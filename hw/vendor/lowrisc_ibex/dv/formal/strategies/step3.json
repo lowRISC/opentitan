@@ -1,0 +1,1 @@
+[[3, ["Ibex_Memory_Wait", "Ibex_Memory_Idle", "Ibex_Memory_Step", "Ibex_Memory_End", "Ibex_Memory_Fail", "Ibex_Memory_StepFail", "Ibex_Memory_WaitGnt", "Ibex_Memory_WaitRvalidMis", "Ibex_Memory_WaitRvalidMisGntsDone", "Ibex_Memory_WaitGntMis", "Ibex_Memory_IdleActive"], "rIC3 -e kind --no-preproc", [20, 12.778778076171875, 20.989760637283325, "OK", "RESULT: UNSAT\n"]]]

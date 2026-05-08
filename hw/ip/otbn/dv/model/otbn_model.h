@@ -90,12 +90,20 @@ class OtbnModel {
   // error. Returns 0 on success; -1 on failure.
   int invalidate_dmem();
 
-  // Set software_errs_fatal bit in ISS model.
+  // Tell the trace checker to tolerate one mismatch between RTL and ISS trace
+  // entries during the next num_checks checks. A value of 0 means indefinitely
+  // many checks will tolerate a mismatch. In both cases the checker no longer
+  // tolerates mismatches after the first detected mismatch. Required for tests
+  // covering FI countermeasures with delayed escalation.
+  void tolerate_result_mismatch(unsigned int num_checks);
+
+  // Set software_errs_fatal bit in ISS model. Returns 0 on success; -1 on
+  // failure.
   int set_software_errs_fatal(unsigned char new_val);
 
-  // Tell the model to not execute checks to see if secure wiping has written
-  // random data to all registers before wiping them with zeroes.
-  int set_no_sec_wipe_chk();
+  // Tell the trace checker to not execute checks to see if secure wiping has
+  // written random data to all registers before wiping them with zeroes.
+  void set_no_sec_wipe_chk();
 
   // Step CRC by consuming 48 bits of data.
   //
@@ -116,18 +124,24 @@ class OtbnModel {
   int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
                           svBit lock_immediately);
 
+  // Stall for one cycle instead of retiring the next instruction.
+  // In case there is a pending halt, the stall request is ignored except if
+  // enforced is True
+  // Returns 0 on success; -1 on failure.
+  int send_stall_request(svBit enforced);
+
   // Returns true if we have an ISS wrapper and it has the START_WIPE flag
   // asserted
   bool is_at_start_of_wipe() const;
 
-  // Trigger initial secure wipe.
+  // Trigger initial secure wipe. Returns 0 on success; -1 on failure.
   int initial_secure_wipe();
 
-  // Set RMA request input on model.
+  // Set RMA request input on model. Returns 0 on success; -1 on failure.
   int set_rma_req(svBitVecVal *rma_req /* bit [3:0] */);
 
   // Disable stack integrity checks
-  int disable_stack_check();
+  void disable_stack_check();
 
  private:
   // Constructs an ISS wrapper if necessary. If something goes wrong, this
@@ -167,6 +181,12 @@ class OtbnModel {
   std::string design_scope_;
 
   bool stack_check_enabled_ = true;
+
+  // If true, tolerate a mismatch in results between ISS and RTL.
+  bool tolerate_result_mismatch_ = false;
+  // The number of checks a mismatch between RTL and ISS is tolerated. A value
+  // of 0 means mismatches are tolerated indefinitely until a mismatch occurs.
+  unsigned int num_tolerating_checks_ = 0;
 };
 
 #endif  // OPENTITAN_HW_IP_OTBN_DV_MODEL_OTBN_MODEL_H_

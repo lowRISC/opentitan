@@ -323,9 +323,9 @@
       width: 1
       default: ""
       external: true
-      top_signame: mbx_tl
       conn_type: false
       index: -1
+      top_signame: mbx_tl
     }
     {
       name: tl_mbx0__soc

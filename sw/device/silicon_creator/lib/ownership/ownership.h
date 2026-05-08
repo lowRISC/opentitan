@@ -7,9 +7,14 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Initialize the owner pages from flash
@@ -25,8 +30,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
  * @param config The current owner configuration.
  * @return error state.
  */
-rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
-                                     uint32_t active_slot,
+rom_error_t ownership_flash_lockdown(boot_data_t *bootdata, boot_log_t *bootlog,
                                      const owner_config_t *config);
 
 /**
@@ -36,5 +40,9 @@ rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
  * @param rescue Whether the ROM_EXT is in rescue mode.
  */
 void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_H_

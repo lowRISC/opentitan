@@ -53,7 +53,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     }
   }
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     string prim_ral_name = "otp_macro_prim_reg_block";
     ral_model_names.push_back(prim_ral_name);
     clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
@@ -63,7 +63,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     tl_intg_alert_name = "fatal_bus_integ_error";
     sec_cm_alert_name  = "fatal_check_error";
 
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // create push_pull agent config obj
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin

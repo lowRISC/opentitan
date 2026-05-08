@@ -12,7 +12,7 @@ use sphincsplus::{DecodeKey, SpxPublicKey};
 
 use super::Error;
 
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct SpxRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -31,6 +31,13 @@ impl TryFrom<&sphincsplus::SpxPublicKey> for SpxRawPublicKey {
         Ok(Self {
             key: v.as_bytes().to_vec(),
         })
+    }
+}
+
+impl TryFrom<sphincsplus::SpxPublicKey> for SpxRawPublicKey {
+    type Error = Error;
+    fn try_from(v: SpxPublicKey) -> Result<Self, Self::Error> {
+        (&v).try_into()
     }
 }
 

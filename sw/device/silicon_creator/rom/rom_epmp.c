@@ -116,7 +116,8 @@ void rom_epmp_unlock_rom_ext_rx(epmp_region_t region) {
   CSR_WRITE(CSR_REG_PMPADDR3, region.start >> 2);
   CSR_WRITE(CSR_REG_PMPADDR4, region.end >> 2);
   CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff);
-  CSR_SET_BITS(CSR_REG_PMPCFG1, kEpmpModeTor | kEpmpPermLockedReadExecute);
+  CSR_SET_BITS(CSR_REG_PMPCFG1,
+               kEpmpModeTor | (uint32_t)kEpmpPermLockedReadExecute);
 }
 
 void rom_epmp_unlock_rom_ext_r(epmp_region_t region) {
@@ -139,7 +140,7 @@ void rom_epmp_unlock_rom_ext_r(epmp_region_t region) {
             region.start >> 2 | (region.end - region.start - 1) >> 3);
   CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff << 16);
   CSR_SET_BITS(CSR_REG_PMPCFG1,
-               ((kEpmpModeNapot | kEpmpPermLockedReadOnly) << 16));
+               ((kEpmpModeNapot | (uint32_t)kEpmpPermLockedReadOnly) << 16));
 }
 
 void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
@@ -162,23 +163,26 @@ void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
+      pmpcfg = ((uint32_t)kEpmpModeNapot | kEpmpPermLockedReadWriteExecute)
+               << 8;
       break;
     case kLcStateDev:
       HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
+      pmpcfg = ((uint32_t)kEpmpModeNapot | kEpmpPermLockedReadWriteExecute)
+               << 8;
       break;
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedNoAccess) << 8;
+      pmpcfg = ((uint32_t)kEpmpModeNapot | kEpmpPermLockedNoAccess) << 8;
       break;
     case kLcStateProdEnd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProdEnd);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedNoAccess) << 8;
+      pmpcfg = ((uint32_t)kEpmpModeNapot | kEpmpPermLockedNoAccess) << 8;
       break;
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      pmpcfg = (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute) << 8;
+      pmpcfg = ((uint32_t)kEpmpModeNapot | kEpmpPermLockedReadWriteExecute)
+               << 8;
       break;
     default:
       HARDENED_TRAP();

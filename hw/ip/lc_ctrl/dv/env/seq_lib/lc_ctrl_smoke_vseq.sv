@@ -24,7 +24,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   virtual task post_start();
     // Kill sub processes
     disable run_clk_byp_rsp;
-    disable run_flash_rma_rsp;
+    disable run_nvm_rma_rsp;
     super.post_start();
   endtask
 
@@ -32,7 +32,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
     fork
       run_clk_byp_rsp(1'b0);
-      run_flash_rma_rsp(1'b0);
+      run_nvm_rma_rsp(1'b0);
     join_none
 
     //

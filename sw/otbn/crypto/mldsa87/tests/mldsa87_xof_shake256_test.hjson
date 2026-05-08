@@ -1,0 +1,34 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      "_xof_shake256_msg_3b": "0x00020100",
+      "_xof_shake256_msg_32b": "0x1f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100",
+      "_xof_shake256_msg_48b": "0x2f2e2d2c2b2a292827262524232221201f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100",
+      "_xof_shake256_msg_128b": "0x7f7e7d7c7b7a797877767574737271706f6e6d6c6b6a696867666564636261605f5e5d5c5b5a595857565554535251504f4e4d4c4b4a494847464544434241403f3e3d3c3b3a393837363534333231302f2e2d2c2b2a292827262524232221201f1e1d1c1b1a191817161514131211100f0e0d0c0b0a09080706050403020100",
+    }
+  },
+
+  "output": {
+    "regs": {
+      // _xof_shake256_msg_3b
+      "w1": "0xaa0ad566fb709410c14031b9d7eaf07de6a1ee9329427ea84e92ad7e16014571",
+      "w2": "0x09ed2c20958a154c805fcfb2514ae510fa29be814a1f8bb981b404d1afdd04ff",
+      // _xof_shake256_msg_32b
+      "w3": "0xd3cd03459bcad2eb13451ee3b3989cbc5b3d2c883909b34d0280ce40887cf069",
+      "w4": "0x3f339b09f17a9ad172b23570ef24cce04ee16391c45aa7d473712c454207c9c9",
+      // _xof_shake256_msg_48b
+      "w5": "0xc30dd72970b41d02bd1109dee86c899715c9d4379f20c0de8ccdd1b4b19b450c",
+      "w6": "0xe78d67efbca388d9d340f7464d83aa41f8e4ffbe635b328fe2df208e7039ad32",
+      // _xof_shake256_msg_128b
+      "w7":  "0xec15ee65051cf30a79c9be76059d3bb35fc8a266cd5f15ded99d98eb493a3a8d",
+      "w8":  "0x5ca16dcc3d26234bcbd8cdfd3fe75f5614b11891e311cbdf487f8dd20a87e51d",
+      "w9":  "0xd79765b558e84e2f0c5961ac100ad6b79a2a1ada153a0962e94d47d35e976518",
+      "w10": "0x06db9686228cd01984b5d4d2883a0267873000c2b99f6cbc1856320b0d416c53",
+    }
+  }
+}

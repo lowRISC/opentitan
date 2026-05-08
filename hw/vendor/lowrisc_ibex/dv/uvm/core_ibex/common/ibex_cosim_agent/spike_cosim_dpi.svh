@@ -14,7 +14,9 @@ import "DPI-C" function
                            bit [31:0] pmp_granularity,
                            bit [31:0] mhpm_counter_num,
                            bit        secure_ibex,
-                           bit        icache);
+                           bit        icache,
+                           bit [31:0] dm_start_addr,
+                           bit [31:0] dm_end_addr);
 
 import "DPI-C" function void spike_cosim_release(chandle cosim_handle);
 

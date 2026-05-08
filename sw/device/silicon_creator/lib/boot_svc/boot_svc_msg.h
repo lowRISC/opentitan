@@ -7,10 +7,12 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_enter_rescue.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_activate.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_history.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_unlock.h"
 
 #ifdef __cplusplus
@@ -31,6 +33,11 @@ extern "C" {
    */ \
   X(boot_svc_empty_t, empty) \
   /**
+   * Enter rescue mode.
+   */ \
+  X(boot_svc_enter_rescue_req_t, enter_rescue_req) \
+  X(boot_svc_enter_rescue_res_t, enter_rescue_res) \
+  /**
    * Next Boot BL0 Slot request and response.
    */ \
   X(boot_svc_next_boot_bl0_slot_req_t, next_boot_bl0_slot_req) \
@@ -45,6 +52,11 @@ extern "C" {
    */ \
   X(boot_svc_ownership_activate_req_t, ownership_activate_req) \
   X(boot_svc_ownership_activate_res_t, ownership_activate_res) \
+  /**
+   * Ownership History
+   */ \
+  X(boot_svc_ownership_history_req_t, ownership_history_req) \
+  X(boot_svc_ownership_history_res_t, ownership_history_res) \
   /**
    * Ownership Unlock
    */ \

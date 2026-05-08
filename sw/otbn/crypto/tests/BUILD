@@ -7,37 +7,6 @@ load("//rules:otbn.bzl", "otbn_consttime_test", "otbn_library", "otbn_sim_test",
 package(default_visibility = ["//visibility:public"])
 
 otbn_sim_test(
-    name = "ed25519_ext_add_test",
-    srcs = [
-        "ed25519_ext_add_test.s",
-    ],
-    exp = "ed25519_ext_add_test.exp",
-    deps = [
-        "//sw/otbn/crypto:ed25519",
-        "//sw/otbn/crypto:field25519",
-    ],
-)
-
-otbn_consttime_test(
-    name = "ed25519_ext_add_consttime",
-    subroutine = "ext_add",
-    deps = [
-        ":ed25519_ext_add_test",
-    ],
-)
-
-otbn_sim_test(
-    name = "ed25519_scalar_test",
-    srcs = [
-        "ed25519_scalar_test.s",
-    ],
-    exp = "ed25519_scalar_test.exp",
-    deps = [
-        "//sw/otbn/crypto:ed25519_scalar",
-    ],
-)
-
-otbn_sim_test(
     name = "div_large_test",
     srcs = [
         "div_large_test.s",
@@ -78,6 +47,74 @@ otbn_consttime_test(
     subroutine = "div",
     deps = [
         ":div_small_test",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_ext_add_test",
+    srcs = [
+        "ed25519_ext_add_test.s",
+    ],
+    exp = "ed25519_ext_add_test.exp",
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_consttime_test(
+    name = "ed25519_ext_add_consttime",
+    subroutine = "ext_add",
+    deps = [
+        ":ed25519_ext_add_test",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_encode_decode_test",
+    srcs = [
+        "ed25519_encode_decode_test.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_scalar_test",
+    srcs = [
+        "ed25519_scalar_test.s",
+    ],
+    exp = "ed25519_scalar_test.exp",
+    deps = [
+        "//sw/otbn/crypto:ed25519_scalar",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_sign_test",
+    srcs = [
+        "ed25519_sign_test.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
+    ],
+)
+
+otbn_sim_test(
+    name = "ed25519_verify_test",
+    srcs = [
+        "ed25519_verify_test.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:ed25519",
+        "//sw/otbn/crypto:ed25519_scalar",
+        "//sw/otbn/crypto:field25519",
     ],
 )
 
@@ -146,6 +183,14 @@ otbn_consttime_test(
     deps = [
         ":gcd_small_test",
     ],
+)
+
+otbn_sim_test(
+    name = "kmac_test",
+    srcs = [
+        "kmac_test.s",
+    ],
+    testcase = "kmac_test.hjson",
 )
 
 otbn_sim_test(
@@ -457,6 +502,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_internal_mult",
         "//sw/otbn/crypto:p384_isoncurve",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -480,6 +526,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p384_a2b",
         "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -492,6 +539,7 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p384_a2b",
         "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -508,6 +556,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_isoncurve",
         "//sw/otbn/crypto:p384_isoncurve_proj",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
         "//sw/otbn/crypto:p384_scalar_mult",
     ],
 )
@@ -553,6 +602,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -567,6 +617,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_isoncurve",
         "//sw/otbn/crypto:p384_isoncurve_proj",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -580,6 +631,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_isoncurve",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -593,6 +645,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -606,6 +659,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_keygen",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -620,6 +674,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_keygen_from_seed",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -631,6 +686,7 @@ otbn_sim_test(
     exp = "p384_proj_add_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -641,6 +697,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_internal_mult",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
@@ -656,6 +713,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_isoncurve",
         "//sw/otbn/crypto:p384_isoncurve_proj",
         "//sw/otbn/crypto:p384_mem",
+        "//sw/otbn/crypto:p384_modinv",
         "//sw/otbn/crypto:p384_scalar_mult",
     ],
 )
@@ -668,11 +726,15 @@ otbn_sim_test(
     exp = "p384_mulmod448x128_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_modinv",
     ],
 )
 
 otbn_consttime_test(
     name = "p384_base_mult_consttime",
+    ignore = [
+        "mod_inv_p_p384",
+    ],
     subroutine = "p384_base_mult",
     deps = [
         ":p384_base_mult_test",
@@ -684,6 +746,7 @@ otbn_consttime_test(
     ignore = [
         "trigger_fault_if_fg0_z",
         "trigger_fault_if_fg0_not_z",
+        "mod_inv_p_p384",
     ],
     subroutine = "p384_scalar_mult",
     deps = [
@@ -773,68 +836,6 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
-    name = "rsa_modinv_f4_test",
-    srcs = [
-        "rsa_modinv_f4_test.s",
-    ],
-    testcase = "rsa_modinv_f4_test.hjson",
-    deps = [
-        "//sw/otbn/crypto:div",
-        "//sw/otbn/crypto:gcd",
-        "//sw/otbn/crypto:lcm",
-        "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_modinv_f4",
-        "//sw/otbn/crypto:run_rsa_mem",
-    ],
-)
-
-otbn_consttime_test(
-    name = "modinv_f4_consttime_test",
-    initial_constants = [
-        "x20:20",
-        "x21:21",
-    ],
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
-    subroutine = "modinv_f4",
-    deps = [
-        ":rsa_modinv_f4_test",
-    ],
-)
-
-otbn_sim_test(
-    name = "rsa_relprime_f4_test",
-    srcs = [
-        "rsa_relprime_f4_test.s",
-    ],
-    testcase = "rsa_relprime_f4.hjson",
-    deps = [
-        "//sw/otbn/crypto:div",
-        "//sw/otbn/crypto:gcd",
-        "//sw/otbn/crypto:lcm",
-        "//sw/otbn/crypto:modexp",
-        "//sw/otbn/crypto:montmul",
-        "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_keygen",
-        "//sw/otbn/crypto:rsa_modinv_f4",
-        "//sw/otbn/crypto:rsa_primality",
-        "//sw/otbn/crypto:run_rsa_mem",
-    ],
-)
-
-otbn_consttime_test(
-    name = "relprime_f4_consttime_test",
-    # All secrets are stored in DMEM; timing is permitted to depend on the
-    # number of limbs.
-    secrets = ["dmem"],
-    subroutine = "relprime_f4_test",
-    deps = [
-        ":rsa_relprime_f4_test",
-    ],
-)
-
-otbn_sim_test(
     name = "rsa_primality_test",
     timeout = "long",  # runs a primality test
     srcs = [
@@ -849,26 +850,6 @@ otbn_sim_test(
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_primality",
-        "//sw/otbn/crypto:run_rsa_mem",
-    ],
-)
-
-otbn_sim_test(
-    name = "rsa_relprime_f4_negative_test",
-    srcs = [
-        "rsa_relprime_f4_negative_test.s",
-    ],
-    testcase = "rsa_relprime_f4_negative_test.hjson",
-    deps = [
-        "//sw/otbn/crypto:div",
-        "//sw/otbn/crypto:gcd",
-        "//sw/otbn/crypto:lcm",
-        "//sw/otbn/crypto:modexp",
-        "//sw/otbn/crypto:montmul",
-        "//sw/otbn/crypto:mul",
-        "//sw/otbn/crypto:rsa_keygen",
-        "//sw/otbn/crypto:rsa_modinv_f4",
         "//sw/otbn/crypto:rsa_primality",
         "//sw/otbn/crypto:run_rsa_mem",
     ],

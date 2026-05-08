@@ -6,12 +6,12 @@
 
 #include <assert.h>
 
-#include "hw/top/dt/dt_lc_ctrl.h"
-#include "hw/top/dt/dt_otp_ctrl.h"
-#include "hw/top/dt/dt_rstmgr.h"
-#include "hw/top/dt/dt_rv_core_ibex.h"
-#include "hw/top/dt/dt_sram_ctrl.h"
-#include "hw/top/dt/dt_uart.h"
+#include "hw/top/dt/lc_ctrl.h"
+#include "hw/top/dt/otp_ctrl.h"
+#include "hw/top/dt/rstmgr.h"
+#include "hw/top/dt/rv_core_ibex.h"
+#include "hw/top/dt/sram_ctrl.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
@@ -21,7 +21,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/stdasm.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -432,7 +432,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_report_error(rom_error_t reason)) {
   shutdown_print(kShutdownLogPrefixBootFault, redacted_error);
   shutdown_print(kShutdownLogPrefixLifecycle, raw_state);
   shutdown_print(kShutdownLogPrefixVersion,
-                 kChipInfo.scm_revision.scm_revision_high);
+                 kBuildInfo.scm_revision.scm_revision_high);
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {

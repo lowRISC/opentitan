@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'b', 'b')
@@ -102,6 +102,10 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   size_t share_words = keyblob_share_num_words(config);
   HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));
   HARDENED_TRY(hardened_memcpy(keyblob + share_words, share1, share_words));
+  HARDENED_CHECK_EQ(hardened_memeq(share0, keyblob, share_words),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(hardened_memeq(share1, keyblob + share_words, share_words),
+                    kHardenedBoolTrue);
   return OTCRYPTO_OK;
 }
 

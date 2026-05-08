@@ -30,6 +30,17 @@ yosys "chparam -set RV32M $lr_synth_ibex_multiplier $lr_synth_top_module"
 
 yosys "chparam -set RegFile $lr_synth_ibex_regfile $lr_synth_top_module"
 
+if { $lr_synth_ibex_secure_ibex } {
+  yosys "chparam -set SecureIbex 1 $lr_synth_top_module"
+  # Place keep_hierarchy contraints on relevant modules to prevent aggressive
+  # synthesis optimzations across the boundaries of these modules.
+  yosys "hierarchy -check -top $lr_synth_top_module"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_and2*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_buf*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_clock_mux2*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_flop*"
+}
+
 yosys "synth $flatten_opt -top $lr_synth_top_module"
 yosys "opt -purge"
 
@@ -47,6 +58,20 @@ if { $lr_synth_timing_run } {
   yosys "abc -liberty $lr_synth_cell_library_path -constr $lr_synth_abc_sdc_file_in -D $yosys_abc_clk_period"
 } else {
   yosys "abc -liberty $lr_synth_cell_library_path"
+}
+
+if { $lr_synth_ibex_secure_ibex } {
+  # Remove keep_hierarchy constraints before the final flattening step.
+  # We're done optimizing.
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_and2*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_buf*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_clock_mux2*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_flop*"
+}
+
+# Final flattening.
+if { $lr_synth_flatten } {
+  yosys "flatten"
 }
 
 yosys "clean"

@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "hw/top/dt/dt_aes.h"
-#include "hw/top/dt/dt_alert_handler.h"
-#include "hw/top/dt/dt_csrng.h"
-#include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -28,6 +28,7 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
@@ -57,6 +58,12 @@ status_t init_test_environment(void) {
   TRY(dif_aes_init_from_dt(kDtAes, &aes));
   TRY(dif_otbn_init_from_dt(kDtOtbn, &otbn));
   TRY(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+
+  // Entropy testutils handle this recoverable alert separately, disable OTTF
+  // handling.
+  TRY(ottf_alerts_ignore_alert(dt_entropy_src_alert_to_alert_id(
+      kDtEntropySrc, kDtEntropySrcAlertRecovAlert)));
+
   return OK_STATUS();
 }
 

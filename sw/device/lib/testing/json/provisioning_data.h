@@ -14,6 +14,25 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'p', 'd')
 
 /**
+ * Max sizes of the UJSON structs below when they are serialized.
+ *
+ * The are obtained by running the following FPGA test:
+ * bazel test --test_output=streamed \
+ *  //sw/device/silicon_creator/manuf/tests:ujson_msg_size_functest
+ *
+ * These should match the constants in:
+ * sw/host/provisioning/ujson_lib/src/lib.rs
+ */
+#ifndef RUST_PREPROCESSOR_EMIT
+enum {
+  kSerdesSha256HashSerializedMaxSize = 98,
+  kLcTokenHashSerializedMaxSize = 52,
+  kManufCertgenInputsSerializedMaxSize = 210,
+  kPersoBlobSerializedMaxSize = 20535,
+};
+#endif
+
+/**
  * Provisioning data imported onto the device during CP.
  */
 // clang-format off
@@ -52,19 +71,6 @@ UJSON_SERDE_STRUCT(ManufCpTestData, \
 // clang-format on
 
 /**
- * Provisioning data imported onto the device in FT during individualization.
- */
-// clang-format off
-#define STRUCT_MANUF_FT_INDIVIDUALIZE_DATA(field, string) \
-    field(enable_alerts, bool) \
-    field(use_ext_clk, bool) \
-    field(ft_device_id, uint32_t, 4)
-UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
-                   manuf_ft_individualize_data_t, \
-                   STRUCT_MANUF_FT_INDIVIDUALIZE_DATA);
-// clang-format on
-
-/**
  * ECC P256 public key.
  */
 // clang-format off
@@ -89,15 +95,21 @@ UJSON_SERDE_STRUCT(LcTokenHash, \
 // clang-format on
 
 /**
+ * Provisioning data imported onto the device in FT during individualization.
+ */
+// clang-format off
+#define STRUCT_MANUF_FT_INDIVIDUALIZE_DATA(field, string) \
+    field(ft_device_id, uint32_t, 4)
+UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
+                   manuf_ft_individualize_data_t, \
+                   STRUCT_MANUF_FT_INDIVIDUALIZE_DATA);
+// clang-format on
+
+/**
  * Inputs needed to generate certificates during personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
-    field(rom_ext_measurement, uint32_t, 8) \
-    field(rom_ext_security_version, uint32_t) \
-    field(owner_manifest_measurement, uint32_t, 8) \
-    field(owner_measurement, uint32_t, 8) \
-    field(owner_security_version, uint32_t) \
     field(dice_auth_key_key_id, uint8_t, 20) \
     field(ext_auth_key_key_id, uint8_t, 20)
 UJSON_SERDE_STRUCT(ManufCertgenInputs, \
@@ -120,7 +132,7 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
 #define STRUCT_PERSO_BLOB(field, string) \
     field(num_objs, size_t) \
     field(next_free, size_t) \
-    field(body, uint8_t, 4096)
+    field(body, uint8_t, 5120)
 UJSON_SERDE_STRUCT(PersoBlob, \
                    perso_blob_t, \
                    STRUCT_PERSO_BLOB);

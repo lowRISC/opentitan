@@ -133,6 +133,7 @@ DIFS = {
             "dif_{}_unittest.cc".format(ip),
             "//sw/device/lib/dif/autogen:{}_unittest".format(ip),
         ],
+        copts = ["-Wno-enum-constexpr-conversion"],
         target_compatible_with = cfg.get("ut_target_compatible_with", []),
         deps = [
             ":{}".format(ip),
@@ -156,8 +157,8 @@ cc_library(
     deps = [
         ":base",
         "//hw/top:csrng_c_regs",
-        "//hw/top:dt_csrng",
         "//hw/top:edn_c_regs",
+        "//hw/top/dt:csrng",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -173,7 +174,7 @@ cc_library(
     hdrs = ["dif_rstmgr.h"],
     deps = [
         ":base",
-        "//hw/top:dt_rstmgr",
+        "//hw/top/dt:rstmgr",
     ],
 )
 

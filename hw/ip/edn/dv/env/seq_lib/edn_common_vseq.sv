@@ -92,8 +92,8 @@ class edn_common_vseq extends edn_base_vseq;
   virtual task send_edn_requests_during_fatal_alerts();
     bit [edn_pkg::StateWidth-1:0] state;
     bit req;
-    push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH) m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
-    bit [MAX_NUM_ENDPOINTS-1:0] send_edn_reqs = $urandom();
+    push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH) m_endpoint_pull_seq[`NUM_END_POINTS];
+    bit [`NUM_END_POINTS-1:0] send_edn_reqs = $urandom();
 
     `uvm_info(`gfn, $sformatf("Send %0h EDN reqs during fatal alert", send_edn_reqs), UVM_HIGH)
 

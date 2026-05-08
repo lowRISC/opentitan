@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result};
 use cryptoki::context::CInitializeArgs;
+use cryptoki::context::CInitializeFlags;
 use cryptoki::context::Pkcs11;
 use cryptoki::session::Session;
 use cryptoki::session::UserType;
@@ -14,18 +15,18 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use crate::error::HsmError;
-use crate::spxef::SpxEf;
+use crate::extra::{SpxEf, SpxKms};
 use acorn::{Acorn, SpxInterface};
 
 #[derive(Debug, Clone)]
 pub enum SpxModule {
     Acorn(String),
     Pkcs11Ef,
+    CloudKms(String),
 }
 
 impl SpxModule {
-    pub const HELP: &'static str =
-        "Type of sphincs+ module [allowed values: acorn:<libpath>, pkcs11-ef]";
+    pub const HELP: &'static str = "Type of sphincs+ module [allowed values: acorn:<libpath>, cloud-kms:<keyring-params>, pkcs11-ef]";
 }
 
 impl FromStr for SpxModule {
@@ -35,6 +36,8 @@ impl FromStr for SpxModule {
             Ok(SpxModule::Acorn(s[6..].into()))
         } else if s.eq_ignore_ascii_case("pkcs11-ef") {
             Ok(SpxModule::Pkcs11Ef)
+        } else if s[..10].eq_ignore_ascii_case("cloud-kms:") {
+            Ok(SpxModule::CloudKms(s[10..].into()))
         } else {
             Err(HsmError::ParseError(format!("unknown SpxModule {s:?}")))
         }
@@ -51,7 +54,7 @@ pub struct Module {
 impl Module {
     pub fn initialize(module: &str) -> Result<Self> {
         let pkcs11 = Pkcs11::new(module)?;
-        pkcs11.initialize(CInitializeArgs::OsThreads)?;
+        pkcs11.initialize(CInitializeArgs::new(CInitializeFlags::OS_LOCKING_OK))?;
         Ok(Module {
             pkcs11,
             session: None,
@@ -63,12 +66,9 @@ impl Module {
     pub fn initialize_spx(&mut self, module: &SpxModule) -> Result<()> {
         let module = match module {
             SpxModule::Acorn(libpath) => Acorn::new(libpath)? as Box<dyn SpxInterface>,
+            SpxModule::CloudKms(keyring) => SpxKms::new(keyring)? as Box<dyn SpxInterface>,
             SpxModule::Pkcs11Ef => {
-                let session = self
-                    .session
-                    .as_ref()
-                    .map(Rc::clone)
-                    .ok_or(HsmError::SessionRequired)?;
+                let session = self.session.clone().ok_or(HsmError::SessionRequired)?;
                 SpxEf::new(session) as Box<dyn SpxInterface>
             }
         };
@@ -100,7 +100,7 @@ impl Module {
         let slot = self.get_token(token)?;
         let session = self.pkcs11.open_rw_session(slot)?;
         if let Some(user) = user {
-            let pin = pin.map(|x| AuthPin::new(x.to_owned()));
+            let pin = pin.map(|x| AuthPin::new(x.to_owned().into()));
             session
                 .login(user, pin.as_ref())
                 .context("Failed HSM Login")?;

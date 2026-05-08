@@ -77,9 +77,8 @@ class i2c_device_response_seq extends i2c_base_seq;
 
   // This method hooks the start of every data byte in an inprogress READ transfer.
   // Fetch any read data from the local memory, and drive the data byte with this value.
-  virtual task drive_read_byte();
+  virtual task drive_read_byte(bit [7:0] rdata);
     bit[Addr7BitMode-1:0] xfer_addr = inp_xfer.addr[Addr7BitMode-1:0];
-    bit [7:0]             rdata;
 
     if (response_mem[xfer_addr].size() == 0) begin
       // We haven't previously seen a write transfer at this address. There is no data to return.
@@ -94,12 +93,7 @@ class i2c_device_response_seq extends i2c_base_seq;
       xfer_addr, rdata), UVM_DEBUG)
 
     // Drive the data byte
-    `uvm_create_obj(REQ, req);
-    start_item(req);
-    req.drv_type = RdData;
-    req.rdata = rdata;
-    finish_item(req);
+    super.drive_read_byte(rdata);
   endtask : drive_read_byte
-
 
 endclass : i2c_device_response_seq

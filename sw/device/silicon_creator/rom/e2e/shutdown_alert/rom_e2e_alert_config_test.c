@@ -10,7 +10,7 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 /**
  * Check that the alert_handler register CRC32 matches OTP value.

@@ -21,8 +21,8 @@ class tl_agent extends dv_base_agent#(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // get tl_if handle
-    if (!uvm_config_db#(virtual tl_if)::get(this, "", "vif", cfg.vif)) begin
+    // get tl_if handle if it is not already supplied
+    if (cfg.vif == null && !uvm_config_db#(virtual tl_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get tl_if handle from uvm_config_db")
     end
     cfg.vif.if_mode = cfg.if_mode;

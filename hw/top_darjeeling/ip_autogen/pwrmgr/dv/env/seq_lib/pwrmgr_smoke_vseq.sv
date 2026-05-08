@@ -62,7 +62,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // Enable resets.
     reset_en = '1;
-    csr_wr(.ptr(ral.reset_en[0]), .value(reset_en));
+    csr_wr(.ptr(ral.reset_en), .value(reset_en));
     wait_for_csr_to_propagate_to_slow_domain();
 
     // Trigger a reset.

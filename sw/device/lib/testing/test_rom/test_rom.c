@@ -20,7 +20,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #ifdef HAS_RETENTION_RAM
@@ -33,7 +33,7 @@
 #endif
 
 #ifdef HAS_FLASH_CTRL
-#include "hw/top/dt/dt_flash_ctrl.h"
+#include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -42,13 +42,13 @@
 #endif
 
 #ifdef HAS_OTP_CTRL
-#include "hw/top/dt/dt_otp_ctrl.h"
+#include "hw/top/dt/otp_ctrl.h"
 
 #include "hw/top/otp_ctrl_regs.h"
 #endif
 
 #ifdef OPENTITAN_IS_DARJEELING
-#include "hw/top/dt/dt_soc_proxy.h"
+#include "hw/top/dt/soc_proxy.h"
 #endif
 
 static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
@@ -187,7 +187,7 @@ bool rom_test_main(void) {
   }
 
   // Print the chip version information
-  LOG_INFO("kChipInfo: scm_revision=%x", kChipInfo.scm_revision);
+  LOG_INFO("kBuildInfo: scm_revision=%x", kBuildInfo.scm_revision);
 
   // Skip sram_init for test_rom
   dif_rstmgr_reset_info_bitfield_t reset_reasons;

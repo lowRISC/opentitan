@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -35,31 +35,29 @@ static status_t run_test_vector(void) {
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
   uint32_t act_tag[512 / 32];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = digest_len,
-  };
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, digest_len);
   otcrypto_hash_digest_t hash_digest = {
       .data = act_tag,
       .len = digest_len,
   };
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
-      TRY(otcrypto_sha2_256(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_256(&current_test_vector->message, &hash_digest));
       break;
     case kHmacTestOperationSha384:
-      TRY(otcrypto_sha2_384(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_384(&current_test_vector->message, &hash_digest));
       break;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_512(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_512(&current_test_vector->message, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac(&current_test_vector->key, current_test_vector->message,
-                        tag_buf));
+      TRY(otcrypto_hmac(&current_test_vector->key,
+                        &current_test_vector->message, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();

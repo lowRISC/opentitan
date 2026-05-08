@@ -2,93 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:signing.bzl", "KeyInfo")
 load("//rules:const.bzl", "CONST")
 load("@bazel_skylib//lib:structs.bzl", "structs")
-
-def _build_key_info_handler(id):
-    """Return a handler that creates a KeyInfo provider.
-
-    Args:
-        id: Identifier used by the consumers of the provider to determine the key algorithm.
-    Returns:
-        A handler that creates a KeyInfo provider.
-    """
-
-    def key_info_handler(ctx):
-        return [KeyInfo(
-            id = id,
-            config = ctx.attr.config,
-            method = ctx.attr.method,
-            pub_key = ctx.file.pub_key,
-            private_key = ctx.file.private_key,
-            type = ctx.attr.type,
-        )]
-
-    return key_info_handler
-
-key_sphincs_plus = rule(
-    implementation = _build_key_info_handler("sphincs_plus"),
-    attrs = {
-        "pub_key": attr.label(
-            allow_single_file = [".pem"],
-            doc = "Public key in pem format.",
-        ),
-        "private_key": attr.label(
-            allow_single_file = [".pem"],
-            doc = "Private key in pem format.",
-        ),
-        "type": attr.string(
-            default = "TestKey",
-            doc = "The type of the key. Can be TestKey, DevKey or ProdKey.",
-            values = ["TestKey", "DevKey", "ProdKey"],
-        ),
-        "config": attr.string(
-            default = "Sha2128s",
-            doc = "The config of the key. Can be Sha2128s[Q20][Prehash].",
-            values = ["Sha2128s", "Sha2128sQ20", "Sha2128sPrehash", "Sha2128sQ20Prehash"],
-        ),
-        "method": attr.string(
-            doc = "Mechanism used to access the key. Can be local or hsmtool.",
-            values = ["local", "hsmtool"],
-        ),
-    },
-)
-
-key_ecdsa = rule(
-    implementation = _build_key_info_handler("ecdsa"),
-    attrs = {
-        "pub_key": attr.label(
-            allow_single_file = [".der"],
-            doc = "Public key in DER format.",
-        ),
-        "private_key": attr.label(
-            allow_single_file = [".der"],
-            doc = "Private key in DER format.",
-        ),
-        "type": attr.string(
-            default = "TestKey",
-            doc = "The type of the key. Can be TestKey, DevKey or ProdKey.",
-            values = ["TestKey", "DevKey", "ProdKey"],
-        ),
-        "config": attr.string(
-            default = "EcdsaP256",
-            doc = "The config of the key. Only EcdsaP256 is supported at the moment.",
-            values = ["EcdsaP256"],
-        ),
-        # TODO(cfrantz, moidx, #22155): To support signing with opentitantool or
-        # hsmtool, the `method` should be replaced with a `token` and `profile`
-        # similar to the `keyset` rule.  The `token` is used to get access to
-        # the appropriate PKCS11 resources (shared libs, config files, etc) and
-        # the `profile` refers to a configuration in
-        # $XDG_CONFIG_HOME/hsmtool/profiles.json that refers to the user's
-        # physical token name and credentials.
-        "method": attr.string(
-            doc = "Mechanism used to access the key. Can be local or hsmtool.",
-            values = ["local", "hsmtool"],
-        ),
-    },
-)
 
 def ecdsa_key_for_lc_state(key_structs, hw_lc_state):
     """Return a dictionary containing a single key that can be used in the given
@@ -198,6 +113,15 @@ def create_test_key(name, label):
 
 def create_dev_key(name, label):
     return create_key_(name, label, [
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.TEST_UNLOCKED1,
+        CONST.LCV.TEST_UNLOCKED2,
+        CONST.LCV.TEST_UNLOCKED3,
+        CONST.LCV.TEST_UNLOCKED4,
+        CONST.LCV.TEST_UNLOCKED5,
+        CONST.LCV.TEST_UNLOCKED6,
+        CONST.LCV.TEST_UNLOCKED7,
+        CONST.LCV.RMA,
         CONST.LCV.DEV,
     ])
 
@@ -229,24 +153,24 @@ SILICON_CREATOR_KEYS = struct(
     FAKE = struct(
         ECDSA = struct(
             TEST = [
-                create_test_key("fake_ecdsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256"),
+                create_test_key("test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset"),
             ],
             DEV = [
-                create_dev_key("fake_ecdsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256"),
+                create_dev_key("dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset"),
             ],
             PROD = [
-                create_prod_key("fake_ecdsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256"),
+                create_prod_key("prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset"),
             ],
         ),
         SPX = struct(
             TEST = [
-                create_test_key("fake_spx_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx"),
+                create_test_key("test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset"),
             ],
             DEV = [
-                create_dev_key("fake_spx_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx"),
+                create_dev_key("dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset"),
             ],
             PROD = [
-                create_prod_key("fake_spx_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx"),
+                create_prod_key("prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset"),
             ],
         ),
     ),
@@ -254,25 +178,8 @@ SILICON_CREATOR_KEYS = struct(
     REAL = None,
     UNAUTHORIZED = struct(
         SPX = [
-            create_key_("spx_unauthorized_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:unauthorized_0_spx", []),
+            create_key_("unauthorized_key_0", "@//sw/device/silicon_creator/rom/keys/unauthorized/spx:spx_keyset", []),
         ],
-    ),
-)
-
-SILICON_OWNER_KEYS = struct(
-    FAKE = struct(
-        RSA = struct(
-            TEST = [
-                create_test_key("fake_rsa_rom_ext_test_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0"),
-            ],
-            DEV = [
-                create_dev_key("fake_rsa_rom_ext_dev_key_0", "@//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_dev_private_key_0"),
-            ],
-            PROD = None,
-        ),
-        # We can't expose real private keys publicly.
-        REAL = None,
-        UNAUTHORIZED = None,
     ),
 )
 
@@ -286,9 +193,4 @@ ECDSA_SPX_KEY_STRUCTS = [
     create_key_struct(SILICON_CREATOR_KEYS.FAKE.ECDSA.TEST[0], None, SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0]),
     create_key_struct(SILICON_CREATOR_KEYS.FAKE.ECDSA.DEV[0], None, SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
     create_key_struct(SILICON_CREATOR_KEYS.FAKE.ECDSA.PROD[0], None, SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
-]
-
-RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
-    create_key_struct(None, SILICON_OWNER_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(None, SILICON_OWNER_KEYS.FAKE.RSA.DEV[0], None),
 ]

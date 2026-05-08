@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, bail};
 use clap::Parser;
 use rusb::UsbContext;
 
@@ -35,6 +35,20 @@ pub struct UsbOpts {
     /// Pin to sense VBUS.
     #[arg(long)]
     pub vbus_sense: Option<String>,
+
+    /// Apply some strappings.
+    #[arg(long)]
+    pub strapping: Vec<String>,
+
+    // VBUS disconnect timeout: how long to wait after setting the pin.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "200ms")]
+    pub vbus_sense_wait: Duration,
+
+    /// Disable strict USB hub operation checks. The operations will be performed
+    /// but the code will not try to ensure that there were successful or even make
+    /// sense.
+    #[arg(long)]
+    pub relaxed_hub_op: bool,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
@@ -67,6 +81,15 @@ impl DeviceLoc {
             port_numbers: dev.port_numbers()?,
         })
     }
+}
+
+pub fn get_device_by_port_numbers(ports: &Vec<u8>) -> Result<UsbDevice> {
+    for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
+        if &device.port_numbers()? == ports {
+            return Ok(device);
+        }
+    }
+    bail!("could not find device at port path {:?}", ports)
 }
 
 impl UsbOpts {
@@ -178,7 +201,7 @@ impl UsbOpts {
         let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
         vbus_sense_en_pin.write(en)?;
         // Give time to hardware buffer to stabilize.
-        std::thread::sleep(Duration::from_millis(100));
+        std::thread::sleep(self.vbus_sense_wait);
         Ok(())
     }
 
@@ -192,61 +215,16 @@ impl UsbOpts {
         let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
         vbus_sense_pin.read()
     }
-}
 
-// Structure representing a USB hub. The device needs to have sufficient permission
-// to be opened.
-pub struct UsbHub {
-    handle: UsbDeviceHandle,
-}
-
-// USB hub operation.
-pub enum UsbHubOp {
-    // Suspend a specific port.
-    Suspend,
-    // Suspend a specific port.
-    Resume,
-    // Reset a specific port.
-    Reset,
-}
-
-const PORT_SUSPEND: u16 = 2;
-const PORT_RESET: u16 = 4;
-
-impl UsbHub {
-    // Construct a hub from a device.
-    pub fn from_device(dev: &UsbDevice) -> Result<UsbHub> {
-        // Make sure the device is a hub.
-        let dev_desc = dev.device_descriptor()?;
-        // Assume that if the device has the HUB class then Linux will already enforce
-        // that it follows the specification.
-        ensure!(
-            dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB,
-            "device is not a hub"
-        );
-        Ok(UsbHub {
-            handle: dev.open().context("cannot open hub")?,
-        })
-    }
-
-    // Perform an operation.
-    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration) -> Result<()> {
-        let (value, set_feature) = match op {
-            UsbHubOp::Suspend => (PORT_SUSPEND, true),
-            UsbHubOp::Resume => (PORT_SUSPEND, false),
-            UsbHubOp::Reset => (PORT_RESET, true),
-        };
-        let req = if set_feature {
-            rusb::constants::LIBUSB_REQUEST_SET_FEATURE
-        } else {
-            rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE
-        };
-        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
-            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
-            | rusb::constants::LIBUSB_ENDPOINT_OUT;
-        let _ = self
-            .handle
-            .write_control(req_type, req, value, port as u16, &[], timeout)?;
+    pub fn apply_strappings(&self, transport: &TransportWrapper, apply: bool) -> Result<()> {
+        for name in &self.strapping {
+            let pin_strapping = transport.pin_strapping(name)?;
+            if apply {
+                pin_strapping.apply()?;
+            } else {
+                pin_strapping.remove()?;
+            }
+        }
         Ok(())
     }
 }

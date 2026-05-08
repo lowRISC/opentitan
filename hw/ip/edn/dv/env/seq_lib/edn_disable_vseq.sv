@@ -7,7 +7,7 @@ class edn_disable_vseq extends edn_base_vseq;
   `uvm_object_new
 
   push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)
-      m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
+      m_endpoint_pull_seq[`NUM_END_POINTS];
 
   uint   num_ep_reqs, num_cs_reqs, wait_disable;
 
@@ -80,14 +80,14 @@ class edn_disable_vseq extends edn_base_vseq;
   endtask
 
   task body();
-    bit [MAX_NUM_ENDPOINTS-1:0] edn_reqs;
+    bit [`NUM_END_POINTS-1:0] edn_reqs;
     super.body();
     num_cs_reqs    = cfg.num_endpoints;
     num_ep_reqs    = num_cs_reqs * csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(edn_reqs, $countones(edn_reqs) == cfg.num_endpoints;)
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       automatic int j = i;
       if (edn_reqs[j]) begin
         fork begin

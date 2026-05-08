@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 def _get_iss_pkgconfig_flags(specifiers: List[str], iss_pc: List[str], simulator: str) -> str:
     all_tokens = []
 
-    # Seperate pkg-config calls for each specifier as combining them has been
+    # Separate pkg-config calls for each specifier as combining them has been
     # observed misbehaving on CentOS 7
     # Generate a list of tokens for each call, and append it to the all_tokens variable
     for s in specifiers:
@@ -114,8 +114,25 @@ def _main() -> int:
             'core_ibex': md.ibex_dv_root,
             'tb_dir': md.dir_tb,
             'tb_build_log': md.tb_build_log,
-            'cmp_opts': get_compile_opts(md.ibex_config,
-                                         md.simulator),
+            'cmp_opts':
+                get_compile_opts(md.ibex_config, md.simulator) + \
+                # Base address of the debug module. This is passed as a parameter
+                # at compile time as the PMP module must always allow debug mode
+                # accesses to it.
+                r" +define+DM_ADDR=1A11_0000 " + \
+                r" +define+DM_ADDR_MASK=0000_0FFF" + \
+                r" +define+BOOT_ADDR=8000_0000 " + \
+                # Spike sets the following parameters via the preprocessor defines
+                # DEBUG_ROM_ENTRY and DEBUG_ROM_TVEC.
+                # As they cannot be moved without recompiling the ISS, treat them as
+                # hardcoded here too, for now. These addresses are placed right at
+                # BOOT_ADDR location, which is the location of the start of the
+                # default vector table. (The reset vector is BOOT_ADDR/256b + 0x80)
+                # The generated RISCV-DV assembly programs move the default vector
+                # table (via MTVEC), and place jump instructions at these two
+                # addresses to the generated debug test sections.
+                r" +define+DEBUG_MODE_HALT_ADDR=8000_0000 " + \
+                r" +define+DEBUG_MODE_EXCEPTION_ADDR=8000_0008 ",
             'dir_shared_cov': (md.dir_shared_cov if md.cov else ''),
             'xlm_cov_cfg_file': f"{md.ot_xcelium_cov_scripts}/cover.ccf",
             'dut_cov_rtl_path': md.dut_cov_rtl_path

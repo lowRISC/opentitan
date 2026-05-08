@@ -6,8 +6,8 @@
 
 #include <assert.h>
 
-#include "hw/top/dt/dt_api.h"
-#include "hw/top/dt/dt_rstmgr.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "rstmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
@@ -167,4 +167,9 @@ bool rstmgr_is_hw_reset_reason(dt_rstmgr_t dt, uint32_t reasons,
   }
 
   return false;
+}
+
+void rstmgr_reboot(void) {
+  rstmgr_reason_clear(1 << kRstmgrReasonPowerOn);
+  rstmgr_reset();
 }

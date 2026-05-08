@@ -5,6 +5,7 @@
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
+load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
@@ -18,6 +19,10 @@ load(
     "opentitan_test",
     "silicon_params",
     "spx_key_for_lc_state",
+)
+load(
+    "//sw/device/silicon_creator/rom/e2e:defs.bzl",
+    "SLOTS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -253,7 +258,11 @@ cc_library(
         fpga = fpga_params(
             needs_jtag = True,
             otp = ":otp_img_sram_exec_en_{}".format(lc_state.lower()),
-            tags = ["manuf"],
+            tags = [
+                "manuf",
+                # Flaky in CI and locally, see #29555.
+                "broken",
+            ],
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
@@ -320,7 +329,7 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_sival",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_sv00",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
@@ -506,5 +515,86 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+    ],
+)
+
+[
+    opentitan_binary(
+        name = "empty_test_{}".format(slot),
+        testonly = True,
+        srcs = ["empty_functest.c"],
+        exec_env = {
+            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for slot in SLOTS.keys()
+]
+
+opentitan_binary_assemble(
+    name = "multislot_empty_test",
+    testonly = True,
+    bins = {
+        ":empty_test_a": SLOTS["a"],
+        ":empty_test_b": SLOTS["b"],
+    },
+    exec_env = [
+        "//hw/top_earlgrey:sim_dv",
+        "//hw/top_earlgrey:silicon_creator",
+    ],
+)
+
+# The below alias is needed to run the multislot_empty_test in DV.
+alias(
+    name = "multislot_empty_test_sim_dv",
+    actual = "multislot_empty_test",
+)
+
+opentitan_test(
+    name = "ujson_msg_size_functest",
+    srcs = ["ujson_msg_size_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        tags = ["manuf"],
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/manuf_ujson_msg_size",
+    ),
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+    ],
+)
+
+opentitan_test(
+    name = "ujson_msg_padding_functest",
+    srcs = ["ujson_msg_padding_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        tags = ["manuf"],
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/manuf_ujson_msg_padding",
+    ),
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
     ],
 )

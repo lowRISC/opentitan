@@ -22,6 +22,8 @@ filesets:
       - fi_ctr_fsm_if.sv
       - fi_core_wrapper.sv
       - fi_core_if.sv
+      - fi_ghash_wrapper.sv
+      - fi_ghash_if.sv
 
     file_type: systemVerilogSource
 

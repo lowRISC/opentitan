@@ -75,7 +75,6 @@
             Verify that genbits generates the amount specified by glen.
             Verify fips bit is set to the inverse of flag0 that was used on the last initialize or reseed.
             Verify that if otp_en_csrng_sw_app_read is set, genbits and int_state_value registers are readable, and unreadable otherwise.
-            Verify that when AES_HALT is set during a generate command that no request is sent to the AES block.
             Verify commands with continuous/non-continuous valid.
             Verify that if FIPS bit drops at input from entropy source that the generated block also has FIPS low.
             '''

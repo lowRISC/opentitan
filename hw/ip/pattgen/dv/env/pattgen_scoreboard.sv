@@ -21,7 +21,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(.CFG_T(pattgen_env_cfg),
   // configuration registers.
   local pattgen_channel_cfg channel_cfg[NUM_PATTGEN_CHANNELS-1:0];
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
@@ -47,7 +47,7 @@ class pattgen_scoreboard extends cip_base_scoreboard #(.CFG_T(pattgen_env_cfg),
   extern function void reset(string kind = "HARD");
 endclass
 
-function pattgen_scoreboard::new (string name="", uvm_component parent=null);
+function pattgen_scoreboard::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 

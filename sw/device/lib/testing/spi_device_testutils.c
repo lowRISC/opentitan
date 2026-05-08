@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/testing/spi_device_testutils.h"
 
-#include "hw/top/dt/dt_spi_device.h"
+#include "hw/top/dt/spi_device.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 

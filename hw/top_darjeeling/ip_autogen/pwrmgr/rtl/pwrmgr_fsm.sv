@@ -33,7 +33,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   output logic clr_cfg_lock_o,
   input  logic int_reset_req_i, // internally generated reset request.
                                 // Send to platform to assert reset
-  input  logic ext_reset_req_i, // Internal Req held until ext reset deasserts
+  input  logic ext_rst_ack_i,   // External reset acknowledged
 
   // rstmgr
   output pwr_rst_req_t pwr_rst_o,
@@ -55,8 +55,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
 
-  // flash
-  input flash_idle_i,
+  // NVM
+  input nvm_idle_i,
 
   // rom_ctrl
   input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
@@ -162,7 +162,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   logic ext_rst_pending_d, ext_rst_pending_q;
 
   always_comb begin
-    ext_rst_req_d     = ext_reset_req_i;
+    ext_rst_req_d     = ext_rst_ack_i;
     ext_rst_pending_d = ext_rst_pending_q;
 
     if (ext_rst_pending_q && !ext_rst_req_d && ext_rst_req_q) begin
@@ -430,7 +430,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateNvmIdleChk: begin
 
-        if (otp_idle_i && lc_idle_i && flash_idle_i) begin
+        if (otp_idle_i && lc_idle_i && nvm_idle_i) begin
           state_d = FastPwrStateLowPowerPrep;
         end else begin
           ip_clk_en_d = 1'b1;

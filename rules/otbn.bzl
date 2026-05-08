@@ -87,7 +87,7 @@ def _otbn_binary(ctx, additional_srcs = []):
     # Declare output files.
     elf = ctx.actions.declare_file(ctx.attr.name + ".elf")
     rv32embed = ctx.actions.declare_file(ctx.attr.name + ".rv32embed.o")
-    archive = ctx.actions.declare_file(ctx.attr.name + ".rv32embed.a")
+    archive = ctx.actions.declare_file("lib" + ctx.attr.name + ".rv32embed.a")
 
     deps = [f for dep in ctx.attr.deps for f in dep.files.to_list()]
 
@@ -174,7 +174,7 @@ def _run_sim_test(ctx, exp, dexp, testcase = None, additional_srcs = []):
     simulator = ctx.executable._simulator
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "{} {} -- {} {}".format(sim_test_wrapper.short_path, exp_content, simulator.short_path, elf.short_path),
+        content = "{} {} {} -- {} {}".format(sim_test_wrapper.short_path, exp_content, '"$@"', simulator.short_path, elf.short_path),
     )
 
     # Runfiles include sources, the .elf file, the simulator and test wrapper
@@ -217,6 +217,32 @@ def otbn_sim_test_suite(name, tests, **kwargs):
         tags = tags,
     )
 
+def otbn_sim_testgen(name, testgen, number, srcs = [], deps = [], type = "expectation", **kwargs):
+    """Bazel macro to automatically generate `number` of testcases.
+
+    An index i for (0 <= i < `number`) will be appended to the test name.
+    """
+
+    tests = [name + str(i) for i in range(number)]
+
+    for i in range(number):
+        otbn_autogen_sim_test(
+            name = tests[i],
+            srcs = srcs,
+            deps = deps,
+            testgen = testgen,
+            seed = i,
+            type = type,
+        )
+
+    # manual test_suite to group all individual testcases
+    tags = kwargs.get("tags", []) + ["manual"]
+    native.test_suite(
+        name = name,
+        tests = tests,
+        tags = tags,
+    )
+
 def _otbn_autogen_sim_test_impl(ctx):
     """
     Automatically generate test data for OTBN simulator tests.
@@ -235,16 +261,28 @@ def _otbn_autogen_sim_test_impl(ctx):
     value for randomness with '-s'.
     """
 
-    data = ctx.actions.declare_file(ctx.attr.name + "_data.s")
-    exp = ctx.actions.declare_file(ctx.attr.name + ".exp")
-    ctx.actions.run(
-        outputs = [data, exp],
-        inputs = [ctx.executable.testgen],
-        arguments = ["-s", str(ctx.attr.seed), data.path, exp.path],
-        executable = ctx.executable.testgen,
-    )
+    if ctx.attr.type == "expectation":
+        # Expectation test using the *_data.s file for inputs and *.exp for outputs.
+        data = ctx.actions.declare_file(ctx.attr.name + "_data.s")
+        exp = ctx.actions.declare_file(ctx.attr.name + ".exp")
+        ctx.actions.run(
+            outputs = [data, exp],
+            inputs = [ctx.executable.testgen],
+            arguments = ["-s", str(ctx.attr.seed), data.path, exp.path],
+            executable = ctx.executable.testgen,
+        )
 
-    return _run_sim_test(ctx, exp, None, additional_srcs = [data])
+        return _run_sim_test(ctx, exp, None, additional_srcs = [data])
+    if ctx.attr.type == "testcase":
+        # Test using the testcase HJSON system (input + output in one HJSON file).
+        hjson_file = ctx.actions.declare_file(ctx.attr.name + ".hjson")
+        ctx.actions.run(
+            outputs = [hjson_file],
+            inputs = [ctx.executable.testgen],
+            arguments = ["-s", str(ctx.attr.seed), hjson_file.path],
+            executable = ctx.executable.testgen,
+        )
+        return _run_sim_test(ctx, None, None, testcase = hjson_file)
 
 def _otbn_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.
@@ -481,6 +519,8 @@ otbn_autogen_sim_test = rv_rule(
             cfg = "exec",
         ),
         "seed": attr.int(mandatory = True),
+        # Test type: "expectation" or "testcase".
+        "type": attr.string(default = "expectation"),
         "_otbn_as": attr.label(
             default = "//hw/ip/otbn/util:otbn_as",
             executable = True,

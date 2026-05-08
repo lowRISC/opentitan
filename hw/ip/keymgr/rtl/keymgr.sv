@@ -107,19 +107,21 @@ module keymgr
   seed_t kmac_seed;
   seed_t none_seed;
 
-  prim_sec_anchor_buf #(
-    .Width(TotalSeedWidth)
-  ) u_seed_anchor (
-    .in_i({RndCnstRevisionSeed,
-           RndCnstCreatorIdentitySeed,
-           RndCnstOwnerIntIdentitySeed,
-           RndCnstOwnerIdentitySeed,
-           RndCnstSoftOutputSeed,
-           RndCnstHardOutputSeed,
-           RndCnstAesSeed,
-           RndCnstOtbnSeed,
-           RndCnstKmacSeed,
-           RndCnstNoneSeed}),
+  localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
+                                                        RndCnstCreatorIdentitySeed,
+                                                        RndCnstOwnerIntIdentitySeed,
+                                                        RndCnstOwnerIdentitySeed,
+                                                        RndCnstSoftOutputSeed,
+                                                        RndCnstHardOutputSeed,
+                                                        RndCnstAesSeed,
+                                                        RndCnstOtbnSeed,
+                                                        RndCnstKmacSeed,
+                                                        RndCnstNoneSeed};
+
+  prim_sec_anchor_const #(
+    .Width(TotalSeedWidth),
+    .ConstVal(RndConstSeed)
+  ) u_seed_anchor_const (
     .out_o({revision_seed,
             creator_identity_seed,
             owner_int_identity_seed,

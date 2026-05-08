@@ -78,8 +78,8 @@ module otp_ctrl
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
   // Scrambling key requests
-  input  flash_otp_key_req_t                         flash_otp_key_i,
-  output flash_otp_key_rsp_t                         flash_otp_key_o,
+  input  nvm_otp_key_req_t                           nvm_otp_key_i,
+  output nvm_otp_key_rsp_t                           nvm_otp_key_o,
   input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
   output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
@@ -610,17 +610,34 @@ module otp_ctrl
     hw2reg.direct_access_rdata = dai_rdata;
     // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
     hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
-    // Report partition errors in the status register; relies upon the field ordering and the
-    // presence of only the scalar signal 'd' in each partition-specific field.
-    hw2reg.status = otp_ctrl_hw2reg_status_reg_t'(part_errors_reduced);
-    // Overwrite the other fields of the status register with specific error conditions.
-    hw2reg.status.timeout_error.d = chk_timeout;
-    hw2reg.status.lfsr_fsm_error.d = lfsr_fsm_err;
+    // Assign these to the status register. Note that the upper most 2 bits of part_errors_reduced
+    // contain the DAI/LCI error. They are treated as normal errors and not part of the dedicated
+    // partition status register.
+    hw2reg.status.partition_error.d      = |part_errors_reduced[$bits(part_errors_reduced)-3:0];
+    hw2reg.status.dai_error.d            = part_errors_reduced[DaiIdx];
+    hw2reg.status.lci_error.d            = part_errors_reduced[LciIdx];
+    hw2reg.status.timeout_error.d        = chk_timeout;
+    hw2reg.status.lfsr_fsm_error.d       = lfsr_fsm_err;
     hw2reg.status.scrambling_fsm_error.d = scrmbl_fsm_err;
-    hw2reg.status.key_deriv_fsm_error.d = part_fsm_err[KdiIdx];
-    hw2reg.status.bus_integ_error.d = fatal_bus_integ_error_q;
-    hw2reg.status.dai_idle.d = dai_idle;
-    hw2reg.status.check_pending.d = chk_pending;
+    hw2reg.status.key_deriv_fsm_error.d  = part_fsm_err[KdiIdx];
+    hw2reg.status.bus_integ_error.d      = fatal_bus_integ_error_q;
+    hw2reg.status.dai_idle.d             = dai_idle;
+    hw2reg.status.check_pending.d        = chk_pending;
+
+    // Assign partition status
+    hw2reg.partition_status_0.vendor_test_error.d = part_errors_reduced[VendorTestIdx];
+    hw2reg.partition_status_0.creator_sw_cfg_error.d = part_errors_reduced[CreatorSwCfgIdx];
+    hw2reg.partition_status_0.owner_sw_cfg_error.d = part_errors_reduced[OwnerSwCfgIdx];
+    hw2reg.partition_status_0.rot_creator_auth_codesign_error.d =
+      part_errors_reduced[RotCreatorAuthCodesignIdx];
+    hw2reg.partition_status_0.rot_creator_auth_state_error.d =
+      part_errors_reduced[RotCreatorAuthStateIdx];
+    hw2reg.partition_status_0.hw_cfg0_error.d = part_errors_reduced[HwCfg0Idx];
+    hw2reg.partition_status_0.hw_cfg1_error.d = part_errors_reduced[HwCfg1Idx];
+    hw2reg.partition_status_0.secret0_error.d = part_errors_reduced[Secret0Idx];
+    hw2reg.partition_status_0.secret1_error.d = part_errors_reduced[Secret1Idx];
+    hw2reg.partition_status_0.secret2_error.d = part_errors_reduced[Secret2Idx];
+    hw2reg.partition_status_0.life_cycle_error.d = part_errors_reduced[LifeCycleIdx];
     // Error code registers.
     hw2reg.err_code = part_error;
     // Interrupt signals
@@ -1128,7 +1145,7 @@ end
 
   logic scrmbl_key_seed_valid;
   logic [SramKeySeedWidth-1:0] sram_data_key_seed;
-  logic [FlashKeySeedWidth-1:0] flash_data_key_seed, flash_addr_key_seed;
+  logic [NvmKeySeedWidth-1:0]  nvm_data_key_seed, nvm_addr_key_seed;
 
   otp_ctrl_kdi #(
     .RndCnstScrmblKeyInit(RndCnstScrmblKeyInit)
@@ -1139,14 +1156,14 @@ end
     .escalate_en_i           ( lc_escalate_en[KdiIdx]  ),
     .fsm_err_o               ( part_fsm_err[KdiIdx]    ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
-    .flash_data_key_seed_i   ( flash_data_key_seed     ),
-    .flash_addr_key_seed_i   ( flash_addr_key_seed     ),
+    .nvm_data_key_seed_i     ( nvm_data_key_seed       ),
+    .nvm_addr_key_seed_i     ( nvm_addr_key_seed       ),
     .sram_data_key_seed_i    ( sram_data_key_seed      ),
     .edn_req_o               ( key_edn_req             ),
     .edn_ack_i               ( key_edn_ack             ),
     .edn_data_i              ( edn_data                ),
-    .flash_otp_key_i,
-    .flash_otp_key_o,
+    .nvm_otp_key_i,
+    .nvm_otp_key_o,
     .sram_otp_key_i,
     .sram_otp_key_o,
     .otbn_otp_key_i,
@@ -1414,7 +1431,7 @@ end
 
   // Note regarding these breakouts: named_keymgr_key_assign will tie off unused key material /
   // valid signals to '0. This is the case for instance in system configurations that keep the seed
-  // material in the flash instead of OTP.
+  // material in the nvm instead of OTP.
   logic creator_root_key_share0_valid_d, creator_root_key_share0_valid_q;
   logic creator_root_key_share1_valid_d, creator_root_key_share1_valid_q;
   logic creator_seed_valid_d, creator_seed_valid_q;
@@ -1470,10 +1487,10 @@ end
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
   assign sram_data_key_seed    = part_buf_data[SramDataKeySeedOffset +:
                                                SramDataKeySeedSize];
-  assign flash_data_key_seed   = part_buf_data[FlashDataKeySeedOffset +:
-                                               FlashDataKeySeedSize];
-  assign flash_addr_key_seed   = part_buf_data[FlashAddrKeySeedOffset +:
-                                               FlashAddrKeySeedSize];
+  assign nvm_data_key_seed     = part_buf_data[NvmDataKeySeedOffset +:
+                                               NvmDataKeySeedSize];
+  assign nvm_addr_key_seed     = part_buf_data[NvmAddrKeySeedOffset +:
+                                               NvmAddrKeySeedSize];
 
   // Test unlock and exit tokens and RMA token
   assign otp_lc_data_o.test_exit_token   = part_buf_data[TestExitTokenOffset +:
@@ -1543,8 +1560,8 @@ end
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
-  `ASSERT_INIT(FlashDataKeySeedSize_A,     FlashKeySeedWidth == FlashDataKeySeedSize * 8)
-  `ASSERT_INIT(FlashAddrKeySeedSize_A,     FlashKeySeedWidth == FlashAddrKeySeedSize * 8)
+  `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
+  `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
   `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)
@@ -1561,7 +1578,7 @@ end
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
-  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
+  `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
   `ASSERT_KNOWN(OtpBroadcastKnown_A,         otp_broadcast_o)
@@ -1605,10 +1622,7 @@ end
   //   Add checks that the incoming fatal conditions from prim_otp trigger alerts.
 
   // Assertions for countermeasures inside prim_otp
-  // `ifndef PRIM_DEFAULT_IMPL
-  //   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-  // `endif
-  // if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
+  // if (prim_pkg::PrimTechName == "Generic") begin : gen_reg_we_assert_generic
   //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
   //       u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
   //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,

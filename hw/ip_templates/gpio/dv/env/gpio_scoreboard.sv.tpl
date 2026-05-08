@@ -42,7 +42,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
 
   `uvm_component_utils(${module_instance_name}_scoreboard)
 
-  function new (string name = "${module_instance_name}_scoreboard", uvm_component parent = null);
+  function new (string name, uvm_component parent = null);
     super.new (name, parent);
   endfunction
 
@@ -163,13 +163,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
               if (cfg.en_cov) begin
                 foreach (cleared_intr_bits[each_bit]) begin
                   if (cleared_intr_bits[each_bit]) begin
-                    if (last_intr_update_except_clearing[each_bit]) begin
-                      cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                                          $sformatf("%0d", each_bit)}].sample(1'b1);
-                    end else begin
-                      cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                                          $sformatf("%0d", each_bit)}].sample(1'b0);
-                    end
+                    cov.sample_intr_pin(each_bit, last_intr_update_except_clearing[each_bit]);
                   end
                 end
               end
@@ -370,44 +364,29 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
     end
   endtask : monitor_gpio_interrupt_pins
 
-  virtual task update_gpio_straps_regs(logic [NUM_GPIOS-1:0] gpio_i_sampled);
-    // Update data_in and data_in_valid ral register value based on result of input
-    `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(gpio_i_sampled),
-                                                  .kind(UVM_PREDICT_READ)));
-    `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value('b1),
-                                                        .kind(UVM_PREDICT_READ)));
-  endtask : update_gpio_straps_regs
-
   // Task: monitor_gpio_straps
   // The task monitors the gpio straps enable signal
   // and checks the straps output signal after the first strap trigger
   virtual task monitor_gpio_straps();
-    logic [NUM_GPIOS-1:0] gpio_i_sampled;
     forever begin : monitor_gpio_straps
-      // Wait for going out of reset operation.
+      // Wait to leave reset
       wait(!cfg.under_reset);
-      // Wait until the strap_en input be triggered
-      // if a reset comes in the middle, step-out of the loop.
-      while (!cfg.straps_vif_inst.tb_port.strap_en) begin
-        cfg.clk_rst_vif.wait_clks_or_rst(1);
-        if (cfg.under_reset) break;
-      end
-      // Step out to the next iteration if a reset happens.
-      if (cfg.under_reset) continue;
-      // Get the gpio_i input data from the pins interface.
-      gpio_i_sampled = cfg.gpio_vif.pins;
-      // Wait for one clock cycle to update the register model.
-      cfg.clk_rst_vif.wait_clks_or_rst(1);
-      // Step out from the loop if a reset comes.
-      if (cfg.under_reset) continue;
-      // Update the register model.
-      update_gpio_straps_regs(gpio_i_sampled);
 
-      // Checker: Compare actual values of gpio pins with straps register.
-      // Check the register hw_straps_data_in against gpio_i pins
-      `DV_CHECK_CASE_EQ(gpio_i_sampled, cfg.straps_vif_inst.tb_port.sampled_straps.data)
-      // Check the register hw_straps_data_in_valid
-      `DV_CHECK_CASE_EQ('b1, cfg.straps_vif_inst.tb_port.sampled_straps.valid)
+      // Now wait until strap_en goes high, dropping out if we go back into reset
+      fork : isolation_fork begin
+        fork
+          wait(cfg.straps_vif_inst.tb_port.strap_en);
+          wait(cfg.under_reset);
+        join_any
+        disable fork;
+      end join
+      if (cfg.under_reset) continue;
+
+      // Sample the pins, storing the value and a validity bit in the register model.
+      if (!ral.hw_straps_data_in.predict(.value(cfg.gpio_vif.pins), .kind(UVM_PREDICT_DIRECT)))
+        `uvm_fatal(get_full_name(), "Failed to update HW_STRAPS_DATA_IN prediction.")
+      if (!ral.hw_straps_data_in_valid.predict(.value(1), .kind(UVM_PREDICT_DIRECT)))
+        `uvm_fatal(get_full_name(), "Failed to update HW_STRAPS_DATA_IN_VALID prediction.")
 
       // Wait for the next reset, if it happens.
       wait(cfg.under_reset);
@@ -748,11 +727,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
         // Coverage Sampling: cover a scenario wherein cleared interrupt state bit
         // is re-asserted due to still active interrupt event
         if (cleared_intr_bits[each_bit]) begin
-          if (exp_intr_status[each_bit]) begin
-            cov.sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_bit)}].sample(1'b1);
-          end else begin
-            cov.sticky_intr_cov[{"gpio_sticky_intr_pin", $sformatf("%0d", each_bit)}].sample(1'b0);
-          end
+          cov.sample_intr_pin(each_bit, exp_intr_status[each_bit]);
           // Clear the flag
           cleared_intr_bits[each_bit] = 1'b0;
         end

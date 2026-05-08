@@ -256,6 +256,13 @@ rom_error_t keymgr_rom_ext_test(void) {
   return kErrorOk;
 }
 
+rom_error_t keymgr_disable_test(void) {
+  sc_keymgr_disable();
+  CHECK(sc_keymgr_state_check(kScKeymgrStateDisabled) == kErrorOk,
+        "Keymgr should be in the disabled state.");
+  return kErrorOk;
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
   dif_rstmgr_t rstmgr;
@@ -295,6 +302,7 @@ bool test_main(void) {
 
     EXECUTE_TEST(result, keymgr_rom_test);
     EXECUTE_TEST(result, keymgr_rom_ext_test);
+    EXECUTE_TEST(result, keymgr_disable_test);
     return status_ok(result);
   } else {
     LOG_FATAL("Unexpected reset reason unexpected: %08x", info);

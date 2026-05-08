@@ -27,6 +27,8 @@ typedef struct ujson {
   int16_t buffer;
   /** Holds the rolling CRC32 of characters that are sent and received.*/
   uint32_t crc32;
+  /** Holds size counter for strings sent or received.*/
+  size_t str_size;
 } ujson_t;
 
 // clang-format off

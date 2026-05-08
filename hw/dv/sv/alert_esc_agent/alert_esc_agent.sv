@@ -7,7 +7,7 @@
 // ---------------------------------------------
 class alert_esc_agent extends dv_base_agent#(
     .CFG_T           (alert_esc_agent_cfg),
-    .DRIVER_T        (alert_esc_base_driver),
+    .DRIVER_T        (dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg)),
     .SEQUENCER_T     (alert_esc_sequencer),
     .MONITOR_T       (alert_esc_base_monitor),
     .COV_T           (alert_esc_agent_cov)
@@ -15,7 +15,7 @@ class alert_esc_agent extends dv_base_agent#(
 
   `uvm_component_utils(alert_esc_agent)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   // Create automatic response (from monitor) to ping and alert requests.
   extern function void connect_phase(uvm_phase phase);
@@ -23,7 +23,7 @@ class alert_esc_agent extends dv_base_agent#(
 
 endclass : alert_esc_agent
 
-function alert_esc_agent::new (string name="", uvm_component parent=null);
+function alert_esc_agent::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -34,9 +34,9 @@ function void alert_esc_agent::build_phase(uvm_phase phase);
   end
   // override monitor
   if (cfg.is_alert) begin
-    alert_esc_base_monitor::type_id::set_type_override(alert_monitor::get_type());
+    MONITOR_T::type_id::set_inst_override(alert_monitor::get_type(), "monitor", this);
   end else begin
-    alert_esc_base_monitor::type_id::set_type_override(esc_monitor::get_type());
+    MONITOR_T::type_id::set_inst_override(esc_monitor::get_type(), "monitor", this);
   end
 
   // override driver
@@ -45,15 +45,15 @@ function void alert_esc_agent::build_phase(uvm_phase phase);
       // use for reactive device
       cfg.has_req_fifo = 1;
       if (cfg.if_mode == Host) begin
-        alert_esc_base_driver::type_id::set_type_override(alert_sender_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(alert_sender_driver::get_type(), "driver", this);
       end else begin
-        alert_esc_base_driver::type_id::set_type_override(alert_receiver_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(alert_receiver_driver::get_type(), "driver", this);
       end
     end else begin
       if (cfg.if_mode == Host) begin
-        alert_esc_base_driver::type_id::set_type_override(esc_sender_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(esc_sender_driver::get_type(), "driver", this);
       end else begin
-        alert_esc_base_driver::type_id::set_type_override(esc_receiver_driver::get_type());
+        DRIVER_T::type_id::set_inst_override(esc_receiver_driver::get_type(), "driver", this);
       end
     end
   end

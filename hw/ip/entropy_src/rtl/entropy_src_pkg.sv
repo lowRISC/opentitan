@@ -41,19 +41,6 @@ package entropy_src_pkg;
   parameter entropy_src_hw_if_req_t ENTROPY_SRC_HW_IF_REQ_DEFAULT = '{default: '0};
   parameter entropy_src_hw_if_rsp_t ENTROPY_SRC_HW_IF_RSP_DEFAULT = '{default: '0};
 
-
-  // csrng block encrypt request/ack i/f
-  typedef struct packed {
-    logic cs_aes_halt_req;
-  } cs_aes_halt_req_t;
-
-  typedef struct packed {
-    logic cs_aes_halt_ack;
-  } cs_aes_halt_rsp_t;
-
-  parameter cs_aes_halt_req_t CS_AES_HALT_REQ_DEFAULT = '{default: '0};
-  parameter cs_aes_halt_rsp_t CS_AES_HALT_RSP_DEFAULT = '{default: '0};
-
   // external health test i/f
   typedef struct packed {
     logic rng_bit_en;
@@ -76,5 +63,18 @@ package entropy_src_pkg;
   parameter entropy_src_xht_meta_req_t ENTROPY_SRC_XHT_META_REQ_DEFAULT = '{default: '0};
   parameter entropy_src_xht_meta_rsp_t ENTROPY_SRC_XHT_META_RSP_DEFAULT =
       '{test_cnt_lo: 16'hffff, default: '0};
+
+  parameter int HT_WATERMARK_NUM_WIDTH = 4;
+  typedef enum logic [HT_WATERMARK_NUM_WIDTH-1:0] {
+    REPCNT_HI  = 0,
+    REPCNTS_HI = 1,
+    ADAPTP_HI  = 2,
+    ADAPTP_LO  = 3,
+    BUCKET_HI  = 4,
+    MARKOV_HI  = 5,
+    MARKOV_LO  = 6,
+    EXTHT_HI   = 7,
+    EXTHT_LO   = 8
+  } ht_watermark_num_e;
 
 endpackage : entropy_src_pkg

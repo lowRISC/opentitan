@@ -22,6 +22,7 @@ bazel run \
     --test-exit-token="0x22222222_22222222_22222222_22222222" \
     --fpga=${FPGA_TARGET} \
     --non-interactive \
+    --ast-cfg-version=0 \
     --db-path=$(pwd)/provisioning.sqlite
 ```
 

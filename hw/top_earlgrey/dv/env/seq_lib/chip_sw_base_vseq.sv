@@ -499,41 +499,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
       spi_host_flash_seq write_command,
       uint busy_timeout_ns = default_spinwait_timeout_ns,
       uint busy_poll_interval_ns = 1000);
-    spi_host_flash_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
-    m_spi_host_seq.opcode = SpiFlashWriteEnable;
-    `uvm_send(m_spi_host_seq);
 
-    `uvm_send(write_command);
+    spi_host_flash_seq m_spi_host_seq = spi_host_flash_seq::type_id::create("m_spi_host_seq");
+    m_spi_host_seq.opcode = SpiFlashWriteEnable;
+    m_spi_host_seq.start(p_sequencer.spi_host_sequencer_h, this);
+
+    write_command.start(p_sequencer.spi_host_sequencer_h, this);
 
     spi_host_wait_on_busy(busy_timeout_ns, busy_poll_interval_ns);
   endtask
 
-  // Load the flash binary specified by the `sw_image` path by sending a chip
-  // erase, then programming pages in sequence via the SPI flash interface
-  // presented by the ROM. Afterwards, bring the software straps back to 0,
-  // and issue a power-on reset.
-  // The `sw_image` path should point to an image usable by the
-  // `read_sw_frames` task.
-  // This task assumes the device was booted with software straps set before
-  // entry. In addition, it expects that the spi_agent was connected to the
-  // spi_device and is ready to issue flash transactions.
-  virtual task spi_device_load_bootstrap(string sw_image);
-    spi_host_flash_seq m_spi_host_seq;
-    byte sw_byte_q[$];
-    uint bytes_to_write;
-    uint byte_cnt = 0;
-    uint SPI_FLASH_PAGE_SIZE = 256;
-
-    // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
-    // it needs to capture CSB pulses.
-    cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
-    cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
-
-    // Configure the spi_agent for flash mode and add command info.
-    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
-
-    // Wait for the commands to be ready
+  // Wait for each of the SPI flash commands on the device to be loaded
+  protected task wait_for_flash_command_load();
     csr_spinwait(
       .ptr(ral.spi_device.cmd_info[spi_device_pkg::CmdInfoReadSfdp].opcode),
       .exp_data(SpiFlashReadSfdp),
@@ -549,34 +526,71 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .exp_data(SpiFlashWriteEnable),
       .backdoor(1),
       .spinwait_delay_ns(5000));
+  endtask
+
+  // Send a SPI command to request that flash is erased
+  protected task erase_flash_over_spi();
+    spi_host_flash_seq erase_seq;
+
+    erase_seq = spi_host_flash_seq::type_id::create("erase_seq");
+    erase_seq.opcode = SpiFlashChipErase;
+    spi_host_flash_issue_write_cmd(.write_command(erase_seq),
+                                   .busy_timeout_ns(200_000_000),
+                                   .busy_poll_interval_ns(1_000_000));
+  endtask
+
+  // Load the flash binary specified by the `sw_image` path by sending a chip erase, then
+  // programming pages in sequence via the SPI flash interface presented by the ROM. Afterwards,
+  // bring the software straps back to 0, and issue a power-on reset.
+  //
+  // The `sw_image` path should point to an image usable by the `read_sw_frames` task.
+  //
+  // This task assumes the device was booted with software straps set before entry. In addition, it
+  // expects that the spi_agent was connected to the spi_device and is ready to issue flash
+  // transactions.
+  task spi_device_load_bootstrap(string sw_image);
+    byte sw_byte_q[$];
+    uint bytes_to_write;
+    uint SPI_FLASH_PAGE_SIZE = 256;
+
+    // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
+    // it needs to capture CSB pulses.
+    cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
+    cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
+
+    // Configure the spi_agent for flash mode and add command info.
+    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
+
+    // Wait for the commands to be ready
+    wait_for_flash_command_load();
 
     read_sw_frames(sw_image, sw_byte_q);
 
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
-    m_spi_host_seq.opcode = SpiFlashChipErase;
-    spi_host_flash_issue_write_cmd(
-      .write_command(m_spi_host_seq),
-      .busy_timeout_ns(200_000_000),
-      .busy_poll_interval_ns(1_000_000));
+    erase_flash_over_spi();
 
-    while (sw_byte_q.size > byte_cnt) begin
-      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
-      m_spi_host_seq.opcode = SpiFlashPageProgram;
-      m_spi_host_seq.address_q = {byte_cnt[23:16], byte_cnt[15:8], byte_cnt[7:0]};
-      if (SPI_FLASH_PAGE_SIZE < (sw_byte_q.size() - byte_cnt)) begin
-        bytes_to_write = SPI_FLASH_PAGE_SIZE;
-      end else begin
-        bytes_to_write = sw_byte_q.size() - byte_cnt;
-      end
-      for (int i = 0; i < bytes_to_write; i++) begin
-        m_spi_host_seq.payload_q.push_back(sw_byte_q[byte_cnt + i]);
-      end
-      spi_host_flash_issue_write_cmd(m_spi_host_seq);
-      byte_cnt += bytes_to_write;
+    for (int unsigned idx = 0; idx < sw_byte_q.size(); idx += SPI_FLASH_PAGE_SIZE) begin
+      spi_write_flash_page(sw_byte_q, idx, SPI_FLASH_PAGE_SIZE);
     end
 
     cfg.chip_vif.sw_straps_if.drive(3'h0);
     assert_por_reset();
+  endtask
+
+  // Write a single page to flash, starting with item at index start_idx. Send up to page_size bytes
+  // if there are that many available.
+  protected virtual task spi_write_flash_page(const ref byte byte_q[$],
+                                              int unsigned start_idx,
+                                              int unsigned page_size);
+    spi_host_flash_seq page_seq = spi_host_flash_seq::type_id::create("page_seq");
+
+    page_seq.opcode = SpiFlashPageProgram;
+    page_seq.address_q = {start_idx[23:16], start_idx[15:8], start_idx[7:0]};
+
+    for (int unsigned i = start_idx; i - start_idx < page_size && i < byte_q.size(); i++) begin
+      page_seq.payload_q.push_back(byte_q[i]);
+    end
+
+    spi_host_flash_issue_write_cmd(page_seq);
   endtask
 
   // Read the flash image pointed to by the `sw_image` path, and place the
@@ -587,6 +601,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     int mem_fd = $fopen(sw_image, "r");
     bit [63:0] word_data[4];
     string addr;
+
+    if (!mem_fd) begin
+      `uvm_error(get_name(), $sformatf("Failed to open sw_image file at %0s.", sw_image))
+    end
 
     while (!$feof(mem_fd)) begin
       num_returns = $fscanf(mem_fd, "%s %h %h %h %h", addr, word_data[0], word_data[1],

@@ -18,8 +18,8 @@ class rv_dm_scanmode_vseq extends rv_dm_base_vseq;
   // Set tms/tdi as requested and then wait for the next negedge of clk (which gets to the
   // corresponding negedge of TCK because we are in scanmode).
   task tms_tdi(bit tms, bit tdi);
-    cfg.m_jtag_agent_cfg.vif.tms = tms;
-    cfg.m_jtag_agent_cfg.vif.tdi = tdi;
+    cfg.m_jtag_agent_cfg.vif._tms_internal = tms;
+    cfg.m_jtag_agent_cfg.vif._tdi_internal = tdi;
     cfg.clk_rst_vif.wait_n_clks(1);
   endtask
 

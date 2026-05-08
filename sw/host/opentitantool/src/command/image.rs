@@ -23,10 +23,12 @@ use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
-use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId, ManifestExtSpec};
+use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId};
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
-use sphincsplus::{DecodeKey, SpxDomain, SpxError, SpxPublicKey, SpxSecretKey};
+use sphincsplus::{
+    DecodeKey, SphincsPlus, SpxDomain, SpxError, SpxPublicKey, SpxRawSignature, SpxSecretKey,
+};
 
 /// Bootstrap the target device.
 #[derive(Debug, Args)]
@@ -114,9 +116,6 @@ pub struct ManifestUpdateCommand {
     /// Filename for an HJSON configuration specifying manifest fields.
     #[arg(short, long)]
     manifest: Option<PathBuf>,
-    /// Filename for an HJSON configuration specifying manifest extension fields.
-    #[arg(long)]
-    manifest_ext: Option<PathBuf>,
     /// Update the length field of the manifest automatically.
     #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     update_length: bool,
@@ -147,9 +146,18 @@ pub struct ManifestUpdateCommand {
     /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
+    /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
+    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
+    spx_algorithm: SphincsPlus,
+    /// Set to true if the firmware uses a byte-reversed representation of the hash.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "false")]
+    spx_hash_reversal_bug: bool,
     /// Filename to write the output to instead of updating the input file.
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Sign the image when private keys are are given.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
+    private_keys_sign: bool,
 }
 
 fn load_rsa_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
@@ -186,18 +194,17 @@ impl CommandDispatch for ManifestUpdateCommand {
             .manifest_sanity_check()
             .context("Image doesn't appear to contain a manifest, or the manifest is corrupted")?;
         // Load the manifest HJSON definition and update the image.
-        if let Some(manifest) = &self.manifest {
-            let def = ManifestSpec::read_from_file(manifest)?;
-            update_length = !def.has_length();
-            image.overwrite_manifest(def)?;
-        }
-
-        // Load the manifest extension HJSON definition and update the image.
-        let ext = self
-            .manifest_ext
+        let manifest = self
+            .manifest
             .as_deref()
-            .map(ManifestExtSpec::read_from_file)
+            .map(ManifestSpec::read_from_file)
             .unwrap_or(Ok(Default::default()))?;
+        let ext = manifest.extension_params.clone();
+
+        update_length = !manifest.has_length() && update_length;
+        image.overwrite_manifest(manifest)?;
+
+        // Update image with signed manifest extensions.
         image.add_signed_manifest_extensions(&ext)?;
 
         // Update the manifest fields that are in the signed region.
@@ -279,11 +286,14 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         // List out all signed extensions and set the bounds of the signed region.
         let signed_ids = ext
-            .signed_region
             .iter()
+            .filter(|entry_spec| entry_spec.is_signed())
             .map(|e| e.id())
             .chain(vec![
                 ManifestExtId::spx_key.into(),
+                ManifestExtId::secver_write.into(),
+                ManifestExtId::isfb.into(),
+                ManifestExtId::isfb_erase.into(),
                 ManifestExtId::image_type.into(),
             ])
             .collect::<HashSet<u32>>();
@@ -292,27 +302,38 @@ impl CommandDispatch for ManifestUpdateCommand {
         // Remove any unused extensions in the table that do not reference extension data.
         image.drop_null_extensions()?;
 
-        // Online signing takes place if private keys are provided.
-        // Sign with RSA.
-        if let Some(key) = rsa_private_key {
-            image.update_rsa_signature(key.sign(&image.compute_digest()?)?)?;
-        }
-        // Sign with ECDSA.
-        if let Some(key) = ecdsa_private_key {
-            image.update_ecdsa_signature(key.sign(&image.compute_digest()?)?)?;
-        }
-        // Sign with SPX+.
-        if let Some(key) = spx_private_key {
-            let sig_bytes = match self.domain {
-                SpxDomain::None | SpxDomain::Pure => {
-                    image.map_signed_region(|buf| key.sign(self.domain, buf))??
-                }
-                SpxDomain::PreHashedSha256 => {
-                    let digest = image.compute_digest()?.to_le_bytes();
-                    key.sign(self.domain, &digest)?
-                }
-            };
-            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(&sig_bytes)?)?;
+        // This private_keys_sign gaurd is intended to sign the image
+        // There are cases in which we need to not always sign the image
+        if self.private_keys_sign {
+            // Online signing takes place if private keys are provided.
+            // Sign with RSA.
+            if let Some(key) = rsa_private_key {
+                image.update_rsa_signature(key.sign(&image.compute_digest()?)?)?;
+            }
+            // Sign with ECDSA.
+            if let Some(key) = ecdsa_private_key {
+                image.update_ecdsa_signature(key.sign(&image.compute_digest()?)?)?;
+            }
+            // Sign with SPX+.
+            if let Some(key) = spx_private_key {
+                let sig_bytes = match self.domain {
+                    SpxDomain::None | SpxDomain::Pure => {
+                        image.map_signed_region(|buf| key.sign(self.domain, buf))??
+                    }
+                    SpxDomain::PreHashedSha256 => {
+                        let digest = image.compute_digest()?;
+                        let digest = if self.spx_hash_reversal_bug {
+                            digest.to_vec_rev()
+                        } else {
+                            digest.to_vec()
+                        };
+                        key.sign(self.domain, &digest)?
+                    }
+                };
+                image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
+                    &sig_bytes,
+                )?)?;
+            }
         }
 
         // Offline signing takes place if signatures are provided.
@@ -336,8 +357,10 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
         // Attach SPX+ signature.
         if let Some(spx_signature) = &self.spx_signature {
-            let signature = std::fs::read(spx_signature)?;
-            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(&signature)?)?;
+            let signature = SpxRawSignature::read_from_file(spx_signature, self.spx_algorithm)?;
+            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
+                signature.as_bytes(),
+            )?)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
@@ -356,6 +379,9 @@ pub struct ManifestVerifyCommand {
     /// The SPX signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
+    /// The SPX signature was created with a reversed hash.
+    #[arg(long, default_value_t = false)]
+    spx_hash_reversal_bug: bool,
 }
 
 impl CommandDispatch for ManifestVerifyCommand {
@@ -365,11 +391,12 @@ impl CommandDispatch for ManifestVerifyCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let image = image::Image::read_from_file(&self.image)?;
-
-        let digest = Sha256Digest::from_le_bytes(image.compute_digest()?.to_le_bytes())?;
+        let digest = image.compute_digest()?;
 
         // Verify signature.
-        let sigverify_params = image.get_sigverify_params_from_manifest()?;
+        let sigverify_params = image
+            .get_sigverify_params_from_manifest()?
+            .with_hash_reversal_bug(self.spx_hash_reversal_bug);
         sigverify_params.verify(&digest)?;
 
         if self.spx {
@@ -402,9 +429,8 @@ pub struct DigestCommand {
 /// Response format for the digest command.
 #[derive(Annotate)]
 pub struct DigestResponse {
-    #[serde(with = "serde_bytes")]
     #[annotate(comment = "SHA256 Digest excluding the image signature bytes", format = hexstr)]
-    pub digest: Vec<u8>,
+    pub digest: Sha256Digest,
 }
 
 impl CommandDispatch for DigestCommand {
@@ -417,11 +443,9 @@ impl CommandDispatch for DigestCommand {
         let digest = image.compute_digest()?;
         if let Some(bin) = &self.bin {
             let mut file = File::create(bin)?;
-            file.write_all(&digest.to_le_bytes())?;
+            file.write_all(digest.as_ref())?;
         }
-        Ok(Some(Box::new(DigestResponse {
-            digest: digest.to_be_bytes(),
-        })))
+        Ok(Some(Box::new(DigestResponse { digest })))
     }
 }
 

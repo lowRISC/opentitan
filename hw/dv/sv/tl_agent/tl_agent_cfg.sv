@@ -111,9 +111,6 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // it is not always guaranteed even at 100%, especially if the test does non-blocking accesses.
   rand int unsigned use_last_a_source_released_pct = 20;
 
-  // The monitor detects reset and maintains the value below.
-  bit reset_asserted;
-
   constraint a_source_eq_last_a_source_released_pct_c {
     use_last_a_source_released_pct <= 100;
     use_last_a_source_released_pct dist {
@@ -195,7 +192,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
     //                    // to False again.
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(a_source,
         // use soft constraint as seq may still send req when all the valid a_source are used
-        (!reset_asserted) -> soft !(a_source inside {a_source_pend_q});
+        (!in_reset) -> soft !(a_source inside {a_source_pend_q});
         // Set the upper a_source bits that are unused to 0.
         (a_source >> valid_a_source_width) == 0;
         // We cannot guarantee that last_a_source_released is not in a_source_pend_q,
@@ -225,7 +222,7 @@ class tl_agent_cfg extends dv_base_agent_cfg;
   // Ensures that the queue does not exceed the max outstanding req size. Pops the oldest a_source
   // used to last_a_source_released.
   virtual function void add_to_a_source_pend_q(bit [SourceWidth-1:0] a_source);
-    if (reset_asserted) return;
+    if (in_reset) return;
     if (a_source_pend_q.size() == max_outstanding_req) begin
       last_a_source_released = a_source_pend_q.pop_front();
     end

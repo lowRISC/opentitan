@@ -64,9 +64,6 @@ class jtag_dmi_reg_abstractdata extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    abstractdata.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_abstractdata
 
@@ -108,8 +105,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    dmactive.set_original_access("RW");
-
     ndmreset = (dv_base_reg_field::
                 type_id::create("ndmreset"));
     ndmreset.configure(
@@ -123,8 +118,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    ndmreset.set_original_access("RW");
 
     clrresethaltreq = (dv_base_reg_field::
                        type_id::create("clrresethaltreq"));
@@ -140,8 +133,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    clrresethaltreq.set_original_access("W1C");
-
     setresethaltreq = (dv_base_reg_field::
                        type_id::create("setresethaltreq"));
     setresethaltreq.configure(
@@ -155,8 +146,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    setresethaltreq.set_original_access("W1C");
 
     hartselhi = (dv_base_reg_field::
                  type_id::create("hartselhi"));
@@ -172,8 +161,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    hartselhi.set_original_access("RW");
-
     hartsello = (dv_base_reg_field::
                  type_id::create("hartsello"));
     hartsello.configure(
@@ -187,8 +174,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    hartsello.set_original_access("RW");
 
     hasel = (dv_base_reg_field::
              type_id::create("hasel"));
@@ -204,8 +189,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    hasel.set_original_access("RW");
-
     ackhavereset = (dv_base_reg_field::
                     type_id::create("ackhavereset"));
     ackhavereset.configure(
@@ -219,8 +202,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    ackhavereset.set_original_access("W1C");
 
     hartreset = (dv_base_reg_field::
                  type_id::create("hartreset"));
@@ -236,8 +217,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    hartreset.set_original_access("RW");
-
     resumereq = (dv_base_reg_field::
                  type_id::create("resumereq"));
     resumereq.configure(
@@ -252,8 +231,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    resumereq.set_original_access("RW");
-
     haltreq = (dv_base_reg_field::
                type_id::create("haltreq"));
     haltreq.configure(
@@ -267,9 +244,6 @@ class jtag_dmi_reg_dmcontrol extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    haltreq.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_dmcontrol
 
@@ -318,8 +292,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    version.set_original_access("RO");
-
     confstrptrvalid = (dv_base_reg_field::
                        type_id::create("confstrptrvalid"));
     confstrptrvalid.configure(
@@ -333,8 +305,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    confstrptrvalid.set_original_access("RO");
 
     hasresethaltreq = (dv_base_reg_field::
                        type_id::create("hasresethaltreq"));
@@ -350,8 +320,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    hasresethaltreq.set_original_access("RO");
-
     authbusy = (dv_base_reg_field::
                 type_id::create("authbusy"));
     authbusy.configure(
@@ -365,8 +333,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    authbusy.set_original_access("RO");
 
     authenticated = (dv_base_reg_field::
                      type_id::create("authenticated"));
@@ -382,8 +348,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    authenticated.set_original_access("RO");
-
     anyhalted = (dv_base_reg_field::
                  type_id::create("anyhalted"));
     anyhalted.configure(
@@ -397,8 +361,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    anyhalted.set_original_access("RO");
 
     allhalted = (dv_base_reg_field::
                  type_id::create("allhalted"));
@@ -414,8 +376,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    allhalted.set_original_access("RO");
-
     anyrunning = (dv_base_reg_field::
                   type_id::create("anyrunning"));
     anyrunning.configure(
@@ -429,8 +389,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    anyrunning.set_original_access("RO");
 
     allrunning = (dv_base_reg_field::
                   type_id::create("allrunning"));
@@ -446,8 +404,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    allrunning.set_original_access("RO");
-
     anyunavail = (dv_base_reg_field::
                   type_id::create("anyunavail"));
     anyunavail.configure(
@@ -461,8 +417,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    anyunavail.set_original_access("RO");
 
     allunavail = (dv_base_reg_field::
                   type_id::create("allunavail"));
@@ -478,8 +432,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    allunavail.set_original_access("RO");
-
     anynonexistent = (dv_base_reg_field::
                       type_id::create("anynonexistent"));
     anynonexistent.configure(
@@ -493,8 +445,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    anynonexistent.set_original_access("RO");
 
     allnonexistent = (dv_base_reg_field::
                       type_id::create("allnonexistent"));
@@ -510,8 +460,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    allnonexistent.set_original_access("RO");
-
     anyresumeack = (dv_base_reg_field::
                     type_id::create("anyresumeack"));
     anyresumeack.configure(
@@ -525,8 +473,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    anyresumeack.set_original_access("RO");
 
     allresumeack = (dv_base_reg_field::
                     type_id::create("allresumeack"));
@@ -542,8 +488,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    allresumeack.set_original_access("RO");
-
     anyhavereset = (dv_base_reg_field::
                     type_id::create("anyhavereset"));
     anyhavereset.configure(
@@ -557,8 +501,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    anyhavereset.set_original_access("RO");
 
     allhavereset = (dv_base_reg_field::
                     type_id::create("allhavereset"));
@@ -574,8 +516,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    allhavereset.set_original_access("RO");
-
     impebreak = (dv_base_reg_field::
                  type_id::create("impebreak"));
     impebreak.configure(
@@ -589,9 +529,6 @@ class jtag_dmi_reg_dmstatus extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    impebreak.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_dmstatus
 
@@ -626,7 +563,6 @@ class jtag_dmi_reg_hartinfo extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    dataaddr.set_original_access("RO");
 
     datasize = (dv_base_reg_field::
                 type_id::create("datasize"));
@@ -642,7 +578,6 @@ class jtag_dmi_reg_hartinfo extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    datasize.set_original_access("RO");
 
     dataaccess = (dv_base_reg_field::
                   type_id::create("dataaccess"));
@@ -658,7 +593,6 @@ class jtag_dmi_reg_hartinfo extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    dataaccess.set_original_access("RO");
 
     nscratch = (dv_base_reg_field::
                 type_id::create("nscratch"));
@@ -673,9 +607,6 @@ class jtag_dmi_reg_hartinfo extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    nscratch.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_hartinfo
 
@@ -706,9 +637,6 @@ class jtag_dmi_reg_haltsum1 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    haltsum1.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_haltsum1
 
@@ -743,7 +671,6 @@ class jtag_dmi_reg_abstractcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    datacount.set_original_access("RO");
 
     cmderr = (dv_base_reg_field::
               type_id::create("cmderr"));
@@ -759,7 +686,6 @@ class jtag_dmi_reg_abstractcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    cmderr.set_original_access("W1C");
 
     busy = (dv_base_reg_field::
             type_id::create("busy"));
@@ -775,7 +701,6 @@ class jtag_dmi_reg_abstractcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    busy.set_original_access("RO");
 
     progbufsize = (dv_base_reg_field::
                    type_id::create("progbufsize"));
@@ -790,9 +715,6 @@ class jtag_dmi_reg_abstractcs extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    progbufsize.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_abstractcs
 
@@ -825,7 +747,6 @@ class jtag_dmi_reg_command extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    control.set_original_access("WO");
 
     cmdtype = (dv_base_reg_field::
                type_id::create("cmdtype"));
@@ -840,9 +761,6 @@ class jtag_dmi_reg_command extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    cmdtype.set_original_access("WO");
-
   endfunction : build
 endclass : jtag_dmi_reg_command
 
@@ -875,7 +793,6 @@ class jtag_dmi_reg_abstractauto extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    autoexecdata.set_original_access("RW");
 
     autoexecprogbuf = (dv_base_reg_field::
                        type_id::create("autoexecprogbuf"));
@@ -890,9 +807,6 @@ class jtag_dmi_reg_abstractauto extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    autoexecprogbuf.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_abstractauto
 
@@ -923,9 +837,6 @@ class jtag_dmi_reg_progbuf extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    data.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_progbuf
 
@@ -956,9 +867,6 @@ class jtag_dmi_reg_haltsum2 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    haltsum2.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_haltsum2
 
@@ -989,9 +897,6 @@ class jtag_dmi_reg_haltsum3 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    haltsum3.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_haltsum3
 
@@ -1054,7 +959,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbaccess8.set_original_access("RO");
 
     sbaccess16 = (dv_base_reg_field::
                   type_id::create("sbaccess16"));
@@ -1070,7 +974,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbaccess16.set_original_access("RO");
 
     sbaccess32 = (dv_base_reg_field::
                   type_id::create("sbaccess32"));
@@ -1086,7 +989,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbaccess32.set_original_access("RO");
 
     sbaccess64 = (dv_base_reg_field::
                   type_id::create("sbaccess64"));
@@ -1102,7 +1004,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbaccess64.set_original_access("RO");
 
     sbaccess128 = (dv_base_reg_field::
                    type_id::create("sbaccess128"));
@@ -1118,7 +1019,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbaccess128.set_original_access("RO");
 
     sbasize = (dv_base_reg_field::
                type_id::create("sbasize"));
@@ -1134,7 +1034,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbasize.set_original_access("RO");
 
     sberror = (jtag_dmi_reg_field_sbcs_sberror::
                type_id::create("sberror"));
@@ -1150,7 +1049,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sberror.set_original_access("W1C");
 
     sbreadondata = (dv_base_reg_field::
                     type_id::create("sbreadondata"));
@@ -1166,7 +1064,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbreadondata.set_original_access("RW");
 
     sbautoincrement = (dv_base_reg_field::
                        type_id::create("sbautoincrement"));
@@ -1182,7 +1079,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbautoincrement.set_original_access("RW");
 
     sbaccess = (dv_base_reg_field::
                 type_id::create("sbaccess"));
@@ -1198,7 +1094,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbaccess.set_original_access("RW");
 
     sbreadonaddr = (dv_base_reg_field::
                     type_id::create("sbreadonaddr"));
@@ -1214,7 +1109,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbreadonaddr.set_original_access("RW");
 
     sbbusy = (dv_base_reg_field::
               type_id::create("sbbusy"));
@@ -1230,7 +1124,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbbusy.set_original_access("RO");
 
     sbbusyerror = (dv_base_reg_field::
                    type_id::create("sbbusyerror"));
@@ -1246,7 +1139,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    sbbusyerror.set_original_access("W1C");
 
     zero0 = (dv_base_reg_field::
                  type_id::create("zero0"));
@@ -1262,7 +1154,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    zero0.set_original_access("RW");
 
     sbversion = (dv_base_reg_field::
                  type_id::create("sbversion"));
@@ -1277,9 +1168,6 @@ class jtag_dmi_reg_sbcs extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    sbversion.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbcs
 
@@ -1310,9 +1198,6 @@ class jtag_dmi_reg_sbaddress0 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    address.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbaddress0
 
@@ -1343,9 +1228,6 @@ class jtag_dmi_reg_sbaddress1 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    address.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbaddress1
 
@@ -1376,9 +1258,6 @@ class jtag_dmi_reg_sbaddress2 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    address.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbaddress2
 
@@ -1409,9 +1288,6 @@ class jtag_dmi_reg_sbaddress3 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    address.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbaddress3
 
@@ -1442,9 +1318,6 @@ class jtag_dmi_reg_sbdata0 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    data.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbdata0
 
@@ -1475,9 +1348,6 @@ class jtag_dmi_reg_sbdata1 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    data.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbdata1
 
@@ -1508,9 +1378,6 @@ class jtag_dmi_reg_sbdata2 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    data.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbdata2
 
@@ -1541,9 +1408,6 @@ class jtag_dmi_reg_sbdata3 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    data.set_original_access("RW");
-
   endfunction : build
 endclass : jtag_dmi_reg_sbdata3
 
@@ -1574,9 +1438,6 @@ class jtag_dmi_reg_haltsum0 extends dv_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    haltsum0.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dmi_reg_haltsum0
 
@@ -1952,6 +1813,5 @@ class jtag_dmi_reg_block extends dv_base_reg_block;
     haltsum0.build(csr_excl);
     default_map.add_reg(.rg(haltsum0),
                         .offset(32'h40));
-
   endfunction : build
 endclass : jtag_dmi_reg_block

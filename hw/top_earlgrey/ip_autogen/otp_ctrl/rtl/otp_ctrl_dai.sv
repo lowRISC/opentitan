@@ -342,15 +342,18 @@ module otp_ctrl_dai
               otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2]))) begin
           otp_req_o = 1'b1;
           // The `Read` OTP command takes integrity errors into account, the `ReadRaw` command
-          // ignores them. The following means integrity errors are taken into account if all of the
-          // following apply:
-          // - the partition has integrity protection enabled;
-          // - the partition has not been zeroized (based on the buffered zeroization information,
-          //   which is only updated after reset);
-          // - the read doesn't address the zeroization marker (which means the zeroization marker
-          //   can always be read without risking fatal integrity errors).
-          if (PartInfo[part_idx].integrity && mubi8_test_false_loose(zer_i[part_idx]) &&
-              !(otp_addr_o[OtpAddrWidth-1:2] == zeroize_addr_lut[part_idx][OtpAddrWidth-1:2])) begin
+          // ignores them. Integrity errors need to be taken into account if and only if:
+          // - the partition has integrity protection enabled AND
+          // - the partition is not zeroizable OR
+          //   - the partition has not been zeroized (based on the buffered zeroization information,
+          //     which is only updated after reset) AND
+          //   - the read doesn't address the zeroization marker (which means the zeroization marker
+          //     can always be read without risking fatal integrity errors).
+          if (PartInfo[part_idx].integrity &&
+              (!PartInfo[part_idx].zeroizable || (
+                mubi8_test_false_loose(zer_i[part_idx]) &&
+                (otp_addr_o[OtpAddrWidth-1:2] != zeroize_addr_lut[part_idx][OtpAddrWidth-1:2])
+              ))) begin
             otp_cmd_o = otp_ctrl_macro_pkg::Read;
           end else begin
             otp_cmd_o = otp_ctrl_macro_pkg::ReadRaw;
@@ -850,6 +853,13 @@ module otp_ctrl_dai
     end
     assign digest_addr_lut[k] = DigestAddrLut;
     assign zeroize_addr_lut[k] = ZeroizeAddrLut;
+
+    // If a partition is not zeroizable, zer_i[k] is not used and assigned to an unused variable to
+    // prevent linter warnings
+    if (PartInfo[k].zeroizable == 1'b0) begin : gen_part_zer_unused
+      mubi8_t unused_zer;
+      assign unused_zer = zer_i[k];
+    end
   end
 
   `ASSERT(ScrmblBlockWidthGe8_A, ScrmblBlockWidth >= 8)

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "hw/top/dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
@@ -99,7 +99,7 @@ enum {
   /**
    * Maximum number of test iterations in silicon targets.
    */
-  kMaxIterationsSilicon = 1000,
+  kMaxIterationsSilicon = 500,
   /**
    * Test timeout parameter.
    */
@@ -734,6 +734,34 @@ static void configure_entropy_complex(void) {
   // requires temporarily disabling it.
   CHECK_STATUS_OK(entropy_testutils_stop_all());
 
+  uint32_t recoverable_alerts = 0;
+  CHECK_DIF_OK(dif_entropy_src_get_recoverable_alerts(&entropy_src,
+                                                      &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("entropy_src - clearing recoverable alerts: %x",
+             recoverable_alerts);
+    CHECK_DIF_OK(dif_entropy_src_clear_recoverable_alerts(&entropy_src,
+                                                          recoverable_alerts));
+  }
+
+  CHECK_DIF_OK(dif_csrng_get_recoverable_alerts(&csrng, &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("csrng - clearing recoverable alerts: %x", recoverable_alerts);
+    CHECK_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng));
+  }
+
+  CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn_0, &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("edn_0 - clearing recoverable alerts: %x", recoverable_alerts);
+    CHECK_DIF_OK(dif_edn_clear_recoverable_alerts(&edn_0));
+  }
+
+  CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn_1, &recoverable_alerts));
+  if (recoverable_alerts != 0) {
+    LOG_INFO("edn_1 - clearing recoverable alerts: %x", recoverable_alerts);
+    CHECK_DIF_OK(dif_edn_clear_recoverable_alerts(&edn_1));
+  }
+
   // Enable entropy_src interrupts for health-test alert detection.
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
       &rv_plic, kTopEarlgreyPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
@@ -1134,6 +1162,7 @@ static void crypto_data_load(void) {
 
 static void crypto_data_load_task(void *task_parameters) {
   while (test_stage != kPowerVirusTestStageComplete) {
+    LOG_INFO("Crypto data load task running ...");
     if (test_stage == kPowerVirusTestStageCryptoDataLoad) {
       crypto_data_load();
       test_stage = kPowerVirusTestStageCommsDataLoad;
@@ -1160,10 +1189,13 @@ static void comms_data_load(void) {
   // Load data into I2C FIFOs.
   static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
                 "Length of i2c_handles must fit in uint8_t");
-  for (uint8_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
-    CHECK_STATUS_OK(i2c_testutils_write(i2c_handles[i], /*addr=*/i + 1,
-                                        I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
-                                        /*skip_stop=*/false));
+  if (kDeviceType == kDeviceSimDV) {
+    for (uint8_t i = 0; i < ARRAYSIZE(i2c_handles); ++i) {
+      LOG_INFO("Loading I2C FIFO %d with data ...", i);
+      CHECK_STATUS_OK(i2c_testutils_write(i2c_handles[i], /*addr=*/i + 1,
+                                          I2C_PARAM_FIFO_DEPTH - 1, kI2cMessage,
+                                          /*skip_stop=*/false));
+    }
   }
 
   // Load data into SPI host (1; as 0 is used in passthrough mode) FIFO.
@@ -1304,6 +1336,16 @@ static void max_power(void) {
   csrng_wait_ready();
   mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
                       csrng_reseed_cmd);
+
+  // This is required to avoid triggering a recoverable alert in the next
+  // test iteration. CSRNG does not accept the instantiate command when it
+  // has been previously instantiated.
+  csrng_wait_ready();
+  mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+                      csrng_cmd_header_build(kCsrngAppCmdUninstantiate,
+                                             kDifCsrngEntropySrcToggleEnable,
+                                             /*cmd_len=*/0,
+                                             /*generate_len=*/0));
 
   // Issue HMAC process and KMAC squeeze commands.
   kmac_operation_state.squeezing = true;

@@ -62,12 +62,32 @@ enum {
       kFlashInfoAstCalibrationDataSizeInBytes / sizeof(uint32_t),
 
   /**
+   * AST Calibration Version Start / Size - Bank 0, Page 0
+   *
+   * The version of the AST calibration words that are stored in flash / OTP.
+   */
+  kFlashInfoFieldAstCfgVersionStartOffset = 304,
+  kFlashInfoFieldAstCfgVersionSizeIn32BitWords = 1,
+
+  /**
    * CP Device ID Start / Size - Bank 0, Page 0
    */
   kFlashInfoFieldCpDeviceIdStartOffset = 384,
   kFlashInfoFieldCpDeviceIdSizeIn32BitWords = 4,
   kFlashInfoFieldCpDeviceIdSizeInBytes =
       kFlashInfoFieldCpDeviceIdSizeIn32BitWords * sizeof(uint32_t),
+
+  /**
+   * AST Individualize Patch Address Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldAstIndividPatchAddrStartOffset = 400,
+  kFlashInfoFieldAstIndividPatchAddrSizeIn32BitWords = 1,
+
+  /**
+   * AST Individualize Patch Value Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldAstIndividPatchValStartOffset = 404,
+  kFlashInfoFieldAstIndividPatchValSizeIn32BitWords = 1,
 
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kFlashInfoFieldKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
@@ -89,7 +109,10 @@ extern const flash_info_field_t kFlashInfoFieldWaferXCoord;
 extern const flash_info_field_t kFlashInfoFieldWaferYCoord;
 extern const flash_info_field_t kFlashInfoFieldProcessData;
 extern const flash_info_field_t kFlashInfoFieldAstCalibrationData;
+extern const flash_info_field_t kFlashInfoFieldAstCfgVersion;
 extern const flash_info_field_t kFlashInfoFieldCpDeviceId;
+extern const flash_info_field_t kFlashInfoFieldAstIndividPatchAddr;
+extern const flash_info_field_t kFlashInfoFieldAstIndividPatchVal;
 
 // Info Page 1 fields.
 extern const flash_info_field_t kFlashInfoFieldCreatorSeed;

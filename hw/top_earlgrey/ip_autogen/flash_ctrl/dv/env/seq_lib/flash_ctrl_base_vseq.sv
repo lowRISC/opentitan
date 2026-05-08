@@ -254,7 +254,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.otp_data_key = otp_data_key;
 
     cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::Off;
-    cfg.flash_ctrl_vif.rma_seed <= LC_FLASH_RMA_SEED_DEFAULT;
+    cfg.flash_ctrl_vif.rma_seed <= LC_NVM_RMA_SEED_DEFAULT;
     otp_model();  // Start OTP Model
     super.pre_start();
     cfg.alert_max_delay_in_ns = cfg.alert_max_delay * (cfg.clk_rst_vif.clk_period_ps / 1000.0);
@@ -1296,7 +1296,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : enable_small_rma
 
   // Task to send an RMA Request (with a given seed) to the Flash Controller
-  virtual task send_rma_req(lc_flash_rma_seed_t rma_seed = LC_FLASH_RMA_SEED_DEFAULT,
+  virtual task send_rma_req(lc_nvm_rma_seed_t rma_seed = LC_NVM_RMA_SEED_DEFAULT,
                             bit ignore_short_rma = 0);
 
     // Local Variables

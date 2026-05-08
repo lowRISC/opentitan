@@ -7,9 +7,10 @@ use clap::Parser;
 use std::time::Duration;
 
 use opentitanlib::execute_test;
+use opentitanlib::io::console::{ConsoleDevice, ConsoleExt};
 use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::serial::SerialPortUart;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::transport::common::uart::SerialPortUart;
 use opentitanlib::uart::console::UartConsole;
 
 use usb::UsbOpts;
@@ -68,7 +69,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     let uart = transport.uart("console")?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {

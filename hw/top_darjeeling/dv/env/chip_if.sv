@@ -463,7 +463,7 @@ interface chip_if;
   // Functional (muxed) interface: external clock source.
   //
   // The reset port is passive only.
-  clk_rst_if#("ExtClkDriver") ext_clk_if(
+  clk_rst_if ext_clk_if(
      .clk (mios[top_darjeeling_pkg::MioPadMio11]),
     .rst_n(dios[top_darjeeling_pkg::DioPadPorN])
   );
@@ -997,6 +997,11 @@ interface chip_if;
   // Signal probe function for `soc_rst_req_async_i` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_rst_req_async,
                                    `TOP_HIER.soc_rst_req_async_i,
+                                   1)
+
+  // Signal probe function for `ext_rst_ack_i` of TOP_HIER.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_ext_rst_ack,
+                                   `TOP_HIER.pwrmgr_ext_rst_ack_i,
                                    1)
 
   // Signal probe function for `soc_wkup_async_i` of TOP_HIER.

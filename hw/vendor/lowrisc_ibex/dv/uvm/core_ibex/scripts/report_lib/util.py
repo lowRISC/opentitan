@@ -77,7 +77,7 @@ def parse_xcelium_cov_report(cov_report: str) -> Dict[str, Dict[str, Dict[str, i
         }
 
     The top-level dictionary gives per-module info. For each module coverage is
-    seperated into a number of metrics. Each metric can be one of two types:
+    separated into a number of metrics. Each metric can be one of two types:
     1. covered - Two integers, 'total' giving total number of things to cover
        and 'covered' giving the number that are covered.
     2. average - Single integer, 'average' giving the average coverage

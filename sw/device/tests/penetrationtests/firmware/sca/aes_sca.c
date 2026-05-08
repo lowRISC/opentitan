@@ -21,6 +21,7 @@
 #include "sw/device/lib/testing/aes_testutils.h"
 #endif
 
+#include "hw/top/aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
@@ -52,6 +53,19 @@ enum {
    * kBytes).
    */
   kNumBatchOpsMax = 256,
+  /**
+   * Max. number of AAD or PTX blocks supported by the AES-GCM tests.
+   */
+  kMaxGcmBlocks = 4,
+  /**
+   * Number of cycles we are putting Ibex into sleep mode. In the meanwhile,
+   * AES-GCM executes and we are measuring the power consumption of the
+   * operation. The number of cycles were determined by using ibex_mcycle_read()
+   * between calling dif_aes_trigger() and waiting until the IDLE bit has been
+   * seen. Here, up to 300 cycles were measured. Moreover, we are using a start
+   * trigger delay of 320.
+   */
+  kIbexAesGcmSleepCycles = 1000,
 };
 
 static dif_aes_t aes;
@@ -348,6 +362,618 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   TRY(aes_encrypt(uj_text.text, uj_text.text_length));
 
   TRY(aes_send_ciphertext(uj));
+
+  return OK_STATUS();
+}
+
+static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
+                                dif_aes_data_t aad[kMaxGcmBlocks],
+                                size_t aad_num_blocks,
+                                size_t aad_last_block_size,
+                                dif_aes_data_t ptx[kMaxGcmBlocks],
+                                size_t ptx_num_blocks,
+                                size_t ptx_last_block_size, dif_aes_data_t *tag,
+                                aes_sca_gcm_triggers_t trigger) {
+  // AES GCM configuration used for this test.
+  dif_aes_transaction_t transaction_gcm = {
+      .operation = kDifAesOperationEncrypt,
+      .mode = kDifAesModeGcm,
+      .key_len = kDifAesKey128,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .manual_operation = kDifAesManualOperationManual,
+      .mask_reseeding = kDifAesReseedPer8kBlock,
+      .reseed_on_key_change = false,
+      .force_masks = transaction.force_masks,
+      .ctrl_aux_lock = false,
+  };
+
+  // Write the initial key share, IV and data in CSRs.
+  TRY(dif_aes_start(&aes, &transaction_gcm, &key, &iv));
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    TRY(aes_sca_load_fixed_seed());
+  }
+#endif
+
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                kIbexAesGcmSleepCycles * 2);
+  // Encrypt all-zero block.
+  if (trigger.triggers[0]) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
+  } else {
+    aes_manual_trigger();
+  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                kIbexAesGcmSleepCycles * 2);
+  // Encrypt initial counter block.
+  if (trigger.triggers[1]) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
+  } else {
+    aes_manual_trigger();
+  }
+
+  // Process the AAD blocks.
+  // For the first block, put the AES-GCM into the AAD phase.
+  size_t valid_bytes = 16;
+  if (aad_num_blocks == 1) {
+    valid_bytes = aad_last_block_size;
+  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD,
+                            valid_bytes));
+  for (size_t it = 0; it < aad_num_blocks - 1; it++) {
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
+                                  kIbexAesGcmSleepCycles * 2);
+    TRY(dif_aes_load_data(&aes, aad[it]));
+    if (trigger.triggers[2] && trigger.block == it) {
+      // In the FPGA mode, the AES automatically raises the trigger signal. For
+      // the other mode, the pentest_call_and_sleep function manually raises the
+      // trigger pin.
+      if (fpga_mode) {
+        pentest_set_trigger_high();
+      }
+      pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                             !fpga_mode, false);
+      if (fpga_mode) {
+        pentest_set_trigger_low();
+      }
+    } else {
+      aes_manual_trigger();
+    }
+  }
+
+  // For the last block, check if the block size is smaller than 16 bytes. Then
+  // we need to again put AES-GCM into the AAD phase with the block size.
+  if (aad_num_blocks != 1 && aad_last_block_size != 16) {
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                  kIbexAesGcmSleepCycles * 2);
+    TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD,
+                              aad_last_block_size));
+  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_load_data(&aes, aad[aad_num_blocks - 1]));
+  if (trigger.triggers[2] && trigger.block == aad_num_blocks - 1) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
+  } else {
+    aes_manual_trigger();
+  }
+
+  // Process the PTX blocks.
+  // For the first block, put the AES-GCM into the TEXT phase.
+  valid_bytes = 16;
+  if (ptx_num_blocks == 1) {
+    valid_bytes = ptx_last_block_size;
+  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                            valid_bytes));
+  for (size_t it = 0; it < ptx_num_blocks - 1; it++) {
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
+                                  kIbexAesGcmSleepCycles * 2);
+    TRY(dif_aes_load_data(&aes, ptx[it]));
+    if (trigger.triggers[3] && trigger.block == it) {
+      // In the FPGA mode, the AES automatically raises the trigger signal. For
+      // the other mode, the pentest_call_and_sleep function manually raises the
+      // trigger pin.
+      if (fpga_mode) {
+        pentest_set_trigger_high();
+      }
+      pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                             !fpga_mode, false);
+      if (fpga_mode) {
+        pentest_set_trigger_low();
+      }
+    } else {
+      aes_manual_trigger();
+    }
+  }
+  // For the last block, check if the block size is smaller than 16 bytes. Then
+  // we need to again put AES-GCM into the TEXT phase with the block size.
+  if (ptx_num_blocks != 1 && ptx_last_block_size != 16) {
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                  kIbexAesGcmSleepCycles * 2);
+    TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                              ptx_last_block_size));
+  }
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_load_data(&aes, ptx[ptx_num_blocks - 1]));
+  if (trigger.triggers[3] && trigger.block == ptx_num_blocks - 1) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
+  } else {
+    aes_manual_trigger();
+  }
+
+  // Generate tag.
+  size_t ptx_total_bytes = (ptx_num_blocks - 1) * 16 + ptx_last_block_size;
+  size_t aad_total_bytes = (aad_num_blocks - 1) * 16 + aad_last_block_size;
+  uint64_t len_ptx = ptx_total_bytes * 8;
+  uint64_t len_aad = aad_total_bytes * 8;
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TAG,
+                            16));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_load_gcm_tag_len(&aes, len_ptx, len_aad));
+  if (trigger.triggers[4]) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
+  } else {
+    aes_manual_trigger();
+  }
+
+  // Read the TAG block from the AES.
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
+                                kIbexAesGcmSleepCycles * 2);
+  TRY(dif_aes_read_output(&aes, tag));
+
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_gcm_fvsr_iv_key_batch(ujson_t *uj) {
+  // Receive the AES-GCM input data over uJSON.
+  aes_sca_num_ops_t uj_num_ops;
+  aes_sca_gcm_triggers_t uj_triggers;
+  aes_sca_block_t uj_iv;
+  aes_sca_key_t uj_key;
+  aes_sca_num_blocks_t uj_aad_blocks;
+  aes_sca_num_blocks_t uj_ptx_blocks;
+  aes_sca_block_t uj_aad[kMaxGcmBlocks];
+  aes_sca_block_t uj_ptx[kMaxGcmBlocks];
+  // Get number of batch iterations.
+  TRY(ujson_deserialize_aes_sca_num_ops_t(uj, &uj_num_ops));
+  if (uj_num_ops.num_batch_ops > kNumBatchOpsMax) {
+    return OUT_OF_RANGE();
+  }
+  // Get the trigger configuration.
+  // uj_triggers.triggers[0] = True/False - process all-zero block.
+  // uj_triggers.triggers[1] = True/False - process initial counter block.
+  // uj_triggers.triggers[2] = True/False - process AAD blocks.
+  // uj_triggers.triggers[3] = True/False - process PTX blocks.
+  // uj_triggers.triggers[4] = True/False - process TAG block.
+  // uj_triggers.block = int - which AAD or PTX block is captured?
+  TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
+  // Get fixed IV and fixed KEY.
+  TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_iv));
+  TRY(ujson_deserialize_aes_sca_key_t(uj, &uj_key));
+  // Get number of AAD and PTX blocks we are expecting.
+  TRY(ujson_deserialize_aes_sca_num_blocks_t(uj, &uj_aad_blocks));
+  TRY(ujson_deserialize_aes_sca_num_blocks_t(uj, &uj_ptx_blocks));
+  if (uj_aad_blocks.num_blocks > kMaxGcmBlocks ||
+      uj_ptx_blocks.num_blocks > kMaxGcmBlocks) {
+    return ABORTED();
+  }
+  // Fetch all AAD blocks.
+  for (size_t it = 0; it < uj_aad_blocks.num_blocks; it++) {
+    TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_aad[it]));
+  }
+  // Fetch all PTX blocks.
+  for (size_t it = 0; it < uj_ptx_blocks.num_blocks; it++) {
+    TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_ptx[it]));
+  }
+
+  // Prepare fixed AES IV.
+  dif_aes_iv_t aes_iv_fixed;
+  memset(aes_iv_fixed.iv, 0, 16);
+  memcpy(aes_iv_fixed.iv, uj_iv.block, uj_iv.num_valid_bytes);
+
+  // Generate Fvsr AES IV & key set.
+  dif_aes_iv_t aes_iv_fvsr[kNumBatchOpsMax];
+  uint8_t batch_keys[kNumBatchOpsMax][kAesKeyLength];
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_num_ops.num_batch_ops; it++) {
+    memset(aes_iv_fvsr[it].iv, 0, 16);
+    memset(batch_keys[it], 0, kAesKeyLength);
+    if (sample_fixed) {
+      memcpy(aes_iv_fvsr[it].iv, aes_iv_fixed.iv, uj_iv.num_valid_bytes);
+      memcpy(batch_keys[it], uj_key.key, uj_key.key_length);
+    } else {
+      // Generate random IV.
+      uint8_t rand_iv[16];
+      prng_rand_bytes(rand_iv, 16);
+      memcpy(aes_iv_fvsr[it].iv, rand_iv, uj_iv.num_valid_bytes);
+      // Generate random key.
+      prng_rand_bytes(batch_keys[it], uj_key.key_length);
+    }
+    sample_fixed = prng_rand_uint32() & 0x1;
+  }
+
+  // Prepare batch key structure.
+  dif_aes_key_share_t key_fvsr[kNumBatchOpsMax];
+  for (size_t it = 0; it < uj_num_ops.num_batch_ops; it++) {
+    memset(key_fvsr[it].share0, 0, sizeof(key_fvsr[it].share0));
+    memset(key_fvsr[it].share1, 0, sizeof(key_fvsr[it].share1));
+
+    // Mask the provided key.
+    for (int i = 0; i < uj_key.key_length / 4; ++i) {
+      key_fvsr[it].share1[i] = pentest_non_linear_layer(
+          pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
+      key_fvsr[it].share0[i] =
+          *((uint32_t *)batch_keys[it] + i) ^ key_fvsr[it].share1[i];
+    }
+    // Provide random shares for unused key bits.
+    for (size_t i = uj_key.key_length / 4; i < kAesKeyLengthMax / 4; ++i) {
+      key_fvsr[it].share1[i] =
+          pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+      key_fvsr[it].share0[i] =
+          pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+    }
+  }
+
+  // Prepare the fixed AAD.
+  dif_aes_data_t aes_aad[kMaxGcmBlocks];
+  size_t aes_aad_last_block_size = 0;
+  for (size_t it = 0; it < uj_aad_blocks.num_blocks; it++) {
+    memset(aes_aad[it].data, 0, sizeof(aes_aad[it].data));
+    memcpy(aes_aad[it].data, uj_aad[it].block, uj_aad[it].num_valid_bytes);
+    aes_aad_last_block_size = uj_aad[it].num_valid_bytes;
+  }
+
+  // Prepare the fixed plaintext.
+  dif_aes_data_t aes_ptx[kMaxGcmBlocks];
+  size_t aes_ptx_last_block_size = 0;
+  for (size_t it = 0; it < uj_ptx_blocks.num_blocks; it++) {
+    memset(aes_ptx[it].data, 0, sizeof(aes_ptx[it].data));
+    memcpy(aes_ptx[it].data, uj_ptx[it].block, uj_ptx[it].num_valid_bytes);
+    aes_ptx_last_block_size = uj_ptx[it].num_valid_bytes;
+  }
+
+  // Trigger the AES GCM operation.
+  dif_aes_data_t aes_tag_acc;
+  aes_tag_acc.data[0] = 0;
+  aes_tag_acc.data[1] = 0;
+  aes_tag_acc.data[2] = 0;
+  aes_tag_acc.data[3] = 0;
+  for (size_t it = 0; it < uj_num_ops.num_batch_ops; it++) {
+    dif_aes_data_t aes_tag;
+    TRY(trigger_aes_gcm(key_fvsr[it], aes_iv_fvsr[it], aes_aad,
+                        uj_aad_blocks.num_blocks, aes_aad_last_block_size,
+                        aes_ptx, uj_ptx_blocks.num_blocks,
+                        aes_ptx_last_block_size, &aes_tag, uj_triggers));
+    // Accumulate (i.e., XOR) TAG for sending back to host.
+    for (size_t i = 0; i < ARRAYSIZE(aes_tag_acc.data); i++) {
+      aes_tag_acc.data[i] ^= aes_tag.data[i];
+    }
+  }
+
+  // Send accumulated TAG back to host.
+  aes_sca_block_t uj_tag;
+  uj_tag.num_valid_bytes = 16;
+  memset(uj_tag.block, 0, sizeof(uj_tag.block));
+  memcpy(uj_tag.block, (uint8_t *)aes_tag_acc.data, uj_tag.num_valid_bytes);
+
+  RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_tag);
+
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_gcm_fvsr_ptx_aad_batch(ujson_t *uj) {
+  // Receive the AES-GCM input data over uJSON.
+  aes_sca_num_ops_t uj_num_ops;
+  aes_sca_gcm_triggers_t uj_triggers;
+  aes_sca_block_t uj_iv;
+  aes_sca_key_t uj_key;
+  aes_sca_num_blocks_t uj_aad_blocks;
+  aes_sca_num_blocks_t uj_ptx_blocks;
+  aes_sca_block_t uj_aad[kMaxGcmBlocks];
+  aes_sca_block_t uj_ptx[kMaxGcmBlocks];
+  // Get number of batch iterations.
+  TRY(ujson_deserialize_aes_sca_num_ops_t(uj, &uj_num_ops));
+  if (uj_num_ops.num_batch_ops > kNumBatchOpsMax) {
+    return OUT_OF_RANGE();
+  }
+  // Get the trigger configuration.
+  // uj_triggers.triggers[0] = True/False - process all-zero block.
+  // uj_triggers.triggers[1] = True/False - process initial counter block.
+  // uj_triggers.triggers[2] = True/False - process AAD blocks.
+  // uj_triggers.triggers[3] = True/False - process PTX blocks.
+  // uj_triggers.triggers[4] = True/False - process TAG block.
+  // uj_triggers.block = int - which AAD or PTX block is captured?
+  TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
+  // Get static IV and static KEY.
+  TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_iv));
+  TRY(ujson_deserialize_aes_sca_key_t(uj, &uj_key));
+  // Get number of AAD and PTX blocks we are expecting.
+  TRY(ujson_deserialize_aes_sca_num_blocks_t(uj, &uj_aad_blocks));
+  TRY(ujson_deserialize_aes_sca_num_blocks_t(uj, &uj_ptx_blocks));
+  if (uj_aad_blocks.num_blocks > kMaxGcmBlocks ||
+      uj_ptx_blocks.num_blocks > kMaxGcmBlocks) {
+    return ABORTED();
+  }
+  // Fetch fixed AAD blocks.
+  for (size_t block = 0; block < uj_aad_blocks.num_blocks; block++) {
+    TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_aad[block]));
+  }
+  // Fetch fixed PTX blocks.
+  for (size_t block = 0; block < uj_ptx_blocks.num_blocks; block++) {
+    TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_ptx[block]));
+  }
+
+  // Prepare static AES IV.
+  dif_aes_iv_t aes_iv_static;
+  memset(aes_iv_static.iv, 0, 16);
+  memcpy(aes_iv_static.iv, uj_iv.block, uj_iv.num_valid_bytes);
+
+  // Prepare static AES key.
+  uint8_t aes_key_static[kAesKeyLength];
+  memset(aes_key_static, 0, kAesKeyLength);
+  memcpy(aes_key_static, uj_key.key, uj_key.key_length);
+
+  // Get the last PTX & AAD block size.
+  size_t aes_ptx_last_block_size =
+      uj_ptx[uj_ptx_blocks.num_blocks - 1].num_valid_bytes;
+  size_t aes_aad_last_block_size =
+      uj_aad[uj_aad_blocks.num_blocks - 1].num_valid_bytes;
+
+  // Generate Fvsr AES PTX & AAD set.
+  dif_aes_data_t aes_ptx_fvsr[kNumBatchOpsMax][kMaxGcmBlocks];
+  dif_aes_data_t aes_aad_fvsr[kNumBatchOpsMax][kMaxGcmBlocks];
+  bool sample_fixed = true;
+  for (size_t batch = 0; batch < uj_num_ops.num_batch_ops; batch++) {
+    // Clear the arrays to 0.
+    for (size_t block = 0; block < kMaxGcmBlocks; block++) {
+      memset(aes_ptx_fvsr[batch][block].data, 0,
+             ARRAYSIZE(aes_ptx_fvsr[batch][block].data) *
+                 sizeof(aes_ptx_fvsr[batch][block].data));
+      memset(aes_aad_fvsr[batch][block].data, 0,
+             ARRAYSIZE(aes_aad_fvsr[batch][block].data) *
+                 sizeof(aes_aad_fvsr[batch][block].data));
+    }
+
+    if (sample_fixed) {
+      // Use static PTX.
+      for (size_t block = 0; block < uj_ptx_blocks.num_blocks; block++) {
+        memcpy(aes_ptx_fvsr[batch][block].data, uj_ptx[block].block,
+               uj_ptx[block].num_valid_bytes);
+      }
+      // Use static AAD.
+      for (size_t block = 0; block < uj_aad_blocks.num_blocks; block++) {
+        memcpy(aes_aad_fvsr[batch][block].data, uj_aad[block].block,
+               uj_aad[block].num_valid_bytes);
+      }
+    } else {
+      // Generate random PTX.
+      for (size_t block = 0; block < uj_ptx_blocks.num_blocks; block++) {
+        size_t valid_bytes = 16;
+        uint8_t rand_ptx[valid_bytes];
+        prng_rand_bytes(rand_ptx, valid_bytes);
+        if (block == uj_ptx_blocks.num_blocks - 1) {
+          valid_bytes = aes_ptx_last_block_size;
+        }
+        memcpy(aes_ptx_fvsr[batch][block].data, rand_ptx, valid_bytes);
+      }
+
+      // Generate random AAD.
+      for (size_t block = 0; block < uj_aad_blocks.num_blocks; block++) {
+        size_t valid_bytes = 16;
+        uint8_t rand_aad[valid_bytes];
+        prng_rand_bytes(rand_aad, valid_bytes);
+        if (block == uj_aad_blocks.num_blocks - 1) {
+          valid_bytes = aes_aad_last_block_size;
+        }
+        memcpy(aes_aad_fvsr[batch][block].data, rand_aad, valid_bytes);
+      }
+    }
+    sample_fixed = prng_rand_uint32() & 0x1;
+  }
+
+  // Prepare key structure.
+  dif_aes_key_share_t key_static;
+  memset(key_static.share0, 0, sizeof(key_static.share0));
+  memset(key_static.share1, 0, sizeof(key_static.share1));
+
+  // Mask the provided key.
+  for (int i = 0; i < uj_key.key_length / 4; ++i) {
+    key_static.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
+    key_static.share0[i] =
+        *((uint32_t *)aes_key_static + i) ^ key_static.share1[i];
+  }
+  // Provide random shares for unused key bits.
+  for (size_t i = uj_key.key_length / 4; i < kAesKeyLengthMax / 4; ++i) {
+    key_static.share1[i] =
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+    key_static.share0[i] =
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+  }
+
+  // Trigger the AES GCM operation.
+  dif_aes_data_t aes_tag_acc;
+  aes_tag_acc.data[0] = 0;
+  aes_tag_acc.data[1] = 0;
+  aes_tag_acc.data[2] = 0;
+  aes_tag_acc.data[3] = 0;
+  for (size_t it = 0; it < uj_num_ops.num_batch_ops; it++) {
+    dif_aes_data_t aes_tag;
+    TRY(trigger_aes_gcm(key_static, aes_iv_static, aes_aad_fvsr[it],
+                        uj_aad_blocks.num_blocks, aes_aad_last_block_size,
+                        aes_ptx_fvsr[it], uj_ptx_blocks.num_blocks,
+                        aes_ptx_last_block_size, &aes_tag, uj_triggers));
+    // Accumulate (i.e., XOR) TAG for sending back to host.
+    for (size_t i = 0; i < ARRAYSIZE(aes_tag_acc.data); i++) {
+      aes_tag_acc.data[i] ^= aes_tag.data[i];
+    }
+  }
+
+  // Send accumulated TAG back to host.
+  aes_sca_block_t uj_tag;
+  uj_tag.num_valid_bytes = 16;
+  memset(uj_tag.block, 0, sizeof(uj_tag.block));
+  memcpy(uj_tag.block, (uint8_t *)aes_tag_acc.data, uj_tag.num_valid_bytes);
+
+  RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_tag);
+
+  return OK_STATUS();
+}
+
+status_t handle_aes_sca_gcm_single_encrypt(ujson_t *uj) {
+  // Receive the AES-GCM input data over uJSON.
+  aes_sca_gcm_triggers_t uj_triggers;
+  aes_sca_block_t uj_iv;
+  aes_sca_key_t uj_key;
+  aes_sca_num_blocks_t uj_aad_blocks;
+  aes_sca_num_blocks_t uj_ptx_blocks;
+  aes_sca_block_t uj_aad[kMaxGcmBlocks];
+  aes_sca_block_t uj_ptx[kMaxGcmBlocks];
+  // Get the trigger configuration.
+  // uj_triggers.triggers[0] = True/False - process all-zero block.
+  // uj_triggers.triggers[1] = True/False - process initial counter block.
+  // uj_triggers.triggers[2] = True/False - process AAD blocks.
+  // uj_triggers.triggers[3] = True/False - process PTX blocks.
+  // uj_triggers.triggers[4] = True/False - process TAG block.
+  // uj_triggers.block = int - which AAD or PTX block is captured?
+  TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
+  // Get IV and KEY.
+  TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_iv));
+  TRY(ujson_deserialize_aes_sca_key_t(uj, &uj_key));
+  // Get number of AAD and PTX blocks we are expecting.
+  TRY(ujson_deserialize_aes_sca_num_blocks_t(uj, &uj_aad_blocks));
+  TRY(ujson_deserialize_aes_sca_num_blocks_t(uj, &uj_ptx_blocks));
+  if (uj_aad_blocks.num_blocks > kMaxGcmBlocks ||
+      uj_ptx_blocks.num_blocks > kMaxGcmBlocks) {
+    return ABORTED();
+  }
+  // Fetch all AAD blocks.
+  for (size_t it = 0; it < uj_aad_blocks.num_blocks; it++) {
+    TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_aad[it]));
+  }
+  // Fetch all PTX blocks.
+  for (size_t it = 0; it < uj_ptx_blocks.num_blocks; it++) {
+    TRY(ujson_deserialize_aes_sca_block_t(uj, &uj_ptx[it]));
+  }
+
+  // Prepare AES IV.
+  dif_aes_iv_t aes_iv;
+  memset(aes_iv.iv, 0, 16);
+  memcpy(aes_iv.iv, uj_iv.block, uj_iv.num_valid_bytes);
+
+  // Prepare keys.
+  dif_aes_key_share_t key;
+  memset(key.share0, 0, sizeof(key.share0));
+  memset(key.share1, 0, sizeof(key.share1));
+
+  // Mask the provided key.
+  for (int i = 0; i < uj_key.key_length / 4; ++i) {
+    key.share1[i] = pentest_non_linear_layer(
+        pentest_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking)));
+    key.share0[i] = *((uint32_t *)uj_key.key + i) ^ key.share1[i];
+  }
+  // Provide random shares for unused key bits.
+  for (size_t i = uj_key.key_length / 4; i < kAesKeyLengthMax / 4; ++i) {
+    key.share1[i] =
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+    key.share0[i] =
+        pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
+  }
+
+  // Prepare the AAD.
+  dif_aes_data_t aes_aad[kMaxGcmBlocks];
+  size_t aes_aad_last_block_size = 0;
+  for (size_t it = 0; it < uj_aad_blocks.num_blocks; it++) {
+    memset(aes_aad[it].data, 0, sizeof(aes_aad[it].data));
+    memcpy(aes_aad[it].data, uj_aad[it].block, uj_aad[it].num_valid_bytes);
+    aes_aad_last_block_size = uj_aad[it].num_valid_bytes;
+  }
+
+  // Prepare the plaintext.
+  dif_aes_data_t aes_ptx[kMaxGcmBlocks];
+  size_t aes_ptx_last_block_size = 0;
+  for (size_t it = 0; it < uj_ptx_blocks.num_blocks; it++) {
+    memset(aes_ptx[it].data, 0, sizeof(aes_ptx[it].data));
+    memcpy(aes_ptx[it].data, uj_ptx[it].block, uj_ptx[it].num_valid_bytes);
+    aes_ptx_last_block_size = uj_ptx[it].num_valid_bytes;
+  }
+
+  // Trigger the AES GCM operation.
+  dif_aes_data_t aes_tag;
+  TRY(trigger_aes_gcm(key, aes_iv, aes_aad, uj_aad_blocks.num_blocks,
+                      aes_aad_last_block_size, aes_ptx,
+                      uj_ptx_blocks.num_blocks, aes_ptx_last_block_size,
+                      &aes_tag, uj_triggers));
+
+  // Send TAG back to host.
+  aes_sca_block_t uj_tag;
+  uj_tag.num_valid_bytes = 16;
+  memset(uj_tag.block, 0, sizeof(uj_tag.block));
+  memcpy(uj_tag.block, (uint8_t *)aes_tag.data, uj_tag.num_valid_bytes);
+
+  RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_tag);
+
   return OK_STATUS();
 }
 
@@ -359,15 +985,11 @@ status_t handle_aes_pentest_init(ujson_t *uj) {
     fpga_mode = true;
   }
 
-  penetrationtest_cpuctrl_t uj_cpuctrl_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
-  penetrationtest_sensor_config_t uj_sensor_data;
-  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   pentest_init(kPentestTriggerSourceAes,
-               kPentestPeripheralIoDiv4 | kPentestPeripheralAes,
-               uj_sensor_data.sensor_ctrl_enable,
-               uj_sensor_data.sensor_ctrl_en_fatal);
+               kPentestPeripheralIoDiv4 | kPentestPeripheralAes);
 
   if (dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) !=
       kDifOk) {
@@ -377,28 +999,6 @@ status_t handle_aes_pentest_init(ujson_t *uj) {
   if (dif_aes_reset(&aes) != kDifOk) {
     return ABORTED();
   }
-
-  // Configure the CPU for the pentest.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
-      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
-      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
-      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
-      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
-      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
-      &uj_output.data_ind_timing_en));
-
-  // Read rom digest.
-  TRY(pentest_read_rom_digest(uj_output.rom_digest));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
-
-  // Read different SKU config fields and return to host.
-  TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
 }
@@ -454,6 +1054,12 @@ status_t handle_aes_sca(ujson_t *uj) {
       return handle_aes_sca_batch_fvsr_data(uj);
     case kAesScaSubcommandBatchFvsrKey:
       return handle_aes_sca_batch_fvsr_key(uj);
+    case kAesScaSubcommandGcmFvsrBatchIvKey:
+      return handle_aes_sca_gcm_fvsr_iv_key_batch(uj);
+    case kAesScaSubcommandGcmFvsrBatchPtxAad:
+      return handle_aes_sca_gcm_fvsr_ptx_aad_batch(uj);
+    case kAesScaSubcommandGcmSingleEncrypt:
+      return handle_aes_sca_gcm_single_encrypt(uj);
     case kAesScaSubcommandInit:
       return handle_aes_pentest_init(uj);
     case kAesScaSubcommandSeedLfsr:

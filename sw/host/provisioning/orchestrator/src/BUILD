@@ -13,12 +13,26 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     imports = ["."],
     deps = [
         ":sku_config",
         ":util",
         requirement("hjson"),
+    ],
+)
+
+py_binary(
+    name = "devid_header_gen",
+    srcs = ["devid_header_gen.py"],
+    data = ["//sw/device/silicon_creator/manuf/keys:ca_data_all"],
+    imports = ["."],
+    deps = [
+        ":device_id",
+        ":sku_config",
+        requirement("hjson"),
+        requirement("mako"),
     ],
 )
 
@@ -42,6 +56,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     deps = [
         ":ca_config",
@@ -82,7 +97,7 @@ filegroup(
         "//sw/device/silicon_creator/manuf/keys:ca_data_all",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",
-        "//sw/host/provisioning/orchestrator/configs/skus:sku_all",
+        "//sw/host/provisioning/orchestrator/configs/skus:all",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",

@@ -53,13 +53,21 @@ class tl_monitor extends dv_base_monitor#(
     end
   endfunction : build_phase
 
-  // Watch the reset signal and maintain the cfg.reset_asserted flag
+  // Watch the reset signal and maintain cfg.in_reset
   local task monitor_reset();
+    // At the start of the task, we don't know whether we are in reset. Set cfg.in_reset to be true
+    // unless rst_n is known and asserted.
+    cfg.in_reset = (cfg.vif.rst_n !== 1'b1);
+
+    // Now wait until rst_n has a known value
+    wait(!$isunknown(cfg.vif.rst_n));
+
     forever begin
-      cfg.reset_asserted = 1'b1;
-      wait(cfg.vif.rst_n);
-      cfg.reset_asserted = 1'b0;
-      wait(!cfg.vif.rst_n);
+      // We maintain the invariant that cfg.vif.rst_n has a known value at the start of each loop
+      // iteration, which ensures that we can safely convert it to a bit in cfg.in_reset. Note that
+      // the wait statement below will only complete when cfg.vif.rst_n has a known value.
+      cfg.in_reset = !cfg.vif.rst_n;
+      wait(cfg.vif.rst_n != !cfg.in_reset);
     end
   endtask
 
@@ -73,7 +81,7 @@ class tl_monitor extends dv_base_monitor#(
 
   local task ad_channels_thread();
     forever begin
-      wait(!cfg.reset_asserted);
+      wait(!cfg.in_reset);
 
       // As we come out of reset, clear the pending_a_req and cfg.a_source_pend_q associative
       // arrays.
@@ -85,7 +93,7 @@ class tl_monitor extends dv_base_monitor#(
       fork begin : isolation_fork
         fork
           ad_channels_thread_();
-          wait(cfg.reset_asserted);
+          wait(cfg.in_reset);
         join_any
         disable fork;
       end join

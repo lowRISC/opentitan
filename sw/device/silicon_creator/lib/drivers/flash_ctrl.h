@@ -177,6 +177,8 @@ enum {
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
+  kFlashCtrlSecMmioDataRegionProtect = 1,
+  kFlashCtrlSecMmioDataRegionProtectLock = 1,
 };
 
 /**
@@ -345,15 +347,6 @@ rom_error_t flash_ctrl_info_read_zeros_on_read_error(
     uint32_t word_count, void *data);
 
 /**
- * Locks the configuration of an information page.
- *
- * This writes a zero to the write-enable register for info page configuration.
- *
- * @param info_page Information page to read from.
- */
-void flash_ctrl_info_lock(const flash_ctrl_info_page_t *info_page);
-
-/**
  * Writes data to the data partition.
  *
  * The flash controller will truncate to the closest, lower word aligned
@@ -453,21 +446,27 @@ rom_error_t flash_ctrl_info_erase(const flash_ctrl_info_page_t *info_page,
  * flash_ctrl config registers use 4-bits for boolean values. Use
  * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
  * permissions.
+ *
+ * The bitfields in this stuct match up with the bitfields in the peripheral
+ * register.
  */
 typedef struct flash_ctrl_perms {
+  uint32_t _pad0 : 4;
   /**
    * Read.
    */
-  multi_bit_bool_t read;
+  uint32_t read : 4;
   /**
    * Write.
    */
-  multi_bit_bool_t write;
+  uint32_t write : 4;
   /**
    * Erase.
    */
-  multi_bit_bool_t erase;
+  uint32_t erase : 4;
+  uint32_t _pad1 : 16;
 } flash_ctrl_perms_t;
+OT_ASSERT_SIZE(flash_ctrl_perms_t, 4);
 
 /**
  * Sets default access permissions for the data partition.
@@ -506,27 +505,26 @@ void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
  * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
  * these settings.
  *
- * This struct has no padding, so it is safe to `memcmp()` without invoking UB.
+ * The bitfields in this stuct match up with the bitfields in the peripheral
+ * register.
  */
 typedef struct flash_ctrl_cfg {
+  uint32_t _pad0 : 16;
   /**
    * Scrambling.
    */
-  multi_bit_bool_t scrambling;
+  uint32_t scrambling : 4;
   /**
    * ECC.
    */
-  multi_bit_bool_t ecc;
+  uint32_t ecc : 4;
   /**
    * High endurance.
    */
-  multi_bit_bool_t he;
+  uint32_t he : 4;
+  uint32_t _pad1 : 4;
 } flash_ctrl_cfg_t;
-
-OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, scrambling, 0);
-OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, ecc, 4);
-OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, he, 8);
-OT_ASSERT_SIZE(flash_ctrl_cfg_t, 12);
+OT_ASSERT_SIZE(flash_ctrl_cfg_t, 4);
 
 /**
  * Sets default configuration settings for the data partition.
@@ -545,6 +543,13 @@ void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg);
  * @return Current configuration settings.
  */
 flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get(void);
+
+/**
+ * Reads the boot data info page configuration settings from OTP.
+ *
+ * @return Current OTP configuration settings.
+ */
+flash_ctrl_cfg_t flash_ctrl_boot_data_cfg_get(void);
 
 /**
  * A type for flash_ctrl memory protection region indices.
@@ -669,6 +674,17 @@ void flash_ctrl_cert_info_page_creator_cfg(
  */
 void flash_ctrl_cert_info_page_owner_restrict(
     const flash_ctrl_info_page_t *info_page);
+
+/**
+ * Builds a `flash_ctrl_info_page_t` struct for a given bank and page.
+ *
+ * @param bank Bank index.
+ * @param page Page index.
+ * @param[out] info_page Pointer to the `flash_ctrl_info_page_t` struct to fill.
+ * @return Result of the operation.
+ */
+rom_error_t flash_ctrl_info_type0_params_build(
+    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page);
 
 #ifdef __cplusplus
 }

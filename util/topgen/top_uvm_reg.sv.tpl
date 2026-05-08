@@ -64,7 +64,8 @@ package ${ral_id}_ral_pkg;
     block = top.blocks[block_name]
     for inst_name in inst_names:
       for if_name in block.reg_blocks:
-        if addr_space not in top.if_addrs[(inst_name, if_name)]: continue
+        asid_to_addr = top.if_addrs.get((inst_name, if_name), {})
+        if addr_space not in asid_to_addr: continue
         if_suffix = '' if if_name is None else '_' + if_name
         if_packages.add('{}{}_ral_pkg'.format(block_name.lower(), if_suffix))
   if_packages = sorted(if_packages)
@@ -86,7 +87,8 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, ral_id, window)}
 %     for inst_name in inst_names:
 %       for if_name, rb in block.reg_blocks.items():
 <%
-          if addr_space not in top.if_addrs[(inst_name, if_name)]: continue
+          asid_to_addr = top.if_addrs.get((inst_name, if_name), {})
+          if addr_space not in asid_to_addr: continue
           if_suffix = '' if if_name is None else '_' + if_name
           esc_if_name = block_name.lower() + if_suffix
           if_inst = inst_name + if_suffix
@@ -128,7 +130,8 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, ral_id, window)}
 %     for inst_name in inst_names:
 %       for if_name, rb in block.reg_blocks.items():
 <%
-          if addr_space not in top.if_addrs[(inst_name, if_name)]: continue
+          asid_to_addr = top.if_addrs.get((inst_name, if_name), {})
+          if addr_space not in asid_to_addr: continue
           if_suffix = '' if if_name is None else '_' + if_name
           esc_if_name = block_name.lower() + if_suffix
           if_inst = inst_name + if_suffix

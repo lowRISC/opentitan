@@ -7,8 +7,8 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -78,14 +78,10 @@ status_t handle_kmac(ujson_t *uj) {
   for (size_t i = 0; i < ARRAYSIZE(key_buf); i++) {
     key_buf[i] ^= kTestMask[i];
   }
-  otcrypto_const_word32_buf_t share0 = {
-      .data = key_buf,
-      .len = ARRAYSIZE(key_buf),
-  };
-  otcrypto_const_word32_buf_t share1 = {
-      .data = kTestMask,
-      .len = ARRAYSIZE(key_buf),
-  };
+  otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, key_buf, ARRAYSIZE(key_buf));
+  otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestMask, ARRAYSIZE(key_buf));
   // Create blinded key
   uint32_t keyblob[2 * ARRAYSIZE(key_buf)];
   otcrypto_blinded_key_t key = {
@@ -93,35 +89,31 @@ status_t handle_kmac(ujson_t *uj) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  TRY(otcrypto_import_blinded_key(share0, share1, &key));
+  TRY(otcrypto_import_blinded_key(&share0, &share1, &key));
 
   // Create input message
   uint8_t msg_buf[uj_message.message_len];
   memcpy(msg_buf, uj_message.message, uj_message.message_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = uj_message.message_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, msg_buf, uj_message.message_len);
 
   // Create customization string
   uint8_t customization_string_buf[uj_customization_string
                                        .customization_string_len];
   memcpy(customization_string_buf, uj_customization_string.customization_string,
          uj_customization_string.customization_string_len);
-  otcrypto_const_byte_buf_t customization_string = {
-      .len = uj_customization_string.customization_string_len,
-      .data = customization_string_buf,
-  };
+  otcrypto_const_byte_buf_t customization_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, customization_string_buf,
+                        uj_customization_string.customization_string_len);
 
   // Create tag
   uint32_t tag_buf[MaxKmacTagWords];
-  otcrypto_word32_buf_t tag = {
-      .len = uj_required_tag_length.required_tag_length / sizeof(uint32_t),
-      .data = tag_buf,
-  };
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, tag_buf,
+      uj_required_tag_length.required_tag_length / sizeof(uint32_t));
   otcrypto_status_t status =
-      otcrypto_kmac(&key, input_message, customization_string,
-                    uj_required_tag_length.required_tag_length, tag);
+      otcrypto_kmac(&key, &input_message, &customization_string,
+                    uj_required_tag_length.required_tag_length, &tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }

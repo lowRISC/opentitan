@@ -17,7 +17,7 @@
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 11 -n 11 \
  *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
@@ -28,24 +28,32 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x5c5
-.equ MODE_SIGN, 0x31b
-.equ MODE_VERIFY, 0x1f8
-.equ MODE_ECDH, 0x6eb
-.equ MODE_SIDELOAD_KEYGEN, 0x275
-.equ MODE_SIDELOAD_SIGN, 0x45e
-.equ MODE_SIDELOAD_ECDH, 0x72c
+.equ MODE_KEYGEN, 0x497
+.equ MODE_SIGN, 0x734
+.equ MODE_SIGN_CONFIG_K, 0x563
+.equ MODE_VERIFY, 0x5D8
+.equ MODE_ECDH, 0x1AD
+.equ MODE_SIDELOAD_KEYGEN, 0x7E
+.equ MODE_SIDELOAD_SIGN, 0x64D
+.equ MODE_SIDELOAD_ECDH, 0x2F1
+.equ MODE_POINTONCRV_CHECK, 0x6AA
+.equ MODE_BASE_POINT_MULT, 0x3C6
+.equ MODE_ARITH_SHARE_SECRET_KEY, 0x31B
 
 /**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_KEYGEN
 .globl MODE_SIGN
+.globl MODE_SIGN_CONFIG_K
 .globl MODE_VERIFY
 .globl MODE_ECDH
 .globl MODE_SIDELOAD_KEYGEN
 .globl MODE_SIDELOAD_SIGN
 .globl MODE_SIDELOAD_ECDH
+.globl MODE_POINTONCRV_CHECK
+.globl MODE_BASE_POINT_MULT
+.globl MODE_ARITH_SHARE_SECRET_KEY
 
 /**
  * Hardened boolean values.
@@ -77,6 +85,9 @@ start:
   addi  x3, x0, MODE_SIDELOAD_ECDH
   beq   x2, x3, shared_key_from_seed
 
+  addi  x3, x0, MODE_POINTONCRV_CHECK
+  beq   x2, x3, point_on_curve_check
+
   /* Copy the caller-provided secret key shares into scratchpad memory.
        dmem[d0] <= dmem[d0_io]
        dmem[d1] <= dmem[d1_io] */
@@ -92,6 +103,25 @@ start:
 
   addi  x3, x0, MODE_ECDH
   beq   x2, x3, shared_key
+
+  addi  x3, x0, MODE_BASE_POINT_MULT
+  beq   x2, x3, base_point_mult
+
+  addi  x3, x0, MODE_ARITH_SHARE_SECRET_KEY
+  beq   x2, x3, arith_share_secret_key
+
+  /* Copy the caller-provided secret scalar shares into scratchpad memory.
+       dmem[k0] <= dmem[k0_io]
+       dmem[k1] <= dmem[k1_io] */
+  la       x13, k0_io
+  la       x14, k0
+  jal      x1, copy_share
+  la       x13, k1_io
+  la       x14, k1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN_CONFIG_K
+  beq   x2, x3, ecdsa_sign_config_k
 
   /* Invalid mode; fail. */
   unimp
@@ -153,6 +183,23 @@ random_keygen:
   la       x13, d1
   la       x14, d1_io
   jal      x1, copy_share
+
+  ecall
+
+/**
+ * Generate a signature.
+ *
+ * @param[in]  dmem[msg]: message to be signed (256 bits)
+ * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
+ * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
+ * @param[in]  dmem[d0]:  first share of private key d (320 bits)
+ * @param[in]  dmem[d1]:  second share of private key d (320 bits)
+ * @param[in]  dmem[k0]:  first share of secret scalar k (320 bits)
+ * @param[in]  dmem[k1]:  second share of secret scalar k (320 bits)
+ */
+ecdsa_sign_config_k:
+  /* Generate the signature. */
+  jal      x1, p256_sign
 
   ecall
 
@@ -310,6 +357,94 @@ shared_key_from_seed:
   jal      x0, shared_key
 
 /**
+ * Check if the point given in the affine coordinate space lies on the P-256
+ * curve.
+ *
+ * If `ok` is false, the point is invalid. The value will be either
+ * HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]   dmem[x]: x-coordinate.
+ * @param[in]   dmem[y]: y-coordinate.
+ * @param[out] dmem[ok]: Whether the point is valid.
+ */
+point_on_curve_check:
+  jal x1, p256_check_isoncurve
+
+  ecall
+
+/**
+ * Calculate a base point multiplication.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  dmem[d0]: d0, first share of the secret key.
+ * @param[in]  dmem[d1]: d1, second share of the secret key.
+ * @param[out] dmem[x]: Public key (Q) x-coordinate.
+ * @param[out] dmem[y]: Public key (Q) y-coordinate.
+ */
+base_point_mult:
+  jal x1, p256_base_mult
+
+  ecall
+
+/**
+ * Generate a secret key arithmetic sharing.
+ *
+ * The input is a Boolean-shared key (two 320 bit shares).
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]  dmem[d0]: d0, first share of the secret key.
+ * @param[in]  dmem[d1]: d1, second share of the secret key.
+ * @param[out] dmem[d0]: d0, first arithmetic share of the secret key.
+ * @param[out] dmem[d1]: d1, second arithmetic share of the secret key.
+ */
+arith_share_secret_key:
+  /* w31 <= 0. */
+  bn.xor w31, w31, w31
+
+  /* Load the key shares:
+     w20, w21 <= d0
+     w10, w11 <= d1. */
+  li x2, 20
+  la x3, d0
+  bn.lid x2++, 0(x3)
+  bn.lid x2++, 32(x3)
+  li x2, 10
+  la x3, d1
+  bn.lid x2++, 0(x3)
+  bn.lid x2++, 32(x3)
+
+  /* Remask the shares. */
+  bn.wsrr w0, URND
+  bn.wsrr w1, URND
+  bn.rshi w1, w31, w1 >> 192
+
+  bn.xor w20, w20, w0
+  bn.xor w21, w21, w1
+  bn.xor w31, w31, w31 /* dummy */
+  bn.xor w10, w10, w0
+  bn.xor w11, w11, w1
+
+  /* Generate secret key shares.
+     w20, w21 <= d0
+     w10, w11 <= d1 */
+  jal x1, p256_key_from_seed
+
+  li       x2, 20
+  la       x3, d0_io
+  bn.sid   x2++, 0(x3)
+  bn.sid   x2++, 32(x3)
+  li       x2, 10
+  la       x3, d1_io
+  bn.sid   x2++, 0(x3)
+  bn.sid   x2++, 32(x3)
+
+  ecall
+
+/**
  * Generate a secret key from a keymgr-derived seed.
  *
  * @param[out] dmem[d0]: First share of secret key.
@@ -404,6 +539,16 @@ d0_io:
 .globl d1_io
 .balign 32
 d1_io:
+  .zero 64
+
+/* Secret scalar (k) input buffer. */
+.globl k0_io
+.balign 32
+k0_io:
+  .zero 64
+.globl k1_io
+.balign 32
+k1_io:
   .zero 64
 
 /* Verification result x_r (aka x_1). */

@@ -9,18 +9,19 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
-load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "convert_to_vmem",
     "obj_disassemble",
     "obj_transform",
 )
+load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules/opentitan:util.bzl", "assemble_for_test", "recursive_format")
-load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "OpenTitanTestInfo")
 
 def _expand(ctx, name, items):
     """Perform location and make_variable expansion on a list of items.
@@ -197,6 +198,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     binary = obj_transform(
         ctx,
         name = name,
+        strip_llvm_prf_cnts = True,
         suffix = "bin",
         format = "binary",
         src = elf,
@@ -416,6 +418,12 @@ common_binary_attrs = {
         default = {},
         doc = "Firmware slot spec to use in this environment",
     ),
+    "_check_initial_coverage": attr.label(
+        doc = "Tool to check the coverage counter initialization.",
+        default = "//util/coverage:check_initial_coverage",
+        executable = True,
+        cfg = "exec",
+    ),
 }
 
 opentitan_binary = rv_rule(
@@ -472,10 +480,24 @@ def _opentitan_test(ctx):
         harness_runfiles = ctx.attr.test_harness[DefaultInfo].default_runfiles
     else:
         harness_runfiles = ctx.runfiles()
-    return DefaultInfo(
-        executable = executable,
-        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles]),
-    )
+
+    if ctx.var.get("ot_coverage_enabled", "false") == "true":
+        coverage_runfiles = ctx.attr._collect_cc_coverage[DefaultInfo].default_runfiles
+    else:
+        coverage_runfiles = ctx.runfiles()
+
+    return [
+        DefaultInfo(
+            executable = executable,
+            runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles, coverage_runfiles]),
+        ),
+        OpenTitanTestInfo(
+            exec_env = exec_env,
+            # If no test suite is provided, use the test's own label as a test suite.
+            test_suite = ctx.attr.test_suite or str(ctx.label),
+            tags = ctx.attr.tags,
+        ),
+    ]
 
 opentitan_test = rv_rule(
     implementation = _opentitan_test,
@@ -547,6 +569,17 @@ opentitan_test = rv_rule(
             executable = True,
             cfg = "exec",
         ),
+        "_lcov_merger": attr.label(
+            default = configuration_field(fragment = "coverage", name = "output_generator"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "_collect_cc_coverage": attr.label(
+            default = "//util/coverage/collect_cc_coverage",
+            executable = True,
+            cfg = "exec",
+        ),
+        "test_suite": attr.string(doc = "Test suite to which this test belongs"),
     }.items()),
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
@@ -576,9 +609,25 @@ def _opentitan_binary_assemble_impl(ctx):
         spec = " ".join(spec)
         spec = recursive_format(spec, action_param)
         spec = spec.split(" ")
-        img = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
-        result.append(exec_env_provider(default = img, kind = "flash"))
-        assembled_bins.append(img)
+
+        # Generate the multislot bin.
+        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+
+        # Generate unscrambled VMEM files.
+        #
+        # Multi-slot binaries are currently only used for bootstrap operations,
+        # i.e., non-backdoor loaded sim environments and FPGA/silicon
+        # environments. Therefore we only need unscrambled VMEM files.
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = bin,
+            word_size = 64,
+        )
+
+        result.append(exec_env_provider(default = bin, kind = "flash", vmem = vmem))
+        assembled_bins.append(bin)
+        assembled_bins.append(vmem)
         ot_bin_env_info[exec_env_provider] = env
     result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
     return result + [DefaultInfo(files = depset(assembled_bins))]
@@ -611,6 +660,7 @@ def _exec_env_filegroup(ctx):
 
     result = []
     default_files = []
+    ot_bin_env_info = {}
     for k in files.keys():
         provider = exec_env[k][ExecEnvInfo].provider
         f = files[k].files.to_list()
@@ -620,7 +670,10 @@ def _exec_env_filegroup(ctx):
         # Return the exec_env's provider so this rule can be consumed by
         # opentitan_test rules.
         result.append(provider(default = f[0], kind = ctx.attr.kind))
+        ot_bin_env_info[provider] = exec_env[k][ExecEnvInfo]
         default_files.append(f[0])
+
+    result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
 
     # Also return a DefaultInfo provider so this rule can be consumed by other
     # filegroup or packaging rules.

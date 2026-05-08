@@ -19,6 +19,11 @@ def parse_test_vectors(raw_data, args):
         # Parse tests within the group
         for test in group["tests"]:
             logging.debug(f"Parsing tcId {test['tcId']}")
+            hash_alg = (
+                args.hash
+                if args.operation == "sign" and args.hash
+                else group["sha"].lower().replace("shake", "shake-")
+            )
             test_vec = {
                 "vendor": "wycheproof",
                 "test_case_id": test["tcId"],
@@ -26,7 +31,7 @@ def parse_test_vectors(raw_data, args):
                 "operation": args.operation,
                 "padding": args.padding,
                 "security_level": int(args.security_level),
-                "hash_alg": group["sha"].lower().replace("shake", "shake-"),
+                "hash_alg": hash_alg,
                 "message": str_to_byte_array(test["msg"]),
             }
 
@@ -41,10 +46,22 @@ def parse_test_vectors(raw_data, args):
                 test_vec["signature"] = str_to_byte_array(test["sig"])
                 test_vec["n"] = str_to_byte_array(group["publicKey"]["modulus"])
                 test_vec["e"] = int(group["publicKey"]["publicExponent"], 16)
+            elif args.operation == "sign":
+                test_vec["n"] = str_to_byte_array(group["privateKey"]["modulus"])
+                test_vec["d"] = str_to_byte_array(group["privateKey"]["privateExponent"])
+                test_vec["e"] = int(group["privateKey"]["publicExponent"], 16)
+                test_vec["label"] = []
+                # Sign-then-verify: result is always True for a valid key.
+                test_vec["result"] = True
             else:
                 raise ValueError(f"Unsupported RSA operation: {args.operation}")
 
-            if test["result"] == "valid":
+            if args.operation == "sign":
+                # Sign-then-verify always succeeds regardless of the source
+                # vector's result; the OAEP result reflects ciphertext validity,
+                # not key validity.
+                test_vec["result"] = True
+            elif test["result"] == "valid":
                 test_vec["result"] = True
             elif test["result"] == "invalid":
                 test_vec["result"] = False
@@ -97,7 +114,7 @@ def main():
         "--operation",
         type = str,
         help = "RSA operation under test",
-        choices = ["verify", "decrypt"],
+        choices = ["verify", "decrypt", "sign"],
     )
     parser.add_argument(
         "--padding",
@@ -110,6 +127,13 @@ def main():
         type = str,
         help = "RSA security level",
         choices = ["2048", "3072", "4096"],
+    )
+    parser.add_argument(
+        "--hash",
+        type = str,
+        help = "Hash algorithm override for sign operation (overrides group sha field)",
+        choices = ["sha-256", "sha-384", "sha-512", "sha3-256", "sha3-384", "sha3-512"],
+        default = None,
     )
     args = parser.parse_args()
 

@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/kdf_ctr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -117,23 +117,19 @@ static status_t run_test(kdf_test_vector_t *test) {
   };
 
   // Construct a buffer for the context.
-  otcrypto_const_byte_buf_t context = {
-      .data = test->kdf_context,
-      .len = test->kdf_context_bytelen,
-  };
+  otcrypto_const_byte_buf_t context = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->kdf_context, test->kdf_context_bytelen);
 
   // Construct a buffer for the label.
-  otcrypto_const_byte_buf_t label = {
-      .data = test->kdf_label,
-      .len = test->kdf_label_bytelen,
-  };
+  otcrypto_const_byte_buf_t label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->kdf_label, test->kdf_label_bytelen);
 
   // Run the KDF specified by the key mode.
   switch (test->key_mode) {
     case kOtcryptoKeyModeHmacSha256:
     case kOtcryptoKeyModeHmacSha384:
     case kOtcryptoKeyModeHmacSha512:
-      TRY(otcrypto_kdf_ctr_hmac(&kdk, label, context, &km));
+      TRY(otcrypto_kdf_ctr_hmac(&kdk, &label, &context, &km));
       break;
     default:
       LOG_INFO("Should never end up here.");

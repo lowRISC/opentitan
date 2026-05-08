@@ -24,6 +24,7 @@ class Config:
         ('RV32E', bool),
         ('RV32M', str),
         ('RV32B', str),
+        ('RV32ZC', str),
         ('RegFile', str),
         ('BranchTargetALU', bool),
         ('WritebackStage', bool),
@@ -62,6 +63,7 @@ class Config:
         self.rv32e = Config.read_bool('RV32E', yml)
         self.rv32m = Config.read_str('RV32M', yml)
         self.rv32b = Config.read_str('RV32B', yml)
+        self.rv32zc = Config.read_str('RV32ZC', yml)
         self.reg_file = Config.read_str('RegFile', yml)
         self.branch_target_alu = Config.read_bool('BranchTargetALU', yml)
         self.writeback_stage = Config.read_bool('WritebackStage', yml)
@@ -271,11 +273,11 @@ def main():
                 lambda p, v: [],
                 lambda d, v: ['+define+' + d + '=' + v], '/'),
         SimOpts('xlm_opts', 'Xcelium compile',
-                lambda p, v: ['-defparam',  p + '=' + v],
+                lambda p, v: ['-defparam', p + '=' + v],
                 lambda d, v: ['-define', d + '=' + v], '.'),
-        SimOpts('dsim_compile_opts', 'DSim compile',
-                lambda p, v: ['+define+' + p + '=' + v],
-                lambda d, v: [], '/'),
+        SimOpts('dsim_opts', 'DSim compile',
+                lambda p, v: ['-defparam', p + '=' + v],
+                lambda d, v: ['+define+' + d + '=' + v], '.'),
     ]
 
     argparser = argparse.ArgumentParser(description=(

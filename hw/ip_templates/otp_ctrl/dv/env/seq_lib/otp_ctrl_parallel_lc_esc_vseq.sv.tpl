@@ -78,9 +78,9 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
     // Random issue key requests before lc_esc_en is issued.
     randcase
       1: req_otbn_key(0);
-    % if enable_flash_key:
-      1: req_flash_addr_key(0);
-      1: req_flash_data_key(0);
+    % if enable_nvm_key:
+      1: req_nvm_addr_key(0);
+      1: req_nvm_data_key(0);
     % endif
       1: req_all_sram_keys(0);
       1: req_lc_transition(0, 0);

@@ -176,6 +176,7 @@ module pinmux
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
       dio_pad_attr_q <= '0;
+    % if enable_strap_sampling:
       for (int kk = 0; kk < NMioPads; kk++) begin
         if (kk == TargetCfg.tap_strap0_idx) begin
           // TAP strap 0 is sampled after reset (and only once for life cycle states that are not
@@ -187,6 +188,9 @@ module pinmux
           mio_pad_attr_q[kk] <= '0;
         end
       end
+    % else:
+      mio_pad_attr_q <= '0;
+    % endif
     end else begin
       // dedicated pads
       for (int kk = 0; kk < NDioPads; kk++) begin

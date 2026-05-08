@@ -65,7 +65,7 @@ static rom_error_t key_is_valid_in_lc_state_rma(sigverify_key_type_t key_type) {
       return kErrorOk;
     case kSigverifyKeyTypeDev:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
-      return kErrorSigverifyBadKey;
+      return kErrorOk;
     default:
       HARDENED_TRAP();
       OT_UNREACHABLE();
@@ -145,7 +145,7 @@ static rom_error_t key_is_valid_in_lc_state_test(
       return kErrorOk;
     case kSigverifyKeyTypeDev:
       HARDENED_CHECK_EQ(key_type, kSigverifyKeyTypeDev);
-      return kErrorSigverifyBadKey;
+      return kErrorOk;
     default:
       HARDENED_TRAP();
       OT_UNREACHABLE();

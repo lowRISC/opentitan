@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hkdf.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -144,19 +144,15 @@ static status_t run_test(hkdf_test_vector_t *test) {
   };
 
   // Construct a buffer for the salt.
-  otcrypto_const_byte_buf_t salt = {
-      .data = test->salt,
-      .len = test->salt_bytelen,
-  };
+  otcrypto_const_byte_buf_t salt = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->salt, test->salt_bytelen);
 
   // Construct a buffer for the context info.
-  otcrypto_const_byte_buf_t info = {
-      .data = test->info,
-      .len = test->info_bytelen,
-  };
+  otcrypto_const_byte_buf_t info = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, test->info, test->info_bytelen);
 
   // Run the "extract" stage of HKDF.
-  TRY(otcrypto_hkdf_extract(&ikm, salt, &prk));
+  TRY(otcrypto_hkdf_extract(&ikm, &salt, &prk));
 
   // If the test includes an expected value of PRK, then check the value.
   if (test->prk != NULL) {
@@ -171,7 +167,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   }
 
   // Run the "expand" stage of HKDF.
-  TRY(otcrypto_hkdf_expand(&prk, info, &okm));
+  TRY(otcrypto_hkdf_expand(&prk, &info, &okm));
 
   // Unmask the output key value and compare to the expected value.
   uint32_t *okm_share0;

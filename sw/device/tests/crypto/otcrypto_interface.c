@@ -93,6 +93,7 @@ volatile otcrypto_interface_t otcrypto = {
     // ECDSA P-256 (blocking).
     .ecdsa_p256_keygen = &otcrypto_ecdsa_p256_keygen,
     .ecdsa_p256_sign = &otcrypto_ecdsa_p256_sign,
+    .ecdsa_p256_sign_config_k = &otcrypto_ecdsa_p256_sign_config_k,
     .ecdsa_p256_sign_verify = &otcrypto_ecdsa_p256_sign_verify,
     .ecdsa_p256_verify = &otcrypto_ecdsa_p256_verify,
 
@@ -101,6 +102,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p256_keygen_async_finalize =
         &otcrypto_ecdsa_p256_keygen_async_finalize,
     .ecdsa_p256_sign_async_start = &otcrypto_ecdsa_p256_sign_async_start,
+    .ecdsa_p256_sign_async_start_config_k =
+        &otcrypto_ecdsa_p256_sign_config_k_async_start,
     .ecdsa_p256_sign_async_finalize = &otcrypto_ecdsa_p256_sign_async_finalize,
     .ecdsa_p256_verify_async_start = &otcrypto_ecdsa_p256_verify_async_start,
     .ecdsa_p256_verify_async_finalize =
@@ -117,9 +120,17 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdh_p256_async_start = &otcrypto_ecdh_p256_async_start,
     .ecdh_p256_async_finalize = &otcrypto_ecdh_p256_async_finalize,
 
+    // ECC P-256 point checks and key import/export.
+    .ecc_p256_point_on_curve = &otcrypto_p256_point_on_curve,
+    .ecc_p256_public_key_import = &otcrypto_ecc_p256_public_key_import,
+    .ecc_p256_public_key_export = &otcrypto_ecc_p256_public_key_export,
+    .ecc_p256_private_key_import = &otcrypto_ecc_p256_private_key_import,
+    .ecc_p256_private_key_export = &otcrypto_ecc_p256_private_key_export,
+
     // ECDSA P-384 (blocking).
     .ecdsa_p384_keygen = &otcrypto_ecdsa_p384_keygen,
     .ecdsa_p384_sign = &otcrypto_ecdsa_p384_sign,
+    .ecdsa_p384_sign_config_k = &otcrypto_ecdsa_p384_sign_config_k,
     .ecdsa_p384_sign_verify = &otcrypto_ecdsa_p384_sign_verify,
     .ecdsa_p384_verify = &otcrypto_ecdsa_p384_verify,
 
@@ -128,6 +139,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p384_keygen_async_finalize =
         &otcrypto_ecdsa_p384_keygen_async_finalize,
     .ecdsa_p384_sign_async_start = &otcrypto_ecdsa_p384_sign_async_start,
+    .ecdsa_p384_sign_async_start_config_k =
+        &otcrypto_ecdsa_p384_sign_config_k_async_start,
     .ecdsa_p384_sign_async_finalize = &otcrypto_ecdsa_p384_sign_async_finalize,
     .ecdsa_p384_verify_async_start = &otcrypto_ecdsa_p384_verify_async_start,
     .ecdsa_p384_verify_async_finalize =
@@ -152,10 +165,18 @@ volatile otcrypto_interface_t otcrypto = {
     // Ed25519 (async).
     .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
     .ed25519_keygen_async_finalize = &otcrypto_ed25519_keygen_async_finalize,
-    .ed25519_sign_async_start = &otcrypto_ed25519_sign_async_start,
+    .ed25519_sign_async_part1_start = &otcrypto_ed25519_sign_part1_async_start,
+    .ed25519_sign_async_part2_start = &otcrypto_ed25519_sign_part2_async_start,
     .ed25519_sign_async_finalize = &otcrypto_ed25519_sign_async_finalize,
     .ed25519_verify_async_start = &otcrypto_ed25519_verify_async_start,
     .ed25519_verify_async_finalize = &otcrypto_ed25519_verify_async_finalize,
+
+    // ECC P-384 point checks and key import/export.
+    .ecc_p384_point_on_curve = &otcrypto_p384_point_on_curve,
+    .ecc_p384_public_key_import = &otcrypto_ecc_p384_public_key_import,
+    .ecc_p384_public_key_export = &otcrypto_ecc_p384_public_key_export,
+    .ecc_p384_private_key_import = &otcrypto_ecc_p384_private_key_import,
+    .ecc_p384_private_key_export = &otcrypto_ecc_p384_private_key_export,
 
     // X25519 (blocking).
     .x25519_keygen = &otcrypto_x25519_keygen,

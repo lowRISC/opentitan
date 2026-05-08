@@ -33,3 +33,6 @@ class VersionInformation():
 
     def scm_status(self, default: Union[str, None] = None) -> Union[str, None]:
         return self.version_stamp.get('BUILD_SCM_STATUS', default)
+
+    def cryptolib_scm_revision(self, default: Union[str, None] = None) -> Union[str, None]:
+        return self.version_stamp.get('BUILD_CRYPTOLIB_SCM_REVISION', default)

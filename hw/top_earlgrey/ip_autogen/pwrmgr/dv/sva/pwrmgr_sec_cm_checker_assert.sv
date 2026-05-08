@@ -27,7 +27,6 @@ module pwrmgr_sec_cm_checker_assert
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input esc_timeout,
-  input esc_timeout_lc_q,
   input slow_esc_rst_req,
   input slow_mp_rst_req,
   input main_pd_ni,
@@ -76,8 +75,8 @@ module pwrmgr_sec_cm_checker_assert
   assign clk_esc_edge = clk_esc_tgl_sync[2] ^ clk_esc_tgl_sync[1];
 
   // clk_esc dead counter - this counts the number of clk_i cycles for which clk_esc_i hasn't
-  // toggled. If it reaches ESC_CLK_DEAD_CNT then clk_esc_i is considered dead. At that point, assertion
-  // EscClkStopEscTimeout_A expects esc_timeout_lc_q to be set until rst_lc_ni goes active.
+  // toggled. If it reaches ESC_CLK_DEAD_CNT then clk_esc_i is considered dead. At that point,
+  // assertion EscClkStopEscTimeout_A expects esc_timeout to be set until rst_lc_ni goes active.
   //
   // The counter is reset when rst_ni is low, io_clk_en is low, clk_esc_edge is high (indicating clk_esc_i is alive)
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -164,7 +163,7 @@ module pwrmgr_sec_cm_checker_assert
   // If clk_esc_i stops for so many cycles that clk_esc_dead_cnt reaches ESC_CLK_DEAD_CNT,
   // an escalation timeout should be requested until rst_lc_ni goes active.
   `ASSERT(EscClkStopEscTimeout_A,
-          $rose(clk_esc_dead_cnt == ESC_CLK_DEAD_CNT) |=> esc_timeout_lc_q until !rst_lc_ni,
+          $rose(clk_esc_dead_cnt == ESC_CLK_DEAD_CNT) |=> esc_timeout until !rst_lc_ni,
           clk_i, reset_or_disable)
 
   // For testpoints sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc.

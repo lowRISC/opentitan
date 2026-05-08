@@ -108,7 +108,7 @@
             - otp_ctrl input lc_trans_cnt reaches 16
             - lc_ctrl state transition request is invalid
             - input LC token does not match the output from otp_ctrl
-            - flash rma responses to lc_ctrl request with error
+            - nvm rma responses to lc_ctrl request with error
             - lc_ctrl clock bypass responses with error
             - input otp_lc_data's error bit is set to 1
             Note that all the above scenarios except the last one requires a reset to recover.

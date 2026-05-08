@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "uvm_macros.svh"
+`include "dv_macros.svh"
+
 // Base sequence
 class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
 

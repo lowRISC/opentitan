@@ -47,32 +47,35 @@ counter_full = counter_hi << 32 | counter_lo;
 
 ### Writing the counter
 
-Between the two count register ([`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo)) writes the counter may increment.
-If the [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) value overflows between a [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) write the intended counter value may be incorrect.
-For example an attempt to clear the counter to 0 could result in a counter value of `0x1_0000_0000`.
-It is recommended the wakeup timer is disabled with [`WKUP_CTRL`](registers.md#wkup_ctrl) before writing to the [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) registers to avoid this problem.
+The counter might increment between writes to the two count registers ([`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo)).
+To avoid this corrupting the value, software should set the lower word first:
+- Write [`WKUP_COUNT_LO`](registers.md#wkup_count_lo).
+- Write [`WKUP_COUNT_HI`](registers.md#wkup_count_hi).
+
+This may not work for a target value that is close to overflow (where e.g. bits `[31:8]` are set).
+For such values, disable the timer with [`WKUP_CTRL`](registers.md#wkup_ctrl) while writing the counter.
 
 ### Reading the threshold
 
-The hardware does not alter the value of the [`WKUP_THOLD_LO`](registers.md#wkup_thold_lo) and [`WKUP_THOLD_HI`](registers.md#wkup_thold_hi) registers so there are no race conditions in reading them.
+The hardware does not alter [`WKUP_THOLD_LO`](registers.md#wkup_thold_lo) and [`WKUP_THOLD_HI`](registers.md#wkup_thold_hi), so there are no race conditions in reading them.
 
 ### Writing the threshold
 
-When writing to [`WKUP_THOLD_LO`](registers.md#wkup_thold_lo) and [`WKUP_THOLD_HI`](registers.md#wkup_thold_hi) between the two writes the 64-bit threshold is effectively an interim value that's not intended to be the real threshold.
-It is possible the interim threshold is lower than the previous threshold triggering a spurious wakeup.
-Use the method in the pseudo code below to avoid this issue:
-
+The threshold is written by setting two registers ([`WKUP_THOLD_LO`](registers.md#wkup_thold_lo) and [`WKUP_THOLD_HI`](registers.md#wkup_thold_hi)).
+As such, there will be an interim value of the threshold after the first register has been written.
+To avoid this triggering a spurious wakeup, use the method below:
 ```
 disable_wakeup_interrupt();
 
-// Guaranteed 64-bit threshold greater than or equal to old threshold. This
-// prevents an interrupt caused by the threshold decreasing.
+// Set the lower word to its maximum value. The resulting threshold will definitely be at least as
+// big as the previous value.
 REG_WRITE(WKUP_THOLD_LO, UINT32_MAX);
-// Guaranteed 64-bit threshold greater than or equal to intended threshold. If
-// the counter reaches this value before we've completing the final write then
-// the interrupt would have happened with the intended threshold as well.
+
+// Set the upper word to its desired value. The resulting threshold will still be at least as big
+// as the desired threshold, so there cannot be any spurious trigger event.
 REG_WRITE(WKUP_THOLD_HI, new_thold >> 32);
-// 64-bit threshold now intended value
+
+// Set the lower word to its desired value.
 REG_WRITE(WKUP_THOLD_LO, new_thold & 0xffff_ffff);
 
 enable_wakeup_interrupt();

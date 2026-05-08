@@ -5,10 +5,13 @@
 #include "sw/device/lib/testing/aes_testutils.h"
 
 #include "hw/ip/aes/model/aes_modes.h"
+#include "hw/top/dt/alert_handler.h"
 #include "sw/device/lib/dif/dif_aes.h"
+#include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #ifdef AES_TESTUTILS_HAS_EDN_AND_CSRNG
+#include "hw/top/dt/csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 
@@ -196,11 +199,43 @@ status_t aes_testutils_csrng_kat(const dif_csrng_t *csrng) {
   TRY(csrng_testutils_kat_reseed(csrng, &seed_material_reseed,
                                  &expected_state_reseed));
 
+  // We're about to generate the same `genbits` again which will trigger a
+  // `csrng_recov_alert`. This is expected, so we must disable this alert if it
+  // is currently enabled and restore it after.
+  dif_alert_handler_t alert_handler;
+  TRY(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+
+  dt_alert_id_t csrng_recov_alert =
+      dt_csrng_alert_to_alert_id(kDtCsrng, kDtCsrngAlertRecovAlert);
+
+  dif_toggle_t was_enabled = kDifToggleDisabled;
+  TRY(dif_alert_handler_alert_is_enabled(&alert_handler, csrng_recov_alert,
+                                         &was_enabled));
+
+  if (was_enabled == kDifToggleEnabled) {
+    TRY(dif_alert_handler_alert_set_enabled(&alert_handler, csrng_recov_alert,
+                                            kDifToggleDisabled));
+  }
+
   // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
   TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen, NULL,
                                    kAesMaskingPrngZeroOutputSeed,
                                    &expected_state_generate));
+
+  // Check that the correct recoverable alert fired even if the alert was
+  // ignored.
+  uint32_t recov_alerts = 0;
+  TRY(dif_csrng_get_recoverable_alerts(csrng, &recov_alerts));
+  TRY_CHECK(recov_alerts == kDifCsrngRecoverableAlertRepeatedGenBits);
+  TRY(dif_csrng_clear_recoverable_alerts(csrng));
+
+  // Restore the alert if it was enabled.
+  if (was_enabled == kDifToggleEnabled) {
+    TRY(dif_alert_handler_alert_set_enabled(&alert_handler, csrng_recov_alert,
+                                            kDifToggleEnabled));
+  }
+
   return OK_STATUS();
 }
 #endif

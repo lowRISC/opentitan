@@ -58,21 +58,10 @@ for pad in target["pinout"]["add_pads"]:
   k += 1
 %>\
 
-% if target["name"] != "asic":
-module chip_${top["name"]}_${target["name"]} #(
-  // Path to a VMEM file containing the contents of the boot ROM, which will be
-  // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
-  // Path to a VMEM file containing the contents of the emulated OTP, which will be
-  // baked into the FPGA bitstream.
-  parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
-) (
-% else:
 module chip_${top["name"]}_${target["name"]} #(
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
   parameter bit SecRomCtrl1DisableScrambling = 1'b0
 ) (
-% endif
 <%
   removed_port_names = []
 %>\
@@ -124,22 +113,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:           TckPadIdx,
-    tms_idx:           TmsPadIdx,
-    trst_idx:          TrstNPadIdx,
-    tdi_idx:           TdiPadIdx,
-    tdo_idx:           TdoPadIdx,
-    tap_strap0_idx:    Tap0PadIdx,
-    tap_strap1_idx:    Tap1PadIdx,
-    dft_strap0_idx:    Dft0PadIdx,
-    dft_strap1_idx:    Dft1PadIdx,
-    // TODO: check whether there is a better way to pass these USB-specific params
-    // The use of these indexes is gated behind a parameter, but to synthesize they
-    // need to exist even if the code-path is never used (pinmux.sv:UsbWkupModuleEn).
-    // Hence, set to zero.
-    usb_dp_idx:        0,
-    usb_dn_idx:        0,
-    usb_sense_idx:     0,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
 <%
@@ -169,7 +142,7 @@ module chip_${top["name"]}_${target["name"]} #(
   scan_roles = []
   for sig in list(reversed(top["pinmux"]["ios"])):
     if sig["connection"] != "muxed":
-      if (len(sig['pad']) > 0) and (target["name"] != "cw305"):
+      if len(sig['pad']) > 0:
         scan_string = lib.Name.from_snake_case('dio_pad_' + sig['pad'] + '_scan_role')
         scan_roles.append((f'scan_role_pkg::{scan_string.as_camel_case()}', sig['name']))
       else:
@@ -184,11 +157,8 @@ module chip_${top["name"]}_${target["name"]} #(
   scan_roles = []
   for pad in list(reversed(pinout["pads"])):
     if pad["connection"] == "muxed":
-      if target["name"] != "cw305":
-        scan_string = lib.Name.from_snake_case('mio_pad_' + pad['name'] + '_scan_role')
-        scan_roles.append(f'scan_role_pkg::{scan_string.as_camel_case()}')
-      else:
-        scan_roles.append('NoScan')
+      scan_string = lib.Name.from_snake_case('mio_pad_' + pad['name'] + '_scan_role')
+      scan_roles.append(f'scan_role_pkg::{scan_string.as_camel_case()}')
 %>\
 % for scan_role in list(scan_roles):
       ${scan_role}${"" if loop.last else ","}
@@ -279,18 +249,15 @@ module chip_${top["name"]}_${target["name"]} #(
 
   ast_pkg::ast_clks_t ast_base_clks;
 
-% if target["name"] == "asic":
   // AST signals needed in padring
   logic scan_rst_n;
    prim_mubi_pkg::mubi4_t scanmode;
-% endif
 
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
     .NDioPads(${len(dedicated_pads)}),
     .NMioPads(${len(muxed_pads)}),
-% if target["name"] == "asic":
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
     .DioScanRole ({
@@ -313,7 +280,6 @@ module chip_${top["name"]}_${target["name"]} #(
       ${lib.Name.from_snake_case('io_bank_' + pad["bank"]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}
 % endfor
     }),
-% endif
 \
 \
     .DioPadType ({
@@ -328,13 +294,8 @@ module chip_${top["name"]}_${target["name"]} #(
     })
   ) u_padring (
   // This is only used for scan and DFT purposes
-% if target["name"] == "asic":
     .clk_scan_i   ( ast_base_clks.clk_sys ),
     .scanmode_i   ( scanmode              ),
-% else:
-    .clk_scan_i   ( 1'b0                  ),
-    .scanmode_i   ( prim_mubi_pkg::MuBi4False ),
-  % endif
     .dio_in_raw_o ( dio_in_raw ),
     // Chip IOs
     .dio_pad_io ({
@@ -390,46 +351,6 @@ module chip_${top["name"]}_${target["name"]} #(
 % endfor
   );
 
-
-###################################################################
-## USB for CW305                                                 ##
-###################################################################
-% if target["name"] == "cw305":
-  logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_rx_enable;
-
-  // Connect the DP pad
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the DN pad
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
-
-  // Connect DN pullup
-  assign manual_out_io_usb_dnpullup0 = usb_dn_pullup_en;
-  assign manual_oe_io_usb_dnpullup0 = 1'b1;
-  assign manual_attr_io_dnpullup0 = '0;
-
-  // Connect DP pullup
-  assign manual_out_io_usb_dppullup0 = usb_dp_pullup_en;
-  assign manual_oe_io_usb_dppullup0 = 1'b1;
-  assign manual_attr_io_dppullup0 = '0;
-
-  // Tie-off unused signals
-  assign usb_rx_d = 1'b0;
-
-% endif
-
 ###################################################################
 ## AST For all targets                                           ##
 ###################################################################
@@ -439,23 +360,20 @@ module chip_${top["name"]}_${target["name"]} #(
   //////////////////////////////////
 
   // pwrmgr interface
-  pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
-  pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  pwrmgr_pkg::pwr_ast_req_t pwrmgr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
   pwrmgr_pkg::pwr_boot_status_t pwrmgr_boot_status;
 
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
 
   // TLUL interface
-  tlul_pkg::tl_h2d_t base_ast_bus;
-  tlul_pkg::tl_d2h_t ast_base_bus;
+  tlul_pkg::tl_h2d_t ast_tl_req;
+  tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // synchronization clocks / rests
   clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
   rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
-
-  // external clock
-  logic ext_clk;
 
   // monitored clock
   logic sck_monitor;
@@ -484,21 +402,12 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::ast_alert_req_t ast_alert_req;
   assign ast_alert_rsp = '0;
 
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-
-  assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
-  assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
-  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
-
   // DFT connections
   logic scan_en;
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
 
   // Jitter enable
-  prim_mubi_pkg::mubi4_t jen;
+  prim_mubi_pkg::mubi4_t clk_main_jitter_en;
 
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
@@ -526,14 +435,6 @@ module chip_${top["name"]}_${target["name"]} #(
                 cfg:    ast_rf_cfg.marg
               }
   };
-
-  logic unused_usb_ram_2p_cfg;
-  assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
-                                   ast_ram_2p_fcfg.marg_a,
-                                   ast_ram_2p_fcfg.test_a,
-                                   ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b,
-                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -576,15 +477,10 @@ module chip_${top["name"]}_${target["name"]} #(
   ast = ast[0]
 %>\
 
-  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
 
   logic [rstmgr_pkg::PowerDomains-1:0] por_n;
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
-
-% if target["name"] == "asic":
-
-  // external clock comes in at a fixed position
-  assign ext_clk = mio_in_raw[MioPadMio11];
 
   wire unused_t0, unused_t1;
   assign unused_t0 = 1'b0;
@@ -592,81 +488,29 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // AST does not use all clocks / resets forwarded to it
   logic unused_slow_clk_en;
-  assign unused_slow_clk_en = base_ast_pwr.slow_clk_en;
+  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
 
   logic unused_pwr_clamp;
-  assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
-
-% else:
-  // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
-  assign pad2ast = '0;
-
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
-  clkgen_xil7series # (
-    .AddClkBuf(0)
-  ) clkgen (
-    .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
-    .srst_ni(srst_n),
-    .clk_main_o(clk_main),
-    .clk_48MHz_o(clk_usb_48mhz),
-    .clk_aon_o(clk_aon),
-    .rst_no(rst_n)
-  );
-
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
-  ast_pkg::clks_osc_byp_t clks_osc_byp;
-  assign clks_osc_byp = '{
-    usb: clk_usb_48mhz,
-    sys: clk_main,
-    io:  clk_main,
-    aon: clk_aon
-  };
-
-% endif
+  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
 
   ast #(
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
-% if target["name"] == "asic":
     // external POR
     .por_ni                ( manual_in_por_n ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
-% else:
-    // external POR
-    .por_ni                ( rst_n ),
 
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
-
-    // clocks' oscillator bypass for FPGA
-    .clk_osc_byp_i         ( clks_osc_byp ),
-
-    // Direct short to PAD
-    .ast2pad_t0_ao         (  ),
-    .ast2pad_t1_ao         (  ),
-
-% endif
     // clocks and resets supplied for detection
     .sns_clks_i            ( clkmgr_aon_clocks    ),
     .sns_rsts_i            ( rstmgr_aon_resets    ),
     .sns_spi_ext_clk_i     ( sck_monitor          ),
     // tlul
-    .tl_i                  ( base_ast_bus ),
-    .tl_o                  ( ast_base_bus ),
+    .tl_i                  ( ast_tl_req ),
+    .tl_o                  ( ast_tl_rsp ),
     // init done indication
     .ast_init_done_o       ( ),
     // buffered clocks & resets
@@ -676,7 +520,6 @@ module chip_${top["name"]}_${target["name"]} #(
     % for port, reset in ast["reset_connections"].items():
     .${port} (${lib.get_reset_path(top, reset)}),
     % endfor
-    .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
     .vcc_supp_i            ( 1'b1 ),
@@ -688,30 +531,24 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_pwst_o            ( ast_pwst ),
     .ast_pwst_h_o          ( ),
     // main regulator
-    .main_env_iso_en_i     ( base_ast_pwr.pwr_clamp_env ),
-    .main_pd_ni            ( base_ast_pwr.main_pd_n ),
+    .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
+    .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
     // pdm control (otp)
     .otp_power_seq_i       ( otp_macro_pwr_seq ),
     .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
-    .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
+    .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
     // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( jen ),
+    .clk_src_sys_jen_i     ( clk_main_jitter_en ),
     .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
-    .clk_src_sys_val_o     ( ast_base_pwr.core_clk_val ),
+    .clk_src_sys_val_o     ( pwrmgr_ast_rsp.core_clk_val ),
     // aon source clock
     .clk_src_aon_o         ( ast_base_clks.clk_aon ),
-    .clk_src_aon_val_o     ( ast_base_pwr.slow_clk_val ),
+    .clk_src_aon_val_o     ( pwrmgr_ast_rsp.slow_clk_val ),
     // io source clock
-    .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
+    .clk_src_io_en_i       ( pwrmgr_ast_req.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
-    .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    // usb source clock
-    .usb_ref_pulse_i       ( '0 ),
-    .usb_ref_val_i         ( '0 ),
-    .clk_src_usb_en_i      ( '0 ),
-    .clk_src_usb_o         (    ),
-    .clk_src_usb_val_o     (    ),
+    .clk_src_io_val_o      ( pwrmgr_ast_rsp.io_clk_val ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
@@ -722,18 +559,12 @@ module chip_${top["name"]}_${target["name"]} #(
     .alert_req_o           ( ast_alert_req  ),
     // dft
     .lc_dft_en_i           ( lc_dft_en        ),
-    .usb_obs_i             ( '0 ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
     .dpram_rml_o           ( ast_ram_2p_lcfg ),
@@ -750,8 +581,8 @@ module chip_${top["name"]}_${target["name"]} #(
   // TAP Instance //
   //////////////////
 
-  tlul_pkg::tl_h2d_t dmi_h2d;
-  tlul_pkg::tl_d2h_t dmi_d2h;
+  tlul_pkg::tl_h2d_t dmi_req;
+  tlul_pkg::tl_d2h_t dmi_rsp;
   jtag_pkg::jtag_req_t jtag_req;
   jtag_pkg::jtag_rsp_t jtag_rsp;
 
@@ -797,8 +628,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .jtag_o     (jtag_rsp),
     .scan_rst_ni(scan_rst_n),
     .scanmode_i (scanmode),
-    .tl_h2d_o   (dmi_h2d),
-    .tl_d2h_i   (dmi_d2h)
+    .tl_h2d_o   (dmi_req),
+    .tl_d2h_i   (dmi_rsp)
   );
 
   // TODO: Resolve this and wire it up.
@@ -955,12 +786,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .alert_o()
   );
 
-###################################################################
-## ASIC                                                          ##
-###################################################################
-
-% if target["name"] == "asic":
-
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
   //////////////////////////////////
@@ -998,469 +823,49 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
   ) top_${top["name"]} (
-    // ast connections
-    .por_n_i                           ( por_n                      ),
-    .clk_main_i                        ( ast_base_clks.clk_sys      ),
-    .clk_io_i                          ( ast_base_clks.clk_io       ),
-    .clk_aon_i                         ( ast_base_clks.clk_aon      ),
-    .clks_ast_o                        ( clkmgr_aon_clocks          ),
-    .clk_main_jitter_en_o              ( jen                        ),
-    .rsts_ast_o                        ( rstmgr_aon_resets          ),
-    .integrator_id_i                   ( '0                         ),
-    .sck_monitor_o                     ( sck_monitor                ),
-    .pwrmgr_ast_req_o                  ( base_ast_pwr               ),
-    .pwrmgr_ast_rsp_i                  ( ast_base_pwr               ),
-    .ast_tl_req_o                      ( base_ast_bus               ),
-    .ast_tl_rsp_i                      ( ast_base_bus               ),
-    .obs_ctrl_i                        ( obs_ctrl                   ),
-    .otp_macro_pwr_seq_o               ( otp_macro_pwr_seq          ),
-    .otp_macro_pwr_seq_h_i             ( otp_macro_pwr_seq_h        ),
-    .otp_obs_o                         ( otp_obs                    ),
-    .otp_cfg_i                         ( otp_cfg                    ),
-    .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),
-    .ctn_tl_h2d_o                      ( ctn_tl_h2d[0]              ),
-    .ctn_tl_d2h_i                      ( ctn_tl_d2h[0]              ),
-    .ac_range_check_overwrite_i        ( ac_range_check_overwrite_i ),
-    .racl_error_i                      ( ext_racl_error             ),
-    .soc_gpi_async_o                   (                            ),
-    .soc_gpo_async_i                   ( '0                         ),
-    .soc_dbg_policy_bus_o              ( soc_dbg_policy_bus         ),
-    .debug_halt_cpu_boot_i             ( '0                         ),
-    .dma_sys_req_o                     (                            ),
-    .dma_sys_rsp_i                     ( '0                         ),
-    .mbx_tl_req_i                      ( tlul_pkg::TL_H2D_DEFAULT   ),
-    .mbx_tl_rsp_o                      (                            ),
-    .pwrmgr_boot_status_o              ( pwrmgr_boot_status         ),
-    .ctn_misc_tl_h2d_i                 ( ctn_misc_tl_h2d_i          ),
-    .ctn_misc_tl_d2h_o                 ( ctn_misc_tl_d2h_o          ),
-    .soc_wkup_async_i                  ( 1'b0                       ),
-    .soc_rst_req_async_i               ( soc_rst_req_async          ),
-    .soc_lsio_trigger_i                ( '0                         ),
-    .mbx0_doe_intr_en_o                (                            ),
-    .mbx0_doe_intr_o                   (                            ),
-    .mbx0_doe_intr_support_o           (                            ),
-    .mbx0_doe_async_msg_support_o      (                            ),
-    .mbx1_doe_intr_en_o                (                            ),
-    .mbx1_doe_intr_o                   (                            ),
-    .mbx1_doe_intr_support_o           (                            ),
-    .mbx1_doe_async_msg_support_o      (                            ),
-    .mbx2_doe_intr_en_o                (                            ),
-    .mbx2_doe_intr_o                   (                            ),
-    .mbx2_doe_intr_support_o           (                            ),
-    .mbx2_doe_async_msg_support_o      (                            ),
-    .mbx3_doe_intr_en_o                (                            ),
-    .mbx3_doe_intr_o                   (                            ),
-    .mbx3_doe_intr_support_o           (                            ),
-    .mbx3_doe_async_msg_support_o      (                            ),
-    .mbx4_doe_intr_en_o                (                            ),
-    .mbx4_doe_intr_o                   (                            ),
-    .mbx4_doe_intr_support_o           (                            ),
-    .mbx4_doe_async_msg_support_o      (                            ),
-    .mbx5_doe_intr_en_o                (                            ),
-    .mbx5_doe_intr_o                   (                            ),
-    .mbx5_doe_intr_support_o           (                            ),
-    .mbx5_doe_async_msg_support_o      (                            ),
-    .mbx6_doe_intr_en_o                (                            ),
-    .mbx6_doe_intr_o                   (                            ),
-    .mbx6_doe_intr_support_o           (                            ),
-    .mbx6_doe_async_msg_support_o      (                            ),
-    .mbx_jtag_doe_intr_en_o            (                            ),
-    .mbx_jtag_doe_intr_o               (                            ),
-    .mbx_jtag_doe_intr_support_o       (                            ),
-    .mbx_jtag_doe_async_msg_support_o  (                            ),
-    .mbx_pcie0_doe_intr_en_o           (                            ),
-    .mbx_pcie0_doe_intr_o              (                            ),
-    .mbx_pcie0_doe_intr_support_o      (                            ),
-    .mbx_pcie0_doe_async_msg_support_o (                            ),
-    .mbx_pcie1_doe_intr_en_o           (                            ),
-    .mbx_pcie1_doe_intr_o              (                            ),
-    .mbx_pcie1_doe_intr_support_o      (                            ),
-    .mbx_pcie1_doe_async_msg_support_o (                            ),
-    .es_rng_enable_o                   ( es_rng_enable              ),
-    .es_rng_valid_i                    ( es_rng_valid               ),
-    .es_rng_bit_i                      ( es_rng_bit                 ),
-    .es_rng_fips_o                     ( es_rng_fips                ),
+    // AST clock and reset signals
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_aon_i (ast_base_clks.clk_aon),
+    .clks_ast_o(clkmgr_aon_clocks    ),
+    .rsts_ast_o(rstmgr_aon_resets    ),
 
-    // OTP external voltage
-    .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
+    // Manual DFT signals
+    .scan_en_i  (scan_en   ),
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode  ),
 
-    // DMI TL-UL
-    .dbg_tl_req_i                      ( dmi_h2d                    ),
-    .dbg_tl_rsp_o                      ( dmi_d2h                    ),
-    // Quasi-static word address for next_dm register value.
-    .rv_dm_next_dm_addr_i              ( '0                         ),
+<%
+port_list = top["inter_signal"]["external"]
+max_portwidth = max(len(x["signame"]) for x in port_list) if port_list else 0
+max_sigwidth = max(len(x["signame_chip"][target["name"]]) for x in port_list) if port_list else 0
+%>\
+    // Auto-generated port map
+    % for sig in port_list:
+    .${lib.ljust(sig["signame"], max_portwidth)}(${lib.ljust(sig["signame_chip"][target["name"]], max_sigwidth)}),
+    % endfor
+
     // Multiplexed I/O
-    .mio_in_i                          ( mio_in                     ),
-    .mio_out_o                         ( mio_out                    ),
-    .mio_oe_o                          ( mio_oe                     ),
+    .mio_in_i (mio_in ),
+    .mio_out_o(mio_out),
+    .mio_oe_o (mio_oe ),
 
     // Dedicated I/O
-    .dio_in_i                          ( dio_in                     ),
-    .dio_out_o                         ( dio_out                    ),
-    .dio_oe_o                          ( dio_oe                     ),
+    .dio_in_i (dio_in ),
+    .dio_out_o(dio_out),
+    .dio_oe_o (dio_oe ),
 
     // Pad attributes
-    .mio_attr_o                        ( mio_attr                   ),
-    .dio_attr_o                        ( dio_attr                   ),
-
-    // Memory attributes
-    .rom_ctrl0_cfg_i                           ( rom_ctrl0_cfg ),
-    .rom_ctrl1_cfg_i                           ( rom_ctrl1_cfg ),
-    .i2c_ram_1p_cfg_i                          ( ram_1p_cfg ),
-    .i2c_ram_1p_cfg_rsp_o                      (   ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( ram_1p_cfg ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (   ),
-    .sram_ctrl_main_ram_1p_cfg_i               ( ram_1p_cfg ),
-    .sram_ctrl_main_ram_1p_cfg_rsp_o           (   ),
-    .sram_ctrl_mbox_ram_1p_cfg_i               ( ram_1p_cfg ),
-    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (   ),
-    .otbn_imem_ram_1p_cfg_i                    ( ram_1p_cfg ),
-    .otbn_imem_ram_1p_cfg_rsp_o                (   ),
-    .otbn_dmem_ram_1p_cfg_i                    ( ram_1p_cfg ),
-    .otbn_dmem_ram_1p_cfg_rsp_o                (   ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( ram_1p_cfg ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (   ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( ram_1p_cfg ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (   ),
-    .spi_device_ram_2p_cfg_sys2spi_i           ( spi_ram_2p_cfg ),
-    .spi_device_ram_2p_cfg_spi2sys_i           ( spi_ram_2p_cfg ),
-    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (   ),
-    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (   ),
-
-    // DFT signals
-    .ast_lc_dft_en_o                   ( lc_dft_en                  ),
-    .ast_lc_hw_debug_en_o              (                            ),
-    .scan_rst_ni                       ( scan_rst_n                 ),
-    .scan_en_i                         ( scan_en                    ),
-    .scanmode_i                        ( scanmode                   ),
-
-    // FPGA build info
-    .fpga_info_i                       ( '0                         )
-  );
-% endif
-
-logic unused_signals;
-assign unused_signals = ^{pwrmgr_boot_status.clk_status,
-                          pwrmgr_boot_status.cpu_fetch_en,
-                          pwrmgr_boot_status.lc_done,
-                          pwrmgr_boot_status.otp_done,
-                          pwrmgr_boot_status.rom_ctrl_status,
-                          pwrmgr_boot_status.strap_sampled};
-
-###################################################################
-## FPGA shared                                                   ##
-###################################################################
-% if target["name"] in ["cw310", "cw305"]:
-  //////////////////
-  // PLL for FPGA //
-  //////////////////
-
-  assign manual_attr_io_clk = '0;
-  assign manual_out_io_clk = 1'b0;
-  assign manual_oe_io_clk = 1'b0;
-  assign manual_attr_por_n = '0;
-  assign manual_out_por_n = 1'b0;
-  assign manual_oe_por_n = 1'b0;
-  assign manual_attr_por_button_n = '0;
-  assign manual_out_por_button_n = 1'b0;
-  assign manual_oe_por_button_n = 1'b0;
-
-  % if target["name"] in ["cw305", "cw310"]:
-  assign srst_n = manual_in_por_button_n;
-  % endif
-
-  % if target["name"] == "cw305":
-  // TODO: follow-up later and hardwire all ast connects that do not
-  //       exist for this target
-  assign otp_obs_o = '0;
-  % endif
-  // Extend the internal reset request from the power manager.
-  //
-  // TODO: To model the SoC within FPGA this logic is insufficient; its presence here
-  // is to avoid a design that locks up awaiting the deassertion of the signal
-  // `soc_rst_req_async_i` in response to an internal reset request.
-  logic  internal_request_d, internal_request_q;
-  logic  external_reset, count_up;
-  logic  [3:0] count;
-  always_ff @(posedge ast_base_clks.clk_aon or negedge por_n[0]) begin
-    if (!por_n[0]) begin
-      external_reset     <= 1'b0;
-      internal_request_q <= 1'b0;
-      count_up           <= '0;
-      count              <= '0;
-    end else begin
-      internal_request_q <= internal_request_d;
-      if (!internal_request_q && internal_request_d) begin
-        count_up       <= 1'b1;
-        external_reset <= 1;
-      end else if (count == 'd8) begin
-        count_up       <= 0;
-        external_reset <= 0;
-        count          <= '0;
-      end else if (count_up) begin
-        count <= count + 1;
-      end
-    end
-  end
-
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-
-  // the rst_ni pin only goes to AST
-  // the rest of the logic generates reset based on the 'pok' signal.
-  // for verilator purposes, make these two the same.
-  prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
-
-// TODO: align this with ASIC version to minimize the duplication.
-// Also need to add AST simulation and FPGA emulation models for things like entropy source -
-// otherwise Verilator / FPGA will hang.
-  top_${top["name"]} #(
-% if target["name"] == "cw310":
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(320),
-    .SecAesAllowForcingMasks(1'b1),
-    .KmacEnMasking(0),
-    .KmacSwKeyMasked(1),
-    .SecKmacCmdDelay(320),
-    .SecKmacIdleAcceptSwMsg(1'b1),
-% if top["name"] == "earlgrey":
-    .KeymgrKmacEnMasking(0),
-% else:
-    .KeymgrDpeKmacEnMasking(0),
-% endif
-    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .SecOtbnMuteUrnd(1'b1),
-    .SecOtbnSkipUrndReseedAtStart(1'b1),
-    .OtpMacroMemInitFile(OtpMacroMemInitFile),
-    .RvCoreIbexPipeLine(1),
-    .SramCtrlRetAonInstrExec(0),
-  % if lib.num_rom_ctrl(top["module"]) > 1:
-    // TODO(opentitan-integrated/issues/251):
-    // Enable hashing below once the build infrastructure can
-    // load scrambled images on FPGA platforms. The DV can
-    // already partially handle it by initializing the 2nd ROM
-    // with random data via the backdoor loading interface - it
-    // can't load "real" SW images yet since that requires
-    // additional build infrastructure.
-    .SecRomCtrl1DisableScrambling(1),
-  % endif
-% elif target["name"] == "cw305":
-    .RvCoreIbexPipeLine(0),
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(320),
-    .SecAesAllowForcingMasks(1'b1),
-    .SecAesSkipPRNGReseeding(1'b1),
-    .UsbdevStub(1'b1),
-% else:
-    .SecAesMasking(1'b0),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
-    .KmacEnMasking(1'b0),
-% if top["name"] == "earlgrey":
-    .KeymgrKmacEnMasking(0),
-% else:
-    .KeymgrDpeKmacEnMasking(0),
-% endif
-    .SecAesStartTriggerDelay(0),
-    .SecAesAllowForcingMasks(1'b0),
-    .SecAesSkipPRNGReseeding(1'b0),
-    .SramCtrlRetAonInstrExec(0),
-    .EntropySrcStub(1'b1),
-    .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
-    .OtbnRegFile(otbn_pkg::RegFileFPGA),
-    .OtbnStub(1'b1),
-    .OtpMacroMemInitFile(OtpMacroMemInitFile),
-    .RvCoreIbexPipeLine(1),
-% endif
-    .RomCtrl0BootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
-    .RvCoreIbexSecureIbex(0),
-    .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_${top["name"]} (
-    .por_n_i                      ( por_n                 ),
-    .clk_main_i                   ( ast_base_clks.clk_sys ),
-    .clk_io_i                     ( ast_base_clks.clk_io  ),
-    .clk_aon_i                    ( ast_base_clks.clk_aon ),
-    .clks_ast_o                   ( clkmgr_aon_clocks     ),
-    .clk_main_jitter_en_o         ( jen                   ),
-    .rsts_ast_o                   ( rstmgr_aon_resets     ),
-    .integrator_id_i              ( '0                    ),
-    .sck_monitor_o                ( sck_monitor           ),
-    .pwrmgr_ast_req_o             ( base_ast_pwr          ),
-    .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
-    .obs_ctrl_i                   ( obs_ctrl              ),
-    .fpga_info_i                  ( fpga_info             ),
-% if target["name"] != "cw305":
-    .ast_tl_req_o                 ( base_ast_bus               ),
-    .ast_tl_rsp_i                 ( ast_base_bus               ),
-    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
-    .otp_obs_o                    ( otp_obs                    ),
-    .otp_cfg_i                    ( otp_cfg                    ),
-    .otp_cfg_rsp_o                ( otp_cfg_rsp                ),
-    .ctn_tl_h2d_o                 ( ctn_tl_h2d[0]              ),
-    .ctn_tl_d2h_i                 ( ctn_tl_d2h[0]              ),
-    .ac_range_check_overwrite_i   ( ac_range_check_overwrite_i ),
-    .racl_error_i                 ( ext_racl_error             ),
-    .soc_gpi_async_o              (                            ),
-    .soc_gpo_async_i              ( '0                         ),
-    .soc_dbg_policy_bus_o         ( soc_dbg_policy_bus         ),
-    .debug_halt_cpu_boot_i        ( '0                         ),
-    .dma_sys_req_o                (                            ),
-    .dma_sys_rsp_i                ( '0                         ),
-    .soc_rst_req_async_i          ( external_reset             ),
-    .soc_lsio_trigger_i           ( '0                         ),
-    .es_rng_enable_o              ( es_rng_enable              ),
-    .es_rng_valid_i               ( es_rng_valid               ),
-    .es_rng_bit_i                 ( es_rng_bit                 ),
-% endif
-
-    // DMI TL-UL
-    .dbg_tl_req_i                 ( dmi_h2d                    ),
-    .dbg_tl_rsp_o                 ( dmi_d2h                    ),
-    // Quasi-static word address for next_dm register value.
-    .rv_dm_next_dm_addr_i         ( '0                         ),
-    // Multiplexed I/O
-    .mio_in_i                     ( mio_in                     ),
-    .mio_out_o                    ( mio_out                    ),
-    .mio_oe_o                     ( mio_oe                     ),
-
-    // Dedicated I/O
-    .dio_in_i                     ( dio_in                     ),
-    .dio_out_o                    ( dio_out                    ),
-    .dio_oe_o                     ( dio_oe                     ),
-
-    // Pad attributes
-    .mio_attr_o                   ( mio_attr                   ),
-    .dio_attr_o                   ( dio_attr                   ),
-
-    // Memory attributes
-    .rom_ctrl0_cfg_i                           ( '0 ),
-    .rom_ctrl1_cfg_i                           ( '0 ),
-    .i2c_ram_1p_cfg_i                          ( '0 ),
-    .i2c_ram_1p_cfg_rsp_o                      (    ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( '0 ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (    ),
-    .sram_ctrl_main_ram_1p_cfg_i               ( '0 ),
-    .sram_ctrl_main_ram_1p_cfg_rsp_o           (    ),
-    .sram_ctrl_mbox_ram_1p_cfg_i               ( '0 ),
-    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (    ),
-    .otbn_imem_ram_1p_cfg_i                    ( '0 ),
-    .otbn_imem_ram_1p_cfg_rsp_o                (    ),
-    .otbn_dmem_ram_1p_cfg_i                    ( '0 ),
-    .otbn_dmem_ram_1p_cfg_rsp_o                (    ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( '0 ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (    ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( '0 ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (    ),
-    .spi_device_ram_2p_cfg_sys2spi_i           ( '0 ),
-    .spi_device_ram_2p_cfg_spi2sys_i           ( '0 ),
-    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (    ),
-    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (    ),
-
-     // DFT signals
-    .ast_lc_dft_en_o      ( lc_dft_en                  ),
-    .ast_lc_hw_debug_en_o (                            ),
-    // DFT signals
-    .dft_hold_tap_sel_i ( '0               ),
-    .scan_rst_ni        ( 1'b1             ),
-    .scan_en_i          ( 1'b0             ),
-    .scanmode_i         ( prim_mubi_pkg::MuBi4False )
-  );
-% endif
-
-###################################################################
-## CW310/305 capture board interface                             ##
-###################################################################
-% if target["name"] in ["cw340", "cw310", "cw305"]:
-
-  /////////////////////////////////////////////////////
-  // ChipWhisperer CW310/305 Capture Board Interface //
-  /////////////////////////////////////////////////////
-  // This is used to interface OpenTitan as a target with a capture board trough the ChipWhisperer
-  // 20-pin connector. This is used for SCA/FI experiments only.
-
-  logic unused_inputs;
-  assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger;
-
-  // Synchronous clock output to capture board.
-  assign manual_out_io_clkout = manual_in_io_clk;
-  assign manual_oe_io_clkout = 1'b1;
-
-  // Capture trigger.
-  // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
-  // GPIO[11:10] is used for selecting the IP of interest. The encoding is as follows (see
-  // hint_names_e enum in clkmgr_pkg.sv for details).
-  //
-  // IP              - GPIO[11:10] - Index for clkmgr_aon_idle
-  // -------------------------------------------------------------
-  //  AES            -   00       -  0
-  //  HMAC           -   01       -  1 - not implemented on CW305
-  //  KMAC           -   10       -  2 - not implemented on CW305
-  //  OTBN           -   11       -  3 - not implemented on CW305
-  //
-  // GPIO9 is used for gating the selected capture trigger in software. Alternatively, GPIO8
-  // can be used to implement a less precise but fully software-controlled capture trigger
-  // similar to what can be done on ASIC.
-  //
-  // Note that on the CW305, GPIO[9,8] are connected to LED[5(Green),7(Red)].
-
-  prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
-
-  % if target["name"] == "cw305":
-  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle;
-  % else:
-  clkmgr_pkg::hint_names_e trigger_sel;
-  always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
-      2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
-      2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
-      2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
-      2'b11:   trigger_sel = clkmgr_pkg::HintMainOtbn;
-      default: trigger_sel = clkmgr_pkg::HintMainAes;
-    endcase;
-  end
-  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
-  % endif
-
-  logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
-  logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
-  logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
-  logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
-
-  // Synchronize signals to manual_in_io_clk.
-  prim_flop_2sync #(
-    .Width ($bits(clk_trans_idle) + 4)
-  ) u_sync_trigger (
-    .clk_i (manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
-    .d_i   ({clk_trans_idle,
-             clk_io_div4_trigger_hw_en,
-             clk_io_div4_trigger_hw_oe,
-             clk_io_div4_trigger_sw_en,
-             clk_io_div4_trigger_sw_oe}),
-    .q_o   ({manual_in_io_clk_idle,
-             manual_in_io_clk_trigger_hw_en,
-             manual_in_io_clk_trigger_hw_oe,
-             manual_in_io_clk_trigger_sw_en,
-             manual_in_io_clk_trigger_sw_oe})
+    .mio_attr_o(mio_attr),
+    .dio_attr_o(dio_attr)
   );
 
-  // Generate the actual trigger signal as trigger_sw OR trigger_hw.
-  assign manual_attr_io_trigger = '0;
-  assign manual_oe_io_trigger  =
-      manual_in_io_clk_trigger_sw_oe | manual_in_io_clk_trigger_hw_oe;
-  assign manual_out_io_trigger =
-      manual_in_io_clk_trigger_sw_en | (manual_in_io_clk_trigger_hw_en &
-          prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle));
-% endif
+  logic unused_signals;
+  assign unused_signals = ^{pwrmgr_boot_status.clk_status,
+                            pwrmgr_boot_status.cpu_fetch_en,
+                            pwrmgr_boot_status.lc_done,
+                            pwrmgr_boot_status.otp_done,
+                            pwrmgr_boot_status.rom_ctrl_status,
+                            pwrmgr_boot_status.strap_sampled};
 
 endmodule : chip_${top["name"]}_${target["name"]}

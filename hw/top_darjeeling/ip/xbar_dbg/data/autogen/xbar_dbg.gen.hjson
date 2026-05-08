@@ -165,9 +165,9 @@
       width: 1
       default: ""
       external: true
-      top_signame: dbg_tl
       conn_type: false
       index: -1
+      top_signame: dbg_tl
     }
     {
       name: tl_rv_dm__dbg

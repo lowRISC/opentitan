@@ -83,6 +83,11 @@ typedef struct cert_flash_info_layout {
    */
   bool used;
   /**
+   * Boolean to indicate if a hash digest needs to be placed at the end of the
+   * page.
+   */
+  bool need_digest;
+  /**
    * A name string for the group of certificates (e.g., "DICE").
    */
   char *group_name;

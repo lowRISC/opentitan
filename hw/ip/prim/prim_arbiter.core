@@ -8,6 +8,7 @@ description: "Generic arbiter"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:util
       - lowrisc:prim:assert
       - lowrisc:prim:leading_one_ppc
     files:

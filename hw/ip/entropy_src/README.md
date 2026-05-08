@@ -1,10 +1,12 @@
 # ENTROPY_SRC HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/entropy_src/data/entropy_src.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`entropy_src_rng_4bits`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/entropy_src_rng_4bits/code.svg) |
 
-[`entropy_src`](https://reports.opentitan.org/hw/ip/entropy_src/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/entropy_src/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/entropy_src/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 
@@ -52,7 +54,7 @@ These tests include:
 The Repetition Count and Adaptive Proportion test are specifically recommended by SP 800-90B, and are implemented in accordance with those recommendations.
 In FIPS/CC compliant mode, all checks except the Repetition Count test are performed on a fixed window of data of configurable size, by default consisting of 2048 bits each.
 Per the definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
-The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
+The Repetition Count Test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
 The combined choice of threshold and window size then determine the false-negative rate (&beta;), or the probability of missing statistical defects at any particular magnitude.
 

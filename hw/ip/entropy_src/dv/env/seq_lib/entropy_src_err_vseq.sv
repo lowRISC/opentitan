@@ -4,33 +4,6 @@
 
 // Test all ERR_CODE fields are asserted as expected, as well as the ERR_CODE_TEST register
 
-`define PATH1 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_entropy_fips_en
-`define PATH2 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_entropy_data_reg_en
-`define PATH3 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_entropy_module_en
-`define PATH4 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_rng_bit_en
-`define PATH5 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_fw_ov_mode
-`define PATH6 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_fw_ov_entropy_insert
-`define PATH7 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_route
-`define PATH8 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_type
-`define PATH9 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_enable
-`define PATH10 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_enable_pulse
-`define CORE \
-    tb.dut.u_entropy_src_core
-`define SHA3 \
-    u_sha3.u_keccak.u_round_count
-`define REPCNT \
-    u_entropy_src_repcnt_ht.u_prim_max_tree_rep_cntr_max
-
 class entropy_src_err_vseq extends entropy_src_base_vseq;
   `uvm_object_utils(entropy_src_err_vseq)
 
@@ -134,7 +107,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
           repcnts_ht_cntr: begin // repcnts ht test counter
             repcnts_ht_cntr_test(m_rng_push_seq, fld);
           end
-          adaptp_ht_cntr: begin // adaptive proportion test counter
+          adaptp_ht_cntr: begin // Adaptive Proportion Test counter
             adaptp_ht_cntr_test(m_rng_push_seq, fld);
           end
           bucket_ht_cntr: begin // Bucket test counter

@@ -327,7 +327,7 @@ That augmented state vector is consumed by three combinational submodules:
 - `lc_ctrl_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
 - `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) from the augmented state vector.
 
-Note that the two additional life cycle control signals `lc_flash_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
+Note that the two additional life cycle control signals `lc_nvm_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
 
 The life cycle controller contains a JTAG TAP that can be used to access the same CSR space that is accessible via TL-UL.
 In order to write to the CSRs, a [hardware mutex](#life-cycle-request-interface) has to be claimed.

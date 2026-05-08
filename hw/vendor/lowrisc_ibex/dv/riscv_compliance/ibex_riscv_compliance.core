@@ -41,6 +41,12 @@ parameters:
     paramtype: vlogdefine
     description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
 
+  RV32ZC:
+    datatype: str
+    default: ibex_pkg::RV32Zca
+    paramtype: vlogdefine
+    description: "Compressed instructions parameter enum. See the ibex_pkg::rv32zc_e enum in ibex_pkg.sv for permitted values."
+
   RegFile:
     datatype: str
     default: ibex_pkg::RegFileFF
@@ -135,6 +141,7 @@ targets:
       - RV32E
       - RV32M
       - RV32B
+      - RV32ZC
       - RegFile
       - ICache
       - ICacheECC
@@ -161,6 +168,6 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++14 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
+          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=ibex_riscv_compliance -g"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"

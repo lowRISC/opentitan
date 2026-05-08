@@ -62,6 +62,7 @@ struct BootSvcTestMsg {
 struct BootSvcHeaderCheckTestCase {
   BootSvcTestMsg msg;
   rom_error_t exp_error;
+  bool error_before_digest;
 };
 
 class BootSvcHeaderCheckTest
@@ -134,6 +135,7 @@ constexpr std::array<BootSvcHeaderCheckTestCase, 7> kHeaderCheckTestCases{{
                         .length = CHIP_BOOT_SVC_MSG_HEADER_SIZE - 1,
                     }},
         .exp_error = kErrorBootSvcBadHeader,
+        .error_before_digest = true,
     },
     // Bad length (too big).
     {
@@ -145,18 +147,22 @@ constexpr std::array<BootSvcHeaderCheckTestCase, 7> kHeaderCheckTestCases{{
                         .length = CHIP_BOOT_SVC_MSG_SIZE_MAX + 1,
                     }},
         .exp_error = kErrorBootSvcBadHeader,
+        .error_before_digest = true,
     },
 }};
 
 TEST_P(BootSvcHeaderCheckTest, Check) {
   // Use an all-zero digest by default.
-  EXPECT_CALL(hmac_,
-              sha256(&GetParam().msg.header.identifier,
-                     GetParam().msg.header.length - sizeof(hmac_digest_t), _))
-      .WillOnce(SetArgPointee<2>(hmac_digest_t{}));
+  auto param = GetParam();
 
-  EXPECT_EQ(boot_svc_header_check(&GetParam().msg.header),
-            GetParam().exp_error);
+  if (!param.error_before_digest) {
+    EXPECT_CALL(hmac_,
+                sha256(&param.msg.header.identifier,
+                       param.msg.header.length - sizeof(hmac_digest_t), _))
+        .WillOnce(SetArgPointee<2>(hmac_digest_t{}));
+  }
+
+  EXPECT_EQ(boot_svc_header_check(&param.msg.header), param.exp_error);
 }
 
 INSTANTIATE_TEST_SUITE_P(HeaderCheckTestCases, BootSvcHeaderCheckTest,

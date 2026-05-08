@@ -136,7 +136,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   // Override this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
   // because some registers won't set to default value until otp_init is done.
-  virtual task read_and_check_all_csrs_after_reset();
+  protected virtual task read_and_check_all_csrs_after_reset();
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
     otp_pwr_init();
     super.read_and_check_all_csrs_after_reset();
@@ -770,7 +770,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // This test access OTP_CTRL's test_access memory. The open-sourced code only test if the access
   // is valid. Please override this task in proprietary OTP.
   virtual task otp_test_access();
-    if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin
+    if (prim_pkg::PrimTechName == "Generic") begin
       repeat (10) begin
         bit [TL_DW-1:0] data;
         bit test_access_en;

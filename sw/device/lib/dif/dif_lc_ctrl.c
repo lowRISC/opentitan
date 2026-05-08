@@ -161,9 +161,9 @@ dif_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeBadToken, true);
   }
 
-  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT)) {
+  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_NVM_RMA_ERROR_BIT)) {
     status_word = bitfield_bit32_write(status_word,
-                                       kDifLcCtrlStatusCodeFlashRmaError, true);
+                                       kDifLcCtrlStatusCodeNvmRmaError, true);
   }
 
   if (bitfield_bit32_read(reg, LC_CTRL_STATUS_OTP_ERROR_BIT)) {

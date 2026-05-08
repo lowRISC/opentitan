@@ -12,7 +12,7 @@ Getting started:
 - `cd dv/formal`
 
 ### Reproducible Build
-
+#### With Jasper:
 This flow is intended for users who wish to run the formal flow as-is using the pinned external dependencies (psgen, sail, riscv-sail etc.)
 
 Build instructions:
@@ -28,13 +28,22 @@ Some steps require a lot of RAM and CPU so we recommend closing any other resour
 A machine with 128 GiB of RAM and 32 cores was used to complete the proof.
 To avoid manually running each step you can also use the `prove_lemmas` command inside the TCL command interface located below your session window.
 
+#### With Yosys and rIC3:
+This is equivalent to the above, but uses only open source tools.
+
+Build instructions:
+- `nix develop .#oss-dev`
+- `make build/aig-manip` builds the Rust aig-manip tool used by conductor.py
+- `make build/all.aig` builds the core Aiger file
+- `python3 conductor.py prove` runs the proof, maximising memory usage. See `python3 conductor.py -h` for more options.
+
 ### Development Builds
 
 Users who wish to do development on this flow should use the below steps.
 This will allow changes to both the local files and the external dependencies (psgen, sail, riscv-sail), and to run the intermediate build steps manually.
 
-Build instructions:
-- Identical to the Reproducible Build steps, but use `nix develop .#formal-dev`.
+- For Jasper: Identical to the Reproducible Build steps, but use `nix develop .#formal-dev`.
+- For OSS: Identical to Reproducible Build steps.
 
 Invoking `make jg` using the provided makefile would run the following steps, which can also be executed manually:
 - `make fusesoc` fetches the necessary RTL using the FuseSoC tool and makes a local copy inside `build/`.
@@ -44,8 +53,14 @@ Invoking `make jg` using the provided makefile would run the following steps, wh
 - `make sv` to build the SV translation of the Sail compiler.
   Will invoke `buildspec.py`, which can be configured to adjust which instructions are defined.
   By default all of them are, this is correct but slow.
-- `jg verify.tcl` invokes Jasper interactively, sourcing the configuration & run script.
+- `jg verify.tcl` (jasper only) invokes Jasper interactively, sourcing the configuration & run script.
   Requires the above two steps to be executed first.
+
+Invoking `make build/all.aig` similarly does the following:
+- `make fusesoc`
+- `make psgen`
+- `make sv`
+- Invokes yosys (and a collection of plugins which may be found under `yosys_formal`, as well as our fork of yosys-slang) to build an Aiger file.
 
 Local versions of the external dependencies can be modified and linked into the build via Environment Variables as follows:
 - psgen: (`https://github.com/mndstrmr/psgen`)
@@ -66,6 +81,11 @@ Local versions of the external dependencies can be modified and linked into the 
   - Make local changes...
   - In the formal-dev shell:
     - Update `LOWRISC_SAIL_RISCV_SRC` to point to the source root with `export LOWRISC_SAIL_RISCV_SRC=<sail-riscv-dir>`.
+- yosys-slang: (`https://github.com/mndstrmr/yosys-slang/tree/formal`)
+  - Clone the repository to a local directory \<yosys-slang-dir\> (`git clone https://github.com/mndstrmr/yosys-slang --branch formal`).
+  - Make local changes...
+  - In the formal-dev shell:
+    - Update `LOWRISC_YOSYS_SLANG` to point to the source root with `export LOWRISC_YOSYS_SLANG=<yosys-slang-dir>`.
 
 ## Conclusivity
 All properties are currently known to be conclusive, with the exception of M-Types.
@@ -76,9 +96,6 @@ This means:
 - If one takes a sequence of instructions and ran Ibex on them, the same memory operations in the same order would be produced by running the Sail main function in a loop.
 - We do not prove that the instruction executed with a given PC was loaded with that PC.
 - We haven't proven that Ibex resets correctly, if it doesn't there is no trace equivalence.
-
-## RTL Changes
-- `ResetAll = 1` is required for now (instead of `ResetAll = Lockstep`)
 
 ## Code Tour
 ### Top Level Goals

@@ -254,12 +254,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           // according to issue #841, interrupt will have one clock cycle delay
           // add an extra cycle for synchronizers from clk_edn to clk
           cfg.clk_rst_vif.wait_n_clks(1);
-          if (!under_reset) begin
-            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[class_i], intr_en[class_i],
-                            $sformatf("Interrupt class_%s, is_local_err %0b, local_alert_type %s",
-                            class_name[class_i],is_int_err, local_alert_type));
-            if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
+          if (!under_reset && (cfg.intr_vif.pins[class_i] !== intr_en[class_i])) begin
+            `uvm_error(get_full_name(),
+                       $sformatf({"Unexpected interrupt value in cfg.intr_vif.pins[%0d]: ",
+                                  "saw %0d, but expected %0d. ",
+                                  "(is_int_err = %0b, local_alert_type = %0p)"},
+                                 class_i, cfg.intr_vif.pins[class_i], intr_en[class_i],
+                                 is_int_err, local_alert_type))
           end
+          if (!under_intr_classes[class_i] && intr_en[class_i]) under_intr_classes[class_i] = 1;
         end
       end
     join_none
@@ -588,11 +591,27 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
              end
           end
 
+          // Check that the value that came from the crashdump reflects the alert_cause and
+          // loc_alert_cause registers that we have predicted in the register model.
           for (int i = 0; i < NUM_ALERTS; i++) begin
-            `DV_CHECK_EQ(crashdump_val.alert_cause[i], `gmv(ral.alert_cause[i]))
+            if (crashdump_val.alert_cause[i] != `gmv(ral.alert_cause[i])) begin
+              `uvm_error(get_full_name(),
+                         $sformatf({"Register/crashdump mismatch. alert_cause[%0d] is ",
+                                    "0x%0h in the crashdump and 0x%0h in the register model."},
+                                   i,
+                                   crashdump_val.alert_cause[i],
+                                   `gmv(ral.alert_cause[i])))
+            end
           end
           for (int i = 0; i < NUM_LOCAL_ALERTS; i++) begin
-            `DV_CHECK_EQ(crashdump_val.loc_alert_cause[i], `gmv(ral.loc_alert_cause[i]))
+            if (crashdump_val.loc_alert_cause[i] != `gmv(ral.loc_alert_cause[i])) begin
+              `uvm_error(get_full_name(),
+                         $sformatf({"Register/crashdump mismatch. loc_alert_cause[%0d] is ",
+                                    "0x%0h in the crashdump and 0x%0h in the register model."},
+                                   i,
+                                   crashdump_val.loc_alert_cause[i],
+                                   `gmv(ral.loc_alert_cause[i])))
+            end
           end
         end
       end

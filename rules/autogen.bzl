@@ -98,8 +98,8 @@ def opentitan_ip_c_header(name, ip, target_compatible_with = [], **kwargs):
         **kwargs
     )
 
-def _opentitan_ip_rust_header_impl(ctx):
-    tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
+def _opentitan_ip_rust_module_impl(ctx):
+    module = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
 
     stamp_args = []
     stamp_files = []
@@ -107,31 +107,43 @@ def _opentitan_ip_rust_header_impl(ctx):
         stamp_files = [ctx.version_file]
         stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
 
+    if ctx.attr.kind == "generic":
+        kind_flag = "--rust"
+    elif ctx.attr.kind == "tock":
+        kind_flag = "--tock"
+    else:
+        fail("unhandled kind '{}'".format(ctx.attr.kind))
+
     ctx.actions.run(
-        outputs = [tock],
+        outputs = [module],
         inputs = [ctx.file.hjson] + stamp_files,
         arguments = [
-            "--tock",
+            kind_flag,
             "-q",
             "-o",
-            tock.path,
+            module.path,
         ] + stamp_args + [ctx.file.hjson.path],
         executable = ctx.executable._regtool,
     )
 
     return [
-        DefaultInfo(files = depset([tock])),
+        DefaultInfo(files = depset([module])),
         OutputGroupInfo(
-            tock = depset([tock]),
+            module = depset([module]),
         ),
     ]
 
-opentitan_ip_rust_header_rule = rule(
-    implementation = _opentitan_ip_rust_header_impl,
-    doc = "Generate the Rust headers for an IP block as used in a top",
+opentitan_ip_rust_module_rule = rule(
+    implementation = _opentitan_ip_rust_module_impl,
+    doc = "Generate the Rust modules for an IP block as used in a top",
     attrs = {
         "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
         "ip": attr.string(doc = "Name of the IP block"),
+        "kind": attr.string(
+            doc = "Kind of Rust module to generate (generic or for Tock)",
+            default = "generic",
+            values = ["generic", "tock"],
+        ),
         "_regtool": attr.label(
             default = "//util:regtool",
             executable = True,
@@ -140,14 +152,15 @@ opentitan_ip_rust_header_rule = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def opentitan_ip_rust_header(name, ip, target_compatible_with = [], **kwargs):
+def opentitan_ip_rust_module(name, ip, kind, target_compatible_with = [], **kwargs):
     """
-    Macro around `opentitan_ip_rust_header_rule` that automatically sets `hjson` for the current top.
+    Macro around `opentitan_ip_rust_module_rule` that automatically sets `hjson` for the current top.
     The target will also be marked as compatible only with tops containing this IP.
     """
-    opentitan_ip_rust_header_rule(
+    opentitan_ip_rust_module_rule(
         name = name,
         ip = ip,
+        kind = kind,
         hjson = opentitan_select_ip_attr(ip, "hjson"),
         target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
         **kwargs
@@ -364,8 +377,8 @@ def opentitan_ip_dt(name, ip, target_compatible_with = []):
         name = "{}_gen".format(name),
         gen_ips = [ip],
         output_groups = {
-            "hdr": ["dt/dt_{}.h".format(ip)],
-            "src": ["dt/dt_{}.c".format(ip)],
+            "hdr": ["{}.h".format(ip)],
+            "src": ["{}.c".format(ip)],
         },
         target_compatible_with = target_compatible_with,
     )
@@ -391,8 +404,8 @@ def opentitan_top_dt_api(name, deps = None):
         name = "{}_gen".format(name),
         gen_top = True,
         output_groups = {
-            "hdr": ["dt/dt_api.h"],
-            "src": ["dt/dt_api.c"],
+            "hdr": ["api.h"],
+            "src": ["api.c"],
         },
     )
 
@@ -512,7 +525,7 @@ def opentitan_autogen_isr_testutils(name, ips = [], deps = [], target_compatible
         target_compatible_with = target_compatible_with,
     )
 
-def _chip_info_src(ctx):
+def _build_info_src(ctx):
     stamp_args = []
     stamp_files = []
     if stamping_enabled(ctx):
@@ -520,13 +533,13 @@ def _chip_info_src(ctx):
         stamp_args.append("--ot_version_file")
         stamp_args.append(ctx.version_file.path)
     else:
-        print("NOTE: stamping is disabled, the chip_info section will use a fixed version string")
+        print("NOTE: stamping is disabled, the build_info section will use a fixed version string")
         stamp_args.append("--default_version")
 
         # The script expects a 20-character long hash: "OpenTitanOpenTitanOT"
         stamp_args.append("4f70656e546974616e4f70656e546974616e4f54")
 
-    out_source = ctx.actions.declare_file("chip_info.c")
+    out_source = ctx.actions.declare_file("build_info.c")
     ctx.actions.run(
         outputs = [
             out_source,
@@ -545,35 +558,105 @@ def _chip_info_src(ctx):
         DefaultInfo(files = depset([out_source])),
     ]
 
-autogen_chip_info_src = rule(
-    implementation = _chip_info_src,
+autogen_build_info_src = rule(
+    implementation = _build_info_src,
     attrs = {
         "_tool": attr.label(
-            default = "//util:rom_chip_info",
+            default = "//util:build_info",
             executable = True,
             cfg = "exec",
         ),
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-def autogen_chip_info(name):
-    """Generates a cc_library named `name` that defines chip info."""
+def autogen_build_info(name):
+    """Generates a cc_library named `name` that defines the build ID."""
 
-    # Generate a C source file that defines the chip info struct. This is an
+    # Generate a C source file that defines the build ID struct. This is an
     # implementation detail and should not be depended on externally.
-    chip_info_src_target = name + "_gen_src"
-    autogen_chip_info_src(name = chip_info_src_target)
+    build_info_src_target = name + "_gen_src"
+    autogen_build_info_src(name = build_info_src_target)
 
     # Package up the generated source file with its corresponding header file
-    # and dependencies. Any target that wants access to the chip info should
+    # and dependencies. Any target that wants access to the build ID should
     # depend on this.
     native.cc_library(
         name = name,
-        srcs = [chip_info_src_target],
-        hdrs = ["//sw/device/silicon_creator/lib:chip_info.h"],
+        srcs = [build_info_src_target],
+        hdrs = ["//sw/device/silicon_creator/lib:build_info.h"],
         deps = [
             "//sw/device/lib/base:macros",
         ],
+        # Make sure to participate in linking so that the symbol is not discarded
+        # (since it is not meant to be directly used).
+        alwayslink = True,
+    )
+
+def _cryptolib_build_info_src(ctx):
+    stamp_args = []
+    stamp_files = []
+    if stamping_enabled(ctx):
+        stamp_files = [ctx.version_file]
+        stamp_args.append("--ot_version_file")
+        stamp_args.append(ctx.version_file.path)
+    else:
+        print("NOTE: stamping is disabled, the build_info section will use a fixed version string")
+        stamp_args.append("--default_version")
+
+        # The script expects a 20-character long hash: "OpenTitanOpenTitanOT"
+        stamp_args.append("4f70656e546974616e4f70656e546974616e4f54")
+
+    out_source = ctx.actions.declare_file("cryptolib_build_info.c")
+    ctx.actions.run(
+        outputs = [
+            out_source,
+        ],
+        inputs = [
+            ctx.executable._tool,
+        ] + stamp_files,
+        arguments = [
+            "-o",
+            out_source.dirname,
+        ] + stamp_args,
+        executable = ctx.executable._tool,
+    )
+
+    return [
+        DefaultInfo(files = depset([out_source])),
+    ]
+
+autogen_cryptolib_build_info_src = rule(
+    implementation = _cryptolib_build_info_src,
+    attrs = {
+        "_tool": attr.label(
+            default = "//util:cryptolib_build_info",
+            executable = True,
+            cfg = "exec",
+        ),
+    } | stamp_attr(-1, "//rules:stamp_flag"),
+)
+
+def autogen_cryptolib_build_info(name):
+    """Generates a cc_library named `name` that defines the cryptolib ID."""
+
+    # Generate a C source file that defines the build ID struct. This is an
+    # implementation detail and should not be depended on externally.
+    cryptolib_build_info_src_target = name + "_gen_src"
+    autogen_cryptolib_build_info_src(name = cryptolib_build_info_src_target)
+
+    # Package up the generated source file with its corresponding header file
+    # and dependencies. Any target that wants access to the build ID should
+    # depend on this.
+    native.cc_library(
+        name = name,
+        srcs = [cryptolib_build_info_src_target],
+        hdrs = ["//sw/device/lib/crypto/drivers:cryptolib_build_info.h"],
+        deps = [
+            "//sw/device/lib/crypto/include:datatypes",
+        ],
+        # Make sure to participate in linking so that the symbol is not discarded
+        # (since it is not meant to be directly used).
+        alwayslink = True,
     )
 
 def _cryptotest_hjson_external(ctx):

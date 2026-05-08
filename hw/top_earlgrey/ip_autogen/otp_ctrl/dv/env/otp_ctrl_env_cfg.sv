@@ -20,8 +20,8 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
   rand push_pull_agent_cfg#(.DeviceDataWidth(SRAM_DATA_SIZE))
       m_sram_pull_agent_cfg[NumSramKeyReqSlots];
   rand push_pull_agent_cfg#(.DeviceDataWidth(OTBN_DATA_SIZE))  m_otbn_pull_agent_cfg;
-  rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent_cfg;
-  rand push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent_cfg;
+  rand push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE)) m_nvm_data_pull_agent_cfg;
+  rand push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE)) m_nvm_addr_pull_agent_cfg;
   rand push_pull_agent_cfg#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE))
       m_lc_prog_pull_agent_cfg;
 
@@ -55,7 +55,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     }
   }
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     string prim_ral_name = "otp_macro_prim_reg_block";
     ral_model_names.push_back(prim_ral_name);
     clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
@@ -65,7 +65,7 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     tl_intg_alert_name = "fatal_bus_integ_error";
     sec_cm_alert_name  = "fatal_check_error";
 
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // create push_pull agent config obj
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
@@ -79,12 +79,12 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
                             ::create("m_otbn_pull_agent_cfg");
     m_otbn_pull_agent_cfg.agent_type = PullAgent;
 
-    m_flash_data_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id
-                                  ::create("m_flash_data_pull_agent_cfg");
-    m_flash_data_pull_agent_cfg.agent_type = PullAgent;
-    m_flash_addr_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id
-                                  ::create("m_flash_addr_pull_agent_cfg");
-    m_flash_addr_pull_agent_cfg.agent_type = PullAgent;
+    m_nvm_data_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE))::type_id
+                                  ::create("m_nvm_data_pull_agent_cfg");
+    m_nvm_data_pull_agent_cfg.agent_type = PullAgent;
+    m_nvm_addr_pull_agent_cfg = push_pull_agent_cfg#(.DeviceDataWidth(NVM_DATA_SIZE))::type_id
+                                  ::create("m_nvm_addr_pull_agent_cfg");
+    m_nvm_addr_pull_agent_cfg.agent_type = PullAgent;
 
     m_lc_prog_pull_agent_cfg = push_pull_agent_cfg#(.HostDataWidth(LC_PROG_DATA_SIZE),
                                .DeviceDataWidth(1))::type_id::create("m_lc_prog_pull_agent_cfg");

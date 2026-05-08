@@ -65,8 +65,6 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   int unsigned handshake_timeout_cycle = 100_000;
   int unsigned ping_timeout_cycle = 32;
 
-  bit under_reset;
-
   // Incremented by the monitor on each ping
   int unsigned ping_count = 0;
   // Needed for alert checks starting after a ping

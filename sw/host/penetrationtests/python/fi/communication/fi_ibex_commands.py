@@ -5,6 +5,7 @@
 
 Communication with OpenTitan happens over the uJSON command interface.
 """
+
 import json
 import time
 from sw.host.penetrationtests.python.util import common_library
@@ -60,6 +61,15 @@ class OTFIIbex:
         # CharFlashRead command.
         self.target.write(json.dumps("CharFlashRead").encode("ascii"))
         parameters = {"flash_region": flash_region}
+        self.target.write(json.dumps(parameters).encode("ascii"))
+
+    def ibex_char_flash_read_static(self, init, flash_region=3) -> None:
+        """Starts the ibex.char.flash_read_static test."""
+        # IbexFi command.
+        self._ujson_ibex_fi_cmd()
+        # CharFlashRead command.
+        self.target.write(json.dumps("CharFlashReadStatic").encode("ascii"))
+        parameters = {"flash_region": flash_region, "init": init}
         self.target.write(json.dumps(parameters).encode("ascii"))
 
     def ibex_char_flash_write(self, flash_region=3) -> None:
@@ -229,9 +239,7 @@ class OTFIIbex:
         # IbexFi command.
         self._ujson_ibex_fi_cmd()
         # CharHardenedCheckComplementBranch command.
-        self.target.write(
-            json.dumps("CharHardenedCheckComplementBranch").encode("ascii")
-        )
+        self.target.write(json.dumps("CharHardenedCheckComplementBranch").encode("ascii"))
 
     def ibex_char_register_file(self) -> None:
         """Starts the ibex.char.register_file test."""

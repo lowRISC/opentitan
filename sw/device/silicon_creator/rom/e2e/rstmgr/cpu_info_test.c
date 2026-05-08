@@ -25,9 +25,6 @@ enum {
 extern const char kFaultAddrStart[];
 extern const char kFaultAddrEnd[];
 
-// This variable is used to ensure loads from an address aren't optimised out.
-volatile static uint32_t addr_val;
-
 /**
  * Overrides the default OTTF exception handler.
  */
@@ -78,10 +75,11 @@ bool test_main(void) {
   switch (reset_reasons) {
     case 1 << kRstmgrReasonPowerOn:
       LOG_INFO("Triggering fault.");
-
-      OT_ADDRESSABLE_LABEL(kFaultAddrStart);
-      addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr0), 0);
-      OT_ADDRESSABLE_LABEL(kFaultAddrEnd);
+      asm volatile(
+          "kFaultAddrStart:\n"
+          "  lw x0, 0(%0)\n"
+          "kFaultAddrEnd:\n" ::"r"(kIllegalAddr0)
+          : "memory");
       return false;
     case 1 << kRstmgrReasonSoftwareRequest:
       LOG_INFO("Escalation detected!");

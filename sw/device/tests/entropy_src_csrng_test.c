@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_csrng.h"
-#include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_otbn.h"
-#include "hw/top/dt/dt_rv_plic.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/otbn.h"
+#include "hw/top/dt/rv_plic.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -133,7 +133,7 @@ static void irq_block_wait(irq_flag_id_t isr_id) {
                                            kDifToggleDisabled));
       break;
     case kTestIrqFlagIdEdn1CmdDone:
-      CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn0, kDifEdnIrqEdnCmdReqDone,
+      CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn1, kDifEdnIrqEdnCmdReqDone,
                                            kDifToggleDisabled));
       break;
     default:

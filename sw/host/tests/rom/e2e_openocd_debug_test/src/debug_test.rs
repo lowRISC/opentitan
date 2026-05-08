@@ -9,7 +9,7 @@ use anyhow::Result;
 use clap::Parser;
 use regex::Regex;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::debug::elf_debugger::{ElfSymbols, SymbolicAddress};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr};
@@ -44,7 +44,7 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     // This test requires RV_DM access so first strap and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     let uart = transport.uart("console")?;
 
@@ -338,12 +338,12 @@ fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     dbg.resume()?;
 
     const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
-    let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
-        exit_success: Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
-        ..Default::default()
-    };
-    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    let mut console = UartConsole::new(
+        Some(CONSOLE_TIMEOUT),
+        Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
+        None,
+    );
+    let result = console.interact(&*uart, false)?;
     assert_eq!(result, ExitStatus::ExitSuccess);
 
     dbg.disconnect()?;

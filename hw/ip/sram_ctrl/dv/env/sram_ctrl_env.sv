@@ -41,6 +41,12 @@ class sram_ctrl_env #(parameter int AddrWidth = 10) extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get sram_ctrl_bkdr_util from uvm_config_db")
     end
 
+    // Get the fault injection interface
+    if (!uvm_config_db#(virtual sram_ctrl_fault_if)::get(this, "",
+                                                         "fault_vif", cfg.fault_vif)) begin
+      `uvm_fatal(get_full_name(), "Failed to get fault_vif from uvm_config_db")
+    end
+
     // Build the KDI agent
     m_kdi_agent = push_pull_agent#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id
       ::create("m_kdi_agent", this);

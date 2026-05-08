@@ -9,7 +9,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
+#include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
@@ -28,7 +28,7 @@ typedef struct boot_log {
   /** Identifier (`BLOG`). */
   uint32_t identifier;
   /** Chip version (from the ROM). */
-  chip_info_scm_revision_t chip_version;
+  build_info_scm_revision_t chip_version;
   /** Which ROM_EXT slot booted (boot_slot_t). */
   uint32_t rom_ext_slot;
   /** ROM_EXT major version number. */
@@ -109,10 +109,10 @@ rom_error_t boot_log_check(const boot_log_t *boot_log);
  *
  * @param boot_log A buffer that holds the boot_log.
  * @param rom_ext_slot The current ROM_EXT slot.
- * @param info A pointer to the chip_info_t structure in ROM.
+ * @param info A pointer to the build_info_t structure in ROM.
  */
 void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
-                            const chip_info_t *info);
+                            const build_info_t *info);
 
 #ifdef __cplusplus
 }

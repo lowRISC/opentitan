@@ -103,8 +103,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   constraint dly_to_reenable_dut_c {
     dly_to_reenable_dut dist {
       [1      :10]       :/ 10,
-      [101    :100]      :/ 3,
-      [1001   :1000]     :/ 1
+      [11     :100]      :/ 3,
+      [101    :1000]     :/ 1
     };
   }
 
@@ -138,12 +138,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg,
                                             realtime pause,
+                                            ref bit stop_early,
                                             output bit completed);
-
     int hi_thresh, lo_thresh;
     mubi4_t threshold_scope = newcfg.ht_threshold_scope;
     mubi4_t rng_bit_enable = newcfg.rng_bit_enable;
-    int fips_window_size, bypass_window_size;
+    int fips_window_size, bypass_window_size, window_size;
 
     completed = 0;
 
@@ -153,64 +153,54 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     bypass_window_size = newcfg.bypass_window_size;
     fips_window_size   = newcfg.fips_window_size *
                              (rng_bit_enable == MuBi4True ? 1 : `RNG_BUS_WIDTH);
+    window_size = newcfg.fips_enable == MuBi4True ? fips_window_size : bypass_window_size;
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
       `uvm_info(`gfn, "Setting ADAPTP thresholds", UVM_DEBUG)
-      m_rng_push_seq.threshold_rec(fips_window_size, adaptp_ht,
+      m_rng_push_seq.threshold_rec(window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
                                    rng_bit_enable == MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
-      ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(bypass_window_size, adaptp_ht,
-                                   threshold_scope != MuBi4True,
-                                   rng_bit_enable == MuBi4True,
-                                   newcfg.adaptp_sigma, lo_thresh, hi_thresh);
-      ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-      ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
-      csr_update(.csr(ral.adaptp_hi_thresholds));
-      csr_update(.csr(ral.adaptp_lo_thresholds));
+      ral.adaptp_hi_threshold.set(hi_thresh[15:0]);
+      ral.adaptp_lo_threshold.set(lo_thresh[15:0]);
+      csr_update(.csr(ral.adaptp_hi_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      csr_update(.csr(ral.adaptp_lo_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
       // Bucket thresholds
       // Disable the bucket health test if rng_bit_enable is not set to MuBi4False.
       if (rng_bit_enable != MuBi4False) begin
-        ral.bucket_thresholds.fips_thresh.set(16'hffff);
-        ral.bucket_thresholds.bypass_thresh.set(16'hffff);
+        ral.bucket_threshold.set(16'hffff);
       end else begin
         `uvm_info(`gfn, "Setting BUCKET thresholds", UVM_DEBUG)
-        m_rng_push_seq.threshold_rec(fips_window_size, bucket_ht, 0, 0,
+        m_rng_push_seq.threshold_rec(window_size, bucket_ht, 0, 0,
                                     newcfg.bucket_sigma, lo_thresh, hi_thresh);
-        ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
-        m_rng_push_seq.threshold_rec(bypass_window_size, bucket_ht, 0, 0,
-                                    newcfg.bucket_sigma, lo_thresh, hi_thresh);
-        ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
+        ral.bucket_threshold.set(hi_thresh[15:0]);
       end
-      csr_update(.csr(ral.bucket_thresholds));
+      csr_update(.csr(ral.bucket_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
 
       // Markov Thresholds
       `uvm_info(`gfn, "Setting MARKOV thresholds", UVM_DEBUG)
-      m_rng_push_seq.threshold_rec(fips_window_size, markov_ht,
+      m_rng_push_seq.threshold_rec(window_size, markov_ht,
                                    threshold_scope != MuBi4True,
                                    rng_bit_enable == MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
-      ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
-      ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(bypass_window_size, markov_ht,
-                                   threshold_scope != MuBi4True,
-                                   rng_bit_enable == MuBi4True,
-                                   newcfg.markov_sigma, lo_thresh, hi_thresh);
-      ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
-      ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
-      csr_update(.csr(ral.markov_hi_thresholds));
-      csr_update(.csr(ral.markov_lo_thresholds));
+      ral.markov_hi_threshold.set(hi_thresh[15:0]);
+      ral.markov_lo_threshold.set(lo_thresh[15:0]);
+      csr_update(.csr(ral.markov_hi_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
+      csr_update(.csr(ral.markov_lo_threshold));
+      if (stop_early || cfg.m_rng_agent_cfg.in_reset) return;
     end
 
     // configure the rest of the variables afterwards so that sw_regupd & module_enable
     // get written last
     // Note there is no need to disable the dut again for the remaining registers
     // it has already been done above.
-    super.try_apply_base_configuration(.newcfg(newcfg), .pause(pause), .completed(completed));
+    super.try_apply_base_configuration(newcfg, pause, stop_early, completed);
   endtask
 
   task pre_start();
@@ -408,8 +398,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_csrng_pull_seq.stop(.hard(0));
     `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
     m_rng_push_seq.stop(.hard(0));
-    `uvm_info(`gfn, "Waiting for CS AES Halt interface to become idle", UVM_MEDIUM)
-    `DV_SPINWAIT(wait(cfg.m_aes_halt_agent_cfg.vif.req == 1'b0);)
     `uvm_info(`gfn, "SEQs SHUTDOWN applying CSRNG reset", UVM_MEDIUM)
     apply_reset(.kind("CSRNG_ONLY"));
     `uvm_info(`gfn, "Waiting for SEQs finished", UVM_MEDIUM)
@@ -446,9 +434,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   task check_reconfig();
     string lockable_conf_regs [] = '{
-        "conf", "entropy_control", "health_test_windows", "repcnt_thresholds", "repcnts_thresholds",
-        "adaptp_hi_thresholds", "adaptp_lo_thresholds", "bucket_thresholds", "markov_hi_thresholds",
-        "markov_lo_thresholds", "fw_ov_control", "observe_fifo_thresh", "alert_threshold"
+        "conf", "entropy_control", "health_test_windows", "repcnt_threshold", "repcnts_threshold",
+        "adaptp_hi_threshold", "adaptp_lo_threshold", "bucket_threshold", "markov_hi_threshold",
+        "markov_lo_threshold", "fw_ov_control", "observe_fifo_thresh", "alert_threshold"
     };
     foreach (lockable_conf_regs[i]) begin
       bit [TL_DW - 1:0] val;
@@ -560,13 +548,33 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // 2. Stops background processes
   task main_timer_thread();
     realtime delta = cfg.sim_duration - $realtime();
-    `uvm_info(`gfn, "Starting main timer", UVM_LOW)
+    `uvm_info("timer",
+              $sformatf("Starting main timer. Randomised sim duration is %0dms",
+                        cfg.sim_duration_ms), UVM_LOW)
 
-    // Assumes that continue_sim has already
-    // been set to 1
+    // If delta is positive then we have more expected time to wait. We assume that continue_sim has
+    // already been initialised to 1: a separate thread that wants to end the simulation can set it
+    // to 0.
+    //
+    // Since this might be quite a long wait, send roughly 20 progress messages, giving the amount
+    // of time left to wait.
     if (delta > 0) begin
-      `DV_SPINWAIT_EXIT(#(delta);, wait(~continue_sim))
+      fork : isolation_fork begin
+        fork
+          #(delta);
+          wait(~continue_sim);
+          forever begin
+            `uvm_info("timer",
+                      $sformatf("Waiting in main_timer_thread. %0.1f %% of total.",
+                                (100 * $realtime) / cfg.sim_duration),
+                      UVM_LOW)
+            #(delta / 20);
+          end
+        join_any
+        disable fork;
+      end join
     end
+
     do_background_procs = 0;
     continue_sim = 0;
     `uvm_info(`gfn, "Exiting main timer", UVM_LOW)

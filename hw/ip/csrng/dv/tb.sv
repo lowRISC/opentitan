@@ -36,7 +36,6 @@ module tb;
   csrng_agents_if csrng_agents_if();
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       entropy_src_if(.clk(clk), .rst_n(entropy_src_disable === 1'b1 ? 1'b0 : rst_n));
-  push_pull_if#(.HostDataWidth(1))   aes_halt_if(.clk(clk), .rst_n(rst_n));
   csrng_path_if csrng_path_if (.csrng_cmd_i(csrng_cmd_i));
 
   bind dut csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
@@ -67,9 +66,6 @@ module tb;
                                   CSRNG_BUS_WIDTH-1:0], entropy_src_if.d_data[entropy_src_pkg::
                                   CSRNG_BUS_WIDTH]}),
 
-    .cs_aes_halt_i              (aes_halt_if.req),
-    .cs_aes_halt_o              (aes_halt_if.ack),
-
     .csrng_cmd_i                (csrng_cmd_req),
     .csrng_cmd_o                (csrng_cmd_rsp),
 
@@ -95,8 +91,6 @@ module tb;
   assign interrupts[EntropyReq] = intr_entropy_req;
   assign interrupts[HwInstExc]  = intr_hw_inst_exc;
   assign interrupts[FifoErr]    = intr_cs_fatal_err;
-  // No data
-  assign aes_halt_if.d_data = '0;
 
   initial begin
     // Drive clk and rst_n from clk_if
@@ -110,8 +104,6 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
       set(null, "*.env.m_entropy_src_agent*", "vif", entropy_src_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(1)))::set
-        (null, "*.env.m_aes_halt_agent*", "vif", aes_halt_if);
     uvm_config_db#(virtual csrng_cov_if)::set(null, "*.env", "csrng_cov_if", dut.u_csrng_cov_if);
     uvm_config_db#(virtual csrng_assert_if)::set(null, "*.env", "csrng_assert_vif",
                                                  dut.csrng_assert_if);
@@ -138,25 +130,6 @@ module tb;
     `DV_ASSERT_CTRL("CmdStageFifoAsserts", CmdStageFifoNotFullReady)
     `DV_ASSERT_CTRL("CmdStageFifoAsserts", CmdStageFifoFullNotReady)
   end
-
-  // Ensure that upon local escalation of the AES cipher core inside Block Encrypt, no intermediate
-  // v is released into the ctr_drbg_gen/update blocks.
-  `define BLOCK_ENCRYPT_PATH tb.dut.u_csrng_core.u_csrng_block_encrypt
-  `define CTR_DRBG_GEN tb.dut.u_csrng_core.u_csrng_ctr_drbg_gen
-  `define CTR_DRBG_GEN_FIFO `CTR_DRBG_GEN.u_prim_fifo_sync_bencack.gen_singleton_fifo
-  `ASSERT(CsrngSecCmAesCipherDataRegLocalEscGen,
-      $rose(`CTR_DRBG_GEN_FIFO.full_q) && `BLOCK_ENCRYPT_PATH.cipher_sm_err_o |=>
-      $past(`CTR_DRBG_GEN_FIFO.storage
-          [csrng_pkg::BencDataWidth-1 -: csrng_pkg::BlkLen]) !=
-      $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
-
-  `define CTR_DRBG_UPD tb.dut.u_csrng_core.u_csrng_ctr_drbg_upd
-  `define CTR_DRBG_UPD_FIFO `CTR_DRBG_UPD.u_prim_fifo_sync_bencack.gen_singleton_fifo
-  `ASSERT(CsrngSecCmAesCipherDataRegLocalEscUpd,
-      $rose(`CTR_DRBG_UPD_FIFO.full_q) && `BLOCK_ENCRYPT_PATH.cipher_sm_err_o |=>
-      $past(`CTR_DRBG_UPD_FIFO.storage
-          [csrng_pkg::BencDataWidth-1 -: csrng_pkg::BlkLen]) !=
-      $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
 
   // Assertion controls
   `DV_ASSERT_CTRL("EntropySrcIf_ReqHighUntilAck_A_CTRL", entropy_src_if.ReqHighUntilAck_A)

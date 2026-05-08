@@ -1,10 +1,12 @@
 # CSRNG HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/csrng/data/csrng.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`csrng`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/code.svg) |
 
-[`csrng`](https://reports.opentitan.org/hw/ip/csrng/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/csrng/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/csrng/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/csrng/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

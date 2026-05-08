@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/flash_ctrl.h"
+
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -11,6 +13,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -26,6 +29,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 #define FLASH_PAGES_PER_BANK flash_info.data_pages
 
 static dif_flash_ctrl_state_t flash;
+static const dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
 
 static uint32_t flash_region_index;
 static uint32_t flash_page_to_test;
@@ -171,8 +175,7 @@ static void test_basic_io(void) {
 
 static void test_memory_protection(void) {
   dif_flash_ctrl_state_t flash;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash, kFlashCtrlDt));
 
   // Set up default access for data partitions.
   // If current platform uses scramble, you can't turn it off once you write
@@ -245,9 +248,16 @@ static void test_memory_protection(void) {
   }
 
   // Perform a partial write.
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(dt_flash_ctrl_alert_to_alert_id(
+          kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
   CHECK(status_err(flash_ctrl_testutils_write(
       &flash, region_boundary_start, /*partition_id=*/0, words,
       kDifFlashCtrlPartitionTypeData, ARRAYSIZE(words))));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(dt_flash_ctrl_alert_to_alert_id(
+          kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
+
   // Words in the good region should still match, while words in the bad region
   // should be all-ones, since we erased.
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
@@ -260,9 +270,15 @@ static void test_memory_protection(void) {
   }
 
   // Attempt to erase bad page, which should fail.
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(dt_flash_ctrl_alert_to_alert_id(
+          kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
   CHECK(status_err(flash_ctrl_testutils_erase_page(
       &flash, bad_region_start,
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeData)));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(dt_flash_ctrl_alert_to_alert_id(
+          kFlashCtrlDt, kDtFlashCtrlAlertRecovErr)));
 
   // Attempt to erase the good page, which should succeed.
   CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
@@ -288,8 +304,7 @@ bool test_main(void) {
     flash_page_to_test = FLASH_PAGES_PER_BANK;
   }
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash, kFlashCtrlDt));
   CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash));
 
   LOG_INFO("flash test!");

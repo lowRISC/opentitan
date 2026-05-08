@@ -288,13 +288,10 @@ static void ecc384_ecdsa(const uint8_t *ecc384_secret_k_bytes,
  */
 static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
-  bool sensor_ctrl_enable = false;
-  bool sensor_ctrl_en_fatal[SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS] = {false};
   pentest_init(kPentestTriggerSourceOtbn,
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
                    kPentestPeripheralOtbn | kPentestPeripheralCsrng |
-                   kPentestPeripheralEdn | kPentestPeripheralHmac,
-               sensor_ctrl_enable, sensor_ctrl_en_fatal);
+                   kPentestPeripheralEdn | kPentestPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
   LOG_INFO("Initializing simple serial interface to capture board.");

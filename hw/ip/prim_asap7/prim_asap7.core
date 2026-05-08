@@ -11,6 +11,7 @@ description: "OpenSource ASAP7 prim standard cell library: prim_asap7:* modules 
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim_asap7:prim_pkg
       - lowrisc:prim_asap7:and2
       - lowrisc:prim_asap7:buf
       - lowrisc:prim_asap7:clock_buf
@@ -19,7 +20,10 @@ filesets:
       - lowrisc:prim_asap7:clock_inv
       - lowrisc:prim_asap7:clock_mux2
       - lowrisc:prim_asap7:flop
+      - lowrisc:prim_asap7:const
+      - lowrisc:prim_asap7:const_sec
       - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:rst_sync
       - lowrisc:prim_asap7:flop_en
       - lowrisc:prim_generic:pad_attr
       - lowrisc:prim_generic:pad_wrapper
@@ -31,11 +35,13 @@ filesets:
       - lowrisc:prim_asap7:xnor2
       - lowrisc:prim_asap7:xor2
       - lowrisc:prim_asap7:flop_no_rst
+      - lowrisc:prim_asap7:inv
 # Note that flash is a macro that depends on IPs, so they are not
 # included here. They must be brought in explicitly.
 #      - lowrisc:prim_generic:flash
 
 mapping:
+  "lowrisc:prim:prim_pkg"     : "lowrisc:prim_asap7:prim_pkg"
   "lowrisc:prim:and2"         : "lowrisc:prim_asap7:and2"
   "lowrisc:prim:buf"          : "lowrisc:prim_asap7:buf"
   "lowrisc:prim:clock_buf"    : "lowrisc:prim_asap7:clock_buf"
@@ -43,8 +49,11 @@ mapping:
   "lowrisc:prim:clock_gating" : "lowrisc:prim_asap7:clock_gating"
   "lowrisc:prim:clock_inv"    : "lowrisc:prim_asap7:clock_inv"
   "lowrisc:prim:clock_mux2"   : "lowrisc:prim_asap7:clock_mux2"
+  "lowrisc:prim:const"        : "lowrisc:prim_asap7:const"
+  "lowrisc:prim:const_sec"    : "lowrisc:prim_asap7:const_sec"
   "lowrisc:prim:flop"         : "lowrisc:prim_asap7:flop"
   "lowrisc:prim:flop_2sync"   : "lowrisc:prim_generic:flop_2sync"
+  "lowrisc:prim:rst_sync"     : "lowrisc:prim_generic:rst_sync"
   "lowrisc:prim:flop_en"      : "lowrisc:prim_asap7:flop_en"
   "lowrisc:prim:pad_attr"     : "lowrisc:prim_generic:pad_attr"
   "lowrisc:prim:pad_wrapper"  : "lowrisc:prim_generic:pad_wrapper"
@@ -56,6 +65,7 @@ mapping:
   "lowrisc:prim:xnor2"        : "lowrisc:prim_asap7:xnor2"
   "lowrisc:prim:xor2"         : "lowrisc:prim_asap7:xor2"
   "lowrisc:prim:flop_no_rst"  : "lowrisc:prim_asap7:flop_no_rst"
+  "lowrisc:prim:inv"          : "lowrisc:prim_asap7:inv"
   # Flash is a good canditate to be removed from the prims and become a macro like OTP.
   # TODO(#27042): When this is done, it should be removed from this mapping.
   "lowrisc:prim:flash": "lowrisc:prim_generic:flash"

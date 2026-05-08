@@ -19,11 +19,25 @@
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_${module_instance_name}",
   dv_doc:             "../doc/dv",
-  version:            "2.1.0",
-  life_stage:         "L1",
-  design_stage:       "D2S",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+      {
+          version:            "2.1.0",
+          life_stage:         "L1",
+          design_stage:       "D2S",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+          commit_id:          "fddea1c8e8a97c6817cb091d80eb226d4f94934d",
+          notes:              ""
+      },
+      {
+          version:            "2.2.0",
+          life_stage:         "L1",
+          design_stage:       "D0",
+          verification_stage: "V0",
+          dif_stage:          "S0",
+          notes:              ""
+      },
+  ]
   notes:              "Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)."
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
              {clock: "clk_edn_i", reset: "rst_edn_ni"}
@@ -363,6 +377,14 @@
       type:    "ibex_pkg::rv32b_e"
       default: "ibex_pkg::RV32BNone"
       desc:    "RV32B"
+      local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "RV32ZC"
+      type:    "ibex_pkg::rv32zc_e"
+      default: "ibex_pkg::RV32ZcaZcbZcmp"
+      desc:    "RV32ZC"
       local:   "false"
       expose:  "true"
     },
@@ -764,6 +786,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "0",
               name: "EN",
@@ -802,6 +825,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",
@@ -830,6 +854,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",
@@ -886,6 +911,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "0",
               name: "EN",
@@ -910,6 +936,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",
@@ -934,6 +961,7 @@
           compact: false,
           swaccess: "rw",
           hwaccess: "hro",
+          hwqe:     "true",
           fields: [
             { bits: "31:0",
               name: "VAL",

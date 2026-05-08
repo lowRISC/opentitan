@@ -57,7 +57,7 @@ module otbn_start_stop_control
   output logic       sec_wipe_base_urnd_o,
   output logic [4:0] sec_wipe_addr_o,
 
-  output logic sec_wipe_acc_urnd_o,
+  output logic sec_wipe_mac_urnd_o,
   output logic sec_wipe_mod_urnd_o,
   output logic sec_wipe_zero_o,
 
@@ -161,7 +161,7 @@ module otbn_start_stop_control
     sec_wipe_wdr_urnd_o       = 1'b0;
     sec_wipe_base_o           = 1'b0;
     sec_wipe_base_urnd_o      = 1'b0;
-    sec_wipe_acc_urnd_o       = 1'b0;
+    sec_wipe_mac_urnd_o       = 1'b0;
     sec_wipe_mod_urnd_o       = 1'b0;
     sec_wipe_zero_o           = 1'b0;
     addr_cnt_inc              = 1'b0;
@@ -295,10 +295,11 @@ module otbn_start_stop_control
         allow_secure_wipe     = 1'b1;
         expect_secure_wipe    = 1'b1;
         secure_wipe_running_d = 1'b1;
-        // The first two clock cycles are used to write random data to accumulator and modulus.
-        sec_wipe_acc_urnd_o   = (addr_cnt_q == 6'b000000);
+        // The first two clock cycles are used to clear the internal MAC state (including the
+        // accumulator) and the modulus by overwriting it with random data.
+        sec_wipe_mac_urnd_o   = (addr_cnt_q == 6'b000000);
         sec_wipe_mod_urnd_o   = (addr_cnt_q == 6'b000001);
-        // Supress writes to the zero register and the call stack.
+        // Suppress writes to the zero register and the call stack.
         sec_wipe_base_o       = (addr_cnt_q > 6'b000001);
         sec_wipe_base_urnd_o  = (addr_cnt_q > 6'b000001);
         if (addr_cnt_q == 6'b011111) begin
@@ -423,7 +424,7 @@ module otbn_start_stop_control
   // Clip the secure wipe address to [0..31].  This is safe because the wipe enable signals are
   // never set when the counter exceeds 5 bit, which we assert below.
   assign sec_wipe_addr_o = addr_cnt_q[4:0];
-  `ASSERT(NoSecWipeAbove32Bit_A, addr_cnt_q[5] |-> (!sec_wipe_wdr_o && !sec_wipe_acc_urnd_o))
+  `ASSERT(NoSecWipeAbove32Bit_A, addr_cnt_q[5] |-> (!sec_wipe_wdr_o && !sec_wipe_mac_urnd_o))
 
   // SEC_CM: START_STOP_CTRL.STATE.CONSISTENCY
   // A check for spurious or dropped secure wipe requests.

@@ -405,7 +405,7 @@ bitflags! {
         const TRANSITION_COUNT_ERROR = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TRANSITION_COUNT_ERROR_BIT;
         const TRANSITION_ERROR       = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TRANSITION_ERROR_BIT;
         const TOKEN_ERROR            = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_TOKEN_ERROR_BIT;
-        const FLASH_RMA_ERROR        = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_FLASH_RMA_ERROR_BIT;
+        const NVM_RMA_ERROR          = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_NVM_RMA_ERROR_BIT;
         const OTP_ERROR              = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_OTP_ERROR_BIT;
         const STATE_ERROR            = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_STATE_ERROR_BIT;
         const BUS_INTEG_ERROR        = 0b1 << ot_bindgen_dif::LC_CTRL_STATUS_BUS_INTEG_ERROR_BIT;
@@ -415,7 +415,7 @@ bitflags! {
             Self::TRANSITION_COUNT_ERROR.bits() |
             Self::TRANSITION_ERROR.bits() |
             Self::TOKEN_ERROR.bits() |
-            Self::FLASH_RMA_ERROR.bits() |
+            Self::NVM_RMA_ERROR.bits() |
             Self::OTP_ERROR.bits() |
             Self::STATE_ERROR.bits() |
             Self::BUS_INTEG_ERROR.bits() |

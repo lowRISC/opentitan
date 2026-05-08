@@ -133,6 +133,8 @@ waive -rules RESET_USE            -location {ibex_lockstep.sv} -regexp {'enable_
 waive -rules {CLOCK_USE RESET_USE} -location {ibex_register_file_ff.sv} ${"\\"}
       -regexp {'(clk_i|rst_ni)' is connected to '(prim_onehot_mux)' port} ${"\\"}
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
+waive -rules CONST_FF             -location {ibex_lockstep.sv} -regexp {Flip-flop 'enable_cmp_d' is driven by constant 4'b0101} ${"\\"}
+      -comment "The only purpose of the flop is to enable the lockstep comparison after reset"
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #

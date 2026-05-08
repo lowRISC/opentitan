@@ -47,6 +47,18 @@ otbn_library(
     ],
 )
 
+otbn_binary(
+    name = "run_curve25519",
+    srcs = [
+        "run_curve25519.s",
+    ],
+    deps = [
+        ":ed25519",
+        ":ed25519_scalar",
+        ":field25519",
+    ],
+)
+
 otbn_library(
     name = "gcd",
     srcs = [
@@ -104,6 +116,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p256_isoncurve_check",
+    srcs = [
+        "p256_isoncurve_check.s",
+    ],
+)
+
+otbn_library(
     name = "p256_isoncurve_proj",
     srcs = [
         "p256_isoncurve_proj.s",
@@ -132,6 +151,7 @@ otbn_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":p256_isoncurve_check",
         ":p256_isoncurve_proj",
         ":p256_shared_key",
         ":p256_sign",
@@ -268,6 +288,7 @@ otbn_library(
 otbn_binary(
     name = "run_rsa",
     srcs = [
+        "div.s",
         "gcd.s",
         "modexp.s",
         "montmul.s",

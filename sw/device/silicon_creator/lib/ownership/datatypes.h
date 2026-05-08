@@ -9,8 +9,8 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/nonce.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
-#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
 
 #ifdef __cplusplus
@@ -26,7 +26,7 @@ typedef struct hybrid_key {
  * An owner_key can be either a ECDSA P256 or SPX+ key.  The type of the key
  * material will be determined by a separate field on the owner block
  */
-typedef union owner_key {
+typedef union owner_key_data {
   /** ECDSA P256 public key */
   ecdsa_p256_public_key_t ecdsa;
   /** SPHINCS+ public key */
@@ -35,7 +35,9 @@ typedef union owner_key {
   hybrid_key_t hybrid;
   /** Enough space to hold an ECDSA key and a SPX+ key for hybrid schemes */
   uint32_t raw[16 + 8];
-} owner_key_t;
+  /** A key ID is the first 32-bit word of the key data */
+  uint32_t id;
+} owner_keydata_t;
 
 /**
  * An owner_signature is an ECDSA P256 signature.
@@ -60,8 +62,6 @@ typedef enum ownership_state {
 } ownership_state_t;
 
 typedef enum ownership_key_alg {
-  /** Key algorithm RSA: `RSA3` */
-  kOwnershipKeyAlgRsa = 0x33415352,
   /** Key algorithm ECDSA P-256: `P256` */
   kOwnershipKeyAlgEcdsaP256 = 0x36353250,
   /** Key algorithm SPX+ Pure: `S+Pu` */
@@ -85,6 +85,8 @@ typedef enum ownership_key_alg {
 
   /** Key algorithm category mask */
   kOwnershipKeyAlgCategoryMask = 0xFF,
+  /** Key algorithm category for ECDSA: `P...` */
+  kOwnershipKeyAlgCategoryEcdsa = 0x50,
   /** Key algorithm category for Sphincs+: `S...` */
   kOwnershipKeyAlgCategorySpx = 0x53,
   /** Key algorithm category for Hybrid: `H...` */
@@ -126,6 +128,10 @@ typedef enum tlv_tag {
   kTlvTagInfoConfig = 0x4f464e49,
   /** Rescue Configuration: `RESQ`. */
   kTlvTagRescueConfig = 0x51534552,
+  /** Integration Specific Firmware Binding: `ISFB`. */
+  kTlvTagIntegrationSpecificFirmwareBinding = 0x42465349,
+  /** Detached Signature: `SIGN`. */
+  kTlvTagDetachedSignature = 0x4e474953,
   /** Not Present: `ZZZZ`. */
   kTlvTagNotPresent = 0x5a5a5a5a,
 } tlv_tag_t;
@@ -175,14 +181,16 @@ typedef struct owner_block {
   uint32_t lock_constraint;
   /** The device ID to which this config applies */
   uint32_t device_id[8];
+  /** Perform ROM_EXT boot services after wakeup (hardened_bool_t). */
+  uint32_t boot_svc_after_wakeup;
   /** Reserved space for future use. */
-  uint32_t reserved[16];
+  uint32_t reserved[15];
   /** Owner public key. */
-  owner_key_t owner_key;
+  owner_keydata_t owner_key;
   /** Owner's Activate public key. */
-  owner_key_t activate_key;
+  owner_keydata_t activate_key;
   /** Owner's Unlock public key. */
-  owner_key_t unlock_key;
+  owner_keydata_t unlock_key;
   /** Data region to hold the other configuration structs. */
   uint8_t data[1536];
   /** Signature over the owner block with the Owner private key. */
@@ -199,7 +207,8 @@ OT_ASSERT_MEMBER_OFFSET(owner_block_t, update_mode, 20);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, min_security_version_bl0, 24);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, lock_constraint, 28);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, device_id, 32);
-OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 64);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, boot_svc_after_wakeup, 64);
+OT_ASSERT_MEMBER_OFFSET(owner_block_t, reserved, 68);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, owner_key, 128);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, activate_key, 224);
 OT_ASSERT_MEMBER_OFFSET(owner_block_t, unlock_key, 320);
@@ -249,13 +258,7 @@ typedef struct owner_application_key {
   /** Usage constraint must match manifest header's constraint */
   uint32_t usage_constraint;
   /** Key material.  Varies by algorithm type. */
-  union {
-    uint32_t id;
-    sigverify_rsa_key_t rsa;
-    sigverify_spx_key_t spx;
-    ecdsa_p256_public_key_t ecdsa;
-    hybrid_key_t hybrid;
-  } data;
+  owner_keydata_t data;
 } owner_application_key_t;
 
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, header, 0);
@@ -264,11 +267,9 @@ OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, key_domain, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, key_diversifier, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, usage_constraint, 44);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, data, 48);
-OT_ASSERT_SIZE(owner_application_key_t, 464);
+OT_ASSERT_SIZE(owner_application_key_t, 144);
 
 enum {
-  kTlvLenApplicationKeyRsa =
-      offsetof(owner_application_key_t, data) + sizeof(sigverify_rsa_key_t),
   kTlvLenApplicationKeySpx =
       offsetof(owner_application_key_t, data) + sizeof(sigverify_spx_key_t),
   kTlvLenApplicationKeyEcdsa =
@@ -294,6 +295,11 @@ enum {
 #define FLASH_CONFIG_ECC                  ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
 #define FLASH_CONFIG_HIGH_ENDURANCE       ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
 // clang-format on
+
+/**
+ * The maximum number of owner_flash_region_t allower per slot.
+ */
+#define FLASH_CONFIG_REGIONS_PER_SLOT 3
 
 /**
  * The owner flash region describes a region of flash and its configuration
@@ -378,8 +384,46 @@ typedef struct owner_rescue_config {
    * length: 16 + sizeof(command_allow).
    */
   tlv_header_t header;
-  /** The rescue type.  Currently, only `XMDM` is supported. */
-  uint32_t rescue_type;
+  /**
+   * The rescue protocol:
+   * - 'X'modem.
+   * - 'U'SB-DFU.
+   * - 'S'PI-DFU.
+   */
+  uint8_t protocol;
+  /**
+   * The misc & gpio configuration (if relevant, depending on `detect`).
+   *
+   *      7 6       2        1       0
+   * +-----+---------+--------+-------+
+   * | WDT | Reserved| PullEn | Value |
+   * +-----+---------+--------+-------+
+   */
+  uint8_t gpio;
+  /**
+   * The timeout configuration (not implemented yet).
+   *
+   *     7  6                        0
+   * +-----+--------------------------+
+   * | EoF |                  Timeout |
+   * +-----+--------------------------+
+   */
+  uint8_t timeout;
+  /**
+   * Trigger detection configuration.
+   *
+   *  7     6  5                    0
+   * +--------+-----------------------+
+   * | Detect |                 Index |
+   * +--------+-----------------------+
+   *
+   * Detect:
+   *  0 - None; index is meaningless.
+   *  1 - UART Break; index is meaningless.
+   *  2 - Strapping pins; index is the strapping value.
+   *  3 - GPIO; index is the pin to sample.
+   */
+  uint8_t detect;
   /** The start offset of the rescue region in flash (in pages). */
   uint16_t start;
   /** The size of the rescue region in flash (in pages). */
@@ -391,11 +435,142 @@ typedef struct owner_rescue_config {
   uint32_t command_allow[];
 } owner_rescue_config_t;
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, header, 0);
-OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, rescue_type, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, protocol, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, gpio, 9);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, timeout, 10);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, detect, 11);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, start, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, size, 14);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, command_allow, 16);
 OT_ASSERT_SIZE(owner_rescue_config_t, 16);
+
+#define RESCUE_ENTER_ON_FAIL_BIT 7
+#define RESCUE_TIMEOUT_SECONDS ((bitfield_field32_t){.mask = 0x7F, .index = 0})
+#define RESCUE_MISC_GPIO_WATCHDOG_TIMEOUT_EN_BIT 7
+#define RESCUE_MISC_GPIO_PULL_EN_BIT 1
+#define RESCUE_MISC_GPIO_VALUE_BIT 0
+#define RESCUE_DETECT ((bitfield_field32_t){.mask = 0x03, .index = 6})
+#define RESCUE_DETECT_INDEX ((bitfield_field32_t){.mask = 0x3F, .index = 0})
+
+typedef enum rescue_protocol {
+  kRescueProtocolXmodem = 'X',
+  kRescueProtocolUsbDfu = 'U',
+  kRescueProtocolSpiDfu = 'S',
+} rescue_protocol_t;
+
+typedef enum rescue_detect {
+  kRescueDetectNone = 0,
+  kRescueDetectBreak = 1,
+  kRescueDetectStrap = 2,
+  kRescueDetectGpio = 3,
+} rescue_detect_t;
+
+/**
+ * The owner Integration Specific Firmware Binding (ISFB) configuration
+ * describes the configuration parameters for the ISFB region.
+ *
+ * Integrators have their own constraints that require owner firmware to be
+ * locked to certain integrator-device phases. The `ROM_EXT` needs to perform
+ * these constraint checks instead of the owner firmware because the rescue
+ * protocol bypasses any owner firmware level enforcement.
+ *
+ * Integrators can also perform their own rollback and upgrade automated testing
+ * using the strike words in the ISFB region. The erase policy implemented by
+ * this configuration entry allows the integrator to authorize erase operations
+ * of the ISFB region to configure devices for testing purposes.
+ */
+typedef struct owner_isfb_config {
+  /**
+   * Header identifiying this struct.
+   * tag: `ISFB`.
+   * length: 44 words.
+   */
+  tlv_header_t header;
+  /** The flash bank where the ISFB region is located. */
+  uint8_t bank;
+  /** The info flash page where the ISFB region is located. */
+  uint8_t page;
+  /** Padding for alignment */
+  uint16_t _pad;
+
+  /**
+   * The erase conditions for the ISFB region.
+   *
+   * This is a packed array of MUBI4 bools indicating which conditions authorize
+   * an erase. The conditions are aligned in little endian order: [B7, B6, B5,
+   * B4, B3, B2, B1, B0]
+   *
+   * The conditions are:
+   * - B0: Firmware must be signed with key specified by `key_domain` field.
+   * - B1: Firmware must be node locked (e.g. manifest usage constraints must be
+   * enabled).
+   * - B2: `manifest_ext_isfb_erase_t` must be present and set to harden true in
+   * the firmware manifest.
+   * - B3-B7: Reserved.
+   */
+  uint32_t erase_conditions;
+  /** If `B0`, part of erase authorization criteria. */
+  uint32_t key_domain;
+  /** Reserved space for future use. */
+  uint32_t reserved[5];
+  /** Number of `uint32_t` reserved for product expressions. It has to be a
+   * value less than or equal to 256. */
+  uint32_t product_words;
+} owner_isfb_config_t;
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, header, 0);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, bank, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, page, 9);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, _pad, 10);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, erase_conditions, 12);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, key_domain, 16);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, reserved, 20);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, product_words, 40);
+OT_ASSERT_SIZE(owner_isfb_config_t, 44);
+
+/**
+ * A detached signature can be used to validate either a signed command or an
+ * owner block.
+ *
+ * Detached signatures are used when the signature is too larger to fit within
+ * the designated signature area of the original buffer. In such cases, the
+ * orginal buffer's signature field will be all zeros and the verification
+ * function will scan through the flash data pages to find the detached
+ * signature.
+ *
+ * The detached signature must be aligned on a flash page boundary.
+ */
+typedef struct owner_detached_signature {
+  /**
+   * Header identifying this struct.
+   * tag: `SIGN`.
+   * length: 8192.
+   */
+  tlv_header_t header;
+  uint32_t _pad[2];
+  /** The command associated with this signature (e.g. UNLK, ACTV, OWNR). */
+  uint32_t command;
+  /** The algorithm used to generate this signature (ownership_key_alg_t). */
+  uint32_t algorithm;
+  /** The current nonce associated with the command. */
+  nonce_t nonce;
+  /** The signature data. */
+  union {
+    uint32_t raw[2040];
+    ecdsa_p256_signature_t ecdsa;
+    sigverify_spx_signature_t spx;
+    struct {
+      ecdsa_p256_signature_t ecdsa;
+      sigverify_spx_signature_t spx;
+    } hybrid;
+  } signature;
+} owner_detached_signature_t;
+
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, header, 0);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, command, 16);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, algorithm, 20);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, nonce, 24);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, signature, 32);
+OT_ASSERT_SIZE(owner_detached_signature_t, 8192);
 
 #ifdef __cplusplus
 }  // extern "C"

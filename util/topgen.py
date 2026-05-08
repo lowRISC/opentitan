@@ -29,7 +29,7 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 from raclgen.lib import DEFAULT_RACL_CONFIG
-from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window
+from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window, vendor_specific
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 from topgen import get_hjsonobj_xbars
@@ -659,11 +659,11 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
 def _get_otp_ctrl_params(top: ConfigT,
                          out_path: Path) -> ParamsT:
 
-    def has_flash_keys(parts, path) -> bool:
-        """Determines if the SECRET1 partition has flash key seeds.
+    def has_nvm_keys(parts, path) -> bool:
+        """Determines if the SECRET1 partition has nvm key seeds.
 
-        This assumes the flash keys are in the secret1 partition, and are
-        named "flash*key_seed" (case doesn't matter). If in some future
+        This assumes the nvm keys are in the secret1 partition, and are
+        named "nvm*key_seed" (case doesn't matter). If in some future
         otp mmap the location of these keys changes we can revisit this
         detection.
         """
@@ -673,10 +673,10 @@ def _get_otp_ctrl_params(top: ConfigT,
                 break
         else:
             raise ValueError(f"SECRET1 partition not found in {path}")
-        flash_keys = [i for i in secret1_partition["items"]
-                      if i["name"].lower().startswith("flash")
-                      and i["name"].lower().endswith("key_seed")]
-        return len(flash_keys) > 0
+        nvm_keys = [i for i in secret1_partition["items"]
+                    if i["name"].lower().startswith("nvm")
+                    and i["name"].lower().endswith("key_seed")]
+        return len(nvm_keys) > 0
 
     def get_param(name: str, param_list: List[Dict[str, Any]]) -> Dict[str, Any]:
         for p in param_list:
@@ -687,7 +687,7 @@ def _get_otp_ctrl_params(top: ConfigT,
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
     otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, generate_fresh_keys=True).config
-    enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
+    enable_nvm_keys = has_nvm_keys(otp_mmap["partitions"], otp_mmap_path)
     otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
 
     # Add the full and non-sanitized OTP map for a later dump to the secrets file.
@@ -746,7 +746,7 @@ def _get_otp_ctrl_params(top: ConfigT,
     ipgen_params = get_ipgen_params(otp_ctrl)
     ipgen_params.update({
         "otp_mmap": otp_mmap,
-        "enable_flash_key": enable_flash_keys,
+        "enable_nvm_key": enable_nvm_keys,
     })
     return ipgen_params
 
@@ -856,10 +856,12 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
 
         inst_to_block[inst_name] = block_name
         for if_name in block.reg_blocks.keys():
-            if_addr = {
-                asid: int(addr, 0)
-                for (asid, addr) in module["base_addrs"][if_name].items()
-            }
+            base_addrs = module["base_addrs"].get(if_name)
+            if base_addrs is None:
+                continue
+
+            if_addr = {asid: int(addr, 0)
+                       for (asid, addr) in base_addrs.items()}
             if_addrs[(inst_name, if_name)] = if_addr
 
     # Top-level may override the mem setting. Store the new type to
@@ -1563,7 +1565,15 @@ def main():
                         action="store_true",
                         help="Only return the list of blocks and exit.")
 
+    parser.add_argument('--vendor-specific-fields',
+                        type=str,
+                        default=None,
+                        help='A hjson file describing vendor defined fields.')
+
     args = parser.parse_args()
+
+    if args.vendor_specific_fields:
+        vendor_specific.extend_optional_fields(args.vendor_specific_fields)
 
     # check combinations
     if args.top_ral:

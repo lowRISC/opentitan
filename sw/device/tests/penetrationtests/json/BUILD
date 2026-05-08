@@ -11,6 +11,7 @@ cc_library(
     deps = [
         ":aes_sca_commands",
         ":alert_fi_commands",
+        ":boot_fi_commands",
         ":crypto_fi_commands",
         ":cryptolib_fi_asym_commands",
         ":cryptolib_fi_sym_commands",
@@ -167,6 +168,13 @@ cc_library(
 )
 
 cc_library(
+    name = "boot_fi_commands",
+    srcs = ["boot_fi_commands.c"],
+    hdrs = ["boot_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "alert_fi_commands",
     srcs = ["alert_fi_commands.c"],
     hdrs = ["alert_fi_commands.h"],
@@ -177,7 +185,10 @@ cc_library(
     name = "pentest_lib_commands",
     srcs = ["pentest_lib_commands.c"],
     hdrs = ["pentest_lib_commands.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = [
+        "//hw/top:alert_handler_c_regs",
+        "//sw/device/lib/ujson",
+    ],
 )
 
 cc_library(
@@ -191,5 +202,12 @@ cc_library(
     name = "trigger_sca_commands",
     srcs = ["trigger_sca_commands.c"],
     hdrs = ["trigger_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "gdb_commands",
+    srcs = ["gdb_commands.c"],
+    hdrs = ["gdb_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )

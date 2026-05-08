@@ -61,7 +61,8 @@ module prim_sync_reqack #(
 
     // Types
     typedef enum logic {
-      LoSt, HiSt
+      LoSt = 1'b0,
+      HiSt = 1'b1
     } rz_fsm_e;
 
     // Signals
@@ -74,7 +75,6 @@ module prim_sync_reqack #(
     always_comb begin : src_fsm
       src_fsm_d = src_fsm_q;
       src_ack_o = 1'b0;
-      src_req = 1'b0;
 
       unique case (src_fsm_q)
         LoSt: begin
@@ -85,7 +85,6 @@ module prim_sync_reqack #(
           end
         end
         HiSt: begin
-          src_req = 1'b1;
           // Forward the acknowledgement.
           src_ack_o = src_ack;
           // If request drops out, we go back to LoSt.
@@ -121,11 +120,12 @@ module prim_sync_reqack #(
       end
     end
 
+    assign src_req = logic'(src_fsm_q);
+
     // ACK-side FSM (DST domain)
     always_comb begin : dst_fsm
       dst_fsm_d = dst_fsm_q;
       dst_req_o = 1'b0;
-      dst_ack = 1'b0;
 
       unique case (dst_fsm_q)
         LoSt: begin
@@ -140,7 +140,6 @@ module prim_sync_reqack #(
           end
         end
         HiSt: begin
-          dst_ack = 1'b1;
           // Wait for the request to drop back to zero.
           if (!dst_req) begin
             dst_fsm_d = LoSt;
@@ -172,6 +171,8 @@ module prim_sync_reqack #(
         dst_fsm_q <= dst_fsm_d;
       end
     end
+
+    assign dst_ack = logic'(dst_fsm_q);
 
   end else begin : gen_nrz_hs_protocol
     //////////////////

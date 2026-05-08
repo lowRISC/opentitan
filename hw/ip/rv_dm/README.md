@@ -1,10 +1,12 @@
 # RISC-V Debug System Wrapper Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/rv_dm/data/rv_dm.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rv_dm_use_jtag_interface`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.1 | D2S, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_dm_use_jtag_interface/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_dm_use_jtag_interface/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_dm_use_jtag_interface/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_dm_use_jtag_interface/code.svg) |
 
-[`rv_dm`](https://reports.opentitan.org/hw/ip/rv_dm/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_dm/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rv_dm/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

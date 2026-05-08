@@ -134,10 +134,8 @@ static void generate_random(size_t num_iterations, uint32_t values[]) {
 }
 
 status_t handle_ibex_pentest_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_cpuctrl_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
-  penetrationtest_sensor_config_t uj_sensor_data;
-  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   // Setup trigger and enable peripherals needed for the test.
   pentest_select_trigger_type(kPentestTriggerTypeSw);
@@ -145,21 +143,7 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
                kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
                    kPentestPeripheralOtbn | kPentestPeripheralCsrng |
                    kPentestPeripheralEdn | kPentestPeripheralHmac |
-                   kPentestPeripheralKmac | kPentestPeripheralAes,
-               uj_sensor_data.sensor_ctrl_enable,
-               uj_sensor_data.sensor_ctrl_en_fatal);
-
-  // Disable the instruction cache and dummy instructions for SCA.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
-      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
-      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
-      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
-      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
-      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
-      &uj_output.data_ind_timing_en));
+                   kPentestPeripheralKmac | kPentestPeripheralAes);
 
   // Key manager not initialized for the handle_ibex_sca_key_sideloading test.
   key_manager_init = false;
@@ -178,16 +162,6 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   // Load p256 keygen from seed app into OTBN.
   // This is not used, but just set so it receives input,
   TRY(otbn_load_app(kOtbnAppP256Ecdsa));
-
-  // Read rom digest.
-  TRY(pentest_read_rom_digest(uj_output.rom_digest));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
-
-  // Read different SKU config fields and return to host.
-  TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
 }
@@ -213,7 +187,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "xor x30, x5, x12\n"
                  "xor x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[0]));
   }
@@ -234,7 +210,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "add x30, x5, x12\n"
                  "add x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[1]));
   }
@@ -255,7 +233,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "sub x30, x5, x12\n"
                  "sub x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[2]));
   }
@@ -276,7 +256,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "rol x30, x5, x12\n"
                  "rol x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[3]));
   }
@@ -297,7 +279,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "mul x30, x5, x12\n"
                  "mul x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[4]));
   }
@@ -318,7 +302,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "div x30, x5, x12\n"
                  "div x31, x5, x12\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     asm volatile("sw x13, (%0)" ::"r"(&result[5]));
   }
@@ -339,7 +325,9 @@ static status_t trigger_ibex_sca_combi_operations(uint32_t value1,
                  "lw x30, (%0)\n"
                  "lw x31, (%0)\n" NOP30
                  :
-                 : "r"(&value1), "r"(&value2));
+                 : "r"(&value1), "r"(&value2)
+                 : "x6", "x7", "x13", "x14", "x15", "x16", "x28", "x29", "x30",
+                   "x31");
     PENTEST_ASM_TRIGGER_LOW
     result[6] = value1;
   }
@@ -530,9 +518,9 @@ status_t handle_ibex_sca_register_file_read(ujson_t *uj) {
   // Give the trigger time to rise.
   asm volatile(NOP30);
   // Copy registers.
-  asm volatile("mv x28, x5");
-  asm volatile("mv x29, x6");
-  asm volatile("mv x30, x7");
+  asm volatile("mv x28, x5" ::: "x28");
+  asm volatile("mv x29, x6" ::: "x29");
+  asm volatile("mv x30, x7" ::: "x30");
   pentest_set_trigger_low();
 
   // Acknowledge test.
@@ -561,9 +549,9 @@ status_t handle_ibex_sca_register_file_read_batch_fvsr(ujson_t *uj) {
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Copy registers.
-    asm volatile("mv x5, x28");
-    asm volatile("mv x6, x29");
-    asm volatile("mv x7, x30");
+    asm volatile("mv x5, x28" ::: "x5");
+    asm volatile("mv x6, x29" ::: "x6");
+    asm volatile("mv x7, x30" ::: "x7");
     pentest_set_trigger_low();
   }
 
@@ -593,9 +581,9 @@ status_t handle_ibex_sca_register_file_read_batch_random(ujson_t *uj) {
     // Give the trigger time to rise.
     asm volatile(NOP30);
     // Copy registers.
-    asm volatile("mv x5, x28");
-    asm volatile("mv x6, x29");
-    asm volatile("mv x7, x30");
+    asm volatile("mv x5, x28" ::: "x5");
+    asm volatile("mv x6, x29" ::: "x6");
+    asm volatile("mv x7, x30" ::: "x7");
     pentest_set_trigger_low();
   }
 

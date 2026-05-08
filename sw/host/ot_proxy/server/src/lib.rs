@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
 
 use anyhow::{Result, bail};
 use tokio::net::TcpListener;
@@ -15,13 +14,12 @@ use handler::TransportCommandHandler;
 use socket_server::{Connection, JsonSocketServer};
 
 mod handler;
-mod nonblocking_uart;
 mod socket_server;
 
 /// Interface for handlers of protocol messages, responding to each message with a single
 /// instance of the same protocol message.
 pub trait CommandHandler<Msg> {
-    fn execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, msg: &Msg) -> Result<Msg>;
+    fn execute_cmd(&mut self, conn: &mut Connection, msg: &Msg) -> Result<Msg>;
 }
 
 /// This is the main entry point for the session proxy.  This struct will either bind on a

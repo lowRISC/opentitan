@@ -7,41 +7,38 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
 
 otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t input_message,
-                                otcrypto_const_byte_buf_t customization_string,
+                                otcrypto_const_byte_buf_t *input_message,
+                                otcrypto_const_byte_buf_t *customization_string,
                                 size_t required_output_len,
-                                otcrypto_word32_buf_t tag) {
+                                otcrypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
-  if (key == NULL || key->keyblob == NULL || tag.data == NULL) {
+  if (key == NULL || key->keyblob == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(key->config.security_level));
-
   // Check for null input message with nonzero length.
-  if (input_message.data == NULL && input_message.len != 0) {
+  if (input_message->data == NULL && input_message->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null customization string with nonzero length.
-  if (customization_string.data == NULL && customization_string.len != 0) {
+  if (customization_string->data == NULL && customization_string->len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Ensure that tag buffer length and `required_output_len` match each other.
-  if (required_output_len != tag.len * sizeof(uint32_t) ||
+  if (required_output_len != tag->len * sizeof(uint32_t) ||
       required_output_len == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -94,17 +91,19 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key->config.key_mode)) {
     case kOtcryptoKeyModeKmac128:
-      HARDENED_TRY(kmac_kmac_128(
-          &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
-          input_message.len, customization_string.data,
-          customization_string.len, tag.data, tag.len));
+      HARDENED_TRY(kmac_kmac_128(&kmac_key,
+                                 /*masked_digest=*/kHardenedBoolFalse,
+                                 input_message, customization_string->data,
+                                 customization_string->len, tag->data,
+                                 tag->len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac128;
       break;
     case kOtcryptoKeyModeKmac256:
-      HARDENED_TRY(kmac_kmac_256(
-          &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
-          input_message.len, customization_string.data,
-          customization_string.len, tag.data, tag.len));
+      HARDENED_TRY(kmac_kmac_256(&kmac_key,
+                                 /*masked_digest=*/kHardenedBoolFalse,
+                                 input_message, customization_string->data,
+                                 customization_string->len, tag->data,
+                                 tag->len));
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeKmac256;
       break;
     default:
@@ -119,6 +118,10 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
   } else if (key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue,
+                    OTCRYPTO_CHECK_BUF(customization_string));
 
   return OTCRYPTO_OK;
 }

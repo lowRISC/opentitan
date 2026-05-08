@@ -34,7 +34,8 @@ extern "C" {
     value(_, RomFi) \
     value(_, Sha3Sca) \
     value(_, TriggerSca) \
-    value(_, AlertFi)
+    value(_, AlertFi) \
+    value(_, BootFi)
 UJSON_SERDE_ENUM(PenetrationtestCommand, penetrationtest_cmd_t, COMMAND);
 
 #define PENTEST_NUM_ENC(field, string) \

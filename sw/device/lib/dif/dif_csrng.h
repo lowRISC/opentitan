@@ -93,15 +93,6 @@ typedef enum dif_csrng_cmd_status_kind {
 typedef enum dif_csrng_fifo {
   kDifCsrngFifoCmd,
   kDifCsrngFifoGenBits,
-  kDifCsrngFifoRcStage,
-  kDifCsrngFifoKeyVrc,
-  kDifCsrngFifoBencAck,
-  kDifCsrngFifoFinal,
-  kDifCsrngFifoGBencAck,
-  kDifCsrngFifoGrcStage,
-  kDifCsrngFifoGGenReq,
-  kDifCsrngFifoGadStage,
-  kDifCsrngFifoCmdId,
 } dif_csrng_fifo_t;
 
 /**
@@ -117,25 +108,17 @@ typedef enum dif_csrng_error {
    */
   kDifCsrngErrorMainSm,
   /**
-   * Indicates an error in the DRBG's generator state machine.
+   * Indicates an error in the CTR_DRBG data path state machine.
    */
-  kDifCsrngErrorDrbgGenSm,
-  /**
-   * Indicates an error in the DRBG's block encoding state machine.
-   */
-  kDifCsrngErrorDrbgUpdateBlockEncSm,
-  /**
-   * Indicates an error in the DRBG's block output state machine.
-   */
-  kDifCsrngErrorDrbgUpdateOutBlockSm,
+  kDifCsrngErrorCtrDrbgSm,
   /**
    * Indicates an error in the AES state machine.
    */
   kDifCsrngErrorAesSm,
   /**
-   * Indicates an error in the generate command's counter.
+   * Indicates an error in one of the counters.
    */
-  kDifCsrngErrorGenerateCmdCounter,
+  kDifCsrngErrorCounters,
   /**
    * Indicates a write to a full FIFO occurred.
    */

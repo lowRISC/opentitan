@@ -4,7 +4,7 @@
 
 #include <stdbool.h>
 
-#include "hw/top/dt/dt_rv_core_ibex.h"  // Generated
+#include "hw/top/dt/rv_core_ibex.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"

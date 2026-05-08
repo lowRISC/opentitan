@@ -24,7 +24,7 @@ Note: this diagram is editable from [this address](https://docs.google.com/drawi
 
 ### Top level testbench
 Top level testbench is located at `hw/top_darjeeling/ip_autogen/ac_range_check/dv/tb/tb.sv`.
-It instantiates the `ac_range_check` DUT module `hw/ip/ac_range_check/rtl/ac_range_check.sv`.
+It instantiates the `ac_range_check` DUT module `hw/top_darjeeling/ip_autogen/ac_range_check/rtl/ac_range_check.sv`.
 In addition, the testbench instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [Reset shadowed interface](../../../../dv/sv/common_ifs/README.md)  // TODO add something in this doc about this interface.

@@ -821,7 +821,7 @@ class flash_ctrl_scoreboard #(
 
   // Overridden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
   // when using Code Access Restrictions (EXEC)
-  virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
+  protected function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit   ecc_err, in_err;
 
     // Skip this routine when fatal error event is asserted

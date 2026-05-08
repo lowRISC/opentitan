@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_PINMUX_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_PINMUX_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -29,6 +30,25 @@ void pinmux_init(void);
 void pinmux_init_uart0_tx(void);
 
 /**
+ * Sets the input pad for the specified peripheral input.
+ *
+ * @param periph A peripheral input (e.g. top_earlgrey_pinmux_peripheral_in_t
+ * periph).
+ * @param insel An MIO pad to link it to (e.g. top_earlgrey_pinmux_insel_t
+ * insel).
+ */
+void pinmux_configure_input(uint32_t periph, uint32_t insel);
+
+/**
+ * Enables or disables pull-up/pull-down for the specified pad.
+ *
+ * @param pad A MIO pad (e.g. top_earlgrey_muxed_pads_t).
+ * @param enable Whether the internal pull resistor should be enabled.
+ * @param up Whether the pull resistor should pull up(true) or down(false).
+ */
+void pinmux_enable_pull(uint32_t pad, bool enable, bool up);
+
+/**
  * Read the SW_STRAP value.
  *
  * The straping value is encoded with two bits per pin and encodes the
@@ -46,6 +66,21 @@ void pinmux_init_uart0_tx(void);
  * @return The strapping value 0-63.
  */
 uint32_t pinmux_read_straps(void);
+
+/**
+ * Initialize the USB sense pin.
+ *
+ * This connects the UsbdevSense input to InselConstantOne.
+ */
+void pinmux_init_usb(void);
+
+/**
+ * Read the value of a GPIO
+ *
+ * @param gpio The GPIO to read.
+ * @return The value read.
+ */
+bool pinmux_read_gpio(uint32_t gpio);
 
 #ifdef __cplusplus
 }

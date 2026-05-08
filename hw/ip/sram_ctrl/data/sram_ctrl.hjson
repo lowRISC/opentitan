@@ -184,7 +184,6 @@
       name:    "cfg"
       act:     "rcv"
       width:   "NumRamInst",
-      default: "'0"
       package: "prim_ram_1p_pkg"
     },
     { struct:  "ram_1p_cfg_rsp"

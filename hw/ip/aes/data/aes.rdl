@@ -1,0 +1,320 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+addrmap aes {
+    reg {
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Initial Key Registers Share 0.
+
+            The actual initial key corresponds to Initial Key Registers
+            Share 0 XORed with Initial Key Registers Share 1.  Loaded into
+            the internal Full Key register upon starting
+            encryption/decryption of the next block.  All key registers
+            (Share 0 and Share 1) must be written at least once when the
+            key is changed, regardless of key length (write random data
+            for unused bits).  The order in which the registers are
+            updated does not matter.  Can only be updated when the AES
+            unit is idle.  If the AES unit is non-idle, writes to these
+            registers are ignored.
+            Upon reset, these registers are cleared with pseudo-random data.";
+        } KEY_SHARE0[31:0];
+    } KEY_SHARE0[8] @ 0x04;
+    reg {
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Initial Key Registers Share 1.
+
+            The actual initial key corresponds to Initial Key Registers
+            Share 0 XORed with Initial Key Registers Share 1.  Loaded into
+            the internal Full Key register upon starting
+            encryption/decryption of the next block.  All key registers
+            (Share 0 and Share 1) must be written at least once when the
+            key is changed, regardless of key length (write random data
+            for unused bits).  The order in which the registers are
+            updated does not matter.  Can only be updated when the AES
+            unit is idle.  If the AES unit is non-idle, writes to these
+            registers are ignored.  Upon reset, these registers are
+            cleared with pseudo-random data.";
+        } KEY_SHARE1[31:0];
+    } KEY_SHARE1[8] @ 0x24;
+    reg {
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Initialization Vector Registers.
+
+            The initialization vector (IV) or initial counter value must
+            be written to these registers when starting a new message in
+            CBC or CTR mode (see Control Register), respectively.  In CBC
+            and CTR modes, the AES unit does not start
+            encryption/decryption with a partially updated IV.  Each
+            register has to be written at least once.  The order in which
+            the registers are written does not matter.  If the AES unit is
+            non-idle, writes to these registers are ignored.  Whenever
+            starting a new message, the corresponding IV value must be
+            provided by the processor.  Once started, the AES unit
+            automatically updates the contents of these registers.  In ECB
+            mode, the IV registers are not used and do not need to be
+            configured.  Upon reset, these registers are cleared with
+            pseudo-random data.";
+        } IV[31:0];
+    } IV[4] @ 0x44;
+    reg {
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Input Data Registers.
+
+            If MANUAL_OPERATION=0 (see Control Register), the AES unit
+            automatically starts encryption/decryption after all Input
+            Data registers have been written.  Each register has to be
+            written at least once.  The order in which the registers are
+            written does not matter.  Loaded into the internal State
+            register upon starting encryption/decryption of the next
+            block.  After that, the processor can update the Input Data
+            registers (See INPUT_READY field of Status Register).  Upon
+            reset, these registers are cleared with pseudo-random data.";
+        } DATA_IN[31:0];
+    } DATA_IN[4] @ 0x54;
+    reg {
+        field {
+            sw = r;
+            desc = "Output Data Register.
+
+            Holds the output data produced by the AES unit during the last
+            encryption/decryption operation.  If MANUAL_OPERATION=0 (see
+            Control Register), the AES unit is stalled when the previous
+            output data has not yet been read and is about to be
+            overwritten.  Each register has to be read at least once.  The
+            order in which the registers are read does not matter.  Upon
+            reset, these registers are cleared with pseudo-random data.";
+        } DATA_OUT[31:0];
+    } DATA_OUT[4] @ 0x64;
+    reg {
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "2-bit one-hot field to select the operation of AES
+            unit.  Invalid input values, i.e., values with multiple
+            bits set and value 2'b00, are mapped to AES_ENC (2'b01).";
+        } OPERATION[1:0];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "6-bit one-hot field to select AES block cipher
+            mode.  Invalid input values, i.e., values with multiple
+            bits set and value 6'b00_0000, are mapped to AES_NONE
+            (6'b11_1111).";
+        } MODE[7:2];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "3-bit one-hot field to select AES key length.
+            Invalid input values, i.e., values with multiple bits set,
+            value 3'b000, and value 3'b010 in case 192-bit keys are
+            not supported (because disabled at compile time) are
+            mapped to AES_256 (3'b100).";
+        } KEY_LEN[10:8];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Controls whether the AES unit uses the key
+            provided by the key manager via key sideload interface (1)
+            or the key provided by software via Initial Key Registers
+            KEY_SHARE1_0 - KEY_SHARE1_7 (0).";
+        } SIDELOAD[11:11];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "3-bit one-hot field to control the reseeding rate
+            of the internal pseudo-random number generator (PRNG) used
+            for masking. Invalid input values, i.e., values with
+            multiple bits set and value 3'b000 are mapped to the
+            highest reseeding rate PER_1 (3'b001).";
+        } PRNG_RESEED_RATE[14:12];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Controls whether the AES unit is operated in
+            normal/automatic mode (0) or fully manual mode (1).  In
+            automatic mode (0), the AES unit automatically i) starts
+            to encrypt/decrypt when it receives new input data, and
+            ii) stalls during the last encryption/decryption cycle if
+            the previous output data has not yet been read.  This is
+            the most efficient mode to operate in.  Note that the
+            corresponding status tracking is automatically cleared
+            upon a write to the Control Register.  In manual mode (1),
+            the AES unit i) only starts to encrypt/decrypt after
+            receiving a start trigger (see Trigger Register), and ii)
+            overwrites previous output data irrespective of whether it
+            has been read out or not.  This mode is useful if software needs full
+            control over the AES unit.";
+        } MANUAL_OPERATION[15:15];
+    } CTRL_SHADOWED @ 0x74;
+    reg {
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Controls whether providing a new key triggers the reseeding
+            of internal pseudo-random number generators used for clearing and
+            masking (1) or not (0).";
+        } KEY_TOUCH_FORCES_RESEED[0:0];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Allow the internal masking PRNG to advance (0) or
+            force its internal state (1) leading to constant masks.
+            Setting all masks to constant value can be useful when
+            performing SCA.  To completely disable the masking, the
+            second key share (KEY_SHARE1_0 - KEY_SHARE1_7) must be
+            zero as well.  In addition, a special seed needs to be
+            loaded into the masking PRNG using the EDN interface.
+            Only applicable if both the Masking parameter and the
+            SecAllowForcingMasks parameter are set to one.";
+        } FORCE_MASKS[1:1];
+    } CTRL_AUX_SHADOWED @ 0x78;
+    reg {
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Auxiliary Control Register configuration enable
+            bit.  If this is cleared to 0, the Auxiliary Control
+            Register cannot be written anymore.";
+        } CTRL_AUX_REGWEN[0:0];
+    } CTRL_AUX_REGWEN @ 0x7c;
+    reg {
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Keep AES unit paused (0) or trigger the
+            encryption/decryption of one data block (1).  This trigger
+            is cleared to `0` if MANUAL_OPERATION=0 or if MODE=AES_NONE
+            (see Control Register).";
+        } START[0:0];
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Keep current values in Initial Key, internal Full
+            Key and Decryption Key registers, IV registers and Input
+            Data registers (0) or clear all those registers with
+            pseudo-random data (1).";
+        } KEY_IV_DATA_IN_CLEAR[1:1];
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Keep current values in Output Data registers (0) or
+            clear those registers with pseudo-random data (1).";
+        } DATA_OUT_CLEAR[2:2];
+        field {
+            sw = w;
+            onwrite = woclr;
+            desc = "Keep continuing with the current states of the
+            internal pseudo-random number generators used for register
+            clearing and masking (0) or perform a reseed of the internal
+            states from the connected entropy source (1).  If the
+            KEY_TOUCH_FORCES_RESEED bit in the Auxiliary Control
+            Register is set to one, this trigger will automatically get
+            set after providing a new initial key.";
+        } PRNG_RESEED[3:3];
+    } TRIGGER @ 0x80;
+    reg {
+        field {
+            sw = r;
+            desc = "The AES unit is idle (1) or busy (0).  This flag
+            is `0` if one of the following operations is currently
+            running: i) encryption/decryption, ii) register clearing or
+            iii) PRNG reseeding.  This flag is also `0` if an
+            encryption/decryption is running but the AES unit is
+            stalled.";
+        } IDLE[0:0];
+        field {
+            sw = r;
+            desc = "The AES unit is not stalled (0) or stalled (1)
+            because there is previous output data that must be read by
+            the processor before the AES unit can overwrite this data.
+            This flag is not meaningful if MANUAL_OPERATION=1 (see
+            Control Register).";
+        } STALL[1:1];
+        field {
+            sw = r;
+            desc = "All previous output data has been fully read by
+            the processor (0) or at least one previous output data block
+            has been lost (1).  It has been overwritten by the AES unit
+            before the processor could fully read it.  Once set to `1`,
+            this flag remains set until AES operation is restarted by
+            re-writing the Control Register.  The primary use of this
+            flag is for design verification.  This flag is not
+            meaningful if MANUAL_OPERATION=0 (see Control Register).";
+        } OUTPUT_LOST[2:2];
+        field {
+            sw = r;
+            desc = "The AES unit has no valid output (0) or has valid output data (1).";
+        } OUTPUT_VALID[3:3];
+        field {
+            sw = r;
+            desc = "The AES unit is ready (1) or not ready (0) to
+            receive new data input via the DATA_IN registers.  If the
+            present values in the DATA_IN registers have not yet been
+            loaded into the module this flag is `0` (not ready).";
+        } INPUT_READY[4:4];
+        field {
+            sw = r;
+            desc = "An update error has not occurred (0) or has
+            occurred (1) in the shadowed Control Register.  AES
+            operation needs to be restarted by re-writing the Control
+            Register.";
+        } ALERT_RECOV_CTRL_UPDATE_ERR[5:5];
+        field {
+            sw = r;
+            desc = "No fatal fault has occurred inside the AES unit
+            (0).  A fatal fault has occurred and the AES unit needs to
+            be reset (1).  Examples for fatal faults include i) storage
+            errors in the Control Register, ii) if any internal FSM
+            enters an invalid state, iii) if any sparsely encoded signal
+            takes on an invalid value, iv) errors in the internal round
+            counter, v) escalations triggered by the life cycle
+            controller, and vi) fatal integrity failures on the TL-UL bus.";
+        } ALERT_FATAL_FAULT[6:6];
+    } STATUS @ 0x84;
+    reg {
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "6-bit one-hot field to select the phase of the
+            Galois/Counter Mode (GCM) of operation.  Invalid input
+            values, i.e., values with multiple bits set and value
+            6'b00_0000, are mapped to GCM_INIT (6'b00_0001).  In case
+            support for GCM has been disabled at compile time, this
+            field is not writable and always reads as GCM_INIT
+            (6'b00_0001).";
+        } PHASE[5:0];
+        field {
+            sw = rw;
+            onwrite = woclr;
+            desc = "Number of valid bytes of the current input block.
+            Only the last block in the GCM_AAD and GCM_TEXT phases are
+            expected to have not all bytes marked as valid.  For all
+            other blocks, the number of valid bytes should be set to 16.
+            Invalid input values, i.e., the value 5'b0_0000, and all
+            other values different from 5'b1_0000 in case GCM is not
+            supported (because disabled at compile time) are mapped to
+            5'b1_0000.";
+        } NUM_VALID_BYTES[10:6];
+    } CTRL_GCM_SHADOWED @ 0x88;
+    reg {
+        field {
+            sw = r;
+            desc = "Name register.";
+        } NAME[31:0];
+    } NAME[2] @ 0x100;
+     reg {
+        field {
+            sw = r;
+            desc = "Version register.";
+        } VERSION[31:0];
+    } VERSION[2] @ 0x108;
+ };

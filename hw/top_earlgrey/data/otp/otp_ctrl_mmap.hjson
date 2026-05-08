@@ -48,12 +48,12 @@
             // The other digest configurations below are used for
             // key derivation and token hashing.
             {
-                name:       "FlashDataKey",
+                name:       "NvmDataKey",
                 iv_value:   "<random>",
                 cnst_value: "<random>",
             }
             {
-                name:       "FlashAddrKey",
+                name:       "NvmAddrKey",
                 iv_value:   "<random>",
                 cnst_value: "<random>",
             }
@@ -260,7 +260,8 @@
                     PROD_END life cycle states. A value of kHardenedBoolTrue
                     enables, all other values disable. If left disabled,
                     provisioning flows are required to setup boot data pages
-                    prior to enabling ROM execution.
+                    prior to enabling ROM execution. The default personalization
+                    flow in `ft_personalize.c` configures these pages.
                     '''
                 }
                 {
@@ -290,6 +291,9 @@
                     The repetition count health test thresholds to enable
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -300,6 +304,9 @@
                     The repetition count symbol health test thresholds to enable
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -310,6 +317,9 @@
                     The adaptive proportion health test high thresholds to
                     enable entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -320,6 +330,9 @@
                     The adaptive proportion health test low thresholds to enable
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -330,6 +343,9 @@
                     The bucket health test thresholds to enable entropy_src with
                     during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -340,6 +356,9 @@
                     The Markov health test high thresholds to enable entropy_src
                     with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -350,6 +369,9 @@
                     The Markov health test low thresholds to enable entropy_src
                     with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -360,6 +382,9 @@
                     The external health test high thresholds to enable the
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
@@ -370,36 +395,61 @@
                     The external health test low thresholds to enable the
                     entropy_src with during ROM execution.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    The LSBs contain the boot-time / bypass mode threshold
+                    value.
+                    The MSBs contain the value for the FIPS / CC compliant mode.
                     See entropy_src documentation for more details.
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
+                    name: "CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD",
                     size: "4",
                     desc: '''
                     The alert threshold to configure the entropy_src with during
-                    ROM execution.
+                    ROM execution in boot-time / bypass mode.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
                     See entropy_src documentation for more details.
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
+                    name: "CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD",
                     size: "4",
                     desc: '''
-                    A CRC32 digest of all entropy_src health test threshold
-                    configuration fields above.
+                    The alert threshold to configure the entropy_src with during
+                    ROM execution in FIPS / CC compliant mode.
                     This must be configured if CREATOR_SW_CFG_RNG_EN is true.
                     See entropy_src documentation for more details.
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
+                    name: "CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST",
+                    size: "4",
+                    desc: '''
+                    A CRC32 digest of the entropy_src configuration above for
+                    boot-time / bypass mode.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST",
+                    size: "4",
+                    desc: '''
+                    A CRC32 digest of the entropy_src configuration above for
+                    FIPS / CC compliant mode.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
+                }
+                {
+                    name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN",
                     size: "4",
                     desc: '''
                     Whether or not the ROM should request SRAM to be rescrambled
-                    with a new key on every boot. kHardenedBoolFalse disables,
-                    while all other values enable.
+                    with a new key on every boot. This includes renewing the
+                    scrambling key and then initializing SRAM with pseudo-random
+                    data. kHardenedBoolFalse disables, while all other values
+                    enable.
                     '''
                 }
                 {
@@ -1090,12 +1140,12 @@
             skip_sw_header: true,
             items: [
                 {
-                    name: "FLASH_ADDR_KEY_SEED",
+                    name: "NVM_ADDR_KEY_SEED",
                     inv_default: "<random>",
                     size: "32"
                 }
                 {
-                    name: "FLASH_DATA_KEY_SEED",
+                    name: "NVM_DATA_KEY_SEED",
                     inv_default: "<random>",
                     size: "32"
                 }
@@ -1106,7 +1156,7 @@
                 }
             ],
             desc: '''Secret partition 1.
-            This contains SRAM and flash scrambling keys.
+            This contains SRAM and NVM scrambling keys.
             '''
         }
         {

@@ -119,4 +119,14 @@ module ${module_instance_name}_assert_fpv #(parameter int NumSrc = 1,
 
   // When fatal alert happens then only reset can clear it.
   `ASSERT(FatalAlertNeverdrops_A, ##1 !$fell(fatal_alert_i))
+
+  // The interrupt gateway in u_gateway is in charge of making sure that the "set; claim; complete"
+  // flow is followed for each interrupt line. This is done with an ia ("interrupt active") signal.
+  // When interrupt i is asserted, both ip[i] and ia[i] are set. When it is claimed, ip[i] gets
+  // cleared (but ia[i] stays high). Subsequent assertions are ignored until the processor marks the
+  // handling complete, which clears ia[i] again.
+  //
+  // As such, ia[i] should always be true when ip[i] is true.
+  `ASSERT(ActiveIfPending_A, u_gateway.ia | ~u_gateway.ip_o)
+
 endmodule : ${module_instance_name}_assert_fpv

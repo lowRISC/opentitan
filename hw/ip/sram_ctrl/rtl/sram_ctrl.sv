@@ -620,8 +620,8 @@ module sram_ctrl
     assign sram_rerror[1] = uncorrectable_error_q;
 
     // Error log if any error happened
-    assign sram_rerror_o.valid   = sram_rvalid_scr & |ecc_error;
-    assign ecc_error.correctable = sram_rvalid_scr & ~ecc_error[1];
+    assign sram_rerror_o.valid       = sram_rvalid_scr & |ecc_error;
+    assign sram_rerror_o.correctable = sram_rvalid_scr & ~ecc_error[1];
 
     // Translate word address to byte address and fill remaining bits with 0
     always_comb begin
@@ -766,5 +766,26 @@ module sram_ctrl
   // `tlul_gnt` is the same as `sram_gnt` when there's an active `tlul_req` that isn't being ignored
   // because the SRAM is initializing.
   `ASSERT(TlulGntIsCorrect_A, tlul_req |-> (sram_gnt & ~init_req) == tlul_gnt)
+
+  `ifdef FI_SIM_Z01X
+    // Check if there are any TL-UL integrity errors caused by faults that Z01X has introduced.
+    // Specific to fault injection simulation as Z01X expects that those strobing points are
+    // available in the design.
+    wire ram_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_ram (
+      .tl_i (ram_tl_o),
+      .err_o(ram_tl_intg_err)
+    );
+
+    wire regs_tl_intg_err;
+    tlul_rsp_intg_chk #(
+      .EnableRspDataIntgCheck(1)
+    ) u_rsp_chk_regs (
+      .tl_i (regs_tl_o),
+      .err_o(regs_tl_intg_err)
+    );
+  `endif
 
 endmodule : sram_ctrl

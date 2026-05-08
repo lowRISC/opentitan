@@ -34,7 +34,7 @@ def char_aes(target, iterations, plaintext, key, trigger, reset = False):
     return response
 
 
-def char_kmac(target, iterations, trigger, reset = False):
+def char_kmac(target, iterations, plaintext, key, trigger, reset = False):
     cryptofi = OTFICrypto(target)
     if reset:
         target.reset_target()
@@ -47,22 +47,22 @@ def char_kmac(target, iterations, trigger, reset = False):
     for _ in range(iterations):
         if trigger == 0:
             # Trigger over loading the key
-            cryptofi.crypto_kmac_key()
+            cryptofi.crypto_kmac_start(plaintext, key)
         if trigger == 1:
             # Trigger over loading the input
-            cryptofi.crypto_kmac_absorb()
+            cryptofi.crypto_kmac_absorb(plaintext, key)
         if trigger == 2:
             # Trigger over the mac itself
-            cryptofi.crypto_kmac_static()
+            cryptofi.crypto_kmac_static(plaintext, key)
         if trigger == 3:
             # Trigger over reading the output
-            cryptofi.crypto_kmac_squeeze()
+            cryptofi.crypto_kmac_squeeze(plaintext, key)
         response = target.read_response()
     # Return the result that is read out
     return response
 
 
-def char_kmac_state(target, iterations, reset = False):
+def char_sha3(target, iterations, plaintext, trigger, reset = False):
     cryptofi = OTFICrypto(target)
     if reset:
         target.reset_target()
@@ -73,7 +73,35 @@ def char_kmac_state(target, iterations, reset = False):
         cryptofi.init(alert_config=common_library.default_fpga_friendly_alert_config)
     )
     for _ in range(iterations):
-        cryptofi.crypto_kmac_state()
+        if trigger == 0:
+            # Trigger over loading the init
+            cryptofi.crypto_sha3_start(plaintext)
+        if trigger == 1:
+            # Trigger over loading the input
+            cryptofi.crypto_sha3_absorb(plaintext)
+        if trigger == 2:
+            # Trigger over the mac itself
+            cryptofi.crypto_sha3_static(plaintext)
+        if trigger == 3:
+            # Trigger over reading the output
+            cryptofi.crypto_sha3_squeeze(plaintext)
+        response = target.read_response()
+    # Return the result that is read out
+    return response
+
+
+def char_kmac_state(target, iterations, plaintext, key, reset = False):
+    cryptofi = OTFICrypto(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
+        cryptofi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+    )
+    for _ in range(iterations):
+        cryptofi.crypto_kmac_state(plaintext, key)
         response = target.read_response()
     # Return the result that is read out
     return response

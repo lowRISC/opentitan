@@ -4,7 +4,7 @@
 
 # The version struct will be appened to the end of imm_section.
 IMM_SECTION_MAJOR_VERSION = 0
-IMM_SECTION_MINOR_VERSION = 1
+IMM_SECTION_MINOR_VERSION = 4
 
 IMM_SECTION_VERSION = "{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION)
 
@@ -14,10 +14,6 @@ DEFAULT_EXEC_ENV = [
     "//hw/top_earlgrey:sim_dv_base",
     "//hw/top_earlgrey:sim_verilator_base",
     "//hw/top_earlgrey:silicon_creator",
-]
-
-IMM_SECTION_VARIATIONS = [
-    "main",
 ]
 
 # CAUTION: The message below should match the message defined in:

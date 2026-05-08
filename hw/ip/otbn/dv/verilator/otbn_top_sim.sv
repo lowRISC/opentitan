@@ -48,11 +48,14 @@ module otbn_top_sim (
   logic                     dmem_rerror;
 
   // Entropy Distribution Network (EDN)
-  logic                     edn_rnd_req, edn_urnd_req;
-  logic                     edn_rnd_ack, edn_urnd_ack;
-  logic [EdnDataWidth-1:0]  edn_rnd_data, edn_urnd_data;
+  logic                     edn_rnd_req;
+  logic                     edn_rnd_ack;
+  logic [EdnDataWidth-1:0]  edn_rnd_data;
   logic                     edn_rnd_data_valid;
   logic                     edn_urnd_data_valid;
+
+  edn_req_t                 urnd_req;
+  edn_rsp_t                 urnd_rsp;
 
   // Instruction counter (feeds into otbn.INSN_CNT in full block)
   logic [31:0]              insn_cnt;
@@ -104,9 +107,8 @@ module otbn_top_sim (
     .edn_rnd_fips_i              ( 1'b1                       ),
     .edn_rnd_err_i               ( 1'b0                       ),
 
-    .edn_urnd_req_o              ( edn_urnd_req               ),
-    .edn_urnd_ack_i              ( edn_urnd_ack               ),
-    .edn_urnd_data_i             ( edn_urnd_data              ),
+    .edn_urnd_i                  ( urnd_rsp                   ),
+    .edn_urnd_o                  ( urnd_req                   ),
 
     .insn_cnt_o                  ( insn_cnt                   ),
     .insn_cnt_clear_i            ( 1'b0                       ),
@@ -151,26 +153,14 @@ module otbn_top_sim (
 
   assign edn_rnd_data_valid = edn_rnd_req & edn_rnd_ack;
 
-  edn_req_t urnd_req;
-  edn_rsp_t urnd_rsp;
-
-  assign urnd_req.edn_req = edn_urnd_req;
-
-  otbn_mock_edn #(
-    .Width        ( WLEN         ),
-    .FixedEdnVals ( FixedEdnVals )
-  ) u_mock_urnd_edn(
-    .clk_i      ( IO_CLK       ),
-    .rst_ni     ( IO_RST_N     ),
-
-    .edn_req_i  ( urnd_req ),
-    .edn_rsp_o  ( urnd_rsp ),
-
-    .edn_ack_o  ( edn_urnd_ack  ),
-    .edn_data_o ( edn_urnd_data )
+  otbn_mock_edn_bivium u_mock_edn_bivium (
+    .clk_i     ( IO_CLK   ),
+    .rst_ni    ( IO_RST_N ),
+    .edn_req_i ( urnd_req ),
+    .edn_rsp_o ( urnd_rsp )
   );
 
-  assign edn_urnd_data_valid = edn_urnd_req & edn_urnd_ack;
+  assign edn_urnd_data_valid = u_otbn_core.u_otbn_rnd.urnd_reseed_ack_o;
 
   bind otbn_core otbn_trace_if #(.ImemAddrWidth, .DmemAddrWidth) i_otbn_trace_if (.*);
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));

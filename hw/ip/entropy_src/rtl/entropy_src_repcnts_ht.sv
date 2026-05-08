@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: entropy_src repetitive count symbol based health test module
+// Description: entropy_src Repetition Count Symbol Test module
 //
 
 module entropy_src_repcnts_ht #(

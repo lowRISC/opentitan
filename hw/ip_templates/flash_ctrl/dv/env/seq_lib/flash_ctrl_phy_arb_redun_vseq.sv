@@ -39,7 +39,6 @@ class flash_ctrl_phy_arb_redun_vseq extends flash_ctrl_err_base_vseq;
 `define COPY_0 gen_input_bufs[0]
 `define COPY_1 gen_input_bufs[1]
 `define REQ_SUFFIX u_req_buf.out_o[1:0]
-`define FIXED_SVA_STAY_HIGH_SUFFIX gen_fixed_arbiter.u_arb.ReqStaysHighUntilGranted0_M
 `define RR_SVA_STAY_HIGH_SUFFIX gen_rr_arbiter.u_arb.ReqStaysHighUntilGranted0_M
 `define RR_SVA_LOCK_ARB_DEC_SUFFIX gen_rr_arbiter.u_arb.LockArbDecision_A
 
@@ -126,15 +125,11 @@ class flash_ctrl_phy_arb_redun_vseq extends flash_ctrl_err_base_vseq;
       1: begin
       end
       2: begin
-        $asserton(0, `HIER_PATH(`CALC_ARB_PREFIX, `COPY_0, `FIXED_SVA_STAY_HIGH_SUFFIX));
         $asserton(0, `HIER_PATH(`CALC_ARB_PREFIX, `COPY_0, `RR_SVA_LOCK_ARB_DEC_SUFFIX));
-        $asserton(0, `HIER_PATH(`CALC_ARB_PREFIX, `COPY_1, `FIXED_SVA_STAY_HIGH_SUFFIX));
         $asserton(0, `HIER_PATH(`CALC_ARB_PREFIX, `COPY_1, `RR_SVA_LOCK_ARB_DEC_SUFFIX));
       end
       3: begin
-        $asserton(0, `HIER_PATH(`OP_ARB_PREFIX, `COPY_0, `FIXED_SVA_STAY_HIGH_SUFFIX));
         $asserton(0, `HIER_PATH(`OP_ARB_PREFIX, `COPY_0, `RR_SVA_LOCK_ARB_DEC_SUFFIX));
-        $asserton(0, `HIER_PATH(`OP_ARB_PREFIX, `COPY_1, `FIXED_SVA_STAY_HIGH_SUFFIX));
         $asserton(0, `HIER_PATH(`OP_ARB_PREFIX, `COPY_1, `RR_SVA_LOCK_ARB_DEC_SUFFIX));
       end
       default:
@@ -164,7 +159,6 @@ class flash_ctrl_phy_arb_redun_vseq extends flash_ctrl_err_base_vseq;
 `undef COPY_0
 `undef COPY_1
 `undef REQ_SUFFIX
-`undef FIXED_SVA_STAY_HIGH_SUFFIX
 `undef RR_SVA_STAY_HIGH_SUFFIX
 `undef RR_SVA_LOCK_ARB_DEC_SUFFIX
 

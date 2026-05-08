@@ -65,7 +65,7 @@ bool BaseRegister::ProcessTransaction(bool *match, RegisterTransaction *trans) {
     // else if (read_val != trans->csr_rdata) {
     //  std::cout << "MCycle(H) incrementing as expected" << std::endl;
     //}
-    // Don't panic about MCycle(H) incremeting, this is expected behavior as
+    // Don't panic about MCycle(H) incrementing, this is expected behavior as
     // the clock is always running. Silently ignore mismatches for MCycle(H).
   } else if (read_val != trans->csr_rdata) {
     std::cout << "Error, transaction:" << std::endl;

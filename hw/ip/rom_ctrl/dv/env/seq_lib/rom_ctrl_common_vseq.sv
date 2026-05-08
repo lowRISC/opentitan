@@ -126,15 +126,13 @@ function void rom_ctrl_common_vseq::sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_
       if (touching_req_fifo) begin
         if (!enable) begin
           `uvm_info(`gfn, "Doing FI on a request fifo. Disabling related assertions", UVM_HIGH)
-          $assertoff(0, "tb.dut.TlAccessChk_A");
-          $assertoff(0, "tb.dut.rom_tlul_assert_device.gen_device.respSzEqReqSz_A");
-          $assertoff(0, "tb.dut.rom_tlul_assert_device.gen_device.respMustHaveReq_A");
-          $assertoff(0, "tb.dut.rom_tlul_assert_device.gen_device.respOpcode_A");
+          $assertoff(0, "tb.dut.rom_tlul_assert_device.gen_device.gen_d2h.respSzEqReqSz_A");
+          $assertoff(0, "tb.dut.rom_tlul_assert_device.gen_device.gen_d2h.respMustHaveReq_A");
+          $assertoff(0, "tb.dut.rom_tlul_assert_device.gen_device.gen_d2h.respOpcode_A");
         end else begin
-          $asserton(0, "tb.dut.TlAccessChk_A");
-          $asserton(0, "tb.dut.rom_tlul_assert_device.gen_device.respSzEqReqSz_A");
-          $asserton(0, "tb.dut.rom_tlul_assert_device.gen_device.respMustHaveReq_A");
-          $asserton(0, "tb.dut.rom_tlul_assert_device.gen_device.respOpcode_A");
+          $asserton(0, "tb.dut.rom_tlul_assert_device.gen_device.gen_d2h.respSzEqReqSz_A");
+          $asserton(0, "tb.dut.rom_tlul_assert_device.gen_device.gen_d2h.respMustHaveReq_A");
+          $asserton(0, "tb.dut.rom_tlul_assert_device.gen_device.gen_d2h.respOpcode_A");
         end
       end
     end

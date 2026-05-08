@@ -6,9 +6,9 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -99,15 +99,11 @@ status_t handle_aes_block(ujson_t *uj) {
   const size_t AES_IV_SIZE = 4;
   uint32_t iv_buf[AES_IV_SIZE];
   memcpy(iv_buf, uj_data.iv, AES_IV_SIZE * 4);
-  otcrypto_word32_buf_t iv = {
-      .data = iv_buf,
-      .len = kAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_buf, kAesBlockWords);
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_data.input,
-      .len = (size_t)uj_data.input_len,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_data.input, (size_t)uj_data.input_len);
 
   // Select a random security level.
   otcrypto_key_security_level_t sec_level;
@@ -142,12 +138,10 @@ status_t handle_aes_block(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
-  otcrypto_aes(&key, iv, mode, op, input, padding, output);
+  otcrypto_aes(&key, &iv, mode, op, &input, padding, &output);
 
   cryptotest_aes_output_t uj_output;
   uj_output.output_len = padded_len_bytes;

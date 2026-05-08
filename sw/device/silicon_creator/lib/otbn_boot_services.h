@@ -31,37 +31,6 @@ OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_app_load(void);
 
 /**
- * Generate an attestation public key from a keymgr-derived secret.
- *
- * This routine triggers the key manager to sideload key material into OTBN,
- * and also loads in an extra seed to XOR with the key material. The final
- * private key is:
- *   d = (additional_seed ^ keymgr_seed) mod n
- * ...where n is the P256 curve order. The public key is d*G, where G is the
- * P256 base point.
- *
- * The extra seed is expected to be the output from a specially seeded DRBG, and
- * is provisioned into flash at manufacturing time. It must be fully independent
- * from the key manager seed.
- *
- * Expects the OTBN boot-services program to already be loaded; see
- * `otbn_boot_app_load`.
- *
- * @param additional_seed_idx The attestation key generation seed index to load.
- *                            The index corresponds to the seed offset in flash
- *                            info page `kFlashCtrlInfoPageAttestationKeySeeds`.
- * @param key_type Keymgr key type to generate, attestation or sealing.
- * @param diversification Salt and version information for key manager.
- * @param[out] public_key Attestation public key.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t otbn_boot_attestation_keygen(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification,
-    ecdsa_p256_public_key_t *public_key);
-
-/**
  * Generate a deterministic ECC P256 attestation public key from a
  * keymgr-derived secret.
  *
@@ -199,6 +168,58 @@ rom_error_t otbn_boot_sigverify(const ecdsa_p256_public_key_t *key,
                                 const ecdsa_p256_signature_t *sig,
                                 const hmac_digest_t *digest,
                                 uint32_t *recovered_r);
+
+/**
+ * Retrieve an additional attestation key generation seed.
+ *
+ * This function retrieves an optional, secondary key seed to be loaded it into
+ * the OTBN data memory (DMEM). This seed complements the primary seed
+ * side-loaded from the `keymgr` used by OTBN for generating the attestation
+ * key.
+ *
+ * This implementation is **top-specific** because the seed's origin, storage
+ * location and availability vary across OpenTitan hardware configurations.
+ *
+ * Tops that do not require or provide a secondary seed must indicate this by
+ * setting the `seed` parameter to zero and returning 'kErrorOk'.
+ *
+ * @param seed_idx The index of the seed, if multiple are stored.
+ * @param seed The retrieved 32-bit seed. Set to zero if not provided.
+ * @return An `error.h` defined error if retrieval fails. Returns `kErrorOk`
+ * if the seed is successfully retrieved, or if no seed is required/available
+ * by the hardware top (in which case `seed` must be zeroed).
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t otbn_boot_attestation_keygen_seed(uint32_t seed_idx,
+                                              uint32_t *seed);
+
+/**
+ * Start an ECDSA-P256 signature verify on OTBN.
+ *
+ * Expects the OTBN boot-services program to already be loaded; see
+ * `otbn_boot_app_load`.
+ *
+ * @param key An ECDSA-P256 public key.
+ * @param sig An ECDSA-P256 signature.
+ * @param digest Message digest to check against.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t otbn_boot_sigverify_start(const ecdsa_p256_public_key_t *key,
+                                      const ecdsa_p256_signature_t *sig,
+                                      const hmac_digest_t *digest);
+
+/**
+ * Finish an ECDSA-P256 signature verify on OTBN.
+ *
+ * Call after the `start` operation to wait for completion and collect the
+ * result.
+ *
+ * @param[out] recovered_r Buffer for the recovered `r` value.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t otbn_boot_sigverify_finish(uint32_t *recovered_r);
 
 #ifdef __cplusplus
 }  // extern "C"

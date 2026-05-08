@@ -11,7 +11,6 @@ rust_library(
     srcs = [
         "src/handler.rs",
         "src/lib.rs",
-        "src/nonblocking_uart.rs",
         "src/socket_server.rs",
     ],
     crate_name = "ot_proxy",

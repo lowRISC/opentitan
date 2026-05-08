@@ -13,7 +13,7 @@ use serde::Deserialize;
 use pentest_commands::commands::PenetrationtestCommand;
 use pentest_commands::fi_ibex_commands::IbexFiSubcommand;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -102,7 +102,7 @@ fn run_fi_ibex_testcase(
     if !test_case.expected_output.is_empty() {
         for exp_output in test_case.expected_output.iter() {
             // Get test output & filter.
-            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            let output = serde_json::Value::recv(uart, opts.timeout, false, false)?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
                 let output_received = filter_response(output.clone());
@@ -131,7 +131,7 @@ fn run_fi_ibex_testcase(
     if !test_case.flaky_expected_output.is_empty() {
         for exp_output in test_case.flaky_expected_output.iter() {
             // Get test output & filter.
-            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            let output = serde_json::Value::recv(uart, opts.timeout, false, false)?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
                 let output_received = filter_response(output.clone());
@@ -162,7 +162,7 @@ fn run_fi_ibex_testcase(
 fn test_fi_ibex(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
@@ -172,7 +172,7 @@ fn test_fi_ibex(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         let fi_ibex_tests: Vec<FiIbexTestCase> = serde_json::from_str(&raw_json)?;
         for fi_ibex_test in &fi_ibex_tests {
             if fi_ibex_test.reset {
-                transport.reset_target(Duration::from_millis(750), true)?;
+                transport.reset_with_delay(UartRx::Clear, Duration::from_millis(750))?;
             } else {
                 test_counter += 1;
                 log::info!("Test counter: {}", test_counter);

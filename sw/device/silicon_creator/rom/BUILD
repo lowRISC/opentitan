@@ -16,6 +16,7 @@ load(
     "opentitan_test",
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
+load("//rules:symbols.bzl", "check_elf_symbols_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -91,10 +92,13 @@ ld_library(
 cc_library(
     name = "rom_isrs",
     srcs = [
-        "rom_isrs.S",
         "rom_isrs.c",
+        "//sw/device/silicon_creator/lib:flash_exc_handler",
     ],
     hdrs = ["rom_isrs.h"],
+    defines = [
+        "INTERRUPT_HANDLER=rom_interrupt_handler",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
@@ -152,7 +156,7 @@ cc_library(
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
@@ -162,8 +166,8 @@ cc_library(
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib:cfi",
-        "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
@@ -174,6 +178,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -210,6 +215,7 @@ cc_library(
 
 opentitan_binary(
     name = "mask_rom",
+    collect_code_coverage = 0,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -232,6 +238,15 @@ opentitan_binary(
         # by tests such as `rom_epmp_test`.
         ":rom_isrs",
     ],
+)
+
+check_elf_symbols_test(
+    name = "mask_rom_symbol_check",
+    forbidden = [
+        "__udivdi3",
+        "__divdi3",
+    ],
+    target = ":mask_rom",
 )
 
 # Create the legacy ROM target names so that existing splicing rules can find
@@ -354,10 +369,10 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -405,8 +420,8 @@ cc_library(
     hdrs = ["sigverify_otp_keys.h"],
     deps = [
         ":sigverify_key_types",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -547,13 +562,13 @@ genrule(
         echo $$f >> $@
         size=$$(stat -L -c %s $$f)
         full=$$(sha256sum $$f | cut -f1 -d' ')
-        without_chip_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
-        code=$$(echo $$without_chip_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
+        without_build_info=$$(head -c -12 $$f | sha256sum | cut -f1 -d' ')
+        code=$$(echo $$without_build_info | sed -E s'/(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})(.{8})/0x\\8,0x\\7,0x\\6,0x\\5,0x\\4,0x\\3,0x\\2,0x\\1,/g')
 
         echo "              size: $$size" >> $@
         echo "     complete hash: $$full" >> $@
-        echo " without chip_info: $$without_chip_info" >> $@
-        echo "w/o chip_info le32: $$code" >> $@
+        echo " without build_info: $$without_build_info" >> $@
+        echo "w/o build_info le32: $$code" >> $@
         echo >> $@
         fi
     done
@@ -573,9 +588,9 @@ opentitan_test(
     name = "stack_utilization_test",
     cw310 = fpga_params(
         binaries = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
             ":empty_flash": "empty",
         },
         stack_usage = "STK:[0-9A-Fa-f/]+\r\n",

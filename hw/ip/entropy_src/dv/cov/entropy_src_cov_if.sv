@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Implements functional coverage for entropy_src.
+// Implements functional coverage for entropy_src and is bound into the dut
 interface entropy_src_cov_if
   import entropy_src_pkg::*;
   import prim_mubi_pkg::*;
@@ -549,13 +549,13 @@ interface entropy_src_cov_if
           entropy_src_reg_pkg::ENTROPY_SRC_CONF_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_ENTROPY_CONTROL_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_HEALTH_TEST_WINDOWS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET,
-          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLD_OFFSET,
+          entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLD_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_FW_OV_CONTROL_OFFSET,
           entropy_src_reg_pkg::ENTROPY_SRC_OBSERVE_FIFO_THRESH_OFFSET
       };
@@ -588,7 +588,7 @@ interface entropy_src_cov_if
                                                   bit esbit_fifo_not_empty_i,
                                                   bit postht_fifo_not_empty_i,
                                                   bit distr_fifo_not_empty_i,
-                                                  bit cs_aes_halt_req_i,
+                                                  bit sha3_block_busy_i,
                                                   bit sha3_block_processed_i,
                                                   bit bypass_mode_i,
                                                   bit enable_o);
@@ -643,11 +643,13 @@ interface entropy_src_cov_if
                                          binsof(cp_distr_fifo.not_empty));
     }
 
-    cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_block_processed_i} {
+    cp_sha3_state: coverpoint {sha3_block_busy_i, sha3_block_processed_i} {
       bins idle = {2'b00};
       bins sha3_block_processed = {2'b01};
-      bins aes_halt_req = {2'b10};
-      bins aes_halt_req_and_sha3_block_processed = {2'b11};
+      bins sha3_block_busy = {2'b10};
+      // In the current implementation, sha3_block_busy is de-asserted based on
+      // sha3_block_processsed.
+      illegal_bins sha3_block_busy_and_sha3_block_processed = {2'b11};
     }
 
     cr_enable_i_sha3_state: cross cp_enable, cp_sha3_state {
@@ -937,15 +939,15 @@ interface entropy_src_cov_if
 
     cp_offset : coverpoint offset {
       bins one_way_regs[] = {
-        entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET,
-        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET
+        entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_HI_THRESHOLD_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_LO_THRESHOLD_OFFSET
       };
     }
 
@@ -957,15 +959,39 @@ interface entropy_src_cov_if
 
   endgroup : one_way_ht_threshold_reg_cg
 
+  // Covergroup to confirm the ht_watermark_num register works correctly.
+  // Do we write all possible (including unsupported values)?
+  covergroup ht_watermark_num_cg with function sample(logic [3:0] num);
+    option.name         = "ht_watermark_num_cg";
+    option.per_instance = 1;
+
+    cp_ht_watermark_num : coverpoint num;
+  endgroup : ht_watermark_num_cg
+
+  // Covergroup to confirm the ht_watermark register works correctly.
+  // Do we read the ht_watermark register for all supported ht_watermark_num values?
+  covergroup ht_watermark_cg with function sample(ht_watermark_num_e num, logic [15:0] value);
+    option.name         = "ht_watermark_cg";
+    option.per_instance = 1;
+
+    cp_ht_watermark_num : coverpoint num;
+    cp_ht_watermark : coverpoint value {
+      bins min = {0};
+      bins med = {[1:16'hfffe]};
+      bins max = {16'hffff};
+    }
+
+    cr_cross : cross cp_ht_watermark_num, cp_ht_watermark;
+  endgroup : ht_watermark_cg
+
   covergroup recov_alert_cg with function sample(int alert_bit);
     option.name         = "recov_alert_cg";
     option.per_instance = 1;
 
     cp_alert_bit : coverpoint alert_bit {
-      bins alert_bits[] = {0, 1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+      bins alert_bits[] = {0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 31};
     }
   endgroup : recov_alert_cg
-
 
   `DV_FCOV_INSTANTIATE_CG(err_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(mubi_err_cg, en_full_cov)
@@ -984,6 +1010,8 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(alert_cnt_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_threshold_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(one_way_ht_threshold_reg_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(ht_watermark_num_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(ht_watermark_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(recov_alert_cg, en_full_cov)
 
   // Sample functions needed for xcelium
@@ -1142,6 +1170,14 @@ interface entropy_src_cov_if
     recov_alert_cg_inst.sample(which_bit);
   endfunction
 
+  function automatic void cg_ht_watermark_num_sample(logic [3:0] num);
+    ht_watermark_num_cg_inst.sample(num);
+  endfunction
+
+  function automatic void cg_ht_watermark_sample(ht_watermark_num_e num, logic [15:0] value);
+    ht_watermark_cg_inst.sample(num, value);
+  endfunction
+
 
   // Sample the csrng_hw_cg whenever data is output on the csrng pins
   logic csrng_if_req, csrng_if_ack;
@@ -1149,8 +1185,10 @@ interface entropy_src_cov_if
           es_type_csr, entropy_data_reg_enable_csr, fw_ov_mode_csr, entropy_insert_csr;
   mubi8_t otp_en_es_fw_read_val;
 
-  assign csrng_if_req = tb.dut.entropy_src_hw_if_i.es_req;
-  assign csrng_if_ack = tb.dut.entropy_src_hw_if_o.es_ack;
+  // Assign req/ack signals to track those in the entropy_src_hw_if_i/o ports of the entropy_src
+  // instance into which this interface has been bound.
+  assign csrng_if_req = entropy_src.entropy_src_hw_if_i.es_req;
+  assign csrng_if_ack = entropy_src.entropy_src_hw_if_o.es_ack;
 
   logic enable_q, enable_qq;
 
@@ -1159,37 +1197,43 @@ interface entropy_src_cov_if
       enable_q  <= 1'b0;
       enable_qq <= 1'b0;
     end else begin
+      // Register the enable_i input to u_enable_delay in the entropy_src_core for the entropy_src
+      // instance into which this interface has been bound.
+      enable_q  <= entropy_src.u_entropy_src_core.u_enable_delay.enable_i;
       enable_qq <= enable_q;
-      enable_q  <= tb.dut.u_entropy_src_core.u_enable_delay.enable_i;
 
       if(csrng_if_req && csrng_if_ack) begin
-        cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
-                           tb.dut.reg2hw.conf.fips_flag.q,
-                           tb.dut.reg2hw.conf.rng_fips.q,
-                           tb.dut.reg2hw.conf.threshold_scope.q,
-                           tb.dut.reg2hw.conf.rng_bit_enable.q,
-                           tb.dut.reg2hw.conf.rng_bit_sel.q,
-                           tb.dut.reg2hw.entropy_control.es_route.q,
-                           tb.dut.reg2hw.entropy_control.es_type.q,
-                           tb.dut.reg2hw.conf.entropy_data_reg_enable.q,
+        // Sample relevant register configuration (based on a hierarchical reference to the dut
+        // containing this interface)
+        cg_csrng_hw_sample(entropy_src.reg2hw.conf.fips_enable.q,
+                           entropy_src.reg2hw.conf.fips_flag.q,
+                           entropy_src.reg2hw.conf.rng_fips.q,
+                           entropy_src.reg2hw.conf.threshold_scope.q,
+                           entropy_src.reg2hw.conf.rng_bit_enable.q,
+                           entropy_src.reg2hw.conf.rng_bit_sel.q,
+                           entropy_src.reg2hw.entropy_control.es_route.q,
+                           entropy_src.reg2hw.entropy_control.es_type.q,
+                           entropy_src.reg2hw.conf.entropy_data_reg_enable.q,
                            otp_en_entropy_src_fw_read_i,
-                           tb.dut.reg2hw.fw_ov_control.fw_ov_mode.q,
+                           entropy_src.reg2hw.fw_ov_control.fw_ov_mode.q,
                            otp_en_entropy_src_fw_over_i,
-                           tb.dut.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
+                           entropy_src.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
       end
 
       if (enable_qq != enable_q) begin
         // Only sample this CG when the enable signal changes.
+        //
+        // Samples are based on a hierarchical reference to the dut containing this interface.
         enable_delay_cg_inst.sample(
             enable_q,
-            tb.dut.u_entropy_src_core.u_enable_delay.esrng_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.cs_aes_halt_req_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.enable_o);
+            entropy_src.u_entropy_src_core.u_enable_delay.esrng_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.sha3_block_busy_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.bypass_mode_i,
+            entropy_src.u_entropy_src_core.u_enable_delay.enable_o);
       end
     end
   end

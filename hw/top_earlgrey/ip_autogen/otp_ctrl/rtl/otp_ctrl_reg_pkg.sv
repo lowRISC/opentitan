@@ -26,7 +26,7 @@ package otp_ctrl_reg_pkg;
   parameter int VendorTestDigestOffset = 56;
   parameter int VendorTestDigestSize = 8;
   parameter int CreatorSwCfgOffset = 64;
-  parameter int CreatorSwCfgSize = 368;
+  parameter int CreatorSwCfgSize = 376;
   parameter int CreatorSwCfgAstCfgOffset = 64;
   parameter int CreatorSwCfgAstCfgSize = 156;
   parameter int CreatorSwCfgAstInitEnOffset = 220;
@@ -81,75 +81,79 @@ package otp_ctrl_reg_pkg;
   parameter int CreatorSwCfgRngExthtHiThresholdsSize = 4;
   parameter int CreatorSwCfgRngExthtLoThresholdsOffset = 320;
   parameter int CreatorSwCfgRngExthtLoThresholdsSize = 4;
-  parameter int CreatorSwCfgRngAlertThresholdOffset = 324;
-  parameter int CreatorSwCfgRngAlertThresholdSize = 4;
-  parameter int CreatorSwCfgRngHealthConfigDigestOffset = 328;
-  parameter int CreatorSwCfgRngHealthConfigDigestSize = 4;
-  parameter int CreatorSwCfgSramKeyRenewEnOffset = 332;
-  parameter int CreatorSwCfgSramKeyRenewEnSize = 4;
-  parameter int CreatorSwCfgImmutableRomExtEnOffset = 336;
+  parameter int CreatorSwCfgRngBootAlertThresholdOffset = 324;
+  parameter int CreatorSwCfgRngBootAlertThresholdSize = 4;
+  parameter int CreatorSwCfgRngFipsAlertThresholdOffset = 328;
+  parameter int CreatorSwCfgRngFipsAlertThresholdSize = 4;
+  parameter int CreatorSwCfgRngBootConfigDigestOffset = 332;
+  parameter int CreatorSwCfgRngBootConfigDigestSize = 4;
+  parameter int CreatorSwCfgRngFipsConfigDigestOffset = 336;
+  parameter int CreatorSwCfgRngFipsConfigDigestSize = 4;
+  parameter int CreatorSwCfgSramKeyRenewAndInitEnOffset = 340;
+  parameter int CreatorSwCfgSramKeyRenewAndInitEnSize = 4;
+  parameter int CreatorSwCfgImmutableRomExtEnOffset = 344;
   parameter int CreatorSwCfgImmutableRomExtEnSize = 4;
-  parameter int CreatorSwCfgImmutableRomExtStartOffsetOffset = 340;
+  parameter int CreatorSwCfgImmutableRomExtStartOffsetOffset = 348;
   parameter int CreatorSwCfgImmutableRomExtStartOffsetSize = 4;
-  parameter int CreatorSwCfgImmutableRomExtLengthOffset = 344;
+  parameter int CreatorSwCfgImmutableRomExtLengthOffset = 352;
   parameter int CreatorSwCfgImmutableRomExtLengthSize = 4;
-  parameter int CreatorSwCfgImmutableRomExtSha256HashOffset = 348;
+  parameter int CreatorSwCfgImmutableRomExtSha256HashOffset = 356;
   parameter int CreatorSwCfgImmutableRomExtSha256HashSize = 32;
-  parameter int CreatorSwCfgReservedOffset = 380;
+  parameter int CreatorSwCfgReservedOffset = 388;
   parameter int CreatorSwCfgReservedSize = 32;
-  parameter int CreatorSwCfgDigestOffset = 424;
+  parameter int CreatorSwCfgDigestOffset = 432;
   parameter int CreatorSwCfgDigestSize = 8;
-  parameter int OwnerSwCfgOffset = 432;
-  parameter int OwnerSwCfgSize = 712;
-  parameter int OwnerSwCfgRomErrorReportingOffset = 432;
+  parameter int OwnerSwCfgOffset = 440;
+  parameter int OwnerSwCfgSize = 704;
+  parameter int OwnerSwCfgRomErrorReportingOffset = 440;
   parameter int OwnerSwCfgRomErrorReportingSize = 4;
-  parameter int OwnerSwCfgRomBootstrapDisOffset = 436;
+  parameter int OwnerSwCfgRomBootstrapDisOffset = 444;
   parameter int OwnerSwCfgRomBootstrapDisSize = 4;
-  parameter int OwnerSwCfgRomAlertClassEnOffset = 440;
+  parameter int OwnerSwCfgRomAlertClassEnOffset = 448;
   parameter int OwnerSwCfgRomAlertClassEnSize = 4;
-  parameter int OwnerSwCfgRomAlertEscalationOffset = 444;
+  parameter int OwnerSwCfgRomAlertEscalationOffset = 452;
   parameter int OwnerSwCfgRomAlertEscalationSize = 4;
-  parameter int OwnerSwCfgRomAlertClassificationOffset = 448;
+  parameter int OwnerSwCfgRomAlertClassificationOffset = 456;
   parameter int OwnerSwCfgRomAlertClassificationSize = 320;
-  parameter int OwnerSwCfgRomLocalAlertClassificationOffset = 768;
+  parameter int OwnerSwCfgRomLocalAlertClassificationOffset = 776;
   parameter int OwnerSwCfgRomLocalAlertClassificationSize = 64;
-  parameter int OwnerSwCfgRomAlertAccumThreshOffset = 832;
+  parameter int OwnerSwCfgRomAlertAccumThreshOffset = 840;
   parameter int OwnerSwCfgRomAlertAccumThreshSize = 16;
-  parameter int OwnerSwCfgRomAlertTimeoutCyclesOffset = 848;
+  parameter int OwnerSwCfgRomAlertTimeoutCyclesOffset = 856;
   parameter int OwnerSwCfgRomAlertTimeoutCyclesSize = 16;
-  parameter int OwnerSwCfgRomAlertPhaseCyclesOffset = 864;
+  parameter int OwnerSwCfgRomAlertPhaseCyclesOffset = 872;
   parameter int OwnerSwCfgRomAlertPhaseCyclesSize = 64;
-  parameter int OwnerSwCfgRomAlertDigestProdOffset = 928;
+  parameter int OwnerSwCfgRomAlertDigestProdOffset = 936;
   parameter int OwnerSwCfgRomAlertDigestProdSize = 4;
-  parameter int OwnerSwCfgRomAlertDigestProdEndOffset = 932;
+  parameter int OwnerSwCfgRomAlertDigestProdEndOffset = 940;
   parameter int OwnerSwCfgRomAlertDigestProdEndSize = 4;
-  parameter int OwnerSwCfgRomAlertDigestDevOffset = 936;
+  parameter int OwnerSwCfgRomAlertDigestDevOffset = 944;
   parameter int OwnerSwCfgRomAlertDigestDevSize = 4;
-  parameter int OwnerSwCfgRomAlertDigestRmaOffset = 940;
+  parameter int OwnerSwCfgRomAlertDigestRmaOffset = 948;
   parameter int OwnerSwCfgRomAlertDigestRmaSize = 4;
-  parameter int OwnerSwCfgRomWatchdogBiteThresholdCyclesOffset = 944;
+  parameter int OwnerSwCfgRomWatchdogBiteThresholdCyclesOffset = 952;
   parameter int OwnerSwCfgRomWatchdogBiteThresholdCyclesSize = 4;
-  parameter int OwnerSwCfgRomKeymgrOtpMeasEnOffset = 948;
+  parameter int OwnerSwCfgRomKeymgrOtpMeasEnOffset = 956;
   parameter int OwnerSwCfgRomKeymgrOtpMeasEnSize = 4;
-  parameter int OwnerSwCfgManufStateOffset = 952;
+  parameter int OwnerSwCfgManufStateOffset = 960;
   parameter int OwnerSwCfgManufStateSize = 4;
-  parameter int OwnerSwCfgRomRstmgrInfoEnOffset = 956;
+  parameter int OwnerSwCfgRomRstmgrInfoEnOffset = 964;
   parameter int OwnerSwCfgRomRstmgrInfoEnSize = 4;
-  parameter int OwnerSwCfgRomExtBootstrapEnOffset = 960;
+  parameter int OwnerSwCfgRomExtBootstrapEnOffset = 968;
   parameter int OwnerSwCfgRomExtBootstrapEnSize = 4;
-  parameter int OwnerSwCfgRomSensorCtrlAlertCfgOffset = 964;
+  parameter int OwnerSwCfgRomSensorCtrlAlertCfgOffset = 972;
   parameter int OwnerSwCfgRomSensorCtrlAlertCfgSize = 12;
-  parameter int OwnerSwCfgRomSramReadbackEnOffset = 976;
+  parameter int OwnerSwCfgRomSramReadbackEnOffset = 984;
   parameter int OwnerSwCfgRomSramReadbackEnSize = 4;
-  parameter int OwnerSwCfgRomPreserveResetReasonEnOffset = 980;
+  parameter int OwnerSwCfgRomPreserveResetReasonEnOffset = 988;
   parameter int OwnerSwCfgRomPreserveResetReasonEnSize = 4;
-  parameter int OwnerSwCfgRomResetReasonCheckValueOffset = 984;
+  parameter int OwnerSwCfgRomResetReasonCheckValueOffset = 992;
   parameter int OwnerSwCfgRomResetReasonCheckValueSize = 4;
-  parameter int OwnerSwCfgRomBannerEnOffset = 988;
+  parameter int OwnerSwCfgRomBannerEnOffset = 996;
   parameter int OwnerSwCfgRomBannerEnSize = 4;
-  parameter int OwnerSwCfgRomFlashEccExcHandlerEnOffset = 992;
+  parameter int OwnerSwCfgRomFlashEccExcHandlerEnOffset = 1000;
   parameter int OwnerSwCfgRomFlashEccExcHandlerEnSize = 4;
-  parameter int OwnerSwCfgReservedOffset = 996;
+  parameter int OwnerSwCfgReservedOffset = 1004;
   parameter int OwnerSwCfgReservedSize = 128;
   parameter int OwnerSwCfgDigestOffset = 1136;
   parameter int OwnerSwCfgDigestSize = 8;
@@ -247,10 +251,10 @@ package otp_ctrl_reg_pkg;
   parameter int Secret0DigestSize = 8;
   parameter int Secret1Offset = 1784;
   parameter int Secret1Size = 88;
-  parameter int FlashAddrKeySeedOffset = 1784;
-  parameter int FlashAddrKeySeedSize = 32;
-  parameter int FlashDataKeySeedOffset = 1816;
-  parameter int FlashDataKeySeedSize = 32;
+  parameter int NvmAddrKeySeedOffset = 1784;
+  parameter int NvmAddrKeySeedSize = 32;
+  parameter int NvmDataKeySeedOffset = 1816;
+  parameter int NvmDataKeySeedSize = 32;
   parameter int SramDataKeySeedOffset = 1848;
   parameter int SramDataKeySeedSize = 16;
   parameter int Secret1DigestOffset = 1864;
@@ -277,7 +281,7 @@ package otp_ctrl_reg_pkg;
   parameter int CoreAw = 12;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 56;
+  parameter int NumRegsCore = 57;
 
   // Alert indices
   typedef enum int {
@@ -460,6 +464,12 @@ package otp_ctrl_reg_pkg;
     } dai_error;
     struct packed {
       logic        d;
+    } partition_error;
+  } otp_ctrl_hw2reg_status_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
     } life_cycle_error;
     struct packed {
       logic        d;
@@ -491,7 +501,7 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        d;
     } vendor_test_error;
-  } otp_ctrl_hw2reg_status_reg_t;
+  } otp_ctrl_hw2reg_partition_status_0_reg_t;
 
   typedef struct packed {
     logic [2:0]  d;
@@ -570,8 +580,9 @@ package otp_ctrl_reg_pkg;
 
   // HW -> register type for core interface
   typedef struct packed {
-    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [767:764]
-    otp_ctrl_hw2reg_status_reg_t status; // [763:744]
+    otp_ctrl_hw2reg_intr_state_reg_t intr_state; // [768:765]
+    otp_ctrl_hw2reg_status_reg_t status; // [764:755]
+    otp_ctrl_hw2reg_partition_status_0_reg_t partition_status_0; // [754:744]
     otp_ctrl_hw2reg_err_code_mreg_t [12:0] err_code; // [743:705]
     otp_ctrl_hw2reg_direct_access_regwen_reg_t direct_access_regwen; // [704:704]
     otp_ctrl_hw2reg_direct_access_rdata_mreg_t [1:0] direct_access_rdata; // [703:640]
@@ -595,57 +606,58 @@ package otp_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] OTP_CTRL_INTR_TEST_OFFSET = 12'h 8;
   parameter logic [CoreAw-1:0] OTP_CTRL_ALERT_TEST_OFFSET = 12'h c;
   parameter logic [CoreAw-1:0] OTP_CTRL_STATUS_OFFSET = 12'h 10;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_0_OFFSET = 12'h 14;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_1_OFFSET = 12'h 18;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_2_OFFSET = 12'h 1c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_3_OFFSET = 12'h 20;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_4_OFFSET = 12'h 24;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_5_OFFSET = 12'h 28;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_6_OFFSET = 12'h 2c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_7_OFFSET = 12'h 30;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_8_OFFSET = 12'h 34;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_9_OFFSET = 12'h 38;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_10_OFFSET = 12'h 3c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_11_OFFSET = 12'h 40;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_12_OFFSET = 12'h 44;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 12'h 48;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 12'h 4c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 12'h 50;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 12'h 54;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 12'h 58;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 12'h 5c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 12'h 60;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 12'h 64;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 12'h 68;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 12'h 6c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 12'h 70;
-  parameter logic [CoreAw-1:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 12'h 74;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 12'h 78;
-  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_READ_LOCK_OFFSET = 12'h 7c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 12'h 80;
-  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 12'h 84;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_OFFSET = 12'h 88;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_OFFSET = 12'h 8c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_OFFSET = 12'h 90;
-  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_OFFSET = 12'h 94;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 12'h 98;
-  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 12'h 9c;
-  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 12'h a0;
-  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 12'h a4;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_OFFSET = 12'h a8;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_OFFSET = 12'h ac;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_OFFSET = 12'h b0;
-  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_OFFSET = 12'h b4;
-  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET = 12'h b8;
-  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET = 12'h bc;
-  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG1_DIGEST_0_OFFSET = 12'h c0;
-  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG1_DIGEST_1_OFFSET = 12'h c4;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 12'h c8;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 12'h cc;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 12'h d0;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 12'h d4;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 12'h d8;
-  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 12'h dc;
+  parameter logic [CoreAw-1:0] OTP_CTRL_PARTITION_STATUS_0_OFFSET = 12'h 14;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_0_OFFSET = 12'h 18;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_1_OFFSET = 12'h 1c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_2_OFFSET = 12'h 20;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_3_OFFSET = 12'h 24;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_4_OFFSET = 12'h 28;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_5_OFFSET = 12'h 2c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_6_OFFSET = 12'h 30;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_7_OFFSET = 12'h 34;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_8_OFFSET = 12'h 38;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_9_OFFSET = 12'h 3c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_10_OFFSET = 12'h 40;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_11_OFFSET = 12'h 44;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ERR_CODE_12_OFFSET = 12'h 48;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_OFFSET = 12'h 4c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_CMD_OFFSET = 12'h 50;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_ADDRESS_OFFSET = 12'h 54;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_0_OFFSET = 12'h 58;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_WDATA_1_OFFSET = 12'h 5c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_OFFSET = 12'h 60;
+  parameter logic [CoreAw-1:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_OFFSET = 12'h 64;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_REGWEN_OFFSET = 12'h 68;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TRIGGER_OFFSET = 12'h 6c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_REGWEN_OFFSET = 12'h 70;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CHECK_TIMEOUT_OFFSET = 12'h 74;
+  parameter logic [CoreAw-1:0] OTP_CTRL_INTEGRITY_CHECK_PERIOD_OFFSET = 12'h 78;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CONSISTENCY_CHECK_PERIOD_OFFSET = 12'h 7c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_READ_LOCK_OFFSET = 12'h 80;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_OFFSET = 12'h 84;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OFFSET = 12'h 88;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_OFFSET = 12'h 8c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_OFFSET = 12'h 90;
+  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_OFFSET = 12'h 94;
+  parameter logic [CoreAw-1:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_OFFSET = 12'h 98;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_OFFSET = 12'h 9c;
+  parameter logic [CoreAw-1:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_OFFSET = 12'h a0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OFFSET = 12'h a4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OFFSET = 12'h a8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_OFFSET = 12'h ac;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_OFFSET = 12'h b0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_OFFSET = 12'h b4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_OFFSET = 12'h b8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_0_OFFSET = 12'h bc;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG0_DIGEST_1_OFFSET = 12'h c0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG1_DIGEST_0_OFFSET = 12'h c4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_HW_CFG1_DIGEST_1_OFFSET = 12'h c8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_0_OFFSET = 12'h cc;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET0_DIGEST_1_OFFSET = 12'h d0;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_0_OFFSET = 12'h d4;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET1_DIGEST_1_OFFSET = 12'h d8;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_0_OFFSET = 12'h dc;
+  parameter logic [CoreAw-1:0] OTP_CTRL_SECRET2_DIGEST_1_OFFSET = 12'h e0;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
@@ -657,18 +669,8 @@ package otp_ctrl_reg_pkg;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_PRIM_OTP_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_RECOV_PRIM_OTP_ALERT_RESVAL = 1'h 0;
-  parameter logic [19:0] OTP_CTRL_STATUS_RESVAL = 20'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_VENDOR_TEST_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_HW_CFG0_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_HW_CFG1_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_SECRET0_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_SECRET1_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_SECRET2_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_RESVAL = 1'h 0;
+  parameter logic [9:0] OTP_CTRL_STATUS_RESVAL = 10'h 0;
+  parameter logic [0:0] OTP_CTRL_STATUS_PARTITION_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_DAI_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_LCI_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_TIMEOUT_ERROR_RESVAL = 1'h 0;
@@ -678,6 +680,18 @@ package otp_ctrl_reg_pkg;
   parameter logic [0:0] OTP_CTRL_STATUS_BUS_INTEG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_DAI_IDLE_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_CHECK_PENDING_RESVAL = 1'h 0;
+  parameter logic [10:0] OTP_CTRL_PARTITION_STATUS_0_RESVAL = 11'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_VENDOR_TEST_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_CREATOR_SW_CFG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_OWNER_SW_CFG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_ROT_CREATOR_AUTH_CODESIGN_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_ROT_CREATOR_AUTH_STATE_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_HW_CFG0_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_HW_CFG1_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_SECRET0_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_SECRET1_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_SECRET2_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_PARTITION_STATUS_0_LIFE_CYCLE_ERROR_RESVAL = 1'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_0_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_0_ERR_CODE_0_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_1_RESVAL = 3'h 0;
@@ -779,6 +793,7 @@ package otp_ctrl_reg_pkg;
     OTP_CTRL_INTR_TEST,
     OTP_CTRL_ALERT_TEST,
     OTP_CTRL_STATUS,
+    OTP_CTRL_PARTITION_STATUS_0,
     OTP_CTRL_ERR_CODE_0,
     OTP_CTRL_ERR_CODE_1,
     OTP_CTRL_ERR_CODE_2,
@@ -833,63 +848,64 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] OTP_CTRL_CORE_PERMIT [56] = '{
+  parameter logic [3:0] OTP_CTRL_CORE_PERMIT [57] = '{
     4'b 0001, // index[ 0] OTP_CTRL_INTR_STATE
     4'b 0001, // index[ 1] OTP_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] OTP_CTRL_INTR_TEST
     4'b 0001, // index[ 3] OTP_CTRL_ALERT_TEST
-    4'b 0111, // index[ 4] OTP_CTRL_STATUS
-    4'b 0001, // index[ 5] OTP_CTRL_ERR_CODE_0
-    4'b 0001, // index[ 6] OTP_CTRL_ERR_CODE_1
-    4'b 0001, // index[ 7] OTP_CTRL_ERR_CODE_2
-    4'b 0001, // index[ 8] OTP_CTRL_ERR_CODE_3
-    4'b 0001, // index[ 9] OTP_CTRL_ERR_CODE_4
-    4'b 0001, // index[10] OTP_CTRL_ERR_CODE_5
-    4'b 0001, // index[11] OTP_CTRL_ERR_CODE_6
-    4'b 0001, // index[12] OTP_CTRL_ERR_CODE_7
-    4'b 0001, // index[13] OTP_CTRL_ERR_CODE_8
-    4'b 0001, // index[14] OTP_CTRL_ERR_CODE_9
-    4'b 0001, // index[15] OTP_CTRL_ERR_CODE_10
-    4'b 0001, // index[16] OTP_CTRL_ERR_CODE_11
-    4'b 0001, // index[17] OTP_CTRL_ERR_CODE_12
-    4'b 0001, // index[18] OTP_CTRL_DIRECT_ACCESS_REGWEN
-    4'b 0001, // index[19] OTP_CTRL_DIRECT_ACCESS_CMD
-    4'b 0011, // index[20] OTP_CTRL_DIRECT_ACCESS_ADDRESS
-    4'b 1111, // index[21] OTP_CTRL_DIRECT_ACCESS_WDATA_0
-    4'b 1111, // index[22] OTP_CTRL_DIRECT_ACCESS_WDATA_1
-    4'b 1111, // index[23] OTP_CTRL_DIRECT_ACCESS_RDATA_0
-    4'b 1111, // index[24] OTP_CTRL_DIRECT_ACCESS_RDATA_1
-    4'b 0001, // index[25] OTP_CTRL_CHECK_TRIGGER_REGWEN
-    4'b 0001, // index[26] OTP_CTRL_CHECK_TRIGGER
-    4'b 0001, // index[27] OTP_CTRL_CHECK_REGWEN
-    4'b 1111, // index[28] OTP_CTRL_CHECK_TIMEOUT
-    4'b 1111, // index[29] OTP_CTRL_INTEGRITY_CHECK_PERIOD
-    4'b 1111, // index[30] OTP_CTRL_CONSISTENCY_CHECK_PERIOD
-    4'b 0001, // index[31] OTP_CTRL_VENDOR_TEST_READ_LOCK
-    4'b 0001, // index[32] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK
-    4'b 0001, // index[33] OTP_CTRL_OWNER_SW_CFG_READ_LOCK
-    4'b 0001, // index[34] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK
-    4'b 0001, // index[35] OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK
-    4'b 1111, // index[36] OTP_CTRL_VENDOR_TEST_DIGEST_0
-    4'b 1111, // index[37] OTP_CTRL_VENDOR_TEST_DIGEST_1
-    4'b 1111, // index[38] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0
-    4'b 1111, // index[39] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1
-    4'b 1111, // index[40] OTP_CTRL_OWNER_SW_CFG_DIGEST_0
-    4'b 1111, // index[41] OTP_CTRL_OWNER_SW_CFG_DIGEST_1
-    4'b 1111, // index[42] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0
-    4'b 1111, // index[43] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1
-    4'b 1111, // index[44] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0
-    4'b 1111, // index[45] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1
-    4'b 1111, // index[46] OTP_CTRL_HW_CFG0_DIGEST_0
-    4'b 1111, // index[47] OTP_CTRL_HW_CFG0_DIGEST_1
-    4'b 1111, // index[48] OTP_CTRL_HW_CFG1_DIGEST_0
-    4'b 1111, // index[49] OTP_CTRL_HW_CFG1_DIGEST_1
-    4'b 1111, // index[50] OTP_CTRL_SECRET0_DIGEST_0
-    4'b 1111, // index[51] OTP_CTRL_SECRET0_DIGEST_1
-    4'b 1111, // index[52] OTP_CTRL_SECRET1_DIGEST_0
-    4'b 1111, // index[53] OTP_CTRL_SECRET1_DIGEST_1
-    4'b 1111, // index[54] OTP_CTRL_SECRET2_DIGEST_0
-    4'b 1111  // index[55] OTP_CTRL_SECRET2_DIGEST_1
+    4'b 0011, // index[ 4] OTP_CTRL_STATUS
+    4'b 0011, // index[ 5] OTP_CTRL_PARTITION_STATUS_0
+    4'b 0001, // index[ 6] OTP_CTRL_ERR_CODE_0
+    4'b 0001, // index[ 7] OTP_CTRL_ERR_CODE_1
+    4'b 0001, // index[ 8] OTP_CTRL_ERR_CODE_2
+    4'b 0001, // index[ 9] OTP_CTRL_ERR_CODE_3
+    4'b 0001, // index[10] OTP_CTRL_ERR_CODE_4
+    4'b 0001, // index[11] OTP_CTRL_ERR_CODE_5
+    4'b 0001, // index[12] OTP_CTRL_ERR_CODE_6
+    4'b 0001, // index[13] OTP_CTRL_ERR_CODE_7
+    4'b 0001, // index[14] OTP_CTRL_ERR_CODE_8
+    4'b 0001, // index[15] OTP_CTRL_ERR_CODE_9
+    4'b 0001, // index[16] OTP_CTRL_ERR_CODE_10
+    4'b 0001, // index[17] OTP_CTRL_ERR_CODE_11
+    4'b 0001, // index[18] OTP_CTRL_ERR_CODE_12
+    4'b 0001, // index[19] OTP_CTRL_DIRECT_ACCESS_REGWEN
+    4'b 0001, // index[20] OTP_CTRL_DIRECT_ACCESS_CMD
+    4'b 0011, // index[21] OTP_CTRL_DIRECT_ACCESS_ADDRESS
+    4'b 1111, // index[22] OTP_CTRL_DIRECT_ACCESS_WDATA_0
+    4'b 1111, // index[23] OTP_CTRL_DIRECT_ACCESS_WDATA_1
+    4'b 1111, // index[24] OTP_CTRL_DIRECT_ACCESS_RDATA_0
+    4'b 1111, // index[25] OTP_CTRL_DIRECT_ACCESS_RDATA_1
+    4'b 0001, // index[26] OTP_CTRL_CHECK_TRIGGER_REGWEN
+    4'b 0001, // index[27] OTP_CTRL_CHECK_TRIGGER
+    4'b 0001, // index[28] OTP_CTRL_CHECK_REGWEN
+    4'b 1111, // index[29] OTP_CTRL_CHECK_TIMEOUT
+    4'b 1111, // index[30] OTP_CTRL_INTEGRITY_CHECK_PERIOD
+    4'b 1111, // index[31] OTP_CTRL_CONSISTENCY_CHECK_PERIOD
+    4'b 0001, // index[32] OTP_CTRL_VENDOR_TEST_READ_LOCK
+    4'b 0001, // index[33] OTP_CTRL_CREATOR_SW_CFG_READ_LOCK
+    4'b 0001, // index[34] OTP_CTRL_OWNER_SW_CFG_READ_LOCK
+    4'b 0001, // index[35] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK
+    4'b 0001, // index[36] OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK
+    4'b 1111, // index[37] OTP_CTRL_VENDOR_TEST_DIGEST_0
+    4'b 1111, // index[38] OTP_CTRL_VENDOR_TEST_DIGEST_1
+    4'b 1111, // index[39] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0
+    4'b 1111, // index[40] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1
+    4'b 1111, // index[41] OTP_CTRL_OWNER_SW_CFG_DIGEST_0
+    4'b 1111, // index[42] OTP_CTRL_OWNER_SW_CFG_DIGEST_1
+    4'b 1111, // index[43] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0
+    4'b 1111, // index[44] OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1
+    4'b 1111, // index[45] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0
+    4'b 1111, // index[46] OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1
+    4'b 1111, // index[47] OTP_CTRL_HW_CFG0_DIGEST_0
+    4'b 1111, // index[48] OTP_CTRL_HW_CFG0_DIGEST_1
+    4'b 1111, // index[49] OTP_CTRL_HW_CFG1_DIGEST_0
+    4'b 1111, // index[50] OTP_CTRL_HW_CFG1_DIGEST_1
+    4'b 1111, // index[51] OTP_CTRL_SECRET0_DIGEST_0
+    4'b 1111, // index[52] OTP_CTRL_SECRET0_DIGEST_1
+    4'b 1111, // index[53] OTP_CTRL_SECRET1_DIGEST_0
+    4'b 1111, // index[54] OTP_CTRL_SECRET1_DIGEST_1
+    4'b 1111, // index[55] OTP_CTRL_SECRET2_DIGEST_0
+    4'b 1111  // index[56] OTP_CTRL_SECRET2_DIGEST_1
   };
 
 endpackage

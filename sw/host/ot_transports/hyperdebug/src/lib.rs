@@ -10,11 +10,12 @@ use std::fs;
 use std::io::{Read, Write};
 use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 use std::sync::LazyLock;
 use std::time::Duration;
 
 use anyhow::{Context, Result, bail, ensure};
+use clap::Args;
 use regex::Regex;
 use serialport::TTYPort;
 
@@ -25,15 +26,13 @@ use opentitanlib::io::i2c::Bus;
 use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
 use opentitanlib::io::uart::Uart;
-use opentitanlib::transport::MaintainConnection;
-use opentitanlib::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use opentitanlib::transport::common::uart::flock_serial;
+use opentitanlib::io::uart::serial::flock_serial;
 use opentitanlib::transport::{
-    Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
-    UpdateFirmware,
+    Capabilities, Capability, FpgaOps, ProgressIndicator, SetJtagPins, Transport, TransportError,
+    TransportInterfaceType, UpdateFirmware,
 };
 use opentitanlib::util::fs::builtin_file;
-use opentitanlib::util::usb::UsbBackend;
+use opentitanlib::util::usb::{UsbBackend, UsbHub, UsbHubOp};
 use ot_transport_chipwhisperer::ChipWhisperer;
 use ot_transport_chipwhisperer::board::Board;
 use ot_transport_chipwhisperer::board::{Cw310, Cw340};
@@ -64,6 +63,7 @@ pub struct Hyperdebug<T: Flavor> {
     current_firmware_version: Option<String>,
     cmsis_google_capabilities: Cell<Option<u16>>,
     phantom: PhantomData<T>,
+    cw_usb_port_workaround: Option<u8>,
 }
 
 /// Trait allowing slightly different treatment of USB devices that work almost like a
@@ -84,7 +84,7 @@ pub trait Flavor {
     }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
-    fn load_bitstream(_fpga_program: &FpgaProgram) -> Result<()> {
+    fn load_bitstream(_bitstream: &[u8], _progress: &dyn ProgressIndicator) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
     fn clear_bitstream() -> Result<()> {
@@ -146,8 +146,9 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
+        cw_usb_port_workaround: Option<u8>,
     ) -> Result<Self> {
-        let mut device = UsbBackend::new(
+        let device = UsbBackend::new(
             usb_vid.unwrap_or_else(T::get_default_usb_vid),
             usb_pid.unwrap_or_else(T::get_default_usb_pid),
             usb_serial,
@@ -301,13 +302,14 @@ impl<T: Flavor> Hyperdebug<T> {
                 console_tty: console_tty.ok_or_else(|| {
                     TransportError::CommunicationError("Missing console interface".to_string())
                 })?,
-                conn: RefCell::new(Weak::new()),
+                conn: RefCell::new(None),
                 usb_device: RefCell::new(device),
                 selected_spi: Cell::new(0),
             }),
             current_firmware_version,
             cmsis_google_capabilities: Cell::new(None),
             phantom: PhantomData,
+            cw_usb_port_workaround,
         };
         Ok(result)
     }
@@ -423,7 +425,7 @@ impl<T: Flavor> Hyperdebug<T> {
 /// even if the caller lets the outer Hyperdebug struct run out of scope.
 pub struct Inner {
     console_tty: PathBuf,
-    conn: RefCell<Weak<Conn>>,
+    conn: RefCell<Option<Rc<Conn>>>,
     usb_device: RefCell<UsbBackend>,
     selected_spi: Cell<u8>,
 }
@@ -444,20 +446,15 @@ pub struct Conn {
     first_use: Cell<bool>,
 }
 
-// The way that the HyperDebug allows callers to request optimization for a sequence of operations
-// without other `opentitantool` processes meddling with the USB devices, is to let the caller
-// hold an `Rc`-reference to the `Conn` struct, thereby keeping the USB connection alive.
-impl MaintainConnection for Conn {}
-
 impl Inner {
     /// General timeout for response on the HyperDebug text-based USB command console.
     const COMMAND_TIMEOUT: Duration = Duration::from_millis(3000);
 
     /// Establish connection with HyperDebug console USB interface.
     pub fn connect(&self) -> Result<Rc<Conn>> {
-        if let Some(conn) = self.conn.borrow().upgrade() {
+        if let Some(ref conn) = *self.conn.borrow() {
             // The driver already has a connection, use it.
-            return Ok(conn);
+            return Ok(conn.clone());
         }
         // Establish a new connection.
         let port_name = self
@@ -475,13 +472,9 @@ impl Inner {
             console_port: RefCell::new(port),
             first_use: Cell::new(true),
         });
-        // Return a (strong) reference to the newly opened connection, while keeping a weak
-        // reference to the same in this `Inner` object.  The result is that if the caller keeps
-        // the strong reference alive long enough, the next invocation of `connect()` will be able
-        // to re-use the same instance.  If on the other hand, the caller drops their reference,
-        // then the weak reference will not keep the instance alive, and next time a new
-        // connection will be made.
-        *self.conn.borrow_mut() = Rc::downgrade(&conn);
+        // Keep a reference to the newly opened connection, so the next invocation of `connect()`
+        // will be able to re-use the same instance.
+        *self.conn.borrow_mut() = Some(conn.clone());
         Ok(conn)
     }
 
@@ -672,7 +665,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         let (enable_cmd, idx) = T::spi_index(&self.inner, instance)?;
         if let Some(instance) = self.cached_io_interfaces.spis.borrow().get(&idx) {
-            return Ok(Rc::clone(instance));
+            return Ok(instance.clone());
         }
         let instance: Rc<dyn Target> = Rc::new(spi::HyperdebugSpiTarget::open(
             &self.inner,
@@ -684,22 +677,22 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         self.cached_io_interfaces
             .spis
             .borrow_mut()
-            .insert(idx, Rc::clone(&instance));
+            .insert(idx, instance.clone());
         Ok(instance)
     }
 
     // Create I2C Target instance, or return one from a cache of previously created instances.
     fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
         if let Some(instance) = self.cached_io_interfaces.i2cs_by_name.borrow().get(name) {
-            return Ok(Rc::clone(instance));
+            return Ok(instance.clone());
         }
         let (idx, mode) = T::i2c_index(&self.inner, name)?;
         if let Some(instance) = self.cached_io_interfaces.i2cs_by_index.borrow().get(&idx) {
             self.cached_io_interfaces
                 .i2cs_by_name
                 .borrow_mut()
-                .insert(name.to_string(), Rc::clone(instance));
-            return Ok(Rc::clone(instance));
+                .insert(name.to_string(), instance.clone());
+            return Ok(instance.clone());
         }
         let cmsis_google_capabilities = self.get_cmsis_google_capabilities()?;
         let instance: Rc<dyn Bus> = Rc::new(
@@ -733,11 +726,11 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         self.cached_io_interfaces
             .i2cs_by_index
             .borrow_mut()
-            .insert(idx, Rc::clone(&instance));
+            .insert(idx, instance.clone());
         self.cached_io_interfaces
             .i2cs_by_name
             .borrow_mut()
-            .insert(name.to_string(), Rc::clone(&instance));
+            .insert(name.to_string(), instance.clone());
         Ok(instance)
     }
 
@@ -751,7 +744,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                     .borrow()
                     .get(&uart_interface.tty)
                 {
-                    return Ok(Rc::clone(instance));
+                    return Ok(instance.clone());
                 }
                 let supports_clearing_queues =
                     self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_UART_QUEUE_CLEAR != 0;
@@ -763,7 +756,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 self.cached_io_interfaces
                     .uarts
                     .borrow_mut()
-                    .insert(uart_interface.tty.clone(), Rc::clone(&instance));
+                    .insert(uart_interface.tty.clone(), instance.clone());
                 Ok(instance)
             }
             _ => Err(TransportError::InvalidInstance(
@@ -783,11 +776,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 .borrow_mut()
                 .entry(pinname.to_string())
             {
-                Entry::Vacant(v) => {
-                    let u = v.insert(T::gpio_pin(&self.inner, pinname)?);
-                    Rc::clone(u)
-                }
-                Entry::Occupied(o) => Rc::clone(o.get()),
+                Entry::Vacant(v) => v.insert(T::gpio_pin(&self.inner, pinname)?).clone(),
+                Entry::Occupied(o) => o.get().clone(),
             },
         )
     }
@@ -830,12 +820,16 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         )?))
     }
 
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        Ok(self)
+    }
+
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             let usb_vid = self.inner.usb_device.borrow().get_vendor_id();
             let usb_pid = self.inner.usb_device.borrow().get_product_id();
             dfu::update_firmware(
-                &mut self.inner.usb_device.borrow_mut(),
+                &self.inner.usb_device.borrow(),
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
@@ -869,10 +863,6 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 }
                 _ => Err(TransportError::UnsupportedOperation.into()),
             }
-        } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            T::load_bitstream(fpga_program).map(|_| None)
-        } else if action.downcast_ref::<ClearBitstream>().is_some() {
-            T::clear_bitstream().map(|_| None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
@@ -899,14 +889,57 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
         Ok(new_jtag)
     }
 
-    /// The way that the HyperDebug driver allows callers to request optimization for a sequence
-    /// of operations without other `opentitantool` processes meddling with the USB devices, is to
-    /// let the caller hold an `Rc`-reference to the `Conn` struct, thereby keeping the USB
-    /// connection alive.  Callers should only hold ond to the object as long as they can
-    /// guarantee that no other `opentitantool` processes simultaneously attempt to access the
-    /// same HyperDebug USB device.
-    fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
-        Ok(self.inner.connect()?)
+    fn relinquish_exclusive_access(&self, callback: Box<dyn FnOnce() + '_>) -> Result<()> {
+        *self.inner.conn.borrow_mut() = None;
+        callback();
+        Ok(())
+    }
+}
+
+impl<T: Flavor> Hyperdebug<T> {
+    // Return the parent hub of the hyperdebug device.
+    fn dut_usb_parent_hub(&self) -> Result<UsbHub> {
+        UsbHub::from_device(
+            &self
+                .inner
+                .usb_device
+                .borrow()
+                .device()
+                .get_parent()
+                .ok_or(anyhow::anyhow!("Hyperdebug device has no parent?!"))?,
+        )
+        .context("failed to open the parent hub of the hyperdebug device")
+    }
+
+    fn enable_dut_usb_port(&self, en: bool) -> Result<()> {
+        if let Some(port) = self.cw_usb_port_workaround {
+            let (op, msg) = match en {
+                true => (UsbHubOp::PowerOn, "on"),
+                false => (UsbHubOp::PowerOff, "off"),
+            };
+            let hub = self.dut_usb_parent_hub()?;
+            log::info!("Powering {msg} port {port} on hyperdebug parent hub (CW USB workaround)");
+            hub.op(op, port, Duration::from_secs(1), true)
+                .context(format!(
+                    "failed to disable port {port} on hyperdebug parent hub (CW USB workaround)"
+                ))?;
+        }
+        Ok(())
+    }
+}
+
+impl<T: Flavor> FpgaOps for Hyperdebug<T> {
+    fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
+        // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
+        // device and only re-enable it after loading.
+        self.enable_dut_usb_port(false)?;
+        T::load_bitstream(bitstream, progress)?;
+        self.enable_dut_usb_port(true)
+    }
+
+    fn clear_bitstream(&self) -> Result<()> {
+        self.enable_dut_usb_port(false)?;
+        T::clear_bitstream()
     }
 }
 
@@ -997,11 +1030,11 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn get_default_usb_pid() -> u16 {
         StandardFlavor::get_default_usb_pid()
     }
-    fn load_bitstream(fpga_program: &FpgaProgram) -> Result<()> {
+    fn load_bitstream(bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // Try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
         let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-        board.load_bitstream(fpga_program)?;
+        board.load_bitstream(bitstream, progress)?;
         Ok(())
     }
     fn clear_bitstream() -> Result<()> {
@@ -1011,16 +1044,28 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct HyperdebugOpts {
+    /// Work around the USB transceiver on the CW boards not being disabled when the FPGA is
+    /// is not loaded. Enabling this option will cause the backend to disable the USB port
+    /// prior to clearing the bitstream and only re-enable it after loading. It assumes that
+    /// the USB port is connected to the same parent hub as the hyperdebug device and this option
+    /// specifies the port number of that hub.
+    #[arg(long)]
+    pub cw_usb_port_workaround: Option<u8>,
+}
+
 struct HyperdebugBackend<T>(T);
 
 impl<T: Flavor + 'static> Backend for HyperdebugBackend<T> {
-    type Opts = ();
+    type Opts = HyperdebugOpts;
 
-    fn create_transport(args: &BackendOpts, _: &()) -> Result<Box<dyn Transport>> {
+    fn create_transport(args: &BackendOpts, opts: &HyperdebugOpts) -> Result<Box<dyn Transport>> {
         Ok(Box::new(Hyperdebug::<T>::open(
             args.usb_vid,
             args.usb_pid,
             args.usb_serial.as_deref(),
+            opts.cw_usb_port_workaround,
         )?))
     }
 }
@@ -1067,8 +1112,13 @@ builtin_file!(
     include_str!("../config/hyperdebug_teacup.json5")
 );
 builtin_file!(
-    "hyperdebug_teacup_default.json5",
-    include_str!("../config/hyperdebug_teacup_default.json5")
+    "hyperdebug_teacup_bga69.json5",
+    include_str!("../config/hyperdebug_teacup_bga69.json5")
+);
+define_interface!(
+    "teacup-bga69",
+    HyperdebugBackend<StandardFlavor>,
+    "/__builtin__/hyperdebug_teacup_bga69.json5"
 );
 
 define_interface!("hyperdebug", HyperdebugBackend<StandardFlavor>);

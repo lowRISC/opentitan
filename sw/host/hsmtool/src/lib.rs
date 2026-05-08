@@ -4,7 +4,7 @@
 
 pub mod commands;
 pub mod error;
+pub mod extra;
 pub mod module;
 pub mod profile;
-pub mod spxef;
 pub mod util;

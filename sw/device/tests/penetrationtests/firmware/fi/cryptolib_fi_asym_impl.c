@@ -9,11 +9,11 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -104,14 +104,12 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, num_bytes);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Create label.
-  otcrypto_const_byte_buf_t label_buf = {.data = kTestLabel,
-                                         .len = kTestLabelLen};
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kTestLabel, kTestLabelLen);
 
   if (uj_input.op_enc) {
     // Encryption.
@@ -123,29 +121,26 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
         .key_length = public_key_bytes,
         .key = public_key_data,
     };
-    TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+    HARDENED_TRY(
+        otcrypto_rsa_public_key_construct(rsa_size, &modulus, &public_key));
 
     // Create input message.
     uint8_t msg_buf[num_words];
     memcpy(msg_buf, uj_input.data, uj_input.data_len);
-    otcrypto_const_byte_buf_t input_message = {
-        .len = uj_input.data_len,
-        .data = msg_buf,
-    };
+    otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, msg_buf, uj_input.data_len);
 
     // Output buffer.
     uint32_t ciphertext_buf[kPentestRsaMaxMsgWords];
-    otcrypto_word32_buf_t ciphertext = {
-        .data = ciphertext_buf,
-        .len = num_words,
-    };
+    otcrypto_word32_buf_t ciphertext =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ciphertext_buf, num_words);
 
     // Trigger window.
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
     otcrypto_status_t status_out = otcrypto_rsa_encrypt(
-        &public_key, hash_mode, input_message, label_buf, ciphertext);
+        &public_key, hash_mode, &input_message, &label_buf, &ciphertext);
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
@@ -170,15 +165,11 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memset(d_buf, 0, sizeof(d_buf));
     memcpy(d_buf, uj_input.d, num_bytes);
 
-    otcrypto_const_word32_buf_t d_share0 = {
-        .data = d_buf,
-        .len = num_words,
-    };
+    otcrypto_const_word32_buf_t d_share0 =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
     uint32_t share1[kPentestRsaMaxDWords] = {0};
-    otcrypto_const_word32_buf_t d_share1 = {
-        .data = share1,
-        .len = num_words,
-    };
+    otcrypto_const_word32_buf_t d_share1 =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
     // Construct the private key.
     otcrypto_key_config_t private_key_config = {
@@ -186,7 +177,7 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
         .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
         .key_length = private_key_bytes,
         .hw_backed = kHardenedBoolFalse,
-        .security_level = kOtcryptoKeySecurityLevelLow,
+        .security_level = kOtcryptoKeySecurityLevelHigh,
     };
     size_t keyblob_words = ceil_div(private_key_blob_bytes, sizeof(uint32_t));
     uint32_t keyblob[keyblob_words];
@@ -200,8 +191,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                                d_share1, &private_key));
+    HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
+        rsa_size, &modulus, &d_share0, &d_share1, &private_key));
     if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
@@ -210,26 +201,22 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memset(ciphertext_buf, 0, sizeof(ciphertext_buf));
     memcpy(ciphertext_buf, uj_input.data, uj_input.data_len);
 
-    otcrypto_const_word32_buf_t ciphertext = {
-        .len = num_words,
-        .data = ciphertext_buf,
-    };
+    otcrypto_const_word32_buf_t ciphertext = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_word32_buf_t, ciphertext_buf, num_words);
 
     // Create output buffer for the plaintext.
     size_t kMaxPlaintextBytes = num_bytes - 2 * hash_digest_bytes - 2;
     uint8_t plaintext_buf[kMaxPlaintextBytes];
-    otcrypto_byte_buf_t plaintext = {
-        .data = plaintext_buf,
-        .len = kMaxPlaintextBytes,
-    };
+    otcrypto_byte_buf_t plaintext = OTCRYPTO_MAKE_BUF(
+        otcrypto_byte_buf_t, plaintext_buf, kMaxPlaintextBytes);
 
     size_t msg_len;
     // Trigger window.
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
-                             plaintext, &msg_len));
+    HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, &ciphertext,
+                                      &label_buf, &plaintext, &msg_len));
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }
@@ -321,15 +308,11 @@ status_t cryptolib_fi_rsa_sign_impl(
   memset(d_buf, 0, sizeof(d_buf));
   memcpy(d_buf, uj_input.d, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = d_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
   uint32_t share1[kPentestRsaMaxDWords] = {0};
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -337,7 +320,7 @@ status_t cryptolib_fi_rsa_sign_impl(
       .key_mode = key_mode,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
   size_t keyblob_words = ceil_div(private_key_blob_bytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
@@ -352,17 +335,15 @@ status_t cryptolib_fi_rsa_sign_impl(
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, d_share0,
-                                              d_share1, &private_key));
+  HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
+      rsa_size, &modulus, &d_share0, &d_share1, &private_key));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -370,10 +351,8 @@ status_t cryptolib_fi_rsa_sign_impl(
   // Copy the message into the buffer.
   uint8_t msg[uj_input.data_len];
   memcpy(msg, uj_input.data, uj_input.data_len);
-  otcrypto_const_byte_buf_t msg_buf = {
-      .len = uj_input.data_len,
-      .data = msg,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.data_len);
 
   // Buffer to store the digest.
   uint32_t msg_digest_data[hash_digest_words];
@@ -388,28 +367,27 @@ status_t cryptolib_fi_rsa_sign_impl(
   }
   // Hash the message.
   if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
   } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_384(&msg_buf, &msg_digest));
   } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
   }
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
   uint32_t sig[kPentestRsaMaxMsgWords];
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = num_words,
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, num_words);
 
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_START);
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
+  HARDENED_TRY(
+      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -499,10 +477,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   memset(n_buf, 0, sizeof(n_buf));
   memcpy(n_buf, uj_input.n, uj_input.n_len);
 
-  otcrypto_const_word32_buf_t modulus = {
-      .data = n_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t modulus =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
   // Create the public key.
   uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
@@ -515,7 +491,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, &public_key));
+  HARDENED_TRY(
+      otcrypto_rsa_public_key_construct(rsa_size, &modulus, &public_key));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
@@ -526,18 +503,14 @@ status_t cryptolib_fi_rsa_verify_impl(
   memset(sig_buf, 0, sizeof(sig_buf));
   memcpy(sig_buf, uj_input.sig, uj_input.sig_len);
 
-  otcrypto_const_word32_buf_t sig = {
-      .data = sig_buf,
-      .len = num_words,
-  };
+  otcrypto_const_word32_buf_t sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_buf, num_words);
 
   // Copy the message into the buffer.
   uint8_t msg[uj_input.data_len];
   memcpy(msg, uj_input.data, uj_input.data_len);
-  otcrypto_const_byte_buf_t msg_buf = {
-      .len = uj_input.data_len,
-      .data = msg,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.data_len);
 
   // Buffer to store the digest.
   uint32_t msg_digest_data[hash_digest_words];
@@ -553,11 +526,11 @@ status_t cryptolib_fi_rsa_verify_impl(
   }
   // Hash the message.
   if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
   } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_384(&msg_buf, &msg_digest));
   } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+    HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
   }
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
@@ -569,13 +542,12 @@ status_t cryptolib_fi_rsa_verify_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_VERIFY_START);
     pentest_set_trigger_high();
   }
-  status_t status = otcrypto_rsa_verify(&public_key, msg_digest, padding_mode,
-                                        sig, &verification_result);
+  HARDENED_TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, &sig,
+                                   &verification_result));
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_VERIFY_END);
   }
-  TRY(status);
 
   // Return data back to host.
   uj_output->result = true;
@@ -604,7 +576,7 @@ status_t cryptolib_fi_p256_ecdh_impl(
               .key_length = kPentestP256Bytes,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolTrue,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
@@ -635,7 +607,7 @@ status_t cryptolib_fi_p256_ecdh_impl(
               .key_length = kPentestP256Bytes,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolTrue,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
           },
       .keyblob_length = sizeof(shared_secretblob),
       .keyblob = shared_secretblob,
@@ -643,17 +615,19 @@ status_t cryptolib_fi_p256_ecdh_impl(
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_ECDH_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
+  HARDENED_TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_ECDH_END);
 
   uint32_t share0[kPentestP256Words];
   uint32_t share1[kPentestP256Words];
   uint32_t ss[kPentestP256Words];
-  TRY(otcrypto_export_blinded_key(
-      &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+  otcrypto_word32_buf_t share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  HARDENED_TRY(
+      otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
   for (size_t i = 0; i < kPentestP256Words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -674,7 +648,7 @@ status_t cryptolib_fi_p256_sign_impl(
       .key_mode = kOtcryptoKeyModeEcdsaP256,
       .key_length = kPentestP256Bytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
 
   // Create the private key.
@@ -709,7 +683,7 @@ status_t cryptolib_fi_p256_sign_impl(
     if (uj_input.trigger == 0) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
+    HARDENED_TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
     pentest_set_trigger_low();
     if (uj_input.trigger == 0) {
       pentest_set_trigger_low();
@@ -729,10 +703,8 @@ status_t cryptolib_fi_p256_sign_impl(
 
   // Set up the signature buffer.
   uint32_t sig[kPentestP256Words * 2] = {0};
-  otcrypto_word32_buf_t signature_mut = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_word32_buf_t signature_mut =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
@@ -740,8 +712,8 @@ status_t cryptolib_fi_p256_sign_impl(
     pentest_set_trigger_high();
   }
   // Sign the message.
-  TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+  HARDENED_TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key,
+                                               message_digest, &signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_SIGN_END);
@@ -795,17 +767,16 @@ status_t cryptolib_fi_p256_verify_impl(
   memcpy(signature_p256.r, uj_input.r, P256_CMD_BYTES);
   memcpy(signature_p256.s, uj_input.s, P256_CMD_BYTES);
 
-  otcrypto_const_word32_buf_t signature = {
-      .len = kPentestP256Words * 2,
-      .data = (uint32_t *)&signature_p256,
-  };
+  otcrypto_const_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t,
+                        (uint32_t *)&signature_p256, kPentestP256Words * 2);
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_VERIFY_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest, signature,
-                                 &verification_result));
+  HARDENED_TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest,
+                                          &signature, &verification_result));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_VERIFY_END);
 
@@ -836,7 +807,7 @@ status_t cryptolib_fi_p384_ecdh_impl(
               .key_length = kPentestP384Bytes,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolTrue,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
@@ -867,7 +838,7 @@ status_t cryptolib_fi_p384_ecdh_impl(
               .key_length = kPentestP384Bytes,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolTrue,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
           },
       .keyblob_length = sizeof(shared_secretblob),
       .keyblob = shared_secretblob,
@@ -875,17 +846,19 @@ status_t cryptolib_fi_p384_ecdh_impl(
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_ECDH_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+  HARDENED_TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_ECDH_END);
 
   uint32_t share0[kPentestP384Words];
   uint32_t share1[kPentestP384Words];
   uint32_t ss[kPentestP384Words];
-  TRY(otcrypto_export_blinded_key(
-      &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+  otcrypto_word32_buf_t share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  HARDENED_TRY(
+      otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
   for (size_t i = 0; i < kPentestP384Words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -906,7 +879,7 @@ status_t cryptolib_fi_p384_sign_impl(
       .key_mode = kOtcryptoKeyModeEcdsaP384,
       .key_length = kPentestP384Bytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
 
   // Create the private key.
@@ -941,7 +914,7 @@ status_t cryptolib_fi_p384_sign_impl(
     if (uj_input.trigger == 0) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
+    HARDENED_TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
     pentest_set_trigger_low();
     if (uj_input.trigger == 0) {
       pentest_set_trigger_low();
@@ -961,18 +934,16 @@ status_t cryptolib_fi_p384_sign_impl(
 
   // Set up the signature buffer.
   uint32_t sig[kPentestP384Words * 2] = {0};
-  otcrypto_word32_buf_t signature_mut = {
-      .data = sig,
-      .len = ARRAYSIZE(sig),
-  };
+  otcrypto_word32_buf_t signature_mut =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_START);
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
-                                      signature_mut));
+  HARDENED_TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key,
+                                               message_digest, &signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_END);
@@ -1026,17 +997,16 @@ status_t cryptolib_fi_p384_verify_impl(
   memcpy(signature_p384.r, uj_input.r, P384_CMD_BYTES);
   memcpy(signature_p384.s, uj_input.s, P384_CMD_BYTES);
 
-  otcrypto_const_word32_buf_t signature = {
-      .len = kPentestP384Words * 2,
-      .data = (uint32_t *)&signature_p384,
-  };
+  otcrypto_const_word32_buf_t signature =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t,
+                        (uint32_t *)&signature_p384, kPentestP384Words * 2);
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_VERIFY_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest, signature,
-                                 &verification_result));
+  HARDENED_TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest,
+                                          &signature, &verification_result));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_VERIFY_END);
 

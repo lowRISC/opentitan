@@ -9,7 +9,7 @@ use std::time::Duration;
 use anyhow::{Result, ensure};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::uart::Uart;
@@ -102,7 +102,7 @@ fn chip_sw_sysrst_ctrl_reset(
     set_test_phase(transport, TestPhase::CheckComboReset)?;
     set_pins(transport, config, PADS_VALUE_INIT)?;
     // Reset target.
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Wait until target has prepared for the test.
     UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
@@ -165,7 +165,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     let uart = transport.uart("console")?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     execute_test!(
         chip_sw_sysrst_ctrl_reset,

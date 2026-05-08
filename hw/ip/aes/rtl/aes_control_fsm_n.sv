@@ -18,7 +18,8 @@ module aes_control_fsm_n
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit SecMasking = 0
+  parameter bit AESGCMEnable = 0,
+  parameter bit SecMasking   = 0
 ) (
   input  logic                                    clk_i,
   input  logic                                    rst_ni,
@@ -35,6 +36,11 @@ module aes_control_fsm_n
   input  prs_rate_e                               prng_reseed_rate_i,
   input  logic                                    manual_operation_i,
   input  logic                                    key_touch_forces_reseed_i,
+  input  logic                                    ctrl_gcm_qe_i,
+  output logic                                    ctrl_gcm_we_o,
+  input  logic                                    ctrl_gcm_phase_i,
+  output logic                                    gcm_init_done_o,
+  input  gcm_phase_e                              gcm_phase_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
   input  logic                                    data_out_clear_i,
@@ -52,11 +58,12 @@ module aes_control_fsm_n
   input  logic                  [NumRegsData-1:0] data_in_qe_i,
   input  logic                  [NumRegsData-1:0] data_out_re_i,
   output logic                                    data_in_we_o,
-  output logic                                    data_out_we_no,          // Sparsify
+  output data_out_sel_e                           data_out_sel_o,
+  output logic                                    data_out_we_no,            // Sparsify
 
   // Previous input data register
   output dip_sel_e                                data_in_prev_sel_o,
-  output logic                                    data_in_prev_we_no,      // Sparsify
+  output logic                                    data_in_prev_we_no,        // Sparsify
 
   // Cipher I/O muxes
   output si_sel_e                                 state_in_sel_o,
@@ -64,19 +71,20 @@ module aes_control_fsm_n
   output add_so_sel_e                             add_state_out_sel_o,
 
   // Counter
-  output logic                                    ctr_incr_no,             // Sparsify
-  input  logic                                    ctr_ready_ni,            // Sparsify
-  input  logic                 [NumSlicesCtr-1:0] ctr_we_ni,               // Sparsify
+  output logic                                    ctr_inc32_no,              // Sparsify
+  output logic                                    ctr_incr_no,               // Sparsify
+  input  logic                                    ctr_ready_ni,              // Sparsify
+  input  logic                 [NumSlicesCtr-1:0] ctr_we_ni,                 // Sparsify
 
   // Cipher core control and sync
-  output logic                                    cipher_in_valid_no,      // Sparsify
-  input  logic                                    cipher_in_ready_ni,      // Sparsify
-  input  logic                                    cipher_out_valid_ni,     // Sparsify
-  output logic                                    cipher_out_ready_no,     // Sparsify
-  output logic                                    cipher_crypt_no,         // Sparsify
-  input  logic                                    cipher_crypt_ni,         // Sparsify
-  output logic                                    cipher_dec_key_gen_no,   // Sparsify
-  input  logic                                    cipher_dec_key_gen_ni,   // Sparsify
+  output logic                                    cipher_in_valid_no,        // Sparsify
+  input  logic                                    cipher_in_ready_ni,        // Sparsify
+  input  logic                                    cipher_out_valid_ni,       // Sparsify
+  output logic                                    cipher_out_ready_no,       // Sparsify
+  output logic                                    cipher_crypt_no,           // Sparsify
+  input  logic                                    cipher_crypt_ni,           // Sparsify
+  output logic                                    cipher_dec_key_gen_no,     // Sparsify
+  input  logic                                    cipher_dec_key_gen_ni,     // Sparsify
   output logic                                    cipher_prng_reseed_o,
   input  logic                                    cipher_prng_reseed_i,
   output logic                                    cipher_key_clear_o,
@@ -84,17 +92,23 @@ module aes_control_fsm_n
   output logic                                    cipher_data_out_clear_o,
   input  logic                                    cipher_data_out_clear_i,
 
+  // GHASH control and sync
+  output logic                                    ghash_in_valid_no,         // Sparsify
+  input  logic                                    ghash_in_ready_ni,         // Sparsify
+  input  logic                                    ghash_out_valid_ni,        // Sparsify
+  output logic                                    ghash_out_ready_no,        // Sparsify
+  output logic                                    ghash_load_hash_subkey_no, // Sparsify
+
   // Initial key registers
   output key_init_sel_e                           key_init_sel_o,
-  output logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we_no,          // Sparsify
+  output logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we_no,            // Sparsify
 
   // IV registers
   output iv_sel_e                                 iv_sel_o,
-  output logic                 [NumSlicesCtr-1:0] iv_we_no,                // Sparsify
+  output logic                 [NumSlicesCtr-1:0] iv_we_no,                  // Sparsify
 
   // Pseudo-random number generator interface
-  output logic                                    prng_data_req_o,
-  input  logic                                    prng_data_ack_i,
+  output logic                                    prng_update_o,
   output logic                                    prng_reseed_req_o,
   input  logic                                    prng_reseed_ack_i,
 
@@ -134,6 +148,9 @@ module aes_control_fsm_n
     prng_reseed_rate_i,
     manual_operation_i,
     key_touch_forces_reseed_i,
+    ctrl_gcm_qe_i,
+    ctrl_gcm_phase_i,
+    gcm_phase_i,
     start_i,
     key_iv_data_in_clear_i,
     data_out_clear_i,
@@ -156,7 +173,8 @@ module aes_control_fsm_n
     cipher_prng_reseed_i,
     cipher_key_clear_i,
     cipher_data_out_clear_i,
-    prng_data_ack_i,
+    ghash_in_ready_ni,
+    ghash_out_valid_ni,
     prng_reseed_ack_i,
     output_lost_i
   });
@@ -174,6 +192,9 @@ module aes_control_fsm_n
     prng_reseed_rate_i,
     manual_operation_i,
     key_touch_forces_reseed_i,
+    ctrl_gcm_qe_i,
+    ctrl_gcm_phase_i,
+    gcm_phase_i,
     start_i,
     key_iv_data_in_clear_i,
     data_out_clear_i,
@@ -196,7 +217,8 @@ module aes_control_fsm_n
     cipher_prng_reseed_i,
     cipher_key_clear_i,
     cipher_data_out_clear_i,
-    prng_data_ack_i,
+    ghash_in_ready_ni,
+    ghash_out_valid_ni,
     prng_reseed_ack_i,
     output_lost_i
   };
@@ -221,6 +243,10 @@ module aes_control_fsm_n
   prs_rate_e                               prng_reseed_rate;
   logic                                    manual_operation;
   logic                                    key_touch_forces_reseed;
+  logic                                    ctrl_gcm_qe;
+  logic                                    ctrl_gcm_phase;
+  gcm_phase_e                              gcm_phase;
+  logic             [$bits(gcm_phase)-1:0] gcm_phase_raw;
   logic                                    start;
   logic                                    key_iv_data_in_clear;
   logic                                    data_out_clear;
@@ -243,7 +269,8 @@ module aes_control_fsm_n
   logic                                    cipher_prng_reseed_in_buf;
   logic                                    cipher_key_clear_in_buf;
   logic                                    cipher_data_out_clear_in_buf;
-  logic                                    prng_data_ack;
+  logic                                    ghash_in_ready_n;
+  logic                                    ghash_out_valid_n;
   logic                                    prng_reseed_ack;
   logic                                    output_lost_in_buf;
 
@@ -257,6 +284,9 @@ module aes_control_fsm_n
           prng_reseed_rate,
           manual_operation,
           key_touch_forces_reseed,
+          ctrl_gcm_qe,
+          ctrl_gcm_phase,
+          gcm_phase_raw,
           start,
           key_iv_data_in_clear,
           data_out_clear,
@@ -279,22 +309,28 @@ module aes_control_fsm_n
           cipher_prng_reseed_in_buf,
           cipher_key_clear_in_buf,
           cipher_data_out_clear_in_buf,
-          prng_data_ack,
+          ghash_in_ready_n,
+          ghash_out_valid_n,
           prng_reseed_ack,
           output_lost_in_buf} = in_buf;
 
   assign cipher_op = ciph_op_e'(cipher_op_raw);
+  assign gcm_phase = gcm_phase_e'(gcm_phase_raw);
 
   // Intermediate output signals
   logic                                    ctrl_we;
+  logic                                    ctrl_gcm_we;
+  logic                                    gcm_init_done;
   logic                                    alert;
   logic                                    data_in_we;
+  data_out_sel_e                           data_out_sel;
   logic                                    data_out_we;
   dip_sel_e                                data_in_prev_sel;
   logic                                    data_in_prev_we;
   si_sel_e                                 state_in_sel;
   add_si_sel_e                             add_state_in_sel;
   add_so_sel_e                             add_state_out_sel;
+  logic                                    ctr_inc32;
   logic                                    ctr_incr;
   logic                                    cipher_in_valid;
   logic                                    cipher_out_ready;
@@ -303,11 +339,14 @@ module aes_control_fsm_n
   logic                                    cipher_prng_reseed_out_buf;
   logic                                    cipher_key_clear_out_buf;
   logic                                    cipher_data_out_clear_out_buf;
+  logic                                    ghash_in_valid;
+  logic                                    ghash_out_ready;
+  logic                                    ghash_load_hash_subkey;
   key_init_sel_e                           key_init_sel;
   logic [NumSharesKey-1:0][NumRegsKey-1:0] key_init_we;
   iv_sel_e                                 iv_sel;
   logic                 [NumSlicesCtr-1:0] iv_we;
-  logic                                    prng_data_req;
+  logic                                    prng_update;
   logic                                    prng_reseed_req;
   logic                                    start_we;
   logic                                    key_iv_data_in_clear_we;
@@ -334,7 +373,8 @@ module aes_control_fsm_n
   // negated outputs, important output signals are inverted further below. Thanks to the prim_buf
   // synthesis optimization barriers, tools will push the inverters into the regular FSM.
   aes_control_fsm #(
-    .SecMasking ( SecMasking )
+    .AESGCMEnable ( AESGCMEnable ),
+    .SecMasking   ( SecMasking   )
   ) u_aes_control_fsm (
     .clk_i                     ( clk_i                         ),
     .rst_ni                    ( rst_ni                        ),
@@ -350,6 +390,11 @@ module aes_control_fsm_n
     .prng_reseed_rate_i        ( prng_reseed_rate              ),
     .manual_operation_i        ( manual_operation              ),
     .key_touch_forces_reseed_i ( key_touch_forces_reseed       ),
+    .ctrl_gcm_qe_i             ( ctrl_gcm_qe                   ),
+    .ctrl_gcm_we_o             ( ctrl_gcm_we                   ),
+    .ctrl_gcm_phase_i          ( ctrl_gcm_phase                ),
+    .gcm_init_done_o           ( gcm_init_done                 ),
+    .gcm_phase_i               ( gcm_phase                     ),
     .start_i                   ( start                         ),
     .key_iv_data_in_clear_i    ( key_iv_data_in_clear          ),
     .data_out_clear_i          ( data_out_clear                ),
@@ -366,6 +411,7 @@ module aes_control_fsm_n
     .data_in_qe_i              ( data_in_qe                    ),
     .data_out_re_i             ( data_out_re                   ),
     .data_in_we_o              ( data_in_we                    ),
+    .data_out_sel_o            ( data_out_sel                  ),
     .data_out_we_o             ( data_out_we                   ), // Invert below for _n output.
 
     .data_in_prev_sel_o        ( data_in_prev_sel              ),
@@ -375,6 +421,7 @@ module aes_control_fsm_n
     .add_state_in_sel_o        ( add_state_in_sel              ),
     .add_state_out_sel_o       ( add_state_out_sel             ),
 
+    .ctr_inc32_o               ( ctr_inc32                     ), // Invert below for _n output.
     .ctr_incr_o                ( ctr_incr                      ), // Invert below for _n output.
     .ctr_ready_i               ( ~ctr_ready_n                  ), // Invert for regular FSM.
     .ctr_we_i                  ( ~ctr_we_n                     ), // Invert for regular FSM.
@@ -394,14 +441,19 @@ module aes_control_fsm_n
     .cipher_data_out_clear_o   ( cipher_data_out_clear_out_buf ),
     .cipher_data_out_clear_i   ( cipher_data_out_clear_in_buf  ),
 
+    .ghash_in_valid_o          ( ghash_in_valid                ), // Invert below for _n output.
+    .ghash_in_ready_i          ( ~ghash_in_ready_n             ), // Invert for regular FSM.
+    .ghash_out_valid_i         ( ~ghash_out_valid_n            ), // Invert for regular FSM.
+    .ghash_out_ready_o         ( ghash_out_ready               ), // Invert below for _n output.
+    .ghash_load_hash_subkey_o  ( ghash_load_hash_subkey        ), // Invert below for _n output.
+
     .key_init_sel_o            ( key_init_sel                  ),
     .key_init_we_o             ( key_init_we                   ), // Invert below for _n output.
 
     .iv_sel_o                  ( iv_sel                        ),
     .iv_we_o                   ( iv_we                         ), // Invert below for _n output.
 
-    .prng_data_req_o           ( prng_data_req                 ),
-    .prng_data_ack_i           ( prng_data_ack                 ),
+    .prng_update_o             ( prng_update                   ),
     .prng_reseed_req_o         ( prng_reseed_req               ),
     .prng_reseed_ack_i         ( prng_reseed_ack               ),
 
@@ -430,14 +482,18 @@ module aes_control_fsm_n
 
   localparam int NumOutBufBits = $bits({
     ctrl_we_o,
+    ctrl_gcm_we_o,
+    gcm_init_done_o,
     alert_o,
     data_in_we_o,
+    data_out_sel_o,
     data_out_we_no,
     data_in_prev_sel_o,
     data_in_prev_we_no,
     state_in_sel_o,
     add_state_in_sel_o,
     add_state_out_sel_o,
+    ctr_inc32_no,
     ctr_incr_no,
     cipher_in_valid_no,
     cipher_out_ready_no,
@@ -446,11 +502,14 @@ module aes_control_fsm_n
     cipher_prng_reseed_o,
     cipher_key_clear_o,
     cipher_data_out_clear_o,
+    ghash_in_valid_no,
+    ghash_out_ready_no,
+    ghash_load_hash_subkey_no,
     key_init_sel_o,
     key_init_we_no,
     iv_sel_o,
     iv_we_no,
-    prng_data_req_o,
+    prng_update_o,
     prng_reseed_req_o,
     start_we_o,
     key_iv_data_in_clear_we_o,
@@ -475,14 +534,18 @@ module aes_control_fsm_n
   // inverters back into the regular FSM.
   assign out = {
     ctrl_we,
+    ctrl_gcm_we,
+    gcm_init_done,
     alert,
     data_in_we,
+    data_out_sel,
     ~data_out_we,
     data_in_prev_sel,
     ~data_in_prev_we,
     state_in_sel,
     add_state_in_sel,
     add_state_out_sel,
+    ~ctr_inc32,
     ~ctr_incr,
     ~cipher_in_valid,
     ~cipher_out_ready,
@@ -491,11 +554,14 @@ module aes_control_fsm_n
     cipher_prng_reseed_out_buf,
     cipher_key_clear_out_buf,
     cipher_data_out_clear_out_buf,
+    ~ghash_in_valid,
+    ~ghash_out_ready,
+    ~ghash_load_hash_subkey,
     key_init_sel,
     ~key_init_we,
     iv_sel,
     ~iv_we,
-    prng_data_req,
+    prng_update,
     prng_reseed_req,
     start_we,
     key_iv_data_in_clear_we,
@@ -524,14 +590,18 @@ module aes_control_fsm_n
   );
 
   assign {ctrl_we_o,
+          ctrl_gcm_we_o,
+          gcm_init_done_o,
           alert_o,
           data_in_we_o,
+          data_out_sel_o,
           data_out_we_no,
           data_in_prev_sel_o,
           data_in_prev_we_no,
           state_in_sel_o,
           add_state_in_sel_o,
           add_state_out_sel_o,
+          ctr_inc32_no,
           ctr_incr_no,
           cipher_in_valid_no,
           cipher_out_ready_no,
@@ -540,11 +610,14 @@ module aes_control_fsm_n
           cipher_prng_reseed_o,
           cipher_key_clear_o,
           cipher_data_out_clear_o,
+          ghash_in_valid_no,
+          ghash_out_ready_no,
+          ghash_load_hash_subkey_no,
           key_init_sel_o,
           key_init_we_no,
           iv_sel_o,
           iv_we_no,
-          prng_data_req_o,
+          prng_update_o,
           prng_reseed_req_o,
           start_we_o,
           key_iv_data_in_clear_we_o,

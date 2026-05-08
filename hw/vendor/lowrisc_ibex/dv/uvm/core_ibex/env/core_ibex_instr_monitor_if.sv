@@ -15,7 +15,7 @@ interface core_ibex_instr_monitor_if #(
   // ID stage
   logic                   reset;
   logic                   valid_id;
-  logic                   instr_new_id;
+  logic                   rvfi_id_done;
   logic                   err_id;
   logic                   is_compressed_id;
   logic [15:0]            instr_compressed_id;
@@ -30,7 +30,7 @@ interface core_ibex_instr_monitor_if #(
   clocking instr_cb @(posedge clk);
     input reset;
     input valid_id;
-    input instr_new_id;
+    input rvfi_id_done;
     input err_id;
     input is_compressed_id;
     input instr_compressed_id;

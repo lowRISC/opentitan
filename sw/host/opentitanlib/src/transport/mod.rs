@@ -134,12 +134,17 @@ pub trait Transport {
         Err(TransportError::InvalidInterface(TransportInterfaceType::GpioBitbanging).into())
     }
     /// Returns a [`Emulator`] implementation.
-    fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+    fn emulator(&self) -> Result<&dyn Emulator> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::Emulator).into())
     }
 
+    /// Methods available only on FPGA implementations.
+    fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::FpgaOps).into())
+    }
+
     /// Methods available only on Proxy implementation.
-    fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+    fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::ProxyOps).into())
     }
 
@@ -148,23 +153,26 @@ pub trait Transport {
         Err(TransportError::UnsupportedOperation.into())
     }
 
-    /// As long as the returned `MaintainConnection` object is kept by the caller, this driver may
-    /// assume that no other `opentitantool` processes attempt to access the same debugger device.
-    /// This allows for optimizations such as keeping USB handles open across function invocations.
-    fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
-        // For implementations that have not implemented any optimizations, return a no-op object.
-        Ok(Rc::new(()))
+    /// Invoke the provided callback (preferably) without exclusive access.
+    ///
+    /// By default, ownership of `Transport` would imply exclusive access to the underlying device,
+    /// and optimisation can be made assuming no other process would be simultaneously accessing.
+    /// However for long running commands, such as `opentitantool console`, it may be desirable to
+    /// relinquish exclusive access during such comamnd and only re-take exclusive access later.
+    ///
+    /// Transport that does not support such scenario may ignore such request and perform a no-op.
+    fn relinquish_exclusive_access(&self, callback: Box<dyn FnOnce() + '_>) -> Result<()> {
+        callback();
+        Ok(())
     }
 }
 
-/// As long as this object is kept alive, the `Transport` driver may assume that no other
-/// `opentitantool` processes attempt to access the same debugger device.  This allows for
-/// optimizations such as keeping USB handles open across function invocations.
-pub trait MaintainConnection {}
+/// Methods available only on FPGA transports.
+pub trait FpgaOps {
+    fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()>;
 
-/// No-op implmentation of the trait, for use by `Transport` implementations that do not do
-/// any optimizations to maintain connection between method calls.
-impl MaintainConnection for () {}
+    fn clear_bitstream(&self) -> Result<()>;
+}
 
 /// Methods available only on the Proxy implementation of the Transport trait.
 pub trait ProxyOps {

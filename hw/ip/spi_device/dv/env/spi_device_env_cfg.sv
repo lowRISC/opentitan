@@ -56,9 +56,9 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     scb_clear_mems = 1;
   endfunction
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = spi_device_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
+    super.initialize();
     // create spi agent config obj
     spi_host_agent_cfg = spi_agent_cfg::type_id::create("spi_host_agent_cfg");
     spi_device_agent_cfg = spi_agent_cfg::type_id::create("spi_device_agent_cfg");

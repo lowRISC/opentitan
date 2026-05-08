@@ -6,10 +6,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -101,20 +101,14 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   // Convert the data struct into cryptolib types
   uint32_t iv_buf[iv_num_words];
   memcpy(iv_buf, uj_data.iv, uj_data.iv_length);
-  otcrypto_const_word32_buf_t iv = {
-      .data = iv_buf,
-      .len = iv_num_words,
-  };
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_buf, iv_num_words);
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_data.input,
-      .len = (size_t)uj_data.input_length,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_data.input, (size_t)uj_data.input_length);
 
-  otcrypto_const_byte_buf_t aad = {
-      .data = uj_data.aad,
-      .len = uj_data.aad_length,
-  };
+  otcrypto_const_byte_buf_t aad = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, uj_data.aad, uj_data.aad_length);
 
   // Select a random security level.
   size_t sec_lvl_idx = rand_testutils_gen32_range(
@@ -144,29 +138,24 @@ status_t handle_aes_gcm_op(ujson_t *uj) {
   key.checksum = integrity_blinded_checksum(&key);
 
   uint8_t output_data[AES_GCM_CMD_MAX_MSG_BYTES];
-  otcrypto_byte_buf_t output = {
-      .data = output_data,
-      .len = uj_data.input_length,
-  };
+  otcrypto_byte_buf_t output =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, output_data, uj_data.input_length);
 
   uint32_t tag_data[tag_num_words];
 
   hardened_bool_t tag_valid = kHardenedBoolTrue;
 
   if (op_enc) {
-    otcrypto_word32_buf_t tag = {
-        .data = tag_data,
-        .len = tag_num_words,
-    };
-    TRY(otcrypto_aes_gcm_encrypt(&key, input, iv, aad, tag_len, output, tag));
+    otcrypto_word32_buf_t tag =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, tag_num_words);
+    TRY(otcrypto_aes_gcm_encrypt(&key, &input, &iv, &aad, tag_len, &output,
+                                 &tag));
   } else {
     memcpy(tag_data, uj_data.tag, uj_data.tag_length);
-    otcrypto_const_word32_buf_t tag = {
-        .data = tag_data,
-        .len = tag_num_words,
-    };
-    TRY(otcrypto_aes_gcm_decrypt(&key, input, iv, aad, tag_len, tag, output,
-                                 &tag_valid));
+    otcrypto_const_word32_buf_t tag =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, tag_num_words);
+    TRY(otcrypto_aes_gcm_decrypt(&key, &input, &iv, &aad, tag_len, &tag,
+                                 &output, &tag_valid));
   }
 
   cryptotest_aes_gcm_output_t uj_output;

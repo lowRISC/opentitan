@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/ip/aes/model/aes_modes.h"
-#include "hw/top/dt/dt_aes.h"
-#include "hw/top/dt/dt_alert_handler.h"
-#include "hw/top/dt/dt_csrng.h"
-#include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_entropy_src.h"
-#include "hw/top/dt/dt_otbn.h"
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -176,8 +176,6 @@ status_t log_entropy_src_failures_and_alerts(
     switch ((dif_entropy_src_test_t)i) {
       case kDifEntropySrcTestRepetitionCount:
         LOG_INFO("Test Repetition Count (Index %u):", i);
-        LOG_INFO("Watermarks: high=%u, low=%u", stats.high_watermark[i],
-                 stats.low_watermark[i]);
         LOG_INFO("All Fails: high=%u, low=%u", stats.high_fails[i],
                  stats.low_fails[i]);
         LOG_INFO("Alert Fails (RepetitionCount): high=%u, low=%u",
@@ -185,8 +183,6 @@ status_t log_entropy_src_failures_and_alerts(
         break;
       case kDifEntropySrcTestAdaptiveProportion:
         LOG_INFO("Test Adaptive Proportion (Index %u):", i);
-        LOG_INFO("Watermarks: high=%u, low=%u", stats.high_watermark[i],
-                 stats.low_watermark[i]);
         LOG_INFO("All Fails: high=%u, low=%u", stats.high_fails[i],
                  stats.low_fails[i]);
         LOG_INFO("Alert Fails (Adaptive Proportion): high=%u, low=%u",
@@ -194,8 +190,6 @@ status_t log_entropy_src_failures_and_alerts(
         break;
       case kDifEntropySrcTestBucket:
         LOG_INFO("Test Bucket (Index %u):", i);
-        LOG_INFO("Watermarks: high=%u, low=%u", stats.high_watermark[i],
-                 stats.low_watermark[i]);
         LOG_INFO("All Fails: high=%u, low=%u", stats.high_fails[i],
                  stats.low_fails[i]);
         LOG_INFO("Alert Fails (Bucket): high=%u, low=%u",
@@ -203,8 +197,6 @@ status_t log_entropy_src_failures_and_alerts(
         break;
       case kDifEntropySrcTestMarkov:
         LOG_INFO("Test Markov (Index %u):", i);
-        LOG_INFO("Watermarks: high=%u, low=%u", stats.high_watermark[i],
-                 stats.low_watermark[i]);
         LOG_INFO("All Fails: high=%u, low=%u", stats.high_fails[i],
                  stats.low_fails[i]);
         LOG_INFO("Alert Fails (Markov): high=%u, low=%u",
@@ -215,6 +207,10 @@ status_t log_entropy_src_failures_and_alerts(
         break;
     }
   }
+
+  // Watermark statistics
+  LOG_INFO("Watermark num %u, watermark %u", stats.watermark_num,
+           stats.watermark);
 
   return OK_STATUS();
 }

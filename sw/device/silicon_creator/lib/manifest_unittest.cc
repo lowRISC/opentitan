@@ -38,6 +38,16 @@ TEST_F(ManifestTest, DigestRegionGet) {
             manifest_.signed_region_end - digest_region_offset);
 }
 
+TEST_F(ManifestTest, BadMajorVersion) {
+  manifest_.manifest_version.major = kManifestVersionMajor2 + 1;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadVersionMajor);
+}
+
+TEST_F(ManifestTest, SignedRegionOutsideImage) {
+  manifest_.length = 0;
+  EXPECT_EQ(manifest_check(&manifest_), kErrorManifestBadSignedRegion);
+}
+
 TEST_F(ManifestTest, CodeRegionGet) {
   epmp_region_t code_region = manifest_code_region_get(&manifest_);
 

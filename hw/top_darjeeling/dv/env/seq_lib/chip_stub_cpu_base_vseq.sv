@@ -26,7 +26,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   task post_start();
     super.post_start();
 
-    if (cfg.use_jtag_dmi == 0) begin
+    if (cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi == 0) begin
       // Random CSR rw might trigger alert. Some alerts will continuously be triggered until reset
       // applied, which will cause alert_monitor phase_ready_to_end timeout.
       apply_reset();
@@ -50,7 +50,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     super.dut_init(reset_kind);
     // Program the AST with the configuration data loaded in OTP creator SW config region.
     `uvm_info(`gfn, "Perform AST configuration", UVM_MEDIUM)
-    if (cfg.use_jtag_dmi == 0) do_ast_cfg();
+    if (cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi == 0) do_ast_cfg();
   endtask
 
   // Write AST registers with the configuration data backdoor loaded into OTP creator SW cfg region.

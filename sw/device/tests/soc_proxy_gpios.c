@@ -31,6 +31,7 @@ bool test_main(void) {
   };
   static_assert(ARRAYSIZE(peripheral_in) == ARRAYSIZE(insel),
                 "Illegal pinmux input configuration arrays!");
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxFirst, &pinmux));
   for (size_t i = 0; i < ARRAYSIZE(peripheral_in); i++) {
     CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, peripheral_in[i], insel[i]));
   }

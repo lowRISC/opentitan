@@ -138,7 +138,7 @@ The remaining event selector CSRs are tied to 0, i.e., no events are counted by 
 FPGA Targets
 ------------
 
-For FPGA targets the performance counters constitute a particularily large structure.
+For FPGA targets the performance counters constitute a particularly large structure.
 Implementing the maximum 29 event counters 32, 48 and 64 bit wide results in relative logic utilizations of the core of 100%, 111% and 129% respectively.
 The relative numbers of flip-flops are 100%, 125% and 150%.
 It is recommended to implement event counters of 32 bit width where possible.

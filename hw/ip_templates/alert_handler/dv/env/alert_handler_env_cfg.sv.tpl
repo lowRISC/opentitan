@@ -18,9 +18,9 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(.RAL_T(${module
 
   `uvm_object_new
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  virtual function void initialize();
     num_edn = 1;
-    super.initialize(csr_base_addr);
+    super.initialize();
     shadow_update_err_status_fields[ral.loc_alert_cause[LocalShadowRegUpdateErr].la] = 1;
     shadow_storage_err_status_fields[ral.loc_alert_cause[LocalShadowRegStorageErr].la] = 1;
 

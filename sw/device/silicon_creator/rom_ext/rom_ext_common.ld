@@ -56,6 +56,7 @@ _manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
                                  _text_start < (ORIGIN(eflash)
                                               + LENGTH(eflash))) ? 0x1d4 : 0x739;
 
+REGION_ALIAS("coverage_flash", rom_ext_flash);
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -111,6 +112,20 @@ SECTIONS {
   } > rom_ext_flash
 
   /**
+   * ROM_EXT ISRs text section, containing the exception handler entry/exit logic
+   * used for handling load access faults due to flash ECC errors during boot.
+   *
+   * This is placed next to the ".shutdown" section.
+   */
+  .isrs : ALIGN(4) {
+    *(.isrs)
+    *(.isrs.*)
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+  } > rom_ext_flash
+
+  /**
    * Shutdown text section, containing shutdown function(s).
    *
    * This must be the last executable section in the ROM_EXT flash image.
@@ -136,6 +151,8 @@ SECTIONS {
     *(.rodata)
     *(.rodata.*)
   } > rom_ext_flash
+
+  INCLUDE sw/device/lib/coverage/rodata.ld
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -210,6 +227,8 @@ SECTIONS {
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
+
+  INCLUDE sw/device/lib/coverage/bss.ld
 
   INCLUDE sw/device/info_sections.ld
 }

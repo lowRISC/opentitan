@@ -31,7 +31,7 @@ module otp_ctrl_cov_bind;
     .pwr_otp_o        (pwr_otp_o),
     .lc_otp_program_i (lc_otp_program_i),
     .lc_escalate_en_i (lc_escalate_en_i),
-    .flash_otp_key_i  (flash_otp_key_i),
+    .nvm_otp_key_i    (nvm_otp_key_i),
     .sram_otp_key_i   (sram_otp_key_i),
     .otbn_otp_key_i   (otbn_otp_key_i)
   );

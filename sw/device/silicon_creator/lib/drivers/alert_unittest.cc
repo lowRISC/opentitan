@@ -43,6 +43,13 @@ TEST_F(InitTest, AlertConfigureAlertBadClass) {
       kErrorAlertBadClass);
 }
 
+TEST_F(InitTest, LocalAlertConfigureAlertBadIndex) {
+  EXPECT_EQ(alert_local_configure(
+                ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT,
+                kAlertClassX, kAlertEnableNone),
+            kErrorAlertBadIndex);
+}
+
 TEST_F(InitTest, LocalAlertConfigureAlertBadClass) {
   EXPECT_EQ(alert_local_configure(0, static_cast<alert_class_t>(-1),
                                   kAlertEnableNone),
@@ -72,6 +79,18 @@ TEST_F(InitTest, AlertConfigureAlertClassXNoOperation) {
 
 TEST_F(InitTest, LocalAlertConfigureAlertClassXNoOperation) {
   EXPECT_EQ(alert_local_configure(0, kAlertClassX, kAlertEnableNone), kErrorOk);
+}
+
+TEST_F(InitTest, AlertConfigureNotEnable) {
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
+  EXPECT_EQ(alert_configure(0, kAlertClassA, kAlertEnableNone), kErrorOk);
+}
+
+TEST_F(InitTest, LocalAlertConfigureNotEnable) {
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET, 0);
+  EXPECT_EQ(alert_local_configure(0, kAlertClassA, kAlertEnableNone), kErrorOk);
 }
 
 TEST_F(InitTest, AlertConfigure0AsClassA) {

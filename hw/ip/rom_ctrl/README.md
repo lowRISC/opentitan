@@ -1,10 +1,13 @@
 # ROM Controller Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/rom_ctrl/data/rom_ctrl.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rom_ctrl_32kb`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.0.1 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_32kb/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_32kb/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_32kb/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_32kb/code.svg) |
+ [`rom_ctrl_64kb`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.0.1 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_64kb/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_64kb/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_64kb/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rom_ctrl_64kb/code.svg) |
 
-[`rom_ctrl`](https://reports.opentitan.org/hw/ip/rom_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rom_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rom_ctrl/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

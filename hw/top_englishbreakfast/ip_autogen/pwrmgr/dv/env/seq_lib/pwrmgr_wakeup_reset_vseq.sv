@@ -45,7 +45,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
                 power_glitch_reset,
                 sw_rst_from_rstmgr
                 ), UVM_MEDIUM)
-      csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
+      csr_wr(.ptr(ral.reset_en.en_0), .value(resets_en));
 
       // Enable wakeups.
       enabled_wakeups = wakeups_en & wakeups;

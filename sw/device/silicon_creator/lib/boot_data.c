@@ -514,11 +514,11 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
   switch (launder32(lc_state)) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
-      res ^= kLcStateTest ^ kErrorBootDataNotFound ^ kErrorOk;
+      res ^= kLcStateTest ^ (uint32_t)kErrorBootDataNotFound ^ kErrorOk;
       break;
     case kLcStateDev:
       HARDENED_CHECK_EQ(lc_state, kLcStateDev);
-      res ^= kLcStateDev ^ kErrorBootDataNotFound ^ kErrorOk;
+      res ^= kLcStateDev ^ (uint32_t)kErrorBootDataNotFound ^ kErrorOk;
       break;
     case kLcStateProd:
       HARDENED_CHECK_EQ(lc_state, kLcStateProd);
@@ -538,7 +538,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
       break;
     case kLcStateRma:
       HARDENED_CHECK_EQ(lc_state, kLcStateRma);
-      res ^= kLcStateRma ^ kErrorBootDataNotFound ^ kErrorOk;
+      res ^= kLcStateRma ^ (uint32_t)kErrorBootDataNotFound ^ kErrorOk;
       break;
     default:
       HARDENED_TRAP();

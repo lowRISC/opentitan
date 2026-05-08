@@ -14,11 +14,11 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('a', 'g', 'c')
@@ -86,12 +86,10 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
     HARDENED_TRY(hardened_memshred(mask, internal_ctx->key.key_len));
 
     // XOR each share with the mask.
-    HARDENED_TRY(
-        hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[0], mask,
-                              internal_ctx->key.key_len));
-    HARDENED_TRY(
-        hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[1], mask,
-                              internal_ctx->key.key_len));
+    hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[0], mask,
+                          internal_ctx->key.key_len);
+    hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[1], mask,
+                          internal_ctx->key.key_len);
     // Update the checksum.
     internal_ctx->key.checksum = aes_key_integrity_checksum(&internal_ctx->key);
   } else {
@@ -120,8 +118,6 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
       kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
-                    kHardenedBoolTrue);
 
   // Check the key mode.
   if (launder32((uint32_t)blinded_key->config.key_mode) !=
@@ -172,6 +168,12 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
 
   // Create the checksum of the key and store it in the key structure.
   aes_key->checksum = aes_key_integrity_checksum(aes_key);
+
+  // Second integrity check of the key we got passed into the cryptolib.
+  // This check is placed here to catch any corruptions that might have
+  // happen after the first check when assembling the `aes_key`.
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
+                    kHardenedBoolTrue);
 
   return OTCRYPTO_OK;
 }
@@ -279,37 +281,40 @@ static status_t clear_key_if_sideloaded(const aes_key_t key) {
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
-                                           otcrypto_const_byte_buf_t plaintext,
-                                           otcrypto_const_word32_buf_t iv,
-                                           otcrypto_const_byte_buf_t aad,
+                                           otcrypto_const_byte_buf_t *plaintext,
+                                           otcrypto_const_word32_buf_t *iv,
+                                           otcrypto_const_byte_buf_t *aad,
                                            otcrypto_aes_gcm_tag_len_t tag_len,
-                                           otcrypto_byte_buf_t ciphertext,
-                                           otcrypto_word32_buf_t auth_tag) {
+                                           otcrypto_byte_buf_t *ciphertext,
+                                           otcrypto_word32_buf_t *auth_tag) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv.data == NULL || auth_tag.data == NULL) {
+  if (key == NULL || iv->data == NULL || auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Randomize the tag before the operation.
+  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
   // Conditionally check for null pointers in data buffers that may be
   // 0-length.
-  if ((aad.len != 0 && aad.data == NULL) ||
-      (ciphertext.len != 0 && ciphertext.data == NULL) ||
-      (plaintext.len != 0 && plaintext.data == NULL)) {
+  if ((aad->len != 0 && aad->data == NULL) ||
+      (ciphertext->len != 0 && ciphertext->data == NULL) ||
+      (plaintext->len != 0 && plaintext->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Ensure the plaintext and ciphertext lengths match.
-  if (launder32(ciphertext.len) != plaintext.len) {
+  if (launder32(ciphertext->len) != plaintext->len) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(ciphertext.len, plaintext.len);
+  HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Store the iCache state (on or off) and disable it when it is on.
   hardened_bool_t icache_saved_state;
@@ -321,34 +326,41 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the core encryption operation.
-  HARDENED_TRY(aes_gcm_encrypt(aes_key, iv.len, iv.data, plaintext.len,
-                               plaintext.data, aad.len, aad.data, auth_tag.len,
-                               auth_tag.data, ciphertext.data));
+  HARDENED_TRY(aes_gcm_encrypt(
+      aes_key, iv->len, iv->data, plaintext->len, plaintext->data, aad->len,
+      aad->data, auth_tag->len, auth_tag->data, ciphertext->data));
 
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(plaintext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
-    otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
-    otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
-    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
-    otcrypto_byte_buf_t plaintext, hardened_bool_t *success) {
+    otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t *ciphertext,
+    otcrypto_const_word32_buf_t *iv, otcrypto_const_byte_buf_t *aad,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t *auth_tag,
+    otcrypto_byte_buf_t *plaintext, hardened_bool_t *success) {
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv.data == NULL || auth_tag.data == NULL) {
+  if (key == NULL || iv->data == NULL || auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Conditionally check for null pointers in data buffers that may be
   // 0-length.
-  if ((aad.len != 0 && aad.data == NULL) ||
-      (ciphertext.len != 0 && ciphertext.data == NULL) ||
-      (plaintext.len != 0 && plaintext.data == NULL)) {
+  if ((aad->len != 0 && aad->data == NULL) ||
+      (ciphertext->len != 0 && ciphertext->data == NULL) ||
+      (plaintext->len != 0 && plaintext->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -365,36 +377,40 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Ensure the plaintext and ciphertext lengths match.
-  if (launder32(ciphertext.len) != plaintext.len) {
+  if (launder32(ciphertext->len) != plaintext->len) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(ciphertext.len, plaintext.len);
+  HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Call the core decryption operation.
-  HARDENED_TRY(aes_gcm_decrypt(aes_key, iv.len, iv.data, ciphertext.len,
-                               ciphertext.data, aad.len, aad.data, auth_tag.len,
-                               auth_tag.data, plaintext.data, success));
+  HARDENED_TRY(aes_gcm_decrypt(
+      aes_key, iv->len, iv->data, ciphertext->len, ciphertext->data, aad->len,
+      aad->data, auth_tag->len, auth_tag->data, plaintext->data, success));
 
   HARDENED_TRY(clear_key_if_sideloaded(aes_key));
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(plaintext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
-    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
-  if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
+  if (key == NULL || key->keyblob == NULL || iv->data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(key->config.security_level));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -411,7 +427,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx;
   internal_ctx.security_level = key->config.security_level;
-  HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
+  HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
 
   // Save the context and clear the key if needed.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
@@ -419,14 +435,17 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
 
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
-    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
-  if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
+  if (key == NULL || key->keyblob == NULL || iv->data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -445,7 +464,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx;
   internal_ctx.security_level = key->config.security_level;
-  HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
+  HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
 
   // Save the context and clear the key if needed.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
@@ -454,19 +473,22 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
-                                              otcrypto_const_byte_buf_t aad) {
-  if (ctx == NULL || aad.data == NULL) {
+                                              otcrypto_const_byte_buf_t *aad) {
+  if (ctx == NULL || aad->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  if (aad.len == 0) {
+  if (aad->len == 0) {
     // Nothing to do.
     return OTCRYPTO_OK;
   }
@@ -481,7 +503,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
 
   // Call the internal update operation.
-  HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad.len, aad.data));
+  HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad->len, aad->data));
 
   // Save the context and clear the key if needed.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
@@ -490,13 +512,16 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
-    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t input,
-    otcrypto_byte_buf_t output, size_t *output_bytes_written) {
-  if (ctx == NULL || input.data == NULL || output.data == NULL ||
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t *input,
+    otcrypto_byte_buf_t *output, size_t *output_bytes_written) {
+  if (ctx == NULL || input->data == NULL || output->data == NULL ||
       output_bytes_written == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -505,7 +530,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  if (input.len == 0) {
+  if (input->len == 0) {
     // Nothing to do.
     return OTCRYPTO_OK;
   }
@@ -524,19 +549,20 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   // The output buffer must be long enough to hold all full blocks that will
   // exist after `input` is added.
   size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
-  if (input.len > UINT32_MAX - partial_block_len) {
+  if (input->len > UINT32_MAX - partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
   size_t min_output_blocks =
-      (partial_block_len + input.len) / kAesBlockNumBytes;
+      (partial_block_len + input->len) / kAesBlockNumBytes;
   size_t min_output_len = min_output_blocks * kAesBlockNumBytes;
-  if (output.len < min_output_len) {
+  if (output->len < min_output_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Call the internal update operation.
-  HARDENED_TRY(aes_gcm_update_encrypted_data(
-      &internal_ctx, input.len, input.data, output_bytes_written, output.data));
+  HARDENED_TRY(aes_gcm_update_encrypted_data(&internal_ctx, input->len,
+                                             input->data, output_bytes_written,
+                                             output->data));
 
   // Save the context and clear the key if needed.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
@@ -545,21 +571,28 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(output));
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
-    otcrypto_byte_buf_t ciphertext, size_t *ciphertext_bytes_written,
-    otcrypto_word32_buf_t auth_tag) {
+    otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
+    otcrypto_word32_buf_t *auth_tag) {
   if (ctx == NULL || ciphertext_bytes_written == NULL ||
-      auth_tag.data == NULL) {
+      auth_tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (ciphertext.len != 0 && ciphertext.data == NULL) {
+  if (ciphertext->len != 0 && ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   *ciphertext_bytes_written = 0;
+
+  // Randomize the tag before the operation.
+  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
   // Ensure entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -569,7 +602,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -581,14 +614,14 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
   size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
-  if (ciphertext.len < partial_block_len) {
+  if (ciphertext->len < partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag.len, auth_tag.data,
-                                     ciphertext_bytes_written,
-                                     ciphertext.data));
+  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag->len,
+                                     auth_tag->data, ciphertext_bytes_written,
+                                     ciphertext->data));
 
   // Clear the context and the key if needed.
   HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
@@ -597,18 +630,22 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
 
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
+
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
-    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
-    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t plaintext,
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t *auth_tag,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success) {
-  if (ctx == NULL || plaintext_bytes_written == NULL || auth_tag.data == NULL ||
-      success == NULL) {
+  if (ctx == NULL || plaintext_bytes_written == NULL ||
+      auth_tag->data == NULL || success == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (plaintext.len != 0 && plaintext.data == NULL) {
+  if (plaintext->len != 0 && plaintext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   *plaintext_bytes_written = 0;
@@ -622,7 +659,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   HARDENED_TRY(ibex_disable_icache(&icache_saved_state));
 
   // Check the tag length.
-  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
+  HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -634,14 +671,14 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
   size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
-  if (plaintext.len < partial_block_len) {
+  if (plaintext->len < partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag.len, auth_tag.data,
-                                     plaintext_bytes_written, plaintext.data,
-                                     success));
+  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag->len,
+                                     auth_tag->data, plaintext_bytes_written,
+                                     plaintext->data, success));
 
   // Clear the context and the key if needed.
   HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
@@ -649,6 +686,10 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
 
   // Enable the iCache if it was previously enabled.
   ibex_restore_icache(icache_saved_state);
+
+  // Verify the input buffers
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(plaintext));
 
   return OTCRYPTO_OK;
 }

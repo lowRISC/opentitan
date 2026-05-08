@@ -150,16 +150,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_LC_CTRL_REGS_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for dmi device on lc_ctrl in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_LC_CTRL_DMI_BASE_ADDR = 32'h0;
-
-  /**
-   * Peripheral size in bytes for dmi device on lc_ctrl in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_LC_CTRL_DMI_SIZE_BYTES = 32'h1000;
-
-  /**
    * Peripheral base address for alert_handler in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR = 32'h40150000;
@@ -348,16 +338,6 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for mem device on rv_dm in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES = 32'h1000;
-
-  /**
-   * Peripheral base address for dbg device on rv_dm in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_RV_DM_DBG_BASE_ADDR = 32'h1000;
-
-  /**
-   * Peripheral size in bytes for dbg device on rv_dm in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_RV_DM_DBG_SIZE_BYTES = 32'h200;
 
   /**
    * Peripheral base address for rv_plic in top earlgrey.

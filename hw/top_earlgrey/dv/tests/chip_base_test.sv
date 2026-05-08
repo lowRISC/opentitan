@@ -19,6 +19,7 @@ class chip_base_test extends cip_base_test #(
   virtual function void build_phase(uvm_phase phase);
     string sw_images_plusarg;
     string use_otp_image_plusarg;
+    bit    use_jtag_dmi;
 
     super.build_phase(phase);
 
@@ -34,11 +35,10 @@ class chip_base_test extends cip_base_test #(
     // The following plusargs are only valid for SW based tests (i.e., no stubbed CPU).
     // Knob to configure writing sw logs to a separate file (enabled by default).
     void'($value$plusargs("write_sw_logs_to_file=%0b", cfg.write_sw_logs_to_file));
+    cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
 
     // Knob to enable logging over UART (disabled by default).
-    void'($value$plusargs("en_uart_logger=%0b", cfg.en_uart_logger));
-    cfg.m_uart_agent_cfgs[0].en_logger = cfg.en_uart_logger;
-    cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
+    void'($value$plusargs("en_uart_logger=%0b", cfg.m_uart_agent_cfgs[0].en_logger));
 
     // Knob to set the sw_test_timeout_ns (set to 12ms by default).
     void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
@@ -47,16 +47,14 @@ class chip_base_test extends cip_base_test #(
     // cfg.use_spi_load_bootstrap will be reset to 0 upon completion.
     void'($value$plusargs("use_spi_load_bootstrap=%0b", cfg.use_spi_load_bootstrap));
 
-    // Knob to indicate what build device to use (DV, Verilator or FPGA).
-    void'($value$plusargs("sw_build_device=%0s", cfg.sw_build_device));
-
     // Knob to set custom sw image names for rom and sw.
     if ($value$plusargs("sw_images=%0s", sw_images_plusarg)) begin
-      cfg.parse_sw_images_string(sw_images_plusarg);
-    end
+      // Knob to indicate what build device to use (DV, Verilator or FPGA).
+      string sw_build_device = "sim_dv";
+      void'($value$plusargs("sw_build_device=%0s", sw_build_device));
 
-    // Knob to perform the AST configuration.
-    void'($value$plusargs("do_creator_sw_cfg_ast_cfg=%0b", cfg.do_creator_sw_cfg_ast_cfg));
+      cfg.parse_sw_images_string(sw_build_device, sw_images_plusarg);
+    end
 
     // Knob to use small page rma
     void'($value$plusargs("en_small_rma=%0b", cfg.en_small_rma));
@@ -86,6 +84,27 @@ class chip_base_test extends cip_base_test #(
     test_timeout_ns = 50_000_000;
     test_timeout_ns = `DV_MAX2(test_timeout_ns, 5 * cfg.sw_test_timeout_ns);
     `uvm_info(`gfn, $sformatf("test_timeout_ns = %0d", test_timeout_ns), UVM_LOW)
+
+    void'($value$plusargs("use_jtag_dmi=%0b", use_jtag_dmi));
+    if (use_jtag_dmi) begin
+      cfg.set_use_jtag_dmi();
+    end
   endfunction : build_phase
+
+  virtual function void configure_sequence(uvm_sequence seq);
+    chip_base_vseq vseq;
+
+    super.configure_sequence(seq);
+
+    if (!$cast(vseq, seq)) begin
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Cannot configure sequence that isn't a chip_base_vseq: %0s.",
+                           seq.sprint()))
+    end
+
+    // Should the AST actually be programmed in the vseq? By default, it should, but this can be
+    // disabled with the do_creator_sw_cfg_ast_cfg plusarg.
+    void'($value$plusargs("do_creator_sw_cfg_ast_cfg=%0b", vseq.do_creator_sw_cfg_ast_cfg));
+  endfunction
 
 endclass : chip_base_test

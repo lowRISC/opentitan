@@ -75,7 +75,7 @@ mode:
 rsa_g:
 .zero 256
 
-.globl r2, rsa_h
+.globl r2, rsa_h, mr_iter_p, mr_iter_q
 .balign 32
 /*----------------+----------+----------*
  |                |          |          |
@@ -87,7 +87,11 @@ rsa_g:
  |                |          |          |
  *----------------+----------+----------*/
 r2:
-.zero 256
+mr_iter_p:
+.zero 4
+mr_iter_q:
+.zero 4
+.zero 248
 rsa_h:
 .zero 256
 
@@ -101,21 +105,15 @@ RR:
 
 /* Scratchpad working buffer. */
 .balign 32
-.globl work_buf, buf0, buf1, buf2, buf3, buf4, buf5, buf6, buf7
+.globl work_buf, nlimbs_tmp, mode_tmp, mr_iter_p_tmp, mr_iter_q_tmp
 work_buf:
-buf0:
-.zero 64
-buf1:
-.zero 64
-buf2:
-.zero 64
-buf3:
-.zero 64
-buf4:
-.zero 64
-buf5:
-.zero 64
-buf6:
-.zero 64
-buf7:
-.zero 64
+.zero 448
+nlimbs_tmp:
+.zero 4
+mode_tmp:
+.zero 4
+mr_iter_p_tmp:
+.zero 4
+mr_iter_q_tmp:
+.zero 4
+.zero 48

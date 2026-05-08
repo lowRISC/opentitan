@@ -10,7 +10,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
     files:
-      - ac_range_check_bind.sv
+      - ${module_instance_name}_bind.sv
     file_type: systemVerilogSource
 
   files_formal:

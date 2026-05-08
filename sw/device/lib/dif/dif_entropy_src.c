@@ -140,7 +140,7 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
       config.alert_threshold);
   alert_threshold = bitfield_field32_write(
       alert_threshold, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
-      ~config.alert_threshold);
+      ~(uint32_t)config.alert_threshold);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET, alert_threshold);
 
@@ -210,51 +210,91 @@ dif_result_t dif_entropy_src_health_test_configure(
     return kDifLocked;
   }
 
-  ptrdiff_t high_thresholds_reg_offset = -1;
-  ptrdiff_t low_thresholds_reg_offset = -1;
+  ptrdiff_t high_threshold_reg_offset = -1;
+  ptrdiff_t low_threshold_reg_offset = -1;
   switch (config.test_type) {
     case kDifEntropySrcTestRepetitionCount:
-      high_thresholds_reg_offset = ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
       if (config.low_threshold) {
         return kDifBadArg;
       }
       break;
     case kDifEntropySrcTestRepetitionCountSymbol:
-      high_thresholds_reg_offset = ENTROPY_SRC_REPCNTS_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
       if (config.low_threshold) {
         return kDifBadArg;
       }
       break;
     case kDifEntropySrcTestAdaptiveProportion:
-      high_thresholds_reg_offset = ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_REG_OFFSET;
-      low_thresholds_reg_offset = ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET;
+      low_threshold_reg_offset = ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET;
       break;
     case kDifEntropySrcTestBucket:
-      high_thresholds_reg_offset = ENTROPY_SRC_BUCKET_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET;
       // Ensure low threshold is zero. There is no low threshold for this test.
       if (config.low_threshold) {
         return kDifBadArg;
       }
       break;
     case kDifEntropySrcTestMarkov:
-      high_thresholds_reg_offset = ENTROPY_SRC_MARKOV_HI_THRESHOLDS_REG_OFFSET;
-      low_thresholds_reg_offset = ENTROPY_SRC_MARKOV_LO_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET;
+      low_threshold_reg_offset = ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET;
       break;
     case kDifEntropySrcTestMailbox:
-      high_thresholds_reg_offset = ENTROPY_SRC_EXTHT_HI_THRESHOLDS_REG_OFFSET;
-      low_thresholds_reg_offset = ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET;
+      high_threshold_reg_offset = ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET;
+      low_threshold_reg_offset = ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET;
       break;
     default:
       return kDifBadArg;
   }
 
-  mmio_region_write32(entropy_src->base_addr, high_thresholds_reg_offset,
+  mmio_region_write32(entropy_src->base_addr, high_threshold_reg_offset,
                       config.high_threshold);
-  if (low_thresholds_reg_offset != -1) {
-    mmio_region_write32(entropy_src->base_addr, low_thresholds_reg_offset,
+  if (low_threshold_reg_offset != -1) {
+    mmio_region_write32(entropy_src->base_addr, low_threshold_reg_offset,
                         config.low_threshold);
+  }
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_health_test_threshold_oneway_enable(
+    const dif_entropy_src_t *entropy_src) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_THRESHOLD_ONEWAY_REG_OFFSET,
+                      kMultiBitBool4True);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_watermark_configure(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_watermark_num_t config) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!mmio_region_read32(entropy_src->base_addr,
+                          ENTROPY_SRC_REGWEN_REG_OFFSET)) {
+    return kDifLocked;
+  }
+
+  // Write the specified value.
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET, config);
+
+  // Read the value back. In case it doesn't match the previously written
+  // value, the specified value isn't supported.
+  uint32_t ht_watermark_num = mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET);
+  if ((uint32_t)config != ht_watermark_num) {
+    return kDifError;
   }
 
   return kDifOk;
@@ -320,64 +360,42 @@ dif_result_t dif_entropy_src_get_health_test_stats(
     return kDifBadArg;
   }
 
-  ptrdiff_t high_watermarks_reg_offset = -1;
-  ptrdiff_t low_watermarks_reg_offset = -1;
+  stats->watermark_num = (dif_entropy_src_watermark_num_t)mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_HT_WATERMARK_NUM_REG_OFFSET);
+  stats->watermark = (uint16_t)mmio_region_read32(
+      entropy_src->base_addr, ENTROPY_SRC_HT_WATERMARK_REG_OFFSET);
+
   ptrdiff_t high_fails_reg_offset = -1;
   ptrdiff_t low_fails_reg_offset = -1;
   for (uint32_t i = 0; i < kDifEntropySrcTestNumVariants; ++i) {
     switch ((dif_entropy_src_test_t)i) {
       case kDifEntropySrcTestRepetitionCount:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_REPCNT_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = -1;
         high_fails_reg_offset = ENTROPY_SRC_REPCNT_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
         break;
       case kDifEntropySrcTestRepetitionCountSymbol:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_REPCNTS_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = -1;
         high_fails_reg_offset = ENTROPY_SRC_REPCNTS_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
         break;
       case kDifEntropySrcTestAdaptiveProportion:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_ADAPTP_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = ENTROPY_SRC_ADAPTP_LO_WATERMARKS_REG_OFFSET;
         high_fails_reg_offset = ENTROPY_SRC_ADAPTP_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_ADAPTP_LO_TOTAL_FAILS_REG_OFFSET;
         break;
       case kDifEntropySrcTestBucket:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_BUCKET_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = -1;
         high_fails_reg_offset = ENTROPY_SRC_BUCKET_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = -1;
         break;
       case kDifEntropySrcTestMarkov:
-        high_watermarks_reg_offset =
-            ENTROPY_SRC_MARKOV_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = ENTROPY_SRC_MARKOV_LO_WATERMARKS_REG_OFFSET;
         high_fails_reg_offset = ENTROPY_SRC_MARKOV_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_MARKOV_LO_TOTAL_FAILS_REG_OFFSET;
         break;
       case kDifEntropySrcTestMailbox:
-        high_watermarks_reg_offset = ENTROPY_SRC_EXTHT_HI_WATERMARKS_REG_OFFSET;
-        low_watermarks_reg_offset = ENTROPY_SRC_EXTHT_LO_WATERMARKS_REG_OFFSET;
         high_fails_reg_offset = ENTROPY_SRC_EXTHT_HI_TOTAL_FAILS_REG_OFFSET;
         low_fails_reg_offset = ENTROPY_SRC_EXTHT_LO_TOTAL_FAILS_REG_OFFSET;
         break;
       default:
         return kDifError;
     }
-
-    stats->high_watermark[i] = (uint16_t)mmio_region_read32(
-        entropy_src->base_addr, high_watermarks_reg_offset);
-    stats->low_watermark[i] =
-        low_watermarks_reg_offset == -1
-            ? 0
-            : (uint16_t)mmio_region_read32(entropy_src->base_addr,
-                                           low_watermarks_reg_offset);
 
     stats->high_fails[i] =
         mmio_region_read32(entropy_src->base_addr, high_fails_reg_offset);

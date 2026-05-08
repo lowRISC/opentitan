@@ -4,7 +4,12 @@
 //
 // base register reg class which will be used to generate the reg field
 class dv_base_reg_field extends uvm_reg_field;
+
+  // The access value that the field had when it was configured. If the field can be locked, its
+  // access value might change to "RO". This value can be used to restore the original access on
+  // reset.
   local string m_original_access;
+
   local dv_base_reg_field lockable_flds[$];
   local bit is_intr_test_fld;
   local uvm_reg_data_t staged_val, committed_val, shadowed_val;
@@ -83,6 +88,7 @@ class dv_base_reg_field extends uvm_reg_field;
                       .individually_accessible(individually_accessible));
       value.rand_mode(is_rand);
       this.mubi_access = mubi_access;
+      this.m_original_access = access;
       is_intr_test_fld = !(uvm_re_match("intr_test*", get_parent().get_name()));
       shadowed_val = ~committed_val;
     endfunction
@@ -202,14 +208,6 @@ class dv_base_reg_field extends uvm_reg_field;
     bit is_ro = (this.get_access() == "RO");
     get_ro_mask = (is_ro << this.get_n_bits()) - is_ro;
     get_ro_mask = get_ro_mask << this.get_lsb_pos();
-  endfunction
-
-  virtual function void set_original_access(string access);
-    if (m_original_access == "") begin
-      m_original_access = access;
-    end else begin
-      `uvm_fatal(`gfn, "register original access can only be written once")
-    end
   endfunction
 
   // Lock the write access to this field.

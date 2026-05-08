@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -92,10 +92,8 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
   memcpy(iv_data, test->iv, kAesBlockBytes);
-  otcrypto_word32_buf_t iv = {
-      .data = iv_data,
-      .len = kAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;
@@ -113,13 +111,13 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   unsigned char *ciphertext = (unsigned char *)ciphertext_data;
   if (streaming) {
     while (plaintext_len > kAesBlockBytes) {
-      otcrypto_const_byte_buf_t plaintext_block = {.data = plaintext,
-                                                   .len = kAesBlockBytes};
-      otcrypto_byte_buf_t ciphertext_block = {.data = ciphertext,
-                                              .len = kAesBlockBytes};
-      TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
-                       plaintext_block, kOtcryptoAesPaddingNull,
-                       ciphertext_block));
+      otcrypto_const_byte_buf_t plaintext_block = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t, plaintext, kAesBlockBytes);
+      otcrypto_byte_buf_t ciphertext_block =
+          OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, kAesBlockBytes);
+      TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationEncrypt,
+                       &plaintext_block, kOtcryptoAesPaddingNull,
+                       &ciphertext_block));
       plaintext += kAesBlockBytes;
       ciphertext += kAesBlockBytes;
       plaintext_len -= kAesBlockBytes;
@@ -128,12 +126,12 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   }
 
   // Encrypt the remaining input in one shot with the requested padding.
-  otcrypto_const_byte_buf_t plaintext_buf = {.data = plaintext,
-                                             .len = plaintext_len};
-  otcrypto_byte_buf_t ciphertext_buf = {.data = ciphertext,
-                                        .len = ciphertext_len};
-  TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationEncrypt,
-                   plaintext_buf, test->padding, ciphertext_buf));
+  otcrypto_const_byte_buf_t plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, plaintext, plaintext_len);
+  otcrypto_byte_buf_t ciphertext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, ciphertext_len);
+  TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationEncrypt,
+                   &plaintext_buf, test->padding, &ciphertext_buf));
 
   TRY_CHECK_ARRAYS_EQ(ciphertext_data, test->exp_ciphertext,
                       ARRAYSIZE(ciphertext_data));
@@ -165,11 +163,9 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
 
   // Construct a buffer to hold the IV.
   uint32_t iv_data[kAesBlockWords];
-  memcpy(iv_data, test->iv, kAesBlockBytes);
-  otcrypto_word32_buf_t iv = {
-      .data = iv_data,
-      .len = kAesBlockWords,
-  };
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, kAesBlockWords);
+  memcpy(iv.data, test->iv, kAesBlockBytes);
 
   // Calculate the size of the padded plaintext.
   size_t padded_len_bytes;
@@ -181,6 +177,9 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   size_t padded_len_words = padded_len_bytes / sizeof(uint32_t);
   uint32_t recovered_plaintext_data[padded_len_words];
   memset(recovered_plaintext_data, 0, sizeof(recovered_plaintext_data));
+  otcrypto_byte_buf_t recovered_plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t,
+                        (uint8_t *)recovered_plaintext_data, padded_len_bytes);
 
   // If in streaming mode, decrypt one block at a time with null padding until
   // there is only 1 block of input remaining.
@@ -190,13 +189,13 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
       (unsigned char *)recovered_plaintext_data;
   if (streaming) {
     while (len > kAesBlockBytes) {
-      otcrypto_const_byte_buf_t ciphertext_block = {.data = ciphertext,
-                                                    .len = kAesBlockBytes};
-      otcrypto_byte_buf_t recovered_plaintext_block = {
-          .data = recovered_plaintext, .len = kAesBlockBytes};
-      TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
-                       ciphertext_block, kOtcryptoAesPaddingNull,
-                       recovered_plaintext_block));
+      otcrypto_const_byte_buf_t ciphertext_block = OTCRYPTO_MAKE_BUF(
+          otcrypto_const_byte_buf_t, ciphertext, kAesBlockBytes);
+      otcrypto_byte_buf_t recovered_plaintext_block = OTCRYPTO_MAKE_BUF(
+          otcrypto_byte_buf_t, recovered_plaintext, kAesBlockBytes);
+      TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationDecrypt,
+                       &ciphertext_block, kOtcryptoAesPaddingNull,
+                       &recovered_plaintext_block));
       ciphertext += kAesBlockBytes;
       recovered_plaintext += kAesBlockBytes;
       len -= kAesBlockBytes;
@@ -207,15 +206,23 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
   }
 
   // Decrypt the remaining input in one shot.
-  otcrypto_const_byte_buf_t ciphertext_buf = {.data = ciphertext, .len = len};
-  otcrypto_byte_buf_t recovered_plaintext_buf = {.data = recovered_plaintext,
-                                                 .len = len};
-  TRY(otcrypto_aes(&key, iv, test->mode, kOtcryptoAesOperationDecrypt,
-                   ciphertext_buf, test->padding, recovered_plaintext_buf));
-
+  otcrypto_const_byte_buf_t ciphertext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ciphertext, len);
+  otcrypto_byte_buf_t recovered_plaintext_buf_last_block =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, recovered_plaintext, len);
+  TRY(otcrypto_aes(&key, &iv, test->mode, kOtcryptoAesOperationDecrypt,
+                   &ciphertext_buf, test->padding,
+                   &recovered_plaintext_buf_last_block));
   // Check the result (not including padding).
   TRY_CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,
                       (unsigned char *)test->plaintext, test->plaintext_len);
+
+  if (test->padding != kOtcryptoAesPaddingNull) {
+    size_t plaintext_len_from_padding;
+    TRY(otcrypto_aes_padding_strip(&recovered_plaintext_buf, test->padding,
+                                   &plaintext_len_from_padding));
+    TRY_CHECK(plaintext_len_from_padding == test->plaintext_len);
+  }
 
   return OK_STATUS();
 }

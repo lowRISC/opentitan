@@ -888,6 +888,40 @@ impl TryFrom<&[u8]> for JedecParams {
     }
 }
 
+#[derive(Default, Debug, Clone, Serialize)]
+pub struct Sdfu {
+    pub tag: u32,
+    pub length: u16,
+    pub major: u8,
+    pub minor: u8,
+    pub mailbox_address: u32,
+    pub mailbox_size: u16,
+    pub dfu_size: u16,
+}
+
+impl TryFrom<&[u8]> for Sdfu {
+    type Error = Error;
+    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+        const SDFU_TAG: u32 = 0x55464453;
+        log::info!("sdfu from {buf:x?}");
+
+        let mut reader = std::io::Cursor::new(buf);
+        let header = Sdfu {
+            tag: reader.read_u32::<LittleEndian>()?,
+            length: reader.read_u16::<LittleEndian>()?,
+            major: reader.read_u8()?,
+            minor: reader.read_u8()?,
+            mailbox_address: reader.read_u32::<LittleEndian>()?,
+            mailbox_size: reader.read_u16::<LittleEndian>()?,
+            dfu_size: reader.read_u16::<LittleEndian>()?,
+        };
+        match header.tag {
+            SDFU_TAG => Ok(header),
+            v => Err(Error::WrongHeaderSignature(v)),
+        }
+    }
+}
+
 /// An `UnknownParams` structure represents SFDP parameter tables for which
 /// we don't have a specialized parser.
 #[derive(Debug, Serialize)]
@@ -911,10 +945,13 @@ pub struct Sfdp {
     pub header: SfdpHeader,
     pub phdr: Vec<SfdpPhdr>,
     pub jedec: JedecParams,
+    pub sdfu: Option<Sdfu>,
     pub params: Vec<UnknownParams>,
 }
 
 impl Sfdp {
+    const LOWRISC_JEDEC_ID: u8 = 0xEF;
+
     /// Given an initial SFDP buffer calculate the number of bytes needed for
     /// the entire SFDP.
     pub fn length_required(buf: &[u8]) -> Result<usize, Error> {
@@ -963,19 +1000,26 @@ impl TryFrom<&[u8]> for Sfdp {
         let jedec =
             JedecParams::try_from(buf.get(start..end).ok_or(Error::SliceRange(start, end))?)?;
 
+        let mut sdfu: Option<Sdfu> = None;
         let mut params = Vec::new();
         for ph in phdr.iter().take((header.nph as usize) + 1).skip(1) {
             let start = ph.offset as usize;
             let end = start + ph.dwords as usize * 4;
-            params.push(UnknownParams::try_from(
-                buf.get(start..end).ok_or(Error::SliceRange(start, end))?,
-            )?);
+            let data = buf.get(start..end).ok_or(Error::SliceRange(start, end))?;
+            if ph.id == Self::LOWRISC_JEDEC_ID
+                && let Ok(s) = Sdfu::try_from(data)
+            {
+                sdfu = Some(s);
+                continue;
+            }
+            params.push(UnknownParams::try_from(data)?);
         }
 
         Ok(Sfdp {
             header,
             phdr,
             jedec,
+            sdfu,
             params,
         })
     }

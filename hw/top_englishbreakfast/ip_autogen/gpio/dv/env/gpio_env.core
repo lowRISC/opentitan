@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:englishbreakfast_dv:gpio_if
     files:
       - gpio_env_pkg.sv
       - gpio_env_cfg.sv: {is_include_file: true}

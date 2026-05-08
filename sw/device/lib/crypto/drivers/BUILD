@@ -4,6 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//rules:autogen.bzl", "autogen_cryptolib_build_info")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
     "//rules:cross_platform.bzl",
@@ -13,6 +14,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
@@ -25,6 +27,16 @@ load(
     "dicts",
 )
 
+CRYPTO_EXEC_ENVS = dicts.add(
+    EARLGREY_TEST_ENVS,
+    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
+)
+
+autogen_cryptolib_build_info(name = "cryptolib_build_info")
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -33,7 +45,7 @@ cc_library(
         ":entropy",
         ":rv_core_ibex",
         "//hw/top:aes_c_regs",
-        "//hw/top:dt_aes",
+        "//hw/top/dt:aes",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",
@@ -47,7 +59,7 @@ cc_library(
 opentitan_test(
     name = "aes_test",
     srcs = ["aes_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -70,14 +82,13 @@ cc_library(
     deps = [
         ":entropy",
         ":rv_core_ibex",
-        "//hw/top:dt_keymgr",
         "//hw/top:keymgr_c_regs",
+        "//hw/top/dt:keymgr",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/runtime:hart",
     ],
 )
 
@@ -86,10 +97,11 @@ opentitan_test(
     srcs = ["keymgr_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        CRYPTO_EXEC_ENVS,
         {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     qemu = qemu_params(
@@ -122,12 +134,14 @@ cc_library(
     deps = [
         ":entropy",
         ":rv_core_ibex",
-        "//hw/top:dt_kmac",
         "//hw/top:kmac_c_regs",
+        "//hw/top/dt:kmac",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
@@ -144,9 +158,9 @@ dual_cc_library(
             "//hw/top:csrng_c_regs",
             "//hw/top:edn_c_regs",
             "//hw/top:entropy_src_c_regs",
-            "//hw/top:dt_csrng",
-            "//hw/top:dt_entropy_src",
-            "//hw/top:dt_edn",
+            "//hw/top/dt:csrng",
+            "//hw/top/dt:entropy_src",
+            "//hw/top/dt:edn",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
@@ -167,7 +181,7 @@ cc_library(
     deps = [
         ":entropy",
         "//hw/top:csrng_c_regs",
-        "//hw/top:dt_csrng",
+        "//hw/top/dt:csrng",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
@@ -180,7 +194,7 @@ cc_library(
 opentitan_test(
     name = "entropy_test",
     srcs = ["entropy_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # TODO #16672 test broken by icache
@@ -188,7 +202,7 @@ opentitan_test(
     deps = [
         ":entropy",
         ":entropy_kat",
-        "//hw/top:dt_otbn",
+        "//hw/top/dt:otbn",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:otbn",
@@ -203,8 +217,8 @@ cc_library(
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
     deps = [
-        "//hw/top:dt_hmac",
         "//hw/top:hmac_c_regs",
+        "//hw/top/dt:hmac",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",
@@ -214,6 +228,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
@@ -229,7 +244,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:dt_rv_core_ibex",
+            "//hw/top/dt:rv_core_ibex",
             "//hw/top:rv_core_ibex_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
@@ -245,7 +260,7 @@ dual_cc_library(
 opentitan_test(
     name = "rv_core_ibex_test",
     srcs = ["rv_core_ibex_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTO_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -267,8 +282,8 @@ cc_library(
     hdrs = ["otbn.h"],
     deps = [
         ":entropy",
-        "//hw/top:dt_otbn",
         "//hw/top:otbn_c_regs",
+        "//hw/top/dt:otbn",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",

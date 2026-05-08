@@ -151,27 +151,27 @@ Note that the key and nonce output signals on the OTP controller side are guaran
 Hence, if the scrambling device clock is faster or in the same order of magnitude as the OTP clock, the data can be directly sampled upon assertion of `src_ack_o`.
 If the scrambling device runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
 
-% if enable_flash_key:
-${"###"} Interface to Flash Scrambler
+% if enable_nvm_key:
+${"###"} Interface to NVM Scrambler
 
-The interface to the FLASH scrambling device is a simple req/ack interface that provides the flash controller with the two 128bit keys for data and address scrambling.
+The interface to the NVM scrambling device is a simple req/ack interface that provides the nvm controller with the two 128bit keys for data and address scrambling.
 
 The keys can be requested as illustrated below:
 
 ```wavejson
 {signal: [
-  {name: 'clk_i',                      wave: 'p...........'},
-  {name: 'flash_otp_key_i.data_req',   wave: '01.|..0.|...'},
-  {name: 'flash_otp_key_i.addr_req',   wave: '01.|....|..0'},
-  {name: 'flash_otp_key_o.data_ack',   wave: '0..|.10.|...'},
-  {name: 'flash_otp_key_o.addr_ack',   wave: '0..|....|.10'},
-  {name: 'flash_otp_key_o.key',        wave: '0..|.30.|.40'},
-  {name: 'flash_otp_key_o.seed_valid', wave: '0..|.10.|.10'},
+  {name: 'clk_i',                    wave: 'p...........'},
+  {name: 'nvm_otp_key_i.data_req',   wave: '01.|..0.|...'},
+  {name: 'nvm_otp_key_i.addr_req',   wave: '01.|....|..0'},
+  {name: 'nvm_otp_key_o.data_ack',   wave: '0..|.10.|...'},
+  {name: 'nvm_otp_key_o.addr_ack',   wave: '0..|....|.10'},
+  {name: 'nvm_otp_key_o.key',        wave: '0..|.30.|.40'},
+  {name: 'nvm_otp_key_o.seed_valid', wave: '0..|.10.|.10'},
 ]}
 ```
 
-The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
-If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
+The keys are derived from the NVM_DATA_KEY_SEED and NVM_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
+If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `nvm_otp_key_o.seed_valid` signal will be set to 0 in the response.
 The resulting scrambling key is still ephemeral (i.e., it is derived using entropy from CSRNG) and okay to be used.
 
 Note that the req/ack protocol runs on the OTP clock.

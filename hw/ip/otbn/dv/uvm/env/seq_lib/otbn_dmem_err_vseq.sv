@@ -33,6 +33,7 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
 
     // Inject error at negedge of clock to avoid racing with second cycle of store instruction.
     @(cfg.clk_rst_vif.cbn);
+    `uvm_info(`gfn, $sformatf("Modifying DMEM"), UVM_LOW)
 
     for (int i = 0; i < DmemSizeByte / 32; i++) begin
       bit [ExtWLEN-1:0] old_data = cfg.read_dmem_word(i, key, nonce);
@@ -41,7 +42,11 @@ class otbn_dmem_err_vseq extends otbn_base_vseq;
       cfg.write_dmem_word(i, bad_data, key, nonce);
     end
 
+    // Invalidate the memory. Any next read will result in an escalation.
     cfg.model_agent_cfg.vif.invalidate_dmem();
+    // As the next read will result in a mismatch between RTL and ISS, we must signal to the ISS
+    // that this is expected.
+    cfg.model_agent_cfg.vif.tolerate_result_mismatch(0);
 
     wait (!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
                                                    otbn_pkg::StatusBusySecWipeInt}));

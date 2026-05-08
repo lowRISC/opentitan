@@ -6,6 +6,9 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -877,10 +880,8 @@ status_t handle_cryptolib_sca_sym_drbg_reseed(ujson_t *uj) {
 }
 
 status_t handle_cryptolib_sca_sym_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_cpuctrl_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
-  penetrationtest_sensor_config_t uj_sensor_data;
-  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
+  // Configure the device.
+  pentest_setup_device(uj, false, false);
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
@@ -890,34 +891,24 @@ status_t handle_cryptolib_sca_sym_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
                    kPentestPeripheralCsrng | kPentestPeripheralEntropy |
                    kPentestPeripheralAes | kPentestPeripheralHmac |
-                   kPentestPeripheralKmac | kPentestPeripheralOtbn,
-               uj_sensor_data.sensor_ctrl_enable,
-               uj_sensor_data.sensor_ctrl_en_fatal);
-
-  // Configure the CPU for the pentest.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
-      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
-      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
-      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
-      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
-      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en, uj_cpuctrl_data.enable_data_ind_timing,
-      &uj_output.data_ind_timing_en));
-
-  // Read rom digest.
-  TRY(pentest_read_rom_digest(uj_output.rom_digest));
-
-  // Read device ID and return to host.
-  TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
-
-  // Read different SKU config fields and return to host.
-  TRY(pentest_send_sku_config(uj));
+                   kPentestPeripheralKmac | kPentestPeripheralOtbn);
 
   /////////////// STUB START ///////////////
-  // Add things like versioning.
+  uint32_t version;
+  bool released;
+  uint32_t build_hash_low;
+  uint32_t build_hash_high;
+  TRY(otcrypto_build_info(&version, &released, &build_hash_low,
+                          &build_hash_high));
+  char cryptolib_version[150];
+  memset(cryptolib_version, '\0', sizeof(cryptolib_version));
+  base_snprintf(cryptolib_version, sizeof(cryptolib_version),
+                "CRYPTO version %08x, released %s, hash %08x%08x", version,
+                released ? "true" : "false", build_hash_high, build_hash_low);
+  RESP_OK(ujson_serialize_string, uj, cryptolib_version);
+
+  // Check the security config of the device.
+  TRY(otcrypto_security_config_check(kOtcryptoKeySecurityLevelHigh));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();

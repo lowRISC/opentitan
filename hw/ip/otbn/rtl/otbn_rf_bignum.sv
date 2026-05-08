@@ -49,7 +49,7 @@ module otbn_rf_bignum
 
   output logic                   intg_err_o,
 
-  input  rf_predec_bignum_t      rf_predec_bignum_i,
+  input  rf_bignum_predec_t      rf_bignum_predec_i,
   output logic                   predec_error_o,
 
   output logic                   spurious_we_err_o
@@ -79,7 +79,7 @@ module otbn_rf_bignum
       .rd_addr_b_i,
       .rd_data_b_o(rd_data_b_intg_o),
 
-      .rf_predec_bignum_i,
+      .rf_bignum_predec_i,
 
       .we_err_o(spurious_we_err_o)
     );
@@ -129,9 +129,9 @@ module otbn_rf_bignum
   );
 
   // SEC_CM: CTRL.REDUN
-  assign rd_en_a_mismatch = expected_rd_en_a_onehot != rf_predec_bignum_i.rf_ren_a;
-  assign rd_en_b_mismatch = expected_rd_en_b_onehot != rf_predec_bignum_i.rf_ren_b;
-  assign wr_en_mismatch   = expected_wr_en_onehot   != rf_predec_bignum_i.rf_we;
+  assign rd_en_a_mismatch = expected_rd_en_a_onehot != rf_bignum_predec_i.rf_ren_a;
+  assign rd_en_b_mismatch = expected_rd_en_b_onehot != rf_bignum_predec_i.rf_ren_b;
+  assign wr_en_mismatch   = expected_wr_en_onehot   != rf_bignum_predec_i.rf_we;
 
   assign predec_error_o = rd_en_a_mismatch | rd_en_b_mismatch | wr_en_mismatch;
 

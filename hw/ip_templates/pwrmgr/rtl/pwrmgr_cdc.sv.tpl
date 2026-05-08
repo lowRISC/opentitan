@@ -7,6 +7,7 @@
 
 `include "prim_assert.sv"
 
+<%  peripheral_reset_reqs = rst_reqs.get("peripheral", []) %>\
 module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 (
   // Clocks and resets
@@ -72,8 +73,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
-  input pwr_flash_t flash_i,
-  output pwr_flash_t flash_o,
+  input pwr_nvm_t nvm_i,
+  output pwr_nvm_t nvm_o,
 
   // otp interface
   input  pwr_otp_rsp_t otp_i,
@@ -186,7 +187,7 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
     if (!rst_slow_ni) begin
       slow_wakeup_en_o <= '0;
-      slow_reset_en_o <= '0;
+      slow_reset_en_o <= ${f"{len(peripheral_reset_reqs)}'b" + "".join(["1" if reset.get("enabled_after_reset", False) else "0" for reset in reversed(peripheral_reset_reqs)])};
       slow_main_pd_no <= '1;
 % for clk in src_clks:
   % if clk != 'usb':
@@ -313,11 +314,11 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   prim_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
-  ) u_sync_flash_idle (
+  ) u_sync_nvm_idle (
     .clk_i,
     .rst_ni,
-    .d_i(flash_i.flash_idle),
-    .q_o(flash_o.flash_idle)
+    .d_i(nvm_i.nvm_idle),
+    .q_o(nvm_o.nvm_idle)
   );
 
   prim_flop_2sync #(

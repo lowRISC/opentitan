@@ -77,7 +77,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   int unsigned aon_clk_cycle = 0;
   int unsigned last_wkup_cause_write_aon_clk_cycle = 0;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
@@ -201,7 +201,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
 
 endclass : aon_timer_scoreboard
 
-function aon_timer_scoreboard::new (string name="", uvm_component parent=null);
+function aon_timer_scoreboard::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

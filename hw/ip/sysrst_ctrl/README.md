@@ -1,10 +1,12 @@
 # System Reset Control Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`sysrst_ctrl`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sysrst_ctrl/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sysrst_ctrl/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sysrst_ctrl/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sysrst_ctrl/code.svg) |
 
-[`sysrst_ctrl`](https://reports.opentitan.org/hw/ip/sysrst_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/sysrst_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/sysrst_ctrl/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

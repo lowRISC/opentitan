@@ -69,4 +69,15 @@ module aes_err_injection_bind;
                    aes_ctrl_cs)
     );
 
+  // fault injection IF for GHASH signals - see aes_fi_vseq.sv
+  bind aes_ghash fi_ghash_wrapper
+    #(.IfName("aes_ghash_fi_vif")
+     )
+  u_ghash_fi
+    (
+     .clk_i       (clk_i),
+     .rst_ni      (rst_ni),
+     .aes_ghash_cs(u_aes_ghash.aes_ghash_cs)
+    );
+
 endmodule

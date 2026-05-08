@@ -7,7 +7,7 @@
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -29,9 +29,7 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         .pin_strapping("PINMUX_TAP_LC")?
         .apply()
         .context("failed to apply LC TAP strapping")?;
-    transport
-        .reset_target(opts.init.bootstrap.options.reset_delay, true)
-        .context("failed to reset")?;
+    transport.reset(UartRx::Clear).context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
     let mut jtag = opts
@@ -53,7 +51,6 @@ fn manuf_cp_unlock_raw(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         DifLcCtrlState::TestUnlocked0,
         Some(token_words),
         true,
-        opts.init.bootstrap.options.reset_delay,
         Some(JtagTap::LcTap),
     )
     .context("failed to transition to TEST_UNLOCKED0")?;

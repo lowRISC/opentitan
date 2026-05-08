@@ -120,5 +120,5 @@ waive -rules RESET_MUX -location {dmi_jtag.sv} -regexp {Asynchronous reset 'dmi_
 
 # dmi_cdc
 waive -rules RESET_MUX -location {dmi_cdc.sv} \
-      -msg {Asynchronous reset 'combined_rstn' is driven by a multiplexer here, used as a reset 'rst_dst_ni' at prim_sync_reqack} \
+      -regexp {Asynchronous reset 'combined_rstn' is driven by a multiplexer here, used as a reset} \
       -comment "This is needed such that the reset can be properly controlled during scanmode."

@@ -7,9 +7,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   );
 
   // Testbench settings
-  bit                 en_uart_logger;
   uart_agent_pkg::baud_rate_e uart_baud_rate = uart_agent_pkg::BaudRate1Mbps;
-  bit                 use_gpio_for_sw_test_status;
 
   // Write logs from sw test to separate log file as well, in addition to the simulator log file.
   bit                 write_sw_logs_to_file = 1'b1;
@@ -38,15 +36,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // before invoking super.dut_init(), or any other suitable place.
   rand uint creator_sw_cfg_ast_cfg_data[ast_pkg::AstRegsNum];
 
-  // A knob that controls whether the AST initialization is done, enabled by default.
-  // Can be updated with plusarg.
-  bit do_creator_sw_cfg_ast_cfg = 1;
-
-  // sw related
-  // In OpenTitan, the same SW test image can be built for DV, Verilator and FPGA. SW build for
-  // other platforms can be run on DV as well. We allow that by specifying the SW build device.
-  string sw_build_device = "sim_dv";
-
   // Types of SW images used in the test.
   //
   // Set via plusarg. This is the basename of the SW image. If the SW image is not pre-built
@@ -71,10 +60,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint               sw_test_timeout_ns = 12_000_000; // 12ms
   // delay until the pull is propagated, only available in closed-source
   uint               pad_pull_delay = 0;
-  sw_logger_vif      sw_logger_vif;
+    sw_logger_vif      sw_logger_vif;
   sw_test_status_vif sw_test_status_vif;
   ast_supply_vif     ast_supply_vif;
-  ast_ext_clk_vif    ast_ext_clk_vif;
 
   // Number of RAM tiles for each RAM instance.
   uint num_ram_main_tiles;
@@ -142,7 +130,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   `uvm_object_utils_end
 
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  virtual function void initialize();
     dv_base_reg_block soc_dbg_base_reg_block;
     dv_base_reg_block soc_mbx_base_reg_block;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
@@ -157,7 +145,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     ral_model_names.push_back("chip_soc_dbg_reg_block");
     ral_model_names.push_back("chip_soc_mbx_reg_block");
-    super.initialize(csr_base_addr);
+    super.initialize();
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW);
     soc_dbg_base_reg_block = ral_models["chip_soc_dbg_reg_block"];
     `downcast(chip_soc_dbg_ral, soc_dbg_base_reg_block);
@@ -191,20 +179,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // create jtag agent config obj
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
-    m_jtag_riscv_agent_cfg.use_jtag_dmi = use_jtag_dmi;
-    if (use_jtag_dmi == 1) begin
-      // Both, the regs only supports 1 outstanding.
-      m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
-
-      m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
-      m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
-      m_jtag_agent_cfg.is_active = 1'b1;
-      m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
-
-      // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
-      m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
-      m_jtag_riscv_agent_cfg.m_jtag_agent_cfg = m_jtag_agent_cfg;
-    end
 
     // create spi agent config obj
     m_spi_host_agent_cfg = spi_agent_cfg::type_id::create("m_spi_host_agent_cfg");
@@ -228,28 +202,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_ctn_tiles, 16)
     `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
 
-    if (use_jtag_dmi == 1) begin
-      jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
-      // Fix the reset values of these fields based on our design.
-      `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
-      jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm::DataAddr);
-      jtag_dmi_ral.hartinfo.datasize.set_reset(dm::DataCount);
-      jtag_dmi_ral.hartinfo.dataaccess.set_reset(1);  // TODO: verify this!
-      jtag_dmi_ral.hartinfo.nscratch.set_reset(2);  // TODO: verify this!
-      jtag_dmi_ral.abstractcs.datacount.set_reset(dm::DataCount);
-      jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm::ProgBufSize);
-      jtag_dmi_ral.dmstatus.authenticated.set_reset(1);  // No authentication performed.
-      jtag_dmi_ral.sbcs.sbaccess32.set_reset(1);
-      jtag_dmi_ral.sbcs.sbaccess16.set_reset(1);
-      jtag_dmi_ral.sbcs.sbaccess8.set_reset(1);
-      jtag_dmi_ral.sbcs.sbasize.set_reset(32);
-      apply_jtag_dmi_ral_csr_excl();
-    end
-
     // Create the JTAG RV debugger instance.
     debugger = jtag_rv_debugger::type_id::create("debugger");
     debugger.set_cfg(m_jtag_agent_cfg);
-    debugger.set_ral(jtag_dmi_ral);
     debugger.num_harts = rv_dm_reg_pkg::NrHarts;
     debugger.num_triggers = 4;  // TODO: wire this from `top_darjeeling_pkg`.
 
@@ -265,6 +220,53 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     num_ram_mbox_tiles = 1;
     num_ram_ctn_tiles = 1;
     num_otbn_dmem_tiles = 1;
+  endfunction
+
+  // Configure the environment to run a DMI agent over a JTAG connection.
+  //
+  // To enable DMI over JTAG, the testbench or test must call this function before the chip
+  // environment's build_phase.
+  function void set_use_jtag_dmi();
+    if (m_jtag_riscv_agent_cfg.use_jtag_dmi) return;
+
+    m_jtag_riscv_agent_cfg.use_jtag_dmi = 1;
+
+    // Both, the regs only supports 1 outstanding.
+    m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
+
+    m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
+    m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
+    m_jtag_agent_cfg.is_active = 1'b1;
+    m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
+
+    // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
+    m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
+    m_jtag_riscv_agent_cfg.m_jtag_agent_cfg = m_jtag_agent_cfg;
+
+    // Create the DMI register block. Because use_jtag_dmi was false at the start of the function,
+    // we know it is currently null.
+    if (jtag_dmi_ral != null) `uvm_fatal(`gfn, "jtag_dmi_ral unexpectedly set")
+
+    jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
+
+    // Fix the reset values of these fields based on our design.
+    `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
+    jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm::DataAddr);
+    jtag_dmi_ral.hartinfo.datasize.set_reset(dm::DataCount);
+    jtag_dmi_ral.hartinfo.dataaccess.set_reset(1);  // TODO: verify this!
+    jtag_dmi_ral.hartinfo.nscratch.set_reset(2);  // TODO: verify this!
+    jtag_dmi_ral.abstractcs.datacount.set_reset(dm::DataCount);
+    jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm::ProgBufSize);
+    jtag_dmi_ral.dmstatus.authenticated.set_reset(1);  // No authentication performed.
+    jtag_dmi_ral.sbcs.sbaccess32.set_reset(1);
+    jtag_dmi_ral.sbcs.sbaccess16.set_reset(1);
+    jtag_dmi_ral.sbcs.sbaccess8.set_reset(1);
+    jtag_dmi_ral.sbcs.sbasize.set_reset(32);
+    apply_jtag_dmi_ral_csr_excl();
+
+    // Finally, tell the debugger (which should already exist) about the register block we just
+    // created.
+    debugger.set_ral(jtag_dmi_ral);
   endfunction
 
   // Disable functional coverage of comportable IP-specific specialized registers.
@@ -376,7 +378,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // attached to the SW image. They can be used to treat the SW image in a specific way. The flag
   // "signed" for example, is used to set the SW image extension correctly. The flag "test_in_rom"
   // is used to indicate a test runs directly out of ROM instead of flash.
-  virtual function void parse_sw_images_string(string sw_images_string);
+  virtual function void parse_sw_images_string(string sw_build_device,
+                                               string sw_images_string);
     string sw_images_split[$];
 
     // Split sw_images with space.
@@ -403,11 +406,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         sw_image_flags[sw_type] = sw_image_fields[2:$];
       end
     end
-    resolve_sw_image_paths();
+    resolve_sw_image_paths(sw_build_device);
   endfunction
 
   // Finalize the SW image paths, once all SW image settings are done.
-  virtual function void resolve_sw_image_paths();
+  local function void resolve_sw_image_paths(string sw_build_device);
     foreach (sw_images[i]) begin
       if ("prebuilt" inside {sw_image_flags[i]}) begin
         sw_images[i] = $sformatf("%0s", sw_images[i]);

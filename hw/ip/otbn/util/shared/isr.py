@@ -8,8 +8,8 @@ from serialize.parse_helpers import (check_keys, check_str, check_list,
 
 
 class Isr:
-    def __init__(self, name: str, address: int,
-                 doc: str, read_only: bool, bits: Dict[int, str]) -> None:
+    def __init__(self, name: str, address: int, doc: str, read_only: bool,
+                 bits: Dict[str, object]) -> None:
         self.name = name
         self.address = address
         self.doc = doc
@@ -33,11 +33,35 @@ class Isr:
         pre_bits = yd.get('bits', {})
         if not isinstance(pre_bits, dict):
             raise ValueError(f'bits field of ISR {name:!r} is not a dict.')
-        bits = {}  # type: Dict[int, str]
-        for k, v in pre_bits.items():
-            k_int = check_int(k, 'address of ISR bit')
-            v_str = check_str(v, f'description of ISR bit {k}')
-            bits[k_int] = v_str
+        bits = {}  # type: Dict[str, object]
+        for idx, desc in pre_bits.items():
+            # An entry in the bits section can either describe a single bit or a bit field.
+            # A single bit is described as "index: description".
+            # A bit field is described with a range of bits, a description and optionally a
+            # list of allowed values.
+            # A yml example is:
+            # bits:
+            #   0: A single bit
+            #   2-1: A bit field
+            #   4-3:
+            #     doc: Another bit field
+            #     values:
+            #       0: Option A
+            #       1: Option B
+
+            # Convert the bit index to string so all cases are handled the same way.
+            # We do not enforce a strict format for the string contents here, meaning that we allow
+            # "MSB-5" and similar notations.
+            if isinstance(idx, int):
+                idx = str(idx)
+            elif isinstance(idx, str):
+                idx = idx
+            else:
+                raise ValueError(f'Invalid bit index {idx!r} format in ISR {name!r}.')
+
+            # We do not check the description format here. It can be validated when building the
+            # documentation.
+            bits[idx] = desc
 
         return Isr(name, address, doc, read_only, bits)
 

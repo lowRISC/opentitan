@@ -224,19 +224,33 @@ typedef struct dif_entropy_src_health_test_config {
    */
   dif_entropy_src_test_t test_type;
   /**
-   * The high threshold for the health test (contains both FIPS and bypass
-   * thresholds).
+   * The high threshold for the health test.
    */
-  uint32_t high_threshold;
+  uint16_t high_threshold;
   /**
-   * The low threshold for the health test (contains both FIPS and bypass
-   * thresholds).
+   * The low threshold for the health test.
    *
    * If the corresponding health test has no low threshold, set to 0, otherwise
    * `dif_entropy_src_health_test_configure()` will return `kDifBadArg`.
    */
-  uint32_t low_threshold;
+  uint16_t low_threshold;
 } dif_entropy_src_health_test_config_t;
+
+/**
+ * Values of the health test watermark number register to record the high or low
+ * watermarks of the corresponding health tests.
+ */
+typedef enum dif_entropy_src_watermark_num {
+  kDifEntropySrcWatermarkNumRepcntHi = 0,
+  kDifEntropySrcWatermarkNumRepcntsHi = 1,
+  kDifEntropySrcWatermarkNumAdaptpHi = 2,
+  kDifEntropySrcWatermarkNumAdaptpLo = 3,
+  kDifEntropySrcWatermarkNumBucketHi = 4,
+  kDifEntropySrcWatermarkNumMarkovHi = 5,
+  kDifEntropySrcWatermarkNumMarkovLo = 6,
+  kDifEntropySrcWatermarkNumExthtHi = 7,
+  kDifEntropySrcWatermarkNumExthtLo = 8,
+} dif_entropy_src_watermark_num_t;
 
 /**
  * Revision information for an entropy source.
@@ -254,20 +268,19 @@ typedef struct dif_entropy_src_revision {
  */
 typedef struct dif_entropy_src_health_test_stats {
   /**
-   * High watermark indicating the highest value emitted by a particular test.
+   * Identifier defining test and the watermark (high or low) the recorded
+   * number belongs to.
    */
-  uint16_t high_watermark[kDifEntropySrcTestNumVariants];
+  dif_entropy_src_watermark_num_t watermark_num;
   /**
-   * Low watermark indicating the lowest value emitted by a particular test
-   * (contains both FIPS and bypass watermarks).
-   *
-   * Note, some health tests do not emit a low watermark as there is no low
-   * threshold. For these tests, this value will always be UINT16_MAX.
+   * The recorded watermark. For low or high watermarks, this indicates the
+   * lowest or highest values emitted by the corresponding health test,
+   * respectively.
    */
-  uint16_t low_watermark[kDifEntropySrcTestNumVariants];
+  uint16_t watermark;
   /**
    * The number of times a particular test has failed above the high threshold
-   * (contains both FIPS and bypass watermarks).
+   * (contains both failures when using the FIPS or the bypass thresholds).
    */
   uint32_t high_fails[kDifEntropySrcTestNumVariants];
   /**
@@ -582,6 +595,36 @@ dif_result_t dif_entropy_src_health_test_configure(
     dif_entropy_src_health_test_config_t config);
 
 /**
+ * Enables the one-way behavior of all entropy source health test threshold
+ * registers.
+ *
+ * This function is reentrant: calling it while the one-way behavior is enabled
+ * will have no effect and return `kDifOk`.
+ *
+ * @param entropy_src An entropy source handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_health_test_threshold_oneway_enable(
+    const dif_entropy_src_t *entropy_src);
+
+/**
+ * Configures the health test watermark number register to record the high or
+ * low watermark of a specific health test.
+ *
+ * This function is primarily required for the initial validation during chip
+ * bring-up.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param config Specific health test and high or low watermark to be recorded.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_watermark_configure(
+    const dif_entropy_src_t *entropy_src,
+    dif_entropy_src_watermark_num_t config);
+
+/**
  * Enables/Disables the entropy source.
  *
  * @param entropy_src An entropy source handle.
@@ -596,7 +639,7 @@ dif_result_t dif_entropy_src_set_enabled(const dif_entropy_src_t *entropy_src,
  * Locks out entropy source functionality.
  *
  * This function is reentrant: calling it while functionality is locked will
- * have no effect and return `kDifEntropySrcOk`.
+ * have no effect and return `kDifOk`.
  *
  * @param entropy_src An entropy source handle.
  * @return The result of the operation.

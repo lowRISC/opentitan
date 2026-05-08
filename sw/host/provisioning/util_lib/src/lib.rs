@@ -16,6 +16,8 @@ use std::path::Path;
 use tiny_keccak::{CShake, Hasher};
 use zerocopy::IntoBytes;
 
+pub mod response;
+
 pub fn hex_string_to_u32_arrayvec<const N: usize>(hex_str: &str) -> Result<ArrayVec<u32, N>> {
     let hex_str_no_sep = hex_str.replace('_', "");
     let hex_str_prefix = "0x";

@@ -12,12 +12,19 @@ use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::AttrData;
-use sphincsplus::{DecodeKey, SpxPublicKey, SpxSecretKey};
+use sphincsplus::{DecodeKey, SpxDomain, SpxPublicKey, SpxSecretKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Import {
     #[arg(short, long)]
     label: String,
+    #[arg(
+        short,
+        long,
+        default_value = "None",
+        help = "SLH-DSA domain (if the backend requires the domain to be associated with the key)"
+    )]
+    domain: SpxDomain,
     #[arg(short, long, help = "Overwrite an existing key with the same label")]
     overwrite: bool,
     filename: PathBuf,
@@ -40,6 +47,7 @@ impl Dispatch for Import {
         let key = spx.import_keypair(
             &self.label,
             &sk.algorithm().to_string(),
+            self.domain,
             token,
             self.overwrite,
             pk.as_bytes(),

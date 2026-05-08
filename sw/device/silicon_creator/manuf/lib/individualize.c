@@ -75,7 +75,7 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
 status_t manuf_individualize_device_hw_cfg(
     dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
     dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    uint32_t *ft_device_id) {
+    const uint32_t *ft_device_id) {
   bool is_locked;
 
   // Provision HW_CFG0 if it is not locked.
@@ -90,11 +90,20 @@ status_t manuf_individualize_device_hw_cfg(
         flash_info_page_0_permissions,
         /*offset=*/NULL));
 
-    // Read CpDeviceId from flash info page 0.
+    // Read CpDeviceId & AST configuration version from flash info page 0.
     uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
     TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldCpDeviceId,
                                     cp_device_id,
                                     kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
+    uint32_t ast_cfg_version;
+    TRY(manuf_flash_info_field_read(
+        flash_state, kFlashInfoFieldAstCfgVersion, &ast_cfg_version,
+        kFlashInfoFieldAstCfgVersionSizeIn32BitWords));
+
+    // Check if AST configuration version is an 8-bit value.
+    if (ast_cfg_version > UINT8_MAX) {
+      return OUT_OF_RANGE();
+    }
 
     // Check if CP device ID from flash is empty.
     bool flash_cp_device_id_empty = true;
@@ -106,12 +115,15 @@ status_t manuf_individualize_device_hw_cfg(
     }
 
     // On non-silicon targets, we expect the CP device ID from flash to be
-    // empty. In this case we set the HW origin portion of the CP device ID.
+    // empty. In this case we set the HW origin and DIN portions of the CP
+    // device ID to all 1s to indicate this is an FPGA/Sim generated device ID.
     // Otherwise, we expect the CP device ID to be present and non-zero.
     if (flash_cp_device_id_empty) {
-      if (kDeviceType != kDeviceSilicon) {
+      if (kDeviceType != kDeviceSilicon && kDeviceType != kDeviceSimDV) {
         memset(&cp_device_id, 0, sizeof(cp_device_id));
-        cp_device_id[0] = 0x00024001u;
+        cp_device_id[0] = UINT32_MAX;
+        cp_device_id[1] = UINT32_MAX;
+        cp_device_id[2] = UINT32_MAX;
       } else {
         return NOT_FOUND();
       }
@@ -123,6 +135,14 @@ status_t manuf_individualize_device_hw_cfg(
     // CP and FT device IDs are the same length (128 bit words).
     memcpy(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords], ft_device_id,
            kFlashInfoFieldCpDeviceIdSizeInBytes);
+
+    // Overwrite AST configuration version field in FT device ID with the
+    // version field from flash.
+    uint32_t ft_device_id_mask = 0xFFFF00FF;
+    device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] =
+        (device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] &
+         ft_device_id_mask) |
+        (ast_cfg_version << 8);
 
     // Write the complete device ID to OTP.
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,

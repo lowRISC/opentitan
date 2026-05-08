@@ -79,7 +79,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     `DV_COMMON_CLK_CONSTRAINT(otp_freq_mhz)
   }
 
-  function void initialize(bit [31:0] csr_base_addr = '1);
+  function void initialize();
     num_edn = 2;
 
     // Set the list of alerts, needed by the CIP base code. This needs to match the names assigned
@@ -101,7 +101,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Build OTP Key cfg object
     key_cfg = otp_key_agent_cfg::type_id::create("key_cfg");
 
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // We can only have one outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;

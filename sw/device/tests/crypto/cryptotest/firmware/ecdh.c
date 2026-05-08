@@ -4,10 +4,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -177,10 +177,11 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   // Unmask the shared secret.
   uint32_t share0[shared_secret_words];
   uint32_t share1[shared_secret_words];
-  TRY(otcrypto_export_blinded_key(
-      &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+  otcrypto_word32_buf_t share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
   for (size_t i = 0; i < shared_secret_words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }
@@ -301,10 +302,11 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   // Unmask the shared secret.
   uint32_t share0[shared_secret_words];
   uint32_t share1[shared_secret_words];
-  TRY(otcrypto_export_blinded_key(
-      &shared_secret,
-      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
-      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+  otcrypto_word32_buf_t share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share0, ARRAYSIZE(share0));
+  otcrypto_word32_buf_t share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, share1, ARRAYSIZE(share1));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
   for (size_t i = 0; i < shared_secret_words; i++) {
     ss[i] = share0[i] ^ share1[i];
   }

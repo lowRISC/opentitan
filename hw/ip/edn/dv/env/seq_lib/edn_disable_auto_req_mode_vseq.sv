@@ -7,11 +7,11 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
   `uvm_object_new
 
   push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)
-      m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
+      m_endpoint_pull_seq[`NUM_END_POINTS];
 
   mailbox #(bit) mbox_kill_endpoint_reqs, mbox_kill_edn_init;
   bit edn_reenable_done;
-  bit [MAX_NUM_ENDPOINTS-1:0] endpoint_reqs_done;
+  bit [`NUM_END_POINTS-1:0] endpoint_reqs_done;
 
   task await_random_main_sm_auto_state();
     string state_path;
@@ -153,7 +153,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
   endtask
 
   task endpoint_reqs();
-    bit [MAX_NUM_ENDPOINTS-1:0] edn_reqs;
+    bit [`NUM_END_POINTS-1:0] edn_reqs;
     uint num_cs_reqs, num_ep_reqs;
     num_cs_reqs    = cfg.num_endpoints;
     num_ep_reqs    = num_cs_reqs * csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH;
@@ -162,7 +162,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
 
     endpoint_reqs_done = '0;
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       automatic int j = i;
       if (edn_reqs[j]) begin
         fork begin

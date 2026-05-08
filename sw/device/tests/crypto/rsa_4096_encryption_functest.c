@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -142,10 +142,8 @@ static status_t run_rsa_4096_encrypt(const uint8_t *msg, size_t msg_len,
                                      const uint8_t *label, size_t label_len,
                                      uint32_t *ciphertext) {
   // Construct the public key.
-  otcrypto_const_word32_buf_t modulus = {
-      .data = kTestModulus,
-      .len = ARRAYSIZE(kTestModulus),
-  };
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   uint32_t public_key_data[ceil_div(kOtcryptoRsa4096PublicKeyBytes,
                                     sizeof(uint32_t))];
   otcrypto_unblinded_key_t public_key = {
@@ -153,18 +151,18 @@ static status_t run_rsa_4096_encrypt(const uint8_t *msg, size_t msg_len,
       .key_length = kOtcryptoRsa4096PublicKeyBytes,
       .key = public_key_data,
   };
-  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, modulus,
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, &modulus,
                                         &public_key));
 
-  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
-  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
-  otcrypto_word32_buf_t ciphertext_buf = {
-      .data = ciphertext,
-      .len = kRsa4096NumWords,
-  };
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
+  otcrypto_word32_buf_t ciphertext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ciphertext, kRsa4096NumWords);
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, msg_buf, label_buf,
-                           ciphertext_buf));
+  TRY(otcrypto_rsa_encrypt(&public_key, kTestHashMode, &msg_buf, &label_buf,
+                           &ciphertext_buf));
   profile_end_and_print(t_start, "RSA-4096 encryption");
 
   return OK_STATUS();
@@ -191,15 +189,12 @@ static status_t run_rsa_4096_decrypt(const uint8_t *label, size_t label_len,
                                      const uint32_t *ciphertext, uint8_t *msg,
                                      size_t *msg_len) {
   // Create two shares for the private exponent (second share is all-zero).
-  otcrypto_const_word32_buf_t d_share0 = {
-      .data = kTestPrivateExponent,
-      .len = ARRAYSIZE(kTestPrivateExponent),
-  };
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponent,
+                        ARRAYSIZE(kTestPrivateExponent));
   uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
-  otcrypto_const_word32_buf_t d_share1 = {
-      .data = share1,
-      .len = ARRAYSIZE(share1),
-  };
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, ARRAYSIZE(share1));
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
@@ -217,22 +212,20 @@ static status_t run_rsa_4096_decrypt(const uint8_t *label, size_t label_len,
       .keyblob = keyblob,
       .keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes,
   };
-  otcrypto_const_word32_buf_t modulus = {
-      .data = kTestModulus,
-      .len = ARRAYSIZE(kTestModulus),
-  };
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   TRY(otcrypto_rsa_private_key_from_exponents(
-      kOtcryptoRsaSize4096, modulus, d_share0, d_share1, &private_key));
+      kOtcryptoRsaSize4096, &modulus, &d_share0, &d_share1, &private_key));
 
-  otcrypto_byte_buf_t plaintext_buf = {.data = msg, .len = kMaxPlaintextBytes};
-  otcrypto_const_byte_buf_t label_buf = {.data = label, .len = label_len};
-  otcrypto_const_word32_buf_t ciphertext_buf = {
-      .data = ciphertext,
-      .len = kRsa4096NumWords,
-  };
+  otcrypto_byte_buf_t plaintext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, msg, kMaxPlaintextBytes);
+  otcrypto_const_byte_buf_t label_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, label, label_len);
+  otcrypto_const_word32_buf_t ciphertext_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, ciphertext, kRsa4096NumWords);
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_decrypt(&private_key, kTestHashMode, ciphertext_buf,
-                           label_buf, plaintext_buf, msg_len));
+  TRY(otcrypto_rsa_decrypt(&private_key, kTestHashMode, &ciphertext_buf,
+                           &label_buf, &plaintext_buf, msg_len));
   profile_end_and_print(t_start, "RSA-4096 decryption");
 
   return OK_STATUS();

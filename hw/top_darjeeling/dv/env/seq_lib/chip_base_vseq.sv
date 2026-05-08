@@ -28,6 +28,9 @@ class chip_base_vseq #(
   // You have to set this knob before or within dut_init task
   bit early_cpu_init = 0;
 
+  // Should the AST actually be programmed?
+  bit do_creator_sw_cfg_ast_cfg = 1;
+
   `uvm_object_new
 
   virtual function void set_handles();
@@ -272,8 +275,7 @@ class chip_base_vseq #(
                                              bit enable_tx_monitor = 1'b1,
                                              bit enable_rx_monitor = 1'b0,
                                              bit en_parity = 1'b0,
-                                             bit odd_parity = 1'b0,
-                                             baud_rate_e baud_rate = cfg.uart_baud_rate);
+                                             bit odd_parity = 1'b0);
     if (enable) begin
       `uvm_info(`gfn, $sformatf("Configuring and connecting UART%0d", uart_idx), UVM_LOW)
       cfg.m_uart_agent_cfgs[uart_idx].set_parity(en_parity, odd_parity);
@@ -326,11 +328,9 @@ class chip_base_vseq #(
 
   // Initialize the OTP creator SW cfg region with AST configuration data.
   virtual function void initialize_otp_creator_sw_cfg_ast_cfg();
-    // The knob controls whether the AST is actually programmed.
-    if (cfg.do_creator_sw_cfg_ast_cfg) begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
-                                       prim_mubi_pkg::MuBi4True);
-    end
+    cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
+                                     (do_creator_sw_cfg_ast_cfg ?
+                                      prim_mubi_pkg::MuBi4True : prim_mubi_pkg::MuBi4False));
 
     // Ensure that the allocated size of the AST cfg region in OTP is equal to the number of AST
     // registers to be programmed.

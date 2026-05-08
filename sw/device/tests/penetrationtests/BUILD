@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_rom_ext_fi_gdb", "pentest_rom_ext_imm_skip_fi_gdb", "pentest_rom_ext_rollback_fi_gdb", "pentest_rom_fi_gdb", "pentest_rom_rollback_fi_gdb", "pentest_sca")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -456,6 +456,14 @@ pentest_fi(
 )
 
 pentest_fi(
+    name = "fi_boot_python_test",
+    tags = [],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_boot_python_test",
+    test_vectors = [],
+)
+
+pentest_fi(
     name = "fi_alert_python_test",
     tags = [
         "manual",
@@ -471,5 +479,60 @@ pentest_fi(
     tags = [],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/fi:fi_rng_python_test",
+    test_vectors = [],
+)
+
+pentest_rom_fi_gdb(
+    name = "fi_rom_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_python_gdb_test",
+    test_vectors = [],
+)
+
+pentest_rom_rollback_fi_gdb(
+    name = "fi_rom_rollback_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_rollback_python_gdb_test",
+    test_vectors = [],
+)
+
+pentest_rom_ext_fi_gdb(
+    name = "fi_rom_ext_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_ext_python_gdb_test",
+    test_vectors = [],
+)
+
+pentest_rom_ext_rollback_fi_gdb(
+    name = "fi_rom_ext_rollback_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_ext_rollback_python_gdb_test",
+    test_vectors = [],
+)
+
+pentest_rom_ext_imm_skip_fi_gdb(
+    name = "fi_rom_ext_imm_skip_python_gdb_test",
+    tags = [
+        "manual",
+        "skip_in_ci",
+    ],
+    test_args = "",
+    test_harness = "//sw/host/penetrationtests/python/fi:fi_rom_ext_imm_skip_python_gdb_test",
     test_vectors = [],
 )

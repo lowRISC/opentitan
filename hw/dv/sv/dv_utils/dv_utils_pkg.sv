@@ -37,10 +37,11 @@ package dv_utils_pkg;
   // typedef parameterized pins_if for ease of implementation for interrupts and alerts
   typedef virtual pins_if #(NUM_MAX_INTERRUPTS) intr_vif;
 
-  // interface direction / mode - Host or Device
-  typedef enum bit {
-    Host,
-    Device
+  // Interface direction / mode
+  typedef enum bit [1:0] {
+    Host,   // The interface is active and is driving signals as a host
+    Device, // The interface is active and is driving signals as a device
+    Monitor // The interface is passive and drives no signals
   } if_mode_e;
 
   // compare operator types
@@ -358,7 +359,6 @@ package dv_utils_pkg;
 `ifdef UVM
   `include "dv_report_catcher.sv"
   `include "dv_report_server.sv"
-  `include "dv_vif_wrap.sv"
 `endif
 
 endpackage

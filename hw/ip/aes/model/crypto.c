@@ -51,6 +51,14 @@ static const EVP_CIPHER *crypto_get_EVP_cipher(int key_len,
     } else {  // key_len = 16
       cipher = EVP_aes_128_ctr();
     }
+  } else if (mode == kCryptoAesGcm) {
+    if (key_len == 32) {
+      cipher = EVP_aes_256_gcm();
+    } else if (key_len == 24) {
+      cipher = EVP_aes_192_gcm();
+    } else {  // key_len = 16
+      cipher = EVP_aes_128_gcm();
+    }
   } else {  // kCryptoAesEcb
     if (key_len == 32) {
       cipher = EVP_aes_256_ecb();
@@ -66,7 +74,9 @@ static const EVP_CIPHER *crypto_get_EVP_cipher(int key_len,
 
 int crypto_encrypt(unsigned char *output, const unsigned char *iv,
                    const unsigned char *input, int input_len,
-                   const unsigned char *key, int key_len, crypto_mode_t mode) {
+                   const unsigned char *key, int key_len, crypto_mode_t mode,
+                   const unsigned char *aad, int aad_len, unsigned char *tag,
+                   int tag_len) {
   EVP_CIPHER_CTX *ctx;
   int ret;
   int len, output_len;
@@ -89,9 +99,18 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
-  // Disable padding - It is safe to do so here because we only ever encrypt
-  // multiples of 16 bytes (the block size).
-  EVP_CIPHER_CTX_set_padding(ctx, 0);
+  // Apply padding for a partial last message block.
+  int pad = (input_len % 16 != 0) ? 1 : 0;
+  EVP_CIPHER_CTX_set_padding(ctx, pad);
+
+  // Feed AAD into cipher, when in GCM mode.
+  if (mode == kCryptoAesGcm) {
+    ret = EVP_EncryptUpdate(ctx, NULL, &output_len, aad, aad_len);
+    if (ret != 1) {
+      printf("ERROR: Encryption operation failed\n");
+      return -1;
+    }
+  }
 
   // Provide encryption input, get first output bytes
   ret = EVP_EncryptUpdate(ctx, output, &output_len, input, input_len);
@@ -108,6 +127,11 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
   }
   output_len += len;
 
+  // Fetch tag, when in GCM mode.
+  if (mode == kCryptoAesGcm) {
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, tag_len, tag);
+  }
+
   // Free
   EVP_CIPHER_CTX_free(ctx);
 
@@ -116,7 +140,9 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
 
 int crypto_decrypt(unsigned char *output, const unsigned char *iv,
                    const unsigned char *input, int input_len,
-                   const unsigned char *key, int key_len, crypto_mode_t mode) {
+                   const unsigned char *key, int key_len, crypto_mode_t mode,
+                   const unsigned char *aad, int aad_len, unsigned char *tag,
+                   int tag_len) {
   EVP_CIPHER_CTX *ctx;
   int ret;
   int len, output_len;
@@ -138,15 +164,29 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
-  // Disable padding - It is safe to do so here because we only ever decrypt
-  // multiples of 16 bytes (the block size).
-  EVP_CIPHER_CTX_set_padding(ctx, 0);
+  // Apply padding for a partial last message block.
+  int pad = (input_len % 16 != 0) ? 1 : 0;
+  EVP_CIPHER_CTX_set_padding(ctx, pad);
+
+  // Feed AAD into cipher, when in GCM mode.
+  if (mode == kCryptoAesGcm) {
+    ret = EVP_DecryptUpdate(ctx, NULL, &output_len, aad, aad_len);
+    if (ret != 1) {
+      printf("ERROR: Encryption operation failed\n");
+      return -1;
+    }
+  }
 
   // Provide decryption input, get first output bytes
   ret = EVP_DecryptUpdate(ctx, output, &output_len, input, input_len);
   if (ret != 1) {
     printf("ERROR: Decryption operation failed\n");
     return -1;
+  }
+
+  // Set tag, when in GCM mode.
+  if (mode == kCryptoAesGcm) {
+    EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, tag_len, (void *)tag);
   }
 
   // Finalize decryption, further bytes might be written

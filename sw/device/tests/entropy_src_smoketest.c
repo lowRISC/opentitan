@@ -20,6 +20,12 @@ bool test_main(void) {
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
 
+  // Print the CRC value. This makes this test useful when updating the
+  // configuration values stored in OTP. Together with the configuration, also
+  // the CRC value stored in OTP needs to be updated.
+  LOG_INFO("entropy_src config crc32 after ROM: 0x%h",
+           entropy_src_config_crc32(&entropy_src));
+
   // Disable entropy for test purpose, as it has been turned on by ROM
   CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
@@ -38,6 +44,12 @@ bool test_main(void) {
   // Re-enable entropy src
   CHECK_DIF_OK(
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
+
+  // Print the CRC value. This makes this test useful when updating the
+  // configuration values stored in OTP. Together with the configuration, also
+  // the CRC value stored in OTP needs to be updated.
+  LOG_INFO("entropy_src config crc32 after re-config: 0x%h",
+           entropy_src_config_crc32(&entropy_src));
 
   // ensure health tests are actually running
   CHECK_STATUS_OK(entropy_src_testutils_wait_for_state(

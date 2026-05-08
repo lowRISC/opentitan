@@ -56,9 +56,9 @@ module aes_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [33:0] reg_we_check;
+  logic [34:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(34)
+    .OneHotWidth(35)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -231,6 +231,12 @@ module aes_reg_top (
   logic status_input_ready_qs;
   logic status_alert_recov_ctrl_update_err_qs;
   logic status_alert_fatal_fault_qs;
+  logic ctrl_gcm_shadowed_re;
+  logic ctrl_gcm_shadowed_we;
+  logic [5:0] ctrl_gcm_shadowed_phase_qs;
+  logic [5:0] ctrl_gcm_shadowed_phase_wd;
+  logic [4:0] ctrl_gcm_shadowed_num_valid_bytes_qs;
+  logic [4:0] ctrl_gcm_shadowed_num_valid_bytes_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -1429,8 +1435,45 @@ module aes_reg_top (
   );
 
 
+  // R[ctrl_gcm_shadowed]: V(True)
+  logic ctrl_gcm_shadowed_qe;
+  logic [1:0] ctrl_gcm_shadowed_flds_we;
+  assign ctrl_gcm_shadowed_qe = &ctrl_gcm_shadowed_flds_we;
+  //   F[phase]: 5:0
+  prim_subreg_ext #(
+    .DW    (6)
+  ) u_ctrl_gcm_shadowed_phase (
+    .re     (ctrl_gcm_shadowed_re),
+    .we     (ctrl_gcm_shadowed_we),
+    .wd     (ctrl_gcm_shadowed_phase_wd),
+    .d      (hw2reg.ctrl_gcm_shadowed.phase.d),
+    .qre    (reg2hw.ctrl_gcm_shadowed.phase.re),
+    .qe     (ctrl_gcm_shadowed_flds_we[0]),
+    .q      (reg2hw.ctrl_gcm_shadowed.phase.q),
+    .ds     (),
+    .qs     (ctrl_gcm_shadowed_phase_qs)
+  );
+  assign reg2hw.ctrl_gcm_shadowed.phase.qe = ctrl_gcm_shadowed_qe;
 
-  logic [33:0] addr_hit;
+  //   F[num_valid_bytes]: 10:6
+  prim_subreg_ext #(
+    .DW    (5)
+  ) u_ctrl_gcm_shadowed_num_valid_bytes (
+    .re     (ctrl_gcm_shadowed_re),
+    .we     (ctrl_gcm_shadowed_we),
+    .wd     (ctrl_gcm_shadowed_num_valid_bytes_wd),
+    .d      (hw2reg.ctrl_gcm_shadowed.num_valid_bytes.d),
+    .qre    (reg2hw.ctrl_gcm_shadowed.num_valid_bytes.re),
+    .qe     (ctrl_gcm_shadowed_flds_we[1]),
+    .q      (reg2hw.ctrl_gcm_shadowed.num_valid_bytes.q),
+    .ds     (),
+    .qs     (ctrl_gcm_shadowed_num_valid_bytes_qs)
+  );
+  assign reg2hw.ctrl_gcm_shadowed.num_valid_bytes.qe = ctrl_gcm_shadowed_qe;
+
+
+
+  logic [34:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == AES_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == AES_KEY_SHARE0_0_OFFSET);
@@ -1466,6 +1509,7 @@ module aes_reg_top (
     addr_hit[31] = (reg_addr == AES_CTRL_AUX_REGWEN_OFFSET);
     addr_hit[32] = (reg_addr == AES_TRIGGER_OFFSET);
     addr_hit[33] = (reg_addr == AES_STATUS_OFFSET);
+    addr_hit[34] = (reg_addr == AES_CTRL_GCM_SHADOWED_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1506,7 +1550,8 @@ module aes_reg_top (
                (addr_hit[30] & (|(AES_PERMIT[30] & ~reg_be))) |
                (addr_hit[31] & (|(AES_PERMIT[31] & ~reg_be))) |
                (addr_hit[32] & (|(AES_PERMIT[32] & ~reg_be))) |
-               (addr_hit[33] & (|(AES_PERMIT[33] & ~reg_be)))));
+               (addr_hit[33] & (|(AES_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(AES_PERMIT[34] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1627,6 +1672,12 @@ module aes_reg_top (
   assign trigger_data_out_clear_wd = reg_wdata[2];
 
   assign trigger_prng_reseed_wd = reg_wdata[3];
+  assign ctrl_gcm_shadowed_re = addr_hit[34] & reg_re & !reg_error;
+  assign ctrl_gcm_shadowed_we = addr_hit[34] & reg_we & !reg_error;
+
+  assign ctrl_gcm_shadowed_phase_wd = reg_wdata[5:0];
+
+  assign ctrl_gcm_shadowed_num_valid_bytes_wd = reg_wdata[10:6];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1664,6 +1715,7 @@ module aes_reg_top (
     reg_we_check[31] = ctrl_aux_regwen_we;
     reg_we_check[32] = trigger_we;
     reg_we_check[33] = 1'b0;
+    reg_we_check[34] = ctrl_gcm_shadowed_we;
   end
 
   // Read data return
@@ -1820,6 +1872,11 @@ module aes_reg_top (
         reg_rdata_next[4] = status_input_ready_qs;
         reg_rdata_next[5] = status_alert_recov_ctrl_update_err_qs;
         reg_rdata_next[6] = status_alert_fatal_fault_qs;
+      end
+
+      addr_hit[34]: begin
+        reg_rdata_next[5:0] = ctrl_gcm_shadowed_phase_qs;
+        reg_rdata_next[10:6] = ctrl_gcm_shadowed_num_valid_bytes_qs;
       end
 
       default: begin

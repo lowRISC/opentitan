@@ -8,7 +8,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils;
@@ -36,12 +36,12 @@ fn test_access_after_hw_reset(
     reset_addr: u32,
 ) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     // Enable console and wait for the message.
     let uart = &*transport.uart("console")?;
     uart.set_flow_control(true)?;
-    UartConsole::wait_for(uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(uart, r"Running ", opts.timeout)?;
     UartConsole::wait_for(uart, r"Waiting for commands", opts.timeout)?;
 
     // Check debugger is available.

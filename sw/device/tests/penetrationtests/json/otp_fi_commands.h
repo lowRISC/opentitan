@@ -32,6 +32,7 @@ RUST_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAN
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiVendortestPartition, otp_fi_vendortest_partition_t, OTPFI_VENDORTEST_PARTITION);
 
@@ -42,6 +43,7 @@ UJSON_SERDE_STRUCT(OtpFiVendortestPartition, otp_fi_vendortest_partition_t, OTPF
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiOwnerswcfgPartition, otp_fi_ownerswcfg_partition_t, OTPFI_OWNERSWCFG_PARTITION);
 
@@ -52,6 +54,7 @@ UJSON_SERDE_STRUCT(OtpFiOwnerswcfgPartition, otp_fi_ownerswcfg_partition_t, OTPF
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiHwcfgPartition, otp_fi_hwcfg_partition_t, OTPFI_HWCFG_PARTITION);
 
@@ -62,6 +65,7 @@ UJSON_SERDE_STRUCT(OtpFiHwcfgPartition, otp_fi_hwcfg_partition_t, OTPFI_HWCFG_PA
     field(otp_status_codes, uint32_t) \
     field(otp_error_causes, uint8_t, 10) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtpFiLifecyclePartition, otp_fi_lifecycle_partition_t, OTPFI_LIFECYCLE_PARTITION);
 

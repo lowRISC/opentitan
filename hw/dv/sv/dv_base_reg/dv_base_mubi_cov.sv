@@ -35,7 +35,7 @@ endclass : mubi_cov
 // enormous number of bins. Setting an explicit width here works around the problem. Fix this up
 // properly if we change tool version.
 class mubi32_cov extends uvm_object;
-  `uvm_object_param_utils(mubi32_cov)
+  `uvm_object_utils(mubi32_cov)
 
   // Collect true, false and at least N other values (N = 32)
   covergroup mubi_cg(string name) with function sample(bit [32-1:0] value);

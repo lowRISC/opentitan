@@ -44,4 +44,15 @@
                               MAX_CYCLES_,                                                                                 \
                               err_o)
 
+// A version of ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1, except that it uses
+// ASSERT_ERROR_TRIGGER_ALERT_IN instead of ASSERT_ERROR_TRIGGER_ALERT. See description in
+// prim_assert_se_cm.svh.
+`define ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(``NAME_``FullCheck_A,                                                   \
+                                 HIER_,                                                                  \
+                                 ALERT_,                                                                 \
+                                 GATE_,                                                                  \
+                                 MAX_CYCLES_,                                                            \
+                                 err_o)
+
 `endif // PRIM_FIFO_ASSERT_SVH

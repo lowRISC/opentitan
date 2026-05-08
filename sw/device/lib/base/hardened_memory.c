@@ -47,7 +47,7 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 status_t hardened_memshred(uint32_t *dest, size_t word_len) {
@@ -72,7 +72,7 @@ status_t hardened_memshred(uint32_t *dest, size_t word_len) {
 
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
@@ -129,26 +129,34 @@ hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
   uint32_t zeros = 0;
   uint32_t ones = UINT32_MAX;
 
-  size_t it = 0;
-  const unsigned char *lh = (const unsigned char *)lhs;
-  const unsigned char *rh = (const unsigned char *)rhs;
-  for (; it < len; ++it, ++lh, ++rh) {
-    const unsigned char a = *lh;
-    const unsigned char b = *rh;
+  random_order_t order;
+  random_order_init(&order, len);
+
+  size_t count = 0;
+
+  uintptr_t lhs_addr = (uintptr_t)lhs;
+  uintptr_t rhs_addr = (uintptr_t)rhs;
+
+  for (; launderw(count) < len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    uint8_t *a = (uint8_t *)launderw(lhs_addr + byte_idx);
+    uint8_t *b = (uint8_t *)launderw(rhs_addr + byte_idx);
 
     // Launder one of the operands, so that the compiler cannot cache the result
     // of the xor for use in the next operation.
     //
     // We launder `zeroes` so that compiler cannot learn that `zeroes` has
     // strictly more bits set at the end of the loop.
-    zeros = launder32(zeros) | (launder32((uint32_t)a) ^ b);
+    zeros = launder32(zeros) | (launder32((uint32_t)*a) ^ *b);
 
     // Same as above. The compiler can cache the value of `a[offset]`, but it
     // has no chance to strength-reduce this operation.
-    ones = launder32(ones) & (launder32((uint32_t)a) ^ ~b);
+    ones = launder32(ones) & (launder32((uint32_t)*a) ^ ~(uint32_t)*b);
   }
 
-  HARDENED_CHECK_EQ(it, len);
+  HARDENED_CHECK_EQ(count, len);
 
   if (launder32(zeros) == 0) {
     HARDENED_CHECK_EQ(ones, UINT32_MAX);
@@ -207,7 +215,7 @@ status_t hardened_xor(const uint32_t *restrict x, const uint32_t *restrict y,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
@@ -239,5 +247,144 @@ status_t hardened_xor_in_place(uint32_t *restrict x, const uint32_t *restrict y,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);
 
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t randomized_bytecopy(void *restrict dest, const void *restrict src,
+                             size_t byte_len) {
+  random_order_t order;
+  random_order_init(&order, byte_len);
+
+  size_t count = 0;
+
+  uintptr_t src_addr = (uintptr_t)src;
+  uintptr_t dest_addr = (uintptr_t)dest;
+
+  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    uint8_t *src_byte_idx = (uint8_t *)launderw(src_addr + byte_idx);
+    uint8_t *dest_byte_idx = (uint8_t *)launderw(dest_addr + byte_idx);
+
+    *(dest_byte_idx) = *(src_byte_idx);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, byte_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t randomized_bytexor_in_place(void *restrict x, const void *restrict y,
+                                     size_t byte_len) {
+  random_order_t order;
+  random_order_init(&order, byte_len);
+
+  size_t count = 0;
+
+  uintptr_t x_addr = (uintptr_t)x;
+  uintptr_t y_addr = (uintptr_t)y;
+
+  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
+    size_t byte_idx = launderw(random_order_advance(&order));
+    barrierw(byte_idx);
+
+    // TODO(#8815) byte writes vs. word-wise integrity
+    uint8_t *x_byte_idx = (uint8_t *)launderw(x_addr + byte_idx);
+    uint8_t *y_byte_idx = (uint8_t *)launderw(y_addr + byte_idx);
+
+    *(x_byte_idx) = *(x_byte_idx) ^ *(y_byte_idx);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, byte_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t hardened_add(const uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  uint32_t carry = 0;
+  size_t count = 0;
+
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    uint32_t x_val = x[count];
+    uint32_t y_val = y[count];
+
+    uint32_t res = x_val + carry;
+    uint32_t next_carry = (res < carry);
+
+    res += y_val;
+    next_carry += (res < y_val);
+
+    dest[count] = res;
+    carry = next_carry;
+  }
+  HARDENED_CHECK_EQ(count, word_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t hardened_sub(const uint32_t *restrict x, const uint32_t *restrict y,
+                      size_t word_len, uint32_t *restrict dest) {
+  // Randomize the content of the output buffer before writing to it.
+  hardened_memshred(dest, word_len);
+
+  uint32_t borrow = 0;
+  size_t count = 0;
+
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    uint32_t x_val = x[count];
+    uint32_t y_val = y[count];
+
+    uint32_t res = x_val - borrow;
+
+    uint32_t next_borrow = (x_val < borrow);
+
+    next_borrow += (res < y_val);
+    res -= y_val;
+
+    dest[count] = res;
+    borrow = next_borrow;
+  }
+  HARDENED_CHECK_EQ(count, word_len);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
+}
+
+status_t hardened_range_check(const uint32_t *value, const uint32_t *N,
+                              size_t word_len) {
+  uint32_t borrow = 0;
+  uint32_t is_zero_acc = 0;
+  size_t count = 0;
+
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
+    uint32_t val_word = value[count];
+    uint32_t n_word = N[count];
+
+    // Accumulate bits to check if value is zero.
+    is_zero_acc = launder32(is_zero_acc) | launder32(val_word);
+
+    // Compute borrow to check if value < N.
+    uint32_t res = val_word - borrow;
+    uint32_t next_borrow = (val_word < borrow);
+    next_borrow += (res < n_word);
+
+    borrow = next_borrow;
+  }
+  HARDENED_CHECK_EQ(count, word_len);
+
+  uint32_t is_zero = (launder32(is_zero_acc) == 0);
+  uint32_t is_greater_or_eq = (launder32(borrow) == 0);
+  uint32_t is_bad = launder32(is_zero) | launder32(is_greater_or_eq);
+
+  if (launder32(is_bad) != 0) {
+    return (status_t){
+        .value = (int32_t)launder32((uint32_t)OTCRYPTO_BAD_ARGS.value)};
+  }
+  HARDENED_CHECK_EQ(is_bad, 0);
+
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }

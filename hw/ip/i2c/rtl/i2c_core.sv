@@ -280,8 +280,8 @@ module i2c_core import i2c_pkg::*;
        scl_rx_val <= 16'h0;
        sda_rx_val <= 16'h0;
     end else begin
-       scl_rx_val <= {scl_rx_val[14:0], scl_i};
-       sda_rx_val <= {sda_rx_val[14:0], sda_i};
+       scl_rx_val <= {scl_rx_val[14:0], scl_sync};
+       sda_rx_val <= {sda_rx_val[14:0], sda_sync};
     end
   end
 
@@ -884,11 +884,6 @@ module i2c_core import i2c_pkg::*;
   ////////////////
   // ASSERTIONS //
   ////////////////
-
-  // TODO: Decide whether to keep this assertion. It is primarily checking the
-  // testbench, not the IP, due to the CDC cycle deletion.
-  // Check to make sure scl_i is never a single cycle glitch
-  //  `ASSERT(SclInputGlitch_A, $rose(scl_sync) |-> ##1 scl_sync)
 
   `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthW <= MaxFifoDepthW)
   `ASSERT_INIT(AcqFifoDepthValid_A, AcqFifoDepth > 0 && AcqFifoDepthW <= MaxFifoDepthW)

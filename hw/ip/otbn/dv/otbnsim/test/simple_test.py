@@ -18,6 +18,24 @@ from typing import Any, List, Tuple
 from testutil import asm_and_link_one_file, SIM_DIR
 from shared.reg_dump import parse_reg_dump
 
+BN_SIMD_DIR_NAME = 'bn-simd-generated'
+BN_SIMD_GENERATOR_SCRIPT = 'generate_bn_simd_tests.py'
+
+
+def generate_bn_simd_tests() -> None:
+    '''Generate most of the BN SIMD tests by calling the generator script.'''
+
+    script_path = os.path.join(os.path.dirname(__file__), BN_SIMD_GENERATOR_SCRIPT)
+    output_dir = os.path.join(os.path.dirname(__file__), 'simple', BN_SIMD_DIR_NAME)
+
+    # Delete and re-create the output directory
+    if os.path.exists(output_dir):
+        subprocess.run(['rm', '-rf', output_dir], check=True)
+    os.makedirs(output_dir)
+
+    cmd = ['python3', script_path, '-o', output_dir]
+    subprocess.run(cmd, check=True)
+
 
 def find_simple_tests() -> List[Tuple[str, str]]:
     '''Find all tests below ./simple (relative to this file)
@@ -103,6 +121,7 @@ def test_count(tmpdir: py.path.local,
 
 def pytest_generate_tests(metafunc: Any) -> None:
     if metafunc.function is test_count:
+        generate_bn_simd_tests()
         tests = find_simple_tests()
         test_ids = [os.path.basename(e[0]) for e in tests]
         metafunc.parametrize("asm_file,expected_file", tests, ids=test_ids)

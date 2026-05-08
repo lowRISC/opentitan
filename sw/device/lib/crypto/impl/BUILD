@@ -21,6 +21,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "release_build",
+    define_values = {
+        "release_build": "true",
+    },
+)
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],
@@ -57,15 +64,50 @@ cc_library(
 )
 
 cc_library(
+    name = "cryptolib_build_info",
+    srcs = ["cryptolib_build_info.c"],
+    hdrs = ["//sw/device/lib/crypto/include:cryptolib_build_info.h"],
+    defines = select({
+        ":release_build": ["CRYPTOLIB_IS_RELEASED=true"],
+        "//conditions:default": ["CRYPTOLIB_IS_RELEASED=false"],
+    }),
+    deps = [
+        ":status",
+        "//sw/device/lib/crypto/drivers:cryptolib_build_info",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "drbg",
     srcs = ["drbg.c"],
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
+        ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "ecc_curve25519",
+    srcs = ["ecc_curve25519.c"],
+    hdrs = ["//sw/device/lib/crypto/include:ecc_curve25519.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":hmac",
+        ":integrity",
+        ":keyblob",
+        ":security_config",
+        ":sha2",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl/ecc:curve25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -101,17 +143,6 @@ cc_library(
 )
 
 cc_library(
-    name = "ed25519",
-    srcs = ["ed25519.c"],
-    hdrs = ["//sw/device/lib/crypto/include:ed25519.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":status",
-        "//sw/device/lib/crypto/include:datatypes",
-    ],
-)
-
-cc_library(
     name = "hkdf",
     srcs = ["hkdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
@@ -128,7 +159,7 @@ cc_library(
 cc_library(
     name = "integrity",
     srcs = ["integrity.c"],
-    hdrs = ["integrity.h"],
+    hdrs = ["//sw/device/lib/crypto/include:integrity.h"],
     deps = [
         "//sw/device/lib/base:crc32_device_library",  # force non-mock version in unit tests
         "//sw/device/lib/base:hardened",
@@ -236,7 +267,7 @@ cc_library(
 cc_library(
     name = "security_config",
     srcs = ["security_config.c"],
-    hdrs = ["security_config.h"],
+    hdrs = ["//sw/device/lib/crypto/include:security_config.h"],
     deps = [
         ":integrity",
         ":status",
@@ -255,6 +286,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":integrity",
         ":status",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
@@ -295,20 +327,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/include:datatypes",
-    ],
-)
-
-opentitan_test(
-    name = "status_functest",
-    srcs = ["status_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":status",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -372,6 +390,17 @@ cc_library(
     name = "x25519",
     srcs = ["x25519.c"],
     hdrs = ["//sw/device/lib/crypto/include:x25519.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":status",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "mldsa",
+    srcs = ["mldsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":status",

@@ -48,13 +48,13 @@ formal/             @lowRISC/ot-dv-reviewers
 # lint/             # TBD
 
 # Common docs
-/doc/               @mundaym
+/doc/               @vogelpi
 
 # License related files
-LICENSE*            @mundaym
-COPYING*            @mundaym
-/util/licence-checker.hjson  @mundaym
+LICENSE*            @vogelpi
+COPYING*            @vogelpi
+/util/licence-checker.hjson  @vogelpi
 
 # CI and testing
-/ci/                @rswarbrick
-/.github            @rswarbrick
+/ci/                @lowRISC/ot-ci-reviewers
+/.github            @lowRISC/ot-ci-reviewers

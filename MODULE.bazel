@@ -81,11 +81,14 @@ archive_override(
     urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20250217_01.tar.gz"],
 )
 
-archive_override(
-    module_name = "rules_multitool",
-    sha256 = "63e8b3d7999574a62ccf49d3234390c584a11ac90392eb16d63b964584c1af6c",
-    strip_prefix = "rules_multitool-temp-fork-0.4",
-    urls = ["https://github.com/jwnrt/rules_multitool/archive/refs/tags/temp-fork-0.4.tar.gz"],
+# Support ChromeOS SDK environment as a Debian variant
+single_version_override(
+    module_name = "toolchains_llvm",
+    patch_strip = 1,
+    patches = [
+        "@lowrisc_opentitan//third_party/toolchains_llvm/patches:toolchains_llvm-distroname.patch",
+    ],
+    version = "1.1.2",
 )
 
 # Rust toolchain:
@@ -152,26 +155,21 @@ crate.annotation(
 )
 crate.annotation(
     crate = "cryptoki",
-    patch_args = ["-p2"],
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
-        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-profile.patch",
-    ],
     repositories = ["crate_index"],
 )
 crate.annotation(
     additive_build_file_content = """
         filegroup(
-            name = "binding_srcs",
+            name = "cryptoki-sys-binding-srcs",
             srcs = [
-                "src/lib.rs",
                 "src/bindings/x86_64-unknown-linux-gnu.rs",
             ],
+            visibility = ["//visibility:public"],
         )
     """,
     crate = "cryptoki-sys",
     extra_aliased_targets = {
-        "cryptoki-sys-binding-srcs": "binding_srcs",
+        "cryptoki-sys-binding-srcs": "cryptoki-sys-binding-srcs",
     },
     repositories = ["crate_index"],
 )
@@ -351,6 +349,9 @@ use_repo(hyperdebug, "hyperdebug_firmware")
 
 lowrisc_rv32imcb_toolchain = use_extension("//third_party/lowrisc:extensions.bzl", "lowrisc_rv32imcb_toolchain")
 use_repo(lowrisc_rv32imcb_toolchain, "lowrisc_rv32imcb_toolchain")
+
+hwtrust = use_extension("//third_party/hwtrust:extensions.bzl", "hwtrust")
+use_repo(hwtrust, "hwtrust")
 
 qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
 use_repo(qemu, "qemu_opentitan", "qemu_opentitan_src")

@@ -53,6 +53,19 @@ status_t handle_crypto_fi_kmac(ujson_t *uj);
 status_t handle_crypto_fi_kmac_state(ujson_t *uj);
 
 /**
+ * SHA3 FI test.
+ *
+ * This test absorbs a static message and returns the
+ * digest over UART back to the host. The host can define, whether the
+ * trigger gets set and unset during(i) loading the start, (ii) absorbing, or
+ * (iii) squeezing.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_crypto_fi_sha3(ujson_t *uj);
+
+/**
  * HMAC FI test.
  *
  * Receive message & trigger configuration from host. Perform SHA2 or HMAC

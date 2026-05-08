@@ -41,7 +41,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
 
   // Constraint for controller address to be in relevant range the for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
+    solve bank before flash_op.addr;
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1)]};
   }
 

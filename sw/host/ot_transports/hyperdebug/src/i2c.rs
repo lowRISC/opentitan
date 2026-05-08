@@ -161,13 +161,13 @@ impl HyperdebugI2cBus {
             idx < 16,
             TransportError::InvalidInstance(TransportInterfaceType::I2c, idx.to_string())
         );
-        let mut usb_handle = inner.usb_device.borrow_mut();
+        let usb_handle = inner.usb_device.borrow_mut();
 
         // Exclusively claim I2C interface, preparing for bulk transfers.
         usb_handle.claim_interface(i2c_interface.interface)?;
 
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             interface: *i2c_interface,
             cmsis_encapsulation,
             supports_i2c_device,

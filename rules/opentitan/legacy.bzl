@@ -105,7 +105,8 @@ vmem_file = rv_rule(
 )
 
 def _scramble_flash_vmem_impl(ctx):
-    outputs = [scramble_flash(ctx, suffix = "src.vmem")]
+    outputs = [scramble_flash(ctx, suffix = "scr.vmem", name = ctx.attr.out or None)]
+
     return [
         DefaultInfo(
             files = depset(outputs),
@@ -118,6 +119,10 @@ scramble_flash_vmem = rv_rule(
     attrs = {
         "src": attr.label(allow_single_file = True),
         "otp": attr.label(allow_single_file = True),
+        "out": attr.string(
+            default = "",
+            doc = "Optional name for the output file. If provided the output name will be <out>.scr.vmem otherwise <name>.scr.vmem.",
+        ),
         "top_secret_cfg": attr.label(
             allow_single_file = True,
             default = "//hw/top:secrets",

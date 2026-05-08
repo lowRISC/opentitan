@@ -43,6 +43,7 @@ typedef struct boot_svc_ownership_activate_req {
   uint32_t din[2];
   /**
    * Erase previous owner's flash (hardened_bool_t).
+   * Currently, this is not implemented.
    */
   uint32_t erase_previous;
   /**
@@ -86,7 +87,7 @@ typedef struct boot_svc_ownership_activate_res {
   /**
    * Response status from the ROM_EXT.
    */
-  rom_error_t status;
+  uint32_t status;
 } boot_svc_ownership_activate_res_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_res_t, header, 0);

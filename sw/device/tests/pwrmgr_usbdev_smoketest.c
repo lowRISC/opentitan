@@ -12,7 +12,7 @@
 // and the usbdev's aon wake function that has been de-coupled from the main
 // usbdev.
 
-#include "hw/top/dt/dt_pinmux.h"
+#include "hw/top/dt/pinmux.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_usbdev.h"

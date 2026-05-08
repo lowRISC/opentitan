@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:fpv:prim_diff_decode_fpv"
+description: "A binding with assertions for prim_diff_decode_fpv"
+filesets:
+  files_formal:
+    depend:
+      - lowrisc:prim:diff_decode
+    files:
+      - tb/prim_diff_decode_bind_fpv.sv
+      - vip/prim_diff_decode_assert_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    # note, this setting is just used
+    # to generate a file list for jg
+    default_tool: icarus
+    filesets:
+      - files_formal
+
+  formal:
+    <<: *default_target
+
+  lint:
+    <<: *default_target

@@ -47,6 +47,9 @@ class entropy_src_dut_cfg extends uvm_object;
 
   // Health test-related knobs
   //
+  // Knob for controlling the one-way behavior of the threshold registers.
+  uint          ht_threshold_oneway_pct;
+
   // Knob for selecting special tighter thresholds for more stringent testing of alert conditions.
   uint          tight_thresholds_pct;
 
@@ -81,7 +84,7 @@ class entropy_src_dut_cfg extends uvm_object;
 
   rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, fips_flag, route_software, type_bypass,
                                 rng_fips, entropy_data_reg_enable, rng_bit_enable,
-                                ht_threshold_scope;
+                                ht_threshold_oneway, ht_threshold_scope;
 
   rand int                      observe_fifo_thresh;
 
@@ -118,6 +121,8 @@ class entropy_src_dut_cfg extends uvm_object;
   // Thresholds for repcnt repcnts
   rand bit [15:0]   repcnt_thresh_bypass, repcnt_thresh_fips,
                     repcnts_thresh_bypass, repcnts_thresh_fips;
+
+  rand bit [3:0] ht_watermark_num;
 
   rand bit             use_invalid_mubi;
   rand invalid_mubi_e  which_invalid_mubi;
@@ -212,6 +217,10 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint rng_bit_enable_c {rng_bit_enable dist {
       prim_mubi_pkg::MuBi4True  :/ rng_bit_enable_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - rng_bit_enable_pct) };}
+
+  constraint ht_threshold_oneway_c {ht_threshold_oneway dist {
+      prim_mubi_pkg::MuBi4True  :/ ht_threshold_oneway_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_oneway_pct) };}
 
   constraint ht_threshold_scope_c {
     solve rng_bit_enable before ht_threshold_scope;
@@ -351,6 +360,12 @@ class entropy_src_dut_cfg extends uvm_object;
       }
     }
 
+  constraint ht_watermark_num_c {ht_watermark_num dist {
+      0        :/ 1,  // Unsupported values are mapped to 0, too.
+      [1 :  8] :/ 16,
+      [9 : 15] :/ 1}; // Unsupported values
+  }
+
   constraint alert_threshold_c {alert_threshold dist {
       1             :/ 3,
       2             :/ 5,
@@ -413,6 +428,8 @@ class entropy_src_dut_cfg extends uvm_object;
                   fw_over_enable.name()),
         $sformatf("\n\t |***** observe_fifo_threshold      : %12d *****| \t",
                   observe_fifo_thresh),
+        $sformatf("\n\t |***** ht_threshold_oneway         : %12d *****| \t",
+                  ht_threshold_oneway),
         $sformatf("\n\t |***** ht_threshold_scope          : %12d *****| \t",
                   ht_threshold_scope),
         $sformatf("\n\t |***** adaptp_sigma                : %12.3f *****| \t",
@@ -447,6 +464,8 @@ class entropy_src_dut_cfg extends uvm_object;
                   entropy_data_reg_enable_pct),
         $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t",
                   rng_bit_enable_pct),
+        $sformatf("\n\t |***** ht_threshold_oneway_pct     : %12d *****| \t",
+                  ht_threshold_oneway_pct),
         $sformatf("\n\t |***** ht_threshold_scope_pct      : %12d *****| \t",
                   ht_threshold_scope_pct),
         $sformatf("\n\t |***** adaptp_sigma range          : (%04.2f, %04.2f) *****| \t",
@@ -500,6 +519,7 @@ class entropy_src_dut_cfg extends uvm_object;
         invalid_fips_flag: fips_flag = invalid_mubi_val;
         invalid_rng_fips: fips_flag = invalid_mubi_val;
         invalid_module_enable: module_enable = invalid_mubi_val;
+        invalid_threshold_oneway: ht_threshold_oneway = invalid_mubi_val;
         invalid_threshold_scope: ht_threshold_scope = invalid_mubi_val;
         invalid_rng_bit_enable: rng_bit_enable = invalid_mubi_val;
         invalid_fw_ov_mode: fw_read_enable = invalid_mubi_val;
@@ -542,6 +562,7 @@ class entropy_src_dut_cfg extends uvm_object;
     `DV_CHECK(entropy_data_reg_enable_pct <= 100);
     `DV_CHECK(fips_flag_pct <= 100);
     `DV_CHECK(rng_fips_pct <= 100);
+    `DV_CHECK(ht_threshold_oneway_pct <= 100);
     `DV_CHECK(ht_threshold_scope_pct <= 100);
     `DV_CHECK(rng_bit_enable_pct <= 100);
     `DV_CHECK(route_software_pct <= 100);

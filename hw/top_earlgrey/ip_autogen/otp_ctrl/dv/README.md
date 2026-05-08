@@ -110,8 +110,8 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * otbn_fifo: otbn request
 * lc_prog_fifo: life cycle programming request
 * lc_token_fifo: life cycle token request
-* flash_addr_fifo: flash address request
-* flash_data_fifo: flash data request
+* nvm_addr_fifo: nvm address request
+* nvm_data_fifo: nvm data request
 * edn_fifo: edn response to OTP_CTRL
 
 For all requests to OTP_CTRL as listed above, scoreboard has a corresponding task to process request, check OTP_CTRL's response value against encryption, and collect coverage.

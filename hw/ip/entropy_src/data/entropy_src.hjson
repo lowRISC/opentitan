@@ -45,18 +45,6 @@
       act:     "rsp",
       package: "entropy_src_pkg",
     }
-    { struct:  "cs_aes_halt"
-      type:    "req_rsp",
-      name:    "cs_aes_halt"
-      act:     "req"
-      package: "entropy_src_pkg"
-      desc:    '''
-               Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
-               The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
-               While SHA3 runs, Entropy Source keeps the request high.
-               CSRNG may not drop the acknowledge before Entropy Source drops the request.
-               '''
-    }
     { struct:  "logic"
       type:    "uni"
       name:    "entropy_src_rng_enable"
@@ -196,13 +184,6 @@
       type:    "int",
       default: "3",
       desc:    "Number of 384-bit entries in the esfinal FIFO"
-      local:   "true",
-      expose:  "true"
-    },
-    { name:    "EnCsAesHaltReqIf",
-      type:    "bit",
-      default: "1",
-      desc:    "Enable (1) or disable (0) the CS AES halt request interface",
       local:   "true",
       expose:  "true"
     },
@@ -465,7 +446,7 @@
           mubi: true,
           desc: '''
                 Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
-                The ENTROPY_SRC block will use the FIPS_WINDOW, FIPS_THRESH and FIPS_WATERMARK values of the !!HEALTH_TEST_WINDOWS, health test thresholds and watermark register, respectively.
+                The ENTROPY_SRC block will use the FIPS_WINDOW value of the !!HEALTH_TEST_WINDOWS register.
                 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
                 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the !!CONF.FIPS_FLAG field.
                 Note that the hardware conditioning can still be disabled in FIPS mode by setting both !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields to `kMultiBitBool4True`.
@@ -505,10 +486,15 @@
           name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
-                This field controls the scope (either by-line or by-sum) of the health checks.
-                If set to `kMultiBitBool4True`, the Adaptive Proportion and Markov Tests will accumulate all RNG input lines into a single score, and thresholds will be applied to the sum all the entropy input lines.
-                If set to `kMultiBitBool4False`, the RNG input lines are all scored individually.
-                A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
+                This field controls the scope (either by-line or by-sum) of the Adaptive Proportion and the Markov health tests.
+                It has no effect if !!CONF.RNG_BIT_ENABLE is set to `kMultiBitBool4True`, i.e., if the ENTROPY_SRC is operating in single-channel mode.
+
+                If set to `kMultiBitBool4False`, the minimum/maximum results of the individual, line-based tests are taken and compared against the configured thresholds.
+                This allows detecting failures of individual noise source channels in multi-channel mode.
+                If set to `kMultiBitBool4True`, the individual, line-based test results are summed up and then compared against the configured thresholds.
+                This allows lowering the likelihood for coincidental test failures (higher alpha).
+
+                Note that the value of THRESHOLD_SCOPE needs to be considered when defining the health test thresholds.
                 '''
           resval: false
         },
@@ -595,7 +581,7 @@
                 Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x symbol size, where the symbol size is 1 in single-channel mode.
                 The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x symbol tested bits.
 
-                Note that NIST SP 800-90B (Table 2) requires the adaptive proportion test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
+                Note that NIST SP 800-90B (Table 2) requires the Adaptive Proportion Test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
                 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.
                 The use of window sizes below 512 samples is thus not recommended as this may not comply with NIST SP 800-90B.
                 '''
@@ -615,8 +601,26 @@
         }
       ]
     },
-    { name: "REPCNT_THRESHOLDS",
-      desc: "Repetition count test thresholds register",
+    { name: "THRESHOLD_ONEWAY",
+      desc: "Threshold one way control register",
+      tags: [// Exclude from writes to this field because they cause side affects.
+            "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: "true",
+          resval: "false",
+          swaccess: "rw1s"
+          hwaccess: "hro",
+          name: "THRESHOLD_ONEWAY",
+          desc: '''
+                Setting this field to `kMultiBitBool4True` will enable enable the one-way behavior of the health test threshold registers.
+                After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations.
+                '''
+        },
+      ]
+    },
+    { name: "REPCNT_THRESHOLD",
+      desc: "Repetition Count Test threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -626,32 +630,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test.
-                   This value is used in FIPS mode.
+          desc: '''This is the threshold for the Repetition Count Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "REPCNTS_THRESHOLDS",
-      desc: "Repetition count symbol test thresholds register",
+    { name: "REPCNTS_THRESHOLD",
+      desc: "Repetition Count Symbol Test threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -661,32 +650,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test.
-                   This value is used in FIPS mode.
+          desc: '''This is the threshold for the Repetition Count Symbol Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "ADAPTP_HI_THRESHOLDS",
-      desc: "Adaptive proportion test high thresholds register",
+    { name: "ADAPTP_HI_THRESHOLD",
+      desc: "Adaptive proportion test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -696,32 +670,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
-                   This value is used in FIPS mode.
+          desc: '''This is the threshold for the Adaptive Proportion Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "ADAPTP_LO_THRESHOLDS",
-      desc: "Adaptive proportion test low thresholds register",
+    { name: "ADAPTP_LO_THRESHOLD",
+      desc: "Adaptive proportion test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -731,32 +690,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
-                   This value is used in FIPS mode.
+          desc: '''This is the threshold for the Adaptive Proportion Test.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0x0000"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
       ]
     },
-    { name: "BUCKET_THRESHOLDS",
-      desc: "Bucket test thresholds register",
+    { name: "BUCKET_THRESHOLD",
+      desc: "Bucket test threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -766,32 +710,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the bucket health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the bucket health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "MARKOV_HI_THRESHOLDS",
-      desc: "Markov test high thresholds register",
+    { name: "MARKOV_HI_THRESHOLD",
+      desc: "Markov test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -801,32 +730,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the Markov health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the Markov health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-       }
       ]
     },
-    { name: "MARKOV_LO_THRESHOLDS",
-      desc: "Markov test low thresholds register",
+    { name: "MARKOV_LO_THRESHOLD",
+      desc: "Markov test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -836,32 +750,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the Markov health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0x0000"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the Markov health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
       ]
     },
-    { name: "EXTHT_HI_THRESHOLDS",
-      desc: "External health test high thresholds register",
+    { name: "EXTHT_HI_THRESHOLD",
+      desc: "External health test high threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -871,32 +770,17 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the external health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the external health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing  to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
       ]
     },
-    { name: "EXTHT_LO_THRESHOLDS",
-      desc: "External health test low thresholds register",
+    { name: "EXTHT_LO_THRESHOLD",
+      desc: "External health test low threshold register",
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -906,200 +790,114 @@
              "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_THRESH",
           desc: '''This is the threshold size for the external health test.
-                   This value is used in FIPS mode.
                    This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
-                '''
-          resval: "0x0000"
-        }
-        { bits: "31:16",
-          name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the external health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
+                   If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
       ]
     },
-    { name:     "REPCNT_HI_WATERMARKS",
-      desc:     "Repetition count test high watermarks register",
+    { name:     "HT_WATERMARK_NUM",
+      desc:     "Health test watermark number register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      regwen:   "REGWEN",
+      tags: [ // Internal HW can modify status register
+             "excl:CsrAllTests:CsrExclCheck"]
+      fields: [
+        { bits: "3:0",
+          name: "HT_WATERMARK_NUM",
+          resval: "0",
+          desc: '''
+                The value of this field defines the health test for which the HT_WATERMARK register records the watermark.
+                Invalid input values, i.e., values greater than 8 are mapped to 0.
+
+                This register must be written before the module is enabled.
+                '''
+          enum: [
+            { value: "0",
+              name: "REPCNT_HI",
+              desc: '''
+                    Repetition Count Test high watermark.
+                    '''
+            },
+            { value: "1",
+              name: "REPCNTS_HI",
+              desc: '''
+                    Repetition Count Symbol Test high watermark.
+                    '''
+            },
+            { value: "2",
+              name: "ADAPTP_HI",
+              desc: '''
+                    Adaptive proportion test high watermark.
+                    '''
+            },
+            { value: "3",
+              name: "ADAPTP_LO",
+              desc: '''
+                    Adaptive proportion test low watermark.
+                    '''
+            },
+            { value: "4",
+              name: "BUCKET_HI",
+              desc: '''
+                    Bucket test high watermark.
+                    '''
+            },
+            { value: "5",
+              name: "MARKOV_HI",
+              desc: '''
+                    Markov test high watermark.
+                    '''
+            },
+            { value: "6",
+              name: "MARKOV_LO",
+              desc: '''
+                    Markov test low watermark.
+              '''
+            },
+            { value: "7",
+              name: "EXTHT_HI",
+              desc: '''
+                    External health test high watermark.
+                    '''
+            },
+            { value: "8",
+              name: "EXTHT_LO",
+              desc: '''
+                    External health test low watermark.
+                    '''
+            }
+          ]
+        }
+      ]
+    },
+    { name:     "HT_WATERMARK",
+      desc:     "Health test watermark register",
       swaccess: "ro",
       hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
+      hwext:    "true",
+      tags: [ // Internal HW drives this register.
              "excl:CsrAllTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the REPCNT test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the REPCNT test in bypass mode."
-        }
-      ]
-    },
-    { name:     "REPCNTS_HI_WATERMARKS",
-      desc:     "Repetition count symbol test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrAllTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the REPCNTS test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the REPCNTS test in bypass mode."
-        }
-      ]
-    },
-    { name:     "ADAPTP_HI_WATERMARKS",
-      desc:     "Adaptive proportion test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the adaptive proportion test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the adaptive proportion test in bypass mode."
-        }
-      ]
-    },
-    { name:     "ADAPTP_LO_WATERMARKS",
-      desc:     "Adaptive proportion test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the adaptive proportion test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the adaptive proportion test in bypass mode."
-          resval: "0xFFFF"
-        }
-      ]
-    },
-    { name:     "EXTHT_HI_WATERMARKS",
-      desc:     "External health test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the external health test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the external health test in bypass mode."
-        }
-      ]
-    },
-    { name:     "EXTHT_LO_WATERMARKS",
-      desc:     "External health test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the external health test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the external health test in bypass mode."
-          resval: "0xFFFF"
-        }
-      ]
-    },
-    { name:     "BUCKET_HI_WATERMARKS",
-      desc:     "Bucket test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the bucket test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the bucket test in bypass mode."
-        }
-      ]
-    },
-    { name:     "MARKOV_HI_WATERMARKS",
-      desc:     "Markov test high watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "High watermark value of the Markov test in FIPS mode."
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "High watermark value of the Markov test in bypass mode."
-        }
-      ]
-    },
-    { name:     "MARKOV_LO_WATERMARKS",
-      desc:     "Markov test low watermarks register",
-      swaccess: "ro",
-      hwaccess: "hwo",
-      hwext: "true",
-      tags: [// Internal HW can modify status register
-             "excl:CsrNonInitTests:CsrExclCheck"]
-      fields: [
-        { bits: "15:0",
-          name: "FIPS_WATERMARK",
-          desc: "Low watermark value of the Markov test in FIPS mode."
-          resval: "0xFFFF"
-        }
-        { bits: "31:16",
-          name: "BYPASS_WATERMARK",
-          desc: "Low watermark value of the Markov test in bypass mode."
-          resval: "0xFFFF"
+          name: "HT_WATERMARK",
+          resval: "0",
+          desc: '''
+                Watermark value for health test selected by HT_WATERMARK_NUM.
+                After a reset, this register always reads as 0.
+                If a low watermark is configured in HT_WATERMARK_NUM, this register is cleared to all-1s after enabling ENTROPY_SRC.
+                '''
         }
       ]
     },
     { name:     "REPCNT_TOTAL_FAILS",
-      desc:     "Repetition count test failure counter register",
+      desc:     "Repetition Count Test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -1113,7 +911,7 @@
       ]
     },
     { name:     "REPCNTS_TOTAL_FAILS",
-      desc:     "Repetition count symbol test failure counter register",
+      desc:     "Repetition Count Symbol Test failure counter register",
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
@@ -1229,7 +1027,7 @@
             Alert threshold register
 
             This register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
-            Note that continuous health tests such as the repetition count test or the repetition count symbol test can trigger multiple test failures within a single window.
+            Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
             Each symbol for which at least one continuous health test fails counts separately towards the threshold.
             In case the configured threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
 
@@ -1265,7 +1063,7 @@
 
             This register holds the total number of subsequent health test windows during which one or more health test failures occurred.
             For information on which health tests failed specifically, refer to !!ALERT_FAIL_COUNTS and !!EXTHT_FAIL_COUNTS.
-            Note that continuous health tests such as the repetition count test or the repetition count symbol test can trigger multiple test failures within a single window.
+            Note that continuous health tests such as the Repetition Count Test or the Repetition Count Symbol Test can trigger multiple test failures within a single window.
             Each symbol for which at least one continuous health test fails is counted separately.
 
             If the value of this register reaches the value configured in the !!ALERT_THRESHOLD register, a recoverable alert is raised and the ENTROPY_SRC block stops operating.
@@ -1608,6 +1406,13 @@
           name: "THRESHOLD_SCOPE_FIELD_ALERT",
           desc: '''
                 This bit is set when the THRESHOLD_SCOPE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "4",
+          name: "THRESHOLD_ONEWAY_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!THRESHOLD_ONEWAY register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }

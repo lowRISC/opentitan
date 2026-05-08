@@ -19,7 +19,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // TLM agent fifos
   uvm_tlm_analysis_fifo#(cs_cmd_item_t) cs_cmd_fifo;
   uvm_tlm_analysis_fifo#(genbits_item_t) genbits_fifo;
-  uvm_tlm_analysis_fifo#(endpoint_item_t) endpoint_fifo[MAX_NUM_ENDPOINTS];
+  uvm_tlm_analysis_fifo#(endpoint_item_t) endpoint_fifo[`NUM_END_POINTS];
   uvm_tlm_analysis_fifo#(csrng_pkg::csrng_rsp_t) rsp_sts_fifo;
 
   // local queues to hold incoming packets pending comparison
@@ -78,7 +78,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
     cs_cmd_fifo  = new("cs_cmd_fifo", this);
     rsp_sts_fifo = new("cs_rsp_sts_fifo", this);
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
     end
 
@@ -109,7 +109,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
       process_rsp_sts_fifo();
     join_none
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       automatic int j = i;
       fork
         begin

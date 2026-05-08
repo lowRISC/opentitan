@@ -11,6 +11,5 @@
 
   build_opts: ["+define+RNG_BUS_WIDTH=16",
                "+define+RNG_BUS_BIT_SEL_WIDTH=4",
-               "+define+EN_CS_AES_HALT_REQ_IF=0",
                "+define+DISTR_FIFO_DEPTH=11"]
 }

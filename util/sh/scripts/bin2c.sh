@@ -60,7 +60,9 @@ fi
 echo -n "" > ${OUTPUT}
 echo "// Copyright lowRISC contributors (OpenTitan project)." >> ${OUTPUT}
 echo "// Licensed under the Apache License, Version 2.0, see LICENSE for details." >> ${OUTPUT}
+# REUSE-IgnoreStart
 echo "// SPDX-License-Identifier: Apache-2.0" >> ${OUTPUT}
+# REUSE-IgnoreEnd
 echo "" >> ${OUTPUT}
 echo "// clang-format off" >> ${OUTPUT}
 echo "const unsigned char ${NAME}[] = {" >> ${OUTPUT}

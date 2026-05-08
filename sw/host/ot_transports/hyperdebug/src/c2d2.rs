@@ -60,7 +60,7 @@ pub struct C2d2ResetPin {
 impl C2d2ResetPin {
     pub fn open(inner: &Rc<Inner>) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
         })
     }
 }

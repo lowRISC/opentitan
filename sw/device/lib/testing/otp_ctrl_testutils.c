@@ -15,9 +15,9 @@
  * OTP the Direct Access Interface (DAI) operation time-out in micro seconds.
  *
  * It is not possible to predict the specific cycle count that a DAI operation
- * takes, thus arbitrary value of 100us is used.
+ * takes, thus arbitrary value of 10ms is used.
  */
-const uint16_t kOtpDaiTimeoutUs = 5000;
+const uint16_t kOtpDaiTimeoutUs = 10000;
 
 /**
  * Checks whether the DAI operation has finished.
@@ -38,7 +38,7 @@ status_t otp_ctrl_testutils_dai_access_error_check(
     if (!bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("Expected a DAI error for access to 0x%x", address);
     }
-    if (status.causes[kDifOtpCtrlStatusCodeDaiError] !=
+    if (status.causes[kDifOtpCtrlPartitionDaiError] !=
         kDifOtpCtrlErrorLockedAccess) {
       LOG_ERROR("Expected access locked error for access to 0x%x", address);
     }
@@ -46,7 +46,7 @@ status_t otp_ctrl_testutils_dai_access_error_check(
     if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("No DAI error expected for access to 0x%x", address);
     }
-    if (status.causes[kDifOtpCtrlStatusCodeDaiError] != kDifOtpCtrlErrorOk) {
+    if (status.causes[kDifOtpCtrlPartitionDaiError] != kDifOtpCtrlErrorOk) {
       LOG_ERROR("No DAI error code expected for access to 0x%x", address);
     }
   }
@@ -54,7 +54,9 @@ status_t otp_ctrl_testutils_dai_access_error_check(
 }
 
 status_t otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_ctrl_testutils_wait_for_dai_pre_hook(otp_ctrl));
   IBEX_TRY_SPIN_FOR(dai_finished(otp_ctrl), kOtpDaiTimeoutUs);
+  TRY(otp_ctrl_testutils_wait_for_dai_post_hook(otp_ctrl));
   return OK_STATUS();
 }
 
@@ -69,9 +71,11 @@ status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
                                        dif_otp_ctrl_partition_t partition,
                                        uint32_t address, uint32_t *result) {
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
+  TRY(otp_ctrl_testutils_dai_read_pre_hook(otp));
   TRY(dif_otp_ctrl_dai_read_start(otp, partition, address));
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
   TRY(dif_otp_ctrl_dai_read32_end(otp, result));
+  TRY(otp_ctrl_testutils_dai_read_post_hook(otp));
   return OK_STATUS();
 }
 
@@ -83,9 +87,11 @@ status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint32_t), ++i) {
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_testutils_dai_read_pre_hook(otp));
     TRY(dif_otp_ctrl_dai_read_start(otp, partition, addr));
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
     TRY(dif_otp_ctrl_dai_read32_end(otp, &buffer[i]));
+    TRY(otp_ctrl_testutils_dai_read_post_hook(otp));
   }
   return OK_STATUS();
 }
@@ -94,9 +100,11 @@ status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
                                        dif_otp_ctrl_partition_t partition,
                                        uint32_t address, uint64_t *result) {
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
+  TRY(otp_ctrl_testutils_dai_read_pre_hook(otp));
   TRY(dif_otp_ctrl_dai_read_start(otp, partition, address));
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
   TRY(dif_otp_ctrl_dai_read64_end(otp, result));
+  TRY(otp_ctrl_testutils_dai_read_post_hook(otp));
   return OK_STATUS();
 }
 
@@ -108,9 +116,11 @@ status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint64_t), ++i) {
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_testutils_dai_read_pre_hook(otp));
     TRY(dif_otp_ctrl_dai_read_start(otp, partition, addr));
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
     TRY(dif_otp_ctrl_dai_read64_end(otp, &buffer[i]));
+    TRY(otp_ctrl_testutils_dai_read_post_hook(otp));
   }
   return OK_STATUS();
 }
@@ -167,9 +177,13 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
     }
 
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_testutils_dai_write_pre_hook(otp));
     TRY(dif_otp_ctrl_dai_program32(otp, partition, addr, buffer[i]));
+    TRY(otp_ctrl_testutils_dai_write_post_hook(otp));
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_testutils_dai_write_pre_error_check_hook(otp));
     TRY(otp_ctrl_dai_write_error_check(otp));
+    TRY(otp_ctrl_testutils_dai_write_post_error_check_hook(otp));
 
     TRY(otp_ctrl_testutils_dai_read32(otp, partition, addr, &read_data));
     if (read_data != buffer[i]) {
@@ -187,9 +201,13 @@ status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint64_t), ++i) {
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_testutils_dai_write_pre_hook(otp));
     TRY(dif_otp_ctrl_dai_program64(otp, partition, addr, buffer[i]));
+    TRY(otp_ctrl_testutils_dai_write_post_hook(otp));
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
+    TRY(otp_ctrl_testutils_dai_write_pre_error_check_hook(otp));
     TRY(otp_ctrl_dai_write_error_check(otp));
+    TRY(otp_ctrl_testutils_dai_write_post_error_check_hook(otp));
 
     uint64_t read_data;
     TRY(otp_ctrl_testutils_dai_read64(otp, partition, addr, &read_data));
@@ -197,5 +215,50 @@ status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
       return INTERNAL();
     }
   }
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_wait_for_dai_pre_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_wait_for_dai_post_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_dai_write_pre_hook(const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_dai_write_post_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_dai_read_pre_hook(const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_dai_read_post_hook(const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_dai_write_pre_error_check_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  return OK_STATUS();
+}
+
+OT_WEAK
+status_t otp_ctrl_testutils_dai_write_post_error_check_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
   return OK_STATUS();
 }

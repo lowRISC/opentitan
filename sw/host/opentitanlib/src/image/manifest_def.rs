@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::image::manifest::*;
-use crate::image::manifest_ext::ManifestExtId;
+use crate::image::manifest_ext::{ManifestExtEntrySpec, ManifestExtId};
 use crate::util::bigint::fixed_size_bigint;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
@@ -237,27 +237,152 @@ impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
     }
 }
 
-manifest_def! {
-    pub struct ManifestSpec {
-        signature: ManifestSigverifyBigInt,
-        usage_constraints: ManifestUsageConstraintsDef,
-        pub_key: ManifestSigverifyBigInt,
-        address_translation: ManifestSmallInt<u32>,
-        identifier: ManifestSmallInt<u32>,
-        manifest_version: ManifestVersionDef,
-        signed_region_end: ManifestSmallInt<u32>,
-        length: ManifestSmallInt<u32>,
-        version_major: ManifestSmallInt<u32>,
-        version_minor: ManifestSmallInt<u32>,
-        security_version: ManifestSmallInt<u32>,
-        timestamp: [ManifestSmallInt<u32>; 2],
-        binding_value: [ManifestSmallInt<u32>; 8],
-        max_key_version: ManifestSmallInt<u32>,
-        code_start: ManifestSmallInt<u32>,
-        code_end: ManifestSmallInt<u32>,
-        entry_point: ManifestSmallInt<u32>,
-        extensions: [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT],
-    }, Manifest
+#[derive(Clone, Default, Deserialize, Serialize, Debug)]
+pub struct ManifestSpec {
+    #[serde(default)]
+    signature: ManifestSigverifyBigInt,
+
+    #[serde(default)]
+    usage_constraints: ManifestUsageConstraintsDef,
+
+    #[serde(default)]
+    pub_key: ManifestSigverifyBigInt,
+
+    #[serde(default)]
+    address_translation: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    identifier: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    manifest_version: ManifestVersionDef,
+
+    #[serde(default)]
+    signed_region_end: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    length: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    version_major: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    version_minor: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    security_version: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    timestamp: [ManifestSmallInt<u32>; 2],
+
+    #[serde(default)]
+    binding_value: [ManifestSmallInt<u32>; 8],
+
+    #[serde(default)]
+    max_key_version: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    code_start: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    code_end: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    entry_point: ManifestSmallInt<u32>,
+
+    #[serde(default)]
+    extensions: [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT],
+
+    #[serde(default)]
+    pub extension_params: Vec<ManifestExtEntrySpec>,
+}
+
+impl ManifestPacked<Manifest> for ManifestSpec {
+    fn unpack(self, _name: &'static str) -> Result<Manifest> {
+        Ok(Manifest {
+            // Call `unpack()` on each field with the field's name included for use in
+            // error messages.
+            signature: self.signature.unpack("signature")?.try_into()?,
+            usage_constraints: self.usage_constraints.unpack("usage_constraints")?,
+            pub_key: self.pub_key.unpack("pub_key")?.try_into()?,
+            address_translation: self.address_translation.unpack("address_translation")?,
+            identifier: self.identifier.unpack("identifier")?,
+            manifest_version: self.manifest_version.unpack("manifest_version")?,
+            signed_region_end: self.signed_region_end.unpack("signed_region_end")?,
+            length: self.length.unpack("length")?,
+            version_major: self.version_major.unpack("version_major")?,
+            version_minor: self.version_minor.unpack("version_minor")?,
+            security_version: self.security_version.unpack("security_version")?,
+            timestamp: self.timestamp.unpack("timestamp")?.try_into()?,
+            binding_value: self.binding_value.unpack("binding_value")?.try_into()?,
+            max_key_version: self.max_key_version.unpack("max_key_version")?,
+            code_start: self.code_start.unpack("code_start")?,
+            code_end: self.code_end.unpack("code_end")?,
+            entry_point: self.entry_point.unpack("entry_point")?,
+            extensions: self.extensions.unpack("extensions")?.into(),
+        })
+    }
+
+    fn overwrite(&mut self, o: ManifestSpec) {
+        self.signature.overwrite(o.signature);
+        self.usage_constraints.overwrite(o.usage_constraints);
+        self.pub_key.overwrite(o.pub_key);
+        self.address_translation.overwrite(o.address_translation);
+        self.identifier.overwrite(o.identifier);
+        self.manifest_version.overwrite(o.manifest_version);
+        self.signed_region_end.overwrite(o.signed_region_end);
+        self.length.overwrite(o.length);
+        self.version_major.overwrite(o.version_major);
+        self.version_minor.overwrite(o.version_minor);
+        self.security_version.overwrite(o.security_version);
+        self.timestamp.overwrite(o.timestamp);
+        self.binding_value.overwrite(o.binding_value);
+        self.max_key_version.overwrite(o.max_key_version);
+        self.code_start.overwrite(o.code_start);
+        self.code_end.overwrite(o.code_end);
+        self.entry_point.overwrite(o.entry_point);
+        self.extensions.overwrite(o.extensions);
+        // TODO(moidx): Implement extension_params overwrite.
+        // Extension params are not overwritten.
+    }
+}
+
+impl TryInto<Manifest> for ManifestSpec {
+    type Error = anyhow::Error;
+
+    fn try_into(self) -> Result<Manifest> {
+        self.unpack("")
+    }
+}
+
+impl TryFrom<&Manifest> for ManifestSpec {
+    type Error = anyhow::Error;
+
+    fn try_from(o: &Manifest) -> Result<Self> {
+        Ok(ManifestSpec {
+            signature: (&o.signature).try_into()?,
+            usage_constraints: (&o.usage_constraints).try_into()?,
+            pub_key: (&o.pub_key).try_into()?,
+            address_translation: (&o.address_translation).into(),
+            identifier: (&o.identifier).into(),
+            manifest_version: (&o.manifest_version).try_into()?,
+            signed_region_end: (&o.signed_region_end).into(),
+            length: (&o.length).into(),
+            version_major: (&o.version_major).into(),
+            version_minor: (&o.version_minor).into(),
+            security_version: (&o.security_version).into(),
+            timestamp: (&o.timestamp).into(),
+            binding_value: (&o.binding_value).into(),
+            max_key_version: (&o.max_key_version).into(),
+            code_start: (&o.code_start).into(),
+            code_end: (&o.code_end).into(),
+            entry_point: (&o.entry_point).into(),
+            extensions: (&o.extensions).into(),
+
+            // TODO(moidx): Implement extension_params extraction from Manifest.
+            extension_params: Vec::new(),
+        })
+    }
 }
 
 manifest_def! {

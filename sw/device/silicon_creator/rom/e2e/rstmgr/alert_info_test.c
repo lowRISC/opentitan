@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_uart.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -12,9 +12,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/uart_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+// Test handles alerts directly, disable OTTF catcher.
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 static const dt_uart_t kUartDt = kDtUart0;
 

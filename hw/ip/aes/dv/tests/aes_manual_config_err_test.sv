@@ -21,7 +21,8 @@ class aes_manual_config_err_test extends aes_base_test;
     // all should have error
     cfg.config_error_pct         = 100;
     // only allow mode errors
-    cfg.config_error_type_en     = '{key_len:  1'b0,
+    cfg.config_error_type_en     = '{gcm_phase:1'b0,
+                                     key_len:  1'b0,
                                      mode:     1'b1,
                                      rsd_rate: 1'b0,
                                      op:       1'b0};
@@ -33,9 +34,12 @@ class aes_manual_config_err_test extends aes_base_test;
     cfg.ctr_weight               = 10;
     cfg.ofb_weight               = 10;
     cfg.cfb_weight               = 10;
+    cfg.gcm_weight               = `EN_GCM ? 10 : 0;
 
     cfg.message_len_min          = 16;
     cfg.message_len_max          = 128;
+    cfg.aad_len_min              = 0;
+    cfg.aad_len_max              = 128;
     cfg.manual_operation_pct     = 0;
 
     cfg.fixed_data_en            = 0;

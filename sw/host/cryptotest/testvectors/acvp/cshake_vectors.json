@@ -1,0 +1,1008 @@
+[
+  {
+    "vsId": 1,
+    "algorithm": "cSHAKE-128",
+    "revision": "1.0",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "msgLen": 0,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 1,
+            "msg": "",
+            "customization": "e9d873eb09067c0715d51697bb17a0"
+          },
+          {
+            "tcId": 2,
+            "msg": "",
+            "customization": "dedd718da1f086826ed6e275f7b3c4"
+          },
+          {
+            "tcId": 3,
+            "msg": "",
+            "customization": "db2bae74ee50f6147d650491bc3f54"
+          },
+          {
+            "tcId": 4,
+            "msg": "",
+            "customization": "df0d02bb7f9d86b37f833112dd8e2b"
+          },
+          {
+            "tcId": 5,
+            "msg": "",
+            "customization": "c5165c0273e03287f391b3ee22030b"
+          }
+        ]
+      },
+      {
+        "tgId": 2,
+        "testType": "AFT",
+        "msgLen": 0,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 6,
+            "msg": "",
+            "customization": "66114a311565bb9aff232b8eb2342d"
+          },
+          {
+            "tcId": 7,
+            "msg": "",
+            "customization": "19872eb116ea283d771e6255fa6721"
+          },
+          {
+            "tcId": 8,
+            "msg": "",
+            "customization": "78d0ec3d329fe236f4f16935b8d521"
+          },
+          {
+            "tcId": 9,
+            "msg": "",
+            "customization": "ddc84a0eadee212b033c3d079d9958"
+          },
+          {
+            "tcId": 10,
+            "msg": "",
+            "customization": "72af955a1e701a7dc77892ecaa454a"
+          }
+        ]
+      },
+      {
+        "tgId": 3,
+        "testType": "AFT",
+        "msgLen": 0,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 11,
+            "msg": "",
+            "customization": "60d59e865421f4331d4aec39f6a6ba"
+          },
+          {
+            "tcId": 12,
+            "msg": "",
+            "customization": "9645ae4f93b40ec0b6c1b1826865a0"
+          },
+          {
+            "tcId": 13,
+            "msg": "",
+            "customization": "917f59be2a4e2882d66fdd177721ca"
+          },
+          {
+            "tcId": 14,
+            "msg": "",
+            "customization": "eb5a9913625e33571e3bcd52f130fa"
+          },
+          {
+            "tcId": 15,
+            "msg": "",
+            "customization": "8bea2f065142107a344a855b1c4d40"
+          }
+        ]
+      },
+      {
+        "tgId": 4,
+        "testType": "AFT",
+        "msgLen": 32,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 16,
+            "msg": "7b73a4e6",
+            "customization": "1216aadabf2039827af0b03a27d023"
+          },
+          {
+            "tcId": 17,
+            "msg": "d25f5b90",
+            "customization": "b081573de8869316274bc117cd22eb"
+          },
+          {
+            "tcId": 18,
+            "msg": "6b3c2c79",
+            "customization": "4def13c73f6ed4cfcfd5d359a418ea"
+          },
+          {
+            "tcId": 19,
+            "msg": "07657d28",
+            "customization": "6158581e167c0dc059e9f4a5ef78c4"
+          },
+          {
+            "tcId": 20,
+            "msg": "3a3e4230",
+            "customization": "3aa882b450293de358ac8eef081f89"
+          }
+        ]
+      },
+      {
+        "tgId": 5,
+        "testType": "AFT",
+        "msgLen": 32,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 21,
+            "msg": "21b1de67",
+            "customization": "6dca87a960cd0ea8cefa7514342f80"
+          },
+          {
+            "tcId": 22,
+            "msg": "f48210b6",
+            "customization": "1f114b944f31ca7a8c7f81d87c554f"
+          },
+          {
+            "tcId": 23,
+            "msg": "cc9fc3b7",
+            "customization": "81b0fbc79c94694d65aa70cfb7bb0f"
+          },
+          {
+            "tcId": 24,
+            "msg": "31b473d2",
+            "customization": "dc595bf56ac60c6a3b2a5ba2f19c42"
+          },
+          {
+            "tcId": 25,
+            "msg": "1f373e5b",
+            "customization": "8ba511c08f1e7cf5a499710ae7d295"
+          }
+        ]
+      },
+      {
+        "tgId": 6,
+        "testType": "AFT",
+        "msgLen": 32,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 26,
+            "msg": "3080f74d",
+            "customization": "070beb69644b8310051f295f71fdcc"
+          },
+          {
+            "tcId": 27,
+            "msg": "6e8e8a1d",
+            "customization": "3d84bb03378d946e87100e9b599a87"
+          },
+          {
+            "tcId": 28,
+            "msg": "dc550855",
+            "customization": "136ff0ccbc89879f77f00dd691cb0c"
+          },
+          {
+            "tcId": 29,
+            "msg": "6bc2cd64",
+            "customization": "d2f1c09b70e95ff81aaea803f196a1"
+          },
+          {
+            "tcId": 30,
+            "msg": "5274dc02",
+            "customization": "90cb2e78126195d6aaaff649c64fc9"
+          }
+        ]
+      },
+      {
+        "tgId": 7,
+        "testType": "AFT",
+        "msgLen": 128,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 31,
+            "msg": "70b3f966db3d983fbf3e58e0ebd03027",
+            "customization": "33e3f6319eb7f3717127082ef8991e"
+          },
+          {
+            "tcId": 32,
+            "msg": "f85619028dc656dc3b7fcef61c1e672b",
+            "customization": "fe3415f44f8338a29004f19f0e76f6"
+          },
+          {
+            "tcId": 33,
+            "msg": "f7e2472672dd35435f9040919f6c66ed",
+            "customization": "de79c1bbde4b2517c702283510f11a"
+          },
+          {
+            "tcId": 34,
+            "msg": "8fcab791ca2bd899baa70fa648ec3bfb",
+            "customization": "1debe97d4fa417168c901306421381"
+          },
+          {
+            "tcId": 35,
+            "msg": "af9a1ce7fd4b4c1ae8df7f55bef2042b",
+            "customization": "ce2f5bedefde389642d0b1afd1f6f6"
+          }
+        ]
+      },
+      {
+        "tgId": 8,
+        "testType": "AFT",
+        "msgLen": 128,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 36,
+            "msg": "aa6d81684e4185d2fd2b5520e60b157c",
+            "customization": "7a01d6a6ea51ece36bb798e784be68"
+          },
+          {
+            "tcId": 37,
+            "msg": "ab4fb319b8b846bf5dec3e2da1e6bef2",
+            "customization": "d11b195e133a25d419a67e40123f2d"
+          },
+          {
+            "tcId": 38,
+            "msg": "65c2920eb9d889866fb7d5b8399c0184",
+            "customization": "71861e3a19126fe6c7411c552623ec"
+          },
+          {
+            "tcId": 39,
+            "msg": "f0e891b79009b97d6c47ab693a420558",
+            "customization": "a64fbd7ee8d993398d32c70cd6d3b6"
+          },
+          {
+            "tcId": 40,
+            "msg": "69b0dc571c3bc21723681e53d3172772",
+            "customization": "5074673e78ddb244d62be6f49e177a"
+          }
+        ]
+      },
+      {
+        "tgId": 9,
+        "testType": "AFT",
+        "msgLen": 128,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 41,
+            "msg": "45df8a72d5f2c6329b59057b849896d3",
+            "customization": "d9f8ec99837a041ae178a6bf8a3d4c"
+          },
+          {
+            "tcId": 42,
+            "msg": "8d3baaf2f7299fefdcc16571f1331153",
+            "customization": "bfadbba2b4e34a1dcea9fe2db7ab99"
+          },
+          {
+            "tcId": 43,
+            "msg": "61afc0930ca5d39135c9a308332533d4",
+            "customization": "393efaf0e232dd2610b6ab6752a89e"
+          },
+          {
+            "tcId": 44,
+            "msg": "e82e1741d612ae7a8f1b3d45ea336e6b",
+            "customization": "a5d405e25eae58fc2d20168be727af"
+          },
+          {
+            "tcId": 45,
+            "msg": "ca177c3d1e147e1db0c7513518dd04e5",
+            "customization": "02ce2fc51609aabecfbcb06d1ef0df"
+          }
+        ]
+      },
+      {
+        "tgId": 10,
+        "testType": "AFT",
+        "msgLen": 1088,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 46,
+            "msg": "3809b430f38c4066b087159675088d7a3b9a5a337379e7bdd3f45382acf3318980f3edb478ea0c3a7751f09b8bfaae25bcd17bbc965f45fc958499012ef96895022ae4411ed705776cbb2f1922d7697e469745f1d6480da2398a738e20d31493a76c612cb9b54ba1a91242c565cadaf40074948871b12c250e38967c0e048ad319523be979f215ed",
+            "customization": "696a9148575261ea48659621675b7a"
+          },
+          {
+            "tcId": 47,
+            "msg": "c759a74494a00c42b2156aa71464915c63b4dfd243f45f8c3159e1fec15a10c380531df7bda63f55c4c58099cc291938bbadeb4f188cd3c354eafdb3bd56c222a81876646b107de76527c83bd4bda98d20750ad77f1de1ce5326a59ef01e5ebbfcf9cadbfe0a68b9d5f17dde1ac26327c3753f7f80d3316525d32ea69cd730df0bbfafc66847fddf",
+            "customization": "9f8faf4a8b3ae13bcead92578679bd"
+          },
+          {
+            "tcId": 48,
+            "msg": "e08e930848c311c52a1275c22ae883ba548ffec090381bcc6d53719678991d143c1b7da52b7ebb2e8c8c30e6a26e74f80779f095c2b4f1010c106d747aa5b779ccb9ace04849c6f3cd2d361f2fbca651054d59ab7108bb89b69d5ef22de1b5edae1757f832621298455a0fbfc0d681a4b8fa172658c33ff33b8b8dae30680ded757b44d3c232b68d",
+            "customization": "a015231739a4cb5a7539f11f2b93d4"
+          },
+          {
+            "tcId": 49,
+            "msg": "da2686ed3543370960229cc70d3b366a4948bda68e318a8aa24d41daf54a6c93e9788f1d2d1167919ce30d4bbaa0a0420ba0a42fb7c607c55f92f5d5e69a3bb5feee9c9f79f879df518daba38b1782b4d2d505e1eb8d4c0d5904d84d0361b2156594cd3bb831c133b47514d699b470c2bfdd8ab459d845bd3bf155ee99233d2e876d70b89aa3b5cb",
+            "customization": "58fe5ae25bce36a11c6d3fcf081957"
+          },
+          {
+            "tcId": 50,
+            "msg": "3cecdaa415e77186bcca745bd9eeecbf6fd2dbe1dd95166a6cd2a63a792bd741a7fc3d047ce50c7107535a2e953189695435c345fac147f1e5ae25db0631520520e3a10b61d305694f5697246775d70accd633125de3810392f44b37c28c6e83aa78032b05d67bc47ffe9ff2a717bff2b11b7de65bb42ba598f09c1e65660b0b032a3c53301dda17",
+            "customization": "66fb4cf48aab948a8db9e2d8d82001"
+          }
+        ]
+      },
+      {
+        "tgId": 11,
+        "testType": "AFT",
+        "msgLen": 1088,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 51,
+            "msg": "158262cd00c9ee94fc90b6ed472c359e150f0af9a410a5dbf326313aef9f9c77bd9f0847f23ba68775ab45593bf7513c9eab62d66316ab96df13133d79807935f454fcf7007d6792b569b0f7643fe95da18b4c984e22cc813a7bc509b65ffa6ffc78c835b6bc9a3ed88f1f159cc3c8b3361b73f124e8efb0a47f174cadf1f70c603f2ce2ea45dc5c",
+            "customization": "1a5474d51bd96d1155df8b2d09f2f0"
+          },
+          {
+            "tcId": 52,
+            "msg": "3f385a3fd3181180896588b777d7403d9096dc1f17194cf14499358467ff483d4cdbf1ef369373e7f07df64014829f6661d75274911372d8c2e068362a80aeb7d0d62918d25c68df8bbf9ca573fceac92c7b6e805ada678cfc42db4a1cdb57a263d8f0b5ebdd0a16bcd628f393f23c6d1d9de69c9f05e33b4dd2fe39084d881773f18c55a6733d41",
+            "customization": "8998c5d07f2b7d22b807838b1e23a6"
+          },
+          {
+            "tcId": 53,
+            "msg": "7a66099435b0ac4e5a2a3177265035a703dbb8276fba1bfa3415518e6eb687644a0aeccea941985575c8effcb87f211fd9f315283330c54752a75a8c07e063c9bcf39b7980628389a57c237b8140eb59eedeb0679a4da2cdcf35166e93ee6ea4a36c9188f1959ebb2ea438eada2eae26d0d4a4d5adede2408a30e3b1dcc34a268a2e4a9db6b53d9d",
+            "customization": "e472a7c92803b23d02915bd5d82716"
+          },
+          {
+            "tcId": 54,
+            "msg": "dcfa4b6775196295ea4c76b334c2f0491e015717c3f909cb75c1365c9bf96849ae5aa3a9aa43d3af7508bbb263a6b0a45b0c3d60471f96e16bf68f78c5c565ff0b7ad18b5d365297ae3c7c53dd742137e4e9eca67c9ddcfbe149b5d60d2bf908433acf5fed781d16c018cfa0d2ecdf0eface6b0646cb8e7ae1c88a548e4778c559430f6b886ad35a",
+            "customization": "403238119ad2864bf2a803a5e851f5"
+          },
+          {
+            "tcId": 55,
+            "msg": "9aabcf3f9b05b5db52edac85d4cb27de4ba992d0a01820573d54122523877bd91e153fdd1a0a4e0dc46622a2a9deb7f2876a2ca0a5ac1c96f087e4f797b4707a8a71f616e10e756daf880f3d532db5a70fd858581c5a4aaf7d93fba805a60c6131a654ea671d375ee4327430e0ca459ee3432a9e74e53ae6f7d024e94c6021bca1cb5c040d14b6f5",
+            "customization": "a3216f8b19cd55d8c112b1aef1c54f"
+          }
+        ]
+      },
+      {
+        "tgId": 12,
+        "testType": "AFT",
+        "msgLen": 1088,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 56,
+            "msg": "6d958d0058a867dc9338e706c97d02a6bbbade74eb14583c697e31664532fd88156dd509a5bb6a98117ccf10d5e6d1d06a37cc8baaa3649566811ded693ed8671625a876af9ee7639c02351ecccfca7ce2ddc7ca6ba2cb643685afb1f95abdc8e3477293e8ba459542b3c32ed91a998f9d7c8550890da0cf43590ae4e91b914412055652c6593bc8",
+            "customization": "72dcd4191b22b26e81bba686214d4f"
+          },
+          {
+            "tcId": 57,
+            "msg": "f2842d6f19edfb6c779a6ebaa3436f6e51d7c96d7c88ad0f53a68a9874100dfec91831d04c90244afd039ad5a776a259bb23461d3e243930f3b41b9c060d7aff5b7054c349fd07e91c031787815708d5502beb392d334f0f0a2c6d2a29d1d531e234a0f141a166418348a47ddb7ae8c167846c3e683ca443b371d124e9384109538392a7fa76a10a",
+            "customization": "0668dd28ec01347489a0becd7c5423"
+          },
+          {
+            "tcId": 58,
+            "msg": "bd09d406e94a7ce74e762e3084c4b65c24f44317330b6841603e8fc9a6537f7d524480ec0ab6eb6d213a1753423bbc508370af1159d47891d7671d6189e6b9943d7c749842f6ae82093209525aa374d068912c974ab18448c759e5c79a18cbaebd041b2cc1cbd0117dca6ca2654ceae173c0998726da379b2645f7574029ccb99b6987f424d42ff0",
+            "customization": "fcc6facd6086e90c960b05dbfa68ba"
+          },
+          {
+            "tcId": 59,
+            "msg": "f64d6e0416166de02dae021d405e4ebef1e95be5527b8c81762f5df3fb2fa82e9a03865bd54339a3174c1372b76c125bae0770bfef131f0ed6e064e86fb6ad4adb8bf838f01a37035aba5ceab058f57283b543264280b797258c079f4b2ac792b6a90adc84c6fb7f8badb25a2ea9132b05a1ced96719ab1ef2c96caee4512d4737e3d89a26d6337c",
+            "customization": "62b5ebe398a2400fa47256c50f3de8"
+          },
+          {
+            "tcId": 60,
+            "msg": "0c50a94c3299d524a7abbab7f546147a38fb68da88394654015c06aa7eee888194589e4d21f917a127e79ed5c09a98dff614a248e235ec472a970db1018ad4de425b7de66fc0bb79a5d97ad39f15551e6da7b9c51d67cd82836718413037111166c240591f0c7276adf74b392ad60d3bff3e370164ae0c92157d5ffb966235dafb81cae6c7231c8e",
+            "customization": "4e9d31f09eae241b5f6a55e28ac617"
+          }
+        ]
+      },
+      {
+        "tgId": 13,
+        "testType": "AFT",
+        "msgLen": 2048,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 61,
+            "msg": "40b738ff23ebec4d78ebb286d57d1ef20d65e3395d110e3b4872d09dbba096e01f73267496f1985b2c2dfa6ee39e2703878f2666091b1a1527c0927063953f7321e9d056653e4a8a4985f25297b5fafc0c1164fa648c4f4df9471f03a8b7be9b0da3e680ef9667a8496b87222192cc2df22bc64a57bd8ebc52c06da364e46040940862ddf6904be2269b4b0ed448211b9a4b66ba49fe3766e794be9f658967432e7ee64c96cad2ea870fd336fac4a85933eb96a5349732827d25de0db3791323dbe1b7f39eda80d834adddd424cbe1cb08bc79772356de5fd3c379d862e05703c0a1db63035c3bfa1b9da4f53e899be275f28f150a4a42b11e58b69377022658",
+            "customization": "dbbfc6aacc9ccfa0bf5cad253a6dd4"
+          },
+          {
+            "tcId": 62,
+            "msg": "70275dbb0e43ae38a93a788bede0605a1d1092c40ec09b3e634e39da8219d002326c9cea6ff820d5b215c61e123b754db67777a262495baaf571c3842e45e68e91591e108d0de091d14d4e336aeb18dd8ce207f55761b35ad4d8921075dd37ee4fd1bfa3d71c1ff51f2e0dc998d16b792b03214f5054e6b846b88009453be874d7a70e70066bc83901f0db93923c6cd5547ec18129ab20ebffd68234e92e0c11fbba1d6af94d0d3e33ede270db0ec247f27d767dacde34c8063e01647bcc9d57db9fc9b0f2f14fffe19b9f84b10dee9bfa6171d4e67d6b9dca3ada9431fa77ef4982e7b45c63eb5375e1bd1c0614f7d31b9f5b2acb23e72f43e4ee0832ea844c",
+            "customization": "24b5caf8bdeed952f918795f5a86ee"
+          },
+          {
+            "tcId": 63,
+            "msg": "4db77789f7afff99a6855d13a1c0bff2d5c97fa88724bbbc3081e2f2fff308417c675d6a974c224f74439b09917f62cd6d471ff9a03b490c48626de7c34aa056a4b5fd47a6fc5994fe9a104617ae2a1efd3ebf61633d39deb19899629f04333d3aff6c751a538c14a34a4d412ff97c68f898541b9b3f13cf1dfc2792d77897af572fca351e1c1cc0dec49343838e5a3d5a899908521d457e8e6d47949da2068d2169df8abde8788d0489af883e941de63d588c87800560916a68891bd50616fa586a38c373d2276224981d6c7c3fa8dca73d3bcb4fad30975c4ea655dbfe8acd7261735b1330b2fdf6960eb49d447468fcfc6d02b20923ae544ded9895a2fec9",
+            "customization": "d18989a96557293ddcd5e7a8c9a404"
+          },
+          {
+            "tcId": 64,
+            "msg": "76053d3cfa175ae989e64c60661ae1cb5e00a2fdc6168a293fa491df5cf90f32a493c3a1854b498a7181f51d57b229420937d99c8001149b7c79e7eadf8e296ab558e844e7d64c7afdfa2cc070647c72b7c6b0e1285cfcf1b18f71842ec4b151218db6429d3d9d16caed8db8cc5dd1aca934dadcd4dfbfa5734b912a528b2b6272806cf2829cb8a5813e5a4879756ff66e6bcfe5b3977c3c73ba94657e902be2647aef69bd85e4cf3a855a618bb60fe9257a78cfc7d407e78c411dd0460f66936a8bf8dfb40c70e2fd50943e449d77027b6419c47b04cbfa3971be66509530bc32ecfce666ad24fa951f346bea7774a5e0581d783711c3979755645284a4d0c0",
+            "customization": "2875d0bc3d88f3fcdee5a8161360d2"
+          },
+          {
+            "tcId": 65,
+            "msg": "fdf2b4e97ea66b71e9792b299d36133b079786eb3e63442baf2bc9a9b7c870956f1bc1aea3017b1d9259522ee4bb967402305409da138c0edc14235887f6ff4b20a6aba9b1af8786fb0a10323cad6fd5e1a410fc4d208e5a44f9450d6f29662cc76e02e44abeba3d67fabd77a1a9cc2d59762bbb85a0a32cbe86a17a3733702df725451cc7c9df31f20a478e8b70718e66900243e29193cdb494215f630b24f418995887a7af49c28445f1e70f937151f7e348ded3399218dc3e7cda5f584900f809fb6ddf96bd8a4727f3148af6b7dc7e8c38a7f8335b26e793a4daa3e952466cedd758ed318bcdd9142615fd610830549f017b5b80f90147fa31007f1b179b",
+            "customization": "265931b28fe1e8bd1cafc6b3551d12"
+          }
+        ]
+      },
+      {
+        "tgId": 14,
+        "testType": "AFT",
+        "msgLen": 2048,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 66,
+            "msg": "a9f57ea011c308b9e7dd964aa955b9ec9db8c48277ab615287bebd3891fde2eae0bc7706d8f22f2079f451bdad142dfe1776f068684772d44030227bcc006abee79a98cf7ca8981b3153fc914dfa98fa78a0572b9cf65a72c13789e83bb78987062829300c1ebff291e6e100aa34c0e9a7403b1bc608744e9dea79b3da798970485370c0ec883e62037d5420361db0f4432aefd7c8f70c18731d7e81e85c48db2b2de2e782f10d04eba8ad7d50df02212629c8db7c1cc6c5db2575384a2747a59c2bf25f78ee7a25b64abca7c8eef847e90ef429ed40790668f4821c68fb87ae5a5bd28e91ee642b0d0fafd0a7982b64ef4345092ade8e2558653bbd8cb7e566",
+            "customization": "f23eca5fb447acf1c2820751f78362"
+          },
+          {
+            "tcId": 67,
+            "msg": "248ce7182644d85699ce4f3d05b15feebdc68aef14ba895f6fbaaa4eca501d50f6e38e88fb7d291be397a8f5177a84b75f9fba962cb09ec77d2df2387c1bc20acacaef4dda4fa5c0d544a24b5585e7e4461e130db867c305c04b9f3f11a75563ba487e798a2b5fa999d844b47d3818acf883867daaafce0eb0144efe95f40c19a41b3262c8b4a88c9ce56ec8c091daede86950a18aeef5943c2d5b8b08e01530923993a4e07515bf5e5cfa83e62c8c8a9ae0883dbcc05649dcc9a03d7376d54ca1412499b9253d0fe17e005de4489e6e225e8ad2eceb6df708c56b9059f6481b5273e7025f082cd1e3fe622f1876272498e3b956fe75401e73e5874636a6e9ee",
+            "customization": "83b0dddcd3d650190fd9ad89329322"
+          },
+          {
+            "tcId": 68,
+            "msg": "d105f5ba95dac5e68ee3f27bb3abf39449c0457c59920acff7e7a402840055c07c4126084ed49b945d69143859a400914e01229c397f2c6c6e3c1c6d54f2560bdd8fcfb1ef9edbbec763c6f8cefd55af97d53a0e6a99516293f821adf3d50b70993e4edb5f224c489fcbf3db95e1b2c3df7f95d21e141999a237d4841bde1c69cd4b4f2b9466b49caf02797aca846f11172f4371220913fd0ebaf7328e51f15e1d7940cc6ca1bb8316f692da54f03def40e664522e681bbc85dac7ca30ab84f72509bae3acdc57f96216fbf9d22ff3560b30334a1e578bae30227852914b10c46ddf7caa8ec8d0084c8f209e1f835527dc4f8044292084d266988af89cfb2907",
+            "customization": "9580fa6908e598328231d93a9c835f"
+          },
+          {
+            "tcId": 69,
+            "msg": "1202f26279be07a1db946e09a8b7ca24755312a1ee823fec982afdd3952f24a2347eb2484ef9a8f4e2280e7e55e93c7a8f3c13a46b1706a43856a4428af14f7adb2708b3780f9b94a690471534a84a9b46e502e6d8e51e87e35ca21d8a9603c1ef781bf725abf7807979f565b5c0157040301e6c1601d769d600cc939569bd29ad8e298fda0a554d5d4faf08a37b4f6970029edf18bd626ebd85d8f15ba3cf7a4d2c63b0d7cc15e29aee7d2b42a8eadf89ebca4c6ec32732454592fda511a48bed852887aecd4e5ca2e533cd0ada42b1772aafe01448e064e5829deca668368ab1ca69cb94e4d02ee56ff55bd00fe47a751aee0c663341aef26b2cfdb4417ac8",
+            "customization": "3fe0915009a103e6bc23609862fa98"
+          },
+          {
+            "tcId": 70,
+            "msg": "78e06e3069c485dfba2256149e9635fdd5c106298d36457a218f7175de71c6aabb2209e78049c69164030ec2a9a275bb134009d81674d8bf209371bd6257cd391bfaacecd89f2ef7e5b699a3c16ebd8d24e2a04a50cf96e5d1d3147bfbc9757be6794f8af5c9312659a283f49d3738511048b02a9bd93f78705578fed644234128f8ff78d57cdb68e416663be64ff63194d0dd2254206dca6f6c6f59485e3d1bdcc1a428f814b660f80991df8a20fa1d4561c90b69403dd75d4be7b1d3ae26be72de0517f17a0fd815b1bb993cd697c520cb50e41175ae0e4ed830cf0d758e05933942db7003a4b97cb2d797db63aa3552ea40199c896512ea6e766ac4018722",
+            "customization": "b508866a08b2af7b08d16642da7ad1"
+          }
+        ]
+      },
+      {
+        "tgId": 15,
+        "testType": "AFT",
+        "msgLen": 2048,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 71,
+            "msg": "16dcd56b76dd1696e9aed9c00eb2eac26149f0fd55dc651e762449fd622d90c2f1cb4566c380ecef6d0bdc49903274069792b83d1a18b1a1dfbbe0bbd2582708b7f2ecdbea0f726740cf05e845204f5ad6e4bf8a5fef99685bc406f4d4ad38d4295396a866918bd56b25e1f64a8b2e3c96468d54383ac87c40275efb37d00ea53e48ff92ac6280793e371a13f5cff053f994788afe843911fe4a765182eaa3199a740f24ce536ecb84ccd1695ef7b72ea00c6a6d75b73b2379abcf96d79db76dfa66a227e482c0778068b00c04ee59519172a2fab5841160634a4d9b226e77e78a00584fa501b3d67b40ac661f60e78614a9617042184b3704e82433df84e919",
+            "customization": "d2426e0be79730c14e5e70d8f8bb9f"
+          },
+          {
+            "tcId": 72,
+            "msg": "1c55dee06cb06abc0f099e9d28cdd7bca3fcc66e0a7216c450116f551eedd32e41aa0380902429c823de2b7d5c3b0d2c909bfda6a35988b1e855c3333a7174da29105d1e998813172f6a82381b45acccc60bd973d997b9604624e3200d0d902e355892a1e3772125fb27be07fa57cdb5933591df65c54e51191e6dfb2cdebd81501d2868f9d279029ea38818eb5e7d1c482e6cbefd2214dbd5504168bf50a92bf01bd0c388746483cb4ac58f80112c2db880b5fe4644bb64d20f8959fe580c54bb6ee57388c9eea7df87d4d9306d9f93214ecd5839006e07dfbc75edb27fb23c3473ac9fdca8d0933d0ea3e04e503c5c5d09e109949658f889a9090db3fa2c69",
+            "customization": "84c10d644aab0674e8375c7c204088"
+          },
+          {
+            "tcId": 73,
+            "msg": "8a03801a4d21031b1550cf0a7df63bdca4c3a67bd1e580a3c002f8ab6e963f81fc50b7531f49829ecf5b23064c7f1fcac3308fcf17979e01242bb4846f6a4cb99f141b85beeb0ba8d1b624fbe0ddb4e19b1ad7ddb7b010c5aef6ee3216deacca2b3d3d59fa6a10fac024c4ca4559736a91a4e0a85178d77f573c72470e86a5c07371aff554a48a844405e4a08a5efb178a3699efee0b74d286fa9c3788e9d4ab5a5e94fd337d0cb381f5fbcad9404c384718e6d7710ebbf47759e80aee75d345ca83247ce5e844b201c1ec0799f89ee972ad1a59b65e27c2bb60f267174e653935d56da60a8ef9ced407c2b99c3967af16a999c72d6db4c1d5635d6181684580",
+            "customization": "aa702227e04329ad734b1e34aa202f"
+          },
+          {
+            "tcId": 74,
+            "msg": "0139a4476ecc6e5f8981111045b79a6c75569a6ac4ac40d1cdae0a716ab418445f23623afc5fe7d0c8f0587d435f99fcce0d43665954a49c72c81be1bbaf8769c858f490a93bb2d44920e9e7656a37bead6deed2c82fc49393d6acabe9a6d877723e9fc85a5fb5790aa5ef4302ef8735eaf514775a591ecdc1be28e480e1b470841b9e238fbd98acbccb19a74192d1dd69dcbbead647c152a6a45f1239befcbf41f2bd1f747c195d362a346641d7103dca73bf67ab93119fabaa40960e109d673b3dbebf994ff66ba4b6d2dd29db282ac9cfe5b6691dc13920d260a9849323c80743ed523b20628e41b46aaf3432df6ba965a8c69892c7f35a0406c5f1aeb543",
+            "customization": "c12cc1ac8f5a2dcd89a8efdfd837d0"
+          },
+          {
+            "tcId": 75,
+            "msg": "87b93015e618d391374ac64e714f8601b473ddb56d22b6479b8c01e870d6f508a01ab409eccc4f317d03c6dca1dc48a50a6e5cefa130bebf17095aa46cf3e52a1891b40f6c6f78d968d5452363c5fd85c6422b8319bf230a9ce8ce05eccf1f302009d7a8be3c326d15cea89a1e547c1c03611caaab2fe3036392096c0958688f0f7c9d4eaed1fc5f0fcc2c3425a37041711b2524baeb667b9f19945f8e02b2d7bdc013dbbb51cfbb5b52eb3b54d89f641a7c5e5ddaba78c43c9d95e639ece365ce16967d7462ec7ee6b290fea4f9ecd42cdb83be741720d868bb5d7610722576a0b030a3fd8ebc14bea6caba87bd2508451222991d518018fed86702f55bdec2",
+            "customization": "e375043ae1db72fe7c8d1276ebc765"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "vsId": 2,
+    "algorithm": "cSHAKE-256",
+    "revision": "1.0",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "msgLen": 0,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 76,
+            "msg": "",
+            "customization": "64d99ffe4b387420f0d707755207ee"
+          },
+          {
+            "tcId": 77,
+            "msg": "",
+            "customization": "fc92db97e70aae38991320550b295b"
+          },
+          {
+            "tcId": 78,
+            "msg": "",
+            "customization": "b46fd0d8dd134b5cbefdf47abc4c2d"
+          },
+          {
+            "tcId": 79,
+            "msg": "",
+            "customization": "182dc24bfc32f65bd3c3b3e515b191"
+          },
+          {
+            "tcId": 80,
+            "msg": "",
+            "customization": "55d2c83152f8be2200e37136ec062b"
+          }
+        ]
+      },
+      {
+        "tgId": 2,
+        "testType": "AFT",
+        "msgLen": 0,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 81,
+            "msg": "",
+            "customization": "2a12ba80d735ba01db95075a53304d"
+          },
+          {
+            "tcId": 82,
+            "msg": "",
+            "customization": "42f095015fcb625a9e2257ceb1f73e"
+          },
+          {
+            "tcId": 83,
+            "msg": "",
+            "customization": "b39b6c5776e5b78e2ebcbff48aedf6"
+          },
+          {
+            "tcId": 84,
+            "msg": "",
+            "customization": "23c788653464f5d2760a35edce850f"
+          },
+          {
+            "tcId": 85,
+            "msg": "",
+            "customization": "f953c9ace9bae092fb2a7ff9aabb30"
+          }
+        ]
+      },
+      {
+        "tgId": 3,
+        "testType": "AFT",
+        "msgLen": 0,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 86,
+            "msg": "",
+            "customization": "50bd2d7b5e617f09fc11a86fa1017e"
+          },
+          {
+            "tcId": 87,
+            "msg": "",
+            "customization": "d09a4355d72905a203861aae23242b"
+          },
+          {
+            "tcId": 88,
+            "msg": "",
+            "customization": "b2f61bcf4877037974e981f364fdc2"
+          },
+          {
+            "tcId": 89,
+            "msg": "",
+            "customization": "0927ec5c3d19d09d1542230220d3e8"
+          },
+          {
+            "tcId": 90,
+            "msg": "",
+            "customization": "07e3da8777b0ca157ed19dfd3201bf"
+          }
+        ]
+      },
+      {
+        "tgId": 4,
+        "testType": "AFT",
+        "msgLen": 32,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 91,
+            "msg": "6b710c39",
+            "customization": "6b6c14ecaef1cb08e170c3f320efc8"
+          },
+          {
+            "tcId": 92,
+            "msg": "096f0b47",
+            "customization": "6f6a77c9fbbd1674a379dd2e2df909"
+          },
+          {
+            "tcId": 93,
+            "msg": "d75de58f",
+            "customization": "dcf2f6b33736d01880bee184ff9314"
+          },
+          {
+            "tcId": 94,
+            "msg": "639e7eef",
+            "customization": "29427534d5587118bff458c65f3190"
+          },
+          {
+            "tcId": 95,
+            "msg": "2035fc3a",
+            "customization": "4822f0f05bdbe019da1e14d80be297"
+          }
+        ]
+      },
+      {
+        "tgId": 5,
+        "testType": "AFT",
+        "msgLen": 32,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 96,
+            "msg": "361688da",
+            "customization": "82489204ec6e68ee207828891c127a"
+          },
+          {
+            "tcId": 97,
+            "msg": "5c0ede65",
+            "customization": "2197018d7fa509fc3f856b1d2ea6e6"
+          },
+          {
+            "tcId": 98,
+            "msg": "743c7f8a",
+            "customization": "0c6e1086157100298d80c4d1e572cf"
+          },
+          {
+            "tcId": 99,
+            "msg": "560cf8b8",
+            "customization": "dc07f8fac8742dde374fab3172a396"
+          },
+          {
+            "tcId": 100,
+            "msg": "4da07378",
+            "customization": "f226502783783d72e312beaf688f93"
+          }
+        ]
+      },
+      {
+        "tgId": 6,
+        "testType": "AFT",
+        "msgLen": 32,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 101,
+            "msg": "c9711d54",
+            "customization": "2fe26fa0e64ab0ef5ceff085632b9f"
+          },
+          {
+            "tcId": 102,
+            "msg": "96365921",
+            "customization": "4ca1b50213bcafa80cafdb1a35a117"
+          },
+          {
+            "tcId": 103,
+            "msg": "1402b28e",
+            "customization": "375462f023ff4aaec8a9890069feb4"
+          },
+          {
+            "tcId": 104,
+            "msg": "fc1b8307",
+            "customization": "9ea7d25d9f3d41649cde1ce9149ac7"
+          },
+          {
+            "tcId": 105,
+            "msg": "637097d1",
+            "customization": "5b09ea5001b492816677efed282de7"
+          }
+        ]
+      },
+      {
+        "tgId": 7,
+        "testType": "AFT",
+        "msgLen": 128,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 106,
+            "msg": "b6025ea5d5e67efc5b4627b906ed96d8",
+            "customization": "f8bb389ebf353d547f5a43a661acec"
+          },
+          {
+            "tcId": 107,
+            "msg": "3c552433ed3959ae35e0fc3575566350",
+            "customization": "cf5d7d1d5f798403e5922ef28f45d5"
+          },
+          {
+            "tcId": 108,
+            "msg": "a265d9dc787cd393d0381e51e56e6b09",
+            "customization": "a1db8bd833422701b280d835fabd27"
+          },
+          {
+            "tcId": 109,
+            "msg": "f1500c4bb1767f45f0885f15951bcc0d",
+            "customization": "a095311d74c9b77ee00d081f82b5d0"
+          },
+          {
+            "tcId": 110,
+            "msg": "439721175001a34c65c1264750f41382",
+            "customization": "56f2825a095418d6fa5f50ce1471d1"
+          }
+        ]
+      },
+      {
+        "tgId": 8,
+        "testType": "AFT",
+        "msgLen": 128,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 111,
+            "msg": "dafafb308633635fff2dc7886c7e75bb",
+            "customization": "146d1eb3a9ecf0b534f3b6b5b97c52"
+          },
+          {
+            "tcId": 112,
+            "msg": "645d4ff2bed3c89428396029a748c038",
+            "customization": "7e31886c0f627f84e1fe1b1e35923b"
+          },
+          {
+            "tcId": 113,
+            "msg": "c3f0cd5fd33e0c4175feffd7804cb36e",
+            "customization": "4147fe792014d9004f664a0c537dec"
+          },
+          {
+            "tcId": 114,
+            "msg": "5b6efa30dffdfd264880863a48f3d8c5",
+            "customization": "9332dc61c09e535851d8034d4761dd"
+          },
+          {
+            "tcId": 115,
+            "msg": "357d0d369118719786e57dd323bd734f",
+            "customization": "6ac2db9e8e6ab0031ee21131e20cf6"
+          }
+        ]
+      },
+      {
+        "tgId": 9,
+        "testType": "AFT",
+        "msgLen": 128,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 116,
+            "msg": "b0529f75e6f547a40c053f8b2e2f814b",
+            "customization": "9e893fbd19f70b6a51fe6fd7888730"
+          },
+          {
+            "tcId": 117,
+            "msg": "3caab2f95502b1af8e269343e655adea",
+            "customization": "4843c2bfe08d983a05b54041326e76"
+          },
+          {
+            "tcId": 118,
+            "msg": "48e9d93b9e7611794ad6e2d995166049",
+            "customization": "1d7b71e6a5f22849c00962a64d204b"
+          },
+          {
+            "tcId": 119,
+            "msg": "483257059b02560f9dbfabc88f73f16e",
+            "customization": "ed7d01493371b92316bb6f06712a8a"
+          },
+          {
+            "tcId": 120,
+            "msg": "83e49d050e2fba9cad8f2d2a35027b97",
+            "customization": "f33ebd3510f5299b7652bfb302158f"
+          }
+        ]
+      },
+      {
+        "tgId": 10,
+        "testType": "AFT",
+        "msgLen": 1088,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 121,
+            "msg": "d588101ef8bc9328ea86b2cf4042ea76a37f65c368d47fb170a40056ae51a2fdcad0143b535963a2e748cfc8a52cee9d2cfac7e34707163abe5dc3198e94aa5d730e7c561e2c5197e43e7e7aeaccff8eb8b19541b05eddafb26cda14ae7e3d03141f1c5a6e53e55cc090fb6e0c5da584999b69e494f37736446d2e022948a0cb704b856b16dc6ea0",
+            "customization": "7f5ee278c0b1f3c0d60ecfc809c877"
+          },
+          {
+            "tcId": 122,
+            "msg": "8c9cae0dc73aa3f313b6a9f4b9263886b9ee2fd2eff671769b5ac185a648a9fae5eac4ef34640b3866bef4cb9fdd74d7def6196a7c13257d53aec650d976c1dc18c89eca58d0c2ed42d196414cdfbee8e9db59cb300193465b0d774624389b10ea5927a418981c040d1efb98768843b428e4a3a0228a52473aef9ed0a53bd6b321ccf99960bca16e",
+            "customization": "6c137f32be29068b65d219eee2ce10"
+          },
+          {
+            "tcId": 123,
+            "msg": "b4e23f285d9bc677c2c4c593423207b28a632630a267595076bc6512cb84c45109c2a880962e154fd430dc5751e9027ae25e527ba1a2d029a3bb02d813d1e883b58bebd73a07644f983bc0a3b4c2124f629dbb7641aab0e2afee064a7f3e29853bf7dc214776a0b4c14f379e8de2a705dacc86ba5f6db902241e3000bf0fa0ba2cc030386868b950",
+            "customization": "71f948114218910fc7b9c73f0c3307"
+          },
+          {
+            "tcId": 124,
+            "msg": "102cd50d66a05da57a75c757bcb9c9acdea3f2c8c0dbd08b66584a8938155553cd6e30a95c49aa97eabf4881cafed4ead2521b156b2cb3f7f6d84aa8005d02f75cc6f8ffebae16165a8813251de4220d6408017dc2c52d11c2fa1cc35f3e22f7447fd29c004674e5c51528dbc36355ddfbf30a3eea3998031c69e5b21c59a9579f3eaba3ff4cd70a",
+            "customization": "6d1c50f8b8cb4c9efdec8a432e02b3"
+          },
+          {
+            "tcId": 125,
+            "msg": "955dd20b7676c20d09eb7796ef7cccb45b84985309833294e3eb1042ccaab11395d34ea444d569c25319df826748af156398012f792739c2d3d4545b9f968eb69d0953594173ad40581ad1eb09d66cc75aafc6368121b7ab4e949a3865bcd7ad97be1f2aa78506dc032ffbf25d7ea8fc21c2df98a98dcf5ce82a2b9bdd4ef7168a80be69c35f05d4",
+            "customization": "f33ab845b5250e3bc687f6d48f4850"
+          }
+        ]
+      },
+      {
+        "tgId": 11,
+        "testType": "AFT",
+        "msgLen": 1088,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 126,
+            "msg": "39f618781b63563e8652530dd2932c2e76a63781ba9ce7add42155230bb67f800a6ea2dfcc97e66660b319d8e5f737f66662e77cb4e98d99abdfffd12830dd32ac7b3e1254d445ee1539a6f44bcb802401fd6f5bebdfd1b914f5d08fc9d56db9f10bd1b06cacf727d888c4370b7a11da08335bffc94f68c37f61ba6f85037619c94be428965e4288",
+            "customization": "76ffa3598ac89ed160885bab07bf62"
+          },
+          {
+            "tcId": 127,
+            "msg": "dead0c94962462e88e0da140ede1e9cab76ef078b3ff8b3957acf29dbd5cd833e5c058ccf32829e8a72451856333d1a623ed615e09d299f74e127fe1c109a59fdd87644249d7bdac55cc45cc4ff72d497c44e6a47f16017322e9ab9bdee6765b89d5002f676b63a148fdb8bd4605cf1836a42d61693f519a827e50c02be648cb731c077e086be7f1",
+            "customization": "63ffa18fb02d59112bf1ed84d9c5bc"
+          },
+          {
+            "tcId": 128,
+            "msg": "ef6d01166485382c749ecba372af7b616a57933318217892a91e58551ee428b8355ccd7110f4e9d6c7099774059be49e1c4b892f42f0b88f79819cfe980393da57c21c7d746984f3684b0bd7dca5292cfd1da5f7958d99effbe3e6601732ff5595ab1f0ed2294eb199929f742e09620e1ce4a8c4a77614b241638aab7f8ff36b9fbceb4854372be1",
+            "customization": "a821b951f709ff991cd1914b19180a"
+          },
+          {
+            "tcId": 129,
+            "msg": "cbd1dc17f97e27201a013670495aa9358d76147c0c707a3a044ff54b2f6713a4949a19d2aecf862d33d86c38259ec69dc0daf27de0d2beb3b95d67dbb6f5ec2e1cfc18ff31b19dfc75e0bbe9c09b387f3ff07a971c556879498bc2d67d3c43ecbbec8326397ba7fe03520eb3dacaf0d8de443790b1df8e3b993367a4dd20130719423d70a98f073d",
+            "customization": "388c18ae4b59d008fbf33907724a69"
+          },
+          {
+            "tcId": 130,
+            "msg": "7224216b33c4413f886bd0412eaf77928021b18bbd444f7e5f0867aee842acbdf61439fd09c1d95700cc56ba01b14ccacab71ce47ab31aef64001158919831bd7408014e026bcff6ef2bcf9a165fd8e466b3959b42502174e1be3e30cabe35808589dadf3262a5e027e0027be5a3c05251e7733986598b321ba7bca4aca97e3d603934ae244099e1",
+            "customization": "9c3034accd02f41aacfa29348e11ed"
+          }
+        ]
+      },
+      {
+        "tgId": 12,
+        "testType": "AFT",
+        "msgLen": 1088,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 131,
+            "msg": "b5094adc1a0028a106df03cf40f8fe18521773a0c5de414a865e2775337de88adb8fabb400e8bd3018b3def67a9097c32e3b82b3cc31411c7a34c9dbfb1aca3524940f7f06ccefc324e4cd606d9afe99917bd00d8c7d60419ec77ebc4a39762355cc5b192665650bd15484aaadcb19c0ba7e8b0cdd73f1044689ca5ef0b5f2d739dbe29e006b7446",
+            "customization": "3081323e3fee25910596d97c2494f9"
+          },
+          {
+            "tcId": 132,
+            "msg": "7b269d92cd79be49a39d7513e1868db6d743d1ef7569df052cd4a73f35ace7ea67d9f0bb9d5c67f24bca5f978528d6d393eb7259bc88b2adce5c8ab07ff7b04b32c1ce6789913d26a4114c032b1175addadcdef86c6b39f85bd82db9c2790d2780d51b033fff9aba60bde7c6c3ec9bbd903122d56a8734dc8ae2b8a4a68d4b688d3f273a4801b66d",
+            "customization": "05a289be1507df8269be1af0ced187"
+          },
+          {
+            "tcId": 133,
+            "msg": "9faf3669bdca73f7b4f91ef58043702a1a1919903b3ef45cfb2d8aa57c9decb9d1bb58f6dff004aa5fa74c5b57413f691d311f4e15d9bc12cc16ac19014afab4b3814faf40b0b402563955caf705edf4664edf4f8874743226df2105a4a761a509dddeb77810cac996840355af0a5645f4f269d950dfbb6d26dafbc11d95ec597b38baab39ded12d",
+            "customization": "ef66b16e0edac1f51ef87c7cde87e0"
+          },
+          {
+            "tcId": 134,
+            "msg": "d9ed951beeef3a284f61faaa77b877ecd37e28dc31b3cf83bf0119aa6eca104af9e56f6ed44b233d49bc974f0c90ed15801f2691878a5e26e8c66cb3457f401b84dde029ad8b76060c48f7d1396bf561b97680fe6050fc329d3eab36407ba0f47dc733a740543dca2d90752f2dcace13569193bcaabe9ab0ae6fb3e703441bc436de6e3574fa185f",
+            "customization": "c7b3f5f6fba63144e0460ad7e2488f"
+          },
+          {
+            "tcId": 135,
+            "msg": "c849438c246d4c0a896fd1ab93d505c5114571e89e7cc12d0ff0c0a0bdf7a9425bf42c8a8e79b71dab024b87dcf3c53c2ae25de27a5cf569c93ea00b58da7c8a725addec42152e31d6dc8acd3f04fc2948c32f055e92c9aaf64609aaf6624a69a5fca7c24d9e382fd4fa09ac2942bc1b8cd516220ae2d804a777b613151bfaadb0e94b911449f427",
+            "customization": "909567ba7a410aa0e506665768bfca"
+          }
+        ]
+      },
+      {
+        "tgId": 13,
+        "testType": "AFT",
+        "msgLen": 2048,
+        "macLen": 128,
+        "tests": [
+          {
+            "tcId": 136,
+            "msg": "d6ba13f139386d9e3f0e8c5d0209ec5e13358cf3e64442fe259082d6c0be35f04ff8534ddd1fe6ce295a427bb63aa031f3e587ae9f9895ee6ce004c6423d13ba2de1edf360c8558555222746abbfd4fb02569fe74b5797e45b7d0ac92c8551624d7f4c38b0af9fad150bc58e5d3b2007b722e24aba2536143cc51a0dea5c96b4ecc540c6adcfaf5e4c0ef5c15f922008fc4497c8158b06b37882c56c7c8bee643fd54ff1a24481bd321d6c5308283e2bb9351e32544dba225adaa42ef101c5646ee7b1f1e1434f79f6dbac1326f4af96ebbeb9e827faf39f3d63b040edbb6545e4eea38f57abfdd6f835804f2af829b676ba1d113599c007eb8464f032fdaaa4",
+            "customization": "ddf4c5715018a576176b59e8d63905"
+          },
+          {
+            "tcId": 137,
+            "msg": "a8b29b37a798f13f0183947e316b16e2dd9385d87414a75f876cf521463d4d819efd5e21f0c9dc189f61a478ffdbeee6df21590a7186a74ffc9341a4d2576d5444db9fbd6e1a663f30fab8024158b455dae8aa0741705433847adcad439d35f4273441a13b6a6bb4ede5b1767a2a9c5201ec59c07f820dd112b88e4f091befd234eef7fc74383b7ad731ddbc5e0dcdf70ebaacee8de062dc4a63ecf51109a1d5af0d6d5d7cdae37f86a6c884cf5fe38e5e15ac4a8a3c4a009794bb94cc313e113c46e73a4a90611ea778e60227ce656da1efd4ce7d21e6f301b1a3873fadd2d2b76f900f4e15ec6103528080fdd7a5bfb0eae3f3d52b7f75afc0e2ea2bfde87a",
+            "customization": "56e56c4bcaed70748f91408697bd64"
+          },
+          {
+            "tcId": 138,
+            "msg": "395a38bb671e950a8bf2c8a53c6f4c092d3b068c92a83edd3f0038a0c5dc19f3d9b389d551152167187ba1312ef81541a6bf07c3ff2b72597b4a37355f8d2f5ada56920dcf5a950abe56dd40cc14fe986a5963d07149b5164e46a1a55e5700711169cece3914025111b985da6213efd7e402cdeec885db48ebecaa75bcde840483d1dcee9fc8cccf959ed7a0fe9eb7137dd1108dd245d8c9893837a5315ea9d11e72031925bdaec4adb7f87bf36631324f4bdf73a29f571de786f32d1b4ea55bbaef1a6de16d2892fc194f7cd62520cfc512d963c5a0942d7d0af06e444eafa4a323f4c2cf3c0ddc5a40b7abaa2ac0a8c419b7d78244837a7db6943481aec140",
+            "customization": "95fadf894e4c1e150a38b5f2f19a67"
+          },
+          {
+            "tcId": 139,
+            "msg": "2b704eaa09b9d4cfabd168852250f9eb0ef578d0655a96a5f413b9fc029ca08070667f549cbf532b4cedb54d07ed89b4ead4af8fec5c6462b3898b06a6b9390cad50d19c5f92c3ed8d5952c911c037156475cb17a9529f069a489e4a0799fdae6e9201f1b88d55d2837bc4d832a7d2428a900c1a195bab3e9038e31961497111d65f82953f0b9545aede6d7716ecece3f9464d21cda7ce710b9d6dee6fb2018df8e74d411365a14e74cdb6fe0f1654b85f685ec1839959962425def5d54d690c3325abafeae67ee1084bf19ac87957245d6925c9865404aff97c3c5c68be7a0e984bc98ab2d1cab7b4f80b21f80c8da67e638bb925dfa58d651f12961392c435",
+            "customization": "d4a5453f2781f978928d44064fe898"
+          },
+          {
+            "tcId": 140,
+            "msg": "6566fb2becacc2b8afad17659ab45ffe046b4f2b63bb2a63b428b7f5e84e1b9c553d6df14dce57b9efc86156bd26322add431f516673ee345f071c208e97fd715b4cc7ce8417d20f199c60160acf9e80bf859ddab1f37ee5fd5c60fbf104e9f657a208e19206fdcbaf8fdb319ad1b5a38d2d35160b9604044657dd0fcce8b60bfbd4bbf7ff2475b7ff3078548735c352b695aa87982733a1ae72ec6d430dbae9a81f9eeefa6ff7869f9dcfc923f8958602b946b82499814caca8e1cf87e15fe69811205ed7e5b74b5002455255206b053a101221a1b05483ae8ea64e43a036a09bc3ab951ccb9171b4dc82cba7a1d1b5f0d846345df2c73ec7d64d7ab4ba90a1",
+            "customization": "366cea2ba3a37d821afb133c311342"
+          }
+        ]
+      },
+      {
+        "tgId": 14,
+        "testType": "AFT",
+        "msgLen": 2048,
+        "macLen": 256,
+        "tests": [
+          {
+            "tcId": 141,
+            "msg": "2dcd5396314cf98716d5ea0b5120748628c5dae0494df744aad9411d6b32a00dc75a3e6e65bfbe93623d18d61f8ebfa96860db3614ac792c4bf3d3ea45cc70eab7b8fe3a8feeaba9c6c971a5b8bf3504d902478fc2749917c9616af8acea8aa84cc60fdd3778e9f658d88de340c3b0a97e70d76a7f7c0c2223284bb8f1595e21297a5a6d145fa394047c0f7aa9e39ffe493ad60ef0ea195a921e915eb0e20799d2561d9ac8c8fdb68c04509bcd91526b8d43f819efe836c53a181d1ff2d2a963522e48617ff95f73f5aa33b550c2192078c4e398a8dc719b56563906e6704ecf3bd730f289f13a2ff6b7adf43608fc8dd669432e329d25b347176731fb0d0284",
+            "customization": "badd895c0923b87460e0c44ff309e7"
+          },
+          {
+            "tcId": 142,
+            "msg": "4091c7322ba67e02489e5f6072c99dcb25c69f7aa2f9b2ea38ea2607d6fd43e4ec7be7c750b279df829107faa815a07f4752263f1b5ce81165296260ddeb16e98ac8a7235917fe42a9e8c30daa0b07670fead0a656d3763acb2a56f3d1d3ec654ac6750e6b4c78dd4eb79e71b1a871453fc8d7df584bd4654051a348e418bb432fa8bb4299dfdf5b33d16ceeadccf8b26a297fb953190ed7f6549bd6db4c01c5b37396bd65dc212f9c608cc63f3f6d0f1332d1cba54d6700f53a58b70612faf23932b7dde468511f3157fa380d128c50e0d698b7f9a4a6dd407b74647324ae5715d17490da3ad8c5be5c992cf1e9e7a7c65ceb3bc483f3aa083ec95d3cad3325",
+            "customization": "aa72cfc338a6112b13eb52adfef485"
+          },
+          {
+            "tcId": 143,
+            "msg": "66905b7dd526f948dfe3b8584891111956edad5e3189990a0d4eed66036595379501a649087866904f4117fac221819286b024746d10eb180b619e830c2d3adb62133a83200bd219c1fcf3db0b670301a7948a4f96f88615cc5a312853d94891c3a784b335e25ca5b76428e7f391b1d16bd4cbfe767dbeaa52d147972a4a74af82895600259843b34e9fe754a37b35801e0b172440c8a6fcba794922712847e07cfb1650fc08cd4345f5bd611cfbcfe7dd57119fd4a274fd92f6a9ecbcc8a15e41c0c8399b10d9cfbf1de1766f8890355b5bad552466555e59464499947b669945b9c0dbe5b4e960b7eac90ee1346b7e8c3cbdfe6c8471343c7dae027d979ae7",
+            "customization": "efd8a027563977ee4ae556d0dd7cb5"
+          },
+          {
+            "tcId": 144,
+            "msg": "5282ef1c73fdcfd8c30678829a5f53c0cea259a7cadfd09d1b0a06dfb38b19e3073b2de042a0087f24021a201176461a3c5d8a54a2c21336a48f373791115b06abdca1e299fd4250c1ad26eb482ff213dcc5e6516a95a02d14d8626d83b841896faf0a576d824a6576bc554eb3b5d57e54830993dd8d71e0a9ad52b72b193104ebf7b3f28ce04c58980add673f2bca370d97ffbea882db0572e8d30df6a6b9e38a2431a235c30eb994675c7cba12f254526b45bd98209e8b2dfb3f7319538e1657b94ba92c414686f231098e7d6fe219e21b2d0343bdce3561d07082813ec380cfcc695cf5b76f1598b90664e01d2e9844a283adf49495ff6999f753e83a3856",
+            "customization": "b9ce481614599afbf84370f2244e46"
+          },
+          {
+            "tcId": 145,
+            "msg": "93269485fcec198444252d38363b133c4aa47426abf47e51eb7ebcb64acdaab21b34761da20d2d6fae0693799ae0a219275364018daed327fb8b00591a7b39053bc2f0c3678b096e05706a09b72421cd5147c0f390713006429f7cf391bb2770bd14a744fb1ac78fec67ab17b687535b4e5ac16d9dc9c980b03c2b7e9121153178582d67c9a377c514537a28401e48df42a7467c2ae32dbed3590eac0c4b39e94120c145f9f1c7fa201eb7122e832966a9de7b325c914abe8db6736b8aa36d16d88c70b5d20f7eb88ce04a883b383621094ed34268a7c5bafc409858ee9a3cdc62d96a4d0f9e3d036d7b77ba85a174978f3ed340c1044e5a05bddbc6250cba5e",
+            "customization": "23ffe8ceb9184ad3a7918b488ce36f"
+          }
+        ]
+      },
+      {
+        "tgId": 15,
+        "testType": "AFT",
+        "msgLen": 2048,
+        "macLen": 512,
+        "tests": [
+          {
+            "tcId": 146,
+            "msg": "811ee819c5d74fef93276f0f15245224d1ab50b582afffe7023706175e78bcd38233422bd99d21b614086bb1d8ff9a45b1a92ee4eb813921983568bf7de2a5533e796988907db87dc95170ac37469aa994e1776596d221d80285546a2f1639de9ffa36ae8786f7aa59836013c0e88f0817f0059120958e766cab34fc2852b9cc82dd39ac208ba016d34066355e2e23803e76a1c0f8ef43162c7c78318d4ccb2d67baeb21da39f5a7c56ea08c8d4257d9327151081a177b0c51a2759c51d2147a1e45334e311ed2c25b83cbf74566897b330faf46342f6aa9df7913be2a07311ddc4b9fc68fcfea7ab9a8de89614c5702e99eed49db4142b38787c7b3e03eac05",
+            "customization": "617d41d1330e717bd7ccbac78070fa"
+          },
+          {
+            "tcId": 147,
+            "msg": "5d5beb629734eff96a4f78765cdc06e10c78d2f4e61158c25b3eca6d0069a91373ed4addc135219f01408554881fc38400495e304b00c2f6510fa266c6d0334050b4d788bae6d18c4c4ac4f919cab6de3c9286709f309215ff22fb2ffb805c2c63c168e7e4b01dd1caadd311764383d4dd42446f9c79d3e0b063a5cb718df6408dd0123e523465241c44241ec831e73f05756632dfb4265accb55339ffb8897e59dc0598b0515ade31bbc8f4e3560ebeee341022bb59526981923ba4d2d97c5ede793b65f1c810e4e7f73cbb8def5067d850405599d6440b89c63ea05b1d7c4610c926291f73513ed56f5913d89067b1b1dbb31270a6ba2722001c4c413dd588",
+            "customization": "227d4e80f689380783a064264436f6"
+          },
+          {
+            "tcId": 148,
+            "msg": "78669333f91d7056bc4a754fdb8c765b4253e598a5ce58a4f0fc0f3de816648f02b2535b8aade21db230aa5bf01486f629ee193049a101825df6114a169051c9b5c1de3b96d2fdaa6b89494586c533201da3ac8ed057b1e9cffb6f401d7dfe1277bab8f5c55b871ae7cf037a4c002d9359c8e25fafe98a4288a1d062217c3900ba8e9855ac2fc6455f90e3e15e1f904904e76aa7eb9fccb7ea845192ea8bd635fab36bcc4ea66cbcc7fb1feb019934020779b8d5e7056ef8b1446489b939791b3afa8681760c0304c3bbd5667eaf82cd3641320826c42eab5f18694ffc7ca49b9b53a314f30fd91ecfb425d7df1f6cd56fbdef965264ab0723fd488f220ad1de",
+            "customization": "cf6809b76bef77dde2654469e80fcb"
+          },
+          {
+            "tcId": 149,
+            "msg": "3ac0f11f95127570acf7df04af7046953b2b319811254a5fe6deb32e6e6eea29afccbf62fe749cab8f4dfe415ae77738251118c43d875ada2c3776fce4b5ac685caba799fc9841415ef29d93022b4123dae5bd30e4a96e6f95bddd5f14e4a0eb89f40f7f82f2d3f9268d3545dc7ae8f20e3375089ac7967ad9676e7c5356681422301ef06cc233b0b54ece543b27bf33a325e69e6f0817233b106c9f42696334eff89787e76a030608b2d66e5122f9758c588d127815964f9bf849b45d33604111a75b9804b3dfe962ee66156971e061a715fc8d491cb173e3abe6dcbc1b5c285cf3fb4bfabdc8f6b6d6914376b32303b8b3bd2629f845b4b4df5d1c4c880366",
+            "customization": "3eec11538d50a80e90ce3c95c72e29"
+          },
+          {
+            "tcId": 150,
+            "msg": "0ca329d7f8bc1a062243fe4349e246d08d34442b3b36df0657510a3aaf967305965f0635bd2f9983e3ae1385e32a61fee8fe958a8cb415a71352446392411322ad02244fa0b921eb87ab033ea676cc72f3c1c51fabcf5c6091a9dfc3bfa8a5ac77d81abc1f229e6481ddfd6f98283add6a9064f3cfbfc45df0296c3a3212032d863dcb634d29cee7bb86bbbcf523a3aeb36954d4bbb3f0e41a9a82bf3a085a7b5e5e40b6088e5d7ff8dbe04a6f30ae36508dbc39bac07eb6cd7a1c055b81e50a509de79a0e3b195b71889d5a91e3ada859c6aa065f3017034a2d21dbdf4fd2712d89a5f67e9f8706f3386a34cab6567576dd1dc69e3e0507a0b2a96adaf53e45",
+            "customization": "af8a1946bedf9ef3d5f72a22a1de25"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -72,7 +72,7 @@ rom_error_t boot_log_check(const boot_log_t *boot_log) {
 }
 
 void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
-                            const chip_info_t *info) {
+                            const build_info_t *info) {
   rom_error_t error = boot_log_check(boot_log);
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);

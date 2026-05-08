@@ -131,13 +131,130 @@ The code snippet below shows how to perform block operation.
 
 ```
 
+## Galois/Counter Mode (GCM)
+
+GCM is a mode of Authenticated Encryption with Additional Data (AEAD) specified in [NIST 800-38D](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf) and widely adopted in industry.
+At a high level, GCM builds on top of the ECB and CTR block cipher modes of operation as well as a Galois Field GF(2^128) multiplication for the integrity tag computation (GHASH).
+The AES unit follows a hybrid implementation approach where software cycles the AES hardware unit through the different phases of GCM.
+To support context switching similar to the other AES block cipher modes of operation which only require reading the IV registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv), software can switch the AES unit into special phases for saving and restoring also GHASH contexts.
+How to cycle the hardware through the different GCM phases and how to save and restore full GCM contexts is explained in detail below.
+
+Additional notes:
+- This implementation uses a fixed IV length of 96 bits, thereby following the recommendation of [NIST 800-38D (Section 5.2.1.1)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf).
+- This implementation uses a fixed tag length of 128 bits.
+  Software is free to discard unused bits.
+
+### GCM Encryption
+
+To perform an GCM encryption, software performs the following steps:
+
+1. Software configures the AES unit in GCM mode by setting the [`CTRL_SHADOWED.MODE`](registers.md#ctrl_shadowed) field to `AES_GCM` and the `OPERATION` field to `AES_ENC`.
+   Writing this register clears internal counters and tracking logic and starts a new message.
+   Software then sets [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_INIT` and the `NUM_VALID_BYTES` field to `16`.
+   Internally, this configures the AES block in ECB mode.
+   After configuring the encryption key, software writes the 96-bit IV to the IV registers [`IV_0`](registers.md#iv) - [`IV_2`](registers.md#iv) and `0` to IV register [`IV_3`](registers.md#iv).
+   The hardware will then perform two operations:
+   1. It encrypts the all-zero vector and stores the result in the hash subkey `H` registers internal to the GHASH module and increments the counter value (content of the IV Registers) using the inc32 function.
+   1. It encrypts the incremented IV to form the encrypted initial counter block `S` and loads that the GHASH module.
+      The counter value is again incremented using the inc32 function.
+
+   Note that when running in manual mode, software must explicitly trigger both these operations by setting the START bit in [`TRIGGER`](registers.md#trigger) to `1`, waiting for the AES unit to become idle, and then again setting the START bit.
+
+1. Software configures [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_AAD` and the `NUM_VALID_BYTES` field to `16`.
+   This configures the module internally to forward any input provided via the Input Data registers [`DATA_IN_0`](registers.md#data_in) - [`DATA_IN_3`](registers.md#data_in) to the GHASH unit but NOT to the AES cipher core. Software then inputs the additional authenticated data (AAD) to the Input Data registers block by block.
+   To see if the AES unit is ready to accept the next block, software can query the [`STATUS.INPUT_READY`](registers.md#status) bit.
+
+   For the last block and only in case the block is not full, software first waits for the AES unit to become idle by querying the [`STATUS.IDLE`](registers.md#status) bit, and then sets the [`CTRL_GCM_SHADOWED.NUM_VALID_BYTES`](registers.md#ctrl_gcm_shadowed) field to the number of valid bytes.
+   For all other blocks, this field must hold the value `16`.
+   Internally, invalid bytes are tied to zero at the input of the GHASH module.
+
+1. Software configures [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_TEXT` and the `NUM_VALID_BYTES` field to `16`.
+   This configures the module internally to run in CTR mode: Any input provided via the Input Data registers [`DATA_IN_0`](registers.md#data_in) - [`DATA_IN_3`](registers.md#data_in) is XORed to the output of the AES cipher core and then fed to the input of the GHASH module as well as to the Output Data registers [`DATA_OUT_0`](registers.md#data_out) - [`DATA_OUT_3`](registers.md#data_out).
+   Software provides the plaintext to the Input Data registers block by block.
+   Note that for maximum performance, the AES unit supports having 3 data blocks in flight:
+   1. One in the Input Data registers waiting to get loaded into the cipher core,
+   2. one being processed by the core, and
+   3. one in the Output Data registers waiting to get read by software.
+
+   For details, refer to the [Block Operation section above](#block-operation).
+   To see if the module is ready to accept the next block, software can query the [`STATUS.INPUT_READY`](registers.md#status) bit.
+   Software reads the ciphertext from the Output Data registers.
+   To see if the module has valid output data, software can query the [`STATUS.OUTPUT_VALID`](registers.md#status) bit.
+
+   For the last block and only in case the block is not full, software first waits for the AES unit to become idle by querying the [`STATUS.IDLE`](registers.md#status) bit, and then sets the [`CTRL_GCM_SHADOWED.NUM_VALID_BYTES`](registers.md#ctrl_gcm_shadowed) field to the number of valid bytes.
+   For all other blocks, this field must hold the value `16`.
+   Internally, invalid bytes are tied to zero at the input of the GHASH module.
+
+1. Software configures [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_TAG` and the `NUM_VALID_BYTES` field to `16`.
+   This configures the module internally to forward any input provided via the Input Data registers [`DATA_IN_0`](registers.md#data_in) - [`DATA_IN_3`](registers.md#data_in) to the GHASH module but NOT to the AES cipher core.
+   Software then provides a single data block of 128 bits containing the length of the AAD as well as the length of the ciphertext.
+   This causes the GHASH module to produce the final authentication tag which is then written to the Output Data registers [`DATA_OUT_0`](registers.md#data_out) - [`DATA_OUT_3`](registers.md#data_out).
+
+### GCM Decryption
+
+To perform an GCM decryption, software performs the following steps:
+
+1. Software configures the AES unit in GCM mode by setting the [`CTRL_SHADOWED.MODE`](registers.md#ctrl_shadowed) field to `AES_GCM` and the `OPERATION` field to `AES_DEC`.
+   The rest of this step is identical to the encryption case.
+
+1. This step is identical to the encryption case.
+
+1. This step is identical to the encryption case.
+   The only difference is that internally to the AES unit, the content of the Input Data registers, i.e., the ciphertext, is fed to the AES cipher core as well as to the GHASH module via the register holding the previous input data.
+
+1. This step is identical to the encryption case.
+   Software reads the final authentication tag from the Output Data registers [`DATA_OUT_0`](registers.md#data_out) - [`DATA_OUT_3`](registers.md#data_out) and compares the obtained value against the expected tag.
+
+### GCM Context Saving
+
+Interrupting an ongoing encryption/decryption operation is only possible in Step 2 or 3 (AAD or plaintext/ciphertext processing) and only after having processed a first AAD or plaintext/ciphertext block.
+
+1. Software needs to wait for the AES unit to become idle (see [`STATUS.IDLE`](registers.md#status)).
+
+1. Software configures the [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_SAVE` and the `NUM_VALID_BYTES` field to `16`.
+   Software should check the [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) field.
+   If it does not read as `GCM_TAG`, the previous write operation did not go through, e.g., because moving to this phase is only possible after having processed a first AAD or plaintext/ciphertext block.
+   If it reads as `GCM_TAG`, this means the AES unit outputs the current state of the GHASH module via Output Data registers [`DATA_OUT_0`](registers.md#data_out) - [`DATA_OUT_3`](registers.md#data_out) where software can read it.
+
+1. Software reads the current content of the IV registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv).
+
+### GCM Context Restoring
+
+To restore a context, software must perform the following steps:
+
+1. Software configures the AES unit in GCM mode by setting the [`CTRL_SHADOWED.MODE`](registers.md#ctrl_shadowed) field to `AES_GCM` and the `OPERATION` field to `AES_ENC`/`AES_DEC`.
+   Writing this register clears internal counters and tracking logic and starts a new message.
+   Software then sets [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_INIT` and the `NUM_VALID_BYTES` field to `16`.
+   Internally, this configures the AES block in ECB mode.
+   After configuring the encryption key, software writes the 96-bit IV to the IV registers [`IV_0`](registers.md#iv) - [`IV_2`](registers.md#iv) and `0` to IV register [`IV_3`](registers.md#iv).
+   The hardware will then perform two operations:
+   1. It encrypts the all-zero vector and stores the result in the hash subkey `H` registers internal to the GHASH module and increment the counter value (content of the IV Registers) using the inc32 function.
+   1. It encrypts the incremented IV to form the encrypted initial counter block `S` and loads that the GHASH module.
+      The counter value is again incremented using the inc32 function.
+
+   Note that when running in manual mode, software must explicitly trigger both these operations by setting the START bit in [`TRIGGER`](registers.md#trigger) to `1`, waiting for the AES unit to become idle, and then again setting the START bit.
+
+   Software then waits for the AES unit to become idle again (see [`STATUS.IDLE`](registers.md#status)).
+   The hardware is now ready to restore a previously saved GCM context.
+
+1. Software configures [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_RESTORE` and the `NUM_VALID_BYTES` field to `16`.
+   Internally, this configures the AES unit to restore the internal state of the GHASH module based on the content of the Input Data registers [`DATA_IN_0`](registers.md#data_in) - [`DATA_IN_3`](registers.md#data_in).
+   Software provides the previously saved GHASH context to the Input Data registers.
+   Then, it waits for the AES unit to become idle again (see [`STATUS.IDLE`](registers.md#status)).
+   Software writes the previously saved IV into the IV registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv).
+   Note that even though just the content of [`IV_3`](registers.md#iv) is really different from the value after the initialization, software must write all four IV registers.
+
+1. Software configures [`CTRL_GCM_SHADOWED.PHASE`](registers.md#ctrl_gcm_shadowed) to `GCM_AAD` or `GCM_TEXT` and the `NUM_VALID_BYTES` field to `16` to continue processing where it left off previously.
+
+Note that since both the masked hash subkey `H` and the masked encrypted initial counter block `S` are recomputed by the AES cipher core as part of the context restoring, the context switching feature can be leveraged to effectively refresh their sharing thereby injecting fresh entropy into the GHASH module.
 
 ## Padding
 
 For the AES unit to automatically start encryption/decryption of the next data block, software is required to always update all four Input Data registers [`DATA_IN_0`](registers.md#data_in) - [`DATA_IN_3`](registers.md#data_in) and read all four Output Data registers [`DATA_OUT_0`](registers.md#data_out) - [`DATA_OUT_3`](registers.md#data_out).
 This is also true if the AES unit is operated in OFB or CTR mode, i.e., if the plaintext/ciphertext not necessarily needs to be a multiple of the block size (for more details refer to Appendix A of [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
+The same also holds for the last AAD or plaintext/ciphertext block in GCM.
 
-In the case that the plaintext/ciphertext is not a multiple of the block size and the AES unit is operated in OFB or CTR mode, software can employ any form of padding for the input data of the last message block as the padding bits do not have an effect on the actual message bits.
+In the case that the AAD or plaintext/ciphertext is not a multiple of the block size and the AES unit is operated in OFB or CTR mode or in GCM, software can employ any form of padding for the input data of the last block as the padding bits do not have an effect on the actual message bits or the final authentication tag in case of GCM.
 It is recommended that software discards the padding bits after reading the output data.
 
 

@@ -42,7 +42,6 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
 
     wait_for_rom_and_active();
     check_reset_status('0);
-    $assertoff(0, "tb.dut.u_cdc.u_clr_reqack.SyncReqAckHoldReq");
 
     for (int i = 0; i < num_of_target_states; ++i) begin
       `uvm_info(`gfn, $sformatf("Starting new round %0d", i), UVM_MEDIUM)
@@ -85,7 +84,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
               ), UVM_MEDIUM)
 
     `uvm_info(`gfn, "Trying to write to reset_en CSR", UVM_MEDIUM)
-    csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
+    csr_wr(.ptr(ral.reset_en.en_0), .value(resets_en));
     // This is necessary to propagate reset_en.
     wait_for_csr_to_propagate_to_slow_domain();
 

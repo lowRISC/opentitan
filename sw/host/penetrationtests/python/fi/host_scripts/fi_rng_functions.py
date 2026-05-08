@@ -74,19 +74,18 @@ def char_entropy_bias(target, iterations, reset = False):
     return response
 
 
-def char_fw_overwrite(target, iterations, disable_health_check):
+def char_fw_overwrite(target, iterations, disable_health_check, reset = False):
     rngfi = OTFIRng(target)
-
-    for _ in range(iterations):
+    if reset:
         target.reset_target()
         # Clear the output from the reset
         target.dump_all()
-
-        # Initialize our chip and catch its output
-        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            rngfi.init("char_fw_overwrite",
-                       alert_config=common_library.default_fpga_friendly_alert_config)
-        )
+    # Initialize our chip and catch its output
+    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
+        rngfi.init("char_fw_overwrite",
+                   alert_config=common_library.default_fpga_friendly_alert_config)
+    )
+    for _ in range(iterations):
         rngfi.rng_fw_overwrite(disable_health_check)
         response = target.read_response()
     return response

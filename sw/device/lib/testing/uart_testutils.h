@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "hw/top/dt/dt_uart.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"

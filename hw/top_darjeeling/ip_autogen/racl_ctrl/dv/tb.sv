@@ -16,12 +16,8 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // NOTE: These values come from the top-level instantiation. For now, we're fixing them to
-  // something reasonable, but we don't intend the testing to have an opinion about their values
-  //
-  // *These* values get passed through to the environment through the config db.
-  localparam int unsigned NumSubscribingIps = 5;
-  localparam int unsigned NumExternalSubscribingIps = 5;
+  localparam int unsigned NumSubscribingIps = 11;
+  localparam int unsigned NumExternalSubscribingIps = 1;
 
   wire clk, rst_n, rst_shadowed_n;
   wire intr_racl_error;
@@ -66,9 +62,14 @@ module tb;
   );
 
   initial begin
-    import racl_ctrl_env_pkg::racl_ctrl_env_wrapper_cfg;
+    import racl_ctrl_base_env_pkg::racl_ctrl_env_wrapper_cfg;
+    import racl_ctrl_env_pkg::racl_ctrl_env_cfg;
 
     automatic racl_ctrl_env_wrapper_cfg wrapper_cfg = new();
+
+    // Tell tests what type to use for the "cfg" variable.
+    uvm_config_db#(uvm_object_wrapper)::set(null, "*.env", "cfg_type",
+                                            racl_ctrl_env_cfg::get_type());
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

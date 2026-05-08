@@ -82,10 +82,8 @@ def render_operand_table(operands: List[Operand],
     return ''.join(parts)
 
 
-def render_encoding(mnemonic: str,
-                    encoding: Encoding,
-                    e2o: Dict[int, str]) -> str:
-    '''Generate a table displaying an instruction encoding'''
+def render_encoding_header() -> str:
+    '''Generate the encoding table header'''
     parts = []
     parts.append('<table style="font-size: 75%">')
     parts.append('<tr>')
@@ -93,6 +91,15 @@ def render_encoding(mnemonic: str,
     for bit in range(31, -1, -1):
         parts.append('<td>{}</td>'.format(bit))
     parts.append('</tr>')
+
+    return ''.join(parts)
+
+
+def render_encoding_row(mnemonic: str,
+                        encoding: Encoding,
+                        e2o: Dict[int, str]) -> str:
+    '''Generate a table row displaying the instruction encoding'''
+    parts = []
 
     # Build dictionary of bit ranges, keyed by the msb and with value a pair
     # (width, desc) where width is the width of the range in bits and desc is a
@@ -142,6 +149,22 @@ def render_encoding(mnemonic: str,
     assert next_bit == -1
     parts.append('</tr>')
 
+    return ''.join(parts)
+
+
+def render_encoding(mnemonic: str,
+                    encoding: Encoding,
+                    e2o: Dict[int, str]) -> str:
+    '''Generate a table displaying an instruction encoding'''
+    parts = []
+
+    # Generate table and header (all bits)
+    parts.append(render_encoding_header())
+
+    # Generate the effective encoding
+    parts.append(render_encoding_row(mnemonic, encoding, e2o))
+
+    # finish the HTML table
     parts.append('</table>\n\n')
     return ''.join(parts)
 
@@ -382,6 +405,49 @@ def render_insns(insns: InsnsFile,
             render_insn_group(group, impls, heading_level, group_file)
 
 
+def render_encoding_group(group: InsnGroup,
+                          impls: Dict[str, str],
+                          heading_level: int,
+                          out_file: TextIO) -> None:
+    '''Render all instruction encodings of a group as a table'''
+    # We don't print the group heading: that's done in the top-level
+    # documentation so it makes it into the TOC.
+
+    if not group.insns:
+        out_file.write('No instructions in group.\n\n')
+        return
+
+    out_file.write(render_encoding_header())
+
+    # For each instruction add its encoding row
+    for insn in group.insns:
+        is_pseudo = insn.literal_pseudo_op or insn.python_pseudo_op
+
+        # If we have an encoding, match up encoding fields with operands
+        if is_pseudo or insn.encoding is None:
+            e2o = None
+        else:
+            _, e2o = name_op_enc_fields(insn.name_to_operand, insn.encoding)
+        # Show encoding if we have one
+        if e2o is not None:
+            assert insn.encoding is not None
+            out_file.write(render_encoding_row(insn.mnemonic, insn.encoding, e2o))
+
+    # End the HTML table
+    out_file.write('</table>\n\n')
+
+
+def render_encodings(insns: InsnsFile,
+                     impls: Dict[str, str],
+                     heading_level: int,
+                     out_dir: str) -> None:
+    '''Render the instruction encoding of all instruction groups as separate tables'''
+    for group in insns.groups.groups:
+        group_path = os.path.join(out_dir, group.key + '_encoding.md')
+        with open(group_path, 'w') as group_file:
+            render_encoding_group(group, impls, heading_level, group_file)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('yaml_file')
@@ -404,6 +470,7 @@ def main() -> int:
               .format(args.out_dir, err))
 
     render_insns(insns, impls, 2, args.out_dir)
+    render_encodings(insns, impls, 2, args.out_dir)
     return 0
 
 

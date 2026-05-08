@@ -722,6 +722,32 @@ dif_result_t dif_alert_handler_get_class_state(
     dif_alert_handler_class_t alert_class,
     dif_alert_handler_class_state_t *state);
 
+/**
+ * Check whether an alert is currently enabled.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert The alert to check enablement for.
+ * @param[out] is_enabled Out-param for the enabled state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_alert_is_enabled(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    dif_toggle_t *is_enabled);
+
+/**
+ * Enable or disable a specific alert.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert The alert to set enablement for.
+ * @param[out] enabled The enablement state to set.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_alert_set_enabled(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert,
+    dif_toggle_t enabled);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

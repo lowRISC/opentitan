@@ -10,17 +10,17 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
@@ -29,14 +29,27 @@
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false, );
+// ATE Indicator GPIOs.
+static const dif_gpio_pin_t kGpioPinTestStart = 0;
+static const dif_gpio_pin_t kGpioPinTestDone = 1;
+static const dif_gpio_pin_t kGpioPinTestError = 2;
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
 
+OTTF_DEFINE_TEST_CONFIG(
+        .console.type = kOttfConsoleSpiDevice,
+        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.test_may_clobber = false, .silence_console_prints = true,
+        .console_tx_indicator.enable = true,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_gpio =
+            kGpioPinSpiConsoleTxReady);
+
+static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_gpio_t gpio;
+static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
-static dif_flash_ctrl_state_t flash_ctrl_state;
-static dif_lc_ctrl_t lc_ctrl;
 
 static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
 
@@ -47,12 +60,43 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
                       &pinmux));
+  return OK_STATUS();
+}
+
+/**
+ * Configure the ATE GPIO indicator pins.
+ */
+static status_t configure_ate_gpio_indicators(void) {
+  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+  // IOA0 / GPIO2 is for error reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+  // IOA1 / GPIO1 is for test done reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+  // IOA4 / GPIO0 is for test start reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+  TRY(dif_gpio_output_set_enabled_all(&gpio,
+                                      0x1f));       // Enable first 5 GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Intialize all to 0.
   return OK_STATUS();
 }
 
@@ -109,10 +153,12 @@ static status_t flash_info_page_0_read_and_validate(
 
   // Encode CP device ID.
   // HW origin portion of CP device.
-  // "0x00024001" encodes:
+  // "0x00034001" encodes:
   //   - a SiliconCreator ID of "0x4001" for "Nuvoton", and
-  //   - a Product ID of "0x0002" for Earlgrey A1 silicon.
-  console_out->cp_device_id[0] = 0x00024001u;
+  //   - a Product ID of "0x0003" for Earlgrey A2 silicon.
+  console_out->cp_device_id[0] = kCpDeviceId[0];
+  TRY_CHECK(kCpDeviceId[0] == 0x00034001u,
+            "Expected to find Earlgrey A2 hardware origin in CP device ID.");
   // Device Identification Number portion of CP device ID.
   uint32_t year = (lot_name >> 24) & 0xf;
   uint32_t week = (lot_name >> 16) & 0xff;
@@ -134,37 +180,16 @@ static status_t flash_info_page_0_read_and_validate(
 
 static status_t wafer_auth_secret_flash_info_page_write(
     manuf_cp_provisioning_data_t *console_in) {
-  uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
       kFlashInfoFieldWaferAuthSecret.bank,
       kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3WritePermissions,
-      &byte_address));
+      /*offset=*/NULL));
   TRY(manuf_flash_info_field_write(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret,
       console_in->wafer_auth_secret,
       kFlashInfoFieldWaferAuthSecretSizeIn32BitWords,
       /*erase_page_before_write=*/true));
-  return OK_STATUS();
-}
-
-static status_t print_inputs_to_console(
-    manuf_cp_provisioning_data_t *console_in) {
-  uint32_t high;
-  uint32_t low;
-
-  LOG_INFO("Test Unlock Token Hash:");
-  for (size_t i = 0; i < ARRAYSIZE(console_in->test_unlock_token_hash); ++i) {
-    high = console_in->test_unlock_token_hash[i] >> 32;
-    low = console_in->test_unlock_token_hash[i] & 0xffffffff;
-    LOG_INFO("0x%08x%08x", high, low);
-  }
-  LOG_INFO("Test Exit Token Hash:");
-  for (size_t i = 0; i < ARRAYSIZE(console_in->test_exit_token_hash); ++i) {
-    high = console_in->test_exit_token_hash[i] >> 32;
-    low = console_in->test_exit_token_hash[i] & 0xffffffff;
-    LOG_INFO("0x%08x%08x", high, low);
-  }
   return OK_STATUS();
 }
 
@@ -174,10 +199,11 @@ static status_t print_inputs_to_console(
 static status_t provision(ujson_t *uj,
                           manuf_cp_provisioning_data_out_t *console_out) {
   // Wait for input console data.
-  LOG_INFO("Waiting for CP provisioning data ...");
+  base_printf("Waiting for CP provisioning data ...\n");
   manuf_cp_provisioning_data_t console_in;
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_cp_provisioning_data_t(uj, &console_in));
-  TRY(print_inputs_to_console(&console_in));
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
   // Provision flash info page 3 (wafer authentication secret).
   TRY(wafer_auth_secret_flash_info_page_write(&console_in));
@@ -186,17 +212,18 @@ static status_t provision(ujson_t *uj,
   TRY(manuf_individualize_device_secret0(&lc_ctrl, &otp_ctrl, &console_in));
 
   // Send data back to host.
-  LOG_INFO("Exporting CP device ID ...");
+  base_printf("Exporting CP device ID ...\n");
   RESP_OK(ujson_serialize_manuf_cp_provisioning_data_out_t, uj, console_out);
 
   return OK_STATUS();
 }
 
 bool test_main(void) {
-  // Initialize DIF handles, pinmux, and console.
+  // Initialize DIF handles, pinmux, GPIO indicator pins, and console.
   CHECK_STATUS_OK(peripheral_handles_init());
   CHECK_STATUS_OK(entropy_complex_init());
-  pinmux_testutils_init(&pinmux);
+  CHECK_STATUS_OK(configure_ate_gpio_indicators());
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();
 
@@ -207,11 +234,15 @@ bool test_main(void) {
 
   // Initialize AST.
   manually_init_ast(ast_cfg_data);
-  LOG_INFO("AST manually configured.");
 
   // Perform CP provisioning operations.
-  CHECK_STATUS_OK(provision(&uj, &console_out));
+  status_t result = provision(&uj, &console_out);
+  if (!status_ok(result)) {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestError, true));
+  } else {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
+  }
 
-  LOG_INFO("CP provisioning done.");
+  base_printf("CP provisioning done.\n");
   return true;
 }

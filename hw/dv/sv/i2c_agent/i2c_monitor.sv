@@ -184,7 +184,7 @@ class i2c_monitor extends dv_base_monitor #(
                  prev_item.stop) begin
 
       `uvm_info(`gfn, "target_collect_thread(): Waiting for START condition.", UVM_FULL)
-      cfg.vif.wait_for_host_start(cfg.timing_cfg);
+      cfg.vif.wait_for_host_start();
       `uvm_info(`gfn, "target_collect_thread(): Saw START condition.", UVM_FULL)
 
       mon_dut_item.start = 1'b1;
@@ -430,7 +430,7 @@ class i2c_monitor extends dv_base_monitor #(
                  prev_item.stop) begin
 
       `uvm_info(`gfn, "controller_collect_thread(): Waiting for START condition.", UVM_FULL)
-      cfg.vif.wait_for_host_start(cfg.timing_cfg);
+      cfg.vif.wait_for_host_start();
       `uvm_info(`gfn, "controller_collect_thread(): Saw START condition.", UVM_FULL)
 
       mon_dut_item.start = 1'b1;

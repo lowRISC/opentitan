@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Prefetcher Buffer for 32 bit memory interface
+ * Prefetch Buffer for 32 bit memory interface
  *
  * Prefetch Buffer that caches instructions. This cuts overly long critical
  * paths to the instruction cache.
@@ -134,7 +134,7 @@ module ibex_prefetch_buffer #(
   // 2. fetch_addr_q  - This is our next address to fetch from. It is updated on branches to
   //                    capture the new address, and then for each new request issued.
   // A third address is tracked in the fetch FIFO itself:
-  // 3. instr_addr_q  - This is the address at the head of the FIFO, efectively our oldest fetched
+  // 3. instr_addr_q  - This is the address at the head of the FIFO, effectively our oldest fetched
   //                    address. This address is updated on branches, and does its own increment
   //                    each time the FIFO is popped.
 

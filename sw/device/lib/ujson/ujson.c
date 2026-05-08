@@ -28,11 +28,12 @@ void ujson_crc32_reset(ujson_t *uj) { crc32_init(&uj->crc32); }
 uint32_t ujson_crc32_finish(ujson_t *uj) { return crc32_finish(&uj->crc32); }
 
 status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len) {
+  uj->str_size += len;
   crc32_add(&uj->crc32, buf, len);
   return uj->putbuf(uj->io_context, buf, len);
 }
 
-static size_t ujson_putbuf_sink(ujson_t *uj, const char *buf, size_t len) {
+static size_t ujson_putbuf_sink(void *uj, const char *buf, size_t len) {
   status_t result = ujson_putbuf(uj, buf, len);
   if (!status_ok(result)) {
     return 0;
@@ -48,6 +49,7 @@ status_t ujson_getc(ujson_t *uj) {
     uj->buffer = -1;
     return OK_STATUS(buffer);
   } else {
+    uj->str_size++;
     status_t s = uj->getc(uj->io_context);
     if (!status_err(s)) {
       crc32_add8(&uj->crc32, (uint8_t)s.value);
@@ -169,6 +171,15 @@ status_t ujson_parse_qs(ujson_t *uj, char *str, size_t len) {
 status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
   char ch = (char)TRY(consume_whitespace(uj));
   bool neg = false;
+  bool quoted = false;
+
+  if (ch == '"') {
+    // If we encounter a quote while parsing an integer, assume that
+    // the quoted string will contain an integer.  Get the next
+    // character and continue parsing as if we expect an integer.
+    quoted = true;
+    ch = (char)TRY(ujson_getc(uj));
+  }
 
   if (ch == '-') {
     neg = true;
@@ -194,8 +205,19 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
       break;
     ch = (char)s.value;
   }
-  if (status_ok(s))
-    TRY(ujson_ungetc(uj, ch));
+
+  if (status_ok(s)) {
+    if (quoted) {
+      if (ch != '"') {
+        return INVALID_ARGUMENT();
+      }
+      // Close quote on an integer in quoted string.
+      // Don't have to unget the quote because we
+      // want to consume it.
+    } else {
+      TRY(ujson_ungetc(uj, ch));
+    }
+  }
 
   if (neg) {
     if (value > (uint64_t)INT64_MAX + 1) {
@@ -424,7 +446,7 @@ status_t ujson_deserialize_status_t(ujson_t *uj, status_t *value) {
 status_t ujson_serialize_status_t(ujson_t *uj, const status_t *value) {
   buffer_sink_t out = {
       .data = uj,
-      .sink = (sink_func_ptr)ujson_putbuf_sink,
+      .sink = ujson_putbuf_sink,
   };
   base_fprintf(out, "%!r", *value);
   return OK_STATUS();

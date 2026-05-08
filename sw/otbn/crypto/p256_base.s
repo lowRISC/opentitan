@@ -1334,8 +1334,11 @@ scalar_mult_int:
 
      w0,w1 <= [w0, w1] << 191 = k0 << 191 */
   bn.wsrr   w20, URND
-  bn.rshi   w1, w1, w0 >> 65
-  bn.rshi   w0, w0, w20 >> 65
+  bn.rshi   w20, w1,  w20 >> 65
+  bn.rshi   w1,  w20, w20 >> 191
+  bn.rshi   w1,  w1,  w0 >> 65
+  bn.wsrr   w20, URND
+  bn.rshi   w0,  w0,  w20 >> 65
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1347,8 +1350,12 @@ scalar_mult_int:
      word as well.
 
      w2,w3 <= [w2, w3] << 191 = k1 << 191 */
-  bn.rshi   w3, w3, w2 >> 65
-  bn.rshi   w2, w2, w20 >> 65
+  bn.wsrr   w20, URND
+  bn.rshi   w20, w3,  w20 >> 65
+  bn.rshi   w3,  w20, w20 >> 191
+  bn.rshi   w3,  w3,  w2 >> 65
+  bn.wsrr   w20, URND
+  bn.rshi   w2,  w2,  w20 >> 65
 
   /* double-and-add loop with decreasing index */
   loopi     321, 63

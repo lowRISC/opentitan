@@ -42,7 +42,11 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     let device_console_tx_ready_pin = &transport.gpio_pin("IOA5")?;
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
+    let spi_console_device = SpiConsoleDevice::new(
+        &*spi,
+        Some(device_console_tx_ready_pin),
+        /*ignore_frame_num=*/ false,
+    )?;
 
     // Load the ELF binary and get the expect data.
     let elf_binary = fs::read(&opts.firmware_elf)?;
@@ -53,14 +57,14 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     // Wait for generic strings to be transmitted.
     for _ in 0..2 {
         // Receive simple string from the device.
-        _ = UartConsole::wait_for(&spi_console_device, "ABC", opts.timeout)?;
+        _ = UartConsole::wait_for_bytes(&spi_console_device, "ABC", opts.timeout)?;
 
         // Receive 4K of data from the device.
-        _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
+        _ = UartConsole::wait_for_bytes(&spi_console_device, data_str, opts.timeout)?;
     }
 
     // Receive the UJSON string transmitted and verify its contents.
-    let perso_blob = PersoBlob::recv(&spi_console_device, opts.timeout, true)?;
+    let perso_blob = PersoBlob::recv(&spi_console_device, opts.timeout, true, false)?;
     for i in 0..perso_blob.body.len() {
         assert_eq!(perso_blob.body[i], (i % 256) as u8);
     }

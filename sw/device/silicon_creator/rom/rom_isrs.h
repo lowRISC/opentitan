@@ -24,7 +24,7 @@ extern "C" {
  * Denotes functions that have to be near the interrupt vector, because they
  * are jumped to from it.
  */
-#define ROM_VECTOR_FUNCTION __attribute__((section(".rom_isrs")))
+#define ROM_VECTOR_FUNCTION __attribute__((section(".isrs")))
 
 /**
  * ROM hardware exception handler.

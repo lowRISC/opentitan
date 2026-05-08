@@ -37,10 +37,6 @@ module csrng
   output entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_o,
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_i,
 
-  // Entropy Source Halt Interface
-  input  entropy_src_pkg::cs_aes_halt_req_t cs_aes_halt_i,
-  output entropy_src_pkg::cs_aes_halt_rsp_t cs_aes_halt_o,
-
   // Application Interfaces
   input  csrng_req_t [NumHwApps-1:0] csrng_cmd_i,
   output csrng_rsp_t [NumHwApps-1:0] csrng_cmd_o,
@@ -96,10 +92,6 @@ module csrng
     // Entropy Interface
     .entropy_src_hw_if_o,
     .entropy_src_hw_if_i,
-
-    // Entropy Interface
-    .cs_aes_halt_i,
-    .cs_aes_halt_o,
 
     // Application Interfaces
     .csrng_cmd_i,
@@ -165,12 +157,8 @@ module csrng
   `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
   `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgUpdAlertCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_upd.u_prim_count_ctr_drbg,
-    alert_tx_o[1])
-
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg,
+    u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
     alert_tx_o[1])
 
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
@@ -188,16 +176,9 @@ module csrng
     alert_tx_o[1])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_gen.u_state_regs,
+    u_csrng_core.u_csrng_ctr_drbg.u_state_regs,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdBlkEncFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_upd.u_blk_enc_state_regs,
-    alert_tx_o[1])
-
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdOutBlkFsmCheck_A,
-    u_csrng_core.u_csrng_ctr_drbg_upd.u_outblk_state_regs,
-    alert_tx_o[1])
 
   for (genvar i = 0; i < aes_pkg::Sp2VWidth; i++) begin : gen_aes_cipher_control_fsm_svas
     if (aes_pkg::SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_aes_cipher_control_fsm_svas_p

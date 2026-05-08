@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 import tempfile
 from dataclasses import dataclass
 
@@ -22,7 +23,7 @@ _FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
 # Opentitantool interface
 _OTT_FPGA_INTERFACE = {
     "cw310": "hyper310",
-    "cw340": "cw340",
+    "cw340": "hyper340",
 }
 
 # CP and FT shared flags.
@@ -39,7 +40,7 @@ _ZERO_256BIT_HEXSTR = "0x" + "_".join(["00000000"] * 8)
 # CP & FT Device Firmware
 _BASE_DEV_DIR           = "sw/device/silicon_creator/manuf/base"  # noqa: E221
 _CP_DEVICE_ELF          = "{base_dir}/sram_cp_provision_{target}.elf"  # noqa: E221
-_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{otp}_{target}.elf"  # noqa: E221
+_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{sku}{ate_suffix}_{target}.elf"  # noqa: E221,E501
 _FT_FW_BUNDLE_BIN       = "{base_dir}/ft_fw_bundle_{sku}_{target}.img"  # noqa: E221
 # CP & FT Host Binaries
 _CP_HOST_BIN = "sw/host/provisioning/cp/cp"
@@ -56,9 +57,9 @@ class OtDut():
     test_unlock_token: str
     test_exit_token: str
     fpga: str
+    ate_mode: bool
     fpga_dont_clear_bitstream: bool
-    enable_alerts: bool
-    use_ext_clk: bool
+    log_ujson_payloads: bool
     require_confirmation: bool = True
 
     def _make_log_dir(self) -> None:
@@ -79,7 +80,7 @@ class OtDut():
         Retuns:
             The extracted JSON data.
         """
-        with open(log_file, "r") as f:
+        with open(log_file, "r", encoding='utf-8', errors='ignore') as f:
             log_data = f.read()
 
         pattern = key + r':\s*({.*})'
@@ -173,12 +174,12 @@ class OtDut():
                 # has already run through CP, and only needs to execute FT.
                 if chip_probe_data["cp_device_id"] == "":
                     logging.warning(
-                        "cp_device_id empty; setting default of all zeros.")
-                    din_from_device = DeviceIdentificationNumber(0)
+                        "cp_device_id empty; setting default DIN of all 0xFF.")
+                    din_from_device = DeviceIdentificationNumber.blind_asm()
                 else:
                     din_from_device = DeviceIdentificationNumber.from_int(
                         (int(chip_probe_data["cp_device_id"], 16) >> 32) &
-                        0xFFFFFFFFFFFFFFFF)
+                        (2**64 - 1))
             logging.info(
                 f"Updating device ID to: {chip_probe_data['cp_device_id']}")
             self.device_id.update_din(din_from_device)
@@ -203,6 +204,7 @@ class OtDut():
         openocd_cfg = resolve_runfile(_OPENOCD_ADAPTER_CONFIG)
         host_flags = _BASE_PROVISIONING_FLAGS
         individ_elf = _FT_INDIVID_DEVICE_ELF
+        ate_suffix = "_ate" if self.ate_mode else ""
         # Emulation perso bins are signed online with fake keys, and therefore
         # have different file naming patterns than production SKUs.
         perso_bin = self.sku_config.perso_bin
@@ -217,7 +219,8 @@ class OtDut():
                                            openocd_cfg=openocd_cfg)
             individ_elf = individ_elf.format(
                 base_dir=self._base_dev_dir(),
-                otp=self.sku_config.otp,
+                sku=self.sku_config.name,
+                ate_suffix=ate_suffix,
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
             perso_bin = perso_bin.format(
                 base_dir=self._base_dev_dir(),
@@ -235,7 +238,8 @@ class OtDut():
                                            openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
             individ_elf = individ_elf.format(base_dir=self._base_dev_dir(),
-                                             otp=self.sku_config.otp,
+                                             sku=self.sku_config.name,
+                                             ate_suffix=ate_suffix,
                                              target="silicon_creator")
             perso_bin = perso_bin.format(base_dir=self._base_dev_dir(),
                                          sku=self.sku_config.name,
@@ -269,26 +273,25 @@ class OtDut():
             --elf={individ_elf} \
             --bootstrap={perso_bin} \
             --second-bootstrap={fw_bundle_bin} \
-            --ft-device-id="0x{hex(self.device_id.sku_specific)[2:].zfill(32)}" \
+            --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
             --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
             --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \
-            --rom-ext-measurement="{_ZERO_256BIT_HEXSTR}" \
-            --owner-manifest-measurement="{_ZERO_256BIT_HEXSTR}" \
-            --owner-measurement="{_ZERO_256BIT_HEXSTR}" \
-            --rom-ext-security-version="0" \
-            --owner-security-version="0" \
             --ca-config={ca_config_file.name} \
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
 
-            # Enable alerts during individualization if requested.
-            if self.enable_alerts:
-                cmd += " --enable-alerts-during-individualize"
+            # Add FT device ID if we are not running in ATE mode.
+            if not self.ate_mode:
+                cmd += f" --ft-device-id=\"0x{hex(self.device_id.sku_specific)[2:].zfill(32)}\""
 
-            # Enable external clock during individualization if requested.
-            if self.use_ext_clk:
-                cmd += " --use-ext-clk-during-individualize"
+            # Add owner FW boot success message check.
+            if self.sku_config.owner_fw_boot_str:
+                cmd += f" --owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
+
+            # Enable UJSON message logging.
+            if self.log_ujson_payloads:
+                cmd += " --log-ujson-payloads"
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")
@@ -307,14 +310,41 @@ class OtDut():
                                                    stdout_logfile)
 
             # Check device ID from OTP matches one constructed on host.
+            #
+            # The CP portion may not match, but the FT portion should, with the
+            # exception of the AST configuration version field as this is also
+            # set during CP. The CP portion of the device ID, and the AST
+            # configuration field of the FT device ID, are set in flash before
+            # the orchestrator.py is ever run, so the device's CP portion of the
+            # device ID should be taken as the ground truth.
             device_id_in_otp = DeviceId.from_hexstr(self.ft_data["device_id"])
-            if device_id_in_otp != self.device_id:
+            # Replace the AST configuration version field of the host device ID
+            # to its counterpart from of the device as this field originates
+            # from flash info page 0, not from any host configuration.
+            self.device_id.update_ast_cfg_version(
+                device_id_in_otp.ast_cfg_version)
+            if device_id_in_otp.sku_specific != self.device_id.sku_specific:
                 logging.error(
-                    "Device ID from OTP does not match expected on host.")
+                    "FT Device ID from OTP does not match expected on host.")
                 logging.error(
-                    f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
+                    f"Final (device) FT DeviceId: {device_id_in_otp.sku_specific_hexstr()}"
+                )
                 logging.error(
-                    f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
-                confirm()
+                    f"Final (host)   FT DeviceId: {self.device_id.sku_specific_hexstr()}"
+                )
+                sys.exit(-1)
+            if device_id_in_otp.base_uid != self.device_id.base_uid:
+                logging.warning(
+                    "CP Device ID from OTP does not match expected on host. Use OTP variant?"
+                )
+                logging.warning(
+                    f"Final (device) CP DeviceId: {device_id_in_otp.base_uid_hexstr()}"
+                )
+                logging.warning(
+                    f"Final (host)   CP DeviceId: {self.device_id.base_uid_hexstr()}"
+                )
+                if self.require_confirmation:
+                    confirm()
+                self.device_id = device_id_in_otp
 
             logging.info("FT completed successfully.")

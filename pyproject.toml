@@ -6,7 +6,7 @@
 name = "opentitan"
 version = "0.0.0"
 description = "Open-source hardware root-of-trust"
-requires-python = ">=3.10"
+requires-python = ">=3.10, <3.14"
 
 dependencies = [
   # Keep sorted
@@ -25,8 +25,11 @@ dependencies = [
   "pyyaml ~= 6.0",
   "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
   "semantic_version==2.10.0",
-  "tabulate==0.8.10",
+  "tabulate~=0.9",
   "typer==0.6.1",
+
+  # Dependencies: util/get-toolchain.py
+  "urllib3==2.6.3",
 
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",
@@ -65,7 +68,10 @@ dependencies = [
   "tockloader==1.13",
 
   # The hardware package manager and build system.
-  "fusesoc==2.4.3",
+  "fusesoc==2.4.5",
+
+  # Build and run tool for Design Verification flows
+  "dvsim==1.17.3",
 
   "peakrdl-systemrdl >= 1.0",
 ]

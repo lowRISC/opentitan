@@ -6,6 +6,9 @@
 // Core ibex environment package
 // ---------------------------------------------
 
+`include "uvm_macros.svh"
+`include "dv_macros.svh"
+
 package core_ibex_env_pkg;
 
   import uvm_pkg::*;

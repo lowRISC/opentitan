@@ -560,6 +560,11 @@ module rom_ctrl
   `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
   `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
 
+  // Check that kmac_data_o.last is "telling the truth": kmac_data_o.valid should drop on the cycle
+  // after the word that it decorates is transferred.
+  `ASSERT(KmacLastTrue_A,
+          kmac_data_o.valid && kmac_data_i.ready && kmac_data_o.last |=> !kmac_data_o.valid)
+
   // Check that pwrmgr_data_o.good is stable when kmac_data_o.valid is asserted
   `ASSERT(StabilityChkKmac_A, kmac_data_o.valid && $past(kmac_data_o.valid)
           |-> $stable(pwrmgr_data_o.good))
@@ -570,12 +575,11 @@ module rom_ctrl
 
   // Check that pwrmgr_data_o.done is never de-asserted once asserted
   `ASSERT(PwrmgrDataChk_A,
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True |=>
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True,
+          !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True),
           clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
-  `ASSERT(KeymgrValidChk_A, keymgr_data_o.valid |=> keymgr_data_o.valid,
+  `ASSERT(KeymgrValidChk_A, !$fell(keymgr_data_o.valid),
           clk_i, !rst_ni || internal_alert)
 
   // It should not be possible to read from the ROM unless the check has finished, implying that

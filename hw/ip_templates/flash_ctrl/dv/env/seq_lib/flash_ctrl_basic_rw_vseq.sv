@@ -32,7 +32,7 @@ class flash_ctrl_basic_rw_vseq extends flash_ctrl_base_vseq;
 
   // Constraint for controller address to be in relevant range for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
+    solve bank before flash_op.addr;
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1)]};
     flash_op.addr[2:0] == '0;
   }
@@ -52,7 +52,7 @@ class flash_ctrl_basic_rw_vseq extends flash_ctrl_base_vseq;
 
   // Flash ctrl operation data queue - used for programming or reading the flash.
   constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
+    solve flash_op.num_words before flash_op_data;
 
     flash_op_data.size() == flash_op.num_words;
   }

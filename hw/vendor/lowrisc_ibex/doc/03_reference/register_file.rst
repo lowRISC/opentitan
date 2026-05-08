@@ -28,7 +28,8 @@ FPGA Register File
 
 The FPGA register file leverages synchronous-write / asynchronous-read RAM design elements, where available on FPGA targets.
 
-For Xilinx FPGAs, synthesis results in an implementation using RAM32M primitives. Using this design with a Xilinx Artya7-100 FPGA conserves around 600 Logic LUTs and 1000 flip-flops at the expense of 48 LUTRAMs for the 31-entry register file as compared to the flip-flop-based register file.
+For Xilinx FPGAs, synthesis results in an implementation using RAM32M primitives.
+Using this design with a Xilinx Arty A7-100 FPGA conserves around 600 Logic LUTs and 1000 flip-flops at the expense of 48 LUTRAMs for the 31-entry register file as compared to the flip-flop-based register file.
 
 This makes it the **first choice for FPGA synthesis**.
 

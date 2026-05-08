@@ -56,8 +56,9 @@ interface aes_cov_if
        bins cfb     = { AES_CFB };
        bins ofb     = { AES_OFB };
        bins ctr     = { AES_CTR };
+       bins gcm     = { AES_GCM };
        bins none    = { AES_NONE };
-       bins illegal = { [0:$] } with ($countones(item) != 1);
+       bins illegal = { [0:$] } with (($countones(item) != 1) && (item != AES_NONE));
       }
 
     cp_key_len: coverpoint aes_keylen
@@ -281,6 +282,94 @@ interface aes_cov_if
       }
   endgroup // aes_reg_interleave_cg
 
+  covergroup aes_gcm_len_cg  with function sample(
+             int                              aad_blocks,
+             int                              aad_last_block_len,
+             int                              aad_block_zero,
+             int                              text_blocks,
+             int                              text_last_block_len,
+             int                              text_block_zero,
+             bit [aes_pkg::AES_OP_WIDTH-1:0]  aes_op
+             );
+    option.per_instance = 1;
+    option.name         = "aes_gcm_len_cg";
+
+    cp_operation: coverpoint aes_op
+      {
+        bins enc     = {AES_ENC};
+        bins dec     = {AES_DEC};
+      }
+
+    cp_aad_blocks: coverpoint aad_blocks
+      {
+        bins aad_blocks_one  = {1};
+        bins aad_blocks_two  = {2};
+        bins aad_blocks_many = {[3:$]};
+      }
+
+    cp_aad_last_block_len: coverpoint aad_last_block_len
+      {
+        // If aad_blocks > 0, then aad_last_block_len = 0 means a full 16-byte
+        // block. Value between 1-15 indicate that the last block is a partial
+        // block.
+        bins aad_last_block_full    = {0};
+        bins aad_last_block_partial = {[1:15]};
+      }
+
+    cp_zero_aad_block: coverpoint aad_block_zero
+      {
+        // Track whether we have seen an AES-GCM run with an AAD length of 0.
+        // This is separate from cp_aad_blocks to not factor it into the cross below.
+        bins aad_block_zero   = {1};
+      }
+
+    cp_text_blocks: coverpoint text_blocks
+      {
+        bins text_blocks_one  = {1};
+        bins text_blocks_two  = {2};
+        bins text_blocks_many = {[3:$]};
+      }
+
+    cp_text_last_block_len: coverpoint text_last_block_len
+      {
+        // If text_blocks > 0, then text_last_block_len = 0 means a full 16-byte
+        // block. Value between 1-15 indicate that the last block is a partial
+        // block.
+        bins text_last_block_full    = {0};
+        bins text_last_block_partial = {[1:15]};
+      }
+
+    cp_zero_text_block: coverpoint text_block_zero
+      {
+        // Track whether we have seen an AES-GCM run with a message length of 0.
+        // This is separate from cp_aad_blocks to not factor it into the cross below.
+        bins text_block_zero   = {1};
+      }
+
+    // Cross coverage points
+    cr_op_aad_block_len: cross cp_operation, cp_aad_blocks, cp_aad_last_block_len;
+    cr_op_text_block_len: cross cp_operation, cp_text_blocks, cp_text_last_block_len;
+
+  endgroup // aes_gcm_aad_len_cg
+
+  covergroup aes_ctrl_gcm_reg_cg  with function sample(
+             bit [aes_pkg::AES_GCMPHASE_WIDTH-1:0] phase
+             );
+    option.per_instance = 1;
+    option.name         = "aes_ctrl_gcm_reg_cg";
+
+    cp_phase: coverpoint phase
+      {
+        bins init[]     = (GCM_INIT     => GCM_RESTORE, GCM_AAD, GCM_TEXT, GCM_TAG);
+        bins restore[]  = (GCM_RESTORE  => GCM_INIT, GCM_AAD, GCM_TEXT);
+        bins aad[]      = (GCM_AAD      => GCM_INIT, GCM_TEXT, GCM_SAVE);
+        bins text[]     = (GCM_TEXT     => GCM_INIT, GCM_SAVE, GCM_TAG);
+        bins save       = (GCM_SAVE     => GCM_INIT);
+        bins tag        = (GCM_TAG      => GCM_INIT);
+        bins illegal    = {[0:$]} with ($countones(item) != 1);
+      }
+
+  endgroup // aes_ctrl_gcm_reg_cg
 
   ///////////////////////////////////
   // Instantiation Macros          //
@@ -295,7 +384,8 @@ interface aes_cov_if
  `DV_FCOV_INSTANTIATE_CG(aes_iv_interleave_cg, en_full_cov)
  `DV_FCOV_INSTANTIATE_CG(aes_key_interleave_cg, en_full_cov)
  `DV_FCOV_INSTANTIATE_CG(aes_reg_interleave_cg, en_full_cov)
-
+ `DV_FCOV_INSTANTIATE_CG(aes_gcm_len_cg, en_full_cov && `EN_GCM)
+ `DV_FCOV_INSTANTIATE_CG(aes_ctrl_gcm_reg_cg, en_full_cov && `EN_GCM)
 
   ///////////////////////////////////
   // Sample functions              //
@@ -355,4 +445,27 @@ interface aes_cov_if
     aes_key_interleave_cg_inst.sample(key, idle_i);
     aes_reg_interleave_cg_inst.sample(1);
   endfunction
+
+  function automatic void cg_gcm_len_sample(
+           int                              aad_blocks,
+           int                              aad_last_block_len,
+           int                              aad_block_zero,
+           int                              text_blocks,
+           int                              text_last_block_len,
+           int                              text_block_zero,
+           bit [aes_pkg::AES_OP_WIDTH-1:0]  aes_op);
+    aes_gcm_len_cg_inst.sample(aad_blocks,
+                               aad_last_block_len,
+                               aad_block_zero,
+                               text_blocks,
+                               text_last_block_len,
+                               text_block_zero,
+                               aes_op);
+  endfunction
+
+  function automatic void cg_ctrl_gcm_reg_sample(
+           bit [aes_pkg::AES_GCMPHASE_WIDTH-1:0] phase);
+    aes_ctrl_gcm_reg_cg_inst.sample(phase);
+  endfunction
+
 endinterface

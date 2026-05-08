@@ -26,9 +26,9 @@ class DisParser:
         escaped_name = re.escape(function_name)
         lines = dis_content.splitlines()
 
-        jump_line_pattern = re.compile(r"^\s*([0-9a-fA-F]{8}):.*?<" + escaped_name + r">")
+        jump_line_pattern = re.compile(r"^\s*([0-9a-fA-F]{1,16}):.*?<" + escaped_name + r">")
 
-        next_addr_pattern = re.compile(r"^\s*([0-9a-fA-F]{8}):")
+        next_addr_pattern = re.compile(r"^\s*([0-9a-fA-F]{1,16}):")
 
         for i, line in enumerate(lines):
             match = jump_line_pattern.match(line)
@@ -54,7 +54,7 @@ class DisParser:
         if pc_address.startswith("0x"):
             pc_address = pc_address[2:]
 
-        instruction_addr_pattern = re.compile(r"^\s*([0-9a-fA-F]{8}):")
+        instruction_addr_pattern = re.compile(r"^\s*([0-9a-fA-F]{1,16}):")
 
         found_current_address = False
 
@@ -87,7 +87,7 @@ class DisParser:
             with open(self.dis_file_path, "r") as f:
                 for line in f:
                     escaped_name = re.escape(function_name)
-                    pattern = re.compile(r"^([0-9a-fA-F]{8})\s*<" + escaped_name + r">:")
+                    pattern = re.compile(r"^([0-9a-fA-F]{1,16})\s*<" + escaped_name + r">:")
 
                     match = pattern.search(line)
                     if match:
@@ -147,3 +147,28 @@ class DisParser:
             self.get_function_start_address(marker_name + "_START"),
             self.get_function_start_address(marker_name + "_END"),
         ]
+
+    def get_inlined_function_address(self, function_name):
+        try:
+            with open(self.dis_file_path, "r") as f:
+                escaped_name = re.escape(function_name)
+                marker_pattern = re.compile(r"^\s*" + escaped_name + r"\(\):")
+
+                inst_address_pattern = re.compile(r"^\s*[\|\+\-\s]*([0-9a-fA-F]{1,16}):")
+
+                found_marker = False
+                for line in f:
+                    if not found_marker:
+                        if marker_pattern.search(line):
+                            found_marker = True
+                    else:
+                        match = inst_address_pattern.search(line)
+                        if match:
+                            return f"0x{match.group(1)}"
+
+        except IOError as e:
+            print(f"Error reading file: {e}")
+            return None
+
+        print(f"Error: Inlined function address not found for {function_name}")
+        return None

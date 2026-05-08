@@ -6,6 +6,10 @@ load(
     "//rules:certificates.bzl",
     "certificate_template",
 )
+load(
+    "//rules/opentitan:defs.bzl",
+    "opentitan_test",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -189,8 +193,8 @@ cc_library(
         ":cert",
         ":cwt_template",
         ":dice_api",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
@@ -200,6 +204,25 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "@open-dice//:cbor_reader_writer",
+    ],
+)
+
+opentitan_test(
+    name = "dice_cwt_functest",
+    srcs = ["dice_cwt_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    deps = [
+        ":dice_cwt",
+        "//hw/top:flash_ctrl_c_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
 

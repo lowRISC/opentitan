@@ -5,6 +5,7 @@
 // HJSON with partition metadata.
 //
 <%
+import math
 from topgen.lib import Name
 
 num_part = len(otp_mmap["partitions"])
@@ -50,7 +51,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       notes:              "",
     }
     {
-      version:            "2.1.0",
+      version:            "3.0.0",
       life_stage:         "L1",
       design_stage:       "D1",
       verification_stage: "V1",
@@ -383,15 +384,15 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "otp_ctrl_pkg"
       desc:    "Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1."
     }
-  % if enable_flash_key:
-    // Broadcast to Flash Controller
-    { struct:  "flash_otp_key"
+  % if enable_nvm_key:
+    // Broadcast to Nvm Controller
+    { struct:  "nvm_otp_key"
       type:    "req_rsp"
-      name:    "flash_otp_key"
+      name:    "nvm_otp_key"
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
-      desc:    "Key derivation interface for FLASH scrambling."
+      desc:    "Key derivation interface for NVM scrambling."
     }
   % endif
     // Key request from SRAM scramblers
@@ -600,7 +601,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.KEY_DERIVATION"
-      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL${" and FLASH_CTRL" if enable_flash_key else ""}."
+      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL${" and FLASH_CTRL" if enable_nvm_key else ""}."
     }
     {
       name: "OTP_CTRL.PROGRAM"
@@ -615,7 +616,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET1"
-      desc: "SRAM${" and FLASH" if enable_flash_key else ""} scrambling key"
+      desc: "SRAM${" and NVM" if enable_nvm_key else ""} scrambling key"
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET2"
@@ -686,7 +687,83 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         tags: [ // OTP internal HW can modify status register
                 "excl:CsrAllTests:CsrExclCheck"],
         fields: [
-  % for k, part in enumerate(otp_mmap["partitions"]):
+          { bits: "0"
+            name: "PARTITION_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in any partition.
+                  If set to 1, SW should check the !!PARTITION_STATUS register to determine the failing partition.
+                  '''
+          }
+          { bits: "1"
+            name: "DAI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the DAI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "2"
+            name: "LCI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the LCI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "3"
+            name: "TIMEOUT_ERROR"
+            desc: '''
+                  Set to 1 if an integrity or consistency check times out.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "4"
+            name: "LFSR_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the LFSR timer FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "5"
+            name: "SCRAMBLING_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "6"
+            name: "KEY_DERIV_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the key derivation FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "7"
+            name: "BUS_INTEG_ERROR"
+            desc: '''
+                  This bit is set to 1 if a fatal bus integrity fault is detected.
+                  This error triggers a fatal_bus_integ_error alert.
+                  '''
+          }
+          { bits: "8"
+            name: "DAI_IDLE"
+            desc: "Set to 1 if the DAI is idle and ready to accept commands."
+          }
+          { bits: "9"
+            name: "CHECK_PENDING"
+            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
+          }
+        ]
+      }
+    % for r in range(int(math.ceil(len(otp_mmap["partitions"]) / 32))):
+      { name: "PARTITION_STATUS_${r}",
+        desc: "OTP partition status register ${r}.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        resval:   0,
+        tags: [ // OTP internal HW can modify status register
+                "excl:CsrAllTests:CsrExclCheck"],
+        fields: [
+        % for k, part in enumerate(otp_mmap["partitions"][r*32 : (r+1)*32]):
           { bits: "${k}"
             name: "${part["name"]}_ERROR"
             desc: '''
@@ -694,66 +771,10 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-  % endfor
-          { bits: "${num_part}"
-            name: "DAI_ERROR"
-            desc: '''
-                  Set to 1 if an error occurred in the DAI.
-                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                  '''
-          }
-          { bits: "${num_part+1}"
-            name: "LCI_ERROR"
-            desc: '''
-                  Set to 1 if an error occurred in the LCI.
-                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                  '''
-          }
-          { bits: "${num_part+2}"
-            name: "TIMEOUT_ERROR"
-            desc: '''
-                  Set to 1 if an integrity or consistency check times out.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+3}"
-            name: "LFSR_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the LFSR timer FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+4}"
-            name: "SCRAMBLING_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+5}"
-            name: "KEY_DERIV_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the key derivation FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "${num_part+6}"
-            name: "BUS_INTEG_ERROR"
-            desc: '''
-                  This bit is set to 1 if a fatal bus integrity fault is detected.
-                  This error triggers a fatal_bus_integ_error alert.
-                  '''
-          }
-          { bits: "${num_part+7}"
-            name: "DAI_IDLE"
-            desc: "Set to 1 if the DAI is idle and ready to accept commands."
-          }
-          { bits: "${num_part+8}"
-            name: "CHECK_PENDING"
-            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
-          }
+        % endfor
         ]
       }
+    % endfor
       { multireg: {
           name:     "ERR_CODE",
           desc:     '''

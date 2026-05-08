@@ -124,11 +124,11 @@ package pwrmgr_pkg;
   };
 
   typedef struct packed {
-    logic flash_idle;
-  } pwr_flash_t;
+    logic nvm_idle;
+  } pwr_nvm_t;
 
-  parameter pwr_flash_t PWR_FLASH_DEFAULT = '{
-    flash_idle: 1'b1
+  parameter pwr_nvm_t PWR_NVM_DEFAULT = '{
+    nvm_idle: 1'b1
   };
 
   // cpu reset requests and status

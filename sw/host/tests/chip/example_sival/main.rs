@@ -65,7 +65,7 @@ fn example_test(opts: &Opts, uart: &dyn Uart, phase_address: u32) -> Result<()> 
     /* Wait for device to be ready and change phase. */
     check_and_set_phase(uart, phase_address, Phase::WaitHost2, Phase::TestDone)?;
     /* Wait for test to end. */
-    let _ = UartConsole::wait_for(uart, r"PASS![^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(uart, r"PASS!", opts.timeout)?;
     Ok(())
 }
 
@@ -89,7 +89,7 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     execute_test!(example_test, &opts, &*uart, *phase_address,);
     Ok(())

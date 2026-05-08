@@ -31,6 +31,7 @@ package dv_lib_pkg;
 
   // base env
   `include "dv_base_env_cfg.sv"
+  `include "bit_toggle_cg_wrap.sv"
   `include "dv_base_env_cov.sv"
   `include "dv_base_virtual_sequencer.sv"
   `include "dv_base_scoreboard.sv"

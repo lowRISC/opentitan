@@ -12,6 +12,7 @@
 
 // Include commands
 #include "sw/device/tests/penetrationtests/json/alert_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/boot_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
@@ -22,6 +23,7 @@
 
 // Include handlers
 #include "sw/device/tests/penetrationtests/firmware/fi/alert_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/boot_fi.h"
 #include "sw/device/tests/penetrationtests/firmware/fi/crypto_fi.h"
 #include "sw/device/tests/penetrationtests/firmware/fi/lc_ctrl_fi.h"
 #include "sw/device/tests/penetrationtests/firmware/fi/otp_fi.h"
@@ -60,6 +62,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kPenetrationtestCommandAlertFi:
         RESP_ERR(uj, handle_alert_fi(uj));
+        break;
+      case kPenetrationtestCommandBootFi:
+        RESP_ERR(uj, handle_boot_fi(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);

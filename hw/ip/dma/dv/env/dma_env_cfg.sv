@@ -67,7 +67,7 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   `uvm_object_new
 
   // Function for Initialization
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = dma_env_pkg::LIST_OF_ALERTS;
     // Populate FIFO names
     fifo_names = '{"host", "ctn", "sys"};
@@ -82,7 +82,7 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
     asid_names[SocSystemAddr]  = "sys";
 
     // Initialize cip_base_env_cfg
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // Interrupt count
     num_interrupts = ral.intr_state.get_n_used_bits();

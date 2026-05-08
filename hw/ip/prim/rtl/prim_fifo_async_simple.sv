@@ -28,24 +28,33 @@ module prim_fifo_async_simple #(
   output logic [Width-1:0]  rdata_o
 );
 
-  ////////////////
-  // FIFO logic //
-  ////////////////
-
-  // Convert ready/valid to req/ack
+  // write side
   logic wr_en;
   logic src_req, src_ack;
   logic pending_d, pending_q, not_in_reset_q;
+  logic [Width-1:0] data_wr_q;
+
+  // read side
+  logic             rvalid_q;
+  logic             rvalid_d;
+  logic             dst_req;
+  logic             dst_ack;
+  logic [Width-1:0] data_rd_q;
+
+  //////////////////
+  // Write domain //
+  //////////////////
+
+  ////////////////
+  // FIFO logic //
+  ////////////////
+  // Convert ready/valid to req/ack
   assign wready_o = !pending_q && not_in_reset_q;
   assign wr_en = wvalid_i && wready_o;
   assign src_req = pending_q || wvalid_i;
 
   assign pending_d = (src_ack)  ? 1'b0 :
                      (wr_en)    ? 1'b1 : pending_q;
-
-  logic dst_req, dst_ack;
-  assign rvalid_o = dst_req;
-  assign dst_ack = dst_req && rready_i;
 
   always_ff @(posedge clk_wr_i or negedge rst_wr_ni) begin
     if (!rst_wr_ni) begin
@@ -57,10 +66,16 @@ module prim_fifo_async_simple #(
     end
   end
 
+  // Data holding reg
+  always_ff @(posedge clk_wr_i) begin
+    if (wr_en) begin
+      data_wr_q <= wdata_i;
+    end
+  end
+
   ////////////////////////////////////
   // REQ/ACK synchronizer primitive //
   ////////////////////////////////////
-
   prim_sync_reqack #(
     .EnRstChks(EnRstChks),
     .EnRzHs(EnRzHs)
@@ -76,16 +91,49 @@ module prim_fifo_async_simple #(
     .dst_ack_i(dst_ack)
   );
 
-  //////////////////////
-  // Data holding reg //
-  //////////////////////
+  /////////////////
+  // Read domain //
+  /////////////////
+  // This flop realigns the request signal to the data
+  // and manages the ready/valid to ack/req protocol
+  always_comb begin
 
-  logic [Width-1:0] data_q;
-  always_ff @(posedge clk_wr_i) begin
-    if (wr_en) begin
-      data_q <= wdata_i;
+    rvalid_d = rvalid_q;
+
+    if (!rvalid_q) begin
+      if (dst_req) begin
+        rvalid_d = '1;
+      end
+    end else begin
+      if (rready_i) begin
+        rvalid_d = '0;
+      end
+    end
+
+  end
+
+  always_ff @(posedge clk_rd_i or negedge rst_rd_ni) begin
+    if (!rst_rd_ni) begin
+      rvalid_q <= '0;
+    end else begin
+      rvalid_q <= rvalid_d;
     end
   end
-  assign rdata_o = data_q;
+
+  // Output staging registers in the read domain to ensure data is synchronous
+  // and enable correct back pressure in the pipe.
+  // NOTE: data_rd_q must be read before it can be updated, i.e. rvalid_q is low,
+  // otherwise data that has not yet been read would be overwritten.
+  always_ff @(posedge clk_rd_i) begin
+    if (dst_req && !rvalid_q) begin
+      data_rd_q <= data_wr_q;
+    end
+  end
+
+  assign rdata_o  = data_rd_q;
+
+  // condition the dst_ack and pass the state to rvalid
+  assign dst_ack = !rvalid_q ? dst_req : 1'b0;
+  assign rvalid_o = rvalid_q;
 
 endmodule

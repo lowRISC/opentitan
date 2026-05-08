@@ -6,7 +6,7 @@ package racl_ctrl_test_pkg;
   // dep packages
   import uvm_pkg::*;
   import cip_base_pkg::*;
-  import racl_ctrl_env_pkg::*;
+  import racl_ctrl_base_env_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

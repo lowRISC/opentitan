@@ -213,7 +213,7 @@
     }
     { name: "disconnected",
       desc: '''
-            Raised if VBUS is lost, thus the link is disconnected.
+            Raised if VBUS is lost or the pullup is disabled, thus the link is disconnected.
             '''
     }
     { name: "host_lost",
@@ -292,6 +292,7 @@
       desc: '''
             Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
             This error is raised if the data toggle, token, packet and/or CRC are invalid, or if the appropriate Available OUT Buffer FIFO is empty and/or the Received Buffer FIFO is full when a packet should have been received.
+            Attempting to perform an OUT transaction to an endpoint that is stalled, i.e. its control bit in `out_stall` is set, will also cause this error to be raised.
             '''
     }
     {
@@ -564,7 +565,7 @@
           desc: '''
                 Reflects the state of the sense pin.
                 1 indicates that the host is providing VBUS.
-                Note that this bit always shows the state of the actual pin and does not take account of the override control.
+                Note that this bit always shows the state of the actual pin and is unaffected by the direct pin driving in phy_pins_drive.
                 '''
         }
         {

@@ -90,24 +90,31 @@ The following steps require manual edits or creation of files and only need to b
 ### Adding your top to the build system
 
 The first step is to make the build system aware of your top so you can use the [top-selection mechanism](../README.md).
-To do this, edit [`hw/top/defs.bzl`](https://github.com/lowRISC/opentitan/blob/master/hw/top/defs.bzl) and add the following lines marked as `NEW`:
-```py
-# In hw/top/defs.bzl`:
-load("//rules/opentitan:hw.bzl", "opentitan_top")
-load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY")
-load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING")
-load("//hw/top_englishbreakfast/data/autogen:defs.bzl", "ENGLISHBREAKFAST")
-# NEW: load your top's description
-load("//hw/top_matcha/data/autogen:defs.bzl", "MATCHA")
+To do this, edit [`MODULE.bazel`](https://github.com/lowRISC/opentitan/blob/master/MODULE.bazel) and add the following lines marked as `NEW`:
 
-ALL_TOPS = [
-    EARLGREY,
-    DARJEELING,
-    ENGLISHBREAKFAST,
-    # NEW: add your top to the build system
-    MATCHA,
-]
+```py
+# Register tops
+top_desc = use_extension("//hw/top:extensions.bzl", "top")
+top_desc.register(
+    bazel_file = "//hw/top_earlgrey:defs.bzl",
+    top_var = "EARLGREY",
+)
+top_desc.register(
+    bazel_file = "//hw/top_darjeeling:defs.bzl",
+    top_var = "DARJEELING",
+)
+top_desc.register(
+    bazel_file = "//hw/top_englishbreakfast:defs.bzl",
+    top_var = "ENGLISHBREAKFAST",
+)
+# NEW: register the new top
+top_desc.register(
+    bazel_file = "//hw/top_matcha:defs.bzl",
+    top_var = "MATCHA",
+)
+use_repo(top_desc, "tops_desc")
 ```
+
 Once done, your top can be selected using `--//hw/top=matcha` when building targets.
 
 ### Declaring execution environment

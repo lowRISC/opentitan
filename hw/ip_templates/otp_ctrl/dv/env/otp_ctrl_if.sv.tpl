@@ -79,8 +79,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // Connect push_pull interfaces ack signals for assertion checks.
   logic otbn_ack, lc_prog_ack;
-% if enable_flash_key:
-  logic [1:0] flash_acks;
+% if enable_nvm_key:
+  logic [1:0] nvm_acks;
 % endif
   logic [NumSramKeyReqSlots-1:0] sram_acks;
 
@@ -337,8 +337,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     RndCnstOtpCtrlPartInvDefault[HwCfg1Offset*8+:HwCfg1Size*8])
 
   `OTP_FATAL_ERR_ASSERT(LcProgAck_A, lc_prog_ack == 0)
-% if enable_flash_key:
-  `OTP_FATAL_ERR_ASSERT(FlashAcks_A, flash_acks == 0)
+% if enable_nvm_key:
+  `OTP_FATAL_ERR_ASSERT(NvmAcks_A, nvm_acks == 0)
 % endif
   `OTP_FATAL_ERR_ASSERT(SramAcks_A, sram_acks == 0)
   `OTP_FATAL_ERR_ASSERT(OtbnAck_A, otbn_ack == 0)

@@ -12,9 +12,6 @@ class csrng_cmds_test extends csrng_base_test;
 
     cfg.num_cmds_min      = 0;
     cfg.num_cmds_max      = 20;
-    cfg.aes_halt_pct      = 80;
-    cfg.min_aes_halt_clks = 400;
-    cfg.max_aes_halt_clks = 600;
     cfg.force_state_pct   = 100;
     cfg.min_num_disable_enable = 0;
     cfg.max_num_disable_enable = 10;

@@ -13,7 +13,6 @@ filesets:
     depend:
       - lowrisc:earlgrey_dv:gpio_test
       - lowrisc:earlgrey_dv:gpio_sva
-      - lowrisc:earlgrey_dv:gpio_if
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

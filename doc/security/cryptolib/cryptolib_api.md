@@ -132,7 +132,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 #### Elliptic curve data structures
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_eddsa_sign_mode }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_eddsa_sign_mode }}
 
 #### Hash data structures
 
@@ -196,11 +196,9 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 
 OpenTitan's [KMAC block][kmac] supports the fixed digest length SHA3\[224, 256, 384, 512\] cryptographic hash functions, and the extendable-output functions of variable digest length SHAKE\[128, 256\] and cSHAKE\[128, 256\].
 
-SHA-2 functions are supported by [OTBN][otbn], and one-shot SHA-256 is supported by the [HMAC block][hmac]
+SHA-2 functions are supported by the [HMAC block][hmac].
 The OpenTitan cryptolib supports SHA2-256, SHA2-384, and SHA2-512.
 For **SHA2 only**, the hash API supports both one-shot and streaming modes of operation.
-
-Note that hardware support for one-shot SHA-256 means that the one-shot version will be significantly faster than streaming mode for that specific algorithm.
 
 ### One-shot mode
 
@@ -389,9 +387,9 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify }}
 
 #### X25519
 
@@ -439,14 +437,15 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### Ed25519
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_finalize }}
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_part1_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_part2_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign_async_finalize }}
 
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify_async_finalize }}
 
 #### X25519
 

@@ -35,17 +35,16 @@ def load_test_data(test_name):
         "lowrisc_opentitan/sw/host/penetrationtests/python/fi/gold_responses/fi_otbn.json"
     )
 
-    with open(data_path, 'r') as f:
+    with open(data_path, "r") as f:
         data = json.load(f)
         return data[test_name]
 
 
 class OtbnFiTest(unittest.TestCase):
-
     def test_init(self):
         otbnfi = OTFIOtbn(target)
-        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = (
-            otbnfi.init(alert_config=common_library.default_fpga_friendly_alert_config)
+        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = otbnfi.init(
+            alert_config=common_library.default_fpga_friendly_alert_config
         )
         device_id_json = json.loads(device_id)
         sensors_json = json.loads(sensors)
@@ -79,13 +78,13 @@ class OtbnFiTest(unittest.TestCase):
         expected_sensors_keys = {"sensor_ctrl_en", "sensor_ctrl_fatal"}
         actual_sensors_keys = set(sensors_json.keys())
 
-        self.assertEqual(
-            expected_sensors_keys, actual_sensors_keys, "sensor keys do not match"
-        )
+        self.assertEqual(expected_sensors_keys, actual_sensors_keys, "sensor keys do not match")
 
         expected_alerts_keys = {
             "alert_classes",
+            "loc_alert_classes",
             "enabled_alerts",
+            "enabled_loc_alerts",
             "enabled_classes",
             "accumulation_thresholds",
             "duration_cycles",
@@ -94,9 +93,7 @@ class OtbnFiTest(unittest.TestCase):
         }
         actual_alerts_keys = set(alerts_json.keys())
 
-        self.assertEqual(
-            expected_alerts_keys, actual_alerts_keys, "alert keys do not match"
-        )
+        self.assertEqual(expected_alerts_keys, actual_alerts_keys, "alert keys do not match")
 
         expected_owner_page_keys = {
             "config_version",
@@ -133,9 +130,7 @@ class OtbnFiTest(unittest.TestCase):
         }
         actual_boot_log_keys = set(boot_log_json.keys())
 
-        self.assertEqual(
-            expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match"
-        )
+        self.assertEqual(expected_boot_log_keys, actual_boot_log_keys, "boot_log keys do not match")
 
         expected_boot_measurements_keys = {"bl0", "rom_ext"}
         actual_boot_measurements_keys = set(boot_measurements_json.keys())
@@ -151,92 +146,70 @@ class OtbnFiTest(unittest.TestCase):
     def test_char_beq(self):
         actual_result = fi_otbn_functions.char_beq(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_beq')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_beq")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_bn_rshi(self):
         data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         actual_result = fi_otbn_functions.char_bn_rshi(target, iterations, data)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_bn_rshi')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_bn_rshi")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_bn_sel(self):
         data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         actual_result = fi_otbn_functions.char_bn_sel(target, iterations, data)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_bn_sel')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_bn_sel")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_bn_wsrr(self):
         actual_result = fi_otbn_functions.char_bn_wsrr(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_bn_wsrr')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_bn_wsrr")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_bne(self):
         actual_result = fi_otbn_functions.char_bne(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_bne')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_bne")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_dmem_access(self):
         actual_result = fi_otbn_functions.char_dmem_access(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_dmem_access')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_dmem_access")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_dmem_write(self):
         actual_result = fi_otbn_functions.char_dmem_write(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_dmem_write')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_dmem_write")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_dmem_op_loop(self):
         actual_result = fi_otbn_functions.char_dmem_op_loop(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_dmem_op_loop')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_dmem_op_loop")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_reg_op_loop(self):
         actual_result = fi_otbn_functions.char_reg_op_loop(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_reg_op_loop')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_reg_op_loop")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_jal(self):
         actual_result = fi_otbn_functions.char_jal(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_jal')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_jal")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_lw(self):
         actual_result = fi_otbn_functions.char_lw(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_lw')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_lw")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_mem(self):
         byte_offset = 0
@@ -247,69 +220,51 @@ class OtbnFiTest(unittest.TestCase):
             target, iterations, byte_offset, num_words, imem, dmem
         )
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_mem')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_mem")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_rf(self):
         actual_result = fi_otbn_functions.char_rf(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_rf')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_rf")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_unrolled_dmem_op_loop(self):
         actual_result = fi_otbn_functions.char_unrolled_dmem_op_loop(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_unrolled_dmem_op_loop')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_unrolled_dmem_op_loop")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_unrolled_reg_op_loop(self):
         actual_result = fi_otbn_functions.char_unrolled_reg_op_loop(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_unrolled_reg_op_loop')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_unrolled_reg_op_loop")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_load_integrity(self):
         actual_result = fi_otbn_functions.char_load_integrity(target, iterations)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_load_integrity')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_load_integrity")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
     def test_char_pc(self):
         pc = 2224
         actual_result = fi_otbn_functions.char_pc(target, iterations, pc)
         actual_result_json = json.loads(actual_result)
-        expected_result_json = load_test_data('char_pc')
-        utils.compare_json_data(
-            actual_result_json, expected_result_json, ignored_keys_set
-        )
+        expected_result_json = load_test_data("char_pc")
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
 
 if __name__ == "__main__":
     r = Runfiles.Create()
     # Get the opentitantool path.
-    opentitantool_path = r.Rlocation(
-        "lowrisc_opentitan/sw/host/opentitantool/opentitantool"
-    )
+    opentitantool_path = r.Rlocation("lowrisc_opentitan/sw/host/opentitantool/opentitantool")
     # Program the bitstream for FPGAs.
     bitstream_path = None
     if BITSTREAM:
-        bitstream_path = r.Rlocation(
-            "lowrisc_opentitan/" + BITSTREAM
-        )
+        bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
     # Get the firmware path.
-    firmware_path = r.Rlocation(
-        "lowrisc_opentitan/" + BOOTSTRAP
-    )
+    firmware_path = r.Rlocation("lowrisc_opentitan/" + BOOTSTRAP)
 
     if "fpga" in BOOTSTRAP:
         target_type = "fpga"
@@ -322,7 +277,7 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
-        tool_args=config_args
+        tool_args=config_args,
     )
 
     target = targets.Target(target_cfg)

@@ -325,10 +325,10 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
-  TRY(otp_secret_write(otp_ctrl, kSecret1FlashAddrKeySeedOffset,
-                       kSecret1FlashAddrKeySeed64BitWords));
-  TRY(otp_secret_write(otp_ctrl, kSecret1FlashDataKeySeedOffset,
-                       kSecret1FlashDataKeySeed64BitWords));
+  TRY(otp_secret_write(otp_ctrl, kSecret1NvmAddrKeySeedOffset,
+                       kSecret1NvmAddrKeySeed64BitWords));
+  TRY(otp_secret_write(otp_ctrl, kSecret1NvmDataKeySeedOffset,
+                       kSecret1NvmDataKeySeed64BitWords));
   TRY(otp_secret_write(otp_ctrl, kSecret1SramDataKeySeedOffset,
                        kSecret1SramDataKeySeed64Bitwords));
 

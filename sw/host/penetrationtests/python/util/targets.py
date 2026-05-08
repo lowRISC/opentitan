@@ -69,6 +69,9 @@ class Target:
         # Clear the UART
         self.dump_all()
 
+    def clear_bitstream(self, delay=2):
+        self.target.clear_bitstream(delay=delay)
+
     def reset_target(self, reset_delay=0.005):
         self.target.reset_target(reset_delay=reset_delay)
 
@@ -96,6 +99,20 @@ class Target:
                     print(read_line, flush=True)
                 else:
                     break
+            except UnicodeDecodeError:
+                pass
+            it += 1
+
+    def read_all(self, max_tries=50):
+        it = 0
+        response = ""
+        while it != max_tries:
+            try:
+                read_line = str(self.readline().decode().strip())
+                if len(read_line) > 0:
+                    response += read_line
+                else:
+                    return response
             except UnicodeDecodeError:
                 pass
             it += 1
@@ -154,7 +171,7 @@ class Target:
                 continue
         return "", False
 
-    def read_response(self, max_tries: Optional[int] = 50):
+    def read_response(self, init_timeout: Optional[int] = 0, max_tries: Optional[int] = 250):
         """
         Args:
             max_tries: Maximum number of attempts to read from UART.
@@ -162,6 +179,7 @@ class Target:
         Returns:
             The JSON response of OpenTitan.
         """
+        time.sleep(init_timeout)
         it = 0
         while it < max_tries:
             try:
@@ -176,9 +194,9 @@ class Target:
             it += 1
         return ""
 
-    def start_openocd(self):
+    def start_openocd(self, startup_delay=4, print_output=True):
         if self.target_cfg.openocd:
-            self.target.start_openocd()
+            self.target.start_openocd(startup_delay=startup_delay, print_output=print_output)
 
     def read_openocd(self):
         if self.target_cfg.openocd:

@@ -24,14 +24,8 @@ pub enum Message {
     // as requests are processed and responses generated in the order they are received.
     Req(Request),
     Res(Result<Response, SerializedError>),
-    // An "asynchronos message" is one that is not a direct response to a request, but can be sent
-    // at any time, as part of a communication "channel" previously set up.
-    Async { channel: u32, msg: AsyncMessage },
-}
-
-#[derive(Serialize, Deserialize)]
-pub enum AsyncMessage {
-    UartData { data: Vec<u8> },
+    // Wake up a previously registered waker.
+    Wake { id: u32, triggered: bool },
 }
 
 #[derive(Serialize, Deserialize)]
@@ -46,6 +40,7 @@ pub enum Request {
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
     Emu { command: EmuRequest },
+    Fpga(FpgaRequest),
     Proxy(ProxyRequest),
 }
 
@@ -61,6 +56,7 @@ pub enum Response {
     Spi(SpiResponse),
     I2c(I2cResponse),
     Emu(EmuResponse),
+    Fpga(FgpaResponse),
     Proxy(ProxyResponse),
 }
 
@@ -180,23 +176,18 @@ pub enum GpioDacResponse {
 #[derive(Serialize, Deserialize)]
 pub enum UartRequest {
     GetBaudrate,
-    SetBaudrate {
-        rate: u32,
-    },
+    SetBaudrate { rate: u32 },
     SetBreak(bool),
     GetParity,
     SetParity(Parity),
     GetFlowControl,
     SetFlowControl(bool),
     GetDevicePath,
-    Read {
-        timeout_millis: Option<u32>,
-        len: u32,
-    },
-    Write {
-        data: Vec<u8>,
-    },
-    RegisterNonblockingRead,
+    // If any data can be read, `Some` will be returned. Otherwise, the waker is registered and `None` will be returned.
+    // When data becomes available, an unsolicited `Wake` message will be send to the client.
+    PollRead { len: u32, waker: u32 },
+    Write { data: Vec<u8> },
+    Initialize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -209,9 +200,9 @@ pub enum UartResponse {
     GetFlowControl { flow_control: FlowControl },
     SetFlowControl,
     GetDevicePath { path: String },
-    Read { data: Vec<u8> },
+    PollRead { data: Option<Vec<u8>> },
     Write,
-    RegisterNonblockingRead { channel: u32 },
+    Initialize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -385,6 +376,18 @@ pub enum EmuResponse {
     GetState { state: EmuState },
     Start,
     Stop,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum FpgaRequest {
+    LoadBitstream { bitstream: Vec<u8> },
+    ClearBitstream,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum FgpaResponse {
+    LoadBitstream,
+    ClearBitstream,
 }
 
 #[derive(Serialize, Deserialize)]

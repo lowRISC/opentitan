@@ -6,13 +6,23 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
+config_setting(
+    name = "disable_buf_integrity_checks",
+    define_values = {
+        "disable_buf_integrity_checks": "true",
+    },
+)
+
 # Export all headers.
 exports_files(glob(["*.h"]))
 
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
-    defines = ["OTCRYPTO_IN_REPO=1"],
+    defines = ["OTCRYPTO_IN_REPO=1"] + select({
+        ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
+        "//conditions:default": [],
+    }),
     includes = ["."],
     deps = [
         "//sw/device/lib/base:hardened",
@@ -25,24 +35,31 @@ cc_library(
     hdrs = [
         "aes.h",
         "aes_gcm.h",
+        "cryptolib_build_info.h",
         "datatypes.h",
         "drbg.h",
+        "ecc_curve25519.h",
         "ecc_p256.h",
         "ecc_p384.h",
-        "ed25519.h",
         "hkdf.h",
         "hmac.h",
+        "integrity.h",
         "kdf_ctr.h",
         "key_transport.h",
         "kmac.h",
         "kmac_kdf.h",
+        "mldsa.h",
         "otcrypto.h",
         "rsa.h",
+        "security_config.h",
         "sha2.h",
         "sha3.h",
         "x25519.h",
     ],
-    defines = ["OTCRYPTO_IN_REPO=1"],
+    defines = ["OTCRYPTO_IN_REPO=1"] + select({
+        ":disable_buf_integrity_checks": ["OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS"],
+        "//conditions:default": [],
+    }),
     includes = ["."],
     deps = [
         "//sw/device/lib/base:hardened",
@@ -57,17 +74,20 @@ cc_library(
     hdrs = [
         "aes.h",
         "aes_gcm.h",
+        "cryptolib_build_info.h",
         "datatypes.h",
         "drbg.h",
+        "ecc_curve25519.h",
         "ecc_p256.h",
         "ecc_p384.h",
-        "ed25519.h",
         "hkdf.h",
         "hmac.h",
+        "integrity.h",
         "kdf_ctr.h",
         "key_transport.h",
         "kmac.h",
         "kmac_kdf.h",
+        "mldsa.h",
         "otcrypto.h",
         "rsa.h",
         "sha2.h",

@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <stdnoreturn.h>
 
-#include "hw/top/dt/dt_api.h"
-#include "hw/top/dt/dt_rstmgr.h"
+#include "hw/top/dt/api.h"
+#include "hw/top/dt/rstmgr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -114,6 +114,18 @@ noreturn
 #endif
     void
     rstmgr_reset(void);
+
+/**
+ * Reboot the chip.
+ *
+ * This function clears the power-on-reset reason and then resets the chip.
+ */
+#ifdef OT_PLATFORM_RV32
+// Omit `noreturn` to be able to test this function in off-target tests.
+noreturn
+#endif
+    void
+    rstmgr_reboot(void);
 
 /**
  * Verifies that info collection is initialized properly.

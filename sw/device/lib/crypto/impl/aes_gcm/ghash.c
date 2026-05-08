@@ -121,7 +121,7 @@ static inline void galois_mulx(const ghash_block_t *p, ghash_block_t *out) {
   // Get the very rightmost bit of the input block (coefficient of x^127).
   uint8_t p127 = block_byte_get(p, kGhashBlockNumBytes - 1) & 1;
   // Set the output to p >> 1.
-  memcpy(out->data, p->data, kGhashBlockNumBytes);
+  randomized_bytecopy(out->data, p->data, kGhashBlockNumBytes);
   block_shiftr(out, 1);
   // If the highest coefficient was 1, then subtract the polynomial that
   // corresponds to (modulus - 2^128).
@@ -172,11 +172,12 @@ hardened_bool_t ghash_context_integrity_checksum_check(
   return kHardenedBoolFalse;
 }
 
-void ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl) {
+status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl) {
   // Initialize 0 * H = 0.
   memset(tbl[0].data, 0, kGhashBlockNumBytes);
   // Initialize 1 * H = H.
-  memcpy(tbl[0x8].data, hash_subkey, kGhashBlockNumBytes);
+  HARDENED_TRY(
+      randomized_bytecopy(tbl[0x8].data, hash_subkey, kGhashBlockNumBytes));
 
   // To get remaining entries, we use a variant of "shift and add"; in
   // polynomial terms, a shift is a multiplication by x. Note that, because the
@@ -191,9 +192,11 @@ void ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl) {
     // Add H to i * H to get (i + 1) * H.
     block_xor(&tbl[reverse_bits(i)], &tbl[0x8], &tbl[reverse_bits(i + 1)]);
   }
+
+  return OTCRYPTO_OK;
 }
 
-void ghash_init(ghash_context_t *ctx) {
+status_t ghash_init(ghash_context_t *ctx) {
   // Randomize the initial state.
   hardened_memshred(ctx->state0.data, kGhashBlockNumWords);
   hardened_memshred(ctx->state1.data, kGhashBlockNumWords);
@@ -201,6 +204,8 @@ void ghash_init(ghash_context_t *ctx) {
   ctx->ghash_block_cnt = 0;
 
   ctx->checksum = ghash_context_integrity_checksum(ctx);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -275,7 +280,8 @@ static ghash_block_t galois_mul_state_key(ghash_block_t state,
  * @param ctx GHASH context.
  * @param block Block to incorporate.
  */
-static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
+static status_t ghash_process_block(ghash_context_t *ctx,
+                                    ghash_block_t *block) {
   ghash_block_t s0_tmp;
   ghash_block_t s1_tmp;
 
@@ -344,62 +350,68 @@ static void ghash_process_block(ghash_context_t *ctx, ghash_block_t *block) {
 
   // Increment the number of processed ghash block counter.
   ctx->ghash_block_cnt++;
+
+  return OTCRYPTO_OK;
 }
 
-void ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
-                               ghash_block_t *partial, size_t input_len,
-                               const uint8_t *input) {
+status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                                   ghash_block_t *partial, size_t input_len,
+                                   const uint8_t *input) {
   if (input_len < kGhashBlockNumBytes - partial_len) {
     // Not enough data for a full block; copy into the partial block.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
-    memcpy(partial_bytes + partial_len, input, input_len);
+    randomized_bytecopy(partial_bytes + partial_len, input, input_len);
   } else {
     // Construct a block from the partial data and the start of the new data.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
-    memcpy(partial_bytes + partial_len, input,
-           kGhashBlockNumBytes - partial_len);
+    randomized_bytecopy(partial_bytes + partial_len, input,
+                        kGhashBlockNumBytes - partial_len);
     input += kGhashBlockNumBytes - partial_len;
     input_len -= kGhashBlockNumBytes - partial_len;
 
     // Process the block.
-    ghash_process_block(ctx, partial);
+    HARDENED_TRY(ghash_process_block(ctx, partial));
 
     // Process any remaining full blocks of input.
     while (input_len >= kGhashBlockNumBytes) {
-      memcpy(partial->data, input, kGhashBlockNumBytes);
-      ghash_process_block(ctx, partial);
+      randomized_bytecopy(partial->data, input, kGhashBlockNumBytes);
+      HARDENED_TRY(ghash_process_block(ctx, partial));
       input += kGhashBlockNumBytes;
       input_len -= kGhashBlockNumBytes;
     }
 
     // Copy any remaining input into the partial block.
-    memcpy(partial->data, input, input_len);
+    randomized_bytecopy(partial->data, input, input_len);
   }
+
+  return OTCRYPTO_OK;
 }
 
-void ghash_update(ghash_context_t *ctx, size_t input_len,
-                  const uint8_t *input) {
+status_t ghash_update(ghash_context_t *ctx, size_t input_len,
+                      const uint8_t *input) {
   // Process all full blocks and write the remaining non-full data into
   // `partial`.
   ghash_block_t partial = {.data = {0}};
-  ghash_process_full_blocks(ctx, 0, &partial, input_len, input);
+  HARDENED_TRY(ghash_process_full_blocks(ctx, 0, &partial, input_len, input));
 
   // Check if there is data remaining, and process it if so.
   size_t partial_len = input_len % kGhashBlockNumBytes;
   if (partial_len != 0) {
     unsigned char *partial_bytes = (unsigned char *)partial.data;
     memset(partial_bytes + partial_len, 0, kGhashBlockNumBytes - partial_len);
-    ghash_process_block(ctx, &partial);
+    HARDENED_TRY(ghash_process_block(ctx, &partial));
   }
+
+  return OTCRYPTO_OK;
 }
 
-void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
-                            const uint8_t *input) {
+status_t ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
+                                const uint8_t *input) {
   // Copy ctx.
   ghash_context_t ctx_redundant;
-  memcpy(&ctx_redundant, ctx, sizeof(ctx_redundant));
+  randomized_bytecopy(&ctx_redundant, ctx, sizeof(ctx_redundant));
 
-  ghash_update(ctx, input_len, input);
+  HARDENED_TRY(ghash_update(ctx, input_len, input));
 
   ghash_update(&ctx_redundant, input_len, input);
 
@@ -409,9 +421,11 @@ void ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
       consttime_memeq_byte(&ctx->state0.data, ctx_redundant.state0.data,
                            kGhashBlockNumBytes),
       kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
 }
 
-void ghash_handle_enc_initial_counter_block(
+status_t ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block0,
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx) {
   // correction_term0 = S0 * (H0 + 1).
@@ -437,9 +451,11 @@ void ghash_handle_enc_initial_counter_block(
 
   // Update the checksum.
   ctx->checksum = ghash_context_integrity_checksum(ctx);
+
+  return OTCRYPTO_OK;
 }
 
-void ghash_final(ghash_context_t *ctx, uint32_t *result) {
+status_t ghash_final(ghash_context_t *ctx, uint32_t *result) {
   // Check that the context's checksum is correct.
   HARDENED_CHECK_EQ(ghash_context_integrity_checksum_check(ctx),
                     kHardenedBoolTrue);
@@ -452,5 +468,8 @@ void ghash_final(ghash_context_t *ctx, uint32_t *result) {
   hardened_xor(tmp_block.data, ctx->enc_initial_counter_block1.data,
                kGhashBlockNumWords, final_block.data);
 
-  memcpy(result, final_block.data, kGhashBlockNumBytes);
+  HARDENED_TRY(
+      randomized_bytecopy(result, final_block.data, kGhashBlockNumBytes));
+
+  return OTCRYPTO_OK;
 }

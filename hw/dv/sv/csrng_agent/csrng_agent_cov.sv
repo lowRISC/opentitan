@@ -17,7 +17,7 @@
 
 // covergroups
 // Depends on whether the agent is device or host mode, the "csrng_cmd_cp" are slightly different:
-// In device mode: acmd INV, GENB, GENU are in the illegal bin.
+// In device mode: acmd INV, is in the illegal bin.
 covergroup device_cmd_cg with function sample(csrng_item item, csrng_cmd_sts_e sts);
   option.name         = "csrng_device_cmd_cg";
   option.per_instance = 1;
@@ -62,8 +62,6 @@ covergroup host_cmd_cg with function sample(csrng_item item, csrng_cmd_sts_e sts
     bins gen = {GEN};
     bins upd = {UPD};
     bins uni = {UNI};
-    bins genb = {GENB};
-    bins genu = {GENU};
     illegal_bins il = default;
   }
   csrng_clen_cp: coverpoint item.clen {
@@ -84,10 +82,10 @@ covergroup host_cmd_cg with function sample(csrng_item item, csrng_cmd_sts_e sts
   csrng_cmd_clen_flag_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_flag_cp;
 
   csrng_cmd_clen_flag_sts_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_flag_cp, csrng_sts {
-    // Illegal commands (INV, GENB, GENU) don't get a response, thus don't have a status.
-    ignore_bins illegal_cmds = binsof(csrng_cmd_cp) intersect {INV, GENB, GENU};
+    // Illegal command INV doesn't get a response, thus doesn't have a status.
+    ignore_bins illegal_cmds = binsof(csrng_cmd_cp) intersect {INV};
     // Ignore status error responses for legal commands.
-    ignore_bins legal_cmds_with_error_sts = !binsof(csrng_cmd_cp) intersect {INV, GENB, GENU} &&
+    ignore_bins legal_cmds_with_error_sts = !binsof(csrng_cmd_cp) intersect {INV} &&
                                             !binsof(csrng_sts) intersect {CMD_STS_SUCCESS};
   }
 

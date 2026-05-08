@@ -3,9 +3,6 @@
 AON Timer interacts with the CPU core and the power manager and reset manager to generate interrupts as well as wakeup and  reset events.
 Each timer increases its count as long as its enable signal (`wdog_ctrl.enable` for WDOG and `wkup_ctrl.enable` for WKUP) is set.
 Both timers halt the counting if the signal `lc_escalate_en_i` is set, which tells the alert handler is the system is in a "killed" state.
-In addition, the WDOG timer can be configured to stop counting if the `sleep_mode_i` is set.
-To configure it like this, set the field `wdog_ctrl.pause_in_sleep` to 1.
-This feature is used to stop the watchdog timer running when in debugging mode.
 
 The diagram below depicts high level functionality and connectivity between AON Timer, the PLIC, Power Manager and the Reset Manager.
 The output signals `intr_wkup_timer_expired_o`, `intr_wdog_timer_bark_o` and `nmi_wdog_timer_bark_o` are driven on the SYS domain.

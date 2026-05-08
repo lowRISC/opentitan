@@ -60,7 +60,10 @@ assign mem_req_fst_d = data_req_o & ~mem_gnt_fst_q;
 assign mem_req_snd_d = data_req_o & mem_gnt_fst_q;
 
 always @(posedge clk_i or negedge rst_ni) begin
-    if (~rst_ni | instr_will_progress) begin
+    if (~rst_ni) begin
+        mem_gnt_fst_q <= 1'b0;
+        mem_gnt_snd_q <= 1'b0;
+    end else if (instr_will_progress) begin
         mem_gnt_fst_q <= 1'b0;
         mem_gnt_snd_q <= 1'b0;
     end else begin

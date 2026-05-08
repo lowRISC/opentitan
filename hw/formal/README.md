@@ -237,7 +237,7 @@ Before running FPV, please make sure the target has been added to one of the [th
 
 For example, to run formal property verification (FPV) using JasperGold on the prim module `prim_arbiter_fixed`, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_prim_fpv_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_fpv_prim_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv
 ```
 JasperGold will then report which assertions have been proven or disproven, and whether or not there are any unreachable assertions or coverpoints.
 Adding a `--gui` option will open the JasperGold GUI.
@@ -252,14 +252,14 @@ To run formal property verification for all prim modules, type:
 If you have access to VC Formal from Synopsys, you can formally verify your assertions.
 For example, to run formal property verification (FPV) using VC Formal on module `gpio`, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_prim_fpv_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv -t vcformal
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_fpv_prim_cfgs.hjson --select-cfgs prim_arbiter_fixed_fpv -t vcformal
 ```
 VC Formal will then report which assertions have been proven or disproven, and whether or not there are any unreachable assertions or coverpoints.
 Adding a `--gui` option will open the VCFormal GUI.
 
 To run formal property verification for all prim modules, type:
 ```
-  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_prim_fpv_cfgs.hjson -t vcformal
+  $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_earlgrey/formal/top_earlgrey_fpv_prim_cfgs.hjson -t vcformal
 ```
 This script generates a report of all FPV runs.
 The report is printed at the end of the run, which lists the total number of assertions and the number of proven, vacuous, covered and failing assertions for each block. CRASH identifies modules that fail to run VC Formal.

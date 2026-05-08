@@ -38,9 +38,7 @@ module tb;
       rng_if(.clk(clk), .rst_n(csrng_rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       csrng_if(.clk(clk), .rst_n(csrng_rst_n));
-  push_pull_if#(.HostDataWidth(0)) aes_halt_if(.clk(clk), .rst_n(csrng_rst_n && rst_n));
   entropy_src_xht_if xht_if(.clk(clk), .rst_n(rst_n));
-  entropy_src_path_if entropy_src_path_if ();
 
   `DV_ALERT_IF_CONNECT()
 
@@ -49,7 +47,6 @@ module tb;
     .RngBusWidth(`RNG_BUS_WIDTH),
     .RngBusBitSelWidth(`RNG_BUS_BIT_SEL_WIDTH),
     .HealthTestWindowWidth(16 + `RNG_BUS_BIT_SEL_WIDTH),
-    .EnCsAesHaltReqIf(`EN_CS_AES_HALT_REQ_IF),
     .DistrFifoDepth(`DISTR_FIFO_DEPTH)
   ) dut (
     .clk_i                        (clk        ),
@@ -66,9 +63,6 @@ module tb;
                                     csrng_if.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH-1:0],
                                     csrng_if.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH]}),
     .entropy_src_hw_if_i          (csrng_if.req),
-
-    .cs_aes_halt_o                (aes_halt_if.req),
-    .cs_aes_halt_i                (aes_halt_if.ack),
 
     .entropy_src_xht_valid_o              (xht_if.entropy_valid),
     .entropy_src_xht_bits_o               (xht_if.entropy_bits),
@@ -94,6 +88,8 @@ module tb;
   assign interrupts[HealthTestFailed] = intr_health_test_failed;
   assign interrupts[ObserveFifoReady] = intr_observe_fifo_ready;
   assign interrupts[FatalErr]         = intr_fatal_err;
+
+  bind dut entropy_src_path_if entropy_src_path_if ();
 
   bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_precon
     entropy_subsys_fifo_exception_if #(
@@ -153,11 +149,9 @@ module tb;
         (null, "*.env.m_rng_agent*", "vif", rng_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
         set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
-    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(0)))::
-        set(null, "*.env.m_aes_halt_agent*", "vif", aes_halt_if);
     uvm_config_db#(virtual entropy_src_xht_if)::set(null, "*.env.m_xht_agent*", "vif", xht_if);
     uvm_config_db#(virtual entropy_src_path_if)::set(null, "*.env", "entropy_src_path_vif",
-        entropy_src_path_if);
+                                                     dut.entropy_src_path_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

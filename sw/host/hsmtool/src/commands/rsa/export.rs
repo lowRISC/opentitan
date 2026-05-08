@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{Result, anyhow};
 use cryptoki::object::{Attribute, ObjectHandle};
 use cryptoki::session::Session;
 use rsa::{RsaPrivateKey, RsaPublicKey};
@@ -17,6 +17,7 @@ use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType, Obj
 use crate::util::helper;
 use crate::util::key::KeyEncoding;
 use crate::util::key::rsa::{save_private_key, save_public_key};
+use crate::util::wrap::{Wrap, WrapPrivateKey};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Export {
@@ -30,6 +31,9 @@ pub struct Export {
     /// Wrap the exported key a wrapping key.
     #[arg(long)]
     wrap: Option<String>,
+    // Wrapping key mechanism. Required when wrap is specified.
+    #[arg(long, default_value = "aes-key-wrap-pad")]
+    wrap_mechanism: Option<WrapPrivateKey>,
     #[arg(short, long, value_enum, default_value = "pem")]
     format: KeyEncoding,
     filename: PathBuf,
@@ -53,16 +57,14 @@ impl Export {
         Ok(())
     }
 
-    fn wrap_key(&self, session: &Session, _object: ObjectHandle) -> Result<()> {
-        let mut attrs = helper::search_spec(None, self.wrap.as_deref())?;
-        attrs.push(Attribute::Class(ObjectClass::SecretKey.try_into()?));
-        let _wkey = helper::find_one_object(session, &attrs).context("Find wrapping key")?;
-
-        bail!("RSA export by wrapping is not supported yet!");
-        // FIXME(cfrantz): Turn this back on when cryptoki includes the correct mechanisms.
-        //let wrapped = session.wrap_key(&Mechanism::RsaPkcs, wkey, object)?;
-        //std::fs::write(&self.filename, &wrapped)?;
-        //Ok(())
+    fn wrap_key(&self, session: &Session, object: ObjectHandle) -> Result<()> {
+        let wrapper: Wrap = self
+            .wrap_mechanism
+            .ok_or(anyhow!("wrap_mechanism is required when wrap is specified"))?
+            .into();
+        let wrapped = wrapper.wrap(session, object, self.wrap.as_deref())?;
+        std::fs::write(&self.filename, &wrapped)?;
+        Ok(())
     }
 }
 

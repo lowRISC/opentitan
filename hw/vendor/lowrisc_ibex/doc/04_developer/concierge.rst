@@ -24,9 +24,10 @@ Who is Ibex Concierge today?
 The concierge duties rotate between several core developers on a weekly basis.
 You can find today's concierge on duty in a `public calendar <https://calendar.google.com/calendar/embed?src=lowrisc.org_s0pdodkddnggdp40jusjij27h4%40group.calendar.google.com>`_.
 
-* Greg Chadwick (`@GregAC <https://github.com/gregac>`_)
+Besides the concierge on duty you can also contact the following people for urgent matters:
+
+* Marno van der Maas (`@marnovandermaas <https://github.com/marnovandermaas>`_)
 * Rupert Swarbrick (`@rswarbrick <https://github.com/rswarbrick>`_)
-* Pirmin Vogel (`@vogelpi <https://github.com/vogelpi>`_)
 
 You can be Ibex Concierge, too.
 Please talk to any of the current concierges to discuss!

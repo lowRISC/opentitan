@@ -52,7 +52,7 @@ class core_base_new_seq #(type REQ = uvm_sequence_item) extends uvm_sequence #(R
   endfunction
 
   virtual task pre_body();
-    // Randomize once before starting to ensure all unininitialized rand variables have a valid starting value
+    // Randomize once before starting to ensure all uninitialized rand variables have a valid starting value
     this.randomize();
   endtask: pre_body
 
@@ -204,7 +204,7 @@ endclass
 class memory_error_seq extends core_base_new_seq#(ibex_mem_intf_seq_item);
   core_ibex_vseq               vseq;
   rand bit                     choose_side;
-  // When set skip error injection if Ibex is currently handling an exception (incluing IRQs)
+  // When set skip error injection if Ibex is currently handling an exception (including IRQs)
   bit                          skip_on_exc = 1'b0;
 
   error_type_e                 err_type = PickErr;

@@ -26,6 +26,8 @@ The interfaces of the icache module are the same as the prefetch buffer with two
 Firstly, a signal to enable the cache which is driven from a custom CSR.
 Secondly a signal to the flush the cache which is set every time a ``fence.i`` instruction is executed.
 
+.. _branch-prediction:
+
 Branch Prediction
 -----------------
 

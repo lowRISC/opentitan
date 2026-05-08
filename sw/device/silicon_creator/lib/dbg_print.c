@@ -9,6 +9,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#ifndef OT_PLATFORM_RV32
+#include <stdio.h>
+#endif
+
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
@@ -16,6 +20,7 @@
 
 OT_NONSTRING static const char kHexTable[16] = "0123456789abcdef";
 
+#if defined(OT_PLATFORM_RV32) || defined(DBG_PRINT_UNIT_TEST_)
 static void print_integer(unsigned value, bool is_signed) {
   char buf[12];
   char *b = buf + sizeof(buf);
@@ -110,6 +115,19 @@ void dbg_printf(const char *format, ...) {
   }
   va_end(args);
 }
+
+#else  // defined(OT_PLATFORM_RV32) || defined(DBG_PRINT_UNIT_TEST_)
+
+void dbg_puts(const char *str) { puts(str); }
+
+void dbg_printf(const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  vprintf(format, args);
+  va_end(args);
+}
+
+#endif  // defined(OT_PLATFORM_RV32) || defined(DBG_PRINT_UNIT_TEST_)
 
 void dbg_print_epmp(void) {
   uint32_t pmpaddr[16];

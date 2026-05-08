@@ -53,11 +53,7 @@ fn test_override(
     let output = &[0x03; SAMPLES];
     let waveform = Box::new([BitbangEntry::Both(output, &mut samples)]);
 
-    UartConsole::wait_for(
-        &*uart,
-        r".*SiVal: waiting for commands.*?[^\r\n]*",
-        opts.timeout,
-    )?;
+    UartConsole::wait_for(&*uart, r"SiVal: waiting for commands", opts.timeout)?;
     MemWriteReq::execute(&*uart, backdoor_start_addr, &[1u8])?;
 
     gpio_bitbanging.run(

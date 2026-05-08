@@ -56,8 +56,8 @@ module pwrmgr
   input  lc_ctrl_pkg::pwr_lc_rsp_t pwr_lc_i,
   output lc_ctrl_pkg::pwr_lc_req_t pwr_lc_o,
 
-  // flash interface
-  input  pwr_flash_t pwr_flash_i,
+  // NVM interface
+  input  pwr_nvm_t pwr_nvm_i,
 
   // processor interface
   input  rv_core_ibex_pkg::cpu_pwrmgr_t pwr_cpu_i,
@@ -65,6 +65,7 @@ module pwrmgr
   output lc_ctrl_pkg::lc_tx_t fetch_en_o,
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input  logic ext_rst_ack_i,
   output pwr_boot_status_t    boot_status_o,
   // peripherals wakeup and reset requests
   input  [NumWkups-1:0]       wakeups_i,
@@ -270,7 +271,7 @@ module pwrmgr
   logic low_power_fall_through;
   logic low_power_abort;
 
-  pwr_flash_t flash_rsp;
+  pwr_nvm_t nvm_rsp;
   pwr_otp_rsp_t otp_rsp;
 
   prim_mubi_pkg::mubi4_t [NumRomInputs-1:0] rom_ctrl_done_async;
@@ -454,9 +455,9 @@ module pwrmgr
     // peripheral signals
     .peri_i(peri_reqs_raw),
 
-    // flash handshake
-    .flash_i(pwr_flash_i),
-    .flash_o(flash_rsp),
+    // NVM handshake
+    .nvm_i(pwr_nvm_i),
+    .nvm_o(nvm_rsp),
 
     // OTP signals
     .otp_i(pwr_otp_i),
@@ -520,14 +521,9 @@ module pwrmgr
                                           slow_reset_en};
   logic strap_sampled;
   logic internal_reset_req;
-  logic ext_reset_req;
 
   // Make the SoC see what the slow FSM sees to to generate the light_reset to the SoC
   assign internal_reset_req = |slow_peri_reqs_masked.rstreqs;
-
-  // The MSB of `slow_peri_reqs.rstreqs` is the external reset request. We want it to always
-  // propagate, in order to continue from the Reset Wait state in the fast FSM.
-  assign ext_reset_req              = slow_peri_reqs.rstreqs[NumRstReqs-1];
 
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
     assign hw2reg.wake_status[i].de = 1'b1;
@@ -623,7 +619,7 @@ module pwrmgr
     .abort_o           (low_power_abort),
     .clr_hint_o        (clr_hint),
     .int_reset_req_i   (internal_reset_req),
-    .ext_reset_req_i   (ext_reset_req),
+    .ext_rst_ack_i     (ext_rst_ack_i),
 
     // rstmgr
     .pwr_rst_o         (pwr_rst_o),
@@ -645,8 +641,8 @@ module pwrmgr
     .lc_dft_en_i       (lc_dft_en),
     .lc_hw_debug_en_i  (lc_hw_debug_en),
 
-    // flash
-    .flash_idle_i      (flash_rsp.flash_idle),
+    // NVM
+    .nvm_idle_i        (nvm_rsp.nvm_idle),
 
     // rom_ctrl
     .rom_ctrl_done_i   (rom_ctrl_done_combined),

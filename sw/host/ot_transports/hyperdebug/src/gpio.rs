@@ -30,7 +30,7 @@ pub struct HyperdebugGpioPin {
 impl HyperdebugGpioPin {
     pub fn open(inner: &Rc<Inner>, pinname: &str) -> Result<Self> {
         let result = Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             pinname: pinname.to_string(),
         };
         Ok(result)
@@ -209,7 +209,7 @@ impl HyperdebugGpioMonitoring {
 
     pub fn open(inner: &Rc<Inner>, cmsis_interface: Option<BulkInterface>) -> Result<Self> {
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             cmsis_interface,
         })
     }
@@ -495,7 +495,7 @@ impl HyperdebugGpioBitbanging {
             .borrow_mut()
             .claim_interface(cmsis_interface.interface)?;
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             cmsis_interface,
         })
     }
@@ -532,7 +532,7 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
         waveform: Box<[BitbangEntry<'a, 'a>]>,
     ) -> Result<Box<dyn GpioBitbangOperation<'a, 'a> + 'a>> {
         Ok(Box::new(HyperdebugGpioBitbangOperation::new(
-            Rc::clone(&self.inner),
+            self.inner.clone(),
             self.cmsis_interface,
             pins,
             clock_tick,
@@ -547,7 +547,7 @@ impl GpioBitbanging for HyperdebugGpioBitbanging {
         waveform: Box<[DacBangEntry]>,
     ) -> Result<Box<dyn GpioDacBangOperation>> {
         Ok(Box::new(HyperdebugGpioDacBangOperation::new(
-            Rc::clone(&self.inner),
+            self.inner.clone(),
             self.cmsis_interface,
             pins,
             clock_tick,

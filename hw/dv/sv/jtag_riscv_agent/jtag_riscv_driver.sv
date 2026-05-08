@@ -8,7 +8,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
   `uvm_component_utils(jtag_riscv_driver)
 
-  function new (string name="", uvm_component parent=null);
+  function new (string name, uvm_component parent);
     super.new(name, parent);
   endfunction
 

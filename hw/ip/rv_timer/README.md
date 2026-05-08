@@ -1,10 +1,12 @@
 # Timer HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/rv_timer/data/rv_timer.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`rv_timer`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.0.0 | D3, V3 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_timer/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_timer/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_timer/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rv_timer/code.svg) |
 
-[`rv_timer`](https://reports.opentitan.org/hw/ip/rv_timer/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/rv_timer/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/rv_timer/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

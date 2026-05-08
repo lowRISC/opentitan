@@ -8,8 +8,8 @@
 
 module i2c_target_fsm import i2c_pkg::*;
 #(
-  parameter int AcqFifoDepth = 64,
-  localparam int AcqFifoDepthWidth = $clog2(AcqFifoDepth+1)
+  parameter int unsigned AcqFifoDepth = 64,
+  localparam int unsigned AcqFifoDepthWidth = $clog2(AcqFifoDepth+1)
 ) (
   input        clk_i,  // clock
   input        rst_ni, // active low reset
@@ -132,7 +132,7 @@ module i2c_target_fsm import i2c_pkg::*;
     tcount_d = tcount_q;
     if (load_tcount) begin
       unique case (tcount_sel)
-        tSetupData  : tcount_d = 13'(t_r_i) + 13'(tsu_dat_i);
+        tSetupData  : tcount_d = 16'(t_r_i) + 16'(tsu_dat_i);
         tHoldData   : tcount_d = 16'(thd_dat_i);
         tNoDelay    : tcount_d = 16'h0001;
         default     : tcount_d = 16'h0001;
@@ -266,7 +266,7 @@ module i2c_target_fsm import i2c_pkg::*;
   // has happened while still keeping space for a subsequent stop or repeated
   // start.
   logic [AcqFifoDepthWidth-1:0] acq_fifo_remainder;
-  assign acq_fifo_remainder = AcqFifoDepth - acq_fifo_depth_i;
+  assign acq_fifo_remainder = AcqFifoDepthWidth'(AcqFifoDepth) - acq_fifo_depth_i;
   // This is used for acq_fifo_full_o to send the ACQ FIFO full alert to
   // software.
   assign acq_fifo_plenty_space = acq_fifo_remainder > AcqFifoDepthWidth'(2);
@@ -415,7 +415,7 @@ module i2c_target_fsm import i2c_pkg::*;
         transmitting_o = 1'b1;
 
         // Upon transition to next state, populate the acquisition fifo
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           if (nack_transaction_q) begin
             // No need to record anything here. We already recorded the first
             // NACK'd byte in a stretch state or abandoned the transaction in
@@ -507,7 +507,7 @@ module i2c_target_fsm import i2c_pkg::*;
         sda_d = 1'b0;
         transmitting_o = 1'b1;
 
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           auto_ack_cnt_d = auto_ack_cnt_q - 1'b1;
           acq_fifo_wvalid_o = ~stretch_rx;          // assert that acq_fifo has space
           acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
@@ -717,7 +717,7 @@ module i2c_target_fsm import i2c_pkg::*;
         if (scl_i) begin
           // The controller is going too fast. Abandon the transaction.
           state_d = WaitForStop;
-        end else if (tcount_q == 20'd1) begin
+        end else if (tcount_q == 16'd1) begin
           if (!nack_addr_after_timeout_i) begin
             // Always ACK addresses in this mode.
             state_d = AddrAckSetup;
@@ -756,7 +756,7 @@ module i2c_target_fsm import i2c_pkg::*;
       end
       // AddrAckHold: target pulls SDA low while SCL is pulled low
       AddrAckHold : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           // Stretch when requested by software or when there is insufficient
           // space to hold the start / address format byte.
           // If there is sufficient space, the format byte is written into the acquisition fifo.
@@ -807,7 +807,7 @@ module i2c_target_fsm import i2c_pkg::*;
       end
       // TransmitHold: target shifts indexed bit onto SDA while SCL is pulled low
       TransmitHold : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           if (bit_ack) begin
             state_d = TransmitAck;
           end else begin
@@ -855,7 +855,7 @@ module i2c_target_fsm import i2c_pkg::*;
         if (scl_i) begin
           // The controller is going too fast. Abandon the transaction.
           state_d = WaitForStop;
-        end else if (tcount_q == 20'd1) begin
+        end else if (tcount_q == 16'd1) begin
           if (nack_transaction_q) begin
             state_d = WaitForStop;
           end else if (stretch_rx) begin
@@ -882,7 +882,7 @@ module i2c_target_fsm import i2c_pkg::*;
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = AcquireByte;
         end
       end
@@ -902,7 +902,7 @@ module i2c_target_fsm import i2c_pkg::*;
       // StretchAddrAckSetup: target pulls SDA low while pulling SCL low for
       // setup time. This is to prepare the setup time after a stretch.
       StretchAddrAckSetup : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = AddrAckSetup;
         end
       end
@@ -945,7 +945,7 @@ module i2c_target_fsm import i2c_pkg::*;
       end
       // StretchTxSetup: Wait for tSetupData before going to transmit
       StretchTxSetup : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = TransmitSetup;
         end
       end
@@ -968,7 +968,7 @@ module i2c_target_fsm import i2c_pkg::*;
       // StretchAcqSetup: Drive the ACK and wait for tSetupData before
       // releasing SCL
       StretchAcqSetup : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 16'd1) begin
           state_d = AcquireAckSetup;
         end
       end

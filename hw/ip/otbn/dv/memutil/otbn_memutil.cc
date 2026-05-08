@@ -19,8 +19,8 @@
 #include "sv_utils.h"
 
 OtbnMemUtil::OtbnMemUtil(const std::string &top_scope)
-    : imem_(SVScoped::join_sv_scopes(top_scope, "u_imem"), 8192 / 4, 4 / 4),
-      dmem_(SVScoped::join_sv_scopes(top_scope, "u_dmem"), 4096 / 32, 32 / 4),
+    : imem_(SVScoped::join_sv_scopes(top_scope, "u_imem"), 16384 / 4, 4 / 4),
+      dmem_(SVScoped::join_sv_scopes(top_scope, "u_dmem"), 32768 / 32, 32 / 4),
       expected_end_addr_(-1) {
   RegisterMemoryArea("imem", 0x4000, &imem_);
   RegisterMemoryArea("dmem", 0x8000, &dmem_);

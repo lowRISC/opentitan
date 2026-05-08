@@ -11,11 +11,11 @@ OpenSTA to produce timing reports. Its outputs are:
   been mapped to a standard-cell library yet
 * A post synthesis netlist - Gate-level verilog after optimisation mapped to a
   standard-cell library
-* An STA netlist - Logically equivilent to the netlist above but with changes to
+* An STA netlist - Logically equivalent to the netlist above but with changes to
   allow processing by OpenSTA
 * Area/Cell Usage report - Total area consumed by utilised cells and counts of
   each cell instance used
-* Timing reports - Overal timing report and reports broken down into various
+* Timing reports - Overall timing report and reports broken down into various
   path groups (register to register paths and per IO reports)
 
 Yosys doesn't yet support the full subset of SystemVerilog used by Ibex so the
@@ -91,7 +91,7 @@ flow. These are used to generate a single .sdc file
   inputs and the desired clock period in ps
 * `ibex.[library-name].sdc` - Header to include in generated .sdc file. Settings
   can be library dependent so the `LR_SYNTH_CELL_LIBRARY_NAME` environment
-  varible is used to supply the `[library-name]` part of the name
+  variable is used to supply the `[library-name]` part of the name
 
 # Timing reports
 

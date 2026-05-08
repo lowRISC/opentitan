@@ -151,6 +151,7 @@ module ac_range_check_reg_top
   logic alert_status_shadowed_storage_err_qs;
   logic alert_status_reg_intg_err_qs;
   logic alert_status_counter_err_qs;
+  logic log_config_re;
   logic log_config_we;
   logic log_config_log_enable_qs;
   logic log_config_log_enable_wd;
@@ -1353,99 +1354,57 @@ module ac_range_check_reg_top
   );
 
 
-  // R[log_config]: V(False)
+  // R[log_config]: V(True)
   logic log_config_qe;
   logic [2:0] log_config_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_log_config0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&log_config_flds_we),
-    .q_o(log_config_qe)
-  );
+  assign log_config_qe = &log_config_flds_we;
   //   F[log_enable]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_log_config_log_enable (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (log_config_re),
     .we     (log_config_we),
     .wd     (log_config_log_enable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
+    .d      (hw2reg.log_config.log_enable.d),
+    .qre    (),
     .qe     (log_config_flds_we[0]),
     .q      (reg2hw.log_config.log_enable.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (log_config_log_enable_qs)
   );
+  assign reg2hw.log_config.log_enable.qe = log_config_qe;
 
   //   F[log_clear]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_log_config_log_clear (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (log_config_we),
     .wd     (log_config_log_clear_wd),
-
-    // from internal hardware
-    .de     (hw2reg.log_config.log_clear.de),
     .d      (hw2reg.log_config.log_clear.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (log_config_flds_we[1]),
     .q      (reg2hw.log_config.log_clear.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.log_config.log_clear.qe = log_config_qe;
 
   //   F[deny_cnt_threshold]: 9:2
-  prim_subreg #(
-    .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (8)
   ) u_log_config_deny_cnt_threshold (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (log_config_re),
     .we     (log_config_we),
     .wd     (log_config_deny_cnt_threshold_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
+    .d      (hw2reg.log_config.deny_cnt_threshold.d),
+    .qre    (),
     .qe     (log_config_flds_we[2]),
     .q      (reg2hw.log_config.deny_cnt_threshold.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (log_config_deny_cnt_threshold_qs)
   );
+  assign reg2hw.log_config.deny_cnt_threshold.qe = log_config_qe;
 
 
   // R[log_status]: V(False)
@@ -12403,6 +12362,7 @@ module ac_range_check_reg_top
   assign alert_status_re = racl_addr_hit_read[4] & reg_re & !reg_error;
 
   assign alert_status_shadowed_update_err_wd = '1;
+  assign log_config_re = racl_addr_hit_read[5] & reg_re & !reg_error;
   assign log_config_we = racl_addr_hit_write[5] & reg_we & !reg_error;
 
   assign log_config_log_enable_wd = reg_wdata[0];

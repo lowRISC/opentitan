@@ -10,11 +10,6 @@ class usb20_device_driver extends usb20_driver;
 
   `uvm_component_new
 
-  virtual task run_phase(uvm_phase phase);
-    // base class forks off reset_signals() and get_and_drive() tasks
-    super.run_phase(phase);
-  endtask
-
   // reset signals
   virtual task reset_signals();
   endtask

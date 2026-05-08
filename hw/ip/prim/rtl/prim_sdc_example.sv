@@ -9,21 +9,21 @@
 //
 // 1. In the synthesized netlist, the following number of size_only instances must be present:
 // e.g. grep -c -R u_size_only_x netlist.v (make sure the design is uniquified)
-// |-------------------------------------------------------------------|
-// | Test | buf | and2 | xor | xnor | flop | clock_mux2 | clock_gating |
-// | -----| ----|------|-----|------|------|------------|--------------|
-// | 1    | 192 | -    |  -  | -    | -    | -          | -            |
-// | 2    | -   | -    |  64 | -    | -    | -          | -            |
-// | 3    |  48 | 48   |  48 | 48   | 144  | -          | -            |
-// | 4    |   8 |  8   |   8 |  8   |  24  | -          | -            |
-// | 5    |  36 | -    |  -  | -    |  24  | -          | -            |
-// | 6    |  16 | -    |  -  | -    |   8  | -          | -            |
-// | 7    | -   | -    |  -  | -    |  32  | 2          | 2            |
-// | 8    |  16 | -    |  -  | -    |   8  | -          | -            |
-// | 9    |  12 | -    |  -  | -    |  12  | -          | -            |
-// | -----| ----|------|-----|------|------|------------|--------------|
-// |total | 328 | 56   | 120 | 56   | 252  | 2          | 2            |
-// |-------------------------------------------------------------------|
+// |-------------------------------------------------------------------------------|
+// | Test | buf | inv | and2 | xor | xnor | flop | tie | clock_mux2 | clock_gating |
+// | -----|-----|-----|------|-----|------|------|-----|------------|--------------|
+// | 1    | 192 |  -  |  -   |  -  |  -   |  -   | 64  | -          | -            |
+// | 2    |  -  |  -  |  -   | 64  |  -   |  -   |  -  | -          | -            |
+// | 3    |  48 | 48  | 48   | 48  | 48   | 144  |  -  | -          | -            |
+// | 4    |   8 |  8  |  8   |  8  |  8   |  24  |  -  | -          | -            |
+// | 5    |  36 |  -  |  -   |  -  |  -   |  24  |  -  | -          | -            |
+// | 6    |  16 |  -  |  -   |  -  |  -   |   8  |  -  | -          | -            |
+// | 7    |  -  |  -  |  -   |  -  |  -   |  32  |  -  | 2          | 2            |
+// | 8    |  16 |  -  |  -   |  -  |  -   |   8  |  -  | -          | -            |
+// | 9    |  12 |  -  |  -   |  -  |  -   |  12  |  -  | -          | -            |
+// | -----|-----|-----|------|-----|------|------|-----|------------|--------------|
+// |total | 328 | 56  | 56   | 120 | 56   | 252  | 64  | 2          | 2            |
+// |-------------------------------------------------------------------------------|
 //
 // 2. None of the test_*_o signals can be driven by a constant 0 or 1.
 // The instantiated size_only instances must prevent logic optimizations and keep
@@ -76,12 +76,30 @@ module prim_sdc_example #(
   // It is not allowed that arithmetic operations are merged across prim_bufs
   // The following size_only cells are expected:
   // 6*32 size_only_buf
+  // It is not allowed to combine consts:
+  // 2*32 size_only TIE cells are expected
 
-  localparam int unsigned NumStages = 3;
-  localparam int unsigned ConstA = 32'h0FF0_ABBA;
+  localparam int unsigned NumStages = 4;
+  localparam logic [31:0] ConstA = 32'h0FF0_ABBA;
+  localparam logic [31:0] ConstB = 32'h1234_ABCD;
 
   logic [NumStages-1:0][31:0] res, res_buf;
   logic [31:0] data_a, data_b, data_c;
+  logic [31:0] const_a, const_b;
+
+  prim_const_sec #(
+    .Width(32),
+    .ConstVal(ConstA)
+  ) u_const_sec_a (
+    .out_o(const_a)
+  );
+
+  prim_const #(
+    .Width(32),
+    .ConstVal(ConstB)
+  ) u_const_b (
+    .out_o(const_b)
+  );
 
   prim_buf #(
     .Width(32)
@@ -113,7 +131,7 @@ module prim_sdc_example #(
     .out_o(res_buf[0])
   );
 
-  assign res[1] = res_buf[0] + ConstA;
+  assign res[1] = res_buf[0] + const_a;
 
   prim_buf #(
     .Width(32)
@@ -122,7 +140,7 @@ module prim_sdc_example #(
     .out_o(res_buf[1])
   );
 
-  assign res[2] = res_buf[1] * data_c;
+  assign res[2] = res_buf[1] * const_b;
 
   prim_buf #(
     .Width(32)
@@ -131,7 +149,16 @@ module prim_sdc_example #(
     .out_o(res_buf[2])
   );
 
-  assign test_res_o = res_buf[2];
+  assign res[3] = res_buf[2] * data_c;
+
+  prim_buf #(
+    .Width(32)
+  ) u_prim_buf_res3 (
+    .in_i (res[3]),
+    .out_o(res_buf[3])
+  );
+
+  assign test_res_o = res_buf[3];
 
   ////////////////////////////////////////////////////////////////
   // Test 2: two xor operations in a row result in the identity //
@@ -171,13 +198,14 @@ module prim_sdc_example #(
   // These gates cannot be removed
   // The following size_only cells are expected:
   // 6*8 size_only_buf
+  // 6*8 size_only_inv
   // 6*8 size_only_and2
   // 6*8 size_only_xor
   // 6*8 size_only_xnor
   // 6*8*3 size_only_flop
 
   localparam int unsigned NumConst = 6;
-  localparam int unsigned NumGates = 7;
+  localparam int unsigned NumGates = 8;
 
   localparam logic [Width-1:0] ConstIn0 [NumConst] = {8'hAB,
                                                       8'hBA,
@@ -253,6 +281,13 @@ module prim_sdc_example #(
       .d_i  (ConstIn0[idx]),
       .q_o  (const_out_not_removed[idx][6])
     );
+
+    prim_inv #(
+      .Width(Width)
+    ) u_prim_inv (
+      .in_i (ConstIn0[idx]),
+      .out_o(const_out_not_removed[idx][7])
+    );
   end
 
   assign test_const_o = ^const_out_not_removed;
@@ -262,6 +297,7 @@ module prim_sdc_example #(
   ///////////////////////////////////////////////////
   // The following size_only cells are expected:
   // 8 size_only_buf
+  // 8 size_only_inv
   // 8 size_only_and2
   // 8 size_only_xor
   // 8 size_only_xnor
@@ -319,6 +355,12 @@ module prim_sdc_example #(
       .clk_i(clk_i),
       .d_i  (data_a[Width-1:0]),
       .q_o  (var_out_not_removed[6])
+  );
+  prim_inv #(
+      .Width(Width)
+  ) u_prim_inv (
+      .in_i (data_a[Width-1:0]),
+      .out_o(var_out_not_removed[7])
   );
 
   assign test_var_o = ^var_out_not_removed;

@@ -15,7 +15,7 @@ use ot_hal::dif::lc_ctrl::{
 use ot_hal::top::earlgrey as top_earlgrey;
 use ot_hal::util::multibits::MultiBitBool8;
 
-use crate::app::TransportWrapper;
+use crate::app::{TransportWrapper, UartRx};
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagParams, JtagTap};
 use crate::test_utils::poll;
@@ -46,6 +46,37 @@ pub enum LcTransitionError {
 }
 impl_serializable_error!(LcTransitionError);
 
+pub fn claim_lc_mutex(jtag: &mut dyn Jtag, claim: bool) -> Result<()> {
+    if claim {
+        // Check the LC transition mutex has not been claimed yet.
+        if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)?
+            == u8::from(MultiBitBool8::True) as u32
+        {
+            return Err(LcTransitionError::MutexAlreadyClaimed.into());
+        }
+
+        // Attempt to claim the LC transition mutex.
+        jtag.write_lc_ctrl_reg(
+            &LcCtrlReg::ClaimTransitionIf,
+            u8::from(MultiBitBool8::True) as u32,
+        )?;
+
+        // Check the LC transition mutex was claimed.
+        if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)?
+            != u8::from(MultiBitBool8::True) as u32
+        {
+            return Err(LcTransitionError::FailedToClaimMutex.into());
+        }
+    } else {
+        // Release the LC transition mutex.
+        jtag.write_lc_ctrl_reg(
+            &LcCtrlReg::ClaimTransitionIf,
+            u8::from(MultiBitBool8::False) as u32,
+        )?;
+    }
+    Ok(())
+}
+
 fn setup_lc_transition(
     jtag: &mut dyn Jtag,
     target_lc_state: DifLcCtrlState,
@@ -58,23 +89,7 @@ fn setup_lc_transition(
         return Err(LcTransitionError::LcCtrlNotReady(status).into());
     }
 
-    // Check the LC transition mutex has not been claimed yet.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? == u8::from(MultiBitBool8::True) as u32
-    {
-        return Err(LcTransitionError::MutexAlreadyClaimed.into());
-    }
-
-    // Attempt to claim the LC transition mutex.
-    jtag.write_lc_ctrl_reg(
-        &LcCtrlReg::ClaimTransitionIf,
-        u8::from(MultiBitBool8::True) as u32,
-    )?;
-
-    // Check the LC transition mutex was claimed.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::ClaimTransitionIf)? != u8::from(MultiBitBool8::True) as u32
-    {
-        return Err(LcTransitionError::FailedToClaimMutex.into());
-    }
+    claim_lc_mutex(jtag, true)?;
 
     // Program the target LC state.
     jtag.write_lc_ctrl_reg(
@@ -127,7 +142,7 @@ fn setup_lc_transition(
 /// tap_lc_strapping.apply().expect("failed to apply strapping");
 ///
 /// // Reset into the new strapping.
-/// transport.reset_target(init.bootstrap.options.reset_delay, true).unwrap();
+/// transport.reset(UartRx::Clear).unwrap();
 ///
 /// // Connect to the LC controller TAP.
 /// let mut jtag = transport
@@ -144,7 +159,6 @@ fn setup_lc_transition(
 ///     DifLcCtrlState::Prod,
 ///     Some(test_exit_token.into_register_values()),
 ///     true,
-///     init.bootstrap.options.reset_delay,
 ///     Some(JtagTap::LcTap),
 /// ).expect("failed to trigger transition to prod");
 ///
@@ -165,7 +179,6 @@ pub fn trigger_lc_transition(
     target_lc_state: DifLcCtrlState,
     token: Option<[u32; 4]>,
     use_external_clk: bool,
-    reset_delay: Duration,
     reset_tap_straps: Option<JtagTap>,
 ) -> Result<()> {
     // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
@@ -207,7 +220,7 @@ pub fn trigger_lc_transition(
             JtagTap::RiscvTap => transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?,
         }
     }
-    transport.reset_target(reset_delay, true)?;
+    transport.reset(UartRx::Clear)?;
 
     Ok(())
 }
@@ -292,7 +305,7 @@ pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlSta
     let jtag_tap = jtag.tap();
 
     // Wait for LC controller to be ready.
-    poll::poll_until(timeout, Duration::from_millis(50), || {
+    poll::poll_until(timeout, Duration::from_millis(1), || {
         let polled_status = match jtag_tap {
             JtagTap::LcTap => jtag.read_lc_ctrl_reg(&LcCtrlReg::Status).unwrap(),
             JtagTap::RiscvTap => {

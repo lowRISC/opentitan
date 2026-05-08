@@ -1292,6 +1292,18 @@ module clkmgr_reg_top (
   //   F[hi]: 9:0
   logic async_io_meas_ctrl_shadowed_hi_err_update;
   logic async_io_meas_ctrl_shadowed_hi_err_storage;
+  logic deglitched_io_meas_ctrl_shadowed_hi_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_meas_ctrl_shadowed_hi_err_storage_deglitch (
+    .clk_i (clk_io_i),
+    .rst_ni(rst_io_ni),
+    .d_i   (async_io_meas_ctrl_shadowed_hi_err_storage),
+    .q_o   (deglitched_io_meas_ctrl_shadowed_hi_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1300,7 +1312,7 @@ module clkmgr_reg_top (
   ) u_io_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_meas_ctrl_shadowed_hi_err_storage),
+    .d_i(deglitched_io_meas_ctrl_shadowed_hi_err_storage),
     .q_o(io_meas_ctrl_shadowed_hi_storage_err)
   );
 
@@ -1351,6 +1363,18 @@ module clkmgr_reg_top (
   //   F[lo]: 19:10
   logic async_io_meas_ctrl_shadowed_lo_err_update;
   logic async_io_meas_ctrl_shadowed_lo_err_storage;
+  logic deglitched_io_meas_ctrl_shadowed_lo_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_meas_ctrl_shadowed_lo_err_storage_deglitch (
+    .clk_i (clk_io_i),
+    .rst_ni(rst_io_ni),
+    .d_i   (async_io_meas_ctrl_shadowed_lo_err_storage),
+    .q_o   (deglitched_io_meas_ctrl_shadowed_lo_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1359,7 +1383,7 @@ module clkmgr_reg_top (
   ) u_io_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_meas_ctrl_shadowed_lo_err_storage),
+    .d_i(deglitched_io_meas_ctrl_shadowed_lo_err_storage),
     .q_o(io_meas_ctrl_shadowed_lo_storage_err)
   );
 
@@ -1450,6 +1474,18 @@ module clkmgr_reg_top (
   //   F[hi]: 8:0
   logic async_io_div2_meas_ctrl_shadowed_hi_err_update;
   logic async_io_div2_meas_ctrl_shadowed_hi_err_storage;
+  logic deglitched_io_div2_meas_ctrl_shadowed_hi_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div2_meas_ctrl_shadowed_hi_err_storage_deglitch (
+    .clk_i (clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .d_i   (async_io_div2_meas_ctrl_shadowed_hi_err_storage),
+    .q_o   (deglitched_io_div2_meas_ctrl_shadowed_hi_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1458,7 +1494,7 @@ module clkmgr_reg_top (
   ) u_io_div2_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div2_meas_ctrl_shadowed_hi_err_storage),
+    .d_i(deglitched_io_div2_meas_ctrl_shadowed_hi_err_storage),
     .q_o(io_div2_meas_ctrl_shadowed_hi_storage_err)
   );
 
@@ -1509,6 +1545,18 @@ module clkmgr_reg_top (
   //   F[lo]: 17:9
   logic async_io_div2_meas_ctrl_shadowed_lo_err_update;
   logic async_io_div2_meas_ctrl_shadowed_lo_err_storage;
+  logic deglitched_io_div2_meas_ctrl_shadowed_lo_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div2_meas_ctrl_shadowed_lo_err_storage_deglitch (
+    .clk_i (clk_io_div2_i),
+    .rst_ni(rst_io_div2_ni),
+    .d_i   (async_io_div2_meas_ctrl_shadowed_lo_err_storage),
+    .q_o   (deglitched_io_div2_meas_ctrl_shadowed_lo_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1517,7 +1565,7 @@ module clkmgr_reg_top (
   ) u_io_div2_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div2_meas_ctrl_shadowed_lo_err_storage),
+    .d_i(deglitched_io_div2_meas_ctrl_shadowed_lo_err_storage),
     .q_o(io_div2_meas_ctrl_shadowed_lo_storage_err)
   );
 
@@ -1608,6 +1656,18 @@ module clkmgr_reg_top (
   //   F[hi]: 7:0
   logic async_io_div4_meas_ctrl_shadowed_hi_err_update;
   logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
+  logic deglitched_io_div4_meas_ctrl_shadowed_hi_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_deglitch (
+    .clk_i (clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d_i   (async_io_div4_meas_ctrl_shadowed_hi_err_storage),
+    .q_o   (deglitched_io_div4_meas_ctrl_shadowed_hi_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1616,7 +1676,7 @@ module clkmgr_reg_top (
   ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div4_meas_ctrl_shadowed_hi_err_storage),
+    .d_i(deglitched_io_div4_meas_ctrl_shadowed_hi_err_storage),
     .q_o(io_div4_meas_ctrl_shadowed_hi_storage_err)
   );
 
@@ -1667,6 +1727,18 @@ module clkmgr_reg_top (
   //   F[lo]: 15:8
   logic async_io_div4_meas_ctrl_shadowed_lo_err_update;
   logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
+  logic deglitched_io_div4_meas_ctrl_shadowed_lo_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_deglitch (
+    .clk_i (clk_io_div4_i),
+    .rst_ni(rst_io_div4_ni),
+    .d_i   (async_io_div4_meas_ctrl_shadowed_lo_err_storage),
+    .q_o   (deglitched_io_div4_meas_ctrl_shadowed_lo_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1675,7 +1747,7 @@ module clkmgr_reg_top (
   ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div4_meas_ctrl_shadowed_lo_err_storage),
+    .d_i(deglitched_io_div4_meas_ctrl_shadowed_lo_err_storage),
     .q_o(io_div4_meas_ctrl_shadowed_lo_storage_err)
   );
 
@@ -1766,6 +1838,18 @@ module clkmgr_reg_top (
   //   F[hi]: 9:0
   logic async_main_meas_ctrl_shadowed_hi_err_update;
   logic async_main_meas_ctrl_shadowed_hi_err_storage;
+  logic deglitched_main_meas_ctrl_shadowed_hi_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_main_meas_ctrl_shadowed_hi_err_storage_deglitch (
+    .clk_i (clk_main_i),
+    .rst_ni(rst_main_ni),
+    .d_i   (async_main_meas_ctrl_shadowed_hi_err_storage),
+    .q_o   (deglitched_main_meas_ctrl_shadowed_hi_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1774,7 +1858,7 @@ module clkmgr_reg_top (
   ) u_main_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_main_meas_ctrl_shadowed_hi_err_storage),
+    .d_i(deglitched_main_meas_ctrl_shadowed_hi_err_storage),
     .q_o(main_meas_ctrl_shadowed_hi_storage_err)
   );
 
@@ -1825,6 +1909,18 @@ module clkmgr_reg_top (
   //   F[lo]: 19:10
   logic async_main_meas_ctrl_shadowed_lo_err_update;
   logic async_main_meas_ctrl_shadowed_lo_err_storage;
+  logic deglitched_main_meas_ctrl_shadowed_lo_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_main_meas_ctrl_shadowed_lo_err_storage_deglitch (
+    .clk_i (clk_main_i),
+    .rst_ni(rst_main_ni),
+    .d_i   (async_main_meas_ctrl_shadowed_lo_err_storage),
+    .q_o   (deglitched_main_meas_ctrl_shadowed_lo_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1833,7 +1929,7 @@ module clkmgr_reg_top (
   ) u_main_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_main_meas_ctrl_shadowed_lo_err_storage),
+    .d_i(deglitched_main_meas_ctrl_shadowed_lo_err_storage),
     .q_o(main_meas_ctrl_shadowed_lo_storage_err)
   );
 
@@ -1923,6 +2019,18 @@ module clkmgr_reg_top (
   //   F[hi]: 8:0
   logic async_usb_meas_ctrl_shadowed_hi_err_update;
   logic async_usb_meas_ctrl_shadowed_hi_err_storage;
+  logic deglitched_usb_meas_ctrl_shadowed_hi_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb_meas_ctrl_shadowed_hi_err_storage_deglitch (
+    .clk_i (clk_usb_i),
+    .rst_ni(rst_usb_ni),
+    .d_i   (async_usb_meas_ctrl_shadowed_hi_err_storage),
+    .q_o   (deglitched_usb_meas_ctrl_shadowed_hi_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1931,7 +2039,7 @@ module clkmgr_reg_top (
   ) u_usb_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_usb_meas_ctrl_shadowed_hi_err_storage),
+    .d_i(deglitched_usb_meas_ctrl_shadowed_hi_err_storage),
     .q_o(usb_meas_ctrl_shadowed_hi_storage_err)
   );
 
@@ -1982,6 +2090,18 @@ module clkmgr_reg_top (
   //   F[lo]: 17:9
   logic async_usb_meas_ctrl_shadowed_lo_err_update;
   logic async_usb_meas_ctrl_shadowed_lo_err_storage;
+  logic deglitched_usb_meas_ctrl_shadowed_lo_err_storage;
+
+  // flop storage error to filter combinational glitches before sending it across CDC
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_usb_meas_ctrl_shadowed_lo_err_storage_deglitch (
+    .clk_i (clk_usb_i),
+    .rst_ni(rst_usb_ni),
+    .d_i   (async_usb_meas_ctrl_shadowed_lo_err_storage),
+    .q_o   (deglitched_usb_meas_ctrl_shadowed_lo_err_storage)
+  );
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
@@ -1990,7 +2110,7 @@ module clkmgr_reg_top (
   ) u_usb_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_usb_meas_ctrl_shadowed_lo_err_storage),
+    .d_i(deglitched_usb_meas_ctrl_shadowed_lo_err_storage),
     .q_o(usb_meas_ctrl_shadowed_lo_storage_err)
   );
 

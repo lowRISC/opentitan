@@ -64,7 +64,6 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
     end
 
     // Read DCSR and verify the cause field.
-    cmd_data = '{};
     cfg.debugger.abstract_cmd_reg_read(.regno(jtag_rv_debugger_pkg::RvCoreCsrDcsr),
                                        .value_q(cmd_data), .status(status));
     `DV_CHECK_EQ(status, jtag_rv_debugger_pkg::AbstractCmdErrNone)

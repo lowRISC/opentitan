@@ -93,3 +93,13 @@ Read the description for more information.
 |                       |                                      | jump (which does the required flushing) so it has the same  |
 |                       |                                      | stall characteristics (see above).                          |
 +-----------------------+--------------------------------------+-------------------------------------------------------------+
+| Zcmp Push/Pop         | 2 - N                                | The cm.push/pop instructions as defined in 'Zcmp' of the    |
+|                       |                                      | RISC-V specification. Internally, they expand to multiple   |
+|                       |                                      | register load/store operations combined with stack pointer  |
+|                       |                                      | adjustments, so their latency corresponds to the total      |
+|                       |                                      | number of instructions issued and the memory latency.       |
++-----------------------+--------------------------------------+-------------------------------------------------------------+
+| Zcmp Move             | 2                                    | The `cm.mvsa01` and `cm.mva01s` instruction as defined in   |
+|                       |                                      | 'Zcmp' of the RISC-V specification. Internally, they are    |
+|                       |                                      | implemented as two `addi rd, rs1, 0` instructions.          |
++-----------------------+--------------------------------------+-------------------------------------------------------------+

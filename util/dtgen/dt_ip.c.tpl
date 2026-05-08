@@ -16,7 +16,7 @@ top_name = helper.top["name"]
  * @brief Device Tables (DT) for IP ${device_name} and top ${top_name}.
  */
 
-#include "hw/top/dt/dt_${device_name}.h"
+#include "hw/top/dt/${device_name}.h"
 
 ## Extension
 ${helper.render_extension(Extension.DtIpPos.SourceIncludes)}
@@ -41,7 +41,7 @@ static const ${helper.inst_dt_map.render_var_def(dt_array_name, helper.inst_dt_v
  */
 #define TRY_GET_DT(dt, default) \
   ({ \
-    if ((dt) < (dt_${device_name}_t)0 || (dt) >= ${dt_array_count.as_c_enum()}) \
+    if ((dt) < (dt_${device_name}_t)0 || (int)(dt) >= ${dt_array_count.as_c_enum()}) \
       return (default); \
     &${dt_array}[dt]; \
   })
@@ -69,6 +69,7 @@ uint32_t dt_${device_name}_reg_block(
 }
 
 % endif
+% if helper.has_memories():
 uint32_t dt_${device_name}_memory_base(
     dt_${device_name}_t dt,
     dt_${device_name}_memory_t mem) {
@@ -83,6 +84,7 @@ uint32_t dt_${device_name}_memory_size(
   return TRY_GET_DT(dt, 0)->mem_size[mem];
 }
 
+% endif
 % if helper.has_irqs():
 dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
     dt_${device_name}_t dt,

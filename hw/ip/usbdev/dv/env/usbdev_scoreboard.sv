@@ -83,7 +83,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
     super.build_phase(phase);
     // Bus Functional Model of USBDEV.
-    bfm = new();
+    bfm = usbdev_bfm::type_id::create("bfm", this);
     // Prediction and checking of loosely-timed registers.
     timed_regs = new("timed_regs");
     timed_regs.clk_rst_vif = cfg.clk_rst_vif;

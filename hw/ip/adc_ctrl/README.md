@@ -1,10 +1,12 @@
 # Analog to Digital Converter Control Interface
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/adc_ctrl/data/adc_ctrl.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`adc_ctrl`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/adc_ctrl/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/adc_ctrl/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/adc_ctrl/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/adc_ctrl/code.svg) |
 
-[`adc_ctrl`](https://reports.opentitan.org/hw/ip/adc_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/adc_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/adc_ctrl/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

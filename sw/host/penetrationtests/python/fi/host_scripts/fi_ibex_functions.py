@@ -308,6 +308,22 @@ def char_flash_read(target, flash_region, iterations, reset = False):
     return response
 
 
+def char_flash_read_static(target, init, flash_region, iterations, reset=False):
+    ibexfi = OTFIIbex(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = ibexfi.init(
+        alert_config=common_library.default_fpga_friendly_alert_config
+    )
+    for _ in range(iterations):
+        ibexfi.ibex_char_flash_read_static(init, flash_region)
+        response = target.read_response()
+    return response
+
+
 def char_flash_write(target, flash_region, iterations, reset = False):
     ibexfi = OTFIIbex(target)
     if reset:

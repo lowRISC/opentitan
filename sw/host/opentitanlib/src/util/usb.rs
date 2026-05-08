@@ -3,15 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result, ensure};
-use rusb;
-use std::time::Duration;
+use rusb::{self, UsbContext};
+use std::time::{Duration, Instant};
 
 use crate::transport::TransportError;
 
 /// The `UsbBackend` provides low-level USB access to debugging devices.
 pub struct UsbBackend {
-    device: rusb::Device<rusb::GlobalContext>,
-    handle: rusb::DeviceHandle<rusb::GlobalContext>,
+    device: rusb::Device<rusb::Context>,
+    handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: String,
     timeout: Duration,
 }
@@ -20,13 +20,13 @@ impl UsbBackend {
     /// Scan the USB bus for a device matching VID/PID, and optionally also matching a serial
     /// number.
     pub fn scan(
-        usb_vid: u16,
-        usb_pid: u16,
+        usb_vid_pid: Option<(u16, u16)>,
+        usb_protocol: Option<(u8, u8, u8)>,
         usb_serial: Option<&str>,
-    ) -> Result<Vec<(rusb::Device<rusb::GlobalContext>, String)>> {
+    ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
         let mut devices = Vec::new();
         let mut deferred_log_messages = Vec::new();
-        for device in rusb::devices().context("USB error")?.iter() {
+        for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
                 Ok(desc) => desc,
                 Err(e) => {
@@ -39,11 +39,42 @@ impl UsbBackend {
                     continue;
                 }
             };
-            if descriptor.vendor_id() != usb_vid {
-                continue;
+
+            if let Some((vid, pid)) = usb_vid_pid {
+                if descriptor.vendor_id() != vid {
+                    continue;
+                }
+                if descriptor.product_id() != pid {
+                    continue;
+                }
             }
-            if descriptor.product_id() != usb_pid {
-                continue;
+            if let Some((class, subclass, protocol)) = usb_protocol {
+                let config = match device.active_config_descriptor() {
+                    Ok(desc) => desc,
+                    Err(e) => {
+                        deferred_log_messages.push(format!(
+                            "Could not read config descriptor for device at bus={} address={}: {}",
+                            device.bus_number(),
+                            device.address(),
+                            e,
+                        ));
+                        continue;
+                    }
+                };
+                let mut found = false;
+                for intf in config.interfaces() {
+                    for desc in intf.descriptors() {
+                        if desc.class_code() == class
+                            && desc.sub_class_code() == subclass
+                            && desc.protocol_code() == protocol
+                        {
+                            found = true;
+                        }
+                    }
+                }
+                if !found {
+                    continue;
+                }
             }
             let handle = match device.open() {
                 Ok(handle) => handle,
@@ -57,6 +88,7 @@ impl UsbBackend {
                     continue;
                 }
             };
+
             let serial_number = match handle.read_serial_number_string_ascii(&descriptor) {
                 Ok(sn) => sn,
                 Err(e) => {
@@ -88,15 +120,31 @@ impl UsbBackend {
         for s in deferred_log_messages {
             log::log!(severity, "{}", s);
         }
-
         Ok(devices)
     }
 
     /// Create a new UsbBackend.
     pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
-        let mut devices = UsbBackend::scan(usb_vid, usb_pid, usb_serial)?;
-        ensure!(!devices.is_empty(), TransportError::NoDevice);
-        ensure!(devices.len() == 1, TransportError::MultipleDevices);
+        let serial_str = if let Some(s) = usb_serial {
+            format!(" (serial={})", s)
+        } else {
+            String::new()
+        };
+        let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
+        if devices.is_empty() {
+            return Err(TransportError::NoDevice(format!(
+                "vid:pid=0x{:04x}:0x{:04x}{}",
+                usb_vid, usb_pid, serial_str
+            ))
+            .into());
+        }
+        if devices.len() > 1 {
+            return Err(TransportError::MultipleDevices(
+                format!("{:?}", devices),
+                format!("vid:pid=0x{:04x}:0x{:04x}{}", usb_vid, usb_pid, serial_str),
+            )
+            .into());
+        }
 
         let (device, serial_number) = devices.remove(0);
         Ok(UsbBackend {
@@ -105,6 +153,72 @@ impl UsbBackend {
             serial_number,
             timeout: Duration::from_millis(500),
         })
+    }
+
+    pub fn from_interface(
+        class: u8,
+        subclass: u8,
+        protocol: u8,
+        usb_serial: Option<&str>,
+    ) -> Result<Self> {
+        Self::from_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
+    }
+
+    pub fn from_interface_with_timeout(
+        class: u8,
+        subclass: u8,
+        protocol: u8,
+        usb_serial: Option<&str>,
+        timeout: Duration,
+    ) -> Result<Self> {
+        let deadline = Instant::now() + timeout;
+        let serial_str = if let Some(s) = usb_serial {
+            format!(" (serial={})", s)
+        } else {
+            String::new()
+        };
+        loop {
+            let mut devices =
+                UsbBackend::scan(None, Some((class, subclass, protocol)), usb_serial)?;
+            if devices.is_empty() {
+                if Instant::now() < deadline {
+                    std::thread::sleep(Duration::from_millis(100));
+                    continue;
+                } else {
+                    return Err(TransportError::NoDevice(format!(
+                        "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}{}",
+                        class, subclass, protocol, serial_str
+                    ))
+                    .into());
+                }
+            }
+            if devices.len() > 1 {
+                return Err(TransportError::MultipleDevices(
+                    format!("{:?}", devices),
+                    format!(
+                        "class:subclass:protocol=0x{:02x}:0x{:02x}:0x{:02x}{}",
+                        class, subclass, protocol, serial_str
+                    ),
+                )
+                .into());
+            }
+
+            let (device, serial_number) = devices.remove(0);
+            return Ok(UsbBackend {
+                handle: device.open().context("USB open error")?,
+                device,
+                serial_number,
+                timeout: Duration::from_millis(500),
+            });
+        }
+    }
+
+    pub fn handle(&self) -> &rusb::DeviceHandle<rusb::Context> {
+        &self.handle
+    }
+
+    pub fn device(&self) -> &rusb::Device<rusb::Context> {
+        &self.device
     }
 
     pub fn get_vendor_id(&self) -> u16 {
@@ -120,29 +234,35 @@ impl UsbBackend {
         self.serial_number.as_str()
     }
 
-    pub fn set_active_configuration(&mut self, config: u8) -> Result<()> {
+    pub fn set_active_configuration(&self, config: u8) -> Result<()> {
         self.handle
             .set_active_configuration(config)
             .context("USB error")
     }
 
-    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
+    pub fn claim_interface(&self, iface: u8) -> Result<()> {
         self.handle.claim_interface(iface).context("USB error")
     }
 
-    pub fn release_interface(&mut self, iface: u8) -> Result<()> {
+    pub fn release_interface(&self, iface: u8) -> Result<()> {
         self.handle.release_interface(iface).context("USB error")
+    }
+
+    pub fn set_alternate_setting(&self, iface: u8, setting: u8) -> Result<()> {
+        self.handle
+            .set_alternate_setting(iface, setting)
+            .context("USB error")
     }
 
     pub fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
         self.handle.kernel_driver_active(iface).context("USB error")
     }
 
-    pub fn detach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+    pub fn detach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.detach_kernel_driver(iface).context("USB error")
     }
 
-    pub fn attach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+    pub fn attach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
@@ -168,6 +288,10 @@ impl UsbBackend {
         self.handle
             .read_string_descriptor_ascii(idx)
             .context("USB error")
+    }
+
+    pub fn reset(&self) -> Result<()> {
+        self.handle.reset().context("USB Error")
     }
 
     //
@@ -232,5 +356,127 @@ impl UsbBackend {
             .write_bulk(endpoint, data, self.timeout)
             .context("USB error")?;
         Ok(len)
+    }
+}
+
+// Structure representing a USB hub. The device needs to have sufficient permission
+// to be opened.
+pub struct UsbHub {
+    handle: rusb::DeviceHandle<rusb::Context>,
+}
+
+// USB hub operation.
+pub enum UsbHubOp {
+    // Power-off a specific port.
+    PowerOff,
+    // Power-on a specific port.
+    PowerOn,
+    // Suspend a specific port.
+    Suspend,
+    // Suspend a specific port.
+    Resume,
+    // Reset a specific port.
+    Reset,
+}
+
+const PORT_SUSPEND: u16 = 2;
+const PORT_RESET: u16 = 4;
+const PORT_POWER: u16 = 8;
+
+impl UsbHub {
+    // Construct a hub from a device.
+    pub fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<UsbHub> {
+        // Make sure the device is a hub.
+        let dev_desc = dev.device_descriptor()?;
+        // Assume that if the device has the HUB class then Linux will already enforce
+        // that it follows the specification.
+        ensure!(
+            dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB,
+            "device is not a hub"
+        );
+        Ok(UsbHub {
+            handle: dev.open().with_context(|| {
+                format!(
+                    "Cannot access USB hub on bus {bus}, address {addr}\n\
+                If this test requires access to the HUB, you need to make sure that \
+                the program has sufficient permissions to access the hub\n\
+                See sw/host/tests/chip/usb/README.md for more information\n\
+                The following command may fix the issue:\n\
+                sudo chmod 0666 /dev/bus/usb/{bus:03}/{addr:03}",
+                    bus = dev.bus_number(),
+                    addr = dev.address(),
+                )
+            })?,
+        })
+    }
+
+    pub fn device(&self) -> rusb::Device<rusb::Context> {
+        self.handle.device()
+    }
+
+    // Report the status of a port (only returns the port status, not the port change).
+    fn port_status(&self, port: u8, timeout: Duration) -> Result<u16> {
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_IN;
+        let mut status = [0u8; 4];
+        let _ = self.handle.read_control(
+            req_type,
+            rusb::constants::LIBUSB_REQUEST_GET_STATUS,
+            0,
+            port as u16,
+            &mut status,
+            timeout,
+        )?;
+        Ok(status[0] as u16 | (status[1] as u16) << 8)
+    }
+
+    // Perform an operation.
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
+        let (feature_index, set_feature, human_op) = match op {
+            UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
+            UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
+            UsbHubOp::Reset => (PORT_RESET, true, "reset"),
+            UsbHubOp::PowerOn => (PORT_POWER, true, "power on"),
+            UsbHubOp::PowerOff => (PORT_POWER, false, "power off"),
+        };
+        let req = if set_feature {
+            rusb::constants::LIBUSB_REQUEST_SET_FEATURE
+        } else {
+            rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE
+        };
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_OUT;
+        // Expected port status after the operation.
+        let port_status_mask = 1u16 << feature_index;
+        let port_status_after = if set_feature { port_status_mask } else { 0u16 };
+
+        // Perform operation.
+        let _ =
+            self.handle
+                .write_control(req_type, req, feature_index, port as u16, &[], timeout)?;
+        // Wait until port has changed status.
+        if !check_status {
+            return Ok(());
+        }
+        let start = Instant::now();
+        loop {
+            let port_status = self.port_status(port, timeout)?;
+            if port_status & port_status_mask == port_status_after {
+                break;
+            }
+            if start.elapsed() >= timeout {
+                anyhow::bail!(
+                    "Trying to {} port {} but port did not change status (last status was {:x})",
+                    human_op,
+                    port,
+                    port_status
+                );
+            }
+        }
+        log::info!("{} performed in {:#?}", human_op, start.elapsed());
+
+        Ok(())
     }
 }

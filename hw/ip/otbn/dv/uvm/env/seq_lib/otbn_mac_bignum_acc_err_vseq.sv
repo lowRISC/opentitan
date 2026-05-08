@@ -8,7 +8,12 @@
 class otbn_mac_bignum_acc_err_vseq extends otbn_intg_err_vseq;
   `uvm_object_utils(otbn_mac_bignum_acc_err_vseq)
 
-  `uvm_object_new
+  // TODO: Replaced the macro `uvm_object_new with the effective constructor to be able to
+  //       overwrite expect_delayed_escalation. There is probably a smarter way?
+  function new (string name="");
+      super.new(name);
+      expect_delayed_escalation = 1;
+    endfunction : new
 
   protected task await_use(output bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words);
     used_words = '0;

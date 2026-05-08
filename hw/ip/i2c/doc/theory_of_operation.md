@@ -6,13 +6,13 @@
 
 ## Functional Description
 
-I2C IP is a controller-target combo that can function as an I2C controller and/or an I2C target.
+The I2C IP is a controller-target combo that can function as an I<sup>2</sup>C controller and/or an I<sup>2</sup>C target.
 These functional modules are enabled at runtime by setting the register fields [`CTRL.ENABLEHOST`](registers.md#ctrl) and [`CTRL.ENABLETARGET`](registers.md#ctrl).
 If the Controller Module is to be used in a multi-controller environment, [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](registers.md#ctrl) would also need to be set.
 Note the ordering requirements in the register description for multi-controller configurations.
 
 The SCL and SDA outputs from the block combine the SCL and SDA outputs from the Controller Module and Target Module.
-The modules operate as though they were independent devices on the same I2C bus, with any logic low value taking priority.
+The modules operate as though they were independent devices on the same I<sup>2</sup>C bus, with any logic low value taking priority.
 
 On the input path, the IP's clock samples SCL and SDA after a 2-flop synchronizer.
 However, the IP's input pins do not reflect the start point for the full input path delay, since pads and nets from I/O buffers also contribute.
@@ -39,7 +39,7 @@ To make this happen, [`HOST_TIMEOUT_CTRL`](registers.md#host_timeout_ctrl) shoul
 
 ### Controller Module
 
-The Controller Module implements all mandatory controller features of the I2C protocol for multi-controller configurations, including clock synchronization and bus arbitration.
+The Controller Module implements all mandatory controller features of the I<sup>2</sup>C protocol for multi-controller configurations, including clock synchronization and bus arbitration.
 It also implements support for handling clock stretching.
 
 The state-machine-controlled Controller Module allows for higher-speed operation with less frequent software interaction.
@@ -75,7 +75,7 @@ Issue a STOP signal after processing this current entry in the FMT FIFO.
 Note that this flag is not compatible with (READB & RCONT), and will cause bus conflicts.
 - NAKOK (corresponds to [`FDATA.NAKOK`](registers.md#fdata), Not compatible with READB):
 Typically every byte transmitted must also receive an ACK signal, and the IP will raise an exception if no ACK is received.
-However, there are some I2C commands which do not require an ACK.
+However, there are some I<sup>2</sup>C commands which do not require an ACK.
 In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received.
 
 The Controller Module may proceed through all commands in the FMT FIFO as long as no exceptional event occurs.
@@ -123,7 +123,7 @@ All bits in [`CONTROLLER_EVENTS`](registers.md#controller_events) must be cleare
 
 ### Target Module
 
-The Target Module implements all mandatory features for targets in multi-controller configurations, as enumerated in the I2C specification.
+The Target Module implements all mandatory features for targets in multi-controller configurations, as enumerated in the I<sup>2</sup>C specification.
 It also supports clock stretching from that same specification.
 
 In addition, the Target Module has the necessary mechanisms to support mandatory SMBus 3.0 features, as well as dynamically-assigned addresses using the SMBus Address Resolution Protocol.
@@ -183,7 +183,7 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 ![](../doc/i2c_acq_fifo_read.svg)
 
 #### Target Clock Stretching
-As described in the I2C specification, a target device can pause a transaction by holding SCL low.
+As described in the I<sup>2</sup>C specification, a target device can pause a transaction by holding SCL low.
 There are 3 cases in which this design stretches the clock:
 - After the target receives the address but before pushing it to the ACQ FIFO
 - Before the (N)ACK bit completes transmission during a write transfer
@@ -262,10 +262,10 @@ This feature is intended to support protocols that require mid-transfer NACK dec
 
 ### Timing Control Registers
 
-For Standard-mode, Fast-mode and Fast-mode Plus, the timing requirements for each transaction are detailed in Table 10 of the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
+For Standard-mode, Fast-mode and Fast-mode Plus, the timing requirements for each transaction are detailed in Table 10 of the [I<sup>2</sup>C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 To claim complete compatibility at each mode, the state machine timings need to be adapted to whether there are Standard-mode, Fast-mode and Fast-mode Plus targets on the bus.
 Furthermore, depending on the actual capacitance of the bus, even a bus with all Fast-mode Plus capable targets may have to operate at slower speeds than 1 Mbaud.
-For example, the controller may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10, in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
+For example, the controller may need to run at lower frequencies, as discussed in Section 5.2 of the specification, but the computation of the nominal frequency will depend on timing specifications in Table 10 (rev. 6), in this case particularly, the limits on t<sub>LOW</sub>, t<sub>HIGH</sub>, t<sub>r</sub>, and t<sub>f</sub>.
 Assuming no clock stretching, for a given set of these four parameters the baud rate is then given to be:
 $$ 1/f\_{SCL}=t\_{LOW}+t\_{HIGH}+t\_{r}+t\_{f}. $$
 
@@ -278,7 +278,7 @@ Thus this parameter is largely budgetary, meaning that it tells the state machin
 - t<sub>f</sub>: set in register [`TIMING1.T_F`](registers.md#timing1).
 (Note: The fall time cannot be explicitly controlled by internal hardware, and is a function of the pin driver.
 Thus this parameter is also budgetary.
-Given that the actual fall time cannot be controlled to stay above the minimum values set in Table 10 of the specification, and so this in this regard this module currently is not strictly compliant to the I2C spec.
+Given that the actual fall time cannot be controlled to stay above the minimum values set in Table 10 of the specification (rev. 6), and so this in this regard this module currently is not strictly compliant to the I<sup>2</sup>C spec.
 The system design is responsible for meeting the spec's minimum fall time.
 )
 - t<sub>SU,STA</sub>: set in register [`TIMING2.TSU_STA`](registers.md#timing2)
@@ -295,7 +295,7 @@ In addition, when the IP operates as a target, the parameter specifies the requi
 
 The values programmed into the registers [`TIMING0`](registers.md#timing0) through [`TIMING4`](registers.md#timing4) are to be expressed in units of the input clock period.
 It is important that the internal clock is at least 50x the bus clock so that the proportions of the timings can be accurately captured.
-Note in order to ensure compliance with the I2C spec, firmware must program these registers with values within the ranges laid out in Table 10 of the specification.
+Note in order to ensure compliance with the I<sup>2</sup>C spec, firmware must program these registers with values within the ranges laid out in Table 10 of the specification (rev. 6).
 These values can be directly computed using DIFs given the desired speed standard, the desired operating frequency, and the actual line capacitance.
 These timing parameters are then fed directly to the I2C state machine to control the bus timing.
 
@@ -413,7 +413,7 @@ This interrupt is suppressed, however, if [`TIMEOUT_CTRL.EN`](registers.md#timeo
   head: {text: 'SCL Timeout Example',tick:-3}}
 ```
 
-Except for START and STOP symbols, the I2C specification requires that the SDA signal remains constant whenever SCL is high.
+Except for START and STOP symbols, the I<sup>2</sup>C specification requires that the SDA signal remains constant whenever SCL is high.
 The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse, causing an unexpected START or STOP symbol.
 
 Transactions are terminated by a STOP signal, but individual transfers within a transaction can be completed by a STOP signal *or* a repeated START signal.
@@ -569,7 +569,7 @@ For full spec compliance, the glitch filter must be added to the system design.
 
 ### Override Mode for Direct Pin Access
 
-The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I2C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
+The I2C hardware interface consists of two external pins, SCL and SDA, whose behavior is described in the [I<sup>2</sup>C specification (rev. 6)](https://web.archive.org/web/20210813122132/https://www.nxp.com/docs/en/user-guide/UM10204.pdf).
 These pins are typically controlled by an internal state machine.
 However, there is a simpler "override" mode, by which these pins can be directly manipulated by software.
 This override mode is useful for both troubleshooting and error recovery.
@@ -586,9 +586,9 @@ Since SCL is directly decoded from the states, it can have short glitches during
 To counter this, the SCL and SDA outputs from the internal state machine are flopped before they are emitted.
 
 This adds a one cycle module clock delay to both signals.
-If the module clock is sufficiently faster than I2C line speeds (for example 24MHz), this is not an issue.
+If the module clock is sufficiently faster than I<sup>2</sup>C line speeds (for example 24MHz), this is not an issue.
 However if the line speeds and the module clock speeds become very close (2x), the 1 cycle delay may have an impact, as the internal state machine may mistakenly think it has sampled an SDA that has not yet been updated.
 
 Therefore, it is recommended that the internal module clock frequency is much higher than the line speeds.
-Another reason to have this higher internal clock frequency is that the timing parameters can be more accurately defined, which helps attain the desired I2C clock rate.
-Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the [Programmer's Guide](./programmers_guide.md#timing-parameter-tuning-algorithm)), it is recommended that the internal module clock frequency is at least 24x higher than the I2C line speeds.
+Another reason to have this higher internal clock frequency is that the timing parameters can be more accurately defined, which helps attain the desired I<sup>2</sup>C clock rate.
+Since there are currently also a few cycles discrepancy between the specified timings and the actual ones (as described in the [Programmer's Guide](./programmers_guide.md#timing-parameter-tuning-algorithm)), it is recommended that the internal module clock frequency is at least 24x higher than the I<sup>2</sup>C line speeds.

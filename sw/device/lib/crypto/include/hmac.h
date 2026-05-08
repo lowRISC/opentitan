@@ -55,16 +55,16 @@ typedef struct otcrypto_hmac_context {
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
-                                otcrypto_const_byte_buf_t input_message,
-                                otcrypto_word32_buf_t tag);
+                                otcrypto_const_byte_buf_t *input_message,
+                                otcrypto_word32_buf_t *tag);
 
 /**
  * Performs the INIT operation for HMAC.
  *
  * Initializes the HMAC context. The key should be at least as long as the
  * digest for the chosen hash function. The hash function is determined by the
- * key mode. Only SHA-2 hash functions are are supported. Other modes (e.g.
- * SHA-3) are not supported and will result in errors.
+ * key mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3)
+ * are not supported and will result in errors.
  *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
@@ -90,8 +90,9 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
  * @return Result of the HMAC update operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
-                                       otcrypto_const_byte_buf_t input_message);
+otcrypto_status_t otcrypto_hmac_update(
+    otcrypto_hmac_context_t *const ctx,
+    const otcrypto_const_byte_buf_t *input_message);
 
 /**
  * Performs the FINAL operation for HMAC.
@@ -112,7 +113,7 @@ otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
-                                      otcrypto_word32_buf_t tag);
+                                      otcrypto_word32_buf_t *tag);
 
 #ifdef __cplusplus
 }  // extern "C"

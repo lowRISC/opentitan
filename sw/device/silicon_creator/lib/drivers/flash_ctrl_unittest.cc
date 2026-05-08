@@ -94,6 +94,14 @@ struct InitCase {
    */
   flash_ctrl_cfg_t cfg;
   /**
+   * Configuration override settings to be read from OTP.
+   */
+  uint32_t override_val;
+  /**
+   * Expected value to be written to the cfg override register.
+   */
+  uint32_t override_write_val;
+  /**
    * Expected value to be written to the info config register.
    */
   uint32_t info_write_val;
@@ -118,7 +126,12 @@ TEST_P(InitTest, Initialize) {
   EXPECT_CALL(
       otp_,
       read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE_OFFSET))
-      .WillOnce(Return(0));
+      .WillOnce(Return(GetParam().override_val));
+
+  if (GetParam().override_val != 0) {
+    EXPECT_SEC_WRITE32(base_ + FLASH_CTRL_HW_INFO_CFG_OVERRIDE_REG_OFFSET,
+                       GetParam().override_write_val);
+  }
 
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
@@ -155,6 +168,8 @@ INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
                                  .cfg = {.scrambling = kMultiBitBool4True,
                                          .ecc = kMultiBitBool4False,
                                          .he = kMultiBitBool4False},
+                                 .override_val = 0,
+                                 .override_write_val = 0,
                                  .info_write_val = 0x9969996,
                                  .data_write_val = 0x996999,
                              },
@@ -163,6 +178,8 @@ INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
                                  .cfg = {.scrambling = kMultiBitBool4False,
                                          .ecc = kMultiBitBool4True,
                                          .he = kMultiBitBool4False},
+                                 .override_val = 0,
+                                 .override_write_val = 0,
                                  .info_write_val = 0x9699996,
                                  .data_write_val = 0x969999,
                              },
@@ -171,6 +188,8 @@ INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
                                  .cfg = {.scrambling = kMultiBitBool4False,
                                          .ecc = kMultiBitBool4False,
                                          .he = kMultiBitBool4True},
+                                 .override_val = 0,
+                                 .override_write_val = 0,
                                  .info_write_val = 0x6999996,
                                  .data_write_val = 0x699999,
                              },
@@ -179,6 +198,38 @@ INSTANTIATE_TEST_SUITE_P(AllCases, InitTest,
                                  .cfg = {.scrambling = kMultiBitBool4True,
                                          .ecc = kMultiBitBool4True,
                                          .he = kMultiBitBool4False},
+                                 .override_val = 0,
+                                 .override_write_val = 0,
+                                 .info_write_val = 0x9669996,
+                                 .data_write_val = 0x966999,
+                             },
+                             // Override scrambling disable.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4False,
+                                         .he = kMultiBitBool4False},
+                                 .override_val = 0x0006,
+                                 .override_write_val = 0x96,
+                                 .info_write_val = 0x9969996,
+                                 .data_write_val = 0x996999,
+                             },
+                             // Override ECC disable.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .override_val = 0x0600,
+                                 .override_write_val = 0x69,
+                                 .info_write_val = 0x9699996,
+                                 .data_write_val = 0x969999,
+                             },
+                             // Override scrambling and ECC disable.
+                             InitCase{
+                                 .cfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False},
+                                 .override_val = 0x0606,
+                                 .override_write_val = 0x66,
                                  .info_write_val = 0x9669996,
                                  .data_write_val = 0x966999,
                              }));
@@ -932,7 +983,7 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
 
   // Expect that flash_ctrl_data_region_protect() will reset the
   // MP_REGION_CFG_${i} register.
-  EXPECT_CALL(sec_mmio_,
+  EXPECT_CALL(mmio_,
               Write32(kBase + kFlashCtrlMpRegionCfgRegOffset[GetParamRegion()],
                       kFlashCtrlMpRegionCfgRegResval[GetParamRegion()]));
 
@@ -971,6 +1022,52 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
           .he = BoolToMultiBitBool4(kFlashHe),
       },
       kHardenedBoolFalse);
+}
+
+TEST(FlashCtrl, FlashPermissionBits) {
+  union Permissions {
+    flash_ctrl_perms_t perms;
+    uint32_t raw;
+  };
+
+  Permissions word = {
+      .perms =
+          {
+              .read = 1,
+              .write = 2,
+              .erase = 3,
+          },
+  };
+
+  EXPECT_EQ(1, bitfield_field32_read(word.raw,
+                                     FLASH_CTRL_MP_REGION_CFG_0_RD_EN_0_FIELD));
+  EXPECT_EQ(2, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_PROG_EN_0_FIELD));
+  EXPECT_EQ(3, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_ERASE_EN_0_FIELD));
+}
+
+TEST(FlashCtrl, FlashConfigurationBits) {
+  union Permissions {
+    flash_ctrl_cfg_t cfg;
+    uint32_t raw;
+  };
+
+  Permissions word = {
+      .cfg =
+          {
+              .scrambling = 1,
+              .ecc = 2,
+              .he = 3,
+          },
+  };
+
+  EXPECT_EQ(1, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_SCRAMBLE_EN_0_FIELD));
+  EXPECT_EQ(2, bitfield_field32_read(
+                   word.raw, FLASH_CTRL_MP_REGION_CFG_0_ECC_EN_0_FIELD));
+  EXPECT_EQ(3, bitfield_field32_read(word.raw,
+                                     FLASH_CTRL_MP_REGION_CFG_0_HE_EN_0_FIELD));
 }
 
 }  // namespace

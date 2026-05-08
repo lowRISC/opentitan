@@ -76,7 +76,7 @@ opentitan_test(
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:spx_verify",
@@ -96,8 +96,8 @@ opentitan_test(
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
-            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
+            "//hw/top/dt",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -135,8 +135,8 @@ opentitan_test(
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
-            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
+            "//hw/top/dt",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -163,8 +163,8 @@ opentitan_test(
         # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
-            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
+            "//hw/top/dt",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -178,7 +178,7 @@ opentitan_test(
 # The following filegroup is required to allow dvsim to build the
 # empty_test_slot_* targets as the `sim_dv` execution environment is expected
 # as a suffix in the target label. For example:
-#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0_sim_dv`
+#  `//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_sim_dv`
 [
     filegroup(
         name = "empty_test_slot_{}_{}_sim_dv".format(slot, key),
@@ -244,6 +244,8 @@ opentitan_test(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
         src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
+        # Override the name to match what the dv testbench expects.
+        out = "empty_test_slot_{}_corrupted_sim_dv.{}.signed.64".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
@@ -277,7 +279,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     deps = [
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -290,7 +292,7 @@ opentitan_test(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -321,7 +323,7 @@ opentitan_test(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw340_sival": None,
@@ -346,7 +348,7 @@ opentitan_test(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom:mask_rom",
     ),
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
@@ -376,9 +378,9 @@ opentitan_test(
         exit_success = MSG_PASS,
     ),
     deps = [
-        "//hw/top:dt",
         "//hw/top:pinmux_c_regs",
         "//hw/top:uart_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
@@ -407,8 +409,8 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -420,7 +422,7 @@ opentitan_test(
     name = "sigverify_key_auth",
     srcs = [":empty_test"],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:unauthorized_key_0_ecdsa_p256": "unauthorized_key_0",
+        "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:ecdsa_keyset": "unauthorized_key_0",
     },
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -431,8 +433,8 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -463,12 +465,29 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_test(
+    name = "rom_e2e_chip_info",
+    srcs = ["chip_info_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    },
+    deps = [
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:build_info",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )

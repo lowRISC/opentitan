@@ -154,7 +154,7 @@ Non-secret OTP partitions hold data that can be public; or data that has no impa
 For example, the current value of lock bits or clock calibration values.
 These values are stored in OTP as plaintext.
 
-Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
+Secret partitions contain data that are critical to security, for example NVM scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
 The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../../ip/prim/doc/prim_present.md).
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
@@ -290,7 +290,7 @@ The CSR node on the left side of this diagram connects to the DAI, the OTP parti
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
-The Key Derivation Interface (KDI) on the bottom right side interacts with the scrambling datapath, the EDN and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for FLASH and SRAM scrambling.
+The Key Derivation Interface (KDI) on the bottom right side interacts with the scrambling datapath, the EDN and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for NVM and SRAM scrambling.
 
 The test access gate shown at the top of the block diagram is governed by the life cycle qualification signal `dft_en_i`, which is only enabled during the TEST_UNLOCKED* life cycle states.
 Otherwise, test access via this TL-UL window is locked down.
@@ -393,7 +393,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation can be requested via the [flash](interfaces.md#interface-to-flash-scrambler) and [sram](interfaces.md#interface-to-sram-and-otbn-scramblers) interfaces.
+Once it is in the idle state, key derivation can be requested via the [nvm](interfaces.md#interface-to-nvm-scrambler) and [sram](interfaces.md#interface-to-sram-and-otbn-scramblers) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
@@ -424,16 +424,16 @@ Note that both the IV as well as the finalization constant are global netlist co
 
 #### Scrambling Key Derivation
 
-The key derivation functions for ephemeral SRAM and static FLASH scrambling keys employ a similar construction as the digest calculation function.
+The key derivation functions for ephemeral SRAM and static NVM scrambling keys employ a similar construction as the digest calculation function.
 In particular, the keys are derived by repeatedly reducing a (partially random) block of data into a 64bit block, as illustrated in subfigures c) and d).
 
 For ephemeral SRAM scrambling keys, the data block is composed of the 128bit SRAM_DATA_KEY_SEED stored in OTP, as well as 128bit of fresh entropy fetched from the EDN.
 This process is repeated twice in order to produce a 128bit key.
 
-For static FLASH scrambling keys, the data block is composed of a 128bit part of either the FLASH_DATA_KEY_SEED or the FLASH_ADDR_KEY_SEED stored in OTP.
+For static NVM scrambling keys, the data block is composed of a 128bit part of either the NVM_DATA_KEY_SEED or the NVM_ADDR_KEY_SEED stored in OTP.
 These key seeds are 256bit in size, allowing to use a unique chunk of 128bit of key seed data to derive a 64bit halve of a particular scrambling key.
 
-Note that the IV and finalization constants are distinct for SRAM and FLASH data and FLASH address scrambling keys.
+Note that the IV and finalization constants are distinct for SRAM and NVM data and NVM address scrambling keys.
 These constants are chosen by the silicon creator prior to the tapeout.
 
 ### Access Arbitration

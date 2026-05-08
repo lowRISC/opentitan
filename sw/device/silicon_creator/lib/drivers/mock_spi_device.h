@@ -16,8 +16,9 @@ namespace internal {
  */
 class MockSpiDevice : public global_mock::GlobalMock<MockSpiDevice> {
  public:
-  MOCK_METHOD(void, Init, ());
-  MOCK_METHOD(rom_error_t, CmdGet, (spi_device_cmd_t *));
+  MOCK_METHOD(void, Init, (uint8_t /*log2_density*/, const void *, size_t));
+  MOCK_METHOD(void, InitBootstrap, ());
+  MOCK_METHOD(rom_error_t, CmdGet, (spi_device_cmd_t *, bool));
   MOCK_METHOD(void, FlashStatusClear, ());
   MOCK_METHOD(uint32_t, FlashStatusGet, ());
 };

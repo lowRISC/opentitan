@@ -10,8 +10,8 @@ interface otp_ctrl_cov_if
    input pwrmgr_pkg::pwr_otp_rsp_t                                 pwr_otp_o,
    input otp_ctrl_pkg::lc_otp_program_req_t                        lc_otp_program_i,
    input bit [3:0]                                                 lc_escalate_en_i,
-  % if enable_flash_key:
-   input otp_ctrl_pkg::flash_otp_key_req_t                         flash_otp_key_i,
+  % if enable_nvm_key:
+   input otp_ctrl_pkg::nvm_otp_key_req_t                           nvm_otp_key_i,
   % endif
    input otp_ctrl_pkg::sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
    input otp_ctrl_pkg::otbn_otp_key_req_t                          otbn_otp_key_i
@@ -22,9 +22,9 @@ interface otp_ctrl_cov_if
   `include "dv_fcov_macros.svh"
 
   covergroup lc_esc_en_condition_cg @(lc_escalate_en_i == lc_ctrl_pkg::On);
-  % if enable_flash_key:
-    lc_esc_during_flash_data_req:  coverpoint flash_otp_key_i.data_req;
-    lc_esc_during_flash_addr_req:  coverpoint flash_otp_key_i.addr_req;
+  % if enable_nvm_key:
+    lc_esc_during_nvm_data_req:    coverpoint nvm_otp_key_i.data_req;
+    lc_esc_during_nvm_addr_req:    coverpoint nvm_otp_key_i.addr_req;
   % endif
     lc_esc_during_sram_0_req:      coverpoint sram_otp_key_i[0].req;
     lc_esc_during_sram_1_req:      coverpoint sram_otp_key_i[1].req;
@@ -33,29 +33,29 @@ interface otp_ctrl_cov_if
     lc_esc_during_lc_otp_prog_req: coverpoint lc_otp_program_i.req;
   endgroup
 
-% if enable_flash_key:
-  covergroup flash_data_req_condition_cg @(flash_otp_key_i.data_req);
-    flash_data_req_during_lc_esc: coverpoint lc_escalate_en_i {
+% if enable_nvm_key:
+  covergroup nvm_data_req_condition_cg @(nvm_otp_key_i.data_req);
+    nvm_data_req_during_lc_esc: coverpoint lc_escalate_en_i {
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-    flash_data_req_during_flash_addr_req: coverpoint flash_otp_key_i.addr_req;
-    flash_data_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
-    flash_data_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
-    flash_data_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
-    flash_data_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
+    nvm_data_req_during_nvm_addr_req:   coverpoint nvm_otp_key_i.addr_req;
+    nvm_data_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
+    nvm_data_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
+    nvm_data_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
+    nvm_data_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
   endgroup
 
-  covergroup flash_addr_req_condition_cg @(flash_otp_key_i.addr_req);
-    flash_addr_req_during_lc_esc: coverpoint lc_escalate_en_i {
+  covergroup nvm_addr_req_condition_cg @(nvm_otp_key_i.addr_req);
+    nvm_addr_req_during_lc_esc: coverpoint lc_escalate_en_i {
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-    flash_addr_req_during_flash_data_req: coverpoint flash_otp_key_i.data_req;
-    flash_addr_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
-    flash_addr_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
-    flash_addr_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
-    flash_addr_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
+    nvm_addr_req_during_nvm_data_req:   coverpoint nvm_otp_key_i.data_req;
+    nvm_addr_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
+    nvm_addr_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
+    nvm_addr_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
+    nvm_addr_req_during_otp_idle:       coverpoint pwr_otp_o.otp_idle;
   endgroup
 % endif
 
@@ -64,9 +64,9 @@ interface otp_ctrl_cov_if
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-  % if enable_flash_key:
-    sram_0_req_during_flash_addr_req: coverpoint flash_otp_key_i.addr_req;
-    sram_0_req_during_flash_data_req: coverpoint flash_otp_key_i.data_req;
+  % if enable_nvm_key:
+    sram_0_req_during_nvm_addr_req:   coverpoint nvm_otp_key_i.addr_req;
+    sram_0_req_during_nvm_data_req:   coverpoint nvm_otp_key_i.data_req;
   % endif
     sram_0_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
     sram_0_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
@@ -78,9 +78,9 @@ interface otp_ctrl_cov_if
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-  % if enable_flash_key:
-    sram_1_req_during_flash_addr_req: coverpoint flash_otp_key_i.addr_req;
-    sram_1_req_during_flash_data_req: coverpoint flash_otp_key_i.data_req;
+  % if enable_nvm_key:
+    sram_1_req_during_nvm_addr_req:   coverpoint nvm_otp_key_i.addr_req;
+    sram_1_req_during_nvm_data_req:   coverpoint nvm_otp_key_i.data_req;
   % endif
     sram_1_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
     sram_1_req_during_otbn_req:       coverpoint otbn_otp_key_i.req;
@@ -92,9 +92,9 @@ interface otp_ctrl_cov_if
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-  % if enable_flash_key:
-    otbn_req_during_flash_addr_req: coverpoint flash_otp_key_i.addr_req;
-    otbn_req_during_flash_data_req: coverpoint flash_otp_key_i.data_req;
+  % if enable_nvm_key:
+    otbn_req_during_nvm_addr_req:   coverpoint nvm_otp_key_i.addr_req;
+    otbn_req_during_nvm_data_req:   coverpoint nvm_otp_key_i.data_req;
   % endif
     otbn_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
     otbn_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
@@ -106,9 +106,9 @@ interface otp_ctrl_cov_if
       bins lc_esc_on  = {lc_ctrl_pkg::On};
       bins lc_esc_off = {[0 : lc_ctrl_pkg::On-1], [lc_ctrl_pkg::On+1 : '1]};
     }
-  % if enable_flash_key:
-    lc_prog_req_during_flash_addr_req: coverpoint flash_otp_key_i.addr_req;
-    lc_prog_req_during_flash_data_req: coverpoint flash_otp_key_i.data_req;
+  % if enable_nvm_key:
+    lc_prog_req_during_nvm_addr_req:   coverpoint nvm_otp_key_i.addr_req;
+    lc_prog_req_during_nvm_data_req:   coverpoint nvm_otp_key_i.data_req;
   % endif
     lc_prog_req_during_sram_0_req:     coverpoint sram_otp_key_i[0].req;
     lc_prog_req_during_sram_1_req:     coverpoint sram_otp_key_i[1].req;
@@ -117,9 +117,9 @@ interface otp_ctrl_cov_if
   endgroup
 
   `DV_FCOV_INSTANTIATE_CG(lc_esc_en_condition_cg)
-% if enable_flash_key:
-  `DV_FCOV_INSTANTIATE_CG(flash_data_req_condition_cg)
-  `DV_FCOV_INSTANTIATE_CG(flash_addr_req_condition_cg)
+% if enable_nvm_key:
+  `DV_FCOV_INSTANTIATE_CG(nvm_data_req_condition_cg)
+  `DV_FCOV_INSTANTIATE_CG(nvm_addr_req_condition_cg)
 % endif
   `DV_FCOV_INSTANTIATE_CG(sram_0_req_condition_cg)
   `DV_FCOV_INSTANTIATE_CG(sram_1_req_condition_cg)

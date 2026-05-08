@@ -2,16 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_alert_handler.h"  // Generated.
-#include "hw/top/dt/dt_aon_timer.h"      // Generated.
-#include "hw/top/dt/dt_i2c.h"            // Generated.
-#include "hw/top/dt/dt_kmac.h"           // Generated.
-#include "hw/top/dt/dt_otp_ctrl.h"       // Generated.
-#include "hw/top/dt/dt_pwrmgr.h"         // Generated.
-#include "hw/top/dt/dt_rstmgr.h"         // Generated.
-#include "hw/top/dt/dt_rv_core_ibex.h"   // Generated.
-#include "hw/top/dt/dt_rv_plic.h"        // Generated.
-#include "hw/top/dt/dt_spi_host.h"       // Generated.
+#include "hw/top/dt/alert_handler.h"  // Generated.
+#include "hw/top/dt/aon_timer.h"      // Generated.
+#include "hw/top/dt/i2c.h"            // Generated.
+#include "hw/top/dt/kmac.h"           // Generated.
+#include "hw/top/dt/otp_ctrl.h"       // Generated.
+#include "hw/top/dt/pwrmgr.h"         // Generated.
+#include "hw/top/dt/rstmgr.h"         // Generated.
+#include "hw/top/dt/rv_core_ibex.h"   // Generated.
+#include "hw/top/dt/rv_plic.h"        // Generated.
+#include "hw/top/dt/spi_host.h"       // Generated.
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
@@ -38,7 +38,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #ifdef OPENTITAN_IS_EARLGREY
-#include "hw/top/dt/dt_flash_ctrl.h"
+#include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"

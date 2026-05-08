@@ -5,6 +5,7 @@
  # Additional reset
  int_reset_reqs = rst_reqs.get("int", [])
  debug_reset_reqs = rst_reqs.get("debug", [])
+ peripheral_reset_reqs = rst_reqs.get("peripheral", [])
  src_clks_core = sorted('core' if clk == 'main' else clk for clk in src_clks)
 %>\
 {
@@ -150,6 +151,12 @@
       act:     "req",
       package: "pwrmgr_pkg",
     },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "ext_rst_ack",
+      act:     "rcv",
+      package: "",
+    },
 % endif
     { struct:  "pwr_ast",
       type:    "req_rsp",
@@ -186,9 +193,9 @@
       package: "lc_ctrl_pkg",
     },
 
-    { struct:  "pwr_flash",
+    { struct:  "pwr_nvm",
       type:    "uni",
-      name:    "pwr_flash",
+      name:    "pwr_nvm",
       act:     "rcv",
       package: "pwrmgr_pkg",
     },
@@ -658,27 +665,27 @@ desc = (usb_enabled_text if src == 'usb' else
       ]
     },
 
-    { multireg:
-      { name: "RESET_EN",
-        desc: "Bit mask for enabled reset requests",
-        swaccess: "rw",
-        hwaccess: "hro",
-        regwen: "RESET_EN_REGWEN",
-        resval: "0"
-        cname: "rstreq_en",
-        count: "NumRstReqs"
-        fields: [
-          { bits: "0",
-            name: "EN",
-            desc: '''
-              Whenever a particular bit is set to 1, that reset request is enabled.
-              Whenever a particular bit is set to 0, that reset request cannot reset the device.
+    { name: "RESET_EN",
+      desc: '''
+            Bit mask for enabled reset requests
+
+            Whenever a particular bit is set to 1, that reset request is enabled.
+            Whenever a particular bit is set to 0, that reset request cannot reset the device.
             ''',
-          },
-        ]
-        tags: [// Self resets should never be triggered by automated tests
-        "excl:CsrAllTests:CsrExclWrite"]
-      },
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "RESET_EN_REGWEN",
+      fields: [
+        % for i, reset in enumerate(peripheral_reset_reqs):
+        { bits: "${i}",
+          name: "EN_${i}",
+          resval: "${"1" if reset.get("enabled_after_reset", False) else "0"}"
+          desc: "Reset enable for ${reset["module"]}: ${reset["name"]}.",
+        },
+        % endfor
+      ]
+      tags: [// Self resets should never be triggered by automated tests
+      "excl:CsrAllTests:CsrExclWrite"]
     },
 
     { multireg:
@@ -763,7 +770,7 @@ desc = (usb_enabled_text if src == 'usb' else
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power
-            hint, an active flash / lifecycle / otp transaction was ongoing when the power controller
+            hint, an active NVM / lifecycle / otp transaction was ongoing when the power controller
             attempted to initiate low power entry.
 
             The power manager detects this condition, halts low power entry and reports as a wakeup reason

@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-from importlib.metadata import version
 import logging as log
 import os
 from packaging.version import Version
@@ -16,14 +15,21 @@ import sys
 # Display INFO log messages and up.
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
+try:
+    import importlib
+except ModuleNotFoundError:
+    log.error("importlib cannot be found. "
+              "This likely means that you're using a very old version of Python. "
+              "Please update Python to the version defined in tool_requirements.py and retry.")
+    sys.exit(1)
+
 
 def get_tool_requirements_path():
-    '''Return the path to tool_requirements.py, at the top of the repo'''
-    # top_src_dir is the top of the repository
-    top_src_dir = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                                '..'))
+    '''Return the path to tool_requirements.py, in the same dir as this file'''
+    # tool_src_dir is the directory containing this file
+    tool_src_dir = os.path.normpath(os.path.join(os.path.dirname(__file__)))
 
-    return os.path.join(top_src_dir, 'tool_requirements.py')
+    return os.path.join(tool_src_dir, 'tool_requirements.py')
 
 
 class ReqErr(Exception):
@@ -223,6 +229,22 @@ class VeribleToolReq(ToolReq):
         return '.'.join(m.group(1, 2, 3))
 
 
+class VivadoToolReq(ToolReq):
+    tool_cmd = ['vivado', '-version']
+    version_regex = re.compile(r'Vivado v(.*)\s')
+
+    def to_semver(self, version, from_req):
+        # Regular Vivado releases just have a major and minor version.
+        # Therefore, the patch number is optional
+        m = re.fullmatch(r'([0-9]+)\.([0-9]+)(?:\.([0-9]+))?', version)
+        if m is None:
+            raise ValueError("{} has invalid version string format."
+                             .format(version))
+
+        # If there is no patch level, we set it to 0.
+        return '.'.join((m.group(1), m.group(2), m.group(3) or '0'))
+
+
 class VcsToolReq(ToolReq):
     tool_cmd = ['vcs', '-full64', '-ID']
     tool_env = {'VCS_ARCH_OVERRIDE': 'linux'}
@@ -260,13 +282,36 @@ class VcsToolReq(ToolReq):
         return '{}.{}{}'.format(major, minor, comb)
 
 
-class PyModuleToolReq(ToolReq):
-    '''A tool in a Python module (its version can be found by running pip)'''
+class NinjaToolReq(ToolReq):
+    tool_cmd = ['ninja', '--version']
 
-    # For Python modules, use metadata directly instead of call into pip3, which
-    # may not always be available for some systems.
+    def to_semver(self, version, from_req):
+        # There exist different version string variants that we need to be
+        # able to parse. Some only contain the semantic version, e.g. "1.10.0",
+        # while others contain an additional suffix, e.g.
+        # "1.10.0.git.kitware.jobserver-1". To allow this trailing suffix,
+        # NinjaToolReq uses re.match instead of re.fullmatch.
+        m = re.match(r'([0-9]+)\.([0-9]+)\.([0-9]+)', version)
+        if m is None:
+            raise ValueError("{} has invalid version string format."
+                             .format(version))
+
+        return '.'.join(m.group(1, 2, 3))
+
+
+class EdalizeToolReq(ToolReq):
+    '''A specialised version extractor for Edalize'''
+
+    # The upstream versions of edalize and fusesoc don't use the standard
+    # versioning mechanism that can be discovered through importlib.metadata.
+    # Instead of using that, try to import the package. Note that an error will
+    # be propagated to top-level, which is what we want.
     def get_version(self):
-        return version(self.tool)
+        try:
+            return importlib.import_module(self.tool + '.version').version
+        except ModuleNotFoundError:
+            raise RuntimeError(f'Unable to import {self.tool} to check version')
+
 
 def dict_to_tool_req(path, tool, raw):
     '''Parse a dict (as read from Python) as a ToolReq
@@ -305,10 +350,12 @@ def dict_to_tool_req(path, tool, raw):
                      .format(where, ', '.join(raw.keys())))
 
     classes = {
-        'edalize': PyModuleToolReq,
+        'edalize': EdalizeToolReq,
         'vcs': VcsToolReq,
         'verible': VeribleToolReq,
-        'verilator': VerilatorToolReq
+        'verilator': VerilatorToolReq,
+        'vivado': VivadoToolReq,
+        'ninja': NinjaToolReq
     }
     cls = classes.get(tool, ToolReq)
 

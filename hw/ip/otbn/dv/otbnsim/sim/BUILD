@@ -16,7 +16,11 @@ py_library(
     name = "csr",
     srcs = ["csr.py"],
     deps = [
+        ":constants",
         ":flags",
+        ":ispr",
+        ":kmac_ispr",
+        ":trace",
         ":wsr",
     ],
 )
@@ -97,6 +101,52 @@ py_library(
 )
 
 py_library(
+    name = "ispr",
+    srcs = ["ispr.py"],
+    deps = [
+        ":trace",
+    ],
+)
+
+py_library(
+    name = "kmac",
+    srcs = ["kmac.py"],
+    deps = [
+        requirement("pycryptodome"),
+        ":constants",
+        ":csr",
+        ":wsr",
+    ],
+)
+
+py_library(
+    name = "kmac_ispr",
+    srcs = ["kmac_ispr.py"],
+    deps = [
+        ":ispr",
+    ],
+)
+
+py_library(
+    name = "mai",
+    srcs = ["mai.py"],
+    deps = [
+        ":csr",
+        ":ispr",
+        ":mai_ispr",
+        ":wsr",
+    ],
+)
+
+py_library(
+    name = "mai_ispr",
+    srcs = ["mai_ispr.py"],
+    deps = [
+        ":ispr",
+    ],
+)
+
+py_library(
     name = "load_elf",
     srcs = ["load_elf.py"],
     deps = [
@@ -155,6 +205,7 @@ py_library(
         ":ext_regs",
         ":flags",
         ":gpr",
+        ":kmac",
         ":loop",
         ":reg",
         ":trace",
@@ -181,10 +232,27 @@ py_library(
 )
 
 py_library(
+    name = "trivium",
+    srcs = ["trivium.py"],
+)
+
+py_test(
+    name = "trivium_test",
+    srcs = ["trivium.py"],
+    main = "trivium.py",
+    deps = [
+        ":trivium",
+    ],
+)
+
+py_library(
     name = "wsr",
     srcs = ["wsr.py"],
     deps = [
         ":ext_regs",
+        ":ispr",
+        ":kmac_ispr",
         ":trace",
+        ":trivium",
     ],
 )

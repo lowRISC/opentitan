@@ -14,10 +14,13 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_TEST_ENVS",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
     "opentitan_test",
     "qemu_params",
+    "silicon_params",
     "verilator_params",
 )
 
@@ -34,6 +37,7 @@ filegroup(
         "rstmgr.h",
         "spi_device.c",
         "spi_device.h",
+        "spi_device_bfpt.h",
     ],
 )
 
@@ -60,7 +64,7 @@ dual_cc_library(
         shared = [
             ":lifecycle",
             ":otp",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
@@ -93,10 +97,10 @@ opentitan_test(
         ":alert",
         ":rstmgr",
         "//hw/top:alert_handler_c_regs",
-        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -112,9 +116,9 @@ cc_library(
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -144,7 +148,7 @@ cc_library(
         "clkmgr.h",
     ],
     deps = [
-        "//hw/top:dt_clkmgr",
+        "//hw/top/dt:clkmgr",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
@@ -174,7 +178,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//hw/top:flash_ctrl_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -198,6 +202,33 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "gpio",
+    srcs = ["gpio.c"],
+    hdrs = ["gpio.h"],
+    deps = [
+        "//hw/top:gpio_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_test(
+    name = "gpio_unittest",
+    srcs = ["gpio_unittest.cc"],
+    deps = [
+        ":gpio",
+        "//hw/top:gpio_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "hmac",
     srcs = dual_inputs(
@@ -211,7 +242,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:hmac_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -231,6 +262,7 @@ dual_cc_library(
 cc_test(
     name = "hmac_unittest",
     srcs = ["hmac_unittest.cc"],
+    local_defines = ["HMAC_UNIT_TEST_"],
     deps = [
         dual_cc_device_library_of(":hmac"),
         "//hw/top:hmac_c_regs",
@@ -245,7 +277,10 @@ cc_test(
 opentitan_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -270,7 +305,7 @@ dual_cc_library(
     deps = dual_inputs(
         shared = [
             "//hw/top:rv_core_ibex_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
@@ -297,8 +332,8 @@ cc_library(
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:keymgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",
@@ -313,7 +348,7 @@ cc_test(
     srcs = ["keymgr_unittest.cc"],
     deps = [
         ":keymgr",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -328,8 +363,9 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     qemu = qemu_params(
@@ -370,8 +406,8 @@ cc_library(
     srcs = ["kmac.c"],
     hdrs = ["kmac.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:kmac_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
@@ -391,7 +427,10 @@ cc_test(
 opentitan_test(
     name = "kmac_functest",
     srcs = ["kmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -418,7 +457,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:lc_ctrl_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -429,6 +468,7 @@ dual_cc_library(
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:abs_mmio",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
         ],
     ),
@@ -452,8 +492,8 @@ cc_library(
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:otbn_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib:error",
@@ -484,7 +524,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -516,10 +556,10 @@ cc_library(
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -551,9 +591,9 @@ cc_library(
     srcs = ["retention_sram.c"],
     hdrs = ["retention_sram.h"],
     deps = [
-        "//hw/top:dt",
         "//hw/top:sram_ctrl_c_regs",
         "//hw/top:top_lib",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -605,7 +645,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             ":otp",
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:abs_mmio",
@@ -653,8 +693,9 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     deps = [
@@ -662,6 +703,7 @@ opentitan_test(
         ":rnd",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:crc32",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rand_testutils",
@@ -690,7 +732,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top:dt",
+            "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
@@ -739,8 +781,8 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         ":ibex",
-        "//hw/top:dt",
         "//hw/top:uart_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -781,9 +823,9 @@ cc_library(
     deps = [
         ":pwrmgr",
         "//hw/top:aon_timer_c_regs",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
@@ -818,7 +860,7 @@ opentitan_test(
         ":retention_sram",
         ":rstmgr",
         ":watchdog",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -835,13 +877,19 @@ dual_cc_library(
     ),
     hdrs = dual_inputs(
         host = ["mock_spi_device.h"],
-        shared = ["spi_device.h"],
+        shared = [
+            "spi_device.h",
+            "spi_device_bfpt.h",
+        ],
     ),
+    copts = [
+        "-Wno-gnu-flexible-array-initializer",
+    ],
     deps = dual_inputs(
         device = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:spi_device_c_regs",
-            "//hw/top:dt",
+            "//hw/top/dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -879,8 +927,8 @@ cc_library(
     hdrs = ["pwrmgr.h"],
     deps = [
         ":ibex",
-        "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -894,9 +942,9 @@ cc_library(
     deps = [
         ":lifecycle",
         ":otp",
-        "//hw/top:dt",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
+        "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -937,5 +985,61 @@ cc_test(
         ":epmp",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "usb",
+    srcs = [
+        "stdusb.c",
+        "usb.c",
+    ],
+    hdrs = [
+        "stdusb.h",
+        "usb.h",
+    ],
+    deps = [
+        "//hw/top:usbdev_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+opentitan_test(
+    name = "usb_functest",
+    srcs = ["usb_functest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/usb:silicon_creator_harness",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:silicon_creator_harness",
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["broken"],
+    ),
+    deps = [
+        ":hmac",
+        ":pinmux",
+        ":rnd",
+        ":usb",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

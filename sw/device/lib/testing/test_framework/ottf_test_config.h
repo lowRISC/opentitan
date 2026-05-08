@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 
-#include "hw/top/dt/dt_api.h"
+#include "hw/top/dt/api.h"
 
 /**
  * Communication interfaces that can be used as the OTTF console.
@@ -118,6 +118,7 @@ typedef struct ottf_test_config {
   bool clear_reset_reason;
 
   /**
+   * Indicates if OTTF console prints will be silenced.
    */
   bool silence_console_prints;
 
@@ -126,6 +127,16 @@ typedef struct ottf_test_config {
    * this will be the file that defines `test_main()`.
    */
   const char *file;
+
+  /**
+   * If true, OTTF will enable all alerts configured for alert class D which
+   * will escalate with signal 0. OTTF will handle IRQs for class D before they
+   * escalate and abort the test.
+   *
+   * The alert handler configuration is not locked and can be modified further
+   * by the test.
+   */
+  bool ignore_alerts;
 } ottf_test_config_t;
 
 /**

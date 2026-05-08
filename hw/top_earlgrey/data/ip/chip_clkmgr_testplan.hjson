@@ -169,6 +169,8 @@
       si_stage: SV3
       lc_states: [
         "DEV",
+        "TEST_UNLOCKED",
+        "RMA",
       ]
       tests: [
         "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",

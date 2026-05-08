@@ -61,7 +61,7 @@
 
 `ifndef uvm_component_new
   `define uvm_component_new \
-    function new (string name="", uvm_component parent=null); \
+    function new (string name, uvm_component parent); \
       super.new(name, parent); \
     endfunction : new
 `endif

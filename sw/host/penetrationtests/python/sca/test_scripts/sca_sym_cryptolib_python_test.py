@@ -39,7 +39,14 @@ class SymCryptoScaTest(unittest.TestCase):
 
     def test_init(self):
         symsca = OTSymCrypto(target)
-        device_id, owner_page, boot_log, boot_measurements, version = symsca.init()
+        (
+            device_id,
+            owner_page,
+            boot_log,
+            boot_measurements,
+            version,
+            cryptolib_version,
+        ) = symsca.init()
         device_id_json = json.loads(device_id)
         owner_page_json = json.loads(owner_page)
         boot_log_json = json.loads(boot_log)
@@ -115,6 +122,8 @@ class SymCryptoScaTest(unittest.TestCase):
         )
 
         self.assertIn("PENTEST", version)
+
+        self.assertIn("CRYPTO", cryptolib_version)
 
     def test_char_aes_fvsr_plaintext(self):
         for num_segments in num_segments_list:

@@ -109,6 +109,12 @@ module tb;
     .sram_rerror_o                (                           )
   );
 
+  // Bind in an interface that makes some fault injection easier.
+  //
+  // The sram_addr and sram_wdata signals need passing explicitly to avoid a warning from VCS about
+  // the fact that the (max footprint) interface ports don't match the design.
+  bind dut sram_ctrl_fault_if u_fault_if (.sram_addr(sram_addr), .sram_wdata(sram_wdata), .*);
+
   // KDI interface assignments
   assign kdi_if.req         = key_req.req;
   assign key_rsp.ack        = kdi_if.ack;
@@ -151,6 +157,7 @@ module tb;
         null, "*.env.m_tl_agent_sram_ctrl_regs_reg_block*", "vif", tl_if);
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_sram_ctrl_prim_reg_block*", "vif", sram_tl_if);
+    uvm_config_db#(virtual sram_ctrl_fault_if)::set(null, "*.env", "fault_vif", dut.u_fault_if);
     uvm_config_db#(sram_ctrl_bkdr_util)::set(null, "*.env", "sram_ctrl_bkdr_util",
                                              m_sram_ctrl_bkdr_util);
 

@@ -64,7 +64,7 @@ The following table describes the available configuration parameters.
 Performance notes
 -----------------
 
-Note that although larger cache line sizes allow for better area efficiency (lower tagram area overhead), there is a performance penalty.
+Note that although larger cache line sizes allow for better area efficiency (lower tag-RAM area overhead), there is a performance penalty.
 When the core branches to an address that is not aligned to the bottom of a cache line (and the request misses in the cache), the I$ will attempt to fetch this address first from the bus.
 The I$ will then fetch the rest of the remaining beats of data in wrapping address order to complete the cache line (in order to allocate it to the cache).
 While these lower addresses are being fetched, the core is starved of data.
@@ -77,7 +77,7 @@ RAM Arrangement
 ---------------
 
 The data RAMs are arranged as ``NumWays`` banks of ``LineSize`` width.
-If ECC is configured, the tag and data banks will be wider to accomodate the extra checkbits.
+If ECC is configured, the tag and data banks will be wider to accommodate the extra checkbits.
 
 Indicative RAM sizes for common configurations are given in the table below:
 

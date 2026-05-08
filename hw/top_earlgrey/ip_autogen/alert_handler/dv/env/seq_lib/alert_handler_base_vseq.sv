@@ -342,6 +342,12 @@ class alert_handler_base_vseq extends cip_base_vseq #(
           `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err; standalone_int_err == 0;
                                          ping_timeout == ping_timeout_err;)
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
+
+          // The sequence has finished, which either means that we have seen an escalation and sent
+          // a response, or it means that a reset has happened. Watch the agent's configuration to
+          // wait until it is out of reset before starting a sequence to respond to the next
+          // escalation.
+          wait(!cfg.esc_device_cfg[index].in_reset);
         end
       join_none
     end

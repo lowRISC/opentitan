@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "entrypoint": "main",
+  "input": {
+    "regs": {
+      # w31 is zero
+      "w31": "0x0",
+      # The secrets in 32-bit elements. Each element is < q = 8380417 = 2^23 - 2^13 + 1
+      "w0": "0x004b0797007325a8003f3539006704890028b454007b496800165e680003a981",
+    }
+  }
+  "output": {
+    "regs": {
+      # The secrets should be returned unchanged
+      "w24": "0x004b0797007325a8003f3539006704890028b454007b496800165e680003a981",
+    }
+  }
+}

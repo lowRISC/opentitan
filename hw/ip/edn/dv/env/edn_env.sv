@@ -12,7 +12,7 @@ class edn_env extends cip_base_env #(
 
   csrng_agent   m_csrng_agent;
   push_pull_agent#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
-       m_endpoint_agent[MAX_NUM_ENDPOINTS];
+       m_endpoint_agent[`NUM_END_POINTS];
 
   `uvm_component_new
 
@@ -25,7 +25,7 @@ class edn_env extends cip_base_env #(
     cfg.m_csrng_agent_cfg.if_mode = dv_utils_pkg::Device;
     cfg.m_csrng_agent_cfg.en_cov  = cfg.en_cov;
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       string endpoint_agent_name = $sformatf("m_endpoint_agent[%0d]", i);
       m_endpoint_agent[i] = push_pull_agent#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))::
                             type_id::create(endpoint_agent_name, this);
@@ -55,7 +55,7 @@ class edn_env extends cip_base_env #(
       m_csrng_agent.m_cmd_push_agent.monitor.analysis_port.connect
           (scoreboard.cs_cmd_fifo.analysis_export);
 
-      for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+      for (int i = 0; i < `NUM_END_POINTS; i++) begin
         m_endpoint_agent[i].monitor.analysis_port.connect
             (scoreboard.endpoint_fifo[i].analysis_export);
       end
@@ -64,7 +64,7 @@ class edn_env extends cip_base_env #(
           (scoreboard.rsp_sts_fifo.analysis_export);
     end
 
-    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+    for (int i = 0; i < `NUM_END_POINTS; i++) begin
       if (cfg.m_endpoint_agent_cfg[i].is_active) begin
         virtual_sequencer.endpoint_sequencer_h[i] = m_endpoint_agent[i].sequencer;
       end

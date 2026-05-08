@@ -133,13 +133,13 @@ impl Bus for LogicalI2cWrapper {
     ) -> Result<()> {
         let mut inner = self.inner.borrow_mut();
         if serial_clock.is_some() {
-            inner.serial_clock = serial_clock.map(Rc::clone);
+            inner.serial_clock = serial_clock.cloned();
         }
         if serial_data.is_some() {
-            inner.serial_data = serial_data.map(Rc::clone);
+            inner.serial_data = serial_data.cloned();
         }
         if gsc_ready.is_some() {
-            inner.gsc_ready = gsc_ready.map(Rc::clone);
+            inner.gsc_ready = gsc_ready.cloned();
         }
         Ok(())
     }

@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cfg),
-                                                         .RAL_T(racl_ctrl_reg_block),
+class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_base_env_cfg),
+                                                         .RAL_T(dv_base_reg_block),
                                                          .COV_T(racl_ctrl_env_cov));
   `uvm_component_utils(racl_ctrl_scoreboard)
 
   uvm_analysis_export #(racl_error_log_vec_item) internal_errors_export;
   uvm_analysis_export #(racl_error_log_vec_item) external_errors_export;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
@@ -131,7 +131,7 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   local tl_seq_item pending_csr_write;
 endclass
 
-function racl_ctrl_scoreboard::new (string name="", uvm_component parent=null);
+function racl_ctrl_scoreboard::new (string name, uvm_component parent);
   super.new(name, parent);
   check_interrupt_ev = new();
   error_log_pred_changed_ev = new();

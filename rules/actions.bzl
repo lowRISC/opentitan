@@ -4,3 +4,4 @@
 
 OT_ACTION_OBJDUMP = "objdump"
 OT_ACTION_LLVM_PROFDATA = "llvm-profdata"
+OT_ACTION_NM = "nm"

@@ -135,18 +135,22 @@
                     value: "0x0",
                 }
                 {
-                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
-                    value: "0xfffd0002",
-                }
-                {
-                    name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
-                    value: "0x8264cf75",
-                }
-                {
                     // Using the default register reset value. Two consecutive
                     // failures trigger an alert.
-                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
+                    name: "CREATOR_SW_CFG_RNG_BOOT_ALERT_THRESHOLD",
                     value: "0xfffd0002",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_FIPS_ALERT_THRESHOLD",
+                    value: "0xfffd0002",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_BOOT_CONFIG_DIGEST",
+                    value: "0xddbce0ed",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_FIPS_CONFIG_DIGEST",
+                    value: "0xddbce0ed",
                 }
             ],
         }

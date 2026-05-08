@@ -25,6 +25,18 @@ static const char *basename(const char *file, size_t *basename_len) {
   return f;
 }
 
+status_t status_from_rom_error(uint32_t val) {
+  uint32_t code =
+      val == kErrorOk ? 0 : bitfield_field32_read(val, ROM_ERROR_FIELD_STATUS);
+  int32_t arg = (int32_t)bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR);
+  uint32_t mod = bitfield_field32_read(val, ROM_ERROR_FIELD_MODULE);
+  uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);
+  /* We know that the module ID extracted from the rom_error_t is not undefined
+   * so there is no point in passing a filename to status_created. */
+  return status_create((absl_status_t)code, module, "unk",
+                       code == kOk ? kErrorOk : arg);
+}
+
 status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
                        int32_t arg) {
   if (code == kOk) {
@@ -55,9 +67,13 @@ status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
     module_id = basename_len >= 3 ? MAKE_MODULE_ID(f[0], f[1], f[2])
                                   : MAKE_MODULE_ID('u', 'n', 'd');
   }
+  // The module ID currently encodes one ASCII in each 8-bit field. To make
+  // the three ASCII fit in 15 bits, we convert to 5-bit ASCII characters.
+  module_id = status_encode_module_id(module_id);
   // At this point, the module_id is already packed into the correct bitfield.
   return (status_t){
-      .value = (int32_t)(module_id |
+      .value = (int32_t)(bitfield_field32_write(0, STATUS_FIELD_MODULE_ID,
+                                                module_id) |
                          bitfield_bit32_write(0, STATUS_BIT_ERROR, true) |
                          bitfield_field32_write(0, STATUS_FIELD_CODE, code) |
                          bitfield_field32_write(0, STATUS_FIELD_ARG,

@@ -6,13 +6,13 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/cryptolib_sym.h"
@@ -86,16 +86,12 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Convert the data struct into cryptolib types.
   uint32_t iv_buf[kPentestAesIvSize];
+  otcrypto_word32_buf_t aes_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_buf, kPentestAesBlockWords);
   memcpy(iv_buf, iv, sizeof(iv_buf));
-  otcrypto_word32_buf_t aes_iv = {
-      .data = iv_buf,
-      .len = kPentestAesBlockWords,
-  };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = data_in,
-      .len = data_in_len,
-  };
+  otcrypto_const_byte_buf_t input =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
@@ -118,7 +114,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
     aes_key_mask[it] = pentest_ibex_rnd32_read();
   }
-  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
   otcrypto_blinded_key_t aes_key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -134,14 +131,13 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
-  };
+  otcrypto_byte_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, (unsigned char *)output_buf, sizeof(output_buf));
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output));
+  HARDENED_TRY(otcrypto_aes(&aes_key, &aes_iv, aes_mode, op, &input,
+                            aes_padding, &output));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -161,23 +157,19 @@ status_t cryptolib_sca_drbg_generate_impl(
   uint8_t nonce_buf[nonce_len];
   memcpy(nonce_buf, nonce, nonce_len);
 
-  otcrypto_const_byte_buf_t nonce_in = {
-      .len = nonce_len,
-      .data = nonce_buf,
-  };
+  otcrypto_const_byte_buf_t nonce_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, nonce_buf, nonce_len);
 
   // Buffer for the output entropy data.
   uint32_t output_data[data_out_len];
-  otcrypto_word32_buf_t output = {
-      .data = output_data,
-      .len = ARRAYSIZE(output_data),
-  };
+  otcrypto_word32_buf_t output = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, output_data, ARRAYSIZE(output_data));
 
   // Trigger window 0.
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_generate(nonce_in, output));
+  HARDENED_TRY(otcrypto_drbg_generate(&nonce_in, &output));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -199,16 +191,14 @@ status_t cryptolib_sca_drbg_reseed_impl(
   uint8_t entropy_buf[entropy_len];
   memcpy(entropy_buf, entropy, entropy_len);
 
-  otcrypto_const_byte_buf_t entropy_in = {
-      .len = entropy_len,
-      .data = entropy_buf,
-  };
+  otcrypto_const_byte_buf_t entropy_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, entropy_buf, entropy_len);
 
   // Trigger window 0.
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_instantiate(entropy_in));
+  HARDENED_TRY(otcrypto_drbg_instantiate(&entropy_in));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -249,7 +239,8 @@ status_t cryptolib_sca_gcm_impl(
   }
 
   uint32_t keyblob[keyblob_num_words(config)];
-  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
 
   // Construct the blinded key.
   otcrypto_blinded_key_t gcm_key = {
@@ -266,31 +257,21 @@ status_t cryptolib_sca_gcm_impl(
   size_t iv_num_words = 4;
   uint32_t iv_data[iv_num_words];
   memcpy(iv_data, iv, sizeof(iv_data));
-  otcrypto_const_word32_buf_t gcm_iv = {
-      .data = iv_data,
-      .len = iv_num_words,
-  };
-  otcrypto_const_byte_buf_t plaintext = {
-      .data = data_in,
-      .len = data_in_len,
-  };
-  otcrypto_const_byte_buf_t gcm_aad = {
-      .data = aad,
-      .len = aad_len,
-  };
+  otcrypto_const_word32_buf_t gcm_iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, iv_num_words);
+  otcrypto_const_byte_buf_t plaintext =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, data_in, data_in_len);
+  otcrypto_const_byte_buf_t gcm_aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, aad, aad_len);
 
   size_t tag_num_words = (*tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t actual_tag_data[tag_num_words];
-  otcrypto_word32_buf_t actual_tag = {
-      .data = actual_tag_data,
-      .len = tag_num_words,
-  };
+  otcrypto_word32_buf_t actual_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, actual_tag_data, tag_num_words);
 
   uint8_t actual_ciphertext_data[AES_CMD_MAX_MSG_BYTES];
-  otcrypto_byte_buf_t actual_ciphertext = {
-      .data = actual_ciphertext_data,
-      .len = data_in_len,
-  };
+  otcrypto_byte_buf_t actual_ciphertext = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, actual_ciphertext_data, data_in_len);
 
   otcrypto_aes_gcm_tag_len_t gcm_tag_len;
   switch (*tag_len) {
@@ -313,8 +294,9 @@ status_t cryptolib_sca_gcm_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
-                               gcm_tag_len, actual_ciphertext, actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&gcm_key, &plaintext, &gcm_iv, &gcm_aad,
+                                        gcm_tag_len, &actual_ciphertext,
+                                        &actual_tag));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -379,7 +361,8 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   for (size_t it = 0; it < kPentestHmacMaxKeyWords; it++) {
     hmac_key_mask[it] = pentest_ibex_rnd32_read();
   }
-  TRY(keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
   otcrypto_blinded_key_t hmac_key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -390,21 +373,17 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   // Create input message.
   uint8_t msg_buf[data_in_len];
   memcpy(msg_buf, data_in, data_in_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = data_in_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_buf, data_in_len);
 
   // Create tag.
   uint32_t tag_buf[kPentestHmacMaxTagWords];
-  otcrypto_word32_buf_t tag = {
-      .len = tag_bytes / sizeof(uint32_t),
-      .data = tag_buf,
-  };
+  otcrypto_word32_buf_t tag = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_buf,
+                                                tag_bytes / sizeof(uint32_t));
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_hmac(&hmac_key, input_message, tag));
+  HARDENED_TRY(otcrypto_hmac(&hmac_key, &input_message, &tag));
   pentest_set_trigger_low();
 
   // Return data back to host.

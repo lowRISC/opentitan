@@ -55,17 +55,6 @@
       FlashConfig: {
         config: [
           {
-            start: 0,
-            size: 32,
-            read: true,
-            program: true,
-            erase: true,
-            scramble: false,
-            ecc: false,
-            high_endurance: false,
-            protect_when_active: true
-          },
-          {
             start: 32,
             size: 192,
             read: true,
@@ -86,17 +75,6 @@
             ecc: false,
             high_endurance: true,
             protect_when_active: false
-          },
-          {
-            start: 256,
-            size: 32,
-            read: true,
-            program: true,
-            erase: true,
-            scramble: false,
-            ecc: false,
-            high_endurance: false,
-            protect_when_active: true
           },
           {
             start: 288,
@@ -126,6 +104,18 @@
     {
       FlashInfoConfig: {
         config: [
+          {
+            bank: 0,
+            page: 5,
+            pad: 0,
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_active: false
+          },
           {
             bank: 0,
             page: 6,
@@ -161,25 +151,29 @@
             ecc: true,
             high_endurance: false,
             protect_when_active: false
-          },
-          {
-            bank: 0,
-            page: 9,
-            pad: 0,
-            read: true,
-            program: true,
-            erase: true,
-            scramble: true,
-            ecc: true,
-            high_endurance: false,
-            protect_when_active: false
           }
         ]
       }
     },
     {
+      IsfbConfig: {
+        bank: 0,
+        page: 5,
+        erase_conditions: 0x666,
+        key_domain: "Dev",
+        product_words: 4
+      }
+    },
+    {
       RescueConfig: {
         rescue_type: "Xmodem",
+        trigger: "UartBreak",
+        trigger_index: 0,
+        gpio_pull_en: false,
+        gpio_value: false,
+        _enter_on_failure: false,
+        _timeout_enable: false,
+        _timeout: 0,
         start: 32,
         size: 192,
         command_allow: [

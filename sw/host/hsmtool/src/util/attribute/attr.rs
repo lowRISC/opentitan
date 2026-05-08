@@ -7,8 +7,9 @@ use std::str::FromStr;
 use std::sync::LazyLock;
 
 use anyhow::Result;
-use cryptoki::object::{Attribute, AttributeInfo, ObjectHandle};
+use cryptoki::object::{Attribute, AttributeInfo, ObjectHandle, ParameterSetType};
 use cryptoki::session::Session;
+use cryptoki::types::Ulong;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
@@ -100,6 +101,10 @@ fn into_kv(attr: &Attribute) -> Result<(AttributeType, AttrData)> {
                 AttrData::from(val),
             ))
         }
+        Attribute::ParameterSet(val) => Ok((
+            AttributeType::from(attr.attribute_type()),
+            AttrData::from(**val),
+        )),
         Attribute::Class(object_class) => {
             let val = ObjectClass::from(*object_class);
             Ok((
@@ -200,6 +205,17 @@ fn from_kv(atype: AttributeType, data: &AttrData) -> Result<Attribute> {
         AttributeType::NeverExtractable => Ok(Attribute::NeverExtractable(data.try_into()?)),
         AttributeType::ObjectId => Ok(Attribute::ObjectId(data.try_into()?)),
         AttributeType::Owner => Ok(Attribute::Owner(data.try_into()?)),
+        AttributeType::ParameterSet => {
+            // TODO: Remove this once cryptoki supports the ML-DSA ParameterSetType.
+            let val = u64::try_from(data)?;
+            match ParameterSetType::try_from(Ulong::from(val)) {
+                Ok(p) => Ok(Attribute::ParameterSet(p)),
+                Err(e) => {
+                    log::error!("ParameterSetType conversion failed for {}: {:?}", val, e);
+                    Err(AttributeError::InvalidDataType.into())
+                }
+            }
+        }
         AttributeType::Prime => Ok(Attribute::Prime(data.try_into()?)),
         AttributeType::Prime1 => Ok(Attribute::Prime1(data.try_into()?)),
         AttributeType::Prime2 => Ok(Attribute::Prime2(data.try_into()?)),
@@ -249,6 +265,10 @@ impl AttributeMap {
     pub fn all() -> &'static [cryptoki::object::AttributeType] {
         static VALID_TYPES: LazyLock<Vec<cryptoki::object::AttributeType>> = LazyLock::new(|| {
             AttributeType::iter()
+                // TODO: Skip KeyGenMechanism because querying it for MLDSA keys
+                // triggers a mechanism validation error in the cryptoki library.
+                // Remove this once cryptoki supports the MLDSA keygenmechanism.
+                .filter(|&a| a != AttributeType::KeyGenMechanism)
                 .map(|a| Ok(a.try_into()?))
                 .filter(|a| a.is_ok())
                 .collect::<Result<Vec<_>>>()
@@ -256,6 +276,24 @@ impl AttributeMap {
         });
 
         VALID_TYPES.as_slice()
+    }
+
+    /// Generates a list of sensitive attributes that should be redacted when
+    /// exporting an object. This list is used to prevent sensitive data from
+    /// being accidentally read. Some HSMs will not mark theses attributes as
+    /// sensitive, so we have to do it manually.
+    pub fn sensitive_attrs() -> &'static [cryptoki::object::AttributeType] {
+        &[
+            // For symmetric and EC private keys.
+            cryptoki::object::AttributeType::Value,
+            // For RSA private keys.
+            cryptoki::object::AttributeType::PrivateExponent,
+            cryptoki::object::AttributeType::Prime1,
+            cryptoki::object::AttributeType::Prime2,
+            cryptoki::object::AttributeType::Exponent1,
+            cryptoki::object::AttributeType::Exponent2,
+            cryptoki::object::AttributeType::Coefficient,
+        ]
     }
 
     /// Inserts a `key`/`value` pair into the mapping, returing the
@@ -297,20 +335,56 @@ impl AttributeMap {
     /// Retrieves an object from the PKCS#11 interface as an `AttributeMap`.
     pub fn from_object(session: &Session, object: ObjectHandle) -> Result<Self> {
         let all = Self::all();
+        let sensitive_attrs = Self::sensitive_attrs();
         let info = session.get_attribute_info(object, all)?;
         let mut atypes = Vec::new();
+        let mut sensitive_types = Vec::new();
         for (&a, i) in all.iter().zip(info.iter()) {
             // Skip the AllowedMechanism as cloud-kms returns a list of
             // mechanisms that aren't understood by cryptoki's MechanismType.
             if a == cryptoki::object::AttributeType::AllowedMechanisms {
                 continue;
             }
+
+            // Skip sensitive attributes. We first have to check if the object
+            // is sensitive before being able to load it. Some Luna HSM
+            // versions will return an error if we attempt to read a sensitive
+            // attribute.
+            if sensitive_attrs.contains(&a) {
+                sensitive_types.push(a);
+                continue;
+            }
+
             if matches!(i, AttributeInfo::Available(_)) {
                 atypes.push(a);
             }
         }
+
         let attrs = session.get_attributes(object, &atypes)?;
         let mut map = AttributeMap::from(attrs.as_slice());
+
+        let sensitive = map.get(&AttributeType::Sensitive);
+        let object_sensitive = matches!(sensitive, Some(AttrData::Bool(true)));
+
+        // Use a functional iteration to query the sensitive attributes. This
+        // is necessary because some HSMs will not allow reading sensitive
+        // attributes. In this case, we have to redact the attribute.
+        sensitive_types.iter().for_each(|&attr| {
+            if object_sensitive {
+                map.insert(
+                    AttributeType::Value,
+                    AttrData::Redacted(Redacted::RedactedByHsm),
+                );
+            } else if let Ok(attrs) = session.get_attributes(object, &[attr])
+                && let Some(attr_obj) = attrs.into_iter().next()
+                && let Ok((ty, val)) = into_kv(&attr_obj)
+            {
+                map.insert(ty, val);
+            }
+        });
+
+        // Finally, regardles of the above, if any attribute info explicitly marks
+        // an attribute as sensitive, redact it.
         for (&a, i) in all.iter().zip(info.iter()) {
             if matches!(i, AttributeInfo::Sensitive) {
                 map.insert(a.into(), AttrData::Redacted(Redacted::RedactedByHsm));

@@ -68,27 +68,23 @@ interface i2c_if(
   // caused the tasks to cease functioning reliably, and the monitor would lose its
   // lock on the bus traffic.
 
-  task automatic wait_for_host_start(ref timing_cfg_t tc);
+  task automatic wait_for_host_start();
     forever begin
       @(negedge sda_i);
       if (!scl_i) continue;
       @(negedge scl_i);
       if (!sda_i) begin
-        // wait_for_dly(tc.tClockStart);
         break;
       end else continue;
     end
   endtask: wait_for_host_start
 
-  task automatic wait_for_host_rstart(ref timing_cfg_t tc,
-                                      output bit rstart);
+  task automatic wait_for_host_rstart(output bit rstart);
     rstart = 1'b0;
     forever begin
       @(posedge scl_i && sda_i);
-      // wait_for_dly(tc.tSetupStart);
       @(negedge sda_i);
       if (scl_i) begin
-        // wait_for_dly(tc.tHoldStart);
         @(negedge scl_i) begin
           rstart = 1'b1;
           break;
@@ -118,7 +114,7 @@ interface i2c_if(
       begin : iso_fork
         fork
           wait_for_host_stop(tc, stop);
-          wait_for_host_rstart(tc, rstart);
+          wait_for_host_rstart(rstart);
         join_any
         disable fork;
       end : iso_fork

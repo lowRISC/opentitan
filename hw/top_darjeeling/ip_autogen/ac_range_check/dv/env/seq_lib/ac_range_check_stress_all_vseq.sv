@@ -12,7 +12,7 @@ class ac_range_check_stress_all_vseq extends ac_range_check_base_vseq;
   }
 
   task body();
-    // ac-range_check_lock_range is removed since it corrupts the stress test. If lock_range test
+    // ac_range_check_lock_range is removed since it corrupts the stress test. If lock_range test
     // is executed no other test that follow the lock test will pass as the range indexes will be
     // locked and can only be released via a HARD reset.
     string seq_names[] = {

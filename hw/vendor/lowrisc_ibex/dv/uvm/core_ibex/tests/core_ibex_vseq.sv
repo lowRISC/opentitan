@@ -19,7 +19,7 @@ class core_ibex_vseq extends uvm_sequence;
   debug_seq                                     debug_seq_single_h;
   fetch_enable_seq                              fetch_enable_seq_h;
   core_ibex_env_cfg                             cfg;
-  bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]  data;
+  bit[ibex_mem_intf_pkg::DATA_WIDTH-1:0]  data;
 
   `uvm_object_utils(core_ibex_vseq)
   `uvm_declare_p_sequencer(core_ibex_vseqr)

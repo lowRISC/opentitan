@@ -56,7 +56,7 @@ scripts:
     cmd:
       - make
       - -C
-      - ../src/lowrisc_ibex_tb_cs_registers_0
+      - src/lowrisc_ibex_tb_cs_registers_0
 
 parameters:
   PMPEnable:
@@ -106,13 +106,13 @@ targets:
       vcs:
         vcs_options:
           - '-xlrm uniq_prior_final'
-          - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+          - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
           - '-debug_access+all'
 
       verilator:
         mode: cc
         libs:
-          - '../src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
+          - 'src/lowrisc_ibex_tb_cs_registers_0/build/bin/reg_dpi.so'
         verilator_options:
           # Disabling tracing reduces compile times but doesn't have a
           # huge influence on runtime performance.
@@ -121,7 +121,7 @@ targets:
           - '--trace-structs'
           - '--trace-params'
           - '--trace-max-array 1024'
-          - '-CFLAGS "-std=c++14 -Wall -DTOPLEVEL_NAME=tb_cs_registers -DVM_TRACE_FMT_FST -g"'
+          - '-CFLAGS "-std=c++17 -Wall -DTOPLEVEL_NAME=tb_cs_registers -DVM_TRACE_FMT_FST -g"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
           - '-Wno-fatal' # Do not fail on (style) issues, only warn about them.

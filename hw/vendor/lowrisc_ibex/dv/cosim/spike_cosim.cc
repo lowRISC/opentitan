@@ -37,7 +37,8 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
                        uint32_t start_mtvec, const std::string &trace_log_path,
                        bool secure_ibex, bool icache_en,
                        uint32_t pmp_num_regions, uint32_t pmp_granularity,
-                       uint32_t mhpm_counter_num)
+                       uint32_t mhpm_counter_num, uint32_t dm_start_addr,
+                       uint32_t dm_end_addr)
     : nmi_mode(false), pending_iside_error(false), insn_cnt(0) {
   FILE *log_file = nullptr;
   if (trace_log_path.length() != 0) {
@@ -67,6 +68,7 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
   processor->set_mhpm_counter_num(mhpm_counter_num);
   processor->set_pmp_granularity(1 << (pmp_granularity + 2));
   processor->set_ibex_flags(secure_ibex, icache_en);
+  processor->set_debug_module_range(dm_start_addr, dm_end_addr);
 
   initial_proc_setup(start_pc, start_mtvec, mhpm_counter_num);
 
@@ -166,7 +168,7 @@ bool SpikeCosim::backdoor_read_mem(uint32_t addr, size_t len,
 //   The state.last_inst_pc also remains with the sentinel value PC_INVALID.
 // - If we catch a trap_t&, then the take_trap() fn updates the state of the
 //   processor, and when we call step() again we start executing in the new
-//   context of the trap (trap andler, new MSTATUS, debug rom, etc. etc.)
+//   context of the trap (trap handler, new MSTATUS, debug rom, etc. etc.)
 bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
                       bool sync_trap, bool suppress_reg_write) {
   assert(write_reg < 32);
@@ -196,7 +198,7 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
     // we do the stop, so we can restore it after the step (as spike won't
     // suppressed the register write).
     //
-    // First check retired instruciton to ensure load suppression is correct
+    // First check retired instruction to ensure load suppression is correct
     if (!check_suppress_reg_write(write_reg, pc, suppressed_write_reg)) {
       return false;
     }
@@ -228,7 +230,7 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
   //    - PC_INVALID == true
   //    - current state is that of the trapping instruction
   // DUT
-  // - If the dut encounters an async trap (which can be thought of as occuring
+  // - If the dut encounters an async trap (which can be thought of as occurring
   //   between instructions), an rvfi_item will be generated for the the first
   //   retired instruction of the trap handler.
   // - If the dut encounters a sync trap, an rvfi_item will be generated for the
@@ -329,7 +331,7 @@ bool SpikeCosim::check_retired_instr(uint32_t write_reg,
     std::stringstream err_str;
     err_str << "PC mismatch, DUT retired : " << std::hex << dut_pc
             << " , but the ISS retired: " << std::hex
-            << processor->get_state()->last_inst_pc;
+            << (processor->get_state()->last_inst_pc & 0xffffffff);
     errors.emplace_back(err_str.str());
     return false;
   }
@@ -626,7 +628,7 @@ void SpikeCosim::early_interrupt_handle() {
 
 // Ibex splits misaligned accesses into two separate requests. They
 // independently undergo PMP access checks. It is possible for one to fail (so
-// no request produced for that half of the access) whilst the other successed
+// no request produced for that half of the access) whilst the other succeeds
 // (producing a request for that half of the access).
 //
 // Spike splits misaligned accesses up into bytes and will apply PMP access
@@ -1022,7 +1024,7 @@ SpikeCosim::check_mem_result_e SpikeCosim::check_mem_access(
     }
 
     // For any misaligned access that sees an error immediately indicate to
-    // spike the error has occured, so ensure the top pending access gets
+    // spike the error has occurred, so ensure the top pending access gets
     // removed.
     pending_access_done = true;
   }
@@ -1048,10 +1050,10 @@ bool SpikeCosim::pc_is_debug_ebreak(uint32_t pc) {
   uint32_t dcsr = processor->get_csr(CSR_DCSR);
 
   // ebreak debug entry is controlled by the ebreakm (bit 15) and ebreaku (bit
-  // 12) fields of DCSR. If the appropriate bit of the current privlege level
+  // 12) fields of DCSR. If the appropriate bit of the current privilege level
   // isn't set ebreak won't enter debug so return false.
-  if ((processor->get_state()->prv == PRV_M) && ((dcsr & 0x1000) == 0) ||
-      (processor->get_state()->prv == PRV_U) && ((dcsr & 0x8000) == 0)) {
+  if (((processor->get_state()->prv == PRV_M) && ((dcsr & 0x1000) == 0)) ||
+      ((processor->get_state()->prv == PRV_U) && ((dcsr & 0x8000) == 0))) {
     return false;
   }
 

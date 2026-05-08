@@ -65,6 +65,11 @@ def reloc_word(simulator: str,
             # For Xcelium, the build directory gets passed as the
             # "-xmlibdirpath" argument.
             (placeholder_dir, build_dir)
+        ],
+        'dsim': [
+            # DSim build path
+            (os.path.join(placeholder_dir, 'dsim'),
+             os.path.join(build_dir, 'dsim'))
         ]
     }
     always_relocs = [

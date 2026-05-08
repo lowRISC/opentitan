@@ -42,14 +42,21 @@ interface mem_assume_t(
     // 2. Grants can only be sent when they are requested
     MemGntOnRequest: assume property (@(posedge clk_i) ~req_o |-> ~gnt_i);
 
+    `ifdef YOSYS
+    // Give yosys stronger bounds for now.
+    // FIXME: Would be nice to relax this, but I'm not sure how long proofs would take.
+    //        It might not be too long based on the alt lsus and whatnot, hard to say.
+    StrictGnt: assume property (@(posedge clk_i) req_o |-> gnt_i);
+    StrictRValid: assume property (@(posedge clk_i) outstanding_reqs_q != 8'b0 |-> rvalid_i);
+    `else
     // Grants must respond within TIME_LIMIT cycles
     GntBound: assume property (@(posedge clk_i) req_o |-> ##[0:`TIME_LIMIT] gnt_i);
-
     // RValid takes no more than TIME_LIMIT cycles
     MemValidTimer: assume property (
       @(posedge clk_i)
       outstanding_reqs != 0 |-> ##[0:`TIME_LIMIT] rvalid_i
     );
+    `endif
 
     // Responses have to come eventually, implied by the above bounds so removed
     // MemGntEventually: assume property (@(posedge clk_i) req_o |-> s_eventually gnt_i);

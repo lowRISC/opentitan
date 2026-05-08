@@ -2,16 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::pin::Pin;
 use std::rc::Rc;
 use std::task::Poll;
-use std::time::Duration;
 
 use anyhow::{Result, bail};
-use tokio::io::AsyncRead;
 
+use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::io::uart::{FlowControl, Parity, Uart};
-use opentitanlib::util::runtime::MultiWaker;
 use ot_proxy_proto::{Request, Response, UartRequest, UartResponse};
 
 use super::{Inner, Proxy, ProxyError};
@@ -19,15 +16,13 @@ use super::{Inner, Proxy, ProxyError};
 pub struct ProxyUart {
     inner: Rc<Inner>,
     instance: String,
-    multi_waker: MultiWaker,
 }
 
 impl ProxyUart {
     pub fn open(proxy: &Proxy, instance: &str) -> Result<Self> {
         let result = Self {
-            inner: Rc::clone(&proxy.inner),
+            inner: proxy.inner.clone(),
             instance: instance.to_string(),
-            multi_waker: MultiWaker::new(),
         };
         Ok(result)
     }
@@ -39,6 +34,32 @@ impl ProxyUart {
             command,
         })? {
             Response::Uart(resp) => Ok(resp),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+}
+
+impl ConsoleDevice for ProxyUart {
+    fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
+        let waker = self.inner.allocate_wake_id(cx.waker().clone());
+        match self.execute_command(UartRequest::PollRead {
+            len: buf.len() as u32,
+            waker,
+        })? {
+            UartResponse::PollRead { data: None } => Poll::Pending,
+            UartResponse::PollRead { data: Some(data) } => {
+                drop(Inner::get_waker_by_id(&self.inner.wakers, waker));
+                buf[..data.len()].copy_from_slice(&data);
+                Poll::Ready(Ok(data.len()))
+            }
+            _ => Err(ProxyError::UnexpectedReply())?,
+        }
+    }
+
+    /// Writes data from `buf` to the UART.
+    fn write(&self, buf: &[u8]) -> Result<()> {
+        match self.execute_command(UartRequest::Write { data: buf.to_vec() })? {
+            UartResponse::Write => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
@@ -57,13 +78,6 @@ impl Uart for ProxyUart {
     fn set_baudrate(&self, rate: u32) -> Result<()> {
         match self.execute_command(UartRequest::SetBaudrate { rate })? {
             UartResponse::SetBaudrate => Ok(()),
-            _ => bail!(ProxyError::UnexpectedReply()),
-        }
-    }
-
-    fn set_break(&self, enable: bool) -> Result<()> {
-        match self.execute_command(UartRequest::SetBreak(enable))? {
-            UartResponse::SetBreak => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
@@ -103,27 +117,9 @@ impl Uart for ProxyUart {
         }
     }
 
-    fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
-        self.inner.poll_for_async_data()?;
-
-        let mut uarts = self.inner.uarts.borrow_mut();
-        let uart_record = uarts.get_mut(&self.instance).unwrap();
-        let mut read_buf = tokio::io::ReadBuf::new(buf);
-        match self.multi_waker.poll_with(cx, |cx| {
-            Pin::new(&mut uart_record.pipe_receiver).poll_read(cx, &mut read_buf)
-        })? {
-            Poll::Ready(()) => Poll::Ready(Ok(read_buf.filled().len())),
-            Poll::Pending => {
-                // `self.inner` currently does not yet support context notification.
-                opentitanlib::util::runtime::poll_later(cx, Duration::from_millis(1))
-            }
-        }
-    }
-
-    /// Writes data from `buf` to the UART.
-    fn write(&self, buf: &[u8]) -> Result<()> {
-        match self.execute_command(UartRequest::Write { data: buf.to_vec() })? {
-            UartResponse::Write => Ok(()),
+    fn set_break(&self, enable: bool) -> Result<()> {
+        match self.execute_command(UartRequest::SetBreak(enable))? {
+            UartResponse::SetBreak => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }

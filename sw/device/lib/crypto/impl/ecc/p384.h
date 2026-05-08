@@ -246,6 +246,32 @@ status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
 /**
  * Start an async ECDSA/P-384 signature generation operation on OTBN.
  *
+ * This function allows for configuration of the secret scalar k.
+ * KATs for FIPS CMVP compliance require ECDSA implementations to receive
+ * non-random selected ephemeral k as input (see p.82 bottom in Implementation
+ * Guidance for FIPS 140-3 and the Cryptographic Module Validation Program).
+ * https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf
+ *
+ * Note that the provided secret scalar k is not re-blinded before signature
+ * generation. This is inline with the strict recommendation that every secret
+ * scalar in ECDSA is strictly only ever used once. The scalar is provided as
+ * 448b which includes implicit blinding, and in arithmetic shares.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param digest Digest of the message to sign.
+ * @param private_key Secret key to sign the message with.
+ * @param secret_scalar Secret scalar to sign the message with.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_ecdsa_sign_config_k_start(const uint32_t digest[kP384ScalarWords],
+                                        p384_masked_scalar_t *private_key,
+                                        p384_masked_scalar_t *secret_scalar);
+
+/**
+ * Start an async ECDSA/P-384 signature generation operation on OTBN.
+ *
  * Expects a sideloaded key from keymgr to be already loaded on OTBN. Returns
  * an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
@@ -348,6 +374,49 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key);
  */
 OT_WARN_UNUSED_RESULT
 status_t p384_sideload_ecdh_start(const p384_point_t *public_key);
+
+/**
+ * Conduct a point is on curve check operation on OTBN.
+ *
+ * Checks if the provided point in the affine form is on the P-384 curve.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param point The point to check.
+ * @param[out] result True if point is valid, false otherwise.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_point_on_curve_check(const p384_point_t *point,
+                                   hardened_bool_t *result);
+
+/**
+ * Calculate a base point multiplication.
+ *
+ * This function can be used to compute the public-key coordinate from a
+ * private key scalar.
+ *
+ * @param private_key The private key that is multiplied with the base point.
+ * @param[out] public_key The resulting public key of the multiplication.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t p384_base_point_mult(p384_masked_scalar_t *private_key,
+                              p384_point_t *public_key);
+
+/**
+ * Generate a secret key arithmetic sharing.
+ *
+ * The input can either be an unshared raw key (two 448-bit shares d0, d1 with
+ * the upper 64 bits of d0 being 0 and d1 being 0) or a Boolean-shared key (two
+ * 384-bit shares in a 448-bit buffer).
+ *
+ * @param boolean_private_key The key that is being arithmetically shared.
+ * @param arithmetic_private_key The resulting arithmetically shared key.
+ * @return Result of the operation (OK or error).
+ */
+status_t p384_arith_share_private_key(p384_masked_scalar_t *boolean_private_key,
+                                      p384_masked_scalar_t *arith_private_key);
 
 #ifdef __cplusplus
 }  // extern "C"

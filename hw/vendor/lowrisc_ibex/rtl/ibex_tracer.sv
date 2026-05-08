@@ -65,7 +65,9 @@ module ibex_tracer (
   input logic [ 3:0] rvfi_mem_rmask,
   input logic [ 3:0] rvfi_mem_wmask,
   input logic [31:0] rvfi_mem_rdata,
-  input logic [31:0] rvfi_mem_wdata
+  input logic [31:0] rvfi_mem_wdata,
+  input logic        rvfi_ext_expanded_insn_valid,
+  input logic [15:0] rvfi_ext_expanded_insn
 );
 
   // These signals are part of RVFI, but not used in this module currently.
@@ -143,6 +145,9 @@ module ibex_tracer (
         $fwrite(fh, " load:0x%08x", rvfi_mem_rdata);
       end
     end
+    if (rvfi_ext_expanded_insn_valid) begin
+      $fwrite(fh, " expand_insn: (0x%04x %s)", rvfi_ext_expanded_insn, decode_expanded_insn());
+    end
 
     $fwrite(fh, "\n");
   endfunction
@@ -155,6 +160,32 @@ module ibex_tracer (
     end else begin
       return $sformatf("x%0d", addr);
     end
+  endfunction
+
+  // Format register address with "x" prefix, left-aligned to a fixed width of 3 characters.
+  function automatic string reg_addr_to_abi_str(input logic [4:0] addr);
+    case (addr)
+      // Hard-wired Zero Register
+      5'd0: return "zero";
+      // Return Address and Pointers
+      5'd1: return "ra";   // Return Address
+      5'd2: return "sp";   // Stack Pointer
+      5'd3: return "gp";   // Global Pointer
+      5'd4: return "tp";   // Thread Pointer
+      // Temporary Registers
+      5'd5, 5'd6, 5'd7: return $sformatf("t%0d", addr - 5);
+      // Saved Registers
+      5'd8, 5'd9: return $sformatf("s%0d", addr - 8);
+      // Function Arguments / Return Values
+      5'd10, 5'd11, 5'd12, 5'd13,
+      5'd14, 5'd15, 5'd16, 5'd17: return $sformatf("a%0d", addr - 10);
+      // Saved Registers
+      5'd18, 5'd19, 5'd20, 5'd21, 5'd22,
+      5'd23, 5'd24, 5'd25, 5'd26, 5'd27: return $sformatf("s%0d", addr - 16);
+      // Temporary Registers
+      5'd28, 5'd29, 5'd30, 5'd31: return $sformatf("t%0d", addr - 25);
+      default: return $sformatf("x%0d", addr);
+    endcase
   endfunction
 
   // Get a CSR name for a CSR address.
@@ -603,6 +634,11 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\t%0x", mnemonic, rvfi_pc_wdata);
   endfunction
 
+  function automatic void decode_Zc_cu_insn(input string mnemonic);
+    data_accessed = RS1 | RD; // RS1 == RD
+    decoded_str = $sformatf("%s\tx%0d", mnemonic, rvfi_rd_addr);
+  endfunction
+
   function automatic void decode_compressed_load_insn(input string mnemonic);
     logic [7:0] imm;
 
@@ -612,6 +648,20 @@ module ibex_tracer (
     end else begin
       // C.LWSP
       imm = {rvfi_insn[3:2], rvfi_insn[12], rvfi_insn[6:4], 2'b00};
+    end
+    data_accessed = RS1 | RD | MEM;
+    decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rd_addr, imm, rvfi_rs1_addr);
+  endfunction
+
+  function automatic void decode_Zc_load_insn(input string mnemonic);
+    logic [1:0] imm;
+
+    if (rvfi_insn[10] == 1'b0) begin
+      // C.LBU
+      imm = {rvfi_insn[5], rvfi_insn[6]};
+    end else begin
+      // C.LHU, C.LH
+      imm = {rvfi_insn[5], 1'b0};
     end
     data_accessed = RS1 | RD | MEM;
     decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rd_addr, imm, rvfi_rs1_addr);
@@ -628,6 +678,69 @@ module ibex_tracer (
     end
     data_accessed = RS1 | RS2 | MEM;
     decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rs2_addr, imm, rvfi_rs1_addr);
+  endfunction
+
+  function automatic void decode_Zc_store_insn(input string mnemonic);
+    logic [1:0] imm;
+
+    if (rvfi_insn[10] == 1'b0) begin
+      // C.SB
+      imm = {rvfi_insn[5], rvfi_insn[6]};
+    end else begin
+      // C.SH
+      imm = {rvfi_insn[5], 1'b0};
+    end
+    data_accessed = RS1 | RS2 | MEM;
+    decoded_str = $sformatf("%s\tx%0d,%0d(x%0d)", mnemonic, rvfi_rd_addr, imm, rvfi_rs1_addr);
+  endfunction
+
+  function automatic string cm_reg_to_str(input logic [2:0] addr);
+    logic [4:0] xreg = {addr[2:1] > 0, addr[2:1]==0, addr[2:0]};
+    return reg_addr_to_abi_str(xreg);
+  endfunction
+
+  function automatic string decode_Zcmp_cmmv_insn(input string mnemonic);
+    return $sformatf("%s\t%0s,%0s", mnemonic, cm_reg_to_str(rvfi_ext_expanded_insn[9:7]),
+                     cm_reg_to_str(rvfi_ext_expanded_insn[4:2]));
+  endfunction
+
+  function automatic string decode_Zcmp_cmpp_insn(input string mnemonic);
+    logic [3:0] rlist;
+    logic [1:0] spimm;
+    string rlist_str;
+    int base;
+    int spimm_val;
+    rlist = rvfi_ext_expanded_insn[7:4];
+    spimm = rvfi_ext_expanded_insn[3:2];
+    // Decode rlist to string
+    if (rlist < 4) begin
+      rlist_str = $sformatf("{INVALID (%0d)}", rlist);
+    end else begin
+      case(rlist)
+        4:  rlist_str = "{ra}";
+        5:  rlist_str = "{ra, s0}";
+        15: rlist_str = "{ra, s0-s11}"; // The special case for s10/s11
+        // The default case handles the general pattern for rlist 6 through 14
+        default: rlist_str = $sformatf("{ra, s0-s%0d}", rlist - 5);
+      endcase
+    end
+    // Decode spimm
+    base = (rlist == 15) ? 64 : (32'(rlist) >> 2) * 16;
+    spimm_val = base + (spimm * 16);
+    spimm_val = mnemonic == "cm.push" ? -spimm_val : spimm_val;
+    return $sformatf("%s\t%s,%0d", mnemonic, rlist_str, spimm_val);
+  endfunction
+
+  function automatic string decode_expanded_insn();
+    unique casez (rvfi_ext_expanded_insn)
+      INSN_CMPUSH:    return decode_Zcmp_cmpp_insn("cm.push");
+      INSN_CMPOP:     return decode_Zcmp_cmpp_insn("cm.pop");
+      INSN_CMPOPRETZ: return decode_Zcmp_cmpp_insn("cm.popretz");
+      INSN_CMPOPRET:  return decode_Zcmp_cmpp_insn("cm.popret");
+      INSN_CMMVSA01:  return decode_Zcmp_cmmv_insn("cm.mvsa01");
+      INSN_CMMVA01S:  return decode_Zcmp_cmmv_insn("cm.mva01s");
+      default:        return "Decoding error";
+    endcase
   endfunction
 
   function automatic void decode_load_insn();
@@ -803,6 +916,13 @@ module ibex_tracer (
           end
           INSN_CLW:        decode_compressed_load_insn("c.lw");
           INSN_CSW:        decode_compressed_store_insn("c.sw");
+          // Zc extension C0
+          INSN_CLBU:        decode_Zc_load_insn("c.lbu");
+          INSN_CLHU:        decode_Zc_load_insn("c.lhu");
+          INSN_CLH:         decode_Zc_load_insn("c.lh");
+          INSN_CSB:         decode_Zc_store_insn("c.sb");
+          INSN_CSH:         decode_Zc_store_insn("c.sh");
+
           // C1 Opcodes
           INSN_CADDI:      decode_ci_caddi_insn("c.addi");
           INSN_CJAL:       decode_cj_insn("c.jal");
@@ -825,10 +945,21 @@ module ibex_tracer (
           INSN_CAND:       decode_cs_insn("c.and");
           INSN_CBEQZ:      decode_cb_insn("c.beqz");
           INSN_CBNEZ:      decode_cb_insn("c.bnez");
+          // Zc extension C1
+          INSN_CZEXTB:     decode_Zc_cu_insn("c.zext.b");
+          INSN_CSEXTB:     decode_Zc_cu_insn("c.sext.b");
+          INSN_CZEXTH:     decode_Zc_cu_insn("c.zext.h");
+          INSN_CSEXTH:     decode_Zc_cu_insn("c.sext.h");
+          INSN_CNOT:       decode_Zc_cu_insn("c.not");
+          INSN_CMUL:       decode_cs_insn("c.mul");
+
           // C2 Opcodes
           INSN_CSLLI:      decode_ci_cslli_insn("c.slli");
           INSN_CLWSP:      decode_compressed_load_insn("c.lwsp");
           INSN_SWSP:       decode_compressed_store_insn("c.swsp");
+          // Zc extension C2: We should never see those on the rvfi_insn interface since they must
+          // get expanded into other instructions. They will be annotated through the
+          // `decode_expanded_insn` function instead and the `rvfi_ext_expanded_insn` signal.
           default:         decode_mnemonic("INVALID");
         endcase
       end

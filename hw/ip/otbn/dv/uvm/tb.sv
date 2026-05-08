@@ -197,7 +197,7 @@ module tb;
   logic otp_key_cdc_done;
 
   assign edn_rnd_cdc_done = dut.edn_rnd_req & dut.edn_rnd_ack;
-  assign edn_urnd_cdc_done = dut.edn_urnd_req & dut.edn_urnd_ack;
+  assign edn_urnd_cdc_done = dut.u_otbn_core.u_otbn_rnd.urnd_reseed_ack_o;
   assign otp_key_cdc_done = dut.u_otbn_scramble_ctrl.otp_key_ack;
 
   bit [31:0] model_insn_cnt;
@@ -296,7 +296,7 @@ module tb;
   // Disable checking URND in the case of Locked status since it's modelling is not exactly accurate
   // for that state.
   // TODO (#15710): Fix modelling of URND in the locked state.
-  `ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_req_o == edn_urnd_req_model,
+  `ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_o.edn_req == edn_urnd_req_model,
     clk, !rst_n || model_if.status == otbn_pkg::StatusLocked)
 
   initial begin

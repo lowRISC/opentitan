@@ -1,0 +1,196 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Base sequence from which all other sequences must be derived. It contains the instantiation of
+// the "dut_cfg" class which itself contains all variables relating to the DUT configuration.
+// By default, we keep TL transactions random, as this can easily be overridden by derived
+// sequences if required, as the constraints are declared "soft".
+class ${module_instance_name}_base_vseq extends cip_base_vseq #(
+    .RAL_T               (${module_instance_name}_reg_block),
+    .CFG_T               (${module_instance_name}_env_cfg),
+    .COV_T               (${module_instance_name}_env_cov),
+    .VIRTUAL_SEQUENCER_T (${module_instance_name}_virtual_sequencer)
+  );
+  `uvm_object_utils(${module_instance_name}_base_vseq)
+
+  // Various knobs to enable certain routines
+  bit do_ac_range_check_init = 1;
+
+  // Configuration variables
+  rand ac_range_check_dut_cfg dut_cfg;
+  rand tl_main_vars_t tl_main_vars;
+  rand int range_idx;
+
+  // Constraints
+  extern constraint range_idx_c;
+
+  // Standard SV/UVM methods
+  extern function new(string name="");
+
+  // Class specific methods
+  extern task dut_init(string reset_kind = "HARD");
+  extern task ac_range_check_init();
+  extern task cfg_range_base();
+  extern task cfg_range_limit();
+  extern task cfg_range_attr();
+  extern task cfg_range_racl_policy();
+  extern task send_single_tl_unfilt_tr(bit zero_delays = 0);
+  extern task tl_filt_device_auto_resp(int min_rsp_delay = 0, int max_rsp_delay = 80,
+    int rsp_abort_pct = 25, int d_error_pct = 0, int d_chan_intg_err_pct = 0);
+  extern virtual task configure_range(int unsigned idx = 0, bit [DataWidth-1:0] base = 0,
+    bit [DataWidth-1:0] limit = 0, bit read_perm = 0, bit write_perm = 0, bit execute_perm = 0,
+    bit en = 0, bit log_denied_access = 0);
+endclass : ${module_instance_name}_base_vseq
+
+
+constraint ${module_instance_name}_base_vseq::range_idx_c {
+  range_idx inside {[0:NUM_RANGES-1]};
+}
+
+function ${module_instance_name}_base_vseq::new(string name="");
+  super.new(name);
+  dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
+endfunction : new
+
+task ${module_instance_name}_base_vseq::dut_init(string reset_kind = "HARD");
+  // Initialize some of DUT inputs
+  cfg.misc_vif.set_range_check_overwrite(0);
+  cfg.misc_vif.init_racl_policies();
+
+  super.dut_init();
+
+  if (do_ac_range_check_init) begin
+    ac_range_check_init();
+  end
+
+  // Spawns off a thread to auto-respond to incoming TL accesses on the Filtered host interface.
+  // Note: the fork is required as the called sequence will loop indefinitely.
+  fork
+    tl_filt_device_auto_resp();
+  join_none
+endtask : dut_init
+
+task ${module_instance_name}_base_vseq::ac_range_check_init();
+  // This fork will ensure that configuration takes place in "disorder", as the TL register
+  // sequencer will have to deal with parallel requests (and random delays).
+  fork
+    cfg_range_base();
+    cfg_range_limit();
+    cfg_range_attr();
+    cfg_range_racl_policy();
+  join
+  // TODO lastly, randomly lock the configuration with RANGE_REGWEN
+endtask : ac_range_check_init
+
+// Only update registers whose value does not match the new one (usage of set+update instead write)
+task ${module_instance_name}_base_vseq::cfg_range_base();
+  foreach (dut_cfg.range_base[i]) begin
+    ral.range_base[i].set(dut_cfg.range_base[i]);
+    csr_update(.csr(ral.range_base[i]));
+  end
+endtask : cfg_range_base
+
+task ${module_instance_name}_base_vseq::cfg_range_limit();
+  foreach (dut_cfg.range_limit[i]) begin
+    ral.range_limit[i].set(dut_cfg.range_limit[i]);
+    csr_update(.csr(ral.range_limit[i]));
+  end
+endtask : cfg_range_limit
+
+task ${module_instance_name}_base_vseq::cfg_range_attr();
+  foreach (dut_cfg.range_attr[i]) begin
+    ral.range_attr[i].log_denied_access.set(mubi4_bool_to_mubi(
+      dut_cfg.range_attr[i].log_denied_access));
+    ral.range_attr[i].execute_access.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].execute_access));
+    ral.range_attr[i].write_access.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].write_access));
+    ral.range_attr[i].read_access.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].read_access));
+    ral.range_attr[i].enable.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].enable));
+    csr_update(.csr(ral.range_attr[i]));
+  end
+endtask : cfg_range_attr
+
+task ${module_instance_name}_base_vseq::cfg_range_racl_policy();
+  foreach (dut_cfg.range_racl_policy[i]) begin
+    ral.range_racl_policy_shadowed[i].set(dut_cfg.range_racl_policy[i]);
+    // Shadowed register: the 2 writes are automatically managed by the csr_utils_pkg
+    csr_update(.csr(ral.range_racl_policy_shadowed[i]));
+  end
+endtask : cfg_range_racl_policy
+
+task ${module_instance_name}_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
+  cip_tl_host_single_seq tl_unfilt_host_seq;
+  `uvm_create_on(tl_unfilt_host_seq, p_sequencer.tl_unfilt_sqr)
+  if (zero_delays) begin
+    tl_unfilt_host_seq.min_req_delay = 0;
+    tl_unfilt_host_seq.max_req_delay = 0;
+  end
+
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_unfilt_host_seq,
+                                 instr_type == mubi4_bool_to_mubi(tl_main_vars.instr_type);
+                                 write      == tl_main_vars.write;
+                                 addr       == tl_main_vars.addr;
+                                 mask       == tl_main_vars.mask;
+                                 data       == tl_main_vars.data;
+                                 racl_role  == tl_main_vars.role;)
+
+  csr_utils_pkg::increment_outstanding_access();
+  `uvm_info(`gfn, "Starting tl_unfilt_host_seq", UVM_MEDIUM)
+  `DV_SPINWAIT(`uvm_send(tl_unfilt_host_seq), "Timed out when sending fetch request")
+  csr_utils_pkg::decrement_outstanding_access();
+endtask : send_single_tl_unfilt_tr
+
+task ${module_instance_name}_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       = 0,
+                                                        int max_rsp_delay       = 80,
+                                                        int rsp_abort_pct       = 25,
+                                                        int d_error_pct         = 0,
+                                                        int d_chan_intg_err_pct = 0);
+  cip_tl_device_seq tl_filt_device_seq;
+  tl_filt_device_seq = cip_tl_device_seq::type_id::create("tl_filt_device_seq");
+  tl_filt_device_seq.min_rsp_delay       = min_rsp_delay;
+  tl_filt_device_seq.max_rsp_delay       = max_rsp_delay;
+  tl_filt_device_seq.rsp_abort_pct       = rsp_abort_pct;
+  tl_filt_device_seq.d_error_pct         = d_error_pct;
+  tl_filt_device_seq.d_chan_intg_err_pct = d_chan_intg_err_pct;
+  `DV_CHECK_RANDOMIZE_FATAL(tl_filt_device_seq)
+  `uvm_info(`gfn, "Starting tl_filt_device_seq", UVM_MEDIUM)
+  tl_filt_device_seq.start(p_sequencer.tl_filt_sqr);
+endtask : tl_filt_device_auto_resp
+
+task ${module_instance_name}_base_vseq::configure_range(int unsigned idx = 0,
+  bit [DataWidth-1:0] base = 0, bit [DataWidth-1:0] limit = 0, bit read_perm = 0,
+  bit write_perm = 0, bit execute_perm = 0, bit en = 0, bit log_denied_access = 0);
+
+  `uvm_info(`gfn, $sformatf("Configuring range index: %0d", idx), UVM_MEDIUM)
+  `uvm_info(`gfn, $sformatf("Base: 0%0h Limit:0%0h", base, limit), UVM_MEDIUM)
+
+  // RANGE_BASE_x
+  ral.range_base[idx].set(base);
+  csr_update(.csr(ral.range_base[idx]));
+
+  // RANGE_LIMIT_x
+  ral.range_limit[idx].set(limit);
+  csr_update(.csr(ral.range_limit[idx]));
+
+  // Needed by the parent sequence to generate TLUL transaction with appropriate addresses.
+  // Randomisation is disabled on the base and limit so as to allow this sequence to do the
+  // appropriate lock range testing
+  dut_cfg.range_base[idx] = base;
+  dut_cfg.range_base[idx].rand_mode(0);
+
+  dut_cfg.range_limit[idx] = limit;
+  dut_cfg.range_limit[idx].rand_mode(0);
+
+  // RANGE_ATTR_x broken down into fields
+  ral.range_attr[idx].log_denied_access.set(mubi4_bool_to_mubi(log_denied_access));
+  ral.range_attr[idx].execute_access.set   (mubi4_bool_to_mubi(execute_perm));
+  ral.range_attr[idx].write_access.set     (mubi4_bool_to_mubi(write_perm));
+  ral.range_attr[idx].read_access.set      (mubi4_bool_to_mubi(read_perm));
+  ral.range_attr[idx].enable.set           (mubi4_bool_to_mubi(en));
+  csr_update(.csr(ral.range_attr[idx]));
+
+  // Disable RACL side effects for simplicity.
+  ral.range_racl_policy_shadowed[idx].set(32'hFFFF_FFFF);
+  csr_update(.csr(ral.range_racl_policy_shadowed[idx]));
+
+endtask : configure_range

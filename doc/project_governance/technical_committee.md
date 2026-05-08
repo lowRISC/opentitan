@@ -7,7 +7,7 @@ It is appointed by the OpenTitan Governing Board (OTGB) and is responsible for t
 
 ## Expectations and Conduct
 
-All OpenTitan spaces, including the OTTC, are covered by the OpenTitan code of conduct to ensure a welcoming and respectful community.
+All OpenTitan spaces, including the OTTC, are covered by the OpenTitan [code of conduct](./code_of_conduct.md) to ensure a welcoming and respectful community.
 Beyond this, OTTC members are expected to follow the guidance below:
 
 * Each OTTC member has a good faith duty to act in the best interests of the OpenTitan Project when performing their role as a OTTC member.
@@ -26,7 +26,6 @@ Other individuals are directly appointed by the OpenTitan Governing Board.
 
 - Andreas Kurth (chair, lowRISC)*
 - Eran Meisner (Nuvoton)*
-- Ravi Sahita (Rivos)*
 - Tim Trippel (Google)*
 - Shimeon Greenberg (Nuvoton)
 - Rupert Swarbrick (lowRISC)
@@ -95,7 +94,7 @@ In particular this includes:
 
 ### Creating and managing Commit Escalation Guidelines
 
-These set out the guidance for when Committers should escalate a particular Commit to the OTTC (e.g., cross-cutting changes), and when Committers should recommend a design rationale write-up or RFC for wider feedback from the OTTC.
+These set out the guidance for when Committers should escalate a particular Commit to the OTTC (e.g. cross-cutting changes), and when Committers should recommend a design rationale write-up or RFC for wider feedback from the OTTC.
 
 ### Proposing changes and/or additions to the Project’s technical roadmap
 

@@ -24,6 +24,8 @@ with_unknown! {
         FlashConfig = u32::from_le_bytes(*b"FLSH"),
         FlashInfoConfig = u32::from_le_bytes(*b"INFO"),
         Rescue = u32::from_le_bytes(*b"RESQ"),
+        DetachedSignature = u32::from_le_bytes(*b"SIGN"),
+        IntegratorSpecificFirmwareBinding = u32::from_le_bytes(*b"ISFB"),
         NotPresent = u32::from_le_bytes(*b"ZZZZ"),
     }
 
@@ -36,9 +38,43 @@ with_unknown! {
         HybridSpxPure = u32::from_le_bytes(*b"H+Pu"),
         HybridSpxPrehash = u32::from_le_bytes(*b"H+S2"),
     }
+    pub enum DetachedSignatureCommand: u32 [default = Self::Unknown] {
+        Unknown = 0,
+        Owner = u32::from_le_bytes(*b"OWNR"),
+        Unlock = u32::from_le_bytes(*b"UNLK"),
+        Activate = u32::from_le_bytes(*b"ACTV"),
+    }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+impl OwnershipKeyAlg {
+    pub fn is_detached(self) -> bool {
+        !matches!(self, Self::EcdsaP256)
+    }
+
+    pub fn is_ecdsa(self) -> bool {
+        matches!(
+            self,
+            Self::EcdsaP256 | Self::HybridSpxPure | Self::HybridSpxPrehash
+        )
+    }
+
+    pub fn is_spx(self) -> bool {
+        matches!(
+            self,
+            Self::SpxPure | Self::SpxPrehash | Self::HybridSpxPure | Self::HybridSpxPrehash
+        )
+    }
+
+    pub fn is_hybrid(self) -> bool {
+        matches!(self, Self::HybridSpxPure | Self::HybridSpxPrehash)
+    }
+
+    pub fn is_prehashed(self) -> bool {
+        matches!(self, Self::SpxPrehash | Self::HybridSpxPrehash)
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
 pub struct StructVersion {
     pub major: u8,
@@ -90,7 +126,7 @@ impl StructVersion {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Annotate, PartialEq)]
 pub struct TlvHeader {
     #[serde(default)]
     pub identifier: TlvTag,
@@ -132,7 +168,7 @@ impl TlvHeader {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct HybridRawPublicKey {
     #[serde(deserialize_with = "string_or_struct")]
     pub ecdsa: EcdsaRawPublicKey,
@@ -158,7 +194,7 @@ impl HybridRawPublicKey {
 }
 
 /// Low-level key material (ie: bit representation).
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[allow(clippy::len_without_is_empty)]
 pub enum KeyMaterial {
     #[serde(alias = "unknown")]

@@ -59,11 +59,32 @@ const flash_info_field_t kFlashInfoFieldAstCalibrationData = {
     .byte_offset = kFlashInfoFieldAstCalibrationDataStartOffset,
 };
 
+const flash_info_field_t kFlashInfoFieldAstCfgVersion = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstCfgVersionStartOffset,
+};
+
 const flash_info_field_t kFlashInfoFieldCpDeviceId = {
     .partition = 0,
     .bank = 0,
     .page = 0,
     .byte_offset = kFlashInfoFieldCpDeviceIdStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldAstIndividPatchAddr = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstIndividPatchAddrStartOffset,
+};
+
+const flash_info_field_t kFlashInfoFieldAstIndividPatchVal = {
+    .partition = 0,
+    .bank = 0,
+    .page = 0,
+    .byte_offset = kFlashInfoFieldAstIndividPatchValStartOffset,
 };
 
 /**

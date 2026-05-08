@@ -134,6 +134,7 @@ bool test_main(void) {
 
       return status_ok(result);
     }
+    default:
+      return false;
   }
-  return false;
 }

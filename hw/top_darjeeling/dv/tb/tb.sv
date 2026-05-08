@@ -84,9 +84,6 @@ module tb;
   );
 
   // TODO: Absorb this functionality into chip_if.
-  bind dut ast_ext_clk_if ast_ext_clk_if ();
-
-  // TODO: Absorb this functionality into chip_if.
   alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
                                     .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_connect_alert_rx
@@ -287,10 +284,6 @@ module tb;
     uvm_config_db#(virtual ast_supply_if)::set(
         null, "*.env", "ast_supply_vif", dut.ast_supply_if);
 
-    // AST io clk blocker interface.
-    uvm_config_db#(virtual ast_ext_clk_if)::set(
-        null, "*.env", "ast_ext_clk_vif", dut.ast_ext_clk_if);
-
     // DMI clk_rst_vif
     uvm_config_db#(virtual clk_rst_if)::set(
         null, "*.env", "clk_rst_vif_chip_soc_dbg_reg_block", dut.chip_if.dmi_clk_rst_if);
@@ -315,7 +308,7 @@ module tb;
   `undef SIM_SRAM_IF
 
   // Instantiate the memory backdoor util instances.
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
+  if (prim_pkg::PrimTechName == "Generic") begin : gen_generic
     initial begin
       sram_ctrl_bkdr_util ram_main0, ram_ret0, ram_mbox0;
       // TODO: CTN RAM is NOT actually a scrambled RAM presently. sw_symbol_backdoor_access

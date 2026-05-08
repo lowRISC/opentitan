@@ -30,6 +30,7 @@ interface aes_masking_reseed_if
   input logic      block_ctr_expr,
   input aes_ctrl_e ctrl_state,
   input aes_ctrl_e ctrl_state_next,
+  input logic      cipher_in_valid,
   input logic      alert_fatal
 );
 
@@ -55,7 +56,7 @@ interface aes_masking_reseed_if
   // Make sure the masking PRNG is reseeded when a new block is started while the block counter
   // has expired unless a fatal alert is triggered.
   `ASSERT(MaskingPrngReseedWhenCtrExpires_A,
-      (block_ctr_expr && (ctrl_state == CTRL_IDLE) && (ctrl_state_next == CTRL_LOAD)) |->
-      ##[1:20] entropy_masking_req || alert_fatal)
+      (block_ctr_expr && (cipher_in_valid == 1'b1) && (ctrl_state == CTRL_IDLE) &&
+      (ctrl_state_next == CTRL_LOAD)) |-> ##[1:20] entropy_masking_req || alert_fatal)
 
 endinterface // aes_masking_reseed_if

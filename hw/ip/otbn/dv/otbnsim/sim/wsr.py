@@ -2,116 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List, Optional, Sequence, Tuple
-
-from .trace import Trace
-
+from typing import List, Optional, Tuple
+from .constants import WsrAddrs
 from .ext_regs import OTBNExtRegs
+from .ispr import ISPR, DumbISPR, ISPRChange
+from .kmac_ispr import KmacDataWSRs
+from .mai_ispr import MaiInputWSR, MaiOutputWSR
+from .trace import Trace
+from .trivium import CipherType, SeedType, Trivium
 
 
-class TraceWSR(Trace):
-    def __init__(self, wsr_name: str, new_value: Optional[int]):
-        self.wsr_name = wsr_name
-        self.new_value = new_value
-
-    def trace(self) -> str:
-        s = '{} = '.format(self.wsr_name)
-        if self.new_value is None:
-            s += '0x' + 'x' * 8
-        else:
-            s += '{:#x}'.format(self.new_value)
-        return s
-
-    def rtl_trace(self) -> str:
-        return '> {}: {}'.format(self.wsr_name,
-                                 Trace.hex_value(self.new_value, 256))
-
-
-class WSR:
-    '''Models a Wide Status Register'''
-    def __init__(self, name: str):
-        self.name = name
-        self._pending_write = False
-
-    def has_value(self) -> bool:
-        '''Return whether the WSR has a valid value'''
-        return True
-
-    def on_start(self) -> None:
-        '''Reset the WSR if necessary for the start of an operation'''
-        return
-
-    def read_unsigned(self) -> int:
-        '''Get the stored value as a 256-bit unsigned value'''
-        raise NotImplementedError()
-
-    def write_unsigned(self, value: int) -> None:
-        '''Set the stored value as a 256-bit unsigned value'''
-        raise NotImplementedError()
-
-    def read_signed(self) -> int:
-        '''Get the stored value as a 256-bit signed value'''
-        uval = self.read_unsigned()
-        return uval - (1 << 256 if uval >> 255 else 0)
-
-    def write_signed(self, value: int) -> None:
-        '''Set the stored value as a 256-bit signed value'''
-        assert -(1 << 255) <= value < (1 << 255)
-        uval = (1 << 256) + value if value < 0 else value
-        self.write_unsigned(uval)
-
-    def commit(self) -> None:
-        '''Commit pending changes'''
-        self._pending_write = False
-
-    def abort(self) -> None:
-        '''Abort pending changes'''
-        self._pending_write = False
-
-    def changes(self) -> Sequence[Trace]:
-        '''Return list of pending architectural changes'''
-        return []
-
-
-class DumbWSR(WSR):
-    '''Models a WSR without special behaviour'''
-    def __init__(self, name: str):
-        super().__init__(name)
-        self._value = 0
-        self._next_value: Optional[int] = None
-
-    def on_start(self) -> None:
-        self._value = 0
-        self._next_value = None
-
-    def read_unsigned(self) -> int:
-        return self._value
-
-    def write_unsigned(self, value: int) -> None:
-        assert 0 <= value < (1 << 256)
-        self._next_value = value
-        self._pending_write = True
-
-    def write_invalid(self) -> None:
-        self._next_value = None
-        self._pending_write = True
-
-    def commit(self) -> None:
-        if self._next_value is not None:
-            self._value = self._next_value
-        self._next_value = None
-        self._pending_write = False
-
-    def abort(self) -> None:
-        self._next_value = None
-        self._pending_write = False
-
-    def changes(self) -> List[TraceWSR]:
-        return ([TraceWSR(self.name, self._next_value)]
-                if self._pending_write else [])
-
-
-class RandWSR(WSR):
+class RandWSR(ISPR):
     '''The magic RND WSR
 
     RND is special as OTBN can stall on reads to it. A read from RND either
@@ -122,7 +23,7 @@ class RandWSR(WSR):
 
     '''
     def __init__(self, name: str, ext_regs: OTBNExtRegs):
-        super().__init__(name)
+        super().__init__(name, 256)
 
         self._random_value: Optional[int] = None
         self._next_random_value: Optional[int] = None
@@ -202,20 +103,26 @@ class RandWSR(WSR):
         self._next_pending_request = False
 
 
-class URNDWSR(WSR):
+class URNDWSR(ISPR):
     '''Models URND PRNG Structure'''
-    def __init__(self, name: str):
-        super().__init__(name)
-        seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
-                0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
-        self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
-        self._next_value = 0
-        self._value = 0
-        self.running = False
 
-    def rol(self, n: int, d: int) -> int:
-        '''Rotate n left by d bits'''
-        return ((n << d) & ((1 << 64) - 1)) | (n >> (64 - d))
+    _BIVIUM_OUTPUT_WIDTH = 256
+
+    def __init__(self, name: str):
+        super().__init__(name, 256)
+
+        self._trivium = Trivium(
+            CipherType.BIVIUM,
+            SeedType.STATE_PARTIAL,
+            self._BIVIUM_OUTPUT_WIDTH,
+        )
+
+        self._next_value: int = 0
+        self._value: int = 0
+
+        self.running = False
+        self.requesting = False
+        self.reseed_done = False
 
     def read_u32(self) -> int:
         '''Read a 32-bit unsigned result'''
@@ -227,49 +134,36 @@ class URNDWSR(WSR):
 
     def on_start(self) -> None:
         self.running = False
+        self.reseed_done = False
 
     def read_unsigned(self) -> int:
-        return self._value
+        # The URND WSR only gets the lower self.width bits of the Bivium output
+        return self._value & ((1 << self.width) - 1)
 
-    def state_update(self, data_in: List[int]) -> List[int]:
-        a_in = data_in[3]
-        b_in = data_in[2]
-        c_in = data_in[1]
-        d_in = data_in[0]
-
-        a_out = a_in ^ b_in ^ d_in
-        b_out = a_in ^ b_in ^ c_in
-        c_out = a_in ^ ((b_in << 17) & ((1 << 64) - 1)) ^ c_in
-        d_out = self.rol(d_in ^ b_in, 45)
-        assert a_out < (1 << 64)
-        assert b_out < (1 << 64)
-        assert c_out < (1 << 64)
-        assert d_out < (1 << 64)
-        return [d_out, c_out, b_out, a_out]
-
-    def set_seed(self, value: List[int]) -> None:
-        assert len(value) == 4
+    def set_seed(self, value: int) -> None:
+        assert value >= 0 and value < 2**Trivium.PART_SEED_SIZE
+        self.reseed_done = False
+        self._trivium.seed(value)
+        # Upon seeing the first seed value the PRNG can be used to
+        # generate a keystream.
         self.running = True
-        self._state[0] = value
-        # Step immediately to update the internal state with the new seed
-        self.step()
 
     def step(self) -> None:
-        if self.running:
-            mask64 = (1 << 64) - 1
-            mid = 4 * [0]
-            nv = 0
-            for i in range(4):
-                st_i = self._state[i]
-                self._state[(i + 1) & 3] = self.state_update(st_i)
-                mid[i] = (st_i[3] + st_i[0]) & mask64
-                nv |= ((self.rol(mid[i], 23) + st_i[3]) & mask64) << (64 * i)
-            self._next_value = nv
+        # Schedule an state update and readout the keystream.
+        self._trivium.update()
+        self._next_value = self._trivium.keystream()
 
     def commit(self) -> None:
+        # Step the PRNG one cycle forward.
+        self._trivium.step()
         self._value = self._next_value
 
-    def changes(self) -> List[TraceWSR]:
+        # Stop requesting EDN seeds once all the seed rounds have
+        # been completed.
+        if self._trivium.seed_done() and self.running:
+            self.requesting = False
+
+    def changes(self) -> List[ISPRChange]:
         # Our URND model doesn't track (or report) changes to its internal
         # state.
         raise NotImplementedError
@@ -325,10 +219,10 @@ class SideloadKey:
         self._new_value = None
 
 
-class KeyWSR(WSR):
+class KeyWSR(ISPR):
     def __init__(self, name: str, shift: int, key_reg: SideloadKey):
         assert 0 <= shift < 384
-        super().__init__(name)
+        super().__init__(name, 256)
         self._shift = shift
         self._key_reg = key_reg
 
@@ -348,24 +242,39 @@ class WSRFile:
         self.KeyS0 = SideloadKey('KeyS0')
         self.KeyS1 = SideloadKey('KeyS1')
 
-        self.MOD = DumbWSR('MOD')
+        self.MOD = DumbISPR('MOD', 256)
         self.RND = RandWSR('RND', ext_regs)
         self.URND = URNDWSR('URND')
-        self.ACC = DumbWSR('ACC')
+        self.ACC = DumbISPR('ACC', 256)
         self.KeyS0L = KeyWSR('KeyS0L', 0, self.KeyS0)
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
+        self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
+        self.MAI_RES_S0 = MaiOutputWSR('MAI_RES_S0')
+        self.MAI_RES_S1 = MaiOutputWSR('MAI_RES_S1')
+        self.MAI_IN0_S0 = MaiInputWSR('MAI_IN0_S0')
+        self.MAI_IN0_S1 = MaiInputWSR('MAI_IN0_S1')
+        self.MAI_IN1_S0 = MaiInputWSR('MAI_IN1_S0')
+        self.MAI_IN1_S1 = MaiInputWSR('MAI_IN1_S1')
 
-        self._by_idx = {
-            0: self.MOD,
-            1: self.RND,
-            2: self.URND,
-            3: self.ACC,
-            4: self.KeyS0L,
-            5: self.KeyS0H,
-            6: self.KeyS1L,
-            7: self.KeyS1H,
+        self._by_addr = {
+            WsrAddrs.MOD: self.MOD,
+            WsrAddrs.RND: self.RND,
+            WsrAddrs.URND: self.URND,
+            WsrAddrs.ACC: self.ACC,
+            WsrAddrs.KEY_S0_L: self.KeyS0L,
+            WsrAddrs.KEY_S0_H: self.KeyS0H,
+            WsrAddrs.KEY_S1_L: self.KeyS1L,
+            WsrAddrs.KEY_S1_H: self.KeyS1H,
+            WsrAddrs.KMAC_DATA_S0: self.KMAC_DATA.shares[0],
+            WsrAddrs.KMAC_DATA_S1: self.KMAC_DATA.shares[1],
+            WsrAddrs.MAI_RES_S0: self.MAI_RES_S0,
+            WsrAddrs.MAI_RES_S1: self.MAI_RES_S1,
+            WsrAddrs.MAI_IN0_S0: self.MAI_IN0_S0,
+            WsrAddrs.MAI_IN0_S1: self.MAI_IN0_S1,
+            WsrAddrs.MAI_IN1_S0: self.MAI_IN1_S0,
+            WsrAddrs.MAI_IN1_S1: self.MAI_IN1_S1,
         }
 
     def on_start(self) -> None:
@@ -374,20 +283,21 @@ class WSRFile:
         This clears values that don't persist between runs (everything except
         RND and the key registers)
         '''
-        for reg in self._by_idx.values():
+        for reg in self._by_addr.values():
             reg.on_start()
 
     def check_idx(self, idx: int) -> bool:
         '''Return True if idx is a valid WSR index'''
-        return idx in self._by_idx
+        # TODO: Clean this up once we have python 3.12+
+        return idx in WsrAddrs._value2member_map_
 
     def has_value_at_idx(self, idx: int) -> int:
-        '''Return True if the WSR at idx has a valid valu.
+        '''Return True if the WSR at idx has a valid value.
 
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].has_value()
+        return self._by_addr[WsrAddrs(idx)].has_value()
 
     def read_at_idx(self, idx: int) -> int:
         '''Read the WSR at idx as an unsigned 256-bit value
@@ -395,7 +305,15 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].read_unsigned()
+        wsr_addr = WsrAddrs(idx)
+        # KMAC_DATA_S0/1 should only be accessed through the wrapper class.
+        if wsr_addr == WsrAddrs.KMAC_DATA_S0:
+            return self.KMAC_DATA.read_unsigned(share_idx=0)
+
+        elif wsr_addr == WsrAddrs.KMAC_DATA_S1:
+            return self.KMAC_DATA.read_unsigned(share_idx=1)
+
+        return self._by_addr[wsr_addr].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
         '''Write the WSR at idx as an unsigned 256-bit value
@@ -403,7 +321,16 @@ class WSRFile:
         Assumes that idx is a valid index (call check_idx to ensure this).
 
         '''
-        return self._by_idx[idx].write_unsigned(value)
+        wsr_addr = WsrAddrs(idx)
+        if wsr_addr == WsrAddrs.KMAC_DATA_S0:
+            self.KMAC_DATA.write_unsigned(share_idx=0, value=value)
+            return
+
+        elif wsr_addr == WsrAddrs.KMAC_DATA_S1:
+            self.KMAC_DATA.write_unsigned(share_idx=1, value=value)
+            return
+
+        self._by_addr[wsr_addr].write_unsigned(value)
 
     def commit(self) -> None:
         self.MOD.commit()
@@ -412,16 +339,33 @@ class WSRFile:
         self.ACC.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
+        self.KMAC_DATA.commit()
+        self.MAI_RES_S0.commit()
+        self.MAI_RES_S1.commit()
+        self.MAI_IN0_S0.commit()
+        self.MAI_IN0_S1.commit()
+        self.MAI_IN1_S0.commit()
+        self.MAI_IN1_S1.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
         self.RND.abort()
         self.URND.abort()
         self.ACC.abort()
+        self.KMAC_DATA.abort()
         # We commit changes to the sideloaded keys from outside, even if the
         # instruction itself gets aborted.
         self.KeyS0.commit()
         self.KeyS1.commit()
+        # We commit changes to the MAI output registers from outside, even if
+        # the instruction itself gets aborted (there is never a write to these
+        # WSRs from an instruction).
+        self.MAI_RES_S0.commit()
+        self.MAI_RES_S1.commit()
+        self.MAI_IN0_S0.abort()
+        self.MAI_IN0_S1.abort()
+        self.MAI_IN1_S0.abort()
+        self.MAI_IN1_S1.abort()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -430,6 +374,13 @@ class WSRFile:
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
+        ret += self.KMAC_DATA.changes()
+        ret += self.MAI_RES_S0.changes()
+        ret += self.MAI_RES_S1.changes()
+        ret += self.MAI_IN0_S0.changes()
+        ret += self.MAI_IN0_S1.changes()
+        ret += self.MAI_IN1_S0.changes()
+        ret += self.MAI_IN1_S1.changes()
         return ret
 
     def set_sideload_keys(self,
@@ -441,3 +392,9 @@ class WSRFile:
     def wipe(self) -> None:
         self.MOD.write_invalid()
         self.ACC.write_invalid()
+        self.MAI_RES_S0.write_invalid()
+        self.MAI_RES_S1.write_invalid()
+        self.MAI_IN0_S0.write_invalid()
+        self.MAI_IN0_S1.write_invalid()
+        self.MAI_IN1_S0.write_invalid()
+        self.MAI_IN1_S1.write_invalid()

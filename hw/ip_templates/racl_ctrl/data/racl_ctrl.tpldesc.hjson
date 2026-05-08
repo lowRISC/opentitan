@@ -52,6 +52,12 @@
       default: "2"
     }
     {
+      name: "nr_external_subscribing_ips"
+      desc: "Number of external RACL subscribing IPs"
+      type: "int"
+      default: "1"
+    }
+    {
       name: "policies"
       desc: "The RACL policies"
       type: "object"

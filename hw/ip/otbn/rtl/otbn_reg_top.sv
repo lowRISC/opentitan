@@ -130,8 +130,8 @@ module otbn_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[16384:24575]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[32768:35839]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[16384:32767]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[32768:49151]} ? 2'd1 :
         // Default set to register
         2'd2;
 

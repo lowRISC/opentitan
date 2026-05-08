@@ -241,11 +241,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
-    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ps * $urandom_range(5, 20);
+    int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.get_tck_period_ps() * $urandom_range(5, 20);
     cfg.rv_dm_vif.cb.scan_rst_n <= 1'b0;
-    cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b0;
+    cfg.m_jtag_agent_cfg.vif.assert_test_reset();
     super.apply_resets_concurrently(dv_utils_pkg::max2(reset_duration_ps, trst_n_duration_ps));
-    cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b1;
+    cfg.m_jtag_agent_cfg.vif.clear_test_reset();
     cfg.rv_dm_vif.cb.scan_rst_n <= 1'b1;
   endtask
 
@@ -416,11 +416,21 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.lc_hw_debug_en <= bool_to_lc_tx_t(lc_hw_debug_en);
   endfunction
 
-  // Read the dtmcs register and check the dmistat field has the expected value.
+  // Read the dtmcs register and check the dmistat field has the expected value, skipping the check
+  // if the system is in reset.
   task check_dmistat(bit [1:0] expected_dmistat);
     uvm_reg_data_t rdata;
+    bit [1:0]      dmistat_seen;
+
     csr_rd(.ptr(jtag_dtm_ral.dtmcs), .value(rdata));
-    `DV_CHECK_EQ(expected_dmistat, get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata))
+    if (!cfg.clk_rst_vif.rst_n) return;
+
+    dmistat_seen = get_field_val(jtag_dtm_ral.dtmcs.dmistat, rdata);
+    if (dmistat_seen != expected_dmistat) begin
+      `uvm_error(get_name(),
+                 $sformatf("Unexpected dtmcs.dmistat. Was expecting b%02b but saw b%02b.",
+                           expected_dmistat, dmistat_seen))
+    end
   endtask
 
   // Check that the cmderr field in abstractcs is as expected, skipping the check if the system is
@@ -460,4 +470,51 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cmd.control = ar_cmd;
     return cmd;
   endfunction
+
+  // Read the value of the ndmreset_pending_q flag.
+  task get_ndmreset_pending(output bit rvalue);
+    uvm_reg_data_t val;
+    string path = "tb.dut.ndmreset_pending_q";
+
+    `DV_CHECK(uvm_hdl_read(path, val));
+    rvalue = val[0];
+  endtask
+
+  // Check that the ndmreset_pending_q signal in the design has the value we expect. If we are in
+  // reset, this returns immediately.
+  task check_ndmreset_pending(bit expected_value);
+    bit seen_value;
+    get_ndmreset_pending(seen_value);
+    if (!cfg.clk_rst_vif.rst_n) return;
+    `DV_CHECK_EQ(seen_value, expected_value);
+  endtask
+
+  // Clear the ndmreset_pending_q flag if it is currently set.
+  task clear_pending_ndmreset();
+    bit ndmreset_pending;
+    get_ndmreset_pending(ndmreset_pending);
+    if (!ndmreset_pending) return;
+
+    // If rv_dm currently thinks an ndmreset is pending, it probably means that we're following a
+    // vseq that set the ndmreset field in dmcontrol. To clear this, we need to set the ndmreset_ack
+    // signal, which happens in response to a reset through rst_lc_ni. We add short waits after
+    // changes to rst_lc_ni so that the signal can flow through some synchronisers. Skip this wait
+    // if there is a system reset.
+    fork begin : isolation_fork
+      fork
+        wait (!cfg.clk_rst_vif.rst_n);
+        begin
+          cfg.clk_lc_rst_vif.drive_rst_pin(1'b0);
+          cfg.clk_rst_vif.wait_clks(8);
+          cfg.clk_lc_rst_vif.drive_rst_pin(1'b1);
+          cfg.clk_rst_vif.wait_clks(8);
+        end
+      join_any
+      disable fork;
+    end join
+    if (!cfg.clk_rst_vif.rst_n) return;
+
+    // This should now have cleared the pending reset flag. Make sure it is clear.
+    check_ndmreset_pending(1'b0);
+  endtask
 endclass : rv_dm_base_vseq

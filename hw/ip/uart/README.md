@@ -1,10 +1,12 @@
 # UART HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/uart/data/uart.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`uart`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.1.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/uart/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/uart/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/uart/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/uart/code.svg) |
 
-[`uart`](https://reports.opentitan.org/hw/ip/uart/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/uart/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/uart/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/uart/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/uart/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/uart/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

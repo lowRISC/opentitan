@@ -12,6 +12,7 @@ use anyhow::{Context as _, Result};
 use tokio::io::{AsyncRead, AsyncWriteExt};
 use tokio::net::UnixStream;
 
+use opentitanlib::io::console::ConsoleDevice;
 use opentitanlib::io::emu::EmuState;
 use opentitanlib::io::uart::{Uart, UartError};
 use opentitanlib::util::runtime::MultiWaker;
@@ -64,21 +65,7 @@ impl Ti50Uart {
     }
 }
 
-/// A trait which represents a UART.
-impl Uart for Ti50Uart {
-    /// Returns the UART baudrate.  May return zero for virtual UARTs.
-    fn get_baudrate(&self) -> Result<u32> {
-        // As a virtual uart, the value is set only for compatibility with common hardware
-        // Real speed of uart is much higher and it is mostly limited by IPC speed.
-        Ok(TI50_UART_BAUDRATE)
-    }
-
-    /// Sets the UART baudrate.  May do nothing for virtual UARTs.
-    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
-        // As a virtual uart, setting the baudrate is a no-op.
-        Ok(())
-    }
-
+impl ConsoleDevice for Ti50Uart {
     fn poll_read(&self, cx: &mut Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         match self.get_state()? {
             EmuState::On => {
@@ -112,5 +99,20 @@ impl Uart for Ti50Uart {
                 Ok(())
             }
         }
+    }
+}
+
+impl Uart for Ti50Uart {
+    /// Returns the UART baudrate.  May return zero for virtual UARTs.
+    fn get_baudrate(&self) -> Result<u32> {
+        // As a virtual uart, the value is set only for compatibility with common hardware
+        // Real speed of uart is much higher and it is mostly limited by IPC speed.
+        Ok(TI50_UART_BAUDRATE)
+    }
+
+    /// Sets the UART baudrate.  May do nothing for virtual UARTs.
+    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
+        // As a virtual uart, setting the baudrate is a no-op.
+        Ok(())
     }
 }

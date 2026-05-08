@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "hw/top/dt/dt_i2c.h"
-#include "hw/top/dt/dt_pinmux.h"
+#include "hw/top/dt/i2c.h"
+#include "hw/top/dt/pinmux.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_pinmux.h"

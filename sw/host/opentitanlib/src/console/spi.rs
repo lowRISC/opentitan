@@ -20,6 +20,7 @@ pub struct SpiConsoleDevice<'a> {
     rx_buf: RefCell<VecDeque<u8>>,
     next_read_address: Cell<u32>,
     device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
+    ignore_frame_num: bool,
 }
 
 impl<'a> SpiConsoleDevice<'a> {
@@ -34,6 +35,7 @@ impl<'a> SpiConsoleDevice<'a> {
     pub fn new(
         spi: &'a dyn Target,
         device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
+        ignore_frame_num: bool,
     ) -> Result<Self> {
         let flash = SpiFlash {
             ..Default::default()
@@ -45,7 +47,13 @@ impl<'a> SpiConsoleDevice<'a> {
             console_next_frame_number: Cell::new(0),
             next_read_address: Cell::new(0),
             device_tx_ready_pin,
+            ignore_frame_num,
         })
+    }
+
+    pub fn reset_frame_counter(&self) {
+        self.console_next_frame_number.set(0);
+        self.next_read_address.set(0);
     }
 
     fn check_device_boot_up(&self, buf: &[u8]) -> Result<usize> {
@@ -57,8 +65,7 @@ impl<'a> SpiConsoleDevice<'a> {
         }
         // Set busy bit and wait for the device to clear the boot magic.
         self.flash.program(self.spi, 0, buf)?;
-        self.console_next_frame_number.set(0);
-        self.next_read_address.set(0);
+        self.reset_frame_counter();
         Ok(0)
     }
 
@@ -72,10 +79,10 @@ impl<'a> SpiConsoleDevice<'a> {
         let frame_number: u32 = u32::from_le_bytes(header[4..8].try_into().unwrap());
         let data_len_bytes: usize = u32::from_le_bytes(header[8..12].try_into().unwrap()) as usize;
         if magic_number != SpiConsoleDevice::SPI_FRAME_MAGIC_NUMBER
-            || frame_number != self.console_next_frame_number.get()
+            || (!self.ignore_frame_num && frame_number != self.console_next_frame_number.get())
             || data_len_bytes > SpiConsoleDevice::SPI_MAX_DATA_LENGTH
         {
-            if self.get_tx_ready_pin()?.is_none() {
+            if self.device_tx_ready_pin.is_none() {
                 self.check_device_boot_up(&header)?;
             }
             // This frame is junk, so we do not read the data
@@ -91,7 +98,7 @@ impl<'a> SpiConsoleDevice<'a> {
             % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
         self.read_data(data_address, &mut data)?;
 
-        if self.get_tx_ready_pin()?.is_some() {
+        if self.device_tx_ready_pin.is_some() {
             // When using the TX-indicator pin feature, we always write each SPI frame at the
             // beginning of the flash buffer, and wait for the host to ready it out before writing
             // another frame.
@@ -130,7 +137,7 @@ impl<'a> SpiConsoleDevice<'a> {
 }
 
 impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
-    fn console_poll_read(
+    fn poll_read(
         &self,
         cx: &mut std::task::Context<'_>,
         buf: &mut [u8],
@@ -141,7 +148,7 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         const POLL_INTERVAL: Duration = Duration::from_millis(1);
 
         if self.rx_buf.borrow().is_empty() {
-            if let Some(ready_pin) = self.get_tx_ready_pin()? {
+            if let Some(ready_pin) = self.device_tx_ready_pin {
                 // If we are gated by the TX-ready pin, only perform the SPI console read if
                 // the ready pin is high.
                 if !ready_pin.read()? {
@@ -164,7 +171,7 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         std::task::Poll::Ready(Ok(i))
     }
 
-    fn console_write(&self, buf: &[u8]) -> Result<()> {
+    fn write(&self, buf: &[u8]) -> Result<()> {
         let buf_len: usize = buf.len();
         let mut written_data_len: usize = 0;
         while written_data_len < buf_len {
@@ -185,9 +192,5 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         }
 
         Ok(())
-    }
-
-    fn get_tx_ready_pin(&self) -> Result<Option<&'a Rc<dyn GpioPin>>> {
-        Ok(self.device_tx_ready_pin)
     }
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 _GET_OBJS=$(find ./out/run -type f -iregex '.*test\.o')
 if [[ -z "${RISCV_TOOLCHAIN}" ]]; then
    echo "Please define RISCV_TOOLCHAIN to have access to objdump."

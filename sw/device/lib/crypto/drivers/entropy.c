@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
-#include "hw/top/dt/dt_csrng.h"
-#include "hw/top/dt/dt_edn.h"
-#include "hw/top/dt/dt_entropy_src.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
@@ -61,7 +61,6 @@ enum {
  * https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
  * for details.
  */
-// TODO(#14542): Harden csrng/edn command fields.
 typedef enum entropy_csrng_op {
   kEntropyDrbgOpInstantiate = 1,
   kEntropyDrbgOpReseed = 2,
@@ -584,10 +583,17 @@ static status_t edn_configure(const edn_config_t *config) {
   abs_mmio_write32(base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
                    config->reseed_interval);
 
-  uint32_t reg =
-      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
+  // Clear the EDN recoverable alert status register.
+  abs_mmio_write32(base_address + EDN_RECOV_ALERT_STS_REG_OFFSET, 0);
+
+  uint32_t reg = bitfield_field32_write(
+      EDN_CTRL_REG_RESVAL, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4False);
   abs_mmio_write32(base_address + EDN_CTRL_REG_OFFSET, reg);
 
   HARDENED_TRY(edn_ready_block(base_address));
@@ -642,23 +648,6 @@ static void entropy_complex_stop_all(void) {
 }
 
 /**
- * Set the value of an entropy_src threshold register.
- *
- * Only sets the FIPS threshold value, not the bypass threshold field; for the
- * bypass threshold we use the reset value, which is ignored if looser than the
- * thresholds already set.
- *
- * @param name Name of register (e.g. REPCNT, BUCKET).
- * @param value Value to set for the FIPS_THRESH field.
- */
-#define SET_FIPS_THRESH(name, value)                                   \
-  abs_mmio_write32(                                                    \
-      entropy_src_base() + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET, \
-      bitfield_field32_write(                                          \
-          ENTROPY_SRC_##name##_THRESHOLDS_REG_RESVAL,                  \
-          ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD, value));
-
-/**
  * Configures the entropy_src with based on `config` options.
  *
  * @param config Entropy Source configuration options.
@@ -709,20 +698,36 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
       config->alert_threshold);
   reg = bitfield_field32_write(
       reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
-      ~config->alert_threshold);
+      ~(uint32_t)(config->alert_threshold));
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
                    reg);
 
-  // Configure health test thresholds. Conditioning bypass is not supported.
-  SET_FIPS_THRESH(REPCNT, config->repcnt_threshold);
-  SET_FIPS_THRESH(REPCNTS, config->repcnts_threshold);
-  SET_FIPS_THRESH(ADAPTP_HI, config->adaptp_hi_threshold);
-  SET_FIPS_THRESH(ADAPTP_LO, config->adaptp_lo_threshold);
-  SET_FIPS_THRESH(BUCKET, config->bucket_threshold);
-  SET_FIPS_THRESH(MARKOV_HI, config->markov_hi_threshold);
-  SET_FIPS_THRESH(MARKOV_LO, config->markov_lo_threshold);
-  SET_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
-  SET_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
+  // Configure health test thresholds.
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET,
+                   config->repcnt_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET,
+      config->repcnts_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET,
+      config->adaptp_hi_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET,
+      config->adaptp_lo_threshold);
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET,
+                   config->bucket_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET,
+      config->markov_hi_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET,
+      config->markov_lo_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET,
+      config->extht_hi_threshold);
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET,
+      config->extht_lo_threshold);
 
   // Enable entropy_src.
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
@@ -731,25 +736,6 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   // TODO: Add FI checks.
   return OTCRYPTO_OK;
 }
-
-/**
- * Verify the value of an entropy_src threshold register.
- *
- * Only checks the FIPS threshold value, not the bypass threshold field.
- *
- * @param name Name of register (e.g. REPCNT, BUCKET).
- * @param exp Expected value of the FIPS_THRESH field.
- */
-#define VERIFY_FIPS_THRESH(name, exp)                                     \
-  do {                                                                    \
-    uint32_t reg = abs_mmio_read32(                                       \
-        entropy_src_base() + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET); \
-    uint32_t act = bitfield_field32_read(                                 \
-        reg, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);          \
-    if (act != exp) {                                                     \
-      return OTCRYPTO_RECOV_ERR;                                          \
-    }                                                                     \
-  } while (false);
 
 /**
  * Check the entropy_src configuration.
@@ -827,15 +813,51 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   }
 
   // Check health test thresholds.
-  VERIFY_FIPS_THRESH(REPCNT, config->repcnt_threshold);
-  VERIFY_FIPS_THRESH(REPCNTS, config->repcnts_threshold);
-  VERIFY_FIPS_THRESH(ADAPTP_HI, config->adaptp_hi_threshold);
-  VERIFY_FIPS_THRESH(ADAPTP_LO, config->adaptp_lo_threshold);
-  VERIFY_FIPS_THRESH(BUCKET, config->bucket_threshold);
-  VERIFY_FIPS_THRESH(MARKOV_HI, config->markov_hi_threshold);
-  VERIFY_FIPS_THRESH(MARKOV_LO, config->markov_lo_threshold);
-  VERIFY_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
-  VERIFY_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_REPCNT_THRESHOLD_REG_OFFSET) !=
+      config->repcnt_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_REPCNTS_THRESHOLD_REG_OFFSET) !=
+      config->repcnts_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_ADAPTP_HI_THRESHOLD_REG_OFFSET) !=
+      config->adaptp_hi_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_ADAPTP_LO_THRESHOLD_REG_OFFSET) !=
+      config->adaptp_lo_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_BUCKET_THRESHOLD_REG_OFFSET) !=
+      config->bucket_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_MARKOV_HI_THRESHOLD_REG_OFFSET) !=
+      config->markov_hi_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_MARKOV_LO_THRESHOLD_REG_OFFSET) !=
+      config->markov_lo_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_EXTHT_HI_THRESHOLD_REG_OFFSET) !=
+      config->extht_hi_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_EXTHT_LO_THRESHOLD_REG_OFFSET) !=
+      config->extht_lo_threshold) {
+    return OTCRYPTO_RECOV_ERR;
+  }
 
   // TODO: more FI checks on comparisons here.
   return OTCRYPTO_OK;

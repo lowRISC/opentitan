@@ -4,38 +4,23 @@
 
 from sw.host.penetrationtests.python.sca.communication.sca_kmac_commands import OTKMAC
 from sw.host.penetrationtests.python.sca.communication.sca_prng_commands import OTPRNG
-from sw.host.penetrationtests.python.sca.communication.sca_trigger_commands import OTTRIGGER
+from sw.host.penetrationtests.python.sca.communication.sca_trigger_commands import (
+    OTTRIGGER,
+)
 
 
-def char_kmac_single(target, iterations, fpga, masking, key, text, reset = False):
-    kmacsca = OTKMAC(target)
-    if reset:
-        target.reset_target()
-        # Clear the output from the reset
-        target.dump_all()
-    # Initialize our chip and catch its output
-    device_id, owner_page, boot_log, boot_measurements, version = kmacsca.init(fpga)
-
-    if masking:
-        lfsr_seed = [0, 1, 2, 3]
-    else:
-        lfsr_seed = [0, 0, 0, 0]
-    kmacsca.write_lfsr_seed(lfsr_seed)
-
-    kmacsca.write_key(key)
-
-    # Set the trigger
-    triggersca = OTTRIGGER(target)
-    triggersca.select_trigger(int(not fpga))
-
-    for _ in range(iterations):
-        kmacsca.absorb(text, len(text))
-        response = target.read_response()
-    return response
-
-
-def char_kmac_batch_daisy_chain(
-    target, iterations, num_segments, fpga, masking, key, text, reset = False
+def char_kmac_single(
+    target,
+    iterations,
+    fpga,
+    masking,
+    key,
+    key_length,
+    text,
+    text_length,
+    customization,
+    customization_length,
+    reset=False,
 ):
     kmacsca = OTKMAC(target)
     if reset:
@@ -56,12 +41,65 @@ def char_kmac_batch_daisy_chain(
     triggersca.select_trigger(int(not fpga))
 
     for _ in range(iterations):
-        kmacsca.absorb_daisy_chain(text, key, num_segments)
+        kmacsca.absorb(
+            text, text_length, key, key_length, customization, customization_length
+        )
         response = target.read_response()
     return response
 
 
-def char_kmac_batch(target, iterations, num_segments, fpga, masking, key, reset = False):
+def char_kmac_batch_daisy_chain(
+    target,
+    iterations,
+    num_segments,
+    fpga,
+    masking,
+    key,
+    key_length,
+    text,
+    customization,
+    customization_length,
+    reset=False,
+):
+    kmacsca = OTKMAC(target)
+    if reset:
+        target.reset_target()
+        # Clear the output from the reset
+        target.dump_all()
+    # Initialize our chip and catch its output
+    device_id, owner_page, boot_log, boot_measurements, version = kmacsca.init(fpga)
+
+    if masking:
+        lfsr_seed = [0, 1, 2, 3]
+    else:
+        lfsr_seed = [0, 0, 0, 0]
+    kmacsca.write_lfsr_seed(lfsr_seed)
+
+    # Set the trigger
+    triggersca = OTTRIGGER(target)
+    triggersca.select_trigger(int(not fpga))
+
+    for _ in range(iterations):
+        kmacsca.absorb_daisy_chain(
+            text, key, key_length, customization, customization_length, num_segments
+        )
+        response = target.read_response()
+    return response
+
+
+def char_kmac_batch(
+    target,
+    iterations,
+    num_segments,
+    fpga,
+    masking,
+    key,
+    key_length,
+    text_length,
+    customization,
+    customization_length,
+    reset=False,
+):
     kmacsca = OTKMAC(target)
     if reset:
         target.reset_target()
@@ -84,9 +122,14 @@ def char_kmac_batch(target, iterations, num_segments, fpga, masking, key, reset 
     ot_prng = OTPRNG(target=target)
     ot_prng.seed_prng([1, 0, 0, 0])
 
-    kmacsca.fvsr_key_set(key, len(key))
-
     for _ in range(iterations):
-        kmacsca.absorb_batch(num_segments)
+        kmacsca.absorb_batch(
+            text_length,
+            key,
+            key_length,
+            customization,
+            customization_length,
+            num_segments,
+        )
         response = target.read_response()
     return response

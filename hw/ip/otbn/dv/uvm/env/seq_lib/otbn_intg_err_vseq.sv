@@ -11,6 +11,10 @@ class otbn_intg_err_vseq extends otbn_base_vseq;
 
   `uvm_object_new
 
+  // A flag whether the injected fault leads to a delayed escalation. Some escalation sources are
+  // flopped in the RTL to improve timing. Overwrite this in the deriving class.
+  protected bit expect_delayed_escalation = 0;
+
   // Wait until the integrity-checked signal is used (otherwise an injected error would not have any
   // consequences) or an internal timeout expires.  The `used_words` output indicates which words
   // were used during the call of this task.
@@ -81,7 +85,17 @@ class otbn_intg_err_vseq extends otbn_base_vseq;
 
     inject_errors(used_words, corrupted_words);
 
+    if (expect_delayed_escalation) begin
+      // Due to the delayed escalation, the faulted instruction still commits but with wrong values.
+      // We must signal to the ISS that the result can be off.
+      cfg.model_agent_cfg.vif.tolerate_result_mismatch(1);
+
+      // Injecting the error can lead to SW errors which escalate immediately.
+      handle_sw_error_during_delayed_hw_escalation(); // This resumes on the next clk posedge
+    end
+
     // Notify the model about the integrity violation error.
+    // The HW escalation must happen on the rising edge. Otherwise the model is informed too late.
     if (|(corrupted_words & used_words)) begin
       otbn_pkg::err_bits_t err_bits;
       err_bits = '{reg_intg_violation: 1'b1, default: 1'b0};

@@ -19,6 +19,9 @@ parameter int unsigned SliceSizeCtr = 16;
 parameter int unsigned NumSlicesCtr = aes_reg_pkg::NumRegsIv * 32 / SliceSizeCtr;
 parameter int unsigned SliceIdxWidth = prim_util_pkg::vbits(NumSlicesCtr);
 
+// In GCM, the counter performs inc32() instead of inc128(), i.e., the counter wraps at 32 bits.
+parameter int unsigned SliceIdxMaxInc32 = 32 / SliceSizeCtr - 1;
+
 // Widths of signals carrying pseudo-random data for clearing
 parameter int unsigned WidthPRDClearing = 64;
 parameter int unsigned NumChunksPRDClearing128 = 128/WidthPRDClearing;
@@ -83,12 +86,26 @@ typedef enum integer {
                                  // see aes_sbox_canright_dom.sv
 } sbox_impl_e;
 
+// GF(2^128) irreducible, field-generating polynomial for AES-GCM
+// See Section "6.3 Multiplication Operation on Blocks" of
+// https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf on Page 11:
+//   "Let R be the bit string 11100001 || 0^120."
+// And further on Page 12:
+//   "The reduction modulus is the polynomial of degree 128 that corresponds to R || 1"
+// Or in other words: x^128 + x^7 + x^2 + x + 1
+// The MSB gets clipped off below.
+parameter int unsigned GCMDegree = 128;
+parameter bit [GCMDegree-1:0] GCMIPoly = GCMDegree'(1'b1) << 7 |
+                                         GCMDegree'(1'b1) << 2 |
+                                         GCMDegree'(1'b1) << 1 |
+                                         GCMDegree'(1'b1) << 0;
 
 // Parameters used for controlgroups in the coverage
 parameter int AES_OP_WIDTH             = 2;
 parameter int AES_MODE_WIDTH           = 6;
 parameter int AES_KEYLEN_WIDTH         = 3;
 parameter int AES_PRNGRESEEDRATE_WIDTH = 3;
+parameter int AES_GCMPHASE_WIDTH       = 6;
 
 // SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_OP_WIDTH-1:0] {
@@ -103,9 +120,11 @@ typedef enum logic [AES_MODE_WIDTH-1:0] {
   AES_CFB  = 6'b00_0100,
   AES_OFB  = 6'b00_1000,
   AES_CTR  = 6'b01_0000,
-  AES_NONE = 6'b10_0000
+  AES_GCM  = 6'b10_0000,
+  AES_NONE = 6'b11_1111
 } aes_mode_e;
 
+// SEC_CM: MAIN.CONFIG.SPARSE
 typedef enum logic [AES_OP_WIDTH-1:0] {
   CIPH_FWD = 2'b01,
   CIPH_INV = 2'b10
@@ -125,6 +144,16 @@ typedef enum logic [AES_PRNGRESEEDRATE_WIDTH-1:0] {
   PER_8K = 3'b100
 } prs_rate_e;
 parameter int unsigned BlockCtrWidth = 13;
+
+// SEC_CM: GCM.CONFIG.SPARSE
+typedef enum logic [AES_GCMPHASE_WIDTH-1:0] {
+  GCM_INIT    = 6'b00_0001,
+  GCM_RESTORE = 6'b00_0010,
+  GCM_AAD     = 6'b00_0100,
+  GCM_TEXT    = 6'b00_1000,
+  GCM_SAVE    = 6'b01_0000,
+  GCM_TAG     = 6'b10_0000
+} gcm_phase_e;
 
 typedef struct packed {
   logic [31:7] unused;
@@ -220,13 +249,46 @@ typedef struct packed {
   typedef enum logic [CtrlStateWidth-1:0] {
     CTRL_IDLE        = 6'b001001,
     CTRL_LOAD        = 6'b100011,
-    CTRL_PRNG_UPDATE = 6'b111101,
+    CTRL_GHASH_READY = 6'b111101,
     CTRL_PRNG_RESEED = 6'b010000,
     CTRL_FINISH      = 6'b100100,
     CTRL_CLEAR_I     = 6'b111010,
     CTRL_CLEAR_CO    = 6'b001110,
     CTRL_ERROR       = 6'b010111
   } aes_ctrl_e;
+
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
+//     -s 31468618 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||| (38.89%)
+//  4: |||||||||||||||||||| (41.67%)
+//  5: |||||||| (16.67%)
+//  6: | (2.78%)
+//  7: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 6
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 5
+//
+localparam int GhashStateWidth = 7;
+typedef enum logic [GhashStateWidth-1:0] {
+  GHASH_IDLE                    = 7'b1100001,
+  GHASH_MULT                    = 7'b0010001,
+  GHASH_ADD_S                   = 7'b0000110,
+  GHASH_OUT                     = 7'b0110111,
+  GHASH_ERROR                   = 7'b0111010,
+  GHASH_MASKED_INIT             = 7'b1111100,
+  GHASH_MASKED_ADD_STATE_SHARES = 7'b0101101,
+  GHASH_MASKED_ADD_CORR         = 7'b0001000,
+  GHASH_MASKED_SETTLE           = 7'b1001111
+} aes_ghash_e;
 
 // Generic, sparse mux selector encodings
 
@@ -298,6 +360,35 @@ typedef enum logic [Mux4SelWidth-1:0] {
   MUX4_SEL_2 = 5'b00001,
   MUX4_SEL_3 = 5'b10111
 } mux4_sel_e;
+
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
+//     -s 31468618 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (50.00%)
+//  4: |||||||||||||||| (40.00%)
+//  5: |||| (10.00%)
+//  6: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 5
+// Minimum Hamming weight: 1
+// Maximum Hamming weight: 5
+//
+localparam int Mux5SelWidth = 6;
+typedef enum logic [Mux5SelWidth-1:0] {
+  MUX5_SEL_0 = 6'b110000,
+  MUX5_SEL_1 = 6'b001000,
+  MUX5_SEL_2 = 6'b000011,
+  MUX5_SEL_3 = 6'b011101,
+  MUX5_SEL_4 = 6'b111110
+} mux5_sel_e;
+
 
 // $ ./sparse-fsm-encode.py -d 3 -m 6 -n 6 \
 //      -s 31468618 --language=sv
@@ -423,6 +514,46 @@ typedef enum logic [AddSOSelWidth-1:0] {
   ADD_SO_DIP  = MUX3_SEL_2
 } add_so_sel_e;
 
+parameter int GHashInSelNum = 2;
+parameter int GHashInSelWidth = Mux2SelWidth;
+typedef enum logic [GHashInSelWidth-1:0] {
+  GHASH_IN_DATA_IN_PREV = MUX2_SEL_0,
+  GHASH_IN_DATA_OUT     = MUX2_SEL_1
+} ghash_in_sel_e;
+
+parameter int GHashAddInSelWidth = 3;
+typedef enum logic [GHashAddInSelWidth-1:0] {
+  ADD_IN_GHASH_IN = 3'b001,
+  ADD_IN_CORR_A   = 3'b010,
+  ADD_IN_CORR_B   = 3'b100,
+  ADD_IN_ZERO     = 3'b000
+} ghash_add_in_sel_e;
+
+parameter int GHashStateSelNum = 5;
+parameter int GHashStateSelWidth = Mux5SelWidth;
+typedef enum logic [GHashStateSelWidth-1:0] {
+  GHASH_STATE_RESTORE = MUX5_SEL_0,
+  GHASH_STATE_INIT    = MUX5_SEL_1,
+  GHASH_STATE_ADD     = MUX5_SEL_2,
+  GHASH_STATE_ADD_S   = MUX5_SEL_3,
+  GHASH_STATE_MULT    = MUX5_SEL_4
+} ghash_state_sel_e;
+
+parameter int GFMultInSelWidth = 3;
+typedef enum logic [GFMultInSelWidth-1:0] {
+  MULT_IN_STATE0 = 3'b001,
+  MULT_IN_STATE1 = 3'b010,
+  MULT_IN_S1     = 3'b100,
+  MULT_IN_ZERO   = 3'b000
+} gf_mult_in_sel_e;
+
+parameter int DataOutSelNum = 2;
+parameter int DataOutSelWidth = Mux2SelWidth;
+typedef enum logic [DataOutSelWidth-1:0] {
+  DATA_OUT_CIPHER = MUX2_SEL_0,
+  DATA_OUT_GHASH  = MUX2_SEL_1
+} data_out_sel_e;
+
 // Sparse two-value signal type sp2v_e
 parameter int Sp2VNum = 2;
 parameter int Sp2VWidth = Mux2SelWidth;
@@ -452,6 +583,12 @@ parameter ctrl_reg_t CTRL_RESET = '{
   mode:             aes_mode_e'(aes_reg_pkg::AES_CTRL_SHADOWED_MODE_RESVAL),
   operation:        aes_op_e'(aes_reg_pkg::AES_CTRL_SHADOWED_OPERATION_RESVAL)
 };
+
+// GCM control register type
+typedef struct packed {
+  logic [4:0] num_valid_bytes;
+  gcm_phase_e phase;
+} ctrl_gcm_reg_t;
 
 // Multiplication by {02} (i.e. x) on GF(2^8)
 // with field generating polynomial {01}{1b} (9'h11b)
@@ -511,6 +648,28 @@ function automatic logic [3:0][3:0][7:0] aes_transpose(logic [3:0][3:0][7:0] in)
     end
   end
   return transpose;
+endfunction
+
+// Convert AES byte state matrix to internal GHASH bit vector representation.
+function automatic logic [127:0] aes_state_to_ghash_vec(logic [3:0][3:0][7:0] in);
+  logic [127:0] out;
+  logic [15:0][7:0] byte_vec;
+  for (int i = 0; i < 4; i++) begin
+    for (int j = 0; j < 4; j++) begin
+      byte_vec[15 - 4*i - j] = in[j][i];
+    end
+  end
+  out = byte_vec;
+  return out;
+endfunction
+
+// Convert internal GHASH bit vector representation to simple bit vector.
+function automatic logic [127:0] aes_ghash_reverse_bit_order(logic [127:0] in);
+  logic [127:0] out;
+  for (int i = 0; i < 128; i++) begin
+    out[i] = in[127-i];
+  end
+  return out;
 endfunction
 
 // Extract single column from state matrix

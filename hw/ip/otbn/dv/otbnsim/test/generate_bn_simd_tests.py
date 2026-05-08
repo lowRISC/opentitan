@@ -1,0 +1,703 @@
+#!/usr/bin/env python3
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# This script generates the test vectors and test programs to check the BN SIMD
+# instructions in the OTBN simulator. These test programs can be placed in
+# ./test/simple/insns.
+
+import argparse
+import os
+import random
+import sys
+from typing import List, Optional
+
+# We depend on some helper functions also used in the simulator.
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from sim.isa import extract_vec_elem, montgomery_mul_no_cond_subtraction  # noqa: E402
+
+# Global random seed. Can be overridden via arguments.
+SEED = 1
+
+
+def list_to_hex_padded(elems: List[int], size: int) -> str:
+    padding_width = size // 4
+    return "".join(f"{num:0{padding_width}x}" for num in elems)
+
+
+def fill_vector(elems: List[int], size: int) -> List[int]:
+    '''Fills a vector to the full size of an 256-bit vector by padding missing upper bits with
+    zeros.'''
+    n_elems = 256 // size
+    assert len(elems) <= n_elems
+
+    if len(elems) < n_elems:
+        elems = [0] * (n_elems - len(elems)) + elems
+    return elems
+
+
+def batched(elems: List[int], n: int) -> List[List[int]]:
+    '''Splits list of elements into 256-bit vectors of n elements.
+    The list must contain a multiple of n elements.'''
+    assert len(elems) % n == 0
+    return [elems[idx:idx + n] for idx in range(0, len(elems), n)]
+
+
+def block_comment(lines: List[str]) -> str:
+    '''Formats the given lines into an OTBN assembly comment.'''
+    return ("/*\n  " + "\n  ".join(lines) + "\n*/\n")
+
+
+def dmem_vector(elems: List[int], size: int, vec_name: str, mnemonic: str) -> str:
+    '''Formats the vector into the OTBN assembly data section format'''
+    elems = fill_vector(elems, size)
+    hexstring = list_to_hex_padded(elems, size)
+
+    words = []
+    for word in range(256 // 32):
+        words.append(f"  .word 0x{hexstring[(word * 8):((word + 1) * 8)]}")
+
+    output = block_comment([
+        f"{size}-bit vector {vec_name} for instruction {mnemonic}",
+        f"{vec_name} = {elems}",
+        f"{vec_name} = 0x{hexstring}",
+    ])
+
+    output += f"{vec_name}:\n"
+    # Reverse the order of the words to print it in little endian order.
+    output += "\n".join(words[::-1]) + "\n"
+    return output
+
+
+def dmem_result(elems: List[int], size: int, comment: str) -> str:
+    '''Creates a comment for OTBN assembly describing the expected result'''
+    return block_comment([
+        f"Result of {comment}",
+        f"res = {elems}",
+        f"res = 0x{list_to_hex_padded(elems, size)}",
+    ])
+
+
+class BNTest:
+    def __init__(self, mnemonic: str, size: int, mod: Optional[int] = None):
+        self.mnemonic = mnemonic
+        # Size of the elements in bits
+        self.size = size
+        self.mod = mod
+        # mod_wsr is the vector which is written into the MOD WSR. This can include additional
+        # constants like for the Montgomery multiplication.
+        self.mod_wsr = (fill_vector([mod], self.size) if mod is not None else
+                        fill_vector([0], self.size))
+
+        self.max_val = (2**self.size) - 1
+        self.min_val = 1
+
+        # The first WDR index to load the source vectors
+        self.wrs_start = 0
+        # The first WDR index to store the result vectors
+        self.wrd_start = 20
+        # The WDR index used to load the MOD WSR
+        self.wrd_for_mod = 30
+
+        # A suffix added at the end of each operation
+        self.suffixes = None
+        # A note to display in the header comment
+        self.note = None
+
+    def operation(self, a: int, b: int) -> int:
+        raise NotImplementedError()
+
+    def set_mod_wsr_value(self, mod_wsr: List[int]):
+        self.mod_wsr = fill_vector(mod_wsr, self.size)
+
+    def _compute_results(self):
+        self.elems_c = []
+        for a, b in zip(self.elems_a, self.elems_b):
+            c = self.operation(a, b)
+            # fake wrap around
+            c = c & ((1 << self.size) - 1)
+            self.elems_c.append(c)
+
+    def rnd(self) -> int:
+        return random.randrange(self.min_val, self.max_val)
+
+    def rnd_mod(self) -> int:
+        assert self.mod is not None
+        return random.randrange(self.min_val, self.mod)
+
+    def generate_tests(self):
+        '''Generate the test vectors for the test.'''
+        self.elems_a = []
+        self.elems_b = []
+        raise NotImplementedError()
+
+    def _header_comment(self) -> str:
+        lines = []
+        lines += ['/* Copyright lowRISC contributors (OpenTitan project). */',
+                  '/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */',
+                  '/* SPDX-License-Identifier: Apache-2.0 */',
+                  '',
+                  f'/* AUTOGENERATED with {os.path.basename(__file__)} --seed {SEED} */']
+
+        if self.note is not None:
+            lines += ['',
+                      '/*',
+                      '  Note:',
+                      f'  {self.note}',
+                      "*/"]
+
+        lines += ['',
+                  '.section .text.start']
+
+        return '\n'.join(lines) + '\n'
+
+    def _load_vectors(self, vec_addrs: List[str], wdr: int) -> str:
+        '''Generates OTBN assembly code to load the given vectors into the
+        WDR registers.
+        The wdr parameter specifies the first WDR to load into. Other vectors are loaded into
+        successive WDRs.'''
+        lines = []
+
+        lines += ['/* Load vectors */',
+                  f'addi   x2,   x0, {wdr}']
+        for addr in vec_addrs:
+            lines += [f'la     x3,   {addr}',
+                      'bn.lid x2++, 0(x3)']
+
+        return '\n'.join(lines) + '\n'
+
+    def _load_mod(self, wdr: int, addr: str) -> str:
+        lines = []
+        lines += ['/* Load modulus into MOD WSR */',
+                  f'li      x2, {wdr}',
+                  f'la      x3, {addr}',
+                  'bn.lid  x2, 0(x3)',
+                  f'bn.wsrw MOD, w{wdr}']
+
+        return '\n'.join(lines) + '\n'
+
+    def _run_test(self, instruction: str, nof_ops: int, wrs: int, wrd: int,
+                  suffix: Optional[List[str]] = None) -> str:
+        if suffix is not None:
+            assert len(suffix) == nof_ops
+        lines = []
+        lines += ['/* Run test */']
+        for i in range(nof_ops):
+            suffix_str = '' if suffix is None else suffix[i]
+            lines += [f'{instruction} w{wrd}, w{wrs}, w{wrs + 1}{suffix_str}']
+            wrs += 2
+            wrd += 1
+
+        return '\n'.join(lines) + '\n'
+
+    def _end(self) -> str:
+        lines = []
+        lines += ['/* Clean up */',
+                  'addi x2, x0, 0 /* reset x2 */',
+                  'addi x3, x0, 0 /* reset x3 */',
+                  '',
+                  'ecall',
+                  '',
+                  '.section .data']
+
+        return '\n'.join(lines) + '\n'
+
+    def _dmem_vectors(self, vecs_a, vecs_b, vecs_c, size) -> str:
+        '''Formats vectors into OTBN memory text.
+
+        Vectors A and B are inputs, vector C are results.'''
+        txt_a = ""
+        txt_b = ""
+        txt_c = ""
+        for index, (vec_a, vec_b, vec_c) in enumerate(zip(vecs_a, vecs_b, vecs_c)):
+            txt_a += dmem_vector(vec_a, size, f"vec{size}a{index}", f"{self.mnemonic}")
+            txt_b += dmem_vector(vec_b, size, f"vec{size}b{index}", f"{self.mnemonic}")
+            txt_c += dmem_result(vec_c, size, f"{self.mnemonic} (w{self.wrd_start + index})")
+        return txt_a + txt_b + txt_c
+
+    def render_program(self) -> str:
+        '''Generates an assembly program to test a BN SIMD arithmetic instruction.'''
+        self.generate_tests()
+        self._compute_results()
+        assert len(self.elems_a) == len(self.elems_b)
+        assert len(self.elems_a) == len(self.elems_c)
+        # Only test full vectors
+        assert (len(self.elems_a) % (256 // self.size)) == 0
+
+        is_mod = self.mod is not None
+        mod_addr = f"mod{self.size}"
+
+        # We have space for only 256//size elements per vector. If there are more
+        # testcases, we need to split them into multiple vectors.
+        vecs_a = batched(self.elems_a, 256 // self.size)
+        vecs_b = batched(self.elems_b, 256 // self.size)
+        vecs_c = batched(self.elems_c, 256 // self.size)
+
+        # Generate the vector addresses.
+        addrs = []
+        for index in range(len(vecs_a)):
+            addrs.append(f"vec{self.size}a{index}")
+            addrs.append(f"vec{self.size}b{index}")
+
+        # Assemble the program text
+        prog = ""
+        prog += self._header_comment()
+        prog += self._load_vectors(addrs, self.wrs_start)
+        if is_mod:
+            prog += self._load_mod(self.wrd_for_mod, mod_addr)
+        prog += self._run_test(self.mnemonic, len(vecs_a), self.wrs_start, self.wrd_start,
+                               self.suffixes)
+        prog += self._end()
+        if is_mod:
+            description = self.mnemonic
+            prog += dmem_vector(self.mod_wsr, self.size, mod_addr, description)
+        prog += self._dmem_vectors(vecs_a, vecs_b, vecs_c, self.size)
+        return prog
+
+    def render_expected_regs(self) -> str:
+        '''Generates the expected results for the used registers.'''
+        out = ["# Copyright lowRISC contributors (OpenTitan project).",
+               "# Licensed under the Apache License, Version 2.0, see LICENSE for details.",
+               "# SPDX-License-Identifier: Apache-2.0",
+               "",
+               f"# AUTOGENERATED with {os.path.basename(__file__)} --seed {SEED}",
+               ""]
+
+        # We have space for only 256//size elements per vector. If there are more
+        # testcases, we need to split them into multiple vectors.
+        vecs_a = batched(self.elems_a, 256 // self.size)
+        vecs_b = batched(self.elems_b, 256 // self.size)
+        vecs_c = batched(self.elems_c, 256 // self.size)
+
+        # Input vectors. Each vector is loaded into a separate WDR. This must match the loading
+        # order defined by the program (see render_program).
+        nof_vecs = len(vecs_a) + len(vecs_b)
+        wdr = self.wrs_start
+        for i_vec in range(nof_vecs):
+            vec = vecs_a[i_vec // 2] if (i_vec % 2 == 0) else vecs_b[i_vec // 2]
+            out += [f"w{wdr} = 0x{list_to_hex_padded(vec, self.size)}"]
+            wdr += 1
+
+        # Result vectors. Each vector is loaded into a separate WDR.
+        wdr = self.wrd_start
+        for vec in vecs_c:
+            out += [f"w{wdr} = 0x{list_to_hex_padded(vec, self.size)}"]
+            wdr += 1
+
+        # MOD if applicable
+        if self.mod is not None:
+            out += [f"w{self.wrd_for_mod} = 0x{list_to_hex_padded(self.mod_wsr, self.size)}"]
+
+        return '\n'.join(out) + '\n'
+
+
+class BNADDVTest(BNTest):
+    def __init__(self):
+        super().__init__('bn.addv.8s', 32)
+
+    def operation(self, a: int, b: int) -> int:
+        c = a + b
+        # fake wrap around
+        c = c & ((1 << self.size) - 1)
+        return c
+
+    def generate_tests(self):
+        self.elems_a = []
+        self.elems_b = []
+        # Test overflow
+        self.elems_a.append(self.max_val)
+        self.elems_b.append(self.rnd())
+        # Test zero addition
+        self.elems_a.append(self.rnd())
+        self.elems_b.append(0)
+        # Test 6 random additions
+        for _ in range(6):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+
+
+class BNADDVMTest(BNTest):
+    def __init__(self, mod):
+        super().__init__('bn.addvm.8s', 32, mod)
+
+    def operation(self, a, b):
+        c = a + b
+        if c >= self.mod:
+            c -= self.mod
+        # fake wrap around
+        c = c & ((1 << self.size) - 1)
+        return c
+
+    def generate_tests(self):
+        self.elems_a = []
+        self.elems_b = []
+        # Test reduction
+        self.elems_a.append(self.mod - 1)
+        self.elems_b.append(self.rnd())
+        # Test zero addition
+        self.elems_a.append(self.rnd_mod())
+        self.elems_b.append(0)
+        # Test 3 random subtractions with full range
+        for _ in range(3):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+        # Test 3 random subtractions with mod range
+        for _ in range(3):
+            self.elems_a.append(self.rnd_mod())
+            self.elems_b.append(self.rnd_mod())
+
+
+class BNSUBVTest(BNTest):
+    def __init__(self):
+        super().__init__('bn.subv.8s', 32)
+
+    def operation(self, a: int, b: int) -> int:
+        c = a - b
+        # fake wrap around
+        c = c & ((1 << self.size) - 1)
+        return c
+
+    def generate_tests(self):
+        self.elems_a = []
+        self.elems_b = []
+        # Test underflow
+        self.elems_a.append(0)
+        self.elems_b.append(self.rnd())
+        # Test zero subtraction
+        self.elems_a.append(self.rnd())
+        self.elems_b.append(0)
+        # Test 6 random subtractions
+        for _ in range(6):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+
+
+class BNSUBVMTest(BNTest):
+    def __init__(self, mod):
+        super().__init__('bn.subvm.8s', 32, mod)
+
+    def operation(self, a: int, b: int) -> int:
+        c = a - b
+        if c < 0:
+            c += self.mod
+        # fake wrap around
+        c = c & ((1 << self.size) - 1)
+        return c
+
+    def generate_tests(self):
+        self.elems_a = []
+        self.elems_b = []
+        # Test underflow
+        self.elems_a.append(self.min_val)
+        self.elems_b.append(self.rnd())
+        # Test zero subtraction
+        self.elems_a.append(self.rnd())
+        self.elems_b.append(0)
+        # Test 3 random subtractions with full range
+        for _ in range(3):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+        # Test 3 random subtractions with mod range
+        for _ in range(3):
+            self.elems_a.append(self.rnd_mod())
+            self.elems_b.append(self.rnd_mod())
+
+
+class BNMULVTest(BNTest):
+    def __init__(self):
+        super().__init__('bn.mulv.8s', 32)
+
+    def operation(self, a, b):
+        c = a * b
+        # fake wrap around
+        c = c & ((1 << self.size) - 1)
+        return c
+
+    def generate_tests(self):
+        assert self.size == 32
+        self.elems_a = []
+        self.elems_b = []
+        # Test zero multiplication
+        self.elems_a.append(0)
+        self.elems_b.append(self.rnd())
+        # Test multiplication with one
+        self.elems_a.append(1)
+        self.elems_b.append(self.rnd())
+        # Test overflow (16b*20b="36b"->32b)
+        self.elems_a.append(0xaf71)
+        self.elems_b.append(0x9b758)
+        # Test exact bit width (14b*18b=32b)
+        self.elems_a.append(0x2606)
+        self.elems_b.append(0x32be1)
+        # Test 4 random multiplications
+        for _ in range(4):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+
+
+class BNMULVMTest(BNTest):
+    def __init__(self, mod: int, mu: int):
+        super().__init__('bn.mulvm.8s', 32, mod)
+        self.mu = mu
+        self.note = "This test operates on values in the Montgomery space."
+
+    def operation(self, a, b):
+        c = montgomery_mul_no_cond_subtraction(a, b, self.mod, self.mu, self.size)
+        return c
+
+    def generate_tests(self):
+        assert self.size == 32
+        # These test use random numbers in Montgomery space [0, mod[.
+        self.elems_a = []
+        self.elems_b = []
+        for _ in range(8):
+            self.elems_a.append(self.rnd_mod())
+            self.elems_b.append(self.rnd_mod())
+
+        self.set_mod_wsr_value([self.mu, self.mod])
+
+        # Make a check that the montgomery multiplication is working correctly.
+        # We can do this by converting back into regular space and check if the final result is
+        # correct.
+        for a, b in zip(self.elems_a, self.elems_b):
+            # Perform a montgomery multiplication
+            c = self.operation(a, b)
+            # We can convert back into regular space by MontMul with 1
+            a_orig = self.operation(a, 1)
+            b_orig = self.operation(b, 1)
+            c_orig = (a_orig * b_orig) % self.mod
+            c_recovered = self.operation(c, 1)
+            assert c_orig == c_recovered
+
+
+class BNLaneTest(BNTest):
+    def __init__(self, mnemonic: str, size: int):
+        super().__init__(mnemonic, size)
+        # Which lanes to test
+        self.lanes = [0, 6]
+
+    def _compute_results(self):
+        n_elems = 256 // self.size
+        assert len(self.lanes) > 0
+        assert len(self.elems_b) == n_elems
+
+        self.elems_c = []
+        self.suffixes = []
+        for lane in self.lanes:
+            assert 0 <= lane < n_elems
+            lane_value = self.elems_b[(n_elems - 1) - lane]
+            self.suffixes.append(f', {lane}')
+            for a in self.elems_a:
+                c = self.operation(a, lane_value)
+                self.elems_c.append(c)
+
+        # We must replicate the input vectors to match the number of operations
+        self.elems_a = self.elems_a * len(self.lanes)
+        self.elems_b = self.elems_b * len(self.lanes)
+
+
+class BNMULVLTest(BNLaneTest):
+    def __init__(self):
+        super().__init__('bn.mulvl.8s', 32)
+        self.lanes = [0, 6]
+
+    def operation(self, a, b):
+        c = a * b
+        # fake wrap around
+        c = c & ((1 << self.size) - 1)
+        return c
+
+    def generate_tests(self):
+        assert self.size == 32
+        self.elems_a = []
+        self.elems_b = []
+        for _ in range(8):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+
+
+class BNMULVMLTest(BNLaneTest):
+    def __init__(self, mod: int, mu: int):
+        super().__init__('bn.mulvml.8s', 32)
+        self.lanes = [1, 5]
+        self.mod = mod
+        self.mu = mu
+        self.note = "This test operates on values in the Montgomery space."
+
+    def operation(self, a, b):
+        c = montgomery_mul_no_cond_subtraction(a, b, self.mod, self.mu, self.size)
+        return c
+
+    def generate_tests(self):
+        # These test use random numbers in Montgomery space [0, mod[.
+        self.elems_a = []
+        self.elems_b = []
+        for _ in range(8):
+            self.elems_a.append(self.rnd_mod())
+            self.elems_b.append(self.rnd_mod())
+
+        self.set_mod_wsr_value([self.mu, self.mod])
+
+
+class BNTRNxTest(BNTest):
+    def __init__(self, mnemonic: str, size: int):
+        assert size in [32, 64, 128]
+        match size:
+            case 32:
+                mnemonic += '.8s'
+            case 64:
+                mnemonic += '.4d'
+            case 128:
+                mnemonic += '.2q'
+        super().__init__(mnemonic, size)
+
+    def _compute_results(self):
+        # We support only a single full vector. This simplifies the operation and assembly
+        # generation.
+        assert len(self.elems_a) == 256 // self.size
+        assert len(self.elems_a) == len(self.elems_b)
+
+        # Compute on 256 bit basis
+        vec_c = self.operation(self.elems_a, self.elems_b)
+
+        # Extract elements to a list
+        self.elems_c = []
+        nof_elems = 256 // self.size
+        for elem in range(nof_elems):
+            self.elems_c.append(extract_vec_elem(vec_c, elem, self.size))
+
+        # Reverse the list so that the first element is the most significant one in the WDR.
+        self.elems_c = list(reversed(self.elems_c))
+
+    def generate_tests(self):
+        self.elems_a = []
+        self.elems_b = []
+        nof_elems = 256 // self.size
+        for _ in range(nof_elems):
+            self.elems_a.append(self.rnd())
+            self.elems_b.append(self.rnd())
+
+
+class BNTRN1Test(BNTRNxTest):
+    def __init__(self, size: int):
+        super().__init__('bn.trn1', size)
+
+    def operation(self, elems_a: int, elems_b: int) -> int:
+        nof_elems = 256 // self.size
+        vec_c = 0
+        for elem in range(0, nof_elems, 2):
+            # The elems in the lists are reversed compared to how the elements are placed in the
+            # WDR.
+            elem_a = elems_a[(nof_elems - 1) - elem]
+            elem_b = elems_b[(nof_elems - 1) - elem]
+            vec_c = vec_c | ((elem_a) << (elem * self.size))
+            vec_c = vec_c | ((elem_b) << ((elem + 1) * self.size))
+        return vec_c
+
+
+class BNTRN2Test(BNTRNxTest):
+    def __init__(self, size: int):
+        super().__init__('bn.trn2', size)
+
+    def operation(self, elems_a: int, elems_b: int) -> int:
+        nof_elems = 256 // self.size
+        vec_c = 0
+        for elem in range(0, nof_elems, 2):
+            # The elems in the lists are reversed compared to how the elements are placed in the
+            # WDR.
+            elem_a = elems_a[(nof_elems - 1) - (elem + 1)]
+            elem_b = elems_b[(nof_elems - 1) - (elem + 1)]
+            vec_c = vec_c | ((elem_a) << (elem * self.size))
+            vec_c = vec_c | ((elem_b) << ((elem + 1) * self.size))
+        return vec_c
+
+
+class BNSHVTest(BNTest):
+    def __init__(self):
+        super().__init__('bn.shv.8s', 32)
+        self.shift_str = []
+        self.shift_amt = []
+
+    def _run_test(self, mnemonic: str, nof_ops: int, wrs: int, wrd: int,
+                  suffix: Optional[List[str]] = None) -> str:
+        # The instruction syntax is different for bn.shv. It still operates over two vectors for
+        # compatibility with other parts of the code.'''
+        if suffix is not None:
+            assert len(suffix) == nof_ops
+        lines = []
+        lines += ['/* Run test */']
+        for i in range(nof_ops):
+            suffix_str = '' if suffix is None else suffix[i]
+            i_insn = i * (256 // self.size)
+            lines += [f'{mnemonic}{suffix_str} w{wrd}, w{wrs} {self.shift_str[i_insn]} '
+                      f'{self.shift_amt[i_insn]}']
+            wrs += 2
+            wrd += 1
+
+        return '\n'.join(lines) + '\n'
+
+    def _compute_results(self):
+        assert len(self.elems_a) == len(self.shift_str)
+        assert len(self.elems_a) == len(self.shift_amt)
+
+        self.elems_c = []
+        for a, sh_str, sh_amt in zip(self.elems_a, self.shift_str, self.shift_amt):
+            if sh_str == '<<':
+                c = (a << sh_amt) & ((1 << self.size) - 1)
+            else:
+                c = (a >> sh_amt) & ((1 << self.size) - 1)
+            self.elems_c.append(c)
+
+    def generate_tests(self):
+        self.elems_a = []
+        self.elems_b = []
+        shift_str = ['<<', '>>']
+        shift_amt = [11, 7]
+        nof_elems = 256 // self.size
+        for dir, amt in zip(shift_str, shift_amt):
+            assert dir in ['<<', '>>']
+            assert 0 <= amt < self.size
+            for _ in range(nof_elems):
+                self.elems_a.append(self.rnd())
+                self.elems_b.append(0)  # unused but here for compatibility
+                self.shift_str.append(dir)
+                self.shift_amt.append(amt)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate BN SIMD test vectors')
+    parser.add_argument('--seed', type=int, default=SEED, help='Random seed (default: 1)')
+    # add output directory argument
+    parser.add_argument('-o', '--output-dir', type=str, default='.',
+                        help='Output directory for generated tests (default: .)')
+    args = parser.parse_args()
+
+    SEED = args.seed
+
+    random.seed(SEED)
+
+    tests = [BNADDVTest(),
+             BNADDVMTest(8380417),
+             BNSUBVTest(),
+             BNSUBVMTest(8380417),
+             BNMULVTest(),
+             BNMULVMTest(8380417, 4236238847),
+             BNMULVLTest(),
+             BNMULVMLTest(8380417, 4236238847),
+             BNTRN1Test(32),
+             BNTRN1Test(64),
+             BNTRN1Test(128),
+             BNTRN2Test(32),
+             BNTRN2Test(64),
+             BNTRN2Test(128),
+             BNSHVTest()]
+
+    for test in tests:
+        filename = os.path.join(args.output_dir, test.mnemonic.replace('.', '_'))
+        print(f"Generating test {filename}...")
+        with open(filename + '.s', 'w') as fd:
+            fd.write(test.render_program())
+        with open(filename + '.exp', 'w') as fd:
+            fd.write(test.render_expected_regs())

@@ -517,6 +517,30 @@ For example the data bits and mask bits could be in the lower and upper parts of
 In this case instance 1 will use bits 1 and 17, instance 2 will use 2 and 18 and so on.
 Instance 16 does not fit, so will start a new register.
 
+#### Vendor-specific fields
+Regtool supports vendor-specific fields/attributes in the <IP>.hjson files.
+To add a vendor-specific field, one can use the argument `--vendor-specific-fields` when invoking `regtool.py`.
+These fields will not affect any of the regtool outputs.
+Therefore, they can be used by vendor-specific tools that also ingest the HJSON files; regtool merely tolerates these fields.
+
+This is a contrived example of how the vendor-specific HJSON configuration file:
+```hjson
+{
+  ip_block: {
+    lowrisc_block_field : ['s', 'This is Lowrisc awesome block field']
+  }
+  register: {
+    lowrisc_reg_field : ['s', 'This is Lowrisc awesome register field']
+  }
+  field: {
+    lowrisc_field : ['s', 'This is Lowrisc awesome field attr']
+  }
+  window: {
+    lowrisc_window_field : ['s', 'This is Lowrisc awesome window field']
+  }
+}
+```
+
 ### Verification Tags Definition and Format
 
 This section documents the usage of tags in the register Hjson file.
@@ -655,8 +679,10 @@ Other error responses include for the following reasons:
 
 * TL-UL `a_opcode` illegal value
 * TL-UL writes of size smaller than register size
-  * I.e. writes of size 8b to registers > 8b will cause error (explicitly: if it has field bits within `[31:08]`)
-  * I.e. writes of size 16b to registers > 16b will cause error (explicitly: if it has field bits within `[31:16]`)
+  * Disallowing such writes makes the implementation simpler.
+  * It also strengthens the security of the system, by making it hard to use a fault injection to cause only part of a register to be updated.
+  * This can be seen with an 8b write to a register which is larger than 8 bits, or a 16b write to a register which is larger than 16 bits.
+  * The width of the register is determined by the location of its fields.
 * TL-UL writes of size smaller than 32b that are not word-aligned
   * I.e. writes of size 8b or 16b that are not to an address that is 4B aligned return in error.
 
@@ -883,7 +909,7 @@ The following section describes the concept in detail.
 
 ### Overview
 
-For Comportable designs used in sensitive security environments, for example AES or HMAC peripherals, there may be a need to guard against fault injection attacks.
+For Comportable designs used in sensitive security environments, for example AES or Alert Handler peripherals, there may be a need to guard against fault injection attacks.
 One of the surfaces under threat are critical configuration settings that may be used to control keys, region access control and system security configuration.
 These registers do not typically contain secret values, but can be vulnerable to fault attacks if a fault can alter the state of a register to a specific state.
 
@@ -902,9 +928,8 @@ The diagram below visualizes the internals of the `prim_subreg_shadow` module us
 
 ![subreg_shadow](./doc/subreg_shadow.svg)
 
-When compared to a normal register, the `prim_subreg_shadow` module is comprised of two additional storage components, giving three storage flops in total.
-The **staged** register holds a written value before being committed.
-The **shadow** register holds a second copy after being committed.
+When compared to a normal register, the `prim_subreg_shadow` module is comprised of an additional storage component, giving two storage flops in total.
+The **shadow** register holds a written value before being committed and the second copy after being committed.
 And the standard storage register holds the **committed** value.
 
 Under the hood, these registers are implemented using the `prim_subreg` module.
@@ -913,23 +938,28 @@ This means a shadow register can implement any of the types described in [this s
 The general behavior of updating a shadow register is as follows:
 1. Software performs a first write to the register.
 
-   The staged register takes on the new value.
+   The shadow register takes on the new value.
    The committed register is **not** updated, so the hardware still sees the old value.
+   The comparison of the committed and the shadow register is switched off.
 
 1. Software performs a second write to the register (same address):
 
-   - If the data of the second write matches the value in the staged register, **both** the shadow register and the committed register are updated.
-   - If the data of the second write does **not** match the contents stored in the staged register, an update error is signaled to the hardware with a pulse on `err_update`.
+   - If the data of the second write matches the value in the shadow register, the committed register is updated.
+   - If the data of the second write does **not** match the contents stored in the shadow register, an update error is signaled to the hardware with a pulse on `err_update`, and the shadow register takes again on the value of the committed register.
+
+   In both cases, the comparison of the committed and the shadow register is again switched on.
 
    The phase is tracked internally to the module.
    If needed, software can put the shadow register back into the first phase by performing a read operation.
+   The shadow register is then again overwritten with the value of the committed register.
    If the register is of type `RO`, software cannot interfere with the update process and read operations do not clear the phase tracker.
-   If the register is of type `RW1S` or `RW0C`, the staged register will latch the raw data value coming from the bus side.
-   The raw data value of the second write is compared with the raw data value in the staged register before being filtered by the `RW1S` or `RW0C` set/clear logic.
+   If the register is of type `RW1S` or `RW0C`, the shadow register will latch the raw data value coming from the bus side in the first phase.
+   The raw data value of the second write is compared with the raw data value in the shadow register before being filtered by the `RW1S` or `RW0C` set/clear logic.
+   Both the shadow and the committed register are then updated with the filtered value.
 
-1. If the value of the shadow register and the committed register are **ever** mismatched, a storage error is signaled to the hardware using the `err_storage` signal.
+1. If the value of the shadow register and the committed register are **ever** mismatched in the first phase, a storage error is signaled to the hardware using the `err_storage` signal.
 
-For added security, the staged and shadow registers store the ones' complement values of the write data (if the write data is `0x33`, `0xCC` is stored in the staged and shadow register).
+For added security, the shadow register stores the ones' complement value of the write data (e.g. if the write data is `0x33`, `0xCC` is stored in the shadow register).
 This is done such that it is more difficult for a localized glitch to cause shadow and committed registers to become the same value.
 
 ### Programmer's model
@@ -943,11 +973,14 @@ If the two write operations required for an update are for some reason interleav
 Such situations can be avoided by using some form of mutex at the driver level for example.
 Alternatively, software can enforce exclusive shadow register access by temporarily disabling interrupts with a sequence as follows:
 1. Disable interrupt context.
+   This may not always be possible, e.g., for software running in user mode.
+
 1. Perform 1st write to shadow register.
 1. Perform 2nd write to shadow register.
 1. Read back the shadow register to ensure data matches the expected value.
-   This step is not strictly required.
-   It helps to identify update errors and can unveil potential fault attacks on the write data lines during process of the write.
+   This helps to identify update errors and can unveil potential fault attacks on the write data lines during the write operation.
+   If interrupts can be disabled, this step is not strictly required.
+
 1. Restore interrupt context.
 
 By performing a read operation, software can at any time put the shadow register back into the first phase, thereby preventing that a subsequent write triggers an update error, and recovering from situations where it is not clear in which phase the register is.
@@ -959,9 +992,25 @@ In addition, error status registers can be added to inform software about update
 
 The following aspects need to be considered when integrating shadow registers into the system.
 
+- Shadow register reset:
+
+  Shadow registers use a separate shadow reset from the committed register.
+  This implies that each module which contains shadow registers will receive two reset lines from the reset controller.
+  The benefit is that a localized reset glitch attack will need to hit both reset lines, otherwise a storage error is triggered.
+
+  Reset skew may need to be handled separately.
+  Depending on the design, the reset propagation **may** be multi-cycle, and thus it is possible for the shadow register and committed register to not be reset at the same time when resets are asserted.
+  This may manifest as an issue if the reset skews are **not** balanced, and may cause register outputs to change on the opposite sides of a clock edge for the receiving domain.
+  It is thus important to ensure the skews of the committed and shadow reset lines to be roughly balanced and/or downstream logic to correctly ignore errors when this happens.
+  Note that a module may need to be reset during operation of the system, i.e., when the [alert system](../../hw/top_earlgrey/ip_autogen/alert_handler/README.md) is running.
+
+  Software-controllable resets should be avoided.
+  If a single reset bit drives both normal and shadow resets, then the problem is simply moved to a different place.
+  If multiple reset bits drive the resets, then it becomes a question of what resets those reset bits, which may itself have the same issue.
+
 - Non-permissive reset values:
 
-  A fault attack on the reset line can reset the staged, shadow and committed registers altogether and not generate an error.
+  Depending on the implementation of the system reset architecture, a fault attack on the main reset line may reset shadow and committed registers altogether and not generate an error.
   It may remain undetected by the system.
   It is thus **highly recommended** to use non-permissive reset values and use software for configuring more permissive values.
 
@@ -973,16 +1022,20 @@ The following aspects need to be considered when integrating shadow registers in
 - Hardware and software cost:
 
   Shadow registers are costly as they imply considerable overheads in terms of circuit area as well as software complexity and performance.
-  They should not be used lightly nor extensively.
+  They should not be used lightly nor extensively, and their usage should be reviewed with the actual use case of the register or hardware IP block in mind.
   For example, if a register is reconfigured frequently, using restrictive reset values, possibly combined with parity bits and/or with verification of the register value after writing, might be more suitable.
   In contrast, for registers that are more static the performance overhead of shadow registers is negligible.
   Also, for some registers it is not possible to define restrictive reset values, e.g., due to process variation.
   The use of shadow registers is more justified in such cases.
   Example use cases for shadow registers are:
-  - Main control registers of cryptographic accelerators such as AES and HMAC where fault attacks could enforce potentially less secure operating modes.
+  - Main control registers of cryptographic accelerators such as AES and KMAC where fault attacks could enforce potentially less secure operating modes.
   - Critical and security-related infrastructure such as:
     - Alert escalation and sensor configuration registers, and
     - Countermeasure tuning and functional/bandgap calibration registers.
+
+  To guard larger register files against fault attacks, the following alternative solutions may be more appropriate:
+  - Hardware-based background checks: The hardware can concurrently or periodically compute a checksum over relevant configuration values and compare that against a software-provided checksum value (see e.g. [OTP_CTRL integrity checks](../../hw/top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#integrity))
+  - Software-based checks: Software can periodically read relevant configuration values, compute a checksum and compare that against a known value, e.g. stored in OTP (see e.g. [ENTROPY_SRC health test configuration checks](https://github.com/lowRISC/opentitan/blob/4903e329a0847ec282f42f558974de37fec7c7d6/sw/device/silicon_creator/rom/rom.c#L457)).
 
 ### DV shadow register alert test automation
 
@@ -998,36 +1051,13 @@ The following features are currently not implemented but might be added in the f
 - Lightweight implementations:
 
   Depending on the use case and security requirements, lightweight shadow register implementations can be more suitable.
-  Possible options include:
-  - Storing only a hash value or parity bits in the staged and/or shadow register instead of the full data word.
-    This can help to reduce circuit area overheads but may weaken security.
-  - Removing the staged register and relying on software to verify the written value.
-    This helps to reduce circuit area but increases software complexity.
-    If lower security can be tolerated, avoiding the read back after a write can make this implementation transparent to software.
-  - A combination of the two options.
-    For example, removing the staged register and storing parity bits only in the shadow register may be suitable for physical memory protection (PMP) registers.
+  For example, storing only a hash value or ECC/parity bits in the shadow register instead of the full data word can help to reduce circuit area overheads but may weaken security.
 
 - Ones' complement inversion in software:
 
   The ones' complement inversion could be done in software.
   This means software would first write the ones' complement of the data and only the second write would be the real data.
   This may make following bus dumps easier because the data values will be different.
-
-- Shadow resets:
-
-  Staged and shadow registers could use a separate shadow reset from the committed register.
-  This would imply that each module which contains shadow registers will receive two reset lines from the reset controller.
-  The benefit is that a localized reset glitch attack will need to hit both reset lines, otherwise a storage error is triggered.
-
-  Reset skew may need to be handled separately.
-  Depending on the design, the reset propagation **may** be multi-cycle, and thus it is possible for the shadow register and committed register to not be reset at the same time when resets are asserted.
-  This may manifest as an issue if the reset skews are **not** balanced, and may cause register outputs to change on the opposite sides of a clock edge for the receiving domain.
-  It is thus important to ensure the skews of the committed and shadow reset lines to be roughly balanced and/or downstream logic to correctly ignore errors when this happens.
-  Note that a module may need to be reset during operation of the system, i.e., when the [alert system](../../hw/top_earlgrey/ip_autogen/alert_handler/README.md) is running.
-
-  Software-controllable resets should be avoided.
-  If a single reset bit drives both normal and shadow resets, then the problem is simply moved to a different place.
-  If multiple reset bits drive the resets, then it becomes a question of what resets those reset bits, which may itself have the same issue.
 
 ## Generating C Header Files
 

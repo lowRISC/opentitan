@@ -7,7 +7,9 @@ pub mod ef;
 pub mod escape;
 pub mod helper;
 pub mod key;
+pub mod secret;
 pub mod signing;
+pub mod wrap;
 
 /// The `testdata` function can be used in tests to reference testdata directories.
 #[cfg(test)]

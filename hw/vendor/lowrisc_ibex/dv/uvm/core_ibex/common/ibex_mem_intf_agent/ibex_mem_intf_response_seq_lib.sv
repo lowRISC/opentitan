@@ -178,7 +178,7 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
   endfunction
 
   // Read a word of DATA_WIDTH bits from addr.
-  // Handle reads fromm uninit memory as follows:
+  // Handle reads from uninit memory as follows:
   // - DMEM : return a random value
   // - IMEM : return {2{C.unimp}}
   protected function logic [DATA_WIDTH-1:0] read(bit [ADDR_WIDTH-1:0] addr,

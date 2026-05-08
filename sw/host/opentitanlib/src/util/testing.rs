@@ -11,7 +11,7 @@ use std::task::{Poll, ready};
 use anyhow::{Context, Result, anyhow};
 use tokio::io::AsyncRead;
 
-use crate::io::uart::Uart;
+use crate::io::console::ConsoleDevice;
 use crate::util::runtime::MultiWaker;
 
 // The transfer state allows us to intentionally inject errors into
@@ -44,7 +44,7 @@ impl TransferState {
 }
 // A convenience wrapper for spawning a child process and
 // interacting with its stdin/stdout.
-pub struct ChildUart {
+pub struct ChildConsole {
     child: RefCell<std::process::Child>,
     stdout: Option<RefCell<tokio::process::ChildStdout>>,
     rd: RefCell<TransferState>,
@@ -52,7 +52,7 @@ pub struct ChildUart {
     multi_waker: MultiWaker,
 }
 
-impl ChildUart {
+impl ChildConsole {
     pub fn spawn_corrupt<S: AsRef<OsStr>>(
         argv: &[S],
         rd: TransferState,
@@ -72,7 +72,7 @@ impl ChildUart {
             Some(v) => Some(RefCell::new(tokio::process::ChildStdout::from_std(v)?)),
             None => None,
         };
-        Ok(ChildUart {
+        Ok(ChildConsole {
             child: RefCell::new(child),
             stdout,
             rd: RefCell::new(rd),
@@ -91,13 +91,7 @@ impl ChildUart {
     }
 }
 
-impl Uart for ChildUart {
-    fn get_baudrate(&self) -> Result<u32> {
-        Err(anyhow!("Not implemented"))
-    }
-    fn set_baudrate(&self, _baudrate: u32) -> Result<()> {
-        Err(anyhow!("Not implemented"))
-    }
+impl ConsoleDevice for ChildConsole {
     fn poll_read(&self, cx: &mut std::task::Context<'_>, buf: &mut [u8]) -> Poll<Result<usize>> {
         let mut stdout = self
             .stdout

@@ -111,15 +111,15 @@ bool test_main(void) {
     // The secret partition must be 64b aligned...for some reason.
     // Figure out that part later.
     enum {
-      kFlashAddrKeyOffset = OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET -
+      kFlashAddrKeyOffset = OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_OFFSET -
                             OTP_CTRL_PARAM_SECRET1_OFFSET,
-      kFlashDataKeyOffset = OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET -
+      kFlashDataKeyOffset = OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_OFFSET -
                             OTP_CTRL_PARAM_SECRET1_OFFSET,
       kSramDataKeyOffset = OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET -
                            OTP_CTRL_PARAM_SECRET1_OFFSET
     };
 
-    for (uint32_t i = 0; i < OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE;
+    for (uint32_t i = 0; i < OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_SIZE;
          i += kFlashWordSize) {
       uint64_t val =
           (uint64_t)rand_testutils_gen32() << 32 | rand_testutils_gen32();
@@ -130,7 +130,7 @@ bool test_main(void) {
       CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
-    for (uint32_t i = 0; i < OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE;
+    for (uint32_t i = 0; i < OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_SIZE;
          i += kFlashWordSize) {
       uint64_t val =
           (uint64_t)rand_testutils_gen32() << 32 | rand_testutils_gen32();

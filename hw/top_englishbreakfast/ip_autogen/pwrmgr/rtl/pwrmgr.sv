@@ -56,8 +56,8 @@ module pwrmgr
   input  lc_ctrl_pkg::pwr_lc_rsp_t pwr_lc_i,
   output lc_ctrl_pkg::pwr_lc_req_t pwr_lc_o,
 
-  // flash interface
-  input  pwr_flash_t pwr_flash_i,
+  // NVM interface
+  input  pwr_nvm_t pwr_nvm_i,
 
   // processor interface
   input  rv_core_ibex_pkg::cpu_pwrmgr_t pwr_cpu_i,
@@ -271,7 +271,7 @@ module pwrmgr
   logic low_power_fall_through;
   logic low_power_abort;
 
-  pwr_flash_t flash_rsp;
+  pwr_nvm_t nvm_rsp;
   pwr_otp_rsp_t otp_rsp;
 
   prim_mubi_pkg::mubi4_t [NumRomInputs-1:0] rom_ctrl_done_async;
@@ -467,9 +467,9 @@ module pwrmgr
     // peripheral signals
     .peri_i(peri_reqs_raw),
 
-    // flash handshake
-    .flash_i(pwr_flash_i),
-    .flash_o(flash_rsp),
+    // NVM handshake
+    .nvm_i(pwr_nvm_i),
+    .nvm_o(nvm_rsp),
 
     // OTP signals
     .otp_i(pwr_otp_i),
@@ -652,8 +652,8 @@ module pwrmgr
     .lc_dft_en_i       (lc_dft_en),
     .lc_hw_debug_en_i  (lc_hw_debug_en),
 
-    // flash
-    .flash_idle_i      (flash_rsp.flash_idle),
+    // NVM
+    .nvm_idle_i        (nvm_rsp.nvm_idle),
 
     // rom_ctrl
     .rom_ctrl_done_i   (rom_ctrl_done_combined),

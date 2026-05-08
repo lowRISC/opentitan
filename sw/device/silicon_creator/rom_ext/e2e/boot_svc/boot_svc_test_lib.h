@@ -19,11 +19,14 @@ typedef enum boot_svc_test {
 typedef enum boot_svc_test_state {
   kBootSvcTestStateInit = 0,
   kBootSvcTestStateCheckEmpty,
+  kBootSvcTestStateEmptyRes,
+  kBootSvcTestStateInvalidMsg,
   kBootSvcTestStateNextSideB,
   kBootSvcTestStateReturnSideA,
   kBootSvcTestStateMinSecAdvance,
   kBootSvcTestStateMinSecTooFar,
   kBootSvcTestStateMinSecGoBack,
+  kBootSvcTestStateEnterRescue,
   kBootSvcTestStateFinal,
 } boot_svc_test_state_t;
 

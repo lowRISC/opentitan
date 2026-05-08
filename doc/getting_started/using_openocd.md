@@ -15,8 +15,8 @@ Currently, we only expose OpenTitan's default JTAG adapter config as `//third_pa
 
 ```sh
 # Manually run OpenOCD:
-./bazelisk.sh run //third_party/openocd -- arg1 arg2
+bazel run //third_party/openocd -- arg1 arg2
 
 # Get the path of the OpenOCD binary:
-./bazelisk.sh outquery //third_party/openocd:openocd_bin
+bazel outquery //third_party/openocd:openocd_bin
 ```

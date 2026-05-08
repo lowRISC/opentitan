@@ -47,7 +47,7 @@ module ibex_controller #(
   input  logic                  instr_exec_i,            // Execution control, when clear ID/EX
                                                          // stage stops accepting instructions from
                                                          // IF
-  // to prefetcher
+  // to prefetch
   output logic                  instr_req_o,             // start fetching instructions
   output logic                  pc_set_o,                // jump to address set by pc_mux
   output ibex_pkg::pc_sel_e     pc_mux_o,                // IF stage fetch address selector
@@ -76,7 +76,7 @@ module ibex_controller #(
   input  logic                  irq_pending_i,           // interrupt request pending
   input  ibex_pkg::irqs_t       irqs_i,                  // interrupt requests qualified with
                                                          // mie CSR
-  input  logic                  irq_nm_ext_i,            // non-maskeable interrupt
+  input  logic                  irq_nm_ext_i,            // non-maskable interrupt
   output logic                  nmi_mode_o,              // core executing NMI handler
 
   // debug signals
@@ -248,7 +248,7 @@ module ibex_controller #(
 
       // Note that with the writeback stage store/load errors occur on the instruction in writeback,
       // all other exception/faults occur on the instruction in ID/EX. The faults from writeback
-      // must take priority as that instruction is architecurally ordered before the one in ID/EX.
+      // must take priority as that instruction is architecturally ordered before the one in ID/EX.
       if (store_err_q) begin
         store_err_prio = 1'b1;
       end else if (load_err_q) begin
@@ -317,7 +317,7 @@ module ibex_controller #(
 
     assign entering_nmi = nmi_mode_d & ~nmi_mode_q;
 
-    // Load integerity error internal interrupt
+    // Load integrity error internal interrupt
     always_comb begin
       mem_resp_intg_err_addr_d        = mem_resp_intg_err_addr_q;
       mem_resp_intg_err_irq_set       = 1'b0;
@@ -428,7 +428,7 @@ module ibex_controller #(
 
   // Record the debug cause outside of the FSM
   // The decision to enter debug_mode and the write of the cause to DCSR happen
-  // in seperate steps within the FSM. Hence, there are a small number of cycles
+  // in separate steps within the FSM. Hence, there are a small number of cycles
   // where a change in external stimulus can cause the cause to be recorded incorrectly.
   assign debug_cause_d = trigger_match_i                    ? DBG_CAUSE_TRIGGER :
                          ebrk_insn_prio & ebreak_into_debug ? DBG_CAUSE_EBREAK  :
@@ -935,7 +935,7 @@ module ibex_controller #(
     debug_mode_d != debug_mode_q |-> flush_id_o & pc_set_o)
 
   `ifdef RVFI
-    // Workaround for internal verilator error when using hierarchical refers to calcuate this
+    // Workaround for internal verilator error when using hierarchical refers to calculate this
     // directly in ibex_core
     logic rvfi_flush_next;
 

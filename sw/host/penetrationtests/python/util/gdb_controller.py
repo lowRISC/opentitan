@@ -17,7 +17,6 @@ class GDBController:
         self.gdb_path = gdb_path
         gdb_command = [
             gdb_path,
-            # "--interpreter=mi",
             "-ex",
             f"target remote {remote_host}:{gdb_port}",
         ]
@@ -45,27 +44,40 @@ class GDBController:
             return ""
 
         output = ""
-
         readable_pipes = []
         if self.gdb_process.stdout:
             readable_pipes.append(self.gdb_process.stdout.fileno())
         if self.gdb_process.stderr:
             readable_pipes.append(self.gdb_process.stderr.fileno())
 
-        try:
-            readable, _, _ = select.select(readable_pipes, [], [], timeout)
+        while True:
+            try:
+                current_timeout = timeout if output == "" else 0
+                readable, _, _ = select.select(readable_pipes, [], [], current_timeout)
 
-            for fd in readable:
-                if fd == self.gdb_process.stdout.fileno():
-                    data = os.read(fd, 4096).decode("utf-8", errors="ignore")
-                    output += data
-                elif fd == self.gdb_process.stderr.fileno():
-                    # GDB uses stderr for logging/errors
-                    err_data = os.read(fd, 4096).decode("utf-8", errors="ignore")
-                    if print_errors:
-                        print(f"GDB Stderr: {err_data}")
-        except Exception as e:
-            print(f"Error reading GDB output: {e}")
+                if not readable:
+                    break
+
+                data_read = False
+                for fd in readable:
+                    if fd == self.gdb_process.stdout.fileno():
+                        chunk = os.read(fd, 4096).decode("utf-8", errors="ignore")
+                        if chunk:
+                            output += chunk
+                            data_read = True
+                    elif fd == self.gdb_process.stderr.fileno():
+                        err_chunk = os.read(fd, 4096).decode("utf-8", errors="ignore")
+                        if err_chunk:
+                            if print_errors:
+                                print(f"GDB Stderr: {err_chunk}")
+                            data_read = True
+
+                if not data_read:
+                    break
+
+            except Exception as e:
+                print(f"Error reading GDB output: {e}")
+                break
 
         return output
 
@@ -79,7 +91,7 @@ class GDBController:
         command_line = mi_command.strip() + "\n"
 
         self.gdb_process.stdin.write(command_line.encode("utf-8"))
-        # Aria: After sending the command let's wait for a while till the command is
+        # After sending the command let's wait for a while till the command is
         # processed on the receiving end
         time.sleep(0.1)
 
@@ -106,19 +118,22 @@ class GDBController:
         else:
             return None
 
-    def reset_target(self, reset_delay=0.005):
-        self.send_command("monitor reset run", check_response=False)
+    def reset_target(self, halt=True, reset_delay=0.005):
+        if halt:
+            self.send_command("monitor reset halt", check_response=False)
+        else:
+            self.send_command("monitor reset run", check_response=False)
         time.sleep(reset_delay)
         self.dump_output()
 
-    def close_gdb(self):
+    def close_gdb(self, timeout=1):
         if not self.gdb_process or self.gdb_process.poll() is not None:
             return
 
         self.dump_output()
         self.gdb_process.send_signal(signal.SIGINT)
         try:
-            self.gdb_process.communicate(timeout=1)
+            self.gdb_process.communicate(timeout=timeout)
         except TimeoutExpired:
             self.gdb_process.kill()
             self.gdb_process.communicate()
@@ -140,12 +155,25 @@ class GDBController:
         except Exception:
             return None
 
-    def setup_pc_trace(self, file_name, trace_start_addr, trace_end_addr):
+    def setup_pc_trace(self, file_name, trace_start_addr, trace_end_addr, skip_addrs=None):
         self.n_brkp = 1
         self.send_command(f"set logging file {file_name}")
         self.send_command("set logging overwrite on")
         self.send_command("set pagination off")
-        self.send_command("set logging enabled on")
+        self.send_command("set logging on")
+
+        step_logic = "stepi"
+        if skip_addrs:
+            for addr in skip_addrs:
+                step_logic = f"""
+                if $pc == {addr}
+                    tbreak *$ra
+                    c
+                else
+                    {step_logic}
+                end
+                """
+
         traceloop_definition = f"""\
         define traceloop
             while 1
@@ -154,10 +182,11 @@ class GDBController:
                     return
                 end
                 printf "PC: 0x%x\\n", $pc
-                stepi
+                {step_logic}
             end
         end
         """
+
         self.send_command(traceloop_definition)
         self.send_command(f"tb *({trace_start_addr})")
         commands_definition = "commands 1\ntraceloop\nend"

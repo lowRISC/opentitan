@@ -341,6 +341,11 @@ class usbdev_bfm extends uvm_component;
   // USB-side bus events.
   //------------------------------------------------------------------------------------------------
   // Bus Reset from host/hub.
+  //
+  // - some actions occur as soon as the SE0 state has been detected for long enough to be certain
+  //   that this is a Bus Reset (not a Low Speed EOP, for example); at this point `completed` is 0.
+  // - once the end of Bus Reset signaling is observed by the DUT, this function shall be called
+  //   with `completed` set to 1.
   function void bus_reset(bit completed = 1'b1);
     out_toggles = 0;
     in_toggles = 0;
@@ -363,11 +368,11 @@ class usbdev_bfm extends uvm_component;
     // Link state changes occur only when the Reset Signaling is complete.
     if (powered && sense && enable) begin
       if (completed) begin
-        link_state = LinkActiveNoSOF;
         if (link_state == LinkSuspended || link_state == LinkResuming) begin
           // Bus Reset also implies the end of Suspend/Resume Signaling.
           intr_state[IntrLinkResume] = 1'b1;
         end
+        link_state = LinkActiveNoSOF;
       end else begin
         // The DUT detects Bus Reset as 'non-Idle' too.
         if (link_state == LinkPoweredSuspended || link_state == LinkSuspended) begin
@@ -409,8 +414,12 @@ class usbdev_bfm extends uvm_component;
   // VBUS/SENSE connection event.
   function void bus_connect();
     sense = 1'b1;
-    if (powered && enable) link_state = LinkPowered;
-    intr_state[IntrPowered] = 1'b1;
+    if (powered) begin
+      // The 'powered' link state reflects VBUS assertion with pullup enabled.
+      if (enable) link_state = LinkPowered;
+      // An interrupt is raised when VBUS becomes asserted, irrespective of the pullup state.
+      intr_state[IntrPowered] = 1'b1;
+    end
   endfunction
 
   // VBUS/SENSE disconnection event.

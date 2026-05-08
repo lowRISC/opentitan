@@ -49,4 +49,14 @@ OT_WARN_UNUSED_RESULT
 status_t entropy_src_testutils_disable_health_tests(
     dif_entropy_src_t *entropy_src);
 
+/**
+ * Calculates CRC32 over the configured entropy_src health test and alert
+ * thresholds.
+ *
+ * Note: To obtain the digest value ROM expects to read from OTP, kErrorOk needs
+ * to be XORed with the return value of this function.
+ */
+OT_WARN_UNUSED_RESULT
+uint32_t entropy_src_config_crc32(dif_entropy_src_t *entropy_src);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_SRC_TESTUTILS_H_

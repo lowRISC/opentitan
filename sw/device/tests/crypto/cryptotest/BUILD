@@ -28,7 +28,7 @@ cryptotest(
 )
 
 cryptotest(
-    name = "acvp_hmac_sha256",
+    name = "hmac_sha256_acvp",
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json)\"",
         "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json)\"",
@@ -37,6 +37,32 @@ cryptotest(
     test_vectors = [
         "//sw/host/cryptotest/testvectors/acvp:hmac_sha256_vectors.json",
         "//sw/host/cryptotest/testvectors/acvp:hmac_sha256_expected.json",
+    ],
+)
+
+cryptotest(
+    name = "cshake_acvp",
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:cshake_vectors.json)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:cshake_expected.json)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:cshake_vectors.json",
+        "//sw/host/cryptotest/testvectors/acvp:cshake_expected.json",
+    ],
+)
+
+cryptotest(
+    name = "rsa_acvp",
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_vectors.json)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_expected.json)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:rsa_vectors.json",
+        "//sw/host/cryptotest/testvectors/acvp:rsa_expected.json",
     ],
 )
 
@@ -186,7 +212,6 @@ RSA_TESTVECTOR_TARGETS = [
     for hash in [
         "sha256_mgf1_32",
         "sha384_mgf1_48",
-        "sha512_mgf1_32",
         "sha512_mgf1_64",
     ]
 ] + [
@@ -208,6 +233,61 @@ RSA_TESTVECTOR_TARGETS = [
         "sha256_mgf1sha256",
         "sha512_mgf1sha512",
     ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_{}_{}_{}_sign.json".format(
+        padding_mode,
+        security_level,
+        hash_suffix,
+    )
+    for security_level, hash_suffixes in [
+        (
+            2048,
+            [
+                "sha256",
+                "sha384",
+                "sha512",
+            ],
+        ),
+        (
+            3072,
+            [
+                "sha256",
+                "sha512",
+            ],
+        ),
+        (
+            4096,
+            [
+                "sha256",
+                "sha512",
+            ],
+        ),
+    ]
+    for hash_suffix in hash_suffixes
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_{}_{}_{}_sign.json".format(
+        padding_mode,
+        security_level,
+        hash_suffix,
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for hash_suffix in [
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ]
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+    ]
 ]
 
 RSA_TESTVECTOR_ARGS = " ".join([
@@ -221,6 +301,14 @@ cryptotest(
     test_args = RSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
     test_vectors = RSA_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "rsa_keygen_kat",
+    slow_test = True,
+    test_args = "--run-keygen",
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = [],
 )
 
 SHA256_TESTVECTOR_TARGETS = [
@@ -585,15 +673,20 @@ cryptotest(
 test_suite(
     name = "crypto_kat_test_suite",
     tests = [
+        ":aes_gcm_kat",
         ":aes_kat",
+        ":cshake_acvp",
         ":cshake_kat",
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
+        ":hmac_sha256_acvp",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
+        ":rsa_acvp",
+        ":rsa_kat",
         ":sha256_kat",
         ":sha384_kat",
         ":sha3_224_kat",

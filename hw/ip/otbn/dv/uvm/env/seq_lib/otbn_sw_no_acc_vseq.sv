@@ -2,12 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// A sequence that writes to 1st Kib of address in DMEM which is inaccessible on TLUL.
+// A sequence that writes to an address of DMEM which is inaccessible on TLUL (a write to the
+// scratchpad).
 
 class otbn_sw_no_acc_vseq extends otbn_single_vseq;
   `uvm_object_utils(otbn_sw_no_acc_vseq)
 
   `uvm_object_new
+
+  localparam int DmemAddrWidth = vbits(otbn_reg_pkg::OTBN_DMEM_SIZE +
+                                       otbn_pkg::DmemScratchSizeByte);
 
   task body();
     bit write;
@@ -17,7 +21,15 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
     logic [127:0]    key;
     logic [63:0]     nonce;
     bit [31:0] err_val = 32'd1 << 21;
-    bit [11:0] offset;
+    logic [DmemAddrWidth-1:0] offset;
+    // The scratchpad starts after the visible DMEM
+    logic [DmemAddrWidth-1:0] ScratchStartAddr = otbn_reg_pkg::OTBN_DMEM_OFFSET +
+                                                 otbn_reg_pkg::OTBN_DMEM_SIZE;
+    // This is the highest possible DMEM address. Note that this can exceed the address space
+    // assigned to OTBN in a top like Earl Grey. But DV tests without the address space limitations
+    // a top design so we should test the full range.
+    logic [DmemAddrWidth-1:0] OtbnTopRegAddr = ScratchStartAddr +
+                                               otbn_pkg::DmemScratchSizeByte - 'h4;
 
     key = cfg.get_dmem_key();
     nonce = cfg.get_dmem_nonce();
@@ -26,10 +38,10 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data, $countones(data) != BUS_DW;)
     `DV_CHECK_STD_RANDOMIZE_FATAL(write)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(offset,
-                                       offset dist {12'hC00           :/ 5,
-                                                    [12'hC00:12'hFFC] :/ 1,
-                                                    12'hFFC           :/ 5};)
-    addr = cfg.ral.get_addr_from_offset('h8000 + offset);
+                                       offset dist {ScratchStartAddr                  :/ 5,
+                                                    [ScratchStartAddr:OtbnTopRegAddr] :/ 1,
+                                                    OtbnTopRegAddr                    :/ 5};)
+    addr = cfg.ral.get_addr_from_offset(otbn_reg_pkg::OTBN_DMEM_OFFSET + offset);
     `uvm_info(`gfn, $sformatf("addr = %h", addr), UVM_LOW)
 
     super.body();

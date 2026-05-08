@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_RND_H_
 
 #include "sw/device/lib/base/global_mock.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
@@ -17,7 +18,8 @@ namespace internal {
  */
 class MockRnd : public global_mock::GlobalMock<MockRnd> {
  public:
-  MOCK_METHOD(rom_error_t, HealthConfigCheck, (lifecycle_state_t));
+  MOCK_METHOD(rom_error_t, HealthConfigCheck,
+              (lifecycle_state_t, hardened_bool_t));
   MOCK_METHOD(uint32_t, Uint32, ());
 };
 

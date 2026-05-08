@@ -12,9 +12,7 @@
 // inout clk
 // inout rst_n
 
-interface clk_rst_if #(
-  parameter string IfName = "main"
-) (
+interface clk_rst_if (
   inout clk,
   inout rst_n
 );
@@ -101,8 +99,7 @@ interface clk_rst_if #(
   // If true, this is the only clock in the system; there is no need to add initial jitter.
   bit sole_clock = 1'b0;
 
-  // use IfName as a part of msgs to indicate which clk_rst_vif instance
-  string msg_id = $sformatf("[%m(clk_rst_if):%s]", IfName);
+  string msg_id = $sformatf("[%m(clk_rst_if)]");
 
   clocking cb @(posedge clk);
   endclocking
@@ -139,15 +136,19 @@ interface clk_rst_if #(
 
   // set the clk frequency in khz
   function automatic void set_freq_khz(int freq_khz);
-    `DV_CHECK_FATAL(freq_khz > 0, , msg_id)
     clk_freq_mhz = $itor(freq_khz) / 1000;
+    if (drive_clk && clk_freq_mhz <= 0) begin
+      `uvm_fatal(msg_id, "Since drive_clk is true, freq_mhz must be greater than zero.")
+    end
     clk_period_ps = 1000_000 / clk_freq_mhz;
     recompute = 1'b1;
   endfunction
 
   // set the clk frequency in mhz
   function automatic void set_freq_mhz(int freq_mhz);
-    `DV_CHECK_FATAL(freq_mhz > 0, , msg_id)
+    if (drive_clk && freq_mhz <= 0) begin
+      `uvm_fatal(msg_id, "Since drive_clk is true, freq_mhz must be greater than zero.")
+    end
     set_freq_khz(freq_mhz * 1000);
   endfunction
 
@@ -169,6 +170,10 @@ interface clk_rst_if #(
 
   // Enables the clock and reset to be driven.
   function automatic void set_active(bit drive_clk_val = 1'b1, bit drive_rst_n_val = 1'b1);
+    if (drive_clk_val && clk_freq_mhz <= 0) begin
+      `uvm_fatal(msg_id, "Cannot enable drive_clk unless clk_freq_mhz is greater than zero.")
+    end
+
     drive_clk = drive_clk_val;
     drive_rst_n = drive_rst_n_val;
     -> set_active_called;

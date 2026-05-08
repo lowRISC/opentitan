@@ -28,50 +28,50 @@
 #include <stdint.h>
 
 #if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top/dt/dt_adc_ctrl.h"     // Generated
-#include "hw/top/dt/dt_entropy_src.h"  // Generated
-#include "hw/top/dt/dt_flash_ctrl.h"   // Generated
-#include "hw/top/dt/dt_keymgr.h"       // Generated
-#include "hw/top/dt/dt_pattgen.h"      // Generated
-#include "hw/top/dt/dt_pwm.h"          // Generated
-#include "hw/top/dt/dt_sensor_ctrl.h"  // Generated
-#include "hw/top/dt/dt_sysrst_ctrl.h"  // Generated
-#include "hw/top/dt/dt_usbdev.h"       // Generated
+#include "hw/top/dt/adc_ctrl.h"     // Generated
+#include "hw/top/dt/entropy_src.h"  // Generated
+#include "hw/top/dt/flash_ctrl.h"   // Generated
+#include "hw/top/dt/keymgr.h"       // Generated
+#include "hw/top/dt/pattgen.h"      // Generated
+#include "hw/top/dt/pwm.h"          // Generated
+#include "hw/top/dt/sensor_ctrl.h"  // Generated
+#include "hw/top/dt/sysrst_ctrl.h"  // Generated
+#include "hw/top/dt/usbdev.h"       // Generated
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top/dt/dt_keymgr_dpe.h"  // Generated
+#include "hw/top/dt/keymgr_dpe.h"  // Generated
 #else
 #error "all_escalation_resets_test does not support this top"
 #endif
 
-#include "hw/top/dt/dt_aes.h"            // Generated
-#include "hw/top/dt/dt_alert_handler.h"  // Generated
-#include "hw/top/dt/dt_aon_timer.h"      // Generated
-#include "hw/top/dt/dt_api.h"            // Generated
-#include "hw/top/dt/dt_clkmgr.h"         // Generated
-#include "hw/top/dt/dt_csrng.h"          // Generated
-#include "hw/top/dt/dt_edn.h"            // Generated
-#include "hw/top/dt/dt_gpio.h"           // Generated
-#include "hw/top/dt/dt_hmac.h"           // Generated
-#include "hw/top/dt/dt_i2c.h"            // Generated
-#include "hw/top/dt/dt_kmac.h"           // Generated
-#include "hw/top/dt/dt_lc_ctrl.h"        // Generated
-#include "hw/top/dt/dt_otbn.h"           // Generated
-#include "hw/top/dt/dt_otp_ctrl.h"       // Generated
-#include "hw/top/dt/dt_pinmux.h"         // Generated
-#include "hw/top/dt/dt_pwrmgr.h"         // Generated
-#include "hw/top/dt/dt_rom_ctrl.h"       // Generated
-#include "hw/top/dt/dt_rstmgr.h"         // Generated
-#include "hw/top/dt/dt_rv_core_ibex.h"   // Generated
-#include "hw/top/dt/dt_rv_dm.h"          // Generated
-#include "hw/top/dt/dt_rv_plic.h"        // Generated
-#include "hw/top/dt/dt_rv_timer.h"       // Generated
-#include "hw/top/dt/dt_spi_device.h"     // Generated
-#include "hw/top/dt/dt_spi_host.h"       // Generated
-#include "hw/top/dt/dt_sram_ctrl.h"      // Generated
-#include "hw/top/dt/dt_uart.h"           // Generated
+#include "hw/top/dt/aes.h"            // Generated
+#include "hw/top/dt/alert_handler.h"  // Generated
+#include "hw/top/dt/aon_timer.h"      // Generated
+#include "hw/top/dt/api.h"            // Generated
+#include "hw/top/dt/clkmgr.h"         // Generated
+#include "hw/top/dt/csrng.h"          // Generated
+#include "hw/top/dt/edn.h"            // Generated
+#include "hw/top/dt/gpio.h"           // Generated
+#include "hw/top/dt/hmac.h"           // Generated
+#include "hw/top/dt/i2c.h"            // Generated
+#include "hw/top/dt/kmac.h"           // Generated
+#include "hw/top/dt/lc_ctrl.h"        // Generated
+#include "hw/top/dt/otbn.h"           // Generated
+#include "hw/top/dt/otp_ctrl.h"       // Generated
+#include "hw/top/dt/pinmux.h"         // Generated
+#include "hw/top/dt/pwrmgr.h"         // Generated
+#include "hw/top/dt/rom_ctrl.h"       // Generated
+#include "hw/top/dt/rstmgr.h"         // Generated
+#include "hw/top/dt/rv_core_ibex.h"   // Generated
+#include "hw/top/dt/rv_dm.h"          // Generated
+#include "hw/top/dt/rv_plic.h"        // Generated
+#include "hw/top/dt/rv_timer.h"       // Generated
+#include "hw/top/dt/spi_device.h"     // Generated
+#include "hw/top/dt/spi_host.h"       // Generated
+#include "hw/top/dt/sram_ctrl.h"      // Generated
+#include "hw/top/dt/uart.h"           // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"

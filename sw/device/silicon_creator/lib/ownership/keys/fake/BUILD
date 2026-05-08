@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -11,13 +12,16 @@ cc_library(
     testonly = True,
     hdrs = [
         "activate_ecdsa_p256.h",
+        "activate_spx.h",
         "app_dev_ecdsa_p256.h",
         "app_dev_spx.h",
         "app_prod_ecdsa_p256.h",
         "app_prod_spx.h",
         "app_test_ecdsa_p256.h",
         "owner_ecdsa_p256.h",
+        "owner_spx.h",
         "unlock_ecdsa_p256.h",
+        "unlock_spx.h",
     ],
 )
 
@@ -61,18 +65,29 @@ filegroup(
 )
 
 filegroup(
-    name = "app_ecdsa_prod",
-    srcs = ["app_prod_ecdsa_p256.der"],
+    name = "owner_key_spx",
+    srcs = ["owner_spx.pem"],
 )
 
+filegroup(
+    name = "owner_key_spx_pub",
+    srcs = ["owner_spx.pub.pem"],
+)
+
+filegroup(
+    name = "activate_key_spx",
+    srcs = ["activate_spx.pem"],
+)
+
+filegroup(
+    name = "unlock_key_spx",
+    srcs = ["unlock_spx.pem"],
+)
+
+# The ownership e2e tests need access to both the app_prod_ecdsa and app_dev_pub public key files below.
 filegroup(
     name = "app_prod_ecdsa_pub",
     srcs = ["app_prod_ecdsa_p256.pub.der"],
-)
-
-filegroup(
-    name = "app_dev",
-    srcs = ["app_dev_ecdsa_p256.der"],
 )
 
 filegroup(
@@ -80,58 +95,46 @@ filegroup(
     srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
-key_ecdsa(
-    name = "app_prod_ecdsa",
-    config = "EcdsaP256",
-    method = "local",
-    private_key = "app_prod_ecdsa_p256.der",
-    pub_key = "app_prod_ecdsa_p256.pub.der",
-    type = "ProdKey",
+pkg_files(
+    name = "fpga_dev_files",
+    testonly = True,
+    srcs = [
+        ":app_dev_pub",
+        ":app_prod_ecdsa_pub",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
+    ],
 )
 
-key_sphincs_plus(
-    name = "app_prod_spx",
-    config = "Sha2128s",
-    method = "local",
-    private_key = "app_prod_spx.pem",
-    pub_key = "app_prod_spx.pub.pem",
-    type = "ProdKey",
+pkg_filegroup(
+    name = "fpga_dev_pkg",
+    testonly = True,
+    srcs = [
+        ":fpga_dev_files",
+    ],
+    prefix = "fake_keys",
 )
 
-key_ecdsa(
-    name = "app_dev_ecdsa",
-    config = "EcdsaP256",
-    method = "local",
-    private_key = "app_dev_ecdsa_p256.der",
-    pub_key = "app_dev_ecdsa_p256.pub.der",
-    type = "DevKey",
+keyset(
+    name = "ecdsa_keyset",
+    build_setting_default = "",
+    keys = {
+        "app_prod_ecdsa_p256.der": "app_prod_0",
+        "app_dev_ecdsa_p256.der": "app_dev_0",
+        "app_test_ecdsa_p256.der": "app_test_0",
+        "app_unauthorized_ecdsa_p256.der": "app_unauthorized_0",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
 )
 
-key_sphincs_plus(
-    name = "app_dev_spx",
-    # TODO(cfrantz): Change this to Prehash after putting
-    # the prehash infrastructure in place.
-    config = "Sha2128s",
-    method = "local",
-    private_key = "app_dev_spx.pem",
-    pub_key = "app_dev_spx.pub.pem",
-    type = "DevKey",
-)
-
-key_ecdsa(
-    name = "app_test_ecdsa",
-    config = "EcdsaP256",
-    method = "local",
-    private_key = "app_test_ecdsa_p256.der",
-    pub_key = "app_test_ecdsa_p256.pub.der",
-    type = "TestKey",
-)
-
-key_ecdsa(
-    name = "app_unauthorized_ecdsa",
-    config = "EcdsaP256",
-    method = "local",
-    private_key = "app_unauthorized_ecdsa_p256.der",
-    pub_key = "app_unauthorized_ecdsa_p256.pub.der",
-    type = "TestKey",
+keyset(
+    name = "spx_keyset",
+    build_setting_default = "",
+    keys = {
+        "app_prod_spx.pem": "app_prod_0",
+        "app_dev_spx.pem": "app_dev_0:domain=PreHashedSha256",
+    },
+    profile = "local",
+    tool = "//signing/tokens:local",
 )

@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for AES with GCM support but without masking
+{
+  // Name of the sim cfg variant
+  variant: gcm_unmasked
+
+  // Import the base sram_ctrl sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_base_sim_cfg.hjson"]
+
+  // Coverage exclusions
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine",
+                             "{proj_root}/hw/ip/aes/dv/cov/refines/aes_unmasked_UNR.vRefine"]
+
+  // Enable the appropriate build mode for all tests
+  en_build_modes: ["aes_gcm_unmasked"]
+}

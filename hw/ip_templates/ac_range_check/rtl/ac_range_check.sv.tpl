@@ -260,8 +260,33 @@ module ${module_instance_name}
   // Range Check Deny Counting Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  logic [DenyCountWidth-1:0] deny_cnt;
+  logic [DenyCountWidth-1:0] deny_cnt, deny_cnt_threshold_q;
   logic deny_cnt_incr;
+  logic log_enable_q;
+
+  // Manual implementation of the SW-RW fields of log_status. The register is implemented as hwext
+  // to allow the rising edge of log_clear to clear the log_status register without setting it.
+  prim_flop_en #(
+    .Width(DenyCountWidth)
+  ) u_deny_cnt_threshold (
+    .clk_i  ( clk_i                                   ),
+    .rst_ni ( rst_ni                                  ),
+    .en_i   ( reg2hw.log_config.deny_cnt_threshold.qe ),
+    .d_i    ( reg2hw.log_config.deny_cnt_threshold.q  ),
+    .q_o    ( deny_cnt_threshold_q                    )
+  );
+
+  assign hw2reg.log_config.deny_cnt_threshold.d = deny_cnt_threshold_q;
+
+  prim_flop_en u_log_enable (
+    .clk_i  ( clk_i                           ),
+    .rst_ni ( rst_ni                          ),
+    .en_i   ( reg2hw.log_config.log_enable.qe ),
+    .d_i    ( reg2hw.log_config.log_enable.q  ),
+    .q_o    ( log_enable_q                    )
+  );
+
+  assign hw2reg.log_config.log_enable.d = log_enable_q;
 
   // Clear log information when clearing the log manually via the writing of a 1 to the
   // log_clear bit.
@@ -269,14 +294,13 @@ module ${module_instance_name}
   assign clear_log = (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
 
   // Always clear the log_clear bit from hardware
-  assign hw2reg.log_config.log_clear.de = 1'b1;
   assign hw2reg.log_config.log_clear.d  = 1'b0;
 
   // Only increment the deny counter if logging is globally enabled and for the particular range,
   // we are not clearing the counter in this cycle, and see a failing range check
-  assign deny_cnt_incr = reg2hw.log_config.log_enable.q &
-                         log_enable_mask[deny_index]    &
-                         ~clear_log                     &
+  assign deny_cnt_incr = log_enable_q                &
+                         log_enable_mask[deny_index] &
+                         ~clear_log                  &
                          range_check_fail;
   // Determine if we are doing the first log. This one is special, since it also needs to log
   // diagnostics data
@@ -348,7 +372,7 @@ module ${module_instance_name}
 
   // Create the IRQ condition when the deny counter is above the configured threshold.
   logic deny_cnt_threshold_reached;
-  assign deny_cnt_threshold_reached = deny_cnt > reg2hw.log_config.deny_cnt_threshold.q;
+  assign deny_cnt_threshold_reached = deny_cnt > deny_cnt_threshold_q;
 
   prim_intr_hw #(
     .Width ( 1        ),

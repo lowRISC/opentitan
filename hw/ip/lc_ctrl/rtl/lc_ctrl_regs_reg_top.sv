@@ -133,7 +133,7 @@ module lc_ctrl_regs_reg_top (
   logic status_transition_count_error_qs;
   logic status_transition_error_qs;
   logic status_token_error_qs;
-  logic status_flash_rma_error_qs;
+  logic status_nvm_rma_error_qs;
   logic status_otp_error_qs;
   logic status_state_error_qs;
   logic status_bus_integ_error_qs;
@@ -386,19 +386,19 @@ module lc_ctrl_regs_reg_top (
     .qs     (status_token_error_qs)
   );
 
-  //   F[flash_rma_error]: 7:7
+  //   F[nvm_rma_error]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status_flash_rma_error (
+  ) u_status_nvm_rma_error (
     .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.flash_rma_error.d),
+    .d      (hw2reg.status.nvm_rma_error.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (status_flash_rma_error_qs)
+    .qs     (status_nvm_rma_error_qs)
   );
 
   //   F[otp_error]: 8:8
@@ -1346,7 +1346,7 @@ module lc_ctrl_regs_reg_top (
         reg_rdata_next[4] = status_transition_count_error_qs;
         reg_rdata_next[5] = status_transition_error_qs;
         reg_rdata_next[6] = status_token_error_qs;
-        reg_rdata_next[7] = status_flash_rma_error_qs;
+        reg_rdata_next[7] = status_nvm_rma_error_qs;
         reg_rdata_next[8] = status_otp_error_qs;
         reg_rdata_next[9] = status_state_error_qs;
         reg_rdata_next[10] = status_bus_integ_error_qs;

@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
@@ -85,21 +85,16 @@ static uint32_t kTestPrimeQ[kRsa2048CofactorNumWords] = {
  */
 static status_t run_key_from_cofactor(const uint32_t *cofactor) {
   // Create two shares for the cofactor (second share is all-zero).
-  otcrypto_const_word32_buf_t cofactor_share0 = {
-      .data = cofactor,
-      .len = kRsa2048CofactorNumWords,
-  };
+  otcrypto_const_word32_buf_t cofactor_share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, cofactor, kRsa2048CofactorNumWords);
   uint32_t cofactor_share1_data[kRsa2048CofactorNumWords] = {0};
-  otcrypto_const_word32_buf_t cofactor_share1 = {
-      .data = cofactor_share1_data,
-      .len = ARRAYSIZE(cofactor_share1_data),
-  };
+  otcrypto_const_word32_buf_t cofactor_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, cofactor_share1_data,
+                        ARRAYSIZE(cofactor_share1_data));
 
   // Buffer for the modulus.
-  otcrypto_const_word32_buf_t modulus = {
-      .data = kTestModulus,
-      .len = ARRAYSIZE(kTestModulus),
-  };
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
 
   // Construct the private key buffer and configuration.
   otcrypto_key_config_t private_key_config = {
@@ -130,8 +125,8 @@ static status_t run_key_from_cofactor(const uint32_t *cofactor) {
 
   // Construct the RSA key pair using the cofactor.
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, modulus,
-                                         cofactor_share0, cofactor_share1,
+  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &modulus,
+                                         &cofactor_share0, &cofactor_share1,
                                          &public_key, &private_key));
   profile_end_and_print(t_start, "RSA keypair from cofactor");
 

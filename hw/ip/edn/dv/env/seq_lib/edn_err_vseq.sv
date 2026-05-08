@@ -13,7 +13,7 @@ class edn_err_vseq extends edn_base_vseq;
 
   bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
-  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[MAX_NUM_ENDPOINTS];
+  bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[`NUM_END_POINTS];
   uint                                          endpoint_port;
 
   // Await a randomly selected state of the edn_ack_sm at index `idx`.  If the state is not reached

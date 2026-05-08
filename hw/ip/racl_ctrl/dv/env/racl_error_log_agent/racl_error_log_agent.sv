@@ -11,13 +11,13 @@ class racl_error_log_agent extends dv_base_agent#(.CFG_T      (racl_error_log_ag
   // An analysis export that exposes error log vector items that have been captured by the monitor
   uvm_analysis_export#(racl_error_log_vec_item) errors_seen;
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 endclass
 
-function racl_error_log_agent::new (string name="", uvm_component parent=null);
+function racl_error_log_agent::new (string name, uvm_component parent);
   super.new(name, parent);
   errors_seen = new("errors_seen", this);
 endfunction

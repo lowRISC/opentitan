@@ -3,6 +3,7 @@
       "digest": [0, 0, 0, 0, 0, 0, 0, 0],
       "err_status": 0,
       "alerts": [0, 0, 0],
+      "loc_alerts": 0,
       "ast_alerts": [0, 0]
     }
 }

@@ -75,7 +75,6 @@ package chip_env_pkg;
   typedef virtual sw_logger_if         sw_logger_vif;
   typedef virtual sw_test_status_if    sw_test_status_vif;
   typedef virtual ast_supply_if        ast_supply_vif;
-  typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
 
   // Types of memories in the chip.
   //
@@ -103,8 +102,10 @@ package chip_env_pkg;
     SpiDeviceIngressMem
   } chip_mem_e;
 
-  // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.
+  // On Darjeeling, we deal with 8 types of SW.
   // This basically puts these SW types into 'slots' that the external regression tool can set.
+  // Note: This enum must be consistent across tops.
+  // Note: If this enum is updated, then also update the file `build_sw_collateral_for_sim.py`.
   typedef enum {
     SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
     SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.
@@ -141,7 +142,7 @@ package chip_env_pkg;
     LcTransitionCntError,
     LcTransitionError,
     LcTokenError,
-    LcFlashRmaError,
+    LcNvmRmaError,
     LcOtpError,
     LcStateError,
     LcBusIntegError,

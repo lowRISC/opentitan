@@ -120,7 +120,8 @@ def gen_const_register(outstr: TextIO, reg: Register, comp: str, width: int,
     rname = reg.name
     offset = reg.offset
 
-    genout(outstr, format_comment(first_line(reg.desc)))
+    if reg.desc:
+        genout(outstr, format_comment(first_line(reg.desc)))
     defname = as_define(comp + '_' + rname)
     gen_const(outstr, defname, 'REG_OFFSET', offset, existing_defines, True)
 

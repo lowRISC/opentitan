@@ -34,7 +34,7 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   uvm_blocking_put_imp_unfilt #(ac_range_check_scb_item, ac_range_check_scoreboard) tl_unfilt_imp;
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
@@ -55,7 +55,7 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
 endclass : ac_range_check_scoreboard
 
 
-function ac_range_check_scoreboard::new(string name="", uvm_component parent=null);
+function ac_range_check_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
@@ -307,13 +307,25 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
       // FIXME TODO MVy
     end
     "log_config": begin
-      // FIXME TODO MVy
+      // log_config is hwext with mixed field types - check reads but handle log_clear specially
+      // Detect write to log_config with log_clear bit set and clear log status
+      if (tl_phase == AChanWrite &&
+          item.a_data[ral.log_config.log_clear.get_lsb_pos()] == 1'b1) begin
+        `uvm_info(`gfn, $sformatf({"Clear performed to log_status and log_address ",
+                                   "(detected in scoreboard)"}), UVM_MEDIUM)
+        void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+        void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+        predict.deny_cnt = 0;
+        predict.overflow_flag = 0;
+      end
     end
     "log_status": begin
-      // FIXME TODO MVy
+      // log_status is read-only for SW, so no need to update the RAL here.
+      // Read checks are done by default.
     end
     "log_address": begin
-      // FIXME TODO MVy
+      // log_address is read-only for SW, so no need to update the RAL here.
+      // Read checks are done by default.
     end
     "range_regwen": begin
       // FIXME TODO MVy

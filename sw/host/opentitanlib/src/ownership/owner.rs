@@ -2,16 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, anyhow, ensure};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::Deserialize;
 use serde_annotate::Annotate;
+use sphincsplus::SpxSecretKey;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::GlobalFlags;
 use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
-use super::{OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerRescueConfig};
+use super::{
+    DetachedSignature, OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig,
+    OwnerIsfbConfig, OwnerRescueConfig,
+};
+use crate::chip::boolean::HardenedBool;
+use crate::crypto::Error as CryptoError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
 
@@ -35,7 +41,7 @@ with_unknown! {
 }
 
 /// Describes the owner configuration and key material.
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct OwnerBlock {
     /// Header identifying this struct.
     #[serde(
@@ -67,9 +73,11 @@ pub struct OwnerBlock {
     )]
     #[annotate(format=hex)]
     pub device_id: [u32; 8],
+    #[serde(default)]
+    pub boot_svc_after_wakeup: HardenedBool,
     #[serde(default, skip_serializing_if = "GlobalFlags::not_debug")]
     #[annotate(format=hex)]
-    pub reserved: [u32; 16],
+    pub reserved: [u32; 15],
     /// The owner identity key.
     pub owner_key: KeyMaterial,
     /// The owner activation key.
@@ -100,7 +108,8 @@ impl Default for OwnerBlock {
             min_security_version_bl0: MinSecurityVersion::default(),
             lock_constraint: 0,
             device_id: Self::default_constraint(),
-            reserved: [0u32; 16],
+            boot_svc_after_wakeup: HardenedBool::default(),
+            reserved: [0u32; 15],
             owner_key: KeyMaterial::default(),
             activate_key: KeyMaterial::default(),
             unlock_key: KeyMaterial::default(),
@@ -120,7 +129,7 @@ impl OwnerBlock {
     const NO_CONSTRAINT: u32 = 0x7e7e7e7e;
 
     pub fn default_header() -> TlvHeader {
-        TlvHeader::new(TlvTag::Owner, 0, "0.0")
+        TlvHeader::new(TlvTag::Owner, Self::SIZE, "0.0")
     }
     pub fn basic() -> Self {
         Self {
@@ -135,8 +144,7 @@ impl OwnerBlock {
     }
 
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        let header = TlvHeader::new(TlvTag::Owner, Self::SIZE, "0.0");
-        header.write(dest)?;
+        self.header.write(dest)?;
         dest.write_u32::<LittleEndian>(self.config_version)?;
         dest.write_u32::<LittleEndian>(u32::from(self.sram_exec))?;
         dest.write_u32::<LittleEndian>(u32::from(self.ownership_key_alg))?;
@@ -151,6 +159,7 @@ impl OwnerBlock {
                 dest.write_u32::<LittleEndian>(*x)?;
             }
         }
+        dest.write_u32::<LittleEndian>(u32::from(self.boot_svc_after_wakeup))?;
         for x in &self.reserved {
             dest.write_u32::<LittleEndian>(*x)?;
         }
@@ -182,7 +191,8 @@ impl OwnerBlock {
 
         let mut device_id = [0u32; 8];
         src.read_u32_into::<LittleEndian>(&mut device_id)?;
-        let mut reserved = [0u32; 16];
+        let boot_svc_after_wakeup = HardenedBool(src.read_u32::<LittleEndian>()?);
+        let mut reserved = [0u32; 15];
         src.read_u32_into::<LittleEndian>(&mut reserved)?;
         let owner_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
         let activate_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
@@ -209,6 +219,7 @@ impl OwnerBlock {
             min_security_version_bl0,
             lock_constraint,
             device_id,
+            boot_svc_after_wakeup,
             reserved,
             owner_key,
             activate_key,
@@ -219,10 +230,36 @@ impl OwnerBlock {
         })
     }
     pub fn sign(&mut self, key: &EcdsaPrivateKey) -> Result<()> {
+        ensure!(
+            self.ownership_key_alg == OwnershipKeyAlg::EcdsaP256,
+            CryptoError::SignFailed(anyhow!(
+                "Algorithm {} requires a detached signature",
+                self.ownership_key_alg
+            ))
+        );
         let mut data = Vec::new();
         self.write(&mut data)?;
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
+    }
+
+    pub fn detached_sign(
+        &mut self,
+        nonce: u64,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            TlvTag::Owner.into(),
+            self.ownership_key_alg,
+            nonce,
+            ecdsa_key,
+            spx_key,
+        )
     }
 
     pub fn is_default_constraint(d: &[u32; 8]) -> bool {
@@ -234,7 +271,7 @@ impl OwnerBlock {
     }
 }
 
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub enum OwnerConfigItem {
     #[serde(alias = "application_key")]
     ApplicationKey(OwnerApplicationKey),
@@ -244,6 +281,8 @@ pub enum OwnerConfigItem {
     FlashConfig(OwnerFlashConfig),
     #[serde(alias = "rescue_config")]
     RescueConfig(OwnerRescueConfig),
+    #[serde(alias = "isfb_config")]
+    IsfbConfig(OwnerIsfbConfig),
     #[serde(alias = "raw")]
     Raw(
         #[serde(with = "serde_bytes")]
@@ -259,6 +298,7 @@ impl OwnerConfigItem {
             Self::FlashInfoConfig(x) => x.write(dest)?,
             Self::FlashConfig(x) => x.write(dest)?,
             Self::RescueConfig(x) => x.write(dest)?,
+            Self::IsfbConfig(x) => x.write(dest)?,
             Self::Raw(x) => dest.write_all(x)?,
         }
         Ok(())
@@ -273,6 +313,9 @@ impl OwnerConfigItem {
                 Self::FlashInfoConfig(OwnerFlashInfoConfig::read(src, header)?)
             }
             TlvTag::Rescue => Self::RescueConfig(OwnerRescueConfig::read(src, header)?),
+            TlvTag::IntegratorSpecificFirmwareBinding => {
+                Self::IsfbConfig(OwnerIsfbConfig::read(src, header)?)
+            }
             TlvTag::NotPresent => return Ok(None),
             _ => {
                 let mut data = Vec::new();
@@ -307,7 +350,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000010: 50 32 35 36 4f 50 45 4e ff ff ff ff 00 00 00 00  P256OPEN........
 00000020: 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e  ~~~~~~~~~~~~~~~~
 00000030: 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e 7e  ~~~~~~~~~~~~~~~~
-00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+00000040: d4 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
@@ -340,14 +383,14 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
 00000220: 66 06 00 00 00 01 00 02 77 17 11 88 77 17 11 11  f.......w...w...
 00000230: 49 4e 46 4f 20 00 00 00 00 01 00 00 66 06 00 99  INFO .......f...
 00000240: 66 06 00 00 01 05 00 00 77 17 11 88 77 17 11 11  f.......w...w...
-00000250: 52 45 53 51 50 00 00 00 58 4d 44 4d 20 00 e0 00  RESQP...XMDM ...
+00000250: 52 45 53 51 50 00 00 00 58 00 00 40 20 00 e0 00  RESQP...X..@ ...
 00000260: 45 4d 50 54 4d 53 45 43 4e 45 58 54 55 4e 4c 4b  EMPTMSECNEXTUNLK
 00000270: 41 43 54 56 51 53 45 52 42 53 45 52 4f 42 45 52  ACTVQSERBSEROBER
 00000280: 47 4f 4c 42 51 45 52 42 50 53 52 42 52 4e 57 4f  GOLBQERBPSRBRNWO
 00000290: 30 47 50 4f 31 47 50 4f 44 49 54 4f 54 49 41 57  0GPO1GPODITOTIAW
-000002a0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-000002b0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
-000002c0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
+000002a0: 49 53 46 42 2c 00 00 00 01 08 00 00 66 06 00 00  ISFB,.......f...
+000002b0: 70 72 6f 64 00 00 00 00 00 00 00 00 00 00 00 00  prod............
+000002c0: 00 00 00 00 00 00 00 00 80 00 00 00 5a 5a 5a 5a  ............ZZZZ
 000002d0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002e0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
 000002f0: 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a 5a  ZZZZZZZZZZZZZZZZ
@@ -440,6 +483,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
   update_mode: "Open",
   min_security_version_bl0: "NoChange",
   lock_constraint: 0,
+  boot_svc_after_wakeup: "False",
   owner_key: {
     Ecdsa: {
       x: "1111111111111111111111111111111111111111111111111111111111111111",
@@ -545,7 +589,14 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
     },
     {
       RescueConfig: {
-        rescue_type: "Xmodem",
+        protocol: "Xmodem",
+        trigger: "UartBreak",
+        trigger_index: 0,
+        gpio_pull_en: false,
+        gpio_value: false,
+        enter_on_watchdog: false,
+        enter_on_failure: false,
+        timeout: 0,
         start: 32,
         size: 224,
         command_allow: [
@@ -566,6 +617,15 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
           "GetDeviceId",
           "Wait"
         ]
+      }
+    },
+    {
+      IsfbConfig: {
+        bank: 1,
+        page: 8,
+        erase_conditions: 0x666,
+        key_domain: "Prod",
+        product_words: 128
       }
     }
   ],
@@ -631,6 +691,15 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
                     ..Default::default()
                 }),
                 OwnerConfigItem::RescueConfig(OwnerRescueConfig::all()),
+                OwnerConfigItem::IsfbConfig(OwnerIsfbConfig {
+                    bank: 1,
+                    page: 8,
+                    pad: 0,
+                    erase_conditions: 0x0000_0666,
+                    key_domain: ApplicationKeyDomain::Prod,
+                    product_words: 128,
+                    ..Default::default()
+                }),
             ],
             signature: EcdsaRawSignature {
                 r: hex::decode("7777777777777777777777777777777777777777777777777777777777777777")?,

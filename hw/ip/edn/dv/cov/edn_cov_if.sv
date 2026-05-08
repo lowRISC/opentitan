@@ -4,8 +4,8 @@
 //
 // Implements functional coverage for edn.
 interface edn_cov_if (
-  input logic                                          clk_i,
-  input logic [edn_env_pkg::MAX_NUM_ENDPOINTS - 1:0]   ep_req
+  input logic                         clk_i,
+  input logic [`NUM_END_POINTS - 1:0] ep_req
 );
 
   import uvm_pkg::*;
@@ -18,24 +18,24 @@ interface edn_cov_if (
 
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
-  bit [MAX_NUM_ENDPOINTS - 1:0]   ep_requests;
+  bit [`NUM_END_POINTS - 1:0] ep_requests;
 
   // If en_full_cov is set, then en_intg_cov must also be set since it is a subset.
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
-  assign ep_requests = {ep_req[6], ep_req[5], ep_req[4], ep_req[3],
-                        ep_req[2], ep_req[1], ep_req[0]};
+  assign ep_requests = ep_req;
 
-  covergroup edn_cfg_cg with function sample(bit [2:0] num_endpoints,
-                                             uint      num_boot_reqs,
-                                             mubi4_t   boot_req_mode,
-                                             mubi4_t   auto_req_mode);
+  covergroup edn_cfg_cg with function sample(uint    num_endpoints,
+                                             uint    num_boot_reqs,
+                                             mubi4_t boot_req_mode,
+                                             mubi4_t auto_req_mode);
     option.name         = "edn_cfg_cg";
     option.per_instance = 1;
 
     cp_num_endpoints: coverpoint num_endpoints {
-      ignore_bins zero = { 0 };
+      ignore_bins below_min = { [0:MIN_NUM_ENDPOINTS-1] };
+      ignore_bins above_max = { [`NUM_END_POINTS+1:$] };
     }
     cp_num_boot_reqs: coverpoint num_boot_reqs {
       bins         single   = { 1 };
@@ -58,8 +58,8 @@ interface edn_cov_if (
 
     cp_ep_requests: coverpoint ep_requests {
       bins none = { $countones(ep_requests) == 0 };
-      bins some = { $countones(ep_requests) inside { [1:MAX_NUM_ENDPOINTS - 1] } };
-      bins all  = { $countones(ep_requests) == MAX_NUM_ENDPOINTS };
+      bins some = { $countones(ep_requests) inside { [1:`NUM_END_POINTS - 1] } };
+      bins all  = { $countones(ep_requests) == `NUM_END_POINTS };
     }
   endgroup : edn_endpoints_cg
 
@@ -75,7 +75,7 @@ interface edn_cov_if (
 
     cp_acmd: coverpoint acmd {
       // ignore unused/invalid commands
-      ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV };
+      ignore_bins unused = { csrng_pkg::INV };
     }
 
     cp_clen: coverpoint clen {
@@ -285,7 +285,7 @@ interface edn_cov_if (
 
     cp_acmd: coverpoint acmd {
       // Ignore unused/invalid HW commands.
-      ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV, csrng_pkg::UPD };
+      ignore_bins unused = { csrng_pkg::INV, csrng_pkg::UPD };
     }
 
     // We want to see all of the boot commands in boot mode.
@@ -310,7 +310,7 @@ interface edn_cov_if (
 
     // Create one bin per endpoint of EDN.
     endpoint_cg: coverpoint endpoint {
-      bins range[MAX_NUM_ENDPOINTS] = {[0:MAX_NUM_ENDPOINTS-1]};
+      bins range[`NUM_END_POINTS] = {[0:`NUM_END_POINTS-1]};
     }
   endgroup : edn_endpoint_err_req_cg
 

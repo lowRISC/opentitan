@@ -56,12 +56,12 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
 
   `uvm_component_utils(alert_esc_agent_cov)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
 
 endclass : alert_esc_agent_cov
 
-function alert_esc_agent_cov::new (string name="", uvm_component parent=null);
+function alert_esc_agent_cov::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

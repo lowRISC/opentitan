@@ -4,9 +4,9 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/crypto/include/sha3.h"
@@ -355,18 +355,29 @@ static status_t run_test_vector(void) {
       .len = ARRAYSIZE(digest),
   };
 
+  otcrypto_const_byte_buf_t label_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->label.data,
+      current_test_vector->label.len);
+  otcrypto_const_byte_buf_t context_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->context.data,
+      current_test_vector->context.len);
+  otcrypto_const_byte_buf_t sha3_input_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, sha3_test_vector.input_msg.data,
+      sha3_test_vector.input_msg.len);
+
   LOG_INFO("Running the first KDF-KMAC sideload operation.");
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key,
-                        current_test_vector->label,
-                        current_test_vector->context, &keying_material1));
+  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
+                        &context_buf, &keying_material1));
 
   // Export the derived blinded key
   uint32_t km_share0[km_keyblob_share_len];
   uint32_t km_share1[km_keyblob_share_len];
-  TRY(otcrypto_export_blinded_key(
-      &keying_material1,
-      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
-      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+  otcrypto_word32_buf_t km_share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, km_share0, ARRAYSIZE(km_share0));
+  otcrypto_word32_buf_t km_share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, km_share1, ARRAYSIZE(km_share1));
+  TRY(otcrypto_export_blinded_key(&keying_material1, &km_share0_buf,
+                                  &km_share1_buf));
 
   // Unmask the derived key
   uint32_t first_key[km_key_len];
@@ -378,16 +389,16 @@ static status_t run_test_vector(void) {
   LOG_INFO("Running the intermediate SHA3 operation.");
   switch (sha3_test_vector.security_strength) {
     case 224:
-      TRY(otcrypto_sha3_224(sha3_test_vector.input_msg, &digest_buf));
+      TRY(otcrypto_sha3_224(&sha3_input_buf, &digest_buf));
       break;
     case 256:
-      TRY(otcrypto_sha3_256(sha3_test_vector.input_msg, &digest_buf));
+      TRY(otcrypto_sha3_256(&sha3_input_buf, &digest_buf));
       break;
     case 384:
-      TRY(otcrypto_sha3_384(sha3_test_vector.input_msg, &digest_buf));
+      TRY(otcrypto_sha3_384(&sha3_input_buf, &digest_buf));
       break;
     case 512:
-      TRY(otcrypto_sha3_512(sha3_test_vector.input_msg, &digest_buf));
+      TRY(otcrypto_sha3_512(&sha3_input_buf, &digest_buf));
       break;
     default:
       LOG_INFO("Invalid security level for SHA3: %d bits",
@@ -396,15 +407,12 @@ static status_t run_test_vector(void) {
   }
 
   LOG_INFO("Running the second KDF-KMAC sideload operation for comparison.");
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key,
-                        current_test_vector->label,
-                        current_test_vector->context, &keying_material2));
+  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
+                        &context_buf, &keying_material2));
 
   // Export the second derived blinded key
-  TRY(otcrypto_export_blinded_key(
-      &keying_material2,
-      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
-      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+  TRY(otcrypto_export_blinded_key(&keying_material2, &km_share0_buf,
+                                  &km_share1_buf));
 
   // Unmask the second derived key
   uint32_t second_key[km_key_len];

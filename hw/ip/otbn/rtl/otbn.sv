@@ -27,6 +27,9 @@ module otbn
   // Skip URND re-seed at the start of an operation. Useful for SCA only.
   parameter bit SecSkipUrndReseedAtStart = 1'b0,
 
+  // Compile-time permutation for URND permutation in BN MAC
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
+
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
@@ -94,11 +97,13 @@ module otbn
   //
   // DMEM is actually a bit bigger than OTBN_DMEM_SIZE: there are an extra DmemScratchSizeByte bytes
   // that aren't accessible over the bus.
-  localparam int ImemSizeByte = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
-  localparam int DmemSizeByte = int'(otbn_reg_pkg::OTBN_DMEM_SIZE + DmemScratchSizeByte);
+  localparam int ImemSizeByte    = int'(otbn_reg_pkg::OTBN_IMEM_SIZE);
+  localparam int DmemBusSizeByte = int'(otbn_reg_pkg::OTBN_DMEM_SIZE);
+  localparam int DmemSizeByte    = DmemBusSizeByte + DmemScratchSizeByte;
 
-  localparam int ImemAddrWidth = vbits(ImemSizeByte);
-  localparam int DmemAddrWidth = vbits(DmemSizeByte);
+  localparam int ImemAddrWidth    = vbits(ImemSizeByte);
+  localparam int DmemBusAddrWidth = vbits(DmemBusSizeByte);
+  localparam int DmemAddrWidth    = vbits(DmemSizeByte);
 
   `ASSERT_INIT(ImemSizePowerOfTwo, 2 ** ImemAddrWidth == ImemSizeByte)
   `ASSERT_INIT(DmemSizePowerOfTwo, 2 ** DmemAddrWidth == DmemSizeByte)
@@ -497,7 +502,7 @@ module otbn
   localparam int DmemSizeWords = DmemSizeByte / (WLEN / 8);
   localparam int DmemIndexWidth = vbits(DmemSizeWords);
 
-  localparam int DmemBusSizeWords = int'(otbn_reg_pkg::OTBN_DMEM_SIZE) / (WLEN / 8);
+  localparam int DmemBusSizeWords = DmemBusSizeByte / (WLEN / 8);
   localparam int DmemBusIndexWidth = vbits(DmemBusSizeWords);
 
   // Access select to DMEM: core (1), or bus (0)
@@ -534,7 +539,7 @@ module otbn
   logic [ExtWLEN-1:0] dmem_wmask_bus;
   logic [ExtWLEN-1:0] dmem_rdata_bus, dmem_rdata_bus_raw;
   logic dmem_rdata_bus_en_q, dmem_rdata_bus_en_d;
-  logic [DmemAddrWidth-1:0] dmem_addr_bus;
+  logic [DmemBusAddrWidth-1:0] dmem_addr_bus;
   logic unused_dmem_addr_bus;
   logic [31:0] dmem_wdata_narrow_bus;
   logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
@@ -672,7 +677,8 @@ module otbn
   assign dmem_write = dmem_access_core ? dmem_write_core : dmem_write_bus;
   assign dmem_wmask = dmem_access_core ? dmem_wmask_core : dmem_wmask_bus;
   // SEC_CM: DATA.MEM.SW_NOACCESS
-  assign dmem_index = dmem_access_core ? dmem_index_core : dmem_index_bus;
+  assign dmem_index = dmem_access_core ? dmem_index_core :
+    {{(DmemIndexWidth-DmemBusIndexWidth){1'b0}}, {dmem_index_bus}};
   assign dmem_wdata = dmem_access_core ? dmem_wdata_core : dmem_wdata_bus;
 
   assign dmem_illegal_bus_access = dmem_req_bus & dmem_access_core;
@@ -737,13 +743,16 @@ module otbn
   assign dmem_rerror_bus  = 2'b00;
   assign dmem_rerror_core = dmem_rerror;
 
-  assign dmem_addr_bus = tl_win_h2d[TlWinDmem].a_address[DmemAddrWidth-1:0];
+  assign dmem_addr_bus         = tl_win_h2d[TlWinDmem].a_address[DmemBusAddrWidth-1:0];
   assign dmem_wdata_narrow_bus = tl_win_h2d[TlWinDmem].a_data[31:0];
-  assign dmem_byte_mask_bus = tl_win_h2d[TlWinDmem].a_mask;
+  assign dmem_byte_mask_bus    = tl_win_h2d[TlWinDmem].a_mask;
 
   // Memory Load Integrity =====================================================
-  // CRC logic below assumes a incoming data bus width of 32 bits
+  // CRC logic below assumes an incoming data bus width of 32 bits and considers
+  // 15 bits of the 32-bit word based addresses.
   `ASSERT_INIT(TLDWIs32Bit_A, top_pkg::TL_DW == 32)
+  `ASSERT_INIT(ImemAddrTooWideForLoadCrc_A, ImemIndexWidth <= 15)
+  `ASSERT_INIT(DmemBusAddrTooWideForLoadCrc_A, (DmemBusAddrWidth - 2) <= 15)
 
   // Only advance CRC calculation on full 32-bit writes;
   assign mem_crc_data_in_valid   = ~(dmem_access_core | imem_access_core) &
@@ -752,14 +761,15 @@ module otbn
 
   assign mem_crc_data_in.wr_data = imem_req_bus ? imem_wdata_bus[31:0] :
                                                   dmem_wdata_narrow_bus[31:0];
+  // The CRC operates on the 32 bits from the bus. For IMEM we can take the index. But for DMEM
+  // we must take the relevant part of dmem_addr_bus because dmem_index_bus indexes 256-bit words.
   assign mem_crc_data_in.index   = imem_req_bus ? {{15 - ImemIndexWidth{1'b0}}, imem_index_bus} :
-                                                   {{15 - (DmemAddrWidth - 2){1'b0}},
-                                                    dmem_addr_bus[DmemAddrWidth-1:2]};
+                                                   {{15 - (DmemBusAddrWidth - 2){1'b0}},
+                                                    dmem_addr_bus[DmemBusAddrWidth-1:2]};
   assign mem_crc_data_in.imem    = imem_req_bus;
 
   // Only the bits that factor into the dmem index and dmem word enables are required
-  assign unused_dmem_addr_bus = ^{dmem_addr_bus[DmemAddrWidth-1:DmemIndexWidth],
-                                  dmem_addr_bus[1:0]};
+  assign unused_dmem_addr_bus = ^dmem_addr_bus[1:0];
 
   // SEC_CM: WRITE.MEM.INTEGRITY
   prim_crc32 #(
@@ -1039,12 +1049,8 @@ module otbn
   logic [EdnDataWidth-1:0] edn_rnd_data;
   logic edn_rnd_fips, edn_rnd_err;
 
-  logic edn_urnd_req, edn_urnd_ack;
-  logic [EdnDataWidth-1:0] edn_urnd_data;
-
-  // These synchronize the data coming from EDN and stack the 32 bit EDN words to achieve an
-  // internal entropy width of 256 bit.
-
+  // This EDN request module synchronizes the data coming from EDN and stack the 32 bit EDN words
+  // to achieve an internal entropy width of 256 bit.
   prim_edn_req #(
     .EnRstChks(1'b1),
     .OutWidth(EdnDataWidth),
@@ -1065,24 +1071,28 @@ module otbn
     .edn_i      ( edn_rnd_i )
   );
 
-  prim_edn_req #(
-    .EnRstChks(1'b1),
-    .OutWidth(EdnDataWidth)
-  ) u_prim_edn_urnd_req (
-    .clk_i,
-    .rst_ni     ( rst_n         ),
-    .req_chk_i  ( 1'b1          ),
-    .req_i      ( edn_urnd_req  ),
-    .ack_o      ( edn_urnd_ack  ),
-    .data_o     ( edn_urnd_data ),
-    .fips_o     (               ), // unused
-    .err_o      (               ), // unused
-    .clk_edn_i,
-    .rst_edn_ni,
-    .edn_o      ( edn_urnd_o    ),
-    .edn_i      ( edn_urnd_i    )
-  );
+  edn_pkg::edn_req_t edn_urnd_req;
+  edn_pkg::edn_rsp_t edn_urnd_rsp;
 
+  // Synchronize the data from the EDN network to the main clock of OTBN.
+  prim_sync_reqack_data #(
+    .Width(edn_pkg::ENDPOINT_BUS_WIDTH + 32'd1),
+    .EnRstChks(1'b1),
+    .DataSrc2Dst(1'b0),
+    .DataReg(1'b0)
+  ) u_prim_sync_reqack_data_urnd (
+    .clk_src_i (clk_i),
+    .rst_src_ni(rst_n),
+    .clk_dst_i (clk_edn_i),
+    .rst_dst_ni(rst_edn_ni),
+    .req_chk_i (1'b1),
+    .src_req_i (edn_urnd_req.edn_req),
+    .src_ack_o (edn_urnd_rsp.edn_ack),
+    .dst_req_o (edn_urnd_o.edn_req),
+    .dst_ack_i (edn_urnd_i.edn_ack),
+    .data_i    ({edn_urnd_i.edn_fips,   edn_urnd_i.edn_bus  }),
+    .data_o    ({edn_urnd_rsp.edn_fips, edn_urnd_rsp.edn_bus})
+  );
 
   // OTBN Core =================================================================
 
@@ -1104,7 +1114,8 @@ module otbn
     .ImemSizeByte(ImemSizeByte),
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed),
     .SecMuteUrnd(SecMuteUrnd),
-    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart)
+    .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),
@@ -1138,9 +1149,8 @@ module otbn
     .edn_rnd_fips_i              (edn_rnd_fips),
     .edn_rnd_err_i               (edn_rnd_err),
 
-    .edn_urnd_req_o              (edn_urnd_req),
-    .edn_urnd_ack_i              (edn_urnd_ack),
-    .edn_urnd_data_i             (edn_urnd_data),
+    .edn_urnd_o                  (edn_urnd_req),
+    .edn_urnd_i                  (edn_urnd_rsp),
 
     .insn_cnt_o                  (insn_cnt),
     .insn_cnt_clear_i            (insn_cnt_clear),
@@ -1222,7 +1232,7 @@ module otbn
 
   // Asserts ===================================================================
   for (genvar i = 0; i < LoopStackDepth; ++i) begin : gen_loop_stack_cntr_asserts
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
       LoopStackCntAlertCheck_A,
       u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].u_loop_count,
       alert_tx_o[AlertFatal]
@@ -1414,47 +1424,85 @@ module otbn
   // Constraint from package, check here as we cannot have `ASSERT_INIT in package
   `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnStartStopFsmCheck_A,
-    u_otbn_core.u_otbn_start_stop_control.u_state_regs, alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnControllerFsmCheck_A,
-    u_otbn_core.u_otbn_controller.u_state_regs, alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtbnScrambleCtrlFsmCheck_A,
-    u_otbn_scramble_ctrl.u_state_regs, alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+    OtbnStartStopFsmCheck_A,
+    u_otbn_core.u_otbn_start_stop_control.u_state_regs,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+    OtbnControllerFsmCheck_A,
+    u_otbn_core.u_otbn_controller.u_state_regs,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+    OtbnScrambleCtrlFsmCheck_A,
+    u_otbn_scramble_ctrl.u_state_regs,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnCallStackWrPtrAlertCheck_A,
-    u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr, alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtbnLoopInfoStackWrPtrAlertCheck_A,
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnCallStackWrPtrAlertCheck_A,
+    u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnLoopInfoStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
-    alert_tx_o[AlertFatal])
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i)
+
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(
+    OtbnBnMacCycleCountAlertCheck_A,
+    u_otbn_core.u_otbn_mac_bignum.u_mac_bignum_fsm,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i,
+    0, 2, state_err_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
-      u_reg, alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+    RegWeOnehotCheck_A,
+    u_reg,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
   // other onehot checks
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBaseOnehotCheck_A,
-      u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_prim_onehot_check,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RfBignumOnehotCheck_A,
-      u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_prim_onehot_check,
-      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+    RfBaseOnehotCheck_A,
+    u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_prim_onehot_check,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+    RfBignumOnehotCheck_A,
+    u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_prim_onehot_check,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemRspFifo,
-                                               u_tlul_adapter_sram_dmem.u_rspfifo,
-                                               alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemSramReqFifo,
-                                               u_tlul_adapter_sram_dmem.u_sramreqfifo,
-                                               alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemReqFifo,
-                                               u_tlul_adapter_sram_dmem.u_reqfifo,
-                                               alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    DmemRspFifo,
+    u_tlul_adapter_sram_dmem.u_rspfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    DmemSramReqFifo,
+    u_tlul_adapter_sram_dmem.u_sramreqfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    DmemReqFifo,
+    u_tlul_adapter_sram_dmem.u_reqfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemRspFifo,
-                                               u_tlul_adapter_sram_imem.u_rspfifo,
-                                               alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemSramReqFifo,
-                                               u_tlul_adapter_sram_imem.u_sramreqfifo,
-                                               alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemReqFifo,
-                                               u_tlul_adapter_sram_imem.u_reqfifo,
-                                               alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    ImemRspFifo,
+    u_tlul_adapter_sram_imem.u_rspfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    ImemSramReqFifo,
+    u_tlul_adapter_sram_imem.u_sramreqfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+    ImemReqFifo,
+    u_tlul_adapter_sram_imem.u_reqfifo,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
 endmodule

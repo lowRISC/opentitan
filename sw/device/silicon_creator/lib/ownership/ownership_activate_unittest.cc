@@ -21,14 +21,18 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 
 constexpr nonce_t kDefaultNonce = {1, 2};
+constexpr uint32_t kActivate =
+    static_cast<uint32_t>(kBootSvcOwnershipActivateReqType);
 
 class OwnershipActivateTest : public rom_test::RomTest {
  protected:
@@ -54,8 +58,12 @@ class OwnershipActivateTest : public rom_test::RomTest {
       case kOwnershipStateUnlockedEndorsed:
         // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
         // to the value stored in boot_data.
-        EXPECT_CALL(hmac_, sha256(_, _, _))
-            .WillOnce(SetArgPointee<2>((hmac_digest_t){{
+        EXPECT_CALL(hmac_, sha256_init());
+        EXPECT_CALL(hmac_, sha256_update(_, _));
+        EXPECT_CALL(hmac_, sha256_update(_, _));
+        EXPECT_CALL(hmac_, sha256_process());
+        EXPECT_CALL(hmac_, sha256_final(_))
+            .WillOnce(SetArgPointee<0>((hmac_digest_t){{
                 bootdata_.next_owner[0] + modifier,
                 bootdata_.next_owner[1],
                 bootdata_.next_owner[2],
@@ -112,6 +120,10 @@ class OwnershipActivateValidStateTest
     : public OwnershipActivateTest,
       public testing::WithParamInterface<ownership_state_t> {};
 
+class OwnershipActivateNextBl0Slot
+    : public OwnershipActivateTest,
+      public testing::WithParamInterface<boot_slot_t> {};
+
 // Tests that requesting Activate in all Locked non-Update states fails.
 TEST_P(OwnershipActivateInvalidStateTest, InvalidState) {
   bootdata_.ownership_state = static_cast<uint32_t>(GetParam());
@@ -131,8 +143,9 @@ TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
   MakePage1Valid(true);
   owner_page[1].header.version.major = 5;
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
@@ -147,8 +160,10 @@ TEST_P(OwnershipActivateValidStateTest, InvalidSignature) {
   // We want to pass the page 1 validity test to check the signature on the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolFalse));
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(
+          DoAll(SetArgPointee<7>(0), Return(kErrorOwnershipInvalidSignature)));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
@@ -162,8 +177,9 @@ TEST_P(OwnershipActivateValidStateTest, InvalidNonce) {
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
@@ -176,8 +192,9 @@ TEST_P(OwnershipActivateValidStateTest, InvalidActivateDin) {
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0, 1, 1}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
@@ -228,8 +245,9 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   bootdata_.next_owner[0] = 12345;
   MakePage1Valid(true);
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
@@ -263,7 +281,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
       .WillOnce(Return(kErrorOk));
 
   if (state != kOwnershipStateUnlockedSelf) {
-    EXPECT_CALL(ownership_key_, secret_new()).WillOnce(Return(kErrorOk));
+    EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
   }
 
   // The nonce will be regenerated.
@@ -287,7 +305,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
 //
 // TODO(cfrantz): Refactor this test as it is nearly a complete copy of the
 // previous test except for the manipulation of the min_sec_ver.
-TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
+TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0MinSecVer) {
   ownership_state_t state = GetParam();
   bootdata_.ownership_state = static_cast<uint32_t>(state);
 
@@ -297,8 +315,9 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
   MakePage1Valid(true);
   owner_page[1].min_security_version_bl0 = 5;
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
@@ -332,7 +351,7 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
       .WillOnce(Return(kErrorOk));
 
   if (state != kOwnershipStateUnlockedSelf) {
-    EXPECT_CALL(ownership_key_, secret_new()).WillOnce(Return(kErrorOk));
+    EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
   }
 
   // The nonce will be regenerated.
@@ -354,5 +373,81 @@ INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateValidStateTest,
                          testing::Values(kOwnershipStateUnlockedSelf,
                                          kOwnershipStateUnlockedAny,
                                          kOwnershipStateUnlockedEndorsed));
+
+// TODO(cfrantz): Refactor this test as it is nearly a complete copy of the
+// previous test except for the manipulation of the primary_bl0_slot.
+TEST_P(OwnershipActivateNextBl0Slot, UpdateBootdataPrimaryBl0Slot) {
+  bootdata_.ownership_state = kOwnershipStateUnlockedAny;
+  boot_slot_t next_slot = GetParam();
+  message_.ownership_activate_req.primary_bl0_slot = next_slot;
+
+  // We initialize the primary slot with an invalid value so we can
+  // check later if the value is changed or unchanged according the
+  // requested next_slot value.
+  bootdata_.primary_bl0_slot = static_cast<boot_slot_t>(0);
+
+  owner_page[0].owner_key = {{1}};
+  memset(bootdata_.next_owner, 0, sizeof(bootdata_.next_owner));
+  MakePage1Valid(true);
+
+  EXPECT_CALL(ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
+      .WillOnce(DoAll(SetArgPointee<7>(kSigverifyFlashExec), Return(kErrorOk)));
+  EXPECT_CALL(lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+
+  // Once the new owner page is determined to be valid, the page will be sealed.
+  EXPECT_CALL(ownership_key_, seal_page(1));
+
+  // The sealed page will be written into flash owner slot 1 first.
+  EXPECT_CALL(flash_ctrl_,
+              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+                                     sizeof(owner_page[1]) / sizeof(uint32_t),
+                                     &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+  // The sealed page will be written into flash owner slot 0 second.
+  EXPECT_CALL(flash_ctrl_,
+              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+                                     sizeof(owner_page[1]) / sizeof(uint32_t),
+                                     &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+
+  // The transfer will regenerate the owner secret.
+  EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
+
+  // The nonce will be regenerated.
+  EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(99));
+  // The boot_svc response will be finalized.
+  EXPECT_CALL(hdr_, Finalize(_, _, _));
+
+  rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
+  EXPECT_EQ(error, kErrorWriteBootdataThenReboot);
+  // After succeeding, the page should be sealed, the nonce changed and the
+  // ownership state set to LockedOwner.
+  EXPECT_FALSE(nonce_equal(&bootdata_.nonce, &kDefaultNonce));
+  EXPECT_EQ(bootdata_.ownership_state, kOwnershipStateLockedOwner);
+
+  switch (next_slot) {
+    case kBootSlotA:
+    case kBootSlotB:
+      // Bootdata primary_bl0_slot should be updated.
+      EXPECT_EQ(bootdata_.primary_bl0_slot, next_slot);
+      break;
+    default:
+      // Bootdata primary_bl0_slot should be unchanged from the original value.
+      EXPECT_EQ(bootdata_.primary_bl0_slot, static_cast<boot_slot_t>(0));
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, OwnershipActivateNextBl0Slot,
+                         testing::Values(kBootSlotA, kBootSlotB,
+                                         // Both `Unspecified` and all garbage
+                                         // values should result in no change.
+                                         kBootSlotUnspecified,
+                                         static_cast<boot_slot_t>(12345)));
 
 }  // namespace

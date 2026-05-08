@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 
-#include "hw/top/dt/dt_alert_handler.h"
+#include "hw/top/dt/alert_handler.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/macros.h"
@@ -334,7 +334,7 @@ rom_error_t alert_config_check(lifecycle_state_t lc_state) {
     case kLcStateTest:
       HARDENED_CHECK_EQ(lc_state, kLcStateTest);
       enum {
-        kMask = kLcStateTest ^ kErrorOk,
+        kMask = (uint32_t)kLcStateTest ^ (uint32_t)kErrorOk,
       };
       res ^= crc32 ^ kMask;
       break;

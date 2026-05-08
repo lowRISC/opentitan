@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/aes.h"
 
-#include "hw/top/dt/dt_aes.h"
+#include "hw/top/dt/aes.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
@@ -320,24 +320,16 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
     HARDENED_TRY(spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
     uint32_t offset = aes_base() + AES_DATA_OUT_0_REG_OFFSET;
-    size_t i;
-    for (i = 0; launder32(i) < ARRAYSIZE(dest->data); ++i) {
-      dest->data[i] = abs_mmio_read32(offset + i * sizeof(uint32_t));
-    }
-    // Check that the loop ran for the correct number of iterations.
-    HARDENED_CHECK_EQ(i, ARRAYSIZE(dest->data));
+    HARDENED_TRY(hardened_memcpy(dest->data, (const uint32_t *)offset,
+                                 ARRAYSIZE(dest->data)));
   }
 
   if (src != NULL) {
     HARDENED_TRY(spin_until(AES_STATUS_INPUT_READY_BIT));
 
     uint32_t offset = aes_base() + AES_DATA_IN_0_REG_OFFSET;
-    size_t i;
-    for (i = 0; launder32(i) < ARRAYSIZE(src->data); ++i) {
-      abs_mmio_write32(offset + i * sizeof(uint32_t), src->data[i]);
-    }
-    // Check that the loop ran for the correct number of iterations.
-    HARDENED_CHECK_EQ(i, ARRAYSIZE(src->data));
+    HARDENED_TRY(
+        hardened_memcpy((uint32_t *)offset, src->data, ARRAYSIZE(src->data)));
   }
 
   return OTCRYPTO_OK;

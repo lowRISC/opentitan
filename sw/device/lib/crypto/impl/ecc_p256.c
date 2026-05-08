@@ -8,10 +8,10 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/impl/security_config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/security_config.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '2', '5')
@@ -22,10 +22,20 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen(
   return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
 }
 
+otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t *signature) {
+  HARDENED_TRY(otcrypto_ecdsa_p256_sign_config_k_async_start(
+      private_key, secret_scalar, message_digest));
+  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
+}
+
 otcrypto_status_t otcrypto_ecdsa_p256_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
+    otcrypto_word32_buf_t *signature) {
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign_async_start(private_key, message_digest));
   return otcrypto_ecdsa_p256_sign_async_finalize(signature);
@@ -34,7 +44,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
       public_key, message_digest, signature));
@@ -46,19 +56,17 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
+    otcrypto_word32_buf_t *signature) {
   // Signature generation.
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign(private_key, message_digest, signature));
 
   // Verify signature before releasing it.
-  otcrypto_const_word32_buf_t signature_check = {
-      .data = signature.data,
-      .len = signature.len,
-  };
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_ecdsa_p256_verify(
-      public_key, message_digest, signature_check, &verification_result));
+      public_key, message_digest, &signature_check, &verification_result));
 
   // Trap if signature verification failed.
   HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
@@ -76,6 +84,45 @@ otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
                                      otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
   return otcrypto_ecdh_p256_async_finalize(shared_secret);
+}
+
+otcrypto_status_t otcrypto_p256_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  if (point == NULL || point == NULL || point->key == NULL ||
+      check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  p256_point_t *pt = (p256_point_t *)point->key;
+  HARDENED_TRY(p256_point_on_curve_check(pt, check_result));
+
+  return OTCRYPTO_OK;
+}
+
+status_t otcrypto_p256_base_point_mult(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || public_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+
+  p256_masked_scalar_t private_scalar;
+  HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+                               kP256MaskedScalarTotalShareWords));
+  HARDENED_CHECK_EQ(hardened_memeq(private_key->keyblob, private_scalar.share0,
+                                   kP256MaskedScalarTotalShareWords),
+                    kHardenedBoolTrue);
+  private_scalar.checksum = p256_masked_scalar_checksum(&private_scalar);
+
+  p256_point_t *pk = (p256_point_t *)public_key->key;
+  HARDENED_TRY(p256_base_point_mult(&private_scalar, pk));
+
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -113,9 +160,6 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
   if (private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(private_key->config.security_level));
 
   // Check the key mode.
   if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256) {
@@ -249,6 +293,10 @@ static status_t internal_p256_keygen_finalize(
                       kHardenedBoolTrue);
     HARDENED_TRY(hardened_memcpy(private_key->keyblob, private_scalar.share0,
                                  kP256MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_scalar.share0, private_key->keyblob,
+                       kP256MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -281,16 +329,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
   return internal_p256_keygen_finalize(private_key, public_key);
 }
 
-otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
+static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest) {
   if (private_key == NULL || private_key->keyblob == NULL ||
       message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  // Check the security config of the device.
-  HARDENED_TRY(security_config_check(private_key->config.security_level));
 
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
@@ -314,9 +359,57 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   }
   HARDENED_CHECK_EQ(launder32(message_digest.len), kP256ScalarWords);
 
-  // Check the key length.
+  // Check the key length and load the private key.
   HARDENED_TRY(p256_private_key_length_check(private_key));
 
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_blinded_key_t *secret_scalar,
+    const otcrypto_hash_digest_t message_digest) {
+  // Do initial checks on the private key and digest.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p256_sign_async_start_setup(private_key, message_digest));
+
+  // Load the secret key d.
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+  p256_masked_scalar_t private_scalar;
+  HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
+                               kP256MaskedScalarTotalShareWords));
+  private_scalar.checksum = p256_masked_scalar_checksum(&private_scalar);
+
+  // Load the secret scalar k.
+  // The use of fixed scalars should be limited to KATs.
+  HARDENED_CHECK_EQ(launder32(secret_scalar->config.hw_backed),
+                    kHardenedBoolFalse);
+  p256_masked_scalar_t config_k_scalar;
+  HARDENED_TRY(hardened_memcpy(config_k_scalar.share0, secret_scalar->keyblob,
+                               kP256MaskedScalarTotalShareWords));
+  config_k_scalar.checksum = p256_masked_scalar_checksum(&config_k_scalar);
+  HARDENED_TRY(p256_ecdsa_sign_config_k_start(
+      message_digest.data, &private_scalar, &config_k_scalar));
+
+  // To detect forgeries of the pointer to the private key that we have passed
+  // to the ECC implementation, check again its integrity. If the pointer would
+  // have been tampered with between the first integrity check we did when
+  // entering the CryptoLib and here, we would detect this now.
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_digest_t message_digest) {
+  // Do initial checks on the private key and digest.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p256_sign_async_start_setup(private_key, message_digest));
+
+  // Load the secret key d.
   if (private_key->config.hw_backed == kHardenedBoolFalse) {
     // Start the asynchronous signature-generation routine.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -324,6 +417,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     p256_masked_scalar_t private_scalar;
     HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
                                  kP256MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_key->keyblob, private_scalar.share0,
+                       kP256MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
     private_scalar.checksum = p256_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY(p256_ecdsa_sign_start(message_digest.data, &private_scalar));
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
@@ -369,16 +466,19 @@ static status_t p256_signature_length_check(size_t len) {
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
-    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL) {
+    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  HARDENED_TRY(p256_signature_length_check(signature.len));
-  p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature.data;
+  HARDENED_TRY(p256_signature_length_check(signature->len));
+  p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature->data;
   // Note: This operation wipes DMEM, so if an error occurs after this
   // point then the signature would be unrecoverable. This should be the
   // last potentially error-causing line before returning to the caller.
@@ -391,8 +491,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature) {
-  if (public_key == NULL || signature.data == NULL ||
+    otcrypto_const_word32_buf_t *signature) {
+  if (public_key == NULL || signature->data == NULL ||
       message_digest.data == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -424,8 +524,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
   HARDENED_CHECK_EQ(launder32(message_digest.len), kP256ScalarWords);
 
   // Check the signature lengths.
-  HARDENED_TRY(p256_signature_length_check(signature.len));
-  p256_ecdsa_signature_t *sig = (p256_ecdsa_signature_t *)signature.data;
+  HARDENED_TRY(p256_signature_length_check(signature->len));
+  p256_ecdsa_signature_t *sig = (p256_ecdsa_signature_t *)signature->data;
 
   // Start the asynchronous signature-verification routine.
   HARDENED_TRY(p256_ecdsa_verify_start(sig, message_digest.data, pk));
@@ -440,17 +540,20 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
+
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  HARDENED_TRY(p256_signature_length_check(signature.len));
-  p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature.data;
+  HARDENED_TRY(p256_signature_length_check(signature->len));
+  p256_ecdsa_signature_t *sig_p256 = (p256_ecdsa_signature_t *)signature->data;
   return p256_ecdsa_verify_finalize(sig_p256, verification_result);
 }
 
@@ -532,6 +635,10 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
     p256_masked_scalar_t private_scalar;
     HARDENED_TRY(hardened_memcpy(private_scalar.share0, private_key->keyblob,
                                  kP256MaskedScalarTotalShareWords));
+    HARDENED_CHECK_EQ(
+        hardened_memeq(private_key->keyblob, private_scalar.share0,
+                       kP256MaskedScalarTotalShareWords),
+        kHardenedBoolTrue);
     private_scalar.checksum = p256_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY(p256_ecdh_start(&private_scalar, pk));
   } else {
@@ -559,6 +666,9 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
 
   // Ensure the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
+
+  // Randomize the output before computing it.
+  HARDENED_TRY(hardened_memshred(shared_secret->keyblob, kP256CoordWords));
 
   // Shared keys cannot be sideloaded because they are software-generated.
   if (launder32(shared_secret->config.hw_backed) != kHardenedBoolFalse) {
@@ -598,4 +708,267 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return keymgr_sideload_clear_otbn();
+}
+
+otcrypto_status_t otcrypto_ecc_p256_public_key_import(
+    const otcrypto_const_word32_buf_t *x, const otcrypto_const_word32_buf_t *y,
+    otcrypto_unblinded_key_t *public_key) {
+  if (x == NULL || x->data == NULL || y == NULL || y->data == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the lengths of the input coordinate buffers.
+  if (x->len != kP256CoordWords || y->len != kP256CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(x->len), kP256CoordWords);
+  HARDENED_CHECK_EQ(launder32(y->len), kP256CoordWords);
+
+  // Check the output key mode; both ECDSA and ECDH P-256 public key modes are
+  // accepted since the underlying point representation is the same.
+  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the output key length (must fit a p256_point_t).
+  HARDENED_TRY(p256_public_key_length_check(public_key));
+
+  // Copy the coordinates into the output key buffer.
+  p256_point_t *pt = (p256_point_t *)public_key->key;
+  HARDENED_TRY(hardened_memcpy(pt->x, x->data, kP256CoordWords));
+  HARDENED_TRY(hardened_memcpy(pt->y, y->data, kP256CoordWords));
+
+  // Calculate the public key checksum.
+  public_key->checksum = integrity_unblinded_checksum(public_key);
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecc_p256_public_key_export(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *x,
+    otcrypto_word32_buf_t *y) {
+  if (x == NULL || x->data == NULL || y == NULL || y->data == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the lengths of the output coordinate buffers.
+  if (x->len != kP256CoordWords || y->len != kP256CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(x->len), kP256CoordWords);
+  HARDENED_CHECK_EQ(launder32(y->len), kP256CoordWords);
+
+  // Check the output key mode; both ECDSA and ECDH P-256 public key modes are
+  // accepted since the underlying point representation is the same.
+  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the key length.
+  HARDENED_TRY(p256_public_key_length_check(public_key));
+
+  // Check the integrity of the public key.
+  if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Copy the key into the output buffer.
+  p256_point_t *pt = (p256_point_t *)public_key->key;
+  HARDENED_TRY(hardened_memcpy(x->data, pt->x, kP256CoordWords));
+  HARDENED_TRY(hardened_memcpy(y->data, pt->y, kP256CoordWords));
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecc_p256_private_key_import(
+    otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
+    otcrypto_blinded_key_t *private_key) {
+  if (share0.data == NULL || share1.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(entropy_complex_check());
+
+  // Each share must be 320 bits (256-bit scalar + 64 redundant bits for
+  // side-channel protection).
+  if (share0.len != kP256MaskedScalarShareWords ||
+      share1.len != kP256MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(share0.len), kP256MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(launder32(share1.len), kP256MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
+  // the private key representation is identical for both.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Import is only supported for software-backed keys.
+  if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+
+  // Check that the caller-allocated keyblob matches the expected P-256 layout.
+  HARDENED_TRY(p256_private_key_length_check(private_key));
+
+  // Randomize the keyblob before writing secret data.
+  HARDENED_TRY(hardened_memshred(private_key->keyblob,
+                                 kP256MaskedScalarTotalShareWords));
+
+  // Copy the caller-supplied shares into the keyblob as share0 || share1,
+  // matching the p256_masked_scalar_t layout.
+  HARDENED_TRY(hardened_memcpy(private_key->keyblob, share0.data,
+                               kP256MaskedScalarShareWords));
+  HARDENED_TRY(
+      hardened_memcpy(private_key->keyblob + kP256MaskedScalarShareWords,
+                      share1.data, kP256MaskedScalarShareWords));
+
+  // Set the blinded key checksum.
+  private_key->checksum = integrity_blinded_checksum(private_key);
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecc_p256_private_key_export(
+    const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
+    otcrypto_word32_buf_t *share1) {
+  if (share0 == NULL || share0->data == NULL || share1 == NULL ||
+      share1->data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(entropy_complex_check());
+
+  // Check the output buffer lengths: each must be exactly 320 bits (256-bit
+  // scalar + 64 redundant bits for side-channel protection).
+  if (share0->len != kP256MaskedScalarShareWords ||
+      share1->len != kP256MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(share0->len), kP256MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(launder32(share1->len), kP256MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
+  // the private key representation is identical for both.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Export is only supported for software-backed keys.
+  if (private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+
+  // Check that the key is marked exportable.
+  if (launder32(private_key->config.exportable) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.exportable, kHardenedBoolTrue);
+
+  // Check that the private key length is correct.
+  HARDENED_TRY(p256_private_key_length_check(private_key));
+
+  // Check the integrity of the provided private key.
+  if (integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Randomize output buffers before writing secret data.
+  HARDENED_TRY(hardened_memshred(share0->data, kP256MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memshred(share1->data, kP256MaskedScalarShareWords));
+
+  // Copy the keyblob shares into the caller-supplied output buffers.
+  HARDENED_TRY(hardened_memcpy(share0->data, private_key->keyblob,
+                               kP256MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(
+      share1->data, private_key->keyblob + kP256MaskedScalarShareWords,
+      kP256MaskedScalarShareWords));
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
+    otcrypto_const_word32_buf_t *bool_private_key_share0,
+    otcrypto_const_word32_buf_t *bool_private_key_share1,
+    otcrypto_blinded_key_t *arith_private_key) {
+  if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
+      arith_private_key == NULL || arith_private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(entropy_complex_check());
+
+  // The key shares must resided in 320-bit buffers.
+  if (bool_private_key_share0->len != kP256MaskedScalarShareWords ||
+      bool_private_key_share1->len != kP256MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(bool_private_key_share0->len),
+                    kP256MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(launder32(bool_private_key_share1->len),
+                    kP256MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
+  // the private key representation is identical for both.
+  if (arith_private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      arith_private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Import is only supported for software-backed keys.
+  if (arith_private_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(arith_private_key->config.hw_backed),
+                    kHardenedBoolFalse);
+
+  // Check that the caller-allocated keyblob matches the expected P-256 layout.
+  HARDENED_TRY(p256_private_key_length_check(arith_private_key));
+
+  // Randomize the keyblob before writing secret data.
+  HARDENED_TRY(hardened_memshred(arith_private_key->keyblob,
+                                 kP256MaskedScalarTotalShareWords));
+
+  p256_masked_scalar_t boolean_private_scalar;
+  p256_masked_scalar_t arith_private_scalar;
+  HARDENED_TRY(hardened_memcpy(boolean_private_scalar.share0,
+                               bool_private_key_share0->data,
+                               kP256MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(boolean_private_scalar.share1,
+                               bool_private_key_share1->data,
+                               kP256MaskedScalarShareWords));
+  boolean_private_scalar.checksum =
+      p256_masked_scalar_checksum(&boolean_private_scalar);
+
+  // Invoke the sharing routine.
+  HARDENED_TRY(p256_arith_share_private_key(&boolean_private_scalar,
+                                            &arith_private_scalar));
+
+  // Copy the two arithmetic shares into the output buffer.
+  HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,
+                               arith_private_scalar.share0,
+                               kP256MaskedScalarTotalShareWords));
+
+  // Set the shared key checksum.
+  arith_private_key->checksum = integrity_blinded_checksum(arith_private_key);
+
+  HARDENED_CHECK_EQ(OTCRYPTO_CHECK_BUF(bool_private_key_share0),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(OTCRYPTO_CHECK_BUF(bool_private_key_share1),
+                    kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
 }

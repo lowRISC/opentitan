@@ -110,9 +110,9 @@ SECTIONS {
    *
    * This is placed next to the ".shutdown" section.
    */
-  .rom_isrs : ALIGN(4) {
-    *(.rom_isrs)
-    *(.rom_isrs.*)
+  .isrs : ALIGN(4) {
+    *(.isrs)
+    *(.isrs.*)
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
@@ -199,7 +199,7 @@ SECTIONS {
    * This is the last thing in rom.
    */
   .chip_info _rom_chip_info_start : ALIGN(4) {
-    KEEP(*(.chip_info))
+    KEEP(*(.build_info))
   } > rom
 
   INCLUDE sw/device/info_sections.ld

@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:ibex:ibex_tracer
+      - "fileset_partner ? (partner:prim_generic:all)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
     files:
       - rtl/ibex_top_tracing.sv
     file_type: systemVerilogSource
@@ -40,6 +42,12 @@ parameters:
     default: ibex_pkg::RV32BNone
     paramtype: vlogdefine
     description: "Bitmanip implementation parameter enum. See the ibex_pkg::rv32b_e enum in ibex_pkg.sv for permitted values."
+
+  RV32ZC:
+    datatype: str
+    default: ibex_pkg::RV32ZcaZcbZcmp
+    paramtype: vlogdefine
+    description: "Compressed instructions parameter enum. See the ibex_pkg::rv32zc_e enum in ibex_pkg.sv for permitted values."
 
   RegFile:
     datatype: str
@@ -141,6 +149,7 @@ targets:
       - RV32E
       - RV32M
       - RV32B
+      - RV32ZC
       - RegFile
       - ICache
       - ICacheECC

@@ -94,6 +94,15 @@ default_alert_config = {
         0,  # "rv_core_ibex_fatal_hw_err",
         1,  # "rv_core_ibex_recov_hw_err"
     ],
+    "enable_loc_alerts": [
+        True,  # "alert pingfail",
+        True,  # "escalation pingfail",
+        True,  # "alert integfail",
+        True,  # "escalation integfail",
+        True,  # "bus integrity failure",
+        True,  # "shadow reg update error",
+        True,  # "shadow reg storage error",
+    ],
     "enable_alerts": [
         True,  # "uart0_fatal_fault",
         True,  # "uart1_fatal_fault",
@@ -304,6 +313,15 @@ default_fpga_friendly_alert_config = {
         True,  # "rv_core_ibex_fatal_hw_err",
         True,  # "rv_core_ibex_recov_hw_err"
     ],
+    "enable_loc_alerts": [
+        True,  # "alert pingfail",
+        True,  # "escalation pingfail",
+        True,  # "alert integfail",
+        True,  # "escalation integfail",
+        True,  # "bus integrity failure",
+        True,  # "shadow reg update error",
+        True,  # "shadow reg storage error",
+    ],
     "enable_classes": [True, True, False, False],
     "accumulation_thresholds": [2, 2, 2, 2],
     "signals": [4294967295, 0, 2, 3],
@@ -446,6 +464,15 @@ no_escalation_alert_config = {
         True,  # "rv_core_ibex_recov_sw_err",
         True,  # "rv_core_ibex_fatal_hw_err",
         True,  # "rv_core_ibex_recov_hw_err"
+    ],
+    "enable_loc_alerts": [
+        True,  # "alert pingfail",
+        True,  # "escalation pingfail",
+        True,  # "alert integfail",
+        True,  # "escalation integfail",
+        True,  # "bus integrity failure",
+        True,  # "shadow reg update error",
+        True,  # "shadow reg storage error",
     ],
     "enable_classes": [False, False, False, False],
     "accumulation_thresholds": [2, 2, 2, 2],

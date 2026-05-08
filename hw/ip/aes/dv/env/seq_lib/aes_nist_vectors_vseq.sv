@@ -46,6 +46,9 @@ class aes_nist_vectors_vseq extends aes_base_vseq;
       ral.ctrl_shadowed.key_len.set(nist_vectors[i].key_len);
       ral.ctrl_shadowed.mode.set(nist_vectors[i].mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.operation.predict(AES_ENC));
+      void'(ral.ctrl_shadowed.key_len.predict(nist_vectors[i].key_len));
+      void'(ral.ctrl_shadowed.mode.predict(nist_vectors[i].mode));
       // transpose key To match NIST format ( little endian)
       init_key = '{ {<<8{nist_vectors[i].key}} ,  256'h0 };
       write_key(init_key, do_b2b);
@@ -84,6 +87,9 @@ class aes_nist_vectors_vseq extends aes_base_vseq;
       ral.ctrl_shadowed.key_len.set(nist_vectors[i].key_len);
       ral.ctrl_shadowed.mode.set(nist_vectors[i].mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.operation.predict(AES_DEC));
+      void'(ral.ctrl_shadowed.key_len.predict(nist_vectors[i].key_len));
+      void'(ral.ctrl_shadowed.mode.predict(nist_vectors[i].mode));
 
       // transpose key To match NIST format ( little endian)
       init_key = '{ {<<8{nist_vectors[i].key}} ,  256'h0 };

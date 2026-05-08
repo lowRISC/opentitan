@@ -13,8 +13,6 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-
 dif_kmac_config_t kKmacTestCases[] = {
 
     //////////////////////////////////////////////////////////////////////////////
@@ -235,7 +233,7 @@ status_t test_kmac_config(dif_kmac_config_t *test_case) {
     } else {
       // If the hash counter threshold is not enabled (i.e. set to 0), the hash
       // counter maxes out at kHashCntMax and should not overflow
-      expected_hash_count = MIN(expected_hash_count + 1, kHashCntMax);
+      expected_hash_count = MIN(expected_hash_count + 1, (uint32_t)kHashCntMax);
     }
     TRY_CHECK(expected_hash_count == hash_count,
               "Unexpected hash counter value: Got %d, Expected %d", hash_count,

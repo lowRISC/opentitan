@@ -88,7 +88,7 @@ fn run_sca_sha3_testcase(
 
     if !test_case.status.is_empty() {
         // Get test output & filter.
-        let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+        let output = serde_json::Value::recv(uart, opts.timeout, false, false)?;
         let output_received = filter_response_common(output.clone());
 
         // Filter expected output.
@@ -113,7 +113,7 @@ fn run_sca_sha3_testcase(
     if !test_case.expected_output.is_empty() {
         for exp_output in test_case.expected_output.iter() {
             // Get test output & filter.
-            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            let output = serde_json::Value::recv(uart, opts.timeout, false, false)?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
                 let output_received = filter_response_common(output.clone());
@@ -144,7 +144,7 @@ fn run_sca_sha3_testcase(
 fn test_sca_sha3(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;

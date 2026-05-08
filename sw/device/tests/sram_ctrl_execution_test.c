@@ -85,7 +85,7 @@ bool test_main(void) {
         "expected PMPCFG1 to be unconfigured before changing it");
 
   CSR_SET_BITS(CSR_REG_PMPCFG1,
-               ((uint32_t)(kEpmpModeNapot | kEpmpPermLockedReadWriteExecute))
+               (((uint32_t)kEpmpModeNapot | kEpmpPermLockedReadWriteExecute))
                    << 24);
 
   // Note: We can test the negative case only using the retention SRAM since

@@ -154,12 +154,12 @@ def _get_otp_ctrl_netlist_consts(top_secret_cfg: dict, scrambling_configs: Flash
         if key["name"] == "Secret1Key":
             scrambling_configs.otp_secret1_key = check_int(key["value"])
 
-    # Extract OTP flash scrambling key IVs.
+    # Extract OTP NVM scrambling key IVs.
     for digest in otp_map["scrambling"]["digests"]:
-        if digest["name"] == "FlashAddrKey":
+        if digest["name"] == "NvmAddrKey":
             scrambling_configs.addr_key_iv = check_int(digest["iv_value"])
             scrambling_configs.addr_key_final_const = check_int(digest["cnst_value"])
-        if digest["name"] == "FlashDataKey":
+        if digest["name"] == "NvmDataKey":
             scrambling_configs.data_key_iv = check_int(digest["iv_value"])
             scrambling_configs.data_key_final_const = check_int(digest["cnst_value"])
 

@@ -13,7 +13,8 @@ on:
       - "*"
   pull_request_target:
     branches:
-      - "*"
+      # We should only run Private CI on `master` currently.
+      - "master"
 
 permissions:
   contents: write # For repository dispatch
@@ -24,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Private CI
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const payload = {

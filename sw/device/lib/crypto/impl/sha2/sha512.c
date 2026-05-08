@@ -352,6 +352,8 @@ static status_t state_shred(sha512_state_t *state) {
       hardened_memshred(state->partial_block, kSha512MessageBlockWords));
   state->total_len.lower = 0;
   state->total_len.upper = 0;
+
+  return OTCRYPTO_OK;
 }
 
 /**

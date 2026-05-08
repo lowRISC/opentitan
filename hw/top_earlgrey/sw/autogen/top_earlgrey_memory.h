@@ -305,23 +305,6 @@
  */
 #define TOP_EARLGREY_LC_CTRL_REGS_SIZE_BYTES 0x100
 /**
- * Peripheral base address for dmi device on lc_ctrl in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_LC_CTRL_DMI_BASE_ADDR 0x0
-
-/**
- * Peripheral size for dmi device on lc_ctrl in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_LC_CTRL_DMI_BASE_ADDR and
- * `TOP_EARLGREY_LC_CTRL_DMI_BASE_ADDR + TOP_EARLGREY_LC_CTRL_DMI_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_LC_CTRL_DMI_SIZE_BYTES 0x1000
-/**
  * Peripheral base address for alert_handler in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -644,23 +627,6 @@
  * `TOP_EARLGREY_RV_DM_MEM_BASE_ADDR + TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES 0x1000
-/**
- * Peripheral base address for dbg device on rv_dm in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_RV_DM_DBG_BASE_ADDR 0x1000
-
-/**
- * Peripheral size for dbg device on rv_dm in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_RV_DM_DBG_BASE_ADDR and
- * `TOP_EARLGREY_RV_DM_DBG_BASE_ADDR + TOP_EARLGREY_RV_DM_DBG_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_RV_DM_DBG_SIZE_BYTES 0x200
 /**
  * Peripheral base address for rv_plic in top earlgrey.
  *

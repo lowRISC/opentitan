@@ -335,7 +335,7 @@ def main() -> int:
             emb_file.write(b'\1\0')
 
         if archive:
-            out_embedded_a = out_dir / (app_name + '.rv32embed.a')
+            out_embedded_a = out_dir / ('lib' + app_name + '.rv32embed.a')
             call_rv32_ar(['rcs', out_embedded_a, out_embedded_obj])
 
     except subprocess.CalledProcessError as e:

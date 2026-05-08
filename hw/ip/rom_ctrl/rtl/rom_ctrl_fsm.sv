@@ -101,7 +101,7 @@ module rom_ctrl_fsm
   localparam int TAW = vbits(TopCount);
 
   localparam int unsigned TopStartAddrInt = RomDepth - TopCount;
-  localparam bit [AW-1:0] TopStartAddr    = TopStartAddrInt[AW-1:0];
+  localparam bit [AW-1:0] TopStartAddr    = TopStartAddrInt[0 +: AW];
 
   // The counter / address generator
   logic          counter_done;

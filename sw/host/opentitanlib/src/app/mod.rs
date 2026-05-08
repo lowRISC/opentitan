@@ -19,7 +19,7 @@ use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::{Target, TransferMode};
 use crate::io::uart::Uart;
 use crate::transport::{
-    Capability, MaintainConnection, ProgressIndicator, ProxyOps, Transport, TransportError,
+    Capability, FpgaOps, ProgressIndicator, ProxyOps, Transport, TransportError,
     TransportInterfaceType, ioexpander,
 };
 
@@ -203,6 +203,7 @@ pub struct I2cConfiguration {
 pub struct TransportWrapperBuilder {
     interface: String,
     disable_dft_on_reset: bool,
+    reset_delay: Duration,
     openocd_adapter_config: Option<PathBuf>,
     provides_list: Vec<(String, String)>,
     requires_list: Vec<(String, String)>,
@@ -223,6 +224,7 @@ pub struct TransportWrapperBuilder {
 pub struct TransportWrapper {
     transport: Rc<dyn Transport>,
     disable_dft_on_reset: Cell<bool>,
+    reset_delay: Cell<Duration>,
     openocd_adapter_config: Option<PathBuf>,
     provides_map: HashMap<String, String>,
     pin_map: HashMap<String, String>,
@@ -253,6 +255,7 @@ impl TransportWrapperBuilder {
         Self {
             interface,
             disable_dft_on_reset,
+            reset_delay: Duration::from_millis(100),
             openocd_adapter_config: None,
             provides_list: Vec::new(),
             requires_list: Vec::new(),
@@ -376,6 +379,11 @@ impl TransportWrapperBuilder {
         for (key, value) in file.requires {
             self.requires_list.push((key, value));
         }
+
+        if let Some(reset_delay) = file.reset_delay {
+            self.reset_delay = reset_delay;
+        }
+
         // Merge content of configuration file into pin_map and other members.
         for pin_conf in file.pins {
             if let Some(alias_of) = &pin_conf.alias_of {
@@ -712,6 +720,7 @@ impl TransportWrapperBuilder {
         let mut transport_wrapper = TransportWrapper {
             transport: Rc::from(transport),
             disable_dft_on_reset: Cell::new(self.disable_dft_on_reset),
+            reset_delay: Cell::new(self.reset_delay),
             openocd_adapter_config: self.openocd_adapter_config,
             provides_map,
             pin_map: self.pin_alias_map,
@@ -746,7 +755,7 @@ impl TransportWrapperBuilder {
                 );
                 transport_wrapper
                     .artificial_pin_map
-                    .insert(pinname, Rc::clone(&io.pins[v.pin_no as usize]));
+                    .insert(pinname, io.pins[v.pin_no as usize].clone());
             } else {
                 bail!(TransportError::InvalidIoExpanderName(
                     v.io_expander.to_string()
@@ -810,23 +819,22 @@ impl TransportWrapper {
         let name = name.to_uppercase();
         let mut spi_logical_map = self.spi_logical_map.borrow_mut();
         if let Some(instance) = spi_logical_map.get(&name) {
-            return Ok(Rc::clone(instance) as Rc<dyn Target>);
+            return Ok(instance.clone());
         }
         if let Some(spi_conf) = self.spi_conf_map.get(&name) {
             let mut spi_physical_map = self.spi_physical_map.borrow_mut();
             // Find if we already have a PhysicalSpiWrapper around the requested instance.  If
             // not, create one.
-            let physical_wrapper = if let Some(instance) =
-                spi_physical_map.get(&spi_conf.underlying_instance)
-            {
-                Rc::clone(instance)
-            } else {
-                let instance = Rc::new(spi::PhysicalSpiWrapper::new(
-                    self.transport.spi(spi_conf.underlying_instance.as_str())?,
-                ));
-                spi_physical_map.insert(spi_conf.underlying_instance.clone(), Rc::clone(&instance));
-                instance
-            };
+            let physical_wrapper =
+                if let Some(instance) = spi_physical_map.get(&spi_conf.underlying_instance) {
+                    instance.clone()
+                } else {
+                    let instance = Rc::new(spi::PhysicalSpiWrapper::new(
+                        self.transport.spi(spi_conf.underlying_instance.as_str())?,
+                    ));
+                    spi_physical_map.insert(spi_conf.underlying_instance.clone(), instance.clone());
+                    instance
+                };
 
             // Create a LogicalSpiWrapper referring to the physical port, and carrying the
             // particular speed and other settings.
@@ -835,7 +843,7 @@ impl TransportWrapper {
                 spi_conf,
                 physical_wrapper,
             )?);
-            spi_logical_map.insert(name, Rc::clone(&new_wrapper));
+            spi_logical_map.insert(name, new_wrapper.clone());
             Ok(new_wrapper)
         } else {
             self.transport.spi(name.as_str())
@@ -847,23 +855,22 @@ impl TransportWrapper {
         let name = name.to_uppercase();
         let mut i2c_logical_map = self.i2c_logical_map.borrow_mut();
         if let Some(instance) = i2c_logical_map.get(&name) {
-            return Ok(Rc::clone(instance) as Rc<dyn Bus>);
+            return Ok(instance.clone());
         }
         if let Some(i2c_conf) = self.i2c_conf_map.get(&name) {
             let mut i2c_physical_map = self.i2c_physical_map.borrow_mut();
             // Find if we already have a PhysicalI2cWrapper around the requested instance.  If
             // not, create one.
-            let physical_wrapper = if let Some(instance) =
-                i2c_physical_map.get(&i2c_conf.underlying_instance)
-            {
-                Rc::clone(instance)
-            } else {
-                let instance = Rc::new(i2c::PhysicalI2cWrapper::new(
-                    self.transport.i2c(i2c_conf.underlying_instance.as_str())?,
-                ));
-                i2c_physical_map.insert(i2c_conf.underlying_instance.clone(), Rc::clone(&instance));
-                instance
-            };
+            let physical_wrapper =
+                if let Some(instance) = i2c_physical_map.get(&i2c_conf.underlying_instance) {
+                    instance.clone()
+                } else {
+                    let instance = Rc::new(i2c::PhysicalI2cWrapper::new(
+                        self.transport.i2c(i2c_conf.underlying_instance.as_str())?,
+                    ));
+                    i2c_physical_map.insert(i2c_conf.underlying_instance.clone(), instance.clone());
+                    instance
+                };
 
             // Create a LogicalI2cWrapper referring to the physical port, and carrying the
             // particular speed and other settings.
@@ -872,7 +879,7 @@ impl TransportWrapper {
                 i2c_conf,
                 physical_wrapper,
             )?);
-            i2c_logical_map.insert(name, Rc::clone(&new_wrapper));
+            i2c_logical_map.insert(name, new_wrapper.clone());
             Ok(new_wrapper)
         } else {
             self.transport.i2c(name.as_str())
@@ -929,7 +936,7 @@ impl TransportWrapper {
         // Find if we already have a GpioPinWrapper around the requested instance.  If
         // not, create one.
         if let Some(instance) = pin_instance_map.get(&resolved_pin_name) {
-            Ok(Rc::clone(instance) as Rc<dyn GpioPin>)
+            Ok(instance.clone())
         } else {
             let instance = if let Some(pin) = self.artificial_pin_map.get(&resolved_pin_name) {
                 pin.clone()
@@ -942,8 +949,8 @@ impl TransportWrapper {
                 .and_then(|conf| conf.invert)
                 .unwrap_or(false);
             let wrapper = Rc::new(gpio::GpioPinWrapper::new(instance, invert));
-            pin_instance_map.insert(resolved_pin_name, Rc::clone(&wrapper));
-            Ok(wrapper as Rc<dyn GpioPin>)
+            pin_instance_map.insert(resolved_pin_name, wrapper.clone());
+            Ok(wrapper)
         }
     }
 
@@ -972,7 +979,7 @@ impl TransportWrapper {
 
     pub fn pin_strapping(&self, name: &str) -> Result<PinStrapping> {
         let proxy = if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
-            Some(self.proxy_ops()?)
+            Some(self.transport.clone())
         } else {
             None
         };
@@ -996,12 +1003,17 @@ impl TransportWrapper {
     }
 
     /// Returns a [`Emulator`] implementation.
-    pub fn emulator(&self) -> Result<Rc<dyn Emulator>> {
+    pub fn emulator(&self) -> Result<&dyn Emulator> {
         self.transport.emulator()
     }
 
+    /// Methods available only on FPGA implementations.
+    pub fn fpga_ops(&self) -> Result<&dyn FpgaOps> {
+        self.transport.fpga_ops()
+    }
+
     /// Methods available only on Proxy implementation.
-    pub fn proxy_ops(&self) -> Result<Rc<dyn ProxyOps>> {
+    pub fn proxy_ops(&self) -> Result<&dyn ProxyOps> {
         self.transport.proxy_ops()
     }
 
@@ -1051,11 +1063,6 @@ impl TransportWrapper {
     /// Configure all pins as input/output, pullup, etc. as declared in configuration files.
     /// Also configure SPI port mode/speed, and other similar settings.
     pub fn apply_default_configuration(&self, strapping_name: Option<&str>) -> Result<()> {
-        // Telling the transport that this function is the exclusive user of the debugger device
-        // for the duration of this function, will allow the transport to keep USB handles open,
-        // for optimization.  (For transports such as the proxy, which does not have any
-        // such optimization, this is a no-op.)
-        let _maintain_connection = self.transport.maintain_connection()?;
         if let Some(strapping_name) = strapping_name {
             if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
                 self.proxy_ops()?
@@ -1087,40 +1094,72 @@ impl TransportWrapper {
         Ok(())
     }
 
+    #[deprecated = "use [`reset`] or [`reset_with_delay`]"]
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
-        // Telling the transport that this function is the exclusive user of the debugger device
-        // for the duration of this function, will allow the transport to keep USB handles open,
-        // for optimization.  (For transports such as the proxy, which does not have any
-        // such optimization, this is a no-op.)
-        let _maintain_connection = self.transport.maintain_connection()?;
+        let uart_rx = match clear_uart_rx {
+            true => UartRx::Clear,
+            false => UartRx::Keep,
+        };
+        self.reset_with_delay(uart_rx, reset_delay)
+    }
+
+    /// Reset the target, optionally clearing the console UART RX.
+    pub fn reset(&self, uart_rx: UartRx) -> Result<()> {
+        self.reset_with_delay(uart_rx, self.reset_delay.get())
+    }
+
+    /// Reset the target with some delay, optionally clearing the console UART RX.
+    pub fn reset_with_delay(&self, uart_rx: UartRx, delay: Duration) -> Result<()> {
         log::info!("Asserting the reset signal");
+
         if self.disable_dft_on_reset.get() {
             self.pin_strapping("PRERESET_DFT_DISABLE")?.apply()?;
         }
+
         self.pin_strapping("RESET")?.apply()?;
-        std::thread::sleep(reset_delay);
-        if clear_uart_rx {
+        std::thread::sleep(delay);
+
+        if uart_rx == UartRx::Clear {
             log::info!("Clearing the UART RX buffer");
             self.uart("console")?.clear_rx_buffer()?;
         }
+
         log::info!("Deasserting the reset signal");
         self.pin_strapping("RESET")?.remove()?;
+
         if self.disable_dft_on_reset.get() {
             std::thread::sleep(Duration::from_millis(10));
             // We remove the DFT strapping after waiting some time, as the DFT straps should have been
             // sampled by then and we can resume our desired pin configuration.
             self.pin_strapping("PRERESET_DFT_DISABLE")?.remove()?;
         }
-        std::thread::sleep(reset_delay);
+
+        std::thread::sleep(delay);
+
         Ok(())
     }
 
-    /// As long as the returned `MaintainConnection` object is kept by the caller, this driver may
-    /// assume that no other `opentitantool` processes attempt to access the same debugger device.
-    /// This allows for optimizations such as keeping USB handles open across function invocations.
-    pub fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
-        self.transport.maintain_connection()
+    /// Invoke the provided callback (preferably) without exclusive access.
+    ///
+    /// By default, ownership of `Transport` would imply exclusive access to the underlying device,
+    /// and optimisation can be made assuming no other process would be simultaneously accessing.
+    /// However for long running commands, such as `opentitantool console`, it may be desirable to
+    /// relinquish exclusive access during such comamnd and only re-take exclusive access later.
+    ///
+    /// Transport that does not support such scenario may ignore such request and perform a no-op.
+    pub fn relinquish_exclusive_access<T>(&self, callback: impl FnOnce() -> T) -> Result<T> {
+        let mut ret = None;
+        self.transport.relinquish_exclusive_access(Box::new(|| {
+            ret = Some(callback());
+        }))?;
+        Ok(ret.unwrap())
     }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum UartRx {
+    Clear,
+    Keep,
 }
 
 /// Given an pin/uart/spi/i2c port name, if the name is a known alias, return the underlying
@@ -1189,7 +1228,7 @@ impl GpioPin for NullPin {
 /// configuration files under a given strapping name.
 pub struct PinStrapping {
     name: String,
-    proxy: Option<Rc<dyn ProxyOps>>,
+    proxy: Option<Rc<dyn Transport>>,
     pins: Vec<StrappedPin>,
 }
 
@@ -1203,10 +1242,10 @@ impl PinStrapping {
     /// Configure the set of pins as strong/weak pullup/pulldown as declared in configuration
     /// files under a given strapping name.
     pub fn apply(&self) -> Result<()> {
-        if let Some(ref proxy_ops) = self.proxy {
+        if let Some(ref transport) = self.proxy {
             // The transport happens to be connected to a remote opentitan session.  First, pass
             // the request to the remote server.
-            if let Err(e) = proxy_ops.apply_pin_strapping(&self.name) {
+            if let Err(e) = transport.proxy_ops()?.apply_pin_strapping(&self.name) {
                 match e.downcast_ref::<TransportError>() {
                     Some(TransportError::InvalidStrappingName(_)) => {
                         if self.pins.is_empty() {
@@ -1232,10 +1271,10 @@ impl PinStrapping {
     /// configuration, that is, to the level declared in the "pins" section of configuration
     /// files, outside of any "strappings" section.
     pub fn remove(&self) -> Result<()> {
-        if let Some(ref proxy_ops) = self.proxy {
+        if let Some(ref transport) = self.proxy {
             // The transport happens to be connection to a remote opentitan session.  Pass
             // request to the remote server.
-            if let Err(e) = proxy_ops.remove_pin_strapping(&self.name) {
+            if let Err(e) = transport.proxy_ops()?.remove_pin_strapping(&self.name) {
                 match e.downcast_ref::<TransportError>() {
                     Some(TransportError::InvalidStrappingName(_)) => {
                         if self.pins.is_empty() {

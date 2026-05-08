@@ -1,16 +1,13 @@
 # KMAC HWIP Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/kmac/data/kmac.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`kmac_masked`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_masked/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_masked/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_masked/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_masked/code.svg) |
+ [`kmac_unmasked`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D2S, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_unmasked/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_unmasked/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_unmasked/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/kmac_unmasked/code.svg) |
 
-[`kmac/masked`](https://reports.opentitan.org/hw/ip/kmac_masked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/masked/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/kmac/index.html).
 
-[`kmac/unmasked`](https://reports.opentitan.org/hw/ip/kmac_unmasked/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/kmac/unmasked/code.svg)
+<!-- END CMDGEN -->
 
 # Overview
 

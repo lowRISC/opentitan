@@ -12,6 +12,7 @@ load(
     "ROM_EXT_VARIATIONS",
     "ROM_EXT_VERSION",
     "SLOTS",
+    "secver_write_selection",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -22,6 +23,7 @@ manifest(d = {
     "version_major": ROM_EXT_VERSION.MAJOR,
     "version_minor": ROM_EXT_VERSION.MINOR,
     "security_version": ROM_EXT_VERSION.SECURITY,
+    "secver_write": secver_write_selection(),
     "visibility": ["//visibility:private"],
 })
 
@@ -40,7 +42,10 @@ ROM_EXT_FEATURES = [
 [
     opentitan_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        ecdsa_key = select({
+            "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
+            "//conditions:default": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
+        }),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
@@ -54,9 +59,8 @@ ROM_EXT_FEATURES = [
             "$(location //sw/device/lib/crt)",
         ],
         manifest = ":manifest_sival",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         transitive_features = ROM_EXT_FEATURES,
-        # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
-        #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
             # as it is typically used to test FPGA flows and the FPGA doesn't
@@ -64,6 +68,7 @@ ROM_EXT_FEATURES = [
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
         ],
@@ -90,6 +95,7 @@ ROM_EXT_FEATURES = [
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
         ],
@@ -107,7 +113,7 @@ offline_presigning_artifacts(
         for slot in SLOTS
     ],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0_ecdsa_p256",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0",
     },
     manifest = ":manifest_sival",
     tags = ["manual"],
@@ -129,6 +135,9 @@ offline_signature_attach(
     ],
     ecdsa_signatures = [
         "//sw/device/silicon_creator/rom_ext/sival/signatures:ecdsa_signatures",
+    ],
+    spx_signatures = [
+        "//sw/device/silicon_creator/rom_ext/sival/signatures:spx_signatures",
     ],
     tags = ["manual"],
 )

@@ -29,6 +29,7 @@ ld_library(
 
 opentitan_binary(
     name = "test_rom",
+    collect_code_coverage = 0,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw305",
@@ -226,7 +227,7 @@ cc_library(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:build_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
     ] + opentitan_if_ip(
@@ -245,7 +246,7 @@ cc_library(
         "flash_ctrl",
         [
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top:dt_flash_ctrl",
+            "//hw/top/dt:flash_ctrl",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
         ],
@@ -258,7 +259,7 @@ cc_library(
         "otp_ctrl",
         [
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:dt_otp_ctrl",
+            "//hw/top/dt:otp_ctrl",
         ],
         [],
     ),

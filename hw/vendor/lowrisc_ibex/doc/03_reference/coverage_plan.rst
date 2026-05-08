@@ -338,7 +338,7 @@ For more detail about each security countermeasure in Ibex see :ref:`security`
 
 * ``cp_lockstep_err`` - Lockstep glitch fault seen.
 
-* ``cp_rf_we_glitch_err`` - Register file write enable glitch fault seen.
+* ``cp_rf_glitch_err`` - Register file fault seen.
 
 * ``cp_pc_mismatch_err`` - PC mismatch error seen.
 
@@ -360,7 +360,7 @@ The mapping between security countermeasures and coverpoints that demonstrate it
 +--------------------------------+-------------------------------------------------------+
 | DATA_REG_SW.INTEGRITY          | ``cp_rf_a_ecc_err`` ``cp_rf_b_ecc_err``               |
 +--------------------------------+-------------------------------------------------------+
-| DATA_REG_SW.GLITCH_DETECT      | ``cp_rf_we_glitch_err``                               |
+| DATA_REG_SW.GLITCH_DETECT      | ``cp_rf_glitch_err``                                  |
 +--------------------------------+-------------------------------------------------------+
 | LOGIC.SHADOW                   | ``cp_lockstep_err``                                   |
 +--------------------------------+-------------------------------------------------------+

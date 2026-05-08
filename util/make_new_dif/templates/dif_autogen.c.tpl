@@ -88,7 +88,7 @@ dif_result_t dif_${ip.name_snake}_init_from_dt(
 dif_result_t dif_${ip.name_snake}_get_dt(
   const dif_${ip.name_snake}_t *${ip.name_snake},
   dt_${ip.name_snake}_t *dt) {
-  if (${ip.name_snake}->dt == kDt${ip.name_camel}Count || dt == NULL) {
+  if ((int)${ip.name_snake}->dt == kDt${ip.name_camel}Count || dt == NULL) {
     return kDifBadArg;
   }
   *dt = ${ip.name_snake}->dt;

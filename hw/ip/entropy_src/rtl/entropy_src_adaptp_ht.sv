@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: entropy_src adaptive proportion health test module
+// Description: entropy_src Adaptive Proportion Test module
 //
 
 module entropy_src_adaptp_ht #(

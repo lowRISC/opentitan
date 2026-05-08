@@ -393,8 +393,10 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
         outfile,
         "// Licensed under the Apache License, Version 2.0 or the MIT License.\n"
     )
+    # REUSE-IgnoreStart
     genout(outfile, "// SPDX-License-Identifier: Apache-2.0 OR MIT\n")
     genout(outfile, "// Copyright lowRISC contributors (OpenTitan project).\n")
+    # REUSE-IgnoreEnd
     genout(outfile, '\n')
     genout(outfile, '// Generated register constants for {}.\n', block.name)
 

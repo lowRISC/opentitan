@@ -210,7 +210,7 @@ bool test_main(void) {
   // We need to initialize the info FLASH partitions storing the Creator and
   // Owner secrets to avoid getting the flash controller into a fatal error
   // state.
-  if (kDeviceType == kDeviceFpgaCw310) {
+  if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
     dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
     if (rst_info & kDifRstmgrResetInfoPor) {
       CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
@@ -226,7 +226,7 @@ bool test_main(void) {
 
     // Update the expected `reset_info` value for the FPGA target, as we have
     // a soft reset required to apply the info flash page configuration.
-    if (kDeviceType == kDeviceFpgaCw310) {
+    if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
       reset_info = kDifRstmgrResetInfoSw;
     }
 

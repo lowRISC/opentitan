@@ -46,7 +46,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   flash_mem_init_e otf_flash_init = FlashMemInitEccMode;
 
   constraint all_ent_c {
-    solve all_entry_en before rand_regions, rand_info;
     if (cfg.en_always_any) all_entry_en == 1;
     else all_entry_en dist { 1 := 1, 0 := 4};
   }
@@ -88,19 +87,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.seq_cfg.addr_flash_word_aligned -> fractions[0] == 1'b0;
   }
   constraint ctrl_info_num_c {
-    solve rand_op before ctrl_info_num;
+    solve rand_op.partition before ctrl_info_num;
     ctrl_info_num inside {[1 : InfoTypeSize[rand_op.partition >> 1]]};
     if (cfg.ecc_mode > FlashEccEnabled) ctrl_info_num * fractions <= 128;
   }
   constraint ctrl_num_c {
-    solve ctrl_data_num, ctrl_info_num, rand_op before ctrl_num;
+    solve ctrl_data_num, ctrl_info_num, rand_op.partition before ctrl_num;
     if (rand_op.partition == FlashPartData) ctrl_num == ctrl_data_num;
     else ctrl_num == ctrl_info_num;
   }
 
   constraint rand_op_c {
     solve fractions before rand_op.addr;
-    solve flash_program_data before rand_op;
     solve rand_op.partition before rand_op.prog_sel, rand_op.addr;
     solve rand_op.addr before rand_op.otf_addr;
     solve rand_op.addr before rand_op.num_words;
@@ -572,21 +570,14 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
   // @arg: overrd : invoke oversize read
   // @arg: in_err : inject fatal error causes flash access disable
-  virtual task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
-                  int overrd = 0, bit in_err = 0);
-    data_q_t flash_read_data;
-    flash_otf_item exp_item;
-    bit poll_fifo_status = ~in_err;
+  virtual task read_flash(ref flash_op_t flash_op,
+                          input int      bank,
+                          input int      num,
+                          input int      wd = 16,
+                          input int      overrd = 0,
+                          input bit      in_err = 0);
     bit [flash_ctrl_top_specific_pkg::BusAddrByteW-1:0] start_addr, end_addr;
-    int page;
     bit overflow = 0;
-    uvm_reg_data_t reg_data;
-    bit derr_is_set;
-    bit drop;
-    int size, is_odd, tail;
-    addr_t tmp_addr;
-    flash_mp_region_cfg_t my_region;
-    rd_cache_t rd_entry;
 
     // Exclude secret partition from non scrambled / ecc mode
     if (cfg.ecc_mode == FlashEccDisabled &&
@@ -627,7 +618,18 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
               UVM_MEDIUM)
 
     for (int i = 0; i < num; i++) begin
-      drop = 0;
+      data_q_t              flash_read_data;
+      flash_otf_item        exp_item;
+      bit                   derr_is_set;
+      bit                   drop;
+      int unsigned          page;
+      int unsigned          size;
+      bit                   is_odd;
+      bit                   tail;
+      addr_t                tmp_addr;
+      flash_mp_region_cfg_t my_region;
+      rd_cache_t            rd_entry;
+
       flash_op.addr = flash_op.otf_addr;
       flash_op.addr[TL_AW-1:OTFBankId] = bank;
       rd_entry.bank = bank;
@@ -706,7 +708,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.ecc_mode > FlashEccEnabled) begin
         if (drop == 0) begin
           if (cfg.ecc_mode == FlashSerrTestMode || flash_op.addr[2] == 0) begin
-            cfg.add_bit_err(flash_op.addr, ReadTaskCtrl, exp_item);
+            cfg.add_bit_err(flash_op, ReadTaskCtrl, exp_item);
             derr_is_set = cfg.address_has_derr(flash_op.addr, flash_op.partition);
             `uvm_info(`gfn, $sformatf("derr_is_set:%b, addr:0x%x", derr_is_set, flash_op.addr),
                       UVM_MEDIUM)
@@ -738,7 +740,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (in_err) begin
            cfg.tlul_core_exp_cnt += flash_op.num_words;
         end
-        flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
+        flash_ctrl_read(flash_op.num_words,
+                        flash_read_data,
+                        .poll_fifo_status(!in_err));
 
         if (overrd > 0) begin
           overread(flash_op, bank, num, overrd);
@@ -747,6 +751,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end
 
       if (derr_is_set | cfg.ierr_created[ReadTaskCtrl]) begin
+        uvm_reg_data_t reg_data;
+
         `uvm_info("read_flash", $sformatf(
                   "bank:%0d addr: %x(otf:%x) derr_is_set:%0d ierr_created[ReadTaskCtrl]:%0d",
                   bank, flash_op.addr, flash_op.otf_addr, derr_is_set,
@@ -807,16 +813,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: in_err : inject fatal error causes flash access disable
   virtual task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, bit in_err);
     bit[TL_AW-1:0] tl_addr, st_addr, end_addr;
-    data_4s_t rdata;
-    flash_otf_item exp_item;
-    int page;
-    flash_op_t flash_op;
-    bit completed;
-    bit derr_is_set;
-    bit ierr_is_set;
-    bit derr, drop;
     bit overflow = 0;
-    flash_mp_region_cfg_t my_region;
     rd_cache_t rd_entry;
 
     end_addr = addr + num * 4 - 1;
@@ -841,8 +838,16 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // Capture for the print in sb.
     st_addr = tl_addr;
     for (int i = 0; i < num ; i++) begin
-      drop = 0;
-      derr = 0;
+      data_4s_t             rdata;
+      flash_otf_item        exp_item;
+      int unsigned          page;
+      flash_op_t            flash_op;
+      bit                   completed;
+      bit                   derr_is_set;
+      bit                   ierr_is_set;
+      bit                   derr, drop;
+      flash_mp_region_cfg_t my_region;
+
       // force address wrap around
       if (cfg.ecc_mode > FlashEccEnabled) tl_addr[18:17] = cfg.tgt_pre[FlashPartData][TgtDr];
 

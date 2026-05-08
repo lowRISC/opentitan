@@ -52,7 +52,7 @@ The quickest way to run an OTBN-only program is to use the Python simulator.
 First, generate a `.elf.` file either using the usual build process or by
 manually running `otbn_as.py` and `otbn_ld.py` as shown above. Then, from `$REPO_TOP`:
 ```console
-$ hw/ip/otbn/dv/otbnsim/standalone.py -t path/to/prog.elf
+$ hw/ip/otbn/dv/otbnsim/standalone.py path/to/prog.elf
 ```
 
 ### Run the standalone RTL simulation
@@ -60,7 +60,9 @@ A standalone environment to run OTBN alone in Verilator is included. Build it
 with `fusesoc` as follows:
 
 ```sh
-fusesoc --cores-root=. run --target=sim --setup --build lowrisc:ip:otbn_top_sim
+fusesoc --cores-root=. run --target=sim --setup --build \
+  --mapping=lowrisc:prim_generic:all:0.1 lowrisc:ip:otbn_top_sim \
+  --make_options="-j$(nproc)"
 ```
 
 It includes functionality to set the initial Dmem and Imem contents from a .elf
@@ -107,6 +109,11 @@ hw/ip/otbn/dv/smoke/run_smoke.sh
 This will build the standalone simulation, build the smoke test binary, run it
 and check the results are as expected.
 
+The vectorized bignum instructions can be smoke-tested by adding the 'vectorized' argument:
+```sh
+hw/ip/otbn/dv/smoke/run_smoke.sh vectorized
+```
+
 ### Run the ISS on its own
 
 There are currently two versions of the ISS and they can be found in
@@ -125,5 +132,5 @@ command-line use otherwise.
 ## Test the ISS
 
 The ISS has a simple test suite, which runs various instructions and
-makes sure they behave as expected. You can find the tests in
-`dv/otbnsim/test` and can run them with `make -C dv/otbnsim test`.
+makes sure they behave as expected.
+See the [simulator page](../dv/otbnsim/README.md) for more details.

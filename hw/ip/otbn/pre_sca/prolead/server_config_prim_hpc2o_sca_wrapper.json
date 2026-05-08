@@ -1,0 +1,111 @@
+{
+  "_comment": "Copyright lowRISC contributors (OpenTitan project). Licensed under the Apache License, Version 2.0, see LICENSE for details. SPDX-License-Identifier: Apache-2.0",
+  "performance": {
+    "max_number_of_threads": "half",
+    "minimize_probing_sets": "aggressive"
+  },
+  "simulation": {
+    "groups": [
+      "3'h$",
+      "3'h0"
+    ],
+    "number_of_clock_cycles": 7,
+    "always_random_inputs": [
+      "rand_i"
+    ],
+    "input_sequence": [
+      {
+        "signals": [
+          {
+            "name": "share0_i[2:0]",
+            "value": "3'h0"
+          },
+          {
+            "name": "share1_i[2:0]",
+            "value": "3'h0"
+          },
+          {
+            "name": "en_i",
+            "value": "1'b0"
+          },
+          {
+            "name": "rst_ni",
+            "value": "1'b1"
+          }
+        ]
+      },
+      {
+        "signals": [
+          {
+            "name": "share0_i[2:0]",
+            "value": "3'h0"
+          },
+          {
+            "name": "share1_i[2:0]",
+            "value": "3'h0"
+          },
+          {
+            "name": "en_i",
+            "value": "1'b0"
+          },
+          {
+            "name": "rst_ni",
+            "value": "1'b0"
+          }
+        ]
+      },
+      {
+        "signals": [
+          {
+            "name": "share0_i[2:0]",
+            "value": "group_in0[2:0]"
+          },
+          {
+            "name": "share1_i[2:0]",
+            "value": "group_in1[2:0]"
+          },
+          {
+            "name": "en_i",
+            "value": "1'b1"
+          },
+          {
+            "name": "rst_ni",
+            "value": "1'b1"
+          }
+        ]
+      },
+      {
+        "signals": [
+          {
+            "name": "share0_i[2:0]",
+            "value": "3'h0"
+          },
+          {
+            "name": "share1_i[2:0]",
+            "value": "3'h0"
+          },
+          {
+            "name": "en_i",
+            "value": "1'b0"
+          },
+          {
+            "name": "rst_ni",
+            "value": "1'b1"
+          }
+        ]
+      }
+    ],
+    "number_of_simulations": 1536000,
+    "number_of_simulations_per_step": 128000
+  },
+  "hardware": {
+    "clock_signal_name": "clk_i"
+  },
+  "side_channel_analysis": {
+    "order": 1,
+    "transitional_leakage": true,
+    "clock_cycles": [
+        "3-7"
+    ]
+  }
+}

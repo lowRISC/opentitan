@@ -6,9 +6,9 @@
 Communication with OpenTitan happens over the uJson
 command interface.
 """
+
 import json
 import time
-from typing import Optional
 from sw.host.penetrationtests.python.util import common_library
 
 
@@ -57,32 +57,6 @@ class OTKMAC:
         version = self.target.read_response()
         return device_id, owner_page, boot_log, boot_measurements, version
 
-    def write_key(self, key: list[int]):
-        """Write the key to KMAC.
-        Args:
-            key: Bytearray containing the key.
-        """
-        # KmacSca command.
-        self._ujson_kmac_sca_cmd()
-        # SetKey command.
-        self.target.write(json.dumps("SetKey").encode("ascii"))
-        # Key payload.
-        key_data = {"key": key, "key_length": 16}
-        self.target.write(json.dumps(key_data).encode("ascii"))
-
-    def fvsr_key_set(self, key: list[int], key_length: Optional[int] = 16):
-        """Write the fixed key to KMAC.
-        Args:
-            key: Bytearray containing the key.
-        """
-        # KmacSca command.
-        self._ujson_kmac_sca_cmd()
-        # SetKey command.
-        self.target.write(json.dumps("FixedKeySet").encode("ascii"))
-        # FixedKeySet payload.
-        key_data = {"key": key, "key_length": key_length}
-        self.target.write(json.dumps(key_data).encode("ascii"))
-
     def write_lfsr_seed(self, seed):
         """Seed the LFSR.
         Args:
@@ -97,7 +71,15 @@ class OTKMAC:
         seed_data = {"seed": seed_int}
         self.target.write(json.dumps(seed_data).encode("ascii"))
 
-    def absorb_batch(self, num_segments):
+    def absorb_batch(
+        self,
+        text_length,
+        key,
+        key_length,
+        customization,
+        customization_length,
+        num_segments,
+    ):
         """Start absorb for batch.
         Args:
             num_segments: Number of encryptions to perform.
@@ -109,14 +91,21 @@ class OTKMAC:
         # Num_segments payload.
         num_segments_data = {"num_enc": num_segments}
         self.target.write(json.dumps(num_segments_data).encode("ascii"))
+        # Msg length, key, custom payload.
+        data = {
+            "msg": [],
+            "msg_length": text_length,
+            "key": key,
+            "key_length": key_length,
+            "customization": customization,
+            "customization_length": customization_length,
+        }
+        self.target.write(json.dumps(data).encode("ascii"))
 
-    def absorb_daisy_chain(self, text, key, num_segments):
-        """Start absorb for daisy chain batch.
-        Args:
-            num_segments: Number of encryptions to perform.
-            text: The input message
-            key: The KMAC128 key
-        """
+    def absorb_daisy_chain(
+        self, text, key, key_length, customization, customization_length, num_segments
+    ):
+        """Start absorb for daisy chain batch."""
         # KmacSca command.
         self._ujson_kmac_sca_cmd()
         # BatchDaisy command.
@@ -124,21 +113,32 @@ class OTKMAC:
         # Num_segments payload.
         num_it_data = {"num_enc": num_segments}
         self.target.write(json.dumps(num_it_data).encode("ascii"))
-        message_data = {"msg": text, "msg_length": len(text)}
-        self.target.write(json.dumps(message_data).encode("ascii"))
-        key_data = {"key": key, "key_length": len(key)}
-        self.target.write(json.dumps(key_data).encode("ascii"))
+        # Msg, key, custom payload.
+        data = {
+            "msg": text,
+            "msg_length": 16,
+            "key": key,
+            "key_length": key_length,
+            "customization": customization,
+            "customization_length": customization_length,
+        }
+        self.target.write(json.dumps(data).encode("ascii"))
 
-    def absorb(self, text, text_length: Optional[int] = 16):
-        """Write plaintext to OpenTitan KMAC & start absorb.
-        Args:
-            text: The plaintext bytearray.
-        """
+    def absorb(
+        self, text, text_length, key, key_length, customization, customization_length
+    ):
+        """Write plaintext, key, customization to OpenTitan KMAC & start absorb."""
         # KmacSca command.
         self._ujson_kmac_sca_cmd()
         # SingleAbsorb command.
         self.target.write(json.dumps("SingleAbsorb").encode("ascii"))
-        # Msg payload.
-        text_int = [x for x in text]
-        text_data = {"msg": text_int, "msg_length": text_length}
-        self.target.write(json.dumps(text_data).encode("ascii"))
+        # Msg, key, custom payload.
+        data = {
+            "msg": text,
+            "msg_length": text_length,
+            "key": key,
+            "key_length": key_length,
+            "customization": customization,
+            "customization_length": customization_length,
+        }
+        self.target.write(json.dumps(data).encode("ascii"))

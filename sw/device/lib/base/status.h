@@ -103,26 +103,18 @@ enum ot_status_create_record_magic {
   })
 #endif /* __cplusplus */
 
-#define DIF_RESULT_INTO_STATUS(expr_)                                     \
-  ({                                                                      \
-    typeof(expr_) _val = (expr_);                                         \
-    absl_status_t code;                                                   \
-    memcpy(&code, &_val, sizeof(code));                                   \
-    status_create(code, MODULE_ID, __FILE__, code == kOk ? 0 : __LINE__); \
+#define _DIF_RESULT_INTO_STATUS(val_)                                       \
+  ({                                                                        \
+    absl_status_t code_;                                                    \
+    memcpy(&code_, &val_, sizeof(code_));                                   \
+    status_create(code_, MODULE_ID, __FILE__, code_ == kOk ? 0 : __LINE__); \
   })
 
-#define ROM_ERROR_INTO_STATUS(expr_)                                          \
-  ({                                                                          \
-    typeof(expr_) ex_ = (expr_);                                              \
-    uint32_t val;                                                             \
-    memcpy(&val, &ex_, sizeof(val));                                          \
-    absl_status_t code =                                                      \
-        val == kErrorOk ? 0                                                   \
-                        : bitfield_field32_read(val, ROM_ERROR_FIELD_STATUS); \
-    int32_t arg = (int32_t)bitfield_field32_read(val, ROM_ERROR_FIELD_ERROR); \
-    uint32_t mod = bitfield_field32_read(val, ROM_ERROR_FIELD_MODULE);        \
-    uint32_t module = (mod & 0x1F) << 16 | (mod & 0x1F00) << (21 - 8);        \
-    status_create(code, module, __FILE__, code == kOk ? kErrorOk : arg);      \
+#define _ROM_ERROR_INTO_STATUS(val_)        \
+  ({                                        \
+    uint32_t val32_;                        \
+    memcpy(&val32_, &val_, sizeof(val32_)); \
+    status_from_rom_error(val32_);          \
   })
 
 /**
@@ -135,12 +127,14 @@ enum ot_status_create_record_magic {
  * @param expr_ Either a `status_t`, `dif_result_t` or `rom_error_t`.
  * @return The `status_t` representation of the input.
  */
-// clang-format off
-  #define INTO_STATUS(expr_) _Generic((expr_),                                   \
-           status_t: (expr_),                                                   \
-        rom_error_t: ROM_ERROR_INTO_STATUS(expr_),                              \
-       dif_result_t: DIF_RESULT_INTO_STATUS(expr_))
-// clang-format on
+#define INTO_STATUS(expr_)                            \
+  ({                                                  \
+    __auto_type val_ = (expr_);                       \
+    _Generic(val_,                                    \
+        status_t: val_,                               \
+        rom_error_t: _ROM_ERROR_INTO_STATUS(val_),    \
+        dif_result_t: _DIF_RESULT_INTO_STATUS(val_)); \
+  })
 
 /**
  * Report an error status.
@@ -206,6 +200,15 @@ extern const uint32_t MODULE_ID;
 OT_WARN_UNUSED_RESULT
 status_t status_create(absl_status_t code, uint32_t mod_id, const char *file,
                        int32_t arg);
+
+/**
+ * Convert a rom_error_t into a status_t.
+ *
+ * @param val A rom_error_t, casted as uint32_t.
+ * @return `status_t`
+ */
+OT_WARN_UNUSED_RESULT
+status_t status_from_rom_error(uint32_t val);
 
 /**
  * Extracts the packed values from a status code.

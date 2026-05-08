@@ -40,6 +40,7 @@ RUST_ONLY(UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOM
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiLoopCounterOutput, otbn_fi_loop_counter_t, OTBNFI_LOOP_COUNTER_OUTPUT);
 
@@ -48,6 +49,7 @@ UJSON_SERDE_STRUCT(OtbnFiLoopCounterOutput, otbn_fi_loop_counter_t, OTBNFI_LOOP_
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiResultOutput, otbn_fi_result_t, OTBNFI_RESULT_OUTPUT);
 
@@ -57,6 +59,7 @@ UJSON_SERDE_STRUCT(OtbnFiResultOutput, otbn_fi_result_t, OTBNFI_RESULT_OUTPUT);
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiKeyOutput, otbn_fi_keys_t, OTBNFI_KEY_OUTPUT);
 
@@ -76,6 +79,7 @@ UJSON_SERDE_STRUCT(OtbnFiMemCfg, otbn_fi_mem_cfg_t, OTBNFI_MEM_CFG);
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiMemOutput, otbn_fi_mem_t, OTBNFI_MEM_OUTPUT);
 
@@ -86,6 +90,7 @@ UJSON_SERDE_STRUCT(OtbnFiMemOutput, otbn_fi_mem_t, OTBNFI_MEM_OUTPUT);
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiDataOutput, otbn_fi_data_t, OTBNFI_DATA_OUTPUT);
 
@@ -96,6 +101,7 @@ UJSON_SERDE_STRUCT(OtbnFiDataOutput, otbn_fi_data_t, OTBNFI_DATA_OUTPUT);
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiRfCharOutput, otbn_fi_rf_char_t, OTBNFI_RF_CHAR_OUTPUT);
 
@@ -105,6 +111,7 @@ UJSON_SERDE_STRUCT(OtbnFiRfCharOutput, otbn_fi_rf_char_t, OTBNFI_RF_CHAR_OUTPUT)
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiResultCntOutput, otbn_fi_result_cnt_t, OTBNFI_RESULT_CNT_OUTPUT);
 
@@ -114,6 +121,7 @@ UJSON_SERDE_STRUCT(OtbnFiResultCntOutput, otbn_fi_result_cnt_t, OTBNFI_RESULT_CN
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiResultArray, otbn_fi_result_array_t, OTBNFI_RESULT_ARRAY);
 
@@ -127,6 +135,7 @@ UJSON_SERDE_STRUCT(OtbnFiBigNum, otbn_fi_big_num_t, OTBNFI_BIG_NUM);
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiBigNumOutput, otbn_fi_big_num_out_t, OTBNFI_BIG_NUM_OUTPUT);
 
@@ -141,6 +150,7 @@ UJSON_SERDE_STRUCT(OtbnFiPc, otbn_fi_pc_t, OTBNFI_PC);
     field(err_otbn, uint32_t) \
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(OtbnFiPcOutput, otbn_fi_pc_out_t, OTBNFI_PC_OUTPUT);
 

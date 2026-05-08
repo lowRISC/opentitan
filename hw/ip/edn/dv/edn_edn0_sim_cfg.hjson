@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  // Name of the sim cfg variant
+  variant: edn0
+
+  // Import the base entropy_src sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/edn/dv/edn_base_sim_cfg.hjson"]
+
+  build_opts: ["+define+NUM_END_POINTS=8"]
+}

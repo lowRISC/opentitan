@@ -33,7 +33,7 @@ ${autogen_banner}
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
-#include "hw/top/dt/dt_${ip.name_snake}.h" // Generated.
+#include "hw/top/dt/${ip.name_snake}.h" // Generated.
 
 #ifdef __cplusplus
 extern "C" {

@@ -21,6 +21,8 @@ rust_binary(
         "@crate_index//:num-bigint-dig",
         "@crate_index//:p256",
         "@crate_index//:p384",
+        "@crate_index//:rand",
+        "@crate_index//:rand_chacha",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
     ],

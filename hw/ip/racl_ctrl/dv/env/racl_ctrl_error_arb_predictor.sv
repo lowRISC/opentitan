@@ -12,7 +12,7 @@ class racl_ctrl_error_arb_predictor extends uvm_component;
   typedef uvm_tlm_analysis_fifo #(racl_error_log_vec_item) error_vec_fifo_t;
 
   // A handle to the environment cfg
-  racl_ctrl_env_cfg cfg;
+  racl_ctrl_base_env_cfg cfg;
 
   // Analysis fifos for messages from the monitors of the two error log agents.
   error_vec_fifo_t internal_errors_fifo;
@@ -21,7 +21,7 @@ class racl_ctrl_error_arb_predictor extends uvm_component;
   // An output with merged errors
   error_fifo_t merged_errors_fifo;
 
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 
@@ -36,7 +36,7 @@ class racl_ctrl_error_arb_predictor extends uvm_component;
   extern local function racl_error_log_vec_item flush_vec_fifo(error_vec_fifo_t fifo);
 endclass
 
-function racl_ctrl_error_arb_predictor::new(string name="", uvm_component parent=null);
+function racl_ctrl_error_arb_predictor::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 

@@ -52,7 +52,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
   // Constraint for controller address to be in relevant range for the selected partition.
   constraint addr_c {
-    solve bank before flash_op;
+    solve bank before flash_op.partition, flash_op.addr;
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1)]};
     if (flash_op.partition != FlashPartData) {
       flash_op.addr inside
@@ -97,7 +97,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
   // Flash ctrl operation data queue - used for programming or reading the flash.
   constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
+    solve flash_op.op, flash_op.num_words before flash_op_data;
     if (flash_op.op inside {
         flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op_data.size() == flash_op.num_words;
@@ -115,8 +115,6 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
-    solve en_mp_regions before mp_regions;
-
     foreach (mp_regions[i]) {
       mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
       mp_regions[i].read_en == MuBi4True;

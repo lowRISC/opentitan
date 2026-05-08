@@ -10,12 +10,12 @@ class aon_timer_env extends cip_base_env #(
   );
   `uvm_component_utils(aon_timer_env)
 
-  extern function new (string name="", uvm_component parent=null);
+  extern function new (string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
 
 endclass : aon_timer_env
 
-function aon_timer_env::new (string name="", uvm_component parent=null);
+function aon_timer_env::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 

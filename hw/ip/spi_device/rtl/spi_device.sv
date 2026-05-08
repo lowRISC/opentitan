@@ -84,8 +84,6 @@ module spi_device
   localparam int unsigned ReadBufferDepth = spi_device_pkg::SramMsgDepth;
   localparam int unsigned BufferAw        = $clog2(ReadBufferDepth);
 
-  localparam int unsigned TpmRdFifoWidth  = spi_device_reg_pkg::TpmRdFifoWidth;
-
   // Derived parameters
   localparam top_racl_pkg::racl_range_t [0:0] RaclPolicySelRangesEgressbuffer = '{
     '{

@@ -76,10 +76,10 @@ The following is a list of common features and settings:
   objection handle of the corresponding CSR field and valued with the expected
   value. This is the list of CSR fields that are modified when an alert triggers
   due to TL integrity violation event. The DV user is required to build this list
-  in the `initialize()` method after `super.initialize(csr_base_addr);`
+  in the `initialize()` method after `super.initialize();`
 ```systemverilog
-virtual function void initialize(bit [31:0] csr_base_addr = '1);
-  super.initialize(csr_base_addr); // ral model is created in `super.initialize`
+virtual function void initialize();
+  super.initialize(); // ral model is created in `super.initialize`
   tl_intg_alert_fields[ral.a_status_reg.a_field] = value;
 ```
 
@@ -384,9 +384,9 @@ from this CIP library class, please follow the steps below:
   so that creating alert host agents will take the updated `list_of_alerts` variable.
   For example in `otp_ctrl_env_cfg.sv`:
   ```systemverilog
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = otp_ctrl_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
+    super.initialize();
   ```
 * **tb.sv**: Add `DV_ALERT_IF_CONNECT` macro that declares alert interfaces,
   connect alert interface wirings with DUT, and set alert_if to uvm_config_db.
@@ -424,8 +424,8 @@ Refer to section [cip_base_env_cfg](#cip_base_env_cfg) for more information on t
 The user may update these 2 variables as follows.
 ```systemverilog
 class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    super.initialize(csr_base_addr);
+  virtual function void initialize();
+    super.initialize();
     tl_intg_alert_name = "fatal_fault_err";
     // csr / field name may vary in different IPs
     tl_intg_alert_fields[ral.fault_status.intg_err] = 1;
@@ -464,8 +464,8 @@ The countermeasure of shadow CSRs can be fully verified via importing [shadow_re
 The details of the test sequences are described in the testplan. Users need to assign the status CSR fields to `cfg.shadow_update_err_status_fields` and `cfg.shadow_storage_err_status_fields` for update error and storage error respectively.
 ```systemverilog
 class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    super.initialize(csr_base_addr);
+  virtual function void initialize();
+    super.initialize();
     // csr / field name may vary in different IPs
     shadow_update_err_status_fields[ral.err_code.invalid_shadow_update] = 1;
     shadow_storage_err_status_fields[ral.fault_status.shadow] = 1;
@@ -550,8 +550,8 @@ package ip_env_pkg;
 4. Set alert name for countermeasure if the alert name is different from the default name - “fatal_fault”.
 ```systemverilog
 class ip_env_cfg extends cip_base_env_cfg #(.RAL_T(ip_reg_block));
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    super.initialize(csr_base_addr);
+  virtual function void initialize();
+    super.initialize();
     sec_cm_alert_name = "fatal_check_error";
 ```
 

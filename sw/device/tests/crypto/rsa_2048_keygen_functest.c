@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -81,29 +82,25 @@ status_t keygen_then_sign_test(void) {
   TRY_CHECK(d_large_enough);
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg_buf = {.data = kTestMessage,
-                                       .len = kTestMessageLen};
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
   uint32_t msg_digest_data[256 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
 
   uint32_t sig[kRsa2048NumWords];
-  otcrypto_word32_buf_t sig_buf = {
-      .data = sig,
-      .len = kRsa2048NumWords,
-  };
-  otcrypto_const_word32_buf_t const_sig_buf = {
-      .data = sig,
-      .len = kRsa2048NumWords,
-  };
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, kOtcryptoRsaPaddingPkcs,
-                        sig_buf));
+                        &sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -112,7 +109,7 @@ status_t keygen_then_sign_test(void) {
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, kOtcryptoRsaPaddingPkcs,
-                          const_sig_buf, &verification_result));
+                          &const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 

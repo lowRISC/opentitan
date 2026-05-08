@@ -6,6 +6,7 @@ use anyhow::Result;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
+use sphincsplus::SpxSecretKey;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
@@ -13,6 +14,7 @@ use super::ChipDataError;
 use crate::chip::boolean::HardenedBool;
 use crate::chip::rom_error::RomError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
+use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
 use crate::with_unknown;
 
 with_unknown! {
@@ -133,6 +135,8 @@ pub struct OwnershipUnlockRequest {
     /// The ROM_EXT nonce.
     #[annotate(format=hex)]
     pub nonce: u64,
+    /// The algorithm of next owner's key (for unlock Endorsed mode).
+    pub next_owner_alg: OwnershipKeyAlg,
     /// The next owner's key (for unlock Endorsed mode).
     pub next_owner_key: EcdsaRawPublicKey,
     // TODO(cfrantz): Hybrid key material
@@ -269,6 +273,20 @@ impl BootSvc {
         digest.reverse();
         data[..Header::HASH_LEN].copy_from_slice(&digest);
         Ok(data)
+    }
+
+    pub fn empty(payload: &[u32]) -> Self {
+        BootSvc {
+            header: Header {
+                digest: [0u32; 8],
+                identifier: Header::IDENTIFIER,
+                kind: BootSvcKind::EmptyRequest,
+                length: (Header::SIZE + Empty::SIZE) as u32,
+            },
+            message: Message::Empty(Empty {
+                payload: payload.to_vec(),
+            }),
+        }
     }
 
     pub fn min_bl0_sec_ver(ver: u32) -> Self {
@@ -454,6 +472,7 @@ impl TryFrom<&[u8]> for OwnershipUnlockRequest {
         val.din = reader.read_u64::<LittleEndian>()?;
         val.reserved.resize(Self::RESERVED_SIZE, 0);
         reader.read_exact(&mut val.reserved)?;
+        val.next_owner_alg = OwnershipKeyAlg(reader.read_u32::<LittleEndian>()?);
         val.nonce = reader.read_u64::<LittleEndian>()?;
         val.next_owner_key = EcdsaRawPublicKey::read(&mut reader).map_err(ChipDataError::Anyhow)?;
 
@@ -467,7 +486,7 @@ impl TryFrom<&[u8]> for OwnershipUnlockRequest {
 }
 impl OwnershipUnlockRequest {
     pub const SIZE: usize = 212;
-    const RESERVED_SIZE: usize = 8 * std::mem::size_of::<u32>();
+    const RESERVED_SIZE: usize = 7 * std::mem::size_of::<u32>();
     const SIGNATURE_OFFSET: usize = 148;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.unlock_mode))?;
@@ -476,6 +495,7 @@ impl OwnershipUnlockRequest {
             let p = self.reserved.get(i).unwrap_or(&0x00);
             dest.write_all(std::slice::from_ref(p))?;
         }
+        dest.write_u32::<LittleEndian>(u32::from(self.next_owner_alg))?;
         dest.write_u64::<LittleEndian>(self.nonce)?;
         self.next_owner_key.write(dest)?;
 
@@ -499,6 +519,25 @@ impl OwnershipUnlockRequest {
         self.write(&mut data)?;
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
+    }
+
+    pub fn detached_sign(
+        &mut self,
+        algorithm: OwnershipKeyAlg,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            BootSvcKind::OwnershipUnlockRequest.into(),
+            algorithm,
+            self.nonce,
+            ecdsa_key,
+            spx_key,
+        )
     }
 }
 
@@ -556,6 +595,25 @@ impl OwnershipActivateRequest {
         self.write(&mut data)?;
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
+    }
+
+    pub fn detached_sign(
+        &mut self,
+        algorithm: OwnershipKeyAlg,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            BootSvcKind::OwnershipActivateRequest.into(),
+            algorithm,
+            self.nonce,
+            ecdsa_key,
+            spx_key,
+        )
     }
 }
 

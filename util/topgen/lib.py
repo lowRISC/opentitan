@@ -721,11 +721,29 @@ def is_inst(module: ConfigT) -> bool:
     return top_level_mem or top_level_module
 
 
-def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
-                      ifname: Optional[str]) -> Tuple[int, int]:
+def get_base_and_size(block: IpBlock,
+                      inst: ConfigT,
+                      ifname: Optional[str]
+                      ) -> Tuple[Dict[str, int], int] | None:
+    '''Return (base_addrs, size) to describe addresses inst uses on ifname.
 
-    block = name_to_block.get(inst['type'])
-    assert block, f"No module named {inst['type']} (coming from instance {inst['name']})"
+    It may be that this instance doesn't actually use the interface at all in
+    the top-level (perhaps because its support for the interface is disabled by
+    a parameter). If so, return None.
+
+    If the instance *does* use the interface, base_addrs is a map from address
+    space ID to the base address of the block in that address space.
+
+    size is the size in bytes that the block uses on the interface named
+    ifname.
+    '''
+
+    # Check whether the top-level connects up this interface. If not, return
+    # None.
+    base_addrs = inst['base_addrs'].get(ifname)
+    if base_addrs is None:
+        return None
+
     # If inst is the instantiation of some block, find the register block
     # that corresponds to ifname
     if rb := block.reg_blocks.get(ifname):
@@ -739,7 +757,7 @@ def get_base_and_size(name_to_block: IpBlocksT, inst: ConfigT,
                 'default' if ifname is None else repr(ifname),
                 inst['name'], block.name))
 
-    base_addrs = deepcopy(inst['base_addrs'][ifname])
+    base_addrs = deepcopy(base_addrs)
 
     for (asid, base_addr) in base_addrs.items():
         if isinstance(base_addr, str):
@@ -981,19 +999,28 @@ class TopGen:
         for inst in self.top['module']:
             block = self._name_to_block[inst['type']]
             for if_name in block.reg_blocks.keys():
+                bases_size = get_base_and_size(block, inst, if_name)
+                if bases_size is None:
+                    # Nothing to do for this interface: it is not used in this
+                    # instance.
+                    continue
+
+                bases, size = bases_size
+                base = bases.get(addr_space)
+                if base is None:
+                    # Again, nothing to do for this interface: it does not
+                    # define anything mapped into addr_space.
+                    continue
+
                 full_if = (inst['name'], if_name)
                 full_if_name = Name.from_snake_case(full_if[0])
                 if if_name is not None:
                     full_if_name += Name.from_snake_case(if_name)
 
                 name = full_if_name
-                base, size = get_base_and_size(self._name_to_block, inst,
-                                               if_name)
-                if addr_space not in base:
-                    continue
 
                 region = MemoryRegion(self._top_name, name, addr_space,
-                                      base[addr_space], size)
+                                      base, size)
                 device_region[inst['name']].update({if_name: region})
 
         self.device_regions[addr_space] = device_region
@@ -1039,19 +1066,36 @@ class TopGen:
         device_memories = defaultdict(dict)
 
         for inst in self.top['module']:
-            if "memory" in inst:
-                for if_name, val in inst["memory"].items():
-                    base, size = get_base_and_size(self._name_to_block, inst,
-                                                   if_name)
-                    if addr_space not in base:
-                        continue
+            block = self._name_to_block.get(inst['type'])
+            if block is None:
+                raise RuntimeError(f"No block defined for instance "
+                                   f"type {inst['type']} (with name "
+                                   f"{inst['name']})")
 
-                    full_if_name = Name.from_snake_case(inst['name']) + \
-                        Name.from_snake_case(if_name)
-                    region = MemoryRegion(self._top_name, full_if_name, addr_space,
-                                          base[addr_space], size)
+            for if_name, val in inst.get("memory", {}).items():
+                bases_size = get_base_and_size(block, inst, if_name)
 
-                    device_memories[inst['name']].update({if_name: region})
+                # We expect bases_size not to be None. If it is None, then the
+                # instance defines the memory but doesn't give it a base
+                # address (which seems unlikely to be right).
+                if bases_size is None:
+                    raise RuntimeError(f"The instance named {inst['name']} "
+                                       f"defines a memory for interface "
+                                       f"{if_name}, but doesn't give it a "
+                                       f"base address.")
+
+                bases, size = bases_size
+                base = bases.get(addr_space)
+
+                if base is None:
+                    continue
+
+                full_if_name = Name.from_snake_case(inst['name']) + \
+                    Name.from_snake_case(if_name)
+                region = MemoryRegion(self._top_name, full_if_name, addr_space,
+                                      base, size)
+
+                device_memories[inst['name']].update({if_name: region})
 
         self.device_memories[addr_space] = device_memories
 

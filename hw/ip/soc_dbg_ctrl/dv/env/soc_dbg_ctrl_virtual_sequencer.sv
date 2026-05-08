@@ -9,10 +9,10 @@ class soc_dbg_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   `uvm_component_utils(soc_dbg_ctrl_virtual_sequencer)
 
   // Standard SV/UVM methods
-  extern function new(string name="", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
 endclass : soc_dbg_ctrl_virtual_sequencer
 
 
-function soc_dbg_ctrl_virtual_sequencer::new(string name="", uvm_component parent=null);
+function soc_dbg_ctrl_virtual_sequencer::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new

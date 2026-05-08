@@ -98,10 +98,23 @@ module keymgr_input_checks import keymgr_pkg::*; #(
 
   assign key_vld_o = &key_chk;
 
+  logic [NumRomDigestInputs-1:0][MaxWidth-1:0] rom_digest_padded;
+
+  for (genvar k = 0; k < NumRomDigestInputs; k++) begin : gen_digest_pad
+    prim_msb_extend #(
+      .InWidth($bits(rom_digest_i[k].data)),
+      .OutWidth(MaxWidth)
+    ) u_rom_digest_pad (
+      .in_i(rom_digest_i[k].data),
+      .out_o(rom_digest_padded[k])
+    );
+  end
+
   always_comb begin
     rom_digest_vld_o = 1'b1;
     for (int k = 0; k < NumRomDigestInputs; k++) begin
-      rom_digest_vld_o &= rom_digest_i[k].valid && valid_chk(MaxWidth'(rom_digest_i[k].data));
+      rom_digest_vld_o &= rom_digest_i[k].valid &&
+                          valid_chk(rom_digest_padded[k]);
     end
   end
 

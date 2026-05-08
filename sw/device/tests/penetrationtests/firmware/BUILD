@@ -14,6 +14,7 @@ load(
     "opentitan_binary",
     "opentitan_test",
     "silicon_params",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -30,6 +31,7 @@ PENTEST_EXEC_ENVS = dicts.add(
 
 FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/fi:alert_fi",
+    "//sw/device/tests/penetrationtests/firmware/fi:boot_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:crypto_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otp_fi",
@@ -172,6 +174,21 @@ FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM = [
     "//sw/device/tests/penetrationtests/json:commands",
 ]
 
+FIRMWARE_DEPS_GDB = [
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+    "//sw/device/tests/penetrationtests/json:gdb_commands",
+    "//sw/device/tests/penetrationtests/json:pentest_lib_commands",
+    "//sw/device/lib/dif:rv_core_ibex",
+    "//sw/device/lib/crypto/impl:status",
+]
+
 # Note that the targets below are only to build the software, to run tests, see the BUILD from penetrationtests
 
 # Not an actual test, only for building purposes
@@ -185,6 +202,12 @@ opentitan_test(
         "skip_in_ci",
     ]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -209,6 +232,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_FI_IBEX,
 )
 
@@ -223,6 +252,12 @@ opentitan_test(
         "skip_in_ci",
     ]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -247,6 +282,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_SCA,
 )
 
@@ -261,6 +302,12 @@ opentitan_test(
         "skip_in_ci",
     ]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -285,6 +332,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM,
 )
 
@@ -299,6 +352,12 @@ opentitan_test(
         "skip_in_ci",
     ]),
     silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
         tags = [
             "manual",
             "skip_in_ci",
@@ -323,5 +382,30 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
     deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM,
+)
+
+# Not an actual test, only for building purposes
+opentitan_test(
+    name = "pen_test_gdb",
+    srcs = [":firmware_gdb.c"],
+    exec_env = PENTEST_EXEC_ENVS,
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
+    silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    deps = FIRMWARE_DEPS_GDB,
 )

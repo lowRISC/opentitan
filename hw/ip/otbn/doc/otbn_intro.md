@@ -5,7 +5,7 @@ It runs as part of OpenTitan in addition to the main processor, Ibex.
 The OTBN hardware block could also run as part of a different system and interact with a different main processor, but this page will focus on the OpenTitan context.
 
 This page is an introduction and overview of OTBN.
-For more detailed information, see the [technical specification](../README.md) and the [ISA guide](isa.md).
+For more detailed information, see the [technical specification](theory_of_operation.md) and the [ISA guide](isa.md).
 
 ## How OTBN executes programs
 

@@ -183,19 +183,19 @@ impl Target for LogicalSpiWrapper {
     ) -> Result<()> {
         let mut inner = self.inner.borrow_mut();
         if serial_clock.is_some() {
-            inner.serial_clock = serial_clock.map(Rc::clone);
+            inner.serial_clock = serial_clock.cloned();
         }
         if host_out_device_in.is_some() {
-            inner.host_out_device_in = host_out_device_in.map(Rc::clone);
+            inner.host_out_device_in = host_out_device_in.cloned();
         }
         if host_in_device_out.is_some() {
-            inner.host_in_device_out = host_in_device_out.map(Rc::clone);
+            inner.host_in_device_out = host_in_device_out.cloned();
         }
         if chip_select.is_some() {
-            inner.chip_select = chip_select.map(Rc::clone);
+            inner.chip_select = chip_select.cloned();
         }
         if gsc_ready.is_some() {
-            inner.gsc_ready = gsc_ready.map(Rc::clone);
+            inner.gsc_ready = gsc_ready.cloned();
         }
         Ok(())
     }
@@ -245,6 +245,6 @@ impl Target for LogicalSpiWrapper {
 
     fn assert_cs(self: Rc<Self>) -> Result<spi::AssertChipSelect> {
         self.apply_settings_to_underlying()?;
-        Rc::clone(&self.physical_wrapper.underlying_target).assert_cs()
+        self.physical_wrapper.underlying_target.clone().assert_cs()
     }
 }

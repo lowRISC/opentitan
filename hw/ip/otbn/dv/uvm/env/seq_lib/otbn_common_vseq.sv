@@ -244,6 +244,23 @@ class otbn_common_vseq extends otbn_base_vseq;
   endfunction: sec_cm_fi_ctrl_svas
 
   virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+    // When testing the countermeasures for the OTBN hardware loop stack, the current_loop_valid
+    // will be high when the loop stack counter is forced to zero. This fault should be detected
+    // and assert the `hw_err_o` of the loop controller. As in this test no SW is run, the loop
+    // stack has undefined values (x). When the `current_loop_valid` is high, the integrity
+    // check of the loop address (current_loop_intg_err) is OR factored into the `hw_err_o` as well
+    // leading to undefined error bits.
+    // We prevent this x propagation by defining the loop stack data. The loop info data bits are
+    // set to random data which pass ECC checks. This ensures that always the `hw_err_o` error
+    // triggers and not the ECC check. Using random values which pass ECC checks but make no sense
+    // when interpreted as loop info is also ok. What can happen is that a loop jump (loop_jump_o)
+    // is requested which could result in a SW error due to a misaligned instruction address (from
+    // `current_loop.loop_addr_info.loop_start` via `insn_fetch_req_addr_o`). But OTBN will
+    // escalate anyway so raising a SW error does not affect the test.
+    if (!uvm_re_match("*loop_info_stack*u_stack_wr_ptr*", if_proxy.path)) begin
+      cfg.loop_vif.randomize_loop_addrs_info();
+    end
+
     fork
       begin
         if_proxy.inject_fault();
@@ -258,6 +275,12 @@ class otbn_common_vseq extends otbn_base_vseq;
         end
       end
     join
+
+    // Re-enable the current_loop_intg_err for the next tests
+    if (!uvm_re_match("*loop_info_stack*u_stack_wr_ptr*", if_proxy.path)) begin
+      cfg.loop_vif.release_loop_addrs_info();
+    end
+
   endtask : sec_cm_inject_fault
 
   virtual task pre_run_sec_cm_fi_vseq();

@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:buf
       - lowrisc:prim:fifo
       - lowrisc:tlul:headers
       - lowrisc:tlul:trans_intg

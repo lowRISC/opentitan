@@ -1,10 +1,13 @@
 # Life Cycle Controller Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/lc_ctrl/data/lc_ctrl.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`lc_ctrl_volatile_unlock_enabled`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.1.1 | D3, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/code.svg) |
+ [`lc_ctrl_volatile_unlock_disabled`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.1.1 | D3, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/code.svg) |
 
-[`lc_ctrl`](https://reports.opentitan.org/hw/ip/lc_ctrl/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/lc_ctrl/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/lc_ctrl/index.html).
+
+<!-- END CMDGEN -->
 
 # Overview
 

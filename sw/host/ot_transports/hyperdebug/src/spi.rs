@@ -16,6 +16,7 @@ use opentitanlib::io::gpio::GpioPin;
 use opentitanlib::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
+use opentitanlib::spiflash::flash::SpiFlash;
 use opentitanlib::transport::TransportError;
 
 use super::{BulkInterface, Inner};
@@ -258,7 +259,7 @@ impl HyperdebugSpiTarget {
         idx: u8,
         supports_tpm_poll: bool,
     ) -> Result<Self> {
-        let mut usb_handle = inner.usb_device.borrow_mut();
+        let usb_handle = inner.usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
         inner.selected_spi.set(idx);
@@ -294,7 +295,7 @@ impl HyperdebugSpiTarget {
         );
 
         Ok(Self {
-            inner: Rc::clone(inner),
+            inner: inner.clone(),
             interface: *spi_interface,
             target_enable_cmd: enable_cmd,
             target_idx: idx,
@@ -1054,10 +1055,10 @@ impl Target for HyperdebugSpiTarget {
                 }
                 [eeprom::Transaction::WaitForBusyClear, rest @ ..] => {
                     self.get_last_streamed_data(stream_state)?;
-                    let mut status = eeprom::STATUS_WIP;
-                    while status & eeprom::STATUS_WIP != 0 {
+                    let mut status = SpiFlash::STATUS_WIP;
+                    while status & SpiFlash::STATUS_WIP != 0 {
                         self.run_transaction(&mut [
-                            Transfer::Write(&[eeprom::READ_STATUS]),
+                            Transfer::Write(&[SpiFlash::READ_STATUS]),
                             Transfer::Read(std::slice::from_mut(&mut status)),
                         ])?;
                     }

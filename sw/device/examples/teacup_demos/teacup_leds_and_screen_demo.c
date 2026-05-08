@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/dt_api.h"  // Generated
+#include "hw/top/dt/api.h"  // Generated
 #include "sw/device/examples/teacup_demos/data/bitmaps.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/boards/teacup_v1_3_0/leds.h"

@@ -4,8 +4,8 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/runtime/log.h"
@@ -50,9 +50,15 @@ static status_t run_test_vector(void) {
   current_test_vector->key_derivation_key.checksum =
       integrity_blinded_checksum(&current_test_vector->key_derivation_key);
 
-  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key,
-                        current_test_vector->label,
-                        current_test_vector->context, &output_key_material));
+  otcrypto_const_byte_buf_t label_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->label.data,
+      current_test_vector->label.len);
+  otcrypto_const_byte_buf_t context_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->context.data,
+      current_test_vector->context.len);
+
+  TRY(otcrypto_kmac_kdf(&current_test_vector->key_derivation_key, &label_buf,
+                        &context_buf, &output_key_material));
 
   HARDENED_CHECK_EQ(integrity_blinded_key_check(&output_key_material),
                     kHardenedBoolTrue);
@@ -60,10 +66,12 @@ static status_t run_test_vector(void) {
   // Export the derived blinded key.
   uint32_t km_share0[km_num_words];
   uint32_t km_share1[km_num_words];
-  TRY(otcrypto_export_blinded_key(
-      &output_key_material,
-      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
-      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+  otcrypto_word32_buf_t km_share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, km_share0, ARRAYSIZE(km_share0));
+  otcrypto_word32_buf_t km_share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, km_share1, ARRAYSIZE(km_share1));
+  TRY(otcrypto_export_blinded_key(&output_key_material, &km_share0_buf,
+                                  &km_share1_buf));
 
   // Unmask the derived key and compare to the expected value.
   uint32_t actual_output[km_num_words];

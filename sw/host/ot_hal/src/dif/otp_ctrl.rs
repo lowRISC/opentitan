@@ -75,38 +75,24 @@ bitflags! {
     pub struct OtpCtrlStatus: u32 {
         const BUS_INTEG_ERROR       = 0b1 << dif::OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT;
         const CHECK_PENDING         = 0b1 << dif::OTP_CTRL_STATUS_CHECK_PENDING_BIT;
-        const CREATOR_SW_CFG_ERROR  = 0b1 << dif::OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT;
         const DAI_ERROR             = 0b1 << dif::OTP_CTRL_STATUS_DAI_ERROR_BIT;
         const DAI_IDLE              = 0b1 << dif::OTP_CTRL_STATUS_DAI_IDLE_BIT;
-        const HW_CFG0_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT;
         const KEY_DERIV_FSM_ERROR   = 0b1 << dif::OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT;
         const LCI_ERROR             = 0b1 << dif::OTP_CTRL_STATUS_LCI_ERROR_BIT;
         const LFSR_FSM_ERROR        = 0b1 << dif::OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT;
-        const LIFE_CYCLE_ERROR      = 0b1 << dif::OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT;
-        const OWNER_SW_CFG_ERROR    = 0b1 << dif::OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT;
+        const PARTITION_ERROR       = 0b1 << dif::OTP_CTRL_STATUS_PARTITION_ERROR_BIT;
         const SCRAMBLING_FSM_ERROR  = 0b1 << dif::OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT;
-        const SECRET0_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_SECRET0_ERROR_BIT;
-        const SECRET1_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_SECRET1_ERROR_BIT;
-        const SECRET2_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_SECRET2_ERROR_BIT;
         const TIMEOUT_ERROR         = 0b1 << dif::OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT;
-        const VENDOR_TEST_ERROR     = 0b1 << dif::OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT;
 
         const ERRORS =
             Self::BUS_INTEG_ERROR.bits() |
-            Self::CREATOR_SW_CFG_ERROR.bits() |
             Self::DAI_ERROR.bits() |
-            Self::HW_CFG0_ERROR.bits() |
             Self::KEY_DERIV_FSM_ERROR.bits() |
             Self::LCI_ERROR.bits() |
             Self::LFSR_FSM_ERROR.bits() |
-            Self::LIFE_CYCLE_ERROR.bits() |
-            Self::OWNER_SW_CFG_ERROR.bits() |
+            Self::PARTITION_ERROR.bits() |
             Self::SCRAMBLING_FSM_ERROR.bits() |
-            Self::SECRET0_ERROR.bits() |
-            Self::SECRET1_ERROR.bits() |
-            Self::SECRET2_ERROR.bits() |
-            Self::TIMEOUT_ERROR.bits() |
-            Self::VENDOR_TEST_ERROR.bits();
+            Self::TIMEOUT_ERROR.bits();
     }
 }
 
@@ -225,8 +211,8 @@ pub enum DaiParam {
     TestUnlockToken,
     TestExitToken,
     // SECRET1
-    FlashAddrKeySeed,
-    FlashDataKeySeed,
+    NvmAddrKeySeed,
+    NvmDataKeySeed,
     SramDataKeySeed,
     // SECRET2
     RmaToken,
@@ -268,13 +254,13 @@ impl DaiParam {
         byte_addr: dif::OTP_CTRL_PARAM_TEST_EXIT_TOKEN_OFFSET,
         size: dif::OTP_CTRL_PARAM_TEST_EXIT_TOKEN_SIZE,
     };
-    pub const FLASH_ADDR_KEY_SEED: OtpParamMmap = OtpParamMmap {
-        byte_addr: dif::OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET,
-        size: dif::OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE,
+    pub const NVM_ADDR_KEY_SEED: OtpParamMmap = OtpParamMmap {
+        byte_addr: dif::OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_OFFSET,
+        size: dif::OTP_CTRL_PARAM_NVM_ADDR_KEY_SEED_SIZE,
     };
-    pub const FLASH_DATA_KEY_SEED: OtpParamMmap = OtpParamMmap {
-        byte_addr: dif::OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET,
-        size: dif::OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_SIZE,
+    pub const NVM_DATA_KEY_SEED: OtpParamMmap = OtpParamMmap {
+        byte_addr: dif::OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_OFFSET,
+        size: dif::OTP_CTRL_PARAM_NVM_DATA_KEY_SEED_SIZE,
     };
     pub const SRAM_DATA_KEY_SEED: OtpParamMmap = OtpParamMmap {
         byte_addr: dif::OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET,
@@ -304,8 +290,8 @@ impl DaiParam {
             Self::EnCsrngSwAppRead => Self::EN_CSRNG_SW_APP_READ,
             Self::TestUnlockToken => Self::TEST_UNLOCK_TOKEN,
             Self::TestExitToken => Self::TEST_EXIT_TOKEN,
-            Self::FlashAddrKeySeed => Self::FLASH_ADDR_KEY_SEED,
-            Self::FlashDataKeySeed => Self::FLASH_DATA_KEY_SEED,
+            Self::NvmAddrKeySeed => Self::NVM_ADDR_KEY_SEED,
+            Self::NvmDataKeySeed => Self::NVM_DATA_KEY_SEED,
             Self::SramDataKeySeed => Self::SRAM_DATA_KEY_SEED,
             Self::RmaToken => Self::RMA_TOKEN,
             Self::CreatorRootKeyShare0 => Self::CREATOR_ROOT_KEY_SHARE0,
@@ -324,8 +310,8 @@ impl DaiParam {
             Self::EnCsrngSwAppRead => Partition::HW_CFG0,
             Self::TestUnlockToken => Partition::SECRET0,
             Self::TestExitToken => Partition::SECRET0,
-            Self::FlashAddrKeySeed => Partition::SECRET1,
-            Self::FlashDataKeySeed => Partition::SECRET1,
+            Self::NvmAddrKeySeed => Partition::SECRET1,
+            Self::NvmDataKeySeed => Partition::SECRET1,
             Self::SramDataKeySeed => Partition::SECRET1,
             Self::RmaToken => Partition::SECRET2,
             Self::CreatorRootKeyShare0 => Partition::SECRET2,

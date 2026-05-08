@@ -73,7 +73,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     clear_seq_flags();
   endtask
 
-  virtual task wait_to_issue_reset(uint reset_delay_bound);
+  protected virtual task wait_to_issue_reset(uint reset_delay_bound);
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(reset_drive_cond)
     case (reset_drive_cond)
       DriveRandomly: begin
@@ -193,8 +193,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
 
       // Access OTP via app interface.
       if ($urandom_range(0, 1)) req_otbn_key(0);
-      if ($urandom_range(0, 1)) req_flash_addr_key(0);
-      if ($urandom_range(0, 1)) req_flash_data_key(0);
+      if ($urandom_range(0, 1)) req_nvm_addr_key(0);
+      if ($urandom_range(0, 1)) req_nvm_data_key(0);
       if ($urandom_range(0, 1)) req_all_sram_keys(0);
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 20));
 

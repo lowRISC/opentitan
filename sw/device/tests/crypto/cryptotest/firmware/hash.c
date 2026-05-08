@@ -5,9 +5,9 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
@@ -29,25 +29,21 @@ status_t handle_hash(ujson_t *uj) {
   // Create input message
   uint8_t msg_buf[uj_message.message_len];
   memcpy(msg_buf, uj_message.message, uj_message.message_len);
-  otcrypto_const_byte_buf_t input_message = {
-      .len = uj_message.message_len,
-      .data = msg_buf,
-  };
+  otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, msg_buf, uj_message.message_len);
   uint8_t customization_string_buf[uj_message.customization_string_len];
   memcpy(customization_string_buf, uj_message.customization_string,
          uj_message.customization_string_len);
-  otcrypto_const_byte_buf_t customization_string = {
-      .len = uj_message.customization_string_len,
-      .data = customization_string_buf,
-  };
+  otcrypto_const_byte_buf_t customization_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, customization_string_buf,
+                        uj_message.customization_string_len);
   // If we are using cSHAKE, the empty function name tells cryptolib not to
   // apply any function on top of cSHAKE.
-  otcrypto_const_byte_buf_t cshake_function_name = {
-      .len = 0,
-  };
+  otcrypto_const_byte_buf_t cshake_function_name =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
   // Handle to correct oneshot hash API for the provided algorithm
-  otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t,
+  otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t *,
                                     otcrypto_hash_digest_t *);
 
   // Digest length in 32-bit words
@@ -127,15 +123,15 @@ status_t handle_hash(ujson_t *uj) {
   // Test oneshot API
   switch (uj_algorithm) {
     case kCryptotestHashAlgorithmCshake128:
-      status = otcrypto_cshake128(input_message, cshake_function_name,
-                                  customization_string, &digest);
+      status = otcrypto_cshake128(&input_message, &cshake_function_name,
+                                  &customization_string, &digest);
       break;
     case kCryptotestHashAlgorithmCshake256:
-      status = otcrypto_cshake256(input_message, cshake_function_name,
-                                  customization_string, &digest);
+      status = otcrypto_cshake256(&input_message, &cshake_function_name,
+                                  &customization_string, &digest);
       break;
     default:
-      status = hash_oneshot(input_message, &digest);
+      status = hash_oneshot(&input_message, &digest);
   }
   if (status.value != kOtcryptoStatusValueOk) {
     LOG_ERROR("Bad status value: 0x%x", status.value);
@@ -157,19 +153,16 @@ status_t handle_hash(ujson_t *uj) {
     }
     // Split up input mesasge into 2 shares for better coverage of stepwise
     // hashing
-    otcrypto_const_byte_buf_t input_message_share1 = {
-        .len = uj_message.message_len / 2,
-        .data = msg_buf,
-    };
-    otcrypto_const_byte_buf_t input_message_share2 = {
-        .len = ceil_div(uj_message.message_len, 2),
-        .data = &msg_buf[uj_message.message_len / 2],
-    };
-    status = otcrypto_sha2_update(&ctx, input_message_share1);
+    otcrypto_const_byte_buf_t input_message_share1 = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, msg_buf, uj_message.message_len / 2);
+    otcrypto_const_byte_buf_t input_message_share2 = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, &msg_buf[uj_message.message_len / 2],
+        ceil_div(uj_message.message_len, 2));
+    status = otcrypto_sha2_update(&ctx, &input_message_share1);
     if (status.value != kOtcryptoStatusValueOk) {
       return INTERNAL(status.value);
     }
-    status = otcrypto_sha2_update(&ctx, input_message_share2);
+    status = otcrypto_sha2_update(&ctx, &input_message_share2);
     if (status.value != kOtcryptoStatusValueOk) {
       return INTERNAL(status.value);
     }

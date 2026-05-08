@@ -28,6 +28,7 @@ filesets:
       - lowrisc:darjeeling_ip:clkmgr_pkg
       - lowrisc:darjeeling_ip:rstmgr_pkg
       - lowrisc:systems:top_darjeeling_ast_pkg
+      - lowrisc:prim:prim_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_bhv_pkg.sv
@@ -44,10 +45,7 @@ filesets:
       - rtl/io_osc.sv
       - rtl/sys_clk.sv
       - rtl/sys_osc.sv
-      - rtl/usb_clk.sv
-      - rtl/usb_osc.sv
       - rtl/gfr_clk_mux2.sv
-      - rtl/ast_clks_byp.sv
       - rtl/rglts_pdm_3p3v.sv
       - rtl/ast_pulse_sync.sv
       - rtl/ast_entropy.sv

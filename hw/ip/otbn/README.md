@@ -1,10 +1,17 @@
 # OpenTitan Big Number Accelerator (OTBN) Technical Specification
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/otbn/data/otbn.hjson --top earlgrey -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`otbn`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D1, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/otbn/code.svg) |
 
-[`otbn`](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/otbn/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/otbn/code.svg)
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/otbn/index.html).
+
+<!-- END CMDGEN -->
+
+> OTBN is currently under development as new PQC related features are added.
+> This is indicated by the development stages (see [`otbn.hjson`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otbn/data/otbn.hjson) and [here](https://opentitan.org/book/doc/project_governance/development_stages.html)).
+> As of this the documentation can slightly differ from the current RTL / simulator implementation.
+> The documentation for the OTBN version with design stage D2S and verification stage V2S (OTBN v1.1.0) can be found under the Earl Grey v1.0.0 documentation [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/otbn/index.html).
 
 # Overview
 
@@ -95,7 +102,7 @@ See the documentation for {{#otbn-insn-ref JAL}} and {{#otbn-insn-ref JALR}} for
 The call stack has a maximum depth of 8 elements.
 Each instruction that reads from `x1` pops a single element from the stack.
 Each instruction that writes to `x1` pushes a single element onto the stack.
-An instruction that reads from an empty stack or writes to a full stack causes a `CALL_STACK` [software error](#design-details-errors).
+An instruction that reads from an empty stack or writes to a full stack causes a `CALL_STACK` [software error](doc/theory_of_operation.md#errors).
 
 A single instruction can both read and write to the stack.
 In this case, the read is ordered before the write.
@@ -109,8 +116,8 @@ CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} an
 Writes to read-only (RO) registers are ignored; they do not signal an error.
 All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
 
-<!-- This list of CSRs is replicated in otbn_env_cov.sv, wsr.py, the
-     RTL and in rig/model.py. If editing one, edit the other four as well. -->
+<!-- This list of CSRs is replicated in otbn_env_cov.sv, csr.py, wsr.py, the
+     RTL and in rig/model.py. If editing one, edit the other five as well. -->
 <!-- BEGIN CMDGEN ./hw/ip/otbn/util/docs/md_isrs.py hw/ip/otbn/data/csr.yml -->
 <table>
   <thead>
@@ -135,10 +142,36 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of flag group 0</td></tr>
-            <tr><td>1</td><td>MSb of flag group 0</td></tr>
-            <tr><td>2</td><td>LSb of flag group 0</td></tr>
-            <tr><td>3</td><td>Zero of flag group 0</td></tr>
+            <tr>
+              <td>0</td>
+              <td>
+                Carry of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                LSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                Zero of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
           </tbody>
         </table>
       </td>
@@ -156,10 +189,36 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of flag group 1</td></tr>
-            <tr><td>1</td><td>MSb of flag group 1</td></tr>
-            <tr><td>2</td><td>LSb of flag group 1</td></tr>
-            <tr><td>3</td><td>Zero of flag group 1</td></tr>
+            <tr>
+              <td>0</td>
+              <td>
+                Carry of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                LSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                Zero of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
           </tbody>
         </table>
       </td>
@@ -177,14 +236,60 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr><th>Bit</th><th>Description</th></tr>
           </thead>
           <tbody>
-            <tr><td>0</td><td>Carry of flag group 0</td></tr>
-            <tr><td>1</td><td>MSb of flag group 0</td></tr>
-            <tr><td>2</td><td>LSb of flag group 0</td></tr>
-            <tr><td>3</td><td>Zero of flag group 0</td></tr>
-            <tr><td>4</td><td>Carry of flag group 1</td></tr>
-            <tr><td>5</td><td>MSb of flag group 1</td></tr>
-            <tr><td>6</td><td>LSb of flag group 1</td></tr>
-            <tr><td>7</td><td>Zero of flag group 1</td></tr>
+            <tr>
+              <td>0</td>
+              <td>
+                Carry of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                LSb of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                Zero of flag group 0
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>
+                Carry of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td>
+                MSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td>
+                LSb of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>
+                Zero of flag group 1
+              </td>
+            </tr>
+            <tr>
+              <td>31:8</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
           </tbody>
         </table>
       </td>
@@ -271,6 +376,241 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0x7D9</td>
+      <td>RW</td>
+      <td>KMAC_IF_STATUS</td>
+      <td>
+        Write a 1 to bits 1 or 2 to clear the error bits.
+        KMAC_IF_STATUS is a CSR that exposes status information for the OTBN-KMAC interface.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MSG_WRITE_RDY indicates whether the KMAC_DATA_S0/1 WSR is ready for the next word.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MSG_SEND_ERROR (W1C) indicates whether an error occurred after issuing a message send command.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                MSG_WRITE_ERROR (W1C) indicates whether an error occurred after writing to the KMAC_DATA_S0/1 WSR.
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                DIGEST_VALID indicates whether the 64 bit word in KMAC_DATA_S0/1 WSR is valid.
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DA</td>
+      <td>RW</td>
+      <td>KMAC_INTR</td>
+      <td>
+        KMAC_INTR is a CSR that exposes the KMAC_ERROR interrupt of the KMAC HWIP.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                KMAC_ERROR (W1C) indicates whether an error occurred in the KMAC HWIP.
+              </td>
+            </tr>
+            <tr>
+              <td>31:1</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DB</td>
+      <td>RW</td>
+      <td>KMAC_CFG</td>
+      <td>
+        A configuration register for the KMAC interface.
+        The encodings for the fields are equivalent to the encodings for the CFG_SHADOWED register in the KMAC HWIP.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                KMAC_EN enables keyed operation in the KMAC HWIP (kmac_en = 0/1).
+              </td>
+            </tr>
+            <tr>
+              <td>3:1</td>
+              <td>
+                STRENGTH allows OTBN to select the desired security strength (kstrength = L128 / L224 / L256 / L384 / L512).
+              </td>
+            </tr>
+            <tr>
+              <td>5:4</td>
+              <td>
+                MODE allows OTBN to set the KMAC hashing mode (mode = SHAKE / cSHAKE / SHA3).
+              </td>
+            </tr>
+            <tr>
+              <td>31:6</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DC</td>
+      <td>RW</td>
+      <td>KMAC_MSG_SEND</td>
+      <td>
+        A command register to send a message to KMAC.
+        Reads from this register always return a 0.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MSG_SEND can be set to send the contents of KMAC_DATA_S0 and KMAC_DATA_S1 to KMAC.
+              </td>
+            </tr>
+            <tr>
+              <td>31:1</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DD</td>
+      <td>RW</td>
+      <td>KMAC_CMD</td>
+      <td>
+        The encodings for the commands are equivalent to the encodings for the CMD register in the KMAC HWIP.
+        Reads from this register always return a 0.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>5:0</td>
+              <td>
+                CMD is the KMAC command field used to issue START, PROCESS, RUN and DONE commands to KMAC.
+              </td>
+            </tr>
+            <tr>
+              <td>31:6</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7DE</td>
+      <td>RW</td>
+      <td>KMAC_BYTE_STROBE</td>
+      <td>
+        The input bytes of KMAC_DATA_S0/1 that are valid and should be consumed by KMAC.
+        <br>
+        For all message chunks except the final one, BYTE_STROBE must be programmed to all ones, indicating that all bytes in KMAC_DATA are valid. For the final message chunk, selected bits may be cleared to indicate unused bytes.
+        Any cleared bits must correspond to the most-significant bytes only, that is, the mask must be contiguous, with no zero bit followed by a one at a higher significance.
+        This needs to be the case, because that's how SHA3 inside KMAC expects the data.
+        If a non contiguous strobe is defined the behaviour is undefined.
+        <br>
+        Reads from this register return the current configuration of the KMAC_BYTE_STROBE CSR.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>31:0</td>
+              <td>
+                BYTE_STROBE is the KMAC byte strobe field.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E0</td>
+      <td>RW</td>
+      <td>MAI_CTRL</td>
+      <td>
+        The MAI control register. This is used to start MAI operations as well as configuring the accelerators.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MAI_START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
+              </td>
+            </tr>
+            <tr>
+              <td>2:1</td>
+              <td>
+                The MAI_OPERATION field defines which accelerator is used for the next operation. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+                <p>Values:</p><ul>
+                  <li>0: A2B</li>
+                  <li>1: B2A</li>
+                  <li>2: secAdd</li>
+                </ul>
+              </td>
+            </tr>
+            <tr>
+              <td>31:3</td>
+              <td>
+                Reserved. Any write is ignored. Always reads as 0.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
       <td>0xFC0</td>
       <td>RO</td>
       <td>RND</td>
@@ -293,6 +633,108 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
         <br>
         The number is sourced from an local PRNG.
         Reads never stall.
+      </td>
+    </tr>
+    <tr>
+      <td>0xFC2</td>
+      <td>RO</td>
+      <td>KMAC_STATUS</td>
+      <td>
+        Writes to this CSR are always ignored.
+        This CSR exposes the internal state of the SHA3 FSM within KMAC.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                SHA3_IDLE indicates whether the SHA3 core is in the idle state.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                SHA3_ABSORB indicates whether the SHA3 core is in the absorb state.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                SHA3_SQUEEZE indicates whether the SHA3 core is in the squeeze state.
+              </td>
+            </tr>
+            <tr>
+              <td>31:3</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xFC3</td>
+      <td>RO</td>
+      <td>KMAC_ERROR</td>
+      <td>
+        Writes to this register are ignored.
+        This register exposes the error code from the KMAC HWIP ERR_CODE register.
+        No other information from the KMAC HWIP ERR_CODE register is exposed.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>7:0</td>
+              <td>
+                ERROR_CODE contains the error code coming directly from the KMAC HWIP.
+              </td>
+            </tr>
+            <tr>
+              <td>31:8</td>
+              <td>
+                Reserved. Always reads as 0. Any write is ignored.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xFCA</td>
+      <td>RO</td>
+      <td>MAI_STATUS</td>
+      <td>
+        The MAI status register.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                MAI_BUSY: This bit is set to 1 when an MAI operation is in progress. If reset, the MAI accepts new configuration values and a new execution can be started by writing to the MAI_START bit in the MAI_CTRL CSR.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                MAI_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+              </td>
+            </tr>
+            <tr>
+              <td>31:2</td>
+              <td>
+                Reserved. Always reads as 0.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </td>
     </tr>
   </tbody>
@@ -343,7 +785,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td><a name="mod">MOD</a></td>
       <td>
-        The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions.
+        The modulus used by the {{#otbn-insn-ref BN.ADDM}} and {{#otbn-insn-ref BN.SUBM}} instructions as well as their vectorized variants.
         This WSR is also visible as CSRs `MOD0` through to `MOD7`.
       </td>
     </tr>
@@ -377,7 +819,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td><a name="acc">ACC</a></td>
       <td>
-        The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction.
+        The accumulator register used by the {{#otbn-insn-ref BN.MULQACC}} instruction and the vectorized multiplication instructions like {{#otbn-insn-ref BN.MULV}}.
       </td>
     </tr>
     <tr>
@@ -420,6 +862,140 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
         Bits [127:0] contain bits [383:256] of share 1 of the 384b OTBN sideload key provided by the [Key Manager](../keymgr/README.md).
         <br>
         A `KEY_INVALID` software error is raised on read if the Key Manager has not provided a valid key.
+      </td>
+    </tr>
+    <tr>
+      <td>0x8</td>
+      <td>RW</td>
+      <td><a name="kmac-data-s0">KMAC_DATA_S0</a></td>
+      <td>
+        KMAC_DATA_S0 is the first 256-bit share of the masked message or digest interface.
+        <br>
+        For masked operations, provide the first share here and the second share in KMAC_DATA_S1.
+        <br>
+        If masking is not required:
+        - Set this share to the plaintext data.
+        - Set the other share to all-zeros.
+        <br>
+        The digest data is provided in chunks of 64 bits at a time.
+        For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>63:0</td>
+              <td>
+                Write: Least significant word of the message share. Read: Current 64-bit word of the digest share.
+              </td>
+            </tr>
+            <tr>
+              <td>255:64</td>
+              <td>
+                Write: Words 1-3 of the message share. Read: Returns `0`. Digest shares are read out via the least significant word only.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x9</td>
+      <td>RW</td>
+      <td><a name="kmac-data-s1">KMAC_DATA_S1</a></td>
+      <td>
+        KMAC_DATA_S1 is the second 256-bit share of the masked message or digest interface.
+        <br>
+        For masked operations, provide the second share here and the second share in KMAC_DATA_S0.
+        <br>
+        If masking is not required:
+        - Set this share to the plaintext data.
+        - Set the other share to all-zeros.
+        <br>
+        The digest data is provided in chunks of 64 bits at a time.
+        For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>63:0</td>
+              <td>
+                Write: Least significant word of the message share. Read: Current 64-bit word of the digest share.
+              </td>
+            </tr>
+            <tr>
+              <td>255:64</td>
+              <td>
+                Write: Words 1-3 of the message share. Read: Returns `0`. Digest shares are read out via the least significant word only.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xA</td>
+      <td>RO</td>
+      <td><a name="mai-res-s0">MAI_RES_S0</a></td>
+      <td>
+        This WSR holds share 0 of the masked results produced by the MAI.
+        The results are organized as eight 32-bit values.
+        Results are valid when MAI is not busy anymore.
+        The results are valid until the next operation produces its first result (depends on the selected accelerator's latency).
+      </td>
+    </tr>
+    <tr>
+      <td>0xB</td>
+      <td>RO</td>
+      <td><a name="mai-res-s1">MAI_RES_S1</a></td>
+      <td>
+        This WSR holds share 1 of the masked results produced by the MAI.
+        The results are organized as eight 32-bit values.
+        Results are valid when MAI is not busy anymore.
+        The results are valid until the next operation produces its first result (depends on the selected accelerator's latency).
+      </td>
+    </tr>
+    <tr>
+      <td>0xC</td>
+      <td>RW</td>
+      <td><a name="mai-in0-s0">MAI_IN0_S0</a></td>
+      <td>
+        This WSR transfers share 0 of the first input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0xD</td>
+      <td>RW</td>
+      <td><a name="mai-in0-s1">MAI_IN0_S1</a></td>
+      <td>
+        This WSR transfers share 1 of the first input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0xE</td>
+      <td>RW</td>
+      <td><a name="mai-in1-s0">MAI_IN1_S0</a></td>
+      <td>
+        This WSR transfers share 0 of the second input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0xF</td>
+      <td>RW</td>
+      <td><a name="mai-in1-s1">MAI_IN1_S1</a></td>
+      <td>
+        This WSR transfers share 1 of the second input secrets towards the MAI.
+        The inputs are considered as eight 32-bit values.
+        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
       </td>
     </tr>
   </tbody>
@@ -527,9 +1103,3 @@ Blanking is applied in the following locations:
   Data paths not required for the instruction being executed are blanked.
 
 Note there is no blanking on the base side (save for the CSRs as these provide access to WDRs such as ACC).
-
-# References
-
-<a name="ref-chen08">[CHEN08]</a> L. Chen, "Hsiao-Code Check Matrices and Recursively Balanced Matrices," arXiv:0803.1217 [cs], Mar. 2008 [Online]. Available: https://arxiv.org/abs/0803.1217
-
-<a name="ref-symbiotic21">[SYMBIOTIC21]</a> RISC-V Bitmanip Extension v0.93 Available: https://github.com/riscv/riscv-bitmanip/releases/download/v0.93/bitmanip-0.93.pdf

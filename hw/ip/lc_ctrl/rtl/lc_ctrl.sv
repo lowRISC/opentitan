@@ -109,12 +109,12 @@ module lc_ctrl
   // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_clk_byp_req_o,
   input  lc_tx_t                                     lc_clk_byp_ack_i,
-  // Request and feedback to/from flash controller.
+  // Request and feedback to/from nvm controller.
   // The ack is synced to the lc clock domain using prim_lc_sync.
-  output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
+  output lc_nvm_rma_seed_t                           lc_nvm_rma_seed_o,
   // SEC_CM: INTERSIG.MUBI
-  output lc_tx_t                                     lc_flash_rma_req_o,
-  input  lc_tx_t [NumRmaAckSigs-1:0]                 lc_flash_rma_ack_i,
+  output lc_tx_t                                     lc_nvm_rma_req_o,
+  input  lc_tx_t [NumRmaAckSigs-1:0]                 lc_nvm_rma_ack_i,
   // State group diversification value for keymgr.
   output lc_keymgr_div_t                             lc_keymgr_div_o,
   // Hardware config input, needed for the DEVICE_ID field.
@@ -326,7 +326,7 @@ module lc_ctrl
   logic          trans_cnt_oflw_error_d, trans_cnt_oflw_error_q;
   logic          trans_invalid_error_d, trans_invalid_error_q;
   logic          token_invalid_error_d, token_invalid_error_q;
-  logic          flash_rma_error_d, flash_rma_error_q;
+  logic          nvm_rma_error_d, nvm_rma_error_q;
   logic          otp_prog_error_d, fatal_prog_error_q;
   logic          state_invalid_error_d, fatal_state_error_q;
   logic          otp_part_error_q;
@@ -342,20 +342,26 @@ module lc_ctrl
 
   logic lc_idle_d, lc_done_d;
 
-  // Assign the hardware revision constant and feed it through an anchor buffer. This ensures the
-  // individual bits remain visible in the netlist, thereby enabling metal fixes to be reflected
-  // in the hardware revision.
-  lc_hw_rev_t hw_rev;
-  assign hw_rev = '{silicon_creator_id: SiliconCreatorId,
-                    product_id:         ProductId,
-                    revision_id:        RevisionId,
-                    reserved:           '0};
-  prim_sec_anchor_buf #(
-    .Width($bits(lc_hw_rev_t))
-  ) u_hw_rev_anchor_buf (
-    .in_i(hw_rev),
-    .out_o(hw_rev_o)
+  // Create the hardware revision with the anchor const that instantiates specific standard cells.
+  // This ensures the individual bits are not combined through logic optimization and remain visible
+  // in the netlist, thereby enabling metal fixes to be reflected in the hardware revision.
+  localparam int HwRevWidth = $bits(lc_hw_rev_t);
+  localparam lc_hw_rev_t HwRev = '{silicon_creator_id: SiliconCreatorId,
+                                   product_id:         ProductId,
+                                   revision_id:        RevisionId,
+                                   reserved:           '0};
+
+  // We need to first cast HwRev to a logic array and then back to lc_hw_rev_t
+  // This explicit cast is required because some tools misinterpret packed struct parameters as
+  // integers, leading to MSB truncation
+  logic [HwRevWidth-1:0] hw_rev_raw;
+  prim_const #(
+    .Width(HwRevWidth),
+    .ConstVal(HwRevWidth'(HwRev))
+  ) u_hw_rev_const (
+    .out_o(hw_rev_raw)
   );
+  assign hw_rev_o = lc_hw_rev_t'(hw_rev_raw);
 
   // OTP Vendor control bits
   logic ext_clock_switched;
@@ -373,7 +379,7 @@ module lc_ctrl
     hw2reg.status.transition_count_error = trans_cnt_oflw_error_q;
     hw2reg.status.transition_error       = trans_invalid_error_q;
     hw2reg.status.token_error            = token_invalid_error_q;
-    hw2reg.status.flash_rma_error        = flash_rma_error_q;
+    hw2reg.status.nvm_rma_error          = nvm_rma_error_q;
     hw2reg.status.otp_error              = fatal_prog_error_q;
     hw2reg.status.state_error            = fatal_state_error_q;
     hw2reg.status.otp_partition_error    = otp_part_error_q;
@@ -519,7 +525,7 @@ module lc_ctrl
       trans_cnt_oflw_error_q        <= 1'b0;
       trans_invalid_error_q         <= 1'b0;
       token_invalid_error_q         <= 1'b0;
-      flash_rma_error_q             <= 1'b0;
+      nvm_rma_error_q               <= 1'b0;
       fatal_prog_error_q            <= 1'b0;
       fatal_state_error_q           <= 1'b0;
       sw_claim_transition_if_q      <= MuBi8False;
@@ -548,7 +554,7 @@ module lc_ctrl
       trans_cnt_oflw_error_q    <= trans_cnt_oflw_error_d  | trans_cnt_oflw_error_q;
       trans_invalid_error_q     <= trans_invalid_error_d   | trans_invalid_error_q;
       token_invalid_error_q     <= token_invalid_error_d   | token_invalid_error_q;
-      flash_rma_error_q         <= flash_rma_error_d       | flash_rma_error_q;
+      nvm_rma_error_q           <= nvm_rma_error_d         | nvm_rma_error_q;
       fatal_prog_error_q        <= otp_prog_error_d        | fatal_prog_error_q;
       fatal_state_error_q       <= state_invalid_error_d   | fatal_state_error_q;
       otp_part_error_q          <= otp_lc_data_i.error     | otp_part_error_q;
@@ -586,7 +592,7 @@ module lc_ctrl
   end
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
-  assign lc_flash_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
+  assign lc_nvm_rma_seed_o = transition_token_q[RmaSeedWidth-1:0];
 
   // Gate the vendor specific test ctrl/status bits to zero in production states.
   // Buffer the enable signal to prevent optimization of the multibit signal.
@@ -812,7 +818,7 @@ module lc_ctrl
     .trans_cnt_oflw_error_o ( trans_cnt_oflw_error_d           ),
     .trans_invalid_error_o  ( trans_invalid_error_d            ),
     .token_invalid_error_o  ( token_invalid_error_d            ),
-    .flash_rma_error_o      ( flash_rma_error_d                ),
+    .nvm_rma_error_o        ( nvm_rma_error_d                  ),
     .otp_prog_error_o       ( otp_prog_error_d                 ),
     .state_invalid_error_o  ( state_invalid_error_d            ),
     .lc_raw_test_rma_o      ( lc_raw_test_rma                  ),
@@ -833,8 +839,8 @@ module lc_ctrl
     .lc_check_byp_en_o,
     .lc_clk_byp_req_o,
     .lc_clk_byp_ack_i,
-    .lc_flash_rma_req_o,
-    .lc_flash_rma_ack_i,
+    .lc_nvm_rma_req_o,
+    .lc_nvm_rma_ack_i,
     .lc_keymgr_div_o
   );
 
@@ -870,15 +876,13 @@ module lc_ctrl
   `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
   `ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
   `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o           )
-  `ASSERT_KNOWN(LcFlashRmaSeedKnown_A,  lc_flash_rma_seed_o        )
-  `ASSERT_KNOWN(LcFlashRmaReqKnown_A,   lc_flash_rma_req_o         )
+  `ASSERT_KNOWN(LcNvmRmaSeedKnown_A,    lc_nvm_rma_seed_o          )
+  `ASSERT_KNOWN(LcNvmRmaReqKnown_A,     lc_nvm_rma_req_o           )
   `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
   `ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
 
   `ASSERT(LcInitDoneSticky_A,
-      lc_tx_test_true_strict(lc_init_done_o)
-      |=>
-      ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
+          ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,

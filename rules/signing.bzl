@@ -10,22 +10,7 @@ load("//rules:host.bzl", "host_tools_transition")
 
 PreSigningBinaryInfo = provider(fields = ["files"])
 SigningToolInfo = provider(fields = ["tool", "data", "env", "location"])
-KeySetInfo = provider(fields = ["keys", "selected_key", "profile", "sign", "tool"])
-
-KeyInfo = provider(
-    """Key Information.
-
-    Used to capture all required information about a key.
-    """,
-    fields = {
-        "id": "Identifier used by the consumers of the provider to determine the key algorithm.",
-        "config": "The config of the key. Specific to the key algorithm.",
-        "method": "Mechanism used to access the key. Can be local or hsmtool.",
-        "pub_key": "Public key `file`.",
-        "private_key": "Private key `file`. May be None when method is set to hsmtool.",
-        "type": "The type of the key. Can be TestKey, DevKey or ProdKey.",
-    },
-)
+KeySetInfo = provider(fields = ["keys", "config", "selected_key", "profile", "sign", "tool"])
 
 def _label_str(label):
     return "@{}//{}:{}".format(label.workspace_name, label.package, label.name)
@@ -61,14 +46,8 @@ def key_from_dict(key, attr_name):
             label = key,
             file = ksi.keys[name],
             name = name,
-        )
-    elif KeyInfo in key:
-        key_info = key[KeyInfo]
-        return struct(
-            label = key,
-            file = None,
-            name = name,
-            info = key_info,
+            info = None,
+            config = ksi.config[name],
         )
     elif DefaultInfo in key:
         key_file = key[DefaultInfo].files.to_list()
@@ -78,6 +57,7 @@ def key_from_dict(key, attr_name):
             label = key,
             file = key_file[0],
             name = name,
+            config = {},
         )
     return None
 
@@ -168,23 +148,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
 
     ecdsa_or_rsa_args = []
     if ecdsa_key:
-        # Check if the provider is KeyInfo or KeySetInfo
-        info = getattr(ecdsa_key, "info", None)
         selected_ecdsa_key = getattr(ecdsa_key, "file", None)
-        if info:
-            # Provider is KeyInfo; get the key file.
-            if info.private_key:
-                selected_ecdsa_key = ecdsa_key.info.private_key
-            elif info.pub_key:
-                selected_ecdsa_key = ecdsa_key.info.pub_key
-            else:
-                fail("Expected an ECDSA key with a private_key or pub_key attributes.")
-        elif selected_ecdsa_key:
-            # Provider is KeySetInfo; we already have the key file.
-            pass
-        else:
-            fail("Expected either KeyInfo or KeySetInfo; got neither")
-
         ecdsa_or_rsa_args.append("--ecdsa-key={}".format(selected_ecdsa_key.path))
         inputs.append(selected_ecdsa_key)
     elif rsa_key:
@@ -192,23 +156,10 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
         inputs.append(rsa_key.file)
 
     spx_args = []
+    spx_domain = None
     if spx_key:
-        # Check if the provider is KeyInfo or KeySetInfo
-        info = getattr(spx_key, "info", None)
+        spx_domain = spx_key.config.get("domain", "Pure")
         selected_spx_key = getattr(spx_key, "file", None)
-        if info:
-            # Provider is KeyInfo; get the key file.
-            if info.private_key:
-                selected_spx_key = spx_key.info.private_key
-            elif info.pub_key:
-                selected_spx_key = spx_key.info.pub_key
-            else:
-                fail("Expected a SPHINCS+ key with a private_key or pub_key attributes.")
-        elif selected_spx_key:
-            # Provider is KeySetInfo; we already have the key file.
-            pass
-        else:
-            fail("Expected either KeyInfo or KeySetInfo; got neither")
         spx_args.append("--spx-key={}".format(selected_spx_key.path))
         inputs.append(selected_spx_key)
     ctx.actions.run(
@@ -221,6 +172,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
             "manifest",
             "update",
             "--manifest={}".format(manifest.path),
+            "--domain={}".format(spx_domain),
             "--output={}".format(pre.path),
             src.path,
         ] + ecdsa_or_rsa_args + spx_args,
@@ -269,32 +221,44 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
     # Compute message to be signed with SPX+.
     spxmsg = None
     if spx_key:
-        spxmsg = ctx.actions.declare_file("{}.spx-message".format(basename))
-        ctx.actions.run(
-            outputs = [spxmsg],
-            inputs = [pre],
-            arguments = [
-                "--rcfile=",
-                "--quiet",
-                "image",
-                "spx-message",
-                "--output={}".format(spxmsg.path),
-                pre.path,
-            ],
-            executable = opentitantool,
-            mnemonic = "PreSigningSpxMessage",
-        )
-        signing_directives.append(struct(
-            command = "spx-sign",
-            id = None,
-            label = spx_key.name,
-            little_endian = False,
-            # TODO(cfrantz): Update the format/domain when we can support pre-hashed signing.
-            format = "PlainText",
-            domain = "Pure",
-            output = "{}.spx_sig".format(basename),
-            input = "{}.spx-message".format(basename),
-        ))
+        if spx_domain.lower() == "prehashedsha256":
+            spxmsg = digest
+            rev = spx_key.config.get("byte-reversal-bug", "false")
+            fmt = "Sha256HashReversed" if rev == "true" else "Sha256Hash"
+            signing_directives.append(struct(
+                command = "spx-sign",
+                id = None,
+                label = spx_key.name,
+                format = fmt,
+                domain = spx_domain,
+                output = "{}.spx_sig".format(basename),
+                input = "{}.digest".format(basename),
+            ))
+        else:
+            spxmsg = ctx.actions.declare_file("{}.spx-message".format(basename))
+            ctx.actions.run(
+                outputs = [spxmsg],
+                inputs = [pre],
+                arguments = [
+                    "--rcfile=",
+                    "--quiet",
+                    "image",
+                    "spx-message",
+                    "--output={}".format(spxmsg.path),
+                    pre.path,
+                ],
+                executable = opentitantool,
+                mnemonic = "PreSigningSpxMessage",
+            )
+            signing_directives.append(struct(
+                command = "spx-sign",
+                id = None,
+                label = spx_key.name,
+                format = "PlainText",
+                domain = spx_domain,
+                output = "{}.spx_sig".format(basename),
+                input = "{}.spx-message".format(basename),
+            ))
 
     return struct(pre = pre, digest = digest, spxmsg = spxmsg, script = signing_directives)
 
@@ -324,8 +288,8 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
         key_command = "rsa"
     elif ecdsa_key:
         output_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".ecdsa_sig"))
-        inputs.append(ecdsa_key.info.private_key)
-        key_path = ecdsa_key.info.private_key.path
+        inputs.append(ecdsa_key.file)
+        key_path = ecdsa_key.file.path
         key_command = "ecdsa"
     else:
         fail("Expected an ECDSA or RSA key")
@@ -347,19 +311,24 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
     )
 
     spx_sig = None
-    if spxmsg and spx_key.file:
+    if spxmsg and spx_key:
+        private_key = spx_key.file
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx_sig"))
+        domain = spx_key.config.get("domain", "Pure")
+        rev = spx_key.config.get("byte-reversal-bug", "false")
         ctx.actions.run(
             outputs = [spx_sig],
-            inputs = [spxmsg, spx_key.file],
+            inputs = [spxmsg, private_key],
             arguments = [
                 "--rcfile=",
                 "--quiet",
                 "spx",
                 "sign",
+                "--spx-hash-reversal-bug={}".format(rev),
+                "--domain={}".format(domain),
                 "--output={}".format(spx_sig.path),
                 spxmsg.path,
-                spx_key.file.path,
+                private_key.path,
             ],
             executable = tool.tool,
             mnemonic = "LocalSpxSign",
@@ -430,6 +399,20 @@ def _hsmtool_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key 
 
     spx_sig = None
     if spxmsg and spx_key:
+        domain = spx_key.config.get("domain", "Pure")
+        if domain.lower() == "prehashedsha256":
+            rev = spx_key.config.get("byte-reversal-bug", "false")
+            fmt = "sha256-hash-reversed" if rev == "true" else "sha256-hash"
+            args = [
+                "--little-endian",
+                "--format={}".format(fmt),
+                "--domain={}".format(domain),
+            ]
+        else:
+            args = [
+                "--format=plain-text",
+                "--domain={}".format(domain),
+            ]
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx-sig"))
         ctx.actions.run(
             outputs = [spx_sig],
@@ -440,11 +423,10 @@ def _hsmtool_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key 
                 "--profile={}".format(profile),
                 "spx",
                 "sign",
-                "--format=plain-text",
                 "--label={}".format(spx_key.name),
                 "--output={}".format(spx_sig.path),
                 spxmsg.path,
-            ],
+            ] + args,
             executable = tool.tool,
             execution_requirements = {
                 "no-sandbox": "",
@@ -699,9 +681,6 @@ def _clear_if_none_key(key_attr):
 
     key, _ = key_attr.items()[0]
 
-    if KeyInfo in key:
-        return key_attr
-
     if key.label.name == "none_key":
         return None
 
@@ -855,11 +834,22 @@ signing_tool = rule(
 
 def _keyset(ctx):
     keys = {}
+    config = {}
     for k, v in ctx.attr.keys.items():
         keyfile = k.files.to_list()
+
+        # Parse the value (nickname and parameters) into a param dictionary
+        # so we keep the per-key configuration parameters in the KeySetInfo
+        # provider `config` field.
+        param = v.split(":")
+        if "=" not in param[0]:
+            param[0] = "name=" + param[0]
+        param = [p.split("=", 1) for p in param]
+        param = {p[0]: p[1] for p in param}
         if len(keyfile) != 1:
             fail("keyset key labels must resolve to exactly one file.")
-        keys[v] = keyfile[0]
+        keys[param["name"]] = keyfile[0]
+        config[param["name"]] = param
 
     tool = ctx.attr.tool[SigningToolInfo]
     if tool.location == "local" and ctx.attr.profile != "local":
@@ -875,7 +865,10 @@ def _keyset(ctx):
         sign = _local_sign
     else:
         sign = _hsmtool_sign
-    return [KeySetInfo(keys = keys, selected_key = selected_key, profile = ctx.attr.profile, sign = sign, tool = tool)]
+    return [
+        KeySetInfo(keys = keys, config = config, selected_key = selected_key, profile = ctx.attr.profile, sign = sign, tool = tool),
+        DefaultInfo(files = depset(keys.values()), data_runfiles = ctx.runfiles(files = keys.values())),
+    ]
 
 keyset = rule(
     implementation = _keyset,
@@ -884,7 +877,7 @@ keyset = rule(
         "keys": attr.label_keyed_string_dict(
             allow_files = True,
             mandatory = True,
-            doc = "A mapping of key files to key names.  When a key file is a public key whose private component is held in an HSM, the name should be the same as the HSM label of that key.",
+            doc = "A mapping of key files to key names.  When a key file is a public key whose private component is held in an HSM, the name should be the same as the HSM label of that key.  Additional key parameters may be specified with colon-separated key=value pairs.",
         ),
         "profile": attr.string(
             mandatory = True,
@@ -895,4 +888,81 @@ keyset = rule(
             providers = [SigningToolInfo],
         ),
     },
+)
+
+def _signature_test_impl(ctx):
+    keys = []
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    script = ctx.actions.declare_file("{}.bash".format(ctx.label.name))
+    verify_args = ""
+    ecdsa_key = key_from_dict(ctx.attr.ecdsa_key, "ecdsa_key")
+    spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
+
+    selected_ecdsa_key_path = ""
+    selected_spx_key_path = ""
+
+    if ctx.attr.spx_domain != "":
+        verify_args = "--spx --domain " + ctx.attr.spx_domain
+    if ecdsa_key:
+        selected_ecdsa_key_path = ecdsa_key.file.path
+        keys.append(ecdsa_key.file)
+    if spx_key:
+        selected_spx_key_path = spx_key.file.path
+        keys.append(spx_key.file)
+
+    files = [f.short_path for f in ctx.files.srcs]
+    ctx.actions.expand_template(
+        template = ctx.file._script,
+        output = script,
+        substitutions = {
+            "@FILES@": " ".join(files),
+            "@OPENTITANTOOL@": tc.tools.opentitantool.executable.short_path,
+            "@VERIFY_ARGS@": verify_args,
+            "@ECDSA_KEY@": selected_ecdsa_key_path,
+            "@SPX_KEY@": selected_spx_key_path,
+            "@IS_NEGATIVE_TEST@": str(ctx.attr.negative_test),
+        },
+        is_executable = True,
+    )
+
+    return [
+        DefaultInfo(
+            runfiles = ctx.runfiles(files = ctx.files.srcs + keys + [tc.tools.opentitantool.executable]),
+            executable = script,
+        ),
+    ]
+
+signature_test = rule(
+    implementation = _signature_test_impl,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True, doc = "help string"),
+        "ecdsa_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
+            allow_files = True,
+            doc = "ECDSA public key to validate this image",
+        ),
+        "spx_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
+            allow_files = True,
+            doc = "SPX public key to validate this image",
+        ),
+        "negative_test": attr.bool(
+            default = False,
+            doc = "Whether this is a negative test case.",
+        ),
+        "spx_domain": attr.string(
+            default = "",
+            values = ["", "Pure", "PrehashedSha256"],
+            doc = "The SPHINCS+ domain to use for signing.",
+        ),
+        "_script": attr.label(
+            default = "//rules/scripts:sival_signature_test.template.sh",
+            doc = "The shell script to execute for the test.",
+            allow_single_file = True,
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
+    test = True,
 )

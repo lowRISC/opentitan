@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
-#include "hw/top/dt/dt_rv_core_ibex.h"
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/runtime/hart.h"

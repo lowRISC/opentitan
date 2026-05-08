@@ -17,7 +17,7 @@ impl I2cTargetAddress {
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
         TestCommand::I2cTargetAddress.send_with_crc(uart)?;
         self.send_with_crc(uart)?;
-        Status::recv(uart, Duration::from_secs(300), false)?;
+        Status::recv(uart, Duration::from_secs(300), false, false)?;
         Ok(())
     }
 }
@@ -42,7 +42,7 @@ impl I2cTransferStart {
         TestCommand::I2cStartTransferRead.send_with_crc(uart)?;
         self.send_with_crc(uart)?;
         f()?;
-        Status::recv(uart, Duration::from_secs(300), false)?;
+        Status::recv(uart, Duration::from_secs(300), false, false)?;
         Ok(())
     }
 
@@ -52,7 +52,7 @@ impl I2cTransferStart {
     {
         TestCommand::I2cStartTransferWrite.send_with_crc(uart)?;
         f()?;
-        Self::recv(uart, Duration::from_secs(300), false)
+        Self::recv(uart, Duration::from_secs(300), false, false)
     }
 
     pub fn execute_write_slow<F>(uart: &dyn Uart, f: F) -> Result<Self>
@@ -61,7 +61,7 @@ impl I2cTransferStart {
     {
         TestCommand::I2cStartTransferWriteSlow.send_with_crc(uart)?;
         f()?;
-        Self::recv(uart, Duration::from_secs(300), false)
+        Self::recv(uart, Duration::from_secs(300), false, false)
     }
 
     pub fn execute_write_read<F>(&self, uart: &dyn Uart, f: F) -> Result<Self>
@@ -71,7 +71,7 @@ impl I2cTransferStart {
         TestCommand::I2cStartTransferWriteRead.send_with_crc(uart)?;
         self.send_with_crc(uart)?;
         f()?;
-        Self::recv(uart, Duration::from_secs(300), false)
+        Self::recv(uart, Duration::from_secs(300), false, false)
     }
 }
 
@@ -79,7 +79,7 @@ impl I2cTestConfig {
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
         TestCommand::I2cTestConfig.send_with_crc(uart)?;
         self.send_with_crc(uart)?;
-        Status::recv(uart, Duration::from_secs(300), false)?;
+        Status::recv(uart, Duration::from_secs(300), false, false)?;
         Ok(())
     }
 }

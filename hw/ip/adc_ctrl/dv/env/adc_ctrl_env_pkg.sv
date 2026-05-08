@@ -74,39 +74,25 @@ package adc_ctrl_env_pkg;
     AdcCtrlResetModeHw
   } adc_ctrl_reset_mode_e;
 
-  // Filter condition coding
-  typedef enum bit {
-    ADC_CTRL_FILTER_COND_IN  = 0,
-    ADC_CTRL_FILTER_COND_OUT = 1
-  } adc_ctrl_filter_cond_e;
-
-  // Filter configuration
-  typedef struct packed {
-    adc_ctrl_filter_cond_e cond;  // Condition
-    int min_v;  // Minimum value
-    int max_v;  // Maximum value
-    bit en;  // Enable
-  } adc_ctrl_filter_cfg_t;
+  typedef class adc_ctrl_filter_cfg;
 
   // Constants
   // Filter defaults - applies to all channels
-  const
-  adc_ctrl_filter_cfg_t
-  FILTER_CFG_DEFAULTS[] = '{
-      '{min_v: 149, max_v: 279, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 391, max_v: 524, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 712, max_v: 931, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 712, max_v: 847, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 349, max_v: 512, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 405, max_v: 503, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 186, max_v: 279, cond: ADC_CTRL_FILTER_COND_IN, en: 1},
-      '{min_v: 116, max_v: 954, cond: ADC_CTRL_FILTER_COND_OUT, en: 1}
+  const adc_ctrl_filter_cfg FILTER_CFG_DEFAULTS[] = '{
+      adc_ctrl_filter_cfg::make("default0", 149, 279, 1),
+      adc_ctrl_filter_cfg::make("default1", 391, 524, 1),
+      adc_ctrl_filter_cfg::make("default2", 712, 931, 1),
+      adc_ctrl_filter_cfg::make("default3", 712, 847, 1),
+      adc_ctrl_filter_cfg::make("default4", 349, 512, 1),
+      adc_ctrl_filter_cfg::make("default5", 405, 503, 1),
+      adc_ctrl_filter_cfg::make("default6", 186, 279, 1),
+      adc_ctrl_filter_cfg::make("default7", 116, 954, 0)
   };
-  // functions and tasks
 
   // package sources
   `include "adc_ctrl_env_cfg.sv"
   `include "adc_ctrl_env_var_filter_cfg.sv"
+  `include "adc_ctrl_filter_cfg.sv"
   `include "adc_ctrl_env_cov.sv"
   `include "adc_ctrl_virtual_sequencer.sv"
   `include "adc_ctrl_scoreboard.sv"

@@ -27,10 +27,8 @@
 
 #define SIVAL_OWNER_CONFIG_VERSION 1
 
-rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
-                                   owner_config_t *config,
-                                   owner_application_keyring_t *keyring) {
-  owner_key_t owner = (owner_key_t){
+rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
+  owner_keydata_t owner = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = OWNERSHIP_OWNER_KEY};
@@ -67,11 +65,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   memset(owner_page[0].device_id, kLockConstraintNone,
          sizeof(owner_page[0].device_id));
   owner_page[0].owner_key = owner;
-  owner_page[0].activate_key = (owner_key_t){
+  owner_page[0].activate_key = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = OWNERSHIP_ACTIVATE_KEY};
-  owner_page[0].unlock_key = (owner_key_t){
+  owner_page[0].unlock_key = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = OWNERSHIP_UNLOCK_KEY};
@@ -132,6 +130,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -
                (uintptr_t)app;
   memset(app, 0x5a, len);
+
+  // Check that the owner_block will parse correctly.
+  RETURN_IF_ERROR(owner_block_parse(&owner_page[0],
+                                    /*check_only=*/kHardenedBoolTrue, NULL,
+                                    NULL));
 
   ownership_seal_page(/*page=*/0);
   memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));

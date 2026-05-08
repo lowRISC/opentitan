@@ -14,7 +14,7 @@ load(
     "verilator_params",
 )
 load("//rules/opentitan:util.bzl", "flatten")
-load("//hw/top:defs.bzl", "opentitan_if_ip")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -24,37 +24,6 @@ filegroup(
         "**/*.md",
         "**/*.svg",
     ]),
-)
-
-cc_library(
-    name = "coverage_none",
-    srcs = ["coverage_none.c"],
-    hdrs = ["coverage.h"],
-)
-
-cc_library(
-    name = "coverage_llvm",
-    srcs = [
-        "coverage_llvm.c",
-    ],
-    hdrs = ["coverage.h"],
-    linkopts = ["-lgcc"],
-    deps = [
-        "//sw/device/lib/base:crc32",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//third_party/llvm_compiler_rt",
-    ],
-)
-
-alias(
-    name = "coverage",
-    actual = select({
-        "//sw/device:measure_coverage_on_target": ":coverage_llvm",
-        "//conditions:default": ":coverage_none",
-    }),
-    visibility = ["//visibility:private"],
 )
 
 cc_library(
@@ -95,6 +64,7 @@ ld_library(
     includes = ["ottf_common.ld"],
     deps = [
         "//sw/device:info_sections",
+        "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
 )
@@ -203,17 +173,28 @@ cc_library(
     hdrs = [
         "ottf_isrs.h",
     ],
+    defines = opentitan_if_ip(
+        "alert_handler",
+        ["OPENTITAN_HAS_ALERT_HANDLER"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-    ],
+    ] + opentitan_select_top(
+        {"englishbreakfast": []},
+        [
+            ":ottf_alerts",
+            "//sw/device/lib/dif:alert_handler",
+        ],
+    ),
 )
 
 # This target provides start files without providing the full OTTF, and can be
@@ -239,6 +220,8 @@ cc_library(
         "//hw/top:top_lib",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/coverage:api_asm",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -269,29 +252,66 @@ cc_library(
 )
 
 cc_library(
+    name = "ottf_alerts",
+    srcs = ["ottf_alerts.c"],
+    hdrs = ["ottf_alerts.h"],
+    defines = opentitan_if_ip(
+        "flash_ctrl",
+        ["OPENTITAN_HAS_FLASH_CTRL"],
+        [],
+    ),
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":ottf_test_config",
+        "//hw/top/dt",
+        "//sw/device/lib/arch:boot_stage",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+    ],
+)
+
+cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
+    defines = opentitan_if_ip(
+        "alert_handler",
+        ["OPENTITAN_HAS_ALERT_HANDLER"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
-        ":coverage",
         ":freertos_port",
         ":ottf_console",
         ":ottf_start",
-        ":ottf_test_config",
         ":status",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/dif:rv_core_ibex",
-        "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rand_testutils",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
-    ],
+    ] + opentitan_select_top(
+        {
+            "englishbreakfast": [],
+        },
+        [
+            ":ottf_alerts",
+            ":ottf_test_config",
+        ],
+    ),
     # `:ottf` depends on `:ottf_start`, but `:ottf_start` gets its main function
     # from `:ottf`. Thus we need to include all of the objects in `:ottf`
     # unconditionally so that the linker can find the symbol later.
@@ -503,7 +523,7 @@ cc_library(
         ":check",
         ":freertos_config",
         ":ottf_start",
-        "//hw/top:dt",
+        "//hw/top/dt",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",

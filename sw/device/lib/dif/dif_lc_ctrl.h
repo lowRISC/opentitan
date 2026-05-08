@@ -62,9 +62,9 @@ typedef enum dif_lc_ctrl_status_code {
    */
   kDifLcCtrlStatusCodeBadToken,
   /**
-   * Indicates a flash RMA request error.
+   * Indicates a nvm RMA request error.
    */
-  kDifLcCtrlStatusCodeFlashRmaError,
+  kDifLcCtrlStatusCodeNvmRmaError,
   /**
    * Indicates an error during an OTP operation.
    *

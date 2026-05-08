@@ -8,10 +8,11 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -20,6 +21,11 @@ static_assert(
     OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(uint32_t) == 0,
     "OTP Vendor Test partition should be an integer multiple of 32-bit words.");
 
+static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
+                  OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+              "The CREATOR_SW_CFG_AST_CFG item must be at the beginning of the "
+              "CREATOR_SW_CFG partition");
+
 enum {
   kSha256DigestWords = 256 / 32,
 };
@@ -27,18 +33,12 @@ enum {
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
                                              size_t token_size_bytes,
                                              uint64_t *hashed_token) {
-  otcrypto_const_byte_buf_t input = {
-      .data = (unsigned char *)raw_token,
-      .len = token_size_bytes,
-  };
-  otcrypto_const_byte_buf_t function_name_string = {
-      .data = (unsigned char *)"",
-      .len = 0,
-  };
-  otcrypto_const_byte_buf_t customization_string = {
-      .data = (unsigned char *)"LC_CTRL",
-      .len = 7,
-  };
+  otcrypto_const_byte_buf_t input = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)raw_token, token_size_bytes);
+  otcrypto_const_byte_buf_t function_name_string =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)"", 0);
+  otcrypto_const_byte_buf_t customization_string = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (unsigned char *)"LC_CTRL", 7);
 
   // Create a temporary uint32_t buffer and copy the result from there to the
   // uint64_t buffer.
@@ -56,7 +56,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
       .len = token_num_words,
   };
 
-  TRY(otcrypto_cshake128(input, function_name_string, customization_string,
+  TRY(otcrypto_cshake128(&input, &function_name_string, &customization_string,
                          &output));
   memcpy(hashed_token, token_data, sizeof(token_data));
 
@@ -65,15 +65,10 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
 
 status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                        dif_otp_ctrl_partition_t partition,
-                                       otcrypto_word32_buf_t output) {
-  if (otp_ctrl == NULL || output.len != kSha256DigestWords) {
+                                       hmac_digest_t *digest) {
+  if (otp_ctrl == NULL) {
     return INVALID_ARGUMENT();
   }
-  otcrypto_hash_digest_t digest = {
-      .data = output.data,
-      .len = output.len,
-  };
-
   switch (partition) {
     case kDifOtpCtrlPartitionVendorTest: {
       uint32_t
@@ -85,32 +80,39 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
            OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
               sizeof(uint32_t)));
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)vendor_test_32bit_array,
-          .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
-                 OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE,
-      };
-      TRY(otcrypto_sha2_256(input, &digest));
+      hmac_sha256(vendor_test_32bit_array,
+                  OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                      OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE,
+                  digest);
+
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                                    OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                                    OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
-          .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
-                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
-      };
-      TRY(otcrypto_sha2_256(input, &digest));
+      // Note: we purposely exclude the AST configuration data field of this
+      // partition from the digest calculation because this could be different
+      // per chip and we do not want to it to be part of the foundation for the
+      // UDS keys if the OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN switch is set to
+      // enabled. If this field is intended to be set for a given SKU, during
+      // personalization we need to be able to inject the expected OTP SW
+      // partition measurement into the manifest of the perso image so that the
+      // same CreatorRootKey keymgr attestation binding value computed in the
+      // field by the ROM is the same as the one used during perso when all the
+      // CreatorSwCfg fields have not yet been set.
+      hmac_sha256(
+          (const void *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                         OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET),
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+              OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
+              OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
+          digest);
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                                    OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                                    OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
-          .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
-                 OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
-      };
-      TRY(otcrypto_sha2_256(input, &digest));
+      hmac_sha256((const void *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                                 OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                                 OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
+                  OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+                      OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
+                  digest);
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
       uint32_t rot_creator_auth_codesign_32bit_array
@@ -123,12 +125,11 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE) /
               sizeof(uint32_t)));
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)rot_creator_auth_codesign_32bit_array,
-          .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
-                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
-      };
-      TRY(otcrypto_sha2_256(input, &digest));
+      hmac_sha256(rot_creator_auth_codesign_32bit_array,
+                  OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+                      OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
+                  digest);
+
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthState: {
       uint32_t rot_creator_auth_state_32bit_array
@@ -141,12 +142,10 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE) /
               sizeof(uint32_t)));
-      otcrypto_const_byte_buf_t input = {
-          .data = (unsigned char *)rot_creator_auth_state_32bit_array,
-          .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
-                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
-      };
-      TRY(otcrypto_sha2_256(input, &digest));
+      hmac_sha256(rot_creator_auth_state_32bit_array,
+                  OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
+                      OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
+                  digest);
     } break;
     default:
       return INVALID_ARGUMENT();

@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hmac.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
@@ -222,28 +222,31 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
   uint32_t act_tag[512 / 32];
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, digest_len);
   otcrypto_hash_digest_t hash_digest = {
       .data = act_tag,
       .len = digest_len,
   };
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, current_test_vector->message.data,
+      current_test_vector->message.len);
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
-      TRY(otcrypto_sha2_256(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_256(&msg_buf, &hash_digest));
       break;
     case kHmacTestOperationSha384:
-      TRY(otcrypto_sha2_384(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_384(&msg_buf, &hash_digest));
       break;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_512(current_test_vector->message, &hash_digest));
+      TRY(otcrypto_sha2_512(&msg_buf, &hash_digest));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac(
-          &current_test_vector->key, current_test_vector->message,
-          (otcrypto_word32_buf_t){.data = act_tag, .len = digest_len}));
+      TRY(otcrypto_hmac(&current_test_vector->key, &msg_buf, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -269,10 +272,9 @@ static status_t hmac_oneshot(hmac_test_vector_t *current_test_vector) {
 static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
                          hmac_test_vector_t *current_test_vector,
                          size_t segment_start, size_t segment_len) {
-  otcrypto_const_byte_buf_t msg = {
-      .data = &current_test_vector->message.data[segment_start],
-      .len = segment_len,
-  };
+  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t,
+      &current_test_vector->message.data[segment_start], segment_len);
 
   switch (current_test_vector->test_operation) {
     case kHmacTestOperationSha256:
@@ -280,14 +282,14 @@ static status_t feed_msg(otcrypto_sha2_context_t *hash_ctx,
     case kHmacTestOperationSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationSha512:
-      TRY(otcrypto_sha2_update(hash_ctx, msg));
+      TRY(otcrypto_sha2_update(hash_ctx, &msg));
       break;
     case kHmacTestOperationHmacSha256:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_update((otcrypto_hmac_context_t *)hash_ctx, msg));
+      TRY(otcrypto_hmac_update((otcrypto_hmac_context_t *)hash_ctx, &msg));
       break;
     default:
       return INVALID_ARGUMENT();
@@ -309,10 +311,8 @@ static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
   size_t digest_len = current_test_vector->digest.len;
   // Allocate the buffer for the maximum digest size (which comes from SHA-512).
   uint32_t act_tag[512 / 32];
-  otcrypto_word32_buf_t tag_buf = {
-      .data = act_tag,
-      .len = digest_len,
-  };
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, digest_len);
   otcrypto_hash_digest_t hash_digest = {
       .data = act_tag,
       .len = digest_len,
@@ -330,7 +330,7 @@ static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
     case kHmacTestOperationHmacSha384:
       OT_FALLTHROUGH_INTENDED;
     case kHmacTestOperationHmacSha512:
-      TRY(otcrypto_hmac_final((otcrypto_hmac_context_t *)hash_ctx, tag_buf));
+      TRY(otcrypto_hmac_final((otcrypto_hmac_context_t *)hash_ctx, &tag_buf));
       break;
     default:
       return INVALID_ARGUMENT();

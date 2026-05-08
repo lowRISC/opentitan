@@ -8,17 +8,23 @@ package otbn_pkg;
 
   // Global Constants ==============================================================================
 
-  // Data path width for BN (wide) instructions, in bits.
-  parameter int WLEN = 256;
+  // Data path width for BN (wide) instructions, in bits. And its half and quarter size.
+  parameter int WLEN  = 256;
+  parameter int HWLEN = WLEN / 2;
+  parameter int QWLEN = WLEN / 4;
 
   // "Extended" WLEN: the size of the datapath with added integrity bits
-  parameter int ExtWLEN = WLEN * 39 / 32;
+  parameter int ExtWLEN  = WLEN  * 39 / 32;
+  parameter int ExtHWLEN = HWLEN * 39 / 32;
+  parameter int ExtQWLEN = QWLEN * 39 / 32;
 
   // Width of base (32b) data path with added integrity bits
   parameter int BaseIntgWidth = 39;
 
-  // Number of 32-bit words per WLEN
-  parameter int BaseWordsPerWLEN = WLEN / 32;
+  // Number of 32-bit words per WLEN / HWLEN / QWLEN
+  parameter int BaseWordsPerWLEN  = WLEN / 32;
+  parameter int BaseWordsPerHWLEN = HWLEN / 32;
+  parameter int BaseWordsPerQWLEN = QWLEN / 32;
 
   // Number of flag groups
   parameter int NFlagGroups = 2;
@@ -51,7 +57,16 @@ package otbn_pkg;
   // that some of the Python tooling depends on this parameter (it needs to know the full DMEM size,
   // but regtool only gives it OTBN_DMEM_SIZE). If changing this, you'll also need to edit
   // _DmemScratchSizeBytes in util/shared/mem_layout.py
-  parameter int DmemScratchSizeByte = 1024;
+  parameter int DmemScratchSizeByte = 16384;
+
+  // Width of vector, in bits
+  parameter int VLEN = WLEN;
+
+  // Width of the smallest vector chunk we operate on, in bits
+  parameter int VChunkLEN = 32;
+
+  // Number of vector chunk processing elements
+  parameter int NVecProc = VLEN / VChunkLEN;
 
   // Toplevel constants ============================================================================
 
@@ -148,7 +163,8 @@ package otbn_pkg;
     logic rf_base_intg_err;
     logic rf_bignum_intg_err;
     logic mod_ispr_intg_err;
-    logic acc_ispr_intg_err;
+    // mac_ispr_intg_err includes the ACC WSR and the hidden registers for Montgomery computation
+    logic mac_ispr_intg_err;
     logic loop_stack_addr_intg_err;
     logic insn_fetch_intg_err;
   } internal_intg_err_t;
@@ -216,6 +232,7 @@ package otbn_pkg;
     InsnOpcodeBignumMisc     = 7'h0B,
     InsnOpcodeBignumArith    = 7'h2B,
     InsnOpcodeBignumMulqacc  = 7'h3B,
+    InsnOpcodeBignumVec      = 7'h5B,
     InsnOpcodeBignumBaseMisc = 7'h7B
   } insn_opcode_e;
 
@@ -233,21 +250,32 @@ package otbn_pkg;
     AluOpBaseSll
   } alu_op_base_e;
 
-  typedef enum logic [3:0] {
+  typedef enum logic [4:0] {
     AluOpBignumAdd,
     AluOpBignumAddc,
     AluOpBignumAddm,
+    AluOpBignumAddv,
+    AluOpBignumAddvm,
 
     AluOpBignumSub,
     AluOpBignumSubb,
     AluOpBignumSubm,
+    AluOpBignumSubv,
+    AluOpBignumSubvm,
 
     AluOpBignumRshi,
+    AluOpBignumShv,
 
     AluOpBignumXor,
     AluOpBignumOr,
     AluOpBignumAnd,
     AluOpBignumNot,
+
+    AluOpBignumTrn1,
+    AluOpBignumTrn2,
+
+    AluOpBignumPack,
+    AluOpBignumUnpk,
 
     AluOpBignumNone
   } alu_op_bignum_e;
@@ -258,6 +286,16 @@ package otbn_pkg;
     AluOpLogicAnd = 2'h2,
     AluOpLogicNot = 2'h3
   } alu_op_logic_e;
+
+  typedef enum logic {
+    AluShiftOpFull  = 1'b0,
+    AluShiftOpDense = 1'b1
+  } alu_shifter_op_e;
+
+  typedef enum logic {
+    AluShiftDirLeft  = 1'b0,
+    AluShiftDirRight = 1'b1
+  } alu_shifter_dir_e;
 
   typedef enum logic {
     ComparisonOpBaseEq,
@@ -288,12 +326,48 @@ package otbn_pkg;
     ImmBaseBX
   } imm_b_sel_base_e;
 
-  // Shift amount select for bignum ISA
+  // Number of ALU element lengths (ELEN)
+  parameter int NELEN_ALU = 2;
+
+  // Vector element length type for bignum vec ISA implemented in BN ALU for
+  // bn.addv(m), bn.subv(m) and bn.shv.
+  // The ISA foresees 4 types (16 to 128 bits) but only a subset is implemented.
+  // In addition, vectorized instructions use the same hardware as regular instructions and thus
+  // we need also a 256b type.
+  typedef enum logic {
+    AluElen32  = 1'h0,
+    AluElen256 = 1'h1
+  } alu_elen_e;
+
+  // Number of transpose element lengths (ELEN)
+  parameter int NELEN_TRN = 3;
+
+  // Vector element length type for bignum instructions bn.trn1 and bn.trn2.
+  // The ISA foresees 4 types (16 to 128 bits) but only a subset is implemented.
   typedef enum logic [1:0] {
-    ShamtSelBignumA,
-    ShamtSelBignumS,
-    ShamtSelBignumZero
-  } shamt_sel_bignum_e;
+    TrnElen32  = 2'b00,
+    TrnElen64  = 2'b01,
+    TrnElen128 = 2'b10
+  } trn_elen_e;
+
+  // Number of BN MAC ELENs
+  parameter int NELEN_MAC = 2;
+
+  // Vector element length type for bignum vec ISA implemented in BN MAC
+  // The instructions supported by BN MAC support 2 types: vectorized 32-bit elements and the
+  // regular 64-bit multiplication.
+  typedef enum logic {
+    MacElen32 = 1'b0,
+    MacElen64 = 1'b1
+  } mac_elen_e;
+
+  // A BN MAC internal signal exposed for predecoding reasons. Selects the input for multiplier
+  // operand B.
+  typedef enum logic [1:0] {
+    MulOpB,
+    MulOpMu,
+    MulOpq
+  } mac_mul_op_b_sel_e;
 
   // Regfile write data selection
   typedef enum logic [2:0] {
@@ -436,24 +510,36 @@ package otbn_pkg;
     logic                    b_inc;           // Increment source register index b in base register
                                               // file
 
+    alu_elen_e               alu_elen;
+    trn_elen_e               trn_elen;
+    logic                    alu_adder_carry_sel;
     // Shifting only applies to a subset of ALU operations
     logic [$clog2(WLEN)-1:0] alu_shift_amt;   // Shift amount
     logic                    alu_shift_right; // Shift right if set otherwise left
+    // Shift mask for vectorized shifting. Replicated for all chunks.
+    logic [VChunkLEN-1:0]    alu_shift_mask;
 
     flag_group_t             alu_flag_group;
     flag_e                   alu_sel_flag;
     logic                    alu_flag_en;
-    logic                    mac_flag_en;
     alu_op_bignum_e          alu_op;
     op_b_sel_e               alu_op_b_sel;
 
-    logic [1:0]              mac_op_a_qw_sel;
-    logic [1:0]              mac_op_b_qw_sel;
+    logic                    mac_flag_en;
+    logic [1:0]              mac_op_a_qw_sel_raw;
+    logic [2:0]              mac_op_b_elem0_sel_raw;
+    logic [2:0]              mac_op_b_elem1_sel_raw;
     logic                    mac_wr_hw_sel_upper;
     logic [1:0]              mac_pre_acc_shift;
-    logic                    mac_zero_acc;
+    logic                    mac_acc_add_en;
     logic                    mac_shift_out;
     logic                    mac_en;
+    logic                    mac_is_vec;
+    logic                    mac_is_mod;
+    logic                    mac_is_lane;
+    mac_elen_e               mac_elen;
+    logic [VLEN/QWLEN-1:0]   mac_adder_carry_sel;
+    logic [2:0]              mac_lane_index;
 
     logic                    rf_we;
     rf_wd_sel_e              rf_wdata_sel;
@@ -467,21 +553,38 @@ package otbn_pkg;
     logic [NWdr-1:0] rf_ren_a;
     logic [NWdr-1:0] rf_ren_b;
     logic [NWdr-1:0] rf_we;
-  } rf_predec_bignum_t;
+  } rf_bignum_predec_t;
 
   typedef struct packed {
+    // ALU
+    alu_elen_e               alu_elen;
     logic                    adder_x_en;
     logic                    x_res_operand_a_sel;
     logic                    adder_y_op_a_en;
     logic                    shift_mod_sel;
+    logic                    unpack_shifter_en;
     logic                    adder_y_op_shifter_en;
-    logic                    shifter_a_en;
-    logic                    shifter_b_en;
-    logic                    shift_right;
+    logic [NVecProc-1:0]     adder_x_carries_in;
+    logic                    adder_x_op_b_invert;
+    logic [NVecProc-2:0]     adder_y_carries_top; // The adder Y carries except the LSB carry
+    logic                    adder_y_op_b_invert;
+    logic                    adder_carry_sel;
+    logic                    mod_is_subtraction;
+    // Shifter
+    logic [1:0]              shift_op_a_sel;
+    logic [1:0]              shift_op_b_sel;
+    logic [1:0]              shift_dir;
     logic [$clog2(WLEN)-1:0] shift_amt;
+    logic [VChunkLEN-1:0]    shift_mask;
+    // Logic
     logic                    logic_a_en;
     logic                    logic_shifter_en;
     logic [3:0]              logic_res_sel;
+    // Vector transposer
+    trn_elen_e               trn_elen;
+    logic                    trn_en;
+    logic                    trn_is_trn1;
+    // Flags
     logic [NFlagGroups-1:0]  flag_group_sel;
     flags_t                  flag_sel;
     logic [NFlagGroups-1:0]  flags_keep;
@@ -489,17 +592,46 @@ package otbn_pkg;
     logic [NFlagGroups-1:0]  flags_logic_update;
     logic [NFlagGroups-1:0]  flags_mac_update;
     logic [NFlagGroups-1:0]  flags_ispr_wr;
-  } alu_predec_bignum_t;
+  } alu_bignum_predec_t;
 
   typedef struct packed {
     logic [NIspr-1:0] ispr_rd_en;
     logic [NIspr-1:0] ispr_wr_en;
-  } ispr_predec_bignum_t;
+  } ispr_bignum_predec_t;
 
   typedef struct packed {
-    logic op_en;
-    logic acc_rd_en;
-  } mac_predec_bignum_t;
+    logic                  mac_en;
+    logic                  is_vec;
+    logic                  is_mod;
+    logic                  is_lane;
+    logic [2:0]            lane_index;
+    mac_elen_e             elen;
+    logic [VLEN/QWLEN-1:0] adder_carry_sel;
+    logic                  acc_add_en;
+    logic [1:0]            op_a_qw_sel;      // Both (a, b) are predecoded to optimize timing
+    logic [2:0]            op_b_elem0_sel;   // Operand B is mux on lane level
+    logic [2:0]            op_b_elem1_sel;
+    logic                  mul_op_a_tmp_sel; // Predecoded to optimize timing
+    mac_mul_op_b_sel_e     mul_op_b_sel;     // Predecoded to optimize timing
+    logic                  mul_add_en;
+    logic                  c_add_en;
+    logic                  add_mod_en;
+    logic [VLEN/QWLEN-1:0] acc_qw_sel;
+    logic                  acc_merger_en;
+    logic                  mul_shift_en;
+    logic                  mul_merger_en;
+    logic                  add_res_en;
+    logic                  operation_valid_raw;
+  } mac_bignum_predec_t;
+
+  typedef struct packed {
+    logic tmp_wr_en_raw;
+    logic tmp_clear_en;
+    logic c_wr_en_raw;
+    logic c_clear_en;
+    logic acc_wr_en_raw;
+    logic acc_clear_en;
+  } mac_bignum_contrl_t;
 
   typedef struct packed {
     logic call_stack_pop;
@@ -526,8 +658,12 @@ package otbn_pkg;
     alu_op_bignum_e op;
     logic [WLEN-1:0]         operand_a;
     logic [WLEN-1:0]         operand_b;
+    alu_elen_e               alu_elen;
+    trn_elen_e               trn_elen;
+    logic                    adder_carry_sel;
     logic                    shift_right;
     logic [$clog2(WLEN)-1:0] shift_amt;
+    logic [VChunkLEN-1:0]    shift_mask;
     flag_group_t             flag_group;
     flag_e                   sel_flag;
     logic                    alu_flag_en;
@@ -535,14 +671,23 @@ package otbn_pkg;
   } alu_bignum_operation_t;
 
   typedef struct packed {
-    logic [WLEN-1:0] operand_a;
-    logic [WLEN-1:0] operand_b;
-    logic [1:0]      operand_a_qw_sel;
-    logic [1:0]      operand_b_qw_sel;
-    logic            wr_hw_sel_upper;
-    logic [1:0]      pre_acc_shift_imm;
-    logic            zero_acc;
-    logic            shift_acc;
+    logic [WLEN-1:0]       operand_a;
+    logic [WLEN-1:0]       operand_b;
+    // The raw select signals are used as input to the FSM which then computes the actual selection
+    // signals. Effectively used are the predecoded ones.
+    logic [1:0]            op_a_qw_sel_raw;
+    logic [2:0]            op_b_elem0_sel_raw;
+    logic [2:0]            op_b_elem1_sel_raw;
+    logic                  wr_hw_sel_upper;
+    logic [1:0]            pre_acc_shift_imm;
+    logic                  acc_add_en;
+    logic                  shift_acc;
+    logic                  is_vec;
+    logic                  is_mod;
+    logic                  is_lane;
+    mac_elen_e             elen;
+    logic [VLEN/QWLEN-1:0] adder_carry_sel;
+    logic [2:0]            lane_index;
   } mac_bignum_operation_t;
 
   // Encoding generated with:
@@ -633,12 +778,9 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
 } scramble_ctrl_state_e;
 
   // URNG PRNG default seed.
-  // These parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 2840984437 --prefix "Urnd"
-  parameter int UrndPrngWidth = 256;
-  typedef logic [UrndPrngWidth-1:0] urnd_prng_seed_t;
+  typedef prim_trivium_pkg::trivium_lfsr_seed_t urnd_prng_seed_t;
   parameter urnd_prng_seed_t RndCnstUrndPrngSeedDefault =
-      256'h84ddfadaf7e1134d70aa1c59de6197ff25a4fe335d095f1e2cba89acbe4a07e9;
+      urnd_prng_seed_t'(prim_trivium_pkg::RndCnstTriviumLfsrSeedDefault);
 
   parameter otp_ctrl_pkg::otbn_key_t RndCnstOtbnKeyDefault =
       128'h14e8cecae3040d5e12286bb3cc113298;
@@ -647,4 +789,21 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
 
   typedef logic [63:0] otbn_dmem_nonce_t;
   typedef logic [63:0] otbn_imem_nonce_t;
+
+  // Permutation for the URND permutation in BN MAC used for register clearing.
+  // These parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 256 --seed 3357506447 --prefix "BnMac"
+  // and replaced "Lfsr" with "UrndPerm" and "lfsr_" with "urnd_".
+  parameter int BnMacUrndPermWidth = 256;
+  typedef logic [BnMacUrndPermWidth-1:0][$clog2(BnMacUrndPermWidth)-1:0] bn_mac_urnd_perm_t;
+  parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPermDefault = {
+    256'h5883853c_f22faef4_c975ab18_050bfc6b_b9193e1b_450d686e_5de1cdb5_a02a1532,
+    256'ha3e9dd76_8278f6d4_33f74bd9_edbabd7f_721c5a4e_0c23a6f0_34a477db_84947998,
+    256'h6d0affec_df12e025_0fb41ab3_3bdc90e5_ce279907_91227bf1_e4505bcc_2b4c31be,
+    256'h562047c5_9df5fd21_73acadc3_b1438b53_bc8e87a1_d7b02e88_16de0e97_6c354669,
+    256'he89657fe_2662402d_03e3a849_1f6ff839_668c5574_54e2bf14_9cbb8dd3_d5d1ea81,
+    256'h92c73f60_6402b793_52b68911_5161cb7a_09aacab2_0604865f_4dd8d201_101e08c1,
+    256'h7c95a23a_ef177de6_d65c418f_daa96a70_5929c83d_fafb9f37_8a4436af_a5a71d13,
+    256'hcf48c07e_42d0eb67_c29b3863_9a28e72c_b880f3ee_9e246571_00c6f9c4_4f305e4a
+  };
 endpackage

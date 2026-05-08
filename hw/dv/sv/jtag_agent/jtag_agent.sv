@@ -19,12 +19,15 @@ class jtag_agent extends dv_base_agent #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // get jtag_if handle
-    if (!uvm_config_db#(virtual jtag_if)::get(this, "", "vif", cfg.vif)) begin
+
+    // Get jtag_if handle and jtag_mon_if handle if they haven't already been supplied. The
+    // jtag_mon_if handle is optional.
+    if (cfg.vif == null && !uvm_config_db#(virtual jtag_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get jtag_if handle from uvm_config_db")
     end
-    // Also get jtag_mon_if handle (stored as cfg.mon_vif), but allow it not to be provided.
-    void'(uvm_config_db#(virtual jtag_mon_if)::get(this, "", "mon_vif", cfg.mon_vif));
+    if (cfg.mon_vif == null) begin
+      void'(uvm_config_db#(virtual jtag_mon_if)::get(this, "", "mon_vif", cfg.mon_vif));
+    end
 
     if (cfg.is_active) begin
       m_jtag_dtm_reg_adapter = jtag_dtm_reg_adapter::type_id::create("m_jtag_dtm_reg_adapter");

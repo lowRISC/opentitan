@@ -11,6 +11,8 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'p', 'a')
@@ -223,6 +225,9 @@ status_t rsa_padding_pkcs1v15_verify(
   // Compare with the expected value.
   *result = hardened_memeq(encoded_message, expected_encoded_message,
                            ARRAYSIZE(expected_encoded_message));
+  // Clear the register file in order to ensure we clear any kHardenedBoolTrue
+  // value in there
+  ibex_clear_rf();
   return OTCRYPTO_OK;
 }
 
@@ -273,7 +278,7 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
     default:
       return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_GT(*num_words, 0);
   HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
 
   return OTCRYPTO_OK;
@@ -296,28 +301,30 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
 OT_WARN_UNUSED_RESULT
 static status_t hash(otcrypto_hash_mode_t hash_mode, const uint8_t *message,
                      size_t message_len, uint32_t *digest) {
+  otcrypto_const_byte_buf_t message_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, message, message_len);
   switch (launder32(hash_mode)) {
     case kOtcryptoHashModeSha256:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha256);
-      return hmac_hash_sha256(message, message_len, digest);
+      return hmac_hash_sha256(&message_buf, digest);
     case kOtcryptoHashModeSha384:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha384);
-      return hmac_hash_sha384(message, message_len, digest);
+      return hmac_hash_sha384(&message_buf, digest);
     case kOtcryptoHashModeSha512:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha512);
-      return hmac_hash_sha512(message, message_len, digest);
+      return hmac_hash_sha512(&message_buf, digest);
     case kOtcryptoHashModeSha3_224:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_224);
-      return kmac_sha3_224(message, message_len, digest);
+      return kmac_sha3_224(&message_buf, digest);
     case kOtcryptoHashModeSha3_256:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_256);
-      return kmac_sha3_256(message, message_len, digest);
+      return kmac_sha3_256(&message_buf, digest);
     case kOtcryptoHashModeSha3_384:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_384);
-      return kmac_sha3_384(message, message_len, digest);
+      return kmac_sha3_384(&message_buf, digest);
     case kOtcryptoHashModeSha3_512:
       HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_512);
-      return kmac_sha3_512(message, message_len, digest);
+      return kmac_sha3_512(&message_buf, digest);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -403,83 +410,7 @@ static status_t reverse_bytes(size_t input_len, uint32_t *input) {
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(i, num_idx);
 
-  return OTCRYPTO_OK;
-}
-
-/**
- * Copy memory between non-overlapping regions with a randomized byte traversal.
- *
- * CAUTION! This function is not considered as secure as `hardened_memcpy` due
- * to the byte-sized memory accesses vs. 32b word accesses.
- *
- * @param dest the region to copy to.
- * @param src the region to copy from.
- * @param byte_len, the number of bytes to copy.
- * @return Result of the operation (OK or error).
- */
-static status_t randomized_bytecopy(void *restrict dest,
-                                    const void *restrict src, size_t byte_len) {
-  random_order_t order;
-  random_order_init(&order, byte_len);
-
-  size_t count = 0;
-
-  uintptr_t src_addr = (uintptr_t)src;
-  uintptr_t dest_addr = (uintptr_t)dest;
-
-  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
-    size_t byte_idx = launderw(random_order_advance(&order));
-    barrierw(byte_idx);
-
-    uint8_t *src_byte_idx = (uint8_t *)launderw(src_addr + byte_idx);
-    // TODO(#8815) byte writes vs. word-wise integrity.
-    uint8_t *dest_byte_idx = (uint8_t *)launderw(dest_addr + byte_idx);
-
-    *(dest_byte_idx) = *(src_byte_idx);
-  }
-  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, byte_len);
-
-  return OTCRYPTO_OK;
-}
-
-/**
- * In-place XOR of two non-overlapping memory regions with a randomized byte
- * traversal.
- *
- * CAUTION! This function is not considered as secure as `hardened_xor_in_place`
- * due to the byte-sized memory accesses vs. 32b word accesses.
- *
- * @param x Pointer to the first operand (modified in-place).
- * @param y Pointer to the second operand.
- * @param byte_len, the number of bytes to XOR.
- * @return Result of the operation (OK or error).
- */
-static status_t randomized_bytexor_in_place(void *restrict x,
-                                            const void *restrict y,
-                                            size_t byte_len) {
-  random_order_t order;
-  random_order_init(&order, byte_len);
-
-  size_t count = 0;
-
-  uintptr_t x_addr = (uintptr_t)x;
-  uintptr_t y_addr = (uintptr_t)y;
-
-  for (; launderw(count) < byte_len; count = launderw(count) + 1) {
-    size_t byte_idx = launderw(random_order_advance(&order));
-    barrierw(byte_idx);
-
-    // TODO(#8815) byte writes vs. word-wise integrity
-    uint8_t *x_byte_idx = (uint8_t *)launderw(x_addr + byte_idx);
-    uint8_t *y_byte_idx = (uint8_t *)launderw(y_addr + byte_idx);
-
-    *(x_byte_idx) = *(x_byte_idx) ^ *(y_byte_idx);
-  }
-  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
-  HARDENED_CHECK_EQ(count, byte_len);
-
-  return OTCRYPTO_OK;
+  return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
 /**
@@ -627,6 +558,11 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   HARDENED_TRY(hardened_memcpy(encoded_message, db, ARRAYSIZE(db)));
   HARDENED_TRY(
       randomized_bytecopy(encoded_message_bytes + db_bytelen, h, sizeof(h)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(h, encoded_message_bytes + db_bytelen, sizeof(h)),
+      kHardenedBoolTrue);
+
   encoded_message_bytes[encoded_message_bytelen - 1] = 0xbc;
   HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
   return OTCRYPTO_OK;
@@ -672,6 +608,10 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   uint32_t h[message_digest.len];
   HARDENED_TRY(
       randomized_bytecopy(h, encoded_message_bytes + db_bytelen, sizeof(h)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + db_bytelen, h, sizeof(h)),
+      kHardenedBoolTrue);
 
   // Compute the mask = MFG(H, emLen - hLen - 1). Zero the last bytes if
   // needed.
@@ -701,6 +641,12 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   HARDENED_TRY(randomized_bytecopy(exp_padding_bytes + padding_bytelen,
                                    db_bytes + padding_bytelen,
                                    sizeof(exp_padding) - padding_bytelen));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(consttime_memeq_byte(db_bytes + padding_bytelen,
+                                         exp_padding_bytes + padding_bytelen,
+                                         sizeof(exp_padding) - padding_bytelen),
+                    kHardenedBoolTrue);
+
   hardened_bool_t padding_eq =
       hardened_memeq(db, exp_padding, ARRAYSIZE(exp_padding));
   if (padding_eq != kHardenedBoolTrue) {
@@ -712,11 +658,18 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   uint32_t salt[message_digest.len];
   HARDENED_TRY(randomized_bytecopy(salt, db_bytes + db_bytelen - salt_bytelen,
                                    sizeof(salt)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(consttime_memeq_byte(db_bytes + db_bytelen - salt_bytelen,
+                                         salt, sizeof(salt)),
+                    kHardenedBoolTrue);
 
   // Construct the expected value of H and compare.
   uint32_t exp_h[message_digest.len];
   HARDENED_TRY(pss_construct_h(message_digest, salt, ARRAYSIZE(salt), exp_h));
   *result = hardened_memeq(h, exp_h, ARRAYSIZE(exp_h));
+  // Clear the register file in order to ensure we clear any kHardenedBoolTrue
+  // value in there
+  ibex_clear_rf();
   return OTCRYPTO_OK;
 }
 
@@ -804,8 +757,17 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   encoded_message_bytes[0] = 0x00;
   HARDENED_TRY(
       randomized_bytecopy(encoded_message_bytes + 1, seed, sizeof(seed)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(seed, encoded_message_bytes + 1, sizeof(seed)),
+      kHardenedBoolTrue);
   HARDENED_TRY(randomized_bytecopy(encoded_message_bytes + 1 + sizeof(seed), db,
                                    sizeof(db)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(db, encoded_message_bytes + 1 + sizeof(seed),
+                           sizeof(db)),
+      kHardenedBoolTrue);
 
   // Reverse the byte-order.
   HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
@@ -832,6 +794,10 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
   HARDENED_TRY(
       randomized_bytecopy(seed, encoded_message_bytes + 1, sizeof(seed)));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + 1, seed, sizeof(seed)),
+      kHardenedBoolTrue);
 
   // Extract maskedDB from the encoded message (RFC 8017, section 7.1.2, step
   // 3b).
@@ -843,6 +809,11 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   // memcpy(db, encoded_message_bytes + 1 + sizeof(seed), db_bytelen);
   HARDENED_TRY(randomized_bytecopy(db, encoded_message_bytes + 1 + sizeof(seed),
                                    db_bytelen));
+  // Check whether a FI tampered copying the bytes.
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + 1 + sizeof(seed), db,
+                           db_bytelen),
+      kHardenedBoolTrue);
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 3c).
   uint32_t seed_mask[digest_wordlen];
@@ -901,6 +872,10 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   if (*message_bytelen > 0) {
     HARDENED_TRY(randomized_bytecopy(message, (char *)db + message_start_idx0,
                                      *message_bytelen));
+    // Check whether a FI tampered copying the bytes.
+    HARDENED_CHECK_EQ(consttime_memeq_byte((char *)db + message_start_idx0,
+                                           message, *message_bytelen),
+                      kHardenedBoolTrue);
   }
   // Shred the stale memory after copying out the plaintext.
   HARDENED_TRY(hardened_memshred(db, db_wordlen));

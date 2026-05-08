@@ -152,29 +152,8 @@ package otp_ctrl_env_pkg;
     NumOtpCtrlIntr
   } otp_intr_e;
 
-  typedef enum bit [5:0] {
-    OtpVendorTestErrIdx,
-    OtpCreatorSwCfgErrIdx,
-    OtpOwnerSwCfgErrIdx,
-    OtpOwnershipSlotStateErrIdx,
-    OtpRotCreatorAuthErrIdx,
-    OtpRotOwnerAuthSlot0ErrIdx,
-    OtpRotOwnerAuthSlot1ErrIdx,
-    OtpPlatIntegAuthSlot0ErrIdx,
-    OtpPlatIntegAuthSlot1ErrIdx,
-    OtpPlatOwnerAuthSlot0ErrIdx,
-    OtpPlatOwnerAuthSlot1ErrIdx,
-    OtpPlatOwnerAuthSlot2ErrIdx,
-    OtpPlatOwnerAuthSlot3ErrIdx,
-    OtpExtNvmErrIdx,
-    OtpRomPatchErrIdx,
-    OtpHwCfg0ErrIdx,
-    OtpHwCfg1ErrIdx,
-    OtpSecret0ErrIdx,
-    OtpSecret1ErrIdx,
-    OtpSecret2ErrIdx,
-    OtpSecret3ErrIdx,
-    OtpLifeCycleErrIdx,
+  typedef enum bit [3:0] {
+    OtpPartitionErrorIdx,
     OtpDaiErrIdx,
     OtpLciErrIdx,
     OtpTimeoutErrIdx,
@@ -186,6 +165,32 @@ package otp_ctrl_env_pkg;
     OtpCheckPendingIdx,
     OtpStatusFieldSize
   } otp_status_e;
+
+  typedef enum int {
+    OtpPartitionVendorTestIdx,
+    OtpPartitionCreatorSwCfgIdx,
+    OtpPartitionOwnerSwCfgIdx,
+    OtpPartitionOwnershipSlotStateIdx,
+    OtpPartitionRotCreatorAuthIdx,
+    OtpPartitionRotOwnerAuthSlot0Idx,
+    OtpPartitionRotOwnerAuthSlot1Idx,
+    OtpPartitionPlatIntegAuthSlot0Idx,
+    OtpPartitionPlatIntegAuthSlot1Idx,
+    OtpPartitionPlatOwnerAuthSlot0Idx,
+    OtpPartitionPlatOwnerAuthSlot1Idx,
+    OtpPartitionPlatOwnerAuthSlot2Idx,
+    OtpPartitionPlatOwnerAuthSlot3Idx,
+    OtpPartitionExtNvmIdx,
+    OtpPartitionRomPatchIdx,
+    OtpPartitionHwCfg0Idx,
+    OtpPartitionHwCfg1Idx,
+    OtpPartitionSecret0Idx,
+    OtpPartitionSecret1Idx,
+    OtpPartitionSecret2Idx,
+    OtpPartitionSecret3Idx,
+    OtpPartitionLifeCycleIdx
+  } otp_partition_e;
+
 
   typedef enum bit [2:0] {
     OtpNoError,
@@ -257,24 +262,38 @@ package otp_ctrl_env_pkg;
     return PartInfo[part_idx].hw_digest;
   endfunction
 
+  // Return the address of the last 64 bits of the given partition
+  function automatic bit [TL_DW-1:0] last_64_addr(int unsigned part_idx);
+    return (PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8;
+  endfunction
+
+  // Return true if the address points into the first 32 bits of a partition digest for the given
+  // partition (HW or SW)
+  function automatic bit is_digest_for(bit [TL_DW-1:0] addr, int unsigned part_idx);
+    if (!PartInfo[part_idx].sw_digest && !PartInfo[part_idx].hw_digest) return 0;
+
+    // If the partition contains a digest, it will be the last 64 bits of the partition, unless
+    // there is also a zeroization marker. When both are present, the digest comes just before the
+    // zeroisation marker.
+    return {addr[TL_DW-1:3], 3'b0} == (last_64_addr(part_idx) -
+                                       (PartInfo[part_idx].zeroizable ? 8 : 0));
+  endfunction
+
   function automatic bit is_sw_digest(bit [TL_DW-1:0] addr);
     int part_idx = get_part_index(addr);
-    if (PartInfo[part_idx].sw_digest) begin
-      // If the partition contains a digest, it will be located in the last 64bit of the partition.
-      return {addr[TL_DW-1:3], 3'b0} == ((PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8);
-    end else begin
-      return 0;
-    end
+    return PartInfo[part_idx].sw_digest && is_digest_for(addr, part_idx);
   endfunction
 
   function automatic bit is_digest(bit [TL_DW-1:0] addr);
-    int part_idx = get_part_index(addr);
-    if (PartInfo[part_idx].sw_digest || PartInfo[part_idx].hw_digest) begin
-      // If the partition contains a digest, it will be located in the last 64bit of the partition.
-      return {addr[TL_DW-1:3], 3'b0} == ((PartInfo[part_idx].offset + PartInfo[part_idx].size) - 8);
-    end else begin
-      return 0;
-    end
+    return is_digest_for(addr, get_part_index(addr));
+  endfunction
+
+  // Return true if this is the address of the Zeroize marker for a partition with zeroization
+  function automatic bit is_zeroize_marker(bit [TL_DW-1:0] addr);
+    int unsigned part_idx = get_part_index(addr);
+
+    // If the partition is zeroizable, its Zeroize status is in the last 64 bits of the partition.
+    return (PartInfo[part_idx].zeroizable && (addr == last_64_addr(part_idx)));
   endfunction
 
   function automatic bit is_sw_part(bit [TL_DW-1:0] addr);

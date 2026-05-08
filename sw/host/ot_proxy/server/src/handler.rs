@@ -5,35 +5,42 @@
 use anyhow::{Result, bail};
 
 use std::borrow::Borrow;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use std::task::{Context, Poll};
 use std::time::Duration;
 
-use opentitanlib::app::TransportWrapper;
+use opentitanlib::app::{NoProgressBar, TransportWrapper};
 use opentitanlib::bootstrap::Bootstrap;
+use opentitanlib::io::console::broadcast::WeakBroadcaster;
+use opentitanlib::io::console::{Broadcaster, ConsoleDevice};
 use opentitanlib::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
+use opentitanlib::io::uart::Uart;
 use opentitanlib::io::{i2c, spi};
 use opentitanlib::transport::TransportError;
 use opentitanlib::util::serializable_error::SerializedError;
 use ot_proxy_proto::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, EmuRequest, EmuResponse,
-    GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest,
-    GpioMonResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse, I2cTransferRequest,
-    I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request, Response, SpiRequest,
-    SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
+    FgpaResponse, FpgaRequest, GpioBitRequest, GpioBitResponse, GpioDacRequest, GpioDacResponse,
+    GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse, I2cRequest, I2cResponse,
+    I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request,
+    Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest,
+    UartResponse,
 };
 
-use super::nonblocking_uart::NonblockingUartRegistry;
 use super::{CommandHandler, Connection};
+use crate::socket_server::ProxyWaker;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.
 pub struct TransportCommandHandler {
     transport: TransportWrapper,
-    uart_registry: NonblockingUartRegistry,
+    /// Map from a UART instance to the corresponding broadcaster instance.
+    uarts: RefCell<HashMap<usize, WeakBroadcaster<Rc<dyn Uart>>>>,
     spi_chip_select: HashMap<String, Vec<spi::AssertChipSelect>>,
     ongoing_bitbanging: Option<Box<dyn GpioBitbangOperation<'static, 'static>>>,
     ongoing_dacbanging: Option<Box<dyn GpioDacBangOperation>>,
@@ -43,7 +50,7 @@ impl TransportCommandHandler {
     pub fn new(transport: TransportWrapper) -> Result<Self> {
         Ok(Self {
             transport,
-            uart_registry: NonblockingUartRegistry::new(),
+            uarts: Default::default(),
             spi_chip_select: HashMap::new(),
             ongoing_bitbanging: None,
             ongoing_dacbanging: None,
@@ -62,7 +69,7 @@ impl TransportCommandHandler {
     /// by the given `Request`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be propagated to the remote client, without any server-side
     /// logging.
-    fn do_execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, req: &Request) -> Result<Response> {
+    fn do_execute_cmd(&mut self, conn: &mut Connection, req: &Request) -> Result<Response> {
         match req {
             Request::GetCapabilities => {
                 Ok(Response::GetCapabilities(self.transport.capabilities()?))
@@ -249,7 +256,25 @@ impl TransportCommandHandler {
                 }
             }
             Request::Uart { id, command } => {
-                let instance = self.transport.uart(id)?;
+                // OT proxy broadcasts UART received data to all instances.
+                // Therefore we need to use the UART instance above to retrieve our copy of the broadcaster.
+                let instance = {
+                    let uart = self.transport.uart(id)?;
+                    let uart_key = Rc::as_ptr(&uart).addr();
+
+                    conn.uarts.entry(uart_key).or_insert_with(|| {
+                        // This UART instance is used for the first time for this connection.
+                        let mut uarts = self.uarts.borrow_mut();
+                        uarts
+                            .entry(uart_key)
+                            .or_insert_with(|| {
+                                // This UART instance is used for the first time for this proxy.
+                                Broadcaster::new(uart).downgrade()
+                            })
+                            .upgrade()
+                    })
+                };
+
                 match command {
                     UartRequest::GetBaudrate => {
                         let rate = instance.get_baudrate()?;
@@ -285,29 +310,26 @@ impl TransportCommandHandler {
                         let path = instance.get_device_path()?;
                         Ok(Response::Uart(UartResponse::GetDevicePath { path }))
                     }
-                    UartRequest::Read {
-                        timeout_millis,
-                        len,
-                    } => {
+                    UartRequest::PollRead { len, waker } => {
+                        let proxy_waker = Arc::new(ProxyWaker::new(&conn.conn_tx, *waker));
+                        let waker = proxy_waker.clone().into();
+                        let mut cx = Context::from_waker(&waker);
                         let mut data = vec![0u8; *len as usize];
-                        let count = match timeout_millis {
-                            None => instance.read(&mut data)?,
-                            Some(ms) => instance
-                                .read_timeout(&mut data, Duration::from_millis(*ms as u64))?,
+                        let data = match instance.poll_read(&mut cx, &mut data)? {
+                            Poll::Pending => None,
+                            Poll::Ready(len) => {
+                                proxy_waker.dismiss();
+                                data.resize(len, 0);
+                                Some(data)
+                            }
                         };
-                        data.resize(count, 0);
-                        Ok(Response::Uart(UartResponse::Read { data }))
+                        Ok(Response::Uart(UartResponse::PollRead { data }))
                     }
                     UartRequest::Write { data } => {
                         instance.write(data)?;
                         Ok(Response::Uart(UartResponse::Write))
                     }
-                    UartRequest::RegisterNonblockingRead => {
-                        let channel = self.uart_registry.nonblocking_uart_init(&instance, conn)?;
-                        Ok(Response::Uart(UartResponse::RegisterNonblockingRead {
-                            channel,
-                        }))
-                    }
+                    UartRequest::Initialize => Ok(Response::Uart(UartResponse::Initialize)),
                 }
             }
             Request::Spi { id, command } => {
@@ -567,6 +589,18 @@ impl TransportCommandHandler {
                     }
                 }
             }
+            Request::Fpga(request) => match request {
+                FpgaRequest::LoadBitstream { bitstream } => {
+                    self.transport
+                        .fpga_ops()?
+                        .load_bitstream(bitstream, &NoProgressBar)?;
+                    Ok(Response::Fpga(FgpaResponse::LoadBitstream))
+                }
+                FpgaRequest::ClearBitstream => {
+                    self.transport.fpga_ops()?.clear_bitstream()?;
+                    Ok(Response::Fpga(FgpaResponse::ClearBitstream))
+                }
+            },
             Request::Proxy(command) => match command {
                 ProxyRequest::Provides => {
                     let provides_map = self.transport.provides_map()?.clone();
@@ -601,7 +635,7 @@ impl CommandHandler<Message> for TransportCommandHandler {
     /// by the given `Message`, and return a response to be sent to the client.  Any `Err`
     /// return from this method will be treated as an irrecoverable protocol error, causing an
     /// error message in the server log, and the connection to be terminated.
-    fn execute_cmd(&mut self, conn: &Arc<Mutex<Connection>>, msg: &Message) -> Result<Message> {
+    fn execute_cmd(&mut self, conn: &mut Connection, msg: &Message) -> Result<Message> {
         if let Message::Req(req) = msg {
             // Package either `Ok()` or `Err()` into a `Message`, to be sent via network.
             return Ok(Message::Res(

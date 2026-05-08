@@ -14,6 +14,7 @@ from pathlib import Path
 from reggen import (
     gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
     gen_rust, gen_sec_cm_testplan, gen_selfdoc, systemrdl_exporter, gen_tock, version,
+    vendor_specific
 )
 from reggen.ip_block import IpBlock
 
@@ -148,6 +149,11 @@ def main():
         help=
         'If version stamping, the location of workspace version stamp file.')
 
+    parser.add_argument('--vendor-specific-fields',
+                        type=str,
+                        default=None,
+                        help='A hjson file describing vendor defined fields.')
+
     args = parser.parse_args()
 
     if args.version:
@@ -240,6 +246,9 @@ def main():
             gen_selfdoc.document(outfile)
         exit(0)
 
+    if args.vendor_specific_fields:
+        vendor_specific.extend_optional_fields(args.vendor_specific_fields)
+
     srcfull = infile.read()
 
     try:
@@ -280,7 +289,9 @@ def main():
         found_spdx = None
         found_lunder = None
         copy = re.compile(r'.*(copyright.*)|(.*\(c\).*)', re.IGNORECASE)
+        # REUSE-IgnoreStart
         spdx = re.compile(r'.*(SPDX-License-Identifier:.+)')
+        # REUSE-IgnoreEnd
         lunder = re.compile(r'.*(Licensed under.+)', re.IGNORECASE)
         for line in srcfull.splitlines():
             mat = copy.match(line)

@@ -141,6 +141,7 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
       .operand_a_i({muxed_addr_key[DataWidth +: AddrPadWidth], calc_addr_in}),
       .operand_b_i(muxed_addr_key[DataWidth-1:0]),
       .ack_o(calc_ack),
+      .ack_pre_o(),
       .prod_o(calc_mask)
     );
   end else begin : gen_no_gf_mult

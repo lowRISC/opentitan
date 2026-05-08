@@ -70,7 +70,9 @@ package cip_base_pkg;
     foreach (mems[i]) begin
       dv_base_mem dv_mem;
       `downcast(dv_mem, mems[i], , , msg_id)
-      if (!dv_mem.get_mem_partial_write_support() && dv_mem.get_access() == "RO") begin
+      // If the memory supports write (WO or RW) and doesn't have partial write support then it can
+      // generate a memory byte access error.
+      if (!dv_mem.get_mem_partial_write_support() && dv_mem.get_access() != "RO") begin
         has_mem_byte_access_err = 1;
       end
       if (dv_mem.get_access() == "WO") has_wo_mem = 1;

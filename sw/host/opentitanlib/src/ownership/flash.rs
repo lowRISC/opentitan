@@ -14,7 +14,7 @@ use super::GlobalFlags;
 use super::misc::{TlvHeader, TlvTag};
 
 /// Describes the proprerties of a flash region.
-#[derive(Debug, Default, Clone, Copy, Deserialize, Annotate)]
+#[derive(Debug, Default, Clone, Copy, Deserialize, Annotate, PartialEq)]
 pub struct FlashFlags {
     /// Read operations are allowed in this region.
     #[serde(default)]
@@ -147,7 +147,7 @@ impl From<FlashFlags> for u64 {
 }
 
 /// Describes a region to which a set of flags apply.
-#[derive(Debug, Default, Deserialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Annotate, PartialEq)]
 pub struct OwnerFlashRegion {
     /// The start of the region (in pages).
     pub start: u16,
@@ -177,7 +177,7 @@ impl OwnerFlashRegion {
 }
 
 /// Describes the overall flash configuration for data pages.
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct OwnerFlashConfig {
     /// Header identifying this struct.
     #[serde(

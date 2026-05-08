@@ -19,6 +19,26 @@ always_comb begin
     else main_mode = MAIN_IDEX;
 end
 
+// Some registers are not driven. Only those that have reg_driven[i] high are
+// given real values, the rest are left free (i.e. the spec cannot depend on
+// them). For wraparound purposes it does not matter what reg_driven[i] is:
+// - If too many registers are driven they all must pass checks anyway (since
+// they are checked as inputs)
+// - If too few registers are driven instructions will fail to be spec
+// conformant
+// Note that while it again does not matter how they are defined, but only
+// registers matching one of `CR.rf_raddr_{a, b} can be driven.
+
+logic [31:0] reg_driven;
+assign reg_driven[0] = 1'b0;
+
+for (genvar i = 1; i < 32; i++) begin: g_regs_cut
+    logic [31:0] free; // Undriven
+    assign reg_driven[i] =
+        (`CR.rf_raddr_a == i && `CR.rf_ren_a) || (`CR.rf_raddr_b == i && `CR.rf_ren_b);
+    assign pre_regs_cut[i] = reg_driven[i] ? pre_regs[i] : free;
+end
+
 spec_api #(
     .NREGS(32)
 ) spec_api_i (
@@ -26,13 +46,7 @@ spec_api #(
     .main_mode(main_mode),
 
     .insn_bits(ex_compressed_instr),
-
-    .rx_a_en_o(spec_rx_a_en),
-    .rx_a_addr_o(spec_rx_a_addr),
-    .rx_a_i(spec_rx_a),
-    .rx_b_en_o(spec_rx_b_en),
-    .rx_b_addr_o(spec_rx_b_addr),
-    .rx_b_i(spec_rx_b),
+    .regs_i(pre_regs_cut),
 
     .wx_o(spec_post_wX),
     .wx_addr_o(spec_post_wX_addr),

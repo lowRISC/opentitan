@@ -1,9 +1,10 @@
 # Power Manager HWIP Technical Specification
-[`pwrmgr`](https://reports.opentitan.org/hw/top_englishbreakfast/ip_autogen/pwrmgr/dv/latest/report.html):
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/test.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/passing.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/functional.svg)
-![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/code.svg)
+<!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/top_englishbreakfast/ip_autogen/pwrmgr/data/pwrmgr.hjson --top englishbreakfast -->
+| Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
+|-|-|-|-|
+ [`pwrmgr`](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/dashboard.html) | 1.0.1 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/pwrmgr/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/pwrmgr/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/pwrmgr/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/englishbreakfast/badge/pwrmgr/code.svg) |
+
+<!-- END CMDGEN -->
 
 # Overview
 

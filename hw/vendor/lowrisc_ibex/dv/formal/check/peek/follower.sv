@@ -25,16 +25,16 @@ assign ex_err = `IDC.exc_req_d;
 assign ex_kill = `ID.wb_exception | ~`ID.controller_run;
 // Note that this only kills instructions because e.g. of a jump ahead of it or an exception
 
-assign exc_finishing = `IDC.ctrl_fsm_cs == `ID.controller_i.FLUSH;
-assign wbexc_handling_irq = `IDC.ctrl_fsm_cs == `ID.controller_i.IRQ_TAKEN;
+assign exc_finishing = `IDC.ctrl_fsm_cs == FLUSH;
+assign wbexc_handling_irq = `IDC.ctrl_fsm_cs == IRQ_TAKEN;
 
 assign wb_finishing = wbexc_is_wfi? wfi_will_finish:`CR.instr_done_wb;
 
-assign wfi_will_finish = `IDC.ctrl_fsm_cs == `ID.controller_i.FLUSH;
+assign wfi_will_finish = `IDC.ctrl_fsm_cs == FLUSH;
 
 assign wbexc_err =  wbexc_ex_err |
                     `IDC.wb_exception_o |
-                    ((`IDC.ctrl_fsm_cs == `ID.controller_i.FLUSH) & ~wbexc_csr_pipe_flush);
+                    ((`IDC.ctrl_fsm_cs == FLUSH) & ~wbexc_csr_pipe_flush);
                     // CSR pipe flushes don't count as exceptions
 
 assign wbexc_finishing =
@@ -51,7 +51,7 @@ always_comb begin
 
     ex_has_branched_d = (ex_has_branched_d | `IF.branch_req) &&
                         ~ex_kill &&
-                        (`IDC.ctrl_fsm_cs == `IDC.DECODE);
+                        (`IDC.ctrl_fsm_cs == DECODE);
 end
 
 always @(posedge clk_i or negedge rst_ni) begin
@@ -60,6 +60,58 @@ always @(posedge clk_i or negedge rst_ni) begin
         ex_has_compressed_instr <= 1'b0;
         ex_has_branched_q <= 1'b0;
         wbexc_csr_pipe_flush <= 1'b0;
+
+        // Zero initialise everything to avoid warnings
+        wbexc_post_wX <= 32'b0;
+        wbexc_post_wX_addr <= 5'b0;
+        wbexc_post_wX_en <= 1'b0;
+        wbexc_instr <= 32'b0;
+        wbexc_decompressed_instr <= 32'b0;
+        wbexc_compressed_illegal <= 1'b0;
+        wbexc_ex_err <= 1'b0;
+        wbexc_fetch_err <= 1'b0;
+        wbexc_post_int_err <= 1'b0;
+        wbexc_illegal <= 1'b0;
+        wbexc_pc <= 32'b0;
+        wbexc_is_checkable_csr <= 1'b0;
+        wbexc_spec_mem_read_fst_rdata <= 32'b0;
+        wbexc_spec_mem_read_snd_rdata <= 32'b0;
+        wbexc_mem_had_snd_req <= 1'b0;
+        ex_compressed_instr <= 32'b0;
+        wbexc_post_pc <= 32'h0;
+        wbexc_post_priv <= Machine;
+        wbexc_post_mstatus <= 32'h0;
+        wbexc_post_mie <= 32'h0;
+        wbexc_post_mcause <= 32'h0;
+        wbexc_post_mtval <= 32'h0;
+        wbexc_post_mtvec <= 32'h0;
+        wbexc_post_mscratch <= 32'h0;
+        wbexc_post_mepc <= 32'h0;
+        wbexc_post_mcycle <= 32'h0;
+        wbexc_post_mshwmb <= 32'h0;
+        wbexc_post_mshwm <= 32'h0;
+        wbexc_post_mcounteren <= 32'h0;
+        wbexc_post_mseccfg <= 32'h0;
+        wbexc_dut_post_pc <= 32'h0;
+        wbexc_dut_post_priv <= Machine;
+        wbexc_dut_post_mstatus <= 32'h0;
+        wbexc_dut_post_mie <= 32'h0;
+        wbexc_dut_post_mcause <= 32'h0;
+        wbexc_dut_post_mtval <= 32'h0;
+        wbexc_dut_post_mtvec <= 32'h0;
+        wbexc_dut_post_mscratch <= 32'h0;
+        wbexc_dut_post_mepc <= 32'h0;
+        wbexc_dut_post_mcycle <= 32'h0;
+        wbexc_dut_post_mshwmb <= 32'h0;
+        wbexc_dut_post_mshwm <= 32'h0;
+        wbexc_dut_post_mcounteren <= 32'h0;
+        wbexc_dut_post_mseccfg <= 32'h0;
+        for (integer i = 0; i < PMPNumRegions; i++) begin
+            wbexc_post_pmp_cfg[i] <= 32'h0;
+            wbexc_post_pmp_addr[i] <= 32'h0;
+            wbexc_dut_post_pmp_cfg[i] <= 32'h0;
+            wbexc_dut_post_pmp_addr[i] <= 32'h0;
+        end
     end else begin
         if (wbexc_finishing) begin
             wbexc_exists <= 1'b0;

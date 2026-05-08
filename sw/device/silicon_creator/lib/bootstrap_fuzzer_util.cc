@@ -71,8 +71,8 @@ void AbstractBootstrapMockGroup::ConfigureMocks() {
                : stream_.ParseIntOr<uint32_t>("flash_status", 0);
   });
 
-  ON_CALL(spi_device_, CmdGet(testing::NotNull()))
-      .WillByDefault([&](spi_device_cmd_t *cmd) -> rom_error_t {
+  ON_CALL(spi_device_, CmdGet(testing::NotNull(), true))
+      .WillByDefault([&](spi_device_cmd_t *cmd, bool blocking) -> rom_error_t {
         spi_cmd_count_++;
 
         if (spi_cmd_count_ < max_spi_cmd_count_) {

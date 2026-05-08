@@ -34,6 +34,7 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic                        main_sm_err_o
 );
 
+  // SEC_CM: MAIN_SM.FSM.SPARSE
   main_sm_state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, main_sm_state_e, MainSmIdle)
 
@@ -95,11 +96,22 @@ module csrng_main_sm import csrng_pkg::*; (
         end
         MainSmCmdVld: begin
           cmd_vld_o = 1'b1;
-          if (cmd_rdy_i) state_d = MainSmClrAData;
+          if (cmd_rdy_i) begin
+            if (cmd_complete_i) begin
+              clr_adata_packer_o = 1'b1;
+              state_d = MainSmIdle;
+            end else begin
+              state_d = MainSmClrAData;
+            end
+          end
         end
         MainSmClrAData: begin
           clr_adata_packer_o = 1'b1;
-          state_d = MainSmCmdCompWait;
+          if (cmd_complete_i) begin
+            state_d = MainSmIdle;
+          end else begin
+            state_d = MainSmCmdCompWait;
+          end
         end
         MainSmCmdCompWait: begin
           if (cmd_complete_i) begin

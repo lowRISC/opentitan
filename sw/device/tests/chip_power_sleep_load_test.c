@@ -64,7 +64,7 @@ static volatile const bool kDeepSleep = false;
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 void ottf_external_isr(uint32_t *exc_info) {
   LOG_INFO("got external IRQ");

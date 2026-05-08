@@ -79,6 +79,7 @@ def main() -> int:
                         help='Path to a testcase hjson file.')
     parser.add_argument('elf',
                         help='Path to the .elf file for the OTBN program.')
+    parser.add_argument('--dump-regs', action='store_true')
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
@@ -119,6 +120,10 @@ def main() -> int:
         dmem_file.seek(0)
         actual_dmem = parse_actual_dmem(dmem_file.read())
         actual_regs = parse_reg_dump(regs_file.read().decode('utf-8'))
+
+        if args.dump_regs:
+            regs_file.seek(0)
+            print(regs_file.read().decode('utf-8'))
 
     expected_err = 0
     expected_regs = {}

@@ -241,7 +241,8 @@ inline uint32_t launder32(uint32_t val) {
 
   // When we're building for static analysis, reduce false positives by
   // short-circuiting the inline assembly block.
-#if OT_BUILD_FOR_STATIC_ANALYZER || OT_DISABLE_HARDENING
+#if OT_BUILD_FOR_STATIC_ANALYZER || \
+    (defined(OT_DISABLE_HARDENING) && OT_DISABLE_HARDENING)
   return val;
 #endif
 
@@ -263,7 +264,8 @@ inline uint32_t launder32(uint32_t val) {
  */
 OT_WARN_UNUSED_RESULT
 inline uintptr_t launderw(uintptr_t val) {
-#if OT_BUILD_FOR_STATIC_ANALYZER || OT_DISABLE_HARDENING
+#if OT_BUILD_FOR_STATIC_ANALYZER || \
+    (defined(OT_DISABLE_HARDENING) && OT_DISABLE_HARDENING)
   return val;
 #endif
   asm volatile("" : "+r"(val));

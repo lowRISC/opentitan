@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -68,33 +69,33 @@ status_t sign_then_verify_test(void) {
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
 
   // Hash the message.
-  otcrypto_const_byte_buf_t msg = {
-      .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
-  };
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)&kMessage,
+                        sizeof(kMessage) - 1);
   uint32_t msg_digest_data[384 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-  TRY(otcrypto_sha2_384(msg, &msg_digest));
+  TRY(otcrypto_sha2_384(&msg, &msg_digest));
 
   // Allocate space for the signature.
   uint32_t sig[kP384SignatureWords] = {0};
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_verify(
-      &private_key, &public_key, msg_digest,
-      (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key,
+                                                  msg_digest, &sig_buf));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_verify(
-      &public_key, msg_digest,
-      (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &verification_result));
+      &public_key, msg_digest, &const_sig_buf, &verification_result));
 
   // The signature should pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

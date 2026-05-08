@@ -15,6 +15,7 @@ class aes_env extends cip_base_env #(
   key_sideload_agent keymgr_sideload_agent;
 
   function void build_phase(uvm_phase phase);
+    aes_reg_block::type_id::set_type_override(aes_reg_block_extended::get_type());
     super.build_phase(phase);
 
     keymgr_sideload_agent = key_sideload_agent#(keymgr_pkg::hw_key_req_t)::type_id::create(

@@ -53,6 +53,9 @@ import "DPI-C" function int otbn_model_invalidate_dmem(chandle model);
 
 import "DPI-C" function int otbn_model_set_software_errs_fatal(chandle model, bit new_val);
 
+import "DPI-C" function int otbn_model_tolerate_result_mismatch(chandle model,
+                                                                int unsigned num_checks);
+
 import "DPI-C" function int otbn_set_no_sec_wipe_chk(chandle model);
 
 import "DPI-C" function int otbn_model_step_crc(chandle          model,
@@ -69,6 +72,9 @@ import "DPI-C" context function int otbn_model_reset(chandle          model,
 import "DPI-C" function int otbn_model_send_err_escalation(chandle    model,
                                                            bit [31:0] err_val,
                                                            bit        lock_immediately);
+
+import "DPI-C" function int otbn_model_send_stall_request(chandle model,
+                                                          bit     enforced);
 
 import "DPI-C" function int otbn_model_set_rma_req(chandle   model,
                                                    bit [3:0] rma_req);

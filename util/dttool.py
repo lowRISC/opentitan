@@ -16,7 +16,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 from reggen.ip_block import IpBlock
 from dtgen.helper import TopHelper, IpHelper, Extension
 from dtgen.ipgen_ext import IpgenExt
-from topgen.lib import CArrayMapping, CEnum
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parents[1].resolve() / "util" / "dtgen"
 
@@ -139,7 +138,7 @@ def main():
     )
 
     args = parser.parse_args()
-    outdir = Path(args.outdir) / "dt"
+    outdir = Path(args.outdir)
     outdir.mkdir(parents = True, exist_ok = True)
 
     name_to_block = {}
@@ -161,20 +160,20 @@ def main():
     else:
         ext_mod = None
 
-    top_helper = TopHelper(topcfg, CEnum, CArrayMapping)
+    top_helper = TopHelper(topcfg)
 
     if args.gen_top:
         top_lib_header = "hw/top_{0}/sw/autogen/top_{0}.h".format(topcfg["name"])
 
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.h.tpl",
-            outdir / "dt_api.h",
+            outdir / "api.h",
             helper = top_helper,
             top_lib_header = top_lib_header,
         )
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.c.tpl",
-            outdir / "dt_api.c",
+            outdir / "api.c",
             helper = top_helper,
         )
 
@@ -197,17 +196,16 @@ def main():
             # The instance name is 'top_{topname}_{ipname}'.
             ipconfig = name_to_ipconfig.get('top_{}_{}'.format(topcfg["name"], ipname), None)
 
-            helper = IpHelper(top_helper, ip, ipconfig, default_node, CEnum, CArrayMapping,
-                              extension_cls)
+            helper = IpHelper(top_helper, ip, ipconfig, default_node, extension_cls)
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
-                outdir / "dt_{}.h".format(ipname),
+                outdir / "{}.h".format(ipname),
                 helper = helper,
             )
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.c.tpl",
-                outdir / "dt_{}.c".format(ipname),
+                outdir / "{}.c".format(ipname),
                 helper = helper,
             )
 

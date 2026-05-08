@@ -392,13 +392,13 @@
   operands: [grd, grs1, offset]
   straight-line: false
   doc: |
-    The JALR instruction has the same behavior as in RV32I, jumping by `<grs1> + <offset>` and writing `PC+4` as a link address to the destination register.
+    The JALR instruction has the same behavior as in RV32I, jumping by `grs1 + offset` and writing `PC+4` as a link address to the destination register.
 
     OTBN has a hardware managed call stack, accessed through `x1`, which should be used when calling and returning from subroutines.
     To return from a subroutine, use `jalr x0, x1, 0`.
     This pops a link address from the call stack and branches to it.
     To call a subroutine through a function pointer, use `jalr x1, <grs1>, 0`.
-    This jumps to the address in `<grs1>` and pushes the link address onto the call stack.
+    This jumps to the address in `grs1` and pushes the link address onto the call stack.
   errs:
     - *grs1-call-stack
     - *grd1-call-stack

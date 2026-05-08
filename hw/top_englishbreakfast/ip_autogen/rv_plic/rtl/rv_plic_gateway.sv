@@ -10,14 +10,58 @@ module rv_plic_gateway #(
   input clk_i,
   input rst_ni,
 
+  // Incoming interrupt requests from the interrupt sources.
   input [N_SOURCE-1:0] src_i,
-  input [N_SOURCE-1:0] le_i,      // Level0 Edge1
 
-  input [N_SOURCE-1:0] claim_i, // $onehot0(claim_i)
-  input [N_SOURCE-1:0] complete_i, // $onehot0(complete_i)
+  // Control whether each interrupt is level or edge triggered. It is considered level triggered if
+  // its bit of le_i is zero and edge triggered if the bit is 1.
+  input [N_SOURCE-1:0] le_i,
 
+  // Interrupts being claimed by a target. This should be onehot0 (so only one interrupt can be
+  // claimed at once).
+  input [N_SOURCE-1:0] claim_i,
+
+  // Interrupts being marked complete by a target. This should be onehot0 (so only one interrupt can
+  // be claimed at once). It has no effect on an interrupt that has not already been claimed.
+  input [N_SOURCE-1:0] complete_i,
+
+  // The "interrupt pending" flag. If a bit of ip_o is true, the target should be notified that the
+  // interrupt needs handling.
   output logic [N_SOURCE-1:0] ip_o
 );
+
+  // The flow for an interrupt is described in "RISC-V Platform-Level Interrupt Controller
+  // Specification" (v1.0.0) in section 1.5.
+  //
+  //   1. An interrupt starts neither active nor pending (so the relevant bits of ia and ip_o are
+  //      zero).
+  //
+  //   2. The interrupt source asserts interrupt k by setting src_i[k]. If le_i requests edge
+  //      triggering, the gateway only recognises an interrupt with a posedge on src_i.
+  //
+  //   3. The gateway sets ip_o[k] to tell the target that interrupt k is pending.
+  //
+  //   4. The target claims the interrupt, which appears as claim_i[k] being true.
+  //
+  //   5. The gateway clears ip_o[k], but remembers that the interrupt is being handled. As such,
+  //      further changes in src_i will not cause a new (overlapping) interrupt.
+  //
+  //   6. The target finishes handling the interrupt and sets complete_i[k].
+  //
+  //   7. The gateway will now allow changes in src_i to cause the interrupt to become pending
+  //      again.
+  //
+  // This is translated into hardware signals as follows:
+  //
+  //   - The interrupt assertion in src_i is detected with the "set" signal. This includes posedge
+  //     detection if le_i is true for the interrupt.
+  //
+  //   - Once interrupt k is asserted, it is marked pending in ip_o[k]. It is also marked "active"
+  //     (which implies the target hasn't yet got as far as completion) by setting ia[k].
+  //
+  //   - When the target claims the interrupt, ip_o[k] is cleared, but ia[k] stays high.
+  //
+  //   - Finally, when the target completes the interrupt, ia[k] is cleared.
 
   logic [N_SOURCE-1:0] ia;    // Interrupt Active
 
@@ -35,28 +79,32 @@ module rv_plic_gateway #(
 
   assign set = src_i & ~(src_q & le_i);
 
-  // Interrupt pending is set by source (depends on le_i), cleared by claim_i.
-  // Until interrupt is claimed, set doesn't affect ip_o.
-  // RISC-V PLIC spec mentioned it can have counter for edge triggered
-  // But skipped the feature as counter consumes substantial logic size.
+  // The interrupt pending signal for interrupt k stays true until it is claimed (claim_i[k]). It is
+  // newly asserted if the interrupt is interrupt asserted (src_i[k]) (restricted to positive edges
+  // if le_i[k] is true) when the interrupt isn't already active (~ia[k]).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ip_o <= '0;
     end else begin
-      ip_o <= (ip_o | (set & ~ia & ~ip_o)) & (~(ip_o & claim_i));
+      ip_o <= (ip_o & ~claim_i) | (set & ~ia);
     end
   end
 
-  // Interrupt active is to control ip_o. If ip_o is set then until completed
-  // by target, ip_o shouldn't be set by source even claim_i can clear ip_o.
-  // ia can be cleared only when ia was set. If `set` and `complete_i` happen
-  // at the same time, always `set` wins.
+  // The Interrupt Active signal is high for interrupts that are active. Interrupt k becomes active
+  // (so ia[k] is true) if the interrupt is asserted when it is not already active. An active
+  // interrupt is initially pending (ip_o[k] is high) and stops being pending when claimed by the
+  // target setting claim_i[k]. After the interrupt has been claimed, it is marked inactive when the
+  // target signals completion (by setting complete_i[k]).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ia <= '0;
     end else begin
-      ia <= (ia | (set & ~ia)) & (~(ia & complete_i & ~ip_o));
+      ia <= (~ia & set) | (ia & ~(complete_i & ~ip_o));
     end
   end
+
+  // Check the claim_i and complete_i input ports are being driven with onehot0 values.
+  `ASSERT(ClaimOneHot0_A,    $onehot0(claim_i))
+  `ASSERT(CompleteOneHot0_A, $onehot0(complete_i))
 
 endmodule

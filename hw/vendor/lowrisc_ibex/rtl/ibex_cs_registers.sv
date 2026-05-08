@@ -9,28 +9,28 @@
 
 `include "prim_assert.sv"
 
-module ibex_cs_registers #(
-  parameter bit                     DbgTriggerEn      = 0,
-  parameter int unsigned            DbgHwBreakNum     = 1,
-  parameter bit                     DataIndTiming     = 1'b0,
-  parameter bit                     DummyInstructions = 1'b0,
-  parameter bit                     ShadowCSR         = 1'b0,
-  parameter bit                     ICache            = 1'b0,
-  parameter int unsigned            MHPMCounterNum    = 10,
-  parameter int unsigned            MHPMCounterWidth  = 40,
-  parameter bit                     PMPEnable         = 0,
-  parameter int unsigned            PMPGranularity    = 0,
-  parameter int unsigned            PMPNumRegions     = 4,
-  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]     = ibex_pkg::PmpCfgRst,
-  parameter logic [33:0]            PMPRstAddr[16]    = ibex_pkg::PmpAddrRst,
-  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg     = ibex_pkg::PmpMseccfgRst,
-  parameter bit                     RV32E             = 0,
-  parameter ibex_pkg::rv32m_e RV32M                   = ibex_pkg::RV32MFast,
-  parameter ibex_pkg::rv32b_e RV32B                   = ibex_pkg::RV32BNone,
+module ibex_cs_registers import ibex_pkg::*; #(
+  parameter bit                     DbgTriggerEn                = 0,
+  parameter int unsigned            DbgHwBreakNum               = 1,
+  parameter bit                     DataIndTiming               = 1'b0,
+  parameter bit                     DummyInstructions           = 1'b0,
+  parameter bit                     ShadowCSR                   = 1'b0,
+  parameter bit                     ICache                      = 1'b0,
+  parameter int unsigned            MHPMCounterNum              = 10,
+  parameter int unsigned            MHPMCounterWidth            = 40,
+  parameter bit                     PMPEnable                   = 0,
+  parameter int unsigned            PMPGranularity              = 0,
+  parameter int unsigned            PMPNumRegions               = 4,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[PMP_MAX_REGIONS]  = ibex_pkg::PmpCfgRst,
+  parameter logic [PMP_ADDR_MSB:0]  PMPRstAddr[PMP_MAX_REGIONS] = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg               = ibex_pkg::PmpMseccfgRst,
+  parameter bit                     RV32E                       = 0,
+  parameter ibex_pkg::rv32m_e RV32M                             = ibex_pkg::RV32MFast,
+  parameter ibex_pkg::rv32b_e RV32B                             = ibex_pkg::RV32BNone,
   // mvendorid: encoding of manufacturer/provider
-  parameter logic [31:0]            CsrMvendorId      = 32'b0,
+  parameter logic [31:0]            CsrMvendorId                = 32'b0,
   // mimpid: encoding of processor implementation version
-  parameter logic [31:0]            CsrMimpId         = 32'b0
+  parameter logic [31:0]            CsrMimpId                   = 32'b0
 ) (
   // Clock and Reset
   input  logic                 clk_i,
@@ -71,7 +71,7 @@ module ibex_cs_registers #(
 
   // PMP
   output ibex_pkg::pmp_cfg_t     csr_pmp_cfg_o  [PMPNumRegions],
-  output logic [33:0]            csr_pmp_addr_o [PMPNumRegions],
+  output logic [PMP_ADDR_MSB:0]  csr_pmp_addr_o [PMPNumRegions],
   output ibex_pkg::pmp_mseccfg_t csr_pmp_mseccfg_o,
 
   // debug
@@ -109,7 +109,7 @@ module ibex_cs_registers #(
   input  ibex_pkg::exc_cause_t csr_mcause_i,
   input  logic [31:0]          csr_mtval_i,
   output logic                 illegal_csr_insn_o,     // access to non-existent CSR,
-                                                        // with wrong priviledge level, or
+                                                        // with wrong privilege level, or
                                                         // missing write permissions
   output logic                 double_fault_seen_o,
   // Performance Counters
@@ -127,8 +127,6 @@ module ibex_cs_registers #(
   input  logic                 mul_wait_i,                  // core waiting for multiply
   input  logic                 div_wait_i                   // core waiting for divide
 );
-
-  import ibex_pkg::*;
 
   // Is a PMP config a locked one that allows M-mode execution when MSECCFG.MML is set (either
   // M mode alone or shared M/U mode execution)?
@@ -149,7 +147,7 @@ module ibex_cs_registers #(
   // All bitmanip configs enable non-ratified sub-extensions
   localparam int unsigned RV32BExtra   = (RV32B != RV32BNone) ? 1 : 0;
   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
-  localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? 33 - PMPGranularity : 32;
+  localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? PMP_ADDR_MSB - PMPGranularity : 32;
 
   // misa
   localparam logic [31:0] MISA_VALUE =
@@ -199,7 +197,7 @@ module ibex_cs_registers #(
   } dcsr_t;
 
   // Partial CPU control and status register fields
-  // ICache scramble key valid (ic_scr_key_valid) is registered seperately to this struct. This is
+  // ICache scramble key valid (ic_scr_key_valid) is registered separately to this struct. This is
   // because it is sampled from the top-level every cycle whilst the other fields only change
   // occasionally.
   typedef struct packed {
@@ -343,7 +341,7 @@ module ibex_cs_registers #(
       CSR_MIMPID: csr_rdata_int = CsrMimpId;
       // mhartid: unique hardware thread id
       CSR_MHARTID: csr_rdata_int = hart_id_i;
-      // mconfigptr: pointer to configuration data structre
+      // mconfigptr: pointer to configuration data structure
       CSR_MCONFIGPTR: csr_rdata_int = CSR_MCONFIGPTR_VALUE;
 
       // mstatus: always M-mode, contains IE bit
@@ -1185,7 +1183,7 @@ module ibex_cs_registers #(
       // When MSECCFG.MML is set cannot add new regions allowing M mode execution unless MSECCFG.RLB
       // is set
       assign pmp_cfg_wr_suppress[i] = pmp_mseccfg_q.mml                   &
-                                      ~pmp_mseccfg.rlb                    &
+                                      ~pmp_mseccfg_q.rlb                  &
                                       is_mml_m_exec_cfg(pmp_cfg_wdata[i]);
 
       // --------------------------
@@ -1203,7 +1201,7 @@ module ibex_cs_registers #(
       ibex_csr #(
         .Width     (PMPAddrWidth),
         .ShadowCopy(ShadowCSR),
-        .ResetValue(PMPRstAddr[i][33-:PMPAddrWidth])
+        .ResetValue(PMPRstAddr[i][PMP_ADDR_MSB-:PMPAddrWidth])
       ) u_pmp_addr_csr (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),
@@ -1213,7 +1211,7 @@ module ibex_cs_registers #(
         .rd_error_o(pmp_addr_err[i])
       );
 
-      `ASSERT_INIT(PMPAddrRstLowBitsZero_A, PMPRstAddr[i][33-PMPAddrWidth:0] == '0)
+      `ASSERT_INIT(PMPAddrRstLowBitsZero_A, PMPRstAddr[i][PMP_ADDR_MSB-PMPAddrWidth:0] == '0)
 
       assign csr_pmp_cfg_o[i]  = pmp_cfg[i];
       assign csr_pmp_addr_o[i] = {pmp_addr_rdata[i], 2'b00};
