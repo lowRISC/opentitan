@@ -206,11 +206,11 @@
     { name: "CTRL.CONFIG.REGWEN",
       desc: "Configurations cannot be changed when an operation is ongoing."
     }
-    { name: "INFO_PAGE.CONFIG.REGWEN",
-      desc: "Each info page has a configurable regwen."
-    }
     { name: "DATA_REGIONS.CONFIG.REGWEN",
       desc: "Each data region has a configurable regwen."
+    }
+    { name: "INFO_PAGE.CONFIG.REGWEN",
+      desc: "Each info page has a configurable regwen."
     }
     { name: "MEM.CTRL.GLOBAL_ESC",
       desc: "Global escalation causes memory to no longer be accessible."
@@ -261,6 +261,7 @@
             - rram_ctrl_otp
             - rram_ctrl_rd/wr
             - rram_phy_wr
+            This includes seed count and address count used during seed reading phase, as well as word count, page count and wipe index in RMA entry phase.
             '''
     }
     { name: "PHY_ARBITER.CTRL.REDUN",
