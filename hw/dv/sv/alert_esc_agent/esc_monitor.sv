@@ -129,7 +129,7 @@ task esc_monitor::esc_thread();
                                 req.alert_esc_type.name(), req.esc_handshake_sta.name(),
                                 req.ping_timeout), UVM_HIGH)
       if (cfg.en_cov) begin
-        cov.m_esc_handshake_complete_cg.sample(req.alert_esc_type, req.esc_handshake_sta);
+        cov.m_handshake_complete_cg.sample(req.alert_esc_type, req.esc_handshake_sta);
         if (cfg.en_ping_cov) cov.m_esc_trans_cg.sample(req.alert_esc_type);
       end
     end

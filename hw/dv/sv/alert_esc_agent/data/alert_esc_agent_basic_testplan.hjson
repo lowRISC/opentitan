@@ -6,8 +6,8 @@
 {
   covergroups: [
     {
-      name: alert_handshake_complete_cg
-      desc: '''Cover if the alert handshake completes.'''
+      name: handshake_complete_cg
+      desc: '''Cover if the alert / escalation handshake completes.'''
     }
   ]
 }
