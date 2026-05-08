@@ -650,6 +650,17 @@ otbn_sim_test(
     ],
 )
 
+otbn_sim_test_suite(
+    name = "p384_check_public_key_invalid_test",
+    binary = "//sw/otbn/crypto:run_p384",
+    tests = [
+        "p384_check_public_key_not_on_curve.hjson",
+        "p384_check_public_key_x_too_large.hjson",
+        "p384_check_public_key_x_reduces_to_valid.hjson",
+        "p384_check_public_key_y_too_large.hjson",
+    ],
+)
+
 otbn_sim_test(
     name = "p384_curve_point_valid_test",
     srcs = [
@@ -1169,6 +1180,7 @@ test_suite(
         ":p384_ecdsa_verify_test",
         ":p384_isoncurve_test",
         ":p384_isoncurve_proj_test",
+        ":p384_check_public_key_invalid_test",
         ":p384_curve_point_valid_test",
         ":p384_internal_mult_test",
         ":p384_keygen_test",

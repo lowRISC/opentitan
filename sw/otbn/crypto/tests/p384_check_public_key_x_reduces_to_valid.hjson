@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "entrypoint": "p384_check_public_key",
+  "input": {
+    "dmem": {
+      # x = p + 2: fits in 384 bits but x >= p, so it is not a valid field element.
+      # However, x mod p = 2, and (2, y) IS a valid P-384 point.
+      "x": "0x00000000000000000000000000000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff000000000000000100000001"
+      "y": "0x000000000000000000000000000000008cdeadbbd04911a3c1931e26df3fa6439dca9c7eb286fbd46fc319f0e2bb780232baf57825fc0c1912ada2fefe84024c"
+      "ok": "0x00000739"  # HARDENED_TRUE
+    }
+  }
+  "output": {
+    "dmem": {
+      "ok": "0x000001d4"  # HARDENED_FALSE
+    }
+  }
+}
