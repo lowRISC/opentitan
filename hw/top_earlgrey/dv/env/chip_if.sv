@@ -32,16 +32,18 @@ interface chip_if;
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
   `define TOP_HIER          tb.dut.top_earlgrey
+  `define TOP_HIER_AON      tb.dut.top_earlgrey_pd_aon
 `else
   `define TOP_HIER          top_earlgrey
+  `define TOP_HIER_AON      top_earlgrey_pd_aon
 `endif
-`define ADC_CTRL_HIER       `TOP_HIER.u_adc_ctrl_aon
+`define ADC_CTRL_HIER       `TOP_HIER_AON.u_adc_ctrl_aon
 `define AES_HIER            `TOP_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
-`define AON_TIMER_HIER      `TOP_HIER.u_aon_timer_aon
+`define AON_TIMER_HIER      `TOP_HIER_AON.u_aon_timer_aon
 `define AST_HIER            u_ast
-`define CLKMGR_HIER         `TOP_HIER.u_clkmgr_aon
+`define CLKMGR_HIER         `TOP_HIER_AON.u_clkmgr_aon
 `define CPU_HIER            `TOP_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
@@ -62,19 +64,19 @@ interface chip_if;
 `define OTBN_HIER           `TOP_HIER.u_otbn
 `define PATTGEN_HIER        `TOP_HIER.u_pattgen
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWM_HIER            `TOP_HIER.u_pwm_aon
-`define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
+`define PWM_HIER            `TOP_HIER_AON.u_pwm_aon
+`define PWRMGR_HIER         `TOP_HIER_AON.u_pwrmgr_aon
 `define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
-`define RSTMGR_HIER         `TOP_HIER.u_rstmgr_aon
+`define RSTMGR_HIER         `TOP_HIER_AON.u_rstmgr_aon
 `define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
 `define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
 `define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl_aon
+`define SENSOR_CTRL_HIER    `TOP_HIER_AON.u_sensor_ctrl_aon
 `define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `TOP_HIER.u_sram_ctrl_ret_aon
-`define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
+`define SRAM_CTRL_RET_HIER  `TOP_HIER_AON.u_sram_ctrl_ret_aon
+`define SYSRST_CTRL_HIER    `TOP_HIER_AON.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
 `define USBDEV_HIER         `TOP_HIER.u_usbdev
 
@@ -1330,7 +1332,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pattgen_chan_1_0_enable,
       pattgen_chan_1_0_enable, 2)
 
-  // tb.dut.top_earlgrey.u_pwm_aon.u_pwm_core.cntr_en
+  // tb.dut.top_earlgrey_pd_aon.u_pwm_aon.u_pwm_core.cntr_en
   wire pwm_core_cntr_en;
 `ifdef GATE_LEVEL
   assign pwm_core_cntr_en = `PWM_HIER.u_reg.u_cfg_cntr_en.q;
