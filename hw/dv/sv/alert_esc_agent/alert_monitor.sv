@@ -16,6 +16,7 @@ class alert_monitor extends alert_esc_base_monitor;
   bit active_alert = 1'b0;
 
   extern function new (string name, uvm_component parent);
+  extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 
   // A task from dv_base_monitor, which sets ok_to_end to false unless {alert_p, alert_n} is {0, 1}
@@ -67,7 +68,7 @@ class alert_monitor extends alert_esc_base_monitor;
   // receiver should still ack the (nonexistent) alert.
   extern local task ping_thread();
 
-  // Watch the internals of a ping -> alert transaction and report it through alert_esc_port. Note
+  // Watch the internals of a ping -> alert transaction and report it through m_alert_port. Note
   // that this is only called when cfg.en_alert_lpg is false (because otherwise the ping should be
   // ignored).
   //
@@ -85,7 +86,7 @@ class alert_monitor extends alert_esc_base_monitor;
   // when the ack is complete, write a sequence item describing the transaction.
   extern local task monitor_alert_handshake();
 
-  // Watch for signal integrity errors (alert_p == alert_n), reporting them to alert_esc_port. If
+  // Watch for signal integrity errors (alert_p == alert_n), reporting them to m_alert_port. If
   // cfg.is_async, allow a single cycle of integrity error without a report, to allow for clock
   // skew.
   extern local task int_fail_thread();
@@ -114,6 +115,11 @@ endclass : alert_monitor
 function alert_monitor::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
+
+function void alert_monitor::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  m_alert_port = new("m_alert_port", this);
+endfunction
 
 task alert_monitor::run_phase(uvm_phase phase);
   // Run the base class run_phase task in parallel (which maintains the cfg.in_reset flag).
@@ -269,8 +275,8 @@ task alert_monitor::report_ping_requests();
           logic last_ping = cfg.vif.monitor_cb.alert_rx_final.ping_p;
           forever @(cfg.vif.monitor_cb) begin
             if (cfg.vif.monitor_cb.alert_rx_final.ping_p != last_ping) begin
-              alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
-              req.alert_esc_type = AlertEscPingTrans;
+              alert_seq_item req = alert_seq_item::type_id::create("req");
+              req.m_trans_type = AlertEscPingTrans;
               req_analysis_port.write(req);
             end
             last_ping = cfg.vif.monitor_cb.alert_rx_final.ping_p;
@@ -321,7 +327,7 @@ task alert_monitor::ping_thread();
 endtask : ping_thread
 
 task alert_monitor::monitor_ping_handshake();
-  alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
+  alert_seq_item req = alert_seq_item::type_id::create("req");
 
   // If alert_p is currently asserted, that must be the tail of a different alert. Wait for it to
   // clear.
@@ -334,7 +340,7 @@ task alert_monitor::monitor_ping_handshake();
   cfg.under_ping_handshake = 1;
   cfg.ping_count++;
 
-  req.alert_esc_type = AlertEscPingTrans;
+  req.m_trans_type = AlertEscPingTrans;
 
   // Track the ping transaction: the sender should respond by setting alert_p, which should then get
   // acked by the receiver.
@@ -369,9 +375,9 @@ task alert_monitor::monitor_ping_handshake();
   end join
 
   `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
-  alert_esc_port.write(req);
+  m_alert_port.write(req);
 
-  if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
+  if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.m_trans_type);
 
   // It's possible that the alert_p signal went high quickly, but the ack was slow (in which case
   // we'll see a ping timeout with alert_handshake_sta == AlertReceived).
@@ -381,7 +387,7 @@ task alert_monitor::monitor_ping_handshake();
     @(cfg.vif.monitor_cb);
     if (cfg.vif.monitor_cb.alert_rx_final.ack_p == 1'b1) begin
       `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
-      alert_esc_port.write(req);
+      m_alert_port.write(req);
     end
   end
 
@@ -404,14 +410,14 @@ task alert_monitor::alert_thread();
 endtask : alert_thread
 
 task alert_monitor::monitor_alert_handshake();
-  alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
+  alert_seq_item req = alert_seq_item::type_id::create("req");
 
-  req.alert_esc_type = AlertEscSigTrans;
+  req.m_trans_type = AlertEscSigTrans;
   req.alert_handshake_sta = AlertReceived;
-  `uvm_info(`gfn, $sformatf("%m - Sending req on 'alert_esc_port': \n%0s",req.sprint),
+  `uvm_info(`gfn, $sformatf("%m - Sending req on 'm_alert_port': \n%0s",req.sprint),
             UVM_DEBUG)
   // Write alert packet to scb when receiving alert signal
-  alert_esc_port.write(req);
+  m_alert_port.write(req);
   // Write alert packet to sequence for auto alert responses.
   `uvm_info(`gfn, $sformatf("%m - Sending req on 'req_analysis_port': \n%0s",req.sprint),
             UVM_DEBUG)
@@ -428,15 +434,15 @@ task alert_monitor::monitor_alert_handshake();
 
   active_alert = 0;
 
-  `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s", req.alert_esc_type.name(),
+  `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s", req.m_trans_type.name(),
                             req.alert_handshake_sta.name()), UVM_HIGH)
-  `uvm_info(`gfn, $sformatf("%m - Sending req on 'alert_esc_port': \n%0s",req.sprint),
+  `uvm_info(`gfn, $sformatf("%m - Sending req on 'm_alert_port': \n%0s",req.sprint),
             UVM_DEBUG)
-  alert_esc_port.write(req);
+  m_alert_port.write(req);
 
   if (cfg.en_cov) begin
-    cov.m_handshake_complete_cg.sample(req.alert_esc_type, req.alert_handshake_sta);
-    if (cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.alert_esc_type);
+    cov.m_handshake_complete_cg.sample(req.m_trans_type, req.alert_handshake_sta);
+    if (cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.m_trans_type);
   end
 endtask
 
@@ -453,13 +459,12 @@ task alert_monitor::int_fail_thread();
           if (is_sig_int_err()) begin
             failure_len += 1;
             if (failure_len > skew_grace_time) begin
-              alert_esc_seq_item req;
-              req = alert_esc_seq_item::type_id::create("req");
-              req.alert_esc_type = AlertEscIntFail;
+              alert_seq_item req = alert_seq_item::type_id::create("req");
+              req.m_trans_type = AlertEscIntFail;
               `uvm_info(`gfn,
-                        $sformatf("%m - Sending req on 'alert_esc_port': \n%0s", req.sprint),
+                        $sformatf("%m - Sending req on 'm_alert_port': \n%0s", req.sprint),
                         UVM_DEBUG)
-              alert_esc_port.write(req);
+              m_alert_port.write(req);
             end
           end else begin
             failure_len = 0;

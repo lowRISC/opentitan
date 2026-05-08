@@ -4,7 +4,7 @@
 
 // this is a base sequence for alert_receiver side
 class alert_receiver_base_seq extends dv_base_seq #(
-    .REQ         (alert_esc_seq_item),
+    .REQ         (alert_seq_item),
     .CFG_T       (alert_esc_agent_cfg),
     .SEQUENCER_T (alert_esc_sequencer)
   );
@@ -25,7 +25,7 @@ endfunction : new
 
 task alert_receiver_base_seq::body();
   `uvm_info(`gfn, $sformatf("starting alert receiver transfer"), UVM_HIGH)
-  req = alert_esc_seq_item::type_id::create("req");
+  req = alert_seq_item::type_id::create("req");
   start_item(req);
   `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
                                  r_alert_ping_send == local::r_alert_ping_send;

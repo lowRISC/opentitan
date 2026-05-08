@@ -13,11 +13,15 @@ class alert_esc_base_monitor extends dv_reactive_monitor #(
 
   `uvm_component_utils(alert_esc_base_monitor)
 
-  // The output port that reports alert/escalation items that have been seen
-  uvm_analysis_port #(alert_esc_seq_item) alert_esc_port;
+  // An output port that reports alert items that have been seen. If this is an esc_monitor, it will
+  // be null.
+  uvm_analysis_port #(alert_seq_item) m_alert_port;
+
+  // An output port that reports escalation items that have been seen. If this is an alert_monitor,
+  // it will be null.
+  uvm_analysis_port #(esc_seq_item) m_esc_port;
 
   extern function new(string name, uvm_component parent);
-  extern virtual function void build_phase(uvm_phase phase);
   extern virtual task run_phase(uvm_phase phase);
 
   // Reset config flags to their initial values (at the end of a reset)
@@ -27,11 +31,6 @@ endclass : alert_esc_base_monitor
 function alert_esc_base_monitor::new (string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
-
-function void alert_esc_base_monitor::build_phase(uvm_phase phase);
-  super.build_phase(phase);
-  alert_esc_port = new("alert_esc_port", this);
-endfunction : build_phase
 
 task alert_esc_base_monitor::run_phase(uvm_phase phase);
   fork

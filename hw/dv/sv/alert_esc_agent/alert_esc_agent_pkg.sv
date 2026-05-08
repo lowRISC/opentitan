@@ -15,7 +15,6 @@ package alert_esc_agent_pkg;
   // 1 clock cycle for monitor to detect alert, and 1 for synchronizer skip.
   parameter uint ALERT_B2B_DELAY = 5;
 
-  typedef class alert_esc_seq_item;
   typedef class alert_esc_agent_cfg;
 
   typedef enum {
@@ -49,10 +48,13 @@ package alert_esc_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // include local files
   `include "alert_esc_seq_item.sv"
+  `include "esc_seq_item.sv"
+  `include "alert_seq_item.sv"
+
   `include "alert_esc_agent_cfg.sv"
   `include "alert_esc_agent_cov.sv"
+  `include "alert_esc_base_driver.sv"
   `include "alert_base_driver.sv"
   `include "alert_sender_driver.sv"
   `include "alert_receiver_driver.sv"
@@ -72,7 +74,6 @@ package alert_esc_agent_pkg;
   `include "seq_lib/alert_sender_ping_rsp_seq.sv"
   `include "seq_lib/alert_sender_seq.sv"
   `include "seq_lib/esc_receiver_base_seq.sv"
-  `include "seq_lib/esc_receiver_esc_rsp_seq.sv"
 
   `include "alert_esc_agent.sv"
 endpackage

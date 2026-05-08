@@ -137,10 +137,12 @@ class alert_handler_base_vseq extends cip_base_vseq #(
           if (esc_int_errs[index]) begin
             fork
               begin
-                esc_receiver_esc_rsp_seq esc_seq =
-                    esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-                `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == 1; standalone_int_err == 1;
-                                               ping_timeout == 0;)
+                esc_receiver_base_seq esc_seq = esc_receiver_base_seq::type_id::create("esc_seq");
+                if (!esc_seq.randomize() with {
+                       int_err == 1; standalone_int_err == 1; ping_timeout == 0;
+                     }) begin
+                  `uvm_fatal(get_full_name(), "Failed to randomize esc_seq.")
+                end
                 esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
               end
             join_none
@@ -337,10 +339,14 @@ class alert_handler_base_vseq extends cip_base_vseq #(
         forever begin
           bit esc_int_err      = esc_int_errs[index]      ? $urandom_range(0, 1) : 0;
           bit ping_timeout_err = ping_timeout_errs[index] ? $urandom_range(0, 1) : 0;
-          esc_receiver_esc_rsp_seq esc_seq =
-              esc_receiver_esc_rsp_seq::type_id::create("esc_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(esc_seq, int_err == esc_int_err; standalone_int_err == 0;
-                                         ping_timeout == ping_timeout_err;)
+          esc_receiver_base_seq esc_seq = esc_receiver_base_seq::type_id::create("esc_seq");
+          if (!esc_seq.randomize() with {
+                 int_err            == local::esc_int_err;
+                 standalone_int_err == 0;
+                 ping_timeout       == local::ping_timeout_err;
+               }) begin
+            `uvm_fatal(get_full_name(), "Failed to randomize esc_seq.")
+          end
           esc_seq.start(p_sequencer.esc_device_seqr_h[index]);
 
           // The sequence has finished, which either means that we have seen an escalation and sent
