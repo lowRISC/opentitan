@@ -112,14 +112,16 @@ enum {
    */
   kModeKeygenInsCnt = 1961351,
   kModeKeygenSideloadInsCnt = 1961244,
-  kModeEcdhInsCnt = 1972946,
-  kModeEcdhSideloadInsCnt = 1973092,
+  kModeEcdhInsCnt = 1972956,
+  kModeEcdhSideloadInsCnt = 1973102,
   kModeEcdsaSignConfigKInsCnt = 1600471,
   kModeEcdsaSignInsCnt = 1600692,
   kModeEcdsaSignSideloadInsCnt = 1600838,
-  kModePointOnCurveCheckInsCnt = 346,
-  kModePointOnCurveCheckInvld1InsCnt = 338,
-  kModePointOnCurveCheckInvld2InsCnt = 345,
+  kModePointOnCurveCheckInsCnt = 357,
+  kModePointOnCurveCheckInvld1InsCnt = 348,
+  kModePointOnCurveCheckInvld2InsCnt = 355,
+  kModePointOnCurveCheckInvldXRangeInsCnt = 40,
+  kModePointOnCurveCheckInvldYRangeInsCnt = 48,
   kModeBasePointMultInsCnt = 1961105,
   kModeArithShareSecretKeyInsCnt = 308,
 };
@@ -531,6 +533,10 @@ status_t p384_point_on_curve_check(const p384_point_t *point,
     HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInsCnt);
   } else if (launder32(ins_cnt) == kModePointOnCurveCheckInvld1InsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvld1InsCnt);
+  } else if (launder32(ins_cnt) == kModePointOnCurveCheckInvldXRangeInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvldXRangeInsCnt);
+  } else if (launder32(ins_cnt) == kModePointOnCurveCheckInvldYRangeInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvldYRangeInsCnt);
   } else {
     // COVERAGE (MISSING) We do not cover PointOnCurveCheckInvld2
     HARDENED_CHECK_EQ(ins_cnt, kModePointOnCurveCheckInvld2InsCnt);
