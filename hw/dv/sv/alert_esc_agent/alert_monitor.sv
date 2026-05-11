@@ -364,9 +364,9 @@ task alert_monitor::monitor_ping_handshake();
       end
       begin : wait_ping_handshake
         wait(cfg.vif.monitor_cb.alert_tx_final.alert_p);
-        req.alert_handshake_sta = AlertReceived;
+        req.m_alert_handshake_sta = AlertReceived;
         wait_ack();
-        req.alert_handshake_sta = AlertAckReceived;
+        req.m_alert_handshake_sta = AlertAckReceived;
         cfg.under_ping_handshake = 0;
         cfg.under_ping_handshake_ph_2 = 1;
       end
@@ -380,10 +380,10 @@ task alert_monitor::monitor_ping_handshake();
   if (cfg.en_cov && cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.m_trans_type);
 
   // It's possible that the alert_p signal went high quickly, but the ack was slow (in which case
-  // we'll see a ping timeout with alert_handshake_sta == AlertReceived).
+  // we'll see a ping timeout with m_alert_handshake_sta == AlertReceived).
   //
   // This might cause a spurious alert error. For details see the discussion on Issue #2321.
-  if (req.m_ping_timeout && req.alert_handshake_sta == AlertReceived) begin
+  if (req.m_ping_timeout && req.m_alert_handshake_sta == AlertReceived) begin
     @(cfg.vif.monitor_cb);
     if (cfg.vif.monitor_cb.alert_rx_final.ack_p == 1'b1) begin
       `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
@@ -413,7 +413,7 @@ task alert_monitor::monitor_alert_handshake();
   alert_seq_item req = alert_seq_item::type_id::create("req");
 
   req.m_trans_type = AlertEscSigTrans;
-  req.alert_handshake_sta = AlertReceived;
+  req.m_alert_handshake_sta = AlertReceived;
   `uvm_info(`gfn, $sformatf("%m - Sending req on 'm_alert_port': \n%0s",req.sprint),
             UVM_DEBUG)
   // Write alert packet to scb when receiving alert signal
@@ -426,22 +426,22 @@ task alert_monitor::monitor_alert_handshake();
   // Duplicate req for writing alert packet at the end of alert handshake
   `downcast(req, req.clone())
 
-  req.alert_handshake_sta = AlertAckReceived;
+  req.m_alert_handshake_sta = AlertAckReceived;
   wait_alert_complete();
-  req.alert_handshake_sta = AlertComplete;
+  req.m_alert_handshake_sta = AlertComplete;
   wait_ack_complete();
-  req.alert_handshake_sta = AlertAckComplete;
+  req.m_alert_handshake_sta = AlertAckComplete;
 
   active_alert = 0;
 
   `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s", req.m_trans_type.name(),
-                            req.alert_handshake_sta.name()), UVM_HIGH)
+                            req.m_alert_handshake_sta.name()), UVM_HIGH)
   `uvm_info(`gfn, $sformatf("%m - Sending req on 'm_alert_port': \n%0s",req.sprint),
             UVM_DEBUG)
   m_alert_port.write(req);
 
   if (cfg.en_cov) begin
-    cov.m_handshake_complete_cg.sample(req.m_trans_type, req.alert_handshake_sta);
+    cov.m_handshake_complete_cg.sample(req.m_trans_type, req.m_alert_handshake_sta);
     if (cfg.en_ping_cov) cov.m_alert_trans_cg.sample(req.m_trans_type);
   end
 endtask

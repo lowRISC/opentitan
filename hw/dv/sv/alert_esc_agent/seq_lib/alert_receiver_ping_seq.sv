@@ -27,8 +27,8 @@ task alert_receiver_ping_seq::body();
     // cfg.ping_delay_min .. cfg.ping_delay_max.
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
                                    m_txn_type == alert_seq_item::PingTxn;
-                                   cfg.ping_delay_min <= ping_delay;
-                                   ping_delay <= cfg.ping_delay_max;)
+                                   cfg.ping_delay_min <= m_ping_delay;
+                                   m_ping_delay <= cfg.ping_delay_max;)
     finish_item(req);
     get_response(req);
   end
