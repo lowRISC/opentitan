@@ -22,7 +22,7 @@ case "$1" in
     ;;
   *)
     # Default case.
-    TOP_MODULE=prim_hpc3o_sca_wrapper
+    TOP_MODULE=otbn_sec_add_sca_wrapper
     ;;
 esac
 if [[ "$#" -gt 1 ]]; then
@@ -45,7 +45,7 @@ echo ${CONFIG_SRC}
 
 # Strip the _comment key (PROLEAD validates all JSON keys strictly).
 CONFIG_TMP=$(mktemp --suffix=.json)
-jq 'del(._comment)' "${CONFIG_SRC}" > "${CONFIG_TMP}"
+grep -v '"_comment"' "${CONFIG_SRC}" > "${CONFIG_TMP}"
 
 # Launch the tool.
 PROLEAD -l ${REPO_TOP}/hw/ip/otbn/pre_sca/prolead/nang45.json \

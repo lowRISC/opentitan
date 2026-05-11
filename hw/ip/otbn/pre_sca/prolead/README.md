@@ -35,7 +35,7 @@ This directory contains support files to perform leakage analysis on OTBN gadget
    ```sh
    ./syn_yosys_sec_add.sh <gadget>
    ```
-   Supported gadgets are: `hpc2`, `hpc2o`, `hpc3`, `hpc3o`.
+   Supported gadgets are: `hpc2`, `hpc2o`, `hpc3`, `hpc3o`, `sec_add`.
 
 
 ## Running the leakage analysis
@@ -56,7 +56,7 @@ After building PROLEAD and synthesizing the target gadget:
    ```sh
    ./evaluate.sh <gadget>
    ```
-   The default (no argument) runs the full `mask_accelerator` wrapper.
+   The default (no argument) runs the `sec_add` wrapper.
 
    Results are written to `out/<gadget>_<timestamp>/` and a symlink `out/latest` points to the most recent run.
 
