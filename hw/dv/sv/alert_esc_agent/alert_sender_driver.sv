@@ -156,10 +156,13 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
     // task.
     if (item == null) return;
 
-    // Handle the alert request or ping response. If the item requests both, send the ping response
-    // first and then the real alert.
-    if (item.s_alert_ping_rsp) send_item(1'b1, item);
-    if (item.s_alert_send) send_item(1'b0, item);
+    // Handle the alert request or ping response.
+    case (item.m_txn_type)
+      alert_seq_item::AlertTxn: send_item(1'b0, item);
+      alert_seq_item::PingTxn:  send_item(1'b1, item);
+      default: `uvm_fatal(get_full_name(), "Unknown txn type.")
+    endcase
+
     seq_item_port.put_response(item);
   end
 endtask
@@ -170,8 +173,8 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
   rsp.set_id_info(item);
 
   `uvm_info(`gfn,
-            $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err_cyc=%0b",
-                      item.s_alert_send, item.s_alert_ping_rsp, item.m_int_err_cyc), UVM_HIGH)
+            $sformatf("starting to send sender item: %0s, int_err_cyc=%0b",
+                      item.m_txn_type.name(), item.m_int_err_cyc), UVM_HIGH)
   fork : isolation_fork begin
     fork
       wait (cfg.in_reset);
@@ -184,8 +187,8 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
     disable fork;
   end join
   `uvm_info(`gfn,
-            $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err_cyc=%0b",
-                      item.s_alert_send, item.s_alert_ping_rsp, item.m_int_err_cyc), UVM_HIGH)
+            $sformatf("finished sending sender item: %0s, int_err_cyc=%0b",
+                      item.m_txn_type.name(), item.m_int_err_cyc), UVM_HIGH)
 
   seq_item_port.put_response(rsp);
 endtask
