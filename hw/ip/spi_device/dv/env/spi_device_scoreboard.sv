@@ -2112,7 +2112,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // this is already called in cip_base_scoreboard::process_tl_a/d_chan_fifo tasks
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
-    bit     do_read_check   = 1'b0; // TODO: fixme
+    bit     do_read_check   = 1'b0; // TODO: Determine conditions under which read checking should be enabled for TL accesses.
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
