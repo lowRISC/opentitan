@@ -10,7 +10,7 @@
     {
       name: ate_bootstrap_flash_erase
       uvm_test_seq: chip_sw_ate_bootstrap_flash_erase_vseq
-      # We do not need to load any flash images as this test is entirely host driven.
+      # This test checks behaviour before loading flash, so doesn't require any flash image.
       sw_images: []
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: [
