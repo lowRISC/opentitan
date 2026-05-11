@@ -29,14 +29,24 @@ task esc_receiver_base_seq::body();
   `uvm_info(`gfn, $sformatf("starting escalator receiver transfer"), UVM_HIGH)
   req = esc_seq_item::type_id::create("req");
   start_item(req);
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                 r_esc_rsp          == local::r_esc_rsp;
-                                 int_err            == local::int_err;
-                                 standalone_int_err == local::standalone_int_err;
-                                 ping_timeout       == local::ping_timeout;
-                                 )
+
+  if (!req.randomize() with {
+        r_esc_rsp          == local::r_esc_rsp;
+        standalone_int_err == local::standalone_int_err;
+        ping_timeout       == local::ping_timeout;
+
+        // If int_err is true, override the soft constraint in the sequence item and request a
+        // nonzero time with an error.
+        if (local::int_err) {
+          m_int_err_cyc != 0;
+        }
+      }) begin
+    `uvm_error(get_full_name(), "Failed to randomize req.")
+  end
+
   `uvm_info(`gfn,
-            $sformatf("seq_item: int_err=%0b, ping_timeout=%0b", req.int_err, req.ping_timeout),
+            $sformatf("seq_item: int_err_cyc=%0b, ping_timeout=%0b",
+                      req.m_int_err_cyc, req.ping_timeout),
             UVM_MEDIUM)
   finish_item(req);
   get_response(rsp);

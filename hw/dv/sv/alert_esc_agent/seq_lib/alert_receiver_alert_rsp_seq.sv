@@ -57,7 +57,6 @@ task alert_receiver_alert_rsp_seq::default_rsp_thread();
       `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
                                      r_alert_ping_send == 0;
                                      r_alert_rsp       == 1;
-                                     int_err           == 0;
                                      )
       finish_item(rsp);
       get_response(rsp);
