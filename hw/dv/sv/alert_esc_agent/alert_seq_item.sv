@@ -62,9 +62,9 @@ class alert_seq_item extends alert_esc_seq_item;
 endclass
 
 constraint alert_seq_item::delay_c {
-  soft m_ack_delay  <= 32;
-  soft m_ack_stable <= 32;
-  soft m_alert_delay dist {0 :/ 5, [1:10] :/ 5};
+  soft m_ack_delay   <= 32;
+  soft m_ack_stable  <= 32;
+  soft m_alert_delay <= 32;
 }
 
 function alert_seq_item::new (string name = "");
