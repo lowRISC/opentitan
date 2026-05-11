@@ -194,18 +194,16 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
 endtask
 
 task alert_sender_driver::drive_alert_pins(alert_seq_item req);
-  int unsigned alert_delay, ack_delay;
+  int unsigned alert_delay;
   alert_delay = (cfg.use_seq_item_alert_delay) ? req.m_alert_delay :
                 $urandom_range(cfg.alert_delay_max, cfg.alert_delay_min);
-  ack_delay = (cfg.use_seq_item_ack_delay) ? req.m_ack_delay :
-              $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
 
   if (req.m_int_err_cyc) begin
     random_drive_int_fail(req.m_int_err_cyc);
     set_alert(1'b0);
   end else begin
     set_alert_pins(alert_delay);
-    reset_alert_pins(ack_delay);
+    reset_alert_pins(req.m_ack_delay);
   end
 
   // There must be at least two sender clock delays before next alert_handshake

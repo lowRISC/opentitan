@@ -45,7 +45,6 @@ class alert_esc_agent_cfg extends dv_reactive_agent_cfg;
   int unsigned alert_delay_max = 10;
 
   // receiver mode
-  bit use_seq_item_ack_delay;
   int unsigned ack_delay_min = 0;
   int unsigned ack_delay_max = 10;
 
