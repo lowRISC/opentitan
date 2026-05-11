@@ -331,10 +331,10 @@ sc_mul:
  * Blind a scalar with a multiple of the curve order L.
  *
  * Given a scalar s < L, this routine adds a random multiple of the group order
- * k * L to the scalar such that s + k * L. In accordance, with Schindler's and
- * Wiemers' recommendation [1] the blinding factor k is 128 bits. Since the
+ * 8 * k * L to the scalar such that s + 8 * k * L. We left shift k * L (multiply by 8) in order to clamp the blinding factor.
+ * In accordance, with Schindler's and Wiemers' recommendation [1] the blinding factor k is 128 bits. Since the
  * curve order L is 253 bits, by choosing a 128-bit factor k we can guarantee
- * that the blinded scalar s + k * L is at most 382 bits.
+ * that the blinded scalar s + 8 * k * L is at most 385 bits.
  *
  * [1] https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
  *
@@ -358,7 +358,7 @@ sc_blind:
 
   /* Calculate k * L, i.e., 128-bit x 253-bit multiplication resulting in a
      381-bit value.
-       [w17:w16] <= [w23:w22] * w21 = k * L. */
+       [w17:w16] <= w22 * w21 = k * L. */
   bn.mulqacc.z          w21.0, w22.0, 0
   bn.mulqacc            w21.0, w22.1, 64
   bn.mulqacc.so  w16.L, w21.1, w22.0, 64
@@ -367,6 +367,12 @@ sc_blind:
   bn.mulqacc            w21.2, w22.1, 64
   bn.mulqacc.so  w16.U, w21.3, w22.0, 64
   bn.mulqacc.wo  w17,   w21.3, w22.1, 0
+
+  /* w17 = (w17 << 3) | (w16 >> 253) */
+  bn.rshi w17, w17, w16 >> 253
+
+  /* w16 = (w16 << 3) | (0 >> 253) */
+  bn.rshi w16, w16, w31 >> 253
 
   /* Add the 381-bit blinding value to the 253-bit scalar resulting in a
      382-bit blinded scalar avoiding any overflow.
@@ -403,6 +409,9 @@ x25519_clamp_shares:
   /* Shift right 2: inserts the 1 at bit 254, original bit 253 moves back to 253 */
   bn.rshi  w8, w2, w8 >> 2
 
+  /* Clear flags */
+  bn.xor w31, w31, w31
+
   /* --- Clamp Share 1 (w7) --- */
   /* Clear bottom 3 bits */
   bn.rshi  w7, w31, w7 >> 3
@@ -410,6 +419,9 @@ x25519_clamp_shares:
   bn.rshi  w7, w7, w31 >> 251
   /* Prepare bit 254 = 0 (use w31 instead of w2) */
   bn.rshi  w7, w31, w7 >> 2
+
+  /* Clear flags before exit */
+  bn.sub  w31, w31, w31, FG0
 
   ret
 
