@@ -17,8 +17,7 @@ class alert_receiver_alert_rsp_seq extends alert_receiver_base_seq;
 endclass : alert_receiver_alert_rsp_seq
 
 constraint alert_receiver_alert_rsp_seq::alert_receiver_alert_rsp_seq_c {
-  r_alert_ping_send == 0;
-  r_alert_rsp       == 1;
+  m_txn_type == alert_seq_item::AlertTxn;
 }
 
 function alert_receiver_alert_rsp_seq::new (string name = "");
@@ -54,10 +53,7 @@ task alert_receiver_alert_rsp_seq::default_rsp_thread();
       wait (req_q.size());
       rsp = req_q.pop_front();
       start_item(rsp);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
-                                     r_alert_ping_send == 0;
-                                     r_alert_rsp       == 1;
-                                     )
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, m_txn_type == local::m_txn_type;)
       finish_item(rsp);
       get_response(rsp);
     end : send_rsp

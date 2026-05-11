@@ -5,17 +5,23 @@
 // An item that represents transactions on an alert interface
 
 class alert_seq_item extends alert_esc_seq_item;
-  // If true, the alert sender should raise an alert
-  rand bit s_alert_send;
 
-  // If true, the alert sender should raise an alert to respond to a ping
-  rand bit s_alert_ping_rsp;
+  // There are two "high-level" transactions that happen on the alert interface:
+  //
+  //   - an alert that is raised by the alert sender and then acked by the alert receiver
+  //
+  //   - a ping sent by the alert receiver, which gets an alert in response from the alert sender.
+  //     This is then acked by the alert receiver.
+  typedef enum {
+    AlertTxn,
+    PingTxn
+  } txn_type_e;
 
-  // If true, the alert receiver should send a ping to the alert sender
-  rand bit r_alert_ping_send;
-
-  // If true, the alert receiver should generate an ack to respond to an alert
-  rand bit r_alert_rsp;
+  // The transaction type that corresponds to this item.
+  //
+  // This is only used for the active side of the agent. The meaning of the item depends on whether
+  // the agent is acting as an alert sender or receiver.
+  rand txn_type_e m_txn_type;
 
   // A delay injected by alert_receiver_driver before it actually sends a ping request. This allows
   // the driver to be sent a stream of back-to-back items without locking up the interface.
@@ -43,10 +49,7 @@ class alert_seq_item extends alert_esc_seq_item;
   extern constraint delay_c;
 
   `uvm_object_utils_begin(alert_seq_item)
-    `uvm_field_int (s_alert_send,      UVM_DEFAULT)
-    `uvm_field_int (s_alert_ping_rsp,  UVM_DEFAULT)
-    `uvm_field_int (r_alert_ping_send, UVM_DEFAULT)
-    `uvm_field_int (r_alert_rsp,       UVM_DEFAULT)
+    `uvm_field_enum(txn_type_e, m_txn_type, UVM_DEFAULT)
     `uvm_field_int (ping_delay,        UVM_DEFAULT)
     `uvm_field_int (ack_delay,         UVM_DEFAULT)
     `uvm_field_int (ack_stable,        UVM_DEFAULT)

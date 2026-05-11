@@ -26,8 +26,7 @@ task alert_receiver_ping_seq::body();
     // ping_delay cycles before it actually sends the ping. Bound this to be in the interval
     // cfg.ping_delay_min .. cfg.ping_delay_max.
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                   r_alert_ping_send == 1'b1;
-                                   r_alert_rsp == 1'b0;
+                                   m_txn_type == alert_seq_item::PingTxn;
                                    cfg.ping_delay_min <= ping_delay;
                                    ping_delay <= cfg.ping_delay_max;)
     finish_item(req);
