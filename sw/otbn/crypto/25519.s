@@ -1320,18 +1320,20 @@ ext_scmul_sca:
   bn.mov w4, w16
   bn.mov w5, w17
 
-  /* Move the blinded 382-bit share s0 to the MSB position. */
-  bn.rshi w3, w3, w2 >> 126
-  bn.rshi w2, w2, w31 >> 126
+  /* Move the newly expanded 385-bit share s0 to the MSB position.
+     Left-shift by 127 bits = rshi by 129. */
+  bn.rshi w3, w3, w2 >> 129
+  bn.rshi w2, w2, w31 >> 129
 
   bn.xor w31, w31, w31 /* dummy */
 
-  /* Move the blinded 382-bit share s1 to the MSB position. */
-  bn.rshi w5, w5, w4 >> 126
-  bn.rshi w4, w4, w31 >> 126
+  /* Move the newly expanded 385-bit share s1 to the MSB position. */
+  bn.rshi w5, w5, w4 >> 129
+  bn.rshi w4, w4, w31 >> 129
+
 
   /* Iterate over all scalar bits starting at the MSB. */
-  loopi  382, 56
+  loopi  385, 56
     /* Compute Q = 2 * Q.
          [w13:w10] <= [w13:w10] + [w13:w10] = 2 * Q  */
     jal x1, ext_double
@@ -2033,9 +2035,6 @@ x25519_ed_y_to_mont_u:
  * clobbered flag groups: FG0
  */
 X25519:
-  /* Move the private key scalar */
-  bn.mov   w2, w8
-
   /* Initialize field arithmetic (MOD <= p, w19 <= 19) */
   jal      x1, fe_init
   bn.xor   w31, w31, w31
@@ -2076,11 +2075,8 @@ X25519:
   /* Double w29 so it equals (2*d) mod p */
   bn.addm  w29, w29, w29
 
-  /* Move scalar from w2 to w28 for ext_scmul */
-  bn.mov   w28, w2
-
-  /* Perform scalar multiplication: [w13:w10] = w28 * [w9:w6] */
-  jal      x1, ext_scmul
+  /* Perform masked scalar multiplication: [w13:w10] = (w2 - w4) * [w9:w6] */
+  jal      x1, ext_scmul_sca
 
   /* Convert result back to affine (x, y) */
   jal      x1, ext_to_affine

@@ -277,13 +277,15 @@ status_t curve25519_verify_finalize(hardened_bool_t *result);
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
- * @param private_key The unmasked private key.
+ * @param s0 The first arithmetic share of the masked private key.
+ * @param s1 The second arithmetic share of the masked private key.
  * @param public_key The public key from the other party.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t curve25519_x25519_start(
-    const uint32_t private_key[kCurve25519ScalarWords],
+    const uint32_t s0[kCurve25519ScalarWords],
+    const uint32_t s1[kCurve25519ScalarWords],
     const uint32_t public_key[kCurve25519PointWords]);
 
 /**
@@ -324,12 +326,14 @@ status_t curve25519_x25519_finalize(
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
- * @param private_key The unmasked private key.
+ * @param s0 The first arithmetic share of the masked private key.
+ * @param s1 The second arithmetic share of the masked private key.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t curve25519_x25519_keygen_start(
-    const uint32_t private_key[kCurve25519ScalarWords]);
+    const uint32_t s0[kCurve25519ScalarWords],
+    const uint32_t s1[kCurve25519ScalarWords]);
 
 /**
  * Finish an async X25519 keygen operation on OTBN.

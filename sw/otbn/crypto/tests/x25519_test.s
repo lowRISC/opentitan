@@ -32,6 +32,9 @@ main:
   bn.addi w7, w31, 1
   bn.rshi w8, w7, w8 >> 2
 
+  bn.mov  w2, w8
+  bn.mov  w4, w31
+
   /* w22 <= X25519(k, u) */
   jal     x1, X25519
 
