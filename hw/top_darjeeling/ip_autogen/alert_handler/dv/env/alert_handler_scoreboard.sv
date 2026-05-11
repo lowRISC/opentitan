@@ -104,7 +104,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           if (alert_en) begin
             // alert detected
             if (act_item.m_trans_type == AlertEscSigTrans && !act_item.m_ping_timeout &&
-                act_item.alert_handshake_sta == AlertReceived) begin
+                act_item.m_alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
             // alert integrity fail
             end else if (act_item.m_trans_type == AlertEscIntFail) begin
