@@ -206,8 +206,8 @@ task alert_receiver_driver::consume_requests_betwen_resets();
         bit [1:0] jobs;
 
         m_requests.get(item);
-        jobs[0] = item.r_alert_rsp;
-        jobs[1] = item.r_alert_ping_send;
+        jobs[0] = (item.m_txn_type == alert_seq_item::AlertTxn);
+        jobs[1] = (item.m_txn_type == alert_seq_item::PingTxn);
 
         if (!jobs) begin
           `uvm_fatal(get_full_name(),

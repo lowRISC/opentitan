@@ -44,8 +44,8 @@ task alert_base_driver::get_req();
     `downcast(req_clone, req.clone());
     req_clone.set_id_info(req);
     m_requests.write(req_clone);
-    `uvm_info(`gfn, $sformatf({"Driver received item (after pushing): req.r_alert_ping_send=%0d",
-                               " | req.r_alert_rsp=%0d"},
-                              req_clone.r_alert_ping_send, req_clone.r_alert_rsp), UVM_DEBUG)
+    `uvm_info(`gfn,
+              $sformatf("Driver received item (after pushing): %0s", req_clone.m_txn_type.name()),
+              UVM_DEBUG)
   end
 endtask : get_req
