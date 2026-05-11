@@ -53,7 +53,12 @@ task alert_receiver_alert_rsp_seq::default_rsp_thread();
       wait (req_q.size());
       rsp = req_q.pop_front();
       start_item(rsp);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, m_txn_type == local::m_txn_type;)
+      if (!rsp.randomize() with {
+            m_txn_type == local::m_txn_type;
+            cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+          }) begin
+        `uvm_error(get_full_name(), "Failed to randomize rsp")
+      end
       finish_item(rsp);
       get_response(rsp);
     end : send_rsp
