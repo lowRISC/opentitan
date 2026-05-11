@@ -18,7 +18,6 @@ function alert_sender_seq::new (string name = "");
 endfunction : new
 
 constraint alert_sender_seq::alert_sender_seq_c {
-  s_alert_send     == 1;
-  s_alert_ping_rsp == 0;
-  ping_timeout     == 0;
+  m_txn_type == alert_seq_item::AlertTxn;
+  ping_timeout == 0;
 }

@@ -13,8 +13,7 @@ class alert_receiver_seq extends alert_receiver_base_seq;
 endclass : alert_receiver_seq
 
 constraint alert_receiver_seq::alert_receiver_seq_c {
-  r_alert_ping_send == 1;
-  r_alert_rsp       == 0;
+  m_txn_type == alert_seq_item::PingTxn;
 }
 
 function alert_receiver_seq::new (string name = "");
