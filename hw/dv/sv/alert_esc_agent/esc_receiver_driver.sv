@@ -109,7 +109,7 @@ task esc_receiver_driver::rsp_escalator();
     rsp.set_id_info(esc_req);
 
     `uvm_info(`gfn,
-              $sformatf("starting to send receiver item, int_fail=%0b", esc_req.int_err),
+              $sformatf("starting to send receiver item, int_fail=%0b", esc_req.m_int_err_cyc != 0),
               UVM_HIGH)
     fork
       begin : non_blocking_fork
@@ -119,7 +119,7 @@ task esc_receiver_driver::rsp_escalator();
         join_any
         disable fork;
         `uvm_info(`gfn,
-                  $sformatf("finished sending receiver item int_fail=%0b", esc_req.int_err),
+                  $sformatf("have sent receiver item int_fail=%0b", esc_req.m_int_err_cyc != 0),
                   UVM_HIGH)
         seq_item_port.put_response(rsp);
       end
@@ -131,7 +131,7 @@ task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
   if (req.standalone_int_err) begin
     wait_esc_complete();
     @(cfg.vif.receiver_cb); // wait one clock cycle to ensure is_ping is set
-    repeat (req.int_err_cyc) begin
+    repeat (req.m_int_err_cyc) begin
       if (is_ping || cfg.vif.esc_tx.esc_p !== 1'b0) break;
       random_drive_resp_signal();
       @(cfg.vif.receiver_cb);
@@ -141,7 +141,7 @@ task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
   end else begin
     wait_esc();
     @(cfg.vif.receiver_cb);
-    while (get_esc() === 1'b1) toggle_resp_signal(req.int_err);
+    while (get_esc() === 1'b1) toggle_resp_signal(req.m_int_err_cyc != 0);
 
     // drives escalation ping request response according to the above scenarios:
     // if no sig_int_err: the driver will toggle resp_p/n as design required
@@ -150,7 +150,7 @@ task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
     // immediately and response to the real escalation signal without sig_int_err
     if (is_ping) begin
       // `ping_timeout_cycle` is divided by 2 because `toggle_resp_signal` task contains two cycles
-      int toggle_cycle = req.int_err ? cfg.ping_timeout_cycle / 2 : 1;
+      int toggle_cycle = (req.m_int_err_cyc != 0) ? cfg.ping_timeout_cycle / 2 : 1;
       fork begin : isolation_fork
         fork
           repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
@@ -163,7 +163,7 @@ task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
         while (get_esc() === 1'b1) toggle_resp_signal(0);
       end
     end
-    if (req.ping_timeout || req.int_err) reset_resp();
+    if (req.ping_timeout || (req.m_int_err_cyc != 0)) reset_resp();
   end
 endtask : drive_esc_resp
 

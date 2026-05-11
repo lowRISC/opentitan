@@ -29,14 +29,23 @@ task alert_sender_base_seq::body();
   `uvm_info(`gfn, $sformatf("starting alert sender transfer"), UVM_HIGH)
   req = alert_seq_item::type_id::create("req");
   start_item(req);
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                 s_alert_send     == local::s_alert_send;
-                                 s_alert_ping_rsp == local::s_alert_ping_rsp;
-                                 int_err          == local::int_err;
-                                 ping_timeout     == local::ping_timeout;
-                                 )
-  `uvm_info(`gfn, $sformatf("seq_item: send_alert=%0b, ping_rsp=%0b, int_err=%0b",
-                            req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_MEDIUM)
+
+  if (!req.randomize() with {
+        s_alert_send     == local::s_alert_send;
+        s_alert_ping_rsp == local::s_alert_ping_rsp;
+        ping_timeout     == local::ping_timeout;
+
+        // If int_err is true, override the soft constraint in the sequence item and request a
+        // nonzero time with an error.
+        if (local::int_err) {
+          m_int_err_cyc != 0;
+        }
+      }) begin
+    `uvm_error(get_full_name(), "Failed to randomize req.")
+  end
+
+  `uvm_info(`gfn, $sformatf("seq_item: send_alert=%0b, ping_rsp=%0b, int_err_cyc=%0b",
+                            req.s_alert_send, req.s_alert_ping_rsp, req.m_int_err_cyc), UVM_MEDIUM)
   finish_item(req);
   get_response(rsp);
   `uvm_info(`gfn, "alert sender transfer done", UVM_HIGH)
