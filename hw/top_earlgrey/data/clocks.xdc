@@ -234,7 +234,7 @@ set_input_delay  -clock clk_spi_pt -clock_fall -max ${spi_host_in_delay_max} \
 
 ## SPI Host constraints
 # SPI Host clock origin buffer
-set spi_host_0_peri [get_pins top_earlgrey/u_clkmgr_aon/u_clk_io_peri_cg/gen_gate.gen_bufgce.u_bufgce/O]
+set spi_host_0_peri [get_pins top_*/u_clkmgr_aon/u_clk_io_peri_cg/gen_gate.gen_bufgce.u_bufgce/O]
 
 create_generated_clock -name clk_spi_host0 -divide_by 2 -add \
   -source ${spi_host_0_peri} \

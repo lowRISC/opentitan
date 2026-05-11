@@ -258,7 +258,7 @@ set_multicycle_path -hold 1 -end \
 
 ## SPI Host constraints
 # SPI Host clock origin buffer
-set spi_host_0_peri [get_pins top_earlgrey/u_clkmgr_aon/u_clk_io_peri_cg/gen_gate.u_bufgce/O]
+set spi_host_0_peri [get_pins top_*/u_clkmgr_aon/u_clk_io_peri_cg/gen_gate.u_bufgce/O]
 
 # Even though it's 2x the max possible frequency, keep the peripheral clock
 # frequency for the output. This will enable shifting the latch edge for hold
