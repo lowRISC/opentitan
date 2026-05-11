@@ -573,12 +573,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     erase_flash_over_spi();
 
-    for (int unsigned idx = 0; idx < sw_byte_q.size(); idx += SPI_FLASH_PAGE_SIZE) begin
-      spi_write_flash_page(sw_byte_q, idx, SPI_FLASH_PAGE_SIZE);
-    end
+    spi_write_flash_stream(sw_byte_q, SPI_FLASH_PAGE_SIZE);
 
     cfg.chip_vif.sw_straps_if.drive(3'h0);
     assert_por_reset();
+  endtask
+
+  // Stream a byte queue into SPI flash, using sequential page-write operations of size page_size.
+  protected virtual task spi_write_flash_stream(const ref byte byte_q[$],
+                                                int unsigned page_size);
+    for (int unsigned idx = 0; idx < byte_q.size(); idx += page_size) begin
+      spi_write_flash_page(byte_q, idx, page_size);
+    end
   endtask
 
   // Write a single page to flash, starting with item at index start_idx. Send up to page_size bytes
