@@ -214,7 +214,7 @@ Run the following command to see the circuit diagramm if there is a leakage:
    xdot tmp/dbg-circuit-0.dot
    ```
 
-## Formally verifying the HPC Gadgets used in the OTBN core
+## Formally verifying the mask accelerator interface modules
 
 After completing the prerequisites above, source the build constants, activate the Alma virtual
 environment and run `verify_sec_add.sh` with the desired gadget:
@@ -227,7 +227,7 @@ source dev/bin/activate
 ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/verify_sec_add.sh <gadget>
 ```
 
-where `<gadget>` is one of `hpc2`, `hpc2o`, `hpc3`, or `hpc3o`.
+where `<gadget>` is one of `hpc2`, `hpc2o`, `hpc3`, `hpc3o`, or `sec_add`.
 The script runs all steps (parse, label, trace, verify) automatically, using the synthesized
 netlist from `syn_out/latest/generated/`.
 
