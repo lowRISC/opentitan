@@ -4,7 +4,9 @@
 
 #include "sw/device/lib/crypto/include/hkdf.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -15,6 +17,14 @@
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'k', 'd')
+
+enum {
+  // Maximum length for the salt in 32-bit words (512 bytes).
+  kHkdfMaxSaltWords = 128,
+  // Maximum length for the input key material (IKM) in 32-bit words (512
+  // bytes).
+  kHkdfMaxIkmWords = 128,
+};
 
 /**
  * Infer the digest length in 32-bit words for the given hash function.
@@ -73,11 +83,11 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_wordlen = keyblob_num_words(prk_config);
-  uint32_t keyblob[keyblob_wordlen];
+  uint32_t keyblob[kHmacMaxDigestWords * 2];
   otcrypto_blinded_key_t prk = {
       .config = prk_config,
       .keyblob = keyblob,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_wordlen * sizeof(uint32_t),
   };
 
   // Call extract and expand.
@@ -163,8 +173,12 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   size_t salt_bytelen =
       (salt->len == 0) ? digest_words * sizeof(uint32_t) : salt->len;
   size_t salt_wordlen = ceil_div(salt_bytelen, sizeof(uint32_t));
-  uint32_t salt_aligned_data[salt_wordlen];
-  memset(salt_aligned_data, 0, sizeof(salt_aligned_data));
+
+  if (salt_wordlen > kHkdfMaxSaltWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t salt_aligned_data[kHkdfMaxSaltWords];
+  memset(salt_aligned_data, 0, salt_wordlen * sizeof(uint32_t));
   if (salt->len > 0) {
     memcpy(salt_aligned_data, salt->data, salt->len);
   }
@@ -174,17 +188,21 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   // struct.
 
   // Unmask the input key.
-  uint32_t unmasked_ikm_data[keyblob_share_num_words(ikm->config)];
+  size_t unmasked_ikm_wordlen = keyblob_share_num_words(ikm->config);
+  if (unmasked_ikm_wordlen > kHkdfMaxIkmWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t unmasked_ikm_data[kHkdfMaxIkmWords];
   HARDENED_TRY(
-      keyblob_key_unmask(ikm, ARRAYSIZE(unmasked_ikm_data), unmasked_ikm_data));
+      keyblob_key_unmask(ikm, unmasked_ikm_wordlen, unmasked_ikm_data));
   otcrypto_const_byte_buf_t unmasked_ikm = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, (unsigned char *)unmasked_ikm_data,
       ikm->config.key_length);
 
   // Package the salt value in a blinded key, using an all-zero mask because
   // the salt is not actually secret.
-  uint32_t salt_mask[ARRAYSIZE(salt_aligned_data)];
-  memset(salt_mask, 0, sizeof(salt_mask));
+  uint32_t salt_mask[kHkdfMaxSaltWords];
+  memset(salt_mask, 0, salt_wordlen * sizeof(uint32_t));
   otcrypto_key_config_t salt_key_config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = ikm->config.key_mode,
@@ -204,17 +222,22 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   salt_key.checksum = otcrypto_integrity_blinded_checksum(&salt_key);
 
   // Call HMAC(salt, IKM).
-  uint32_t tag_data[digest_words];
+  uint32_t tag_data[kHmacMaxDigestWords];
   otcrypto_word32_buf_t tag =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, ARRAYSIZE(tag_data));
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, digest_words);
   HARDENED_TRY(otcrypto_hmac(&salt_key, &unmasked_ikm, &tag));
 
-  // Construct the blinded keyblob for PRK (with an all-zero mask for now
-  // because HMAC is unhardened anyway).
-  uint32_t prk_mask[digest_words];
-  memset(prk_mask, 0, sizeof(prk_mask));
+  // Mask the PRK
+  uint32_t prk_mask[kHmacMaxDigestWords];
+  HARDENED_TRY(hardened_memshred(prk_mask, digest_words));
+
   HARDENED_TRY(
       keyblob_from_key_and_mask(tag_data, prk_mask, prk->config, prk->keyblob));
+
+  // Wipe the sensitive buffers
+  HARDENED_TRY(hardened_memshred(unmasked_ikm_data, unmasked_ikm_wordlen));
+  HARDENED_TRY(hardened_memshred(tag_data, digest_words));
+
   prk->checksum = otcrypto_integrity_blinded_checksum(prk);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -259,42 +282,59 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   }
   HARDENED_CHECK_LE(num_iterations, 255);
 
-  // Create a buffer that holds `info` and a one-byte counter.
-  uint8_t info_and_counter_data[info->len + 1];
-  memcpy(info_and_counter_data, info->data, info->len);
-  info_and_counter_data[info->len] = 0x00;
-  otcrypto_const_byte_buf_t info_and_counter =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, info_and_counter_data,
-                        sizeof(info_and_counter_data));
+  // Repeatedly call HMAC to generate the derived key (see RFC 5869,
+  // section 2.3).
+  uint32_t *share0_ptr = okm->keyblob;
+  uint32_t *share1_ptr = okm->keyblob + keyblob_share_num_words(okm->config);
+  size_t words_written = 0;
 
-  // Repeatedly call HMAC to generate the derived key (see RFC 5869, section
-  // 2.3):
-  uint32_t okm_data[okm_wordlen];
-  uint32_t *t_data = okm_data;
+  // Array to hold T(i) from the previous loop iteration.
+  uint32_t prev_t[kHmacMaxDigestWords];
+
   for (uint8_t i = 0; i < num_iterations; i++) {
-    info_and_counter_data[info->len] = i + 1;
     otcrypto_hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, prk));
     if (launder32(i) != 0) {
       otcrypto_const_byte_buf_t t_bytes =
-          OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)t_data,
+          OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (unsigned char *)prev_t,
                             digest_words * sizeof(uint32_t));
       HARDENED_TRY(otcrypto_hmac_update(&ctx, &t_bytes));
-      t_data += digest_words;
     }
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, &info_and_counter));
+
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, info));
+
+    uint8_t counter_val = i + 1;
+    otcrypto_const_byte_buf_t counter_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, &counter_val, 1);
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, &counter_buf));
+
+    uint32_t tag_data[kHmacMaxDigestWords];
     otcrypto_word32_buf_t t_words =
-        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, t_data, digest_words);
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, digest_words);
     HARDENED_TRY(otcrypto_hmac_final(&ctx, &t_words));
+
+    memcpy(prev_t, tag_data, digest_words * sizeof(uint32_t));
+
+    size_t words_to_copy = digest_words;
+    if (words_written + digest_words > okm_wordlen) {
+      words_to_copy = okm_wordlen - words_written;
+    }
+
+    uint32_t mask_data[kHmacMaxDigestWords];
+    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+
+    uint32_t share0_data[kHmacMaxDigestWords];
+    HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
+
+    HARDENED_TRY(hardened_memcpy(share0_ptr + words_written, share0_data,
+                                 words_to_copy));
+    HARDENED_TRY(
+        hardened_memcpy(share1_ptr + words_written, mask_data, words_to_copy));
+
+    words_written += words_to_copy;
   }
 
-  // Generate a mask (all-zero for now, since HMAC is unhardened anyway).
-  uint32_t mask[digest_words];
-  memset(mask, 0, sizeof(mask));
-
-  // Construct a blinded key.
-  HARDENED_TRY(
-      keyblob_from_key_and_mask(okm_data, mask, okm->config, okm->keyblob));
+  // Manually compute and assign the checksum
   okm->checksum = otcrypto_integrity_blinded_checksum(okm);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
