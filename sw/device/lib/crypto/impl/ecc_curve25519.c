@@ -729,22 +729,13 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 
     return otcrypto_eval_exit(curve25519_x25519_keygen_sideload_start());
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    uint32_t private_key_unmasked[kCurve25519ScalarWords];
     uint32_t *share0 = private_key->keyblob;
     uint32_t *share1 =
         private_key->keyblob + keyblob_share_num_words(private_key->config);
 
-    HARDENED_TRY(hardened_add(share0, share1, kCurve25519ScalarWords,
-                              private_key_unmasked));
+    HARDENED_TRY(curve25519_x25519_keygen_start(share0, share1));
 
-    HARDENED_TRY(ed25519_clamp(private_key_unmasked));
-
-    // Start the OTBN key exchange app.
-    HARDENED_TRY(curve25519_x25519_keygen_start(private_key_unmasked));
-
-    // Wipe the unmasked private key.
-    return otcrypto_eval_exit(
-        hardened_memshred(private_key_unmasked, kCurve25519ScalarWords));
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   return OTCRYPTO_BAD_ARGS;
@@ -777,23 +768,13 @@ otcrypto_status_t otcrypto_x25519_async_start(
         curve25519_x25519_sideload_start(public_key->key));
 
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    uint32_t private_key_unmasked[kCurve25519ScalarWords];
-
-    // Unmask the private key
     uint32_t *share0 = private_key->keyblob;
     uint32_t *share1 =
         private_key->keyblob + keyblob_share_num_words(private_key->config);
-    HARDENED_TRY(hardened_add(share0, share1, kCurve25519ScalarWords,
-                              private_key_unmasked));
-    HARDENED_TRY(ed25519_clamp(private_key_unmasked));
 
-    // Start the standard OTBN key exchange app
-    HARDENED_TRY(
-        curve25519_x25519_start(private_key_unmasked, public_key->key));
+    HARDENED_TRY(curve25519_x25519_start(share0, share1, public_key->key));
 
-    // Wipe the unmasked private key from CPU memory and return
-    return otcrypto_eval_exit(
-        hardened_memshred(private_key_unmasked, kCurve25519ScalarWords));
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   return OTCRYPTO_BAD_ARGS;
