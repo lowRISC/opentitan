@@ -28,6 +28,7 @@ task alert_receiver_ping_seq::body();
     if (!req.randomize() with {
           m_txn_type == alert_seq_item::PingTxn;
           cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+          cfg.ack_stable_min <= m_ack_stable && m_ack_stable <= cfg.ack_stable_max;
           cfg.ping_delay_min <= m_ping_delay && m_ping_delay <= cfg.ping_delay_max;
         }) begin
         `uvm_error(get_full_name(), "Failed to randomize req")
