@@ -153,7 +153,7 @@ task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
       int toggle_cycle = (req.m_int_err_cyc != 0) ? cfg.ping_timeout_cycle / 2 : 1;
       fork begin : isolation_fork
         fork
-          repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
+          repeat (toggle_cycle) toggle_resp_signal(req.m_ping_timeout);
           cfg.probe_vif.wait_esc_en();
         join_any
         disable fork;
@@ -163,7 +163,7 @@ task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
         while (get_esc() === 1'b1) toggle_resp_signal(0);
       end
     end
-    if (req.ping_timeout || (req.m_int_err_cyc != 0)) reset_resp();
+    if (req.m_ping_timeout || (req.m_int_err_cyc != 0)) reset_resp();
   end
 endtask : drive_esc_resp
 

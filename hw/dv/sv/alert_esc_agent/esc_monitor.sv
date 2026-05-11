@@ -92,7 +92,7 @@ task esc_monitor::esc_thread();
         if (ping_cnter >= cfg.ping_timeout_cycle) begin
           esc_seq_item req_clone;
           `downcast(req_clone, req.clone());
-          req_clone.ping_timeout = 1;
+          req_clone.m_ping_timeout = 1;
           m_esc_port.write(req_clone);
           // alignment for prim_esc_sender design. Design does not know ping timeout cycles, only
           // way to exit FSM is when state is IDLE or PingComplete.
@@ -134,7 +134,7 @@ task esc_monitor::esc_thread();
 
       `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s, timeout=%0b",
                                 req.m_trans_type.name(), req.esc_handshake_sta.name(),
-                                req.ping_timeout), UVM_HIGH)
+                                req.m_ping_timeout), UVM_HIGH)
       if (cfg.en_cov) begin
         cov.m_handshake_complete_cg.sample(req.m_trans_type, req.esc_handshake_sta);
         if (cfg.en_ping_cov) cov.m_esc_trans_cg.sample(req.m_trans_type);
