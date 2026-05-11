@@ -134,11 +134,11 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
           esc_fifo[index].get(act_item);
           // escalation triggered, check signal length
           if (act_item.m_trans_type == AlertEscSigTrans &&
-              act_item.esc_handshake_sta == EscRespComplete) begin
-            check_esc_signal(act_item.sig_cycle_cnt, index);
+              act_item.m_esc_handshake_sta == EscRespComplete) begin
+            check_esc_signal(act_item.m_sig_cycle_cnt, index);
           // escalation integrity fail
           end else if (act_item.m_trans_type == AlertEscIntFail ||
-               (act_item.esc_handshake_sta == EscIntFail && !act_item.m_ping_timeout)) begin
+               (act_item.m_esc_handshake_sta == EscIntFail && !act_item.m_ping_timeout)) begin
             bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscIntFail].get_mirrored_value();
             if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
