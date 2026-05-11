@@ -16,9 +16,9 @@ class alert_receiver_driver extends alert_base_driver;
     integer transaction_id;
   } id_pair_t;
 
-  // The drive_req_between_resets task will consume requests from m_receiver_requests and add these
-  // requests to this pair of FIFOs (to be consumed by the send_pings and send_alert_rsps tasks that
-  // it spawns).
+  // The drive_req_between_resets task will consume requests from m_requests and add these requests
+  // to this pair of FIFOs (to be consumed by the send_pings and send_alert_rsps tasks that it
+  // spawns).
   //
   // When reset is asserted, both of those tasks will exit after flushing their respective queues.
   local uvm_tlm_analysis_fifo #(alert_seq_item) m_pending_pings;
@@ -54,8 +54,8 @@ class alert_receiver_driver extends alert_base_driver;
   // This implements a task in alert_base_driver
   extern task drive_req();
 
-  // Take items from m_receiver_requests and (depending on the type of the item) add them to
-  // m_pending_pings and m_pending_alert_rsps.
+  // Take items from m_requests and (depending on the type of the item) add them to m_pending_pings
+  // and m_pending_alert_rsps.
   //
   // Exits immediately on reset.
   extern local task consume_requests_betwen_resets();
@@ -184,7 +184,7 @@ task alert_receiver_driver::drive_req();
         alert_seq_item item;
         fork
           wait (!cfg.in_reset);
-          m_receiver_requests.get(item);
+          m_requests.get(item);
         join_any
         disable fork;
         // Since we are in reset, we ignore any item that we see. Because it was fetched by get() in
@@ -205,7 +205,7 @@ task alert_receiver_driver::consume_requests_betwen_resets();
         id_pair_t ids;
         bit [1:0] jobs;
 
-        m_receiver_requests.get(item);
+        m_requests.get(item);
         jobs[0] = item.r_alert_rsp;
         jobs[1] = item.r_alert_ping_send;
 
@@ -239,9 +239,9 @@ task alert_receiver_driver::drive_req_between_resets();
   do_alert_rx_init();
   if (cfg.in_reset) return;
 
-  // Fetch items to drive and drive them. The first task takes items from the m_receiver_requests
-  // fifo and uses them to populate m_pending_pings and m_pending_alert_rsps. The second two tasks
-  // take (and drive) items from those two fifos.
+  // Fetch items to drive and drive them. The first task takes items from the m_requests fifo and
+  // uses them to populate m_pending_pings and m_pending_alert_rsps. The second two tasks take (and
+  // drive) items from those two fifos.
   //
   // All three tasks exit on reset.
   fork
