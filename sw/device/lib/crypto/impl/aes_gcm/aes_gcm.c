@@ -662,7 +662,12 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
     // If authentication fails, zero the plaintext so that the caller does not
     // use the unauthenticated decrypted data. We still use `OTCRYPTO_OK`
     // because there was no internal error during the authentication check.
-    memset(plaintext_base, 0, ciphertext_len);
+    volatile uint8_t *p = plaintext_base;
+    // Use a volatile loop instead of a memset to ensure that the code persists
+    // even when compiler optimizations are enabled.
+    for (size_t i = 0; i < ciphertext_len; i++) {
+      p[i] = 0;
+    }
   }
   return result;
 }
