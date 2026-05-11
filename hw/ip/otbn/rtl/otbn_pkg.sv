@@ -41,6 +41,9 @@ package otbn_pkg;
   // Number of Wide Data Registers (WDRs)
   parameter int NWdr = 2 ** WdrAw;
 
+  // Number of shares used inside the mask accelerator
+  parameter int NumShares = 2;
+
   // Width of entropy input
   parameter int EdnDataWidth = 256;
 
