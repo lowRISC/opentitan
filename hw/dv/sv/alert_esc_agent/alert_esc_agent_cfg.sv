@@ -40,7 +40,6 @@ class alert_esc_agent_cfg extends dv_reactive_agent_cfg;
   int clk_freq_mhz;
 
   // sender mode
-  bit use_seq_item_alert_delay;
   int unsigned alert_delay_min = 0;
   int unsigned alert_delay_max = 10;
 
