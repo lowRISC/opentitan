@@ -356,8 +356,10 @@ endtask
 task alert_receiver_driver::send_ping(alert_seq_item item);
   `uvm_info(get_full_name(), "Sending ping", UVM_HIGH)
 
-  if (item.int_err) begin
-    `uvm_info(get_full_name(), "Not actually sending ping (because int_err is true)", UVM_HIGH)
+  if (item.m_int_err_cyc) begin
+    `uvm_info(get_full_name(),
+              "Not actually sending ping (because m_int_err_cyc is positive)",
+              UVM_HIGH)
   end else begin
     drive_alert_ping(item.ping_delay, item.ack_delay, item.ack_stable);
   end
