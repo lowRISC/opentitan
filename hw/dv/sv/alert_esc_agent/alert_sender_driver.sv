@@ -115,7 +115,7 @@ task alert_sender_driver::drive_req();
           alert_seq_item item;
           fork
             wait(!cfg.in_reset);
-            m_sender_requests.get(item);
+            m_requests.get(item);
           join_any
           disable fork;
           if (item != null) seq_item_port.put_response(item);
@@ -147,7 +147,7 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
       fork
         wait(cfg.en_alert_lpg != en_alert_lpg);
         wait(cfg.in_reset);
-        m_sender_requests.get(item);
+        m_requests.get(item);
       join_any
       disable fork;
     end join
