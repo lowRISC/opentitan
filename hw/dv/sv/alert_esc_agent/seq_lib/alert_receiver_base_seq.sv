@@ -29,6 +29,7 @@ task alert_receiver_base_seq::body();
 
   if (!req.randomize() with {
         m_txn_type == local::m_txn_type;
+        cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
         m_int_err_cyc == 0; // This agent do not support alert_receiver int_err
       }) begin
     `uvm_fatal(get_full_name(), "Failed to randomize req")
