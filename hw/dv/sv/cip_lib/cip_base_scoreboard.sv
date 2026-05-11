@@ -243,7 +243,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           `uvm_info(`gfn, $sformatf("[cfg.en_scb=%0d] - Received alert_esc_item: \n%0s",
                                     cfg.en_scb, item.sprint), UVM_DEBUG)
           if (!cfg.en_scb) continue;
-          if (item.m_trans_type == AlertEscSigTrans && !item.ping_timeout &&
+          if (item.m_trans_type == AlertEscSigTrans && !item.m_ping_timeout &&
               item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
           // IP level alert protocol does not drive any sig_int_err or ping response.
@@ -251,7 +251,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           // disable signal integrity checking via `check_alert_sig_int_err` flag.
           end else if (check_alert_sig_int_err && item.m_trans_type == AlertEscIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
-          end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
+          end else if (item.m_ping_timeout && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
           end
         end

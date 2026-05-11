@@ -33,7 +33,7 @@ task alert_sender_base_seq::body();
   if (!req.randomize() with {
         s_alert_send     == local::s_alert_send;
         s_alert_ping_rsp == local::s_alert_ping_rsp;
-        ping_timeout     == local::ping_timeout;
+        m_ping_timeout   == local::ping_timeout;
 
         // If int_err is true, override the soft constraint in the sequence item and request a
         // nonzero time with an error.
