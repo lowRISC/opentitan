@@ -14,7 +14,7 @@ case "$TARGET_TYPE" in
   hpc2o)   export TOP_MODULE=prim_hpc2o_sca_wrapper ;;
   hpc3)    export TOP_MODULE=prim_hpc3_sca_wrapper ;;
   hpc3o)   export TOP_MODULE=prim_hpc3o_sca_wrapper ;;
-  *)       export TOP_MODULE=prim_hpc3o_sca_wrapper ;;
+  *)       export TOP_MODULE=otbn_sec_add_sca_wrapper ;;
 esac
 
 TESTBENCH=${TOP_MODULE}
@@ -36,6 +36,7 @@ sed -i 's/\(rand_i\(\s\[[0-9]\+:0\]\)\?\s=\s\)unimportant/\1random/g' tmp/labels
   --netlist tmp/circuit.v --c-compiler gcc -o tmp/circuit
 
 # Verify
+# --cycles should be larger than the number of cycles, in the simulation, to be evaluated.
 ./verify.py --json tmp/circuit.json \
   --label tmp/labels.txt \
   --top-module ${TOP_MODULE} \
