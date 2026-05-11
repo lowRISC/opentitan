@@ -5,8 +5,8 @@
 // Virtual base class used for alert_sender_driver and alert_receiver_driver
 
 virtual class alert_base_driver extends alert_esc_base_driver;
-  protected uvm_tlm_analysis_fifo #(alert_seq_item) m_sender_requests;
-  protected uvm_tlm_analysis_fifo #(alert_seq_item) m_receiver_requests;
+  // Items that have been taken from seq_item_port and should be sent
+  protected uvm_tlm_analysis_fifo #(alert_seq_item) m_requests;
 
   extern function new (string name, uvm_component parent);
 
@@ -26,8 +26,7 @@ endclass
 
 function alert_base_driver::new (string name, uvm_component parent);
   super.new(name, parent);
-  m_sender_requests = new("m_sender_requests", this);
-  m_receiver_requests = new("m_receiver_requests", this);
+  m_requests = new("m_requests", this);
 endfunction : new
 
 task alert_base_driver::get_and_drive();
@@ -44,11 +43,7 @@ task alert_base_driver::get_req();
     seq_item_port.get(req);
     `downcast(req_clone, req.clone());
     req_clone.set_id_info(req);
-    // receiver mode
-    if (req_clone.r_alert_ping_send || req_clone.r_alert_rsp) m_receiver_requests.write(req_clone);
-    // sender mode
-    if (req_clone.s_alert_send || req_clone.s_alert_ping_rsp) m_sender_requests.write(req_clone);
-
+    m_requests.write(req_clone);
     `uvm_info(`gfn, $sformatf({"Driver received item (after pushing): req.r_alert_ping_send=%0d",
                                " | req.r_alert_rsp=%0d"},
                               req_clone.r_alert_ping_send, req_clone.r_alert_rsp), UVM_DEBUG)
