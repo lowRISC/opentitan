@@ -170,8 +170,8 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
   rsp.set_id_info(item);
 
   `uvm_info(`gfn,
-            $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
-                      item.s_alert_send, item.s_alert_ping_rsp, item.int_err), UVM_HIGH)
+            $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err_cyc=%0b",
+                      item.s_alert_send, item.s_alert_ping_rsp, item.m_int_err_cyc), UVM_HIGH)
   fork : isolation_fork begin
     fork
       wait (cfg.in_reset);
@@ -184,8 +184,8 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
     disable fork;
   end join
   `uvm_info(`gfn,
-            $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
-                      item.s_alert_send, item.s_alert_ping_rsp, item.int_err), UVM_HIGH)
+            $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err_cyc=%0b",
+                      item.s_alert_send, item.s_alert_ping_rsp, item.m_int_err_cyc), UVM_HIGH)
 
   seq_item_port.put_response(rsp);
 endtask
@@ -197,13 +197,12 @@ task alert_sender_driver::drive_alert_pins(alert_seq_item req);
   ack_delay = (cfg.use_seq_item_ack_delay) ? req.ack_delay :
               $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
 
-  if (!req.int_err) begin
+  if (req.m_int_err_cyc) begin
+    random_drive_int_fail(req.m_int_err_cyc);
+    set_alert(1'b0);
+  end else begin
     set_alert_pins(alert_delay);
     reset_alert_pins(ack_delay);
-  end else begin
-    // Because req.int_err is true, cause the alert signal integrity check to fail.
-    random_drive_int_fail(req.int_err_cyc);
-    set_alert(1'b0);
   end
 
   // There must be at least two sender clock delays before next alert_handshake
