@@ -17,8 +17,7 @@ class alert_sender_ping_rsp_seq extends alert_sender_base_seq;
 endclass : alert_sender_ping_rsp_seq
 
 constraint alert_sender_ping_rsp_seq::alert_sender_ping_rsp_seq_c {
-  s_alert_send     == 0;
-  s_alert_ping_rsp == 1;
+  m_txn_type == alert_seq_item::PingTxn;
 }
 
 function alert_sender_ping_rsp_seq::new (string name = "");
@@ -55,8 +54,7 @@ task alert_sender_ping_rsp_seq::default_rsp_thread();
       rsp = req_q.pop_front();
       start_item(rsp);
       `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
-                                     s_alert_send     == local::s_alert_send;
-                                     s_alert_ping_rsp == local::s_alert_ping_rsp;
+                                     m_txn_type       == m_txn_type;
                                      int_err          == 0;
                                      m_ping_timeout   == 0;
                                      )
