@@ -128,7 +128,7 @@ task esc_receiver_driver::rsp_escalator();
 endtask : rsp_escalator
 
 task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
-  if (req.standalone_int_err) begin
+  if (req.m_standalone_int_err) begin
     wait_esc_complete();
     @(cfg.vif.receiver_cb); // wait one clock cycle to ensure is_ping is set
     repeat (req.m_int_err_cyc) begin
