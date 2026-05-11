@@ -44,6 +44,7 @@ filesets:
       - rtl/otbn_loop_controller.sv
       - rtl/otbn_stack.sv
       - rtl/otbn_rnd.sv
+      - rtl/otbn_sec_add.sv
       - rtl/otbn_start_stop_control.sv
       - rtl/otbn_core.sv
       - rtl/otbn_vec_adder.sv
