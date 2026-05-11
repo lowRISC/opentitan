@@ -23,12 +23,15 @@ task alert_receiver_ping_seq::body();
     req = alert_seq_item::type_id::create("req");
     start_item(req);
     // Randomise the item to be a ping request. When driven, the item will "wait around" for
-    // ping_delay cycles before it actually sends the ping. Bound this to be in the interval
-    // cfg.ping_delay_min .. cfg.ping_delay_max.
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                   m_txn_type == alert_seq_item::PingTxn;
-                                   cfg.ping_delay_min <= m_ping_delay;
-                                   m_ping_delay <= cfg.ping_delay_max;)
+    // ping_delay cycles before it actually sends the ping. Bound this to be at most
+    // cfg.ping_delay_max.
+    if (!req.randomize() with {
+          m_txn_type == alert_seq_item::PingTxn;
+          cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+          cfg.ping_delay_min <= m_ping_delay && m_ping_delay <= cfg.ping_delay_max;
+        }) begin
+        `uvm_error(get_full_name(), "Failed to randomize req")
+    end
     finish_item(req);
     get_response(req);
   end

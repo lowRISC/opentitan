@@ -39,6 +39,8 @@ task alert_sender_base_seq::body();
         if (local::int_err) {
           m_int_err_cyc != 0;
         }
+
+        cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
       }) begin
     `uvm_error(get_full_name(), "Failed to randomize req.")
   end
