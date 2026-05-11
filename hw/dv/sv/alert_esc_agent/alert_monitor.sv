@@ -360,7 +360,7 @@ task alert_monitor::monitor_ping_handshake();
         if (cfg.ping_timeout_cycle > 2) begin
           wait_slow_clocks(cfg.ping_timeout_cycle - 2);
         end
-        req.ping_timeout = 1'b1;
+        req.m_ping_timeout = 1'b1;
       end
       begin : wait_ping_handshake
         wait(cfg.vif.monitor_cb.alert_tx_final.alert_p);
@@ -383,7 +383,7 @@ task alert_monitor::monitor_ping_handshake();
   // we'll see a ping timeout with alert_handshake_sta == AlertReceived).
   //
   // This might cause a spurious alert error. For details see the discussion on Issue #2321.
-  if (req.ping_timeout && req.alert_handshake_sta == AlertReceived) begin
+  if (req.m_ping_timeout && req.alert_handshake_sta == AlertReceived) begin
     @(cfg.vif.monitor_cb);
     if (cfg.vif.monitor_cb.alert_rx_final.ack_p == 1'b1) begin
       `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
