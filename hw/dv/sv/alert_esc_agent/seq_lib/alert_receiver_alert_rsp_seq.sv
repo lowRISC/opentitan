@@ -56,6 +56,7 @@ task alert_receiver_alert_rsp_seq::default_rsp_thread();
       if (!rsp.randomize() with {
             m_txn_type == local::m_txn_type;
             cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+            cfg.ack_stable_min <= m_ack_stable && m_ack_stable <= cfg.ack_stable_max;
           }) begin
         `uvm_error(get_full_name(), "Failed to randomize rsp")
       end

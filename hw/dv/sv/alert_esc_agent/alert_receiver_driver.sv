@@ -99,11 +99,8 @@ class alert_receiver_driver extends alert_base_driver;
   // This task uses m_ack_semaphore as a mutex (to serialise ping response acks and other alert
   // acks).
   //
-  // The delay before the initial ack is from the ack_delay argument.
-  //
-  // Similarly, the ack stays in place for a time that is normally randomised in the range
-  // [cfg.ack_stable_min, cfg.ack_stable_max]. If cfg.use_seq_item_ack_stable is true then the ack
-  // stays stable for the number of cycles in the ack_stable argument.
+  // The delay before the initial ack is from the ack_delay argument. The ack then stays stable for
+  // the number of cycles in the ack_stable argument.
   //
   // Both of these times will be truncated if cfg.fast_rcvr is true. In that case, they will be
   // cfg.ack_delay_min, cfg.ack_stable_min respectively.
@@ -382,10 +379,6 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
 endtask
 
 task alert_receiver_driver::ack_alert(int unsigned ack_delay, int unsigned ack_stable);
-  if (!cfg.use_seq_item_ack_stable) begin
-    ack_stable = $urandom_range(cfg.ack_stable_max, cfg.ack_stable_min);
-  end
-
   if (cfg.fast_rcvr) begin
     ack_delay = cfg.ack_delay_min;
     ack_stable = cfg.ack_stable_min;
