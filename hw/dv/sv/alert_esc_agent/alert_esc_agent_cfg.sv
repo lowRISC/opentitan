@@ -48,7 +48,6 @@ class alert_esc_agent_cfg extends dv_reactive_agent_cfg;
   int unsigned ack_delay_min = 0;
   int unsigned ack_delay_max = 10;
 
-  bit use_seq_item_ack_stable;
   int unsigned ack_stable_min = 0;
   int unsigned ack_stable_max = 10;
 
