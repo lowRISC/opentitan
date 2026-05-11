@@ -31,9 +31,9 @@ task esc_receiver_base_seq::body();
   start_item(req);
 
   if (!req.randomize() with {
-        r_esc_rsp          == local::r_esc_rsp;
-        standalone_int_err == local::standalone_int_err;
-        m_ping_timeout     == local::ping_timeout;
+        r_esc_rsp            == local::r_esc_rsp;
+        m_standalone_int_err == local::standalone_int_err;
+        m_ping_timeout       == local::ping_timeout;
 
         // If int_err is true, override the soft constraint in the sequence item and request a
         // nonzero time with an error.
