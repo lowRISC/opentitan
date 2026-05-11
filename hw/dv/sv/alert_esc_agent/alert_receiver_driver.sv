@@ -83,7 +83,7 @@ class alert_receiver_driver extends alert_base_driver;
   // passing ack_delay and ack_stable).
   //
   // The task allows to retract driving the ping. If there's an alert (r_alert_rsp_q.size > 0)
-  // before the 'ping_delay' the ping is aborted and the driver moves to tackle the alert in
+  // before the ping delay, the ping is aborted and the driver moves to tackle the alert in
   // 'rsp_alert' task. This is notified by setting `item_not_driven=1`
   //
   // The task exits early on reset.
@@ -287,7 +287,7 @@ task alert_receiver_driver::send_ping(alert_seq_item item);
               "Not actually sending ping (because m_int_err_cyc is positive)",
               UVM_HIGH)
   end else begin
-    drive_alert_ping(item.ping_delay, item.ack_delay, item.ack_stable);
+    drive_alert_ping(item.m_ping_delay, item.m_ack_delay, item.m_ack_stable);
   end
 endtask
 
@@ -314,7 +314,7 @@ task alert_receiver_driver::send_alert_rsp(alert_seq_item item);
   // again.
   //
   // The task exits early on reset.
-  ack_alert(item.ack_delay, item.ack_stable);
+  ack_alert(item.m_ack_delay, item.m_ack_stable);
 endtask
 
 task alert_receiver_driver::wait_for_alert_propagation(int unsigned max_cycles);

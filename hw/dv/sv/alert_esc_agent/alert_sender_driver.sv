@@ -195,9 +195,9 @@ endtask
 
 task alert_sender_driver::drive_alert_pins(alert_seq_item req);
   int unsigned alert_delay, ack_delay;
-  alert_delay = (cfg.use_seq_item_alert_delay) ? req.alert_delay :
+  alert_delay = (cfg.use_seq_item_alert_delay) ? req.m_alert_delay :
                 $urandom_range(cfg.alert_delay_max, cfg.alert_delay_min);
-  ack_delay = (cfg.use_seq_item_ack_delay) ? req.ack_delay :
+  ack_delay = (cfg.use_seq_item_ack_delay) ? req.m_ack_delay :
               $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
 
   if (req.m_int_err_cyc) begin

@@ -244,7 +244,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                     cfg.en_scb, item.sprint), UVM_DEBUG)
           if (!cfg.en_scb) continue;
           if (item.m_trans_type == AlertEscSigTrans && !item.m_ping_timeout &&
-              item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
+              item.m_alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
           // IP level alert protocol does not drive any sig_int_err or ping response.
           // However, `lpg_en` or `alert_init` will trigger signal integrity error, user can
@@ -277,8 +277,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
 
     `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s", alert_name,
-                              item.alert_handshake_sta), UVM_DEBUG)
-    if (item.alert_handshake_sta == AlertReceived) begin
+                              item.m_alert_handshake_sta), UVM_DEBUG)
+    if (item.m_alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
       on_alert(alert_name, item);
       ++alert_count[alert_name];
