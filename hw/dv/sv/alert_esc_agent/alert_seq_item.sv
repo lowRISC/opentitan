@@ -67,7 +67,7 @@ constraint alert_seq_item::delay_c {
   // (which wouldn't be particularly informative).
   soft m_ack_delay <= 32;
   soft m_ack_stable <= 32;
-  soft m_alert_delay dist {0 :/ 5, [1:10] :/ 5};
+  soft m_alert_delay <= 32;
 }
 
 function alert_seq_item::new (string name = "");
