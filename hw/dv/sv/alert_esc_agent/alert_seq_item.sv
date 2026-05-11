@@ -62,7 +62,10 @@ class alert_seq_item extends alert_esc_seq_item;
 endclass
 
 constraint alert_seq_item::delay_c {
-  soft m_ack_delay   dist {0 :/ 5, [1:10] :/ 5};
+  // Normally, we expect the sequence to supply constraints on this 32-bit value that come from the
+  // agent config. The upper bound of 32 cycles is just to avoid the test hanging forever (which
+  // wouldn't be particularly informative).
+  soft m_ack_delay <= 32;
   soft m_ack_stable  dist {1 :/ 5, [2:10] :/ 5};
   soft m_alert_delay dist {0 :/ 5, [1:10] :/ 5};
 }
