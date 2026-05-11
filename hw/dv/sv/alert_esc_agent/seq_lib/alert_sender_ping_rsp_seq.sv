@@ -58,7 +58,7 @@ task alert_sender_ping_rsp_seq::default_rsp_thread();
                                      s_alert_send     == local::s_alert_send;
                                      s_alert_ping_rsp == local::s_alert_ping_rsp;
                                      int_err          == 0;
-                                     ping_timeout     == 0;
+                                     m_ping_timeout   == 0;
                                      )
       finish_item(rsp);
       get_response(rsp);

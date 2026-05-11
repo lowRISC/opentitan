@@ -14,7 +14,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
   //
   // The field is also used by esc_receiver_driver and will cause it it to drive random response
   // values for a time.
-  rand bit ping_timeout;
+  rand bit m_ping_timeout;
 
   // This value is only set by monitors and gives the type of the transaction that has been seen (a
   // ping, an alert/escalation, or a signal integrity failure).
@@ -29,7 +29,7 @@ class alert_esc_seq_item extends uvm_sequence_item;
 
   `uvm_object_utils_begin(alert_esc_seq_item)
     `uvm_field_int (m_int_err_cyc,  UVM_DEFAULT)
-    `uvm_field_int (ping_timeout, UVM_DEFAULT)
+    `uvm_field_int (m_ping_timeout, UVM_DEFAULT)
     `uvm_field_enum(alert_esc_trans_type_e, m_trans_type, UVM_DEFAULT)
   `uvm_object_utils_end
 

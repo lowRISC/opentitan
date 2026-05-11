@@ -103,7 +103,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
           if (alert_en) begin
             // alert detected
-            if (act_item.m_trans_type == AlertEscSigTrans && !act_item.ping_timeout &&
+            if (act_item.m_trans_type == AlertEscSigTrans && !act_item.m_ping_timeout &&
                 act_item.alert_handshake_sta == AlertReceived) begin
               process_alert_sig(index, 0);
             // alert integrity fail
@@ -111,7 +111,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
               loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertIntFail].get_mirrored_value();
               if (loc_alert_en) process_alert_sig(index, 1, LocalAlertIntFail);
             end else if (act_item.m_trans_type == AlertEscPingTrans &&
-                         act_item.ping_timeout) begin
+                         act_item.m_ping_timeout) begin
               loc_alert_en = ral.loc_alert_en_shadowed[LocalAlertPingFail].get_mirrored_value();
               if (loc_alert_en) begin
                 process_alert_sig(index, 1, LocalAlertPingFail);
@@ -138,12 +138,12 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             check_esc_signal(act_item.sig_cycle_cnt, index);
           // escalation integrity fail
           end else if (act_item.m_trans_type == AlertEscIntFail ||
-               (act_item.esc_handshake_sta == EscIntFail && !act_item.ping_timeout)) begin
+               (act_item.esc_handshake_sta == EscIntFail && !act_item.m_ping_timeout)) begin
             bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscIntFail].get_mirrored_value();
             if (loc_alert_en) process_alert_sig(index, 1, LocalEscIntFail);
           // escalation ping timeout
           end else if (act_item.m_trans_type == AlertEscPingTrans) begin
-            if (act_item.ping_timeout) begin
+            if (act_item.m_ping_timeout) begin
               bit loc_alert_en = ral.loc_alert_en_shadowed[LocalEscPingFail].get_mirrored_value();
               if (loc_alert_en) begin
                 process_alert_sig(index, 1, LocalEscPingFail);
