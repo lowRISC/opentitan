@@ -15,8 +15,7 @@ class key_sideload_driver#(
     super.new(name, parent);
   endfunction
 
-  // reset signals
-  virtual task reset_signals();
+  task on_enter_reset();
     cfg.vif.sideload_key.valid = 0;
     cfg.vif.sideload_key.key[0] = 'x;
     cfg.vif.sideload_key.key[1] = 'x;

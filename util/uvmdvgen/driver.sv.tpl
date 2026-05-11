@@ -11,10 +11,6 @@ class ${name}_driver extends dv_base_driver #(.ITEM_T(${name}_item),
 
   `uvm_component_new
 
-  // reset signals
-  virtual task reset_signals();
-  endtask
-
   // drive trans received from sequencer
   virtual task get_and_drive();
     forever begin

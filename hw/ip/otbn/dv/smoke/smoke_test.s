@@ -347,6 +347,35 @@ call_stack_3:
   bn.add w2, w2, w1
 .endif
 
+# Write to MAI register
+# Clear output register to known state
+bn.wsrw MAI_RES_S0, w10
+bn.wsrw MAI_RES_S1, w11
+# Write inputs
+bn.wsrw MAI_IN0_S0, w12
+bn.wsrw MAI_IN0_S1, w13
+bn.wsrw MAI_IN1_S0, w14
+bn.wsrw MAI_IN1_S1, w15
+
+# Read registers from MAI
+bn.wsrr w10, MAI_RES_S0
+bn.wsrr w11, MAI_RES_S1
+bn.wsrr w12, MAI_IN0_S0
+bn.wsrr w13, MAI_IN0_S1
+bn.wsrr w14, MAI_IN1_S0
+bn.wsrr w15, MAI_IN1_S1
+
+# Execute SecAdd on MAI
+li x30, 0x2f
+csrrw x0, MAI_CTRL, x30
+
+# Poll for completion of MAI execution
+jal x1, mai_poll_busy
+
+# Read back results from MAI
+bn.wsrr w30, MAI_RES_S0
+bn.wsrr w31, MAI_RES_S1
+
 # Read from URND in the OTBN Verilator smoke test and 0x0 when running on the FPGA or chip-level test
 .ifnotdef deterministic
   csrrs x30, urnd, x0
@@ -366,6 +395,13 @@ test_fn_2:
   # x21 = x21 + 3 = 0xcafef010
   addi x22, x22, 3
   jalr x0, x1, 0
+
+# Helper function to poll the MAI status
+mai_poll_busy:
+  csrrs x30, MAI_STATUS, x0
+  andi x30, x30, 0x1
+  bne x30, x0, mai_poll_busy
+  ret
 
 
 # This function dumps both the register files

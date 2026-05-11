@@ -590,18 +590,19 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
               </td>
             </tr>
             <tr>
-              <td>2:1</td>
+              <td>5:1</td>
               <td>
                 The MAI_OPERATION field defines which accelerator is used for the next operation. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
                 <p>Values:</p><ul>
-                  <li>0: A2B</li>
-                  <li>1: B2A</li>
-                  <li>2: secAdd</li>
+                  <li>11: A2B</li>
+                  <li>16: B2A</li>
+                  <li>23: secAdd</li>
+                  <li>12: secAddMod</li>
                 </ul>
               </td>
             </tr>
             <tr>
-              <td>31:3</td>
+              <td>31:6</td>
               <td>
                 Reserved. Any write is ignored. Always reads as 0.
               </td>
@@ -938,7 +939,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
     </tr>
     <tr>
       <td>0xA</td>
-      <td>RO</td>
+      <td>RW</td>
       <td><a name="mai-res-s0">MAI_RES_S0</a></td>
       <td>
         This WSR holds share 0 of the masked results produced by the MAI.
@@ -949,7 +950,7 @@ All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is w
     </tr>
     <tr>
       <td>0xB</td>
-      <td>RO</td>
+      <td>RW</td>
       <td><a name="mai-res-s1">MAI_RES_S1</a></td>
       <td>
         This WSR holds share 1 of the masked results produced by the MAI.

@@ -39,16 +39,16 @@ module otbn_rnd import otbn_pkg::*;
   output logic            rnd_fips_err_o,
 
   // Request URND PRNG reseed from the EDN
-  input  logic            urnd_reseed_req_i,
+  input  logic               urnd_reseed_req_i,
   // Acknowledge URND PRNG reseed from the EDN
-  output logic            urnd_reseed_ack_o,
+  output logic               urnd_reseed_ack_o,
   // When asserted PRNG state advances. It is permissible to advance the state whilst
   // reseeding.
-  input  logic            urnd_advance_i,
+  input  logic               urnd_advance_i,
   // URND data from PRNG
-  output logic [WLEN-1:0] urnd_data_o,
+  output logic [UrndLen-1:0] urnd_data_o,
   // URND lockup state detected
-  output logic            urnd_all_zero_o,
+  output logic               urnd_all_zero_o,
 
   // Entropy distribution network (EDN)
   output logic                    edn_rnd_req_o,
@@ -79,7 +79,7 @@ module otbn_rnd import otbn_pkg::*;
   logic urnd_reseed_ack_d, urnd_reseed_ack_q;
   logic seed_en_d, seed_en_q;
 
-  logic [WLEN-1:0] urnd_data_d, urnd_data_q;
+  logic [UrndLen-1:0] urnd_data_d, urnd_data_q;
 
   ////////////////////////
   // RND Implementation //
@@ -172,7 +172,7 @@ module otbn_rnd import otbn_pkg::*;
 
   prim_trivium #(
     .BiviumVariant(1'b1),
-    .OutputWidth(WLEN),
+    .OutputWidth(UrndLen),
     .StrictLockupProtection(1'b1),
     .SeedType(prim_trivium_pkg::SeedTypeStatePartial),
     .PartialSeedWidth(edn_pkg::ENDPOINT_BUS_WIDTH),

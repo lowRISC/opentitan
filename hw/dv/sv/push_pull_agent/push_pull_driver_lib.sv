@@ -51,15 +51,8 @@ class push_pull_driver #(
     sub_driver.cfg = cfg;
   endfunction
 
-  virtual task reset_signals();
+  virtual task on_enter_reset();
     sub_driver.reset_signals();
-    forever begin
-      @(negedge cfg.vif.rst_n);
-      `uvm_info(`gfn, "Driver is under reset", UVM_HIGH)
-      sub_driver.reset_signals();
-      @(posedge cfg.vif.rst_n);
-      `uvm_info(`gfn, "Driver is out of reset", UVM_HIGH)
-    end
   endtask
 
   // Drive trans received from sequencer.
