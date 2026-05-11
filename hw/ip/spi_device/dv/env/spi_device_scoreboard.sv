@@ -1762,7 +1762,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                    " to 'spi_side_flash_status'"}, UVM_DEBUG)
                   spi_side_flash_status = matched_flash_status;
                   spi_side_fuzzy_flash_status_q = {};
-                `uvm_info(`gfn, "'spi_side_fuzzy_flash_status_q' has been cleared", UVM_DEBUG)
+                `uvm_info(`gfn,
+                            $sformatf("Cleared 'spi_side_fuzzy_flash_status_q' after fuzzy match. "
+                                       "Matched flash status: 0x%0h",
+                                       matched_flash_status),
+                             UVM_DEBUG)
               end
 
                 if (cfg.en_cov) begin
