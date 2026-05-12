@@ -121,7 +121,8 @@ OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_clear(void);
 
 /**
- * Signs the message with the saved attestation key, and clears the key.
+ * Signs the message with the saved attestation key, clears the key, and
+ * verifies the signature.
  *
  * Must be called when there is a saved attestation key in OTBN's scratchpad;
  * use `otbn_boot_attestation_key_save` to store one.
@@ -129,7 +130,8 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  * The intended purpose of this function is to sign the current stage's
  * attestation certificate with the private key of the previous stage. The
  * caller should hash the certificate with SHA-256 before calling this
- * function.
+ * function. To protect against fault injections, the generated signature is
+ * verified using the provided public key.
  *
  * Note that the digest gets interpreted by OTBN in little-endian order. If the
  * HMAC block has not been set to produce little-endian digests, then the
@@ -140,11 +142,14 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  *
  * @param digest Digest to sign.
  * @param[out] sig Resulting signature.
+ * @param key The public key corresponding to the saved private key, used for
+ * verification.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          ecdsa_p256_signature_t *sig);
+                                          ecdsa_p256_signature_t *sig,
+                                          const ecdsa_p256_public_key_t *key);
 
 /**
  * Computes an ECDSA-P256 signature verification on OTBN.
