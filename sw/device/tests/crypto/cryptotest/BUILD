@@ -56,6 +56,20 @@ cryptotest(
 )
 
 cryptotest(
+    name = "eddsa_sigver_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:eddsa_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:eddsa_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:eddsa_expected.hjson",
+    ],
+)
+
+cryptotest(
     name = "rsa_acvp",
     slow_test = True,
     test_args = " ".join([
@@ -712,6 +726,7 @@ test_suite(
         ":ecdh_kat",
         ":ecdsa_kat",
         ":ed25519_kat",
+        ":eddsa_sigver_acvp",
         ":hmac_sha256_acvp",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
