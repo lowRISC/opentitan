@@ -112,7 +112,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     ip_fatal_alert_t ip_alert;
     bit [7:0] sw_alert_num[];
     string actual_ip;
-    bit show_proxies;
     string excluded_ips[$];
     int excluded_ip_idxs[$];
 
@@ -134,17 +133,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     end
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(ip_index, !(ip_index inside {excluded_ip_idxs});)
 
-    if ($value$plusargs("show_proxies=%s", show_proxies)) begin
-      if (show_proxies) begin
-        foreach (sec_cm_pkg::sec_cm_if_proxy_q[i]) begin
-          `uvm_info(`gfn, $sformatf(
-                    "sec_cm type %0d at %s",
-                    sec_cm_pkg::sec_cm_if_proxy_q[i].sec_cm_type,
-                    sec_cm_pkg::sec_cm_if_proxy_q[i].path
-                    ), UVM_MEDIUM)
-        end
-      end
-    end
     ip_alert = ip_alerts[ip_index];
 
     // This sequence will trigger a fatal sec_cm failure.
