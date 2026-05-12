@@ -117,7 +117,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     int excluded_ip_idxs[$];
 
     append_queue_plusarg("avoid_inject_fatal_error_for_ips", excluded_ips);
-    append_queue_plusarg("avoid_ferr_ips_append", excluded_ips);
 
     foreach (excluded_ips[i]) begin
       string sec_cm;
