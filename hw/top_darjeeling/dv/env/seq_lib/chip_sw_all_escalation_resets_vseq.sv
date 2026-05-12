@@ -79,21 +79,31 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     return -1;
   endfunction
 
+  // Consume the plusarg called plusarg_name, whose value should be a comma-separated list of
+  // strings. Append each of those strings to queue.
+  function void append_queue_plusarg(string plusarg_name, ref string queue[$]);
+    string plusarg_val;
+    if ($value$plusargs({plusarg_name, "=%0s"}, plusarg_val)) begin
+      string words[$];
+      str_split(plusarg_val, words, ",");
+      foreach (words[i]) begin
+        queue.push_back(words[i]);
+      end
+    end
+  endfunction
+
   virtual task body();
     sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
     ip_fatal_alert_t ip_alert;
     bit [7:0] sw_alert_num[];
     string actual_ip;
     bit show_proxies;
-
-    string excluded_ips[$], excluded_ips_append[$];
+    string excluded_ips[$];
     int excluded_ip_idxs[$];
-    `DV_GET_QUEUE_PLUSARG(excluded_ips, avoid_inject_fatal_error_for_ips)
-    `DV_GET_QUEUE_PLUSARG(excluded_ips_append, avoid_ferr_ips_append)
-    if (excluded_ips_append.size() > 0) begin
-      while(excluded_ips_append.size() > 0)
-        excluded_ips.push_back(excluded_ips_append.pop_front());
-    end
+
+    append_queue_plusarg("avoid_inject_fatal_error_for_ips", excluded_ips);
+    append_queue_plusarg("avoid_ferr_ips_append", excluded_ips);
+
     foreach (excluded_ips[i]) begin
       string sec_cm;
       int sep_idx = find_separator(excluded_ips[i]);
