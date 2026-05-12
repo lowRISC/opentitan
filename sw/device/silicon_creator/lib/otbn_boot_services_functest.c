@@ -166,20 +166,12 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   hmac_digest_t digest;
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   ecdsa_p256_signature_t sig;
-  RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
-
-  // Check that the signature is valid (recovered r == r).
-  uint32_t recovered_r[kEcdsaP256SignatureComponentWords];
-  RETURN_IF_ERROR(otbn_boot_sigverify(&pk, &sig, &digest, recovered_r));
-  CHECK_ARRAYS_EQ(recovered_r, sig.r, ARRAYSIZE(sig.r));
+  RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig, &pk));
 
   // Run endorsement again (should not return an error, but should produce an
   // invalid signature).
-  RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
-
-  // Check that the signature is invalid (recovered r != r).
-  RETURN_IF_ERROR(otbn_boot_sigverify(&pk, &sig, &digest, recovered_r));
-  CHECK_ARRAYS_NE(recovered_r, sig.r, ARRAYSIZE(sig.r));
+  CHECK(otbn_boot_attestation_endorse(&digest, &sig, &pk) ==
+        kErrorSigverifyBadEcdsaSignature);
 
   // Check that generating a new key with the same diversification as before
   // now gets a different public key because keymgr has advanced.
@@ -194,6 +186,12 @@ rom_error_t attestation_advance_and_endorse_test(void) {
 
 // N.B. This test will lock OTBN, so it needs to be the last test that runs.
 rom_error_t attestation_save_clear_key_test(void) {
+  // We need the public key to pass to the endorse routine's self-test.
+  ecdsa_p256_public_key_t pk;
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
+                                               kScKeymgrKeyTypeAttestation,
+                                               kDiversification, &pk));
+
   // Save and then clear a private key.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
                                                  kScKeymgrKeyTypeAttestation,
@@ -207,14 +205,14 @@ rom_error_t attestation_save_clear_key_test(void) {
   hmac_digest_t digest;
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   ecdsa_p256_signature_t sig;
-  RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
+  RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig, &pk));
 
   // Clear the key and check that endorsing now fails (it should even lock
   // OTBN). We cannot recover from the fatal alert so must ignore it.
   CHECK_STATUS_OK(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdOtbnFatal));
   RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
-  CHECK(otbn_boot_attestation_endorse(&digest, &sig) ==
+  CHECK(otbn_boot_attestation_endorse(&digest, &sig, &pk) ==
         kErrorOtbnExecutionFailed);
   return kErrorOk;
 }
