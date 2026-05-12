@@ -216,6 +216,7 @@ rom_error_t dice_uds_tbs_cert_build(
 rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   uint32_t rom_ext_security_version,
                                   cert_key_id_pair_t *key_ids,
+                                  ecdsa_p256_public_key_t *uds_pubkey,
                                   ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Build Subject public key structure
@@ -289,8 +290,14 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   // Obtain digest & sign
   hmac_digest_t tbs_digest;
   hmac_sha256(cert, cdi0_entry_input_size, &tbs_digest);
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+
+  ecdsa_p256_public_key_t uds_pubkey_le = *uds_pubkey;
+  util_reverse_bytes(uds_pubkey_le.x, sizeof(uds_pubkey_le.x));
+  util_reverse_bytes(uds_pubkey_le.y, sizeof(uds_pubkey_le.y));
+
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_endorse(
+      &tbs_digest, &curr_tbs_signature, &uds_pubkey_le));
+
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
                                        curr_tbs_signature.s);
 
@@ -314,6 +321,7 @@ rom_error_t dice_cdi_1_cert_build(
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_manifest_measurement,
     hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
     owner_app_domain_t key_domain, cert_key_id_pair_t *key_ids,
+    ecdsa_p256_public_key_t *cdi_0_pubkey,
     ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size) {
   // TODO: The ownership history is currently not included in the CWT
   // certificate.
@@ -388,8 +396,14 @@ rom_error_t dice_cdi_1_cert_build(
   // Obtain digest & sign
   hmac_digest_t tbs_digest;
   hmac_sha256(cert, cdi1_entry_input_size, &tbs_digest);
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+
+  ecdsa_p256_public_key_t cdi_0_pubkey_le = *cdi_0_pubkey;
+  util_reverse_bytes(cdi_0_pubkey_le.x, sizeof(cdi_0_pubkey_le.x));
+  util_reverse_bytes(cdi_0_pubkey_le.y, sizeof(cdi_0_pubkey_le.y));
+
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_endorse(
+      &tbs_digest, &curr_tbs_signature, &cdi_0_pubkey_le));
+
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
                                        curr_tbs_signature.s);
 

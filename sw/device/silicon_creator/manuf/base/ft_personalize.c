@@ -150,6 +150,7 @@ static cert_key_id_pair_t cdi_1_key_ids = {
 };
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static ecdsa_p256_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
+static ecdsa_p256_public_key_t cdi_0_pubkey = {.x = {0}, .y = {0}};
 static perso_blob_t perso_blob_to_host;    // Perso data device => host.
 static perso_blob_t perso_blob_from_host;  // Perso data host => device.
 
@@ -619,8 +620,11 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                   /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
                                      &curr_pubkey));
-  TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &curr_pubkey,
-                            all_certs, &curr_cert_size));
+
+  memcpy(&cdi_0_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
+
+  TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &uds_pubkey,
+                            &curr_pubkey, all_certs, &curr_cert_size));
   cdi_0_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
@@ -637,8 +641,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
   TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, &kZeroDigest, 0,
-                            kOwnerAppDomainProd, &cdi_1_key_ids, &curr_pubkey,
-                            all_certs, &curr_cert_size));
+                            kOwnerAppDomainProd, &cdi_1_key_ids, &cdi_0_pubkey,
+                            &curr_pubkey, all_certs, &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
