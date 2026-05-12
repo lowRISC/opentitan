@@ -335,8 +335,8 @@ rom_error_t dice_chain_attestation_creator(
     HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
         (hmac_digest_t *)rom_ext_measurement->data,
         rom_ext_manifest->security_version, &dice_chain_cdi_0_key_ids,
-        &static_dice_cdi_0.cdi_0_pubkey, static_dice_cdi_0.cert_data,
-        &static_dice_cdi_0.cert_size));
+        &static_dice_cdi_0.uds_pubkey, &static_dice_cdi_0.cdi_0_pubkey,
+        static_dice_cdi_0.cert_data, &static_dice_cdi_0.cert_size));
   } else {
     // Replace UDS with CDI_0 key for endorsing next stage cert.
     HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
@@ -478,8 +478,8 @@ rom_error_t dice_chain_attestation_owner(
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
         (hmac_digest_t *)bl0_measurement, owner_measurement, owner_history_hash,
         owner_manifest->security_version, key_domain, &dice_chain.key_ids,
-        &dice_chain.subject_pubkey, dice_chain.scratch_cert,
-        &updated_cert_size));
+        &static_dice_cdi_0.cdi_0_pubkey, &dice_chain.subject_pubkey,
+        dice_chain.scratch_cert, &updated_cert_size));
     RETURN_IF_ERROR(dice_chain_push_cert("CDI_1", dice_chain.scratch_cert,
                                          updated_cert_size));
   } else {

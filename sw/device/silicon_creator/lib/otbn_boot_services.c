@@ -245,7 +245,8 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
 }
 
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
-                                          ecdsa_p256_signature_t *sig) {
+                                          ecdsa_p256_signature_t *sig,
+                                          const ecdsa_p256_public_key_t *key) {
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationEndorse;
   HARDENED_RETURN_IF_ERROR(
@@ -266,6 +267,22 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
                                              kOtbnVarBootR, sig->r));
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords,
                                              kOtbnVarBootS, sig->s));
+
+  // Verify the signature.
+  uint32_t recovered_r[kEcdsaP256SignatureComponentWords];
+  HARDENED_RETURN_IF_ERROR(otbn_boot_sigverify(key, sig, digest, recovered_r));
+
+  uint32_t diff = 0;
+  size_t i = 0;
+  for (; launder32(i) < kEcdsaP256SignatureComponentWords; ++i) {
+    diff |= recovered_r[i] ^ sig->r[i];
+  }
+  HARDENED_CHECK_EQ(i, kEcdsaP256SignatureComponentWords);
+
+  if (launder32(diff) != 0) {
+    return kErrorSigverifyBadEcdsaSignature;
+  }
+  HARDENED_CHECK_EQ(diff, 0);
 
   return kErrorOk;
 }
