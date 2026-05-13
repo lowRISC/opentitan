@@ -24,7 +24,7 @@
   }
   clock_connections:
   {
-    clk_mbx_i: clkmgr_aon_clocks.clk_main_infra
+    clk_mbx_i: clkmgr_aon_clocks_i.clk_main_infra
   }
   domain: Main
   connections:
@@ -333,6 +333,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx0_soc_tl_d
       index: -1
     }
@@ -345,6 +346,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx1_soc_tl_d
       index: -1
     }
@@ -357,6 +359,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx2_soc_tl_d
       index: -1
     }
@@ -369,6 +372,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx3_soc_tl_d
       index: -1
     }
@@ -381,6 +385,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx4_soc_tl_d
       index: -1
     }
@@ -393,6 +398,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx5_soc_tl_d
       index: -1
     }
@@ -405,6 +411,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx6_soc_tl_d
       index: -1
     }
@@ -417,6 +424,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx_pcie0_soc_tl_d
       index: -1
     }
@@ -429,6 +437,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx_pcie1_soc_tl_d
       index: -1
     }
@@ -441,6 +450,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: racl_ctrl_tl
       index: -1
     }
@@ -453,6 +463,7 @@
       inst_name: mbx
       width: 1
       default: ""
+      domain: Main
       top_signame: ac_range_check_tl
       index: -1
     }

@@ -30,8 +30,8 @@
   }
   clock_connections:
   {
-    clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
-    clk_peri_i: clkmgr_aon_clocks.clk_io_infra
+    clk_dbg_i: clkmgr_aon_clocks_i.clk_main_infra
+    clk_peri_i: clkmgr_aon_clocks_i.clk_io_infra
   }
   domain: Main
   connections:
@@ -175,6 +175,7 @@
       inst_name: dbg
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_dm_dbg_tl_d
       index: -1
     }
@@ -187,6 +188,7 @@
       inst_name: dbg
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx_jtag_soc_tl_d
       index: -1
     }
@@ -199,6 +201,7 @@
       inst_name: dbg
       width: 1
       default: ""
+      domain: Main
       top_signame: lc_ctrl_dmi_tl
       index: -1
     }
@@ -211,6 +214,7 @@
       inst_name: dbg
       width: 1
       default: ""
+      domain: Main
       top_signame: soc_dbg_ctrl_jtag_tl
       index: -1
     }
