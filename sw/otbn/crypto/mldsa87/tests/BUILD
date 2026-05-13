@@ -40,6 +40,7 @@ unit_tests = [
     "mldsa87_sec_leq_test",
     "mldsa87_sec_bound_check_test",
     "mldsa87_sec_decompose_test",
+    "mldsa87_sec_mod5_test",
 ]
 
 [
