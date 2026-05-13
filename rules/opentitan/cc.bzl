@@ -573,12 +573,17 @@ opentitan_binary_assemble = rule(
 def _exec_env_filegroup(ctx):
     files = {v: k for k, v in ctx.attr.files.items()}
     exec_env = {v: k for k, v in ctx.attr.exec_env.items()}
+    rom_files = {v: k for k, v in ctx.attr.rom.items()}
 
     fset = {k: 1 for k in files.keys()}
     eset = {k: 1 for k in exec_env.keys()}
+    rset = {k: 1 for k in rom_files.keys()}
 
     if fset != eset:
         fail("The set of files and exec_envs must be matched: files =", fset.keys(), ", exec_env =", eset.keys())
+
+    if rom_files and rset != eset:
+        fail("The set of rom files and exec_envs must be matched: rom =", rom_files.keys(), ", exec_env =", eset.keys())
 
     result = []
     default_files = []
@@ -588,9 +593,19 @@ def _exec_env_filegroup(ctx):
         if len(f) != 1:
             fail("files[{}] must supply exactly one file".format(k))
 
+        kwargs = {
+            "default": f[0],
+            "kind": ctx.attr.kind,
+        }
+        if k in rom_files:
+            r = rom_files[k].files.to_list()
+            if len(r) != 1:
+                fail("rom[{}] must supply exactly one file".format(k))
+            kwargs["rom"] = r[0]
+
         # Return the exec_env's provider so this rule can be consumed by
         # opentitan_test rules.
-        result.append(provider(default = f[0], kind = ctx.attr.kind))
+        result.append(provider(**kwargs))
         default_files.append(f[0])
 
     # Also return a DefaultInfo provider so this rule can be consumed by other
@@ -610,6 +625,10 @@ exec_env_filegroup = rule(
             providers = [ExecEnvInfo],
             mandatory = True,
             doc = "Dictionary of execution environments for this target.",
+        ),
+        "rom": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = "Dictionary of rom files to exec_envs.",
         ),
         "kind": attr.string(default = "flash", doc = "The kind of binary"),
     },
