@@ -217,13 +217,6 @@ module kmac
   logic [kmac_pkg::MsgStrbW-1:0] msgfifo_strb        ;
   logic                          msgfifo_ready       ;
 
-  if (EnMasking) begin : gen_msgfifo_data_masked
-    // In Masked mode, the input message data is split into two shares.
-    // Only concern, however, here is the secret key. So message can be
-    // put into only one share and other is 0.
-    assign msgfifo_data[1] = '0;
-  end
-
   // TL-UL Adapter(MSG_FIFO) signals
   logic        tlram_req;
   logic        tlram_gnt;
@@ -244,7 +237,7 @@ module kmac
 
   // KeyMgr interface to MSG_FIFO
   logic                          mux2fifo_valid;
-  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_data;
+  logic [kmac_pkg::MsgWidth-1:0] mux2fifo_data[Share];
   logic [kmac_pkg::MsgWidth-1:0] mux2fifo_strb;
   logic                          mux2fifo_ready;
 
@@ -1146,9 +1139,10 @@ module kmac
     .fifo_data_i  (mux2fifo_data),
     .fifo_strb_i  (mux2fifo_strb),
     .fifo_ready_o (mux2fifo_ready),
+    .fifo_bypass_i('0),
 
     .msg_valid_o (msgfifo_valid),
-    .msg_data_o  (msgfifo_data[0]),
+    .msg_data_o  (msgfifo_data),
     .msg_strb_o  (msgfifo_strb),
     .msg_ready_i (msgfifo_ready),
 
