@@ -668,3 +668,127 @@ sim_dv(
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
 )
+
+###########################################################################
+# Earlgrey A2 Environments (Earlgrey-PROD-A2-M6-ROM-RC1)
+###########################################################################
+
+fpga_cw310(
+    name = "fpga_cw310_a2_rom_ext",
+    testonly = True,
+    base = ":fpga_cw310_rom_ext",
+    exec_env = "fpga_cw310_a2_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw310(
+    name = "fpga_cw310_a2_rom_with_fake_keys",
+    testonly = True,
+    base = ":fpga_cw310_rom_with_fake_keys",
+    exec_env = "fpga_cw310_a2_rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw310(
+    name = "fpga_cw310_a2_sival",
+    testonly = True,
+    base = ":fpga_cw310_sival",
+    exec_env = "fpga_cw310_a2_sival",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw310(
+    name = "fpga_cw310_a2_sival_rom_ext",
+    testonly = True,
+    base = ":fpga_cw310_sival_rom_ext",
+    exec_env = "fpga_cw310_a2_sival_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw340(
+    name = "fpga_cw340_a2_rom_ext",
+    testonly = True,
+    base = ":fpga_cw340_rom_ext",
+    exec_env = "fpga_cw340_a2_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw340(
+    name = "fpga_cw340_a2_rom_with_fake_keys",
+    testonly = True,
+    base = ":fpga_cw340_rom_with_fake_keys",
+    exec_env = "fpga_cw340_a2_rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw340(
+    name = "fpga_cw340_a2_sival",
+    testonly = True,
+    base = ":fpga_cw340_sival",
+    exec_env = "fpga_cw340_a2_sival",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw340(
+    name = "fpga_cw340_a2_sival_rom_ext",
+    testonly = True,
+    base = ":fpga_cw340_sival_rom_ext",
+    exec_env = "fpga_cw340_a2_sival_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw310(
+    name = "fpga_hyper310_a2_rom_ext",
+    testonly = True,
+    base = ":fpga_hyper310_rom_ext",
+    exec_env = "fpga_hyper310_a2_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+fpga_cw310(
+    name = "fpga_hyper310_a2_rom_with_fake_keys",
+    testonly = True,
+    base = ":fpga_hyper310_rom_with_fake_keys",
+    exec_env = "fpga_hyper310_a2_rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+sim_qemu(
+    name = "sim_qemu_a2_rom_ext",
+    testonly = True,
+    base = ":sim_qemu_rom_ext",
+    exec_env = "sim_qemu_a2_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+sim_qemu(
+    name = "sim_qemu_a2_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_qemu_rom_with_fake_keys",
+    exec_env = "sim_qemu_a2_rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+sim_qemu(
+    name = "sim_qemu_a2_sival",
+    testonly = True,
+    base = ":sim_qemu_sival",
+    exec_env = "sim_qemu_a2_sival",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+sim_qemu(
+    name = "sim_qemu_a2_sival_rom_ext",
+    testonly = True,
+    base = ":sim_qemu_sival_rom_ext",
+    exec_env = "sim_qemu_a2_sival_rom_ext",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
+
+sim_verilator(
+    name = "sim_verilator_a2_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_verilator_rom_with_fake_keys",
+    exec_env = "sim_verilator_a2_rom_with_fake_keys",
+    rom = "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
+)
