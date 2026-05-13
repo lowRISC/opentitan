@@ -11,6 +11,7 @@
 .globl sec_unmask
 .globl sec_bound_check
 .globl sec_decompose
+.globl sec_mod5_8x32
 
 /*
 
@@ -395,6 +396,90 @@ sec_unmask:
     addi x31, x31, -4
     lw \reg, 0(x31)
   .endr
+
+  ret
+
+/**
+ * Reduce a vector of 8 Boolean-masked coefficients (x0_B, x1_B) in the
+ * interval [0, 14] modulo 5.
+ *
+ * Rationale: A coefficient x in the interval [0, 14] is, with uniform
+ * probability, in on of three buckets [0, 4], [5, 9] and [10, 14]:
+ *
+ *   - [0, 4]: x is already reduced modulo 5 and nothing needs to be done.
+ *   - [5, 9]: we need to calculate x - 5 to calculate x mod 5.
+ *   - [9, 14]: we need to calculate x - 10 (or twice x - 5) for the reduction.
+ *
+ * Bucket membership can be derived through `sec_leq_8x32`. This should not
+ * leak the actual value x modulo 5, which is still uniformly distributed in
+ * the interval [0, 4]. The subtraction is calculated with `sec_add_8x32`.
+ *
+ * CAUTION: This is a hack and not a peer-reviewed gadget. It can be used to
+ * calculate the modulo 5 step of the `CoeffFromHalfByte` function (Algorithm
+ * 15) of FIPS-204.
+ *
+ * @param[in]  w0: x0_B, 8 Boolean-shared coefficients in [0, 14] (share 0).
+ * @param[in]  w1: x1_B, 8 Boolean-shared coefficients in [0, 14] (share 1).
+ * @param[out] w0: y0_B, 8 Boolean-shared coefficients x mod 5 (share 0).
+ * @param[out] w1: y1_B, 8 Boolean-shared coefficients x mod 5 (share 1).
+ */
+sec_mod5_8x32:
+  /* Save x0_B and x1_B. */
+  bn.mov w4, w0
+  bn.xor w31, w31, w31 /* dummy */
+  bn.mov w5, w1
+
+  /* w6 = [5, 5, 5, 5, 5, 5, 5, 5]. */
+  bn.addi w6, w31, 5
+  bn.or w6, w6, w6 << 32
+  bn.or w6, w6, w6 << 64
+  bn.or w6, w6, w6 << 128
+
+  /*
+   * Evaluate x <= 9.
+   */
+
+  /* w2 = [9, 9, 9, 9, 9, 9, 9, 9]. */
+  bn.addi w2, w31, 9
+  bn.or w2, w2, w2 << 32
+  bn.or w2, w2, w2 << 64
+  bn.or w2, w2, w2 << 128
+
+  jal x1, sec_leq_8x32
+
+  /* w7[i] = 5 if x[i] > 9, else 0. */
+  bn.not w0, w0
+  bn.and w7, w0, w6
+
+  /*
+   * Evaluate x <= 4.
+   */
+
+  bn.mov w0, w4
+
+  /* w2 = [4, 4, 4, 4, 4, 4, 4, 4]. */
+  bn.addi w2, w31, 4
+  bn.or w2, w2, w2 << 32
+  bn.or w2, w2, w2 << 64
+  bn.or w2, w2, w2 << 128
+
+  bn.mov w1, w5
+  jal x1, sec_leq_8x32
+
+  /* w8[i] = 5 if x[i] > 4, else 0. */
+  bn.not w0, w0
+  bn.and w8, w0, w6
+
+  /* w7[i] = -10 if x[i] > 9, -5 if (x[i] > 4 and x[i] < 10), else 0. */
+  bn.addv.8s w7, w7, w8
+  bn.subv.8s w7, w31, w7
+
+  /* y = x - w7. */
+  bn.mov w0, w4
+  bn.mov w2, w7 /* prevent accessing shares in successive instructions */
+  bn.mov w1, w5
+  bn.mov w3, w31
+  jal x1, sec_add_8x32
 
   ret
 
