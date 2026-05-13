@@ -27,6 +27,7 @@ rust_binary(
         "@crate_index//:log",
         "@crate_index//:rand",
         "@crate_index//:rand_chacha",
+        "@crate_index//:deser-hjson",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
     ],

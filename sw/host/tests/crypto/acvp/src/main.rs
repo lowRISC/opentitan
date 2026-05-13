@@ -77,7 +77,11 @@ enum AcvpVectors {
     },
     Hmac(hmac::HmacTestVectorSet),
     Cshake(cshake::CshakeTestVectorSet),
+    // EddsaTestVectorSet (sigVer) requires `q` and `signature` in each test
+    // case; EddsaSignGenTestVectorSet (sigGen) has only `message`, so sigVer
+    // vectors match Eddsa first and sigGen vectors fall through to EddsaSigGen.
     Eddsa(eddsa::EddsaTestVectorSet),
+    EddsaSigGen(eddsa::EddsaSignGenTestVectorSet),
     // RsaSigGen must precede Rsa: sigGen test cases have a required `message`
     // field that sigVer test cases lack, so sigVer vectors will fall through to Rsa.
     RsaSigGen(rsa::RsaSignGenTestVectorSet),
@@ -186,10 +190,12 @@ fn run<R: std::io::Read, W: std::io::Write>(
     )?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
-    let acvp_vectors: Vec<AcvpVectors> = serde_json::from_reader(input)?;
+    let acvp_vectors: Vec<AcvpVectors> = deser_hjson::from_reader(input)?;
     let mut acvp_results: Vec<AcvpResults> = Vec::with_capacity(acvp_vectors.len());
-    let mut siggen_results: Vec<rsa::RsaSignGenResultVectorSet> = Vec::new();
     let mut sigver_results: Vec<serde_json::Value> = Vec::new();
+    // sigGen results from any algorithm are serialised to --output-siggen.
+    // They are never compared against --expected.
+    let mut siggen_results: Vec<serde_json::Value> = Vec::new();
 
     for v in acvp_vectors {
         match v {
@@ -234,15 +240,28 @@ fn run<R: std::io::Read, W: std::io::Write>(
                     acvp_results.push(AcvpResults::Eddsa(result));
                 }
             }
-            AcvpVectors::RsaSigGen(vs) => {
+            AcvpVectors::EddsaSigGen(vs) => {
                 if opts.run_siggen || opts.output_siggen.is_some() {
-                    siggen_results.push(rsa::run_rsa_siggen_vector_set(
+                    let result = eddsa::run_eddsa_siggen_vector_set(
                         opts.timeout,
                         &spi_console_device,
                         &vs,
                         opts.skip_stride,
                         opts.seed,
-                    )?);
+                    )?;
+                    siggen_results.push(serde_json::to_value(result)?);
+                }
+            }
+            AcvpVectors::RsaSigGen(vs) => {
+                if opts.run_siggen || opts.output_siggen.is_some() {
+                    let result = rsa::run_rsa_siggen_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?;
+                    siggen_results.push(serde_json::to_value(result)?);
                 }
             }
             AcvpVectors::Rsa(vs) => {
@@ -268,7 +287,7 @@ fn run<R: std::io::Read, W: std::io::Write>(
         serde_json::to_writer_pretty(w, &sigver_results)?;
     }
     if let Some(r) = expected {
-        let expected_results_json: serde_json::Value = serde_json::from_reader(r)?;
+        let expected_results_json: serde_json::Value = deser_hjson::from_reader(r)?;
         validate_subset(&acvp_results, &expected_results_json)?;
         if opts.skip_stride == 0 {
             let acvp_results_json = serde_json::to_value(&acvp_results)?;
