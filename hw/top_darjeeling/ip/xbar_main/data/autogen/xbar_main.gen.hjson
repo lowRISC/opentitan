@@ -30,8 +30,8 @@
   }
   clock_connections:
   {
-    clk_main_i: clkmgr_aon_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_aon_clocks.clk_io_infra
+    clk_main_i: clkmgr_aon_clocks_i.clk_main_infra
+    clk_fixed_i: clkmgr_aon_clocks_i.clk_io_infra
   }
   domain: Main
   connections:
@@ -1142,6 +1142,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_rv_core_ibex__corei
       index: -1
     }
@@ -1155,6 +1156,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_rv_core_ibex__cored
       index: -1
     }
@@ -1168,6 +1170,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_rv_dm__sba
       index: -1
     }
@@ -1181,6 +1184,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_dma__host
       index: -1
     }
@@ -1194,6 +1198,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx0__sram
       index: -1
     }
@@ -1207,6 +1212,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx1__sram
       index: -1
     }
@@ -1220,6 +1226,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx2__sram
       index: -1
     }
@@ -1233,6 +1240,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx3__sram
       index: -1
     }
@@ -1246,6 +1254,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx4__sram
       index: -1
     }
@@ -1259,6 +1268,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx5__sram
       index: -1
     }
@@ -1272,6 +1282,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx6__sram
       index: -1
     }
@@ -1285,6 +1296,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx_jtag__sram
       index: -1
     }
@@ -1298,6 +1310,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx_pcie0__sram
       index: -1
     }
@@ -1311,6 +1324,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_mbx_pcie1__sram
       index: -1
     }
@@ -1323,6 +1337,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_dm_regs_tl_d
       index: -1
     }
@@ -1335,6 +1350,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_dm_mem_tl_d
       index: -1
     }
@@ -1347,6 +1363,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rom_ctrl0_rom_tl
       index: -1
     }
@@ -1359,6 +1376,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rom_ctrl0_regs_tl
       index: -1
     }
@@ -1371,6 +1389,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rom_ctrl1_rom_tl
       index: -1
     }
@@ -1383,6 +1402,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rom_ctrl1_regs_tl
       index: -1
     }
@@ -1396,6 +1416,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_peri
       index: -1
     }
@@ -1408,8 +1429,11 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: soc_proxy_core_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_soc_proxy__ctn
@@ -1420,8 +1444,11 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: soc_proxy_ctn_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_hmac
@@ -1432,6 +1459,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: hmac_tl
       index: -1
     }
@@ -1444,6 +1472,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: kmac_tl
       index: -1
     }
@@ -1456,6 +1485,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: aes_tl
       index: -1
     }
@@ -1468,6 +1498,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: entropy_src_tl
       index: -1
     }
@@ -1480,6 +1511,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: csrng_tl
       index: -1
     }
@@ -1492,6 +1524,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: edn0_tl
       index: -1
     }
@@ -1504,6 +1537,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: edn1_tl
       index: -1
     }
@@ -1516,6 +1550,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_plic_tl
       index: -1
     }
@@ -1528,6 +1563,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: otbn_tl
       index: -1
     }
@@ -1540,6 +1576,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: keymgr_dpe_tl
       index: -1
     }
@@ -1552,6 +1589,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_core_ibex_cfg_tl_d
       index: -1
     }
@@ -1564,6 +1602,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_main_regs_tl
       index: -1
     }
@@ -1576,6 +1615,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_main_ram_tl
       index: -1
     }
@@ -1588,6 +1628,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_mbox_regs_tl
       index: -1
     }
@@ -1600,6 +1641,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_mbox_ram_tl
       index: -1
     }
@@ -1612,6 +1654,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: dma_tl_d
       index: -1
     }
@@ -1624,6 +1667,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx0_core_tl_d
       index: -1
     }
@@ -1636,6 +1680,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx1_core_tl_d
       index: -1
     }
@@ -1648,6 +1693,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx2_core_tl_d
       index: -1
     }
@@ -1660,6 +1706,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx3_core_tl_d
       index: -1
     }
@@ -1672,6 +1719,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx4_core_tl_d
       index: -1
     }
@@ -1684,6 +1732,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx5_core_tl_d
       index: -1
     }
@@ -1696,6 +1745,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx6_core_tl_d
       index: -1
     }
@@ -1708,6 +1758,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx_jtag_core_tl_d
       index: -1
     }
@@ -1720,6 +1771,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx_pcie0_core_tl_d
       index: -1
     }
@@ -1732,6 +1784,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: mbx_pcie1_core_tl_d
       index: -1
     }
