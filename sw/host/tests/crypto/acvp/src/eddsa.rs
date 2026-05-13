@@ -11,9 +11,9 @@ use std::time::Duration;
 
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::ed25519_commands::{
-    CryptotestEd25519Message, CryptotestEd25519Operation, CryptotestEd25519PrivateKey,
-    CryptotestEd25519PublicKey, CryptotestEd25519SignMode, CryptotestEd25519SignResp,
-    CryptotestEd25519Signature, CryptotestEd25519VerifyOutput,
+    CryptotestEd25519KeygenResp, CryptotestEd25519Message, CryptotestEd25519Operation,
+    CryptotestEd25519PrivateKey, CryptotestEd25519PublicKey, CryptotestEd25519SignMode,
+    CryptotestEd25519SignResp, CryptotestEd25519Signature, CryptotestEd25519VerifyOutput,
 };
 
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -288,6 +288,123 @@ pub fn run_eddsa_vector_set(
     }
 
     Ok(EddsaResultVectorSet {
+        vs_id: vs.vs_id,
+        algorithm: vs.algorithm.clone(),
+        mode: vs.mode.clone(),
+        revision: vs.revision.clone(),
+        is_sample: vs.is_sample,
+        test_groups: result_groups,
+    })
+}
+
+// Key Generation
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EddsaKeygenTestCase {
+    tc_id: usize,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EddsaKeygenTestGroup {
+    tg_id: usize,
+    test_type: String,
+    curve: String,
+    tests: Vec<EddsaKeygenTestCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaKeygenTestVectorSet {
+    vs_id: usize,
+    algorithm: String,
+    mode: String,
+    revision: String,
+    #[serde(default)]
+    is_sample: bool,
+    test_groups: Vec<EddsaKeygenTestGroup>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaKeygenResultCase {
+    pub tc_id: usize,
+    pub d: String,
+    pub q: String,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaKeygenResultGroup {
+    pub tg_id: usize,
+    pub tests: Vec<EddsaKeygenResultCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaKeygenResultVectorSet {
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub mode: String,
+    pub revision: String,
+    #[serde(default)]
+    pub is_sample: bool,
+    pub test_groups: Vec<EddsaKeygenResultGroup>,
+}
+
+fn run_eddsa_keygen_case(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    tc: &EddsaKeygenTestCase,
+) -> Result<EddsaKeygenResultCase> {
+    CryptotestCommand::Ed25519.send(spi_console)?;
+    CryptotestEd25519Operation::KeyGen.send(spi_console)?;
+
+    let resp = CryptotestEd25519KeygenResp::recv(spi_console, timeout, false, false)?;
+
+    let d_bytes = resp.d.as_slice()[..resp.d_len].to_vec();
+    let q_bytes = resp.q.as_slice()[..resp.q_len].to_vec();
+
+    Ok(EddsaKeygenResultCase {
+        tc_id: tc.tc_id,
+        d: hex::encode_upper(&d_bytes),
+        q: hex::encode_upper(&q_bytes),
+    })
+}
+
+fn run_eddsa_keygen_group(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    tg: &EddsaKeygenTestGroup,
+) -> Result<EddsaKeygenResultGroup> {
+    log::info!("tg_id: {}", tg.tg_id);
+
+    let mut result_cases = Vec::new();
+    for tc in &tg.tests {
+        log::info!("tc_id: {}", tc.tc_id);
+        result_cases.push(run_eddsa_keygen_case(timeout, spi_console, tc)?);
+    }
+
+    Ok(EddsaKeygenResultGroup {
+        tg_id: tg.tg_id,
+        tests: result_cases,
+    })
+}
+
+pub fn run_eddsa_keygen_vector_set(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    vs: &EddsaKeygenTestVectorSet,
+) -> Result<EddsaKeygenResultVectorSet> {
+    log::info!("vs_id: {}", vs.vs_id);
+
+    let mut result_groups = Vec::with_capacity(vs.test_groups.len());
+    for tg in &vs.test_groups {
+        result_groups.push(run_eddsa_keygen_group(timeout, spi_console, tg)?);
+    }
+
+    Ok(EddsaKeygenResultVectorSet {
         vs_id: vs.vs_id,
         algorithm: vs.algorithm.clone(),
         mode: vs.mode.clone(),
