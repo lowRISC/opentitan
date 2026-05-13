@@ -5,25 +5,16 @@ ${gencmd}
 <%
 import re
 import topgen.lib as lib
+from reggen.params import Parameter
+
 from copy import deepcopy
 
 # Provide shortcuts for some commonly used variables
 pinmux = top['pinmux']
 pinout = top['pinout']
 
-num_mio_inputs = pinmux['io_counts']['muxed']['inouts'] + \
-                 pinmux['io_counts']['muxed']['inputs']
-num_mio_outputs = pinmux['io_counts']['muxed']['inouts'] + \
-                  pinmux['io_counts']['muxed']['outputs']
-num_mio_pads = pinmux['io_counts']['muxed']['pads']
-
-num_dio_inputs = pinmux['io_counts']['dedicated']['inouts'] + \
-                 pinmux['io_counts']['dedicated']['inputs']
-num_dio_outputs = pinmux['io_counts']['dedicated']['inouts'] + \
-                  pinmux['io_counts']['dedicated']['outputs']
-num_dio_total = pinmux['io_counts']['dedicated']['inouts'] + \
-                pinmux['io_counts']['dedicated']['inputs'] + \
-                pinmux['io_counts']['dedicated']['outputs']
+feature_info = {}
+cio_info = {}
 
 def get_dio_sig(pinmux: {}, pad: {}):
   '''Get DIO signal associated with this pad or return None'''
@@ -57,6 +48,7 @@ for pad in target["pinout"]["add_pads"]:
   dedicated_pads.append(pad)
   k += 1
 %>\
+<%include file="/toplevel_snippets/info_dicts.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info" />\
 
 module chip_${top["name"]}_${target["name"]} #(
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
@@ -371,9 +363,11 @@ module chip_${top["name"]}_${target["name"]} #(
   tlul_pkg::tl_h2d_t ast_tl_req;
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
-  // synchronization clocks / rests
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  // Generated clocks, resets, and enable signals
+  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
+  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_aon_cg_en;
+  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
+  rstmgr_pkg::rstmgr_rst_en_t rstmgr_aon_rst_en;
 
   // monitored clock
   logic sck_monitor;
@@ -514,8 +508,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // init done indication
     .ast_init_done_o       ( ),
     // buffered clocks & resets
-    % for port, clk in ast["clock_connections"].items():
-    .${port} (${clk}),
+    % for port, clk in ast["clock_srcs"].items():
+    .${port} (${lib.get_clock_prefixes(top)["top"]}clk_${clk["clock"]}_${clk["group"]}),
     % endfor
     % for port, reset in ast["reset_connections"].items():
     .${port} (${lib.get_reset_path(top, reset)}),
@@ -814,6 +808,15 @@ module chip_${top["name"]}_${target["name"]} #(
   logic soc_rst_req_async;
   assign soc_rst_req_async = 1'b0;
 
+  // Inter-Power Domain signals
+% for sig in top["inter_pd"]["definitions"]:
+  % if isinstance(sig["width"], Parameter):
+  ${lib.im_defname(sig)} [${sig["width"].name_top}-1:0] ${sig["signame"]};
+  % else:
+  ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
+  % endif
+% endfor
+
   //////////////////////
   // Top-level design //
   //////////////////////
@@ -823,41 +826,23 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
   ) top_${top["name"]} (
-    // AST clock and reset signals
-    .clk_main_i(ast_base_clks.clk_sys),
-    .clk_io_i  (ast_base_clks.clk_io ),
-    .clk_aon_i (ast_base_clks.clk_aon),
-    .clks_ast_o(clkmgr_aon_clocks    ),
-    .rsts_ast_o(rstmgr_aon_resets    ),
+<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=False, domain='Main'" />\
 
-    // Manual DFT signals
-    .scan_en_i  (scan_en   ),
-    .scan_rst_ni(scan_rst_n),
-    .scanmode_i (scanmode  ),
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=True, last_snippet=False" />\
 
-<%
-port_list = top["inter_signal"]["external"]
-max_portwidth = max(len(x["signame"]) for x in port_list) if port_list else 0
-max_sigwidth = max(len(x["signame_chip"][target["name"]]) for x in port_list) if port_list else 0
-%>\
-    // Auto-generated port map
-    % for sig in port_list:
-    .${lib.ljust(sig["signame"], max_portwidth)}(${lib.ljust(sig["signame_chip"][target["name"]], max_sigwidth)}),
-    % endfor
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=False, last_snippet=True" />\
+  );
 
-    // Multiplexed I/O
-    .mio_in_i (mio_in ),
-    .mio_out_o(mio_out),
-    .mio_oe_o (mio_oe ),
 
-    // Dedicated I/O
-    .dio_in_i (dio_in ),
-    .dio_out_o(dio_out),
-    .dio_oe_o (dio_oe ),
+  //////////////////////
+  // Always-on Domain //
+  //////////////////////
+  top_${top["name"]}_pd_aon top_${top["name"]}_pd_aon (
+<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=False, domain='Aon'" />\
 
-    // Pad attributes
-    .mio_attr_o(mio_attr),
-    .dio_attr_o(dio_attr)
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=True, last_snippet=False" />\
+
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=False, last_snippet=True" />\
   );
 
   logic unused_signals;
