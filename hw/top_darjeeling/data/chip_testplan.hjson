@@ -1195,22 +1195,35 @@
     }
     {
       name: chip_sw_all_escalation_resets
-      desc: '''Verify escalation from all unit integrity errors.
+      desc: '''See escalations after alerts from arbitrary IPs.
 
-            Inject integrity errors in any unit that has a one-hot checker for CSR register
-            writes, and verify escalation is triggered. Allow escalation to go through reset.
-            Use the rstmgr alert info and the unit's fault CSRs to check the alert cause is right.
-            Each run of the test randomly chooses some one-hot checker for the error to be injected.
-            Keep state across resets in flash to check the expected interrupts and the right number
-            of resets occur.
-            - Verify the integrity error results in a regular interrupt.
-            - Verify the first escalation results in NMI serviced by the CPU.
-            - Verify the alert id in both these interrupts.
-            - Verify the unit's fault CSR correctly captured the fault kind.
-            - Verify any timer interrupts are disabled by escalation.
-            - Verify after the escalation reset all faults are cleared, and that the alert
-              info captured the correct alert.
-            - Check that no additional resets occur.
+            - Randomly choose an IP with a security countermeasure that can be triggered (probably
+              through a sec_cm interface) and will cause a fatal alert.
+
+            - When SW on the device is ready, trigger the countermeasure (unless it is triggered by
+              a fatal SW alert, in which case the SW does it).
+
+            - This should generate an interrupt (which the SW waits for). The SW then checks that
+              the expected interrupt was raised, then waits for another conventional interrupt
+              (which shouldn't appear).
+
+            - Instead of another conventional interrupt, we expect an NMI to be generated as part of
+              alert escalation. When that NMI arrives, SW checks that it was the expected NMI (not a
+              watchdog bark, because escalation should have disabled timer interrupts).
+
+            - We now expect there to be a reset, after which the SW can check that the expected
+              number of interrupts and NMI had been asserted and that the alert handler no longer
+              reports an alert cause (which should have been cleared by the reset).
+
+            The main check aim of this testpoint is to check that:
+
+            - A fatal alert will be reported correctly to Ibex.
+            - It is then escalated to an NMI, then a HW reset.
+            - After the reset, the alert is no longer being reported.
+
+            The test SW has several extra checks. For example, corrupting the retention SRAM should
+            cause it to block further access. If the sequence did this, the SW checks that access is
+            indeed blocked.
             '''
       stage: V2
       tests: ["chip_sw_all_escalation_resets"]
