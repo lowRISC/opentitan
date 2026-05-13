@@ -27,7 +27,7 @@ Other individuals are directly appointed by the OpenTitan Governing Board.
 - Andreas Kurth (chair, lowRISC)*
 - Eran Meisner (Nuvoton)*
 - Tim Trippel (Google)*
-- Shimeon Greenberg (Nuvoton)
+- Ziv Hershman (Nuvoton)
 - Rupert Swarbrick (lowRISC)
 - No current appointee (Giesecke & Devrient)*
 
