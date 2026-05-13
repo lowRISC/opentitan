@@ -62,6 +62,7 @@ cc_library(
     srcs = ["ed25519.c"],
     hdrs = ["ed25519.h"],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto",
