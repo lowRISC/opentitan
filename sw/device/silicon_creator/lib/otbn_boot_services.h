@@ -19,6 +19,28 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Expected OTBN instruction counts for various boot service modes.
+ *
+ * Two targets are provided per mode to account for underlying profile
+ * differences between the OTBN service from silicon ROM
+ * (Earlgrey-PROD-A2-M6-ROM-RC1) or at HEAD.
+ */
+
+// DO NOT EDIT: ROM instruction counts are fixed for the silicon version.
+enum {
+  kOtbnInsnCountKeygenROM = 0x9ceb1,
+  kOtbnInsnCountKeySaveROM = 0x66,
+  kOtbnInsnCountEndorseROM = 0xa4a07,
+};
+
+// Instruction counts for current version.
+enum {
+  kOtbnInsnCountKeygen = 0x8c110,
+  kOtbnInsnCountKeySave = 0x69,
+  kOtbnInsnCountEndorse = 0x9435e,
+};
+
+/**
  * Loads the OTBN boot-services application.
  *
  * Loads the OTBN program that runs attestation and code-signature

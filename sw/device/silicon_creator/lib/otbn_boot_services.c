@@ -141,7 +141,13 @@ rom_error_t otbn_boot_attestation_keygen(
   HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
   SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
+  // Verify the OTBN instruction count to mitigate FI.
+  uint32_t insn_cnt = sc_otbn_instruction_count_get();
+  if (launder32(insn_cnt) != kOtbnInsnCountKeygenROM) {
+    HARDENED_CHECK_EQ(insn_cnt, kOtbnInsnCountKeygen);
+  } else {
+    HARDENED_CHECK_EQ(insn_cnt, kOtbnInsnCountKeygenROM);
+  }
 
   // Retrieve the public key.
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256PublicKeyCoordWords,
@@ -218,7 +224,13 @@ rom_error_t otbn_boot_attestation_key_save(
   HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
   SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
+  // Verify the OTBN instruction count to mitigate FI.
+  uint32_t insn_cnt = sc_otbn_instruction_count_get();
+  if (launder32(insn_cnt) != kOtbnInsnCountKeySaveROM) {
+    HARDENED_CHECK_EQ(insn_cnt, kOtbnInsnCountKeySave);
+  } else {
+    HARDENED_CHECK_EQ(insn_cnt, kOtbnInsnCountKeySaveROM);
+  }
 
   return kErrorOk;
 }
@@ -259,7 +271,13 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
   HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
   SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
+  // Verify the OTBN instruction count to mitigate FI.
+  uint32_t insn_cnt = sc_otbn_instruction_count_get();
+  if (launder32(insn_cnt) != kOtbnInsnCountEndorseROM) {
+    HARDENED_CHECK_EQ(insn_cnt, kOtbnInsnCountEndorse);
+  } else {
+    HARDENED_CHECK_EQ(insn_cnt, kOtbnInsnCountEndorseROM);
+  }
 
   // Retrieve the signature (in two parts, r and s).
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords,
@@ -311,8 +329,6 @@ rom_error_t otbn_boot_sigverify_finish(uint32_t *recovered_r) {
   // Read the status value again as an extra hardening measure.
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(1, kOtbnVarBootOk, &ok));
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
-
-  // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
 
   // Read the recovered `r` value from DMEM.
   return sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords, kOtbnVarBootXr,
