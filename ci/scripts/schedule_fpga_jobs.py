@@ -255,8 +255,8 @@ def main():
 
     sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"])
     sched("ROM", "cw310", "cw310_rom", ["cw310_rom_with_fake_keys"])
-    sched("TestROM", "cw340", "cw340_rom", ["cw340_test_rom"])
-    sched("TestROM", "cw310", "cw310_rom", ["cw310_test_rom"])
+    sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
+    sched("TestROM", "cw310", "cw310_test_rom", ["cw310_test_rom"])
 
     for job in jobs:
         tests = job.pop("tests")
