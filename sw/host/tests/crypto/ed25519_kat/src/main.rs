@@ -87,7 +87,7 @@ fn run_ed25519_testcase(
 
     let operation = match test_case.operation.as_str() {
         "verify" => CryptotestEd25519Operation::Verify,
-        "sign" => CryptotestEd25519Operation::Sign,
+        "sign" => CryptotestEd25519Operation::SignCheck,
         _ => panic!("Unsupported Ed25519 operation: {}", test_case.operation),
     };
 
@@ -139,7 +139,7 @@ fn run_ed25519_testcase(
     // For sign: additively mask the private key seed (seed = d0 + d1 mod 2^256).
     // For verify: the firmware ignores the private key; send empty shares.
     let (d0_bytes, d1_bytes): (Vec<u8>, Vec<u8>) =
-        if matches!(operation, CryptotestEd25519Operation::Sign) {
+        if matches!(operation, CryptotestEd25519Operation::SignCheck) {
             assert_eq!(
                 test_case.private_key.len(),
                 ED25519_PRIVATE_KEY_SEED_BYTES,
@@ -169,7 +169,9 @@ fn run_ed25519_testcase(
     .send(spi_console)?;
 
     let success = match operation {
-        CryptotestEd25519Operation::Verify | CryptotestEd25519Operation::Sign => {
+        CryptotestEd25519Operation::Verify
+        | CryptotestEd25519Operation::Sign
+        | CryptotestEd25519Operation::SignCheck => {
             let output =
                 CryptotestEd25519VerifyOutput::recv(spi_console, opts.timeout, false, false)?;
             match output {
@@ -179,6 +181,9 @@ fn run_ed25519_testcase(
                     panic!("Invalid Ed25519 result: {}", i)
                 }
             }
+        }
+        CryptotestEd25519Operation::KeyGen => {
+            unreachable!("KeyGen is not used in KAT tests")
         }
         CryptotestEd25519Operation::IntValue(_) => {
             unreachable!("Should be caught above")
