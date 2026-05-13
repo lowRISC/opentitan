@@ -41,7 +41,7 @@ extern "C" {
 // - result (ED25519_VERIFY_OUTPUT)
 
 #define ED25519_OPERATION(_, value) \
-    value(_, Sign) \
+    value(_, SignCheck) \
     value(_, Verify)
 UJSON_SERDE_ENUM(CryptotestEd25519Operation, cryptotest_ed25519_operation_t, ED25519_OPERATION);
 
