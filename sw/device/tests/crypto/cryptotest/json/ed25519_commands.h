@@ -18,30 +18,40 @@ extern "C" {
 
 // clang-format off
 
-// Sign operation:
+// SignCheck operation (sign-then-verify round trip):
 // The host sends, in order:
-// - operation (ED25519_OPERATION)
+// - operation (ED25519_OPERATION = SignCheck)
 // - sign_mode (ED25519_SIGN_MODE)
 // - message (ED25519_MESSAGE)
-// - signature (ED25519_SIGNATURE)  [unused for sign, sent as zeros]
-// - public_key (ED25519_PUBLIC_KEY) [unused for sign, sent as zeros]
+// - signature (ED25519_SIGNATURE)  [unused, sent as zeros]
+// - public_key (ED25519_PUBLIC_KEY) [unused, sent as zeros]
 // - private_key (ED25519_PRIVATE_KEY)
 // The device responds with:
-// - signature (ED25519_SIGNATURE)
+// - result (ED25519_VERIFY_OUTPUT)
+//
+// Sign operation (signature generation):
+// The host sends, in order:
+// - operation (ED25519_OPERATION = Sign)
+// - sign_mode (ED25519_SIGN_MODE)
+// - message (ED25519_MESSAGE)
+// - private_key (ED25519_PRIVATE_KEY)
+// The device responds with:
+// - sign_resp (ED25519_SIGN_RESP)
 //
 // Verify operation:
 // The host sends, in order:
-// - operation (ED25519_OPERATION)
+// - operation (ED25519_OPERATION = Verify)
 // - sign_mode (ED25519_SIGN_MODE)
 // - message (ED25519_MESSAGE)
 // - signature (ED25519_SIGNATURE)
 // - public_key (ED25519_PUBLIC_KEY)
-// - private_key (ED25519_PRIVATE_KEY) [unused for verify, sent as zeros]
+// - private_key (ED25519_PRIVATE_KEY) [unused, sent as zeros]
 // The device responds with:
 // - result (ED25519_VERIFY_OUTPUT)
 
 #define ED25519_OPERATION(_, value) \
     value(_, SignCheck) \
+    value(_, Sign) \
     value(_, Verify)
 UJSON_SERDE_ENUM(CryptotestEd25519Operation, cryptotest_ed25519_operation_t, ED25519_OPERATION);
 
@@ -76,6 +86,13 @@ UJSON_SERDE_STRUCT(CryptotestEd25519PrivateKey, cryptotest_ed25519_private_key_t
     value(_, Success) \
     value(_, Failure)
 UJSON_SERDE_ENUM(CryptotestEd25519VerifyOutput, cryptotest_ed25519_verify_output_t, ED25519_VERIFY_OUTPUT);
+
+#define ED25519_SIGN_RESP(field, string) \
+    field(signature, uint8_t, ED25519_CMD_SIGNATURE_BYTES) \
+    field(signature_len, size_t) \
+    field(public_key, uint8_t, ED25519_CMD_PUBLIC_KEY_BYTES) \
+    field(public_key_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestEd25519SignResp, cryptotest_ed25519_sign_resp_t, ED25519_SIGN_RESP);
 
 // clang-format on
 
