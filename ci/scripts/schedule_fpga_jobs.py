@@ -272,6 +272,9 @@ def main():
                 print(f"  {job['name']}", file=sys.stderr)
         sys.exit(1)
 
+    # Clean up the jobs list to remove empty jobs.
+    jobs = [j for j in jobs if j["tests"]]
+
     for job in jobs:
         tests = job.pop("tests")
         target_file = "{}.txt".format(job["id"])
