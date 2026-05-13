@@ -12,8 +12,8 @@ use std::time::Duration;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::ed25519_commands::{
     CryptotestEd25519Message, CryptotestEd25519Operation, CryptotestEd25519PrivateKey,
-    CryptotestEd25519PublicKey, CryptotestEd25519SignMode, CryptotestEd25519Signature,
-    CryptotestEd25519VerifyOutput,
+    CryptotestEd25519PublicKey, CryptotestEd25519SignMode, CryptotestEd25519SignResp,
+    CryptotestEd25519Signature, CryptotestEd25519VerifyOutput,
 };
 
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -26,19 +26,19 @@ use rand_chacha::ChaCha8Rng;
 // be byte-reversed when crossing the ACVP (big-endian) / device (little-endian)
 // boundary.
 const ED25519_SIGNATURE_R_BYTES: usize = 32;
+const ED25519_PRIVATE_KEY_BYTES: usize = 32;
 
-// Test vector input structs
+// sigVer test case - all three payload fields are required.
+// Making them non-optional lets serde distinguish sigVer vectors (which have
+// all three) from sigGen vectors (which have only `message`).
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct EddsaTestCase {
     tc_id: usize,
-    #[serde(default)]
-    message: Option<String>,
-    #[serde(default)]
-    q: Option<String>,
-    #[serde(default)]
-    signature: Option<String>,
+    message: String,
+    q: String,
+    signature: String,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -63,7 +63,38 @@ pub struct EddsaTestVectorSet {
     test_groups: Vec<EddsaTestGroup>,
 }
 
-// Result structs
+// sigGen test case - only `message` is present in the input vectors.
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EddsaSignGenTestCase {
+    tc_id: usize,
+    message: String,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EddsaSignGenTestGroup {
+    tg_id: usize,
+    test_type: String,
+    curve: String,
+    pre_hash: bool,
+    tests: Vec<EddsaSignGenTestCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaSignGenTestVectorSet {
+    vs_id: usize,
+    algorithm: String,
+    mode: String,
+    revision: String,
+    #[serde(default)]
+    is_sample: bool,
+    test_groups: Vec<EddsaSignGenTestGroup>,
+}
+
+// sigVer result structs
 
 #[derive(Deserialize, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -91,17 +122,48 @@ pub struct EddsaResultVectorSet {
     pub test_groups: Vec<EddsaResultGroup>,
 }
 
+// sigGen result structs
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaSignGenResultCase {
+    pub tc_id: usize,
+    pub signature: String,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaSignGenResultGroup {
+    pub tg_id: usize,
+    pub q: String,
+    pub tests: Vec<EddsaSignGenResultCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EddsaSignGenResultVectorSet {
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub mode: String,
+    pub revision: String,
+    #[serde(default)]
+    pub is_sample: bool,
+    pub test_groups: Vec<EddsaSignGenResultGroup>,
+}
+
+// Signature Verification
+
 fn run_eddsa_verify_case(
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
     tc: &EddsaTestCase,
 ) -> Result<EddsaResultCase> {
-    let msg = Vec::<u8>::from_hex(tc.message.as_ref().unwrap())?;
-    let q = Vec::<u8>::from_hex(tc.q.as_ref().unwrap())?;
+    let msg = Vec::<u8>::from_hex(&tc.message)?;
+    let q = Vec::<u8>::from_hex(&tc.q)?;
 
     // ACVP encodes the signature in big-endian hex. The device expects the R
     // component (first 32 bytes) in little-endian byte order.
-    let mut sig = Vec::<u8>::from_hex(tc.signature.as_ref().unwrap())?;
+    let mut sig = Vec::<u8>::from_hex(&tc.signature)?;
     if sig.len() >= ED25519_SIGNATURE_R_BYTES {
         sig[..ED25519_SIGNATURE_R_BYTES].reverse();
     }
@@ -162,7 +224,6 @@ fn run_eddsa_verify_case(
 fn run_eddsa_group(
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
-    mode: &str,
     tg: &EddsaTestGroup,
     skip_stride: usize,
     start_offset: usize,
@@ -187,16 +248,7 @@ fn run_eddsa_group(
             continue;
         }
         log::info!("tc_id: {}", tc.tc_id);
-
-        if mode.eq_ignore_ascii_case("sigVer") {
-            result_cases.push(run_eddsa_verify_case(timeout, spi_console, tc)?);
-        } else {
-            return Err(std::io::Error::other(format!(
-                "EDDSA mode '{}' not implemented in harness",
-                mode
-            ))
-            .into());
-        }
+        result_cases.push(run_eddsa_verify_case(timeout, spi_console, tc)?);
     }
 
     Ok(EddsaResultGroup {
@@ -229,7 +281,6 @@ pub fn run_eddsa_vector_set(
         result_groups.push(run_eddsa_group(
             timeout,
             spi_console,
-            &vs.mode,
             tg,
             skip_stride,
             start_offset,
@@ -237,6 +288,148 @@ pub fn run_eddsa_vector_set(
     }
 
     Ok(EddsaResultVectorSet {
+        vs_id: vs.vs_id,
+        algorithm: vs.algorithm.clone(),
+        mode: vs.mode.clone(),
+        revision: vs.revision.clone(),
+        is_sample: vs.is_sample,
+        test_groups: result_groups,
+    })
+}
+
+// Signature Generation
+
+// Signs `tc.message` using the provided 32-byte seed (sent as d0; d1 = zeros).
+// Returns the result case and the derived public key bytes (in ACVP byte order).
+fn run_eddsa_sign_case(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    seed: &[u8; ED25519_PRIVATE_KEY_BYTES],
+    tc: &EddsaSignGenTestCase,
+) -> Result<(EddsaSignGenResultCase, Vec<u8>)> {
+    let msg = Vec::<u8>::from_hex(&tc.message)?;
+
+    CryptotestCommand::Ed25519.send(spi_console)?;
+    CryptotestEd25519Operation::Sign.send(spi_console)?;
+    CryptotestEd25519SignMode::Eddsa.send(spi_console)?;
+
+    CryptotestEd25519Message {
+        input: ArrayVec::try_from(msg.as_slice())
+            .map_err(|_| std::io::Error::other("Ed25519 message too large"))?,
+        input_len: msg.len(),
+    }
+    .send(spi_console)?;
+
+    // Use the seed as d0; d1 = zeros so that the effective key equals the seed.
+    CryptotestEd25519PrivateKey {
+        d0: ArrayVec::try_from(seed.as_slice())
+            .map_err(|_| std::io::Error::other("Ed25519 seed too large"))?,
+        d0_len: seed.len(),
+        d1: ArrayVec::new(),
+        d1_len: 0,
+    }
+    .send(spi_console)?;
+
+    let resp = CryptotestEd25519SignResp::recv(spi_console, timeout, false, false)?;
+
+    let sig_len = resp.signature_len;
+    let mut sig_bytes = resp.signature.as_slice()[..sig_len].to_vec();
+    // Device stores R in little-endian; reverse it to produce ACVP big-endian hex.
+    if sig_bytes.len() >= ED25519_SIGNATURE_R_BYTES {
+        sig_bytes[..ED25519_SIGNATURE_R_BYTES].reverse();
+    }
+
+    let pk_len = resp.public_key_len;
+    let pk_bytes = resp.public_key.as_slice()[..pk_len].to_vec();
+
+    Ok((
+        EddsaSignGenResultCase {
+            tc_id: tc.tc_id,
+            signature: hex::encode_upper(&sig_bytes),
+        },
+        pk_bytes,
+    ))
+}
+
+fn run_eddsa_siggen_group(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    tg: &EddsaSignGenTestGroup,
+    skip_stride: usize,
+    start_offset: usize,
+) -> Result<EddsaSignGenResultGroup> {
+    log::info!("tg_id: {}", tg.tg_id);
+
+    if tg.pre_hash {
+        return Err(std::io::Error::other(format!(
+            "Pre-hash mode is not yet supported (tg_id {})",
+            tg.tg_id
+        ))
+        .into());
+    }
+
+    // Generate a fresh random 32-byte seed for this group's key pair.
+    // All test cases within the group share the same key.
+    let seed: [u8; ED25519_PRIVATE_KEY_BYTES] = rand::random();
+
+    let stride = min(skip_stride, tg.tests.len());
+    let offset = if stride > 0 { start_offset % stride } else { 0 };
+    log::info!("Tests options: skip_stride: {}, offset: {}", stride, offset);
+
+    let mut q_hex: Option<String> = None;
+    let mut result_cases = Vec::new();
+
+    for tc in &tg.tests {
+        if stride > 0 && (tc.tc_id % stride) != offset {
+            continue;
+        }
+        log::info!("tc_id: {}", tc.tc_id);
+
+        let (case, pk_bytes) = run_eddsa_sign_case(timeout, spi_console, &seed, tc)?;
+        if q_hex.is_none() {
+            q_hex = Some(hex::encode_upper(&pk_bytes));
+        }
+        result_cases.push(case);
+    }
+
+    Ok(EddsaSignGenResultGroup {
+        tg_id: tg.tg_id,
+        q: q_hex.unwrap_or_default(),
+        tests: result_cases,
+    })
+}
+
+pub fn run_eddsa_siggen_vector_set(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    vs: &EddsaSignGenTestVectorSet,
+    skip_stride_arg: usize,
+    seed_arg: Option<u64>,
+) -> Result<EddsaSignGenResultVectorSet> {
+    log::info!("vs_id: {}", vs.vs_id);
+
+    let seed = seed_arg.unwrap_or_else(rand::random::<u64>);
+    log::info!("Using seed {}", seed);
+
+    let mut drng = ChaCha8Rng::seed_from_u64(seed);
+    let (skip_stride, start_offset) = match (drng.next_u32() as usize).checked_rem(skip_stride_arg)
+    {
+        Some(offset) => (skip_stride_arg, offset),
+        None => (1usize, 0usize),
+    };
+
+    let mut result_groups = Vec::with_capacity(vs.test_groups.len());
+    for tg in &vs.test_groups {
+        result_groups.push(run_eddsa_siggen_group(
+            timeout,
+            spi_console,
+            tg,
+            skip_stride,
+            start_offset,
+        )?);
+    }
+
+    Ok(EddsaSignGenResultVectorSet {
         vs_id: vs.vs_id,
         algorithm: vs.algorithm.clone(),
         mode: vs.mode.clone(),
