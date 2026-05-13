@@ -13,6 +13,7 @@ do not take too long, splitting them into several jobs if necessary.
 """
 
 import argparse
+from collections import defaultdict
 import json
 from pathlib import Path
 import subprocess
@@ -257,6 +258,19 @@ def main():
     sched("ROM", "cw310", "cw310_rom", ["cw310_rom_with_fake_keys"])
     sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
     sched("TestROM", "cw310", "cw310_test_rom", ["cw310_test_rom"])
+
+    # Check for ID collisions in the scheduled jobs.
+    jobs_by_id = defaultdict(list)
+    for job in jobs:
+        jobs_by_id[job["id"]].append(job)
+
+    duplicates = {id: jobs for id, jobs in jobs_by_id.items() if len(jobs) > 1}
+    if duplicates:
+        for id, jobs in duplicates.items():
+            print(f"Error: jobs have the same id {id}:", file=sys.stderr)
+            for job in jobs:
+                print(f"  {job['name']}", file=sys.stderr)
+        sys.exit(1)
 
     for job in jobs:
         tests = job.pop("tests")
