@@ -51,7 +51,7 @@ module kmac_app
 
   // to MSG_FIFO
   output logic                kmac_valid_o,
-  output logic [MsgWidth-1:0] kmac_data_o,
+  output logic [MsgWidth-1:0] kmac_data_o[Share],
   // This strobe is on bit level for the packer. The FIFO will then convert it again to byte level.
   output logic [MsgWidth-1:0] kmac_strb_o,
   input                       kmac_ready_i,
@@ -616,14 +616,14 @@ module kmac_app
     sw_ready_o = 1'b 1;
 
     kmac_valid_o = 1'b 0;
-    kmac_data_o = '0;
+    kmac_data_o = '{default:'0};
     kmac_strb_o = '0;
 
     unique case (mux_sel_buf_kmac)
       SelApp: begin
         // app_id is valid at this time
-        kmac_valid_o = app_i[app_id].valid;
-        kmac_data_o  = app_i[app_id].data;
+        kmac_valid_o   = app_i[app_id].valid;
+        kmac_data_o[0] = app_i[app_id].data;
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
         for (int i = 0 ; i < $bits(app_i[app_id].strb) ; i++) begin
           kmac_strb_o[8*i+:8] = {8{app_i[app_id].strb[i]}};
@@ -633,21 +633,21 @@ module kmac_app
 
       SelOutLen: begin
         // Write encoded output length value
-        kmac_valid_o = 1'b 1; // always write
-        kmac_data_o  = MsgWidth'(encoded_outlen);
-        kmac_strb_o  = MsgWidth'(encoded_outlen_strb);
+        kmac_valid_o   = 1'b 1; // always write
+        kmac_data_o[0] = MsgWidth'(encoded_outlen);
+        kmac_strb_o    = MsgWidth'(encoded_outlen_strb);
       end
 
       SelSw: begin
-        kmac_valid_o = sw_valid_i;
-        kmac_data_o  = sw_data_i ;
-        kmac_strb_o  = sw_strb_i ;
-        sw_ready_o   = kmac_ready_i ;
+        kmac_valid_o   = sw_valid_i;
+        kmac_data_o[0] = sw_data_i ;
+        kmac_strb_o    = sw_strb_i ;
+        sw_ready_o     = kmac_ready_i ;
       end
 
       default: begin // Incl. SelNone
         kmac_valid_o = 1'b 0;
-        kmac_data_o = '0;
+        kmac_data_o = '{default:'0};
         kmac_strb_o = '0;
       end
 

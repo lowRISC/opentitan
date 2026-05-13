@@ -15,7 +15,8 @@ module kmac_msgfifo
   // pushing to MsgFIFO
   parameter int OutWidth = 64,
 
-  parameter bit EnMasking = 1'b 1,
+  parameter  bit EnMasking = 1'b 1,
+  localparam int Share     = (EnMasking) ? 2 : 1, // derived parameter
 
   // Internal MsgFIFO Entry count
   parameter  int MsgDepth = 9,
@@ -25,16 +26,17 @@ module kmac_msgfifo
   input rst_ni,
 
   // from REG or KeyMgr Intf input
-  input                fifo_valid_i,
-  input [OutWidth-1:0] fifo_data_i,
+  input  logic         fifo_valid_i,
+  input [OutWidth-1:0] fifo_data_i[Share],
   input [OutWidth-1:0] fifo_strb_i,
-  output               fifo_ready_o,
+  output logic         fifo_ready_o,
+  input  logic         fifo_bypass_i,
 
   // MSG interface
   output logic                  msg_valid_o,
-  output logic [OutWidth-1:0]   msg_data_o,
+  output logic [OutWidth-1:0]   msg_data_o[Share],
   output logic [OutWidth/8-1:0] msg_strb_o,
-  input                         msg_ready_i,
+  input  logic                  msg_ready_i,
 
   output logic                 fifo_empty_o,
   output logic                 fifo_full_o,
@@ -43,13 +45,51 @@ module kmac_msgfifo
   // Control
   input prim_mubi_pkg::mubi4_t clear_i,
 
-  // process_i --> process_o
-  // process_o asserted after all internal messages are flushed out to MSG interface
-  input        process_i,
+  // When process_i is asserted, packer and FIFO are flushed. Once flushed, process_o is asserted.
+  // When bypassing, nothing must be flushed.
+  input  logic process_i,
   output logic process_o,
 
   err_t err_o
 );
+
+  //////////////////
+  // Bypass logic //
+  //////////////////
+  // The packing and FIFO only support one share. These can be bypassed if operating with shares.
+  logic                  fifo_valid;
+  logic                  fifo_ready;
+  logic [OutWidth/8-1:0] fifo_strb_byte;
+  logic                  msg_valid;
+  logic                  msg_ready;
+  logic [OutWidth-1:0]   msg_data[Share];
+  logic [OutWidth/8-1:0] msg_strb;
+
+  // Reduce strobe from bit to byte level as KMAC core operates on byte strobes.
+  always_comb begin
+    fifo_strb_byte = '0;
+    for (int i = 0; i < $bits(fifo_strb_byte); i++) begin
+      fifo_strb_byte[i] = |fifo_strb_i[8 * i +: 8];
+    end
+  end
+
+  assign fifo_valid   = fifo_bypass_i ? '0              : fifo_valid_i;
+  assign fifo_ready_o = fifo_bypass_i ? msg_ready_i     : fifo_ready;
+  assign msg_valid_o  = fifo_bypass_i ? fifo_valid_i    : msg_valid;
+  assign msg_ready    = fifo_bypass_i ? '0              : msg_ready_i;
+  assign msg_strb_o   = fifo_bypass_i ? fifo_strb_byte  : msg_strb;
+
+  for (genvar i = 0; i < Share; i++) begin : g_msg_data_bypass_mux
+    assign msg_data_o[i] = fifo_bypass_i ? fifo_data_i[i] : msg_data[i];
+  end
+
+  // If bypassing, packer and FIFO must not be flushed so we can gate the flush signal and
+  // feed it directly to process_o.
+  logic process_to_fifo;
+  logic process_from_fifo;
+
+  assign process_to_fifo = fifo_bypass_i ? '0        : process_i;
+  assign process_o       = fifo_bypass_i ? process_i : process_from_fifo;
 
   /////////////////
   // Definitions //
@@ -99,37 +139,41 @@ module kmac_msgfifo
 
   // packer flush to msg_fifo, then msg_fifo empty out the internals
   // then assert msgfifo_flush_done
+  logic packer_flush;
   logic packer_flush_done;
   logic msgfifo_flush_done;
 
   logic packer_err;
 
+  assign packer_flush = process_to_fifo;
+
   // SEC_CM: PACKER.CTR.REDUN
   prim_packer #(
-    .InW          (OutWidth),
-    .OutW         (OutWidth),
-    .HintByteData (1),
+    .InW(OutWidth),
+    .OutW(OutWidth),
+    .HintByteData(1),
 
     // Turn on dup counter when EnMasking is set
-    .EnProtection (EnMasking)
+    .EnProtection(EnMasking)
   ) u_packer (
     .clk_i,
     .rst_ni,
 
-    .valid_i      (fifo_valid_i),
-    .data_i       (fifo_data_i),
-    .mask_i       (fifo_strb_i),
-    .ready_o      (fifo_ready_o),
+    .valid_i(fifo_valid),
+    // FIFO operates only on one share
+    .data_i (fifo_data_i[0]),
+    .mask_i (fifo_strb_i),
+    .ready_o(fifo_ready),
 
-    .valid_o      (packer_wvalid),
-    .data_o       (packer_wdata),
-    .mask_o       (packer_wmask),
-    .ready_i      (packer_wready),
+    .valid_o(packer_wvalid),
+    .data_o (packer_wdata),
+    .mask_o (packer_wmask),
+    .ready_i(packer_wready),
 
-    .flush_i      (process_i),
-    .flush_done_o (packer_flush_done),
+    .flush_i     (packer_flush),
+    .flush_done_o(packer_flush_done),
 
-    .err_o (packer_err)
+    .err_o(packer_err)
   );
 
   // Assign packer wdata and wmask to FIFO struct
@@ -171,10 +215,13 @@ module kmac_msgfifo
   assign fifo_wvalid = packer_wvalid;
   assign packer_wready = fifo_wready;
 
-  assign msg_valid_o = fifo_rvalid;
-  assign fifo_rready = msg_ready_i;
-  assign msg_data_o  = fifo_rdata.data;
-  assign msg_strb_o  = fifo_rdata.strb;
+  assign msg_valid   = fifo_rvalid;
+  assign fifo_rready = msg_ready;
+  assign msg_strb    = fifo_rdata.strb;
+  assign msg_data[0] = fifo_rdata.data;
+  for (genvar i = 1; i < Share; i++) begin : g_msg_data_mask_assignment
+    assign msg_data[i] = '0;
+  end
 
   assign fifo_empty_o = !fifo_rvalid;
 
@@ -196,7 +243,9 @@ module kmac_msgfifo
 
     unique case (flush_st)
       FlushIdle: begin
-        if (process_i) begin
+        // Only enter packer-flush sequence when not in bypass mode.
+        // In bypass mode, process_o is driven directly from process_i below.
+        if (packer_flush) begin
           flush_st_d = FlushPacker;
         end else begin
           flush_st_d = FlushIdle;
@@ -235,7 +284,7 @@ module kmac_msgfifo
     endcase
   end
 
-  assign process_o = msgfifo_flush_done;
+  assign process_from_fifo = msgfifo_flush_done;
 
   err_t error;
   assign err_o = error;
@@ -273,12 +322,36 @@ module kmac_msgfifo
   `ASSERT(FlushStInValid_A, flush_st inside {FlushIdle, FlushPacker, FlushFifo, FlushClear})
 
   // Packer done signal is asserted at least one cycle later
-  `ASSERT(PackerDoneDelay_A, $onehot0({process_i, packer_flush_done}))
+  `ASSERT(PackerDoneDelay_A, $onehot0({packer_flush, packer_flush_done}))
 
   // process_i not asserted during the flush operation
-  `ASSUME(PackerDoneValid_a, process_i |-> flush_st == FlushIdle)
+  `ASSUME(PackerDoneValid_a, packer_flush |-> flush_st == FlushIdle)
 
   // No messages in between `process_i` and `clear_i`
   `ASSUME(MessageValid_a, fifo_valid_i |-> flush_st == FlushIdle)
+
+`ifdef INC_ASSERT
+  // INC_ASSERT is used to hide signal definitions that are only used for assertions.
+  //VCS coverage off
+  // pragma coverage off
+
+  // Assert that fifo_bypass_i remains stable once the first messages was handshaked until the FIFO
+  // has been flushed or the full message is sent downstream, respectively.
+  logic first_data_entered;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      first_data_entered <= 1'b0;
+    end else if (fifo_valid_i && fifo_ready_o) begin
+      first_data_entered <= 1'b1;
+    end else if (process_o) begin
+      first_data_entered <= 1'b0;
+    end
+  end
+
+  `ASSERT(BypassCtrlStable_A,
+    first_data_entered && !process_o
+    |-> fifo_bypass_i == $past(fifo_bypass_i))
+
+`endif
 
 endmodule
