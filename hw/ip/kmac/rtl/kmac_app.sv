@@ -20,21 +20,21 @@ module kmac_app
   input rst_ni,
 
   // Secret Key from register
-  input [MaxKeyLen-1:0] reg_key_data_i [Share],
+  input [MaxKeyLen-1:0] reg_key_data_i[Share],
   input key_len_e       reg_key_len_i,
 
   // Prefix from register
   input [sha3_pkg::NSRegisterSize*8-1:0] reg_prefix_i,
 
   // mode, strength, kmac_en from register
-  input                             reg_kmac_en_i,
+  input logic                       reg_kmac_en_i,
   input sha3_pkg::sha3_mode_e       reg_sha3_mode_i,
   input sha3_pkg::keccak_strength_e reg_keccak_strength_i,
 
   // Data from Software
   input                sw_valid_i,
   input [MsgWidth-1:0] sw_data_i,
-  input [MsgWidth-1:0] sw_mask_i,
+  input [MsgWidth-1:0] sw_strb_i,
   output logic         sw_ready_o,
 
   // KeyMgr Sideload Key interface
@@ -45,14 +45,15 @@ module kmac_app
   output app_rsp_t [NumAppIntf-1:0] app_o,
 
   // to KMAC Core: Secret key
-  output logic [MaxKeyLen-1:0] key_data_o [Share],
+  output logic [MaxKeyLen-1:0] key_data_o[Share],
   output key_len_e             key_len_o,
   output logic                 key_valid_o,
 
   // to MSG_FIFO
   output logic                kmac_valid_o,
   output logic [MsgWidth-1:0] kmac_data_o,
-  output logic [MsgWidth-1:0] kmac_mask_o,
+  // This strobe is on bit level for the packer. The FIFO will then convert it again to byte level.
+  output logic [MsgWidth-1:0] kmac_strb_o,
   input                       kmac_ready_i,
 
   // KMAC Core
@@ -65,19 +66,20 @@ module kmac_app
 
   // STATE from SHA3 Core
   input                        keccak_state_valid_i,
-  input [sha3_pkg::StateW-1:0] keccak_state_i [Share],
+  input [sha3_pkg::StateW-1:0] keccak_state_i[Share],
 
   // to STATE TL-window if Application is not active, the incoming state goes to
   // register if kdf_en is set, the state value goes to application and the
   // output to the register is all zero.
   output logic                        reg_state_valid_o,
-  output logic [sha3_pkg::StateW-1:0] reg_state_o [Share],
+  output logic [sha3_pkg::StateW-1:0] reg_state_o[Share],
 
-  // Configurations If key_en is set, the logic uses KeyMgr's sideloaded key as
-  // a secret key rather than register values. This only affects when software
-  // initiates. If App initiates the hash operation and uses KMAC algorithm, it
-  // always uses sideloaded key.
-  input keymgr_key_en_i,
+  // Controls for SW and CmdApp operations whether to take the key from the KeyMgr sideload
+  // interface or registers. For KMAC operations initiated by an app interface, we always take the
+  // sideloaded key.
+  // If 1, the key for KMAC is taken from the KeyMgr sideload interface.
+  // If 0, the key is taken from the registers.
+  input logic keymgr_key_en_i,
 
   // Commands
   // Command from software
@@ -166,7 +168,7 @@ module kmac_app
     24'h 02_0002  // Key512
   };
 
-  localparam logic [OutLenW-1:0] EncodedOutLenMask [5] = '{
+  localparam logic [OutLenW-1:0] EncodedOutLenStrb [5] = '{
     24'h 00FFFF, // Key128,
     24'h 00FFFF, // Key192
     24'h FFFFFF, // Key256
@@ -200,7 +202,7 @@ module kmac_app
   logic               clr_appid, set_appid;
 
   // Output length
-  logic [OutLenW-1:0] encoded_outlen, encoded_outlen_mask;
+  logic [OutLenW-1:0] encoded_outlen, encoded_outlen_strb;
 
   // state output
   // Mux selection signal
@@ -600,7 +602,7 @@ module kmac_app
 
   // Encoded output length
   assign encoded_outlen      = EncodedOutLen[SelDigSize];
-  assign encoded_outlen_mask = EncodedOutLenMask[SelKeySize];
+  assign encoded_outlen_strb = EncodedOutLenStrb[SelKeySize];
 
   // Data mux
   // This is the main part of the KeyMgr interface logic.
@@ -615,7 +617,7 @@ module kmac_app
 
     kmac_valid_o = 1'b 0;
     kmac_data_o = '0;
-    kmac_mask_o = '0;
+    kmac_strb_o = '0;
 
     unique case (mux_sel_buf_kmac)
       SelApp: begin
@@ -624,7 +626,7 @@ module kmac_app
         kmac_data_o  = app_i[app_id].data;
         // Expand strb to bits. prim_packer inside MSG_FIFO accepts the bit masks
         for (int i = 0 ; i < $bits(app_i[app_id].strb) ; i++) begin
-          kmac_mask_o[8*i+:8] = {8{app_i[app_id].strb[i]}};
+          kmac_strb_o[8*i+:8] = {8{app_i[app_id].strb[i]}};
         end
         app_data_ready = kmac_ready_i;
       end
@@ -633,20 +635,20 @@ module kmac_app
         // Write encoded output length value
         kmac_valid_o = 1'b 1; // always write
         kmac_data_o  = MsgWidth'(encoded_outlen);
-        kmac_mask_o  = MsgWidth'(encoded_outlen_mask);
+        kmac_strb_o  = MsgWidth'(encoded_outlen_strb);
       end
 
       SelSw: begin
         kmac_valid_o = sw_valid_i;
         kmac_data_o  = sw_data_i ;
-        kmac_mask_o  = sw_mask_i ;
+        kmac_strb_o  = sw_strb_i ;
         sw_ready_o   = kmac_ready_i ;
       end
 
       default: begin // Incl. SelNone
         kmac_valid_o = 1'b 0;
         kmac_data_o = '0;
-        kmac_mask_o = '0;
+        kmac_strb_o = '0;
       end
 
     endcase
@@ -741,7 +743,7 @@ module kmac_app
     end
   end
 
-  // Keccak state --> KeyMgr
+  // Keccak state --> App interface
   always_comb begin
     app_digest_done = 1'b 0;
     app_digest = '{default:'0};
@@ -764,7 +766,7 @@ module kmac_app
   // Prepare merged key if EnMasking is not set.
   // Combine share keys into unpacked array for logic below to assign easily.
   // SEC_CM: KEY.SIDELOAD
-  logic [MaxKeyLen-1:0] keymgr_key [Share];
+  logic [MaxKeyLen-1:0] keymgr_key[Share];
   if (EnMasking == 1) begin : g_masked_key
     for (genvar i = 0; i < Share; i++) begin : gen_key_pad
       assign keymgr_key[i] =  {(MaxKeyLen-KeyMgrKeyW)'(0), keymgr_key_i.key[i]};

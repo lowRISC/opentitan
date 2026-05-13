@@ -27,7 +27,7 @@ module kmac_msgfifo
   // from REG or KeyMgr Intf input
   input                fifo_valid_i,
   input [OutWidth-1:0] fifo_data_i,
-  input [OutWidth-1:0] fifo_mask_i,
+  input [OutWidth-1:0] fifo_strb_i,
   output               fifo_ready_o,
 
   // MSG interface
@@ -118,7 +118,7 @@ module kmac_msgfifo
 
     .valid_i      (fifo_valid_i),
     .data_i       (fifo_data_i),
-    .mask_i       (fifo_mask_i),
+    .mask_i       (fifo_strb_i),
     .ready_o      (fifo_ready_o),
 
     .valid_o      (packer_wvalid),

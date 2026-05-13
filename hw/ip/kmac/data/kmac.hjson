@@ -389,8 +389,7 @@
           name: "kmac_en"
           desc: '''KMAC datapath enable.
 
-                If this bit is 1, the incoming message is processed in KMAC
-                with the secret key.
+                If this bit is 1, the KMAC mode is active and the secret key is prepended to the incoming message.
                 '''
           tags: [// don't enable kmac and sha data paths - we will do that in functional tests
                  "excl:CsrNonInitTests:CsrExclWrite",

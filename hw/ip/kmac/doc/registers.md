@@ -327,8 +327,7 @@ Other values are reserved.
 ### CFG_SHADOWED . kmac_en
 KMAC datapath enable.
 
-If this bit is 1, the incoming message is processed in KMAC
-with the secret key.
+If this bit is 1, the KMAC mode is active and the secret key is prepended to the incoming message.
 
 ## CMD
 KMAC/ SHA3 command register.
