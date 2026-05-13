@@ -32,8 +32,9 @@
 //
 // Modifications:
 // This file was modified on 13.05.2026 as following:
-// - Combined sigVer and sigGen into one file.
-// - Removed all test vectors expect the first two for each set.
+// - Combined sigVer, sigGen, keyGen into one file.
+// - Removed all test vectors expect the first two for sigVer, sigGen.
+// - Removed ED-448 curve for keyGen.
 [
   {
     "vsId": 0,
@@ -86,6 +87,31 @@
             "message": "6BABA4CFEEF3C747F71E43FD41438A081CB9262B3C51E813854ACFC33F71C34165376E914B69E45E20F226AC133B858202A9725713AC42DA3DF038D252E73A1ECB5639C7C58DB18E1039D77E2B2503BD1D21AA7A8F8E989EFE341FFDF8F498F77151D216F9A3A4AD2402E6AB4A400F5CED30C7EBDEAC709D6D326A6A3AD591F6"
           }
         ]
+      }
+    ]
+  },
+  {
+    "vsId": 0,
+    "algorithm": "EDDSA",
+    "mode": "keyGen",
+    "revision": "1.0",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "tests": [
+          {
+            "tcId": 1
+          },
+          {
+            "tcId": 2
+          },
+          {
+            "tcId": 3
+          }
+        ],
+        "curve": "ED-25519"
       }
     ]
   }
