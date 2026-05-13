@@ -11,6 +11,7 @@
 status_t handle_ed25519_verify(ujson_t *uj);
 status_t handle_ed25519_sign_check(ujson_t *uj);
 status_t handle_ed25519_sign(ujson_t *uj);
+status_t handle_ed25519_keygen(ujson_t *uj);
 status_t handle_ed25519(ujson_t *uj);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_CRYPTO_CRYPTOTEST_FIRMWARE_ED25519_H_
