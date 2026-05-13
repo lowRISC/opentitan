@@ -35,17 +35,9 @@
   ]
 
   // This is the clock data structure of the design.
-  // The hier path refers to the clock reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
-
-    hier_paths: {
-      top: "clkmgr_aon_clocks.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "clkmgr_aon_cg_en.",  // top level struct for alert lpg reset enables
-    },
 
     // Clock Source attributes
     // name: Name of group.
@@ -104,18 +96,10 @@
   },
 
   // This is the reset data structure of the design.
-  // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
     // Discrete OpenTitan does not need to wait for external resets
     wait_for_external_reset: false,
-
-    hier_paths: {
-      top: "rstmgr_aon_resets.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "rstmgr_aon_rst_en.", // top level struct for alert lpg reset enables
-    },
 
     // Reset node attributes
     // name: name of reset.
@@ -527,10 +511,17 @@
       template_type: "pinmux",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io",
-                          rst_aon_ni: "lc_aon",
-                         },
-      domain: "Aon",
+      reset_connections: {
+          rst_ni: {
+            name: "lc_io",
+            domain: "Aon"
+          },
+          rst_aon_ni: {
+            name: "lc_aon",
+            domain: "Aon"
+          },
+        },
+      domain: "Main",
       base_addr: {
         hart: "0x30460000",
       },
@@ -577,7 +568,7 @@
           domain: "Main",
         },
       },
-      domain: "Aon",
+      domain: "Main",
       base_addr: {
         hart: "0x30480000",
       },
@@ -1406,6 +1397,8 @@
         'spi_device.ram_cfg_spi2sys'           : 'spi_device_ram_2p_cfg_spi2sys',
         'pwrmgr_aon.boot_status'               : 'pwrmgr_boot_status',
         'pwrmgr_aon.ext_rst_ack'               : 'pwrmgr_ext_rst_ack',
+        'clkmgr_aon.clocks'                    : '',
+        'clkmgr_aon.cg_en'                     : '',
         'clkmgr_aon.jitter_en'                 : 'clk_main_jitter_en',
         'dma.sys'                              : 'dma_sys',
         'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
@@ -1462,9 +1455,10 @@
         'otp_macro.ext_voltage_h'              : 'otp_ext_voltage_h',
         'otp_macro.otp_obs'                    : 'otp_obs',
         'otp_macro.cfg'                        : 'otp_cfg',
-        'otp_macro.cfg_rsp'                    : 'otp_cfg_rsp',
-        'rstmgr_aon.por_n'                     : 'por_n'
-        'rv_core_ibex.fpga_info'               : 'fpga_info'
+        'rstmgr_aon.por_n'                     : 'por_n',
+        'rstmgr_aon.resets'                    : '',
+        'rstmgr_aon.rst_en'                    : '',
+        'rv_core_ibex.fpga_info'               : 'fpga_info',
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',

@@ -66,6 +66,7 @@ filesets:
     files:
       - rtl/autogen/top_darjeeling_racl_pkg.sv
       - rtl/autogen/top_darjeeling.sv
+      - rtl/autogen/top_darjeeling_pd_aon.sv
     file_type: systemVerilogSource
 
   files_rtl_testing:

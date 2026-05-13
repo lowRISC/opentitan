@@ -73,12 +73,12 @@ module tb;
 
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
-    .clk(top_darjeeling.clk_aon_i),
+    .clk(top_darjeeling_pd_aon.clk_aon_i),
 `ifdef GATE_LEVEL
     .core_sleeping_trigger(0),
     .low_power_trigger(0)
 `else
-    .core_sleeping_trigger(top_darjeeling.rv_core_ibex_pwrmgr.core_sleeping),
+    .core_sleeping_trigger(rv_core_ibex_pwrmgr.core_sleeping),
     .low_power_trigger(`PWRMGR_HIER.pwr_rst_o.reset_cause == pwrmgr_pkg::LowPwrEntry)
 `endif
   );
