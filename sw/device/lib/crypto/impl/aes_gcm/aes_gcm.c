@@ -28,6 +28,54 @@ static_assert(kAesBlockNumBytes == (1 << kAesBlockLog2NumBytes),
               "kAesBlockLog2NumBytes does not match kAesBlockNumBytes");
 
 /**
+ * Perform a secure GHASH update with redundant verification.
+ *
+ * This function provides a Fault Injection (FI) countermeasure for medium and
+ * high security levels by executing the GHASH update logic twice and comparing
+ * the results. For low security levels, a single standard update is performed.
+ *
+ * @param[in,out] ctx Pointer to the GHASH context structure.
+ * @param len Length of the data in bytes.
+ * @param data Pointer to the input data buffer.
+ * @param security_level The security level for this operation.
+ * @return Result of the operation (OK or error status).
+ */
+static inline status_t ghash_update_secure(
+    ghash_context_t *ctx, size_t len, const uint8_t *data,
+    otcrypto_key_security_level_t security_level) {
+  if (security_level != kOtcryptoKeySecurityLevelLow) {
+    // To mitigate FI, perform the GHASH update twice and compare the result.
+    HARDENED_TRY(ghash_update_redundant(ctx, len, (unsigned char *)data));
+  } else {
+    HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
+    ghash_update(ctx, len, (unsigned char *)data);
+  }
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Flush any remaining partial Associated Authenticated Data (AAD) to the GHASH
+ * accumulator.
+ *
+ * Checks the context for buffered AAD data that has not yet been processed by
+ * GHASH. If the accumulation of encrypted data has not yet begun (`input_len ==
+ * 0`), this function securely finalizes the processing of the final partial AAD
+ * block.
+ *
+ * @param[in,out] ctx Pointer to the AES-GCM internal context.
+ * @return Result of the operation (OK or error status).
+ */
+static inline status_t flush_partial_aad(aes_gcm_context_t *ctx) {
+  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
+    HARDENED_TRY(ghash_update_secure(
+        &ctx->ghash_ctx, partial_ghash_block_len,
+        (const uint8_t *)ctx->partial_ghash_block.data, ctx->security_level));
+  }
+  return OTCRYPTO_OK;
+}
+
+/**
  * Increment a 32-bit big-endian word.
  *
  * This operation theoretically increments the "rightmost" (last) 32 bits of
@@ -333,15 +381,9 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx, size_t tag_len,
 
   // Append (len64(A) || len64(C)) and XOR the result with S1 to get the final
   // tag.
-  if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
-    // To mitigate FI, perform the GHASH update twice and compare the result.
-    HARDENED_TRY(ghash_update_redundant(&ctx->ghash_ctx, kAesBlockNumBytes,
-                                        (unsigned char *)last_block));
-  } else {
-    HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
-    ghash_update(&ctx->ghash_ctx, kAesBlockNumBytes,
-                 (unsigned char *)last_block);
-  }
+  HARDENED_TRY(ghash_update_secure(&ctx->ghash_ctx, kAesBlockNumBytes,
+                                   (unsigned char *)last_block,
+                                   ctx->security_level));
 
   aes_block_t full_tag;
   HARDENED_TRY(ghash_final(&ctx->ghash_ctx, full_tag.data));
@@ -502,19 +544,7 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
 
   // If this is the first part of the plaintext and we haven't finished the AAD
   // yet, process the remaining partial AAD and update the state.
-  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
-    if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
-      // To mitigate FI, perform the GHASH update twice and compare the result.
-      HARDENED_TRY(ghash_update_redundant(
-          &ctx->ghash_ctx, partial_ghash_block_len,
-          (unsigned char *)ctx->partial_ghash_block.data));
-    } else {
-      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
-      ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
-                   (unsigned char *)ctx->partial_ghash_block.data);
-    }
-  }
+  HARDENED_TRY(flush_partial_aad(ctx));
 
   // Process any full blocks of input with GCTR to generate more ciphertext.
   size_t partial_aes_block_len = ctx->input_len % kAesBlockNumBytes;
@@ -564,19 +594,7 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
                        size_t *output_len, uint8_t *output) {
   // If there was no input (we never entered the "update encrypted data"
   // stage), process the remaining partial AAD and update the state.
-  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
-    if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
-      // To mitigate FI, perform the GHASH update twice and compare the result.
-      HARDENED_TRY(ghash_update_redundant(
-          &ctx->ghash_ctx, partial_ghash_block_len,
-          (unsigned char *)ctx->partial_ghash_block.data));
-    } else {
-      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
-      ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
-                   (unsigned char *)ctx->partial_ghash_block.data);
-    }
-  }
+  HARDENED_TRY(flush_partial_aad(ctx));
 
   // If a partial block of input data remains, pad it with zeroes and generate
   // one last block of output, which is then truncated to match the input
@@ -602,31 +620,16 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
     // If a partial block of ciphertext (output for encryption) was generated,
     // accumulate in GHASH.
     if (*output_len > 0) {
-      if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
-        // To mitigate FI, perform the GHASH update twice and compare the
-        // result.
-        HARDENED_TRY(ghash_update_redundant(&ctx->ghash_ctx, *output_len,
-                                            (unsigned char *)output));
-      } else {
-        HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
-        ghash_update(&ctx->ghash_ctx, *output_len, (unsigned char *)output);
-      }
+      HARDENED_TRY(ghash_update_secure(&ctx->ghash_ctx, *output_len, output,
+                                       ctx->security_level));
     }
   } else if (ctx->is_encrypt == kHardenedBoolFalse) {
     // If a partial block of ciphertext (input for decryption) remains,
     // accumulate it in GHASH.
     size_t partial_ghash_block_len = ctx->input_len % kGhashBlockNumBytes;
-    if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
-      // To mitigate FI, perform the GHASH update twice and compare the result.
-      HARDENED_TRY(ghash_update_redundant(
-          &ctx->ghash_ctx, partial_ghash_block_len,
-          (unsigned char *)ctx->partial_ghash_block.data));
-    } else {
-      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
-      ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
-                   (unsigned char *)ctx->partial_ghash_block.data);
-    }
-
+    HARDENED_TRY(ghash_update_secure(
+        &ctx->ghash_ctx, partial_ghash_block_len,
+        (const uint8_t *)ctx->partial_ghash_block.data, ctx->security_level));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }

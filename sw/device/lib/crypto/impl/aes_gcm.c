@@ -280,6 +280,80 @@ static status_t clear_key_if_sideloaded(const aes_key_t key) {
   return keymgr_sideload_clear_aes();
 }
 
+/**
+ * Restore and prepare the AES-GCM internal context for streaming operations.
+ *
+ * This routine restores the internal state from the provided API context,
+ * handles sideloaded key loading, and performs conditional key remasking if
+ * requested by the operation flow.
+ *
+ * @param api_ctx Context object.
+ * @param[out] internal_ctx Internal structure to be populated with restored
+ * state.
+ * @param remask Whether to perform a fresh remask of the AES key shares.
+ * @return Result of the operation (OK or error status).
+ */
+static inline status_t gcm_implement_context(
+    otcrypto_aes_gcm_context_t *api_ctx, aes_gcm_context_t *internal_ctx,
+    hardened_bool_t remask) {
+  HARDENED_TRY(gcm_context_restore(api_ctx, internal_ctx));
+  HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
+  if (remask == kHardenedBoolTrue) {
+    HARDENED_TRY(gcm_remask_key(internal_ctx));
+  }
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Internal initializer for shared AES-GCM encryption/decryption state.
+ *
+ * Constructs the AES key, performs the initial block cipher operation to
+ * derive the hash subkey and initial counter block, and saves the resulting
+ * state into the context object.
+ *
+ * @param key Pointer to the blinded key structure.
+ * @param iv Pointer to the initialization vector buffer.
+ * @param[out] ctx Destination context object to store internal GCM state.
+ * @param is_encrypt Hardened flag indicating encryption (True) or decryption
+ * (False).
+ * @return Result of the operation (OK or error status).
+ */
+static inline otcrypto_status_t internal_aes_gcm_init(
+    otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
+    otcrypto_aes_gcm_context_t *ctx, hardened_bool_t is_encrypt) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
+      ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  // Construct the AES key.
+  aes_key_t aes_key;
+  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
+  HARDENED_TRY(load_key_if_sideloaded(aes_key));
+
+  // Call the internal init operation.
+  aes_gcm_context_t internal_ctx;
+  internal_ctx.security_level = key->config.security_level;
+  if (is_encrypt == kHardenedBoolTrue) {
+    HARDENED_TRY(
+        aes_gcm_encrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
+  } else {
+    HARDENED_TRY(
+        aes_gcm_decrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
+  }
+
+  // Save the context and clear the key if needed.
+  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
+  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
+
+  // Verify the input buffer
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
 otcrypto_status_t otcrypto_aes_gcm_encrypt(
     otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
     const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
@@ -398,61 +472,13 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
-      ctx == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  // Construct the AES key.
-  aes_key_t aes_key;
-  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
-  HARDENED_TRY(load_key_if_sideloaded(aes_key));
-
-  // Call the internal init operation.
-  aes_gcm_context_t internal_ctx;
-  internal_ctx.security_level = key->config.security_level;
-  HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
-
-  // Save the context and clear the key if needed.
-  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
-
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return internal_aes_gcm_init(key, iv, ctx, kHardenedBoolTrue);
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     otcrypto_blinded_key_t *key, const otcrypto_const_word32_buf_t *iv,
     otcrypto_aes_gcm_context_t *ctx) {
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
-      ctx == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  // Construct the AES key.
-  aes_key_t aes_key;
-  HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
-  HARDENED_TRY(load_key_if_sideloaded(aes_key));
-
-  // Call the internal init operation.
-  aes_gcm_context_t internal_ctx;
-  internal_ctx.security_level = key->config.security_level;
-  HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
-
-  // Save the context and clear the key if needed.
-  HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
-
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return internal_aes_gcm_init(key, iv, ctx, kHardenedBoolFalse);
 }
 
 otcrypto_status_t otcrypto_aes_gcm_update_aad(
@@ -471,8 +497,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
-  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  HARDENED_TRY(gcm_implement_context(ctx, &internal_ctx, kHardenedBoolFalse));
 
   // Call the internal update operation.
   HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad->len, aad->data));
@@ -504,12 +529,9 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     return OTCRYPTO_OK;
   }
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // Restore the AES-GCM context object, load the key, and remask.
   aes_gcm_context_t internal_ctx;
-  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
-  // Remask the key if it is not sideloaded.
-  HARDENED_TRY(gcm_remask_key(&internal_ctx));
+  HARDENED_TRY(gcm_implement_context(ctx, &internal_ctx, kHardenedBoolTrue));
 
   // The output buffer must be long enough to hold all full blocks that will
   // exist after `input` is added.
@@ -563,12 +585,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // Randomize the tag before the operation.
   HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // Restore the AES-GCM context object, load the key, and remask.
   aes_gcm_context_t internal_ctx;
-  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
-  // Remask the key if it is not sideloaded.
-  HARDENED_TRY(gcm_remask_key(&internal_ctx));
+  HARDENED_TRY(gcm_implement_context(ctx, &internal_ctx, kHardenedBoolTrue));
 
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
@@ -613,12 +632,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // Restore the AES-GCM context object, load the key, and remask.
   aes_gcm_context_t internal_ctx;
-  HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
-  // Remask the key if it is not sideloaded.
-  HARDENED_TRY(gcm_remask_key(&internal_ctx));
+  HARDENED_TRY(gcm_implement_context(ctx, &internal_ctx, kHardenedBoolTrue));
 
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
