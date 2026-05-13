@@ -157,6 +157,8 @@ _POSITIONS = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
             "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_a2_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_a2_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
