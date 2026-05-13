@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -19,6 +20,7 @@
 // algorithm itself, but the keyblob layout requires them so that the share1
 // pointer lands at the correct offset within the keyblob.
 enum {
+  kEd25519SeedWords = ED25519_CMD_PRIVATE_KEY_SHARE_BYTES / 4,
   kEd25519MaskedScalarShareBytes =
       ED25519_CMD_PRIVATE_KEY_SHARE_BYTES + (64 / 8),
   kEd25519MaskedScalarShareWords = kEd25519MaskedScalarShareBytes / 4,
@@ -298,6 +300,49 @@ status_t handle_ed25519_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
+// Generates a fresh Ed25519 key pair and returns the unblinded seed d and
+// the derived public key q.
+status_t handle_ed25519_keygen(ujson_t *uj) {
+  // Generate the random seed using the hardware PRNG (URND).
+  uint32_t d_words[kEd25519SeedWords] = {0};
+  HARDENED_TRY(hardened_memshred(d_words, kEd25519SeedWords));
+
+  // Build a properly blinded keyblob: share0 = d - share1 (mod 2^256),
+  // share1 random. Padding words beyond kEd25519SeedWords stay zero.
+  uint32_t keyblob[kEd25519MaskedScalarTotalShareWords] = {0};
+  uint32_t *share0 = keyblob;
+  uint32_t *share1 = keyblob + kEd25519MaskedScalarShareWords;
+  HARDENED_TRY(hardened_memshred(share1, kEd25519SeedWords));
+  HARDENED_TRY(hardened_sub(d_words, share1, kEd25519SeedWords, share0));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kEd25519PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Derive the public key.
+  uint32_t public_key_buf[kEd25519PublicKeyWords];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = ED25519_CMD_PUBLIC_KEY_BYTES,
+      .key = public_key_buf,
+  };
+  TRY(otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+
+  cryptotest_ed25519_keygen_resp_t uj_output;
+  memset(uj_output.d, 0, ED25519_CMD_PRIVATE_KEY_SHARE_BYTES);
+  memcpy(uj_output.d, d_words, ED25519_CMD_PRIVATE_KEY_SHARE_BYTES);
+  uj_output.d_len = ED25519_CMD_PRIVATE_KEY_SHARE_BYTES;
+  memset(uj_output.q, 0, ED25519_CMD_PUBLIC_KEY_BYTES);
+  memcpy(uj_output.q, public_key_buf, ED25519_CMD_PUBLIC_KEY_BYTES);
+  uj_output.q_len = ED25519_CMD_PUBLIC_KEY_BYTES;
+
+  RESP_OK(ujson_serialize_cryptotest_ed25519_keygen_resp_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_ed25519(ujson_t *uj) {
   cryptotest_ed25519_operation_t uj_op;
   TRY(ujson_deserialize_cryptotest_ed25519_operation_t(uj, &uj_op));
@@ -308,6 +353,8 @@ status_t handle_ed25519(ujson_t *uj) {
       return handle_ed25519_sign_check(uj);
     case kCryptotestEd25519OperationSign:
       return handle_ed25519_sign(uj);
+    case kCryptotestEd25519OperationKeyGen:
+      return handle_ed25519_keygen(uj);
     default:
       LOG_ERROR("Unrecognized Ed25519 operation: %d", uj_op);
       return INVALID_ARGUMENT();

@@ -52,7 +52,8 @@ extern "C" {
 #define ED25519_OPERATION(_, value) \
     value(_, SignCheck) \
     value(_, Sign) \
-    value(_, Verify)
+    value(_, Verify) \
+    value(_, KeyGen)
 UJSON_SERDE_ENUM(CryptotestEd25519Operation, cryptotest_ed25519_operation_t, ED25519_OPERATION);
 
 #define ED25519_SIGN_MODE(_, value) \
@@ -93,6 +94,13 @@ UJSON_SERDE_ENUM(CryptotestEd25519VerifyOutput, cryptotest_ed25519_verify_output
     field(public_key, uint8_t, ED25519_CMD_PUBLIC_KEY_BYTES) \
     field(public_key_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEd25519SignResp, cryptotest_ed25519_sign_resp_t, ED25519_SIGN_RESP);
+
+#define ED25519_KEYGEN_RESP(field, string) \
+    field(d, uint8_t, ED25519_CMD_PRIVATE_KEY_SHARE_BYTES) \
+    field(d_len, size_t) \
+    field(q, uint8_t, ED25519_CMD_PUBLIC_KEY_BYTES) \
+    field(q_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestEd25519KeygenResp, cryptotest_ed25519_keygen_resp_t, ED25519_KEYGEN_RESP);
 
 // clang-format on
 
