@@ -411,8 +411,10 @@ module keccak_2share
     end
     for (int x = 0 ; x < 5 ; x++) begin
       for (int z = 0 ; z < W ; z++) begin
+        // index_z is z-1 modulo W, which will be W-1 if z=0. Computing modulus "expr % W" with
+        // "expr & (W-1)" works because W is a power of two.
         int index_z;
-        index_z = (z == 0) ? W-1 : z-1; // (z+1)%W
+        index_z = (z - 1) & (W - 1);
         d[x][z] = c[ThetaIndexX1[x]][z] ^ c[ThetaIndexX2[x]][index_z];
       end
     end
