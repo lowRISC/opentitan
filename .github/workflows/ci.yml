@@ -512,6 +512,18 @@ jobs:
       interface: cw340
       tag_filters: "manuf,-hyper310,-qemu"
 
+  execute_a2_rom_ext_fpga_tests_cw340:
+    name: CW340 Earlgrey A2 ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_a2_rom_ext_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_a2_rom_ext
+
   verify_fpga_jobs:
     name: Verify FPGA jobs
     runs-on: ubuntu-22.04
@@ -528,6 +540,7 @@ jobs:
       - execute_rom_ext_fpga_tests_cw340
       - execute_sival_fpga_tests_cw340
       - execute_sival_rom_ext_fpga_tests_cw340
+      - execute_a2_rom_ext_fpga_tests_cw340
       - execute_manuf_fpga_tests_cw340
     if: success() || failure()
     steps:
