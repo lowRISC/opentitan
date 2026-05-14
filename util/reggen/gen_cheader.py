@@ -7,6 +7,7 @@ Generate C header from validated register JSON tree
 
 import io
 import logging as log
+import re
 import sys
 import textwrap
 import warnings
@@ -196,28 +197,107 @@ def gen_cdefine_window(outstr: TextIO, win: Window, comp: str, regwidth: int,
                gen_define(defname + '_MASK ', [], hex(mask), existing_defines))
 
 
+def verilog_int_literal_to_c(literal: str) -> str:
+    '''Convert an integer literal from Verilog syntax to C
+
+    This is designed to cope with the form 32'h10 (giving 0x10). If the code
+    isn't in a known syntax, the function just passes the value straight through
+    (returning literal).
+
+    If the literal looks like an integer but will not work for C code, the
+    function raises a ValueError with a description of the problem. This will
+    cause gen_cdefines_module_param to print a warning and drop the parameter.
+    '''
+    m = re.match(r"[0-9]*'([dh])([_0-9a-f]+)\s*$", literal, re.IGNORECASE)
+
+    # If this isn't a syntax we understand, pass the result straight through
+    if m is None:
+        return literal
+
+    is_hex = m.group(1) == "h"
+
+    # Interpret the integer literal. This might fail, because the regex above
+    # doesn't disallow e.g. 'dff.
+    try:
+        no_underscores = m.group(2).replace("_", "")
+        int_literal = int(no_underscores, 16 if is_hex else 10)
+    except ValueError as e:
+        raise ValueError(f"Cannot convert {literal} to a integer") from e
+
+    # Check that the integer literal will actually fit in a C (long) integer.
+    bit_len = int_literal.bit_length()
+    if bit_len > 64:
+        raise ValueError(f"The literal {literal} would take {bit_len} bits")
+
+    # Otherwise, it's looking promising. Return no_underscores, but with an 0x
+    # prefix if the base is 16. That way, the C literal will have the same base
+    # as the value we parsed (which is nice for literals like 999 or 'h100).
+    return f"0x{no_underscores}" if is_hex else no_underscores
+
+
 def gen_cdefines_module_param(outstr: TextIO, param: LocalParam,
                               module_name: str,
                               existing_defines: Set[str]) -> None:
-    # Presently there is only one type (int), however if the new types are
-    # added, they potentially need to be handled differently.
-    known_types = ["int", "int unsigned"]
-    if param.param_type not in known_types:
-        warnings.warn(
-            f"Cannot generate a module define of type {param.param_type}")
-        return
-
-    if param.desc is not None:
-        genout(outstr, format_comment(first_line(param.desc)))
     # Heuristic: if the name already has underscores, it's already snake_case,
     # otherwise, assume StudlyCaps and covert it to snake_case.
     param_name = param.name if '_' in param.name else to_snake_case(param.name)
     define_name = as_define(module_name + '_PARAM_' + param_name)
-    if param.param_type == "int" or param.param_type == "int unsigned":
-        define = gen_define(define_name, [], param.value, existing_defines)
 
-    genout(outstr, define)
-    genout(outstr, '\n')
+    # SystemVerilog types where parameter values can be written as integer
+    # literals in C. (Note: we assume the author of the hjson didn't having
+    # written a value as something like "'h10", but that would be a silly thing
+    # to do! They'll just get an error further downstream)
+    #
+    # Note that the list here has the property there are no entries A before B
+    # where A is a prefix of B. This guarantees that the integer type
+    # substitution below will replace the largest possible type.
+    #
+    # Also note that the format of the entries in the list needs to be
+    # understood by the code that makes int_typ_regexes (because we do a simple
+    # substitution and then treat the result as a regex).
+    int_types = ["int unsigned", "int",
+                 "logic [31:0]", "logic", "bit [31:0]", "bit"]
+
+    # To make the matching logic below a bit easier, get rid of leading and
+    # trailing space and replace multiple spaces with single ones.
+    trimmed_type = re.sub(r"\s+", " ", param.param_type.strip())
+
+    # Does this param look like an array of one of the integer types? In
+    # SystemVerilog syntax, the type might be "int [123]" or it might be
+    # something like "logic [31:0][123]" or "logic [7:0][4:0]". If so, this
+    # isn't really something we'd want in a #define line.
+    #
+    # To spot this case, start by trying to match something from int_types at
+    # the start of the type. On a match (which is of maximal length because of
+    # the ordering in int_types), try to match "\s*[" immediately afterwards. On
+    # a hit, this is an array we should skip.
+    type_patterns = (re.escape(t).replace(r"\ ", r"\s*") for t in int_types)
+    int_type_regex = "|".join(f"(?:{pattern})" for pattern in type_patterns)
+    int_type_match = re.match(int_type_regex, trimmed_type)
+    if int_type_match and re.match(r"\s*\[",
+                                   param.param_type[int_type_match.end():]):
+        return
+
+    if trimmed_type in int_types:
+        if param.desc is not None:
+            genout(outstr, format_comment(first_line(param.desc)))
+
+        try:
+            parsed_str = verilog_int_literal_to_c(param.value)
+        except ValueError as e:
+            warnings.warn(f"Skipping parameter {param.name}: {e}")
+            return
+
+        define = gen_define(define_name, [], parsed_str, existing_defines)
+
+        genout(outstr, define)
+        genout(outstr, '\n')
+
+    else:
+        # We don't know how to handle this parameter type. Print a warning to
+        # the console and ignore it.
+        warnings.warn(f"Skipping parameter {param.name} with "
+                      f"unknown type {param.param_type}")
 
 
 def gen_cdefines_module_params(outstr: TextIO, module_data: IpBlock,
