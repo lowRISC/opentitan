@@ -660,7 +660,7 @@ def _offline_signature_attach(ctx):
 offline_signature_attach = rule(
     implementation = _offline_signature_attach,
     attrs = {
-        "srcs": attr.label_list(allow_files = True, providers = [PreSigningBinaryInfo], doc = "Binary files to sign"),
+        "srcs": attr.label_list(allow_files = True, providers = [[PreSigningBinaryInfo], [DefaultInfo]], doc = "Binary files to sign"),
         "ecdsa_signatures": attr.label_list(allow_files = True, doc = "ECDSA signed digest files"),
         "rsa_signatures": attr.label_list(allow_files = True, doc = "RSA signed digest files"),
         "spx_signatures": attr.label_list(allow_files = True, doc = "SPX+ signed digest files"),
