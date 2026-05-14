@@ -2470,7 +2470,7 @@
         "bzlTransitiveDigest": "o/whtsO23lJVry1VyWqgpH+wKL0qvCL0/hUtHawp+1A=",
         "usagesDigest": "tdFxsSLiRUnMAr6sM+iVki4hl8WLIChPzoBKi0CpPXU=",
         "recordedFileInputs": {
-          "@@//python-requirements.txt": "3f00052cf766b1e57986b8487234e4e84e615eabbe9fd34e813b9e4bab2012fb",
+          "@@//python-requirements.txt": "91b51f4248cac22636098b0d6d3668b414423d8d43352b4663ab844ec59b5732",
           "@@lowrisc_misc_linters+//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
           "@@protobuf+//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_fuzzing+//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
@@ -2598,7 +2598,7 @@
               "dep_template": "@ot_python_deps//{name}:{target}",
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
-              "requirement": "dvsim==1.17.3 --hash=sha256:bcf793a19898de8c2a762415740a629ef51b40eb5bf6b49e275e20f7dff202ce --hash=sha256:d3b76e8ad67b43304c171ab96389fb9ffcd78ae3268b815a4b8400bfd3e00e19"
+              "requirement": "dvsim==1.34.1 --hash=sha256:13cee7d7d05efb80f327c5c9db7a18bd7b16a7db7c2011dbf0ff72041bb53dda --hash=sha256:592ffafa4375d2ef3f67cfdd234f4b7ae185c560189f4202e07e616b93109282"
             }
           },
           "ot_python_deps_310_edalize": {
