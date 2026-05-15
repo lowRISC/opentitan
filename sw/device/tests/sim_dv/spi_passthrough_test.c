@@ -436,6 +436,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_device_init_from_dt(kSpiDeviceDt, &spi_device.dev));
   bool upload_write_commands = (kUploadWriteCommands != 0);
 
+  // Print kFilteredCommands and kReadPipelineMode to the log, which
+  // allows us to check SW has seen the pipeline configuration
+  // expected by the DV code.
+  LOG_INFO("kFilteredCommands = %x", kFilteredCommands);
+  LOG_INFO("kReadPipelineMode = %d", kReadPipelineMode);
+
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spi_device, kFilteredCommands, upload_write_commands));
   CHECK_STATUS_OK(spi_device_testutils_configure_read_pipeline(
