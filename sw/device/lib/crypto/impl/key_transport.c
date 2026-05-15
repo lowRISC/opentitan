@@ -329,6 +329,12 @@ otcrypto_status_t otcrypto_key_unwrap(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Sanitize the length of the key. Maximum bound is currently the size of a
+  // RSA 4096 private key.
+  if (wrapped_key->len > kOtcryptoWrappedKeyMaxWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Unwrap the key.
   uint32_t plaintext[wrapped_key->len];
   HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));
