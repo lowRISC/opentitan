@@ -444,6 +444,24 @@ typedef struct otcrypto_key_config {
 } otcrypto_key_config_t;
 
 /**
+ * Maximum number of 32-bit words in a wrapped key.
+ *
+ * Sized for the largest supported key (RSA-4096 private key). Callers can use
+ * this to bound input buffers passed to `otcrypto_key_unwrap`.
+ */
+enum {
+  kOtcryptoWrappedKeyMaxWords =
+      /* key configuration struct */
+  sizeof(otcrypto_key_config_t) / sizeof(uint32_t) +
+  /* checksum and keyblob_length fields */
+  2 +
+  /* RSA-4096 keyblob: 2 shares of 512 bytes each */
+  2 * (4096 / 8 / sizeof(uint32_t)) +
+  /* AES-KWP 64-bit integrity prefix */
+  2,
+};
+
+/**
  * Struct to handle unmasked key type.
  */
 typedef struct otcrypto_unblinded_key {
