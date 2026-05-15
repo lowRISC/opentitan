@@ -18,6 +18,7 @@ import random
 from Crypto.PublicKey import RSA, ECC
 from Crypto.Signature import pkcs1_15, DSS
 from Crypto.Hash import SHA256, SHA384
+from Crypto.Protocol import DH
 
 ignored_keys_set = set([])
 opentitantool_path = ""
@@ -806,33 +807,43 @@ class SymCryptolibFiTest(unittest.TestCase):
         )
 
     def test_char_x25519_ecdh(self):
-        # Test vector from RFC 7748, Section 6.1
-        # https://datatracker.ietf.org/doc/html/rfc7748#section-6.1
-        # Alice's Private Key
-        private_key_bytes = bytes.fromhex(
-            "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a"
-        )
-        private_key = list(private_key_bytes)
+        # Generate random 32-byte arrays to act as the private key seeds
+        alice_private_list = [random.randint(0, 255) for _ in range(32)]
+        bob_private_list = [random.randint(0, 255) for _ in range(32)]
 
-        # Bob's Public Key
-        public_bob_bytes = bytes.fromhex(
-            "de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f"
+        alice_private_bytes = bytes(alice_private_list)
+        bob_private_bytes = bytes(bob_private_list)
+
+        alice_key = DH.import_x25519_private_key(alice_private_bytes)
+        bob_key = DH.import_x25519_private_key(bob_private_bytes)
+
+        # Extract Bob's public key (the 32-byte X coordinate) in raw format
+        bob_public_bytes = bob_key.public_key().export_key(format="raw")
+        bob_public_list = list(bob_public_bytes)
+
+        # key_agreement inherently requires a KDF. Passing a lambda identity
+        # function bypasses it, returning the raw 32-byte shared secret point.
+        expected_shared_bytes = DH.key_agreement(
+            static_priv=alice_key,
+            static_pub=bob_key.public_key(),
+            kdf=lambda x: x
         )
-        public_x = list(public_bob_bytes)
-        public_y = [0] * 32  # X25519 uses the u-coordinate (x) exclusively
+        expected_shared = list(expected_shared_bytes)
+
         cfg = 0
         trigger = 0
+        public_y = [0] * 32  # X25519 ignores the Y coordinate
 
         actual_result = fi_asym_cryptolib_functions.char_x25519_ecdh(
-            target, iterations, private_key, public_x, public_y, cfg, trigger
+            target,
+            iterations,
+            alice_private_list,
+            bob_public_list,
+            public_y,
+            cfg,
+            trigger,
         )
         actual_result_json = json.loads(actual_result)
-
-        expected_shared = list(
-            bytes.fromhex(
-                "4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742"
-            )
-        )
 
         expected_result_json = {
             "status": 0,
@@ -843,6 +854,7 @@ class SymCryptolibFiTest(unittest.TestCase):
             "ast_alerts": [0, 0],
             "cfg": 0,
         }
+
         utils.compare_json_data(
             actual_result_json, expected_result_json, ignored_keys_set
         )
