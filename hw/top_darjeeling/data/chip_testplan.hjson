@@ -2732,7 +2732,7 @@
             as well.
             '''
       stage: V2
-      tests: ["rom_keymgr_functest"]
+      tests: ["rom_keymgr_dpe_functest"]
     }
     {
       name: chip_sw_signed
