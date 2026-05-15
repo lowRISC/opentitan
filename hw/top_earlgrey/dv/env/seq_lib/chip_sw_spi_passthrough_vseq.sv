@@ -5,25 +5,29 @@
 class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_spi_passthrough_vseq)
 
-  `uvm_object_new
-
   // The sequence of opcodes used for the test.
   spi_flash_cmd_e test_opcodes[$];
+
   // Whether to check for transactions appearing on the unused spi_host.
   bit en_unused_spi_host_monitoring = 1'b1;
+
   // Frequencies to use for testing the sequences.
   time sck_periods_ps[] = '{
     41_000, // 24 MHz
-`ifndef GATE_LEVEL
-    //TODO return 30MHz for GLS simulation when issue #24597 is fixed
-    // 30Mhz SCK is not supported when CMD_INFO.read_pipeline_mode is set to 0x0 or 0x1
     33_000, // 30 MHz
-`endif
     167_000 // 6 MHz
   };
+
   // A bit map of command slots that will have passthrough filters enabled.
   rand bit [spi_device_pkg::NumTotalCmdInfo-1:0] passthrough_filters;
 
+  // This test will run with a random SCK period, selected from sck_periods_ps
+  rand time sck_period_ps;
+
+  // Constrain the selected SCK period to be one of the frequencies in sck_periods_ps
+  constraint valid_sck_period_c {
+    sck_period_ps inside {sck_periods_ps};
+  }
 
   // Configures the read pipeline when set to non-zero
   rand bit [1:0] read_pipeline_mode;
@@ -31,6 +35,18 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   constraint read_pipeline_mode_c {
     read_pipeline_mode <= 2;
   }
+
+  // Constrain read_pipeline_mode to be 2 when running at a high frequency (with period at most
+  // 33_000, so an SCK frequency of 30 MHz or more)
+  constraint high_speed_read_pipeline_c {
+    if (sck_period_ps <= 33_000) {
+      read_pipeline_mode == 2;
+    }
+  }
+
+  function new (string name="");
+    super.new(name);
+  endfunction
 
   // Generate a random permutation of the following opcodes, and place them in
   // the test_opcodes queue:
@@ -164,6 +180,16 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
+    `uvm_info(get_full_name(),
+              $sformatf({"\nRunning SPI passthrough test with following config:\n",
+                         "    SCK period                  = %0d ps\n",
+                         "    Enabled passthrough filters = 0x%0h\n",
+                         "    Read pipeline mode          = %0d"},
+                        sck_period_ps,
+                        passthrough_filters,
+                        read_pipeline_mode),
+              UVM_LOW)
+
     // Turn off the FIFO data output assertion, as spi_device issues a read
     // before it knows whether it needs the data.
     $assertoff(0, "tb.dut.top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
@@ -197,11 +223,11 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
         monitor_unused_spi_host();
       join_none
     end
-    foreach (sck_periods_ps[i]) begin
-      cfg.m_spi_host_agent_cfg.sck_period_ps = sck_periods_ps[i];
-      generate_spi_flash_sequence();
-      execute_spi_flash_sequence();
-    end
+
+    cfg.m_spi_host_agent_cfg.sck_period_ps = sck_period_ps;
+    generate_spi_flash_sequence();
+    execute_spi_flash_sequence();
+
     override_test_status_and_finish(1'b1);
   endtask
 
