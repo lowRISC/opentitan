@@ -26,7 +26,7 @@ dependencies = [
   "lxml ~= 5.0",
   "mako==1.1.6",
   "pluralizer==1.2.0",
-  "pycryptodome==3.15.0",
+  "pycryptodome==3.23.0",
   "pyelftools==0.29",
   "pytest-timeout==2.1.0",
   "pytest==7.0.1",
