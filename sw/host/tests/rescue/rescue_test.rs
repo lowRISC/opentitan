@@ -249,7 +249,7 @@ where
             if e.to_string().contains(error) {
                 Ok(())
             } else {
-                Err(anyhow!("Unexpected error: {}", e.to_string()))
+                Err(anyhow!("Unexpected error: {}", e))
             }
         }
     }

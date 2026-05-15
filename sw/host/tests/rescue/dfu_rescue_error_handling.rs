@@ -80,7 +80,7 @@ fn expect_usb_bad_mode_write_control(
             if e.to_string().contains("UsbBadSetup") {
                 Ok(())
             } else {
-                Err(anyhow!("Unexpected error: {}", e.to_string()))
+                Err(anyhow!("Unexpected error: {}", e))
             }
         }
     }
@@ -101,7 +101,7 @@ fn expect_usb_bad_mode_read_control(
             if e.to_string().contains("UsbBadSetup") {
                 Ok(())
             } else {
-                Err(anyhow!("Unexpected error: {}", e.to_string()))
+                Err(anyhow!("Unexpected error: {}", e))
             }
         }
     }

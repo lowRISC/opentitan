@@ -7287,7 +7287,7 @@ opentitan_test(
         needs_jtag = True,
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         tags = ["manual"],
-        test_cmd = "--elf={sram_program}",
+        test_cmd = "--elf={sram_program} --jtag-interface=probe-rs",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
     ),
     silicon = silicon_params(
