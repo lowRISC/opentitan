@@ -1569,8 +1569,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.vendor_specific_fields:
-        vendor_specific.extend_optional_fields(args.vendor_specific_fields)
+    vendor_specific.extend_optional_fields(args.vendor_specific_fields)
 
     # check combinations
     if args.top_ral:

@@ -156,6 +156,8 @@ def main():
 
     args = parser.parse_args()
 
+    vendor_specific.extend_optional_fields(args.vendor_specific_fields)
+
     if args.version:
         version.show_and_exit(__file__, ["Hjson", "Mako"])
 
@@ -245,9 +247,6 @@ def main():
         with outfile:
             gen_selfdoc.document(outfile)
         exit(0)
-
-    if args.vendor_specific_fields:
-        vendor_specific.extend_optional_fields(args.vendor_specific_fields)
 
     srcfull = infile.read()
 
