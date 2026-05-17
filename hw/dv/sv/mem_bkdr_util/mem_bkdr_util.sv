@@ -184,7 +184,7 @@ class mem_bkdr_util extends uvm_object;
 
     byte_width = `HAS_PARITY ? 9 : 8;
     bytes_per_word = data_width / byte_width;
-    `DV_CHECK_LE_FATAL(bytes_per_word, 32, "data width > 32 bytes is not supported")
+    `DV_CHECK_LE_FATAL(bytes_per_word, 64, "data width > 64 bytes is not supported")
     size_bytes = depth * bytes_per_word;
     addr_lsb   = $clog2(bytes_per_word);
     addr_width = $clog2(depth);
