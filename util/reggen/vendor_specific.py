@@ -6,15 +6,34 @@
 from pathlib import Path
 import hjson  # type: ignore [import]
 import logging as log
+import os
 import sys
 
 from reggen import ip_block, register, multi_register, field, window
 
 
-def extend_optional_fields(arg_vendor_file: str) -> None:
-    """Extend the optional fields with vendor specific fields, in case it is defined."""
+def extend_optional_fields(arg_vendor_file: str | None) -> None:
+    """Extend optional fields with vendor-specific fields if supplied.
+    There are two ways to supply a path to a file listing vendor-specific
+    fields:
 
-    vendor_specific = import_fields(arg_vendor_file)
+    a) through the arg_vendor_file argument of this function
+    b) through the OT_REGTOOL_VENDOR_SPECIFIC_FIELDS_FILE environment variable
+
+    If the function argument is not None and the environment variable is set,
+    a runtime error is raised.
+    """
+    env_vendor_file = os.environ.get("OT_REGTOOL_VENDOR_SPECIFIC_FIELDS_FILE")
+    if arg_vendor_file is not None and env_vendor_file is not None:
+        raise RuntimeError(
+            "Conflict between arg_vendor_file and"
+            " OT_REGTOOL_VENDOR_SPECIFIC_FIELDS environment variable."
+        )
+    vendor_file = arg_vendor_file or env_vendor_file
+    if not vendor_file:
+        return
+
+    vendor_specific = import_fields(vendor_file)
 
     _extend_fields(vendor_specific, "ip_block", ip_block.OPTIONAL_FIELDS)
     _extend_fields(vendor_specific, "register", register.OPTIONAL_FIELDS)
