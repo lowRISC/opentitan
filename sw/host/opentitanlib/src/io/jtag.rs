@@ -18,6 +18,10 @@ use crate::impl_serializable_error;
 
 #[derive(Debug, Args, Clone)]
 pub struct JtagParams {
+    /// Which JTAG interface to use
+    #[arg(long, default_value = "probe-rs")]
+    pub jtag_interface: String,
+
     /// OpenOCD binary path.
     #[arg(long, default_value = "openocd")]
     pub openocd: PathBuf,
@@ -59,16 +63,16 @@ pub trait JtagChain {
     /// Connect to the given JTAG TAP on this chain.
     fn connect(self: Box<Self>, tap: JtagTap) -> Result<Box<dyn Jtag>>;
 
-    /// Stop further setup and returns raw OpenOCD instance.
+    // Stop further setup and returns raw OpenOCD instance.
     fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
 }
 
 /// A trait which represents a TAP on a JTAG chain.
 pub trait Jtag {
-    /// Stop further operation and returns raw OpenOCD instance.
+    // Stop further operation and returns raw OpenOCD instance.
     fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
 
-    /// Returns the underlying OpenOCD instance.
+    // Returns the underlying OpenOCD instance.
     fn as_raw(&mut self) -> Result<&mut OpenOcd>;
 
     /// Disconnect from the TAP.
@@ -136,7 +140,7 @@ pub enum JtagTap {
 }
 
 /// List of RISC-V general purpose registers
-#[derive(Clone, Copy, Debug, Deserialize, Serialize, strum::IntoStaticStr)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, strum::IntoStaticStr, strum::EnumIter, Eq, Hash, PartialEq)]
 #[strum(serialize_all = "lowercase")]
 pub enum RiscvGpr {
     RA,
@@ -170,6 +174,7 @@ pub enum RiscvGpr {
     T4,
     T5,
     T6,
+    PC,
 }
 
 impl RiscvGpr {
@@ -334,6 +339,152 @@ impl RiscvCsr {
     /// Get the register name as a string.
     pub fn name(self) -> &'static str {
         self.into()
+    }
+
+    /// Get the address of this register
+    pub fn addr(self) -> u16{
+        match self {
+            Self::MSTATUS => 0x300,
+            Self::MISA => 0x301,
+            Self::MIE => 0x304,
+            Self::MTVEC => 0x305,
+            Self::MCOUNTINHIBIT => 0x320,
+            Self::MHPMEVENT3 => 0x323,
+            Self::MHPMEVENT4 => 0x324,
+            Self::MHPMEVENT5 => 0x325,
+            Self::MHPMEVENT6 => 0x326,
+            Self::MHPMEVENT7 => 0x327,
+            Self::MHPMEVENT8 => 0x328,
+            Self::MHPMEVENT9 => 0x329,
+            Self::MHPMEVENT10 => 0x32a,
+            Self::MHPMEVENT11 => 0x32b,
+            Self::MHPMEVENT12 => 0x32c,
+            Self::MHPMEVENT13 => 0x32d,
+            Self::MHPMEVENT14 => 0x32e,
+            Self::MHPMEVENT15 => 0x32f,
+            Self::MHPMEVENT16 => 0x330,
+            Self::MHPMEVENT17 => 0x331,
+            Self::MHPMEVENT18 => 0x332,
+            Self::MHPMEVENT19 => 0x333,
+            Self::MHPMEVENT20 => 0x334,
+            Self::MHPMEVENT21 => 0x335,
+            Self::MHPMEVENT22 => 0x336,
+            Self::MHPMEVENT23 => 0x337,
+            Self::MHPMEVENT24 => 0x338,
+            Self::MHPMEVENT25 => 0x339,
+            Self::MHPMEVENT26 => 0x33a,
+            Self::MHPMEVENT27 => 0x33b,
+            Self::MHPMEVENT28 => 0x33c,
+            Self::MHPMEVENT29 => 0x33d,
+            Self::MHPMEVENT30 => 0x33e,
+            Self::MHPMEVENT31 => 0x33f,
+            Self::MSCRATCH => 0x340,
+            Self::MEPC => 0x341,
+            Self::MCAUSE => 0x342,
+            Self::MTVAL => 0x343,
+            Self::MIP => 0x344,
+            Self::PMPCFG0 => 0x3a0,
+            Self::PMPCFG1 => 0x3a1,
+            Self::PMPCFG2 => 0x3a2,
+            Self::PMPCFG3 => 0x3a3,
+            Self::PMPADDR0 => 0x3b0,
+            Self::PMPADDR1 => 0x3b1,
+            Self::PMPADDR2 => 0x3b2,
+            Self::PMPADDR3 => 0x3b3,
+            Self::PMPADDR4 => 0x3b4,
+            Self::PMPADDR5 => 0x3b5,
+            Self::PMPADDR6 => 0x3b6,
+            Self::PMPADDR7 => 0x3b7,
+            Self::PMPADDR8 => 0x3b8,
+            Self::PMPADDR9 => 0x3b9,
+            Self::PMPADDR10 => 0x3ba,
+            Self::PMPADDR11 => 0x3bb,
+            Self::PMPADDR12 => 0x3bc,
+            Self::PMPADDR13 => 0x3bd,
+            Self::PMPADDR14 => 0x3be,
+            Self::PMPADDR15 => 0x3bf,
+            Self::SCONTEXT => 0x5a8,
+            Self::MSECCFG => 0x747,
+            Self::MSECCFGH => 0x757,
+            Self::TSELECT => 0x7a0,
+            Self::TDATA1 => 0x7a1,
+            Self::TDATA2 => 0x7a2,
+            Self::TDATA3 => 0x7a3,
+            Self::MCONTEXT => 0x7a8,
+            Self::MSCONTEXT => 0x7aa,
+            Self::DCSR => 0x7b0,
+            Self::DPC => 0x7b1,
+            Self::DSCRATCH0 => 0x7b2,
+            Self::DSCRATCH1 => 0x7b3,
+            Self::MCYCLE => 0xb00,
+            Self::MINSTRET => 0xb02,
+            Self::MHPMCOUNTER3 => 0xb03,
+            Self::MHPMCOUNTER4 => 0xb04,
+            Self::MHPMCOUNTER5 => 0xb05,
+            Self::MHPMCOUNTER6 => 0xb06,
+            Self::MHPMCOUNTER7 => 0xb07,
+            Self::MHPMCOUNTER8 => 0xb08,
+            Self::MHPMCOUNTER9 => 0xb09,
+            Self::MHPMCOUNTER10 => 0xb0a,
+            Self::MHPMCOUNTER11 => 0xb0b,
+            Self::MHPMCOUNTER12 => 0xb0c,
+            Self::MHPMCOUNTER13 => 0xb0d,
+            Self::MHPMCOUNTER14 => 0xb0e,
+            Self::MHPMCOUNTER15 => 0xb0f,
+            Self::MHPMCOUNTER16 => 0xb10,
+            Self::MHPMCOUNTER17 => 0xb11,
+            Self::MHPMCOUNTER18 => 0xb12,
+            Self::MHPMCOUNTER19 => 0xb13,
+            Self::MHPMCOUNTER20 => 0xb14,
+            Self::MHPMCOUNTER21 => 0xb15,
+            Self::MHPMCOUNTER22 => 0xb16,
+            Self::MHPMCOUNTER23 => 0xb17,
+            Self::MHPMCOUNTER24 => 0xb18,
+            Self::MHPMCOUNTER25 => 0xb19,
+            Self::MHPMCOUNTER26 => 0xb1a,
+            Self::MHPMCOUNTER27 => 0xb1b,
+            Self::MHPMCOUNTER28 => 0xb1c,
+            Self::MHPMCOUNTER29 => 0xb1d,
+            Self::MHPMCOUNTER30 => 0xb1e,
+            Self::MHPMCOUNTER31 => 0xb1f,
+            Self::MCYCLEH => 0xb80,
+            Self::MINSTRETH => 0xb82,
+            Self::MHPMCOUNTER3H => 0xb83,
+            Self::MHPMCOUNTER4H => 0xb84,
+            Self::MHPMCOUNTER5H => 0xb85,
+            Self::MHPMCOUNTER6H => 0xb86,
+            Self::MHPMCOUNTER7H => 0xb87,
+            Self::MHPMCOUNTER8H => 0xb88,
+            Self::MHPMCOUNTER9H => 0xb89,
+            Self::MHPMCOUNTER10H => 0xb8a,
+            Self::MHPMCOUNTER11H => 0xb8b,
+            Self::MHPMCOUNTER12H => 0xb8c,
+            Self::MHPMCOUNTER13H => 0xb8d,
+            Self::MHPMCOUNTER14H => 0xb8e,
+            Self::MHPMCOUNTER15H => 0xb8f,
+            Self::MHPMCOUNTER16H => 0xb90,
+            Self::MHPMCOUNTER17H => 0xb91,
+            Self::MHPMCOUNTER18H => 0xb92,
+            Self::MHPMCOUNTER19H => 0xb93,
+            Self::MHPMCOUNTER20H => 0xb94,
+            Self::MHPMCOUNTER21H => 0xb95,
+            Self::MHPMCOUNTER22H => 0xb96,
+            Self::MHPMCOUNTER23H => 0xb97,
+            Self::MHPMCOUNTER24H => 0xb98,
+            Self::MHPMCOUNTER25H => 0xb99,
+            Self::MHPMCOUNTER26H => 0xb9a,
+            Self::MHPMCOUNTER27H => 0xb9b,
+            Self::MHPMCOUNTER28H => 0xb9c,
+            Self::MHPMCOUNTER29H => 0xb9d,
+            Self::MHPMCOUNTER30H => 0xb9e,
+            Self::MHPMCOUNTER31H => 0xb9f,
+            Self::MVENDORID => 0xf11,
+            Self::MARCHID => 0xf12,
+            Self::MIMPID => 0xf13,
+            Self::MHARTID => 0xf14,
+            Self::CPUCTRL => todo!(),
+            Self::SECURESEED => todo!(),
+        }
     }
 }
 

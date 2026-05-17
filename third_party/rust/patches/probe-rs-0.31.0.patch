@@ -1,0 +1,94 @@
+commit f989d58ea5d309293f8105f69e2c7e5379737424
+Author: Lex Bailey <lex.bailey@lowrisc.org>
+Date:   Tue Apr 28 15:22:06 2026 +0100
+
+    workaround: HyperDebug issues
+
+diff --git a/probe-rs/src/probe.rs b/probe-rs/src/probe.rs
+index 90d140c3..de8ef874 100644
+--- a/probe-rs/src/probe.rs
++++ b/probe-rs/src/probe.rs
+@@ -1256,13 +1256,15 @@ impl JtagDriverState {
+ 
+ impl Default for JtagDriverState {
+     fn default() -> Self {
+-        Self {
++        let mut r = Self {
+             state: JtagState::Reset,
+             expected_scan_chain: None,
+             scan_chain: Vec::new(),
+             chain_params: ChainParams::default(),
+             jtag_idle_cycles: 0,
+-        }
++        };
++        r.chain_params.irlen = 5;
++        r
+     }
+ }
+ 
+diff --git a/probe-rs/src/probe/cmsisdap/commands/mod.rs b/probe-rs/src/probe/cmsisdap/commands/mod.rs
+index cab0c6cd..d488a2ef 100644
+--- a/probe-rs/src/probe/cmsisdap/commands/mod.rs
++++ b/probe-rs/src/probe/cmsisdap/commands/mod.rs
+@@ -325,6 +325,15 @@ impl CmsisDapDevice {
+                     ..
+                 }) => (),
+ 
++                Err(CmsisDapError::Send {
++                    source: SendError::UnexpectedAnswer,
++                    ..
++                }) => {
++                    // TODO: only apply this workaround if this is a HyperDebug
++                    self.set_packet_size(256);
++                    return Ok(256);
++                },
++
+                 // Raise other errors.
+                 Err(e) => return Err(e),
+             }
+diff --git a/probe-rs/src/probe/cmsisdap/mod.rs b/probe-rs/src/probe/cmsisdap/mod.rs
+index 886b4eb4..3accb9a0 100644
+--- a/probe-rs/src/probe/cmsisdap/mod.rs
++++ b/probe-rs/src/probe/cmsisdap/mod.rs
+@@ -25,7 +25,7 @@ use crate::{
+         AutoImplementJtagAccess, BatchCommand, DebugProbe, DebugProbeError, DebugProbeInfo,
+         DebugProbeSelector, JtagAccess, JtagDriverState, ProbeFactory, WireProtocol,
+         cmsisdap::commands::{
+-            CmsisDapError, RequestError,
++            CmsisDapError, RequestError, SendError,
+             general::info::{CapabilitiesCommand, PacketCountCommand, SWOTraceBufferSizeCommand},
+         },
+     },
+@@ -140,7 +140,17 @@ impl CmsisDap {
+         let packet_size = device.find_packet_size()? as u16;
+ 
+         // Read remaining probe information.
+-        let packet_count = commands::send_command(&mut device, &PacketCountCommand {})?;
++        let packet_count = match commands::send_command(&mut device, &PacketCountCommand {}){
++            Ok(n) => {Ok(n)},
++            Err(CmsisDapError::Send {
++                source: SendError::UnexpectedAnswer,
++                ..
++            }) => {
++                // TODO: only apply this workaround if this is a HyperDebug
++                Ok(6)
++            },
++            Err(a) =>  {Err(a)},
++        }?;
+         let caps: Capabilities = commands::send_command(&mut device, &CapabilitiesCommand {})?;
+         tracing::debug!("Detected probe capabilities: {:?}", caps);
+         let mut swo_buffer_size = None;
+diff --git a/probe-rs/src/probe/cmsisdap/mod.rs b/probe-rs/src/probe/cmsisdap/mod.rs
+index 3accb9a0..807d2dea 100644
+--- a/probe-rs/src/probe/cmsisdap/mod.rs
++++ b/probe-rs/src/probe/cmsisdap/mod.rs
+@@ -1334,7 +1334,8 @@ impl Drop for CmsisDap {
+             let _ = self.disable_swo();
+         }
+ 
+-        let _ = self.detach();
++        //let _ = self.detach();
++        println!("===============dropped CmsisDap");
+     }
+ }
+ 

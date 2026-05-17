@@ -182,6 +182,12 @@ crate.annotation(
     crate = "openssl-sys",
     repositories = ["crate_index"],
 )
+crate.annotation(
+    crate = "probe-rs",
+    patch_args = ["-p2"],
+    patches = ["@lowrisc_opentitan//third_party/rust/patches:probe-rs-0.31.0.patch"],
+    repositories = ["crate_index"],
+)
 use_repo(crate, "crate_index")
 
 # mdbook (separate because it has a lot of dependencies):
