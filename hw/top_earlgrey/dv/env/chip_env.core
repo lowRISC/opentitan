@@ -38,6 +38,7 @@ filesets:
       - lowrisc:dv:lc_ctrl_dv_utils
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
       - "fileset_partner ? (partner:systems:top_earlgrey_ast_pkg)"
+      - "skip_ral_gen ? (partner:dv:chip_ast_ral_pkg)"
     files:
       - chip_common_pkg.sv
       - chip_if.sv
