@@ -163,6 +163,9 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
         hardened_memeq(private_scalar.share0, private_key->keyblob,
                        kP256MaskedScalarTotalShareWords),
         kHardenedBoolTrue);
+
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kP256MaskedScalarTotalShareWords);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -401,6 +404,9 @@ status_t otcrypto_ecc_p256_base_point_mult(
 
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
+  hardened_memshred((uint32_t *)&private_scalar,
+                    kP256MaskedScalarTotalShareWords);
+
   return OTCRYPTO_OK;
 }
 
@@ -507,6 +513,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
   // entering the CryptoLib and here, we would detect this now.
   HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
+  hardened_memshred((uint32_t *)&private_scalar,
+                    kP256MaskedScalarTotalShareWords);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -527,6 +535,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
     HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
     HARDENED_TRY_WIPE_DMEM(
         p256_ecdsa_sign_start(message_digest.data, &private_scalar));
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kP256MaskedScalarTotalShareWords);
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -767,6 +777,8 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
     p256_masked_scalar_t private_scalar;
     HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
     HARDENED_TRY_WIPE_DMEM(p256_ecdh_start(&private_scalar, pk));
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kP256MaskedScalarTotalShareWords);
   } else {
     // Invalid value for `hw_backed`.
     return OTCRYPTO_BAD_ARGS;
@@ -1086,10 +1098,16 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
   HARDENED_TRY_WIPE_DMEM(p256_arith_share_private_key(&boolean_private_scalar,
                                                       &arith_private_scalar));
 
+  hardened_memshred((uint32_t *)&boolean_private_scalar,
+                    kP256MaskedScalarTotalShareWords);
+
   // Copy the two arithmetic shares into the output buffer.
   HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,
                                arith_private_scalar.share0,
                                kP256MaskedScalarTotalShareWords));
+
+  hardened_memshred((uint32_t *)&arith_private_scalar,
+                    kP256MaskedScalarTotalShareWords);
 
   // Set the shared key checksum.
   arith_private_key->checksum =
