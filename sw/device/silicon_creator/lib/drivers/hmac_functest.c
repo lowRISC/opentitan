@@ -58,14 +58,27 @@ static const uint32_t kGettysburgDigest[] = {
 static const char kGettysburgDigestBigEndian[] =
     "1e6fd4030f9034cd775708a396c324ed420ec587eb3dd433e29f6ac08b8cc7ba";
 
+/**
+ * @brief Prints a single word comparison between a computed digest and the
+ * expected digest.
+ * @param index          The current word index being printed.
+ * @param computed_word  The 32-bit word from the calculated digest.
+ * @param expected_word  The 32-bit word from the gold standard digest.
+ */
+static void print_digest_word_mismatch(int index, uint32_t computed_word,
+                                       uint32_t expected_word) {
+  LOG_INFO("word[%d] = 0x%08x, exp. digest word[%d] = 0x%08x", index,
+           computed_word, expected_word);
+}
+
 rom_error_t hmac_sha256_test(void) {
   hmac_digest_t digest;
   hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, &digest);
 
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != kGettysburgDigest[i]) {
+      print_digest_word_mismatch(i, digest.digest[i], kGettysburgDigest[i]);
       return kErrorUnknown;
     }
   }
@@ -112,8 +125,9 @@ rom_error_t hmac_hmac_sha256_test(void) {
                       /*big_endian_digest=*/false, &digest);
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != kGettysburgHmacSha256Digest[i]) {
+      print_digest_word_mismatch(i, digest.digest[i],
+                                 kGettysburgHmacSha256Digest[i]);
       return kErrorUnknown;
     }
   }
@@ -127,8 +141,9 @@ rom_error_t hmac_hmac_sha256_unaligned_test(void) {
                       /*big_endian_digest=*/false, &digest);
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != kGettysburgHmacSha256Digest[i]) {
+      print_digest_word_mismatch(i, digest.digest[i],
+                                 kGettysburgHmacSha256Digest[i]);
       return kErrorUnknown;
     }
   }
@@ -144,8 +159,8 @@ rom_error_t hmac_process_nowait_test(void) {
 
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != kGettysburgDigest[i]) {
+      print_digest_word_mismatch(i, digest.digest[i], kGettysburgDigest[i]);
       return kErrorUnknown;
     }
   }
@@ -163,8 +178,8 @@ rom_error_t hmac_process_wait_test(void) {
 
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != kGettysburgDigest[i]) {
+      print_digest_word_mismatch(i, digest.digest[i], kGettysburgDigest[i]);
       return kErrorUnknown;
     }
   }
@@ -180,8 +195,8 @@ rom_error_t hmac_truncated_test(void) {
 
   const size_t len = ARRAYSIZE(digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest[i]);
     if (digest[i] != kGettysburgDigest[i]) {
+      print_digest_word_mismatch(i, digest[i], kGettysburgDigest[i]);
       return kErrorUnknown;
     }
   }
@@ -201,8 +216,8 @@ rom_error_t hmac_bigendian_test(void) {
 
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != result[i]) {
+      print_digest_word_mismatch(i, digest.digest[i], result[i]);
       return kErrorUnknown;
     }
   }
@@ -222,8 +237,8 @@ rom_error_t hmac_bigendian_truncated_test(void) {
 
   const size_t len = ARRAYSIZE(digest);
   for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest[i]);
     if (digest[i] != result[i]) {
+      print_digest_word_mismatch(i, digest[i], result[i]);
       return kErrorUnknown;
     }
   }
@@ -267,16 +282,16 @@ rom_error_t hmac_save_restore_test(void) {
   hexstr_decode(&expected_digest_be, sizeof(expected_digest_be),
                 kGettysburgDigestBigEndian);
   for (int i = 0; i < ARRAYSIZE(digest_be.digest); ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest_be.digest[i]);
     if (digest_be.digest[i] != expected_digest_be[i]) {
+      print_digest_word_mismatch(i, digest_be.digest[i], expected_digest_be[i]);
       return kErrorUnknown;
     }
   }
 
   // Check that the little-endian result was correct.
   for (int i = 0; i < ARRAYSIZE(digest_le.digest); ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest_le.digest[i]);
     if (digest_le.digest[i] != kGettysburgDigest[i]) {
+      print_digest_word_mismatch(i, digest_le.digest[i], kGettysburgDigest[i]);
       return kErrorUnknown;
     }
   }
@@ -311,8 +326,8 @@ rom_error_t hmac_save_restore_repeated_test(void) {
 
   // Check that the little-endian result was correct.
   for (int i = 0; i < ARRAYSIZE(digest_le.digest); ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest_le.digest[i]);
     if (digest_le.digest[i] != kGettysburgDigest[i]) {
+      print_digest_word_mismatch(i, digest_le.digest[i], kGettysburgDigest[i]);
       return kErrorUnknown;
     }
   }
