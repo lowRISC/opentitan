@@ -235,6 +235,9 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } ctrl_fifo_err;
+    struct packed {
+      logic        q;
     } ctrl_cnt_err;
     struct packed {
       logic        q;
@@ -452,6 +455,10 @@ package rram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } ctrl_fifo_err;
+    struct packed {
+      logic        d;
+      logic        de;
     } ctrl_cnt_err;
     struct packed {
       logic        d;
@@ -601,21 +608,21 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [727:722]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [721:716]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [715:704]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [703:694]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [693:686]
-    rram_ctrl_reg2hw_exec_reg_t exec; // [685:654]
-    rram_ctrl_reg2hw_init_reg_t init; // [653:653]
-    rram_ctrl_reg2hw_control_reg_t control; // [652:639]
-    rram_ctrl_reg2hw_addr_reg_t addr; // [638:618]
-    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [617:458]
-    rram_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [457:266]
-    rram_ctrl_reg2hw_default_region_reg_t default_region; // [265:250]
-    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [249:90]
-    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [89:82]
-    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [81:70]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [728:723]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [722:717]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [716:705]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [704:695]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [694:687]
+    rram_ctrl_reg2hw_exec_reg_t exec; // [686:655]
+    rram_ctrl_reg2hw_init_reg_t init; // [654:654]
+    rram_ctrl_reg2hw_control_reg_t control; // [653:640]
+    rram_ctrl_reg2hw_addr_reg_t addr; // [639:619]
+    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [618:459]
+    rram_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [458:267]
+    rram_ctrl_reg2hw_default_region_reg_t default_region; // [266:251]
+    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [250:91]
+    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [90:83]
+    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [82:70]
     rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [69:56]
     rram_ctrl_reg2hw_corr_err_cnt_reg_t corr_err_cnt; // [55:48]
     rram_ctrl_reg2hw_phy_alert_cfg_reg_t phy_alert_cfg; // [47:46]
@@ -626,13 +633,13 @@ package rram_ctrl_reg_pkg;
 
   // HW -> register type for core interface
   typedef struct packed {
-    rram_ctrl_hw2reg_intr_state_reg_t intr_state; // [159:148]
-    rram_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [147:147]
-    rram_ctrl_hw2reg_control_reg_t control; // [146:145]
-    rram_ctrl_hw2reg_op_status_reg_t op_status; // [144:141]
-    rram_ctrl_hw2reg_status_reg_t status; // [140:129]
-    rram_ctrl_hw2reg_err_code_reg_t err_code; // [128:121]
-    rram_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [120:97]
+    rram_ctrl_hw2reg_intr_state_reg_t intr_state; // [161:150]
+    rram_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [149:149]
+    rram_ctrl_hw2reg_control_reg_t control; // [148:147]
+    rram_ctrl_hw2reg_op_status_reg_t op_status; // [146:143]
+    rram_ctrl_hw2reg_status_reg_t status; // [142:131]
+    rram_ctrl_hw2reg_err_code_reg_t err_code; // [130:123]
+    rram_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [122:97]
     rram_ctrl_hw2reg_fault_status_reg_t fault_status; // [96:69]
     rram_ctrl_hw2reg_err_addr_reg_t err_addr; // [68:47]
     rram_ctrl_hw2reg_corr_err_cnt_reg_t corr_err_cnt; // [46:38]
