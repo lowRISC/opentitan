@@ -247,6 +247,23 @@ cryptotest(
     test_vectors = ED25519_TESTVECTOR_TARGETS,
 )
 
+X25519_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_x25519_json",
+]
+
+X25519_TESTVECTOR_ARGS = " ".join([
+    "--x25519-json=\"$(rootpath {})\"".format(target)
+    for target in X25519_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "x25519_kat",
+    slow_test = True,
+    test_args = X25519_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/x25519_kat:harness",
+    test_vectors = X25519_TESTVECTOR_TARGETS,
+)
+
 RSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_2048_{}.json".format(hash)
     for hash in [
@@ -777,5 +794,6 @@ test_suite(
         ":shake128_kat",
         ":shake256_kat",
         ":sphincsplus_kat",
+        ":x25519_kat",
     ],
 )
