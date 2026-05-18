@@ -76,14 +76,18 @@ jobs:
             >> "$target_pattern_file"
       - name: Run software unit tests coverage
         run: |
-          ./bazelisk.sh coverage                             \
-            --build_tests_only                               \
-            --keep_going                                     \
-            --config=ot_coverage                             \
-            --test_output=errors                             \
-            --define DISABLE_VERILATOR_BUILD=true            \
-            --target_pattern_file="$target_pattern_file"     \
+          ARGS=(
+            --build_tests_only
+            --keep_going
+            --config=ot_coverage
+            --test_output=errors
+            --define DISABLE_VERILATOR_BUILD=true
+            --target_pattern_file="$target_pattern_file"
             --test_tag_filters=-broken,-coverage_broken,-cw310,-verilator,-dv,-silicon,-qemu
+          )
+          ./bazelisk.sh coverage "${ARGS[@]}"
+          # Ensure all generated sources are available.
+          ./bazelisk.sh build "${ARGS[@]}" --output_groups=coverage_sources
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
