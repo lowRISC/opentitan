@@ -23,7 +23,8 @@ extern "C" {
     value(_, Kmac) \
     value(_, Quit) \
     value(_, Rsa) \
-    value(_, SphincsPlus)
+    value(_, SphincsPlus) \
+    value(_, X25519)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
 // clang-format on
