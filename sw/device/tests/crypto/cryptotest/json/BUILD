@@ -20,6 +20,7 @@ cc_library(
         ":hmac_commands",
         ":kmac_commands",
         ":rsa_commands",
+        ":x25519_commands",
         "//sw/device/lib/ujson",
     ],
 )
@@ -108,6 +109,14 @@ cc_library(
     name = "sphincsplus_commands",
     srcs = ["sphincsplus_commands.c"],
     hdrs = ["sphincsplus_commands.h"],
+    features = ["-coverage"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "x25519_commands",
+    srcs = ["x25519_commands.c"],
+    hdrs = ["x25519_commands.h"],
     features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )
