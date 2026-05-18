@@ -241,6 +241,9 @@ static status_t aes_gcm_hash_subkey(
   HARDENED_TRY(ghash_init_subkey(hash_subkey_share0.data, ctx->tbl0));
   ghash_init_subkey(hash_subkey_share1.data, ctx->tbl1);
 
+  hardened_memshred((uint32_t *)&hash_subkey,
+                    sizeof(hash_subkey) / sizeof(uint32_t));
+
   return OTCRYPTO_OK;
 }
 
