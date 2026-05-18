@@ -193,6 +193,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
  * not long enough; if `output` is overly long, only the first
  * `output_bytes_written` bytes will be used.
  *
+ * Security Warning: This API does not yet check the validity of the tag of the
+ * GCM before writing the ciphertext. Please handle the API call with care and
+ * release decrypted data only after the tag is verified.
+ *
  * @param ctx Context object for the operation, updated in place.
  * @param input Plaintext for encryption, ciphertext for decryption.
  * @param[out] output Ciphertext for encryption, plaintext for decryption.
@@ -214,6 +218,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * `ciphertext_bytes_written` parameter with the number of bytes written to
  * `ciphertext`, which is always either 16 or 0. This function returns an error
  * if the ciphertext or tag buffer is not long enough.
+ *
+ * Security Warning: This API does not yet check the validity of the tag of the
+ * GCM before writing the ciphertext. Please handle the API call with care and
+ * release decrypted data only after the tag is verified.
  *
  * @param ctx Context object for the operation.
  * @param tag_len Length of authentication tag to be generated.
