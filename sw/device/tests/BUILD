@@ -7300,6 +7300,20 @@ test_suite(
 )
 
 opentitan_test(
+    name = "rv_core_ibex_mcounteren_writable_test",
+    srcs = ["rv_core_ibex_mcounteren_writable_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "rv_core_ibex_epmp_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(
