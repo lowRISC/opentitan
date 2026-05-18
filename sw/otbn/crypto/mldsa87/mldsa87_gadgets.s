@@ -8,6 +8,7 @@
 .globl sec_b2a_8x32
 .globl sec_add_8x32
 .globl sec_unmask_8x32
+.globl sec_leq_8x32
 .globl sec_unmask
 .globl sec_bound_check
 .globl sec_decompose
