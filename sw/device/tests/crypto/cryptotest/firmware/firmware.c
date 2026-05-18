@@ -25,6 +25,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/rsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/x25519_commands.h"
 
 // Include handlers
 #include "aes.h"
@@ -38,6 +39,7 @@
 #include "kmac.h"
 #include "rsa.h"
 #include "sphincsplus.h"
+#include "x25519.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
@@ -82,6 +84,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandSphincsPlus:
         RESP_ERR(uj, handle_sphincsplus(uj));
+        break;
+      case kCryptotestCommandX25519:
+        RESP_ERR(uj, handle_x25519(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);
