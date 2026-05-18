@@ -178,6 +178,8 @@ static status_t internal_p384_keygen_finalize(
         hardened_memeq(private_scalar.share0, private_key->keyblob,
                        kP384MaskedScalarTotalShareWords),
         kHardenedBoolTrue);
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kP384MaskedScalarTotalShareWords);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -313,6 +315,9 @@ status_t otcrypto_ecc_p384_base_point_mult(
 
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
+  hardened_memshred((uint32_t *)&private_scalar,
+                    kP384MaskedScalarTotalShareWords);
+
   return OTCRYPTO_OK;
 }
 
@@ -408,6 +413,9 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
   HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
 
+  hardened_memshred((uint32_t *)&private_scalar,
+                    kP384MaskedScalarTotalShareWords);
+
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -433,6 +441,9 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY_WIPE_DMEM(
         p384_ecdsa_sign_start(message_digest.data, &private_scalar));
+
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kP384MaskedScalarTotalShareWords);
   } else if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
@@ -627,6 +638,8 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
         kHardenedBoolTrue);
     private_scalar.checksum = p384_masked_scalar_checksum(&private_scalar);
     HARDENED_TRY_WIPE_DMEM(p384_ecdh_start(&private_scalar, pk));
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kP384MaskedScalarTotalShareWords);
   } else {
     // Invalid value for `hw_backed`.
     return OTCRYPTO_BAD_ARGS;
@@ -934,10 +947,16 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
   HARDENED_TRY_WIPE_DMEM(p384_arith_share_private_key(&boolean_private_scalar,
                                                       &arith_private_scalar));
 
+  hardened_memshred((uint32_t *)&boolean_private_scalar,
+                    kP384MaskedScalarTotalShareWords);
+
   // Copy the two arithmetic shares into the output buffer.
   HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,
                                arith_private_scalar.share0,
                                kP384MaskedScalarTotalShareWords));
+
+  hardened_memshred((uint32_t *)&arith_private_scalar,
+                    kP384MaskedScalarTotalShareWords);
 
   // Set the shared key checksum.
   arith_private_key->checksum =
