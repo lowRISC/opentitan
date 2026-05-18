@@ -155,6 +155,24 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ed25519_parser",
 )
 
+run_binary(
+    name = "wycheproof_x25519_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:x25519_schema.json",
+        "@wycheproof//testvectors_v1:x25519_test.json",
+    ],
+    outs = [":wycheproof_x25519.json"],
+    args = [
+        "--src",
+        "$(location @wycheproof//testvectors_v1:x25519_test.json)",
+        "--dst",
+        "$(location :wycheproof_x25519.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:x25519_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_x25519_parser",
+)
+
 # Number of tests per configuration (e.g. Verify P-256 SHA-256)
 ECDSA_RANDOM_COUNT = 128
 
