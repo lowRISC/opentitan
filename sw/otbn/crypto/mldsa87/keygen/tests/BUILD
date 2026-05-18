@@ -16,10 +16,13 @@ srcs = [
     "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
     "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
     "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_sample.s",
+    "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_expand.s",
 ]
 
 unit_tests = [
     "mldsa87_keygen_rej_bounded_poly_test",
+    "mldsa87_keygen_expand_s1_test",
+    "mldsa87_keygen_expand_s2_test",
 ]
 
 [
