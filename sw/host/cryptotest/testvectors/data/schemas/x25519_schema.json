@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/x25519_schema.json",
+  "title": "Cryptotest X25519 Key Derivation Test Vector",
+  "description": "A list of testvectors for X25519 Key Derivation testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID from test vector source -- used for debugging",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be x25519",
+        "type": "string",
+        "enum": ["x25519"]
+      },
+      "operation": {
+        "description": "X25519 operation",
+        "type": "string",
+        "enum": ["derive"]
+      },
+      "private_key": {
+        "description": "Local private key scalar (32 bytes, little-endian), from Wycheproof 'private' field",
+        "$ref": "#/$defs/byte_array"
+      },
+      "public_key": {
+        "description": "Peer's public key u-coordinate (32 bytes, little-endian), from Wycheproof 'public' field",
+        "$ref": "#/$defs/byte_array"
+      },
+      "shared_secret": {
+        "description": "Expected shared secret u-coordinate (32 bytes, little-endian), from Wycheproof 'shared' field",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Expected derivation result",
+        "type": "string",
+        "enum": ["valid"]
+      }
+    }
+  }
+}

@@ -25,4 +25,5 @@ exports_files([
     "kmac_schema.json",
     "rsa_schema.json",
     "sphincsplus_schema.json",
+    "x25519_schema.json",
 ])
