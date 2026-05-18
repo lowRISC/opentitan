@@ -90,6 +90,22 @@ cc_library(
 )
 
 cc_library(
+    name = "x25519",
+    srcs = ["x25519.c"],
+    hdrs = ["x25519.h"],
+    deps = [
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:x25519_commands",
+    ],
+)
+
+cc_library(
     name = "drbg",
     srcs = ["drbg.c"],
     hdrs = ["drbg.h"],
@@ -195,6 +211,7 @@ FIRMWARE_DEPS = [
     ":kmac",
     ":rsa",
     ":sphincsplus",
+    ":x25519",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/crypto",
     "//sw/device/lib/testing/test_framework:check",
