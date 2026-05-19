@@ -803,7 +803,7 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
   uint32_t unmasked_secret[kCurve25519PointWords];
   memset(unmasked_secret, 0, sizeof(unmasked_secret));
-  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(unmasked_secret));
+  HARDENED_TRY(curve25519_x25519_finalize(unmasked_secret));
 
   uint32_t *share0 = shared_secret->keyblob;
   uint32_t *share1 =

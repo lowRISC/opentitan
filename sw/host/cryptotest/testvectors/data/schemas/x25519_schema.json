@@ -52,7 +52,7 @@
       "result": {
         "description": "Expected derivation result",
         "type": "string",
-        "enum": ["valid"]
+        "enum": ["valid", "invalid"]
       }
     }
   }
