@@ -1,0 +1,23 @@
+diff --git a/stream_join_dynamic.sv b/stream_join_dynamic.sv
+index 267990b9..0dec8875 100644
+--- a/stream_join_dynamic.sv
++++ b/stream_join_dynamic.sv
+@@ -11,7 +11,7 @@
+ // Authors:
+ // - Luca Colagrande <colluca@iis.ee.ethz.ch>
+ 
+-`include "common_cells/assertions.svh"
++`include "prim_assert.sv"
+ 
+ // Stream join dynamic: Joins a parametrizable number of input streams (i.e. valid-ready
+ // handshaking with dependency rules as in AXI4) to a single output stream. The subset of streams
+@@ -39,7 +39,6 @@ module stream_join_dynamic #(
+     assign inp_ready_o[i] = oup_valid_o & oup_ready_i & sel_i[i];
+   end
+ 
+-`ifndef COMMON_CELLS_ASSERTS_OFF
+-  `ASSERT_INIT(n_inp_0, N_INP >= 1, "N_INP must be at least 1!")
+-`endif
++  `ASSERT_INIT(NumInputLargerZero_A, N_INP >= 1)
++
+ endmodule
