@@ -64,7 +64,8 @@ hardened_bool_t owner_block_owner_key_equal(void) {
 hardened_bool_t owner_block_newversion_mode(void) {
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       (owner_page[0].update_mode == kOwnershipUpdateModeNewVersion ||
-       owner_page[0].update_mode == kOwnershipUpdateModeSelfVersion)) {
+       owner_page[0].update_mode == kOwnershipUpdateModeSelfVersion ||
+       owner_page[0].update_mode == kOwnershipUpdateModeAnyVersion)) {
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;

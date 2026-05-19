@@ -74,12 +74,19 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       launder32(owner_page_valid[1]) == kOwnerPageStatusSigned &&
       owner_block_newversion_mode() == kHardenedBoolTrue &&
-      owner_page[1].config_version > owner_page[0].config_version &&
-      launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
+      owner_page[1].config_version > owner_page[0].config_version) {
     HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSigned);
-    HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
-    rom_error_t error =
-        ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
+
+    rom_error_t error = kHardenedBoolFalse;
+    if (launder32(owner_page[0].update_mode) == kOwnershipUpdateModeAnyVersion) {
+      HARDENED_CHECK_EQ(owner_page[0].update_mode, kOwnershipUpdateModeAnyVersion);
+      error = ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
+    } else if (launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
+      error = ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
+    } else {
+      // Do nothing and don't activate the new page.
+    }
     if (launder32(error) == kErrorOk) {
       HARDENED_CHECK_EQ(error, kErrorOk);
       // Thunk the status of page 0 to Invalid so the next set of validity
