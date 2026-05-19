@@ -168,6 +168,8 @@ status_t cryptolib_sca_rsa_dec_impl(
     pentest_set_trigger_low();
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&plaintext));
+
   // Return data back to host.
   *data_out_len = msg_len;
   *cfg_out = 0;
@@ -429,6 +431,8 @@ status_t cryptolib_sca_rsa_sign_impl(
     pentest_set_trigger_low();
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&rsa_sig));
+
   // Return data back to host.
   *sig_len = *n_len;
   *cfg_out = 0;
@@ -528,6 +532,8 @@ status_t cryptolib_sca_p256_sign_impl(
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature_mut));
 
   // Return data back to host.
   uj_output->cfg = 0;
@@ -740,6 +746,8 @@ status_t cryptolib_sca_p384_sign_impl(
     pentest_set_trigger_low();
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature_mut));
+
   // Return data back to host.
   uj_output->cfg = 0;
   memset(uj_output->r, 0, P384_CMD_BYTES);
@@ -825,6 +833,8 @@ status_t cryptolib_sca_ed25519_sign_impl(
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
 
   // Return signature: R component (first 32 bytes) in r, S (next 32) in s.
   uj_output->cfg = 0;
