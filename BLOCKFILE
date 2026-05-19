@@ -27,6 +27,7 @@ hw/top_earlgrey/rtl/*
 
 # Vendored IP
 hw/vendor/lowrisc_ibex/rtl/*
+hw/vendor/pulp_common_cells/rtl/*
 hw/vendor/pulp_riscv_dbg/src/*
 hw/vendor/pulp_riscv_dbg/debug_rom/*
 

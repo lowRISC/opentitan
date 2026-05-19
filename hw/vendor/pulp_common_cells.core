@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "pulp-platform:common_cells:common_cells:0.1"
+description: "PULP Common Cells"
+
+filesets:
+  files_src:
+    depend:
+      - lowrisc:prim:assert
+    files:
+      - pulp_common_cells/rtl/stream_fork.sv
+      - pulp_common_cells/rtl/stream_fork_dynamic.sv
+      - pulp_common_cells/rtl/stream_join_dynamic.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_src
