@@ -191,6 +191,10 @@ x25519:
   /* Call Edwards-mapped X25519 */
   jal      x1, X25519
 
+  /* Store result status (SUCCESS or FAILURE) from x20. */
+  la       x3, x25519_ok
+  sw       x20, 0(x3)
+
   /* Store shared key from w22 */
   li       x2, 22
   la       x3, x25519_shared_key
@@ -239,6 +243,10 @@ x25519_sideload:
   bn.lid x2, 0(x3)
 
   jal x1, X25519
+
+  /* Store result status (SUCCESS or FAILURE) from x20. */
+  la       x3, x25519_ok
+  sw       x20, 0(x3)
 
   /* Store shared key from w22 */
   li x2, 22
@@ -338,6 +346,12 @@ ed25519_r0:
 .globl ed25519_r1
 ed25519_r1:
   .zero 96
+
+/* X25519 result status (SUCCESS=0x739 or FAILURE=0x1d4). Output for x25519. */
+.balign 4
+.globl x25519_ok
+x25519_ok:
+  .zero 4
 
 /* X25519 public key */
 .balign 32
