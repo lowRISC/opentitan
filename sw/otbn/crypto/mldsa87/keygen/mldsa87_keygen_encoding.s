@@ -5,6 +5,7 @@
 /* Polynomial encoding/decoding routines for ML-DSA-87 keygen. */
 
 .globl encode_t0
+.globl encode_t1
 
 .text
 
@@ -70,6 +71,68 @@ encode_t0:
   /* Store the encoded polynomial in w2-w14 to DMEM. */
   addi x4, x0, 2
   loopi 13, 2
+    bn.sid x4++, 0(x3)
+    addi x3, x3, 32
+    /* End of loop */
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+/**
+ * Encode a T1 polynomial into a dense representation.
+ *
+ * A T1 of the public key consists of 256 10-bit coefficients in the range
+ * [0, 2^10-1] hence its encoded representation has a size of 256 * 10 = 2560
+ * bits or 320 bytes. This routine is a part of the `pkEncode` function
+ * (Algorithm 22) of FIPS-204.
+ *
+ * @param[in] x2: DMEM location of the decoded T1 polynomial.
+ * @param[in] x3: DMEM location of the encoded T1 polynomial.
+ */
+encode_t1:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x4
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /*
+   * We have 2560 = 10 * 256, hence all 256 10-bit coefficients exactly fit in
+   * 10 WDRs. Iterate in chunks of 8 coefficients over the polynomial and shift
+   * each coefficient into w1-w10 to form the encoded representation.
+   */
+
+  loopi 32, 14
+    /* Load 8 coefficients into w0. */
+    bn.lid x0, 0(x2++)
+
+    loopi 8, 11
+      /* Shift each 10-bit coefficient into w1-w10. */
+      bn.rshi w1, w2, w1 >> 10
+      bn.rshi w2, w3, w2 >> 10
+      bn.rshi w3, w4, w3 >> 10
+      bn.rshi w4, w5, w4 >> 10
+      bn.rshi w5, w6, w5 >> 10
+      bn.rshi w6, w7, w6 >> 10
+      bn.rshi w7, w8, w7 >> 10
+      bn.rshi w8, w9, w8 >> 10
+      bn.rshi w9, w10, w9 >> 10
+      bn.rshi w10, w0, w10 >> 10
+
+      /* Remove the coefficient from w0. */
+      bn.rshi w0, w31, w0 >> 32
+      /* End of loop */
+    nop
+    /* End of loop */
+
+  /* Store the encoded polynomial in w1-w10 to DMEM. */
+  addi x4, x0, 1
+  loopi 10, 2
     bn.sid x4++, 0(x3)
     addi x3, x3, 32
     /* End of loop */

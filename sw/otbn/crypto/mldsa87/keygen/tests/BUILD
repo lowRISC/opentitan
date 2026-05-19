@@ -25,6 +25,7 @@ unit_tests = [
     "mldsa87_keygen_expand_s1_test",
     "mldsa87_keygen_expand_s2_test",
     "mldsa87_keygen_encode_t0_test",
+    "mldsa87_keygen_encode_t1_test",
 ]
 
 [
