@@ -43,12 +43,6 @@ def parse_test_vectors(raw_data):
         for test in group["tests"]:
             logging.debug(f"Parsing tcId {test['tcId']}")
 
-            if test["result"] != "valid":
-                logging.info(
-                    f"Skipped tcId {test['tcId']}: result is '{test['result']}'"
-                )
-                continue
-
             result = "valid"
             if _is_twist_point(test["public"]):
                 logging.info(
