@@ -49,6 +49,13 @@ struct Opts {
     x25519_json: Vec<String>,
 }
 
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
+enum X25519Result {
+    Valid,
+    Invalid,
+}
+
 #[derive(Debug, Deserialize)]
 struct X25519TestCase {
     vendor: String,
@@ -57,6 +64,7 @@ struct X25519TestCase {
     private_key: Vec<u8>,
     public_key: Vec<u8>,
     shared_secret: Vec<u8>,
+    result: X25519Result,
 }
 
 // Fixed sizes defined by the X25519 algorithm (RFC 7748).
@@ -121,12 +129,16 @@ fn run_x25519_testcase(
 
     let device_secret = &output.shared_secret[..output.shared_secret_len];
 
-    let success = output.result && device_secret == test_case.shared_secret.as_slice();
+    let success = match test_case.result {
+        X25519Result::Valid => output.result && device_secret == test_case.shared_secret.as_slice(),
+        X25519Result::Invalid => !output.result,
+    };
 
     if !success {
         log::info!(
-            "FAILED test #{}: device result = {}, device secret = {:02x?}",
+            "FAILED test #{}: expected = {:?}, device result = {}, device secret = {:02x?}",
             test_case.test_case_id,
+            test_case.result,
             output.result,
             device_secret,
         );
