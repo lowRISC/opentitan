@@ -30,10 +30,14 @@ sample_mask_poly:
     addi x31, x31, 4
   .endr
 
-  /* Load GAMMA1 = (2^19, 2^19, ..., 2^19) into w2. */
-  bn.not w2, w31
-  bn.shv.8s w2, w2 >> 31
-  bn.shv.8s w2, w2 << 19
+  /* Load GAMMA1 = (2^19, 2^19, ..., 2^19) into w15. */
+  bn.not w15, w31
+  bn.shv.8s w15, w15 >> 31
+  bn.shv.8s w15, w15 << 19
+
+  /* Prepare 20-bit masks. w16 = (0x000fffff, ..., 0x000fffff). */
+  bn.not w16, w31
+  bn.shv.8s w16, w16 >> 12
 
   /* Initialize the SHAKE256 XOF and absorb the 66 bytes of rho. */
   jal x1, xof_shake256_init
@@ -48,7 +52,7 @@ sample_mask_poly:
   addi x5, x0, 1
 
   /* In each iteration, we sample 64 coefficients. */
-  loopi 4, 44
+  loopi 4, 51
 
     /*
      * Each coefficient of the mask polynomial has a size of 20 bits. Since
@@ -83,10 +87,19 @@ sample_mask_poly:
     bn.mov w12, w30
 
     /* Sample 64 coefficients in steps of eight at at time. */
-    loopi 8, 22
+    loopi 8, 29
+
+      /* Initialize the WDRs that hold intermediate results with randomness. */
+      bn.wsrr w0, URND
+      bn.wsrr w1, URND
 
       /* Sample one shared vector of eight coefficients. */
-      loopi 8, 15
+      loopi 8, 17
+
+        /* Randomness to shift into registers when a coefficient is extracted.
+           This avoids that few secrets bits are isolated in an all-zero WDR. */
+        bn.wsrr w13, URND
+        bn.wsrr w14, URND
 
         /*
          * Share 0:
@@ -95,14 +108,14 @@ sample_mask_poly:
         /* Shift in the next 20-bit coefficient and move it to the most
            significant 32-bit slot in w0 and w1. */
         bn.rshi w0, w3, w0 >> 20
-        bn.rshi w0, w31, w0 >> 12
+        bn.rshi w0, w13, w0 >> 12
 
         /* Shift out the 20 bits out of the sampled buffer. */
         bn.rshi w3, w4, w3 >> 20
         bn.rshi w4, w5, w4 >> 20
         bn.rshi w5, w6, w5 >> 20
         bn.rshi w6, w7, w6 >> 20
-        bn.rshi w7, w31, w7 >> 20
+        bn.rshi w7, w13, w7 >> 20
 
         bn.xor w31, w31, w31 /* dummy */
 
@@ -111,13 +124,13 @@ sample_mask_poly:
          */
 
         bn.rshi w1, w8, w1 >> 20
-        bn.rshi w1, w31, w1 >> 12
+        bn.rshi w1, w14, w1 >> 12
 
         bn.rshi w8, w9, w8 >> 20
         bn.rshi w9, w10, w9 >> 20
         bn.rshi w10, w11, w10 >> 20
         bn.rshi w11, w12, w11 >> 20
-        bn.rshi w12, w31, w12 >> 20
+        bn.rshi w12, w14, w12 >> 20
         /* End of loop */
 
       /*
@@ -127,10 +140,15 @@ sample_mask_poly:
        * `BitUnpack` function (Algorithm 19) of FIPS-204.
        */
 
+      /* Mask out the lower 20 bits of each 32-bit chunk. */
+      bn.and w0, w0, w16
+      bn.xor w31, w31, w31 /* dummy */
+      bn.and w1, w1, w16
+
       jal x1, sec_b2a_8x32
 
       /* w0 = GAMMA1 - w0 mod Q. */
-      bn.subvm.8S w0, w2, w0
+      bn.subvm.8S w0, w15, w0
       bn.sid x4, 0(x2++)
 
       bn.xor w31, w31, w31 /* dummy */

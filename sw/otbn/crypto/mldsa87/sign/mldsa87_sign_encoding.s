@@ -392,17 +392,32 @@ _bit_unpack_s:
   li x6, 0
   li x7, 1
 
+  /* Prepare 3-bit masks. w13 = (0x00000007, ..., 0x00000007). */
+  bn.not w13, w31
+  bn.shv.8s w13, w13 >> 29
+
   /* In each iteration, we decode 8 Boolean-shared coefficients that are
      bit-unpacked and converted to arithmetic shares in w0 and w1. */
-  loopi 8, 14
-    loopi 8, 7
+  loopi 8, 21
+
+    /* Initialize the WDRs that hold intermediate results with randomness. */
+    bn.wsrr w0, URND
+    bn.wsrr w1, URND
+
+    loopi 8, 9
+
+      /* Randomness to shift into registers when a coefficient is extracted.
+         This avoids that few secrets bits are isolated in an all-zero WDR. */
+      bn.wsrr w11, URND
+      bn.wsrr w12, URND
+
       /* Share 0: */
 
       /* Shift in a 3-bit chunk into w0. */
       bn.rshi w0, w9, w0 >> 3
-      bn.rshi w0, w31, w0 >> 29
+      bn.rshi w0, w11, w0 >> 29
       /* Remove the processed 3-bit chunk from w9. */
-      bn.rshi w9, w31, w9 >> 3
+      bn.rshi w9, w11, w9 >> 3
 
       /* Share 1: */
 
@@ -410,13 +425,18 @@ _bit_unpack_s:
 
       /* Shift in a 3-bit chunk into w1. */
       bn.rshi w1, w10, w1 >> 3
-      bn.rshi w1, w31, w1 >> 29
+      bn.rshi w1, w12, w1 >> 29
       /* Remove the processed 3-bit chunk from w10. */
-      bn.rshi w10, w31, w10 >> 3
+      bn.rshi w10, w12, w10 >> 3
       /* End of loop */
 
     /* Finalize the bit unpacking by converting the 8 coefficients to
        arithmetic shares and computing the subtraction ETA - x mod Q. */
+
+    /* Mask out the lower 3 bits of each 32-bit chunk. */
+    bn.and w0, w0, w13
+    bn.xor w31, w31, w31 /* dummy */
+    bn.and w1, w1, w13
 
     /* Convert the Boolean shares in w0 and w1 to arithmetic shares. */
     jal x1, sec_b2a_8x32
