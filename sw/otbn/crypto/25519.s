@@ -1939,6 +1939,28 @@ trigger_fault_if_fg0_not_z:
   ret
 
 /**
+ * Check that the X25519 public key u is valid for the Montgomery-to-Edwards map.
+ *
+ * The Montgomery-to-Edwards conversion y = (u-1)/(u+1) has a zero denominator
+ * at u = p-1. fe_inv(0) = 0, so the conversion silently produces y = 0,
+ * which decodes as a valid Edwards point and bypasses the twist check.
+ *
+ * @param[in]  w9:  Montgomery u-coordinate (reduced mod p, MSB cleared)
+ * @param[in]  w31: all-zero
+ * @param[out] x2:  0 if u is acceptable, non-zero if u = p-1
+ *
+ * clobbered registers: x2, w10
+ * clobbered flag groups: FG0
+ */
+x25519_check_denominator:
+  bn.addi  w10, w31, 1
+  bn.addm  w10, w9, w10
+  bn.cmp   w10, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  ret
+
+/**
  * Convert Montgomery u-coordinate to Twisted Edwards y-coordinate.
  * Formula: y = (u - 1) * (u + 1)^-1 mod p
  *
@@ -2024,6 +2046,10 @@ X25519:
   bn.rshi  w7, w31, w7 >> 1
   bn.and   w9, w9, w7
   bn.addm  w9, w9, w31
+
+  /* Reject u = p-1 before the Montgomery-to-Edwards conversion. */
+  jal      x1, x25519_check_denominator
+  bne      x2, x0, .L_x25519_fail
 
   /* Convert Montgomery u to Edwards y */
   jal      x1, x25519_mont_u_to_ed_y
