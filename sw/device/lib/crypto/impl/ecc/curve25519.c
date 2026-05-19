@@ -45,6 +45,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          x25519_public_key);  // X25519 public key.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
                          x25519_shared_key);  // X25519 shared key.
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519,
+                         x25519_ok);  // X25519 result status.
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_KEYGEN);
@@ -361,6 +363,17 @@ status_t curve25519_x25519_finalize(
     uint32_t shared_secret[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Check whether OTBN accepted the public key (rejects twist points).
+  uint32_t ok;
+  const otbn_addr_t kOtbnVarX25519Ok =
+      OTBN_ADDR_T_INIT(run_curve25519, x25519_ok);
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarX25519Ok, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read the shared secret from OTBN dmem.
   const otbn_addr_t kOtbnVarX25519SharedKey =

@@ -2004,8 +2004,10 @@ x25519_ed_y_to_mont_u:
  * @param[in]  w8: scalar (private key, already clamped by host CPU)
  * @param[in]  w9: Montgomery u-coordinate (public key or base point 9)
  * @param[out] w22: result, X25519(k, u) as an encoded u-coordinate
+ * @param[out] x20: SUCCESS if the public key decoding passed,
+ *                  FAILURE if the public key decoding failed
  *
- * clobbered registers: x2, x3, x20, x21, w2, w6 to w30
+ * clobbered registers: x2, x3, x21, w2, w6 to w30
  * clobbered flag groups: FG0
  */
 X25519:
@@ -2058,11 +2060,14 @@ X25519:
   /* Convert Edwards y back to Montgomery u */
   jal      x1, x25519_ed_y_to_mont_u
 
+  /* Signal success to caller via x20. */
+  li       x20, 0x739
   ret
 
 .L_x25519_fail:
-  /* If point decoding fails, return 0 in w22 */
+  /* If point decoding fails, return 0 in w22 and signal failure via x20. */
   bn.xor   w22, w22, w22
+  li       x20, 0x1d4
   ret
 
 .bss
