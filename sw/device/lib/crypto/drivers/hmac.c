@@ -439,8 +439,7 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(msg));
 
-  HARDENED_TRY(clear());
-  return OTCRYPTO_OK;
+  return clear();
 }
 
 /**
@@ -829,12 +828,10 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
          leftover_len);
   ctx->partial_block_bytelen = leftover_len;
 
-  // Clean up.
-  HARDENED_TRY(clear());
-
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(data));
 
-  return OTCRYPTO_OK;
+  // Clean up.
+  return clear();
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
@@ -864,6 +861,5 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(digest));
 
   // Clean up.
-  HARDENED_TRY(clear());
-  return OTCRYPTO_OK;
+  return clear();
 }
