@@ -155,6 +155,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
                    &output));
   pentest_set_trigger_low();
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
+
   // Return data back to host.
   *data_out_len = padded_len_bytes;
   *cfg_out = 0;
@@ -188,6 +190,8 @@ status_t cryptolib_sca_drbg_generate_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
 
   // Return data back to host.
   *cfg_out = 0;
@@ -320,6 +324,9 @@ status_t cryptolib_sca_gcm_impl(
                                gcm_tag_len, &actual_ciphertext, &actual_tag));
   pentest_set_trigger_low();
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&actual_ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&actual_tag));
+
   // Return data back to host.
   *cfg_out = 0;
   // Ciphertext.
@@ -421,6 +428,8 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   HARDENED_TRY(otcrypto_hmac(&hmac_key, &input_message, &tag));
   pentest_set_trigger_low();
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
+
   // Return data back to host.
   *data_out_len = tag_bytes;
   *cfg_out = 0;
@@ -497,6 +506,8 @@ status_t cryptolib_sca_cmac_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   pentest_set_trigger_high();
   TRY(otcrypto_cmac(&cmac_key, &input_message, &tag));
   pentest_set_trigger_low();
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
 
   // Return data back to host.
   *data_out_len = tag_bytes;
