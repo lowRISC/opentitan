@@ -153,6 +153,8 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   TRY(otcrypto_aes(&key, &iv, mode, op, &input, padding, &output));
   pentest_set_trigger_low();
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
+
   // Return data back to host.
   uj_output->data_len = padded_len_bytes;
   uj_output->cfg = 0;
@@ -185,6 +187,8 @@ status_t cryptolib_fi_drbg_generate_impl(
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
 
   // Return data back to host.
   uj_output->cfg = 0;
@@ -329,6 +333,9 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
                                &actual_ciphertext, &actual_tag));
   pentest_set_trigger_low();
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&actual_ciphertext));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&actual_tag));
+
   // Return data back to host.
   uj_output->cfg = 0;
   // Ciphertext.
@@ -426,6 +433,8 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   TRY(otcrypto_hmac(&key, &input_message, &tag));
   pentest_set_trigger_low();
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
+
   // Return data back to host.
   uj_output->data_len = tag_bytes;
   uj_output->cfg = 0;
@@ -497,6 +506,8 @@ status_t cryptolib_fi_cmac_impl(cryptolib_fi_sym_cmac_in_t uj_input,
   pentest_set_trigger_high();
   TRY(otcrypto_cmac(&key, &input_message, &tag));
   pentest_set_trigger_low();
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
 
   // Return data back to host.
   uj_output->data_len = tag_bytes;
