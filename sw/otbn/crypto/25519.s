@@ -2059,10 +2059,12 @@ X25519:
   la       x3, ed25519_d
   bn.lid   x2, 0(x3)
 
-  /* Decode x coordinate using the curve equation. */
+  /* Decode x coordinate and verify the point lies on the Ed25519 curve.
+     Points on the quadratic twist of Curve25519 do not map to valid Ed25519
+     points, so affine_decode_var will fail for them. */
   jal      x1, affine_decode_var
 
-  /* Check for failure (e.g., if the point is on the quadratic twist). */
+  /* Fail if the point was not on the Ed25519 curve (e.g. twist point). */
   li       x21, 0x739
   bne      x20, x21, .L_x25519_fail
 
