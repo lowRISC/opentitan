@@ -145,6 +145,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
       pentest_set_trigger_low();
     }
 
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ciphertext));
+
     // Return data back to host.
     uj_output->data_len = num_bytes;
     uj_output->cfg = 0;
@@ -220,6 +222,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }
+
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&plaintext));
 
     // Return data back to host.
     uj_output->data_len = msg_len;
@@ -393,6 +397,8 @@ status_t cryptolib_fi_rsa_sign_impl(
     pentest_set_trigger_low();
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_END);
   }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&sig_buf));
 
   // Return data back to host.
   uj_output->sig_len = uj_input.n_len;
@@ -748,6 +754,8 @@ status_t cryptolib_fi_p256_sign_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_SIGN_END);
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature_mut));
+
   // Return data back to host.
   uj_output->cfg = 0;
   memset(uj_output->r, 0, P256_CMD_BYTES);
@@ -1086,6 +1094,8 @@ status_t cryptolib_fi_p384_sign_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_END);
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature_mut));
+
   // Return data back to host.
   uj_output->cfg = 0;
   memset(uj_output->r, 0, P384_CMD_BYTES);
@@ -1296,6 +1306,8 @@ status_t cryptolib_fi_ed25519_sign_impl(
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
 
   // Return signature: R component (first 32 bytes) in r, S (next 32) in s.
   uj_output->cfg = 0;
