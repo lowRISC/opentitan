@@ -19,7 +19,7 @@ from Crypto.PublicKey import RSA, ECC
 from Crypto.Signature import pkcs1_15, DSS
 from Crypto.Hash import SHA256, SHA384
 
-ignored_keys_set = set([])
+ignored_keys_set = set(["magic"])
 opentitantool_path = ""
 iterations = 1
 repetitions = 3

@@ -18,7 +18,7 @@ import random
 from Crypto.Hash import SHA256, HMAC, CMAC
 from Crypto.Cipher import AES
 
-ignored_keys_set = set([])
+ignored_keys_set = set(["magic"])
 opentitantool_path = ""
 iterations = 3
 repetitions = 3
