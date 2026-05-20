@@ -161,6 +161,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   uj_output->cfg = 0;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->data, output_buf, uj_output->data_len);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -195,6 +196,7 @@ status_t cryptolib_fi_drbg_generate_impl(
   uj_output->cfg = 0;
   memset(uj_output->data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
   memcpy(uj_output->data, output_data, uj_input.data_len);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -220,6 +222,7 @@ status_t cryptolib_fi_drbg_reseed_impl(
 
   // Return data back to host.
   uj_output->cfg = 0;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -238,6 +241,7 @@ status_t cryptolib_fi_trng_init_impl(
 
   // Return data back to host.
   uj_output->cfg = 0;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -347,6 +351,7 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   uj_output->tag_len = uj_input.tag_len;
   memset(uj_output->tag, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->tag, actual_tag_data, uj_output->tag_len);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -441,6 +446,7 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   uj_output->cfg = 0;
   memset(uj_output->data, 0, HMAC_CMD_MAX_TAG_BYTES);
   memcpy(uj_output->data, tag_buf, uj_output->data_len);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -515,6 +521,7 @@ status_t cryptolib_fi_cmac_impl(cryptolib_fi_sym_cmac_in_t uj_input,
   uj_output->cfg = uj_input.cfg;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->data, tag_buf, uj_output->data_len);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
