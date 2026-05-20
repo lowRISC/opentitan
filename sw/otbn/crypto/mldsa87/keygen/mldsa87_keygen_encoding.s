@@ -6,6 +6,7 @@
 
 .globl encode_t0
 .globl encode_t1
+.globl encode_s
 
 .text
 
@@ -139,6 +140,121 @@ encode_t1:
 
   /* Restore clobbered general-purpose registers. */
   .irp reg, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+/**
+ * Encode a S{1, 2} polynomial to a dense representation.
+ *
+ * A S{1, 2} polynomial of the secret key consists of 256 3-bit coefficients in
+ * the range [-ETA, ETA] for ETA = 2, hence its encoded representation has a
+ * size of 256 * 3 = 768 bits or 96 bytes. This routine is a part of the
+ * `skEncode` function (Algorithm 24) of FIPS-204.
+ *
+ * The S polynomial is assumed to be passed as two arithmetic shares. The
+ * encoded polynomial is returned as two Boolean shares.
+ *
+ * @param[in] x2: DMEM address of the first arithmetic share of S.
+ * @param[in] x3: DMEM address of the second arithmetic share of S.
+ * @param[in] x4: DMEM address of the first Boolean share of the encoded S.
+ * @param[in] x5: DMEM address of the second Boolean share of the encoded S.
+ */
+encode_s:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x6, x7
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* Set up subtraction vector w2 = [ETA, ETA, ..., ETA]. */
+  bn.not w2, w31
+  bn.shv.8s w2, w2 >> 31
+  bn.shv.8s w2, w2 << 1
+
+  /* WDR pointers. */
+  addi x6, x0, 0
+  addi x7, x0, 1
+
+  /* Initialize the registers that hold the compressed polynomial shares with
+     randomness. This avoids isolating secrets bits in an all-zero register
+     during the shifting operations. */
+
+  /* Share 0. */
+  bn.wsrr w3, URND
+  bn.wsrr w4, URND
+  bn.wsrr w5, URND
+  /* Share 1. */
+  bn.wsrr w6, URND
+  bn.wsrr w7, URND
+  bn.wsrr w8, URND
+
+  /* Encode the polynomial in chunks of 8 coefficients at a time. */
+  loopi 32, 19
+    /* Load the two arithmetically shared vectors of 8 coefficients
+       x = (x0, x1) and compute ETA - x mod Q. This is the centering step of
+       the `BitPack` function (Algorithm 17) of FIPS-204. */
+
+    /* Share 0. */
+    bn.lid x6, 0(x2++)
+    bn.subvm.8S w0, w2, w0
+
+    bn.xor w31, w31, w31 /* dummy */
+
+    /* Share 1. */
+    bn.lid x7, 0(x3++)
+    bn.subvm.8S w1, w31, w1
+
+    /* Convert the two arithmetically shared vectors to Boolean shares. */
+    jal x1, sec_a2b_8x32
+
+    loopi 8, 11
+      /* Randomness to shift into registers when a coefficient is extracted.
+         This avoids that few secrets bits are isolated in an all-zero WDR. */
+      bn.wsrr w9, URND
+      bn.wsrr w10, URND
+
+      /* Share 0: */
+
+      /* Shift a 3-bit coefficient into w3-w5. */
+      bn.rshi w3, w4, w3 >> 3
+      bn.rshi w4, w5, w4 >> 3
+      bn.rshi w5, w0, w5 >> 3
+      bn.rshi w0, w9, w0 >> 32
+
+      /* Share 1. */
+
+      bn.xor w31, w31, w31 /* dummy */
+
+      /* Shift a 3-bit coefficient into w6-w8. */
+      bn.rshi w6, w7, w6 >> 3
+      bn.rshi w7, w8, w7 >> 3
+      bn.rshi w8, w1, w8 >> 3
+      bn.rshi w1, w10, w1 >> 32
+      /* End of loop */
+
+    nop
+    /* End of loop */
+
+  /* Store the encoded polynomial shares to DMEM. */
+
+  /* Share 0. */
+  addi x6, x0, 3
+  bn.sid x6++, 0(x4)
+  bn.sid x6++, 32(x4)
+  bn.sid x6++, 64(x4)
+
+  bn.xor w31, w31, w31 /* dummy */
+
+  /* Share 1. */
+  bn.sid x6++, 0(x5)
+  bn.sid x6++, 32(x5)
+  bn.sid x6++, 64(x5)
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x7, x6, x3, x2
     addi x31, x31, -4
     lw \reg, 0(x31)
   .endr
