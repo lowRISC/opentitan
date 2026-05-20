@@ -173,7 +173,7 @@ static status_t clear(void) {
   // Use a random value from EDN to wipe HMAC.
   abs_mmio_write32(hmac_base() + HMAC_WIPE_SECRET_REG_OFFSET,
                    (uint32_t)ibex_rnd32_read());
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
@@ -347,7 +347,7 @@ static status_t msg_fifo_write(const uint8_t *message, size_t message_len) {
   // Check that the loops ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, message_len);
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**

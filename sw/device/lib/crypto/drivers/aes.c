@@ -240,7 +240,7 @@ status_t aes_verify_ctrl_aux_reg(void) {
       abs_mmio_read32(aes_base() + AES_CTRL_AUX_SHADOWED_REG_OFFSET),
       launder32(ctrl_aux_reg));
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
