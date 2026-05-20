@@ -57,11 +57,11 @@ static status_t spin_until(uint32_t bit) {
  */
 static status_t aes_write_key(aes_key_t key) {
   if (key.sideload != kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
     // Nothing to be done; key must be separately loaded from keymgr.
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
+  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolFalse));
 
   uint32_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
   uint32_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
