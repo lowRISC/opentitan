@@ -159,6 +159,7 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memcpy(uj_output->n, uj_input.n, uj_input.n_len);
     memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
     memcpy(uj_output->d, uj_input.d, uj_input.n_len);
+    uj_output->magic = kOutputComplete;
   } else {
     // Decryption.
 
@@ -236,6 +237,7 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     memcpy(uj_output->n, uj_input.n, uj_input.n_len);
     memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
     memcpy(uj_output->d, uj_input.d, uj_input.n_len);
+    uj_output->magic = kOutputComplete;
   }
 
   return OK_STATUS();
@@ -411,6 +413,7 @@ status_t cryptolib_fi_rsa_sign_impl(
   memcpy(uj_output->n, uj_input.n, uj_input.n_len);
   memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output->d, uj_input.d, uj_input.n_len);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -561,6 +564,7 @@ status_t cryptolib_fi_rsa_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -656,6 +660,7 @@ status_t cryptolib_fi_p256_ecdh_impl(
   uj_output->cfg = 0;
   memset(uj_output->shared_key, 0, P256_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P256_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -778,6 +783,7 @@ status_t cryptolib_fi_p256_sign_impl(
 
   memcpy(uj_output->pubx, out_pub_x, P256_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P256_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -840,6 +846,7 @@ status_t cryptolib_fi_p256_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -904,6 +911,7 @@ status_t cryptolib_fi_p256_base_mul_impl(
   memset(uj_output->y, 0, P256_CMD_BYTES);
   memcpy(uj_output->x, out_pub_x, P256_CMD_BYTES);
   memcpy(uj_output->y, out_pub_y, P256_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -999,6 +1007,7 @@ status_t cryptolib_fi_p384_ecdh_impl(
   uj_output->cfg = 0;
   memset(uj_output->shared_key, 0, P384_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P384_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1120,6 +1129,7 @@ status_t cryptolib_fi_p384_sign_impl(
 
   memcpy(uj_output->pubx, out_pub_x, P384_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P384_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1182,6 +1192,7 @@ status_t cryptolib_fi_p384_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1246,6 +1257,7 @@ status_t cryptolib_fi_p384_base_mul_impl(
   memset(uj_output->y, 0, P384_CMD_BYTES);
   memcpy(uj_output->x, out_pub_x, P384_CMD_BYTES);
   memcpy(uj_output->y, out_pub_y, P384_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1327,6 +1339,7 @@ status_t cryptolib_fi_ed25519_sign_impl(
   memset(uj_output->pubx, 0, ED25519_CMD_SCALAR_BYTES);
   memset(uj_output->puby, 0, ED25519_CMD_SCALAR_BYTES);
   memcpy(uj_output->pubx, public_key_data, ED25519_CMD_SCALAR_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1375,6 +1388,7 @@ status_t cryptolib_fi_ed25519_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1424,6 +1438,7 @@ status_t cryptolib_fi_x25519_base_mul_impl(
   memset(uj_output->x, 0, X25519_CMD_BYTES);
   memset(uj_output->y, 0, X25519_CMD_BYTES);  // X25519 has no Y coordinate
   memcpy(uj_output->x, public_key.key, X25519_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1502,6 +1517,7 @@ status_t cryptolib_fi_x25519_ecdh_impl(
   uj_output->cfg = 0;
   memset(uj_output->shared_key, 0, X25519_CMD_BYTES);
   memcpy(uj_output->shared_key, ss_unmasked, X25519_CMD_BYTES);
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }
@@ -1524,6 +1540,7 @@ status_t cryptolib_fi_x25519_point_mul_impl(
   memcpy(uj_output->x, ecdh_out.shared_key, X25519_CMD_BYTES);
   memset(uj_output->y, 0, X25519_CMD_BYTES);
   uj_output->cfg = ecdh_out.cfg;
+  uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
 }

@@ -47,8 +47,15 @@ status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj) {
 
   cryptolib_fi_asym_rsa_enc_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_rsa_enc_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get registered local alerts from alert handler.
@@ -92,8 +99,15 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj) {
 
   cryptolib_fi_asym_rsa_sign_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_rsa_sign_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get registered local alerts from alert handler.
@@ -136,8 +150,15 @@ status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj) {
 
   cryptolib_fi_asym_rsa_verify_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_rsa_verify_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get registered local alerts from alert handler.
@@ -182,8 +203,15 @@ status_t handle_cryptolib_fi_asym_p256_base_mul(ujson_t *uj) {
   memset(&uj_output, 0, sizeof(uj_output));
 
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p256_base_mul_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -273,8 +301,15 @@ status_t handle_cryptolib_fi_asym_p256_ecdh(ujson_t *uj) {
 
   cryptolib_fi_asym_p256_ecdh_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p256_ecdh_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -318,8 +353,15 @@ status_t handle_cryptolib_fi_asym_p256_sign(ujson_t *uj) {
 
   cryptolib_fi_asym_p256_sign_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p256_sign_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -363,8 +405,15 @@ status_t handle_cryptolib_fi_asym_p256_verify(ujson_t *uj) {
 
   cryptolib_fi_asym_p256_verify_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p256_verify_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -410,8 +459,15 @@ status_t handle_cryptolib_fi_asym_p384_base_mul(ujson_t *uj) {
   memset(&uj_output, 0, sizeof(uj_output));
 
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p384_base_mul_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -501,8 +557,15 @@ status_t handle_cryptolib_fi_asym_p384_ecdh(ujson_t *uj) {
 
   cryptolib_fi_asym_p384_ecdh_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p384_ecdh_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -546,8 +609,15 @@ status_t handle_cryptolib_fi_asym_p384_sign(ujson_t *uj) {
 
   cryptolib_fi_asym_p384_sign_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p384_sign_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -591,8 +661,15 @@ status_t handle_cryptolib_fi_asym_p384_verify(ujson_t *uj) {
 
   cryptolib_fi_asym_p384_verify_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_p384_verify_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -861,8 +938,15 @@ status_t handle_cryptolib_fi_asym_x25519_base_mul(ujson_t *uj) {
   cryptolib_fi_asym_x25519_base_mul_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_x25519_base_mul_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -909,8 +993,15 @@ status_t handle_cryptolib_fi_asym_x25519_point_mul(ujson_t *uj) {
   cryptolib_fi_asym_x25519_point_mul_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_x25519_point_mul_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -956,8 +1047,15 @@ status_t handle_cryptolib_fi_asym_x25519_ecdh(ujson_t *uj) {
   cryptolib_fi_asym_x25519_ecdh_out_t uj_output;
   memset(&uj_output, 0, sizeof(uj_output));
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_x25519_ecdh_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1045,8 +1143,15 @@ status_t handle_cryptolib_fi_asym_ed25519_sign(ujson_t *uj) {
 
   cryptolib_fi_asym_ed25519_sign_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_ed25519_sign_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1090,8 +1195,15 @@ status_t handle_cryptolib_fi_asym_ed25519_verify(ujson_t *uj) {
 
   cryptolib_fi_asym_ed25519_verify_out_t uj_output;
   uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
   uj_output.status =
       (size_t)cryptolib_fi_ed25519_verify_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
