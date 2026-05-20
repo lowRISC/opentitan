@@ -151,8 +151,8 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes(&aes_key, &aes_iv, aes_mode, op, &input, aes_padding,
-                   &output));
+  HARDENED_TRY(otcrypto_aes(&aes_key, &aes_iv, aes_mode, op, &input,
+                            aes_padding, &output));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
@@ -320,8 +320,9 @@ status_t cryptolib_sca_gcm_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&gcm_key, &plaintext, &gcm_iv, &gcm_aad,
-                               gcm_tag_len, &actual_ciphertext, &actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&gcm_key, &plaintext, &gcm_iv, &gcm_aad,
+                                        gcm_tag_len, &actual_ciphertext,
+                                        &actual_tag));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&actual_ciphertext));
@@ -504,7 +505,7 @@ status_t cryptolib_sca_cmac_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_cmac(&cmac_key, &input_message, &tag));
+  HARDENED_TRY(otcrypto_cmac(&cmac_key, &input_message, &tag));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
