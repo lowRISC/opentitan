@@ -17,6 +17,7 @@
 # Two-stage pipeline without additional branch target ALU and 3 cycle multiplier
 # (4 cycles for mulh), resulting in 2 stall cycles for mul (3 for mulh)
 small:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MFast"
   RV32B                    : "ibex_pkg::RV32BNone"
@@ -38,6 +39,7 @@ small:
 
 # Configuration to match that used in the OpenTitan project
 opentitan:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BOTEarlGrey"
@@ -62,6 +64,7 @@ opentitan:
 # maximum performance configuration ignoring the branch predictor (which isn't
 # yet fully verified)
 maxperf:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
@@ -83,6 +86,7 @@ maxperf:
 
 # maxperf config above with balanced bitmanip extension and PMP
 maxperf-pmp-bmbalanced:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BBalanced"
@@ -110,6 +114,7 @@ maxperf-pmp-bmbalanced:
 
 # maxperf config above plus PMP enabled with 16 regions.
 maxperf-pmp:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"
@@ -132,6 +137,7 @@ maxperf-pmp:
 
 # maxperf-pmp config above with full bitmanip extension
 maxperf-pmp-bmfull:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BFull"
@@ -153,6 +159,7 @@ maxperf-pmp-bmfull:
 
 # maxperf-pmp-bmfull config above with icache enabled
 maxperf-pmp-bmfull-icache:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BFull"
@@ -181,6 +188,7 @@ maxperf-pmp-bmfull-icache:
 # known to have issues.
 
 experimental-branch-predictor:
+  BaseIsa                  : "ibex_pkg::BaseIsaRV32I"
   RV32E                    : 0
   RV32M                    : "ibex_pkg::RV32MSingleCycle"
   RV32B                    : "ibex_pkg::RV32BNone"

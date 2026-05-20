@@ -13,6 +13,7 @@
  * Top level module of the ibex RISC-V core
  */
 module ibex_top import ibex_pkg::*; #(
+  parameter ibex_pkg::base_isa_e    BaseIsa                      = ibex_pkg::BaseIsaRV32I,
   parameter bit                     PMPEnable                    = 1'b0,
   parameter int unsigned            PMPGranularity               = 0,
   parameter int unsigned            PMPNumRegions                = 4,
@@ -21,6 +22,8 @@ module ibex_top import ibex_pkg::*; #(
   parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[PMP_MAX_REGIONS]   = ibex_pkg::PmpCfgRst,
   parameter logic [PMP_ADDR_MSB:0]  PMPRstAddr[PMP_MAX_REGIONS]  = ibex_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg                = ibex_pkg::PmpMseccfgRst,
+  parameter int unsigned            CheriotRevBitmapAddrWidth    = 32'd11,
+  parameter int unsigned            CheriotRevBitmapBaseAddr     = 32'h0,
   parameter bit                     RV32E                        = 1'b0,
   parameter rv32m_e                 RV32M                        = RV32MFast,
   parameter rv32b_e                 RV32B                        = RV32BNone,
@@ -73,6 +76,8 @@ module ibex_top import ibex_pkg::*; #(
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
 
+  input  logic [31:0]                                                  trvk_heap_base_addr_i,
+
   // Instruction memory interface
   output logic                                                         instr_req_o,
   input  logic                                                         instr_gnt_i,
@@ -91,9 +96,20 @@ module ibex_top import ibex_pkg::*; #(
   output logic [31:0]                                                  data_addr_o,
   output logic [31:0]                                                  data_wdata_o,
   output logic [6:0]                                                   data_wdata_intg_o,
+  output logic                                                         data_tag_o,
   input  logic [31:0]                                                  data_rdata_i,
   input  logic [6:0]                                                   data_rdata_intg_i,
+  input  logic                                                         data_tag_i,
   input  logic                                                         data_err_i,
+
+  // TRVK revocation bitmap read interface
+  output logic                                                         trvk_revbm_req_o,
+  input  logic                                                         trvk_revbm_gnt_i,
+  input  logic                                                         trvk_revbm_rvalid_i,
+  output logic [31:0]                                                  trvk_revbm_addr_o,
+  input  logic [31:0]                                                  trvk_revbm_rdata_i,
+  input  logic [6:0]                                                   trvk_revbm_rdata_intg_i,
+  input  logic                                                         trvk_revbm_err_i,
 
   // Interrupt inputs
   input  logic                                                         irq_software_i,
@@ -201,6 +217,12 @@ module ibex_top import ibex_pkg::*; #(
   // Scrambling Parameter
   localparam int unsigned NumAddrScrRounds  = ICacheScramble ? 2 : 0;
 
+  // Ibex can have a maximum of 2 accesses outstanding on the DSide. This is because it does not
+  // speculative data accesses so the only requests that can be in flight must relate to a single
+  // ongoing load or store instruction. Due to unaligned access support a single load or store can
+  // generate 2 accesses.
+  localparam int unsigned MaxOutstandingDSideAccesses = 2;
+
   // Clock signals
   logic                        clk;
   ibex_mubi_t                  core_busy_d, core_busy_q;
@@ -221,6 +243,23 @@ module ibex_top import ibex_pkg::*; #(
   logic [MemDataWidth-1:0]     data_wdata_core;
   logic [MemDataWidth-1:0]     data_rdata_core;
   logic [MemDataWidth-1:0]     instr_rdata_core;
+
+  // Core <-> TRVK connection
+  logic        trvk_req;
+  logic        trvk_gnt;
+  logic        trvk_rvalid;
+  logic        trvk_we;
+  logic [3:0]  trvk_be;
+  logic [31:0] trvk_addr;
+  logic [31:0] trvk_wdata;
+  logic [6:0]  trvk_wdata_intg;
+  logic        trvk_wtag;
+  logic [31:0] trvk_rdata;
+  logic [6:0]  trvk_rdata_intg;
+  logic        trvk_rtag;
+  logic        trvk_err;
+  logic        trvk_revbm_data_intg_error;
+  logic        trvk_revbm_device_error;
 
   // Core <-> RAMs signals
   logic [IC_NUM_WAYS-1:0]      ic_tag_req;
@@ -305,16 +344,16 @@ module ibex_top import ibex_pkg::*; #(
 
   // ibex_core takes integrity and data bits together. Combine the separate integrity and data
   // inputs here.
-  assign data_rdata_core[31:0] = data_rdata_i;
+  assign data_rdata_core[31:0] = trvk_rdata;
   assign instr_rdata_core[31:0] = instr_rdata_i;
 
   if (MemECC) begin : gen_mem_rdata_ecc
-    assign data_rdata_core[38:32] = data_rdata_intg_i;
+    assign data_rdata_core[38:32] = trvk_rdata_intg;
     assign instr_rdata_core[38:32] = instr_rdata_intg_i;
   end else begin : gen_non_mem_rdata_ecc
     logic unused_intg;
 
-    assign unused_intg = ^{instr_rdata_intg_i, data_rdata_intg_i};
+    assign unused_intg = ^{instr_rdata_intg_i, trvk_rdata_intg};
   end
 
   ibex_core #(
@@ -370,15 +409,15 @@ module ibex_top import ibex_pkg::*; #(
     .instr_rdata_i(instr_rdata_core),
     .instr_err_i,
 
-    .data_req_o,
-    .data_gnt_i,
-    .data_rvalid_i,
-    .data_we_o,
-    .data_be_o,
-    .data_addr_o,
-    .data_wdata_o(data_wdata_core),
-    .data_rdata_i(data_rdata_core),
-    .data_err_i,
+    .data_req_o   (trvk_req),
+    .data_gnt_i   (trvk_gnt),
+    .data_rvalid_i(trvk_rvalid),
+    .data_we_o    (trvk_we),
+    .data_be_o    (trvk_be),
+    .data_addr_o  (trvk_addr),
+    .data_wdata_o (data_wdata_core),
+    .data_rdata_i (data_rdata_core),
+    .data_err_i   (trvk_err),
 
     .dummy_instr_id_o (dummy_instr_id),
     .dummy_instr_wb_o (dummy_instr_wb),
@@ -777,15 +816,15 @@ module ibex_top import ibex_pkg::*; #(
     assign icache_data_alert = '{default:'b0};
   end
 
-  assign data_wdata_o = data_wdata_core[31:0];
+  assign trvk_wdata = data_wdata_core[31:0];
 
   if (MemECC) begin : gen_mem_wdata_ecc
     prim_buf #(.Width(7)) u_prim_buf_data_wdata_intg (
       .in_i (data_wdata_core[38:32]),
-      .out_o(data_wdata_intg_o)
+      .out_o(trvk_wdata_intg)
     );
   end else begin : gen_no_mem_ecc
-    assign data_wdata_intg_o = '0;
+    assign trvk_wdata_intg = '0;
   end
 
   // Redundant lockstep core implementation
@@ -806,15 +845,15 @@ module ibex_top import ibex_pkg::*; #(
       instr_addr_o,
       instr_rdata_core,
       instr_err_i,
-      data_req_o,
-      data_gnt_i,
-      data_rvalid_i,
-      data_we_o,
-      data_be_o,
-      data_addr_o,
-      data_wdata_o,
+      trvk_req,
+      trvk_gnt,
+      trvk_rvalid,
+      trvk_we,
+      trvk_be,
+      trvk_addr,
+      trvk_wdata,
       data_rdata_core,
-      data_err_i,
+      trvk_err,
       rf_rdata_a,
       rf_rdata_b,
       ic_tag_req,
@@ -901,15 +940,15 @@ module ibex_top import ibex_pkg::*; #(
       instr_addr_o,
       instr_rdata_core,
       instr_err_i,
-      data_req_o,
-      data_gnt_i,
-      data_rvalid_i,
-      data_we_o,
-      data_be_o,
-      data_addr_o,
-      data_wdata_o,
+      trvk_req,
+      trvk_gnt,
+      trvk_rvalid,
+      trvk_we,
+      trvk_be,
+      trvk_addr,
+      trvk_wdata,
       data_rdata_core,
-      data_err_i,
+      trvk_err,
       rf_rdata_a,
       rf_rdata_b,
       ic_tag_req,
@@ -1148,15 +1187,116 @@ module ibex_top import ibex_pkg::*; #(
     assign unused_scan = scan_rst_ni;
   end
 
+
+  //////////
+  // TRVK //
+  //////////
+
+  if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_trvk
+    ibex_trvk #(
+      .NumOutstanding(MaxOutstandingDSideAccesses),
+      .MemECC(MemECC),
+      .RevBitmapAddrWidth(CheriotRevBitmapAddrWidth),
+      .RevBitmapBaseAddr(CheriotRevBitmapBaseAddr)
+    ) i_ibex_trvk (
+      .clk_i                  (clk),
+      .rst_ni                 (rst_ni),
+      .heap_base_addr_i       (trvk_heap_base_addr_i),
+      .upstream_req_i         (trvk_req),
+      .upstream_gnt_o         (trvk_gnt),
+      .upstream_rvalid_o      (trvk_rvalid),
+      .upstream_we_i          (trvk_we),
+      .upstream_be_i          (trvk_be),
+      .upstream_addr_i        (trvk_addr),
+      .upstream_wdata_i       (trvk_wdata),
+      .upstream_wdata_intg_i  (trvk_wdata_intg),
+      .upstream_rdata_o       (trvk_rdata),
+      .upstream_rdata_intg_o  (trvk_rdata_intg),
+      .upstream_err_o         (trvk_err),
+      .upstream_tag_i         (trvk_wtag),
+      .upstream_tag_o         (trvk_rtag),
+      .downstream_req_o       (data_req_o),
+      .downstream_gnt_i       (data_gnt_i),
+      .downstream_rvalid_i    (data_rvalid_i),
+      .downstream_we_o        (data_we_o),
+      .downstream_be_o        (data_be_o),
+      .downstream_addr_o      (data_addr_o),
+      .downstream_wdata_o     (data_wdata_o),
+      .downstream_wdata_intg_o(data_wdata_intg_o),
+      .downstream_rdata_i     (data_rdata_i),
+      .downstream_rdata_intg_i(data_rdata_intg_i),
+      .downstream_err_i       (data_err_i),
+      .downstream_tag_o       (data_tag_o),
+      .downstream_tag_i       (data_tag_i),
+      .revbm_req_o            (trvk_revbm_req_o),
+      .revbm_gnt_i            (trvk_revbm_gnt_i),
+      .revbm_rvalid_i         (trvk_revbm_rvalid_i),
+      .revbm_addr_o           (trvk_revbm_addr_o),
+      .revbm_rdata_i          (trvk_revbm_rdata_i),
+      .revbm_rdata_intg_i     (trvk_revbm_rdata_intg_i),
+      .revbm_err_i            (trvk_revbm_err_i),
+      .revbm_data_intg_error_o(trvk_revbm_data_intg_error),
+      .revbm_device_error_o   (trvk_revbm_device_error)
+    );
+
+    // Tag connection towards the core is tied-off for now. This will change as soon as the core
+    // is updated to feature CHERIoT support.
+    logic unused_trvk;
+    assign trvk_wtag   = 1'b0;
+    assign unused_trvk = trvk_rtag;
+
+  end else begin : gen_no_cheriot_trvk
+
+    logic unused_trvk;
+
+    assign trvk_revbm_req_o           = '0;
+    assign trvk_revbm_addr_o          = '0;
+    // Currently tied-off trvk_wtag as the core does not connect this signal yet.
+    assign trvk_wtag                  = 1'b0;
+    assign trvk_rtag                  = 1'b0;
+    assign data_tag_o                 = 1'b0;
+    assign trvk_revbm_data_intg_error = 1'b0;
+    assign trvk_revbm_device_error    = 1'b0;
+    assign unused_trvk = ^{
+      trvk_heap_base_addr_i,
+      trvk_revbm_gnt_i,
+      trvk_revbm_rvalid_i,
+      trvk_revbm_rdata_i,
+      trvk_revbm_rdata_intg_i,
+      trvk_revbm_err_i,
+      trvk_wtag,
+      // Currently consumed as unused as the core does not consume this signal yet.
+      trvk_rtag,
+      data_tag_i
+    };
+
+    // Through-connect TRVK
+    assign data_req_o        = trvk_req;
+    assign trvk_gnt          = data_gnt_i;
+    assign trvk_rvalid       = data_rvalid_i;
+    assign data_we_o         = trvk_we;
+    assign data_be_o         = trvk_be;
+    assign data_addr_o       = trvk_addr;
+    assign data_wdata_o      = trvk_wdata;
+    assign data_wdata_intg_o = trvk_wdata_intg;
+    assign trvk_rdata        = data_rdata_i;
+    assign trvk_rdata_intg   = data_rdata_intg_i;
+    assign trvk_err          = data_err_i;
+  end
+
+
   // Enable or disable iCache multi bit encoding checking error generation.
   // If enabled and a MuBi encoding error is detected, raise a major alert.
   logic icache_alert_major_internal;
   assign icache_alert_major_internal = (|icache_tag_alert) | (|icache_data_alert);
 
-  assign alert_major_internal_o = core_alert_major_internal |
+  assign alert_major_internal_o = core_alert_major_internal     |
                                   lockstep_alert_major_internal |
                                   icache_alert_major_internal;
-  assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
+  assign alert_major_bus_o      = core_alert_major_bus       |
+                                  lockstep_alert_major_bus   |
+                                  trvk_revbm_data_intg_error |
+                                  trvk_revbm_device_error;
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
 
   // X checks for top-level outputs
@@ -1165,7 +1305,10 @@ module ibex_top import ibex_pkg::*; #(
 
   `ASSERT_KNOWN(IbexDataReqX, data_req_o)
   `ASSERT_KNOWN_IF(IbexDataReqPayloadX,
-    {data_we_o, data_be_o, data_addr_o, data_wdata_o, data_wdata_intg_o}, data_req_o)
+    {data_we_o, data_be_o, data_addr_o, data_wdata_o, data_wdata_intg_o, data_tag_o}, data_req_o)
+
+  `ASSERT_KNOWN(IbexTrvkRevbmReqX, trvk_revbm_req_o)
+  `ASSERT_KNOWN_IF(IbexTrvkRevbmReqPayloadX, trvk_revbm_addr_o, trvk_revbm_req_o)
 
   `ASSERT_KNOWN(IbexScrambleReqX, scramble_req_o)
   `ASSERT_KNOWN(IbexDoubleFaultSeenX, double_fault_seen_o)
@@ -1180,6 +1323,7 @@ module ibex_top import ibex_pkg::*; #(
   `ASSERT_KNOWN(IbexRamCfgDataX, ram_cfg_icache_data_i)
   `ASSERT_KNOWN(IbexHartIdX, hart_id_i)
   `ASSERT_KNOWN(IbexBootAddrX, boot_addr_i)
+  `ASSERT_KNOWN(IbexTrvkHeapBaseAddrX, trvk_heap_base_addr_i)
 
   `ASSERT_KNOWN(IbexInstrGntX, instr_gnt_i)
   `ASSERT_KNOWN(IbexInstrRValidX, instr_rvalid_i)
@@ -1188,13 +1332,13 @@ module ibex_top import ibex_pkg::*; #(
 
   `ASSERT_KNOWN(IbexDataGntX, data_gnt_i)
   `ASSERT_KNOWN(IbexDataRValidX, data_rvalid_i)
-  `ifdef INC_ASSERT
-    // Ibex can have a maximum of 2 accesses outstanding on the DSide. This is because it does not
-    // speculative data accesses so the only requests that can be in flight must relate to a single
-    // ongoing load or store instruction. Due to unaligned access support a single load or store can
-    // generate 2 accesses.
-    localparam int unsigned MaxOutstandingDSideAccesses = 2;
 
+  `ASSERT_KNOWN(IbexTrvkRevbmGntX, trvk_revbm_gnt_i)
+  `ASSERT_KNOWN(IbexTrvkRevbmRValidX, trvk_revbm_rvalid_i)
+  `ASSERT_KNOWN_IF(IbexTrvkRevbmRPayloadX,
+    {trvk_revbm_rdata_i, trvk_revbm_rdata_intg_i, trvk_revbm_err_i}, trvk_revbm_rvalid_i)
+
+  `ifdef INC_ASSERT
     typedef struct packed {
       logic valid;
       logic is_read;
@@ -1270,8 +1414,9 @@ module ibex_top import ibex_pkg::*; #(
           data_rvalid_i & pending_dside_accesses_q[0].is_read)
     end
 
-    // data_err_i relevant to both reads and writes. Check it isn't X on any response.
-    `ASSERT_KNOWN_IF(IbexDataRErrPayloadX, data_err_i, data_rvalid_i)
+    // data_err_i and data_tag_i are relevant to both reads and writes. Check neither is X on any
+    // response.
+    `ASSERT_KNOWN_IF(IbexDataRErrPayloadX, {data_err_i, data_tag_i}, data_rvalid_i)
 
     `ifdef RVFI
     // Tracking logic and predictor for double_fault_seen_o output, relies on RVFI so only include
@@ -1391,7 +1536,7 @@ module ibex_top import ibex_pkg::*; #(
       .err_o      (data_ecc_err)
     );
     `ASSERT(MajorAlertOnDMemIntegrityErr,
-      data_rvalid_i && (|data_ecc_err) |-> ##[0:5] alert_major_bus_o)
+      trvk_rvalid && (|data_ecc_err) |-> ##[0:5] alert_major_bus_o)
 
     prim_secded_inv_39_32_dec u_instr_intg_dec (
       .data_i     (instr_rdata_core),

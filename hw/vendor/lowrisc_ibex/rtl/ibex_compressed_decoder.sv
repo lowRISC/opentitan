@@ -25,6 +25,7 @@ module ibex_compressed_decoder #(
   output logic [31:0]          instr_o,
   output logic                 is_compressed_o,
   output ibex_pkg::instr_exp_e gets_expanded_o,
+  input  logic                 flush_expanded_i,
   output logic                 illegal_instr_o
 );
   import ibex_pkg::*;
@@ -670,6 +671,8 @@ module ibex_compressed_decoder #(
                       instr_o = cm_sp_addi(.rlist(instr_i[7:4]),
                                           .spimm(instr_i[3:2]),
                                           .decr(1'b0));
+                      // Ensure the SP adjustment commits atomically with the subsequent micro-ops.
+                      gets_expanded = INSTR_EXPANDED_COMMIT;
                       if (id_in_ready_i) begin
                         unique case (instr_i[12:8])
                           5'b11100: cm_state_d = CmPopZeroA0; // cm.popretz
@@ -684,6 +687,8 @@ module ibex_compressed_decoder #(
                     end
                     CmPopZeroA0: begin
                       instr_o = cm_zero_a0();
+                      // Ensure the `ret` after is executed atomically with this one.
+                      gets_expanded = INSTR_EXPANDED_COMMIT;
                       if (id_in_ready_i) begin
                         cm_state_d = CmPopRetRa;
                       end
@@ -712,6 +717,8 @@ module ibex_compressed_decoder #(
                           // No cm.mvsa01 instruction is active yet; start a new one.
                           // Move a0 to register indicated by r1s'.
                           instr_o = cm_mvsa01(.a01(1'b0), .rs(instr_i[9:7]));
+                          // Ensure the second move happens atomically with this one.
+                          gets_expanded = INSTR_EXPANDED_COMMIT;
                           if (valid_i && id_in_ready_i) begin
                             cm_state_d = CmMvSecondReg;
                           end
@@ -738,6 +745,8 @@ module ibex_compressed_decoder #(
                           // No cm.mva01s instruction is active yet; start a new one.
                           // Move register indicated by r1s' into a0.
                           instr_o = cm_mva01s(.rs(instr_i[9:7]), .a01(1'b0));
+                          // Ensure the second move happens atomically with this one.
+                          gets_expanded = INSTR_EXPANDED_COMMIT;
                           if (valid_i && id_in_ready_i) begin
                             cm_state_d = CmMvSecondReg;
                           end
@@ -799,7 +808,7 @@ module ibex_compressed_decoder #(
     if (!rst_ni) begin
       cm_state_q <= CmIdle;
     end else begin
-      cm_state_q <= cm_state_d;
+      cm_state_q <= flush_expanded_i ? CmIdle : cm_state_d;
     end
   end
 

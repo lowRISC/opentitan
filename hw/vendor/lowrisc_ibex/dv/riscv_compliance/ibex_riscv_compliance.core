@@ -23,6 +23,12 @@ filesets:
       - lint/verilator_waiver.vlt: {file_type: vlt}
 
 parameters:
+  BaseIsa:
+    datatype: str
+    default: ibex_pkg::BaseIsaRV32I
+    paramtype: vlogdefine
+    description: "Base ISA parameter enum. See the ibex_pkg::base_isa_e enum in ibex_pkg.sv for permitted values."
+
   RV32E:
     datatype: int
     paramtype: vlogparam
@@ -138,6 +144,7 @@ targets:
       - files_sim
       - tool_verilator ? (files_verilator)
     parameters:
+      - BaseIsa
       - RV32E
       - RV32M
       - RV32B
