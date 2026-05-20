@@ -101,6 +101,239 @@ def re_initialize(gdb, print_output=False):
 
 
 class AsymCryptolibFiSim(unittest.TestCase):
+    def test_p384_sign(self):
+        print("Starting the p384 sign init test")
+
+        # Preparing the input for an invalid signature
+        key = ECC.generate(curve="P-384")
+        scalar = [x for x in key.d.to_bytes(48, "little")]
+        pubx1 = [x for x in key.pointQ.x.to_bytes(48, "little")]
+
+        # Create a second set of inputs with a single bit flipped to check for collisions
+        pubx2 = pubx1.copy()
+        pubx2[0] ^= 1
+        pubx = [pubx1, pubx2]
+
+        puby = [x for x in key.pointQ.y.to_bytes(48, "little")]
+
+        # Using a dummy message for the digest
+        message = [i for i in range(16)]
+        h = SHA384.new(bytes(message))
+        message_digest = [x for x in h.digest()]
+
+        # Taken from the regular test
+        cfg = 0
+        trigger = 0
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "p384_sign_pc_trace.log")
+        # Directory for the log of the campaign
+        campaign_file = os.path.join(log_dir, "p384_sign_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        sign_output = [None, None]
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w") as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(
+                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                )
+
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_P384_SIGN"
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print(
+                    "Start and stop addresses of ", function_name, ": ", trace_address
+                )
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+
+                # Trigger the p384 sign from the testOS (we do not read its output)
+                asymfi.handle_p384_sign(
+                    scalar, pubx[0], puby, message_digest, cfg, trigger
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurrence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print(
+                    "Tracing has a total of",
+                    len(pc_count_dict),
+                    "unique PCs",
+                    flush=True,
+                )
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the sign instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print(
+                                "Applying instruction skip in ",
+                                pc,
+                                "occurrence",
+                                i_count,
+                            )
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                asymfi.handle_p384_sign(
+                                    scalar, pubx[i], puby, message_digest, cfg, trigger
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                sign_output[i] = None
+                                if "instruction skip applied" in gdb_response:
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        testos_response_json = json.loads(
+                                            testos_response
+                                        )
+                                        print(
+                                            "Output:", testos_response_json, flush=True
+                                        )
+                                        if testos_response_json["status"] == 0:
+                                            # Record the 'r' value from the signature
+                                            sign_output[i] = testos_response_json["r"]
+
+                                            # Check for collisions on the 48-byte r-value
+                                            if utils.is_partial_collision(
+                                                sign_output[0],
+                                                sign_output[1],
+                                                match_threshold_ratio=0.75,
+                                            ) or utils.is_majority_zeros(
+                                                sign_output[i], total_length=48
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print(
+                                                    "Location:",
+                                                    pc,
+                                                    "iteration",
+                                                    i_count,
+                                                )
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                                        # We do not need to reset the target since it gave an output
+                                else:
+                                    print(
+                                        "No break point found, something went wrong",
+                                        flush=True,
+                                    )
+                                    gdb = reset_target_and_gdb(gdb)
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(
+                    f"Total attacks {total_attacks}, successful attacks {successful_faults}"
+                )
+                # Close the OpenOCD and GDB connection at the end
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
     def test_p384_verify(self):
         print("Starting the p384 verify test")
         # Preparing the input for an invalid signature
