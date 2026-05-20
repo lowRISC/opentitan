@@ -155,7 +155,7 @@ static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
     dst[i] = src[len - 1 - i];
   }
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
@@ -240,7 +240,7 @@ static status_t ed25519_clamp(uint32_t hash_h_low[kCurve25519HalfHashWords]) {
   hash_h_low[0] &= 0xfffffff8;
   hash_h_low[kCurve25519HalfHashWords - 1] &= 0x7fffffff;
   hash_h_low[kCurve25519HalfHashWords - 1] |= 0x40000000;
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
