@@ -94,6 +94,8 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_asym_commands",
+        # Specifically load the HARDENED_TRY
+        "//sw/device/lib/crypto/impl:status",
     ] + select({
         # This is the target for the cryptolib given as a prebuilt drop
         "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [
@@ -119,6 +121,8 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_sym_commands",
+        # Specifically load the HARDENED_TRY
+        "//sw/device/lib/crypto/impl:status",
     ] + select({
         # This is the target for the cryptolib given as a prebuilt drop
         "//sw/device/tests/penetrationtests/cryptolib_drop:use_prebuilt_cryptolib": [

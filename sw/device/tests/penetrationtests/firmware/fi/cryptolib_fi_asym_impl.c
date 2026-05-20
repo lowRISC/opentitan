@@ -217,8 +217,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_high();
     }
-    TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, &ciphertext, &label_buf,
-                             &plaintext, &msg_len));
+    HARDENED_TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, &ciphertext,
+                                      &label_buf, &plaintext, &msg_len));
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }
@@ -593,8 +593,8 @@ status_t cryptolib_fi_p256_ecdh_impl(
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1, kPentestP256MaskedPrivateKeyWords);
 
-  TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
-                                           &private_key));
+  HARDENED_TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
+                                                    &private_key));
 
   // Construct the public key object.
   uint32_t public_key_buf[kPentestP256Words * 2];
@@ -614,7 +614,7 @@ status_t cryptolib_fi_p256_ecdh_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP256Words * 2];
@@ -646,8 +646,8 @@ status_t cryptolib_fi_p256_ecdh_impl(
   otcrypto_word32_buf_t ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP256Words];
-  TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
-                                  &ss_share1_buf));
+  HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                           &ss_share1_buf));
   for (size_t i = 0; i < kPentestP256Words; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
@@ -688,8 +688,8 @@ status_t cryptolib_fi_p256_sign_impl(
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1, kPentestP256MaskedPrivateKeyWords);
 
-  TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
-                                           &private_key));
+  HARDENED_TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
+                                                    &private_key));
 
   // Create the public key.
   uint32_t public_key_buf[kPentestP256Words * 2];
@@ -709,7 +709,7 @@ status_t cryptolib_fi_p256_sign_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a key pair if requested.
   // This will overwrite the private and public key above.
@@ -773,7 +773,8 @@ status_t cryptolib_fi_p256_sign_impl(
   otcrypto_word32_buf_t out_y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+  HARDENED_TRY(
+      otcrypto_ecc_p256_public_key_export(&public_key, &out_x_buf, &out_y_buf));
 
   memcpy(uj_output->pubx, out_pub_x, P256_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P256_CMD_BYTES);
@@ -813,7 +814,7 @@ status_t cryptolib_fi_p256_verify_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
 
   // Setup the signature buffer.
   uint32_t signature_data[kPentestP256Words * 2] = {0};
@@ -870,8 +871,8 @@ status_t cryptolib_fi_p256_base_mul_impl(
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1, kPentestP256MaskedPrivateKeyWords);
 
-  TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
-                                           &private_key));
+  HARDENED_TRY(otcrypto_ecc_p256_private_key_import(share0_buf, share1_buf,
+                                                    &private_key));
 
   uint32_t public_key_buf[kPentestP256Words * 2];
   otcrypto_unblinded_key_t public_key = {
@@ -883,7 +884,7 @@ status_t cryptolib_fi_p256_base_mul_impl(
   if (uj_input.trigger) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ecc_p256_base_point_mult(&private_key, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p256_base_point_mult(&private_key, &public_key));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
   }
@@ -895,7 +896,8 @@ status_t cryptolib_fi_p256_base_mul_impl(
   otcrypto_word32_buf_t out_y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+  HARDENED_TRY(
+      otcrypto_ecc_p256_public_key_export(&public_key, &out_x_buf, &out_y_buf));
 
   uj_output->cfg = 0;
   memset(uj_output->x, 0, P256_CMD_BYTES);
@@ -934,8 +936,8 @@ status_t cryptolib_fi_p384_ecdh_impl(
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1, kPentestP384MaskedPrivateKeyWords);
 
-  TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
-                                           &private_key));
+  HARDENED_TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
+                                                    &private_key));
 
   // Construct the public key object.
   uint32_t public_key_buf[kPentestP384Words * 2];
@@ -955,7 +957,7 @@ status_t cryptolib_fi_p384_ecdh_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP384Words * 2];
@@ -987,8 +989,8 @@ status_t cryptolib_fi_p384_ecdh_impl(
   otcrypto_word32_buf_t ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP384Words];
-  TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
-                                  &ss_share1_buf));
+  HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                           &ss_share1_buf));
   for (size_t i = 0; i < kPentestP384Words; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
@@ -1029,8 +1031,8 @@ status_t cryptolib_fi_p384_sign_impl(
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1, kPentestP384MaskedPrivateKeyWords);
 
-  TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
-                                           &private_key));
+  HARDENED_TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
+                                                    &private_key));
 
   // Create the public key.
   uint32_t public_key_buf[kPentestP384Words * 2];
@@ -1050,7 +1052,7 @@ status_t cryptolib_fi_p384_sign_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
 
   // Create a key pair if requested.
   // This will overwrite the private and public key above.
@@ -1113,7 +1115,8 @@ status_t cryptolib_fi_p384_sign_impl(
   otcrypto_word32_buf_t out_y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+  HARDENED_TRY(
+      otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
 
   memcpy(uj_output->pubx, out_pub_x, P384_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P384_CMD_BYTES);
@@ -1153,7 +1156,7 @@ status_t cryptolib_fi_p384_verify_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
 
   // Setup the signature buffer.
   uint32_t signature_data[kPentestP384Words * 2] = {0};
@@ -1210,8 +1213,8 @@ status_t cryptolib_fi_p384_base_mul_impl(
   otcrypto_const_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share1, kPentestP384MaskedPrivateKeyWords);
 
-  TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
-                                           &private_key));
+  HARDENED_TRY(otcrypto_ecc_p384_private_key_import(share0_buf, share1_buf,
+                                                    &private_key));
 
   uint32_t public_key_buf[kPentestP384Words * 2];
   otcrypto_unblinded_key_t public_key = {
@@ -1223,7 +1226,7 @@ status_t cryptolib_fi_p384_base_mul_impl(
   if (uj_input.trigger) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ecc_p384_base_point_mult(&private_key, &public_key));
+  HARDENED_TRY(otcrypto_ecc_p384_base_point_mult(&private_key, &public_key));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
   }
@@ -1235,7 +1238,8 @@ status_t cryptolib_fi_p384_base_mul_impl(
   otcrypto_word32_buf_t out_y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, out_pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+  HARDENED_TRY(
+      otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
 
   uj_output->cfg = 0;
   memset(uj_output->x, 0, P384_CMD_BYTES);
@@ -1282,7 +1286,8 @@ status_t cryptolib_fi_ed25519_sign_impl(
   if (uj_input.trigger == 0) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  HARDENED_TRY(
+      otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
   if (uj_input.trigger == 0) {
     pentest_set_trigger_low();
   }
@@ -1301,7 +1306,8 @@ status_t cryptolib_fi_ed25519_sign_impl(
   if (uj_input.trigger == 1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_ed25519_sign_verify(&private_key, &public_key, &input_message,
+  HARDENED_TRY(
+      otcrypto_ed25519_sign_verify(&private_key, &public_key, &input_message,
                                    kOtcryptoEddsaSignModeEddsa, &signature));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
@@ -1358,9 +1364,9 @@ status_t cryptolib_fi_ed25519_verify_impl(
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
   pentest_set_trigger_high();
-  TRY(otcrypto_ed25519_verify(&public_key, &input_message,
-                              kOtcryptoEddsaSignModeEddsa, &signature,
-                              &verification_result));
+  HARDENED_TRY(otcrypto_ed25519_verify(&public_key, &input_message,
+                                       kOtcryptoEddsaSignModeEddsa, &signature,
+                                       &verification_result));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -1409,7 +1415,7 @@ status_t cryptolib_fi_x25519_base_mul_impl(
   if (uj_input.trigger) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_x25519_keygen(&private_key, &public_key));
+  HARDENED_TRY(otcrypto_x25519_keygen(&private_key, &public_key));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
   }
@@ -1475,7 +1481,7 @@ status_t cryptolib_fi_x25519_ecdh_impl(
   if (uj_input.trigger) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_x25519(&private_key, &public_key, &shared_secret));
+  HARDENED_TRY(otcrypto_x25519(&private_key, &public_key, &shared_secret));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
   }
@@ -1487,11 +1493,11 @@ status_t cryptolib_fi_x25519_ecdh_impl(
   otcrypto_word32_buf_t ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
 
-  TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
-                                  &ss_share1_buf));
+  HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                           &ss_share1_buf));
 
   uint32_t ss_unmasked[8];
-  TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+  HARDENED_TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
 
   uj_output->cfg = 0;
   memset(uj_output->shared_key, 0, X25519_CMD_BYTES);
@@ -1513,7 +1519,7 @@ status_t cryptolib_fi_x25519_point_mul_impl(
   ecdh_in.trigger = uj_input.trigger;
 
   cryptolib_fi_asym_x25519_ecdh_out_t ecdh_out;
-  TRY(cryptolib_fi_x25519_ecdh_impl(ecdh_in, &ecdh_out));
+  HARDENED_TRY(cryptolib_fi_x25519_ecdh_impl(ecdh_in, &ecdh_out));
 
   memcpy(uj_output->x, ecdh_out.shared_key, X25519_CMD_BYTES);
   memset(uj_output->y, 0, X25519_CMD_BYTES);

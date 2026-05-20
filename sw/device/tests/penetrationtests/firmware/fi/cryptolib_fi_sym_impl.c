@@ -149,7 +149,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_aes(&key, &iv, mode, op, &input, padding, &output));
+  HARDENED_TRY(otcrypto_aes(&key, &iv, mode, op, &input, padding, &output));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_AES_END);
 
@@ -234,7 +234,7 @@ status_t cryptolib_fi_trng_init_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_entropy_init());
+  HARDENED_TRY(otcrypto_entropy_init());
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -334,8 +334,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   // Trigger window.
   PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_ENCRYPT_START);
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&key, &plaintext, &iv, &aad, tag_len,
-                               &actual_ciphertext, &actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&key, &plaintext, &iv, &aad, tag_len,
+                                        &actual_ciphertext, &actual_tag));
   pentest_set_trigger_low();
   PENTEST_MARKER_LABEL(PENTEST_MARKER_GCM_ENCRYPT_END);
 
@@ -512,7 +512,7 @@ status_t cryptolib_fi_cmac_impl(cryptolib_fi_sym_cmac_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_cmac(&key, &input_message, &tag));
+  HARDENED_TRY(otcrypto_cmac(&key, &input_message, &tag));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
