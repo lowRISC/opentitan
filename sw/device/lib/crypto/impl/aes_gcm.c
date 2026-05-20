@@ -244,12 +244,8 @@ status_t aes_gcm_check_tag_length(size_t word_len,
 static status_t load_key_if_sideloaded(const aes_key_t key) {
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     return OTCRYPTO_OK;
-  } else if (key.sideload != kHardenedBoolTrue) {
-    // COVERAGE (SW ERR) This is an internal function, the aes key's sideload is
-    // set internal by good parameters.
-    return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
       key.key_shares[0], kOtcryptoKeyModeAesGcm, &diversification));
@@ -269,14 +265,14 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
  */
 static status_t clear_key_if_sideloaded(const aes_key_t key) {
   if (launder32(key.sideload) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
+    HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolFalse));
     return OTCRYPTO_OK;
   } else if (launder32(key.sideload) != kHardenedBoolTrue) {
     // COVERAGE (SW ERR) This is an internal function, the aes key's sideload is
     // set internal by good parameters.
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
   return keymgr_sideload_clear_aes();
 }
 
