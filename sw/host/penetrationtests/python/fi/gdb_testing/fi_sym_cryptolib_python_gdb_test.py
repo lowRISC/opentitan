@@ -15,6 +15,7 @@ from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util import common_library
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import json
 import argparse
@@ -50,7 +51,7 @@ original_stdout = sys.stdout
 
 def trigger_testos_init(print_output=True):
     # Initializing the testOS (setting up the alerts and accelerators)
-    (device_id, _, _, _, _, _, _) = symfi.init(
+    (device_id, _, _, _, _, _, _, _) = symfi.init(
         alert_config=common_library.no_escalation_alert_config
     )
     if print_output:
@@ -244,7 +245,15 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         if testos_response_json["status"] == 0:
                                             data_out[i] = tuple(testos_response_json["data"])
 
-                                            if data_out[i] == data_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    data_out[0],
+                                                    data_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                data_out[i], total_length=32
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -446,7 +455,15 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         if testos_response_json["status"] == 0:
                                             drbg_out[i] = tuple(testos_response_json["data"])
 
-                                            if drbg_out[i] == drbg_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    drbg_out[0],
+                                                    drbg_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                drbg_out[i], total_length=16
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -642,12 +659,24 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
-                                        testos_response_json = json.loads(testos_response)
-                                        print("Output:", testos_response_json, flush=True)
+                                        testos_response_json = json.loads(
+                                            testos_response
+                                        )
+                                        print(
+                                            "Output:", testos_response_json, flush=True
+                                        )
                                         if testos_response_json["status"] == 0:
                                             drbg_out[i] = testos_response_json["data"]
 
-                                            if drbg_out[i] == drbg_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    drbg_out[0],
+                                                    drbg_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                drbg_out[i], total_length=16
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -731,7 +760,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                 trigger_testos_init()
 
                 # Connect to GDB
-                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+                gdb = GDBController(
+                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                )
 
                 # We provide the name of the unique marker in the pentest framework
                 function_name = "PENTEST_MARKER_GCM_ENCRYPT"
@@ -885,7 +916,15 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         if testos_response_json["status"] == 0:
                                             gcm_out[i] = testos_response_json["data"]
 
-                                            if gcm_out[i] == gcm_out[1 - i]:
+                                            if (
+                                                utils.is_partial_collision(
+                                                    gcm_out[0],
+                                                    gcm_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                gcm_out[i], total_length=16
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
