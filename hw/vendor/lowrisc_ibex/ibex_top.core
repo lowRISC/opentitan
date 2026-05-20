@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_core
       - lowrisc:prim:and2
+      - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:count
@@ -19,10 +20,14 @@ filesets:
       - lowrisc:prim:onehot_check
       - lowrisc:prim:onehot
       - lowrisc:prim:util
+      - lowrisc:prim:fifo
+      - lowrisc:prim:secded
+      - pulp-platform:common_cells:common_cells
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA
       - rtl/ibex_register_file_latch.sv # ASIC
+      - rtl/ibex_trvk.sv
       - rtl/ibex_lockstep.sv
       - rtl/ibex_top.sv
     file_type: systemVerilogSource
@@ -54,6 +59,12 @@ parameters:
     description: Identifies Xilinx FPGA targets to set DSP pragmas for performance counters.
     default: false
     paramtype: vlogdefine
+
+  BaseIsa:
+    datatype: str
+    default: ibex_pkg::BaseIsaRV32I
+    paramtype: vlogdefine
+    description: "Base ISA parameter enum. See the ibex_pkg::base_isa_e enum in ibex_pkg.sv for permitted values."
 
   RV32E:
     datatype: int

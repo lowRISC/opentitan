@@ -577,6 +577,7 @@ module ibex_core import ibex_pkg::*; #(
     .instr_rdata_alu_i    (instr_rdata_alu_id),
     .instr_rdata_c_i      (instr_rdata_c_id),
     .instr_is_compressed_i(instr_is_compressed_id),
+    .instr_gets_expanded_i(instr_gets_expanded_id),
     .instr_bp_taken_i     (instr_bp_taken_id),
 
     // Jumps and branches
