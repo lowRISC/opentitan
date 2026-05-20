@@ -15,6 +15,7 @@ from sw.host.penetrationtests.python.util import targets
 from sw.host.penetrationtests.python.util import common_library
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
+from sw.host.penetrationtests.python.util import utils
 from collections import Counter
 import json
 import argparse
@@ -53,7 +54,7 @@ original_stdout = sys.stdout
 
 def trigger_testos_init(print_output=True):
     # Initializing the testOS (setting up the alerts and accelerators)
-    (device_id, _, _, _, _, _, _) = asymfi.init(
+    (device_id, _, _, _, _, _, _, _) = asymfi.init(
         alert_config=common_library.no_escalation_alert_config
     )
     if print_output:
@@ -428,8 +429,16 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
                                         if testos_response_json["status"] == 0:
-                                            ecdh_output[i] = testos_response_json["shared_key"]
-                                            if ecdh_output[i] == ecdh_output[1 - i]:
+                                            ecdh_output[i] = testos_response_json[
+                                                "shared_key"
+                                            ]
+                                            if utils.is_partial_collision(
+                                                ecdh_output[0],
+                                                ecdh_output[1],
+                                                match_threshold_ratio=0.75,
+                                            ) or utils.is_majority_zeros(
+                                                ecdh_output[i]
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
@@ -801,8 +810,16 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
                                         if testos_response_json["status"] == 0:
-                                            ecdh_output[i] = testos_response_json["shared_key"]
-                                            if ecdh_output[i] == ecdh_output[1 - i]:
+                                            ecdh_output[i] = testos_response_json[
+                                                "shared_key"
+                                            ]
+                                            if utils.is_partial_collision(
+                                                ecdh_output[0],
+                                                ecdh_output[1],
+                                                match_threshold_ratio=0.75,
+                                            ) or utils.is_majority_zeros(
+                                                ecdh_output[i]
+                                            ):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
