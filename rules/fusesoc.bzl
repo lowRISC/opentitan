@@ -82,10 +82,12 @@ def _fusesoc_build_impl(ctx):
     args.add_all(ctx.attr.systems)
     args.add_all(flags)
 
+    env = {k: ctx.expand_location(v, ctx.attr.extra_deps) for k, v in ctx.attr.env.items()}
+
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
-        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + [
+        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + ctx.files.extra_deps + [
             cfg_file,
         ],
         arguments = [args],
@@ -99,7 +101,7 @@ def _fusesoc_build_impl(ctx):
                 # Obtain the non-hermetic binary path and append Bazel's default PATH.
                 "PATH": BIN_PATHS["vivado" if ctx.attr.target == "synth" else "verilator"] + ":/bin:/usr/bin:/usr/local/bin",
             },
-        ),
+        ) | env,
     )
     return [
         DefaultInfo(
@@ -115,6 +117,8 @@ fusesoc_build = rule(
         "cores": attr.label_list(allow_files = True, doc = "FuseSoC core specification files"),
         "srcs": attr.label_list(allow_files = True, doc = "Source files"),
         "data": attr.label_list(allow_files = True, doc = "Files needed at runtime"),
+        "extra_deps": attr.label_list(allow_files = True, doc = "Extra deps needed to build the model"),
+        "env": attr.string_dict(doc = "Environment variables to set during the build"),
         "target": attr.string(mandatory = True, doc = "Target name (e.g. 'sim')"),
         "systems": attr.string_list(mandatory = True, doc = "Systems to build"),
         "flags": attr.string_list(doc = "Flags controlling the FuseSOC system build"),

@@ -1,0 +1,26 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "libelf",
+    args = ["-j"],
+    configure_in_place = True,
+    lib_source = ":all_srcs",
+    out_static_libs = ["libelf.a"],
+)
+
+filegroup(
+    name = "gen_dir",
+    srcs = [":libelf"],
+    output_group = "gen_dir",
+)

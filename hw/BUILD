@@ -100,6 +100,18 @@ fusesoc_build(
         ":cores",
     ],
     data = ["//hw/ip/otbn:rtl_files"],
+    env = {
+        # Note: when `make` is executed to build the simulator, it executes inside of
+        # a build directory 6 levels down from where the location directives will
+        # evaluate to.
+        "CFLAGS_FOR_BUILD": "-I../../../../../../$(location @libelf//:gen_dir)/include",
+        "LDFLAGS_FOR_BUILD": "-static ../../../../../../$(location @libelf//:gen_dir)/lib/libelf.a",
+    },
+    extra_deps = [
+        # Note: the current debian/ubuntu `libelf1` package will not statically link.
+        # We supply the latest version which fixes the linking error.
+        "@libelf//:gen_dir",
+    ],
     make_options = ":make_options",
     output_groups = opentitan_select_top_attr("top_verilator_binary"),
     systems = opentitan_select_top_attr("top_verilator_core"),
