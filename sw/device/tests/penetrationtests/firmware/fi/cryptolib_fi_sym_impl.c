@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/cmac.h"
@@ -150,7 +151,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes(&key, &iv, mode, op, &input, padding, &output));
+  HARDENED_TRY(otcrypto_aes(&key, &iv, mode, op, &input, padding, &output));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
@@ -183,7 +184,7 @@ status_t cryptolib_fi_drbg_generate_impl(
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_generate(&nonce, &output));
+  HARDENED_TRY(otcrypto_drbg_generate(&nonce, &output));
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -212,7 +213,7 @@ status_t cryptolib_fi_drbg_reseed_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_drbg_instantiate(&entropy));
+  HARDENED_TRY(otcrypto_drbg_instantiate(&entropy));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -230,7 +231,7 @@ status_t cryptolib_fi_trng_init_impl(
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  TRY(otcrypto_entropy_init());
+  HARDENED_TRY(otcrypto_entropy_init());
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -329,8 +330,8 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_aes_gcm_encrypt(&key, &plaintext, &iv, &aad, tag_len,
-                               &actual_ciphertext, &actual_tag));
+  HARDENED_TRY(otcrypto_aes_gcm_encrypt(&key, &plaintext, &iv, &aad, tag_len,
+                                        &actual_ciphertext, &actual_tag));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&actual_ciphertext));
@@ -430,7 +431,7 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_hmac(&key, &input_message, &tag));
+  HARDENED_TRY(otcrypto_hmac(&key, &input_message, &tag));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
@@ -504,7 +505,7 @@ status_t cryptolib_fi_cmac_impl(cryptolib_fi_sym_cmac_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_cmac(&key, &input_message, &tag));
+  HARDENED_TRY(otcrypto_cmac(&key, &input_message, &tag));
   pentest_set_trigger_low();
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
