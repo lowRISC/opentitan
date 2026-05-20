@@ -104,6 +104,7 @@ otbn_library(
 otbn_library(
     name = "p256_shared_key",
     srcs = [
+        "p256_a2b.s",
         "p256_shared_key.s",
     ],
 )
@@ -111,6 +112,7 @@ otbn_library(
 otbn_library(
     name = "p256_base",
     srcs = [
+        "p256_b2a.s",
         "p256_base.s",
     ],
 )
@@ -319,6 +321,20 @@ otbn_library(
     name = "rsa_key_from_cofactor",
     srcs = [
         "rsa_key_from_cofactor.s",
+    ],
+)
+
+otbn_library(
+    name = "p256_a2b",
+    srcs = [
+        "p256_a2b.s",
+    ],
+)
+
+otbn_library(
+    name = "p256_b2a",
+    srcs = [
+        "p256_b2a.s",
     ],
 )
 
