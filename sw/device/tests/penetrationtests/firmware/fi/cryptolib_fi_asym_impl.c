@@ -25,6 +25,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Markers in the dis file to be able to trace certain functions
+#define PENTEST_MARKER_LABEL(name) asm volatile(#name ":" ::: "memory")
+
 // OAEP label for testing.
 static const unsigned char kTestLabel[] = "Test label.";
 static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;
@@ -530,12 +533,14 @@ status_t cryptolib_fi_rsa_verify_impl(
   hardened_bool_t verification_result;
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_VERIFY_START);
     pentest_set_trigger_high();
   }
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, &sig,
                           &verification_result));
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_VERIFY_END);
   }
 
   // Return data back to host.
@@ -616,9 +621,11 @@ status_t cryptolib_fi_p256_ecdh_impl(
       .keyblob = shared_secretblob,
   };
 
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_ECDH_START);
   pentest_set_trigger_high();
   TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_ECDH_END);
 
   uint32_t ss_share0[kPentestP256Words];
   uint32_t ss_share1[kPentestP256Words];
@@ -724,6 +731,7 @@ status_t cryptolib_fi_p256_sign_impl(
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_SIGN_START);
     pentest_set_trigger_high();
   }
   // Sign the message.
@@ -731,6 +739,7 @@ status_t cryptolib_fi_p256_sign_impl(
                                       &signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_SIGN_END);
   }
 
   // Return data back to host.
@@ -803,10 +812,12 @@ status_t cryptolib_fi_p256_verify_impl(
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_VERIFY_START);
   pentest_set_trigger_high();
   TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest, &signature,
                                  &verification_result));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P256_VERIFY_END);
 
   // Return data back to host.
   uj_output->result = true;
@@ -949,9 +960,11 @@ status_t cryptolib_fi_p384_ecdh_impl(
       .keyblob = shared_secretblob,
   };
 
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_ECDH_START);
   pentest_set_trigger_high();
   TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_ECDH_END);
 
   uint32_t ss_share0[kPentestP384Words];
   uint32_t ss_share1[kPentestP384Words];
@@ -1057,12 +1070,14 @@ status_t cryptolib_fi_p384_sign_impl(
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_START);
     pentest_set_trigger_high();
   }
   TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
                                       &signature_mut));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_SIGN_END);
   }
 
   // Return data back to host.
@@ -1135,10 +1150,12 @@ status_t cryptolib_fi_p384_verify_impl(
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_VERIFY_START);
   pentest_set_trigger_high();
   TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest, &signature,
                                  &verification_result));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_P384_VERIFY_END);
 
   // Return data back to host.
   uj_output->result = true;
