@@ -417,7 +417,7 @@ static status_t little_endian_encode(size_t value, uint8_t *encoding_buf,
     encoding_buf[idx] = reverse_buf[len - 1 - idx];
   }
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**

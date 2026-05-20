@@ -19,5 +19,5 @@ otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
   *build_hash_low = kCryptoLibBuildInfo.scm_revision.scm_revision_low;
   *build_hash_high = kCryptoLibBuildInfo.scm_revision.scm_revision_high;
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }

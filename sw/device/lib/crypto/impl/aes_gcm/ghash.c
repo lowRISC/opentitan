@@ -207,7 +207,7 @@ status_t ghash_init(ghash_context_t *ctx) {
 
   ctx->checksum = ghash_context_integrity_checksum(ctx);
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
@@ -353,7 +353,7 @@ static status_t ghash_process_block(ghash_context_t *ctx,
   // Increment the number of processed ghash block counter.
   ctx->ghash_block_cnt++;
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
@@ -454,7 +454,7 @@ status_t ghash_handle_enc_initial_counter_block(
   // Update the checksum.
   ctx->checksum = ghash_context_integrity_checksum(ctx);
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 status_t ghash_final(ghash_context_t *ctx, uint32_t *result) {

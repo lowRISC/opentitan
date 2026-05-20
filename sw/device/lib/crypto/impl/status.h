@@ -26,6 +26,10 @@ extern "C" {
  * minimized.
  */
 #define OTCRYPTO_OK ((status_t){.value = kHardenedBoolTrue})
+
+#define LAUNDERED_OTCRYPTO_OK \
+  ((status_t){.value = (int)launder32(kHardenedBoolTrue)})
+
 #ifdef OTCRYPTO_STATUS_DEBUG
 
 #define OTCRYPTO_RECOV_ERR                                \

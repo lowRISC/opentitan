@@ -66,7 +66,7 @@ static status_t keymgr_start(keymgr_diversification_t diversification) {
   abs_mmio_write32(kBaseAddr + KEYMGR_START_REG_OFFSET,
                    1 << KEYMGR_START_EN_BIT);
 
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
