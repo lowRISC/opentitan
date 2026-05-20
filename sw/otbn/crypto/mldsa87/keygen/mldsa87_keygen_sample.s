@@ -64,6 +64,12 @@ rej_bounded_poly:
   addi x7, x0, 0
   addi x8, x0, 1
 
+  /* Initialize the WDRs that hold intermediate results with randomness. */
+  bn.wsrr w4, URND
+  bn.wsrr w5, URND
+  bn.wsrr w10, URND
+  bn.wsrr w11, URND
+
   /*
    * The following loop unfolds in two parts. First, rejection sample a
    * Boolean shared vector x consisting of 8 4-bit coefficients in the interval
@@ -71,14 +77,7 @@ rej_bounded_poly:
    * arithmetic shares. Repeat this 32 times until all the coefficients of the
    * polynomial have been sampled.
    */
-  loopi 32, 42
-
-    /* Initialize the WDRs that hold intermediate results with randomness. */
-    bn.wsrr w4, URND
-    bn.wsrr w5, URND
-    bn.wsrr w10, URND
-    bn.wsrr w11, URND
-
+  loopi 32, 38
     loopi 8, 27
      /* If the squeezed buffer is empty re-squeeze a new batch of 64 4-bit
         coefficients. */

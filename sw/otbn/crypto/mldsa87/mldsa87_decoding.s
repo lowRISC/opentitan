@@ -99,14 +99,13 @@ _bit_unpack_s:
   bn.not w13, w31
   bn.shv.8s w13, w13 >> 29
 
+  /* Initialize the WDRs that hold intermediate results with randomness. */
+  bn.wsrr w0, URND
+  bn.wsrr w1, URND
+
   /* In each iteration, we decode 8 Boolean-shared coefficients that are
      bit-unpacked and converted to arithmetic shares in w0 and w1. */
-  loopi 8, 21
-
-    /* Initialize the WDRs that hold intermediate results with randomness. */
-    bn.wsrr w0, URND
-    bn.wsrr w1, URND
-
+  loopi 8, 19
     loopi 8, 9
 
       /* Randomness to shift into registers when a coefficient is extracted.
