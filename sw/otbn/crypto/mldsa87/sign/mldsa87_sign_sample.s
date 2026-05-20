@@ -51,8 +51,28 @@ sample_mask_poly:
   addi x4, x0, 0
   addi x5, x0, 1
 
+  /* Initialize the registers that hold the compressed polynomial shares with
+     randomness. This avoids isolating secrets bits in an all-zero register
+     during the shifting operations. */
+
+  /* Share 0. */
+  bn.wsrr w0, URND
+  bn.wsrr w3, URND
+  bn.wsrr w4, URND
+  bn.wsrr w5, URND
+  bn.wsrr w6, URND
+  bn.wsrr w7, URND
+
+  /* Share 1. */
+  bn.wsrr w1, URND
+  bn.wsrr w8, URND
+  bn.wsrr w9, URND
+  bn.wsrr w10, URND
+  bn.wsrr w11, URND
+  bn.wsrr w12, URND
+
   /* In each iteration, we sample 64 coefficients. */
-  loopi 4, 51
+  loopi 4, 49
 
     /*
      * Each coefficient of the mask polynomial has a size of 20 bits. Since
@@ -87,11 +107,7 @@ sample_mask_poly:
     bn.mov w12, w30
 
     /* Sample 64 coefficients in steps of eight at at time. */
-    loopi 8, 29
-
-      /* Initialize the WDRs that hold intermediate results with randomness. */
-      bn.wsrr w0, URND
-      bn.wsrr w1, URND
+    loopi 8, 27
 
       /* Sample one shared vector of eight coefficients. */
       loopi 8, 17
