@@ -65,7 +65,7 @@ otcrypto_status_t otcrypto_disable_icache(hardened_bool_t *icache_enabled) {
 
 otcrypto_status_t otcrypto_restore_icache(hardened_bool_t icache_enabled) {
   ibex_restore_icache(icache_enabled);
-  return OTCRYPTO_OK;
+  return LAUNDERED_OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_clear_alerts(void) {
