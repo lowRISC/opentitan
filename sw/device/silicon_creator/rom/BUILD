@@ -17,6 +17,7 @@ load(
 )
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 load("//rules:symbols.bzl", "check_elf_symbols_test")
+load("//util/design:hardened.bzl", "hardened_comparison_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -247,6 +248,12 @@ check_elf_symbols_test(
         "__divdi3",
     ],
     target = ":mask_rom",
+)
+
+hardened_comparison_test(
+    name = "mask_rom_hardened_comparison_test",
+    srcs = [":mask_rom"],
+    tags = ["broken"],
 )
 
 # Create the legacy ROM target names so that existing splicing rules can find

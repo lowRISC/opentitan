@@ -108,3 +108,8 @@ filegroup(
     name = "doc_files",
     srcs = ["README.md"],
 )
+
+py_binary(
+    name = "check-hardened-comparison",
+    srcs = ["check-hardened-comparison.py"],
+)
