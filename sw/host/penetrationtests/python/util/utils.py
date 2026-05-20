@@ -14,8 +14,9 @@ def compare_json_data(
     assert expected_comparable_keys == actual_comparable_keys
 
     for key in expected_comparable_keys:
-        assert expected_data[key] == actual_data[key], \
+        assert expected_data[key] == actual_data[key], (
             f"Found {actual_data[key]} but expected {expected_data[key]} under the key: {key}"
+        )
 
 
 def to_signed32(n_unsigned):
@@ -70,3 +71,30 @@ def pad_with_zeros(array, length):
     zeros_to_add = max(0, length - len(padded_arr))
     padded_arr.extend([0] * zeros_to_add)
     return padded_arr
+
+
+def is_majority_zeros(array, total_length=None):
+    if total_length is None:
+        total_length = len(array)
+    if total_length <= 0 or total_length > len(array):
+        return False
+
+    array = array[:total_length]
+    zero_count = array.count(0)
+
+    return zero_count > (total_length / 2)
+
+
+def is_partial_collision(out1, out2, match_threshold_ratio=0.75):
+    """
+    Checks if two outputs share a significant number of identical bytes.
+    Useful for catching FI vulnerabilities where a skipped instruction
+    causes a partial state collision rather than an exact match.
+    """
+    if out1 is None or out2 is None or len(out1) != len(out2) or len(out1) == 0:
+        return False
+
+    matching_bytes = sum(1 for a, b in zip(out1, out2) if a == b)
+    match_ratio = matching_bytes / len(out1)
+
+    return match_ratio >= match_threshold_ratio
