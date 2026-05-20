@@ -29,6 +29,9 @@
 // Markers in the dis file to be able to trace certain functions
 #define PENTEST_MARKER_LABEL(name) asm volatile(#name ":" ::: "memory")
 
+// Markers in the dis file to be able to trace certain functions
+#define PENTEST_MARKER_LABEL(name) asm volatile(#name ":" ::: "memory")
+
 // OAEP label for testing.
 static const unsigned char kTestLabel[] = "Test label.";
 static const size_t kTestLabelLen = sizeof(kTestLabel) - 1;
