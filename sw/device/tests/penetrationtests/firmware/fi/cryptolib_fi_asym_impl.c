@@ -1506,21 +1506,83 @@ status_t cryptolib_fi_x25519_ecdh_impl(
 status_t cryptolib_fi_x25519_point_mul_impl(
     cryptolib_fi_asym_x25519_point_mul_in_t uj_input,
     cryptolib_fi_asym_x25519_point_mul_out_t *uj_output) {
-  // Point multiplication in X25519 is equivalent to ECDH
-  // where Bob's scalar is used as the base point.
-  cryptolib_fi_asym_x25519_ecdh_in_t ecdh_in;
-  memcpy(ecdh_in.private_key, uj_input.scalar_alice, X25519_CMD_BYTES);
-  memcpy(ecdh_in.public_x, uj_input.scalar_bob, X25519_CMD_BYTES);
-  memset(ecdh_in.public_y, 0, X25519_CMD_BYTES);  // Ignored
-  ecdh_in.cfg = uj_input.cfg;
-  ecdh_in.trigger = uj_input.trigger;
+  // Use the Ed25519 masked size since both use the exact same 256-bit curve
+  uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  // Alice's scalar acts as the private key
+  memcpy(private_keyblob, uj_input.scalar_alice, X25519_CMD_BYTES);
 
-  cryptolib_fi_asym_x25519_ecdh_out_t ecdh_out;
-  HARDENED_TRY(cryptolib_fi_x25519_ecdh_impl(ecdh_in, &ecdh_out));
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeX25519,
+              .key_length = X25519_CMD_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
-  memcpy(uj_output->x, ecdh_out.shared_key, X25519_CMD_BYTES);
-  memset(uj_output->y, 0, X25519_CMD_BYTES);
-  uj_output->cfg = ecdh_out.cfg;
+  uint32_t public_key_buf[X25519_CMD_BYTES / sizeof(uint32_t)];
+  memset(public_key_buf, 0, sizeof(public_key_buf));
+  // Bob's scalar acts as the base point (public key X coordinate)
+  memcpy(public_key_buf, uj_input.scalar_bob, X25519_CMD_BYTES);
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = X25519_CMD_BYTES,
+      .key = public_key_buf,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  uint32_t shared_secretblob[16];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = X25519_CMD_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+  };
+
+  // FI Trigger window
+  if (uj_input.trigger) {
+    pentest_set_trigger_high();
+  }
+  HARDENED_TRY(otcrypto_x25519(&private_key, &public_key, &shared_secret));
+  if (uj_input.trigger) {
+    pentest_set_trigger_low();
+  }
+
+  uint32_t ss_share0[8];
+  uint32_t ss_share1[8];
+  otcrypto_word32_buf_t ss_share0_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
+  otcrypto_word32_buf_t ss_share1_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
+
+  HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                           &ss_share1_buf));
+
+  uint32_t ss_unmasked[8];
+  HARDENED_TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+
+  // Map the unmasked secret back to the point multiplication output
+  uj_output->cfg = 0;
+  memset(uj_output->x, 0, X25519_CMD_BYTES);
+  memcpy(uj_output->x, ss_unmasked, X25519_CMD_BYTES);
+  memset(uj_output->y, 0,
+         X25519_CMD_BYTES);  // Y coordinate is ignored in X25519
   uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
