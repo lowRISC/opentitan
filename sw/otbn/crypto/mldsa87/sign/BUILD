@@ -15,6 +15,7 @@ otbn_binary(
         "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_decoding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_xof.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
