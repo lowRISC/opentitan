@@ -341,7 +341,8 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx, size_t tag_len,
     HARDENED_TRY(ghash_update_redundant(&ctx->ghash_ctx, kAesBlockNumBytes,
                                         (unsigned char *)last_block));
   } else {
-    HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
+    HARDENED_CHECK_EQ(ctx->security_level,
+                      launder32(kOtcryptoKeySecurityLevelLow));
     ghash_update(&ctx->ghash_ctx, kAesBlockNumBytes,
                  (unsigned char *)last_block);
   }
@@ -513,7 +514,8 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
           &ctx->ghash_ctx, partial_ghash_block_len,
           (unsigned char *)ctx->partial_ghash_block.data));
     } else {
-      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
+      HARDENED_CHECK_EQ(ctx->security_level,
+                        launder32(kOtcryptoKeySecurityLevelLow));
       ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
                    (unsigned char *)ctx->partial_ghash_block.data);
     }
@@ -575,7 +577,8 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
           &ctx->ghash_ctx, partial_ghash_block_len,
           (unsigned char *)ctx->partial_ghash_block.data));
     } else {
-      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
+      HARDENED_CHECK_EQ(ctx->security_level,
+                        launder32(kOtcryptoKeySecurityLevelLow));
       ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
                    (unsigned char *)ctx->partial_ghash_block.data);
     }
@@ -611,7 +614,8 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
         HARDENED_TRY(ghash_update_redundant(&ctx->ghash_ctx, *output_len,
                                             (unsigned char *)output));
       } else {
-        HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
+        HARDENED_CHECK_EQ(ctx->security_level,
+                          launder32(kOtcryptoKeySecurityLevelLow));
         ghash_update(&ctx->ghash_ctx, *output_len, (unsigned char *)output);
       }
     }
@@ -625,7 +629,8 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
           &ctx->ghash_ctx, partial_ghash_block_len,
           (unsigned char *)ctx->partial_ghash_block.data));
     } else {
-      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
+      HARDENED_CHECK_EQ(ctx->security_level,
+                        launder32(kOtcryptoKeySecurityLevelLow));
       ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
                    (unsigned char *)ctx->partial_ghash_block.data);
     }
