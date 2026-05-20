@@ -56,6 +56,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "mldsa87_decoding",
+    srcs = [
+        "mldsa87_decoding.s",
+    ],
+)
+
+otbn_library(
     name = "mldsa87_gadgets",
     srcs = [
         "mldsa87_gadgets.s",
