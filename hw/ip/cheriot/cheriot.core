@@ -1,0 +1,25 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:cheriot:0.1"
+description: "CHERIoT IPs"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+      - pulp-platform:common_cells:common_cells
+    files:
+      - rtl/cheriot_pkg.sv
+      - rtl/cheriot_rmw_filter.sv
+      - rtl/cheriot_tag_filter.sv
+      - rtl/cheriot_access_check.sv
+      - rtl/cheriot.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
