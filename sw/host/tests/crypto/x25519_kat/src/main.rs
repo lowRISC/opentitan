@@ -13,6 +13,7 @@ use std::time::Duration;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::x25519_commands::{
     CryptotestX25519DeriveOutput, CryptotestX25519PrivateKey, CryptotestX25519PublicKey,
+    X25519Subcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -99,11 +100,12 @@ fn run_x25519_testcase(
         X25519_PUBLIC_KEY_BYTES,
         test_case.public_key.len(),
     );
+    // Send X25519 Shared Secret Generation command.
+    CryptotestCommand::X25519.send(spi_console)?;
+    X25519Subcommand::X25519SSG.send(spi_console)?;
 
     // X25519 keys and shared secrets are in RFC 7748 little-endian byte order;
     // the test vectors are already in this format so no reversal is needed.
-    CryptotestCommand::X25519.send(spi_console)?;
-
     CryptotestX25519PrivateKey {
         private_key: ArrayVec::try_from(test_case.private_key.as_slice())
             .expect("X25519 private key had unexpected length."),
