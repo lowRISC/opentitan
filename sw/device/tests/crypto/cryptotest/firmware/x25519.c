@@ -36,7 +36,7 @@ static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
-status_t handle_x25519(ujson_t *uj) {
+status_t handle_x25519_shared_secret_generation(ujson_t *uj) {
   cryptotest_x25519_private_key_t uj_private_key;
   cryptotest_x25519_public_key_t uj_public_key;
 
@@ -140,5 +140,18 @@ status_t handle_x25519(ujson_t *uj) {
          X25519_CMD_SHARED_SECRET_BYTES);
 
   RESP_OK(ujson_serialize_cryptotest_x25519_derive_output_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_x25519(ujson_t *uj) {
+  x25519_subcommand_t cmd;
+  TRY(ujson_deserialize_x25519_subcommand_t(uj, &cmd));
+  switch (cmd) {
+    case kX25519SubcommandX25519SSG:
+      return handle_x25519_shared_secret_generation(uj);
+    default:
+      LOG_ERROR("Unrecognized X25519 subcommand: %d", cmd);
+      return INVALID_ARGUMENT();
+  }
   return OK_STATUS();
 }
