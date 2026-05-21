@@ -4,8 +4,6 @@ This page is intended for users of the OpenTitan cryptographic library.
 The library is written in C and uses OpenTitan's hardware blocks for accelerated cryptography.
 It generally attempts to minimize code size and protect against side-channel and fault-injection attacks, including by physically present attackers.
 
-**Note: at the time of writing, the crypto library is still under development, and not all algorithms described in this page are fully implemented and tested.**
-
 This page:
 - Lists a quick reference for [supported algorithms](#supported-algorithms)
 - Enumerates all of the cryptolib's [data structures](#data-structures)
@@ -65,6 +63,32 @@ You can activate these settings during the build process by passing `--define=<s
 | `release_build` | `CRYPTOLIB_IS_RELEASED` | Marks the build as a frozen release version. This directly updates the `released` boolean flag retrieved when calling `otcrypto_build_info()`. |
 | `disable_null_checks` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
 | `disable_buf_integrity_checks` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
+
+## FIPS Build & Position-Independent Code (PIC)
+
+In addition to the default development build (`crypto_dev` which builds a standard static library), the cryptolib can be built as a **position-independent binary blob** for FIPS compliance.
+This specialized target hashes the library's contents and fuses the hash onto the binary boundary.
+
+You can trigger this build using the `--config=crypto_fips_all` Bazel flag.
+The exact functions included in this blob are strictly governed by an allowlist configuration file located in `//sw/device/lib/crypto/configs`.
+
+Because the FIPS blob is relocatable and contiguous, developers contributing to the cryptolib must adhere to strict memory and structural constraints:
+
+*   **No `.bss` or `.data` Sections:** The linker script enforces that the `.bss`, `.sbss`, `.data`, and `.sdata2` sections have a size of exactly 0. You **cannot** use static (non-const) variables or uninitialized global variables. All data must reside in `.text`, `.rodata`, or `.srodata`.
+*   **Strict Position Independence:** Code must be completely position-independent (PIC) and cannot rely on a Global Offset Table (GOT).
+*   **No Jump Tables:** The library is explicitly compiled with `-fno-jump-tables`. This forces the compiler to handle `switch` statements without generating position-dependent jump tables.
+
+### Testing PIC Compliance
+
+If you suspect position-dependent code has been introduced, you can run the dedicated PIC compliance test:
+
+```bash
+bazel test //sw/device/tests/crypto:otcrypto_pic_test
+```
+
+This test ensures there are no absolute addresses in the blob.
+It does this by compiling the library at two different base memory offsets, extracting the pure binary, and comparing them byte-by-byte.
+If differences are found, the test traces them back to the violating symbols, failing the run and printing the exact functions or variables that need manual inspection in the disassembly.
 
 ## Cryptolib Usage Examples
 
