@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_sym_impl.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -108,17 +109,10 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   uint32_t key_buf[kPentestAesMaxKeyWords];
   memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
-  memcpy(key_buf, key, key_len);
 
   uint32_t aes_key_mask[kPentestAesMaxKeyWords];
-  memset(aes_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
-  for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
-    aes_key_mask[it] = pentest_ibex_rnd32_read();
-  }
-
-  for (size_t i = 0; i < key_words; ++i) {
-    key_buf[i] ^= aes_key_mask[i];
-  }
+  hardened_memshred(aes_key_mask, kPentestAesMaxKeyWords);
+  hardened_xor((uint32_t *)key, aes_key_mask, key_words, key_buf);
 
   otcrypto_const_word32_buf_t share0 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, key_buf, key_words);
@@ -249,17 +243,11 @@ status_t cryptolib_sca_gcm_impl(
 
   uint32_t key_buf[kPentestAesMaxKeyWords];
   memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
-  memcpy(key_buf, key, key_len);
 
   uint32_t aes_key_mask[kPentestAesMaxKeyWords];
   memset(aes_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
-  for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
-    aes_key_mask[it] = pentest_ibex_rnd32_read();
-  }
-
-  for (size_t i = 0; i < key_words; ++i) {
-    key_buf[i] ^= aes_key_mask[i];
-  }
+  hardened_memshred(aes_key_mask, kPentestAesMaxKeyWords);
+  hardened_xor((uint32_t *)key, aes_key_mask, key_words, key_buf);
 
   otcrypto_const_word32_buf_t share0 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, key_buf, key_words);
@@ -383,17 +371,11 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
 
   uint32_t key_buf[kPentestHmacMaxKeyWords];
   memset(key_buf, 0, HMAC_CMD_MAX_KEY_BYTES);
-  memcpy(key_buf, key, key_len);
 
   uint32_t hmac_key_mask[kPentestHmacMaxKeyWords];
   memset(hmac_key_mask, 0, HMAC_CMD_MAX_KEY_BYTES);
-  for (size_t it = 0; it < kPentestHmacMaxKeyWords; it++) {
-    hmac_key_mask[it] = pentest_ibex_rnd32_read();
-  }
-
-  for (size_t i = 0; i < key_words; ++i) {
-    key_buf[i] ^= hmac_key_mask[i];
-  }
+  hardened_memshred(hmac_key_mask, kPentestHmacMaxKeyWords);
+  hardened_xor((uint32_t *)key, hmac_key_mask, key_words, key_buf);
 
   otcrypto_const_word32_buf_t share0 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, key_buf, key_words);
@@ -461,17 +443,11 @@ status_t cryptolib_sca_cmac_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   uint32_t key_buf[kPentestAesMaxKeyWords];
   memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
-  memcpy(key_buf, key, key_len);
 
   uint32_t cmac_key_mask[kPentestAesMaxKeyWords];
   memset(cmac_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
-  for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
-    cmac_key_mask[it] = pentest_ibex_rnd32_read();
-  }
-
-  for (size_t i = 0; i < key_words; ++i) {
-    key_buf[i] ^= cmac_key_mask[i];
-  }
+  hardened_memshred(cmac_key_mask, kPentestAesMaxKeyWords);
+  hardened_xor((uint32_t *)key, cmac_key_mask, key_words, key_buf);
 
   otcrypto_const_word32_buf_t share0 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, key_buf, key_words);
