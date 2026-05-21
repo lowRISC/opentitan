@@ -21,6 +21,18 @@ class lc_ctrl_base_test extends cip_base_test #(
 
   endfunction : build_phase
 
+  virtual task run_phase(uvm_phase phase);
+    // Run a sequence in m_kmac_app_agent that will respond with to requests with digests
+    //
+    // This gets run in the background: it will run forever and we want to be able to finish the
+    // test when the rest of run_phase completes.
+    fork
+      env.m_kmac_app_agent.run_device_seq();
+    join_none
+
+    super.run_phase(phase);
+  endtask
+
   // Add message demotes here
   virtual function void add_message_demotes(dv_report_catcher catcher);
     string msg;

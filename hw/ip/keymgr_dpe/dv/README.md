@@ -83,11 +83,11 @@ The covergroups defined in testplan have been developed to prove that the test i
 #### Scoreboard
 The `keymgr_dpe_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: An analysis FIFO to hold transactions from TL address channel.
-* tl_d_chan_fifo: An analysis FIFO to hold transactions from TL data channel.
-* req_fifo: An analysis FIFO to hold request data sent to KMAC.
-* rsp_fifo: An analysis FIFO to hold response digests received from KMAC.
-* edn_fifo: An analysis FIFO to hold transactions coming from the EDN interface.
+* `tl_a_chan_fifo`: An analysis FIFO to hold transactions from TL address channel.
+* `tl_d_chan_fifo`: An analysis FIFO to hold transactions from TL data channel.
+* `m_kmac_txn_imp`: An import that sees KMAC transactions sent to the application interface.
+* `m_kmac_req_imp`: An import that sees the requests that began these transactions.
+* `edn_fifos[0]`: An analysis FIFO to hold transactions coming from the EDN interface.
 
 #### Assertions
 * TLUL assertions: The `tb/keymgr_dpe_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.

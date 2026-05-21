@@ -431,7 +431,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
           msg_id
         )
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
-        // set `rsp_valid` to 1, force the other fields to a random value to avoid X propagation
+        // set rsp_valid to 1, force the other fields to a random value to avoid X propagation
         invalid_kmac_rsp.rsp_valid = 1;
         force tb.kmac_if.rsp = invalid_kmac_rsp;
         @(negedge clk);
@@ -535,17 +535,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
       release tb.dut.u_ctrl.u_data_en.data_sw_en_o;
     end
   endtask
-
-  // Disable h_data stability assertion when keymgr_dpe is in
-  // disabled/invalid state or LC turns off as
-  // keymgr_dpe will sent constantly changed entropy data to KMAC for KDF operation.
-  always_comb begin
-    if (!is_kmac_data_good || keymgr_dpe_en_sync1 != lc_ctrl_pkg::On) begin
-      $assertoff(0, tb.kmac_if.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end else begin
-      $asserton(0, tb.kmac_if.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end
-  end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
