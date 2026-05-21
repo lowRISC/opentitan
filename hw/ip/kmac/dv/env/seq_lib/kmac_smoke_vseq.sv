@@ -195,7 +195,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
             bit [TL_DW-1:0] rand_data;
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fifo_addr)
             `DV_CHECK_STD_RANDOMIZE_FATAL(rand_data)
-            wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid);
+            wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_valid);
             tl_access(.addr(ral.get_addr_from_offset(fifo_addr)),
                       .write(1),
                       .data(rand_data),
@@ -211,7 +211,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           // the only command that will trigger this particular error is CmdStart.
           if (kmac_err_type == kmac_pkg::ErrSwIssuedCmdInAppActive) begin : sw_cmd_in_app
             kmac_pkg::kmac_cmd_e invalid_cmd = kmac_pkg::CmdStart;
-            wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid);
+            wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_valid);
             cfg.clk_rst_vif.wait_clks($urandom_range(25, 250));
             issue_cmd(invalid_cmd);
             error_injected = 1;
@@ -221,7 +221,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           // provided to an AppKeymgr operation that is in progress.
           if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin : check_invalid_key_err
             // wait until the first valid request is seen
-            wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid);
+            wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_valid);
             if (process_key_err_before_app_done) begin
               disable send_kmac_req;
               check_err();
@@ -238,7 +238,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         end else begin
           // Wait until the KMAC engine has completely finished
           `uvm_info(`gfn, "waiting for kmac_app operation to finish", UVM_HIGH)
-          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp_done == 1);
+          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.rsp_done);
           `uvm_info(`gfn, "finished waiting for kmac_app operation", UVM_HIGH)
 
           if (kmac_err_type inside

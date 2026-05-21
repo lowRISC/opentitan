@@ -16,8 +16,8 @@ module tb;
 
   wire                        clk, rst_n;
   bit                         digest_cal_done;
-  kmac_pkg::app_rsp_t         kmac_data_in;
-  kmac_pkg::app_req_t         kmac_data_out;
+  wire kmac_pkg::app_rsp_t    kmac_data_in;
+  wire kmac_pkg::app_req_t    kmac_data_out;
   rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t keymgr_data;
   logic kmac_done_occured;
@@ -27,13 +27,9 @@ module tb;
   clk_rst_if rom_clk_rst_if(.clk(), .rst_n()); // dummy clk_rst_vif for second RAL
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
+  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req (kmac_data_out), .rsp (kmac_data_in));
 
   `DV_ALERT_IF_CONNECT()
-
-  assign kmac_app_if.kmac_data_req = kmac_data_out;
-  assign kmac_data_in              = kmac_app_if.kmac_data_rsp;
-
 
   // dut
   rom_ctrl #(
@@ -101,7 +97,7 @@ module tb;
         "*.env.m_tl_agent_rom_ctrl_regs_reg_block*", "vif", tl_if);
     uvm_config_db#(rom_ctrl_bkdr_util)::set(null, "*.env", "rom_ctrl_bkdr_util",
         m_rom_ctrl_bkdr_util);
-    uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
+    uvm_config_db#(virtual kmac_app_if)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", dut.rom_ctrl_if);
     uvm_config_db#(virtual rom_ctrl_fsm_if)::set(
         null, "*.env", "rom_ctrl_fsm_vif",

@@ -11,8 +11,8 @@ module tb;
   import kmac_reg_pkg::*;
 
   // macro includes
-  `include "uvm_macros.svh"
-  `include "dv_macros.svh"
+`include "uvm_macros.svh"
+`include "dv_macros.svh"
 
   wire clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -37,7 +37,27 @@ module tb;
     .sideload_key (kmac_sideload_key)
   );
 
-  kmac_app_intf kmac_app_if[NUM_APP_INTF](.clk(clk), .rst_n(rst_n));
+  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_app_if
+    wire kmac_pkg::app_req_t req;
+    wire kmac_pkg::app_rsp_t rsp;
+
+    // In this testbench, the interface is in Host mode, meaning that it will drive req and consume
+    // rsp.
+    assign app_req[i] = req;
+    assign rsp = app_rsp[i];
+
+    kmac_app_if app_if(.clk_i (clk),
+                       .rst_ni(rst_n),
+                       .req   (req),
+                       .rsp   (rsp));
+
+    initial begin
+      uvm_config_db#(virtual kmac_app_if)::set(null,
+                                               $sformatf("*env.m_kmac_app_agent[%0d]*", i),
+                                               "vif",
+                                               app_if);
+    end
+  end
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -89,18 +109,6 @@ module tb;
     .entropy_o          (edn_if[0].req                     ),
     .entropy_i          ({edn_if[0].ack, edn_if[0].d_data} )
   );
-
-  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_kmac_app_intf
-    assign app_req[i]                   = kmac_app_if[i].kmac_data_req;
-    assign kmac_app_if[i].kmac_data_rsp = app_rsp[i];
-    assign kmac_if.app_req[i] = app_req[i];
-    assign kmac_if.app_rsp[i] = app_rsp[i];
-
-    initial begin
-      uvm_config_db#(virtual kmac_app_intf)::set(null,
-          $sformatf("*env.m_kmac_app_agent[%0d]*", i), "vif", kmac_app_if[i]);
-    end
-  end
 
   initial begin
     // drive clk and rst_n from clk_if

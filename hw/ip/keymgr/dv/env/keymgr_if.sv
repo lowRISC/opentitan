@@ -387,9 +387,9 @@ interface keymgr_if(input clk, input rst_n);
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
         // set `done` to 1, force the other fields to a random value to avoid X propagation
         invalid_kmac_rsp.done = 1;
-        force tb.keymgr_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
+        force tb.kmac_if.rsp = invalid_kmac_rsp;
         @(negedge clk);
-        release tb.keymgr_kmac_intf.kmac_data_rsp;
+        release tb.kmac_if.rsp;
       end
       FaultSideloadNotConsistent: begin
         pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
@@ -488,16 +488,6 @@ interface keymgr_if(input clk, input rst_n);
       release tb.dut.u_ctrl.u_data_en.data_sw_en_o;
     end
   endtask
-
-  // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
-  // keymgr will sent constantly changed entropy data to KMAC for KDF operation.
-  always_comb begin
-    if (!is_kmac_data_good || keymgr_en_sync1 != lc_ctrl_pkg::On) begin
-      $assertoff(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end else begin
-      $asserton(0, tb.keymgr_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
-    end
-  end
 
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
