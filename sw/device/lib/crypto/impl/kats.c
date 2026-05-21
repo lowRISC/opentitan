@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/drbg.h"
+#include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
@@ -1085,6 +1086,116 @@ static status_t kat_kmac_256(void) {
   return OTCRYPTO_OK;
 }
 
+// Ed25519 CAVP / RFC 8032 Section 7.1 Test 2
+static const uint32_t ed25519_sk[] = {
+    0x9b08cd4c, 0xda96ff28, 0x46c3b69d, 0x0f4e11ec,
+    0x9f318a5b, 0x24a6ab35, 0xedf68cda, 0xfba6b84f,
+};
+
+static const uint32_t ed25519_pk[] = {
+    0xc317403d, 0x5a8943e8, 0xa70ab792, 0xbc7e1b4d,
+    0xcf2c989c, 0x8c96c42e, 0xf155cdc0, 0x0c66f42a,
+};
+
+static const uint32_t ed25519_sig[] = {
+    // R
+    0xebdb69da,
+    0xb3762223,
+    0x16503f8f,
+    0xa2b27b54,
+    0x5f642540,
+    0x720e820b,
+    0xf0d4cab8,
+    0x92a009a9,
+    // S
+    0xe4c15a08,
+    0x6e99153e,
+    0x13368f45,
+    0x8c1df1d0,
+    0xae2e7b38,
+    0xee2a30b4,
+    0x16290db0,
+    0x000cbb12,
+};
+
+static const uint8_t ed25519_msg[] = {0x72};
+
+static const otcrypto_key_config_t kEd25519Config = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEd25519,
+    .key_length = sizeof(ed25519_sk),
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+static status_t kat_ed25519_sign(void) {
+  uint32_t keyblob[keyblob_num_words(kEd25519Config)];
+
+  memset(keyblob, 0, sizeof(keyblob));
+
+  memcpy(keyblob, ed25519_sk, sizeof(ed25519_sk));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kEd25519Config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, ed25519_msg, sizeof(ed25519_msg));
+
+  uint32_t sig_act[16];
+  memset(sig_act, 0, sizeof(sig_act));
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_act, ARRAYSIZE(sig_act));
+
+  HARDENED_TRY(otcrypto_ed25519_sign(&private_key, &msg,
+                                     kOtcryptoEddsaSignModeEddsa, &sig_buf));
+
+  if (memcmp(sig_act, ed25519_sig, sizeof(ed25519_sig))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+static status_t kat_ed25519_verify(void) {
+  hardened_bool_t result;
+
+  uint32_t pk_data[8];
+  memcpy(pk_data, ed25519_pk, sizeof(ed25519_pk));
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = sizeof(ed25519_pk),
+      .key = pk_data,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, ed25519_msg, sizeof(ed25519_msg));
+
+  uint32_t sig_data[16];
+  memcpy(sig_data, ed25519_sig, sizeof(ed25519_sig));
+  otcrypto_const_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, sig_data, ARRAYSIZE(sig_data));
+
+  HARDENED_TRY(otcrypto_ed25519_verify(
+      &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
+  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+
+  // Negative test: Modify a word in the signature array to ensure verification
+  // fails
+  sig_data[15] ^= 0x1;
+  HARDENED_TRY(otcrypto_ed25519_verify(
+      &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
+  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+
+  return OTCRYPTO_OK;
+}
+
 // A function pointer type for KAT functions.
 typedef status_t (*kat_func_t)(void);
 
@@ -1116,6 +1227,8 @@ static const kat_dispatch_t kKatDispatch[] = {
     {OTCRYPTO_KAT_AES_ECB_256_DECRYPT, &kat_aes_ecb_256_decrypt},
     {OTCRYPTO_KAT_SHAKE_256, &kat_shake_256},
     {OTCRYPTO_KAT_KMAC_256, &kat_kmac_256},
+    {OTCRYPTO_KAT_ED25519_SIGN, &kat_ed25519_sign},
+    {OTCRYPTO_KAT_ED25519_VERIFY, &kat_ed25519_verify},
 };
 
 status_t run_kats(otcrypto_kat_id_t tests) {
