@@ -6719,6 +6719,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         test_cmd = """
