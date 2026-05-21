@@ -7,6 +7,7 @@
 .globl sample_s
 .globl compute_t
 .globl encode_t
+.globl hash_seed
 
 .text
 
@@ -315,5 +316,70 @@ encode_t:
     addi x10, x10, 416
     addi x11, x11, 320
     /* End of loop */
+
+  ret
+
+/**
+ * Hash the seed Xi.
+ *
+ * ML-DSA keygen is parametrized by a 32-byte seed Xi (passed as a 34-byte
+ * value) that is hashed to create RHO, RHO_PRIME and K, i.e.,
+ *
+ *   RHO, RHO_PRIME, K = Shake256(Xi),
+ *
+ * where RHO is a 32-byte unshared value, RHO_PRIME is a 64-byte Boolean-shared
+ * value and K is a 32-byte Boolean-shared value.
+ *
+ * Xi is assumed to be passed as a 34-byte value in a 64-byte region with bytes
+ * 32 and 33 of both shares set to 0.
+ *
+ * @param[in] x2: DMEM address of the first Boolean share of Xi.
+ * @param[in] x3: DMEM address of the second Boolean share of Xi.
+ * @param[in] x4: DMEM address of RHO.
+ * @param[in] x5: DMEM address of the first Boolean share of RHO_PRIME.
+ * @param[in] x6: DMEM address of the second Boolean share of RHO_PRIME.
+ * @param[in] x7: DMEM address of the first Boolean share of K.
+ * @param[in] x8: DMEM address of the second Boolean share of K.
+ */
+hash_seed:
+  /* Xi[32] = K = 8, Xi[33] = L = 7. */
+  li x9, 0x00000708
+  sw x9, 32(x2)
+
+  /* Squeeze buffer WDR pointers. */
+  addi x9, x0, 29
+  addi x10, x0, 30
+
+  jal x1, xof_shake256_init
+
+  /* Absorb the 34-byte Boolean shared seed value Xi. */
+  addi x20, x0, 34
+  addi x21, x2, 0
+  addi x22, x3, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Squeeze the 32-byte unshared value RHO. */
+  jal x1, xof_squeeze32
+  bn.xor w29, w29, w30 /* unmask */
+  bn.sid x9, 0(x4)
+
+  /* Squeeze the 64-byte Boolean-shared value RHO_PRIME. */
+  jal x1, xof_squeeze32
+  bn.sid x9, 0(x5)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.sid x10, 0(x6)
+  jal x1, xof_squeeze32
+  bn.sid x9, 32(x5)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.sid x10, 32(x6)
+
+  /* Squeeze the 32-byte Boolean-shared value K. */
+  jal x1, xof_squeeze32
+  bn.sid x9, 0(x7)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.sid x10, 0(x8)
+
+  jal x1, xof_finish
 
   ret
