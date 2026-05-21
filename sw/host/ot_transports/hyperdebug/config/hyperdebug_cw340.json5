@@ -48,6 +48,12 @@
       "mode": "Alternate",
       "pull_mode": "PullUp",
       "alias_of": "IOA7"
+    },
+    {
+      "name": "I2C_SCL",
+      "mode": "Alternate",
+      "pull_mode": "PullUp",
+      "alias_of": "IOA8"
     }
   ],
   "strappings": [
