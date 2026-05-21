@@ -391,6 +391,7 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:lz4",
         "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/impl:status",
     ],
