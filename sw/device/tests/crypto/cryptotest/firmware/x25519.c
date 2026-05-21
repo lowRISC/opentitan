@@ -36,6 +36,101 @@ static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
+status_t handle_x25519_key_exchange(ujson_t *uj) {
+  // Receive the server's public key from the host.
+  cryptotest_x25519_public_key_t uj_server_public_key;
+  TRY(ujson_deserialize_cryptotest_x25519_public_key_t(uj,
+                                                       &uj_server_public_key));
+  if (uj_server_public_key.public_key_len != X25519_CMD_PUBLIC_KEY_BYTES) {
+    LOG_ERROR(
+        "Invalid X25519 server public key length (have = %d, want = %d bytes)",
+        (uint32_t)uj_server_public_key.public_key_len,
+        X25519_CMD_PUBLIC_KEY_BYTES);
+    return INVALID_ARGUMENT();
+  }
+
+  // Generate a random ephemeral private key and apply blinding.
+  uint32_t raw_key[kX25519PrivateKeyWords] = {0};
+  HARDENED_TRY(hardened_memshred(raw_key, kX25519PrivateKeyWords));
+
+  uint32_t keyblob[kX25519MaskedScalarTotalWords] = {0};
+  uint32_t *share0 = keyblob;
+  uint32_t *share1 = keyblob + kX25519MaskedScalarShareWords;
+  HARDENED_TRY(hardened_memshred(share1, kX25519PrivateKeyWords));
+  HARDENED_TRY(hardened_sub(raw_key, share1, kX25519PrivateKeyWords, share0));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kX25519PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Derive the corresponding ephemeral public key.
+  uint32_t gen_public_key_buf[kX25519PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t gen_public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = X25519_CMD_PUBLIC_KEY_BYTES,
+      .key = gen_public_key_buf,
+  };
+  TRY(otcrypto_x25519_keygen(&private_key, &gen_public_key));
+
+  // Build the server's public key struct.
+  uint32_t server_public_key_buf[kX25519PublicKeyWords] = {0};
+  memcpy(server_public_key_buf, uj_server_public_key.public_key,
+         X25519_CMD_PUBLIC_KEY_BYTES);
+  otcrypto_unblinded_key_t server_public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = X25519_CMD_PUBLIC_KEY_BYTES,
+      .key = server_public_key_buf,
+  };
+  server_public_key.checksum =
+      otcrypto_integrity_unblinded_checksum(&server_public_key);
+
+  // Allocate the blinded shared secret output.
+  uint32_t shared_secretblob[kX25519SharedSecretWords * 2];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = X25519_CMD_SHARED_SECRET_BYTES,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+  };
+
+  TRY(otcrypto_x25519(&private_key, &server_public_key, &shared_secret));
+
+  // Unmask the shared secret by adding its two shares.
+  uint32_t dest_share0[kX25519SharedSecretWords];
+  uint32_t dest_share1[kX25519SharedSecretWords];
+  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dest_share0, ARRAYSIZE(dest_share0));
+  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dest_share1, ARRAYSIZE(dest_share1));
+  TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
+
+  uint32_t unblinded_secret[kX25519SharedSecretWords];
+  TRY(hardened_add(dest_share0, dest_share1, kX25519SharedSecretWords,
+                   unblinded_secret));
+
+  cryptotest_x25519_kex_output_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  memcpy(uj_output.public_key, gen_public_key_buf, X25519_CMD_PUBLIC_KEY_BYTES);
+  uj_output.public_key_len = X25519_CMD_PUBLIC_KEY_BYTES;
+  memcpy(uj_output.shared_secret, unblinded_secret,
+         X25519_CMD_SHARED_SECRET_BYTES);
+  uj_output.shared_secret_len = X25519_CMD_SHARED_SECRET_BYTES;
+
+  RESP_OK(ujson_serialize_cryptotest_x25519_kex_output_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_x25519_shared_secret_generation(ujson_t *uj) {
   cryptotest_x25519_private_key_t uj_private_key;
   cryptotest_x25519_public_key_t uj_public_key;
@@ -149,6 +244,8 @@ status_t handle_x25519(ujson_t *uj) {
   switch (cmd) {
     case kX25519SubcommandX25519SSG:
       return handle_x25519_shared_secret_generation(uj);
+    case kX25519SubcommandX25519KEX:
+      return handle_x25519_key_exchange(uj);
     default:
       LOG_ERROR("Unrecognized X25519 subcommand: %d", cmd);
       return INVALID_ARGUMENT();
