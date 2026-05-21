@@ -6,6 +6,7 @@
 
 .globl sample_s
 .globl compute_t
+.globl encode_t
 
 .text
 
@@ -258,6 +259,61 @@ compute_t:
     addi x8, x8, 1024
     addi x15, x15, 96
     addi x16, x16, 96
+    /* End of loop */
+
+  ret
+
+/**
+ * Round and encode T.
+ *
+ * This routine unmasks the arithmetically shared vector T, rounds it to T0 and
+ * T1 vectors which are then encoded on-the-fly.
+ *
+ * Two polynomial slots are required for the storage of intermediate results.
+ *
+ * @param[in] x2: DMEM address of the first arithmetic share of T (8192 bytes).
+ * @param[in] x3: DMEM address of the second arithmetic share of T (8192 bytes).
+ * @param[in] x4: DMEM address of the encoded T0 vector (3328 bytes).
+ * @param[in] x5: DMEM address of the encoded T1 vector (2560 bytes).
+ * @param[in] x6: DMEM address of polynomial slot 0 (1024 bytes).
+ * @param[in] x7: DMEM address of polynomial slot 1 (1024 bytes).
+ */
+encode_t:
+  /* Prepare DMEM address registers. */
+  addi x8, x2, 0  /* T (share 0) */
+  addi x9, x3, 0  /* T (share 1) */
+  addi x10, x4, 0 /* T0_enc */
+  addi x11, x5, 0 /* T1_enc */
+
+  /* Unmask, round and encode each T polynomial. */
+  loopi 8, 18
+    /* Securely unmask T into slot 0. */
+    addi x2, x8, 0
+    addi x3, x9, 0
+    addi x4, x6, 0
+    jal x1, sec_unmask
+
+    /* Split T into T0 and T1 in slots 0 and 1. */
+    addi x2, x6, 0
+    addi x3, x6, 0
+    addi x4, x7, 0
+    jal x1, power2round
+
+    /* Encode T0 into the output location. */
+    addi x2, x6, 0
+    addi x3, x10, 0
+    jal x1, encode_t0
+
+    /* Encode T1 into the output location. */
+    addi x2, x7, 0
+    addi x3, x11, 0
+    jal x1, encode_t1
+
+    /* Advance T and output pointers.*/
+    addi x8, x8, 1024
+    addi x9, x9, 1024
+    addi x10, x10, 416
+    addi x11, x11, 320
     /* End of loop */
 
   ret
