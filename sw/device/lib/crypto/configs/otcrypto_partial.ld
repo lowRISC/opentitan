@@ -16,5 +16,14 @@ SECTIONS {
         _libotcrypto_hash_ = .;
 
         . = . + 48; /* Reserved for the hash */
+
+        /*
+         * Internal anchor: This symbol is used internally by the cryptolib C code
+         * to generate a PC-relative offset pointing to this exact address.
+         * The host firmware must use its global linker script to place a pointer
+         * to its state variable at this physical location.
+         * See cryptolib_api.md for info.
+         */
+        _libotcrypto_tether_ = .;
     }
 }
