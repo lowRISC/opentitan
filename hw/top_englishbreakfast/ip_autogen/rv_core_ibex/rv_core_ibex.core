@@ -20,6 +20,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:rv_core_ibex_pkg
+      - lowrisc:ip:cheriot
 
     files:
       - rtl/rv_core_ibex_reg_pkg.sv
