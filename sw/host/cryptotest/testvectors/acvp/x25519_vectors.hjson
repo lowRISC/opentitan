@@ -1,0 +1,154 @@
+// Copyright lowRISC contributors (OpenTitan project).
+//
+// Source: NIST ACVP-Server (https://github.com/usnistgov/ACVP-Server)
+// NIST License:
+// NIST-developed software is provided by NIST as a public service. You may
+// use, copy, and distribute copies of the software in any medium, provided
+// that you keep intact this entire notice. You may improve, modify, and create
+// derivative works of the software or any portion of the software, and you may
+// copy and distribute such modifications or works. Modified works should carry
+// a notice stating that you changed the software and should note the date and
+// nature of any such change. Please explicitly acknowledge the National
+// Institute of Standards and Technology as the source of the software.
+//
+// NIST-developed software is expressly provided "AS IS." NIST MAKES NO
+// WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT, OR ARISING BY OPERATION OF
+// LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND DATA ACCURACY. NIST
+// NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE
+// UNINTERRUPTED OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST
+// DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE OF THE
+// SOFTWARE OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE
+// CORRECTNESS, ACCURACY, RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
+//
+// You are solely responsible for determining the appropriateness of using and
+// distributing the software and you assume all risks associated with its use,
+// including but not limited to the risks and costs of program errors,
+// compliance with applicable laws, damage to or loss of data, programs or
+// equipment, and the unavailability or interruption of operation. This
+// software is not intended to be used in any situation where a failure could
+// cause risk of injury or damage to property. The software developed by NIST
+// employees is not subject to copyright protection within the United States.
+//
+// Based on:
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/XECDH-SSC-RFC7748/prompt.json
+// Modifications:
+// This file was modified on 21.05.2026 as following:
+// - Removed test group 2.
+// - Wrapped in an array for compatibility with the ACVP harness.
+[{
+  "vsId": 0,
+  "algorithm": "XECDH",
+  "mode": "SSC",
+  "revision": "RFC7748",
+  "isSample": true,
+  "testGroups": [
+    {
+      "tgId": 1,
+      "testType": "AFT",
+      "curve": "Curve25519",
+      "tests": [
+        {
+          "tcId": 1,
+          "publicServer": "42C4060DF475A484E4236D10F17180AF3B99F6D684DDF870E845881B9071A54E"
+        },
+        {
+          "tcId": 2,
+          "publicServer": "6F816BF7D5F9A0A1D9455D41A02CFFF189809ADA9DDFB2715C34BBB5F0947603"
+        },
+        {
+          "tcId": 3,
+          "publicServer": "B11FADD796461DBB7B4744C8D120AB417BA0BCB4D07C19BAC5D35A5A63E1262E"
+        },
+        {
+          "tcId": 4,
+          "publicServer": "9E50A0F910DF7272063F56E6C1FA0985D67EEDB27A614F1B50F169E553BF6935"
+        },
+        {
+          "tcId": 5,
+          "publicServer": "E5CC81E9470D117B0A447F857479C1D62A1707CFBBB7C5982EC37E3B0D70445B"
+        },
+        {
+          "tcId": 6,
+          "publicServer": "1AF998D78E31E5F3E4B239069D59577103BB22BCD74A7F340F0CBEB2E0749656"
+        },
+        {
+          "tcId": 7,
+          "publicServer": "3E89E54DCBE9864564ED5D9E7AF8C81519296434974415AE911C1E6D979CE86C"
+        },
+        {
+          "tcId": 8,
+          "publicServer": "48953896FEC80D17357B5172F57267002CAF85F7B8AAD72ABB9A7C974BDC624A"
+        },
+        {
+          "tcId": 9,
+          "publicServer": "5B1F9736154161C3EDEB6B2CEB0E3EE53ACB8D5E911E93E753C4C000207EC50C"
+        },
+        {
+          "tcId": 10,
+          "publicServer": "1BC4C7B94927A81D9CA201B5A4C82C379BDF0ADDE6EA0BAECF923252CD5D6673"
+        },
+        {
+          "tcId": 11,
+          "publicServer": "C7103A622C399D5A6FFFA827E24F49F37398201FA35423BD04C72D025864AC1E"
+        },
+        {
+          "tcId": 12,
+          "publicServer": "FD9095C9EA7C3A5BD7A59556B81CB537AF1BBE6C6327A95C096090754C5C1120"
+        },
+        {
+          "tcId": 13,
+          "publicServer": "DDC2FDA36F630995AC295A2F8D743623C193F226C0B91CAA0F03DF3272B2F067"
+        },
+        {
+          "tcId": 14,
+          "publicServer": "6E0CDA7BB75AD207B30C01B9BF57F8F0143389442BBABCB037C8E1FA6CED1C7E"
+        },
+        {
+          "tcId": 15,
+          "publicServer": "81DC2EFBCF3054744CAFD5F659355298651DB7B44FA464178DC39318D3CE0E78"
+        },
+        {
+          "tcId": 16,
+          "publicServer": "0B20799C9FBCBC9E3254CB69422DC043F0315E72EA8A95664EF5C37223D27072"
+        },
+        {
+          "tcId": 17,
+          "publicServer": "07C3802DDD18F2CB01BB5EADA2F17FBDCC808C5E136D53E739198D5A71DEC61A"
+        },
+        {
+          "tcId": 18,
+          "publicServer": "50721754D50790BEB2B608EE6538BD33B30E984560186991C1534FAF7B150D12"
+        },
+        {
+          "tcId": 19,
+          "publicServer": "3D51C7B4479379FC253E2A2B333FE15A3489CEC3C78CB63CACAD2025CD276B07"
+        },
+        {
+          "tcId": 20,
+          "publicServer": "D5C7A1C50C77D83242F86C8E4E55669238A368898CDE9044AFF0C2EDAEAD2717"
+        },
+        {
+          "tcId": 21,
+          "publicServer": "75C3281BEB47BB8B757D88924FEA098DE0B14B8AE35904F0850854E2D9E29E0A"
+        },
+        {
+          "tcId": 22,
+          "publicServer": "5A8650D92D13FE430C0C26E41BBB12B97F7972C0B8D7A58A2942CF15EF505E32"
+        },
+        {
+          "tcId": 23,
+          "publicServer": "3114BC1DC454A98EBA47097E8F03E7AC1251BBC9EA26A74ABC1B87F6E7756943"
+        },
+        {
+          "tcId": 24,
+          "publicServer": "B943F23DFECAD4A954D67BD09B66AC34B65C23F844BC4058543A36576A0F361D"
+        },
+        {
+          "tcId": 25,
+          "publicServer": "18C78BD5BD90B5CAD9F141ACE03C0EDC6D3E76154BF2E7A1700CD9252111BA52"
+        }
+      ]
+    }
+  ]
+}]
