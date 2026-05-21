@@ -337,6 +337,19 @@
       tests: ["spi_device_cfg_cmd"]
     }
     {
+      name: flash_mode_ignore_cmds
+      desc: '''
+            - Set the device busy bit.
+            - Constrain the issued opcode to commands the spec requires to be ignored while
+              busy: WREN, WRDI, EN4B, EX4B, and upload commands with the busy bit set in
+              their cmd_info slot.
+            - Issue commands immediately without waiting for busy to de-assert.
+            - Check that the DUT discards each command without modifying flash status,
+              address-mode state or the upload FIFO.'''
+      stage: V2
+      tests: ["spi_device_flash_mode_ignore_cmds"]
+    }
+    {
       name: TPM_with_flash_or_passthrough_mode
       desc: '''
             - Enable TPM mode.
