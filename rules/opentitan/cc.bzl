@@ -626,6 +626,22 @@ common_binary_attrs = {
     ),
 }
 
+def _transitive_feature_transition_impl(settings, attr):
+    features = settings["//command_line_option:features"] + attr.transitive_features
+    return {
+        "//command_line_option:features": features,
+    }
+
+_transitive_feature_transition = transition(
+    implementation = _transitive_feature_transition_impl,
+    inputs = [
+        "//command_line_option:features",
+    ],
+    outputs = [
+        "//command_line_option:features",
+    ],
+)
+
 opentitan_binary_blob = rv_rule(
     implementation = _opentitan_binary_blob,
     attrs = dict(common_binary_attrs.items() + {
@@ -640,7 +656,12 @@ opentitan_binary_blob = rv_rule(
         ),
         "deps_blob": attr.label_list(
             providers = [CcInfo],
+            cfg = _transitive_feature_transition,
             doc = "The list of other libraries to be for the creation of the binary blob.",
+        ),
+        "transitive_features": attr.string_list(
+            default = [],
+            doc = "Features to apply transitively to all dependencies.",
         ),
         "_linker_script_template": attr.label(
             default = Label("//sw/device/lib/crypto/configs:otcrypto_blob.ld"),
