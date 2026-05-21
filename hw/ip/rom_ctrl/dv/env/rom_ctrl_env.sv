@@ -13,7 +13,7 @@ class rom_ctrl_env extends cip_base_env #(
   `uvm_component_new
 
   // KMAC interface agent
-  kmac_app_agent m_kmac_agent;
+  kmac_app_device_agent m_kmac_agent;
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
@@ -40,7 +40,7 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
     `uvm_fatal(`gfn, "failed to get rom_ctrl_compare_vif from uvm_config_db")
 
   // Build the KMAC agent
-  m_kmac_agent = kmac_app_agent::type_id::create("m_kmac_agent", this);
+  m_kmac_agent = kmac_app_device_agent::type_id::create("m_kmac_agent", this);
   uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
 
   cfg.scoreboard = scoreboard;
@@ -50,8 +50,8 @@ endfunction
 function void rom_ctrl_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 
-  m_kmac_agent.monitor.analysis_port.connect(scoreboard.kmac_rsp_fifo.analysis_export);
-  m_kmac_agent.monitor.req_analysis_port.connect(scoreboard.kmac_req_fifo.analysis_export);
+  m_kmac_agent.monitor.m_req_packet_analysis_port.connect(scoreboard.m_kmac_req_imp);
+  m_kmac_agent.monitor.analysis_port.connect(scoreboard.m_kmac_txn_imp);
 
   virtual_sequencer.kmac_sequencer_h = m_kmac_agent.sequencer;
 
