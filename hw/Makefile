@@ -23,6 +23,7 @@ IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
        bkdr_loader   \
+       cheriot       \
        csrng         \
        dma           \
        edn           \
