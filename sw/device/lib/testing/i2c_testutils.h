@@ -127,6 +127,8 @@ typedef enum i2c_pinmux_platform_id {
   I2cPinmuxPlatformIdHyper310 = 0,
   I2cPinmuxPlatformIdDvsim,
   I2cPinmuxPlatformIdCw310Pmod,
+  I2cPinmuxPlatformIdCw340,
+  I2cPinmuxPlatformIdSilicon,
   I2cPinmuxPlatformIdCount,
 } i2c_pinmux_platform_id_t;
 

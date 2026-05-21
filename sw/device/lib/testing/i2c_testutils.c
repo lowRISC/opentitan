@@ -73,6 +73,8 @@ static status_t get_i2c_pads_for_platform(dt_i2c_t i2c_dt,
 #elif defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
   // For Earlgrey and EnglishBreakfast platforms
   switch (platform) {
+    case I2cPinmuxPlatformIdSilicon:
+    case I2cPinmuxPlatformIdCw340:
     case I2cPinmuxPlatformIdHyper310:  // CW310 HyperDebug
       *sda_pad = kDtPadIoa7;
       *scl_pad = kDtPadIoa8;
