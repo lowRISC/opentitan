@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `define KMAC_APP_VALID_TRANS(mode) \
-    (cfg.m_kmac_app_agent_cfg[``mode``].vif.req_data_if.valid && \
-     cfg.m_kmac_app_agent_cfg[``mode``].vif.req_data_if.ready)
+    (cfg.m_kmac_app_agent_cfg[``mode``].vif.mon_cb.req_valid && \
+     cfg.m_kmac_app_agent_cfg[``mode``].vif.mon_cb.req_ready)
 
 `define CALC_PARTIAL_MSG \
     (!in_kmac_app && msg.size() % 8 > 0) || \
@@ -12,11 +12,9 @@
         (app_mode == AppKeymgr && (kmac_app_msg.size() + 3) % 8 > 0) || \
         (app_mode != AppKeymgr && kmac_app_msg.size() % 8 > 0))
 
-class kmac_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(kmac_env_cfg),
-    .RAL_T(kmac_reg_block),
-    .COV_T(kmac_env_cov)
-  );
+class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
+                                                    .RAL_T(kmac_reg_block),
+                                                    .COV_T(kmac_env_cov));
   `uvm_component_utils(kmac_scoreboard)
 
   // local variables
@@ -110,10 +108,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // key length enum
   key_len_e key_len;
 
-  bit [keymgr_pkg::KmacDataIfWidth-1:0]   kmac_app_block_data;
-  bit [keymgr_pkg::KmacDataIfWidth/8-1:0] kmac_app_block_strb;
-  int kmac_app_block_strb_size = 0;
-  bit kmac_app_last;
+  // True if the most recent request on an app interface had the "last" bit equal to zero. If this
+  // is true, there is a partially-sent app request.
+  //
+  // This is set and cleared by process_kmac_app_req_fifo when requests are seen and is also cleared
+  // by the reset function.
+  bit m_part_way_through_req;
 
   // secret keys
   //
@@ -153,38 +153,46 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                 ({KMAC_FIFO_DEPTH{1'b1}} << KmacStatusFifoDepthLSB);
 
   // TLM fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[NUM_APP_INTF];
-  uvm_tlm_analysis_fifo #(push_pull_agent_pkg::push_pull_item #(
-    .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)))
-    kmac_app_req_fifo[NUM_APP_INTF];
+  uvm_tlm_analysis_fifo #(kmac_app_mon_item) kmac_app_fifo[NUM_APP_INTF];
 
-  `uvm_component_new
+  // A FIFO for each application interface that subscribes to (words from) requests seen by the
+  // monitor. Using a fifo rather than an import makes it easy to keep track of which application
+  // sees a request.
+  uvm_tlm_analysis_fifo #(kmac_app_req_item) m_app_req_fifos[NUM_APP_INTF];
+
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     for (int i = 0; i < NUM_APP_INTF; i++) begin
-      kmac_app_req_fifo[i] = new($sformatf("kmac_app_req_fifo[%0d]", i), this);
-      kmac_app_rsp_fifo[i] = new($sformatf("kmac_app_rsp_fifo[%0d]", i), this);
+      kmac_app_fifo[i] = new($sformatf("kmac_app_fifo[%0d]", i), this);
+      m_app_req_fifos[i] = new($sformatf("m_app_req_fifos[%0d]", i), this);
     end
-  endfunction
-
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
   endfunction
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     if (cfg.en_scb) begin
-      fork
-        process_checked_kmac_cmd();
-        detect_kmac_app_start();
-        process_kmac_app_fsm();
-        process_edn();
-        process_kmac_app_req_fifo();
-        process_kmac_app_rsp_fifo();
-        process_sideload_key();
-        manage_fifo_empty_intr();
-      join_none
+      fork : isolation_fork begin
+        fork
+          process_checked_kmac_cmd();
+          detect_kmac_app_start();
+          process_kmac_app_fsm();
+          process_edn();
+          process_kmac_app_fifo();
+          process_sideload_key();
+          manage_fifo_empty_intr();
+        join_none
+
+        for (int unsigned i_ = 0; i_ < NUM_APP_INTF; i_++) begin
+          automatic int i = i_;
+          fork process_kmac_app_req_fifo(i); join_none
+        end
+
+        wait fork;
+      end join
     end
   endtask
 
@@ -397,9 +405,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               StIdle: begin
                 app_fsm_active = 0;
                 if (!in_kmac_app &&
-                    (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.req_data_if.valid ||
-                     cfg.m_kmac_app_agent_cfg[AppLc].vif.req_data_if.valid ||
-                     cfg.m_kmac_app_agent_cfg[AppRom].vif.req_data_if.valid)) begin
+                    (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.mon_cb.req_valid ||
+                     cfg.m_kmac_app_agent_cfg[AppLc].vif.mon_cb.req_valid ||
+                     cfg.m_kmac_app_agent_cfg[AppRom].vif.mon_cb.req_valid)) begin
                   app_st = StAppCfg;
                   app_fsm_active = 1;
                 end else if (checked_kmac_cmd == CmdStart) begin
@@ -416,7 +424,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
               StAppMsg: begin
                 app_mux_sel = SelApp;
-                if (kmac_app_last) begin
+                if (!m_part_way_through_req) begin
                   if (app_mode == AppKeymgr) begin
                     app_st = StAppOutLen;
                   end else begin
@@ -473,8 +481,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                 // It's possible for SW to not clear the error until after the hash is done.
                 // In this case the hash will be garbage data, so do not check it.
-                if (cfg.m_kmac_app_agent_cfg[app_mode].vif.req.req_valid &&
-                    cfg.m_kmac_app_agent_cfg[app_mode].vif.req.req_last) begin
+                if (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_valid &&
+                    cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_last) begin
                   do_check_digest = 0;
                 end
 
@@ -494,135 +502,132 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // This task continuously checks the analysis_port of the push_pull_agent
-  // in the kmac_app_agent, as we need to know every time a data block is sent
-  // over the KMAC_APP interface.
-  virtual task process_kmac_app_req_fifo();
-    push_pull_agent_pkg::push_pull_item#(
-      .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)) kmac_app_block_item;
+  // Watch request words on the given app interface.
+  //
+  // This task will run forever.
+  task process_kmac_app_req_fifo(int unsigned app_index);
     forever begin
-        wait(!cfg.under_reset);
-        @(posedge in_kmac_app);
-        `uvm_info(`gfn, $sformatf("req app_mode: %0s", app_mode.name()), UVM_HIGH)
-        `DV_SPINWAIT_EXIT(
-            forever begin
-              kmac_app_req_fifo[app_mode].get(kmac_app_block_item);
-              `uvm_info(`gfn,
-                        $sformatf("Detected KMAC_APP data transfer:\n%0s",
-                                  kmac_app_block_item.sprint()),
-                        UVM_HIGH)
-              {kmac_app_block_data, kmac_app_block_strb, kmac_app_last} =
-                  kmac_app_block_item.h_data;
-              kmac_app_block_strb_size = $countones(kmac_app_block_strb);
+      kmac_app_req_item item;
 
-              // sample coverage
-              if (cfg.en_cov) begin
-                cov.app_cg_wrappers[app_mode].app_sample(0,
-                    kmac_app_block_strb,
-                    0,
-                    kmac_app_last,
-                    in_keccak_rounds);
-              end
+      m_app_req_fifos[app_index].get(item);
 
-              while (kmac_app_block_strb > 0) begin
-                if (kmac_app_block_strb[0]) begin
-                  kmac_app_msg.push_back(kmac_app_block_data[7:0]);
-                end
-                kmac_app_block_data = kmac_app_block_data >> 8;
-                kmac_app_block_strb = kmac_app_block_strb >> 1;
-              end
-              `uvm_info(`gfn, $sformatf("kmac_app_msg: %0p", kmac_app_msg), UVM_HIGH)
-            end
-            ,
-            wait(cfg.under_reset || !in_kmac_app);
-        )
+      // An item should only arrive when the currently selected app is app_index.
+      //
+      // TODO: The first req for a packet will race against the monitor code that is in this file as
+      // detect_kmac_app_start. That task should be folded into this one.
+      //
+      // As a stop-gap solution, we have a tiny delay here to ensure that detect_kmac_app_start has
+      // run.
+      #1ps;
+
+      if (! (in_kmac_app && (app_mode == app_index))) begin
+        `uvm_error(get_full_name(),
+                   $sformatf("Saw request be handled for app %0d when that app was not selected.",
+                             app_index))
+      end
+
+      m_part_way_through_req = !item.m_last;
     end
   endtask
 
-  // This task processes the `kmac_app_rsp_fifo`.
+  // Watch monitored request/response transactions on the kmac_app_fifo for the selected app (based
+  // on app_mode)
   //
-  // This fifo is populated once the KMAC has sent the response digest to
-  // complete the KMAC_APP request.
-  // As such, `in_kmac_app` must always be 1 when a response item is seen, otherwise
+  // This fifo is populated once the KMAC has sent the response digest to complete  KMAC_APP
+  // request. As such, `in_kmac_app` must always be 1 when a response item is seen, otherwise
   // something has gone horribly wrong.
   //
   // It is important to note that when in KMAC_APP mode, any messages/keys/commands sent
   // to the CSRs will not be considered as valid, so this task needs to take care of checking
   // the KMAC_APP digest and clearing internal state for the next hash operation.
-  virtual task process_kmac_app_rsp_fifo();
-    kmac_app_item kmac_app_rsp;
-    @(negedge cfg.under_reset);
+  virtual task process_kmac_app_fifo();
     forever begin
-      wait(!cfg.under_reset);
-      `DV_SPINWAIT_EXIT(
-          forever begin
-            wait(!cfg.under_reset);
-            @(posedge in_kmac_app);
-            `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
-            `DV_SPINWAIT_EXIT(
-                bit app_intf_err = 0;
-                kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
-                `uvm_info(`gfn,
-                          $sformatf("Detected a KMAC_APP response:\n%0s",
-                                    kmac_app_rsp.sprint()),
-                          UVM_HIGH)
+      wait(!cfg.under_reset && in_kmac_app);
 
-                // sample coverage
-                if (cfg.en_cov) begin
-                  cov.app_cg_wrappers[app_mode].app_sample(
-                    kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
-                    '0,
-                    kmac_app_rsp.error,
-                    1,
-                    0
-                  );
-                  cov.app_cg_wrappers[app_mode].app_cfg_reg_sample(hash_mode);
-                end
+      // Check that there is nothing in the fifo at the moment. This is a consistency check: we
+      // should notice that we have started the app quite a while before any information gets
+      // generated by the dut and passed to the fifo.
+      if (!kmac_app_fifo[app_mode].is_empty()) begin
+        `uvm_fatal(get_full_name(),
+                   {"Testbench inconsistency: something got added ",
+                    "to the fifo before we were in app mode."})
+      end
 
-                // safety check that things are working properly and
-                // no random KMAC_APP operations are seen
-                `DV_CHECK_FATAL(in_kmac_app == 1,
-                    "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
+      fork : isolation_fork begin
+        fork
+          wait(cfg.under_reset || !in_kmac_app);
+          begin
+            kmac_app_mon_item item;
+            app_cg_wrap       cg_wrapper;
 
-                // We expect an app interface error if app_mode is AppKeymgr (meaning that we are
-                // in the mode where we are talking to the keymgr) and either there is no entropy
-                // to perform the masking that is enabled or the key has been invalidated.
-                app_intf_err = (app_mode == AppKeymgr &&
-                                ((cfg.enable_masking && !entropy_ready) || cfg.key_invalidated));
+            kmac_app_fifo[app_mode].get(item);
 
-                // Check app interface errors have been reported as expected.
-                `DV_CHECK_FATAL(kmac_app_rsp.error == app_intf_err)
+            cg_wrapper = cov.app_cg_wrappers[app_mode];
 
+            foreach (item.m_req.m_reqs[i]) begin
+              bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb;
+              strb = (1 << item.m_req.m_reqs[i].m_num_bytes) - 1;
 
-                // Check that digests have been zeroed if there was an interface error. If not,
-                // extract the digests and (if configured) check they are correct.
-                if (app_intf_err) begin
-                  `DV_CHECK_FATAL(kmac_app_rsp.digest_s0 == 0,
-                    "APP interface error, expect output to be all 0s")
-                  `DV_CHECK_FATAL(kmac_app_rsp.digest_s1 == 0,
-                    "APP interface error, expect output to be all 0s")
-                end else begin
-                  // Static app interface: assign digest values directly
-                  kmac_app_digest_share0 = kmac_app_rsp.digest_s0;
-                  kmac_app_digest_share1 = kmac_app_rsp.digest_s1;
+              if (cfg.en_cov) begin
+                cg_wrapper.app_sample(0,
+                                      strb,
+                                      0,
+                                      item.m_req.m_reqs[i].m_last,
+                                      in_keccak_rounds);
+              end
 
-                  if (do_check_digest) check_digest();
-                end
+              for (int byte_idx = 0; byte_idx < item.m_req.m_reqs[i].m_num_bytes; byte_idx++) begin
+                bit [7:0] data_byte_s0 = (item.m_req.m_reqs[i].m_data_s0 >> (byte_idx * 8)) & 8'hff;
+                bit [7:0] data_byte_s1 = (item.m_req.m_reqs[i].m_data_s1 >> (byte_idx * 8)) & 8'hff;
+                kmac_app_msg.push_back(data_byte_s0 ^ data_byte_s1);
+              end
+            end
 
-                in_kmac_app = 0;
-                sha3_squeeze = 0;
-                sha3_absorb = 0;
-                sha3_idle = 1;
-                `uvm_info(`gfn, "dropped in_kmac_app and raised sha3_idle", UVM_HIGH)
+            if (cfg.en_cov) begin
+              cg_wrapper.app_sample(item.m_req.m_reqs.size() == 1,
+                                    '0,
+                                    item.m_rsp.m_error,
+                                    1,
+                                    0);
+              cg_wrapper.app_cfg_reg_sample(hash_mode);
+            end
 
-                clear_state();
-                ,
-                wait(!in_kmac_app);
-            )
+            // We expect an app interface error if app_mode is AppKeymgr (meaning that we are in the
+            // mode where we are talking to the keymgr) and either there is no entropy to perform
+            // the masking that is enabled or the key has been invalidated.
+            if (item.m_rsp.m_error !=
+                (app_mode == AppKeymgr &&
+                 ((cfg.enable_masking && !entropy_ready) || cfg.key_invalidated))) begin
+              `uvm_error(get_full_name(),
+                         $sformatf("Unexpected m_error value in the app response (%0d)",
+                                   item.m_rsp.m_error))
+            end
+
+            if (item.m_rsp.m_error) begin
+              // Check that digests have been zeroed if there was an interface error.
+              if (|item.m_rsp.m_digest_s0) begin
+                `uvm_error(get_full_name(), "Unexpected nonzero digest share 0 despite error")
+              end
+              if (|item.m_rsp.m_digest_s1) begin
+                `uvm_error(get_full_name(), "Unexpected nonzero digest share 1 despite error")
+              end
+
+            end else begin
+              // If no error, extract the digests and (if configured) check they are correct.
+              kmac_app_digest_share0 = item.m_rsp.m_digest_s0;
+              kmac_app_digest_share1 = item.m_rsp.m_digest_s1;
+              if (do_check_digest) check_digest();
+            end
+
+            in_kmac_app = 0;
+            sha3_squeeze = 0;
+            sha3_absorb = 0;
+            sha3_idle = 1;
+            clear_state();
           end
-          ,
-          wait(cfg.under_reset);
-      )
+        join_any
+        disable fork;
+      end join
     end
   endtask
 
@@ -1365,6 +1370,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     unchecked_kmac_cmd = CmdNone;
 
     first_op_after_rst = 1;
+    m_part_way_through_req = 0;
 
     // status tracking bits
     sha3_idle         = ral.status.sha3_idle.get_reset();
@@ -1386,11 +1392,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     msg.delete();
     kmac_app_msg.delete();
 
-    kmac_app_block_data      = '0;
-    kmac_app_block_strb      = '0;
-    kmac_app_block_strb_size = 0;
-    kmac_app_last            = 0;
-    in_kmac_app              = 0;
+    in_kmac_app = 0;
 
     req_manual_squeeze      = 0;
     msg_digest_done         = 0;

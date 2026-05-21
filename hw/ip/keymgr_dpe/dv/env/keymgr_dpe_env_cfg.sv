@@ -25,8 +25,7 @@ class keymgr_dpe_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_dpe_reg_block)
     shadow_update_err_status_fields[ral.err_code.invalid_shadow_update] = 1;
     shadow_storage_err_status_fields[ral.fault_status.shadow] = 1;
 
-    m_kmac_agent_cfg =
-      kmac_app_agent_cfg::type_id::create("m_kmac_agent_cfg");
+    m_kmac_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_agent_cfg");
     m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
 
     // keymgr_dpe requests entropy periodically, if seq is done,

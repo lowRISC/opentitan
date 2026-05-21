@@ -573,12 +573,17 @@ class kmac_base_vseq extends cip_base_vseq #(
   endtask
 
   // Call this task to initiate a KMAC_APP hashing operation
-  virtual task send_kmac_app_req(kmac_app_e mode);
-    kmac_app_host_seq kmac_app_seq;
-    `uvm_create_on(kmac_app_seq, p_sequencer.kmac_app_sequencer_h[mode]);
-    `DV_CHECK_RANDOMIZE_FATAL(kmac_app_seq)
-    kmac_app_seq.msg_size_bytes = msg.size();
-    `uvm_send(kmac_app_seq)
+  task send_kmac_app_req(kmac_app_e mode);
+    kmac_app_host_seq kmac_app_seq = kmac_app_host_seq::type_id::create("kmac_app_seq");
+
+    if (!kmac_app_seq.randomize()) begin
+      `uvm_fatal(get_full_name(), "Failed to randomize kmac_app_seq")
+    end
+
+    kmac_app_seq.msg_size_bytes           = msg.size();
+    kmac_app_seq.m_using_masked_interface = cfg.m_kmac_app_agent_cfg[mode].has_masking;
+
+    kmac_app_seq.start(p_sequencer.kmac_app_sequencer_h[mode]);
   endtask
 
   // This task writes a generic byte array into the msg_fifo

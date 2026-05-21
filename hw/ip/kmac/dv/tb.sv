@@ -11,8 +11,8 @@ module tb;
   import kmac_reg_pkg::*;
 
   // macro includes
-  `include "uvm_macros.svh"
-  `include "dv_macros.svh"
+`include "uvm_macros.svh"
+`include "dv_macros.svh"
 
   wire clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;

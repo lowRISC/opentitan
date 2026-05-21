@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_kmac_req)
+`uvm_analysis_imp_decl(_kmac_txn)
+
 class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     .CFG_T(keymgr_dpe_env_cfg),
     .RAL_T(keymgr_dpe_reg_block),
@@ -87,9 +90,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e addr_phase_working_state;
   bit                                addr_phase_is_sw_share_corrupted;
 
-  // TLM agent fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) req_fifo;
-  uvm_tlm_analysis_fifo #(kmac_app_item) rsp_fifo;
+  // An import for request packets sent to KMAC
+  uvm_analysis_imp_kmac_req #(kmac_app_req_packet_item, keymgr_dpe_scoreboard) m_kmac_req_imp;
+
+  // An import for complete transactions between rom_ctrl and KMAC
+  uvm_analysis_imp_kmac_txn #(kmac_app_mon_item, keymgr_dpe_scoreboard)        m_kmac_txn_imp;
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
@@ -109,25 +114,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    req_fifo = new("req_fifo", this);
-    rsp_fifo = new("rsp_fifo", this);
+    m_kmac_req_imp = new("m_kmac_req_imp", this);
+    m_kmac_txn_imp = new("m_kmac_txn_imp", this);
   endfunction
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      forever begin
-        kmac_app_item item;
-        req_fifo.get(item);
-        if (!cfg.en_scb) continue;
-        process_kmac_data_req(item);
-      end
-      forever begin
-        kmac_app_item item;
-        rsp_fifo.get(item);
-        if (!cfg.en_scb) continue;
-        process_kmac_data_rsp(item);
-      end
       forever begin
         wait(cfg.keymgr_dpe_vif.keymgr_dpe_en_sync2 != lc_ctrl_pkg::On);
 
@@ -147,17 +140,33 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
-  virtual function void process_kmac_data_req(kmac_app_item item);
-    keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
+  function void write_kmac_req(kmac_app_req_packet_item packet);
+    byte unsigned req_bytes[$];
+    int unsigned  nonzero_share1_indices[$];
+    keymgr_dpe_pkg::keymgr_dpe_ops_e op;
     bit is_err;
     logic [keymgr_dpe_pkg::DpeBootStagesWidth-1:0] boot_stage =
       current_internal_key[current_key_slot.src_slot].boot_stage;
 
-    `uvm_info(`gfn, $sformatf("process_kmac_data_req: for op %s in state %s",
-     op.name, current_state.name), UVM_MEDIUM)
+    // If the scoreboard is disabled, ignore the KMAC request and return immediately.
+    if (!cfg.en_scb) return;
+
+    op = get_operation();
+
+    `uvm_info(`gfn,
+              $sformatf("process_kmac_data_req: for op %s in state %s",
+                        op.name, current_state.name),
+              UVM_MEDIUM)
+
+    packet.get_share_byte_queue(0, req_bytes);
+    if (packet.get_reqs_with_nonzero_share(1, nonzero_share1_indices)) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Packet had %0d requests with a nonzero share1 (indices: %0p).",
+                           nonzero_share1_indices.size(), nonzero_share1_indices))
+    end
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
-      compare_invalid_data(item.byte_data_q);
+      compare_invalid_data(req_bytes);
       return;
     end else begin
       // there must be a OP which causes the KMAC data req
@@ -179,7 +188,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                boot_stage, is_err), UVM_LOW)
               compare_boot_stage_0_data(
                 .exp_match(!is_err),
-                .byte_data_q(item.byte_data_q)
+                .byte_data_q(req_bytes)
               );
             end else if (boot_stage == keymgr_dpe_pkg::BootStageOwner) begin
               `uvm_info(`gfn,
@@ -188,7 +197,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                boot_stage, is_err), UVM_LOW)
                compare_boot_stage_1_data(
                 .exp_match(!is_err),
-                .byte_data_q(item.byte_data_q)
+                .byte_data_q(req_bytes)
                );
             end else begin
               `uvm_info(`gfn,
@@ -197,7 +206,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                boot_stage, is_err), UVM_LOW)
                compare_boot_stage_gte_2_data(
                 .exp_match(!is_err),
-                .byte_data_q(item.byte_data_q)
+                .byte_data_q(req_bytes)
                );
             end
           end
@@ -210,13 +219,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           end
           default: `uvm_error(`gfn, $sformatf("Unexpected current_state: %0d", current_state))
         endcase
-        if (is_err) compare_invalid_data(item.byte_data_q);
+        if (is_err) compare_invalid_data(req_bytes);
       end
       keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut: begin
         case (current_state)
         keymgr_dpe_pkg::StWorkDpeAvailable: begin
-          if (get_is_kmac_data_correct()) compare_gen_out_data(item.byte_data_q);
-          else                            compare_invalid_data(item.byte_data_q);
+          if (get_is_kmac_data_correct()) compare_gen_out_data(req_bytes);
+          else                            compare_invalid_data(req_bytes);
         end
         keymgr_dpe_pkg::StWorkDpeReset,
         keymgr_dpe_pkg::StWorkDpeDisabled,
@@ -227,23 +236,27 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
         default: `uvm_error(`gfn, $sformatf("Unexpected current_state: %0d", current_state))
         endcase
-        if (is_err) compare_invalid_data(item.byte_data_q);
+        if (is_err) compare_invalid_data(req_bytes);
       end
       keymgr_dpe_pkg::OpDpeDisable: begin
-        compare_invalid_data(item.byte_data_q);
+        compare_invalid_data(req_bytes);
       end
       default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
     endcase
   endfunction
 
-  virtual function void process_kmac_data_rsp(kmac_app_item item);
+  function void write_kmac_txn(kmac_app_mon_item txn);
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     update_result_e update_result;
     bit process_update;
 
+    // If the scoreboard is disabled, ignore the KMAC transaction (containing the response) and
+    // return immediately.
+    if (!cfg.en_scb) return;
+
     // fault error is preserved until reset
-    if (!is_kmac_rsp_err) is_kmac_rsp_err = item.error;
-    if (!is_kmac_invalid_data) is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
+    if (!is_kmac_rsp_err) is_kmac_rsp_err = txn.m_rsp.m_error;
+    if (!is_kmac_invalid_data) is_kmac_invalid_data = txn.m_rsp.is_kmac_rsp_data_invalid();
 
     update_result = process_update_after_op_done();
 
@@ -257,8 +270,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         compare_internal_key_slot = 1;
         // digest is 384 bits wide while internal key is only 256, need to truncate it
         current_internal_key[current_key_slot.dst_slot].key =
-          {item.digest_s1[keymgr_pkg::KeyWidth-1:0],
-           item.digest_s0[keymgr_pkg::KeyWidth-1:0]};
+          {txn.m_rsp.m_digest_s1[keymgr_pkg::KeyWidth-1:0],
+           txn.m_rsp.m_digest_s0[keymgr_pkg::KeyWidth-1:0]};
 
         // Boot stage should increment if we are in the creator or owner stage. If we are in the
         // runtime stage, we do not increment the boot stage.
@@ -304,8 +317,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         if (!get_fault_err && !get_invalid_op()) begin
           bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
           // digest is 384 bits wide while SW output is only 256, need to truncate it
-          sw_share_output = {item.digest_s1[keymgr_pkg::KeyWidth-1:0],
-                             item.digest_s0[keymgr_pkg::KeyWidth-1:0]};
+          sw_share_output = {txn.m_rsp.m_digest_s1[keymgr_pkg::KeyWidth-1:0],
+                             txn.m_rsp.m_digest_s0[keymgr_pkg::KeyWidth-1:0]};
           foreach (sw_share_output[i, j]) begin
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);
@@ -318,7 +331,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       end
       // Should occur when a valid OpDpeGenHwOut is issued in the StWorkDpeAvailable state
       UpdateHwOut: begin
-        kmac_digests_t key_shares = {item.digest_s1, item.digest_s0};
+        kmac_digests_t key_shares = {txn.m_rsp.m_digest_s1, txn.m_rsp.m_digest_s0};
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control_shadowed.dest_sel));
 
@@ -1527,8 +1540,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
-    req_fifo.flush();
-    rsp_fifo.flush();
     foreach (current_internal_key[slot]) begin
       current_internal_key[slot].key = '0;
       current_internal_key[slot].key_policy = '0;
@@ -1548,8 +1559,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // post test checks - ensure that all local fifos and queues are empty
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, req_fifo)
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(kmac_app_item, rsp_fifo)
     for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid,
                    current_internal_key[slot].valid)

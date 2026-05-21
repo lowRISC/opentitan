@@ -63,11 +63,11 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
   virtual task check_keymgr_rsp_nonblocking();
     fork begin
       while (cfg.en_scb == 0 && entropy_fetched == 0) begin
-        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.rsp.rsp_valid == 1);
+        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.mon_cb.rsp_valid);
         if (cfg.enable_masking && entropy_mode == EntropyModeEdn) begin
-          `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.rsp.error, 1)
+          `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.mon_cb.rsp_error, 1)
         end
-        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.rsp.rsp_valid == 0);
+        wait (!cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.mon_cb.rsp_valid);
       end
     end join_none
   endtask

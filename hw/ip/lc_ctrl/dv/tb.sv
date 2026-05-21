@@ -304,9 +304,6 @@ module tb;
   `DV_ASSERT_CTRL(
       "KmacIfSyncReqAckAckNeedsReq",
       dut.u_lc_ctrl_kmac_if.u_prim_sync_reqack_data_in.u_prim_sync_reqack.SyncReqAckAckNeedsReq)
-  `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq",
-                  kmac_app_if.req_data_if.H_DataStableWhenValidAndNotReady_A)
-  `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)
   `DV_ASSERT_CTRL("FsmClkBypAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_clk_byp_ack)
   for (genvar k = 0; k < NUM_RMA_ACK_SIGS; k++) begin : gen_sync_asserts
     `DV_ASSERT_CTRL("FsmClkNvmRmaAckSync",

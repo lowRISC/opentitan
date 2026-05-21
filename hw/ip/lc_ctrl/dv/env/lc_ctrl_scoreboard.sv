@@ -4,6 +4,8 @@
 
 `define GMV32(csr) 32'(`gmv(csr))
 
+`uvm_analysis_imp_decl(_kmac_req)
+
 class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   .CFG_T(lc_ctrl_env_cfg),
   .RAL_T(lc_ctrl_regs_reg_block),
@@ -22,13 +24,14 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   protected uint m_otp_prog_cnt;
   event check_lc_output_ev;
 
+  // An import for request packets sent to KMAC
+  uvm_analysis_imp_kmac_req #(kmac_app_req_packet_item, lc_ctrl_scoreboard) m_kmac_req_imp;
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(push_pull_item #(
     .HostDataWidth  (OTP_PROG_HDATA_WIDTH),
     .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)
   )) otp_prog_fifo;
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_req_fifo;
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_wipe_secrets_fifo;
   uvm_tlm_analysis_fifo #(alert_esc_seq_item) esc_scrap_state_fifo;
   uvm_tlm_analysis_fifo #(jtag_riscv_item) jtag_riscv_fifo;
@@ -38,8 +41,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     otp_prog_fifo = new("otp_prog_fifo", this);
-    kmac_app_req_fifo = new("kmac_app_req_fifo", this);
-    kmac_app_rsp_fifo = new("kmac_app_rsp_fifo", this);
+    m_kmac_req_imp = new("m_kmac_req_imp", this);
     esc_wipe_secrets_fifo = new("esc_wipe_secrets_fifo", this);
     esc_scrap_state_fifo = new("esc_scrap_state_fifo", this);
     jtag_riscv_fifo = new("jtag_riscv_fifo", this);
@@ -55,8 +57,6 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     fork
       check_lc_output();
       process_otp_prog_rsp();
-      process_kmac_app_req();
-      process_kmac_app_rsp();
       if (cfg.jtag_riscv_map != null) process_jtag_riscv();
     join_none
   endtask
@@ -174,39 +174,43 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // verilog_format: off - avoid bad formatting
-  virtual task process_kmac_app_req();
-    forever begin
-      bit [127:0] token_data;
-      kmac_app_item item_rcv;
-      kmac_app_req_fifo.get(item_rcv);
-      `uvm_info(`gfn, item_rcv.sprint(uvm_default_line_printer), UVM_HIGH)
+  function void write_kmac_req(kmac_app_req_packet_item packet);
+    bit [127:0]   token_data;
+    byte unsigned req_bytes[$];
+    int unsigned  nonzero_share1_indices[$];
 
-      // Should be 16 bytes of data
-      `DV_CHECK_EQ_FATAL(item_rcv.byte_data_q.size(), 16)
-      // Unpack token data from request
-      for(int i=0; i<16; i++) begin
-        token_data[i*8 +: 8] = item_rcv.byte_data_q[i];
-      end
-      `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_MEDIUM)
+    packet.get_share_byte_queue(0, req_bytes);
+    if (packet.get_reqs_with_nonzero_share(1, nonzero_share1_indices)) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Packet had %0d requests with a nonzero share1 (indices: %0p).",
+                           nonzero_share1_indices.size(), nonzero_share1_indices))
+    end
 
-      if (cfg.en_scb) begin
-        `DV_CHECK_EQ(token_data, {`GMV32(ral.transition_token[3]),
-                                  `GMV32(ral.transition_token[2]),
-                                  `GMV32(ral.transition_token[1]),
-                                  `GMV32(ral.transition_token[0])})
+    if (req_bytes.size() != 16) begin
+      `uvm_error(get_full_name(),
+                 $sformatf("Expected a 16 byte KMAC request but actually saw length %0d.",
+                           req_bytes.size()))
+      return;
+    end
+
+    // Unpack token data from request
+    for(int i=0; i<16; i++) begin
+      token_data[i*8 +: 8] = req_bytes[i];
+    end
+    `uvm_info(`gfn, $sformatf("process_kmac_app_req: token received %h", token_data), UVM_MEDIUM)
+
+    if (cfg.en_scb) begin
+      bit [127:0] exp_token;
+      exp_token = {`GMV32(ral.transition_token[3]), `GMV32(ral.transition_token[2]),
+                   `GMV32(ral.transition_token[1]), `GMV32(ral.transition_token[0])};
+      if (token_data != exp_token) begin
+        `uvm_error(get_full_name(),
+                   $sformatf({"Token data doesn't match the transition token registers. ",
+                              "Value sent to KMAC was 0x%0h. Registers contain 0x%0h."},
+                             token_data, exp_token))
       end
     end
-  endtask
-  // verilog_format: on
-
-  virtual task process_kmac_app_rsp();
-    forever begin
-      kmac_app_item item_rcv;
-      kmac_app_rsp_fifo.get(item_rcv);
-      `uvm_info(`gfn, item_rcv.sprint(uvm_default_line_printer), UVM_HIGH)
-    end
-  endtask
+  endfunction
 
   virtual task process_jtag_riscv();
     jtag_riscv_item      jt_item;

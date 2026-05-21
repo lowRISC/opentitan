@@ -65,7 +65,8 @@ typedef enum int {
 typedef enum int {
   AppKeymgr,
   AppLc,
-  AppRom
+  AppRom,
+  AppOtbn
 } kmac_app_e;
 
 typedef virtual pins_if#(1)      idle_vif;
@@ -121,11 +122,11 @@ Please refer to the covergroups section under [testplan](#testplan) for coverpoi
 #### Scoreboard
 The `kmac_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: TL address channel
-* tl_d_chan_fifo: TL data channel
-* kmac_app_req_fifo[NUM_APP_INTF]: An array of analysis FIFOs to hold request transactions coming from the various application interfaces
-* kmac_app_rsp_fifo[NUM_APP_INTF]: An array of analysis FIFOs to hold response transactions coming from the various application interfaces
-* edn_fifo: FIFO used to hold transactions coming from the EDN interface
+* `tl_a_chan_fifo`: TL address channel
+* `tl_d_chan_fifo`: TL data channel
+* `kmac_app_fifo[NUM_APP_INTF]`: An array of analysis FIFOs that receive transactions on the various application interfaces.
+* `m_app_req_fifos[NUM_APP_INTF]`: An array of analysis FIFOs receiving the requests from those transactions.
+* `edn_fifos[0]`: A FIFO used to hold transactions on the EDN interface.
 
 The KMAC scoreboard implements a cycle-accurate model of the DUT that is used to thoroughly check the operation of the KMAC IP.
 Though complex to implement, this is extremely useful for CSR prediction as many of the status fields rely on exact timing of the design (e.g. CSR fields that reflect the internal message FIFO pointers need to be predicted in the scoreboard on the exact cycle that they are updated in the design otherwise it will result in prediction mismatches).
