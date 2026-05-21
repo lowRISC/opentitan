@@ -166,11 +166,13 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     // Create two shares for the private exponent (second share is all-zero).
     uint32_t d_buf[kPentestRsaMaxDWords];
     memset(d_buf, 0, sizeof(d_buf));
-    memcpy(d_buf, uj_input.d, num_bytes);
+
+    uint32_t share1[kPentestRsaMaxDWords];
+    hardened_memshred(share1, kPentestRsaMaxDWords);
+    hardened_xor(share1, (uint32_t *)uj_input.d, num_words, d_buf);
 
     otcrypto_const_word32_buf_t d_share0 =
         OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
-    uint32_t share1[kPentestRsaMaxDWords] = {0};
     otcrypto_const_word32_buf_t d_share1 =
         OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
@@ -312,11 +314,13 @@ status_t cryptolib_fi_rsa_sign_impl(
   // Create two shares for the private exponent (second share is all-zero).
   uint32_t d_buf[kPentestRsaMaxDWords];
   memset(d_buf, 0, sizeof(d_buf));
-  memcpy(d_buf, uj_input.d, uj_input.n_len);
+
+  uint32_t share1[kPentestRsaMaxDWords];
+  hardened_memshred(share1, kPentestRsaMaxDWords);
+  hardened_xor(share1, (uint32_t *)uj_input.d, num_words, d_buf);
 
   otcrypto_const_word32_buf_t d_share0 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, d_buf, num_words);
-  uint32_t share1[kPentestRsaMaxDWords] = {0};
   otcrypto_const_word32_buf_t d_share1 =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, num_words);
 
@@ -586,9 +590,27 @@ status_t cryptolib_fi_p256_ecdh_impl(
       .keyblob = private_keyblob,
   };
 
-  uint32_t share0[kPentestP256MaskedPrivateKeyWords] = {0};
-  uint32_t share1[kPentestP256MaskedPrivateKeyWords] = {0};
-  memcpy(share0, uj_input.private_key, P256_CMD_BYTES);
+  // P-256 curve order n, padded to 320 bits (10 words) for our math operations.
+  static const uint32_t kP256Order[kPentestP256MaskedPrivateKeyWords] = {
+      0xFC632551, 0xF3B9CAC2, 0xA7179E84, 0xBCE6FAAD, 0xFFFFFFFF,
+      0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share1_rand[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share0[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share1[kPentestP256MaskedPrivateKeyWords];
+
+  memset(unmasked_val, 0, kPentestP256MaskedPrivateKeyBytes);
+  memcpy(unmasked_val, uj_input.private_key, P256_CMD_BYTES);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords));
+  TRY(hardened_mod_reduce(share1_rand, kP256Order,
+                          kPentestP256MaskedPrivateKeyWords, share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP256Order,
+                       kPentestP256MaskedPrivateKeyWords, share0));
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kPentestP256MaskedPrivateKeyWords);
@@ -682,9 +704,27 @@ status_t cryptolib_fi_p256_sign_impl(
       .keyblob = private_keyblob,
   };
 
-  uint32_t share0[kPentestP256MaskedPrivateKeyWords] = {0};
-  uint32_t share1[kPentestP256MaskedPrivateKeyWords] = {0};
-  memcpy(share0, uj_input.scalar, P256_CMD_BYTES);
+  // P-256 curve order n, padded to 320 bits (10 words) for our math operations.
+  static const uint32_t kP256Order[kPentestP256MaskedPrivateKeyWords] = {
+      0xFC632551, 0xF3B9CAC2, 0xA7179E84, 0xBCE6FAAD, 0xFFFFFFFF,
+      0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share1_rand[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share0[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share1[kPentestP256MaskedPrivateKeyWords];
+
+  memset(unmasked_val, 0, kPentestP256MaskedPrivateKeyBytes);
+  memcpy(unmasked_val, uj_input.scalar, P256_CMD_BYTES);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords));
+  TRY(hardened_mod_reduce(share1_rand, kP256Order,
+                          kPentestP256MaskedPrivateKeyWords, share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP256Order,
+                       kPentestP256MaskedPrivateKeyWords, share0));
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kPentestP256MaskedPrivateKeyWords);
@@ -867,9 +907,27 @@ status_t cryptolib_fi_p256_base_mul_impl(
       .keyblob = private_keyblob,
   };
 
-  uint32_t share0[kPentestP256MaskedPrivateKeyWords] = {0};
-  uint32_t share1[kPentestP256MaskedPrivateKeyWords] = {0};
-  memcpy(share0, uj_input.scalar, P256_CMD_BYTES);
+  // P-256 curve order n, padded to 320 bits (10 words) for our math operations.
+  static const uint32_t kP256Order[kPentestP256MaskedPrivateKeyWords] = {
+      0xFC632551, 0xF3B9CAC2, 0xA7179E84, 0xBCE6FAAD, 0xFFFFFFFF,
+      0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share1_rand[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share0[kPentestP256MaskedPrivateKeyWords];
+  uint32_t share1[kPentestP256MaskedPrivateKeyWords];
+
+  memset(unmasked_val, 0, kPentestP256MaskedPrivateKeyBytes);
+  memcpy(unmasked_val, uj_input.scalar, P256_CMD_BYTES);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords));
+  TRY(hardened_mod_reduce(share1_rand, kP256Order,
+                          kPentestP256MaskedPrivateKeyWords, share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP256Order,
+                       kPentestP256MaskedPrivateKeyWords, share0));
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kPentestP256MaskedPrivateKeyWords);
@@ -933,9 +991,28 @@ status_t cryptolib_fi_p384_ecdh_impl(
       .keyblob = private_keyblob,
   };
 
-  uint32_t share0[kPentestP384MaskedPrivateKeyWords] = {0};
-  uint32_t share1[kPentestP384MaskedPrivateKeyWords] = {0};
-  memcpy(share0, uj_input.private_key, P384_CMD_BYTES);
+  // P-384 curve order n, padded to 448 bits (14 words) for our math operations.
+  static const uint32_t kP384Order[kPentestP384MaskedPrivateKeyWords] = {
+      0xCCC52973, 0xECEC196A, 0x48B0A77A, 0x581A0DB2, 0xF4372DDF,
+      0xC7634D81, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+      0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share1_rand[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share0[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share1[kPentestP384MaskedPrivateKeyWords];
+
+  memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
+  memcpy(unmasked_val, uj_input.private_key, P384_CMD_BYTES);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords));
+  TRY(hardened_mod_reduce(share1_rand, kP384Order,
+                          kPentestP384MaskedPrivateKeyWords, share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP384Order,
+                       kPentestP384MaskedPrivateKeyWords, share0));
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kPentestP384MaskedPrivateKeyWords);
@@ -1029,9 +1106,28 @@ status_t cryptolib_fi_p384_sign_impl(
       .keyblob = private_keyblob,
   };
 
-  uint32_t share0[kPentestP384MaskedPrivateKeyWords] = {0};
-  uint32_t share1[kPentestP384MaskedPrivateKeyWords] = {0};
-  memcpy(share0, uj_input.scalar, P384_CMD_BYTES);
+  // P-384 curve order n, padded to 448 bits (14 words) for our math operations.
+  static const uint32_t kP384Order[kPentestP384MaskedPrivateKeyWords] = {
+      0xCCC52973, 0xECEC196A, 0x48B0A77A, 0x581A0DB2, 0xF4372DDF,
+      0xC7634D81, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+      0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share1_rand[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share0[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share1[kPentestP384MaskedPrivateKeyWords];
+
+  memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
+  memcpy(unmasked_val, uj_input.scalar, P384_CMD_BYTES);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords));
+  TRY(hardened_mod_reduce(share1_rand, kP384Order,
+                          kPentestP384MaskedPrivateKeyWords, share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP384Order,
+                       kPentestP384MaskedPrivateKeyWords, share0));
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kPentestP384MaskedPrivateKeyWords);
@@ -1213,9 +1309,28 @@ status_t cryptolib_fi_p384_base_mul_impl(
       .keyblob = private_keyblob,
   };
 
-  uint32_t share0[kPentestP384MaskedPrivateKeyWords] = {0};
-  uint32_t share1[kPentestP384MaskedPrivateKeyWords] = {0};
-  memcpy(share0, uj_input.scalar, P384_CMD_BYTES);
+  // P-384 curve order n, padded to 448 bits (14 words) for our math operations.
+  static const uint32_t kP384Order[kPentestP384MaskedPrivateKeyWords] = {
+      0xCCC52973, 0xECEC196A, 0x48B0A77A, 0x581A0DB2, 0xF4372DDF,
+      0xC7634D81, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
+      0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000};
+
+  uint32_t unmasked_val[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share1_rand[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share0[kPentestP384MaskedPrivateKeyWords];
+  uint32_t share1[kPentestP384MaskedPrivateKeyWords];
+
+  memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
+  memcpy(unmasked_val, uj_input.scalar, P384_CMD_BYTES);
+
+  // Generate a random value and reduce it modulo n to get a valid share1
+  TRY(hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords));
+  TRY(hardened_mod_reduce(share1_rand, kP384Order,
+                          kPentestP384MaskedPrivateKeyWords, share1));
+
+  // Calculate share0 = (unmasked_val - share1) mod n
+  TRY(hardened_sub_mod(unmasked_val, share1, kP384Order,
+                       kPentestP384MaskedPrivateKeyWords, share0));
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kPentestP384MaskedPrivateKeyWords);
@@ -1268,7 +1383,15 @@ status_t cryptolib_fi_ed25519_sign_impl(
   // (seed bytes + 8 redundant ECC arithmetic extension bytes).
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, uj_input.scalar, ED25519_CMD_SCALAR_BYTES);
+  // Generate a random mask for share0
+  HARDENED_TRY(
+      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+
+  // Calculate share1 = key - share0 (implicitly modulo 2^256)
+  HARDENED_TRY(
+      hardened_sub((uint32_t *)uj_input.scalar, private_keyblob,
+                   kPentestEd25519MaskedPrivateKeyWords,
+                   private_keyblob + kPentestEd25519MaskedPrivateKeyWords));
   otcrypto_blinded_key_t private_key = {
       .config =
           {
@@ -1397,7 +1520,15 @@ status_t cryptolib_fi_x25519_base_mul_impl(
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, uj_input.scalar, X25519_CMD_BYTES);
+  // Generate a random mask for share0
+  HARDENED_TRY(
+      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+
+  // Calculate share1 = key - share0 (implicitly modulo 2^256)
+  HARDENED_TRY(
+      hardened_sub((uint32_t *)uj_input.scalar, private_keyblob,
+                   kPentestEd25519MaskedPrivateKeyWords,
+                   private_keyblob + kPentestEd25519MaskedPrivateKeyWords));
 
   otcrypto_blinded_key_t private_key = {
       .config =
@@ -1447,7 +1578,15 @@ status_t cryptolib_fi_x25519_ecdh_impl(
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
-  memcpy(private_keyblob, uj_input.private_key, X25519_CMD_BYTES);
+  // Generate a random mask for share0
+  HARDENED_TRY(
+      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+
+  // Calculate share1 = key - share0 (implicitly modulo 2^256)
+  HARDENED_TRY(
+      hardened_sub((uint32_t *)uj_input.private_key, private_keyblob,
+                   kPentestEd25519MaskedPrivateKeyWords,
+                   private_keyblob + kPentestEd25519MaskedPrivateKeyWords));
 
   otcrypto_blinded_key_t private_key = {
       .config =
@@ -1526,8 +1665,15 @@ status_t cryptolib_fi_x25519_point_mul_impl(
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
-  // Alice's scalar acts as the private key
-  memcpy(private_keyblob, uj_input.scalar_alice, X25519_CMD_BYTES);
+  // Generate a random mask for share0
+  HARDENED_TRY(
+      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+
+  // Calculate share1 = key - share0 (implicitly modulo 2^256)
+  HARDENED_TRY(
+      hardened_sub((uint32_t *)uj_input.scalar_alice, private_keyblob,
+                   kPentestEd25519MaskedPrivateKeyWords,
+                   private_keyblob + kPentestEd25519MaskedPrivateKeyWords));
 
   otcrypto_blinded_key_t private_key = {
       .config =

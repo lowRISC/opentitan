@@ -127,6 +127,7 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",

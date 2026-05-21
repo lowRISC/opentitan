@@ -123,6 +123,7 @@ cc_library(
     ],
     deps = [
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
