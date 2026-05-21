@@ -239,6 +239,11 @@ module rv_core_ibex
   // core sleeping
   logic core_sleep;
 
+  // CHERIoT signals
+  prim_mubi_pkg::mubi4_t cheriot_ena;
+  logic                  cheriot_switch_error;
+  logic                  unused_cheriot;
+
   // The following intermediate signals are created to aid in simulations.
   //
   // If a parent port is connected directly to a port of sub-modules, the implicit wire connection
@@ -1030,6 +1035,29 @@ module rv_core_ibex
   assign hw2reg.rnd_status.rnd_data_valid.d = rnd_valid_q;
   assign hw2reg.rnd_status.rnd_data_fips.d  = rnd_fips_q;
 
+  ////////////////////
+  // CHERIoT switch
+  ////////////////////
+
+  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch
+    cheriot_switch u_cheriot_switch (
+      .clk_i,
+      .rst_ni,
+      .ena_i        (reg2hw.cheriot_ena.q),
+      .lock_i       (reg2hw.cheriot_lock.q),
+      .lock_access_i(reg2hw.cheriot_lock.qe),
+      .ena_o        (cheriot_ena),
+      .error_o      (cheriot_switch_error)
+    );
+    // For now, tie off all signals
+    assign unused_cheriot = ^{cheriot_ena, cheriot_switch_error};
+
+  end else begin : gen_no_cheriot_switch
+    assign cheriot_ena          = prim_mubi_pkg::MuBi4False;
+    assign cheriot_switch_error = 1'b0;
+    assign unused_cheriot       = ^{cheriot_ena, cheriot_switch_error};
+  end
+
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
 
@@ -1120,7 +1148,8 @@ module rv_core_ibex
     assign unused_reg2hw_shadow = ^{reg2hw_shadow.alert_test, reg2hw_shadow.nmi_enable,
                                     reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
                                     reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
-                                    reg2hw_shadow.mcounteren_writable};
+                                    reg2hw_shadow.mcounteren_writable,
+                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_lock};
 
     /////////////////////////////////////////////////////////////////
     // Shadow Core Data Address Translation Unit and TL-UL Adapter //
