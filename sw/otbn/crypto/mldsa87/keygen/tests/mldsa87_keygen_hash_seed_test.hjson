@@ -1,0 +1,27 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// NIST ACVP ML-DSA-87 keygen vector #51 (first ML-DSA-87 vector):
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ML-DSA-keyGen-FIPS204
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      // Xi
+      "_hash_seed_xi_share0": "0x7bcbfc40c22b8e76a5dd9f8927691d12305635a63b771687cd591792bb2f05f7",
+      "_hash_seed_xi_share1": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "output": {
+    "dmem": {
+      // RHO
+      "_hash_seed_rho": "0xd937df8c3fe571dcc9de94cd892d91cfcdb5e640a21935a26e75f5de92f3df18",
+      // RHO_PRIME
+      "_hash_seed_rho_prime_share0": "0x3af649807ca2405382e16fc376486871f8478741dcb502773f43b3ff7910a4892f75a52f1205580933491c0c9434133ea4660011c521c5df9cf9b54bb701a885",
+      // K
+      "_hash_seed_k_share0": "0xd24ab993ed9fb49815e9ea7a168ae2a07c538064017431e12b26d55584d307d7",
+    }
+  }
+}
