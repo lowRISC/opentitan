@@ -33,6 +33,8 @@ typedef enum {
   kTestRsa4096SignBit,
   kTestShake256Bit,
   kTestKmac256Bit,
+  kTestEd25519SignBit,
+  kTestEd25519VerifyBit,
   // Last entry used for mask calculation
   kTestLastBit,
 } otcrypto_kat_bits_t;
@@ -62,6 +64,8 @@ typedef enum {
 #define OTCRYPTO_KAT_AES_ECB_256_DECRYPT _FLAG(AesEcb256Decrypt)
 #define OTCRYPTO_KAT_SHAKE_256 _FLAG(Shake256)
 #define OTCRYPTO_KAT_KMAC_256 _FLAG(Kmac256)
+#define OTCRYPTO_KAT_ED25519_SIGN _FLAG(Ed25519Sign)
+#define OTCRYPTO_KAT_ED25519_VERIFY _FLAG(Ed25519Verify)
 
 typedef struct {
   uint64_t flags;

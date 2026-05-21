@@ -223,6 +223,7 @@ cc_library(
         ":aes_gcm",
         ":config",
         ":drbg",
+        ":ecc_curve25519",
         ":ecc_p256",
         ":ecc_p384",
         ":entropy_src",
