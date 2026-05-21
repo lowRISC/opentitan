@@ -18,7 +18,51 @@ extern "C" {
 static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
 
+/**
+ * Returns the base address of the flash bank containing the given address.
+ *
+ * This function asserts that the calculated base address is indeed either Bank
+ * A or Bank B base address, and triggers a hardened trap on target if the
+ * assertion fails (e.g., if the input address is outside the valid flash
+ * boundaries).
+ *
+ * @param addr A physical address in flash.
+ * @return The base address of the flash bank (either Bank A or Bank B).
+ */
+static inline uintptr_t flash_bank_base_get(uintptr_t addr) {
+  uintptr_t bank_size = TOP_EARLGREY_EFLASH_SIZE_BYTES / 2;
+  uintptr_t bank_base = addr & ~(bank_size - 1);
+
+#if defined(OT_PLATFORM_RV32)
+  uintptr_t diff = launder32(bank_base) ^ TOP_EARLGREY_EFLASH_BASE_ADDR;
+  HARDENED_CHECK_EQ(diff & ~bank_size, 0);
+#endif
+
+  return bank_base;
+}
+
 #ifdef OT_PLATFORM_RV32
+/**
+ * Helper function to scan a flash bank for the first valid owner boot stage
+ * manifest.
+ *
+ * The scan starts at a 64K offset (0x10000) and ends at a 256K offset (0x40000)
+ * (excluded) in steps of 8K (0x2000).
+ *
+ * @param bank_base The base address of the flash bank.
+ * @return Pointer to the first found manifest, or NULL if none found.
+ */
+static inline const manifest_t *rom_ext_boot_policy_manifest_search(
+    uintptr_t bank_base) {
+  for (uintptr_t offset = 0x10000; offset < 0x40000; offset += 0x2000) {
+    const manifest_t *manifest = (const manifest_t *)(bank_base + offset);
+    if (manifest->identifier == CHIP_BL0_IDENTIFIER) {
+      return manifest;
+    }
+  }
+  return NULL;
+}
+
 /**
  * Returns a pointer to the manifest of the first owner boot stage image stored
  * in flash slot A.
@@ -27,9 +71,8 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  * A.
  */
 OT_WARN_UNUSED_RESULT
-inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
-  return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
-                              CHIP_ROM_EXT_SIZE_MAX);
+static inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
+  return rom_ext_boot_policy_manifest_search(TOP_EARLGREY_EFLASH_BASE_ADDR);
 }
 
 /**
@@ -40,10 +83,9 @@ inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
  * B.
  */
 OT_WARN_UNUSED_RESULT
-inline const manifest_t *rom_ext_boot_policy_manifest_b_get(void) {
-  return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
-                              (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) +
-                              CHIP_ROM_EXT_SIZE_MAX);
+static inline const manifest_t *rom_ext_boot_policy_manifest_b_get(void) {
+  return rom_ext_boot_policy_manifest_search(
+      TOP_EARLGREY_EFLASH_BASE_ADDR + (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2));
 }
 #else
 /**

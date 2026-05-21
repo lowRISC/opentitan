@@ -31,6 +31,7 @@ with_unknown! {
         isfb = MANIFEST_EXT_ID_ISFB,
         isfb_erase = MANIFEST_EXT_ID_ISFB_ERASE,
         image_type = MANIFEST_EXT_ID_IMAGE_TYPE,
+        base_addr = MANIFEST_EXT_ID_BASE_ADDR,
     }
 }
 
@@ -79,6 +80,9 @@ pub enum ManifestExtEntrySpec {
     #[serde(alias = "image_type")]
     ImageType { image_type: u32 },
 
+    #[serde(alias = "base_addr")]
+    BaseAddr { base_addr: u32 },
+
     #[serde(alias = "raw")]
     Raw {
         name: HexEncoded<u32>,
@@ -96,6 +100,7 @@ pub enum ManifestExtEntry {
     Isfb(ManifestExtIsfb),
     IsfbErasePolicy(ManifestExtIsfbErasePolicy),
     ImageType(ManifestExtImageType),
+    BaseAddr(ManifestExtBaseAddr),
     Raw {
         header: ManifestExtHeader,
         data: Vec<u8>,
@@ -130,6 +135,7 @@ impl ManifestExtEntrySpec {
             ManifestExtEntrySpec::Isfb { .. } => MANIFEST_EXT_ID_ISFB,
             ManifestExtEntrySpec::IsfbErasePolicy { .. } => MANIFEST_EXT_ID_ISFB_ERASE,
             ManifestExtEntrySpec::ImageType { image_type: _ } => MANIFEST_EXT_ID_IMAGE_TYPE,
+            ManifestExtEntrySpec::BaseAddr { .. } => MANIFEST_EXT_ID_BASE_ADDR,
             ManifestExtEntrySpec::Raw { identifier, .. } => **identifier,
         }
     }
@@ -140,7 +146,8 @@ impl ManifestExtEntrySpec {
             | ManifestExtEntrySpec::SecVerWrite { .. }
             | ManifestExtEntrySpec::Isfb { .. }
             | ManifestExtEntrySpec::IsfbErasePolicy { .. }
-            | ManifestExtEntrySpec::ImageType { .. } => true,
+            | ManifestExtEntrySpec::ImageType { .. }
+            | ManifestExtEntrySpec::BaseAddr { .. } => true,
             ManifestExtEntrySpec::SpxSignature { .. } => false,
             ManifestExtEntrySpec::Raw { signed, .. } => *signed,
         }
@@ -228,6 +235,16 @@ impl ManifestExtEntry {
         }))
     }
 
+    pub fn new_base_addr_entry(base_addr: u32) -> Result<Self> {
+        Ok(ManifestExtEntry::BaseAddr(ManifestExtBaseAddr {
+            header: ManifestExtHeader {
+                identifier: MANIFEST_EXT_ID_BASE_ADDR,
+                name: MANIFEST_EXT_NAME_BASE_ADDR,
+            },
+            base_addr,
+        }))
+    }
+
     /// Creates a new manifest extension from a given `spec`.
     pub fn from_spec(spec: &ManifestExtEntrySpec) -> Result<Self> {
         Ok(match spec {
@@ -264,6 +281,9 @@ impl ManifestExtEntry {
             ManifestExtEntrySpec::ImageType { image_type } => {
                 ManifestExtEntry::new_image_type_entry(*image_type)?
             }
+            ManifestExtEntrySpec::BaseAddr { base_addr } => {
+                ManifestExtEntry::new_base_addr_entry(*base_addr)?
+            }
             ManifestExtEntrySpec::Raw {
                 name,
                 identifier,
@@ -288,6 +308,7 @@ impl ManifestExtEntry {
             ManifestExtEntry::Isfb(isfb) => &isfb.header,
             ManifestExtEntry::IsfbErasePolicy(erase) => &erase.header,
             ManifestExtEntry::ImageType(image_type) => &image_type.header,
+            ManifestExtEntry::BaseAddr(base_addr) => &base_addr.header,
             ManifestExtEntry::Raw { header, data: _ } => header,
         }
     }
@@ -301,6 +322,7 @@ impl ManifestExtEntry {
             ManifestExtEntry::Isfb(isfb) => isfb.to_vec().unwrap(),
             ManifestExtEntry::IsfbErasePolicy(erase) => erase.as_bytes().to_vec(),
             ManifestExtEntry::ImageType(image_type) => image_type.as_bytes().to_vec(),
+            ManifestExtEntry::BaseAddr(base_addr) => base_addr.as_bytes().to_vec(),
             ManifestExtEntry::Raw { header, data } => {
                 header.as_bytes().iter().chain(data).copied().collect()
             }

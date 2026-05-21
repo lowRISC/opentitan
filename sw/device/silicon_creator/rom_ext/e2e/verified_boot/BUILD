@@ -82,6 +82,32 @@ _POSITIONS = {
         "success": "bl0_slot = __BB\r\n",
         "otp_img": None,
     },
+    "owner_slot_b_shifted_pass": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
+        "owner_offset": "{owner_slot_b}",
+        "success": "bl0_slot = __BB\r\n",
+        "otp_img": None,
+        "manifest": ":owner_slot_b_shifted_manifest",
+        "slot_spec": {
+            "rom_ext_size": "0x12000",
+            "owner_slot_b": "0x92000",
+        },
+    },
+    "owner_slot_b_shifted_fail": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
+        "owner_offset": "{owner_slot_b}",
+        "success": "BFV:0442500d",
+        "failure": "bl0_slot = __BB\r\n",
+        "otp_img": None,
+        "slot_spec": {
+            "rom_ext_size": "0x12000",
+            "owner_slot_b": "0x92000",
+        },
+    },
     "owner_virtual_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "{rom_ext_slot_a}",
@@ -170,6 +196,7 @@ _POSITIONS = {
             romext_offset = position["romext_offset"],
         ),
         linker_script = position["linker_script"],
+        manifest = position.get("manifest"),
         qemu = qemu_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
             binaries = {
@@ -181,6 +208,7 @@ _POSITIONS = {
             owner_offset = position["owner_offset"],
             romext_offset = position["romext_offset"],
         ),
+        slot_spec = position.get("slot_spec", {}),
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -195,6 +223,14 @@ test_suite(
     name = "positions",
     tests = ["position_{}".format(name) for name in _POSITIONS],
 )
+
+manifest(d = {
+    "name": "owner_slot_b_shifted_manifest",
+    "address_translation": hex(CONST.HARDENED_FALSE),
+    "identifier": hex(CONST.OWNER),
+    "base_addr": "0x12000",
+    "visibility": ["//visibility:public"],
+})
 
 manifest(d = {
     "name": "bad_manifest",

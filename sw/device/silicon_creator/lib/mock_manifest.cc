@@ -39,5 +39,10 @@ rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
   return MockManifest::Instance().Isfb(manifest, isfb);
 }
 
+rom_error_t manifest_ext_get_base_addr(
+    const manifest_t *manifest, const manifest_ext_base_addr_t **base_addr) {
+  return MockManifest::Instance().BaseAddr(manifest, base_addr);
+}
+
 }  // extern "C"
 }  // namespace rom_test

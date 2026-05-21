@@ -167,7 +167,7 @@ def _manifest_impl(ctx):
             "secver_write",
             "isfb",
             "isfb_erase",
-            None,
+            "base_addr",
             None,
             None,
             None,
@@ -209,6 +209,16 @@ def _manifest_impl(ctx):
             },
         )
 
+    base_addr = ctx.attr.base_addr
+    if base_addr != "none":
+        mf["extension_params"].append(
+            {
+                "base_addr": {
+                    "base_addr": int(base_addr, 0),
+                },
+            },
+        )
+
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(mf))
     return DefaultInfo(
@@ -246,6 +256,7 @@ _manifest = rule(
         "integrator_specific_firmware_binding": attr.string(doc = "Create an Integrator Specific Firmware Block (ISFB) JSON object"),
         "isfb_erase_allowed_policy": attr.string(doc = "Create an ISFB Erase Allowed Policy JSON object"),
         "secver_write": attr.string(default = "none", values = ["none", "false", "true"], doc = "Add the secver_write extension with the specified value"),
+        "base_addr": attr.string(default = "none", doc = "Add the base_addr extension with the specified value"),
     },
 )
 

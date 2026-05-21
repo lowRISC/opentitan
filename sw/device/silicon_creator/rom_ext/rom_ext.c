@@ -213,17 +213,8 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
 extern char _owner_virtual_start_address[];
 extern char _owner_virtual_size[];
 
-/**
- * Compute the virtual address corresponding to the physical address `lma_addr`.
- *
- * @param manifest Pointer to the current manifest.
- * @param lma_addr Load address or physical address.
- * @return the computed virtual address.
- */
-OT_WARN_UNUSED_RESULT
-static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
-  return (lma_addr - (uintptr_t)manifest +
-          (uintptr_t)_owner_virtual_start_address + CHIP_ROM_EXT_SIZE_MAX);
+static uintptr_t owner_vma_get(uintptr_t bank_base, uintptr_t lma_addr) {
+  return lma_addr - bank_base + (uintptr_t)_owner_virtual_start_address;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -291,8 +282,9 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   switch (launder32(manifest->address_translation)) {
     case kHardenedBoolTrue:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-      ibex_addr_remap_1_set((uintptr_t)_owner_virtual_start_address,
-                            (uintptr_t)manifest, (size_t)_owner_virtual_size);
+      uintptr_t bank_base = flash_bank_base_get((uintptr_t)manifest);
+      ibex_addr_remap_1_set((uintptr_t)_owner_virtual_start_address, bank_base,
+                            (size_t)_owner_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
@@ -308,9 +300,9 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       // Move the ROM_EXT execution section from the load address to the virtual
       // address.
       // TODO(#13513): Harden these calculations.
-      text_region.start = owner_vma_get(manifest, text_region.start);
-      text_region.end = owner_vma_get(manifest, text_region.end);
-      entry_point = owner_vma_get(manifest, entry_point);
+      text_region.start = owner_vma_get(bank_base, text_region.start);
+      text_region.end = owner_vma_get(bank_base, text_region.end);
+      entry_point = owner_vma_get(bank_base, entry_point);
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
@@ -392,31 +384,24 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     uint32_t flash_exec = 0;
-    char slot_id =
-        (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) ? 'A'
-                                                                       : 'B';
+    boot_slot_t current_slot = manifests.ordered[i].slot;
+    const manifest_t *manifest = manifests.ordered[i].manifest;
+
     error =
-        rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &flash_exec,
-                       &keyring, &verify_key, &owner_config, &isfb_check_count);
+        rom_ext_verify(manifest, current_slot, boot_data, &flash_exec, &keyring,
+                       &verify_key, &owner_config, &isfb_check_count);
     slot[i] = error;
     if (error != kErrorOk) {
-      dbg_printf("verifyfail: Slot%c;%x\r\n", slot_id, error);
+      dbg_printf("verifyfail: Slot:%C;%x\r\n", current_slot, error);
       continue;
     }
     HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
 
-    if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
-      boot_log->bl0_slot = kBootSlotA;
-    } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
-      boot_log->bl0_slot = kBootSlotB;
-    } else {
-      return kErrorRomExtBootFailed;
-    }
+    boot_log->bl0_slot = current_slot;
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(
-        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &flash_exec));
+    RETURN_IF_ERROR(rom_ext_boot(boot_data, boot_log, manifest, &flash_exec));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;
@@ -435,6 +420,10 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 }
 
 static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
+  const manifest_t *self = rom_ext_manifest();
+  uint32_t actual_size = self->length;
+  uint32_t pages = (actual_size + kFlashPageSize - 1) / kFlashPageSize;
+
   flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
   flash_ctrl_perms_t read = {
       .read = kMultiBitBool4True,
@@ -446,10 +435,10 @@ static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4True,
   };
-  flash_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
+  flash_ctrl_data_region_protect(0, kRomExtAStart, pages,
                                  rom_ext_slot == kBootSlotA ? read : write, cfg,
                                  kHardenedBoolTrue);
-  flash_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
+  flash_ctrl_data_region_protect(1, kRomExtBStart, pages,
                                  rom_ext_slot == kBootSlotB ? read : write, cfg,
                                  kHardenedBoolTrue);
 }
@@ -562,7 +551,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
   boot_log->rom_ext_major = self->version_major;
   boot_log->rom_ext_minor = self->version_minor;
-  boot_log->rom_ext_size = CHIP_ROM_EXT_SIZE_MAX;
+  boot_log->rom_ext_size = self->length;
   // Even though `primary_bl0_slot` can be changed by boot svc, we initialize
   // it here so the "SetNextBl0" can do a one-time override of the RAM copy
   // of `boot_data`.

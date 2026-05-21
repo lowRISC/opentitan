@@ -147,6 +147,7 @@ enum module_ {
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyRollback,         ERROR_(3, kModuleBootPolicy, kInternal)), \
+  X(kErrorBootPolicyBadBaseAddr,      ERROR_(4, kModuleBootPolicy, kInternal)), \
   \
   X(kErrorBootstrapEraseAddress,      ERROR_(1, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapProgramAddress,    ERROR_(2, kModuleBootstrap, kInvalidArgument)), \

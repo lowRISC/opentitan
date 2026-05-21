@@ -219,6 +219,16 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
   manifest_t manifest_a{};
   manifest_t manifest_b{};
 
+  uintptr_t addr_a = (uintptr_t)&manifest_a;
+  uintptr_t bank_base_a = addr_a & ~((TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) - 1);
+  uint32_t offset_a = addr_a - bank_base_a;
+  manifest_ext_base_addr_t ext_base_addr_a{.base_addr = offset_a};
+
+  uintptr_t addr_b = (uintptr_t)&manifest_b;
+  uintptr_t bank_base_b = addr_b & ~((TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) - 1);
+  uint32_t offset_b = addr_b - bank_base_b;
+  manifest_ext_base_addr_t ext_base_addr_b{.base_addr = offset_b};
+
   manifest_a.identifier = CHIP_BL0_IDENTIFIER;
   manifest_a.length = CHIP_BL0_SIZE_MIN;
   manifest_a.security_version = 2;
@@ -250,6 +260,8 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
       .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, BaseAddr(&manifest_a, _))
+      .WillOnce(DoAll(SetArgPointee<1>(&ext_base_addr_a), Return(kErrorOk)));
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
@@ -271,6 +283,8 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
       .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, BaseAddr(&manifest_b, _))
+      .WillOnce(DoAll(SetArgPointee<1>(&ext_base_addr_b), Return(kErrorOk)));
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
@@ -375,6 +389,16 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
   manifest_t manifest_a{};
   manifest_t manifest_b{};
 
+  uintptr_t addr_a = (uintptr_t)&manifest_a;
+  uintptr_t bank_base_a = addr_a & ~((TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) - 1);
+  uint32_t offset_a = addr_a - bank_base_a;
+  manifest_ext_base_addr_t ext_base_addr_a{.base_addr = offset_a};
+
+  uintptr_t addr_b = (uintptr_t)&manifest_b;
+  uintptr_t bank_base_b = addr_b & ~((TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) - 1);
+  uint32_t offset_b = addr_b - bank_base_b;
+  manifest_ext_base_addr_t ext_base_addr_b{.base_addr = offset_b};
+
   manifest_a.identifier = CHIP_BL0_IDENTIFIER;
   manifest_a.length = CHIP_BL0_SIZE_MIN;
   manifest_a.security_version = 2;
@@ -406,6 +430,8 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
       .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, BaseAddr(&manifest_a, _))
+      .WillOnce(DoAll(SetArgPointee<1>(&ext_base_addr_a), Return(kErrorOk)));
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);
@@ -427,6 +453,8 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
       .WillOnce(Return(kErrorManifestBadExtension));
+  EXPECT_CALL(mock_manifest_, BaseAddr(&manifest_b, _))
+      .WillOnce(DoAll(SetArgPointee<1>(&ext_base_addr_b), Return(kErrorOk)));
 
   EXPECT_CALL(mock_rnd_, Uint32);
   EXPECT_CALL(mock_hmac_, sha256_init);

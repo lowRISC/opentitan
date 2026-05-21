@@ -18,9 +18,9 @@ extern "C" {
  * Verify the the next boot stage according to the owner configuration.
  *
  * @param manifest Pointer to the manifest being examined.
- * @param slot_id Name of the slot being examined ('A', 'B' or 0).  This
- *                parameter controls the "verify" debug print, but is not used
- *                for any verification purpose.
+ * @param slot Slot being examined (kBootSlotA, kBootSlotB or
+ * kBootSlotUnspecified). This parameter controls the "verify" debug print, but
+ * is not used for any verification purpose.
  * @param boot_data Pointer to the boot_data struct.
  * @param flash_exec[out] Redundant check word for image validity.
  * @param keyring A list of valid owner Application keys.
@@ -31,7 +31,7 @@ extern "C" {
  * @return kErrorOk or a validation error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
+rom_error_t rom_ext_verify(const manifest_t *manifest, boot_slot_t slot,
                            const boot_data_t *boot_data, uint32_t *flash_exec,
                            owner_application_keyring_t *keyring,
                            size_t *verify_key, owner_config_t *owner_config,

@@ -20,7 +20,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 
 OT_WARN_UNUSED_RESULT
-rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
+rom_error_t rom_ext_verify(const manifest_t *manifest, boot_slot_t slot,
                            const boot_data_t *boot_data, uint32_t *flash_exec,
                            owner_application_keyring_t *keyring,
                            size_t *verify_key, owner_config_t *owner_config,
@@ -51,8 +51,8 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
   RETURN_IF_ERROR(owner_keyring_find_key(keyring, key_id, verify_key));
   uint32_t key_alg = keyring->key[*verify_key]->key_alg;
 
-  if (slot_id) {
-    dbg_printf("verify: Slot%c;key%u;%C;%C\r\n", slot_id, (uint32_t)*verify_key,
+  if (slot != kBootSlotUnspecified) {
+    dbg_printf("verify: Slot:%C;key%u;%C;%C\r\n", slot, (uint32_t)*verify_key,
                key_alg, keyring->key[*verify_key]->key_domain);
   }
 

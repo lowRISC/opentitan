@@ -13,18 +13,23 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
     const boot_data_t *boot_data) {
   const manifest_t *slot_a = rom_ext_boot_policy_manifest_a_get();
   const manifest_t *slot_b = rom_ext_boot_policy_manifest_b_get();
+
+  rom_ext_boot_policy_manifest_t manifest_a = {.manifest = slot_a,
+                                               .slot = kBootSlotA};
+  rom_ext_boot_policy_manifest_t manifest_b = {.manifest = slot_b,
+                                               .slot = kBootSlotB};
+
   uint32_t slot = boot_data->primary_bl0_slot;
   switch (launder32(slot)) {
     case kBootSlotB:
       HARDENED_CHECK_EQ(slot, kBootSlotB);
       return (rom_ext_boot_policy_manifests_t){
-          .ordered = {slot_b, slot_a},
+          .ordered = {manifest_b, manifest_a},
       };
     case kBootSlotA:
-      OT_FALLTHROUGH_INTENDED;
     default:
       return (rom_ext_boot_policy_manifests_t){
-          .ordered = {slot_a, slot_b},
+          .ordered = {manifest_a, manifest_b},
       };
   }
 }
@@ -63,6 +68,9 @@ static inline rom_error_t manifest_check_rom_ext(const manifest_t *manifest) {
 
 rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
                                                const boot_data_t *boot_data) {
+  if (manifest == NULL) {
+    return kErrorBootPolicyBadIdentifier;
+  }
   if (manifest->identifier != CHIP_BL0_IDENTIFIER) {
     return kErrorBootPolicyBadIdentifier;
   }
@@ -82,6 +90,20 @@ rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
                     boot_data->min_security_version_bl0);
 
   RETURN_IF_ERROR(manifest_check_rom_ext(manifest));
+
+  // Base address check
+  uintptr_t bank_base = flash_bank_base_get((uintptr_t)manifest);
+  uint32_t base_addr = (uintptr_t)manifest - bank_base;
+
+  uint32_t expected_base_addr = 0x10000;  // 64K default
+  const manifest_ext_base_addr_t *ext;
+  if (manifest_ext_get_base_addr(manifest, &ext) == kErrorOk) {
+    expected_base_addr = ext->base_addr;
+  }
+  if (base_addr != expected_base_addr) {
+    return kErrorBootPolicyBadBaseAddr;
+  }
+
   return kErrorOk;
 }
 

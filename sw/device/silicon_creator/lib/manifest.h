@@ -415,6 +415,10 @@ enum {
    */
   kManifestExtIdIsfbErase = 0x45465349,
   /**
+   * ASCII "BASE".
+   */
+  kManifestExtIdBaseAddr = 0x45534142,
+  /**
    * ASCII "EXT0.
    */
   kManifestExtNameSpxKey = 0x30545845,
@@ -422,6 +426,10 @@ enum {
    * ASCII "EXT1.
    */
   kManifestExtNameSpxSignature = 0x31545845,
+  /**
+   * ASCII "BADD".
+   */
+  kManifestExtNameBaseAddr = 0x44444142,
 };
 
 /**
@@ -550,6 +558,20 @@ typedef struct manifest_ext_isfb_erase {
 } manifest_ext_isfb_erase_t;
 
 /**
+ * Manifest extension: Base address the image is designed to be placed.
+ */
+typedef struct manifest_ext_base_addr {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * Base address offset (relative to bank start).
+   */
+  uint32_t base_addr;
+} manifest_ext_base_addr_t;
+
+/**
  * Table of manifest extensions.
  *
  * Columns: Table index, type name, extenstion name, identifier, signed or not.
@@ -560,7 +582,8 @@ typedef struct manifest_ext_isfb_erase {
   X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false) \
   X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)  \
   X(3, manifest_ext_isfb_t,          isfb,          kManifestExtIdIsfb,         true)  \
-  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)
+  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)  \
+  X(5, manifest_ext_base_addr_t,     base_addr,     kManifestExtIdBaseAddr,     true)
 // clang-format on
 
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
@@ -722,6 +745,8 @@ rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
                                   const manifest_ext_isfb_t **isfb);
 rom_error_t manifest_ext_get_isfb_erase(
     const manifest_t *manifest, const manifest_ext_isfb_erase_t **isfb_erase);
+rom_error_t manifest_ext_get_base_addr(
+    const manifest_t *manifest, const manifest_ext_base_addr_t **base_addr);
 
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 

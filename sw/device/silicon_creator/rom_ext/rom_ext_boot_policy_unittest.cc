@@ -148,11 +148,15 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
   rom_ext_boot_policy_manifests_t res =
       rom_ext_boot_policy_manifests_get(&boot_data);
   if (GetParam().primary == kBootSlotA) {
-    EXPECT_EQ(res.ordered[0], &manifest_a);
-    EXPECT_EQ(res.ordered[1], &manifest_b);
+    EXPECT_EQ(res.ordered[0].manifest, &manifest_a);
+    EXPECT_EQ(res.ordered[0].slot, kBootSlotA);
+    EXPECT_EQ(res.ordered[1].manifest, &manifest_b);
+    EXPECT_EQ(res.ordered[1].slot, kBootSlotB);
   } else {
-    EXPECT_EQ(res.ordered[0], &manifest_b);
-    EXPECT_EQ(res.ordered[1], &manifest_a);
+    EXPECT_EQ(res.ordered[0].manifest, &manifest_b);
+    EXPECT_EQ(res.ordered[0].slot, kBootSlotB);
+    EXPECT_EQ(res.ordered[1].manifest, &manifest_a);
+    EXPECT_EQ(res.ordered[1].slot, kBootSlotA);
   }
 }
 

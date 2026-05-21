@@ -40,3 +40,5 @@ extern rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
                                          const manifest_ext_isfb_t **isfb);
 extern rom_error_t manifest_ext_get_isfb_erase(
     const manifest_t *manifest, const manifest_ext_isfb_erase_t **isfb_erase);
+extern rom_error_t manifest_ext_get_base_addr(
+    const manifest_t *manifest, const manifest_ext_base_addr_t **base_addr);
