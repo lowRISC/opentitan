@@ -35,6 +35,7 @@ unit_tests = [
     "mldsa87_keygen_compute_t_test",
     "mldsa87_keygen_encode_t_test",
     "mldsa87_keygen_hash_seed_test",
+    "mldsa87_keygen_hash_pk_test",
 ]
 
 [
