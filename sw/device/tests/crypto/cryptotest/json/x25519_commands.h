@@ -16,12 +16,16 @@ extern "C" {
 
 // clang-format off
 
-// Derive operation:
+// Shared secret generation
 // The host sends, in order:
 // - private_key (X25519_PRIVATE_KEY)  [raw scalar; blinding is applied on the device]
 // - public_key (X25519_PUBLIC_KEY)    [peer's u-coordinate]
 // The device responds with:
 // - output (X25519_DERIVE_OUTPUT)     [unblinded shared secret and result]
+
+#define X25519_SUBCOMMAND(_, value) \
+    value(_, X25519SSG)
+UJSON_SERDE_ENUM(X25519Subcommand, x25519_subcommand_t, X25519_SUBCOMMAND);
 
 #define X25519_PRIVATE_KEY(field, string) \
     field(private_key, uint8_t, X25519_CMD_PRIVATE_KEY_BYTES) \
