@@ -8,8 +8,8 @@ import argparse
 import sys
 import re
 import requests
+from datetime import datetime, timezone
 
-# Number of authorizations required from committers to override a block
 NUM_AUTHS_REQD = 2
 
 GH_API_URL = 'https://api.github.com/repos/'
@@ -19,12 +19,8 @@ def load_blockfile(blockfile_name: str) -> list[str]:
     blocklist = []
     with open(blockfile_name, 'r') as blockfile:
         for line in blockfile.readlines():
-            # Remove everything following a '#' for comments
             line = line.partition('#')[0]
-            # Remove leading and trailing whitespace
             line = line.strip()
-
-            # If anything remains after the above add it to the list
             if line != '':
                 blocklist.append(line)
 
@@ -43,20 +39,14 @@ def load_changes(changes_filename: str) -> list[str]:
 def check_changes_against_blocklist(changes: list[str],
                                     blocklist: list[str]) -> dict[str,
                                                                   list[str]]:
-    """"Determines which changes are blocked by the blocklist
-
-    Returns a dictionary keyed by blocked filenames, the value provides a list
-    of the patterns from the blocklist it matched against"""
+    """Return dict mapping blocked filenames to matching patterns."""
 
     blocked_changes = {}
 
     for change in changes:
-        # Create list of patterns from blocklist that match change
         blocked = list(filter(lambda x: x is not None,
                               map(lambda b: b if fnmatch(change, b) else None,
                                   blocklist)))
-
-        # If any match patterns exist add them to the blocked_changes dictionary
         if blocked:
             blocked_changes[change] = blocked
 
@@ -64,9 +54,8 @@ def check_changes_against_blocklist(changes: list[str],
 
 
 def fetch_pr_comments(gh_token: str, repo_name: str,
-                      pr_number: int) -> list[tuple[str, str]]:
-    """Fetches comments from a PR and returns a list of (author, comment_body)
-    pairs"""
+                      pr_number: int) -> list[tuple[str, str, str]]:
+    """Return list of (author, body, created_at) for issue comments."""
 
     headers = {
         'Accept': 'application/vnd.github+json',
@@ -75,10 +64,68 @@ def fetch_pr_comments(gh_token: str, repo_name: str,
     }
 
     pr_comment_url = f'{GH_API_URL}{repo_name}/issues/{pr_number}/comments'
-    pr_comment_request = requests.get(pr_comment_url, headers=headers)
+    resp = requests.get(pr_comment_url, headers=headers)
+    resp.raise_for_status()
 
-    comments_json_list = pr_comment_request.json()
-    return [(c['user']['login'], c['body']) for c in comments_json_list]
+    comments_json_list = resp.json()
+    return [(c['user']['login'], c['body'], c.get('created_at'))
+            for c in comments_json_list]
+
+
+def fetch_pr_reviews(gh_token: str, repo_name: str,
+                     pr_number: int) -> list[tuple[str, str, str, str]]:
+    """Return list of APPROVED reviews as (author, body, state, submitted_at)."""
+
+    headers = {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'Bearer {gh_token}',
+        'X-GitHub-Api-Version': '2022-11-28'
+    }
+
+    pr_reviews_url = f'{GH_API_URL}{repo_name}/pulls/{pr_number}/reviews'
+    resp = requests.get(pr_reviews_url, headers=headers)
+    resp.raise_for_status()
+
+    reviews_json = resp.json()
+    results: list[tuple[str, str, str, str]] = []
+    for r in reviews_json:
+        state = r.get('state', '')
+        if state != 'APPROVED':
+            continue
+        author = r['user']['login'] if r.get('user') else ''
+        results.append((author, r.get('body', ''), state,
+                        r.get('submitted_at')))
+
+    return results
+
+
+def fetch_pr_last_commit_time(gh_token: str, repo_name: str,
+                              pr_number: int) -> datetime:
+    """Return datetime of the PR's last commit (UTC)."""
+
+    headers = {
+        'Accept': 'application/vnd.github+json',
+        'Authorization': f'Bearer {gh_token}',
+        'X-GitHub-Api-Version': '2022-11-28'
+    }
+
+    commits_url = f'{GH_API_URL}{repo_name}/pulls/{pr_number}/commits'
+    resp = requests.get(commits_url, headers=headers)
+    resp.raise_for_status()
+    commits = resp.json()
+
+    if not commits:
+        return datetime.fromtimestamp(0, tz=timezone.utc)
+    last = commits[-1]
+    date_str = None
+    try:
+        date_str = last['commit']['committer']['date']
+    except Exception:
+        date_str = last['commit']['author']['date']
+
+    if date_str.endswith('Z'):
+        date_str = date_str.replace('Z', '+00:00')
+    return datetime.fromisoformat(date_str)
 
 
 committer_re = re.compile(r'\* ([\w\s-]+) \(([\w-]+)\)')
@@ -101,25 +148,38 @@ def load_committers(committers_filename: str) -> dict[str, str]:
 authorize_re = re.compile(r'^CHANGE AUTHORIZED: (.*)$', re.MULTILINE)
 
 
-def get_authorized_changes(comments: list[tuple[str, str]],
-                           committers: dict[str, str]) -> dict[str, set[str]]:
-    """Returns a dict of file changes authorized by committters.
+def get_authorized_changes(comments: list[tuple[str, str, str]],
+                           reviews: list[tuple[str, str, str, str]],
+                           committers: dict[str, str],
+                           last_commit_time: datetime) -> dict[str, set[str]]:
+    """Return mapping file -> set(handles) for valid authorizations.
 
-    The key is the file name, the value is a set of committer handles that
-    authorized it.
+    Only counts authorizations submitted after last_commit_time.
     """
 
-    file_change_authorizations = {}
+    file_change_authorizations: dict[str, set[str]] = {}
 
-    for comment_author, comment_body in comments:
-        comment_author = comment_author.lower()
+    def _process_entry(author: str, body: str, when_str: str) -> None:
+        if not when_str:
+            return
+        author_l = author.lower()
+        if author_l not in committers:
+            return
+        try:
+            when = datetime.fromisoformat(
+                when_str.replace('Z', '+00:00') if when_str.endswith('Z') else when_str)
+        except Exception:
+            return
+        if when <= last_commit_time:
+            return
+        for filename in authorize_re.findall(body):
+            fn = filename.strip()
+            file_change_authorizations.setdefault(fn, set()).add(author_l)
 
-        if comment_author not in committers:
-            continue
-
-        for filename in authorize_re.findall(comment_body):
-            author_set = file_change_authorizations.setdefault(filename.strip(), set())
-            author_set.add(comment_author)
+    for author, body, created_at in comments:
+        _process_entry(author, body, created_at)
+    for author, body, state, submitted_at in reviews:
+        _process_entry(author, body, submitted_at)
 
     return file_change_authorizations
 
@@ -169,28 +229,30 @@ def main() -> int:
     changes = load_changes(args.changes_file)
     blocked_changes = check_changes_against_blocklist(changes, blocklist)
 
-    # If we've been provided with a github auth token and a PR ref then fetch
-    # comments to determine which changes are authorized
     if (args.gh_token is not None and args.pr_number is not None):
         committers = load_committers('COMMITTERS')
+        # fetch comments, reviews and last commit time
         pr_comments = fetch_pr_comments(args.gh_token, args.gh_repo,
                                         args.pr_number)
-        authorized_changes = get_authorized_changes(pr_comments, committers)
+        pr_reviews = fetch_pr_reviews(args.gh_token, args.gh_repo,
+                                      args.pr_number)
+        last_commit_time = fetch_pr_last_commit_time(args.gh_token,
+                                                    args.gh_repo,
+                                                    args.pr_number)
+
+        authorized_changes = get_authorized_changes(pr_comments,
+                                                   pr_reviews,
+                                                   committers,
+                                                   last_commit_time)
 
         block_changes_files = list(blocked_changes.keys())
         for change in block_changes_files:
-            # For each changed file that matched the block list check if it's an
-            # authorized change
             if (change in authorized_changes and
                     len(authorized_changes[change]) >= NUM_AUTHS_REQD):
-                # Change is authorized so delete it from the blocked_changes
-                # dict
                 del blocked_changes[change]
-
                 authorizers = ', '.join(
                     [f'{committers[handle]} ({handle})' for handle in
                         authorized_changes[change]])
-
                 if not args.plain_block_msg:
                     print(f'{change} change is authorized by {authorizers}')
 
@@ -209,8 +271,7 @@ def main() -> int:
             print('')
 
     if blocked_changes:
-        # If there are blocked changes present print out what's been blocked and
-        # the pattern(s) that blocked it and return error code 1
+        # print blocked changes and return error code 1
         for change, block_patterns in blocked_changes.items():
             patterns_str = ' '.join(block_patterns)
             if args.plain_block_msg:
