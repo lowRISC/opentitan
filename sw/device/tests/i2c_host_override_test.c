@@ -98,8 +98,22 @@ static status_t i2c_configure_instance(uint8_t i2c_instance) {
       mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
   TRY(dif_i2c_init(base_addr, &i2c));
 
-  TRY(i2c_testutils_select_pinmux(&pinmux, i2c_instance,
-                                  I2cPinmuxPlatformIdHyper310));
+  i2c_pinmux_platform_id_t platform = I2cPinmuxPlatformIdHyper310;
+  switch (kDeviceType) {
+    case kDeviceFpgaCw310:
+      platform = I2cPinmuxPlatformIdHyper310;
+      break;
+    case kDeviceFpgaCw340:
+      platform = I2cPinmuxPlatformIdCw340;
+      break;
+    case kDeviceSilicon:
+      platform = I2cPinmuxPlatformIdSilicon;
+      break;
+    default:
+      TRY_CHECK(false, "Unsupported platform=%u", kDeviceType);
+  };
+
+  TRY(i2c_testutils_select_pinmux(&pinmux, i2c_instance, platform));
 
   TRY(dif_i2c_override_set_enabled(&i2c, kDifToggleEnabled));
   TRY(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
