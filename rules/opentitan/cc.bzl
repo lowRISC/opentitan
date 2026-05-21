@@ -708,7 +708,12 @@ opentitan_binary_blob = rv_rule(
         ),
         "deps_blob": attr.label_list(
             providers = [CcInfo],
+            cfg = _transitive_feature_transition,
             doc = "The list of other libraries to be for the creation of the binary blob.",
+        ),
+        "transitive_features": attr.string_list(
+            default = [],
+            doc = "Features to apply transitively to all dependencies.",
         ),
         "_linker_script_template": attr.label(
             default = Label("//sw/device/lib/crypto/configs:otcrypto_blob.ld"),
