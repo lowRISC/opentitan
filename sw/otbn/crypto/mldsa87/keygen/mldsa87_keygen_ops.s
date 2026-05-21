@@ -8,6 +8,7 @@
 .globl compute_t
 .globl encode_t
 .globl hash_seed
+.globl hash_pk
 
 .text
 
@@ -379,6 +380,38 @@ hash_seed:
   bn.sid x9, 0(x7)
   bn.xor w31, w31, w31 /* dummy */
   bn.sid x10, 0(x8)
+
+  jal x1, xof_finish
+
+  ret
+
+/**
+ * Hash the public key.
+ *
+ * The hash of the 2592-byte public key is 64-byte unshared value TR.
+ *
+ *   TR = Shake256(PK)
+ *
+ * @param[in] x2: DMEM address of the 2592-byte public key.
+ * @param[in] x3: DMEM address of TR.
+ */
+hash_pk:
+  jal x1, xof_shake256_init
+
+  /* Absorb the entire public key of size 2592 bytes. */
+  li x20, 2592
+  addi x21, x2, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Squeeze the 64-byte value TR. */
+  jal x1, xof_squeeze32
+  bn.xor w0, w29, w30 /* unmask */
+  bn.sid x0, 0(x3)
+  jal x1, xof_squeeze32
+  bn.xor w0, w29, w30 /* unmask */
+  bn.sid x0, 32(x3)
 
   jal x1, xof_finish
 
