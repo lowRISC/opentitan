@@ -105,6 +105,23 @@
       tests: ["spi_host_speed"]
     }
     {
+      name: upper_range_clkdiv
+      desc: '''
+            Verify SPI host correctness with large clock divider values.
+
+            Stimulus:
+              - Constrain CLKDIV to the upper half of the valid range, with 30 % probability
+                of selecting the maximum value
+              - Enable FSM fast mode so the internal counter decrements by 16 units per step,
+                bounding simulation time for very slow SPI clocks
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly under slow SPI clocks
+            '''
+      stage: V2
+      tests: ["spi_host_upper_range_clkdiv"]
+    }
+    {
       name: sw_reset
       desc: '''
             verify software reset behavior
