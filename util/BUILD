@@ -14,6 +14,7 @@ py_binary(
     srcs = ["otbn_build.py"],
     imports = ["../hw/ip/otbn/util/"],
     deps = [
+        requirement("lz4"),
         requirement("pyelftools"),
         "//hw/ip/otbn/util:otbn_as",
         "//hw/ip/otbn/util:otbn_ld",
