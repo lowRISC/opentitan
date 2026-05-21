@@ -46,8 +46,6 @@ dual_cc_library(
     hdrs = [
         "alert.h",
     ],
-    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
-    features = ["no_jump_tables"],
     deps = dual_inputs(
         device = [
             "//hw/top:alert_handler_c_regs",

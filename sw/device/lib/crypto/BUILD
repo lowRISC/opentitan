@@ -60,6 +60,8 @@ opentitan_binary_blob(
         "//sw/device/lib/crypto/configs:crypto_fips_all": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+    # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
+    transitive_features = ["no_jump_tables"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/include:crypto_hdrs",
