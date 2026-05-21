@@ -263,6 +263,16 @@ cryptotest(
     test_vectors = X25519_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "x25519_acvp",
+    slow_test = True,
+    test_args = "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:x25519_vectors.hjson)\"",
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:x25519_vectors.hjson",
+    ],
+)
+
 RSA_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_2048_{}.json".format(hash)
     for hash in [
@@ -790,6 +800,7 @@ test_suite(
         ":shake128_kat",
         ":shake256_kat",
         ":sphincsplus_kat",
+        ":x25519_acvp",
         ":x25519_kat",
     ],
 )

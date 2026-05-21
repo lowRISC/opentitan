@@ -19,6 +19,7 @@ mod cshake;
 mod eddsa;
 mod hmac;
 mod rsa;
+mod x25519;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -87,6 +88,10 @@ enum AcvpVectors {
     // vectors match Eddsa first and sigGen vectors fall through to EddsaSigGen.
     Eddsa(eddsa::EddsaTestVectorSet),
     EddsaSigGen(eddsa::EddsaSignGenTestVectorSet),
+    // X25519TestVectorSet must precede EddsaKeyGen: EddsaKeygenTestVectorSet test
+    // cases only require `tc_id`, so they would silently match x25519 test cases
+    // (which also have `tc_id` plus `publicServer`) if X25519 came later.
+    X25519(x25519::X25519TestVectorSet),
     // EddsaKeygenTestVectorSet has no `preHash` in groups, so sigGen vectors
     // (which require preHash) fall through to EddsaKeyGen.
     EddsaKeyGen(eddsa::EddsaKeygenTestVectorSet),
@@ -110,6 +115,7 @@ enum AcvpResults {
     Eddsa(eddsa::EddsaResultVectorSet),
     RsaSigGen(rsa::RsaSignGenResultVectorSet),
     Rsa(rsa::RsaResultVectorSet),
+    X25519(x25519::X25519ResultVectorSet),
 }
 
 fn validate_subset(actual: &[AcvpResults], expected_json: &serde_json::Value) -> Result<()> {
@@ -290,6 +296,13 @@ fn run<R: std::io::Read, W: std::io::Write>(
                     )?));
                 }
             }
+            AcvpVectors::X25519(vs) => {
+                acvp_results.push(AcvpResults::X25519(x25519::run_x25519_vector_set(
+                    opts.timeout,
+                    &spi_console_device,
+                    &vs,
+                )?));
+            }
         }
     }
     if let Some(w) = output {
@@ -380,7 +393,6 @@ fn main() -> Result<()> {
         }
         None => None,
     };
-
     run(
         &opts,
         &transport,
