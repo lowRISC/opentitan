@@ -15,6 +15,7 @@ rust_binary(
         "src/hmac.rs",
         "src/main.rs",
         "src/rsa.rs",
+        "src/x25519.rs",
     ],
     deps = [
         "//sw/host/cryptotest/ujson_lib:cryptotest_commands",
