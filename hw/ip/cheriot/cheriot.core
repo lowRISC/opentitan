@@ -13,6 +13,7 @@ filesets:
       - pulp-platform:common_cells:common_cells
     files:
       - rtl/cheriot_pkg.sv
+      - rtl/cheriot_switch.sv
       - rtl/cheriot_rmw_filter.sv
       - rtl/cheriot_tag_filter.sv
       - rtl/cheriot_access_check.sv
