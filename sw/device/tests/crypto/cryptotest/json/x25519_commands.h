@@ -24,7 +24,8 @@ extern "C" {
 // - output (X25519_DERIVE_OUTPUT)     [unblinded shared secret and result]
 
 #define X25519_SUBCOMMAND(_, value) \
-    value(_, X25519SSG)
+    value(_, X25519SSG) \
+    value(_, X25519KEX)
 UJSON_SERDE_ENUM(X25519Subcommand, x25519_subcommand_t, X25519_SUBCOMMAND);
 
 #define X25519_PRIVATE_KEY(field, string) \
@@ -42,6 +43,17 @@ UJSON_SERDE_STRUCT(CryptotestX25519PublicKey, cryptotest_x25519_public_key_t, X2
     field(shared_secret, uint8_t, X25519_CMD_SHARED_SECRET_BYTES) \
     field(shared_secret_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestX25519DeriveOutput, cryptotest_x25519_derive_output_t, X25519_DERIVE_OUTPUT);
+
+// Key exchange output
+// The device responds with:
+// - public_key  [generated ephemeral public key (u-coordinate)]
+// - shared_secret [unblinded shared secret]
+#define X25519_KEX_OUTPUT(field, string) \
+    field(public_key, uint8_t, X25519_CMD_PUBLIC_KEY_BYTES) \
+    field(public_key_len, size_t) \
+    field(shared_secret, uint8_t, X25519_CMD_SHARED_SECRET_BYTES) \
+    field(shared_secret_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestX25519KexOutput, cryptotest_x25519_kex_output_t, X25519_KEX_OUTPUT);
 
 // clang-format on
 
