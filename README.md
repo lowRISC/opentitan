@@ -22,7 +22,7 @@ You can access it [online at opentitan.org/book/](https://opentitan.org/book/).
 
 ## How to contribute
 
-Have a look at [CONTRIBUTING](CONTRIBUTING.md) and our [documentation on project organization and processes](./doc/project_governance/README.md) for guidelines on how to contribute code to this repository.
+Have a look at our documentation on [contributing](./doc/contributing/README.md) and [project organization and processes](./doc/project_governance/README.md) for guidelines on contributing code to this repository.
 
 ## Licensing
 
