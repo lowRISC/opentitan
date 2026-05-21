@@ -13,6 +13,7 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
+#include "sw/device/lib/crypto/impl/kats.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"

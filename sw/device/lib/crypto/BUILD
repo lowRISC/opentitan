@@ -14,7 +14,10 @@ cc_library(
     name = "otcrypto_api",
     defines =
         select({
-            "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+            "//sw/device/lib/crypto/configs:hashed": [
+                "HASH_SELF_CHECK_ENABLE",
+                "KAT_CHECK_ENABLE",
+            ],
             "//conditions:default": [],
         }),
     deps = [

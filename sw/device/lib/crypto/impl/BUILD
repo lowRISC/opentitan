@@ -42,6 +42,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
@@ -58,6 +59,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
@@ -106,6 +108,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
@@ -124,6 +127,7 @@ cc_library(
         ":config",
         ":hmac",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         ":sha2",
         ":status",
@@ -140,6 +144,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":config",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p256",
@@ -154,6 +159,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":config",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/impl/ecc:p384",
@@ -217,7 +223,6 @@ cc_test(
 cc_library(
     name = "kats",
     srcs = ["kats.c"],
-    hdrs = ["kats.h"],
     deps = [
         ":aes",
         ":aes_gcm",
@@ -228,6 +233,7 @@ cc_library(
         ":entropy_src",
         ":hmac",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         ":kmac",
         ":rsa",
@@ -236,6 +242,21 @@ cc_library(
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy_kat",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+    alwayslink = True,
+)
+
+# We split the header to avoid circular dependencies.
+cc_library(
+    name = "kats_api",
+    hdrs = ["kats.h"],
+    defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["KAT_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -330,6 +351,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -368,6 +390,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":status",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
@@ -386,6 +409,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":config",
+        ":kats_api",
         ":status",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
@@ -447,6 +471,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         ":sha2",
         "//sw/device/lib/base:hardened",
@@ -465,6 +490,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",

@@ -66,6 +66,44 @@ You can activate these settings during the build process by passing `--define=<s
 | `disable_null_checks` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
 | `disable_buf_integrity_checks` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
 
+## FIPS Build & Position-Independent Code (PIC)
+
+In addition to the default development build (`crypto_dev` which builds a standard static library), the cryptolib can be built as a **position-independent binary blob** for FIPS compliance.
+This specialized target hashes the library's contents and fuses the hash onto the binary boundary.
+
+You can trigger this build using the `--config=crypto_fips_all` Bazel flag.
+The exact functions included in this blob are strictly governed by an allowlist configuration file located in `//sw/device/lib/crypto/configs`.
+
+Because the FIPS blob is relocatable and contiguous, developers contributing to the cryptolib must adhere to strict memory and structural constraints:
+
+*   **No `.bss` or `.data` Sections:** The linker script enforces that the `.bss`, `.sbss`, `.data`, and `.sdata2` sections have a size of exactly 0. You **cannot** use static (non-const) variables or uninitialized global variables. All data must reside in `.text`, `.rodata`, or `.srodata`.
+*   **Strict Position Independence:** Code must be completely position-independent (PIC) and cannot rely on a Global Offset Table (GOT).
+*   **No Jump Tables:** The library is explicitly compiled with `-fno-jump-tables`. This forces the compiler to handle `switch` statements without generating position-dependent jump tables.
+
+### Stateful Logic & The Tethering Contract
+
+Because the FIPS blob is strictly stateless (`.bss` of 0), tracking run-once states—such as lazy Known-Answer Test (KAT) evaluations—requires a "tethering" trick.
+
+The cryptolib C code resolves a PC-relative offset to look exactly past the end of its own footprint (specifically, right after its 48-byte hash).
+It expects the host firmware to place a pointer at that exact physical location, which points back to mutable memory in the firmware's `.bss`.
+
+For the firmware developer consuming the FIPS blob, this creates a strict physical memory contract.
+
+**1. Allocate the State in Firmware C Code**
+The firmware must allocate the memory and define a pointer forced into a specific `.rodata` section:
+
+```c
+// 1. Allocate the actual memory the cryptolib will mutate.
+// This lives normally in the firmware's .bss section.
+uint32_t otcrypto_fips_kat_state = 0;
+
+// 2. Create a constant pointer to that memory.
+// The used attribute prevents the compiler from optimizing it out,
+// and the section attribute allows the linker to place it physically.
+__attribute__((used, section(".rodata.otcrypto_tether")))
+void * const otcrypto_tether_ptr = &otcrypto_fips_kat_state;
+```
+
 ## Cryptolib Usage Examples
 
 Examples of how to use the cryptolib API are provided in the [cryptolib test directory][crypto-tests].

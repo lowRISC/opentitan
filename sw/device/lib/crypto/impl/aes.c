@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/impl/kats.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -554,6 +555,9 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  // Run the AES ECB 256 KAT exactly once before utilizing the block
+  HARDENED_TRY(otcrypto_stateful_kat(kTestAesEcb256DecryptBit));
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);

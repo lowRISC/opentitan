@@ -273,20 +273,6 @@ static const uint32_t rsa2048_mod[64] = {
     0x105cc797, 0x924ec514, 0x146810df, 0xb1ab4a49,
 };
 
-static const uint32_t rsa2048_exp[64] = {
-    0x0b19915b, 0xa6a935e6, 0x426b2e10, 0xb4ff0629, 0x7322343b, 0x3f28c8d5,
-    0x190757ce, 0x87409d6b, 0xd88e282b, 0x01c13c2a, 0xebb79189, 0x74cbeab9,
-    0x93de5d54, 0xae1bc80a, 0x083a75f2, 0xd574d229, 0xeb46696e, 0x7648cfb6,
-    0xe7ad1b36, 0xbd0e81b2, 0x19c72703, 0xebea5085, 0xf8c7d152, 0x34dcf84d,
-    0xa437187f, 0x41e4f88e, 0xe4e35f9f, 0xcd8bc6f8, 0x7f98e2f2, 0xffdf75ca,
-    0x3698226e, 0x903f2a56, 0xbf21a6dc, 0x97cbf653, 0xe9d80cb3, 0x55dc1685,
-    0xe0ebae21, 0xc8171e18, 0x8e73d26d, 0xbbdbaac1, 0x886e8007, 0x673c9da4,
-    0xe2cb0698, 0xa9f1ba2d, 0xedab4f0a, 0x197e890c, 0x65e7e736, 0x1de28f24,
-    0x57cf5137, 0x631ff441, 0x22539942, 0xcee3fd41, 0xd22b5f8a, 0x995dd87a,
-    0xcaa6815c, 0x08ca0fd3, 0x8f996093, 0x30b7c446, 0xf69b11f7, 0xa298dd00,
-    0xfd4e8120, 0x059df602, 0x25feb268, 0x0f3f749e,
-};
-
 static const uint32_t rsa2048_sig[64] = {
     0xab66c6c7, 0x97effc0a, 0x9869cdba, 0x7b6c09fe, 0x2124d28f, 0x793084b3,
     0x4da24b72, 0x4f6c8659, 0x63e3a27b, 0xbbe8d120, 0x8789190f, 0x1722fe46,
@@ -304,14 +290,6 @@ static const uint32_t rsa2048_sig[64] = {
 static const uint32_t rsa2048_digest[8] = {
     0x7a99dab2, 0x7ce06e96, 0x83f0e143, 0x88e57c80,
     0xcaa4c04b, 0xca023bd1, 0x18a172dc, 0x1709b520,
-};
-
-static const otcrypto_key_config_t kRsa2048Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeRsaSignPkcs,
-    .key_length = kOtcryptoRsa2048PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Test vector comes from the rsa_4096_signature_functest
@@ -1118,7 +1096,45 @@ static const kat_dispatch_t kKatDispatch[] = {
     {OTCRYPTO_KAT_KMAC_256, &kat_kmac_256},
 };
 
-status_t run_kats(otcrypto_kat_id_t tests) {
+#ifdef KAT_CHECK_ENABLE
+
+// Link to the tether provided by the application.
+// This points to a stateful variable.
+extern void *_libotcrypto_tether_;
+
+static inline uint32_t *get_kat_state_ptr(void) {
+  uint32_t **host_tether_addr = (uint32_t **)&_libotcrypto_tether_;
+  return *host_tether_addr;
+}
+
+otcrypto_status_t otcrypto_stateful_kat(otcrypto_kat_bits_t kat_bit) {
+  uint32_t *state = get_kat_state_ptr();
+
+  if (state == NULL) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  uint32_t mask = (1UL << kat_bit);
+
+  if ((*state & mask) == 0) {
+    *state |= mask;  // Re-entrance lock
+
+    otcrypto_kat_id_t test_id = {.flags = mask};
+    status_t result = run_kats(test_id);
+
+    // When failing a KAT
+    if (result.value != kHardenedBoolTrue) {
+      *state &= ~mask;  // Unset the mask
+      return result;
+    }
+  }
+
+  return OTCRYPTO_OK;
+}
+
+#endif  // KAT_CHECK_ENABLE
+
+otcrypto_status_t run_kats(otcrypto_kat_id_t tests) {
   if (tests.flags == 0 || tests.flags >= (1 << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
   }

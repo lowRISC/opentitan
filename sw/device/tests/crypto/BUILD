@@ -1011,12 +1011,21 @@ opentitan_test(
     name = "kats_functest",
     srcs = ["kats_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["KAT_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kats",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
