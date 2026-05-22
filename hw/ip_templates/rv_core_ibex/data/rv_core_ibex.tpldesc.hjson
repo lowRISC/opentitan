@@ -38,5 +38,11 @@
       type: "bool"
       default: false
     }
+    {
+      name: "cheriot_available"
+      desc: "Whether CHERIoT is enabled"
+      type: "bool"
+      default: false
+    }
   ]
 }
