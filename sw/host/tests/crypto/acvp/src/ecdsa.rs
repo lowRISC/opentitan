@@ -352,12 +352,15 @@ fn curve_scalar_bytes(curve: &str) -> Result<usize> {
     }
 }
 
-// Sends KeyGen, receives qx/qy/d0/d1 as little-endian byte vecs.
+// (qx_le, qy_le, d0_le, d1_le, d_le) from a KeyGen response.
+type KeygenRaw = (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>);
+
+// Sends KeyGen, receives qx/qy/d0/d1/d as little-endian byte vecs.
 fn run_ecdsa_keygen(
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
     curve: &str,
-) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)> {
+) -> Result<KeygenRaw> {
     CryptotestCommand::Ecdsa.send(spi_console)?;
     CryptotestEcdsaOperation::KeyGen.send(spi_console)?;
     map_curve(curve)?.send(spi_console)?;
@@ -367,7 +370,8 @@ fn run_ecdsa_keygen(
     let qy = resp.qy.as_slice()[..resp.qy_len].to_vec();
     let d0 = resp.d0.as_slice()[..resp.d0_len].to_vec();
     let d1 = resp.d1.as_slice()[..resp.d1_len].to_vec();
-    Ok((qx, qy, d0, d1))
+    let d = resp.d.as_slice()[..resp.d_len].to_vec();
+    Ok((qx, qy, d0, d1, d))
 }
 
 // Runs Hash then Sign for one sigGen test case. Returns (r_be_hex, s_be_hex).
@@ -473,7 +477,7 @@ fn run_ecdsa_siggen_group(
     map_curve(&tg.curve)?;
 
     // One key per group; all test cases share it.
-    let (qx_le, qy_le, d0_le, d1_le) = run_ecdsa_keygen(timeout, spi_console, &tg.curve)?;
+    let (qx_le, qy_le, d0_le, d1_le, _d_le) = run_ecdsa_keygen(timeout, spi_console, &tg.curve)?;
 
     let mut qx_be = qx_le.clone();
     qx_be.reverse();
@@ -544,6 +548,129 @@ pub fn run_ecdsa_siggen_vector_set(
     }
 
     Ok(EcdsaSignGenResultVectorSet {
+        vs_id: vs.vs_id,
+        algorithm: vs.algorithm.clone(),
+        mode: vs.mode.clone(),
+        revision: vs.revision.clone(),
+        is_sample: vs.is_sample,
+        test_groups: result_groups,
+    })
+}
+
+// keyGen
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EcdsaKeyGenTestCase {
+    tc_id: usize,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EcdsaKeyGenTestGroup {
+    tg_id: usize,
+    test_type: String,
+    curve: String,
+    secret_generation_mode: String,
+    tests: Vec<EcdsaKeyGenTestCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaKeyGenTestVectorSet {
+    vs_id: usize,
+    algorithm: String,
+    mode: String,
+    revision: String,
+    #[serde(default)]
+    is_sample: bool,
+    test_groups: Vec<EcdsaKeyGenTestGroup>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaKeyGenResultCase {
+    pub tc_id: usize,
+    pub d: String,
+    pub qx: String,
+    pub qy: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaKeyGenResultGroup {
+    pub tg_id: usize,
+    pub tests: Vec<EcdsaKeyGenResultCase>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaKeyGenResultVectorSet {
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub mode: String,
+    pub revision: String,
+    #[serde(default)]
+    pub is_sample: bool,
+    pub test_groups: Vec<EcdsaKeyGenResultGroup>,
+}
+
+fn run_ecdsa_keygen_case(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    curve: &str,
+    tc: &EcdsaKeyGenTestCase,
+) -> Result<EcdsaKeyGenResultCase> {
+    let (qx_le, qy_le, _d0_le, _d1_le, d_le) = run_ecdsa_keygen(timeout, spi_console, curve)?;
+
+    let mut qx_be = qx_le;
+    qx_be.reverse();
+    let mut qy_be = qy_le;
+    qy_be.reverse();
+    let mut d_be = d_le;
+    d_be.reverse();
+
+    Ok(EcdsaKeyGenResultCase {
+        tc_id: tc.tc_id,
+        d: hex::encode_upper(&d_be),
+        qx: hex::encode_upper(&qx_be),
+        qy: hex::encode_upper(&qy_be),
+    })
+}
+
+fn run_ecdsa_keygen_group(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    tg: &EcdsaKeyGenTestGroup,
+) -> Result<EcdsaKeyGenResultGroup> {
+    log::info!("tg_id: {}", tg.tg_id);
+    map_curve(&tg.curve)?;
+
+    let mut result_cases = Vec::new();
+    for tc in &tg.tests {
+        log::info!("tc_id: {}", tc.tc_id);
+        result_cases.push(run_ecdsa_keygen_case(timeout, spi_console, &tg.curve, tc)?);
+    }
+
+    Ok(EcdsaKeyGenResultGroup {
+        tg_id: tg.tg_id,
+        tests: result_cases,
+    })
+}
+
+pub fn run_ecdsa_keygen_vector_set(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    vs: &EcdsaKeyGenTestVectorSet,
+) -> Result<EcdsaKeyGenResultVectorSet> {
+    log::info!("vs_id: {}", vs.vs_id);
+
+    let mut result_groups = Vec::with_capacity(vs.test_groups.len());
+    for tg in &vs.test_groups {
+        result_groups.push(run_ecdsa_keygen_group(timeout, spi_console, tg)?);
+    }
+
+    Ok(EcdsaKeyGenResultVectorSet {
         vs_id: vs.vs_id,
         algorithm: vs.algorithm.clone(),
         mode: vs.mode.clone(),
