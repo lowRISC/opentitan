@@ -100,7 +100,9 @@ UJSON_SERDE_STRUCT(CryptotestEcdsaHashDigest, cryptotest_ecdsa_hash_digest_t, EC
     field(d0, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
     field(d0_len, size_t) \
     field(d1, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
-    field(d1_len, size_t)
+    field(d1_len, size_t) \
+    field(d, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
+    field(d_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdsaKeygenResp, cryptotest_ecdsa_keygen_resp_t,
                    ECDSA_KEYGEN_RESP);
 
