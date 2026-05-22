@@ -92,7 +92,7 @@ runs:
     # Log into Google Cloud using service account JSON.
     # This can't be Workload Identity Federation because Bazel performance using WIF is terrible.
     # This needs access to secrets and thus doesn't work for pull request.
-    - uses: google-github-actions/auth@v2
+    - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093  # v3.0.0
       id: google_auth
       if: github.event_name != 'pull_request' && inputs.service_account_json != ''
       with:
