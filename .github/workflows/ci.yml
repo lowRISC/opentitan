@@ -30,7 +30,7 @@ jobs:
     name: Lint (quick)
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Required so we can lint commit messages.
       - name: Prepare environment
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -130,7 +130,7 @@ jobs:
     env:
       BUCKET: gold-hybrid-255313-prod
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -200,7 +200,7 @@ jobs:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
       verible_version: v0.0-3430-g060bde0f
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare Verible config
         run: |
           echo "Concatenating Verible waivers"
@@ -229,7 +229,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -262,7 +262,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
@@ -278,7 +278,7 @@ jobs:
     needs: quick_lint
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -327,7 +327,7 @@ jobs:
       - chip_earlgrey_cw310_hyperdebug
       - chip_earlgrey_cw340
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -531,7 +531,7 @@ jobs:
       - execute_manuf_fpga_tests_cw340
     if: success() || failure()
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download target pattern files
         uses: actions/download-artifact@v4
         with:
@@ -573,7 +573,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build Developer Utility Container
         uses: docker/build-push-action@v6
         env:
@@ -597,7 +597,7 @@ jobs:
     timeout-minutes: 120
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Required for bitstream cache to work.
       - name: Prepare environment
@@ -666,7 +666,7 @@ jobs:
     runs-on: ubuntu-22.04-vivado
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Prepare environment
@@ -682,7 +682,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: opentitan
       - name: Prepare environment
@@ -690,7 +690,7 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
           working-directory: opentitan
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           repository: lowRISC/qemu
           ref: v9.2.0-2025-02-11
