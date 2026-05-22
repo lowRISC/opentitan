@@ -22,6 +22,15 @@
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 
+#ifdef KAT_CHECK_ENABLE
+
+#include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#endif
+
 // We first provide all configs and test vectors
 static const uint32_t kTestMask[] = {
     0x8cb847c3, 0xc6d34f36, 0x72edbf7b, 0x9bc0317f, 0x8f003c7f, 0x1d7ba049,
@@ -274,20 +283,6 @@ static const uint32_t rsa2048_mod[64] = {
     0x105cc797, 0x924ec514, 0x146810df, 0xb1ab4a49,
 };
 
-static const uint32_t rsa2048_exp[64] = {
-    0x0b19915b, 0xa6a935e6, 0x426b2e10, 0xb4ff0629, 0x7322343b, 0x3f28c8d5,
-    0x190757ce, 0x87409d6b, 0xd88e282b, 0x01c13c2a, 0xebb79189, 0x74cbeab9,
-    0x93de5d54, 0xae1bc80a, 0x083a75f2, 0xd574d229, 0xeb46696e, 0x7648cfb6,
-    0xe7ad1b36, 0xbd0e81b2, 0x19c72703, 0xebea5085, 0xf8c7d152, 0x34dcf84d,
-    0xa437187f, 0x41e4f88e, 0xe4e35f9f, 0xcd8bc6f8, 0x7f98e2f2, 0xffdf75ca,
-    0x3698226e, 0x903f2a56, 0xbf21a6dc, 0x97cbf653, 0xe9d80cb3, 0x55dc1685,
-    0xe0ebae21, 0xc8171e18, 0x8e73d26d, 0xbbdbaac1, 0x886e8007, 0x673c9da4,
-    0xe2cb0698, 0xa9f1ba2d, 0xedab4f0a, 0x197e890c, 0x65e7e736, 0x1de28f24,
-    0x57cf5137, 0x631ff441, 0x22539942, 0xcee3fd41, 0xd22b5f8a, 0x995dd87a,
-    0xcaa6815c, 0x08ca0fd3, 0x8f996093, 0x30b7c446, 0xf69b11f7, 0xa298dd00,
-    0xfd4e8120, 0x059df602, 0x25feb268, 0x0f3f749e,
-};
-
 static const uint32_t rsa2048_sig[64] = {
     0xab66c6c7, 0x97effc0a, 0x9869cdba, 0x7b6c09fe, 0x2124d28f, 0x793084b3,
     0x4da24b72, 0x4f6c8659, 0x63e3a27b, 0xbbe8d120, 0x8789190f, 0x1722fe46,
@@ -307,16 +302,8 @@ static const uint32_t rsa2048_digest[8] = {
     0xcaa4c04b, 0xca023bd1, 0x18a172dc, 0x1709b520,
 };
 
-static const otcrypto_key_config_t kRsa2048Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeRsaSignPkcs,
-    .key_length = kOtcryptoRsa2048PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
 // Test vector comes from the rsa_4096_signature_functest
-static uint32_t rsa4096_mod[128] = {
+static const uint32_t rsa4096_mod[128] = {
     0x3114efe5, 0x85c4bdcf, 0x02cdc82c, 0xde80fc8b, 0xea50031c, 0x7c4ceeb0,
     0x17488f53, 0xf071b30b, 0xb1d4b69c, 0xa86ad866, 0xd33d1707, 0xa970c3dc,
     0xf22b2197, 0x2ab3eb21, 0xf9699bf2, 0x4f473ba5, 0xef92361d, 0xcf348dfb,
@@ -341,7 +328,7 @@ static uint32_t rsa4096_mod[128] = {
     0xb8100867, 0x923d26b1,
 };
 
-static uint32_t rsa4096_exp[128] = {
+static const uint32_t rsa4096_exp[128] = {
     0x2605e651, 0x2109108d, 0x4c0f18d0, 0xed4cacbe, 0x6b11c61d, 0xbdbc9c78,
     0x2fcbfb38, 0xe077dea9, 0x4a977ff1, 0x90a218e0, 0x010cc1af, 0xed1cf5db,
     0x0a86efb9, 0xf0f0ec3a, 0xdb656795, 0xa6bca8d4, 0x1fc075d6, 0xccb95bca,
@@ -395,14 +382,6 @@ static const uint32_t rsa4096_digest[16] = {
     0xb893ca9d, 0xf40ba12b, 0x09e4aa43, 0x8c33b554, 0xeec01007, 0x64192c43,
     0xf0513d70, 0x7bc41f0e, 0x46196723, 0x94549bc2, 0xc35e1539, 0x371599ad,
     0x5203c922, 0x43577df0, 0xbd4c7513, 0x43267c48,
-};
-
-static const otcrypto_key_config_t kRsa4096Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeRsaSignPkcs,
-    .key_length = kOtcryptoRsa4096PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // NIST CAVP vector
@@ -525,13 +504,34 @@ static const uint8_t kmac_256_ans[] = {
     0x7C, 0xF6, 0xF5, 0x95, 0x1F, 0x01, 0x03, 0xF3, 0x3F, 0x4F, 0x24,
     0x87, 0x10, 0x24, 0xD9, 0xC2, 0x77, 0x73, 0xA8, 0xDD};
 
+// Helper function to make the data be loaded dynamically making the code PIC
+static inline otcrypto_unblinded_key_t make_unblinded_key(
+    otcrypto_key_mode_t mode, size_t len, const uint32_t *key) {
+  otcrypto_unblinded_key_t k;
+  k.key_mode = mode;
+  k.key_length = len;
+  k.key = (uint32_t *)key;
+  k.checksum = 0;
+  return k;
+}
+
+// Helper function to make the data be loaded dynamically making the code PIC
+static inline otcrypto_hash_digest_t make_hash_digest(
+    const uint32_t *data, size_t len, otcrypto_hash_mode_t mode) {
+  otcrypto_hash_digest_t d;
+  d.data = (uint32_t *)data;
+  d.len = len;
+  d.mode = mode;
+  return d;
+}
+
 // The functions to run the kats
 static status_t kat_sha256_hash(void) {
   otcrypto_sha2_context_t ctx;
   HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
 
-  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, sha256_in, sizeof(sha256_in));
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(sha256_in, sizeof(sha256_in));
   HARDENED_TRY(otcrypto_sha2_update(&ctx, &msg_buf));
 
   uint32_t act_digest[256 / 32];
@@ -552,8 +552,8 @@ static status_t kat_sha512_hash(void) {
   otcrypto_sha2_context_t ctx;
   HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
 
-  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, sha512_in, sizeof(sha512_in));
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(sha512_in, sizeof(sha512_in));
   HARDENED_TRY(otcrypto_sha2_update(&ctx, &msg_buf));
 
   uint32_t act_digest[512 / 32];
@@ -571,8 +571,8 @@ static status_t kat_sha512_hash(void) {
 }
 
 static status_t kat_sha256_hmac(void) {
-  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, hmac_sha256_in, sizeof(hmac_sha256_in));
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(hmac_sha256_in, sizeof(hmac_sha256_in));
 
   uint32_t keyblob[keyblob_num_words(kSha256Config)];
   HARDENED_TRY(keyblob_from_key_and_mask((uint32_t *)hmac_sha256_key, kTestMask,
@@ -586,8 +586,7 @@ static status_t kat_sha256_hmac(void) {
   blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[128 / 32];
-  otcrypto_word32_buf_t tag_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, 128 / 32);
+  otcrypto_word32_buf_t tag_buf = otcrypto_make_word32_buf(act_tag, 128 / 32);
 
   HARDENED_TRY(otcrypto_hmac(&blinded_key, &msg_buf, &tag_buf));
 
@@ -599,8 +598,8 @@ static status_t kat_sha256_hmac(void) {
 }
 
 static status_t kat_sha512_hmac(void) {
-  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, hmac_sha512_in, sizeof(hmac_sha512_in));
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(hmac_sha512_in, sizeof(hmac_sha512_in));
 
   uint32_t keyblob[keyblob_num_words(kSha512Config)];
   HARDENED_TRY(keyblob_from_key_and_mask((uint32_t *)hmac_sha512_key, kTestMask,
@@ -614,8 +613,7 @@ static status_t kat_sha512_hmac(void) {
   blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[32 / 4];
-  otcrypto_word32_buf_t tag_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, 32 / 4);
+  otcrypto_word32_buf_t tag_buf = otcrypto_make_word32_buf(act_tag, 32 / 4);
 
   HARDENED_TRY(otcrypto_hmac(&blinded_key, &msg_buf, &tag_buf));
 
@@ -653,11 +651,10 @@ static status_t kat_p256_sign(void) {
   memcpy(keyblob_scalar, p256_k, 32);
   secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
-  otcrypto_hash_digest_t digest = {.data = (uint32_t *)p256_msg_digest,
-                                   .len = 8};
+  otcrypto_hash_digest_t digest = make_hash_digest(
+      (const uint32_t *)p256_msg_digest, 8, kOtcryptoHashModeSha256);
   uint32_t sig[16];
-  otcrypto_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, 16);
+  otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 16);
 
   HARDENED_TRY(otcrypto_ecdsa_p256_sign_config_k(&private_key, &secret_scalar,
                                                  digest, &sig_buf));
@@ -680,11 +677,9 @@ static status_t kat_p256_base_point_mul(void) {
   private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
   uint32_t pk_act[16] = {0};
-  otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsaP256,
-      .key_length = sizeof(pk_act),
-      .key = pk_act,
-  };
+  otcrypto_unblinded_key_t public_key = make_unblinded_key(
+      kOtcryptoKeyModeEcdsaP256, sizeof(pk_act), (const uint32_t *)pk_act);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
   HARDENED_TRY(otcrypto_ecc_p256_base_point_mult(&private_key, &public_key));
 
@@ -698,19 +693,16 @@ static status_t kat_p256_base_point_mul(void) {
 static status_t kat_p256_verify(void) {
   hardened_bool_t result;
 
-  otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsaP256,
-      .key_length = sizeof(p256_Q),
-      .key = (uint32_t *)p256_Q,
-  };
+  otcrypto_unblinded_key_t public_key = make_unblinded_key(
+      kOtcryptoKeyModeEcdsaP256, sizeof(p256_Q), (const uint32_t *)p256_Q);
   public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
-  otcrypto_hash_digest_t digest = {.data = (uint32_t *)p256_msg_digest,
-                                   .len = 8};
+  otcrypto_hash_digest_t digest = make_hash_digest(
+      (const uint32_t *)p256_msg_digest, 8, kOtcryptoHashModeSha256);
 
   uint32_t sig_data[16] = {0};
   otcrypto_const_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 16);
+      otcrypto_make_const_word32_buf(sig_data, 16);
   memcpy(sig_data, p256_sig, 64);
 
   HARDENED_TRY(
@@ -728,9 +720,8 @@ static status_t kat_p256_verify(void) {
 static status_t kat_p256_point_on_curve(void) {
   hardened_bool_t result;
 
-  otcrypto_unblinded_key_t point = {.key_mode = kOtcryptoKeyModeEcdsaP256,
-                                    .key = (uint32_t *)p256_Q,
-                                    .key_length = sizeof(p256_Q)};
+  otcrypto_unblinded_key_t point = make_unblinded_key(
+      kOtcryptoKeyModeEcdsaP256, sizeof(p256_Q), (const uint32_t *)p256_Q);
   point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
@@ -773,11 +764,10 @@ static status_t kat_p384_sign(void) {
   memcpy(keyblob_scalar, p384_k, 48);
   secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
-  otcrypto_hash_digest_t digest = {.data = (uint32_t *)p384_msg_digest,
-                                   .len = 12};
+  otcrypto_hash_digest_t digest = make_hash_digest(
+      (const uint32_t *)p384_msg_digest, 12, kOtcryptoHashModeSha384);
   uint32_t sig[24];
-  otcrypto_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, 24);
+  otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 24);
 
   HARDENED_TRY(otcrypto_ecdsa_p384_sign_config_k(&private_key, &secret_scalar,
                                                  digest, &sig_buf));
@@ -819,19 +809,16 @@ static status_t kat_p384_base_point_mul(void) {
 static status_t kat_p384_verify(void) {
   hardened_bool_t result;
 
-  otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsaP384,
-      .key_length = sizeof(p384_Q),
-      .key = (uint32_t *)p384_Q,
-  };
+  otcrypto_unblinded_key_t public_key = make_unblinded_key(
+      kOtcryptoKeyModeEcdsaP384, sizeof(p384_Q), (const uint32_t *)p384_Q);
   public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
-  otcrypto_hash_digest_t digest = {.data = (uint32_t *)p384_msg_digest,
-                                   .len = 12};
+  otcrypto_hash_digest_t digest = make_hash_digest(
+      (const uint32_t *)p384_msg_digest, 12, kOtcryptoHashModeSha384);
 
   uint32_t sig_data[24] = {0};
   otcrypto_const_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig_data, 24);
+      otcrypto_make_const_word32_buf(sig_data, 24);
   memcpy(sig_data, p384_sig, 96);
 
   HARDENED_TRY(
@@ -849,9 +836,8 @@ static status_t kat_p384_verify(void) {
 static status_t kat_p384_point_on_curve(void) {
   hardened_bool_t result;
 
-  otcrypto_unblinded_key_t point = {.key_mode = kOtcryptoKeyModeEcdsaP384,
-                                    .key = (uint32_t *)p384_Q,
-                                    .key_length = sizeof(p384_Q)};
+  otcrypto_unblinded_key_t point = make_unblinded_key(
+      kOtcryptoKeyModeEcdsaP384, sizeof(p384_Q), (const uint32_t *)p384_Q);
   point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
@@ -874,7 +860,7 @@ static status_t kat_p384_point_on_curve(void) {
 
 static status_t kat_rsa2048_verify(void) {
   otcrypto_const_word32_buf_t modulus_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, rsa2048_mod, 64);
+      otcrypto_make_const_word32_buf(rsa2048_mod, 64);
 
   uint32_t public_key_data[64];
   otcrypto_unblinded_key_t public_key = {
@@ -886,11 +872,10 @@ static status_t kat_rsa2048_verify(void) {
   HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048,
                                                  &modulus_buf, &public_key));
 
-  otcrypto_hash_digest_t digest = {.data = (uint32_t *)rsa2048_digest,
-                                   .len = 8,
-                                   .mode = kOtcryptoHashModeSha256};
+  otcrypto_hash_digest_t digest =
+      make_hash_digest(rsa2048_digest, 8, kOtcryptoHashModeSha256);
   otcrypto_const_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, rsa2048_sig, 64);
+      otcrypto_make_const_word32_buf(rsa2048_sig, 64);
 
   hardened_bool_t result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
@@ -903,14 +888,23 @@ static status_t kat_rsa2048_verify(void) {
 
 static status_t kat_rsa4096_sign(void) {
   otcrypto_const_word32_buf_t d_share0 =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, rsa4096_exp, 128);
+      otcrypto_make_const_word32_buf(rsa4096_exp, 128);
   uint32_t zero_share[128] = {0};
   otcrypto_const_word32_buf_t d_share1 =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, zero_share, 128);
+      otcrypto_make_const_word32_buf(zero_share, 128);
   otcrypto_const_word32_buf_t modulus =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, rsa4096_mod, 128);
+      otcrypto_make_const_word32_buf(rsa4096_mod, 128);
 
   uint32_t keyblob[kOtcryptoRsa4096PrivateKeyblobBytes / 4];
+
+  const otcrypto_key_config_t kRsa4096Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa4096PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
   otcrypto_blinded_key_t private_key = {
       .config = kRsa4096Config,
       .keyblob = keyblob,
@@ -920,12 +914,10 @@ static status_t kat_rsa4096_sign(void) {
   HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize4096, &modulus, &d_share0, &d_share1, &private_key));
 
-  otcrypto_hash_digest_t digest_struct = {.data = (uint32_t *)rsa4096_digest,
-                                          .len = 16,
-                                          .mode = kOtcryptoHashModeSha512};
+  otcrypto_hash_digest_t digest_struct =
+      make_hash_digest(rsa4096_digest, 16, kOtcryptoHashModeSha512);
   uint32_t act_sig[128];
-  otcrypto_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_sig, 128);
+  otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(act_sig, 128);
 
   HARDENED_TRY(otcrypto_rsa_sign(&private_key, digest_struct,
                                  kOtcryptoRsaPaddingPkcs, &sig_buf));
@@ -939,7 +931,7 @@ static status_t kat_rsa4096_sign(void) {
 
 static status_t kat_rsa4096_verify(void) {
   otcrypto_const_word32_buf_t modulus_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, rsa4096_mod, 128);
+      otcrypto_make_const_word32_buf(rsa4096_mod, 128);
   uint32_t public_key_data[kOtcryptoRsa4096PublicKeyBytes / 4];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeRsaSignPkcs,
@@ -949,11 +941,10 @@ static status_t kat_rsa4096_verify(void) {
   HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096,
                                                  &modulus_buf, &public_key));
 
-  otcrypto_hash_digest_t digest = {.data = (uint32_t *)rsa4096_digest,
-                                   .len = 16,
-                                   .mode = kOtcryptoHashModeSha512};
+  otcrypto_hash_digest_t digest =
+      make_hash_digest(rsa4096_digest, 16, kOtcryptoHashModeSha512);
   otcrypto_const_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, rsa4096_sig, 128);
+      otcrypto_make_const_word32_buf(rsa4096_sig, 128);
 
   hardened_bool_t result;
   HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
@@ -975,20 +966,18 @@ static status_t kat_aes_gcm_256_encrypt(void) {
   };
   key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
-  otcrypto_const_byte_buf_t pt_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, aes_gcm_256_pt, sizeof(aes_gcm_256_pt));
-  otcrypto_const_byte_buf_t aad_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, aes_gcm_256_aad, sizeof(aes_gcm_256_aad));
-  otcrypto_const_word32_buf_t iv_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_word32_buf_t, (uint32_t *)aes_gcm_256_iv, 3);
+  otcrypto_const_byte_buf_t pt_buf =
+      otcrypto_make_const_byte_buf(aes_gcm_256_pt, sizeof(aes_gcm_256_pt));
+  otcrypto_const_byte_buf_t aad_buf =
+      otcrypto_make_const_byte_buf(aes_gcm_256_aad, sizeof(aes_gcm_256_aad));
+  otcrypto_const_word32_buf_t iv_buf =
+      otcrypto_make_const_word32_buf((uint32_t *)aes_gcm_256_iv, 3);
 
   uint8_t ct_act[51];
-  otcrypto_byte_buf_t ct_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ct_act, 51);
+  otcrypto_byte_buf_t ct_buf = otcrypto_make_byte_buf(ct_act, 51);
 
   uint32_t tag_act[4];
-  otcrypto_word32_buf_t tag_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_act, 4);
+  otcrypto_word32_buf_t tag_buf = otcrypto_make_word32_buf(tag_act, 4);
 
   HARDENED_TRY(otcrypto_aes_gcm_encrypt(&key, &pt_buf, &iv_buf, &aad_buf,
                                         kOtcryptoAesGcmTagLen128, &ct_buf,
@@ -1017,13 +1006,15 @@ static status_t kat_aes_ecb_256_decrypt(void) {
   key.checksum = otcrypto_integrity_blinded_checksum(&key);
 
   otcrypto_const_byte_buf_t ct_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (uint8_t *)aes_256_ct, 16);
+      otcrypto_make_const_byte_buf((const uint8_t *)aes_256_ct, 16);
 
-  uint32_t pt_act[12] = {0};
-  otcrypto_byte_buf_t pt_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)pt_act, 16);
+  uint32_t pt_act[4] = {0};
+  otcrypto_byte_buf_t pt_buf = otcrypto_make_byte_buf((uint8_t *)pt_act, 16);
 
-  HARDENED_TRY(otcrypto_aes(&key, NULL, kOtcryptoAesModeEcb,
+  uint32_t dummy_iv_data[4] = {0};
+  otcrypto_word32_buf_t dummy_iv = otcrypto_make_word32_buf(dummy_iv_data, 4);
+
+  HARDENED_TRY(otcrypto_aes(&key, &dummy_iv, kOtcryptoAesModeEcb,
                             kOtcryptoAesOperationDecrypt, &ct_buf,
                             kOtcryptoAesPaddingNull, &pt_buf));
 
@@ -1035,8 +1026,8 @@ static status_t kat_aes_ecb_256_decrypt(void) {
 }
 
 static status_t kat_shake_256(void) {
-  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, shake256_in, sizeof(shake256_in));
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(shake256_in, sizeof(shake256_in));
 
   uint32_t act_digest[256 / 32];
   otcrypto_hash_digest_t digest_buf = {
@@ -1065,16 +1056,14 @@ static status_t kat_kmac_256(void) {
   };
   blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
 
-  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, kmac_256_in, sizeof(kmac_256_in));
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(kmac_256_in, sizeof(kmac_256_in));
 
-  otcrypto_const_byte_buf_t custom_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, (const uint8_t *)kmac_256_custom,
-      sizeof(kmac_256_custom) - 1);
+  otcrypto_const_byte_buf_t custom_buf = otcrypto_make_const_byte_buf(
+      (const uint8_t *)kmac_256_custom, sizeof(kmac_256_custom) - 1);
 
   uint32_t act_tag[16] = {0};
-  otcrypto_word32_buf_t tag_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, 16);
+  otcrypto_word32_buf_t tag_buf = otcrypto_make_word32_buf(act_tag, 16);
 
   HARDENED_TRY(
       otcrypto_kmac(&blinded_key, &msg_buf, &custom_buf, 64, &tag_buf));
@@ -1143,13 +1132,13 @@ static status_t kat_ed25519_sign(void) {
   };
   private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
-  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, ed25519_msg, sizeof(ed25519_msg));
+  otcrypto_const_byte_buf_t msg =
+      otcrypto_make_const_byte_buf(ed25519_msg, sizeof(ed25519_msg));
 
   uint32_t sig_act[16];
   memset(sig_act, 0, sizeof(sig_act));
   otcrypto_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_act, ARRAYSIZE(sig_act));
+      otcrypto_make_word32_buf(sig_act, ARRAYSIZE(sig_act));
 
   HARDENED_TRY(otcrypto_ed25519_sign(&private_key, &msg,
                                      kOtcryptoEddsaSignModeEddsa, &sig_buf));
@@ -1174,13 +1163,13 @@ static status_t kat_ed25519_verify(void) {
   };
   public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
-  otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, ed25519_msg, sizeof(ed25519_msg));
+  otcrypto_const_byte_buf_t msg =
+      otcrypto_make_const_byte_buf(ed25519_msg, sizeof(ed25519_msg));
 
   uint32_t sig_data[16];
   memcpy(sig_data, ed25519_sig, sizeof(ed25519_sig));
-  otcrypto_const_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_word32_buf_t, sig_data, ARRAYSIZE(sig_data));
+  otcrypto_const_word32_buf_t sig_buf =
+      otcrypto_make_const_word32_buf(sig_data, ARRAYSIZE(sig_data));
 
   HARDENED_TRY(otcrypto_ed25519_verify(
       &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
@@ -1196,51 +1185,76 @@ static status_t kat_ed25519_verify(void) {
   return OTCRYPTO_OK;
 }
 
-// A function pointer type for KAT functions.
-typedef status_t (*kat_func_t)(void);
-
-// A struct to hold a test ID and its corresponding KAT function.
-typedef struct kat_dispatch {
-  const uint64_t test_id;
-  const kat_func_t func;
-} kat_dispatch_t;
-
-// The dispatch table for all KATs.
-static const kat_dispatch_t kKatDispatch[] = {
-    {OTCRYPTO_KAT_HASH_SHA256, &kat_sha256_hash},
-    {OTCRYPTO_KAT_HASH_SHA512, &kat_sha512_hash},
-    {OTCRYPTO_KAT_HMAC_SHA256, &kat_sha256_hmac},
-    {OTCRYPTO_KAT_HMAC_SHA512, &kat_sha512_hmac},
-    {OTCRYPTO_KAT_DRBG, &kat_drbg},
-    {OTCRYPTO_KAT_P256_SIGN, &kat_p256_sign},
-    {OTCRYPTO_KAT_P256_VERIFY, &kat_p256_verify},
-    {OTCRYPTO_KAT_P256_BASE_POINT_MUL, &kat_p256_base_point_mul},
-    {OTCRYPTO_KAT_P256_POINT_ON_CURVE, &kat_p256_point_on_curve},
-    {OTCRYPTO_KAT_P384_SIGN, &kat_p384_sign},
-    {OTCRYPTO_KAT_P384_VERIFY, &kat_p384_verify},
-    {OTCRYPTO_KAT_P384_BASE_POINT_MUL, &kat_p384_base_point_mul},
-    {OTCRYPTO_KAT_P384_POINT_ON_CURVE, &kat_p384_point_on_curve},
-    {OTCRYPTO_KAT_RSA2048_VERIFY, &kat_rsa2048_verify},
-    {OTCRYPTO_KAT_RSA4096_VERIFY, &kat_rsa4096_verify},
-    {OTCRYPTO_KAT_RSA4096_SIGN, &kat_rsa4096_sign},
-    {OTCRYPTO_KAT_AES_GCM_256_ENCRYPT, &kat_aes_gcm_256_encrypt},
-    {OTCRYPTO_KAT_AES_ECB_256_DECRYPT, &kat_aes_ecb_256_decrypt},
-    {OTCRYPTO_KAT_SHAKE_256, &kat_shake_256},
-    {OTCRYPTO_KAT_KMAC_256, &kat_kmac_256},
-    {OTCRYPTO_KAT_ED25519_SIGN, &kat_ed25519_sign},
-    {OTCRYPTO_KAT_ED25519_VERIFY, &kat_ed25519_verify},
-};
-
-status_t run_kats(otcrypto_kat_id_t tests) {
-  if (tests.flags == 0 || tests.flags >= (1 << kTestLastBit)) {
+otcrypto_status_t run_kats(otcrypto_kat_id_t tests) {
+  if (tests.flags == 0 || tests.flags >= (1UL << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Run all requested tests.
-  for (size_t i = 0; i < kTestLastBit; ++i) {
-    if ((tests.flags & kKatDispatch[i].test_id) != 0) {
-      HARDENED_TRY(kKatDispatch[i].func());
-    }
+  if ((tests.flags & OTCRYPTO_KAT_HASH_SHA256) != 0) {
+    HARDENED_TRY(kat_sha256_hash());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_HASH_SHA512) != 0) {
+    HARDENED_TRY(kat_sha512_hash());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_HMAC_SHA256) != 0) {
+    HARDENED_TRY(kat_sha256_hmac());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_HMAC_SHA512) != 0) {
+    HARDENED_TRY(kat_sha512_hmac());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_DRBG) != 0) {
+    HARDENED_TRY(kat_drbg());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P256_SIGN) != 0) {
+    HARDENED_TRY(kat_p256_sign());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P256_VERIFY) != 0) {
+    HARDENED_TRY(kat_p256_verify());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P256_BASE_POINT_MUL) != 0) {
+    HARDENED_TRY(kat_p256_base_point_mul());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P256_POINT_ON_CURVE) != 0) {
+    HARDENED_TRY(kat_p256_point_on_curve());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P384_SIGN) != 0) {
+    HARDENED_TRY(kat_p384_sign());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P384_VERIFY) != 0) {
+    HARDENED_TRY(kat_p384_verify());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P384_BASE_POINT_MUL) != 0) {
+    HARDENED_TRY(kat_p384_base_point_mul());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P384_POINT_ON_CURVE) != 0) {
+    HARDENED_TRY(kat_p384_point_on_curve());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_RSA2048_VERIFY) != 0) {
+    HARDENED_TRY(kat_rsa2048_verify());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_RSA4096_VERIFY) != 0) {
+    HARDENED_TRY(kat_rsa4096_verify());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_RSA4096_SIGN) != 0) {
+    HARDENED_TRY(kat_rsa4096_sign());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_AES_GCM_256_ENCRYPT) != 0) {
+    HARDENED_TRY(kat_aes_gcm_256_encrypt());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_AES_ECB_256_DECRYPT) != 0) {
+    HARDENED_TRY(kat_aes_ecb_256_decrypt());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_SHAKE_256) != 0) {
+    HARDENED_TRY(kat_shake_256());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_KMAC_256) != 0) {
+    HARDENED_TRY(kat_kmac_256());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_ED25519_SIGN) != 0) {
+    HARDENED_TRY(kat_ed25519_sign());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_ED25519_VERIFY) != 0) {
+    HARDENED_TRY(kat_ed25519_verify());
   }
 
   return OTCRYPTO_OK;
