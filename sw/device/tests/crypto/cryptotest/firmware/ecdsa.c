@@ -7,6 +7,8 @@
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -313,10 +315,80 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   return OK_STATUS(0);
 }
 
+static status_t handle_ecdsa_hash(
+    ujson_t *uj, cryptotest_ecdsa_hash_alg_t uj_hash_alg,
+    const cryptotest_ecdsa_message_t *uj_message) {
+  size_t digest_words;
+  otcrypto_status_t (*hash_fn)(const otcrypto_const_byte_buf_t *,
+                               otcrypto_hash_digest_t *);
+  switch (uj_hash_alg) {
+    case kCryptotestEcdsaHashAlgSha256:
+      digest_words = 256 / 32;
+      hash_fn = otcrypto_sha2_256;
+      break;
+    case kCryptotestEcdsaHashAlgSha384:
+      digest_words = 384 / 32;
+      hash_fn = otcrypto_sha2_384;
+      break;
+    case kCryptotestEcdsaHashAlgSha512:
+      digest_words = 512 / 32;
+      hash_fn = otcrypto_sha2_512;
+      break;
+    case kCryptotestEcdsaHashAlgSha3_256:
+      digest_words = 256 / 32;
+      hash_fn = otcrypto_sha3_256;
+      break;
+    case kCryptotestEcdsaHashAlgSha3_384:
+      digest_words = 384 / 32;
+      hash_fn = otcrypto_sha3_384;
+      break;
+    case kCryptotestEcdsaHashAlgSha3_512:
+      digest_words = 512 / 32;
+      hash_fn = otcrypto_sha3_512;
+      break;
+    default:
+      LOG_ERROR("Unsupported hash algorithm for ECDSA: %d", uj_hash_alg);
+      return INVALID_ARGUMENT();
+  }
+
+  uint8_t msg_buf[uj_message->input_len];
+  memcpy(msg_buf, uj_message->input, uj_message->input_len);
+  const otcrypto_const_byte_buf_t msg = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, msg_buf, uj_message->input_len);
+
+  uint32_t digest_buf[digest_words];
+  memset(digest_buf, 0, digest_words * sizeof(uint32_t));
+  otcrypto_hash_digest_t digest = {
+      .data = digest_buf,
+      .len = digest_words,
+  };
+  otcrypto_status_t status = hash_fn(&msg, &digest);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Hash operation failed with status 0x%x", status.value);
+    return INTERNAL(status.value);
+  }
+
+  cryptotest_ecdsa_hash_digest_t uj_digest;
+  uj_digest.digest_len = digest_words * sizeof(uint32_t);
+  memcpy(uj_digest.digest, digest_buf, uj_digest.digest_len);
+  RESP_OK(ujson_serialize_cryptotest_ecdsa_hash_digest_t, uj, &uj_digest);
+  return OK_STATUS(0);
+}
+
 status_t handle_ecdsa(ujson_t *uj) {
-  // Declare ECDSA parameter ujson deserializer types
   cryptotest_ecdsa_operation_t uj_op;
   cryptotest_ecdsa_hash_alg_t uj_hash_alg;
+
+  TRY(ujson_deserialize_cryptotest_ecdsa_operation_t(uj, &uj_op));
+  TRY(ujson_deserialize_cryptotest_ecdsa_hash_alg_t(uj, &uj_hash_alg));
+
+  if (uj_op == kCryptotestEcdsaOperationHash) {
+    cryptotest_ecdsa_message_t uj_message;
+    TRY(ujson_deserialize_cryptotest_ecdsa_message_t(uj, &uj_message));
+    return handle_ecdsa_hash(uj, uj_hash_alg, &uj_message);
+  }
+
+  // Sign / Verify: read remaining parameters.
   cryptotest_ecdsa_curve_t uj_curve;
   cryptotest_ecdsa_message_t uj_message;
   cryptotest_ecdsa_signature_t uj_signature;
@@ -324,9 +396,6 @@ status_t handle_ecdsa(ujson_t *uj) {
   cryptotest_ecdsa_coordinate_t uj_qy;
   cryptotest_ecdsa_private_key_t uj_private_key;
 
-  // Deserialize ujson byte stream into ECDSA parameters
-  TRY(ujson_deserialize_cryptotest_ecdsa_operation_t(uj, &uj_op));
-  TRY(ujson_deserialize_cryptotest_ecdsa_hash_alg_t(uj, &uj_hash_alg));
   TRY(ujson_deserialize_cryptotest_ecdsa_curve_t(uj, &uj_curve));
   TRY(ujson_deserialize_cryptotest_ecdsa_message_t(uj, &uj_message));
   TRY(ujson_deserialize_cryptotest_ecdsa_signature_t(uj, &uj_signature));

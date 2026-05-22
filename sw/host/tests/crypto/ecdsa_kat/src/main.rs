@@ -502,6 +502,9 @@ fn run_ecdsa_testcase(
                 }
             }
         }
+        CryptotestEcdsaOperation::Hash => {
+            unreachable!("Hash operation is not used in KAT tests")
+        }
         CryptotestEcdsaOperation::IntValue(_) => {
             unreachable!("Should be caught above")
         }
