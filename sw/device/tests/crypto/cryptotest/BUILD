@@ -83,6 +83,19 @@ cryptotest(
 )
 
 cryptotest(
+    name = "ecdsa_keygen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson)\"",
+        "--run-keygen",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:ecdsa_vectors.hjson",
+    ],
+)
+
+cryptotest(
     name = "eddsa_siggen_acvp",
     slow_test = True,
     test_args = " ".join([
@@ -805,6 +818,7 @@ test_suite(
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
+        ":ecdsa_keygen_acvp",
         ":ecdsa_siggen_acvp",
         ":ecdsa_sigver_acvp",
         ":ed25519_kat",

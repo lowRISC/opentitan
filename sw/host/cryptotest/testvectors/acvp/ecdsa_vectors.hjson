@@ -1758,5 +1758,48 @@
         ]
       }
     ]
+  },
+  {
+    "vsId": 0,
+    "algorithm": "ECDSA",
+    "mode": "keyGen",
+    "revision": "FIPS186-5",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 4,
+        "testType": "AFT",
+        "tests": [
+          {
+            "tcId": 10
+          },
+          {
+            "tcId": 11
+          },
+          {
+            "tcId": 12
+          }
+        ],
+        "curve": "P-256",
+        "secretGenerationMode": "extra bits"
+      },
+      {
+        "tgId": 6,
+        "testType": "AFT",
+        "tests": [
+          {
+            "tcId": 16
+          },
+          {
+            "tcId": 17
+          },
+          {
+            "tcId": 18
+          }
+        ],
+        "curve": "P-384",
+        "secretGenerationMode": "extra bits"
+      }
+    ]
   }
 ]
