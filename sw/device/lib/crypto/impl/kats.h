@@ -81,7 +81,7 @@ typedef struct {
  * @param tests_to_run bit mask with tests to run
  * @return OK if the requested KATs passed.
  */
-status_t run_kats(otcrypto_kat_id_t tests_to_run);
+otcrypto_status_t run_kats(otcrypto_kat_id_t tests_to_run);
 
 #ifdef __cplusplus
 }  // extern "C"
