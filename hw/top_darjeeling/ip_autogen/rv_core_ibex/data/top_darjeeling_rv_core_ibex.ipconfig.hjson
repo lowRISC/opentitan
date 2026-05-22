@@ -10,6 +10,7 @@
     topname: darjeeling
     uniquified_modules: {}
     racl_support: false
+    cheriot_available: false
   }
   dtgen:
   {

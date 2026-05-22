@@ -579,14 +579,14 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         "data_addr_o",
         "data_wdata_o": begin
           $assertoff(0,
-              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_cheriot__cored.gen_device");
         end
         // The RF read data obtained on Port b may feed into data_wdata_o even if Ibex isn't doing
         // a store.
         "rf_rdata_b_ecc_i": begin
           if (glitched_inp_used) begin
             $assertoff(0,
-                "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+                "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_cheriot__cored.gen_device");
           end
         end
         // There are several SVAs inside ibex_top ensuring correct behavior of crash dump. When

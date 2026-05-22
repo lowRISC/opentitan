@@ -265,8 +265,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Disable functional coverage of comportable IP-specific specialized registers.
   // Chip level testbench does not sample these coverpoints.
   protected virtual function void pre_build_ral_settings(dv_base_reg_block ral);
+    RAL_T chip_ral;
     super.pre_build_ral_settings(ral);
     ral.set_en_dv_reg_cov(0);
+    // sram_ctrl_meta.ram is not on the main XBAR - it is only reachable via
+    // the cheriot.revbm port, which is already mapped at the same address.
+    // Registering both causes a UVM_WARNING (overlap) that fails the test.
+    if ($cast(chip_ral, ral)) chip_ral.create_sram_ctrl_meta_ram = 1'b0;
   endfunction
 
   // Apply RAL fixes before it is locked.

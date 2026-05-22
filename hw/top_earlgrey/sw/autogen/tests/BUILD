@@ -121,6 +121,7 @@ opentitan_test(
         "//sw/device/lib/dif/autogen:aes",
         "//sw/device/lib/dif/autogen:alert_handler",
         "//sw/device/lib/dif/autogen:aon_timer",
+        "//sw/device/lib/dif/autogen:cheriot",
         "//sw/device/lib/dif/autogen:clkmgr",
         "//sw/device/lib/dif/autogen:csrng",
         "//sw/device/lib/dif/autogen:edn",
