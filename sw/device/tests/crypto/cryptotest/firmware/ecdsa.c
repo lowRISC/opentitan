@@ -447,32 +447,51 @@ status_t handle_ecdsa(ujson_t *uj) {
       otcrypto_const_word32_buf_t, signature_mut.data, signature_mut.len);
 
   otcrypto_hash_mode_t mode;
+  size_t hash_digest_words;
   switch (uj_hash_alg) {
     case kCryptotestEcdsaHashAlgSha256:
       mode = kOtcryptoHashModeSha256;
+      hash_digest_words = 256 / 32;
       break;
     case kCryptotestEcdsaHashAlgSha384:
       mode = kOtcryptoHashModeSha384;
+      hash_digest_words = 384 / 32;
       break;
     case kCryptotestEcdsaHashAlgSha512:
       mode = kOtcryptoHashModeSha512;
+      hash_digest_words = 512 / 32;
       break;
     case kCryptotestEcdsaHashAlgSha3_256:
       mode = kOtcryptoHashModeSha3_256;
+      hash_digest_words = 256 / 32;
       break;
     case kCryptotestEcdsaHashAlgSha3_384:
       mode = kOtcryptoHashModeSha3_384;
+      hash_digest_words = 384 / 32;
       break;
     case kCryptotestEcdsaHashAlgSha3_512:
       mode = kOtcryptoHashModeSha3_512;
+      hash_digest_words = 512 / 32;
       break;
     default:
       LOG_ERROR("Unrecognized ECDSA hash mode: %d", uj_hash_alg);
       return INVALID_ARGUMENT();
   }
+  // The cryptolib requires message_digest.len == curve scalar words exactly.
+  // Words are in MSW-first order, so:
+  //   hash > curve: take the first digest_len words (leftmost/most-significant
+  //                 bits)
+  //   hash < curve: right-align the hash at the end of the buffer
+  //                 (zero-pad high words)
   uint32_t message_buf[ECDSA_CMD_MAX_MESSAGE_WORDS];
   memset(message_buf, 0, digest_len * sizeof(uint32_t));
-  memcpy(message_buf, uj_message.input, uj_message.input_len);
+  if (hash_digest_words >= digest_len) {
+    memcpy(message_buf, uj_message.input, digest_len * sizeof(uint32_t));
+  } else {
+    size_t offset_bytes = (digest_len - hash_digest_words) * sizeof(uint32_t);
+    memcpy((uint8_t *)message_buf + offset_bytes, uj_message.input,
+           uj_message.input_len);
+  }
   const otcrypto_hash_digest_t message_digest = {
       .mode = mode,
       .len = digest_len,
