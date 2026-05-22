@@ -50,7 +50,7 @@ module prim_fifo_async_simple #(
   ////////////////
   // Convert ready/valid to req/ack
   assign wready_o = wready_q;
-  assign wr_en    = wvalid_i && wready_q;
+  assign wr_en    = wvalid_i && wready_o;
   assign src_req  = pending_q || wvalid_i;
 
   assign pending_d = (src_ack)  ? 1'b0 :
