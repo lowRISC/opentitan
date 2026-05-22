@@ -16,6 +16,7 @@ use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
 
 mod cshake;
+mod ecdsa;
 mod eddsa;
 mod hmac;
 mod rsa;
@@ -83,6 +84,9 @@ enum AcvpVectors {
     },
     Hmac(hmac::HmacTestVectorSet),
     Cshake(cshake::CshakeTestVectorSet),
+    // EcdsaTestVectorSet has `qx`, `qy`, `r`, `s` per test case and `hashAlg`
+    // per group — fields absent from all other algorithm structs.
+    Ecdsa(ecdsa::EcdsaTestVectorSet),
     // EddsaTestVectorSet (sigVer) requires `q` and `signature` in each test
     // case; EddsaSignGenTestVectorSet (sigGen) has only `message`, so sigVer
     // vectors match Eddsa first and sigGen vectors fall through to EddsaSigGen.
@@ -112,6 +116,7 @@ enum AcvpResults {
     },
     Hmac(hmac::HmacResultVectorSet),
     Cshake(cshake::CshakeResultVectorSet),
+    Ecdsa(ecdsa::EcdsaResultVectorSet),
     Eddsa(eddsa::EddsaResultVectorSet),
     RsaSigGen(rsa::RsaSignGenResultVectorSet),
     Rsa(rsa::RsaResultVectorSet),
@@ -240,6 +245,17 @@ fn run<R: std::io::Read, W: std::io::Write>(
                     opts.skip_stride,
                     opts.seed,
                 )?))
+            }
+            AcvpVectors::Ecdsa(vs) => {
+                if opts.expected.is_some() || opts.output.is_some() {
+                    acvp_results.push(AcvpResults::Ecdsa(ecdsa::run_ecdsa_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?));
+                }
             }
             AcvpVectors::Eddsa(vs) => {
                 if opts.expected.is_some() || opts.output.is_some() {

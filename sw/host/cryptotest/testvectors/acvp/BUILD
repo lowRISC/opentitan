@@ -7,6 +7,8 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "cshake_expected.json",
     "cshake_vectors.json",
+    "ecdsa_expected.hjson",
+    "ecdsa_vectors.hjson",
     "eddsa_expected.hjson",
     "eddsa_vectors.hjson",
     "hmac_sha256_expected.json",

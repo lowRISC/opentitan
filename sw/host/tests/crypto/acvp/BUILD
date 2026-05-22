@@ -11,6 +11,7 @@ rust_binary(
     name = "harness",
     srcs = [
         "src/cshake.rs",
+        "src/ecdsa.rs",
         "src/eddsa.rs",
         "src/hmac.rs",
         "src/main.rs",
