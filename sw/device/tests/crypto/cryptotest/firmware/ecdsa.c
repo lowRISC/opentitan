@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
@@ -54,6 +55,18 @@ static const otcrypto_key_config_t kP384PrivateKeyConfig = {
     .hw_backed = kHardenedBoolFalse,
     .exportable = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+// P-256 group order n in little-endian uint32_t limbs.
+static const uint32_t kP256OrderLE[kP256ScalarWords] = {
+    0xFC632551, 0xF3B9CAC2, 0xA7179E84, 0xBCE6FAAD,
+    0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF,
+};
+
+// P-384 group order n in little-endian uint32_t limbs.
+static const uint32_t kP384OrderLE[kP384ScalarWords] = {
+    0xCCC52973, 0xECEC196A, 0x48B0A77A, 0x581A0DB2, 0xF4372DDF, 0xC7634D81,
+    0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,
 };
 
 static const otcrypto_key_config_t kP256ExportableKeyConfig = {
@@ -459,6 +472,10 @@ static status_t handle_ecdsa_keygen(ujson_t *uj,
     memcpy(resp.d0, d0, kP256MaskedScalarShareBytes);
     resp.d1_len = kP256MaskedScalarShareBytes;
     memcpy(resp.d1, d1, kP256MaskedScalarShareBytes);
+    uint32_t d_scalar[kP256ScalarWords];
+    TRY(hardened_add_mod(d0, d1, kP256OrderLE, kP256ScalarWords, d_scalar));
+    resp.d_len = kP256ScalarBytes;
+    memcpy(resp.d, d_scalar, kP256ScalarBytes);
   } else if (uj_curve == kCryptotestEcdsaCurveP384) {
     uint32_t keyblob[kP384MaskedScalarTotalShareBytes / sizeof(uint32_t)];
     otcrypto_blinded_key_t priv = {
@@ -512,6 +529,10 @@ static status_t handle_ecdsa_keygen(ujson_t *uj,
     memcpy(resp.d0, d0, kP384MaskedScalarShareBytes);
     resp.d1_len = kP384MaskedScalarShareBytes;
     memcpy(resp.d1, d1, kP384MaskedScalarShareBytes);
+    uint32_t d_scalar[kP384ScalarWords];
+    TRY(hardened_add_mod(d0, d1, kP384OrderLE, kP384ScalarWords, d_scalar));
+    resp.d_len = kP384ScalarBytes;
+    memcpy(resp.d, d_scalar, kP384ScalarBytes);
   } else {
     LOG_ERROR("Unsupported ECC curve for keygen: %d", uj_curve);
     return INVALID_ARGUMENT();
