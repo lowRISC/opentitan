@@ -89,14 +89,14 @@ jobs:
           cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/build.fpga_${{ inputs.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}_0.1.runs/impl_1/runme.log || true
 
       - name: Upload step outputs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: partial-build-bin-chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
           path: build-bin.tar
 
       - name: Upload artifacts if build failed
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}-build-out
           path: build-out

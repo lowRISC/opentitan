@@ -37,7 +37,7 @@ runs:
 
     - name: Upload report as artifact
       if: inputs.artifact-name != ''
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-name }}
         path: ${{ inputs.merged-results }}
@@ -64,7 +64,7 @@ runs:
 
     - name: Upload coverage report
       if: steps.collect_coverage.outputs.coverageReport == 'ok'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-name }}-coverage
         path: /tmp/coverage_report
