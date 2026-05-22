@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class usb20_monitor extends dv_base_monitor #(
+class usb20_monitor extends dv_reactive_monitor #(
   .ITEM_T (usb20_item),
   .REQ_ITEM_T (usb20_item),
   .RSP_ITEM_T (usb20_item),

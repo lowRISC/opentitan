@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class kmac_app_monitor extends dv_base_monitor #(
+class kmac_app_monitor extends dv_reactive_monitor #(
     .ITEM_T (kmac_app_item),
     .CFG_T  (kmac_app_agent_cfg),
     .COV_T  (kmac_app_agent_cov)

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class csrng_agent extends dv_base_agent #(
+class csrng_agent extends dv_reactive_agent #(
   .CFG_T          (csrng_agent_cfg),
   .DRIVER_T       (csrng_driver),
   .HOST_DRIVER_T  (csrng_host_driver),

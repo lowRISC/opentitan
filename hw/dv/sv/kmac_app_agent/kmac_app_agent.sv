@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class kmac_app_agent extends dv_base_agent #(
+class kmac_app_agent extends dv_reactive_agent #(
   .CFG_T          (kmac_app_agent_cfg),
   .DRIVER_T       (kmac_app_driver),
   .HOST_DRIVER_T  (kmac_app_host_driver),

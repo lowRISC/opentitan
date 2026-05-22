@@ -5,7 +5,7 @@
 
 // A base class for monitors that track alert/escalation items and watch an alert_esc_if.
 
-class alert_esc_base_monitor extends dv_base_monitor #(
+class alert_esc_base_monitor extends dv_reactive_monitor #(
   .ITEM_T(alert_esc_seq_item),
   .CFG_T (alert_esc_agent_cfg),
   .COV_T (alert_esc_agent_cov)

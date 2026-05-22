@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class kmac_app_sequencer extends dv_base_sequencer #(
+class kmac_app_sequencer extends dv_reactive_sequencer #(
     .ITEM_T (kmac_app_item),
     .CFG_T  (kmac_app_agent_cfg)
 );
