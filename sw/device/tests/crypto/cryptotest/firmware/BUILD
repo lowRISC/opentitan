@@ -47,6 +47,7 @@ cc_library(
     srcs = ["ecdsa.c"],
     hdrs = ["ecdsa.h"],
     deps = [
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto",
