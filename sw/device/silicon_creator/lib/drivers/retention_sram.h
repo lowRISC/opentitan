@@ -32,7 +32,6 @@ typedef struct retention_sram_creator {
    * communicate with each other.
    */
   boot_svc_msg_t boot_svc_msg;
-
   /**
    * Space reserved for future allocation by the silicon creator.
    *
@@ -82,6 +81,13 @@ OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
  */
 typedef struct retention_sram_owner {
   /**
+   * The state of the cryptolib concerning FIPS.
+   *
+   * This includes whether the self-integrity check was run, and whether the
+   * Known-Answer-Tests have been run.
+   */
+  uint32_t cryptolib_state;
+  /**
    * Space reserved for allocation by the silicon owner.
    *
    * The silcon creator boot stages will not modify this field except for
@@ -90,8 +96,12 @@ typedef struct retention_sram_owner {
    * Tests that need to trigger (or detect) a device reset may use this field to
    * preserve state information across resets.
    */
-  uint32_t reserved[2048 / sizeof(uint32_t)];
+  uint32_t reserved[(2048 - (sizeof(uint32_t)  // cryptolib_state
+                             )) /
+                    sizeof(uint32_t)];
 } retention_sram_owner_t;
+OT_ASSERT_MEMBER_OFFSET(retention_sram_owner_t, cryptolib_state, 0);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_owner_t, reserved, 4);
 OT_ASSERT_SIZE(retention_sram_owner_t, 2048);
 
 /**

@@ -72,11 +72,22 @@ This specialized target hashes the library's contents and fuses the hash onto th
 You can trigger this build using the `--config=crypto_fips_all` Bazel flag.
 The exact functions included in this blob are strictly governed by an allowlist configuration file located in `//sw/device/lib/crypto/configs`.
 
-Because the FIPS blob is relocatable and contiguous, developers contributing to the cryptolib must adhere to strict memory and structural constraints:
+Because the FIPS blob is relocatable and contiguous, developers contributing to the cryptolib must adhere to strict memory and structural constraints.
+
+### Cryptolib Contributor Constraints
 
 *   **No `.bss` or `.data` Sections:** The linker script enforces that the `.bss`, `.sbss`, `.data`, and `.sdata2` sections have a size of exactly 0. You **cannot** use static (non-const) variables or uninitialized global variables. All data must reside in `.text`, `.rodata`, or `.srodata`.
 *   **Strict Position Independence:** Code must be completely position-independent (PIC) and cannot rely on a Global Offset Table (GOT).
 *   **No Jump Tables:** The library is explicitly compiled with `-fno-jump-tables`. This forces the compiler to handle `switch` statements without generating position-dependent jump tables.
+*   **No Function Pointer Arrays:** Do not use `static const` arrays of function pointers (such as execution dispatch tables). The compiler will bake absolute memory addresses into the `.rodata` section. Instead, use sequential `if` statements or `switch` blocks, which force the compiler to generate safe, PC-relative jump instructions (`jal` or `auipc`).
+*   **Dynamic Pointer Initialization:** When initializing structs that contain pointers (like `otcrypto_byte_buf_t` or `otcrypto_unblinded_key_t`) with global constant arrays, **do not** use static curly-brace initialization or macros like `OTCRYPTO_MAKE_BUF`. The GCC optimizer will trap this and embed absolute addresses into `.rodata`. Instead, construct these structs dynamically at runtime using the inline builder functions provided in `integrity.h` (e.g., `otcrypto_make_const_byte_buf()`). This forces the compiler to calculate the pointer offsets safely on the stack.
+
+### Stateful Known Answer Tests (KATs)
+
+In the FIPS build, cryptographic operations are gated by Power-On Self-Tests (POSTs) and Known Answer Tests (KATs).
+The cryptolib handles these seamlessly, but internal contributors must observe the following rule to prevent lockups:
+
+*   **Run-Once State Tracking:** To minimize latency, KATs execute lazily upon the first invocation of a module. The cryptolib records successful KAT executions in the hardware's Retention SRAM. `otcrypto_init()` clears this state at boot. Never clear or mutate this Retention SRAM state manually outside of `otcrypto_init()`, or you will corrupt the execution ledger.
 
 ### Testing PIC Compliance
 

@@ -83,6 +83,42 @@ typedef struct {
  */
 otcrypto_status_t run_kats(otcrypto_kat_id_t tests_to_run);
 
+/**
+ * @brief Ensures the specified Known-Answer Test (KAT) is executed exactly
+ * once.
+ *
+ * This function provides stateful, lazy evaluation of KATs depending on the
+ * build configuration:
+ *
+ * - **FIPS Build (`KAT_CHECK_ENABLE` defined):** It checks a tethered state
+ *   variable (provided by the host firmware) to verify if the KAT corresponding
+ *   to `kat_bit` has already run. If not, it executes the KAT and securely
+ *   updates the state. Subsequent calls for the same KAT will bypass execution.
+ * - **Standard Build (`KAT_CHECK_ENABLE` undefined):** The function evaluates
+ *   to a static inline no-op. It returns `OTCRYPTO_OK` immediately to avoid
+ *   unnecessary execution and linker dependencies.
+ *
+ * @param kat_bit The specific KAT to execute (e.g.,
+ * `kTestAesEcb256DecryptBit`).
+ * @return Result of the operation. Returns `OTCRYPTO_OK` on success, if the KAT
+ * already passed, or if lazy evaluation is disabled. Returns
+ * `OTCRYPTO_FATAL_ERR` if the KAT fails or the state pointer is missing.
+ */
+#ifndef KAT_CHECK_ENABLE
+
+// Standard build: Stateful KAT evaluation is disabled (non FIPS).
+static inline otcrypto_status_t otcrypto_stateful_kat(
+    otcrypto_kat_bits_t kat_bit) {
+  return OTCRYPTO_OK;
+}
+
+#else
+
+// FIPS build: Evaluates kats in a stateful manner
+otcrypto_status_t otcrypto_stateful_kat(otcrypto_kat_bits_t kat_bit);
+
+#endif  // KAT_CHECK_ENABLE
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -335,6 +335,10 @@ opentitan_binary_blob(
         "//sw/device/lib/runtime:log",
     ],
     rom_origin = "0x10000",
+    target_compatible_with = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     transitive_features = [
         "no_jump_tables",
         "minsize",
@@ -1042,15 +1046,29 @@ opentitan_test(
     name = "kats_functest",
     srcs = ["kats_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["KAT_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
-        "//sw/device/lib/crypto/impl:config",
-        "//sw/device/lib/crypto/impl:kats",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
+)
+
+# Call the kats test with --config=crypto_fips_all
+# Call for example kats_functest_fips_fpga_cw340_sival_rom_ext, i.e., append fips behind the name and before the exec_env
+fips_wrap_opentitan_test(
+    name = "kats_functest",
+    exec_env = CRYPTOTEST_FIPS_EXEC_ENVS,
 )
 
 opentitan_test(

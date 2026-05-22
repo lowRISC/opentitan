@@ -42,6 +42,7 @@ cc_library(
     deps = [
         ":config",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
@@ -217,7 +218,6 @@ cc_test(
 cc_library(
     name = "kats",
     srcs = ["kats.c"],
-    hdrs = ["kats.h"],
     deps = [
         ":aes",
         ":aes_gcm",
@@ -229,14 +229,33 @@ cc_library(
         ":entropy_src",
         ":hmac",
         ":integrity",
+        ":kats_api",
         ":keyblob",
         ":kmac",
         ":rsa",
         ":sha2",
         ":sha3",
         ":status",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy_kat",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+    alwayslink = True,
+)
+
+# We split the header to avoid circular dependencies.
+cc_library(
+    name = "kats_api",
+    hdrs = ["kats.h"],
+    defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["KAT_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -347,6 +366,10 @@ cc_library(
     name = "config",
     srcs = ["config.c"],
     hdrs = ["//sw/device/lib/crypto/include:config.h"],
+    defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["KAT_CHECK_ENABLE"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":entropy_src",
         ":integrity",
@@ -357,6 +380,7 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:alert",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 

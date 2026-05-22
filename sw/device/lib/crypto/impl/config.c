@@ -13,6 +13,12 @@
 #include "clkmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#ifdef KAT_CHECK_ENABLE
+
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+
+#endif
+
 otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
@@ -74,6 +80,12 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(otcrypto_set_security_config(security_level));
 
   HARDENED_TRY(init_alert_registers());
+
+#ifdef KAT_CHECK_ENABLE
+  // Clear the KAT evaluation state.
+  retention_sram_t *ret_sram = (retention_sram_t *)kRetentionSramBase;
+  ret_sram->owner.cryptolib_state = 0;
+#endif
 
   // Instantiate the RNG.
   HARDENED_TRY(otcrypto_entropy_init());

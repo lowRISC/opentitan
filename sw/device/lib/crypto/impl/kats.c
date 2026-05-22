@@ -1171,6 +1171,42 @@ static status_t kat_ed25519_verify(void) {
   return OTCRYPTO_OK;
 }
 
+#ifdef KAT_CHECK_ENABLE
+
+static inline uint32_t *get_kat_state_ptr(void) {
+  // Cast the absolute hardware address directly to the struct pointer.
+  retention_sram_t *ret_sram = (retention_sram_t *)kRetentionSramBase;
+
+  return &ret_sram->owner.cryptolib_state;
+}
+
+otcrypto_status_t otcrypto_stateful_kat(otcrypto_kat_bits_t kat_bit) {
+  uint32_t *state = get_kat_state_ptr();
+
+  if (state == NULL) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  uint32_t mask = (1UL << kat_bit);
+
+  if ((*state & mask) == 0) {
+    *state |= mask;  // Re-entrance lock
+
+    otcrypto_kat_id_t test_id = {.flags = mask};
+    status_t result = run_kats(test_id);
+
+    // If the KAT failed, unset the mask so it can be retried or debugged
+    if (result.value != kHardenedBoolTrue) {
+      *state &= ~mask;
+      return result;
+    }
+  }
+
+  return OTCRYPTO_OK;
+}
+
+#endif  // KAT_CHECK_ENABLE
+
 otcrypto_status_t run_kats(otcrypto_kat_id_t tests) {
   if (tests.flags == 0 || tests.flags >= (1UL << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
