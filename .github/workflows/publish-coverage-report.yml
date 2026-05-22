@@ -37,7 +37,7 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: "*-coverage"
           path: /tmp/job_reports
