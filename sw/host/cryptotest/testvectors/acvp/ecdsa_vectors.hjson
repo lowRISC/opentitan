@@ -33,11 +33,13 @@
 // Based on:
 // https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ECDSA-SigVer-FIPS186-5/prompt.json
 // https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ECDSA-SigGen-FIPS186-5/prompt.json
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ECDSA-KeyGen-FIPS186-5/prompt.json
 // Modifications:
 // This file was modified on 22.05.2026 as following:
 // - Removed all test vectors that do not use the P-256 or P-384 curve.
 // - Removed hashAlg SHA2-512/256 and SHAKE-128/256 test vectors.
-// - Combined sigVer and SigGen
+// - Combined SigVer, SigGen, and KeyGen
+// - Removed all test vectors that do not use secretGenerationMode=extra bits.
 [
   {
     "vsId": 0,
