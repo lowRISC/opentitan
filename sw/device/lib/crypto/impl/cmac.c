@@ -60,6 +60,20 @@ enum {
 };
 
 /**
+ * AES cleanup guard.
+ */
+static void aes_wipe_guard(uint32_t *dummy) { (void)aes_clear(); }
+
+/**
+ * Sideload cleanup guard.
+ */
+static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+  if (*is_sideloaded == kHardenedBoolTrue) {
+    (void)keymgr_sideload_clear_aes();
+  }
+}
+
+/**
  * Checks for NULL pointers or invalid settings in the blinded key.
  */
 static status_t check_key(const otcrypto_blinded_key_t *key) {
@@ -329,11 +343,18 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  // Clear AES unconditionally, and clear sideload if requested.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
+
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
   HARDENED_TRY(check_key(key));
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
+    is_sideloaded = kHardenedBoolTrue;
     keymgr_diversification_t diversification;
     HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
     HARDENED_TRY(keymgr_generate_key_aes(diversification));
@@ -410,6 +431,9 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
+
   HARDENED_TRY(check_key(key));
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
@@ -474,6 +498,8 @@ otcrypto_status_t otcrypto_cmac_update(
   }
 #endif
 
+  uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
+
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
@@ -521,6 +547,10 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   }
 #endif
 
+  uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
+
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
@@ -528,6 +558,10 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                kOtcryptoCmacCtxStructWords));
+
+  if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
+    is_sideloaded = kHardenedBoolTrue;
+  }
 
   if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelLow);
