@@ -23,5 +23,7 @@ otbn_binary(
         "mldsa87_keygen_encoding.s",
         "mldsa87_keygen_rounding.s",
         "mldsa87_keygen_ops.s",
+        "mldsa87_keygen_mem.s",
+        "mldsa87_keygen.s",
     ],
 )
