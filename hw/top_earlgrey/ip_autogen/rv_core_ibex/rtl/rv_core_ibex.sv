@@ -494,7 +494,7 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
-    .trvk_heap_base_addr_i('0), // TODO (#30541)
+    .trvk_heap_base_addr_i('0), // SRAM base address
 
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
