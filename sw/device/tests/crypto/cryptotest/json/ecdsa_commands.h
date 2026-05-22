@@ -37,7 +37,8 @@ extern "C" {
 #define ECDSA_OPERATION(_, value) \
     value(_, Sign) \
     value(_, Verify) \
-    value(_, Hash)
+    value(_, Hash) \
+    value(_, KeyGen)
 UJSON_SERDE_ENUM(CryptotestEcdsaOperation, cryptotest_ecdsa_operation_t, ECDSA_OPERATION);
 
 #define ECDSA_HASH_ALG(_, value) \
@@ -88,6 +89,18 @@ UJSON_SERDE_ENUM(CryptotestEcdsaVerifyOutput, cryptotest_ecdsa_verify_output_t, 
     field(digest, uint8_t, ECDSA_CMD_MAX_HASH_DIGEST_BYTES) \
     field(digest_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdsaHashDigest, cryptotest_ecdsa_hash_digest_t, ECDSA_HASH_DIGEST);
+
+#define ECDSA_KEYGEN_RESP(field, string) \
+    field(qx, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
+    field(qx_len, size_t) \
+    field(qy, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
+    field(qy_len, size_t) \
+    field(d0, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    field(d0_len, size_t) \
+    field(d1, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    field(d1_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestEcdsaKeygenResp, cryptotest_ecdsa_keygen_resp_t,
+                   ECDSA_KEYGEN_RESP);
 
 // clang-format on
 
