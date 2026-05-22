@@ -56,6 +56,24 @@ static const otcrypto_key_config_t kP384PrivateKeyConfig = {
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
+static const otcrypto_key_config_t kP256ExportableKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEcdsaP256,
+    .key_length = kP256PrivateKeyBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .exportable = kHardenedBoolTrue,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+static const otcrypto_key_config_t kP384ExportableKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEcdsaP384,
+    .key_length = kP384PrivateKeyBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .exportable = kHardenedBoolTrue,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
 int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
                          cryptotest_ecdsa_coordinate_t uj_qy,
                          cryptotest_ecdsa_signature_t uj_signature,
@@ -236,8 +254,8 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
                    cryptotest_ecdsa_signature_t *uj_signature) {
   uint32_t share0[kP256MaskedScalarShareWords] = {0};
   uint32_t share1[kP256MaskedScalarShareWords] = {0};
-  memcpy(share0, uj_private_key->d0, kP256ScalarBytes);
-  memcpy(share1, uj_private_key->d1, kP256ScalarBytes);
+  memcpy(share0, uj_private_key->d0, uj_private_key->d0_len);
+  memcpy(share1, uj_private_key->d1, uj_private_key->d1_len);
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kP256MaskedScalarShareWords);
@@ -283,8 +301,8 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
                    cryptotest_ecdsa_signature_t *uj_signature) {
   uint32_t share0[kP384MaskedScalarShareWords] = {0};
   uint32_t share1[kP384MaskedScalarShareWords] = {0};
-  memcpy(share0, uj_private_key->d0, kP384ScalarBytes);
-  memcpy(share1, uj_private_key->d1, kP384ScalarBytes);
+  memcpy(share0, uj_private_key->d0, uj_private_key->d0_len);
+  memcpy(share1, uj_private_key->d1, uj_private_key->d1_len);
 
   otcrypto_const_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, share0, kP384MaskedScalarShareWords);
@@ -383,11 +401,138 @@ static status_t handle_ecdsa_hash(
   return OK_STATUS(0);
 }
 
+static status_t handle_ecdsa_keygen(ujson_t *uj,
+                                    cryptotest_ecdsa_curve_t uj_curve) {
+  cryptotest_ecdsa_keygen_resp_t resp;
+  memset(&resp, 0, sizeof(resp));
+
+  if (uj_curve == kCryptotestEcdsaCurveP256) {
+    uint32_t keyblob[kP256MaskedScalarTotalShareBytes / sizeof(uint32_t)];
+    otcrypto_blinded_key_t priv = {
+        .config = kP256ExportableKeyConfig,
+        .keyblob_length = sizeof(keyblob),
+        .keyblob = keyblob,
+    };
+    uint32_t pub_buf[kP256CoordWords * 2];
+    otcrypto_unblinded_key_t pub = {
+        .key_mode = kOtcryptoKeyModeEcdsaP256,
+        .key_length = kP256CoordBytes * 2,
+        .key = pub_buf,
+    };
+    otcrypto_status_t status = otcrypto_ecdsa_p256_keygen(&priv, &pub);
+    if (status.value != kOtcryptoStatusValueOk) {
+      LOG_ERROR("otcrypto_ecdsa_p256_keygen failed: 0x%x", status.value);
+      return INTERNAL(status.value);
+    }
+
+    uint32_t d0[kP256MaskedScalarShareWords];
+    uint32_t d1[kP256MaskedScalarShareWords];
+    otcrypto_word32_buf_t d0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, d0, kP256MaskedScalarShareWords);
+    otcrypto_word32_buf_t d1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, d1, kP256MaskedScalarShareWords);
+    status = otcrypto_ecc_p256_private_key_export(&priv, &d0_buf, &d1_buf);
+    if (status.value != kOtcryptoStatusValueOk) {
+      LOG_ERROR("otcrypto_ecc_p256_private_key_export failed: 0x%x",
+                status.value);
+      return INTERNAL(status.value);
+    }
+
+    uint32_t qx[kP256CoordWords];
+    uint32_t qy[kP256CoordWords];
+    otcrypto_word32_buf_t qx_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, qx, kP256CoordWords);
+    otcrypto_word32_buf_t qy_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, qy, kP256CoordWords);
+    status = otcrypto_ecc_p256_public_key_export(&pub, &qx_buf, &qy_buf);
+    if (status.value != kOtcryptoStatusValueOk) {
+      LOG_ERROR("otcrypto_ecc_p256_public_key_export failed: 0x%x",
+                status.value);
+      return INTERNAL(status.value);
+    }
+
+    resp.qx_len = kP256CoordBytes;
+    memcpy(resp.qx, qx, kP256CoordBytes);
+    resp.qy_len = kP256CoordBytes;
+    memcpy(resp.qy, qy, kP256CoordBytes);
+    resp.d0_len = kP256MaskedScalarShareBytes;
+    memcpy(resp.d0, d0, kP256MaskedScalarShareBytes);
+    resp.d1_len = kP256MaskedScalarShareBytes;
+    memcpy(resp.d1, d1, kP256MaskedScalarShareBytes);
+  } else if (uj_curve == kCryptotestEcdsaCurveP384) {
+    uint32_t keyblob[kP384MaskedScalarTotalShareBytes / sizeof(uint32_t)];
+    otcrypto_blinded_key_t priv = {
+        .config = kP384ExportableKeyConfig,
+        .keyblob_length = sizeof(keyblob),
+        .keyblob = keyblob,
+    };
+    uint32_t pub_buf[kP384CoordWords * 2];
+    otcrypto_unblinded_key_t pub = {
+        .key_mode = kOtcryptoKeyModeEcdsaP384,
+        .key_length = kP384CoordBytes * 2,
+        .key = pub_buf,
+    };
+    otcrypto_status_t status = otcrypto_ecdsa_p384_keygen(&priv, &pub);
+    if (status.value != kOtcryptoStatusValueOk) {
+      LOG_ERROR("otcrypto_ecdsa_p384_keygen failed: 0x%x", status.value);
+      return INTERNAL(status.value);
+    }
+
+    uint32_t d0[kP384MaskedScalarShareWords];
+    uint32_t d1[kP384MaskedScalarShareWords];
+    otcrypto_word32_buf_t d0_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, d0, kP384MaskedScalarShareWords);
+    otcrypto_word32_buf_t d1_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, d1, kP384MaskedScalarShareWords);
+    status = otcrypto_ecc_p384_private_key_export(&priv, &d0_buf, &d1_buf);
+    if (status.value != kOtcryptoStatusValueOk) {
+      LOG_ERROR("otcrypto_ecc_p384_private_key_export failed: 0x%x",
+                status.value);
+      return INTERNAL(status.value);
+    }
+
+    uint32_t qx[kP384CoordWords];
+    uint32_t qy[kP384CoordWords];
+    otcrypto_word32_buf_t qx_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, qx, kP384CoordWords);
+    otcrypto_word32_buf_t qy_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, qy, kP384CoordWords);
+    status = otcrypto_ecc_p384_public_key_export(&pub, &qx_buf, &qy_buf);
+    if (status.value != kOtcryptoStatusValueOk) {
+      LOG_ERROR("otcrypto_ecc_p384_public_key_export failed: 0x%x",
+                status.value);
+      return INTERNAL(status.value);
+    }
+
+    resp.qx_len = kP384CoordBytes;
+    memcpy(resp.qx, qx, kP384CoordBytes);
+    resp.qy_len = kP384CoordBytes;
+    memcpy(resp.qy, qy, kP384CoordBytes);
+    resp.d0_len = kP384MaskedScalarShareBytes;
+    memcpy(resp.d0, d0, kP384MaskedScalarShareBytes);
+    resp.d1_len = kP384MaskedScalarShareBytes;
+    memcpy(resp.d1, d1, kP384MaskedScalarShareBytes);
+  } else {
+    LOG_ERROR("Unsupported ECC curve for keygen: %d", uj_curve);
+    return INVALID_ARGUMENT();
+  }
+
+  RESP_OK(ujson_serialize_cryptotest_ecdsa_keygen_resp_t, uj, &resp);
+  return OK_STATUS(0);
+}
+
 status_t handle_ecdsa(ujson_t *uj) {
   cryptotest_ecdsa_operation_t uj_op;
   cryptotest_ecdsa_hash_alg_t uj_hash_alg;
 
   TRY(ujson_deserialize_cryptotest_ecdsa_operation_t(uj, &uj_op));
+
+  if (uj_op == kCryptotestEcdsaOperationKeyGen) {
+    cryptotest_ecdsa_curve_t uj_curve;
+    TRY(ujson_deserialize_cryptotest_ecdsa_curve_t(uj, &uj_curve));
+    return handle_ecdsa_keygen(uj, uj_curve);
+  }
+
   TRY(ujson_deserialize_cryptotest_ecdsa_hash_alg_t(uj, &uj_hash_alg));
 
   if (uj_op == kCryptotestEcdsaOperationHash) {
