@@ -46,7 +46,9 @@
             ],
   bus_interfaces: [
     { protocol: "tlul", direction: "host",   name: "corei" }
+  % if not cheriot_available:
     { protocol: "tlul", direction: "host",   name: "cored" }
+  % endif
   % if racl_support:
     { protocol: "tlul", direction: "device", name: "cfg", racl_support: true }
   % else:
@@ -88,6 +90,53 @@
       package: "",
     },
 
+% if cheriot_available:
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable."
+    },
+
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "cored_tl_h",
+      act:     "req",
+      package: "tlul_pkg",
+      desc:    "Core data host port to the CHERIoT subsystem."
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_h2d",
+      act:     "req",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_d2h",
+      act:     "rcv",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "Capability tag returned on the D-channel of cored_tl_h."
+    },
+
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "corerevbm_tl",
+      act:     "req",
+      package: "tlul_pkg",
+      desc:    "Core revocation bitmap host port."
+    },
+
+% endif
     { struct:  "ram_1p_cfg",
       type:    "req_rsp",
       name:    "ram_cfg_icache_tag",
@@ -346,6 +395,29 @@
       local:         "false"
       expose:        "true"
     },
+% if cheriot_available:
+    { name:    "CheriotRevBitmapAddrWidth"
+      type:    "int unsigned"
+      default: "11"
+      desc:    "Address width of the TRVK revocation bitmap."
+      local:   "false"
+      expose:  "true"
+    },
+    { name:    "CheriotRevBitmapBaseAddr"
+      type:    "int unsigned"
+      default: "0"
+      desc:    "Base address of the TRVK revocation bitmap."
+      local:   "false"
+      expose:  "true"
+    },
+    { name:    "CheriotTrvkHeapBaseAddr"
+      type:    "int unsigned"
+      default: "0"
+      desc:    "Base address of the heap."
+      local:   "false"
+      expose:  "true"
+    },
+% endif
     { name:    "RV32E"
       type:    "bit"
       default: "0"
