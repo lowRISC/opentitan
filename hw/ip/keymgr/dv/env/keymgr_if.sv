@@ -565,25 +565,61 @@ interface keymgr_if(input clk, input rst_n);
     end
   endfunction
 
-  // Create a macro to skip checking key values when LC is off or fault error occurs
-  `define ASSERT_IFF_KEYMGR_LEGAL(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk)
+  // Assertions that check key values, skipping situations when when LC is off or fault error occurs
+  //
+  // These assertions all share the same disable and clocking settings, so are grouped into a
+  // gen_keymgr_legal_checks block, where they can share a "default disable" and "default clocking".
+  if (1) begin : gen_keymgr_legal_checks
+    default disable iff !rst_n || keymgr_en_sync2 != lc_ctrl_pkg::On || !en_chk;
+    default clocking @(posedge clk); endclocking
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKey, is_kmac_key_good && kmac_key_exp.valid ->
-                           (kmac_key.key[0] ^ kmac_key.key[1]) ==
-                           (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckKmacKeyValid, is_kmac_key_good ->
-                           kmac_key_exp.valid == kmac_key.valid)
+    CheckKmacKeyValid:
+      assert property (is_kmac_key_good -> kmac_key_exp.valid == kmac_key.valid)
+      else `uvm_error("CheckKmacKeyValid",
+                      $sformatf("Mismatch for valid bit. Saw %0b but expected %0b.",
+                                kmac_key.valid, kmac_key_exp.valid))
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKey, aes_sideload_status == SideLoadAvail && aes_key_exp.valid ->
-                           aes_key == aes_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckAesKeyValid, aes_sideload_status != SideLoadClear ->
-                           aes_key_exp.valid == aes_key.valid)
+    CheckKmacKey:
+      assert property (is_kmac_key_good && kmac_key.valid ->
+                       (kmac_key.key[0] ^ kmac_key.key[1]) ==
+                       (kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
+      else `uvm_error("CheckKmacKey",
+                      $sformatf({"Key mismatch. Saw 0x%0h ^ 0x%0h = 0x%0h ",
+                                 "but expected 0x%0h ^ 0x%0h = 0x%0h."},
+                                kmac_key.key[0], kmac_key.key[1],
+                                kmac_key.key[0] ^ kmac_key.key[1],
+                                kmac_key_exp.key[0], kmac_key_exp.key[1],
+                                kmac_key_exp.key[0] ^ kmac_key_exp.key[1]))
 
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKey, otbn_sideload_status == SideLoadAvail && otbn_key_exp.valid
-                           -> otbn_key == otbn_key_exp)
-  `ASSERT_IFF_KEYMGR_LEGAL(CheckOtbnKeyValid, otbn_sideload_status != SideLoadClear ->
-                           otbn_key_exp.valid == otbn_key.valid)
+
+    CheckAesKeyValid:
+      assert property (aes_sideload_status != SideLoadClear -> aes_key_exp.valid == aes_key.valid)
+      else `uvm_error("CheckAesKeyValid",
+                      $sformatf("Mismatch for valid bit. Saw %0b but expected %0b.",
+                                aes_key.valid, aes_key_exp.valid))
+
+    CheckAesKey:
+      assert property (aes_sideload_status == SideLoadAvail && aes_key.valid ->
+                       aes_key == aes_key_exp)
+      else `uvm_error("CheckAesKey",
+                      $sformatf("Key mismatch. Saw 0x%0h but expected 0x%0h",
+                                aes_key, aes_key_exp))
+
+
+    CheckOtbnKeyValid:
+      assert property (otbn_sideload_status != SideLoadClear ->
+                       otbn_key_exp.valid == otbn_key.valid)
+      else `uvm_error("CheckOtbnKeyValid",
+                      $sformatf("Mismatch for valid bit. Saw %0b but expected %0b.",
+                                otbn_key.valid, otbn_key_exp.valid))
+
+    CheckOtbnKey:
+      assert property (otbn_sideload_status == SideLoadAvail && otbn_key.valid ->
+                       otbn_key == otbn_key_exp)
+      else `uvm_error("CheckOtbnKey",
+                      $sformatf("Key mismatch. Saw 0x%0h but expected 0x%0h",
+                                otbn_key, otbn_key_exp))
+  end
 
   // for EDN assertion
   // sync req/ack to core clk domain
@@ -661,6 +697,4 @@ interface keymgr_if(input clk, input rst_n);
   `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |->
           edn_wait_cnt < edn_tolerance_upd,
           clk, !rst_n || !en_chk)
-
-  `undef ASSERT_IFF_KEYMGR_LEGAL
 endinterface
