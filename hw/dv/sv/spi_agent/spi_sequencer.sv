@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class spi_sequencer extends dv_base_sequencer#(spi_item, spi_agent_cfg, spi_item);
+class spi_sequencer extends dv_reactive_sequencer #(spi_item, spi_agent_cfg, spi_item);
   `uvm_component_utils(spi_sequencer)
 
   // Analysis imp to receive items from host AP in monitor

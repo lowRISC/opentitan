@@ -5,9 +5,9 @@
 // ---------------------------------------------
 // Alert agent
 // ---------------------------------------------
-class alert_esc_agent extends dv_base_agent#(
+class alert_esc_agent extends dv_reactive_agent #(
     .CFG_T           (alert_esc_agent_cfg),
-    .DRIVER_T        (dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg)),
+    .DRIVER_T        (dv_base_driver #(alert_esc_seq_item, alert_esc_agent_cfg)),
     .SEQUENCER_T     (alert_esc_sequencer),
     .MONITOR_T       (alert_esc_base_monitor),
     .COV_T           (alert_esc_agent_cov)

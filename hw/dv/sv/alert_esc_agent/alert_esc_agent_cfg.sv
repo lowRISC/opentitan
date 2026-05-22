@@ -6,7 +6,7 @@
 // ---------------------------------------------
 // Configuration class for Alert agent
 // ---------------------------------------------
-class alert_esc_agent_cfg extends dv_base_agent_cfg;
+class alert_esc_agent_cfg extends dv_reactive_agent_cfg;
   virtual alert_esc_if vif;
   virtual alert_esc_probe_if probe_vif;
   bit is_alert        = 1;

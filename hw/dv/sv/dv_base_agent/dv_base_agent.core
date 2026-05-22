@@ -19,6 +19,11 @@ filesets:
       - dv_base_driver.sv: {is_include_file: true}
       - dv_base_agent.sv: {is_include_file: true}
       - dv_base_seq.sv: {is_include_file: true}
+
+      - dv_reactive_agent_cfg.sv: {is_include_file: true}
+      - dv_reactive_monitor.sv: {is_include_file: true}
+      - dv_reactive_sequencer.sv: {is_include_file: true}
+      - dv_reactive_agent.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

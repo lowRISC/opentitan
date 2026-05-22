@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class entropy_src_xht_agent_cfg extends dv_base_agent_cfg;
+class entropy_src_xht_agent_cfg extends dv_reactive_agent_cfg;
 
   virtual entropy_src_xht_if vif;
 

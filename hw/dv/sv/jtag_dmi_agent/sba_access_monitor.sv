@@ -13,7 +13,7 @@
 // higher level testbench components to process.
 //
 // Reads and writes made to non SBA registers are passed on through non_sba_jtag_dmi_analysis_port.
-class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monitor#(
+class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_monitor #(
     .ITEM_T (ITEM_T),
     .CFG_T  (jtag_agent_cfg));
   `uvm_component_param_utils(sba_access_monitor #(ITEM_T))

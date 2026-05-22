@@ -26,14 +26,6 @@ class dv_base_agent_cfg extends uvm_object;
   // false, the agent can work by connecting to some lower-level agent to send multiple items.
   bit has_driver = 1'b1;
 
-  // True if agent's sequencer has a request fifo. If so, the agent will connect its monitor's
-  // req_analysis_port to the sequencer's request fifo.
-  bit has_req_fifo = 1'b0;
-
-  // True if agent's sequencer has a response fifo. If so, the agent will connect its monitor's
-  // req_analysis_port to the sequencer's response fifo.
-  bit has_rsp_fifo = 1'b0;
-
   // The minimum time in ns that the monitor expects to see ok_to_end be high before it drops an
   // objection that stopped the run_phase ending.
   int ok_to_end_delay_ns = 1000;
@@ -49,8 +41,6 @@ class dv_base_agent_cfg extends uvm_object;
     `uvm_field_int (en_cov,               UVM_DEFAULT)
     `uvm_field_enum(if_mode_e, if_mode,   UVM_DEFAULT)
     `uvm_field_int (has_driver,           UVM_DEFAULT)
-    `uvm_field_int (has_req_fifo,         UVM_DEFAULT)
-    `uvm_field_int (has_rsp_fifo,         UVM_DEFAULT)
     `uvm_field_int (ok_to_end_delay_ns,   UVM_DEFAULT)
     `uvm_field_int (in_reset,             UVM_DEFAULT)
   `uvm_object_utils_end

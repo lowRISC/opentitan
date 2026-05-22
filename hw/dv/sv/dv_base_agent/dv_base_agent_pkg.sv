@@ -22,6 +22,11 @@ package dv_base_agent_pkg;
   `include "dv_base_driver.sv"
   `include "dv_base_agent.sv"
 
+  `include "dv_reactive_agent_cfg.sv"
+  `include "dv_reactive_monitor.sv"
+  `include "dv_reactive_sequencer.sv"
+  `include "dv_reactive_agent.sv"
+
   // base seq
   `include "dv_base_seq.sv"
 
