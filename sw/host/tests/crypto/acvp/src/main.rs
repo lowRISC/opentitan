@@ -68,6 +68,10 @@ struct Opts {
     #[arg(long)]
     output_siggen: Option<std::path::PathBuf>,
 
+    // Output ACVP JSON result file for ECDSA sigGen results.
+    #[arg(long)]
+    output_ecdsa_siggen: Option<std::path::PathBuf>,
+
     // Output ACVP JSON result file for all EdDSA results (sigVer, sigGen, keyGen).
     #[arg(long)]
     output_eddsa: Option<std::path::PathBuf>,
@@ -84,9 +88,11 @@ enum AcvpVectors {
     },
     Hmac(hmac::HmacTestVectorSet),
     Cshake(cshake::CshakeTestVectorSet),
-    // EcdsaTestVectorSet has `qx`, `qy`, `r`, `s` per test case and `hashAlg`
-    // per group — fields absent from all other algorithm structs.
+    // EcdsaTestVectorSet (sigVer) has required qx/qy/r/s in each test case;
+    // EcdsaSignGenTestVectorSet (sigGen) has only message, so sigVer vectors
+    // match Ecdsa first and sigGen vectors fall through to EcdsaSigGen.
     Ecdsa(ecdsa::EcdsaTestVectorSet),
+    EcdsaSigGen(ecdsa::EcdsaSignGenTestVectorSet),
     // EddsaTestVectorSet (sigVer) requires `q` and `signature` in each test
     // case; EddsaSignGenTestVectorSet (sigGen) has only `message`, so sigVer
     // vectors match Eddsa first and sigGen vectors fall through to EddsaSigGen.
@@ -199,6 +205,7 @@ fn run<R: std::io::Read, W: std::io::Write>(
     output: Option<W>,
     output_siggen: Option<W>,
     output_eddsa: Option<W>,
+    output_ecdsa_siggen: Option<W>,
 ) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
@@ -211,6 +218,8 @@ fn run<R: std::io::Read, W: std::io::Write>(
     // RSA sigGen results are serialised to --output-siggen.
     // They are never compared against --expected.
     let mut siggen_results: Vec<serde_json::Value> = Vec::new();
+    // ECDSA sigGen results are serialised to --output-ecdsa-siggen.
+    let mut ecdsa_siggen_results: Vec<serde_json::Value> = Vec::new();
 
     for v in acvp_vectors {
         match v {
@@ -250,6 +259,18 @@ fn run<R: std::io::Read, W: std::io::Write>(
                         opts.skip_stride,
                         opts.seed,
                     )?));
+                }
+            }
+            AcvpVectors::EcdsaSigGen(vs) => {
+                if opts.run_siggen || opts.output_ecdsa_siggen.is_some() {
+                    let result = ecdsa::run_ecdsa_siggen_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?;
+                    ecdsa_siggen_results.push(serde_json::to_value(result)?);
                 }
             }
             AcvpVectors::Eddsa(vs) => {
@@ -322,6 +343,9 @@ fn run<R: std::io::Read, W: std::io::Write>(
     if let Some(w) = output_siggen {
         serde_json::to_writer_pretty(w, &siggen_results)?;
     }
+    if let Some(w) = output_ecdsa_siggen {
+        serde_json::to_writer_pretty(w, &ecdsa_siggen_results)?;
+    }
     if let Some(w) = output_eddsa {
         serde_json::to_writer_pretty(w, &eddsa_results)?;
     }
@@ -363,6 +387,7 @@ fn main() -> Result<()> {
         && !opts.run_siggen
         && !opts.run_keygen
         && opts.output_siggen.is_none()
+        && opts.output_ecdsa_siggen.is_none()
         && opts.output_eddsa.is_none()
     {
         log::warn!("Missing expected/output ACVP JSON files");
@@ -404,6 +429,14 @@ fn main() -> Result<()> {
         }
         None => None,
     };
+    let output_ecdsa_siggen = match &opts.output_ecdsa_siggen {
+        Some(path) => {
+            let f = std::fs::File::create(path)
+                .inspect_err(|e| log::error!("open ecdsa siggen output file: {e}"))?;
+            Some(std::io::BufWriter::new(f))
+        }
+        None => None,
+    };
     run(
         &opts,
         &transport,
@@ -412,5 +445,6 @@ fn main() -> Result<()> {
         output,
         output_siggen,
         output_eddsa,
+        output_ecdsa_siggen,
     )
 }
