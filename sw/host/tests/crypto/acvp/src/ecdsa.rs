@@ -12,8 +12,9 @@ use std::time::Duration;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::ecdsa_commands::{
     CryptotestEcdsaCoordinate, CryptotestEcdsaCurve, CryptotestEcdsaHashAlg,
-    CryptotestEcdsaHashDigest, CryptotestEcdsaMessage, CryptotestEcdsaOperation,
-    CryptotestEcdsaPrivateKey, CryptotestEcdsaSignature, CryptotestEcdsaVerifyOutput,
+    CryptotestEcdsaHashDigest, CryptotestEcdsaKeygenResp, CryptotestEcdsaMessage,
+    CryptotestEcdsaOperation, CryptotestEcdsaPrivateKey, CryptotestEcdsaSignature,
+    CryptotestEcdsaVerifyOutput,
 };
 
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -272,6 +273,277 @@ pub fn run_ecdsa_vector_set(
     }
 
     Ok(EcdsaResultVectorSet {
+        vs_id: vs.vs_id,
+        algorithm: vs.algorithm.clone(),
+        mode: vs.mode.clone(),
+        revision: vs.revision.clone(),
+        is_sample: vs.is_sample,
+        test_groups: result_groups,
+    })
+}
+
+// sigGen
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EcdsaSignGenTestCase {
+    tc_id: usize,
+    message: String,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EcdsaSignGenTestGroup {
+    tg_id: usize,
+    test_type: String,
+    curve: String,
+    hash_alg: String,
+    #[serde(default)]
+    component_test: bool,
+    tests: Vec<EcdsaSignGenTestCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaSignGenTestVectorSet {
+    vs_id: usize,
+    algorithm: String,
+    mode: String,
+    revision: String,
+    #[serde(default)]
+    is_sample: bool,
+    test_groups: Vec<EcdsaSignGenTestGroup>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaSignGenResultCase {
+    pub tc_id: usize,
+    pub r: String,
+    pub s: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaSignGenResultGroup {
+    pub tg_id: usize,
+    pub qx: String,
+    pub qy: String,
+    pub tests: Vec<EcdsaSignGenResultCase>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EcdsaSignGenResultVectorSet {
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub mode: String,
+    pub revision: String,
+    #[serde(default)]
+    pub is_sample: bool,
+    pub test_groups: Vec<EcdsaSignGenResultGroup>,
+}
+
+fn curve_scalar_bytes(curve: &str) -> Result<usize> {
+    match curve {
+        "P-256" => Ok(32),
+        "P-384" => Ok(48),
+        _ => Err(std::io::Error::other(format!("Unsupported curve: {}", curve)).into()),
+    }
+}
+
+// Sends KeyGen, receives qx/qy/d0/d1 as little-endian byte vecs.
+fn run_ecdsa_keygen(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    curve: &str,
+) -> Result<(Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>)> {
+    CryptotestCommand::Ecdsa.send(spi_console)?;
+    CryptotestEcdsaOperation::KeyGen.send(spi_console)?;
+    map_curve(curve)?.send(spi_console)?;
+
+    let resp = CryptotestEcdsaKeygenResp::recv(spi_console, timeout, false, false)?;
+    let qx = resp.qx.as_slice()[..resp.qx_len].to_vec();
+    let qy = resp.qy.as_slice()[..resp.qy_len].to_vec();
+    let d0 = resp.d0.as_slice()[..resp.d0_len].to_vec();
+    let d1 = resp.d1.as_slice()[..resp.d1_len].to_vec();
+    Ok((qx, qy, d0, d1))
+}
+
+// Runs Hash then Sign for one sigGen test case. Returns (r_be_hex, s_be_hex).
+#[allow(clippy::too_many_arguments)]
+fn run_ecdsa_sign_case(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    hash_alg: &str,
+    curve: &str,
+    qx_le: &[u8],
+    qy_le: &[u8],
+    d0_le: &[u8],
+    d1_le: &[u8],
+    tc: &EcdsaSignGenTestCase,
+) -> Result<EcdsaSignGenResultCase> {
+    let msg = Vec::<u8>::from_hex(&tc.message)?;
+
+    // Step 1: hash the message on device.
+    CryptotestCommand::Ecdsa.send(spi_console)?;
+    CryptotestEcdsaOperation::Hash.send(spi_console)?;
+    map_hash_alg(hash_alg)?.send(spi_console)?;
+    CryptotestEcdsaMessage {
+        input: arrayvec::ArrayVec::try_from(msg.as_slice())
+            .map_err(|_| std::io::Error::other("ECDSA message too large"))?,
+        input_len: msg.len(),
+    }
+    .send(spi_console)?;
+
+    let hash_resp = CryptotestEcdsaHashDigest::recv(spi_console, timeout, false, false)?;
+    let digest = &hash_resp.digest.as_slice()[..hash_resp.digest_len];
+
+    // Step 2: sign the digest with the key from keygen.
+    CryptotestCommand::Ecdsa.send(spi_console)?;
+    CryptotestEcdsaOperation::Sign.send(spi_console)?;
+    map_hash_alg(hash_alg)?.send(spi_console)?;
+    map_curve(curve)?.send(spi_console)?;
+
+    CryptotestEcdsaMessage {
+        input: arrayvec::ArrayVec::try_from(digest)
+            .map_err(|_| std::io::Error::other("ECDSA digest too large for message buffer"))?,
+        input_len: digest.len(),
+    }
+    .send(spi_console)?;
+
+    // Signature buffer is output-only; send empty.
+    CryptotestEcdsaSignature {
+        r: arrayvec::ArrayVec::new(),
+        r_len: 0,
+        s: arrayvec::ArrayVec::new(),
+        s_len: 0,
+    }
+    .send(spi_console)?;
+
+    CryptotestEcdsaCoordinate {
+        coordinate: arrayvec::ArrayVec::try_from(qx_le)
+            .map_err(|_| std::io::Error::other("ECDSA qx too large"))?,
+        coordinate_len: qx_le.len(),
+    }
+    .send(spi_console)?;
+
+    CryptotestEcdsaCoordinate {
+        coordinate: arrayvec::ArrayVec::try_from(qy_le)
+            .map_err(|_| std::io::Error::other("ECDSA qy too large"))?,
+        coordinate_len: qy_le.len(),
+    }
+    .send(spi_console)?;
+
+    let unmasked_len = curve_scalar_bytes(curve)?;
+    CryptotestEcdsaPrivateKey {
+        d0: arrayvec::ArrayVec::try_from(d0_le)
+            .map_err(|_| std::io::Error::other("ECDSA d0 too large"))?,
+        d0_len: d0_le.len(),
+        d1: arrayvec::ArrayVec::try_from(d1_le)
+            .map_err(|_| std::io::Error::other("ECDSA d1 too large"))?,
+        d1_len: d1_le.len(),
+        unmasked_len,
+    }
+    .send(spi_console)?;
+
+    let sig = CryptotestEcdsaSignature::recv(spi_console, timeout, false, false)?;
+    let mut r = sig.r.as_slice()[..sig.r_len].to_vec();
+    let mut s = sig.s.as_slice()[..sig.s_len].to_vec();
+    r.reverse();
+    s.reverse();
+
+    Ok(EcdsaSignGenResultCase {
+        tc_id: tc.tc_id,
+        r: hex::encode_upper(&r),
+        s: hex::encode_upper(&s),
+    })
+}
+
+fn run_ecdsa_siggen_group(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    tg: &EcdsaSignGenTestGroup,
+    skip_stride: usize,
+    start_offset: usize,
+) -> Result<EcdsaSignGenResultGroup> {
+    log::info!("tg_id: {}", tg.tg_id);
+
+    map_hash_alg(&tg.hash_alg)?;
+    map_curve(&tg.curve)?;
+
+    // One key per group; all test cases share it.
+    let (qx_le, qy_le, d0_le, d1_le) = run_ecdsa_keygen(timeout, spi_console, &tg.curve)?;
+
+    let mut qx_be = qx_le.clone();
+    qx_be.reverse();
+    let mut qy_be = qy_le.clone();
+    qy_be.reverse();
+    let qx_hex = hex::encode_upper(&qx_be);
+    let qy_hex = hex::encode_upper(&qy_be);
+
+    let stride = min(skip_stride, tg.tests.len());
+    let offset = if stride > 0 { start_offset % stride } else { 0 };
+    log::info!("Test options: skip_stride: {}, offset: {}", stride, offset);
+
+    let mut result_cases = Vec::new();
+    for tc in &tg.tests {
+        if stride > 0 && (tc.tc_id % stride) != offset {
+            continue;
+        }
+        log::info!("tc_id: {}", tc.tc_id);
+        result_cases.push(run_ecdsa_sign_case(
+            timeout,
+            spi_console,
+            &tg.hash_alg,
+            &tg.curve,
+            &qx_le,
+            &qy_le,
+            &d0_le,
+            &d1_le,
+            tc,
+        )?);
+    }
+
+    Ok(EcdsaSignGenResultGroup {
+        tg_id: tg.tg_id,
+        qx: qx_hex,
+        qy: qy_hex,
+        tests: result_cases,
+    })
+}
+
+pub fn run_ecdsa_siggen_vector_set(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    vs: &EcdsaSignGenTestVectorSet,
+    skip_stride_arg: usize,
+    seed_arg: Option<u64>,
+) -> Result<EcdsaSignGenResultVectorSet> {
+    log::info!("vs_id: {}", vs.vs_id);
+
+    let seed = seed_arg.unwrap_or_else(rand::random::<u64>);
+    log::info!("Using seed {}", seed);
+
+    let mut drng = ChaCha8Rng::seed_from_u64(seed);
+    let (skip_stride, start_offset) = match (drng.next_u32() as usize).checked_rem(skip_stride_arg)
+    {
+        Some(offset) => (skip_stride_arg, offset),
+        None => (1usize, 0usize),
+    };
+
+    let mut result_groups = Vec::with_capacity(vs.test_groups.len());
+    for tg in &vs.test_groups {
+        result_groups.push(run_ecdsa_siggen_group(
+            timeout,
+            spi_console,
+            tg,
+            skip_stride,
+            start_offset,
+        )?);
+    }
+
+    Ok(EcdsaSignGenResultVectorSet {
         vs_id: vs.vs_id,
         algorithm: vs.algorithm.clone(),
         mode: vs.mode.clone(),
