@@ -1,0 +1,313 @@
+// Copyright lowRISC contributors (OpenTitan project).
+//
+// Source: NIST ACVP-Server (https://github.com/usnistgov/ACVP-Server)
+// NIST License:
+// NIST-developed software is provided by NIST as a public service. You may
+// use, copy, and distribute copies of the software in any medium, provided
+// that you keep intact this entire notice. You may improve, modify, and create
+// derivative works of the software or any portion of the software, and you may
+// copy and distribute such modifications or works. Modified works should carry
+// a notice stating that you changed the software and should note the date and
+// nature of any such change. Please explicitly acknowledge the National
+// Institute of Standards and Technology as the source of the software.
+//
+// NIST-developed software is expressly provided "AS IS." NIST MAKES NO
+// WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT, OR ARISING BY OPERATION OF
+// LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND DATA ACCURACY. NIST
+// NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE
+// UNINTERRUPTED OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST
+// DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE OF THE
+// SOFTWARE OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE
+// CORRECTNESS, ACCURACY, RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
+//
+// You are solely responsible for determining the appropriateness of using and
+// distributing the software and you assume all risks associated with its use,
+// including but not limited to the risks and costs of program errors,
+// compliance with applicable laws, damage to or loss of data, programs or
+// equipment, and the unavailability or interruption of operation. This
+// software is not intended to be used in any situation where a failure could
+// cause risk of injury or damage to property. The software developed by NIST
+// employees is not subject to copyright protection within the United States.
+//
+// Based on:
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ECDSA-SigVer-FIPS186-5/prompt.json
+// Modifications:
+// This file was modified on 22.05.2026 as following:
+// - Removed all test vectors that do not use the P-256 or P-384 curve.
+// - Removed hashAlg SHA2-512/256 and SHAKE-128/256 test vectors.
+[
+  {
+    "vsId": 0,
+    "algorithm": "ECDSA",
+    "mode": "sigVer",
+    "revision": "FIPS186-5",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 8,
+        "tests": [
+          {
+            "tcId": 50,
+            "testPassed": false
+          },
+          {
+            "tcId": 51,
+            "testPassed": false
+          },
+          {
+            "tcId": 52,
+            "testPassed": false
+          },
+          {
+            "tcId": 53,
+            "testPassed": false
+          },
+          {
+            "tcId": 54,
+            "testPassed": true
+          },
+          {
+            "tcId": 55,
+            "testPassed": false
+          },
+          {
+            "tcId": 56,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 9,
+        "tests": [
+          {
+            "tcId": 57,
+            "testPassed": false
+          },
+          {
+            "tcId": 58,
+            "testPassed": false
+          },
+          {
+            "tcId": 59,
+            "testPassed": false
+          },
+          {
+            "tcId": 60,
+            "testPassed": false
+          },
+          {
+            "tcId": 61,
+            "testPassed": false
+          },
+          {
+            "tcId": 62,
+            "testPassed": true
+          },
+          {
+            "tcId": 63,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 11,
+        "tests": [
+          {
+            "tcId": 71,
+            "testPassed": false
+          },
+          {
+            "tcId": 72,
+            "testPassed": false
+          },
+          {
+            "tcId": 73,
+            "testPassed": false
+          },
+          {
+            "tcId": 74,
+            "testPassed": false
+          },
+          {
+            "tcId": 75,
+            "testPassed": true
+          },
+          {
+            "tcId": 76,
+            "testPassed": false
+          },
+          {
+            "tcId": 77,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 12,
+        "tests": [
+          {
+            "tcId": 78,
+            "testPassed": true
+          },
+          {
+            "tcId": 79,
+            "testPassed": false
+          },
+          {
+            "tcId": 80,
+            "testPassed": false
+          },
+          {
+            "tcId": 81,
+            "testPassed": false
+          },
+          {
+            "tcId": 82,
+            "testPassed": false
+          },
+          {
+            "tcId": 83,
+            "testPassed": false
+          },
+          {
+            "tcId": 84,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 15,
+        "tests": [
+          {
+            "tcId": 99,
+            "testPassed": false
+          },
+          {
+            "tcId": 100,
+            "testPassed": false
+          },
+          {
+            "tcId": 101,
+            "testPassed": false
+          },
+          {
+            "tcId": 102,
+            "testPassed": false
+          },
+          {
+            "tcId": 103,
+            "testPassed": true
+          },
+          {
+            "tcId": 104,
+            "testPassed": false
+          },
+          {
+            "tcId": 105,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 16,
+        "tests": [
+          {
+            "tcId": 106,
+            "testPassed": false
+          },
+          {
+            "tcId": 107,
+            "testPassed": false
+          },
+          {
+            "tcId": 108,
+            "testPassed": false
+          },
+          {
+            "tcId": 109,
+            "testPassed": false
+          },
+          {
+            "tcId": 110,
+            "testPassed": false
+          },
+          {
+            "tcId": 111,
+            "testPassed": true
+          },
+          {
+            "tcId": 112,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 18,
+        "tests": [
+          {
+            "tcId": 120,
+            "testPassed": false
+          },
+          {
+            "tcId": 121,
+            "testPassed": false
+          },
+          {
+            "tcId": 122,
+            "testPassed": false
+          },
+          {
+            "tcId": 123,
+            "testPassed": false
+          },
+          {
+            "tcId": 124,
+            "testPassed": true
+          },
+          {
+            "tcId": 125,
+            "testPassed": false
+          },
+          {
+            "tcId": 126,
+            "testPassed": false
+          }
+        ]
+      },
+      {
+        "tgId": 19,
+        "tests": [
+          {
+            "tcId": 127,
+            "testPassed": false
+          },
+          {
+            "tcId": 128,
+            "testPassed": false
+          },
+          {
+            "tcId": 129,
+            "testPassed": false
+          },
+          {
+            "tcId": 130,
+            "testPassed": false
+          },
+          {
+            "tcId": 131,
+            "testPassed": false
+          },
+          {
+            "tcId": 132,
+            "testPassed": false
+          },
+          {
+            "tcId": 133,
+            "testPassed": true
+          }
+        ]
+      }
+    ]
+  }
+]
