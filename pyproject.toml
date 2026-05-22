@@ -10,7 +10,7 @@ requires-python = ">=3.8"
 
 dependencies = [
   # Dependency management
-  "uv==0.4.10",
+  "uv==0.7.14",
 
    # Polyfill library
   "importlib-resources ~= 5.12", # Need for Python<3.9
