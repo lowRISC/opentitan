@@ -22,11 +22,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_aes",
-  version:            "1.1.0",
-  life_stage:         "L1",
-  design_stage:       "D1",
-  verification_stage: "V1",
-  dif_stage:          "S2",
+  revisions: [
+    {
+      version:            "1.0.1",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+      commit_id:          "5967df933a814f72d5212bd43d13a0041a3aaf9d",
+    },
+    {
+      version:            "1.1.0",
+      life_stage:         "L1",
+      design_stage:       "D2S",
+      verification_stage: "V2S",
+      dif_stage:          "S2",
+    }
+  ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", idle: "idle_o", primary: true},
     {clock: "clk_edn_i", reset: "rst_edn_ni", idle: "idle_o"}
