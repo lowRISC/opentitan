@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
+`include "prim_fifo_assert.svh"
 
 /**
  * Ibex RISC-V core
@@ -60,7 +61,8 @@ module rv_core_ibex
   parameter logic [31:0]            CsrMvendorId                   = 32'b0,
   parameter logic [31:0]            CsrMimpId                      = 32'b0,
   parameter int unsigned            CheriotRevBitmapAddrWidth      = 32'd9,
-  parameter int unsigned            CheriotRevBitmapBaseAddr       = 32'h0
+  parameter int unsigned            CheriotRevBitmapBaseAddr       = 32'h0,
+  parameter int unsigned            CheriotTrvkHeapBaseAddr        = 32'h0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -82,6 +84,8 @@ module rv_core_ibex
   input  logic [31:0] hart_id_i,
   input  logic [31:0] boot_addr_i,
 
+  output prim_mubi_pkg::mubi4_t cheriot_ena_o,
+
   // Instruction memory interface
   output tlul_pkg::tl_h2d_t     corei_tl_h_o,
   input  tlul_pkg::tl_d2h_t     corei_tl_h_i,
@@ -89,6 +93,14 @@ module rv_core_ibex
   // Data memory interface
   output tlul_pkg::tl_h2d_t     cored_tl_h_o,
   input  tlul_pkg::tl_d2h_t     cored_tl_h_i,
+
+  // CHERIoT capability tags
+  output logic cored_tag_h2d_o,
+  input  logic cored_tag_d2h_i,
+
+  // CHERIoT TRVK revocation bitmap (revbm) memory interface
+  output tlul_pkg::tl_h2d_t     corerevbm_tl_o,
+  input  tlul_pkg::tl_d2h_t     corerevbm_tl_i,
 
   // Interrupt inputs
   input  logic        irq_software_i,
@@ -188,6 +200,15 @@ module rv_core_ibex
   logic [31:0] shadow_core_data_wdata;
   logic [6:0]  shadow_core_data_wdata_intg;
 
+  // Main core CHERIoT TRVK revocation bitmap (revbm) interface (internal)
+  logic        main_core_revbm_req;
+  logic        main_core_revbm_gnt;
+  logic [31:0] main_core_revbm_addr;
+  logic        main_core_revbm_rvalid;
+  logic [31:0] main_core_revbm_rdata;
+  logic [6:0]  main_core_revbm_rdata_intg;
+  logic        main_core_revbm_err;
+
   // Lockstep interface
   logic [3:0]  core_lockstep_cmp_en;
 
@@ -196,6 +217,8 @@ module rv_core_ibex
   tl_d2h_t tl_i_fifo2ibex;
   tl_h2d_t tl_d_ibex2fifo_main_core;
   tl_d2h_t tl_d_fifo2ibex;
+  tl_h2d_t tl_revbm_ibex2fifo;
+  tl_d2h_t tl_revbm_fifo2ibex;
 
   // TLUL LC Gate interfaces
   tl_h2d_t tl_d_fifo2gate;
@@ -240,7 +263,6 @@ module rv_core_ibex
   logic core_sleep;
 
   // CHERIoT signals
-  prim_mubi_pkg::mubi4_t cheriot_ena;
   logic                  cheriot_switch_error;
   logic                  unused_cheriot;
 
@@ -261,6 +283,7 @@ module rv_core_ibex
 
   // errors and core alert events
   logic ibus_intg_err, dbus_intg_err;
+  logic revbmbus_intg_err;
   logic alert_minor, alert_major_internal, alert_major_bus;
   logic double_fault;
   logic fatal_intg_err, fatal_core_err, recov_core_err;
@@ -272,7 +295,7 @@ module rv_core_ibex
   logic fatal_core_event;
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
-  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
+  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | revbmbus_intg_err | alert_major_bus;
   assign fatal_core_event = alert_major_internal        |
                             double_fault                |
                             tlul_lc_gate_core_d_error   |
@@ -504,7 +527,7 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
-    .trvk_heap_base_addr_i('0), // SRAM base address
+    .trvk_heap_base_addr_i(CheriotTrvkHeapBaseAddr), // SRAM base address
 
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
@@ -522,19 +545,19 @@ module rv_core_ibex
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
-    .data_tag_o         (),
+    .data_tag_o         (cored_tag_h2d_o),
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
-    .data_tag_i         ('0),
+    .data_tag_i         (cored_tag_d2h_i),
     .data_err_i         (main_core_data_err),
 
-    .trvk_revbm_req_o       (),
-    .trvk_revbm_gnt_i       ('0),
-    .trvk_revbm_rvalid_i    ('0),
-    .trvk_revbm_addr_o      (),
-    .trvk_revbm_rdata_i     ('0),
-    .trvk_revbm_rdata_intg_i('0),
-    .trvk_revbm_err_i       ('0),
+    .trvk_revbm_req_o       (main_core_revbm_req),
+    .trvk_revbm_gnt_i       (main_core_revbm_gnt),
+    .trvk_revbm_rvalid_i    (main_core_revbm_rvalid),
+    .trvk_revbm_addr_o      (main_core_revbm_addr),
+    .trvk_revbm_rdata_i     (main_core_revbm_rdata),
+    .trvk_revbm_rdata_intg_i(main_core_revbm_rdata_intg),
+    .trvk_revbm_err_i       (main_core_revbm_err),
 
     .irq_software_i     ( irq_software     ),
     .irq_timer_i        ( irq_timer        ),
@@ -821,6 +844,75 @@ module rv_core_ibex
     .err_o          (tlul_lc_gate_core_d_error)
   );
 
+  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_revbm_tl_adapter
+
+    logic [6:0]  revbm_wdata_intg;
+    logic [top_pkg::TL_DW-1:0] unused_revbm_data;
+    // tl_adapter_host_revbm_ibex only reads revocation bm. a_data is always 0
+    assign {revbm_wdata_intg, unused_revbm_data} = prim_secded_pkg::prim_secded_inv_39_32_enc('0);
+    // SEC_CM: BUS.INTEGRITY
+    tlul_adapter_host #(
+      .MAX_REQS(NumOutstandingReqs),
+      // if secure ibex is not set, data integrity is not generated
+      // from ibex, therefore generate it in the gasket instead.
+      .EnableDataIntgGen(~SecureIbex)
+    ) tl_adapter_host_revbm_ibex (
+      .clk_i,
+      .rst_ni,
+      .req_i        (main_core_revbm_req),
+      .instr_type_i (prim_mubi_pkg::MuBi4True),
+      .gnt_o        (main_core_revbm_gnt),
+      .addr_i       (main_core_revbm_addr),
+      .we_i         (1'b0),
+      .wdata_i      (32'b0),
+      .wdata_intg_i (revbm_wdata_intg),
+      .be_i         (4'hF),
+      .user_rsvd_i  (TlulHostUserRsvdBits),
+      .valid_o      (main_core_revbm_rvalid),
+      .rdata_o      (main_core_revbm_rdata),
+      .rdata_intg_o (main_core_revbm_rdata_intg),
+      .err_o        (main_core_revbm_err),
+      .intg_err_o   (revbmbus_intg_err),
+      .tl_o         (tl_revbm_ibex2fifo),
+      .tl_i         (tl_revbm_fifo2ibex)
+    );
+
+    tlul_fifo_sync #(
+      .ReqPass(FifoPass),
+      .RspPass(FifoPass),
+      .ReqDepth(FifoDepth),
+      .RspDepth(FifoDepth)
+    ) fifo_revbm (
+      .clk_i,
+      .rst_ni,
+      .tl_h_i      (tl_revbm_ibex2fifo),
+      .tl_h_o      (tl_revbm_fifo2ibex),
+      .tl_d_o      (corerevbm_tl_o),
+      .tl_d_i      (corerevbm_tl_i),
+      .spare_req_i (1'b0),
+      .spare_req_o (),
+      .spare_rsp_i (1'b0),
+      .spare_rsp_o ()
+    );
+
+  end else begin : gen_no_cheriot_revbm_tl_adapter
+
+    // Tie-off unused signals
+    logic unused_cheriot_tl;
+    assign unused_cheriot_tl = ^{corerevbm_tl_i,
+                                 tl_revbm_ibex2fifo,
+                                 tl_revbm_fifo2ibex,
+                                 main_core_revbm_req,
+                                 main_core_revbm_addr
+                                };
+    assign corerevbm_tl_o             = '0;
+    assign main_core_revbm_gnt        = '0;
+    assign main_core_revbm_rvalid     = '0;
+    assign main_core_revbm_rdata      = '0;
+    assign main_core_revbm_rdata_intg = '0;
+    assign main_core_revbm_err        = '0;
+  end
+
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
     .clk_i,
@@ -1038,24 +1130,26 @@ module rv_core_ibex
   ////////////////////
   // CHERIoT switch
   ////////////////////
-
   if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch
     cheriot_switch u_cheriot_switch (
       .clk_i,
       .rst_ni,
-      .ena_i        (reg2hw.cheriot_ena.q),
-      .lock_i       (reg2hw.cheriot_lock.q),
+      .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
+      .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
       .lock_access_i(reg2hw.cheriot_lock.qe),
-      .ena_o        (cheriot_ena),
+      .ena_o        (cheriot_ena_o),
       .error_o      (cheriot_switch_error)
     );
     // For now, tie off all signals
-    assign unused_cheriot = ^{cheriot_ena, cheriot_switch_error};
+    assign unused_cheriot = ^cheriot_switch_error;
 
   end else begin : gen_no_cheriot_switch
-    assign cheriot_ena          = prim_mubi_pkg::MuBi4False;
+    assign cheriot_ena_o        = prim_mubi_pkg::MuBi4False;
     assign cheriot_switch_error = 1'b0;
-    assign unused_cheriot       = ^{cheriot_ena, cheriot_switch_error};
+    assign unused_cheriot       = ^{cheriot_switch_error,
+                                    reg2hw.cheriot_ena,
+                                    reg2hw.cheriot_lock
+                                  };
   end
 
   logic unused_reg2hw;
@@ -1571,6 +1665,9 @@ module rv_core_ibex
   end
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
       u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
+
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheriotSwitchFsm_A,
+      gen_cheriot_switch.u_cheriot_switch.u_state_regs, alert_tx_o[2])
 
 `endif // ifdef INC_ASSERT
 endmodule

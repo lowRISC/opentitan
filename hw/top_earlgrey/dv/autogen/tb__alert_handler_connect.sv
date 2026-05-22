@@ -67,3 +67,4 @@ assign alert_if[59].alert_tx = `CHIP_HIER.u_rv_core_ibex.alert_tx_o[0];
 assign alert_if[60].alert_tx = `CHIP_HIER.u_rv_core_ibex.alert_tx_o[1];
 assign alert_if[61].alert_tx = `CHIP_HIER.u_rv_core_ibex.alert_tx_o[2];
 assign alert_if[62].alert_tx = `CHIP_HIER.u_rv_core_ibex.alert_tx_o[3];
+assign alert_if[63].alert_tx = `CHIP_HIER.u_sram_ctrl_meta.alert_tx_o[0];

@@ -12,6 +12,7 @@ load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_earlgrey/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
 load("//hw/ip/aon_timer:defs.bzl", "AON_TIMER")
 load("//hw/top_earlgrey/ip/ast:defs.bzl", "AST")
+load("//hw/ip/cheriot:defs.bzl", "CHERIOT")
 load("//hw/top_earlgrey/ip_autogen/clkmgr:defs.bzl", "CLKMGR")
 load("//hw/ip/csrng:defs.bzl", "CSRNG")
 load("//hw/ip/edn:defs.bzl", "EDN")
@@ -48,6 +49,7 @@ EARLGREY_IPS = [
     ALERT_HANDLER,
     AON_TIMER,
     AST,
+    CHERIOT,
     CLKMGR,
     CSRNG,
     EDN,
@@ -143,4 +145,5 @@ EARLGREY_ALERTS = [
     "rv_core_ibex_recov_sw_err",
     "rv_core_ibex_fatal_hw_err",
     "rv_core_ibex_recov_hw_err",
+    "sram_ctrl_meta_fatal_error",
 ]

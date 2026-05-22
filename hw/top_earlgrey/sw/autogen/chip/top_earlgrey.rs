@@ -637,6 +637,20 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
+/// Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const SRAM_CTRL_META_REGS_BASE_ADDR: usize = 0x411D0000;
+
+/// Peripheral size for regs device on sram_ctrl_meta in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #SRAM_CTRL_META_REGS_BASE_ADDR and
+/// `SRAM_CTRL_META_REGS_BASE_ADDR + SRAM_CTRL_META_REGS_SIZE_BYTES`.
+pub const SRAM_CTRL_META_REGS_SIZE_BYTES: usize = 0x40;
+
 /// Memory base address for ram memory on sram_ctrl_ret_aon in top earlgrey.
 pub const SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x40600000;
 
@@ -660,6 +674,18 @@ pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
 
 /// Memory size for rom memory on rom_ctrl in top earlgrey.
 pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
+
+/// Memory base address for revbm memory on cheriot in top earlgrey.
+pub const CHERIOT_REVBM_BASE_ADDR: usize = 0x11000000;
+
+/// Memory size for revbm memory on cheriot in top earlgrey.
+pub const CHERIOT_REVBM_SIZE_BYTES: usize = 0x800;
+
+/// Memory base address for ram memory on sram_ctrl_meta in top earlgrey.
+pub const SRAM_CTRL_META_RAM_BASE_ADDR: usize = 0x11000000;
+
+/// Memory size for ram memory on sram_ctrl_meta in top earlgrey.
+pub const SRAM_CTRL_META_RAM_SIZE_BYTES: usize = 0x9000;
 
 /// PLIC Interrupt Source Peripheral.
 ///
@@ -1812,6 +1838,8 @@ pub enum AlertPeripheral {
     RomCtrl = 38,
     /// rv_core_ibex
     RvCoreIbex = 39,
+    /// sram_ctrl_meta
+    SramCtrlMeta = 40,
 }
 
 /// Alert Handler Alert Source.
@@ -1947,6 +1975,8 @@ pub enum AlertId {
     RvCoreIbexFatalHwErr = 61,
     /// rv_core_ibex_recov_hw_err
     RvCoreIbexRecovHwErr = 62,
+    /// sram_ctrl_meta_fatal_error
+    SramCtrlMetaFatalError = 63,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2016,6 +2046,7 @@ impl TryFrom<u32> for AlertId {
             60 => Ok(Self::RvCoreIbexRecovSwErr),
             61 => Ok(Self::RvCoreIbexFatalHwErr),
             62 => Ok(Self::RvCoreIbexRecovHwErr),
+            63 => Ok(Self::SramCtrlMetaFatalError),
             _ => Err(val),
         }
     }
@@ -2025,7 +2056,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 63] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 64] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // Uart1FatalFault -> AlertPeripheral::Uart1
@@ -2152,6 +2183,8 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 63] = [
     AlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovHwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
+    // SramCtrlMetaFatalError -> AlertPeripheral::SramCtrlMeta
+    AlertPeripheral::SramCtrlMeta,
 ];
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
@@ -3113,5 +3146,5 @@ pub enum HintableClocks {
 /// MMIO region excludes any memory that is separate from the module
 /// configuration space, i.e. ROM, main SRAM, and flash are excluded but
 /// retention SRAM, spi_device memory, or usbdev memory are included.
-pub const TOP_EARLGREY_MMIO_BASE_ADDR: usize = 0x40000000;
-pub const TOP_EARLGREY_MMIO_SIZE_BYTES: usize = 0x10000000;
+pub const TOP_EARLGREY_MMIO_BASE_ADDR: usize = 0x11000000;
+pub const TOP_EARLGREY_MMIO_SIZE_BYTES: usize = 0x3F000000;

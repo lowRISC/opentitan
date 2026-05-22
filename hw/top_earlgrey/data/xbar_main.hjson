@@ -31,7 +31,7 @@
       reset: "rst_main_ni",
       pipeline: false
     },
-    { name:  "rv_core_ibex.cored",
+    { name:  "cheriot.cored",
       type:  "host",
       addr_space: "hart",
       clock: "clk_main_i",
@@ -216,16 +216,30 @@
       reset:     "rst_main_ni",
       pipeline:  false
     },
+    { name:      "sram_ctrl_meta.regs",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "cheriot.revbm",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
   ],
   connections: {
     rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
-    rv_core_ibex.cored:  [
+    cheriot.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
       "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
-      "rv_core_ibex.cfg"
+      "rv_core_ibex.cfg", "sram_ctrl_meta.regs", "cheriot.revbm"
     ],
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
@@ -233,7 +247,7 @@
       "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
-      "rv_core_ibex.cfg",
+      "rv_core_ibex.cfg", "sram_ctrl_meta.regs", "cheriot.revbm"
     ],
   },
 }

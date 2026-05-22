@@ -822,6 +822,24 @@ extern "C" {
  */
 #define TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES 0x100u
 
+/**
+ * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_META_REGS_BASE_ADDR 0x411D0000u
+
+/**
+ * Peripheral size for regs device on sram_ctrl_meta in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_META_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_META_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_META_REGS_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_META_REGS_SIZE_BYTES 0x40u
+
 
 /**
  * Memory base address for ram memory on sram_ctrl_ret_aon in top earlgrey.
@@ -862,6 +880,26 @@ extern "C" {
  * Memory size for rom memory on rom_ctrl in top earlgrey.
  */
 #define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
+
+/**
+ * Memory base address for revbm memory on cheriot in top earlgrey.
+ */
+#define TOP_EARLGREY_CHERIOT_REVBM_BASE_ADDR 0x11000000u
+
+/**
+ * Memory size for revbm memory on cheriot in top earlgrey.
+ */
+#define TOP_EARLGREY_CHERIOT_REVBM_SIZE_BYTES 0x800u
+
+/**
+ * Memory base address for ram memory on sram_ctrl_meta in top earlgrey.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_META_RAM_BASE_ADDR 0x11000000u
+
+/**
+ * Memory size for ram memory on sram_ctrl_meta in top earlgrey.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_META_RAM_SIZE_BYTES 0x9000u
 
 
 /**
@@ -1166,7 +1204,8 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralSramCtrlMain = 37, /**< sram_ctrl_main */
   kTopEarlgreyAlertPeripheralRomCtrl = 38, /**< rom_ctrl */
   kTopEarlgreyAlertPeripheralRvCoreIbex = 39, /**< rv_core_ibex */
-  kTopEarlgreyAlertPeripheralLast = 39, /**< \internal Final Alert peripheral */
+  kTopEarlgreyAlertPeripheralSramCtrlMeta = 40, /**< sram_ctrl_meta */
+  kTopEarlgreyAlertPeripheralLast = 40, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
 
 /**
@@ -1239,7 +1278,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 60, /**< rv_core_ibex_recov_sw_err */
   kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 61, /**< rv_core_ibex_fatal_hw_err */
   kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 62, /**< rv_core_ibex_recov_hw_err */
-  kTopEarlgreyAlertIdLast = 62, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdSramCtrlMetaFatalError = 63, /**< sram_ctrl_meta_fatal_error */
+  kTopEarlgreyAlertIdLast = 63, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1249,7 +1289,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[63];
+    top_earlgrey_alert_for_peripheral[64];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 
@@ -1657,8 +1697,8 @@ typedef enum top_earlgrey_hintable_clocks {
  * configuration space, i.e. ROM, main SRAM, and flash are excluded but
  * retention SRAM, spi_device memory, or usbdev memory are included.
  */
-#define TOP_EARLGREY_MMIO_BASE_ADDR 0x40000000u
-#define TOP_EARLGREY_MMIO_SIZE_BYTES 0x10000000u
+#define TOP_EARLGREY_MMIO_BASE_ADDR 0x11000000u
+#define TOP_EARLGREY_MMIO_SIZE_BYTES 0x3F000000u
 
 // Header Extern Guard
 #ifdef __cplusplus

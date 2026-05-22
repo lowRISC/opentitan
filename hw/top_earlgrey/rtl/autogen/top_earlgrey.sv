@@ -99,6 +99,7 @@ module top_earlgrey #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
@@ -112,6 +113,10 @@ module top_earlgrey #(
   parameter ibex_pkg::pmp_cfg_t RvCoreIbexPMPRstCfg[16] = ibex_pmp_reset_pkg::PmpCfgRst,
   parameter logic [33:0] RvCoreIbexPMPRstAddr[16] = ibex_pmp_reset_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t RvCoreIbexPMPRstMsecCfg = ibex_pmp_reset_pkg::PmpMseccfgRst,
+  parameter ibex_pkg::base_isa_e RvCoreIbexBaseIsa = ibex_pkg::BaseIsaRV32IorCHERIoT,
+  parameter int unsigned RvCoreIbexCheriotRevBitmapAddrWidth = 9,
+  parameter int unsigned RvCoreIbexCheriotRevBitmapBaseAddr = 32'h1100_0000,
+  parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr = 32'h1000_0000,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
   parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
@@ -136,7 +141,20 @@ module top_earlgrey #(
   parameter bit RvCoreIbexPipeLine = 0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvCoreIbexTlulHostUserRsvdBits = '0,
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
-  parameter logic [31:0] RvCoreIbexCsrMimpId = '0
+  parameter logic [31:0] RvCoreIbexCsrMimpId = '0,
+  // parameters for cheriot
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramBaseAddr = 32'h1000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramTopAddr = 32'h1002_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmBaseAddr = 32'h2000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmTopAddr = 32'h2020_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMetaSramBaseAddr = 32'h1100_0000,
+  // parameters for sram_ctrl_meta
+  parameter int SramCtrlMetaInstSize = 36864,
+  parameter int SramCtrlMetaNumRamInst = 1,
+  parameter bit SramCtrlMetaInstrExec = 0,
+  parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlMetaNumAddrScrRounds = 0,
+  parameter bit SramCtrlMetaEccCorrection = 0
 ) (
   // Inter-module Signal External type
   output alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump_o,
@@ -188,6 +206,7 @@ module top_earlgrey #(
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlMetaNumRamInst-1:0] sram_ctrl_meta_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       usb_ram_1p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
@@ -306,6 +325,8 @@ module top_earlgrey #(
   localparam bit RomCtrlFlopToKmac = 1'b0;
   // local parameters for rv_core_ibex
   localparam bit RvCoreIbexInstructionPipeline = 1'b0;
+  // local parameters for sram_ctrl_meta
+  localparam int SramCtrlMetaOutstanding = 2;
 
   // Signals
   logic [56:0] mio_p2d;
@@ -414,6 +435,8 @@ module top_earlgrey #(
   // sram_ctrl_main
   // rom_ctrl
   // rv_core_ibex
+  // cheriot
+  // sram_ctrl_meta
 
 
   logic [183:0] intr_vector;
@@ -666,12 +689,20 @@ module top_earlgrey #(
   logic       rv_plic_msip;
   logic       rv_plic_irq;
   logic       rv_dm_debug_req;
+  tlul_pkg::tl_h2d_t       rv_core_ibex_cored_tl_h_req;
+  tlul_pkg::tl_d2h_t       rv_core_ibex_cored_tl_h_rsp;
+  tlul_pkg::tl_h2d_t       rv_core_ibex_corerevbm_tl_req;
+  tlul_pkg::tl_d2h_t       rv_core_ibex_corerevbm_tl_rsp;
+  logic       rv_core_ibex_cored_tag_h2d;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
+  tlul_pkg::tl_h2d_t       cheriot_meta_sram_tl_req;
+  tlul_pkg::tl_d2h_t       cheriot_meta_sram_tl_rsp;
+  logic       cheriot_cored_tag_d2h;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
-  tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__cored_req;
-  tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__cored_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_cheriot__cored_req;
+  tlul_pkg::tl_d2h_t       main_tl_cheriot__cored_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_dm__sba_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_dm__sba_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_regs_tl_d_req;
@@ -722,6 +753,10 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       sram_ctrl_main_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_ram_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_main_ram_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_meta_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_meta_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       cheriot_revbm_tl_d_req;
+  tlul_pkg::tl_d2h_t       cheriot_revbm_tl_d_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
@@ -782,14 +817,6 @@ module top_earlgrey #(
   assign ast_usb_ram_1p_cfg = usb_ram_1p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
 
-  // Dummy signal definitions for unused partial inter-module signals
-  otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
-
-  // Assign unused partial inter-module signals
-  assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
-
-  // Assign undriven partial inter-module signals
-  assign otp_ctrl_sram_otp_key_req[3] = '0;
 
   // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
@@ -2385,6 +2412,7 @@ module top_earlgrey #(
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+    .NumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
     .Outstanding(SramCtrlMainOutstanding),
     .EccCorrection(SramCtrlMainEccCorrection)
   ) u_sram_ctrl_main (
@@ -2465,6 +2493,10 @@ module top_earlgrey #(
     .PMPRstCfg(RvCoreIbexPMPRstCfg),
     .PMPRstAddr(RvCoreIbexPMPRstAddr),
     .PMPRstMsecCfg(RvCoreIbexPMPRstMsecCfg),
+    .BaseIsa(RvCoreIbexBaseIsa),
+    .CheriotRevBitmapAddrWidth(RvCoreIbexCheriotRevBitmapAddrWidth),
+    .CheriotRevBitmapBaseAddr(RvCoreIbexCheriotRevBitmapBaseAddr),
+    .CheriotTrvkHeapBaseAddr(RvCoreIbexCheriotTrvkHeapBaseAddr),
     .RV32E(RvCoreIbexRV32E),
     .RV32M(RvCoreIbexRV32M),
     .RV32B(RvCoreIbexRV32B),
@@ -2513,6 +2545,13 @@ module top_earlgrey #(
 
     // Inter-module signals
     .rst_cpu_n_o(),
+    .cheriot_ena_o(),
+    .cored_tl_h_o(rv_core_ibex_cored_tl_h_req),
+    .cored_tl_h_i(rv_core_ibex_cored_tl_h_rsp),
+    .cored_tag_h2d_o(rv_core_ibex_cored_tag_h2d),
+    .cored_tag_d2h_i(cheriot_cored_tag_d2h),
+    .corerevbm_tl_o(rv_core_ibex_corerevbm_tl_req),
+    .corerevbm_tl_i(rv_core_ibex_corerevbm_tl_rsp),
     .ram_cfg_icache_tag_i(ast_ram_1p_cfg),
     .ram_cfg_rsp_icache_tag_o(),
     .ram_cfg_icache_data_i(ast_ram_1p_cfg),
@@ -2532,15 +2571,87 @@ module top_earlgrey #(
     .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark_i),
     .edn_o(edn0_edn_req[7]),
     .edn_i(edn0_edn_rsp[7]),
-    .icache_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
-    .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
+    .icache_otp_key_o(otp_ctrl_sram_otp_key_req[3]),
+    .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[3]),
     .fpga_info_i(fpga_info_i),
     .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
     .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
-    .cored_tl_h_o(main_tl_rv_core_ibex__cored_req),
-    .cored_tl_h_i(main_tl_rv_core_ibex__cored_rsp),
     .cfg_tl_d_i(rv_core_ibex_cfg_tl_d_req),
     .cfg_tl_d_o(rv_core_ibex_cfg_tl_d_rsp)
+  );
+
+  cheriot #(
+    .MainSramBaseAddr(CheriotMainSramBaseAddr),
+    .MainSramTopAddr(CheriotMainSramTopAddr),
+    .NvmBaseAddr(CheriotNvmBaseAddr),
+    .NvmTopAddr(CheriotNvmTopAddr),
+    .MetaSramBaseAddr(CheriotMetaSramBaseAddr)
+  ) u_cheriot (
+    // Clock and reset connections
+    .clk_i(clkmgr_aon_clocks_i.clk_main_infra),
+    .rst_ni(rstmgr_aon_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+
+
+    // Inter-module signals
+    .cheriot_ena_i(prim_mubi_pkg::MuBi4False),
+    .cored_tl_d_i(rv_core_ibex_cored_tl_h_req),
+    .cored_tl_d_o(rv_core_ibex_cored_tl_h_rsp),
+    .cored_tag_h2d_i(rv_core_ibex_cored_tag_h2d),
+    .cored_tag_d2h_o(cheriot_cored_tag_d2h),
+    .corerevbm_tl_i(rv_core_ibex_corerevbm_tl_req),
+    .corerevbm_tl_o(rv_core_ibex_corerevbm_tl_rsp),
+    .meta_sram_tl_o(cheriot_meta_sram_tl_req),
+    .meta_sram_tl_i(cheriot_meta_sram_tl_rsp),
+    .cored_tl_h_o(main_tl_cheriot__cored_req),
+    .cored_tl_h_i(main_tl_cheriot__cored_rsp),
+    .revbm_tl_d_i(cheriot_revbm_tl_d_req),
+    .revbm_tl_d_o(cheriot_revbm_tl_d_rsp)
+  );
+
+  sram_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[63]),
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .RndCnstSramKey(RndCnstSramCtrlMetaSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlMetaSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlMetaLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlMetaLfsrPerm),
+    .MemSizeRam(36864),
+    .InstSize(SramCtrlMetaInstSize),
+    .NumRamInst(SramCtrlMetaNumRamInst),
+    .InstrExec(SramCtrlMetaInstrExec),
+    .NumPrinceRoundsHalf(SramCtrlMetaNumPrinceRoundsHalf),
+    .NumAddrScrRounds(SramCtrlMetaNumAddrScrRounds),
+    .Outstanding(SramCtrlMetaOutstanding),
+    .EccCorrection(SramCtrlMetaEccCorrection)
+  ) u_sram_ctrl_meta (
+    // Clock and reset connections
+    .clk_i(clkmgr_aon_clocks_i.clk_main_infra),
+    .clk_otp_i(clkmgr_aon_clocks_i.clk_io_div4_infra),
+    .rst_ni(rstmgr_aon_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_otp_ni(rstmgr_aon_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+
+    // alert_handler[63]: fatal_error
+    .alert_tx_o(alert_tx[63]),
+    .alert_rx_i(alert_rx[63]),
+
+    // RACL policies
+    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+
+    // Inter-module signals
+    .sram_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
+    .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
+    .cfg_i(sram_ctrl_meta_cfg_i),
+    .cfg_rsp_o(),
+    .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+    .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+    .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
+    .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+    .racl_error_o(),
+    .sram_rerror_o(),
+    .regs_tl_i(sram_ctrl_meta_regs_tl_req),
+    .regs_tl_o(sram_ctrl_meta_regs_tl_rsp),
+    .ram_tl_i(cheriot_meta_sram_tl_req),
+    .ram_tl_o(cheriot_meta_sram_tl_rsp)
   );
 
 
@@ -2718,9 +2829,9 @@ module top_earlgrey #(
     .tl_rv_core_ibex__corei_i(main_tl_rv_core_ibex__corei_req),
     .tl_rv_core_ibex__corei_o(main_tl_rv_core_ibex__corei_rsp),
 
-    // port: tl_rv_core_ibex__cored
-    .tl_rv_core_ibex__cored_i(main_tl_rv_core_ibex__cored_req),
-    .tl_rv_core_ibex__cored_o(main_tl_rv_core_ibex__cored_rsp),
+    // port: tl_cheriot__cored
+    .tl_cheriot__cored_i(main_tl_cheriot__cored_req),
+    .tl_cheriot__cored_o(main_tl_cheriot__cored_rsp),
 
     // port: tl_rv_dm__sba
     .tl_rv_dm__sba_i(main_tl_rv_dm__sba_req),
@@ -2821,6 +2932,14 @@ module top_earlgrey #(
     // port: tl_sram_ctrl_main__ram
     .tl_sram_ctrl_main__ram_o(sram_ctrl_main_ram_tl_req),
     .tl_sram_ctrl_main__ram_i(sram_ctrl_main_ram_tl_rsp),
+
+    // port: tl_sram_ctrl_meta__regs
+    .tl_sram_ctrl_meta__regs_o(sram_ctrl_meta_regs_tl_req),
+    .tl_sram_ctrl_meta__regs_i(sram_ctrl_meta_regs_tl_rsp),
+
+    // port: tl_cheriot__revbm
+    .tl_cheriot__revbm_o(cheriot_revbm_tl_d_req),
+    .tl_cheriot__revbm_i(cheriot_revbm_tl_d_rsp),
 
     .scanmode_i
   );
