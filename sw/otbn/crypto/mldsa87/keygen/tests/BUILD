@@ -48,3 +48,22 @@ unit_tests = [
     )
     for test in unit_tests
 ]
+
+mldsa87_nist_tests = [
+    "mldsa87_keygen_nist_acvp_51_test",
+    "mldsa87_keygen_nist_acvp_52_test",
+    "mldsa87_keygen_nist_acvp_53_test",
+]
+
+[
+    otbn_sim_test(
+        name = test,
+        srcs = srcs + [
+            "mldsa87_keygen_test.s",
+            "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen.s",
+            "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_mem.s",
+        ],
+        testcase = test + ".hjson",
+    )
+    for test in mldsa87_nist_tests
+]
