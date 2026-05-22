@@ -174,6 +174,14 @@ OT_WARN_UNUSED_RESULT
 status_t aes_end(aes_block_t *iv);
 
 /**
+ * Clears the AES hardware data registers and triggers.
+ *
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t aes_clear(void);
+
+/**
  * Compute the checksum of an AES key.
  *
  * Call this routine after creating or modifying the aes key structure.

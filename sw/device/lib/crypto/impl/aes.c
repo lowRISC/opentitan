@@ -280,6 +280,14 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
 }
 
 /**
+ * Hardware cleanup guard.
+ */
+static void hw_wipe_guard(uint32_t *dummy) {
+  (void)aes_clear();
+  (void)keymgr_sideload_clear_aes();
+}
+
+/**
  * Performs the AES operation.
  *
  * @param key Pointer to the blinded key struct with key shares.
@@ -297,6 +305,9 @@ static otcrypto_status_t otcrypto_aes_impl(
     otcrypto_aes_mode_t aes_mode, otcrypto_aes_operation_t aes_operation,
     const otcrypto_const_byte_buf_t *cipher_input,
     otcrypto_aes_padding_t aes_padding, otcrypto_byte_buf_t *cipher_output) {
+  // Guarantees hw_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
+
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
   size_t input_nblocks;
@@ -450,8 +461,7 @@ static otcrypto_status_t otcrypto_aes_impl(
     HARDENED_TRY(hardened_memcpy(iv->data, aes_iv.data, kAesBlockNumWords));
   }
 
-  // In case the key was sideloaded, clear it.
-  return otcrypto_eval_exit(keymgr_sideload_clear_aes());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_aes_padding_strip(

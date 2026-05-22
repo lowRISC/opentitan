@@ -343,6 +343,10 @@ status_t aes_end(aes_block_t *iv) {
     HARDENED_CHECK_EQ(i, ARRAYSIZE(iv->data));
   }
 
+  return spin_until(AES_STATUS_IDLE_BIT);
+}
+
+status_t aes_clear(void) {
   uint32_t trigger_reg = 0;
   trigger_reg = bitfield_bit32_write(
       trigger_reg, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
