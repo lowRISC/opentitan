@@ -18,14 +18,29 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_EXEC_ENV_SILICON_ROM_EXT",
+)
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("//rules/coverage:view.bzl", "coverage_view_test")
+load("//sw/device/lib/crypto/configs:fips_wrapper.bzl", "fips_transition_test", "fips_wrap_opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
 CRYPTOTEST_EXEC_ENVS = dicts.add(
     EARLGREY_TEST_ENVS,
     EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    {
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    },
+)
+
+# Specifying more restricted platforms for the FIPS tests
+# due to the transition environment not allowing to pass other flags
+# such as Verilator flags
+CRYPTOTEST_FIPS_EXEC_ENVS = dicts.add(
+    EXT_EXEC_ENV_SILICON_ROM_EXT,
     {
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
     },
@@ -350,12 +365,24 @@ filegroup(
     output_group = "dis_file",
 )
 
+# Internal target, to be used for otcrypto_pic_test
+py_test(
+    name = "internal_otcrypto_pic_test",
+    srcs = ["otcrypto_pic_test.py"],
+    main = "otcrypto_pic_test.py",
+    tags = ["manual"],
+    deps = [
+        "@rules_python//python/runfiles",
+    ],
+)
+
 # Verify whether the binary blob of the cryptolib API is position-independent
 # by checking that the symbol addresses are appropriately shifted when
 # shifting the library in memory.
-py_test(
+# Run the test with config=crypto_fips_all
+fips_transition_test(
     name = "otcrypto_pic_test",
-    srcs = ["otcrypto_pic_test.py"],
+    actual_test = ":internal_otcrypto_pic_test",
     args = [
         "--elf-base=$(location :otcrypto_elf_base)",
         "--elf-offset=$(location :otcrypto_elf_shifted)",
@@ -373,7 +400,6 @@ py_test(
         "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-nm",
         "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objcopy",
         "@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-objdump",
-        "@rules_python//python/runfiles",
     ],
 )
 
@@ -1573,6 +1599,13 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+# Call the hash test with --config=crypto_fips_all
+# Call for example otcrypto_hash_test_fips_fpga_cw340_sival_rom_ext, i.e., append fips behind the name and before the exec_env
+fips_wrap_opentitan_test(
+    name = "otcrypto_hash_test",
+    exec_env = CRYPTOTEST_FIPS_EXEC_ENVS,
 )
 
 opentitan_test(
