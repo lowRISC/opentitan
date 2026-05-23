@@ -110,9 +110,9 @@ typedef struct perso_tlv_dev_seed_set {
 /**
  * Personalization blob version object payload.
  */
-typedef struct perso_tlv_blob_version {
+typedef struct perso_tlv_blob_version_payload {
   uint16_t version;
-} perso_tlv_blob_version_t;
+} perso_tlv_blob_version_payload_t;
 
 /**
  * The x509 certificate is prepended by a 16 bits header followed by the ASCII

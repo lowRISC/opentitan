@@ -222,7 +222,10 @@ fn main() -> Result<()> {
     let _perso_certgen_inputs = ManufCertgenInputs {
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
-        blob_version: opts.provisioning_data.blob_version.into(),
+        blob_version: match opts.provisioning_data.blob_version {
+            BlobVersion::V0 => 0,
+            BlobVersion::V1 => 1,
+        },
     };
 
     // Only run test unlock operation if we are in a locked LC state.
