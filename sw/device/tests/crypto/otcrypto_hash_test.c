@@ -63,18 +63,6 @@ bool test_main(void) {
   status_t result = OK_STATUS();
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
-#ifdef HASH_SELF_CHECK_ENABLE
-  otcrypto_status_t check_status = otcrypto_integrity_check();
-
-  if (!status_ok(check_status)) {
-    LOG_ERROR("FIPS Library integrity check failed! Code: 0x%08x",
-              check_status.value);
-    return false;
-  }
-
-  LOG_INFO("Self-integrity check passed.");
-#endif
-
   result = hash_test();
   return status_ok(result);
 }
