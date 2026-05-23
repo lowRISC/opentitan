@@ -14,6 +14,15 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
 
+/**
+ * Sideload cleanup guard.
+ */
+static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+  if (*is_sideloaded == kHardenedBoolTrue) {
+    (void)keymgr_sideload_clear_kmac();
+  }
+}
+
 otcrypto_status_t otcrypto_kmac(
     otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *input_message,
     const otcrypto_const_byte_buf_t *customization_string,
@@ -38,6 +47,9 @@ otcrypto_status_t otcrypto_kmac(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   size_t required_output_words =
@@ -71,6 +83,8 @@ otcrypto_status_t otcrypto_kmac(
     if (key_len != kKmacSideloadKeyLength / 8) {
       return OTCRYPTO_BAD_ARGS;
     }
+    is_sideloaded = kHardenedBoolTrue;
+
     // Configure keymgr with diversification input and then generate the
     // sideload key.
     keymgr_diversification_t diversification;
@@ -118,10 +132,6 @@ otcrypto_status_t otcrypto_kmac(
   // Check if we landed in the correct case statement. Use ORs for this to
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
-
-  if (key->config.hw_backed == kHardenedBoolTrue) {
-    HARDENED_TRY(keymgr_sideload_clear_kmac());
-  }
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue,

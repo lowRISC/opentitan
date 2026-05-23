@@ -176,6 +176,11 @@ static status_t clear(void) {
 }
 
 /**
+ * Hardware wipe guard.
+ */
+static void hmac_wipe_guard(uint32_t *dummy) { (void)clear(); }
+
+/**
  * Write given key to HMAC HWIP.
  *
  * This function does not return error, so it is the responsibility of the
@@ -438,6 +443,8 @@ static status_t ensure_idle(void) {
 static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
                         const otcrypto_const_byte_buf_t *msg,
                         size_t digest_wordlen, uint32_t *digest) {
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+
   // Check that the block is idle.
   HARDENED_TRY(ensure_idle());
 
@@ -476,7 +483,7 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(msg));
 
-  return clear();
+  return OTCRYPTO_OK;
 }
 
 /**
@@ -825,6 +832,8 @@ hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
 }
 
 status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
   size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
@@ -877,11 +886,12 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(data));
 
-  // Clean up.
-  return clear();
+  return OTCRYPTO_OK;
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+
   // Restore context will restore the context and also hit start or continue
   // button as necessary.
   HARDENED_TRY(context_restore(ctx));
@@ -908,6 +918,5 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(digest));
 
-  // Clean up.
-  return clear();
+  return OTCRYPTO_OK;
 }
