@@ -874,14 +874,12 @@ affine_encode:
  *   - Solving the curve equation to get two candidates for x.
  *   - Use lsb(x) to select the correct candidate.
  *
- * This implementation, in accordance with ZIP215 validation criteria, will
- * accept non-canonical values of y in the range [p,2^255). However, the output
- * y value will be fully reduced modulo p.
+ * In order to allow instruction count checking for fault injection protection,
+ * this runs in constant time.
  *
- * Since the inputs to this routine are all public values, there's no need to
- * make it constant-time.
- *
- * This routine runs in variable time.
+ * To achieve constant-time execution, this routine computes both possible
+ * roots and uses branchless hardware selection (bn.sel) and bitwise masking
+ * to apply the correct root and status code.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -894,7 +892,7 @@ affine_encode:
  * @param[out] w10: output x (x < p) (only valid if x20=SUCCESS)
  * @param[out] w11: output y (y < p) (only valid if x20=SUCCESS)
  *
- * clobbered registers: w10, w11, w14 to w18, w20 to w28
+ * clobbered registers: x2, x5 to x7, w10, w11, w14 to w18, w20 to w28
  * clobbered flag groups: FG0
  */
 affine_decode_var:
@@ -946,66 +944,56 @@ affine_decode_var:
   /* FG0.C <= w11 < w27 = y < p */
   bn.cmp   w11, w27
 
-  /* x2 <= FG0[0] = FG0.C */
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 1
+  /* x7 <= FG0[0] = FG0.C
+     x7 will be 1 if y is canonical, 0 if y >= p */
+  csrrs    x7, FG0, x0
+  andi     x7, x7, 1
 
-  /* Fail if y >= p */
-  bne      x2, x0, .L_y_is_canonical
+  /* Store the constant 1, which will be used to compute u and v.
+     w25 <= 1 */
+  bn.addi  w25, w31, 1
 
-  /* Return FAILURE if not canonical */
-  li       x20, 0x1d4
-  bn.mov   w10, w31
-  bn.mov   w11, w31
-  ret
+  /* Compute u and v. */
 
-.L_y_is_canonical:
+  /* w22 <= (w11^2) mod p = y^2 mod p */
+  bn.mov   w22, w11
+  jal      x1, fe_square
+  /* w26 <= (w22 - w25) mod p <= (y^2 - 1) mod p = u */
+  bn.subm  w26, w22, w25
+  /* w22 <= (w22 * w29) mod p = (y^2 * d) mod p */
+  bn.mov   w23, w29
+  jal      x1, fe_mul
+  /* w25 <= (w22 + w25) mod p = (y^2 * d + 1) mod p = v */
+  bn.addm  w25, w22, w25
 
-   /* Store the constant 1, which will be used to compute u and v.
-        w25 <= 1 */
-   bn.addi   w25, w31, 1
+  /* Compute the candidate root r = (u*(v^3))((u*(v^7))^((p-5)/8)) mod p. */
 
-   /* Compute u and v. */
-
-   /* w22 <= (w11^2) mod p = y^2 mod p */
-   bn.mov   w22, w11
-   jal      x1, fe_square
-   /* w26 <= (w22 - w25) mod p <= (y^2 - 1) mod p = u */
-   bn.subm  w26, w22, w25
-   /* w22 <= (w22 * w29) mod p = (y^2 * d) mod p */
-   bn.mov   w23, w29
-   jal      x1, fe_mul
-   /* w25 <= (w22 + w25) mod p = (y^2 * d + 1) mod p = v */
-   bn.addm  w25, w22, w25
-
-   /* Compute the candidate root r = (u*(v^3))((u*(v^7))^((p-5)/8)) mod p. */
-
-   /* w27 <= (w26 * w25) mod p = (u * v) mod p */
-   bn.mov   w22, w26
-   bn.mov   w23, w25
-   jal      x1, fe_mul
-   bn.mov   w27, w22
-   /* w28 <= (w25^2) mod p = (v^2) mod p */
-   bn.mov   w22, w25
-   jal      x1, fe_square
-   bn.mov   w28, w22
-   /* w27 <= (w27 * w28) mod p = (u * v^3) mod p */
-   bn.mov   w22, w27
-   bn.mov   w23, w28
-   jal      x1, fe_mul
-   bn.mov   w27, w22
-   /* w22 <= (w28^2) mod p = (v^4) mod p */
-   bn.mov   w22, w28
-   jal      x1, fe_square
-   /* w22 <= (w22 * w27) mod p = (u * v^7) mod p */
-   bn.mov   w23, w27
-   jal      x1, fe_mul
-   /* w22 <= (w22^((p-5)/8)) mod p = (u * v^7)^((p-5)/8) mod p */
-   bn.mov   w16, w22
-   jal      x1, fe_pow_2252m3
-   /* w22 <= (w22 * w27) mod p = r */
-   bn.mov   w23, w27
-   jal      x1, fe_mul
+  /* w27 <= (w26 * w25) mod p = (u * v) mod p */
+  bn.mov   w22, w26
+  bn.mov   w23, w25
+  jal      x1, fe_mul
+  bn.mov   w27, w22
+  /* w28 <= (w25^2) mod p = (v^2) mod p */
+  bn.mov   w22, w25
+  jal      x1, fe_square
+  bn.mov   w28, w22
+  /* w27 <= (w27 * w28) mod p = (u * v^3) mod p */
+  bn.mov   w22, w27
+  bn.mov   w23, w28
+  jal      x1, fe_mul
+  bn.mov   w27, w22
+  /* w22 <= (w28^2) mod p = (v^4) mod p */
+  bn.mov   w22, w28
+  jal      x1, fe_square
+  /* w22 <= (w22 * w27) mod p = (u * v^7) mod p */
+  bn.mov   w23, w27
+  jal      x1, fe_mul
+  /* w22 <= (w22^((p-5)/8)) mod p = (u * v^7)^((p-5)/8) mod p */
+  bn.mov   w16, w22
+  jal      x1, fe_pow_2252m3
+  /* w22 <= (w22 * w27) mod p = r */
+  bn.mov   w23, w27
+  jal      x1, fe_mul
 
   /* Use the candidate root to derive two possible square roots of x^2. From
      RFC 8032, section 5.1.3, step 3 (with the candidate root again shown as r
@@ -1020,6 +1008,8 @@ affine_decode_var:
 
        3.  Otherwise, no square root exists for modulo p, and decoding
            fails.
+           Note: In this constant-time implementation, case 3 (failure) is
+           handled branchlessly at the end by returning a FAILURE status code.
 
      Again the RFC doesn't really explain the mathematics here. Recall from the
      last step that:
@@ -1047,92 +1037,57 @@ affine_decode_var:
         w27 <= w22 = r */
   bn.mov   w27, w22
 
-  /* w22 <= (w22^2) mod p = (r^2) mod p */
-  jal      x1, fe_square
-  /* w22 <= (w22 * w25) mod p = (r^2 * v) mod p */
-  bn.mov   w23, w25
-  jal      x1, fe_mul
-
-  /* Check for case 1: (r^2 * v) mod p == u. */
-
-  /* x3 <= 8 */
-  addi     x3, x0, 8
-
-  /* FG0.Z <= (w22 - w26 == 0) = ((r^2 * v) mod p == u) */
-  bn.cmp   w22, w26
-  /* x2 <= FG0[3] = FG0.Z = ((r^2 * v) mod p == u) */
-  csrrs    x2, FG0, x0
-  and      x2, x2, x3
-
-  /* Go to step 3, case 1 if we are in case 1. */
-  beq      x2, x3, decode_step3_case1
-
-  /* Check for case 2: (r^2 * v) mod p == (- u) mod p */
-
-  /* w28 <= (w31 - w26) mod p = (0 - u) mod p */
-  bn.subm  w28, w31, w26
-
-  /* FG0.Z <= (w22 - w28 == 0) = ((r^2 * v) mod p == (-u) mod p) */
-  bn.cmp   w22, w28
-  /* x2 <= FG0[3] = FG0.Z = ((r^2 * v) mod p == (-u) mod p) */
-  csrrs    x2, FG0, x0
-  and      x2, x2, x3
-
-  /* Go to step 3, case 2 if we are in case 2. */
-  beq      x2, x3, decode_step3_case2
-
-  /* If we get here, then r^2 was not equal to either (u/v) or - (u/v), so we
-     are in case 3, (u/v) is nonsquare mod p, and point decoding fails. */
-  li       x20, 0x1d4
-  bn.mov   w10, w31
-  bn.mov   w11, w31
-  ret
-
-  decode_step3_case2:
-  /* Multiply r by sqrt(-1) = 2^((p-1)/4). */
-
-  /* w23 <= dmem[ed25519_sqrt_m1] = sqrt(-1) mod p */
+  /* Compute case 2 root: r_alt = r * sqrt(-1) mod p */
   la       x2, ed25519_sqrt_m1
   li       x3, 23
-  bn.lid   x3, 0(x2)
+  bn.lid   x3, 0(x2)           /* w23 <= sqrt(-1) */
+  jal      x1, fe_mul          /* w22 <= r * sqrt(-1) */
+  bn.mov   w14, w22            /* w14 <= r_alt */
 
-  /* w27 <= (w27 * w23) mod p = (r * sqrt(-1)) mod p */
+  /* Restore r to w22 to compute (r^2 * v) mod p */
   bn.mov   w22, w27
-  jal      x1, fe_mul
-  bn.mov   w27, w22
+  jal      x1, fe_square       /* w22 <= r^2 */
+  bn.mov   w23, w25            /* w23 <= v */
+  jal      x1, fe_mul          /* w22 <= (r^2 * v) mod p */
 
-  /* From here, r^2 = x^2 and we can proceed with the same steps as case 1. */
+  /* Pre-calculate -u */
+  bn.subm  w28, w31, w26       /* w28 <= (-u) mod p */
 
-  decode_step3_case1:
-  /* Once we're here, we know that r^2 = x^2, and therefore r is either x or
-     -x. Following RFC 8032, section 5.1.3, step 4, we set the resulting
-     point's x coordinate to r if lsb(x) from the encoded point matches lsb(r),
-     and set x to (-r) mod p otherwise.
+  /* Evaluate Case 1: (r^2 * v) mod p == u */
+  bn.cmp   w22, w26            /* FG0.Z is 1 if Case 1 is true */
+  csrrs    x5, FG0, x0
+  andi     x5, x5, 8           /* x5 = 8 if Case 1, else 0 */
 
-     Because we are following the ZIP15 validation criteria instead of the RFC,
-     we allow the case where x=0 but the encoded lsb(x)=1, so that check is
-     skipped here. In this case, we will decode x as (-0) mod p = 0.
+  /* Evaluate Case 2: (r^2 * v) mod p == -u */
+  bn.cmp   w22, w28            /* FG0.Z is 1 if Case 2 is true */
+  csrrs    x6, FG0, x0
+  andi     x6, x6, 8           /* x6 = 8 if Case 2, else 0 */
 
-     Code here expects:
-       w27: r such that r^2 = x^2 (mod p).
-       w31: all-zero
-  */
-
-  /* Compute (-r) mod p.
-       w10 <= (w31 - w27) mod p = (-r) mod p */
+  /* If the math failed, the calculations are bogus, nevertheless
+     we will return a FAILURE code. */
+  bn.sel   w27, w14, w27, FG0.Z
   bn.subm  w10, w31, w27
-
-  /* Set FG.L to be 1 iff the LSBs of r and x are mismatched.
-       FG0.L <= lsb(w24 ^ w27) = lsb(lsb(x) ^ r) = lsb(x) ^ lsb(r) = (lsb(x) != lsb(r)) */
   bn.xor   w24, w27, w24
-
-  /* If the LSBs are mismatched, select (-r) mod p; otherwise select r.
-       w10 <= FG0.L ? w10 : w27
-                = if (lsb(x) != lsb(r)) then (-r) mod p else r */
   bn.sel   w10, w10, w27, FG0.L
 
-  /* Exit point decoding with SUCCESS. */
-  li       x20, 0x739
+  /* Check math validity: x2 = 8 if math passed, 0 if math failed */
+  or       x2, x5, x6
+  srli     x2, x2, 3           /* x2 = 1 if math passed, 0 if failed */
+
+  /* Combine with the canonical check from the very beginning (x7) */
+  and      x2, x2, x7          /* x2 = 1 ONLY if both passed */
+
+  li       x20, 0x1d4          /* Base: FAILURE */
+  li       x5,  0x565          /* Difference between SUCCESS and FAILURE */
+
+  /* Create a bitmask (0xFFFFFFFF or 0x00000000) */
+  sub      x2, x0, x2
+
+  /* Apply the mask to the difference */
+  and      x5, x5, x2          /* x5 = 1381 if valid, 0 if invalid */
+
+  /* Add to the base failure code */
+  add      x20, x20, x5
 
   ret
 
@@ -1946,6 +1901,9 @@ x25519_mont_u_to_ed_y:
  * clobbered flag groups: FG0
  */
 x25519_ed_ext_to_mont_u_masked:
+  /* Initialize error accumulator in x4 */
+  add      x4, x0, x0
+
   /* W = (Z - Y) mod p */
   bn.subm  w23, w12, w11
 
@@ -1957,10 +1915,9 @@ x25519_ed_ext_to_mont_u_masked:
   bn.cmp   w24, w31
   csrrs    x2, FG0, x0
   andi     x2, x2, 8      /* Extract the Z flag (bit 3) from FG0 */
-  addi     x3, x0, 8
 
-  /* If the Z flag is set (U = 0). Jump to end and return failure flag. */
-  beq      x2, x3, .L_invalid_mapping
+  /* Accumulate U=0 error locally */
+  or       x4, x4, x2
 
   /* Fetch random mask r and reduce it modulo p. */
   bn.wsrr  w25, URND
@@ -1975,12 +1932,13 @@ x25519_ed_ext_to_mont_u_masked:
 
   bn.mov   w16, w23
 
+  /* Check if W == 0 mod p */
   bn.cmp   w16, w31
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 8
-  addi     x3, x0, 8
-  /* Reject if we have the identity point (W = 0). */
-  beq      x2, x3, .L_invalid_mapping
+  csrrs    x3, FG0, x0
+  andi     x3, x3, 8      /* Extract the Z flag */
+
+  /* Accumulate W=0 error locally */
+  or       x4, x4, x3
 
   /* Compute W^-1 mod p. */
   jal      x1, fe_inv
@@ -1992,7 +1950,9 @@ x25519_ed_ext_to_mont_u_masked:
   /* Output mask 'r' in w19. */
   bn.mov   w19, w25
 
-.L_invalid_mapping:
+  /* Move the error accumulator into x2 */
+  add      x2, x4, x0
+
   ret
 
 /**
@@ -2082,6 +2042,9 @@ x25519:
   bn.xor   w31, w31, w31
   bn.addi  w30, w31, 38
 
+  /* Initialize global error accumulator */
+  add      x26, x0, x0
+
   /* Mask MSB of u and reduce modulo p */
   bn.not   w7, w31
   bn.rshi  w7, w31, w7 >> 1
@@ -2090,7 +2053,7 @@ x25519:
 
   /* Reject u = p-1 before the Montgomery-to-Edwards conversion. */
   jal      x1, x25519_check_denominator
-  bne      x2, x0, .L_x25519_fail
+  or       x26, x26, x2     /* Accumulate error */
 
   /* Convert Montgomery u to Edwards y */
   jal      x1, x25519_mont_u_to_ed_y
@@ -2105,9 +2068,10 @@ x25519:
      points, so affine_decode_var will fail for them. */
   jal      x1, affine_decode_var
 
-  /* Fail if the point was not on the Ed25519 curve (i.e. points on twisted curve). */
+  /* Check if the point was on the Ed25519 curve (i.e. points on twisted curve). */
   li       x21, 0x739
-  bne      x20, x21, .L_x25519_fail
+  sub      x5, x20, x21     /* x5 = 0 if success, != 0 if fail */
+  or       x26, x26, x5     /* Accumulate error */
 
   /* Convert affine (x, y) to extended (X, Y, Z, T) */
   bn.mov   w6, w10
@@ -2123,23 +2087,41 @@ x25519:
 
   /* Verify the resulting projective point is a valid curve point */
   jal      x1, ed25519_isoncurve_ext
-  jal      x1, trigger_fault_if_fg0_not_z
+
+  /* Accumulate curve check error (x2 = 0 on curve, 8 off curve) */
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  xori     x2, x2, 8
+  or       x26, x26, x2
 
   /* Map Ed25519 extended projective back to masked Curve25519 Montgomery u */
   jal      x1, x25519_ed_ext_to_mont_u_masked
+  or       x26, x26, x2     /* Accumulate the returned error from x2 */
 
-  /* If x2 is not 0 (it is 8), U was 0, meaning an invalid mapping. Jump to failure. */
-  bne      x2, x0, .L_x25519_fail
+  /* Calculate return mask: 0xFFFFFFFF if SUCCESS, 0x00000000 if ERROR */
+  sub      x27, x0, x26     /* x27 = -x26 */
+  or       x27, x27, x26    /* x27 = -x26 | x26. MSB is 1 if x26 != 0 */
+  srai     x27, x27, 31     /* x27 = (x26 != 0) ? 0xFFFFFFFF : 0x00000000 */
+  xori     x27, x27, -1     /* x27 = (x26 != 0) ? 0x00000000 : 0xFFFFFFFF */
 
-  /* Signal success to caller via x20. */
-  li       x20, 0x739
+  /* Load DIFF and FAILURE */
+  li       x20, 0x1d4       /* FAILURE */
+  li       x28, 0x6ED       /* XOR difference */
 
-  ret
+  /* Apply the difference ONLY if the mask says success */
+  and      x28, x28, x27    /* x28 = DIFF if success, 0 if error */
+  xor      x20, x20, x28    /* x20 = SUCCESS if success, FAILURE if error */
 
-.L_x25519_fail:
-  /* If point decoding fails, return 0 in w22 and signal failure via x20. */
-  bn.xor   w22, w22, w22
-  li       x20, 0x1d4
+  /* Fetch 256 bits of true randomness into a scratch register (w28) */
+  bn.wsrr  w28, URND
+
+  /* Map the success mask into a flag. */
+  andi     x29, x27, 8
+  csrrw    x0, FG0, x29
+
+  /* Shred the output if there was an error. */
+  bn.sel   w22, w22, w28, FG0.Z
+
   ret
 
 .bss

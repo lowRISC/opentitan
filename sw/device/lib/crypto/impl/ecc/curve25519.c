@@ -63,6 +63,10 @@ enum {
   kModeKeygenInsCnt = 342098,
   kModeSignStage1InsCnt = 684257,
   kModeSignStage2InsCnt = 655,
+  kModeX25519InsCnt = 366561,
+  kModeX25519SideloadInsCnt = 362932,
+  kModeX25519KeygenInsCnt = 359288,
+  kModeX25519KeygenSideloadInsCnt = 355659,
 };
 
 /**
@@ -360,8 +364,15 @@ status_t curve25519_x25519_sideload_start(
 
 status_t curve25519_x25519_finalize(
     uint32_t shared_secret[kCurve25519MaskedPointWords]) {
+  uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeX25519InsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeX25519InsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeX25519SideloadInsCnt);
+  }
 
   // Check whether OTBN accepted the public key (rejects twist points).
   uint32_t ok;
@@ -408,8 +419,15 @@ status_t curve25519_x25519_keygen_start(
 
 status_t curve25519_x25519_keygen_finalize(
     uint32_t public_key[kCurve25519PointWords]) {
+  uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeX25519KeygenInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeX25519KeygenInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeX25519KeygenSideloadInsCnt);
+  }
 
   // Read the public key from OTBN dmem.
   const otbn_addr_t kOtbnVarX25519PublicKey =
