@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -15,6 +16,15 @@
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'k', 'd')
+
+/**
+ * Sideload cleanup guard.
+ */
+static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+  if (*is_sideloaded == kHardenedBoolTrue) {
+    (void)keymgr_sideload_clear_kmac();
+  }
+}
 
 otcrypto_status_t otcrypto_kmac_kdf(
     otcrypto_blinded_key_t *key_derivation_key,
@@ -34,6 +44,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
+
   // Because of KMAC HWIPs prefix limitation, `label` should not exceed
   // `kKmacCustStrMaxSize` bytes.
   if (label->len > kKmacCustStrMaxSize) {
@@ -75,6 +89,9 @@ otcrypto_status_t otcrypto_kmac_kdf(
         kKmacSideloadKeyLength / 8) {
       return OTCRYPTO_BAD_ARGS;
     }
+
+    is_sideloaded = kHardenedBoolTrue;
+
     // Configure keymgr with diversification input and then generate the
     // sideload key.
     keymgr_diversification_t diversification;
@@ -152,6 +169,5 @@ otcrypto_status_t otcrypto_kmac_kdf(
   output_key_material->checksum =
       otcrypto_integrity_blinded_checksum(output_key_material);
 
-  // Clear the KMAC sideload slot in case the key was sideloaded.
-  return otcrypto_eval_exit(keymgr_sideload_clear_kmac());
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
