@@ -318,6 +318,7 @@ cc_library(
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/include:datatypes",
