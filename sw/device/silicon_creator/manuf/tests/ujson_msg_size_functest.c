@@ -69,6 +69,7 @@ static status_t send_ujson_msgs(ujson_t *uj) {
   memset(&sha256_hash_msg.data, UINT8_MAX, sizeof(sha256_hash_msg));
   memset(&lc_token_hash_msg.hash, UINT8_MAX, sizeof(lc_token_hash_msg));
   memset(&certgen_inputs_msg, UINT8_MAX, sizeof(certgen_inputs_msg));
+  certgen_inputs_msg.blob_version = (uint16_t)kPersoBlobVersionV0;
   memset(&perso_blob_msg.num_objs, UINT8_MAX, sizeof(perso_blob_msg.num_objs));
   memset(&perso_blob_msg.next_free, UINT8_MAX,
          sizeof(perso_blob_msg.next_free));

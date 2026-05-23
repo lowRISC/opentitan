@@ -79,6 +79,7 @@ static status_t send_ujson_msgs(ujson_t *uj) {
       certgen_inputs_msg.dice_auth_key_key_id[i] = 0x5;
       certgen_inputs_msg.ext_auth_key_key_id[i] = 0x5;
     }
+    certgen_inputs_msg.blob_version = (uint16_t)kPersoBlobVersionV0;
     perso_blob_msg.body[i] = 0x5;
   }
 
