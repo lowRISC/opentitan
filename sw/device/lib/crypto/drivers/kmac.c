@@ -151,6 +151,16 @@ OT_ASSERT_ENUM_VALUE(ARRAYSIZE(prefix_offsets), KMAC_PREFIX_MULTIREG_COUNT);
 OT_ASSERT_ENUM_VALUE(32, KMAC_PREFIX_PREFIX_FIELD_WIDTH);
 
 /**
+ * Hardware wipe guard.
+ */
+static void kmac_wipe_guard(uint32_t *dummy) {
+  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
+  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
+                                   KMAC_CMD_CMD_VALUE_DONE);
+  abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+/**
  * Return the rate (in bytes) for given security strength.
  *
  * The caller must ensure that `keccak_rate` is not a NULL pointer. This is not
@@ -617,6 +627,9 @@ OT_WARN_UNUSED_RESULT
 static status_t kmac_process_msg_blocks(
     kmac_operation_t operation, const otcrypto_const_byte_buf_t *message,
     uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
+  // This variable guarantees kmac_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
 
@@ -754,12 +767,6 @@ static status_t kmac_process_msg_blocks(
 
   // Poll the status register until in the 'squeeze' state.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
-
-  // Release the KMAC core, so that it goes back to idle mode
-  cmd_reg = KMAC_CMD_REG_RESVAL;
-  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
-                                   KMAC_CMD_CMD_VALUE_DONE);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
 
   // Zero out the trailing bytes in the final word.
   size_t remainder_bytes = digest_len_bytes % sizeof(uint32_t);
