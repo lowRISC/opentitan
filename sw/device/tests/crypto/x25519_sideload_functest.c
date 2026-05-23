@@ -138,6 +138,8 @@ status_t key_exchange_test(void) {
   // Generate a keypair.
   LOG_INFO("Generating X25519 keypair A");
   TRY(otcrypto_x25519_keygen(&private_keyA, &public_keyA));
+  LOG_INFO("OTBN instruction count for keygen: 0x%08x",
+           otbn_instruction_count_get());
 
   // Generate a second keypair.
   LOG_INFO("Generating X25519 keypair B");
@@ -164,6 +166,8 @@ status_t key_exchange_test(void) {
   // Compute the shared secret from A's side.
   LOG_INFO("Generating shared secret (A)");
   TRY(otcrypto_x25519(&private_keyA, &public_keyB, &shared_keyA));
+  LOG_INFO("OTBN instruction count for x25519: 0x%08x",
+           otbn_instruction_count_get());
 
   // Compute the shared secret from B's side.
   LOG_INFO("Generating shared secret (B)");
