@@ -1123,6 +1123,10 @@ otbn_sim_test(
 
 otbn_consttime_test(
     name = "x25519_consttime",
+    ignore = [
+        "trigger_fault_if_fg0_z",
+        "trigger_fault_if_fg0_not_z",
+    ],
     secrets = [
         "w8",
     ],
@@ -1143,6 +1147,7 @@ test_suite(
         ":ed25519_sc_reduce_test",
         ":ed25519_sign_test",
         ":ed25519_verify_test",
+        ":ed25519_ext_is_on_curve_test",
 
         # X25519,
         ":x25519_test",

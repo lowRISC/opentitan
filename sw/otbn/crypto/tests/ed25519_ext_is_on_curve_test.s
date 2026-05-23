@@ -22,10 +22,12 @@ main:
 
   li x2, 10
   la x3, _ed25519_ext_is_on_curve_x_pos
-  bn.lid x2++, 0(x3)
-  bn.lid x2++, 32(x3)
+  bn.lid x2++, 0(x3)   /* w10 = X */
+  bn.lid x2++, 32(x3)  /* w11 = Y */
+  bn.lid x2++, 64(x3)  /* w12 = Z */
+  bn.lid x2++, 96(x3)  /* w13 = T */
 
-  jal x1, ext_is_on_curve
+  jal x1, ed25519_isoncurve_ext
 
   bn.sel w0, w1, w31, FG0.Z
   la x3, _ed25519_ext_is_on_curve_res_pos
@@ -37,10 +39,12 @@ main:
 
   li x2, 10
   la x3, _ed25519_ext_is_on_curve_x_neg
-  bn.lid x2++, 0(x3)
-  bn.lid x2++, 32(x3)
+  bn.lid x2++, 0(x3)   /* w10 = X */
+  bn.lid x2++, 32(x3)  /* w11 = Y */
+  bn.lid x2++, 64(x3)  /* w12 = Z */
+  bn.lid x2++, 96(x3)  /* w13 = T */
 
-  jal x1, ext_is_on_curve
+  jal x1, ed25519_isoncurve_ext
 
   bn.sel w0, w31, w1, FG0.Z
   la x3, _ed25519_ext_is_on_curve_res_neg
@@ -55,10 +59,18 @@ _ed25519_ext_is_on_curve_x_pos:
 .zero 32
 _ed25519_ext_is_on_curve_y_pos:
 .zero 32
+_ed25519_ext_is_on_curve_z_pos:
+.zero 32
+_ed25519_ext_is_on_curve_t_pos:
+.zero 32
 
 _ed25519_ext_is_on_curve_x_neg:
 .zero 32
 _ed25519_ext_is_on_curve_y_neg:
+.zero 32
+_ed25519_ext_is_on_curve_z_neg:
+.zero 32
+_ed25519_ext_is_on_curve_t_neg:
 .zero 32
 
 _ed25519_ext_is_on_curve_res_pos:

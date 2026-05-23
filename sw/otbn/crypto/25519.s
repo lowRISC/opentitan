@@ -16,7 +16,7 @@
 .globl ext_double
 .globl ext_add
 .globl ext_to_affine
-.globl ext_is_on_curve
+.globl ed25519_isoncurve_ext
 .globl x25519
 
 /**
@@ -175,13 +175,13 @@ ed25519_gen_public_key:
   li       x5, 0  /* Ed25519 mode: use rnd * L */
   jal      x1, ext_scmul_sca
 
+  /* Check that A is a curve point in projective space. */
+  jal      x1, ed25519_isoncurve_ext
+  jal      x1, trigger_fault_if_fg0_not_z
+
   /* Convert A to affine coordinates.
        w10 <= A.x, w11 <= A.y */
   jal      x1, ext_to_affine
-
-  /* Check that A is a curve point. */
-  jal      x1, ext_is_on_curve
-  jal      x1, trigger_fault_if_fg0_not_z
 
   /* Encode A.
        w11 <= encode(w10, w11) = A_ */
@@ -406,12 +406,12 @@ ed25519_verify_var:
        [w13:w10] <= w28 * [w9:w6] = [8][S]B */
   jal      x1, ext_scmul
 
+  /* Check that LHS is a curve point in projective space. */
+  jal      x1, ed25519_isoncurve_ext
+  jal      x1, trigger_fault_if_fg0_not_z
+
   /* Convert LHS [8][S]B to affine. */
   jal      x1, ext_to_affine
-
-  /* Check that LHS is a curve point. */
-  jal      x1, ext_is_on_curve
-  jal      x1, trigger_fault_if_fg0_not_z
 
   /* Encode LHS. */
   jal      x1, affine_encode
@@ -428,12 +428,12 @@ ed25519_verify_var:
   bn.mov   w12, w4
   bn.mov   w13, w5
 
+  /* Check that RHS is a curve point in projective space. */
+  jal      x1, ed25519_isoncurve_ext
+  jal      x1, trigger_fault_if_fg0_not_z
+
   /* Convert RHS to affine. */
   jal      x1, ext_to_affine
-
-  /* Check that RHS is a curve point. */
-  jal      x1, ext_is_on_curve
-  jal      x1, trigger_fault_if_fg0_not_z
 
   /* Encode RHS. */
   jal      x1, affine_encode
@@ -562,13 +562,13 @@ ed25519_sign_stage1:
   li       x5, 0  /* Ed25519 mode: use rnd * L */
   jal      x1, ext_scmul_sca
 
+  /* Check that R is a curve point in projective space. */
+  jal      x1, ed25519_isoncurve_ext
+  jal      x1, trigger_fault_if_fg0_not_z
+
   /* Convert R to affine coordinates.
        w10 <= R.x, w11 <= R.y */
   jal      x1, ext_to_affine
-
-  /* Check that R is a curve point. */
-  jal      x1, ext_is_on_curve
-  jal      x1, trigger_fault_if_fg0_not_z
 
   /* Encode R.
        w11 <= encode(w10, w11) = R_ */
@@ -1701,75 +1701,6 @@ ext_add:
   ret
 
 /**
- * Perform an is-on-curve check.
- *
- * Given affine (x, y)-coordinates verify whether they constitute a valid
- * Ed25519 curve point by comparing the lefthand and righthand side of the
- * curve equation to each other. In other words, this routine checks that
- *
- *  a * x^2 + y^2 = 1 + d * x^2 * y^2.
- *
- * This routine runs in constant time.
- *
- * @param[in] w10: x-coordinate.
- * @param[in] w11: y-coordinate.
- * @param[in] w19: constant, 19.
- * @param[in] w30: constant, 38.
- * @param[in] w31: all-zero.
- * @param[in] MOD: p, modulus = 2^255 - 19.
- * @param[out] FG0.Z: result, 1 if the point is on the curve, 0 otherwise.
- *
- * clobbered registers: w12 to w18, w20 to w22.
- * clobbered flag groups: FG0.
- */
-ext_is_on_curve:
-  /* Load the curve constants.
-       w12 <= a
-       w13 <= d. */
-  li x2, 12
-  la x3, ed25519_a
-  bn.lid x2++, 0(x3)
-  la x3, ed25519_d
-  bn.lid x2, 0(x3)
-
-  /* w14 <= w22 * w22 = x^2. */
-  bn.mov w22, w10
-  jal x1, fe_square
-  bn.mov w14, w22
-
-  /* w15 <= w22 * w22 = y^2. */
-  bn.mov w22, w11
-  jal x1, fe_square
-  bn.mov w15, w22
-
-  /* w2 <= w22 * w23 = a * x^2. */
-  bn.mov w22, w12
-  bn.mov w23, w14
-  jal x1, fe_mul
-
-  /* w16 <= w15 + w22 = a * x^2 + y^2. */
-  bn.addm w16, w15, w22
-
-  /* w22 <= w22 * w23 = d * x^2. */
-  bn.mov w22, w13
-  bn.mov w23, w14
-  jal x1, fe_mul
-
-  /* w22 <= w22 * w23 = d * x^2 * y^2. */
-  bn.mov w23, w15
-  jal x1, fe_mul
-
-  /* w17 <= w17 + w22 = 1 + d * x^2 * y^2. */
-  bn.addi w17, w31, 1
-  bn.addm w17, w17, w22
-
-  /* Return 2^256-1 if w16 = w17, i.e., a * x^2 + y^2 = 1 + d * x^2 * y^2. */
-  bn.not w12, w31
-  bn.cmp w16, w17, FG0
-
-  ret
-
-/**
  * Raise a coordinate field element (modulo p) to the power of ((p-5) / 8).
  *
  * Returns c = a^(2^252-3) mod p.
@@ -1994,30 +1925,133 @@ x25519_mont_u_to_ed_y:
   ret
 
 /**
- * Convert Twisted Edwards y-coordinate back to Montgomery u-coordinate.
- * Formula: u = (1 + y) * (1 - y)^-1 mod p
+ * Convert Twisted Edwards extended projective coordinates to a masked Montgomery u-coordinate.
  *
- * @param[in]  w11: Twisted Edwards y
+ * Maps the resulting Ed25519 point from extended projective coordinates
+ * to its affine Curve25519 (Montgomery) u-coordinate equivalent.
+ * To prevent unmasking the shared secret in registers, a random
+ * arithmetic mask 'r' is applied during the projective conversion:
+ * u_masked = u - r mod p
+ * = ((Z + Y) - r * (Z - Y)) / (Z - Y) mod p
+ * = (U - r * W) * W^-1 mod p
+ *
+ * @param[in]  w11: Y coordinate
+ * @param[in]  w12: Z coordinate
  * @param[in]  w31: all-zero
- * @param[out] w22: Montgomery u
+ * @param[out] w19: r, the random arithmetic mask applied to the output
+ * @param[out] w22: u_masked, the arithmetically masked X25519 result
+ * @param[out] x2:  0 if successful, 8 if U = Z + Y = 0 mod p (invalid point)
  *
- * clobbered registers: w6, w10, w16, w23
+ * clobbered registers: x2, x3, w16, w19, w22 to w25
+ * clobbered flag groups: FG0
  */
-x25519_ed_y_to_mont_u:
-  bn.addi  w6, w31, 1
-  /* w10 = 1 + y */
-  bn.addm  w10, w6, w11
-  /* w16 = 1 - y */
-  bn.subm  w16, w6, w11
+x25519_ed_ext_to_mont_u_masked:
+  /* W = (Z - Y) mod p */
+  bn.subm  w23, w12, w11
 
-  /* Invert (1 - y) */
-  jal      x1, fe_inv
+  /* U = (Z + Y) mod p  */
+  /* Note that this value is still masked by the coord rand. */
+  bn.addm  w24, w12, w11
 
-  /* u = (1 + y) * (1 - y)^-1 */
-  bn.mov   w23, w10
+  /* Check if U == 0 mod p */
+  bn.cmp   w24, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8      /* Extract the Z flag (bit 3) from FG0 */
+  addi     x3, x0, 8
+
+  /* If the Z flag is set (U = 0). Jump to end and return failure flag. */
+  beq      x2, x3, .L_invalid_mapping
+
+  /* Fetch random mask r and reduce it modulo p. */
+  bn.wsrr  w25, URND
+  bn.addm  w25, w25, w31
+
+  /* Compute T1 = (r * W) mod p. */
+  bn.mov   w22, w25
   jal      x1, fe_mul
 
-  /* The resulting u-coordinate is now in w22. */
+  /* U_masked = U - (r * W) mod p */
+  bn.subm  w24, w24, w22
+
+  bn.mov   w16, w23
+
+  bn.cmp   w16, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  addi     x3, x0, 8
+  /* Reject if we have the identity point (W = 0). */
+  beq      x2, x3, .L_invalid_mapping
+
+  /* Compute W^-1 mod p. */
+  jal      x1, fe_inv
+
+  /* Compute u_masked = U_masked * W^-1 mod p. */
+  bn.mov   w23, w24
+  jal      x1, fe_mul
+
+  /* Output mask 'r' in w19. */
+  bn.mov   w19, w25
+
+.L_invalid_mapping:
+  ret
+
+/**
+ * Checks if a point in extended twisted Edwards coordinates is on the curve.
+ *
+ * Computes lhs = -X^2 + Y^2 mod p and rhs = Z^2 + d * T^2 mod p
+ * and sets the FG0.Z flag if they are equal.
+ *
+ * @param[in]  w10: X coordinate
+ * @param[in]  w11: Y coordinate
+ * @param[in]  w12: Z coordinate
+ * @param[in]  w13: T coordinate
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus = 2^255 - 19
+ * @param[out] FG0.Z: 1 if point is on curve, 0 otherwise
+ *
+ * clobbered registers: x2, x3, w14 to w17, w22, w23
+ * clobbered flag groups: FG0
+ */
+ed25519_isoncurve_ext:
+  /* Compute X^2 mod p */
+  bn.mov   w22, w10
+  jal      x1, fe_square
+  bn.mov   w14, w22
+
+  /* Compute Y^2 mod p */
+  bn.mov   w22, w11
+  jal      x1, fe_square
+  bn.mov   w15, w22
+
+  /* Compute lhs = -X^2 + Y^2 mod p */
+  bn.subm  w14, w15, w14
+
+  /* Compute Z^2 mod p */
+  bn.mov   w22, w12
+  jal      x1, fe_square
+  bn.mov   w15, w22
+
+  /* Compute T^2 mod p */
+  bn.mov   w22, w13
+  jal      x1, fe_square
+  /* w22 is now T^2 */
+
+  /* Load curve constant d into w16 */
+  li       x2, 16
+  la       x3, ed25519_d
+  bn.lid   x2, 0(x3)
+
+  /* Compute d * T^2 mod p */
+  bn.mov   w23, w16
+  jal      x1, fe_mul
+  /* w22 is now d * T^2 */
+
+  /* Compute rhs = Z^2 + d * T^2 mod p */
+  bn.addm  w15, w15, w22
+
+  /* Compare lhs and rhs. Sets FG0.Z to 1 if equal. */
+  bn.cmp   w14, w15, FG0
+
   ret
 
 /**
@@ -2039,7 +2073,7 @@ x25519_ed_y_to_mont_u:
  * @param[out] x20: SUCCESS if the public key decoding passed,
  * FAILURE if the public key decoding failed or u=0
  *
- * clobbered registers: x2, x3, x21, w2, w6 to w30
+ * clobbered registers: x2, x3, x5, x21, x24, w2, w6 to w30
  * clobbered flag groups: FG0
  */
 x25519:
@@ -2071,7 +2105,7 @@ x25519:
      points, so affine_decode_var will fail for them. */
   jal      x1, affine_decode_var
 
-  /* Fail if the point was not on the Ed25519 curve (e.g. twist point). */
+  /* Fail if the point was not on the Ed25519 curve (i.e. points on twisted curve). */
   li       x21, 0x739
   bne      x20, x21, .L_x25519_fail
 
@@ -2087,62 +2121,19 @@ x25519:
   li       x5, 1  /* X25519 mode: use 8 * rnd * L */
   jal      x1, ext_scmul_sca
 
-  /* Map the resulting Ed25519 point from extended projective coordinates  */
-  /* to its affine Curve25519 (Montgomery) u-coordinate equivalent.        */
+  /* Verify the resulting projective point is a valid curve point */
+  jal      x1, ed25519_isoncurve_ext
+  jal      x1, trigger_fault_if_fg0_not_z
 
-  /* The standard mapping is u = (Z + Y) / (Z - Y) mod p.                  */
-  /* To prevent unmasking the shared secret in registers, we apply a       */
-  /* random arithmetic mask 'r' during the projective conversion:          */
-  /* u_masked = u - r mod p                                                */
-  /* = ((Z + Y) - r * (Z - Y)) / (Z - Y) mod p                             */
-  /* = (U - r * W) * W^-1 mod p                                            */
+  /* Map Ed25519 extended projective back to masked Curve25519 Montgomery u */
+  jal      x1, x25519_ed_ext_to_mont_u_masked
 
-  /* W = (Z - Y) mod p */
-  bn.subm  w23, w12, w11
-
-  /* U = (Z + Y) mod p  */
-  /* Note that this value is still masked by the coord rand. */
-  bn.addm  w24, w12, w11
-
-  /* Check if U == 0 mod p */
-  bn.cmp   w24, w31
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 8      /* Extract the Z flag (bit 3) from FG0 */
-  addi     x3, x0, 8
-
-  /* If the Z flag is set (x2 == 8), U is 0. Jump to failure. */
-  beq      x2, x3, .L_x25519_fail
-
-  /* Fetch random mask r and reduce it modulo p. */
-  bn.wsrr  w25, URND
-  bn.addm  w25, w25, w31
-
-  /* Compute T1 = (r * W) mod p. */
-  bn.mov   w22, w25
-  jal      x1, fe_mul
-
-  /* U_masked = U - (r * W) mod p */
-  bn.subm  w24, w24, w22
-
-  /* Compute W^-1 mod p. */
-  bn.mov   w16, w23
-  jal      x1, fe_inv
-
-  /* u_masked = U_masked * W^-1 mod p */
-  bn.mov   w23, w24
-  jal      x1, fe_mul
-
-  /* Check if W == 0 mod p */
-  bn.cmp   w16, w31
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 8      /* Extract the Z flag */
-  addi     x3, x0, 8
-  beq      x2, x3, .L_x25519_fail  /* Reject if we have the identity point */
-
-  bn.mov   w19, w25
+  /* If x2 is not 0 (it is 8), U was 0, meaning an invalid mapping. Jump to failure. */
+  bne      x2, x0, .L_x25519_fail
 
   /* Signal success to caller via x20. */
   li       x20, 0x739
+
   ret
 
 .L_x25519_fail:

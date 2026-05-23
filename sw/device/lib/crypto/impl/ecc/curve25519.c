@@ -60,8 +60,8 @@ enum {
   /*
    * The expected instruction counts for constant time functions.
    */
-  kModeKeygenInsCnt = 342108,
-  kModeSignStage1InsCnt = 684277,
+  kModeKeygenInsCnt = 342098,
+  kModeSignStage1InsCnt = 684257,
   kModeSignStage2InsCnt = 655,
 };
 
