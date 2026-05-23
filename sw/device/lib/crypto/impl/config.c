@@ -78,6 +78,10 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   // Instantiate the RNG.
   HARDENED_TRY(otcrypto_entropy_init());
 
+#ifdef HASH_SELF_CHECK_ENABLE
+  HARDENED_TRY(otcrypto_integrity_check());
+#endif
+
   return OTCRYPTO_OK;
 }
 
