@@ -250,6 +250,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                     data_out[0],
                                                     data_out[1],
                                                     match_threshold_ratio=0.75,
+                                                    valid_len=32
                                                 )
                                             ) or utils.is_majority_zeros(
                                                 data_out[i], total_length=32
@@ -460,6 +461,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                     drbg_out[0],
                                                     drbg_out[1],
                                                     match_threshold_ratio=0.75,
+                                                    valid_len=16
                                                 )
                                             ) or utils.is_majority_zeros(
                                                 drbg_out[i], total_length=16
@@ -673,6 +675,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                     drbg_out[0],
                                                     drbg_out[1],
                                                     match_threshold_ratio=0.75,
+                                                    valid_len=16
                                                 )
                                             ) or utils.is_majority_zeros(
                                                 drbg_out[i], total_length=16
@@ -765,7 +768,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 )
 
                 # We provide the name of the unique marker in the pentest framework
-                function_name = "PENTEST_MARKER_GCM_ENCRYPT"
+                function_name = "PENTEST_MARKER_GCM"
                 # GCM is fully in SW, thus it is a very long trace.
                 # GDB can not fully trace it and it runs to an error in the tracing.
                 # To circumvent this, we exclude the investigation of some functions.
@@ -776,9 +779,6 @@ class SymCryptolibFiSim(unittest.TestCase):
                 hardened_memcpy_address = parser.get_function_start_address("hardened_memcpy")
                 hardened_memshred_address = parser.get_function_start_address("hardened_memshred")
                 hardened_memeq_address = parser.get_function_start_address("hardened_memeq")
-                ghash_process_block_address = parser.get_function_start_address(
-                    "ghash_process_block"
-                )
                 ghash_context_integrity_checksum_address = parser.get_function_start_address(
                     "ghash_context_integrity_checksum"
                 )
@@ -810,7 +810,6 @@ class SymCryptolibFiSim(unittest.TestCase):
                         hardened_memcpy_address,
                         hardened_memshred_address,
                         hardened_memeq_address,
-                        ghash_process_block_address,
                         ghash_context_integrity_checksum_address,
                         hmac_key_integrity_checksum_address,
                     ],
@@ -921,6 +920,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                     gcm_out[0],
                                                     gcm_out[1],
                                                     match_threshold_ratio=0.75,
+                                                    valid_len=16
                                                 )
                                             ) or utils.is_majority_zeros(
                                                 gcm_out[i], total_length=16
@@ -1142,6 +1142,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                     data_out[0],
                                                     data_out[1],
                                                     match_threshold_ratio=0.75,
+                                                    valid_len=16
                                                 )
                                             ) or utils.is_majority_zeros(
                                                 data_out[i], total_length=16

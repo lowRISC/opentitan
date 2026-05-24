@@ -32,7 +32,8 @@ def bytes_to_words(byte_array):
 
     word_list = []
     for i in range(0, len(byte_array), 4):
-        chunk = byte_array[i: i + 4]
+        chunk = byte_array[i
+                           : i + 4]
         word = struct.unpack(">I", chunk)[0]
         word_list.append(word)
     return word_list
@@ -85,13 +86,20 @@ def is_majority_zeros(array, total_length=None):
     return zero_count > (total_length / 2)
 
 
-def is_partial_collision(out1, out2, match_threshold_ratio=0.75):
+def is_partial_collision(out1, out2, match_threshold_ratio=0.75, valid_len=None):
     """
     Checks if two outputs share a significant number of identical bytes.
     Useful for catching FI vulnerabilities where a skipped instruction
     causes a partial state collision rather than an exact match.
     """
-    if out1 is None or out2 is None or len(out1) != len(out2) or len(out1) == 0:
+    if out1 is None or out2 is None or len(out1) == 0:
+        return False
+
+    if valid_len is not None:
+        out1 = out1[:valid_len]
+        out2 = out2[:valid_len]
+
+    if len(out1) != len(out2):
         return False
 
     matching_bytes = sum(1 for a, b in zip(out1, out2) if a == b)

@@ -278,6 +278,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                                                 sign_output[0],
                                                 sign_output[1],
                                                 match_threshold_ratio=0.75,
+                                                valid_len=48
                                             ) or utils.is_majority_zeros(
                                                 sign_output[i], total_length=48
                                             ):
