@@ -19,6 +19,10 @@ load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMM_SECTION_VERSION",
 )
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "obj_disassemble",
+)
 
 def _cc_import(ctx, cc_toolchain, object):
     feature_configuration = cc_common.configure_features(
@@ -61,16 +65,18 @@ def _cc_import(ctx, cc_toolchain, object):
     return static_library, cc_info
 
 def _choose_one_build(src):
-    # Returns binary_file, [Runfiles]
+    # Returns binary_file, mapfile, [Runfiles]
 
     if type(src) == "File":
-        return src, []
+        return src, None, []
 
     # e2e/exec_env tests ensure the immutable rom_ext is the same across all
     # exec env.
     bin = get_one_binary_file(src, field = "binary", providers = [SiliconBinaryInfo])
     elf = get_one_binary_file(src, field = "elf", providers = [SiliconBinaryInfo])
-    return bin, [elf]
+    mapfile = get_one_binary_file(src, field = "mapfile", providers = [SiliconBinaryInfo])
+
+    return bin, mapfile, [elf]
 
 def _create_imm_section_targets_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
@@ -85,7 +91,8 @@ def _create_imm_section_targets_impl(ctx):
         action_name = OBJ_COPY_ACTION_NAME,
     )
 
-    src, runfiles = _choose_one_build(ctx.attr.src)
+    src, mapfile, runfiles = _choose_one_build(ctx.attr.src)
+    elf_file = runfiles[0]
 
     object = ctx.actions.declare_file(
         "{}.{}".format(
@@ -111,12 +118,28 @@ def _create_imm_section_targets_impl(ctx):
 
     lib, cc_info = _cc_import(ctx, cc_toolchain, object)
 
+    disassembly = obj_disassemble(
+        ctx,
+        name = ctx.label.name + "_elf",
+        src = elf_file,
+    )
+
+    default_outputs = [lib, disassembly]
+    output_groups = {
+        "disassembly": depset([disassembly]),
+    }
+
+    if mapfile:
+        default_outputs.append(mapfile)
+        output_groups["mapfile"] = depset([mapfile])
+
     return [
         DefaultInfo(
-            files = depset([lib]),
+            files = depset(default_outputs),
             runfiles = ctx.runfiles(files = runfiles),
         ),
         cc_info,
+        OutputGroupInfo(**output_groups),
     ]
 
 create_imm_section_targets = rv_rule(
