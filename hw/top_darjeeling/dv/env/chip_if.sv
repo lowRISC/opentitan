@@ -797,46 +797,6 @@ interface chip_if;
     end
   endfunction
 
-  // Returns string path to an IP block instance.
-  // TODO: Autogen this in top_<top>_pkg.
-  function automatic string get_hier_path(top_darjeeling_pkg::peripheral_e peripheral);
-    string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
-    case (peripheral)
-      PeripheralAes:            path = {path, ".", `DV_STRINGIFY(`AES_HIER)};
-      PeripheralAlertHandler:   path = {path, ".", `DV_STRINGIFY(`ALERT_HANDLER_HIER)};
-      PeripheralAonTimerAon:    path = {path, ".", `DV_STRINGIFY(`AON_TIMER_HIER)};
-      PeripheralAst:            path = {path, ".", `DV_STRINGIFY(`AST_HIER)};
-      PeripheralClkmgrAon:      path = {path, ".", `DV_STRINGIFY(`CLKMGR_HIER)};
-      PeripheralCsrng:          path = {path, ".", `DV_STRINGIFY(`CSRNG_HIER)};
-      PeripheralEdn0:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(0))};
-      PeripheralEdn1:           path = {path, ".", `DV_STRINGIFY(`EDN_HIER(1))};
-      PeripheralGpio:           path = {path, ".", `DV_STRINGIFY(`GPIO_HIER)};
-      PeripheralHmac:           path = {path, ".", `DV_STRINGIFY(`HMAC_HIER)};
-      PeripheralI2c0:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(0))};
-      PeripheralKeymgrDpe:      path = {path, ".", `DV_STRINGIFY(`KEYMGR_DPE_HIER)};
-      PeripheralKmac:           path = {path, ".", `DV_STRINGIFY(`KMAC_HIER)};
-      PeripheralLcCtrl:         path = {path, ".", `DV_STRINGIFY(`LC_CTRL_HIER)};
-      PeripheralOtbn:           path = {path, ".", `DV_STRINGIFY(`OTBN_HIER)};
-      PeripheralOtpCtrl:        path = {path, ".", `DV_STRINGIFY(`OTP_CTRL_HIER)};
-      PeripheralPinmuxAon:      path = {path, ".", `DV_STRINGIFY(`PINMUX_HIER)};
-      PeripheralPwrmgrAon:      path = {path, ".", `DV_STRINGIFY(`PWRMGR_HIER)};
-      PeripheralRomCtrl0:       path = {path, ".", `DV_STRINGIFY(`ROM_CTRL0_HIER)};
-      PeripheralRomCtrl1:       path = {path, ".", `DV_STRINGIFY(`ROM_CTRL1_HIER)};
-      PeripheralRstmgrAon:      path = {path, ".", `DV_STRINGIFY(`RSTMGR_HIER)};
-      PeripheralRvCoreIbex:     path = {path, ".", `DV_STRINGIFY(`RV_CORE_IBEX_HIER)};
-      PeripheralRvDm:           path = {path, ".", `DV_STRINGIFY(`RV_DM_HIER)};
-      PeripheralRvPlic:         path = {path, ".", `DV_STRINGIFY(`RV_PLIC_HIER)};
-      PeripheralRvTimer:        path = {path, ".", `DV_STRINGIFY(`RV_TIMER_HIER)};
-      PeripheralSpiDevice:      path = {path, ".", `DV_STRINGIFY(`SPI_DEVICE_HIER)};
-      PeripheralSpiHost0:       path = {path, ".", `DV_STRINGIFY(`SPI_HOST_HIER(0))};
-      PeripheralSramCtrlMain:   path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_MAIN_HIER)};
-      PeripheralSramCtrlRetAon: path = {path, ".", `DV_STRINGIFY(`SRAM_CTRL_RET_HIER)};
-      PeripheralUart0:          path = {path, ".", `DV_STRINGIFY(`UART_HIER(0))};
-      default:      `uvm_fatal(MsgId, $sformatf("Bad peripheral: %0s", peripheral.name()))
-    endcase
-    return path;
-  endfunction
-
   // Disable SVAs in certain hierarchies specific to tests.
   bit chip_padctrl_attributes_test_sva_disable;
   bit chip_sw_sleep_pin_mio_dio_val_sva_disable;
