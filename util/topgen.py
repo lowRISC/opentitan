@@ -1083,7 +1083,7 @@ def create_generic_ip_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
         else:
             ip_block = IpBlock.from_path(str(hjson_path), [])
             if ip_type in alias_cfgs:
-                ip_block = ip_block.alias_from_raw(
+                ip_block.alias_from_raw(
                     False, alias_cfgs[ip_type], f"alias file for {ip_type}")
             ip_attrs[ip_type] = IpAttrs(ip_block=ip_block,
                                         hjson_path=hjson_path,
@@ -1116,8 +1116,8 @@ def create_ipgen_ip_block(topname: str, template_name: str, module_name: str,
                           alias_cfgs: Dict[str, ConfigT]) -> IpBlock:
     ip_block = ipgen_hjson_render(template_name, topname, params)
     if module_name in alias_cfgs:
-        ip_block = ip_block.alias_from_raw(False, alias_cfgs[module_name],
-                                           f"alias file for {module_name}")
+        ip_block.alias_from_raw(False, alias_cfgs[module_name],
+                                f"alias file for {module_name}")
     return ip_block
 
 
