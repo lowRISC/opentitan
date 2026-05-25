@@ -111,7 +111,7 @@ class kmac_common_vseq extends kmac_base_vseq;
     super.shadow_reg_err_ctrl_svas(enable, path);
   endfunction
 
-  virtual function void set_tl_assert_en(bit enable, string path = "*");
+  virtual protected function void set_tl_assert_en(bit enable, string path = "*");
     set_kmac_csr_assert_en(enable);
     super.set_tl_assert_en(enable, path);
   endfunction
