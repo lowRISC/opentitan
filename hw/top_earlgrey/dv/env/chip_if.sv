@@ -67,7 +67,6 @@ interface chip_if;
 `define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
 `define RSTMGR_HIER         `TOP_HIER.u_rstmgr_aon
 `define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
-`define RV_DM_HIER          `TOP_HIER.u_rv_dm
 `define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
 `define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
 `define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl_aon
@@ -1372,7 +1371,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef ROM_CTRL_HIER
 `undef RSTMGR_HIER
 `undef RV_CORE_IBEX_HIER
-`undef RV_DM_HIER
 `undef RV_PLIC_HIER
 `undef RV_TIMER_HIER
 `undef SENSOR_CTRL_HIER
