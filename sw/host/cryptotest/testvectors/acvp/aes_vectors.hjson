@@ -32,9 +32,11 @@
 //
 // Based on:
 // https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ACVP-AES-ECB-1.0/prompt.json
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ACVP-AES-GCM-1.0/prompt.json
 // Modifications:
 // This file was modified on 26.05.2026 as following:
-// - For AES-ECB, removed all test groups except tgId 1.
+// - Combined AES-ECB and AES-GCM test vectors.
+// - For AES-ECB and AES-GCM, removed all test groups except tgId 1.
 [
   {
     "vsId": 0,
@@ -82,6 +84,133 @@
             "tcId": 7,
             "pt": "6A118A874519E64E9963798A503F1D35",
             "key": "00000000000000000000000000000000"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "vsId": 0,
+    "algorithm": "ACVP-AES-GCM",
+    "revision": "1.0",
+    "isSample": false,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "direction": "encrypt",
+        "keyLen": 128,
+        "ivLen": 96,
+        "ivGen": "external",
+        "ivGenMode": "8.2.2",
+        "payloadLen": 0,
+        "aadLen": 120,
+        "tagLen": 128,
+        "tests": [
+          {
+            "tcId": 1,
+            "pt": "",
+            "key": "4B2CBE2158F5D6A28CC798DF4F99F777",
+            "aad": "4607F76F4FDA85DAFDC8CE085E0CE5",
+            "iv": "3851BAF79831605B75086E79"
+          },
+          {
+            "tcId": 2,
+            "pt": "",
+            "key": "32E106F67A99F89788D168BEB6596400",
+            "aad": "65FC70A3CC2E0F14B3C56216881F8C",
+            "iv": "491F4B2DF6D0288DB54716B6"
+          },
+          {
+            "tcId": 3,
+            "pt": "",
+            "key": "15BF034EE6DC3DA6296EE138B90FC0CE",
+            "aad": "EDDE20197C7DED0B293B061F349840",
+            "iv": "DE8CB48EE0F1CB57F4E9FFB5"
+          },
+          {
+            "tcId": 4,
+            "pt": "",
+            "key": "A1BAF46B4B1E8C169EA89892697C1CB4",
+            "aad": "6A4687585852AE3438D97CC703EE17",
+            "iv": "B857C80F75CC7336114DEF84"
+          },
+          {
+            "tcId": 5,
+            "pt": "",
+            "key": "0E5EB84C7E64825C7569712DFEB2F156",
+            "aad": "2BC528CEB661427363C3D7C41A474B",
+            "iv": "F88AD682C50FD2EFBF5DFFA2"
+          },
+          {
+            "tcId": 6,
+            "pt": "",
+            "key": "BF5C3A9C65D72512F752A09C9B5ABA59",
+            "aad": "9D43A96F28E0753DEF6E6E07FD8442",
+            "iv": "0B8AE56978B462A5C0F8486C"
+          },
+          {
+            "tcId": 7,
+            "pt": "",
+            "key": "28DCCD63B305BB169BB7E85FE55591DF",
+            "aad": "8F8EDFA6E95B755976955ED3483CD2",
+            "iv": "407F6C53CCF5DDA6F868B22C"
+          },
+          {
+            "tcId": 8,
+            "pt": "",
+            "key": "3AD410F60CF85C923F2D9CE336E6A185",
+            "aad": "900865D0DB20458368F9A191775A58",
+            "iv": "FE37880DC4531AD581C4E24D"
+          },
+          {
+            "tcId": 9,
+            "pt": "",
+            "key": "1D650E5AD0B45A2A519DE40203C271CF",
+            "aad": "BF4D54FB100225DB37D80AA5883B92",
+            "iv": "3FE45FF564B983251816574D"
+          },
+          {
+            "tcId": 10,
+            "pt": "",
+            "key": "7B7473CA6E44320019A0DD324B77B5AD",
+            "aad": "EE74A91456154EA7DF2702E8069099",
+            "iv": "0F25C4D8969D268C89CF89DC"
+          },
+          {
+            "tcId": 11,
+            "pt": "",
+            "key": "368EF87F3BA49549334D756F7127C264",
+            "aad": "0EE044D4503197D12D2773BAD595DD",
+            "iv": "BE20E127CBEEB126BA5705A8"
+          },
+          {
+            "tcId": 12,
+            "pt": "",
+            "key": "AC8B6AF21571F41B413DD940CC0CE10E",
+            "aad": "CAB5E1F3A6E9F334A1E3A0A480E430",
+            "iv": "F0EABB2B51EDA331A8F69401"
+          },
+          {
+            "tcId": 13,
+            "pt": "",
+            "key": "95F171B040EDEC74200716786A4C9883",
+            "aad": "81FEBC3A769A3EC54CC2B2AF464EB5",
+            "iv": "8A099FB344B8D82105CDE359"
+          },
+          {
+            "tcId": 14,
+            "pt": "",
+            "key": "D933FFCCCF7F179277F2B409F089F497",
+            "aad": "37E2149B37A2199F6DEF54B283A4C8",
+            "iv": "2B8E42BF97178EF7A6E4F745"
+          },
+          {
+            "tcId": 15,
+            "pt": "",
+            "key": "29214E6ABF1A50CBC3EA399138ED22FA",
+            "aad": "AB966DC5A64F1FA1588ACC1CF4062C",
+            "iv": "F451A8FD6B66E538E72E655B"
           }
         ]
       }
