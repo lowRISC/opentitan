@@ -15,6 +15,8 @@ exports_files([
     "eddsa_vectors.hjson",
     "hmac_sha256_expected.json",
     "hmac_sha256_vectors.json",
+    "kmac_expected.hjson",
+    "kmac_vectors.hjson",
     "rsa_expected.json",
     "rsa_vectors.json",
     "x25519_vectors.hjson",
