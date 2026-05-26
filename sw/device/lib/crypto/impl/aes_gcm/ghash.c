@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('g', 'h', 'a')
@@ -357,8 +358,10 @@ static status_t ghash_process_block(ghash_context_t *ctx,
 }
 
 status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
-                                   ghash_block_t *partial, size_t input_len,
-                                   const uint8_t *input) {
+                                   ghash_block_t *partial,
+                                   const otcrypto_const_byte_buf_t *input_buf) {
+  size_t input_len = input_buf->len;
+  const uint8_t *input = input_buf->data;
   if (input_len < kGhashBlockNumBytes - partial_len) {
     // Not enough data for a full block; copy into the partial block.
     unsigned char *partial_bytes = (unsigned char *)partial->data;
@@ -386,18 +389,20 @@ status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
     randomized_bytecopy(partial->data, input, input_len);
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input_buf));
+
   return OTCRYPTO_OK;
 }
 
-status_t ghash_update(ghash_context_t *ctx, size_t input_len,
-                      const uint8_t *input) {
+status_t ghash_update(ghash_context_t *ctx,
+                      const otcrypto_const_byte_buf_t *input) {
   // Process all full blocks and write the remaining non-full data into
   // `partial`.
   ghash_block_t partial = {.data = {0}};
-  HARDENED_TRY(ghash_process_full_blocks(ctx, 0, &partial, input_len, input));
+  HARDENED_TRY(ghash_process_full_blocks(ctx, 0, &partial, input));
 
   // Check if there is data remaining, and process it if so.
-  size_t partial_len = input_len % kGhashBlockNumBytes;
+  size_t partial_len = input->len % kGhashBlockNumBytes;
   if (partial_len != 0) {
     unsigned char *partial_bytes = (unsigned char *)partial.data;
     memset(partial_bytes + partial_len, 0, kGhashBlockNumBytes - partial_len);
@@ -407,15 +412,15 @@ status_t ghash_update(ghash_context_t *ctx, size_t input_len,
   return OTCRYPTO_OK;
 }
 
-status_t ghash_update_redundant(ghash_context_t *ctx, size_t input_len,
-                                const uint8_t *input) {
+status_t ghash_update_redundant(ghash_context_t *ctx,
+                                const otcrypto_const_byte_buf_t *input) {
   // Copy ctx.
   ghash_context_t ctx_redundant;
   randomized_bytecopy(&ctx_redundant, ctx, sizeof(ctx_redundant));
 
-  HARDENED_TRY(ghash_update(ctx, input_len, input));
+  HARDENED_TRY(ghash_update(ctx, input));
 
-  ghash_update(&ctx_redundant, input_len, input);
+  ghash_update(&ctx_redundant, input);
 
   // Compare the GHASH state. Do this only at a single share to avoid
   // introducing SCA leakage. Use consttime_memeq_byte() to avoid DFA.

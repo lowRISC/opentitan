@@ -316,17 +316,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the core encryption operation.
-  HARDENED_TRY(aes_gcm_encrypt(aes_key, iv->len, iv->data, plaintext->len,
-                               plaintext->data, aad->len, aad->data,
-                               auth_tag->len, key->config.security_level,
-                               auth_tag->data, ciphertext->data));
-
-  // Verify the input buffers
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(plaintext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
+  HARDENED_TRY(aes_gcm_encrypt(aes_key, iv, plaintext, aad, auth_tag,
+                               key->config.security_level, ciphertext));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -378,17 +369,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Call the core decryption operation.
-  HARDENED_TRY(aes_gcm_decrypt(aes_key, iv->len, iv->data, ciphertext->len,
-                               ciphertext->data, aad->len, aad->data,
-                               auth_tag->len, auth_tag->data, plaintext->data,
-                               key->config.security_level, success));
-
-  // Verify the input buffers
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(plaintext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
+  HARDENED_TRY(aes_gcm_decrypt(aes_key, iv, ciphertext, aad, auth_tag,
+                               plaintext, key->config.security_level, success));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -419,13 +401,10 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx;
   internal_ctx.security_level = key->config.security_level;
-  HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
+  HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv, &internal_ctx));
 
   // Save the context.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
-
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -456,13 +435,10 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx;
   internal_ctx.security_level = key->config.security_level;
-  HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv->len, iv->data, &internal_ctx));
+  HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv, &internal_ctx));
 
   // Save the context.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
-
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -495,13 +471,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
 
   // Call the internal update operation.
-  HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad->len, aad->data));
+  HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad));
 
   // Save the context.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
-
-  // Verify the input buffer
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(aad));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -553,16 +526,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   }
 
   // Call the internal update operation.
-  HARDENED_TRY(aes_gcm_update_encrypted_data(&internal_ctx, input->len,
-                                             input->data, output_bytes_written,
-                                             output->data));
+  HARDENED_TRY(aes_gcm_update_encrypted_data(&internal_ctx, input, output,
+                                             output_bytes_written));
 
   // Save the context.
   HARDENED_TRY(gcm_context_save(&internal_ctx, ctx));
-
-  // Verify the input buffers
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(output));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -612,16 +580,11 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag->len,
-                                     auth_tag->data, ciphertext_bytes_written,
-                                     ciphertext->data));
+  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag, ciphertext,
+                                     ciphertext_bytes_written));
 
   // Clear the context.
   HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
-
-  // Verify the input buffers
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -669,16 +632,11 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag->len,
-                                     auth_tag->data, plaintext_bytes_written,
-                                     plaintext->data, success));
+  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag, plaintext,
+                                     plaintext_bytes_written, success));
 
   // Clear the context.
   HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
-
-  // Verify the input buffers
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(auth_tag));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(plaintext));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
