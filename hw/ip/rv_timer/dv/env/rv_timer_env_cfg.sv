@@ -9,6 +9,9 @@ class rv_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_timer_reg_block));
   virtual function void initialize();
     list_of_alerts = rv_timer_env_pkg::LIST_OF_ALERTS;
     super.initialize();
+
+    can_reset_with_csr_accesses = 1;
+
     // set num_interrupts
     num_interrupts = NUM_HARTS * NUM_TIMERS;
 
