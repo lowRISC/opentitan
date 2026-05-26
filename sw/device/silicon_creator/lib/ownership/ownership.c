@@ -73,28 +73,53 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   hardened_bool_t bootdata_dirty = kHardenedBoolFalse;
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       launder32(owner_page_valid[1]) == kOwnerPageStatusSigned &&
-      owner_block_newversion_mode() == kHardenedBoolTrue &&
-      launder32(owner_page[1].config_version) >
-          launder32(owner_page[0].config_version) &&
-      launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSigned);
-    HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
-    HARDENED_CHECK_GT(owner_page[1].config_version,
-                      owner_page[0].config_version);
-    rom_error_t error =
-        ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
-    if (launder32(error) == kErrorOk) {
-      HARDENED_CHECK_EQ(error, kErrorOk);
-      // Thunk the status of page 0 to Invalid so the next set of validity
-      // checks will copy the new page 1 content over to page 0 and establish a
-      // redundant backup of the new configuration.
-      owner_page_valid[0] = kOwnerPageStatusInvalid;
-      owner_page_valid[1] = kOwnerPageStatusSealed;
-      bootdata_dirty = kHardenedBoolTrue;
-    } else {
-      // If the new page wasn't good, we'll do nothing here and let the next set
-      // of validity checks copy page 0 over to page 1 and re-establish a
-      // redundant backup of the current configuration.
+      launder32(owner_block_newversion_mode()) == kHardenedBoolTrue) {
+    hardened_bool_t update_valid = kHardenedBoolFalse;
+
+    if (launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
+      if (launder32(owner_page[1].config_version) >
+          launder32(owner_page[0].config_version)) {
+        update_valid = kHardenedBoolTrue;
+      }
+    } else if (owner_page[0].update_mode == kOwnershipUpdateModeAnyVersion) {
+      update_valid = kHardenedBoolTrue;
+    }
+
+    if (launder32(update_valid) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(update_valid, kHardenedBoolTrue);
+      HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSigned);
+      if (launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
+        HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
+        HARDENED_CHECK_GT(owner_page[1].config_version,
+                          owner_page[0].config_version);
+      } else {
+        HARDENED_CHECK_EQ(owner_page[0].update_mode,
+                          kOwnershipUpdateModeAnyVersion);
+      }
+
+      rom_error_t error =
+          ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
+      if (launder32(error) == kErrorOk) {
+        HARDENED_CHECK_EQ(error, kErrorOk);
+
+        if (launder32(owner_block_owner_key_equal()) == kHardenedBoolFalse) {
+          HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolFalse);
+          HARDENED_RETURN_IF_ERROR(ownership_secret_update(bootdata));
+        } else {
+          HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
+        }
+
+        // Thunk the status of page 0 to Invalid so the next set of validity
+        // checks will copy the new page 1 content over to page 0 and establish
+        // a redundant backup of the new configuration.
+        owner_page_valid[0] = kOwnerPageStatusInvalid;
+        owner_page_valid[1] = kOwnerPageStatusSealed;
+        bootdata_dirty = kHardenedBoolTrue;
+      } else {
+        // If the new page wasn't good, we'll do nothing here and let the next
+        // set of validity checks copy page 0 over to page 1 and re-establish a
+        // redundant backup of the current configuration.
+      }
     }
   }
 
