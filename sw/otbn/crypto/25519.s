@@ -2104,6 +2104,15 @@ x25519:
   /* Note that this value is still masked by the coord rand. */
   bn.addm  w24, w12, w11
 
+  /* Check if U == 0 mod p */
+  bn.cmp   w24, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8      /* Extract the Z flag (bit 3) from FG0 */
+  addi     x3, x0, 8
+
+  /* If the Z flag is set (x2 == 8), U is 0. Jump to failure. */
+  beq      x2, x3, .L_x25519_fail
+
   /* Fetch random mask r and reduce it modulo p. */
   bn.wsrr  w25, URND
   bn.addm  w25, w25, w31
