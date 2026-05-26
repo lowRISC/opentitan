@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_crc32.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 
 namespace ghash_unittest {
 namespace {
@@ -106,8 +107,11 @@ TEST(Ghash, ProcessFullBlocksOneByte) {
   EXPECT_OK(
       ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx));
   EXPECT_OK(ghash_init(&ctx));
-  EXPECT_OK(
-      ghash_process_full_blocks(&ctx, partial_len, &partial, input_len, input));
+
+  otcrypto_const_byte_buf_t input_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, input, input_len);
+
+  EXPECT_OK(ghash_process_full_blocks(&ctx, partial_len, &partial, &input_buf));
   EXPECT_EQ(partial.data[0], input_word);
   EXPECT_EQ(partial.data[1], 0);
   EXPECT_EQ(partial.data[2], 0);
@@ -154,12 +158,17 @@ TEST(Ghash, Mul1) {
   size_t partial_len = 0;
   size_t input_len = 1;
   uint8_t *input = &one;
-  EXPECT_OK(
-      ghash_process_full_blocks(&ctx, partial_len, &partial, input_len, input));
+
+  otcrypto_const_byte_buf_t input_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, input, input_len);
+  otcrypto_const_byte_buf_t one_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, &one, 1);
+
+  EXPECT_OK(ghash_process_full_blocks(&ctx, partial_len, &partial, &input_buf));
   EXPECT_LT(input_len, kGhashBlockNumBytes - partial_len);
   EXPECT_EQ(partial.data[0], one);
 
-  EXPECT_OK(ghash_update(&ctx, 1, &one));
+  EXPECT_OK(ghash_update(&ctx, &one_buf));
   EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(H));
   uint32_t result[kGhashBlockNumWords];
   EXPECT_OK(ghash_final(&ctx, result));
@@ -225,12 +234,21 @@ TEST(Ghash, McGrawViegaTestCase2) {
   EXPECT_OK(
       ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx));
   EXPECT_OK(ghash_init(&ctx));
-  EXPECT_OK(ghash_update(&ctx, A.size() * sizeof(uint32_t),
-                         (unsigned char *)A.data()));
-  EXPECT_OK(ghash_update(&ctx, C.size() * sizeof(uint32_t),
-                         (unsigned char *)C.data()));
-  EXPECT_OK(ghash_update(&ctx, bitlengths.size() * sizeof(uint64_t),
-                         (unsigned char *)bitlengths.data()));
+
+  otcrypto_const_byte_buf_t a_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)A.data(),
+                        A.size() * sizeof(uint32_t));
+  otcrypto_const_byte_buf_t c_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)C.data(),
+                        C.size() * sizeof(uint32_t));
+  otcrypto_const_byte_buf_t len_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)bitlengths.data(),
+      bitlengths.size() * sizeof(uint64_t));
+
+  EXPECT_OK(ghash_update(&ctx, &a_buf));
+  EXPECT_OK(ghash_update(&ctx, &c_buf));
+  EXPECT_OK(ghash_update(&ctx, &len_buf));
+
   uint32_t result[kGhashBlockNumWords];
   EXPECT_OK(ghash_final(&ctx, result));
 
@@ -291,14 +309,22 @@ TEST(Ghash, ContextReset) {
   EXPECT_OK(
       ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx));
 
+  otcrypto_const_byte_buf_t a_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)A.data(),
+                        A.size() * sizeof(uint32_t));
+  otcrypto_const_byte_buf_t c_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)C.data(),
+                        C.size() * sizeof(uint32_t));
+  otcrypto_const_byte_buf_t len_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)bitlengths.data(),
+      bitlengths.size() * sizeof(uint64_t));
+
   // Compute GHASH(H, A, C).
   EXPECT_OK(ghash_init(&ctx));
-  EXPECT_OK(ghash_update(&ctx, A.size() * sizeof(uint32_t),
-                         (unsigned char *)A.data()));
-  EXPECT_OK(ghash_update(&ctx, C.size() * sizeof(uint32_t),
-                         (unsigned char *)C.data()));
-  EXPECT_OK(ghash_update(&ctx, bitlengths.size() * sizeof(uint64_t),
-                         (unsigned char *)bitlengths.data()));
+  EXPECT_OK(ghash_update(&ctx, &a_buf));
+  EXPECT_OK(ghash_update(&ctx, &c_buf));
+  EXPECT_OK(ghash_update(&ctx, &len_buf));
+
   uint32_t result[kGhashBlockNumWords];
   EXPECT_OK(ghash_final(&ctx, result));
 
@@ -306,12 +332,9 @@ TEST(Ghash, ContextReset) {
 
   // Compute GHASH(H, A, C) a second time.
   EXPECT_OK(ghash_init(&ctx));
-  EXPECT_OK(ghash_update(&ctx, A.size() * sizeof(uint32_t),
-                         (unsigned char *)A.data()));
-  EXPECT_OK(ghash_update(&ctx, C.size() * sizeof(uint32_t),
-                         (unsigned char *)C.data()));
-  EXPECT_OK(ghash_update(&ctx, bitlengths.size() * sizeof(uint64_t),
-                         (unsigned char *)bitlengths.data()));
+  EXPECT_OK(ghash_update(&ctx, &a_buf));
+  EXPECT_OK(ghash_update(&ctx, &c_buf));
+  EXPECT_OK(ghash_update(&ctx, &len_buf));
   EXPECT_OK(ghash_final(&ctx, result));
 
   EXPECT_THAT(result, testing::ElementsAreArray(exp_result));
@@ -377,12 +400,21 @@ TEST(Ghash, McGrawViegaTestCase18) {
   EXPECT_OK(
       ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx));
   EXPECT_OK(ghash_init(&ctx));
-  EXPECT_OK(ghash_update(&ctx, A.size() * sizeof(uint32_t),
-                         (unsigned char *)A.data()));
-  EXPECT_OK(ghash_update(&ctx, C.size() * sizeof(uint32_t),
-                         (unsigned char *)C.data()));
-  EXPECT_OK(ghash_update(&ctx, bitlengths.size() * sizeof(uint64_t),
-                         (unsigned char *)bitlengths.data()));
+
+  otcrypto_const_byte_buf_t a_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)A.data(),
+                        A.size() * sizeof(uint32_t));
+  otcrypto_const_byte_buf_t c_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)C.data(),
+                        C.size() * sizeof(uint32_t));
+  otcrypto_const_byte_buf_t len_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)bitlengths.data(),
+      bitlengths.size() * sizeof(uint64_t));
+
+  EXPECT_OK(ghash_update(&ctx, &a_buf));
+  EXPECT_OK(ghash_update(&ctx, &c_buf));
+  EXPECT_OK(ghash_update(&ctx, &len_buf));
+
   uint32_t result[kGhashBlockNumWords];
   EXPECT_OK(ghash_final(&ctx, result));
 

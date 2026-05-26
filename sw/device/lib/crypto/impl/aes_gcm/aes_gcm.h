@@ -87,26 +87,24 @@ typedef struct aes_gcm_context {
  * This implementation does not support short tags.
  *
  * @param key AES key
- * @param iv_len length of IV in 32-bit words
- * @param iv IV value (may be NULL if iv_len is 0)
- * @param plaintext_len length of plaintext in bytes
- * @param plaintext plaintext value (may be NULL if plaintext_len is 0)
- * @param aad_len length of AAD in bytes
- * @param aad AAD value (may be NULL if aad_len is 0)
- * @param tag_len Tag length in 32-bit words
+ * @param iv IV buffer (data may be NULL if len is 0)
+ * @param plaintext plaintext buffer (data may be NULL if len is 0)
+ * @param aad AAD buffer (data may be NULL if len is 0)
  * @param security_level The used security level
- * @param[out] tag Output buffer for tag
+ * @param[out] tag Output buffer for tag (len is used as input for the tag
+ * length)
  * @param[out] ciphertext Output buffer for ciphertext (same length as
  * plaintext)
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
-                         const uint32_t *iv, const size_t plaintext_len,
-                         const uint8_t *plaintext, const size_t aad_len,
-                         const uint8_t *aad, const size_t tag_len,
+status_t aes_gcm_encrypt(const aes_key_t key,
+                         const otcrypto_const_word32_buf_t *iv,
+                         const otcrypto_const_byte_buf_t *plaintext,
+                         const otcrypto_const_byte_buf_t *aad,
+                         otcrypto_word32_buf_t *tag,
                          otcrypto_key_security_level_t security_level,
-                         uint32_t *tag, uint8_t *ciphertext);
+                         otcrypto_byte_buf_t *ciphertext);
 
 /**
  * AES-GCM authenticated decryption as defined in NIST SP800-38D, algorithm 5.
@@ -130,25 +128,22 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  * `success`.
  *
  * @param key AES key
- * @param iv_len length of IV in 32-bit words
- * @param iv IV value (may be NULL if iv_len is 0)
- * @param ciphertext_len length of ciphertext in bytes
- * @param ciphertext ciphertext value (may be NULL if ciphertext_len is 0)
- * @param aad_len length of AAD in bytes
- * @param aad AAD value (may be NULL if aad_len is 0)
- * @param tag_len Tag length in 32-bit words
- * @param tag Authentication tag
+ * @param iv IV buffer (data may be NULL if len is 0)
+ * @param ciphertext ciphertext buffer (data may be NULL if len is 0)
+ * @param aad AAD buffer (data may be NULL if len is 0)
+ * @param tag Authentication tag buffer
  * @param security_level The used security level
  * @param[out] plaintext Output buffer for plaintext (same length as ciphertext)
  * @param[out] success True if authentication was successful, otherwise false
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
-                         const uint32_t *iv, const size_t ciphertext_len,
-                         const uint8_t *ciphertext, const size_t aad_len,
-                         const uint8_t *aad, const size_t tag_len,
-                         const uint32_t *tag, uint8_t *plaintext,
+status_t aes_gcm_decrypt(const aes_key_t key,
+                         const otcrypto_const_word32_buf_t *iv,
+                         const otcrypto_const_byte_buf_t *ciphertext,
+                         const otcrypto_const_byte_buf_t *aad,
+                         const otcrypto_const_word32_buf_t *tag,
+                         otcrypto_byte_buf_t *plaintext,
                          otcrypto_key_security_level_t security_level,
                          hardened_bool_t *success);
 
@@ -169,26 +164,25 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
  *   aes_gcm_encrypt_final(...)
  *
  * @param key AES key
- * @param iv_len length of IV in 32-bit words
- * @param iv IV value (may be NULL if iv_len is 0)
+ * @param iv IV buffer (data may be NULL if len is 0)
  * @param[out] ctx AES-GCM context object.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_encrypt_init(const aes_key_t key, const size_t iv_len,
-                              const uint32_t *iv, aes_gcm_context_t *ctx);
+status_t aes_gcm_encrypt_init(const aes_key_t key,
+                              const otcrypto_const_word32_buf_t *iv,
+                              aes_gcm_context_t *ctx);
 
 /**
  * Updates the associated data for an AES-GCM operation.
  *
  * @param ctx AES-GCM context object.
- * @param aad_len length of aad in bytes
- * @param aad aad value (may be NULL if aad_len is 0)
+ * @param aad aad vuffer (data may be NULL if len is 0)
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_update_aad(aes_gcm_context_t *ctx, const size_t aad_len,
-                            const uint8_t *aad);
+status_t aes_gcm_update_aad(aes_gcm_context_t *ctx,
+                            const otcrypto_const_byte_buf_t *aad);
 
 /**
  * Updates the encrypted input for an AES-GCM operation.
@@ -209,17 +203,16 @@ status_t aes_gcm_update_aad(aes_gcm_context_t *ctx, const size_t aad_len,
  * Returns the number of output bytes written in `output_len`.
  *
  * @param ctx AES-GCM context object.
- * @param input_len length of input in bytes
- * @param input input value (may be NULL if input_len is 0)
- * @param[out] output_len number of output bytes written
- * @param[out] output resulting output data
+ * @param input input buffer (data may be NULL if len is 0)
+ * @param[out] output resulting output data buffer
+ * @param[out] bytes_written number of output bytes written
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
-                                       const size_t input_len,
-                                       const uint8_t *input, size_t *output_len,
-                                       uint8_t *output);
+                                       const otcrypto_const_byte_buf_t *input,
+                                       otcrypto_byte_buf_t *output,
+                                       size_t *bytes_written);
 
 /**
  * Finishes an AES-GCM encryption operation.
@@ -235,16 +228,16 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
  * Returns the number of output bytes written in `output_len`.
  *
  * @param ctx AES-GCM context object.
- * @param tag_len Tag length in 32-bit words
- * @param[out] tag Output buffer for tag
- * @param[out] output_len number of output bytes written
- * @param[out] output resulting output data
+ * @param[out] tag Output buffer for tag (len used as input)
+ * @param[out] output resulting output data buffer
+ * @param[out] bytes_written number of output bytes written
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_encrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
-                               uint32_t *tag, size_t *output_len,
-                               uint8_t *output);
+status_t aes_gcm_encrypt_final(aes_gcm_context_t *ctx,
+                               otcrypto_word32_buf_t *tag,
+                               otcrypto_byte_buf_t *output,
+                               size_t *bytes_written);
 
 /**
  * Starts an AES-GCM authenticated decryption operation.
@@ -263,14 +256,14 @@ status_t aes_gcm_encrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
  *   aes_gcm_decrypt_final(...)
  *
  * @param key AES key
- * @param iv_len length of IV in 32-bit words
- * @param iv IV value (may be NULL if iv_len is 0)
+ * @param iv IV buffer (data may be NULL if len is 0)
  * @param[out] ctx AES-GCM context object.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_decrypt_init(const aes_key_t key, const size_t iv_len,
-                              const uint32_t *iv, aes_gcm_context_t *ctx);
+status_t aes_gcm_decrypt_init(const aes_key_t key,
+                              const otcrypto_const_word32_buf_t *iv,
+                              aes_gcm_context_t *ctx);
 
 /**
  * Finishes an AES-GCM decryption operation.
@@ -295,17 +288,17 @@ status_t aes_gcm_decrypt_init(const aes_key_t key, const size_t iv_len,
  * `success`.
  *
  * @param ctx AES-GCM context object.
- * @param tag_len Tag length in 32-bit words
- * @param[out] tag Output buffer for tag
- * @param[out] output_len number of output bytes written
- * @param[out] output resulting output data
+ * @param[out] tag Output buffer for tag (len used for input)
+ * @param[out] output resulting output data buffer
+ * @param[out] bytes_written number of output bytes written
  * @param[out] success True if authentication was successful, otherwise false
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
-                               const uint32_t *tag, size_t *output_len,
-                               uint8_t *output, hardened_bool_t *success);
+status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx,
+                               const otcrypto_const_word32_buf_t *tag,
+                               otcrypto_byte_buf_t *output,
+                               size_t *bytes_written, hardened_bool_t *success);
 
 #ifdef __cplusplus
 }  // extern "C"
