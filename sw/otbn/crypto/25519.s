@@ -17,7 +17,7 @@
 .globl ext_add
 .globl ext_to_affine
 .globl ext_is_on_curve
-.globl X25519
+.globl x25519
 
 /**
  * This library contains an implementation of the Ed25519 signature scheme
@@ -1941,7 +1941,7 @@ trigger_fault_if_fg0_not_z:
   ret
 
 /**
- * Check that the X25519 public key u is valid for the Montgomery-to-Edwards map.
+ * Check that the x25519 public key u is valid for the Montgomery-to-Edwards map.
  *
  * The Montgomery-to-Edwards conversion y = (u-1)/(u+1) has a zero denominator
  * at u = p-1. fe_inv(0) = 0, so the conversion silently produces y = 0,
@@ -2019,7 +2019,7 @@ x25519_ed_y_to_mont_u:
   ret
 
 /**
- * Top-level X25519 function using Twisted Edwards scalar multiplication.
+ * Top-level x25519 function using Twisted Edwards scalar multiplication.
  *
  * This routine saves instruction memory by reusing the Ed25519 point arithmetic.
  * It maps the Montgomery u-coordinate to a Twisted Edwards y-coordinate,
@@ -2027,14 +2027,14 @@ x25519_ed_y_to_mont_u:
  *
  * @param[in]  w8: scalar (private key, already clamped by host CPU)
  * @param[in]  w9: Montgomery u-coordinate (public key or base point 9)
- * @param[out] w22: result, X25519(k, u) as an encoded u-coordinate
+ * @param[out] w22: result, x25519(k, u) as an encoded u-coordinate
  * @param[out] x20: SUCCESS if the public key decoding passed,
  *                  FAILURE if the public key decoding failed
  *
  * clobbered registers: x2, x3, x21, w2, w6 to w30
  * clobbered flag groups: FG0
  */
-X25519:
+x25519:
   /* Initialize field arithmetic (MOD <= p, w19 <= 19) */
   jal      x1, fe_init
   bn.xor   w31, w31, w31

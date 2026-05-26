@@ -9,7 +9,7 @@
 
 /**
  * This library contains arithmetic for the finite field modulo the prime
- * p = 2^255-19, which is used for both the X25519 key exchange and the Ed25519
+ * p = 2^255-19, which is used for both the x25519 key exchange and the Ed25519
  * signature scheme.
  */
 

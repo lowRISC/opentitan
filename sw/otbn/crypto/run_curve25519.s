@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Entrypoint for 25519 ECDH (X25519) and EdDSA (ed25519) operations.
+ * Entrypoint for 25519 ECDH (x25519) and EdDSA (ed25519) operations.
  *
  * This binary has the following modes of operation:
  * 1. MODE_SIGN_PART1: generate a new keypair
@@ -52,28 +52,28 @@ start:
   lw    x2, 0(x2)
 
   addi  x3, x0, MODE_KEYGEN
-  beq   x2, x3, ed25519_keygen
+  beq   x2, x3, run_ed25519_keygen
 
   addi  x3, x0, MODE_SIGN_STAGE1
-  beq   x2, x3, ed25519_sign_compute_r
+  beq   x2, x3, run_ed25519_sign_compute_r
 
   addi  x3, x0, MODE_SIGN_STAGE2
-  beq   x2, x3, ed25519_sign_compute_s
+  beq   x2, x3, run_ed25519_sign_compute_s
 
   addi  x3, x0, MODE_VERIFY
-  beq   x2, x3, ed25519_verify
+  beq   x2, x3, run_ed25519_verify
 
   addi  x3, x0, MODE_X25519
-  beq   x2, x3, x25519
+  beq   x2, x3, run_x25519
 
   addi  x3, x0, MODE_X25519_KEYGEN
-  beq   x2, x3, x25519_keygen
+  beq   x2, x3, run_x25519_keygen
 
   addi  x3, x0, MODE_X25519_SIDELOAD
-  beq   x2, x3, x25519_sideload
+  beq   x2, x3, run_x25519_sideload
 
   addi  x3, x0, MODE_X25519_KEYGEN_SIDELOAD
-  beq   x2, x3, x25519_keygen_sideload
+  beq   x2, x3, run_x25519_keygen_sideload
 
   /* Invalid mode; fail. */
   unimp
@@ -91,7 +91,7 @@ start:
  * clobbered registers: x2 to x3, w2 to w31
  * clobbered flag groups: FG0
  */
-ed25519_keygen:
+run_ed25519_keygen:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -119,7 +119,7 @@ ed25519_keygen:
  * clobbered registers: x2 to x3, w2 to w31
  * clobbered flag groups: FG0
  */
-ed25519_sign_compute_r:
+run_ed25519_sign_compute_r:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -142,7 +142,7 @@ ed25519_sign_compute_r:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w31
  * clobbered flag groups: FG0
  */
-ed25519_sign_compute_s:
+run_ed25519_sign_compute_s:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -165,7 +165,7 @@ ed25519_sign_compute_s:
  * clobbered registers: x2 to x4, x20 to x23, w2 to w31
  * clobbered flag groups: FG0
  */
-ed25519_verify:
+run_ed25519_verify:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -174,7 +174,22 @@ ed25519_verify:
 
   ecall
 
-x25519:
+/**
+ * X25519 shared secret generation operation.
+ * Generates the shared secret given a memory-provided private key and peer's public key.
+ *
+ * Returns SUCCESS or FAILURE in x20, and the encoded shared key point.
+ *
+ * @param[in]  dmem[ed25519_s0]: private key share 0, 256 bits
+ * @param[in]  dmem[ed25519_s1]: private key share 1, 256 bits
+ * @param[in]  dmem[x25519_public_key]: peer's public key (u-coordinate), 256 bits
+ * @param[out] dmem[x25519_shared_key]: computed shared secret, 256 bits
+ * @param[out] dmem[x25519_ok]: SUCCESS or FAILURE code
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -235,8 +250,8 @@ x25519:
   la       x3, x25519_public_key
   bn.lid   x2, 0(x3)
 
-  /* Call Edwards-mapped X25519 */
-  jal      x1, X25519
+  /* Call Edwards-mapped x25519 */
+  jal      x1, x25519
 
   /* Store result status (SUCCESS or FAILURE) from x20. */
   la       x3, x25519_ok
@@ -249,7 +264,20 @@ x25519:
 
   ecall
 
-x25519_keygen:
+/**
+ * X25519 key generation operation.
+ * Generates the public key given a memory-provided private key.
+ *
+ * Returns the encoded public key point.
+ *
+ * @param[in]  dmem[ed25519_s0]: private key share 0, 256 bits
+ * @param[in]  dmem[ed25519_s1]: private key share 1, 256 bits
+ * @param[out] dmem[x25519_public_key]: generated public key (u-coordinate), 256 bits
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519_keygen:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -308,7 +336,7 @@ x25519_keygen:
   /* Set Curve25519 basepoint */
   bn.addi  w9, w31, 9
 
-  jal      x1, X25519
+  jal      x1, x25519
 
   /* Store public key from w22 */
   li       x2, 22
@@ -317,7 +345,22 @@ x25519_keygen:
 
   ecall
 
-x25519_sideload:
+/**
+ * X25519 shared secret generation operation (sideloaded key).
+ * Generates the shared secret using a sideloaded private key from the hardware key manager.
+ *
+ * Returns SUCCESS or FAILURE in x20, and the encoded shared key point.
+ *
+ * @param[in]  KEY_S0_L: hardware-sideloaded private key share 0, 256 bits
+ * @param[in]  KEY_S1_L: hardware-sideloaded private key share 1, 256 bits
+ * @param[in]  dmem[x25519_public_key]: peer's public key (u-coordinate), 256 bits
+ * @param[out] dmem[x25519_shared_key]: computed shared secret, 256 bits
+ * @param[out] dmem[x25519_ok]: SUCCESS or FAILURE code
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519_sideload:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -358,7 +401,7 @@ x25519_sideload:
   la x3, x25519_public_key
   bn.lid x2, 0(x3)
 
-  jal x1, X25519
+  jal x1, x25519
 
   /* Store result status (SUCCESS or FAILURE) from x20. */
   la       x3, x25519_ok
@@ -371,7 +414,20 @@ x25519_sideload:
 
   ecall
 
-x25519_keygen_sideload:
+/**
+ * X25519 key generation operation (sideloaded key).
+ * Generates the public key using a sideloaded private key from the hardware key manager.
+ *
+ * Returns the encoded public key point.
+ *
+ * @param[in]  KEY_S0_L: hardware-sideloaded private key share 0, 256 bits
+ * @param[in]  KEY_S1_L: hardware-sideloaded private key share 1, 256 bits
+ * @param[out] dmem[x25519_public_key]: generated public key (u-coordinate), 256 bits
+ *
+ * clobbered registers: x2 to x3, x20, w2 to w31
+ * clobbered flag groups: FG0
+ */
+run_x25519_keygen_sideload:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -410,7 +466,7 @@ x25519_keygen_sideload:
   /* Set Curve25519 basepoint */
   bn.addi w9, w31, 9
 
-  jal x1, X25519
+  jal x1, x25519
 
   /* Store public key from w22 into DMEM */
   li x2, 22
@@ -485,13 +541,13 @@ ed25519_r0:
 ed25519_r1:
   .zero 96
 
-/* X25519 result status (SUCCESS=0x739 or FAILURE=0x1d4). Output for x25519. */
+/* x25519 result status (SUCCESS=0x739 or FAILURE=0x1d4). Output for x25519. */
 .balign 4
 .globl x25519_ok
 x25519_ok:
   .zero 4
 
-/* X25519 public key */
+/* x25519 public key */
 .balign 32
 .globl x25519_public_key
 x25519_public_key:
