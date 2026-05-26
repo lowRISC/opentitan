@@ -822,8 +822,7 @@ def _get_basic_ipgen_params(topcfg: Dict[str, object], template_type: str) -> Di
     return ipgen_params
 
 
-def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
-                      alt_hjson_path: str) -> None:
+def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str) -> None:
     """Generate the regfile for top_only IPs."""
     log.info("Generating top only modules")
 
@@ -1414,11 +1413,10 @@ def _process_top(
     them to further populate the top config. It can raise exceptions for
     errors found in the process.
     """
-    alt_hjson_path = Path(args.hjson_path) if args.hjson_path is not None else None
     # Prepare the topcfg.
     extract_clocks(topcfg)
     ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path,
-                                        alt_hjson_path)
+                                        args.hjson_path)
     name_to_block = {name: attrs.ip_block for name, attrs in ip_attrs.items()}
     ipgen_attrs = create_ipgen_blocks(topcfg, alias_cfgs, cfg_path, out_path,
                                       name_to_block)
@@ -1634,12 +1632,12 @@ def main():
              Module is created under rtl/. (default: dir(topcfg)/..)
              """)  # yapf: disable
     parser.add_argument("--hjson-path",
-                        help="""
-          If defined, topgen uses supplied path to search for ip hjson.
-          This applies only to ip's with the `reggen_only` attribute.
-          If an hjson is located both in the conventional path and the alternate
-          path, the alternate path has priority.
-        """)
+                        help="""If defined, topgen uses supplied path to search
+                        for ip hjson. This applies only to ip's with the
+                        `reggen_only` attribute. If an hjson is located both in
+                        the conventional path and the alternate path, the
+                        alternate path has priority.""",
+                        type=Path)
     parser.add_argument("--verbose", "-v", action="store_true", help="Verbose")
     parser.add_argument(
         '--version-stamp',
@@ -1909,7 +1907,7 @@ def main():
         m["type"]
         for m in completecfg["module"] if lib.is_top_reggen(m)
     }
-    generate_top_only(top_only_ips, out_path, top_name, args.hjson_path)
+    generate_top_only(top_only_ips, out_path, top_name)
     # Re-set the seed because generate_full_ipgens uses the same RNG again from the beginning
     SecurePrngFactory.create("topgen", topcfg["seed"]["topgen_seed"].value)
 
