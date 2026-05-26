@@ -11,13 +11,11 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// RAM copy of the owner INFO pages from flash.
-extern owner_block_t owner_page[2];
 
 OT_WEAK const owner_keydata_t *const kNoOwnerRecoveryKey;
 
@@ -258,4 +256,14 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
   secret_page_enable(/*read=*/kMultiBitBool4False,
                      /*write=*/kMultiBitBool4False);
   return error;
+}
+
+rom_error_t ownership_secret_update(boot_data_t *bootdata) {
+  uint32_t prior_key_alg = owner_page[0].ownership_key_alg;
+  const owner_keydata_t *prior_owner_key = &owner_page[0].owner_key;
+  HARDENED_RETURN_IF_ERROR(
+      ownership_secret_new(prior_key_alg, prior_owner_key));
+  bootdata->ownership_transfers += 1;
+
+  return kErrorOk;
 }

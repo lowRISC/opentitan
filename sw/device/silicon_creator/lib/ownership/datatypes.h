@@ -110,6 +110,12 @@ typedef enum ownership_update_mode {
    * self-same owner if the config_version is newer)
    */
   kOwnershipUpdateModeSelfVersion = 0x564c4553,
+  /**
+   * Update mode AnyVersion: `ANYV`
+   * (accept new owner configs as long as the config_version is newer,
+   * or any config_version if it is a new owner (transfer))
+   */
+  kOwnershipUpdateModeAnyVersion = 0x56594e41,
 } ownership_update_mode_t;
 
 typedef enum lock_constraint {
