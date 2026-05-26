@@ -180,8 +180,8 @@ status_t key_exchange_test(void) {
   uint32_t keyA[kX25519SharedKeyWords];
   uint32_t keyB[kX25519SharedKeyWords];
 
-  TRY(hardened_add(keyA0, keyA1, kX25519SharedKeyWords, keyA));
-  TRY(hardened_add(keyB0, keyB1, kX25519SharedKeyWords, keyB));
+  TRY(hardened_xor(keyA0, keyA1, kX25519SharedKeyWords, keyA));
+  TRY(hardened_xor(keyB0, keyB1, kX25519SharedKeyWords, keyB));
 
   CHECK_ARRAYS_EQ(keyA, keyB, ARRAYSIZE(keyA));
 

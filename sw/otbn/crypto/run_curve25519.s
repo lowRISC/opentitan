@@ -257,10 +257,21 @@ run_x25519:
   la       x3, x25519_ok
   sw       x20, 0(x3)
 
-  /* Store shared key from w22 */
-  li       x2, 22
-  la       x3, x25519_shared_key
-  bn.sid   x2, 0(x3)
+  bn.mov   w11, w22
+
+  bn.xor   w31, w31, w31
+
+  /* Arithmetic-to-boolean conversion.
+     Inputs:  w19 = r, w11 = u_masked
+     Outputs: w20 = x0, w19 = x1 */
+  jal      x1, arithmetic_to_boolean_mod
+
+  /* Store the boolean shares */
+  la       x4, x25519_shared_key
+  li       x2, 20
+  bn.sid   x2, 0(x4)
+  li       x2, 19
+  bn.sid   x2, 32(x4)
 
   ecall
 
@@ -338,6 +349,9 @@ run_x25519_keygen:
 
   jal      x1, x25519
 
+  /* Unmask the key */
+  bn.addm  w22, w22, w19
+
   /* Store public key from w22 */
   li       x2, 22
   la       x3, x25519_public_key
@@ -407,10 +421,21 @@ run_x25519_sideload:
   la       x3, x25519_ok
   sw       x20, 0(x3)
 
-  /* Store shared key from w22 */
-  li x2, 22
-  la x3, x25519_shared_key
-  bn.sid x2, 0(x3)
+  bn.mov   w11, w22
+
+  bn.xor   w31, w31, w31
+
+  /* Arithmetic-to-boolean conversion.
+     Inputs:  w19 = r, w11 = u_masked
+     Outputs: w20 = x0, w19 = x1 */
+  jal      x1, arithmetic_to_boolean_mod
+
+  /* Store the boolean shares */
+  la       x4, x25519_shared_key
+  li       x2, 20
+  bn.sid   x2, 0(x4)
+  li       x2, 19
+  bn.sid   x2, 32(x4)
 
   ecall
 
@@ -467,6 +492,9 @@ run_x25519_keygen_sideload:
   bn.addi w9, w31, 9
 
   jal x1, x25519
+
+  /* Unmask the key */
+  bn.addm  w22, w22, w19
 
   /* Store public key from w22 into DMEM */
   li x2, 22
