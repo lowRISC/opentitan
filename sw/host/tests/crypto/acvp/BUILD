@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "harness",
     srcs = [
+        "src/aes.rs",
         "src/cshake.rs",
         "src/ecdsa.rs",
         "src/eddsa.rs",

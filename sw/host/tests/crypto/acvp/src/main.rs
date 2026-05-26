@@ -15,6 +15,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::ConsoleSend;
 use opentitanlib::uart::console::UartConsole;
 
+mod aes;
 mod cshake;
 mod ecdsa;
 mod eddsa;
@@ -116,6 +117,9 @@ enum AcvpVectors {
     // field that sigVer test cases lack, so sigVer vectors will fall through to Rsa.
     RsaSigGen(rsa::RsaSignGenTestVectorSet),
     Rsa(rsa::RsaTestVectorSet),
+    // AesTestVectorSet groups require a `direction` field that no other
+    // algorithm's groups have, so AES vectors fall through all prior variants.
+    Aes(aes::AesTestVectorSet),
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -134,6 +138,7 @@ enum AcvpResults {
     RsaSigGen(rsa::RsaSignGenResultVectorSet),
     Rsa(rsa::RsaResultVectorSet),
     X25519(x25519::X25519ResultVectorSet),
+    Aes(aes::AesResultVectorSet),
 }
 
 fn validate_subset(actual: &[AcvpResults], expected_json: &serde_json::Value) -> Result<()> {
@@ -357,6 +362,17 @@ fn run<R: std::io::Read, W: std::io::Write>(
                     &spi_console_device,
                     &vs,
                 )?));
+            }
+            AcvpVectors::Aes(vs) => {
+                if opts.expected.is_some() || opts.output.is_some() {
+                    acvp_results.push(AcvpResults::Aes(aes::run_aes_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?));
+                }
             }
         }
     }
