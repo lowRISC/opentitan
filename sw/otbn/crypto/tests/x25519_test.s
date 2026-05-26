@@ -35,8 +35,8 @@ main:
   bn.mov  w2, w8
   bn.mov  w4, w31
 
-  /* w22 <= X25519(k, u) */
-  jal     x1, X25519
+  /* w22 <= x25519(k, u) */
+  jal     x1, x25519
 
   /* w20 <= expected result */
   li      x2, 20
