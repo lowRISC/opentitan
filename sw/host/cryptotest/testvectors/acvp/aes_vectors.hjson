@@ -1,0 +1,90 @@
+// Copyright lowRISC contributors (OpenTitan project).
+//
+// Source: NIST ACVP-Server (https://github.com/usnistgov/ACVP-Server)
+// NIST License:
+// NIST-developed software is provided by NIST as a public service. You may
+// use, copy, and distribute copies of the software in any medium, provided
+// that you keep intact this entire notice. You may improve, modify, and create
+// derivative works of the software or any portion of the software, and you may
+// copy and distribute such modifications or works. Modified works should carry
+// a notice stating that you changed the software and should note the date and
+// nature of any such change. Please explicitly acknowledge the National
+// Institute of Standards and Technology as the source of the software.
+//
+// NIST-developed software is expressly provided "AS IS." NIST MAKES NO
+// WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT, OR ARISING BY OPERATION OF
+// LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND DATA ACCURACY. NIST
+// NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE
+// UNINTERRUPTED OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST
+// DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE OF THE
+// SOFTWARE OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE
+// CORRECTNESS, ACCURACY, RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
+//
+// You are solely responsible for determining the appropriateness of using and
+// distributing the software and you assume all risks associated with its use,
+// including but not limited to the risks and costs of program errors,
+// compliance with applicable laws, damage to or loss of data, programs or
+// equipment, and the unavailability or interruption of operation. This
+// software is not intended to be used in any situation where a failure could
+// cause risk of injury or damage to property. The software developed by NIST
+// employees is not subject to copyright protection within the United States.
+//
+// Based on:
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ACVP-AES-ECB-1.0/prompt.json
+// Modifications:
+// This file was modified on 26.05.2026 as following:
+// - For AES-ECB, removed all test groups except tgId 1.
+[
+  {
+    "vsId": 0,
+    "algorithm": "ACVP-AES-ECB",
+    "revision": "1.0",
+    "isSample": false,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "testType": "AFT",
+        "direction": "encrypt",
+        "keyLen": 128,
+        "tests": [
+          {
+            "tcId": 1,
+            "pt": "B26AEB1874E47CA8358FF22378F09144",
+            "key": "00000000000000000000000000000000"
+          },
+          {
+            "tcId": 2,
+            "pt": "F34481EC3CC627BACD5DC3FB08F273E6",
+            "key": "00000000000000000000000000000000"
+          },
+          {
+            "tcId": 3,
+            "pt": "9798C4640BAD75C7C3227DB910174E72",
+            "key": "00000000000000000000000000000000"
+          },
+          {
+            "tcId": 4,
+            "pt": "96AB5C2FF612D9DFAAE8C31F30C42168",
+            "key": "00000000000000000000000000000000"
+          },
+          {
+            "tcId": 5,
+            "pt": "CB9FCEEC81286CA3E989BD979B0CB284",
+            "key": "00000000000000000000000000000000"
+          },
+          {
+            "tcId": 6,
+            "pt": "58C8E00B2631686D54EAB84B91F0ACA1",
+            "key": "00000000000000000000000000000000"
+          },
+          {
+            "tcId": 7,
+            "pt": "6A118A874519E64E9963798A503F1D35",
+            "key": "00000000000000000000000000000000"
+          }
+        ]
+      }
+    ]
+  }
+]
