@@ -328,19 +328,19 @@ sc_mul:
   ret
 
 /**
- * Blind a scalar with a multiple of the curve order L.
+ * Blind a scalar with a multiple of the point order 8 * L (considering points out of the main curve).
  *
- * Given a scalar s < L, this routine adds a random multiple of the group order
- * 8 * k * L to the scalar such that s + 8 * k * L. We left shift k * L (multiply by 8) in order to clamp the blinding factor.
+ * Given a scalar s < L, this routine adds a random multiple of the point order
+ * k * 8 * L to the scalar such that s + k * 8 * L.
  * In accordance, with Schindler's and Wiemers' recommendation [1] the blinding factor k is 128 bits. Since the
  * curve order L is 253 bits, by choosing a 128-bit factor k we can guarantee
- * that the blinded scalar s + 8 * k * L is at most 385 bits.
+ * that the blinded scalar s + k * 8 * L is at most 385 bits.
  *
  * [1] https://csrc.nist.gov/csrc/media/events/workshop-on-elliptic-curve-cryptography-standards/documents/papers/session6-schindler-werner.pdf
  *
- * @param[in] w20: s, the scalar to be blinded (s < L).
+ * @param[in] w20: s, the scalar to be blinded.
  * @param[in] w31: all-zero.
- * @param[out] [w17:w16]: The blinded scalar s + k * L.
+ * @param[out] [w17:w16]: The blinded scalar s + k * 8 * L.
  *
  * Clobbered registers: x2, x3, w21, w22, w23.
  * Clobbered flag groups: FG0.
@@ -368,15 +368,16 @@ sc_blind:
   bn.mulqacc.so  w16.U, w21.3, w22.0, 64
   bn.mulqacc.wo  w17,   w21.3, w22.1, 0
 
+  /* Left shift the result to calculate 8 * k * L */
   /* w17 = (w17 << 3) | (w16 >> 253) */
   bn.rshi w17, w17, w16 >> 253
 
   /* w16 = (w16 << 3) | (0 >> 253) */
   bn.rshi w16, w16, w31 >> 253
 
-  /* Add the 381-bit blinding value to the 253-bit scalar resulting in a
-     382-bit blinded scalar avoiding any overflow.
-       [w17:w16] <= [w17:w16] + w20 = k * L + s. */
+  /* Add the 384-bit blinding value to the 253-bit scalar resulting in a
+     385-bit blinded scalar avoiding any overflow.
+       [w17:w16] <= [w17:w16] + w20 = k * 8 * L + s. */
   bn.add w16, w16, w20
   bn.addc w17, w17, w31
 

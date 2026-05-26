@@ -1134,7 +1134,7 @@ otbn_consttime_test(
     secrets = [
         "w8",
     ],
-    subroutine = "X25519",
+    subroutine = "x25519",
     deps = [
         ":x25519_test",
     ],
