@@ -242,30 +242,37 @@ def _opentitan_binary_blob(ctx):
     """
     Creates a position-independent relocatable static library.
 
-    1. Generate a partial linker script locking code, strings (.srodata), and
-       reserving a 48-byte gap at the end of the block for the hash.
-    2. Generate a GCC Response File (@file) with '-Wl,-u,func' to act as GC roots.
-    3. Partial link (-r) all dependencies into a single relocatable.o, enforcing
-       --no-relax to prevent asymmetric instruction compression.
-    4. Perform a dry-run link into an .elf using the static linker script to
-       calculate exact PC-relative math (auipc offsets).
-    5. Extract the .bin from the .elf, strip the 48-byte trailing gap, compute
-       the SHA-384 hash on the pure code, and fuse the hash back onto the end.
-    6. Inject the fused section back into the relocatable.o, strip its relocation
-       tables (preventing double-patching corruption), rename it to .text for
-       proper flash placement, and localize internal dependencies (e.g., memcpy).
-    7. Archive the final, hashed relocatable.o into a static library (.a).
+    This rule combines RISC-V linker relaxation with a Python-driven symbol extraction
+    pipeline to seal the FIPS boundary and preserve hardware crypto (.otbn) sections.
+
+    The following steps are performed to create the final library:
+    1. Generate a linker script to pack the required functions and configure GC roots.
+    2. Partial link (ld -r) dependencies into a single relocatable.o. Linker relaxation
+       is intentionally permitted to maximize code size compression.
+    3. Perform a dry-run link into an .elf to finalize PC-relative math and relaxations.
+    4. Extract the raw binary from the .elf, hollow out the trailing 48 bytes,
+       compute the SHA-384 hash, and fuse it back onto the blob.
+    5. Extract the relaxed memory offsets of the public API functions from the .elf
+       using a Python script.
+    6. Repair the original relocatable.o file using objcopy:
+       - Overwrite the original code section with the hashed binary (--update-section)
+         to safely preserve adjacent hardware .otbn sections.
+       - Localize internal dependencies (e.g., memcpy) to seal the FIPS boundary
+         and prevent downstream linker clashes (--keep-global-symbol).
+       - Inject the new, relaxed public function offsets as global ELF symbols.
+    7. Archive the final, repaired object file into a static library (.a).
     """
     name_relocatable_o = ctx.attr.name + "_relocatable.o"
     name_elf = ctx.attr.name + ".elf"
     name_bin = ctx.attr.name + ".bin"
     name_sha = ctx.attr.name + ".sha384"
-    name_final_o = ctx.attr.name + "_final.o"
+    name_bin_sha = ctx.attr.name + "_sha384.bin"
+    name_sym_args = ctx.attr.name + "_sym_args.txt"
+    name_blob_o = ctx.attr.name + "_blob.o"
     name_library = ctx.attr.name + ".a"
 
     deps_blob = ctx.attr.deps_blob
     cc_toolchain = find_cc_toolchain(ctx)
-    template_file = ctx.file._linker_script_template
 
     features = cc_common.configure_features(
         ctx = ctx,
@@ -292,50 +299,53 @@ def _opentitan_binary_blob(ctx):
     #
     # We deal with this by forcing `*(.text*)`, `*(.rodata*)`, and `*(.srodata*)` into a single,
     # contiguous section.
-    partial_script = ctx.file._partial_linker_script
+    template_file = ctx.file._linker_script_template
+    linker_script = ctx.actions.declare_file(ctx.attr.name + "_linker_script.ld")
 
     # Generate garbage collection roots
-    gc_roots_rsp = None
     if len(ctx.files.config) == 1:
-        gc_roots_rsp = ctx.actions.declare_file(ctx.attr.name + "_gc_roots.rsp")
         ctx.actions.run_shell(
-            inputs = [ctx.files.config[0]],
-            outputs = [gc_roots_rsp],
+            inputs = [template_file, ctx.files.config[0]],
+            outputs = [linker_script],
             # Tell the linker not to remove the functions present in the config file by claiming each function as undefined (-u).
-            command = "awk 'NF {{print \"-Wl,-u,\" $$1}}' < {} > {}".format(
-                ctx.files.config[0].path,
-                gc_roots_rsp.path,
+            command = "cat {template} > {out} && awk 'NF {{print \"EXTERN(\" $1 \")\"}}' < {config} >> {out}".format(
+                template = template_file.path,
+                config = ctx.files.config[0].path,
+                out = linker_script.path,
+            ),
+        )
+    else:
+        ctx.actions.run_shell(
+            inputs = [template_file],
+            outputs = [linker_script],
+            command = "cp {template} {out}".format(
+                template = template_file.path,
+                out = linker_script.path,
             ),
         )
 
     # Partial link (ld -r)
     linking_contexts = [dep[CcInfo].linking_context for dep in deps_blob]
-    partial_linkopts = [
-        "-nostdlib",
-        "-Wl,-r",
-        "-Wl,-T,{}".format(partial_script.path),
-        "-Wl,--no-relax",
-    ] + _expand(ctx, "linkopts", ctx.attr.linkopts or [])
-
-    partial_inputs = [partial_script]
-
-    if gc_roots_rsp != None:
-        partial_linkopts.append("-Wl,--gc-sections")
-        partial_linkopts.append("@{}".format(gc_roots_rsp.path))
-        partial_inputs.append(gc_roots_rsp)
-    else:
-        partial_linkopts.append("-Wl,--whole-archive")
-        partial_linkopts.append("-Wl,--no-gc-sections")
-
-    partial_linker_input = cc_common.create_linker_input(
+    linking_input = cc_common.create_linker_input(
         owner = ctx.label,
-        additional_inputs = depset(partial_inputs),
+        additional_inputs = depset([linker_script]),
     )
     linking_contexts.append(cc_common.create_linking_context(
-        linker_inputs = depset([partial_linker_input]),
+        linker_inputs = depset([linking_input]),
     ))
 
-    # Partial link (*.o -> relocatable .o)
+    linkopts = [
+        "-nostdlib",
+        "-Wl,-r",
+        "-Wl,-T,{}".format(linker_script.path),
+        "-Wl,-u,_libotcrypto_start_",
+    ] + _expand(ctx, "linkopts", ctx.attr.linkopts or [])
+
+    if len(ctx.files.config) == 1:
+        linkopts.append("-Wl,--gc-sections")
+    else:
+        linkopts.extend(["-Wl,--whole-archive", "-Wl,--no-gc-sections"])
+
     partial_linking_outputs = cc_common.link(
         name = name_relocatable_o,
         actions = ctx.actions,
@@ -343,43 +353,15 @@ def _opentitan_binary_blob(ctx):
         feature_configuration = features,
         cc_toolchain = cc_toolchain,
         linking_contexts = linking_contexts,
-        user_link_flags = partial_linkopts,
+        user_link_flags = linkopts,
     )
     relocatable_o = partial_linking_outputs.executable
 
-    validation_file = ctx.actions.declare_file(ctx.attr.name + "_sym_check.passed")
-    if len(ctx.files.config) == 1:
-        ctx.actions.run_shell(
-            inputs = [relocatable_o, ctx.files.config[0]],
-            outputs = [validation_file],
-            # Use nm to list undefined symbols (' U '), then check if any exist in the config
-            command = """
-            UND_SYMBOLS=$(nm -u {obj} | awk '{{print $2}}')
-            for sym in $(cat {config}); do
-                if echo "$UND_SYMBOLS" | grep -q "^${{sym}}$"; then
-                    echo "ERROR: Symbol '${{sym}}' from the config file is UNDEFINED in the compiled library!"
-                    exit 1
-                fi
-            done
-            touch {out}
-            """.format(
-                obj = relocatable_o.path,
-                config = ctx.files.config[0].path,
-                out = validation_file.path,
-            ),
-        )
-    else:
-        ctx.actions.write(validation_file, "No config, skipped.")
-
     # Dry run link (.o -> .elf) using the static script for exact memory layout
     elf_file = ctx.actions.declare_file(name_elf)
-    elf_inputs = [relocatable_o, template_file]
-    if gc_roots_rsp != None:
-        elf_inputs.append(gc_roots_rsp)
-
-    linker_input_relocatable = cc_common.create_linker_input(
+    elf_linker_input = cc_common.create_linker_input(
         owner = ctx.label,
-        additional_inputs = depset(elf_inputs),
+        additional_inputs = depset([relocatable_o, template_file]),
     )
 
     elf_linkopts = [
@@ -388,9 +370,8 @@ def _opentitan_binary_blob(ctx):
         relocatable_o.path,
         "-Wl,--defsym=_rom_origin={}".format(ctx.attr.rom_origin),
         "-Wl,-T,{}".format(template_file.path),
-        "-Wl,--no-relax",
+        "-Wl,--no-gc-sections",
     ]
-    elf_linkopts.append("-Wl,--no-gc-sections")
 
     elf_linking_outputs = cc_common.link(
         name = name_elf,
@@ -398,7 +379,7 @@ def _opentitan_binary_blob(ctx):
         output_type = "executable",
         feature_configuration = features,
         cc_toolchain = cc_toolchain,
-        linking_contexts = [cc_common.create_linking_context(linker_inputs = depset([linker_input_relocatable]))],
+        linking_contexts = [cc_common.create_linking_context(linker_inputs = depset([elf_linker_input]))],
         user_link_flags = elf_linkopts,
     )
     elf_file = elf_linking_outputs.executable
@@ -415,54 +396,60 @@ def _opentitan_binary_blob(ctx):
     )
 
     # Compute Hash (.bin -> .sha384)
-    code_bin = ctx.actions.declare_file(ctx.attr.name + "_code.bin")
     hash_file = ctx.actions.declare_file(name_sha)
-    fused_bin = ctx.actions.declare_file(ctx.attr.name + "_fused.bin")
     ctx.actions.run_shell(
         inputs = [binary_file],
-        outputs = [code_bin, hash_file, fused_bin],
-        command = """
-        head -c -48 {bin} > {code}
-        sha384sum {code} | awk '{{print $1}}' | xxd -r -p > {hash}
-        cat {code} {hash} > {fused}
-        """.format(
-            bin = binary_file.path,
-            code = code_bin.path,
-            hash = hash_file.path,
-            fused = fused_bin.path,
-        ),
+        outputs = [hash_file],
+        command = "head -c -48 {} | sha384sum | awk '{{print $1}}' | xxd -r -p > {}".format(binary_file.path, hash_file.path),
     )
 
-    # Inject the fused section
-    final_relocatable_o = ctx.actions.declare_file(name_final_o)
+    binary_hash_file = ctx.actions.declare_file(name_bin_sha)
+    ctx.actions.run_shell(
+        inputs = [binary_file, hash_file],
+        outputs = [binary_hash_file],
+        command = "head -c -48 {} > {} && cat {} >> {}".format(binary_file.path, binary_hash_file.path, hash_file.path, binary_hash_file.path),
+    )
 
-    objcopy_args = [
-        # The injected binary already has its PC-relative math resolved.
-        # If we do not delete this to-do list, the final linker  will apply
-        # the math a second time, corrupting the bytes and the hash.
-        "--remove-section=.rela.text.libotcrypto",
-        "--remove-section=.rela.text",
-
-        # Overwrite the hollowed section with the fused binary.
-        "--update-section",
-        ".text.libotcrypto=" + fused_bin.path,
+    # Extract symbols using python script
+    sym_args_file = ctx.actions.declare_file(name_sym_args)
+    extract_args = [
+        "--nm",
+        ctx.executable._riscv32_nm.path,
+        "--elf",
+        elf_file.path,
+        "--out",
+        sym_args_file.path,
     ]
-
-    inputs = [relocatable_o, fused_bin]
     if len(ctx.files.config) == 1:
-        objcopy_args.append("--keep-global-symbols={}".format(ctx.files.config[0].path))
-        inputs.append(ctx.files.config[0])
-
-    objcopy_args.extend([
-        relocatable_o.path,
-        final_relocatable_o.path,
-    ])
+        extract_args.append("--config=" + ctx.files.config[0].path)
 
     ctx.actions.run(
-        outputs = [final_relocatable_o],
-        inputs = inputs,
-        executable = objcopy_tool,
-        arguments = objcopy_args,
+        outputs = [sym_args_file],
+        inputs = [elf_file] + ctx.files.config,
+        tools = [ctx.executable._riscv32_nm],
+        executable = ctx.executable._extract_symbols,
+        arguments = extract_args,
+    )
+
+    # Inject binary & symbols via objcopy
+    blob_o_file = ctx.actions.declare_file(name_blob_o)
+
+    # Build the objcopy command. We use --update-section to preserve hardware .otbn sections.
+    # --keep-global-symbol localizes internal dependencies (memcpy, status_create) sealing the boundary.
+    cmd_str = "{objcopy} --keep-global-symbol=_libotcrypto_start_ --strip-debug --discard-all --remove-section=.rela.text.libotcrypto --remove-section=.rela.text --update-section .text.libotcrypto={fused_bin}"
+    if len(ctx.files.config) == 1:
+        cmd_str += " @" + sym_args_file.path
+    cmd_str += " {reloc_o} {final_o}"
+
+    ctx.actions.run_shell(
+        outputs = [blob_o_file],
+        inputs = [relocatable_o, binary_hash_file, sym_args_file],
+        command = cmd_str.format(
+            objcopy = objcopy_tool,
+            fused_bin = binary_hash_file.path,
+            reloc_o = relocatable_o.path,
+            final_o = blob_o_file.path,
+        ),
         use_default_shell_env = True,
         tools = cc_toolchain.all_files,
     )
@@ -470,10 +457,10 @@ def _opentitan_binary_blob(ctx):
     # Create a library from it
     library_file = ctx.actions.declare_file(name_library)
     ctx.actions.run(
-        inputs = [final_relocatable_o, validation_file],
+        inputs = [blob_o_file],
         outputs = [library_file],
         executable = ar_tool,
-        arguments = ["rcs", library_file.path, final_relocatable_o.path],
+        arguments = ["rcs", library_file.path, blob_o_file.path],
         tools = cc_toolchain.all_files,
     )
 
@@ -484,7 +471,8 @@ def _opentitan_binary_blob(ctx):
         OutputGroupInfo(
             elf_file = depset([elf_file]),
             dis_file = depset([dis_file]),
-            linker_script = depset([template_file, partial_script]),
+            linker_script = depset([linker_script, template_file]),
+            sym_args = depset([sym_args_file]),
         ),
         CcInfo(
             linking_context = cc_common.create_linking_context(
@@ -649,6 +637,10 @@ opentitan_binary_blob = rv_rule(
             default = "0",
             doc = "Base address for the dry-run link.",
         ),
+        "hdrs": attr.label_list(
+            allow_files = True,
+            doc = "The list of header file requires for the creation of the library.",
+        ),
         "config": attr.label(
             default = None,
             allow_single_file = True,
@@ -668,11 +660,18 @@ opentitan_binary_blob = rv_rule(
             allow_single_file = True,
             doc = "Base linker script template used for appending EXTERN anchors.",
         ),
-        "_partial_linker_script": attr.label(
-            default = "//sw/device/lib/crypto/configs:otcrypto_partial.ld",
+        "_riscv32_nm": attr.label(
+            default = Label("@lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-nm"),
             allow_single_file = True,
+            executable = True,
+            cfg = "exec",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
+        "_extract_symbols": attr.label(
+            default = "//sw/device/lib/crypto/configs:extract_symbols",
+            executable = True,
+            cfg = "exec",
+        ),
     }.items()),
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
