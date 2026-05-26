@@ -1,0 +1,5024 @@
+diff --git a/.gitignore b/.gitignore
+index b21589557..8fa73a6b2 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -50,6 +50,7 @@ test-results.xml
+ 
+ # Temporary files
+ *~
++*.orig
+ 
+ # Building directories
+ build
+diff --git a/CMAKE-NOTES.md b/CMAKE-NOTES.md
+index b355c41f1..7a2671471 100644
+--- a/CMAKE-NOTES.md
++++ b/CMAKE-NOTES.md
+@@ -12,6 +12,7 @@ Some options (more can be found in CMakeLists.txt):
+ 	-DDISABLE_NON_PAGED_MEMORY=ON	Disable non-paged memory for secure storage
+ 	-DENABLE_EDDSA=ON		Enable support for EDDSA
+ 	-DENABLE_MLDSA=ON		Enable support for ML-DSA
++	-DENABLE_SLHDSA=ON		Enable support for SLH-DSA
+ 	-DWITH_MIGRATE=ON		Build migration tool
+ 	-DWITH_CRYPTO_BACKEND=openssl	Select crypto backend (openssl|botan)
+ 
+diff --git a/CMAKE-WIN-NOTES.md b/CMAKE-WIN-NOTES.md
+index 3b073f009..a740e5924 100644
+--- a/CMAKE-WIN-NOTES.md
++++ b/CMAKE-WIN-NOTES.md
+@@ -53,6 +53,7 @@ Some options (more can be found in CMakeLists.txt):
+ 	-DBUILD_TESTS=ON                Compile tests along with libraries
+ 	-DENABLE_EDDSA=ON               Enable support for EDDSA
+     -DENABLE_MLDSA=ON               Enable support for ML-DSA
++    -DENABLE_SLHDSA=ON              Enable support for SLH-DSA
+ 	-DWITH_MIGRATE=ON               Build migration tool
+ 	-DWITH_CRYPTO_BACKEND=          Select crypto backend (openssl|botan)
+ 	-DDISABLE_NON_PAGED_MEMORY=ON   Disable non-paged memory for secure storage
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7a0f3e106..ca74660de 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -9,6 +9,7 @@ option(ENABLE_64bit "Enable 64-bit compiling" OFF)
+ option(ENABLE_ECC "Enable support for ECC" ON)
+ option(ENABLE_EDDSA "Enable support for EDDSA" ON)
+ option(ENABLE_MLDSA "Enable support for ML-DSA" OFF)
++option(ENABLE_SLHDSA "Enable support for SLH-DSA" OFF)
+ option(ENABLE_GOST "Enable support for GOST" OFF)
+ option(ENABLE_FIPS "Enable support for FIPS 140-2 mode" OFF)
+ option(ENABLE_P11_KIT "Enable p11-kit integration" ON)
+diff --git a/README.md b/README.md
+index 6a44c985a..7a31dfa98 100644
+--- a/README.md
++++ b/README.md
+@@ -83,6 +83,7 @@ Options:
+ 	--enable-gost		Enable support for GOST (default detect)
+ 	--enable-eddsa		Enable support for EDDSA (default detect)
+     --enable-mldsa		Enable support for ML-DSA (default detect)
++    --enable-slhdsa		Enable support for SLH-DSA (default detect)
+ 	--disable-visibility	Disable hidden visibilty link mode [enabled]
+ 	--with-crypto-backend	Select crypto backend (openssl|botan)
+ 	--with-openssl=PATH	Specify prefix of path of OpenSSL
+diff --git a/cmake/modules/CompilerOptions.cmake b/cmake/modules/CompilerOptions.cmake
+index 1f3034972..da08d1edd 100644
+--- a/cmake/modules/CompilerOptions.cmake
++++ b/cmake/modules/CompilerOptions.cmake
+@@ -391,6 +391,26 @@ elseif(WITH_CRYPTO_BACKEND STREQUAL "openssl")
+         message(STATUS "OpenSSL: Support for ML-DSA is disabled")
+     endif(ENABLE_MLDSA)
+ 
++    # acx_openssl_slhdsa.m4
++    if(ENABLE_SLHDSA)
++        # SLH-DSA
++        set(testfile ${CMAKE_SOURCE_DIR}/cmake/modules/tests/test_openssl_slhdsa.c)
++        try_run(RUN_SLHDSA COMPILE_RESULT
++                "${CMAKE_BINARY_DIR}/prebuild_santity_tests" ${testfile}
++                LINK_LIBRARIES ${CRYPTO_LIBS}
++                CMAKE_FLAGS
++                    "-DINCLUDE_DIRECTORIES=${CRYPTO_INCLUDES}"
++                )
++        if(COMPILE_RESULT AND RUN_SLHDSA EQUAL 0)
++            set(WITH_SLH_DSA 1)
++            message(STATUS "OpenSSL: Found SLH-DSA")
++        else()
++            set(error_msg "OpenSSL: Cannot find SLH-DSA! OpenSSL library has no SLH-DSA support!")
++            message(FATAL_ERROR ${error_msg})
++        endif()
++    else(ENABLE_SLHDSA)
++        message(STATUS "OpenSSL: Support for SLH-DSA is disabled")
++    endif(ENABLE_SLHDSA)
+     # acx_openssl_gost.m4
+     if(ENABLE_GOST)
+         set(testfile ${CMAKE_SOURCE_DIR}/cmake/modules/tests/test_openssl_gost.c)
+diff --git a/cmake/modules/tests/test_openssl_slhdsa.c b/cmake/modules/tests/test_openssl_slhdsa.c
+new file mode 100644
+index 000000000..40e20c42b
+--- /dev/null
++++ b/cmake/modules/tests/test_openssl_slhdsa.c
+@@ -0,0 +1,12 @@
++#include <openssl/evp.h>
++#include <openssl/objects.h>
++int main()
++{
++    EVP_PKEY_CTX *ctx;
++    ctx = EVP_PKEY_CTX_new_from_name(NULL, "SLH-DSA-SHA2-128s", NULL);
++    
++    if (ctx == NULL)
++        return 1;
++    EVP_PKEY_CTX_free(ctx);
++    return 0;
++}
+diff --git a/config.h.in.cmake b/config.h.in.cmake
+index 95fb83516..15fa048b9 100644
+--- a/config.h.in.cmake
++++ b/config.h.in.cmake
+@@ -154,6 +154,9 @@
+ /* Compile with ML-DSA support */
+ #cmakedefine WITH_ML_DSA @WITH_ML_DSA@
+ 
++/* Compile with SLH-DSA support */
++#cmakedefine WITH_SLH_DSA @WITH_SLH_DSA@
++
+ /* Compile with FIPS 140-2 mode */
+ #cmakedefine WITH_FIPS @WITH_FIPS@
+ 
+diff --git a/m4/acx_crypto_backend.m4 b/m4/acx_crypto_backend.m4
+index 57a951a52..2341e297d 100644
+--- a/m4/acx_crypto_backend.m4
++++ b/m4/acx_crypto_backend.m4
+@@ -38,6 +38,16 @@ AC_DEFUN([ACX_CRYPTO_BACKEND],[
+ 		[enable_mldsa="detect"]
+ 	)
+ 
++	# Add SLH-DSA check
++
++	AC_ARG_ENABLE(slhdsa,
++		AS_HELP_STRING([--enable-slhdsa],
++			[Enable support for SLH-DSA (default detect)]
++		),
++		[enable_slhdsa="${enableval}"],
++		[enable_slhdsa="detect"]
++	)
++
+ 	# Second check for the FIPS 140-2 mode
+ 
+ 	AC_ARG_ENABLE(fips,
+@@ -119,6 +129,15 @@ AC_DEFUN([ACX_CRYPTO_BACKEND],[
+ 			detect-no) enable_mldsa="no";;
+ 		esac
+ 
++		case "${enable_slhdsa}" in
++			yes|detect) ACX_OPENSSL_SLHDSA;;
++		esac
++		case "${enable_slhdsa}-${have_lib_openssl_slhdsa_support}" in
++			yes-no) AC_MSG_ERROR([OpenSSL library has no SLH-DSA support]);;
++			detect-yes) enable_slhdsa="yes";;
++			detect-no) enable_slhdsa="no";;
++		esac
++
+ 		case "${enable_gost}-${enable_fips}" in
+ 			yes-yes) AC_MSG_ERROR([GOST is not FIPS approved]);;
+ 			yes-no|detect-no) ACX_OPENSSL_GOST;;
+@@ -189,6 +208,10 @@ AC_DEFUN([ACX_CRYPTO_BACKEND],[
+             AC_MSG_ERROR([Botan does not support ML-DSA])
+         fi
+ 
++		if test	"x${enable_slhdsa}" = "xyes"; then
++            AC_MSG_ERROR([Botan does not support SLH-DSA])
++        fi
++
+ 		case "${enable_gost}" in
+ 			yes|detect) ACX_BOTAN_GOST;;
+ 		esac
+@@ -267,6 +290,19 @@ AC_DEFUN([ACX_CRYPTO_BACKEND],[
+ 	fi
+ 	AM_CONDITIONAL([WITH_ML_DSA], [test "x${enable_mldsa}" = "xyes"])
+ 
++	AC_MSG_CHECKING(for SLH-DSA support)
++	if test "x${enable_slhdsa}" = "xyes"; then
++		AC_MSG_RESULT(yes)
++		AC_DEFINE_UNQUOTED(
++			[WITH_SLH_DSA],
++			[],
++			[Compile with SLH-DSA support]
++		)
++	else
++		AC_MSG_RESULT(no)
++	fi
++	AM_CONDITIONAL([WITH_SLH_DSA], [test "x${enable_slhdsa}" = "xyes"])
++
+ 
+ 	AC_SUBST(CRYPTO_INCLUDES)
+ 	AC_SUBST(CRYPTO_LIBS)
+diff --git a/m4/acx_openssl_slhdsa.m4 b/m4/acx_openssl_slhdsa.m4
+new file mode 100644
+index 000000000..e770c04af
+--- /dev/null
++++ b/m4/acx_openssl_slhdsa.m4
+@@ -0,0 +1,44 @@
++AC_DEFUN([ACX_OPENSSL_SLHDSA],[
++	AC_MSG_CHECKING(for OpenSSL SLH-DSA support)
++
++	tmp_CPPFLAGS=$CPPFLAGS
++	tmp_LIBS=$LIBS
++
++	CPPFLAGS="$CPPFLAGS $CRYPTO_INCLUDES"
++	LIBS="$CRYPTO_LIBS $LIBS"
++
++	AC_LANG_PUSH([C])
++	AC_CACHE_VAL([acx_cv_lib_openssl_slhdsa_support],[
++		acx_cv_lib_openssl_slhdsa_support=no
++		AC_RUN_IFELSE([
++			AC_LANG_SOURCE([[
++				#include <openssl/evp.h>
++				#include <openssl/objects.h>
++				int main()
++				{
++					EVP_PKEY_CTX *pctx =
++    					EVP_PKEY_CTX_new_from_name(NULL, "SLH-DSA-SHA2-128s", NULL);
++						if (pctx == NULL)
++							return 1;
++						EVP_PKEY_CTX_free(pctx);
++						return 0;
++				}
++			]])
++		],[
++			AC_MSG_RESULT([yes])
++			acx_cv_lib_openssl_slhdsa_support=yes
++		],[
++			AC_MSG_RESULT([no])
++			acx_cv_lib_openssl_slhdsa_support=no
++		],[
++			AC_MSG_WARN([Cannot test, SLH-DSA])
++			acx_cv_lib_openssl_slhdsa_support=no
++		])
++	])
++
++	AC_LANG_POP([C])
++
++	CPPFLAGS=$tmp_CPPFLAGS
++	LIBS=$tmp_LIBS
++	have_lib_openssl_slhdsa_support="${acx_cv_lib_openssl_slhdsa_support}"
++])
+diff --git a/src/lib/P11Objects.cpp b/src/lib/P11Objects.cpp
+index d3ecf6db2..6e68b1adb 100644
+--- a/src/lib/P11Objects.cpp
++++ b/src/lib/P11Objects.cpp
+@@ -1989,3 +1989,83 @@ bool P11DHDomainObj::init(OSObject *inobject)
+ 	initialized = true;
+ 	return true;
+ }
++
++// Constructor
++P11SLHDSAPublicKeyObj::P11SLHDSAPublicKeyObj()
++{
++	initialized = false;
++}
++
++// Add attributes
++bool P11SLHDSAPublicKeyObj::init(OSObject *inobject)
++{
++	if (initialized) return true;
++	if (inobject == NULL) return false;
++
++	if (!inobject->attributeExists(CKA_KEY_TYPE) || inobject->getUnsignedLongValue(CKA_KEY_TYPE, CKK_VENDOR_DEFINED) != CKK_SLH_DSA) {
++		OSAttribute setKeyType((unsigned long)CKK_SLH_DSA);
++		inobject->setAttribute(CKA_KEY_TYPE, setKeyType);
++	}
++
++	// Create parent
++	if (!P11PublicKeyObj::init(inobject)) return false;
++
++	// Create attributes
++	P11Attribute* attrParameterSet = new P11AttrParameterSet(osobject, P11Attribute::ck3);
++	P11Attribute* attrValue = new P11AttrValue(osobject, P11Attribute::ck1 | P11Attribute::ck4);
++
++	// Initialize the attributes
++	if (!attrParameterSet->init() || !attrValue->init()) {
++		ERROR_MSG("Could not initialize the attribute");
++		delete attrParameterSet;
++		delete attrValue;
++		return false;
++	}
++
++	// Add them to the map
++	attributes[attrParameterSet->getType()] = attrParameterSet;
++	attributes[attrValue->getType()] = attrValue;
++
++	initialized = true;
++	return true;
++}
++
++// Constructor
++P11SLHDSAPrivateKeyObj::P11SLHDSAPrivateKeyObj()
++{
++	initialized = false;
++}
++
++// Add attributes
++bool P11SLHDSAPrivateKeyObj::init(OSObject *inobject)
++{
++	if (initialized) return true;
++	if (inobject == NULL) return false;
++
++	if (!inobject->attributeExists(CKA_KEY_TYPE) || inobject->getUnsignedLongValue(CKA_KEY_TYPE, CKK_VENDOR_DEFINED) != CKK_SLH_DSA) {
++		OSAttribute setKeyType((unsigned long)CKK_SLH_DSA);
++		inobject->setAttribute(CKA_KEY_TYPE, setKeyType);
++	}
++
++	// Create parent
++	if (!P11PrivateKeyObj::init(inobject)) return false;
++
++	// Create attributes
++	P11Attribute* attrParameterSet = new P11AttrParameterSet(osobject, P11Attribute::ck4 | P11Attribute::ck6);
++	P11Attribute* attrValue = new P11AttrValue(osobject, P11Attribute::ck1 | P11Attribute::ck4 | P11Attribute::ck6 | P11Attribute::ck7);
++
++	// Initialize the attributes
++	if (!attrParameterSet->init() || !attrValue->init()) {
++		ERROR_MSG("Could not initialize the attribute");
++		delete attrParameterSet;
++		delete attrValue;
++		return false;
++	}
++
++	// Add them to the map
++	attributes[attrParameterSet->getType()] = attrParameterSet;
++	attributes[attrValue->getType()] = attrValue;
++
++	initialized = true;
++	return true;
++}
+diff --git a/src/lib/P11Objects.h b/src/lib/P11Objects.h
+index 6ed7dbcfe..c4e62f027 100644
+--- a/src/lib/P11Objects.h
++++ b/src/lib/P11Objects.h
+@@ -447,4 +447,35 @@ class P11DHDomainObj : public P11DomainObj
+ 	bool initialized;
+ };
+ 
++/** \brief SLH-DSA public key object */
++class P11SLHDSAPublicKeyObj : public P11PublicKeyObj
++{
++public:
++	/** \brief Constructor */
++	P11SLHDSAPublicKeyObj();
++
++	/** \brief Initialize the object */
++	virtual bool init(OSObject *inobject);
++
++protected:
++	/** \brief Is the object initialized? */
++	bool initialized;
++};
++
++/** \brief SLH-DSA private key object */
++class P11SLHDSAPrivateKeyObj : public P11PrivateKeyObj
++{
++public:
++	/** \brief Constructor */
++	P11SLHDSAPrivateKeyObj();
++
++	/** \brief Initialize the object */
++	virtual bool init(OSObject *inobject);
++
++protected:
++	/** \brief Is the object initialized? */
++	bool initialized;
++};
++
+ #endif // !_SOFTHSM_V2_P11OBJECTS_H
++
+diff --git a/src/lib/SoftHSM.cpp b/src/lib/SoftHSM.cpp
+index 4d7d1acad..1f98b283e 100644
+--- a/src/lib/SoftHSM.cpp
++++ b/src/lib/SoftHSM.cpp
+@@ -62,11 +62,20 @@
+ #include "DHPrivateKey.h"
+ #include "GOSTPublicKey.h"
+ #include "GOSTPrivateKey.h"
++
++#ifdef WITH_ML_DSA
+ #include "MLDSAParameters.h"
+ #include "MLDSAMechanismParam.h"
+ #include "MLDSAPublicKey.h"
+ #include "MLDSAPrivateKey.h"
+ #include "MLDSAUtil.h"
++#endif
++#ifdef WITH_SLH_DSA
++#include "SLHDSAParameters.h"
++#include "SLHDSAPrivateKey.h"
++#include "SLHDSAPublicKey.h"
++#include "SLHDSAUtil.h"
++#endif
+ 
+ #include "cryptoki.h"
+ #include "SoftHSM.h"
+@@ -149,6 +158,10 @@ static CK_RV newP11Object(CK_OBJECT_CLASS objClass, CK_KEY_TYPE keyType, CK_CERT
+ #ifdef WITH_ML_DSA
+ 			else if (keyType == CKK_ML_DSA)
+ 				*p11object = new P11MLDSAPublicKeyObj();
++#endif
++#ifdef WITH_SLH_DSA
++			else if (keyType == CKK_SLH_DSA)
++				*p11object = new P11SLHDSAPublicKeyObj();
+ #endif
+ 			else
+ 				return CKR_ATTRIBUTE_VALUE_INVALID;
+@@ -170,6 +183,10 @@ static CK_RV newP11Object(CK_OBJECT_CLASS objClass, CK_KEY_TYPE keyType, CK_CERT
+ #ifdef WITH_ML_DSA
+ 			else if (keyType == CKK_ML_DSA)
+ 				*p11object = new P11MLDSAPrivateKeyObj();
++#endif
++#ifdef WITH_SLH_DSA
++			else if (keyType == CKK_SLH_DSA)
++				*p11object = new P11SLHDSAPrivateKeyObj();
+ #endif
+ 			else
+ 				return CKR_ATTRIBUTE_VALUE_INVALID;
+@@ -853,6 +870,10 @@ void SoftHSM::prepareSupportedMechanisms(std::map<std::string, CK_MECHANISM_TYPE
+ #ifdef WITH_ML_DSA
+ 	t["CKM_ML_DSA_KEY_PAIR_GEN"] = CKM_ML_DSA_KEY_PAIR_GEN;
+ 	t["CKM_ML_DSA"]			= CKM_ML_DSA;
++#endif
++#ifdef WITH_SLH_DSA
++	t["CKM_SLH_DSA_KEY_PAIR_GEN"] = CKM_SLH_DSA_KEY_PAIR_GEN;
++	t["CKM_SLH_DSA"]		= CKM_SLH_DSA;
+ #endif
+ 	t["CKM_CONCATENATE_DATA_AND_BASE"] = CKM_CONCATENATE_DATA_AND_BASE;
+ 	t["CKM_CONCATENATE_BASE_AND_DATA"] = CKM_CONCATENATE_BASE_AND_DATA;
+@@ -962,6 +983,9 @@ CK_RV SoftHSM::C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type, CK_
+ 	// ML‑DSA min/max sizes are bytes (PKCS#11 v3.2).
+     unsigned long mldsaMinSize = 0, mldsaMaxSize = 0;
+ #endif
++#ifdef WITH_SLH_DSA
++	unsigned long slhdsaMinSize = 0, slhdsaMaxSize = 0;
++#endif
+ 
+ 	if (!isInitialised) return CKR_CRYPTOKI_NOT_INITIALIZED;
+ 	if (pInfo == NULL_PTR) return CKR_ARGUMENTS_BAD;
+@@ -1070,6 +1094,13 @@ CK_RV SoftHSM::C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type, CK_
+ 	mldsaMinSize = mldsa->getMinKeySize();
+ 	mldsaMaxSize = mldsa->getMaxKeySize();
+ 	CryptoFactory::i()->recycleAsymmetricAlgorithm(mldsa);
++#endif
++#ifdef WITH_SLH_DSA
++	AsymmetricAlgorithm* slhdsa = CryptoFactory::i()->getAsymmetricAlgorithm(AsymAlgo::SLHDSA);
++	if (slhdsa == NULL) return CKR_GENERAL_ERROR;
++	slhdsaMinSize = slhdsa->getMinKeySize();
++	slhdsaMaxSize = slhdsa->getMaxKeySize();
++	CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
+ #endif
+ 	pInfo->flags = 0;	// initialize flags
+ 	switch (type)
+@@ -1373,6 +1404,18 @@ CK_RV SoftHSM::C_GetMechanismInfo(CK_SLOT_ID slotID, CK_MECHANISM_TYPE type, CK_
+ 			pInfo->ulMaxKeySize = mldsaMaxSize;
+ 			pInfo->flags = CKF_SIGN | CKF_VERIFY;
+ 			break;
++#endif
++#ifdef WITH_SLH_DSA
++		case CKM_SLH_DSA_KEY_PAIR_GEN:
++			pInfo->ulMinKeySize = slhdsaMinSize;
++			pInfo->ulMaxKeySize = slhdsaMaxSize;
++			pInfo->flags = CKF_GENERATE_KEY_PAIR;
++			break;
++		case CKM_SLH_DSA:
++			pInfo->ulMinKeySize = slhdsaMinSize;
++			pInfo->ulMaxKeySize = slhdsaMaxSize;
++			pInfo->flags = CKF_SIGN | CKF_VERIFY;
++			break;
+ #endif
+ 	    case CKM_CONCATENATE_DATA_AND_BASE:
+ 	    case CKM_CONCATENATE_BASE_AND_DATA:
+@@ -4221,6 +4264,10 @@ CK_RV SoftHSM::AsymSignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechan
+ #ifdef WITH_ML_DSA
+ 	bool isMLDSA = false;
+ 	MLDSAMechanismParam mldsaParam;
++#endif
++#ifdef WITH_SLH_DSA
++	bool isSLHDSA = false;
++	SLHDSAMechanismParam slhdsaParam;
+ #endif
+ 	switch(pMechanism->mechanism) {
+ 		case CKM_RSA_PKCS:
+@@ -4531,6 +4578,48 @@ CK_RV SoftHSM::AsymSignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechan
+ 				mechanismParam = &mldsaParam;
+ 			}
+ 			break;
++#endif
++#ifdef WITH_SLH_DSA
++		case CKM_SLH_DSA:
++			mechanism = AsymMech::SLHDSA;
++			bAllowMultiPartOp = true;
++			isSLHDSA = true;
++			if (pMechanism->pParameter == NULL_PTR)
++			{
++				if (pMechanism->ulParameterLen != 0)
++				{
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++			}
++			else
++			{
++				if (pMechanism->ulParameterLen != sizeof(CK_SIGN_ADDITIONAL_CONTEXT))
++				{
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++				CK_SIGN_ADDITIONAL_CONTEXT* ckSignAdditionalContext = (CK_SIGN_ADDITIONAL_CONTEXT*) pMechanism->pParameter;
++				CK_RV rv = SLHDSAUtil::setHedge(ckSignAdditionalContext->hedgeVariant, &slhdsaParam.hedgeType);
++				if (rv != CKR_OK) {
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++				if (ckSignAdditionalContext->ulContextLen > 0) {
++					if (ckSignAdditionalContext->pContext == NULL_PTR) {
++						ERROR_MSG("Invalid parameters");
++						return CKR_ARGUMENTS_BAD;
++					}
++					if (ckSignAdditionalContext->ulContextLen > 255) {
++						ERROR_MSG("Invalid parameters");
++						return CKR_ARGUMENTS_BAD;
++					}
++					slhdsaParam.additionalContext = ByteString(ckSignAdditionalContext->pContext, ckSignAdditionalContext->ulContextLen);
++					DEBUG_MSG("Sign SLHDSA additionalContextLen=%lu, hedgeType=%d", (unsigned long)slhdsaParam.additionalContext.size(), slhdsaParam.hedgeType);
++				}
++				mechanismParam = &slhdsaParam;
++			}
++			break;
+ #endif
+ 		default:
+ 			return CKR_MECHANISM_INVALID;
+@@ -4654,6 +4743,30 @@ CK_RV SoftHSM::AsymSignInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMechan
+ 		}
+ 	}
+ #endif
++#ifdef WITH_SLH_DSA
++	else if (isSLHDSA)
++	{
++		if (keyType != CKK_SLH_DSA)
++			return CKR_KEY_TYPE_INCONSISTENT;
++
++		asymCrypto = CryptoFactory::i()->getAsymmetricAlgorithm(AsymAlgo::SLHDSA);
++		if (asymCrypto == NULL) return CKR_MECHANISM_INVALID;
++
++		privateKey = asymCrypto->newPrivateKey();
++		if (privateKey == NULL)
++		{
++			CryptoFactory::i()->recycleAsymmetricAlgorithm(asymCrypto);
++			return CKR_HOST_MEMORY;
++		}
++
++		if (SLHDSAUtil::getSLHDSAPrivateKey((SLHDSAPrivateKey*)privateKey, token, key) != CKR_OK)
++		{
++			asymCrypto->recyclePrivateKey(privateKey);
++			CryptoFactory::i()->recycleAsymmetricAlgorithm(asymCrypto);
++			return CKR_GENERAL_ERROR;
++		}
++	}
++#endif
+ #ifdef WITH_GOST
+ 	else if (isGOST)
+ 	{
+@@ -5322,6 +5435,10 @@ CK_RV SoftHSM::AsymVerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMech
+ #ifdef WITH_ML_DSA
+ 	bool isMLDSA = false;
+ 	MLDSAMechanismParam mldsaParam;
++#endif
++#ifdef WITH_SLH_DSA
++	bool isSLHDSA = false;
++	SLHDSAMechanismParam slhdsaParam;
+ #endif
+ 	switch(pMechanism->mechanism) {
+ 		case CKM_RSA_PKCS:
+@@ -5592,7 +5709,7 @@ CK_RV SoftHSM::AsymVerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMech
+ #ifdef WITH_ML_DSA
+ 		case CKM_ML_DSA:
+ 			mechanism = AsymMech::MLDSA;
+-			bAllowMultiPartOp = false;
++			bAllowMultiPartOp = true;
+ 			isMLDSA = true;
+ 			if (pMechanism->pParameter == NULL_PTR)
+ 			{
+@@ -5630,6 +5747,48 @@ CK_RV SoftHSM::AsymVerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMech
+ 				mechanismParam = &mldsaParam;
+ 			}
+ 			break;
++#endif
++#ifdef WITH_SLH_DSA
++		case CKM_SLH_DSA:
++			mechanism = AsymMech::SLHDSA;
++			bAllowMultiPartOp = true;
++			isSLHDSA = true;
++			if (pMechanism->pParameter == NULL_PTR)
++			{
++				if (pMechanism->ulParameterLen != 0)
++				{
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++			}
++			else
++			{
++				if (pMechanism->ulParameterLen != sizeof(CK_SIGN_ADDITIONAL_CONTEXT))
++				{
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++				CK_SIGN_ADDITIONAL_CONTEXT* ckSignAdditionalContext = (CK_SIGN_ADDITIONAL_CONTEXT*) pMechanism->pParameter;
++				CK_RV rv = SLHDSAUtil::setHedge(ckSignAdditionalContext->hedgeVariant, &slhdsaParam.hedgeType);
++				if (rv != CKR_OK) {
++					ERROR_MSG("Invalid parameters");
++					return CKR_ARGUMENTS_BAD;
++				}
++				if (ckSignAdditionalContext->ulContextLen > 0) {
++					if (ckSignAdditionalContext->pContext == NULL_PTR) {
++						ERROR_MSG("Invalid parameters");
++						return CKR_ARGUMENTS_BAD;
++					}
++					if (ckSignAdditionalContext->ulContextLen > 255) {
++						ERROR_MSG("Invalid parameters");
++						return CKR_ARGUMENTS_BAD;
++					}
++					slhdsaParam.additionalContext = ByteString(ckSignAdditionalContext->pContext, ckSignAdditionalContext->ulContextLen);
++					DEBUG_MSG("Verify SLHDSA additionalContextLen=%lu, hedgeType=%d", (unsigned long)slhdsaParam.additionalContext.size(), slhdsaParam.hedgeType);
++				}
++				mechanismParam = &slhdsaParam;
++			}
++			break;
+ #endif
+ 		default:
+ 			return CKR_MECHANISM_INVALID;
+@@ -5753,6 +5912,30 @@ CK_RV SoftHSM::AsymVerifyInit(CK_SESSION_HANDLE hSession, CK_MECHANISM_PTR pMech
+ 		}
+ 	}
+ #endif
++#ifdef WITH_SLH_DSA
++	else if (isSLHDSA)
++	{
++		if (keyType != CKK_SLH_DSA)
++			return CKR_KEY_TYPE_INCONSISTENT;
++
++		asymCrypto = CryptoFactory::i()->getAsymmetricAlgorithm(AsymAlgo::SLHDSA);
++		if (asymCrypto == NULL) return CKR_MECHANISM_INVALID;
++
++		publicKey = asymCrypto->newPublicKey();
++		if (publicKey == NULL)
++		{
++			CryptoFactory::i()->recycleAsymmetricAlgorithm(asymCrypto);
++			return CKR_HOST_MEMORY;
++		}
++
++		if (SLHDSAUtil::getSLHDSAPublicKey((SLHDSAPublicKey*)publicKey, token, key) != CKR_OK)
++		{
++			asymCrypto->recyclePublicKey(publicKey);
++			CryptoFactory::i()->recycleAsymmetricAlgorithm(asymCrypto);
++			return CKR_GENERAL_ERROR;
++		}
++	}
++#endif
+ #ifdef WITH_GOST
+ 	else if (isGOST)
+ 	{
+@@ -6376,6 +6559,11 @@ CK_RV SoftHSM::C_GenerateKeyPair
+ 		case CKM_ML_DSA_KEY_PAIR_GEN:
+ 			keyType = CKK_ML_DSA;
+ 			break;
++#endif
++#ifdef WITH_SLH_DSA
++		case CKM_SLH_DSA_KEY_PAIR_GEN:
++			keyType = CKK_SLH_DSA;
++			break;
+ #endif
+ 		default:
+ 			return CKR_MECHANISM_INVALID;
+@@ -6406,6 +6594,8 @@ CK_RV SoftHSM::C_GenerateKeyPair
+ 		return CKR_TEMPLATE_INCONSISTENT;
+ 	if (pMechanism->mechanism == CKM_ML_DSA_KEY_PAIR_GEN && keyType != CKK_ML_DSA)
+ 		return CKR_TEMPLATE_INCONSISTENT;
++	if (pMechanism->mechanism == CKM_SLH_DSA_KEY_PAIR_GEN && keyType != CKK_SLH_DSA)
++		return CKR_TEMPLATE_INCONSISTENT;
+ 
+ 	// Extract information from the private key template that is needed to create the object.
+ 	CK_OBJECT_CLASS privateKeyClass = CKO_PRIVATE_KEY;
+@@ -6431,6 +6621,8 @@ CK_RV SoftHSM::C_GenerateKeyPair
+ 		return CKR_TEMPLATE_INCONSISTENT;
+ 	if (pMechanism->mechanism == CKM_ML_DSA_KEY_PAIR_GEN && keyType != CKK_ML_DSA)
+ 		return CKR_TEMPLATE_INCONSISTENT;
++	if (pMechanism->mechanism == CKM_SLH_DSA_KEY_PAIR_GEN && keyType != CKK_SLH_DSA)
++		return CKR_TEMPLATE_INCONSISTENT;
+ 
+ 	// Check user credentials
+ 	CK_RV rv = haveWrite(session->getState(), ispublicKeyToken || isprivateKeyToken, ispublicKeyPrivate || isprivateKeyPrivate);
+@@ -6513,6 +6705,16 @@ CK_RV SoftHSM::C_GenerateKeyPair
+ 									 phPublicKey, phPrivateKey,
+ 									 ispublicKeyToken, ispublicKeyPrivate, isprivateKeyToken, isprivateKeyPrivate);
+ 	}
++#endif
++#ifdef WITH_SLH_DSA
++	if (pMechanism->mechanism == CKM_SLH_DSA_KEY_PAIR_GEN)
++	{
++		return this->generateSLHDSA(hSession,
++									 pPublicKeyTemplate, ulPublicKeyAttributeCount,
++									 pPrivateKeyTemplate, ulPrivateKeyAttributeCount,
++									 phPublicKey, phPrivateKey,
++									 ispublicKeyToken, ispublicKeyPrivate, isprivateKeyToken, isprivateKeyPrivate);
++	}
+ #endif
+ 	return CKR_GENERAL_ERROR;
+ }
+@@ -7106,6 +7308,11 @@ CK_RV SoftHSM::C_WrapKey
+ 			case CKK_ML_DSA:
+ 				alg = AsymAlgo::MLDSA;
+ 				break;
++#endif
++#ifdef WITH_SLH_DSA
++			case CKK_SLH_DSA:
++				alg = AsymAlgo::SLHDSA;
++				break;
+ #endif
+ 			default:
+ 				return CKR_KEY_NOT_WRAPPABLE;
+@@ -7150,6 +7357,11 @@ CK_RV SoftHSM::C_WrapKey
+ 			case CKK_ML_DSA:
+ 				rv = MLDSAUtil::getMLDSAPrivateKey((MLDSAPrivateKey*)privateKey, token, key);
+ 				break;
++#endif
++#ifdef WITH_SLH_DSA
++			case CKK_SLH_DSA:
++				rv = SLHDSAUtil::getSLHDSAPrivateKey((SLHDSAPrivateKey*)privateKey, token, key);
++				break;
+ #endif
+ 		}
+ 		if (rv != CKR_OK)
+@@ -7861,6 +8073,17 @@ CK_RV SoftHSM::C_UnwrapKey
+ 			{
+ 				bOK = bOK && MLDSAUtil::setMLDSAPrivateKey(osobject, keydata, token, isPrivate != CK_FALSE);
+ 			}
++#endif
++#ifdef WITH_SLH_DSA
++			else if (keyType == CKK_SLH_DSA)
++			{
++				CK_RV slh_rv = SLHDSAUtil::setSLHDSAPrivateKey(osobject, keydata, token, isPrivate != CK_FALSE);
++				if (slh_rv != CKR_OK)
++				{
++					bOK = false;
++					rv = slh_rv;
++				}
++			}
+ #endif
+ 			else
+ 				bOK = false;
+@@ -7871,7 +8094,10 @@ CK_RV SoftHSM::C_UnwrapKey
+ 				osobject->abortTransaction();
+ 
+ 			if (!bOK)
+-				rv = CKR_FUNCTION_FAILED;
++			{
++				if (rv == CKR_OK)
++					rv = CKR_FUNCTION_FAILED;
++			}
+ 		}
+ 		else
+ 			rv = CKR_FUNCTION_FAILED;
+@@ -13867,3 +14093,251 @@ bool SoftHSM::detectFork(void) {
+ 	return forkID != getpid();
+ #endif
+ }
++#ifdef WITH_SLH_DSA
++CK_RV SoftHSM::generateSLHDSA(
++    CK_SESSION_HANDLE hSession, CK_ATTRIBUTE_PTR pPublicKeyTemplate,
++    CK_ULONG ulPublicKeyAttributeCount, CK_ATTRIBUTE_PTR pPrivateKeyTemplate,
++    CK_ULONG ulPrivateKeyAttributeCount, CK_OBJECT_HANDLE_PTR phPublicKey,
++    CK_OBJECT_HANDLE_PTR phPrivateKey, CK_BBOOL isPublicKeyOnToken,
++    CK_BBOOL isPublicKeyPrivate, CK_BBOOL isPrivateKeyOnToken,
++    CK_BBOOL isPrivateKeyPrivate) {
++  *phPublicKey = CK_INVALID_HANDLE;
++  *phPrivateKey = CK_INVALID_HANDLE;
++
++  // Get the session
++  Session *session = (Session *)handleManager->getSession(hSession);
++  if (session == NULL)
++    return CKR_SESSION_HANDLE_INVALID;
++
++  // Get the token
++  Token *token = session->getToken();
++  if (token == NULL)
++    return CKR_GENERAL_ERROR;
++
++  // Extract desired key information
++  CK_ULONG paramSet = 0;
++  for (CK_ULONG i = 0; i < ulPublicKeyAttributeCount; i++) {
++    switch (pPublicKeyTemplate[i].type) {
++    case CKA_PARAMETER_SET:
++      if (pPublicKeyTemplate[i].ulValueLen != sizeof(CK_ULONG)) {
++        INFO_MSG("CKA_PARAMETER_SET must be sizeof(CK_ULONG)");
++        return CKR_ATTRIBUTE_VALUE_INVALID;
++      }
++      if (pPublicKeyTemplate[i].pValue == NULL) {
++        INFO_MSG("CKA_PARAMETER_SET must have a value");
++        return CKR_ATTRIBUTE_VALUE_INVALID;
++      }
++      paramSet = *(CK_ULONG *)pPublicKeyTemplate[i].pValue;
++      break;
++    default:
++      break;
++    }
++  }
++
++  // The parameters must be specified to be able to generate a key pair.
++  if (paramSet == 0) {
++    INFO_MSG("Missing parameter(s) CKA_PARAMETER_SET in pPublicKeyTemplate");
++    return CKR_TEMPLATE_INCOMPLETE;
++  }
++
++  if (paramSet < CKP_SLH_DSA_SHA2_128S || paramSet > CKP_SLH_DSA_SHAKE_256F) {
++    INFO_MSG("Unsupported parameter set: %lu", (unsigned long)paramSet);
++    return CKR_PARAMETER_SET_NOT_SUPPORTED;
++  }
++
++  // Set the parameters
++  SLHDSAParameters p;
++  p.setParameterSet(paramSet);
++
++  // Generate key pair
++  AsymmetricKeyPair *kp = NULL;
++  AsymmetricAlgorithm *slhdsa =
++      CryptoFactory::i()->getAsymmetricAlgorithm(AsymAlgo::SLHDSA);
++  if (slhdsa == NULL)
++    return CKR_GENERAL_ERROR;
++  if (!slhdsa->generateKeyPair(&kp, &p)) {
++    ERROR_MSG("Could not generate key pair");
++    CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++    return CKR_GENERAL_ERROR;
++  }
++
++  SLHDSAPublicKey *pub = (SLHDSAPublicKey *)kp->getPublicKey();
++  SLHDSAPrivateKey *priv = (SLHDSAPrivateKey *)kp->getPrivateKey();
++
++  CK_RV rv = CKR_OK;
++
++  // Create a public key using C_CreateObject
++  if (rv == CKR_OK) {
++    const CK_ULONG maxAttribs = 32;
++    CK_OBJECT_CLASS publicKeyClass = CKO_PUBLIC_KEY;
++    CK_KEY_TYPE publicKeyType = CKK_SLH_DSA;
++    CK_ATTRIBUTE publicKeyAttribs[maxAttribs] = {
++        {CKA_CLASS, &publicKeyClass, sizeof(publicKeyClass)},
++        {CKA_TOKEN, &isPublicKeyOnToken, sizeof(isPublicKeyOnToken)},
++        {CKA_PRIVATE, &isPublicKeyPrivate, sizeof(isPublicKeyPrivate)},
++        {CKA_KEY_TYPE, &publicKeyType, sizeof(publicKeyType)},
++    };
++    CK_ULONG publicKeyAttribsCount = 4;
++
++    // Add the additional
++    if (ulPublicKeyAttributeCount > (maxAttribs - publicKeyAttribsCount))
++      rv = CKR_TEMPLATE_INCONSISTENT;
++    for (CK_ULONG i = 0; i < ulPublicKeyAttributeCount && rv == CKR_OK; ++i) {
++      switch (pPublicKeyTemplate[i].type) {
++      case CKA_CLASS:
++      case CKA_TOKEN:
++      case CKA_PRIVATE:
++      case CKA_KEY_TYPE:
++        continue;
++      default:
++        publicKeyAttribs[publicKeyAttribsCount++] = pPublicKeyTemplate[i];
++      }
++    }
++
++    if (rv == CKR_OK)
++      rv = this->CreateObject(hSession, publicKeyAttribs, publicKeyAttribsCount,
++                              phPublicKey, OBJECT_OP_GENERATE);
++
++    // Store the attributes that are being supplied by the key generation to the
++    // object
++    if (rv == CKR_OK) {
++      OSObject *osobject = (OSObject *)handleManager->getObject(*phPublicKey);
++      if (osobject == NULL_PTR || !osobject->isValid()) {
++        rv = CKR_FUNCTION_FAILED;
++      } else if (osobject->startTransaction()) {
++        bool bOK = true;
++
++        // Common Key Attributes
++        bOK = bOK && osobject->setAttribute(CKA_LOCAL, true);
++        CK_ULONG ulKeyGenMechanism = (CK_ULONG)CKM_SLH_DSA_KEY_PAIR_GEN;
++        bOK = bOK &&
++              osobject->setAttribute(CKA_KEY_GEN_MECHANISM, ulKeyGenMechanism);
++
++        // SLH-DSA Public Key Attributes
++        ByteString value;
++        if (isPublicKeyPrivate) {
++          token->encrypt(pub->getValue(), value);
++        } else {
++          value = pub->getValue();
++        }
++        bOK = bOK &&
++              osobject->setAttribute(CKA_PARAMETER_SET, pub->getParameterSet());
++        bOK = bOK && osobject->setAttribute(CKA_VALUE, value);
++
++        if (bOK)
++          bOK = osobject->commitTransaction();
++        else
++          osobject->abortTransaction();
++
++        if (!bOK)
++          rv = CKR_FUNCTION_FAILED;
++      } else
++        rv = CKR_FUNCTION_FAILED;
++    }
++  }
++
++  // Create a private key using C_CreateObject
++  if (rv == CKR_OK) {
++    const CK_ULONG maxAttribs = 32;
++    CK_OBJECT_CLASS privateKeyClass = CKO_PRIVATE_KEY;
++    CK_KEY_TYPE privateKeyType = CKK_SLH_DSA;
++    CK_ATTRIBUTE privateKeyAttribs[maxAttribs] = {
++        {CKA_CLASS, &privateKeyClass, sizeof(privateKeyClass)},
++        {CKA_TOKEN, &isPrivateKeyOnToken, sizeof(isPrivateKeyOnToken)},
++        {CKA_PRIVATE, &isPrivateKeyPrivate, sizeof(isPrivateKeyPrivate)},
++        {CKA_KEY_TYPE, &privateKeyType, sizeof(privateKeyType)},
++    };
++    CK_ULONG privateKeyAttribsCount = 4;
++    if (ulPrivateKeyAttributeCount > (maxAttribs - privateKeyAttribsCount))
++      rv = CKR_TEMPLATE_INCONSISTENT;
++    for (CK_ULONG i = 0; i < ulPrivateKeyAttributeCount && rv == CKR_OK; ++i) {
++      switch (pPrivateKeyTemplate[i].type) {
++      case CKA_CLASS:
++      case CKA_TOKEN:
++      case CKA_PRIVATE:
++      case CKA_KEY_TYPE:
++        continue;
++      default:
++        privateKeyAttribs[privateKeyAttribsCount++] = pPrivateKeyTemplate[i];
++      }
++    }
++
++    if (rv == CKR_OK)
++      rv = this->CreateObject(hSession, privateKeyAttribs,
++                              privateKeyAttribsCount, phPrivateKey,
++                              OBJECT_OP_GENERATE);
++
++    // Store the attributes that are being supplied by the key generation to the
++    // object
++    if (rv == CKR_OK) {
++      OSObject *osobject = (OSObject *)handleManager->getObject(*phPrivateKey);
++      if (osobject == NULL_PTR || !osobject->isValid()) {
++        rv = CKR_FUNCTION_FAILED;
++      } else if (osobject->startTransaction()) {
++        bool bOK = true;
++
++        // Common Key Attributes
++        bOK = bOK && osobject->setAttribute(CKA_LOCAL, true);
++        CK_ULONG ulKeyGenMechanism = (CK_ULONG)CKM_SLH_DSA_KEY_PAIR_GEN;
++        bOK = bOK &&
++              osobject->setAttribute(CKA_KEY_GEN_MECHANISM, ulKeyGenMechanism);
++
++        // Common Private Key Attributes
++        bool bAlwaysSensitive = osobject->getBooleanValue(CKA_SENSITIVE, false);
++        bOK = bOK &&
++              osobject->setAttribute(CKA_ALWAYS_SENSITIVE, bAlwaysSensitive);
++        bool bNeverExtractable =
++            osobject->getBooleanValue(CKA_EXTRACTABLE, false) == false;
++        bOK = bOK &&
++              osobject->setAttribute(CKA_NEVER_EXTRACTABLE, bNeverExtractable);
++
++        // SLHDSA Private Key Attributes
++        ByteString value;
++        if (isPrivateKeyPrivate) {
++          token->encrypt(priv->getValue(), value);
++        } else {
++          value = priv->getValue();
++        }
++
++        bOK = bOK && osobject->setAttribute(CKA_PARAMETER_SET,
++                                            priv->getParameterSet());
++        bOK = bOK && osobject->setAttribute(CKA_VALUE, value);
++
++        if (bOK)
++          bOK = osobject->commitTransaction();
++        else
++          osobject->abortTransaction();
++
++        if (!bOK)
++          rv = CKR_FUNCTION_FAILED;
++      } else
++        rv = CKR_FUNCTION_FAILED;
++    }
++  }
++
++  // Clean up
++  slhdsa->recycleKeyPair(kp);
++  CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++
++  // Remove keys that may have been created already when the function fails.
++  if (rv != CKR_OK) {
++    if (*phPrivateKey != CK_INVALID_HANDLE) {
++      OSObject *ospriv = (OSObject *)handleManager->getObject(*phPrivateKey);
++      handleManager->destroyObject(*phPrivateKey);
++      if (ospriv)
++        ospriv->destroyObject();
++      *phPrivateKey = CK_INVALID_HANDLE;
++    }
++
++    if (*phPublicKey != CK_INVALID_HANDLE) {
++      OSObject *ospub = (OSObject *)handleManager->getObject(*phPublicKey);
++      handleManager->destroyObject(*phPublicKey);
++      if (ospub)
++        ospub->destroyObject();
++      *phPublicKey = CK_INVALID_HANDLE;
++    }
++  }
++
++  return rv;
++}
++#endif
+diff --git a/src/lib/SoftHSM.h b/src/lib/SoftHSM.h
+index ab8ac3cc2..f8b7cdc74 100644
+--- a/src/lib/SoftHSM.h
++++ b/src/lib/SoftHSM.h
+@@ -387,6 +387,22 @@ class SoftHSM
+ 		CK_BBOOL isPrivateKeyPrivate
+ 	);
+ #endif
++#ifdef WITH_SLH_DSA
++	CK_RV generateSLHDSA(
++		CK_SESSION_HANDLE hSession,
++		CK_ATTRIBUTE_PTR pPublicKeyTemplate,
++		CK_ULONG ulPublicKeyAttributeCount,
++		CK_ATTRIBUTE_PTR pPrivateKeyTemplate,
++		CK_ULONG ulPrivateKeyAttributeCount,
++		CK_OBJECT_HANDLE_PTR phPublicKey,
++		CK_OBJECT_HANDLE_PTR phPrivateKey,
++		CK_BBOOL isPublicKeyOnToken,
++		CK_BBOOL isPublicKeyPrivate,
++		CK_BBOOL isPrivateKeyOnToken,
++		CK_BBOOL isPrivateKeyPrivate
++	);
++#endif
++
+ #ifdef WITH_ECC
+ 	CK_RV deriveECDH
+ 	(
+diff --git a/src/lib/common/etc/softhsm2.conf b/src/lib/common/etc/softhsm2.conf
+new file mode 100644
+index 000000000..227d9112a
+--- /dev/null
++++ b/src/lib/common/etc/softhsm2.conf
+@@ -0,0 +1,17 @@
++# SoftHSM v2 configuration file
++
++directories.tokendir = /var/lib/softhsm/tokens/
++objectstore.backend = file
++objectstore.umask = 0077
++
++# ERROR, WARNING, INFO, DEBUG
++log.level = ERROR
++
++# If CKF_REMOVABLE_DEVICE flag should be set
++slots.removable = false
++
++# Enable and disable PKCS#11 mechanisms using slots.mechanisms.
++slots.mechanisms = ALL
++
++# If the library should reset the state on fork
++library.reset_on_fork = false
+diff --git a/src/lib/common/etc/softhsm2.conf.sample b/src/lib/common/etc/softhsm2.conf.sample
+new file mode 100644
+index 000000000..227d9112a
+--- /dev/null
++++ b/src/lib/common/etc/softhsm2.conf.sample
+@@ -0,0 +1,17 @@
++# SoftHSM v2 configuration file
++
++directories.tokendir = /var/lib/softhsm/tokens/
++objectstore.backend = file
++objectstore.umask = 0077
++
++# ERROR, WARNING, INFO, DEBUG
++log.level = ERROR
++
++# If CKF_REMOVABLE_DEVICE flag should be set
++slots.removable = false
++
++# Enable and disable PKCS#11 mechanisms using slots.mechanisms.
++slots.mechanisms = ALL
++
++# If the library should reset the state on fork
++library.reset_on_fork = false
+diff --git a/src/lib/common/man5/softhsm2.conf.5 b/src/lib/common/man5/softhsm2.conf.5
+new file mode 100644
+index 000000000..b4b65b93c
+--- /dev/null
++++ b/src/lib/common/man5/softhsm2.conf.5
+@@ -0,0 +1,124 @@
++.TH softhsm2.conf 5 "30 October 2014" "SoftHSM"
++.SH NAME
++softhsm2.conf \- SoftHSM configuration file
++.SH SYNOPSIS
++.B softhsm2.conf
++.SH DESCRIPTION
++This is the configuration file for SoftHSM. It can be found on a
++default location, but can also be relocated by using the
++environment variable. Any configuration must be done according
++to the file format found in this document.
++.SH FILE FORMAT
++Each configuration option is a pair of name and value separated by
++a equality sign. The configuration option must be located on a single line.
++.LP
++.RS
++.nf
++<name> = <value>
++.fi
++.RE
++.LP
++It is also possible to add comments in the file by using the hash sign.
++Anything after the hash sign will be ignored.
++.LP
++.RS
++.nf
++# A comment
++.RE
++.LP
++Any empty lines or lines that does not have the correct format will be ignored.
++.SH DIRECTORIES.TOKENDIR
++The location where SoftHSM can store the tokens.
++.LP
++.RS
++.nf
++directories.tokendir = /var/lib/softhsm/tokens/
++.fi
++.RE
++.LP
++.SH OBJECTSTORE.BACKEND
++The backend to use by SoftHSM to store token objects. Either "file" or "db" is supported.
++In order to use the "db" backend, the SoftHSM build needs to be configured with "configure --with-objectstore-backend-db"
++.LP
++.RS
++.nf
++objectstore.backend = file
++.fi
++.RE
++.LP
++.SH OBJECTSTORE.UMASK
++The file mode creation mask used by SoftHSM when creating files or directories. This value is in octal.
++This is applied in addition to the process umask and cannot override it.
++.LP
++.RS
++.nf
++objectstore.umask = 0077
++.fi
++.RE
++.LP
++.SH LOG.LEVEL
++The log level which can be set to ERROR, WARNING, INFO or DEBUG.
++.LP
++.RS
++.nf
++log.level = INFO
++.fi
++.RE
++.LP
++.SH SLOTS.REMOVABLE
++If set to true CKF_REMOVABLE_DEVICE is set in the flags returned by C_GetSlotInfo. Default is false.
++.LP
++.RS
++.nf
++slots.removable = true
++.fi
++.RE
++.LP
++.SH SLOTS.MECHANISMS
++Allows to enable and disable any of the PKCS#11 mechanisms reported in the
++C_GetMechanismList().
++The option accepts string argument containing the comma separated list of all
++algorithms that should be enabled (do not forget about the keygen mechanisms).
++The list can be prefixed with minus sign "-" to list only the disabled
++mechanisms.
++Additionally, special keyword ALL can be used to enable all the known
++mechanisms (default). Unknown mechanisms are ignored.
++This option has higher priority than the CKA_ALLOWED_MECHANISMS attribute
++on the key objects.
++.LP
++.RS
++.nf
++slots.mechanisms = ALL
++.fi
++.RE
++.LP
++.SH LIBRARY.RESET_ON_FORK
++If set to true, the library will reset the state on fork.
++Default is false.
++.LP
++.RS
++.nf
++library.reset_on_fork = true
++.fi
++.RE
++.LP
++.SH ENVIRONMENT
++.TP
++SOFTHSM2_CONF
++When defined, the value will be used as path to the configuration file.
++.SH FILES
++.TP
++.I ~/.config/softhsm2/softhsm2.conf
++default user-specific location of the SoftHSM configuration file; if it exists it will override the system wide configuration
++.TP
++.I /etc/softhsm2.conf
++default system-wide location of the SoftHSM configuration file
++.TP
++.I /etc/softhsm2.conf.sample
++an example of a SoftHSM configuration file
++.SH AUTHOR
++Written by Rickard Bellgrim, Francis Dupont, René Post, and Roland van Rijswijk.
++.SH "SEE ALSO"
++.IR softhsm2-keyconv (1),
++.IR softhsm2-migrate (1),
++.IR softhsm2-util (1)
+diff --git a/src/lib/crypto/AsymmetricAlgorithm.h b/src/lib/crypto/AsymmetricAlgorithm.h
+index dafa75ebd..978f0adc2 100644
+--- a/src/lib/crypto/AsymmetricAlgorithm.h
++++ b/src/lib/crypto/AsymmetricAlgorithm.h
+@@ -58,8 +58,9 @@ struct AsymAlgo
+ 		ECDSA,
+ 		GOST,
+ 		EDDSA,
+-		MLDSA
+-        };
++		MLDSA,
++		SLHDSA
++	};
+ };
+ 
+ struct AsymMech
+@@ -98,7 +99,8 @@ struct AsymMech
+ 		GOST,
+ 		GOST_GOST,
+ 		EDDSA,
+-		MLDSA
++		MLDSA,
++		SLHDSA
+ 	};
+ };
+ 
+diff --git a/src/lib/crypto/CMakeLists.txt b/src/lib/crypto/CMakeLists.txt
+index 791ddeeec..398a34067 100644
+--- a/src/lib/crypto/CMakeLists.txt
++++ b/src/lib/crypto/CMakeLists.txt
+@@ -35,6 +35,11 @@ set(SOURCES AESKey.cpp
+             MLDSAPrivateKey.cpp
+             MLDSAPublicKey.cpp
+             MLDSAUtil.cpp
++            SLHDSAMechanismParam.cpp
++            SLHDSAParameters.cpp
++            SLHDSAPrivateKey.cpp
++            SLHDSAPublicKey.cpp
++            SLHDSAUtil.cpp
+             RSAParameters.cpp
+             RSAPrivateKey.cpp
+             RSAPublicKey.cpp
+@@ -80,6 +85,10 @@ if(WITH_OPENSSL)
+                         OSSLMLDSAKeyPair.cpp
+                         OSSLMLDSAPrivateKey.cpp
+                         OSSLMLDSAPublicKey.cpp
++                        OSSLSLHDSA.cpp
++                        OSSLSLHDSAKeyPair.cpp
++                        OSSLSLHDSAPrivateKey.cpp
++                        OSSLSLHDSAPublicKey.cpp
+                         OSSLRNG.cpp
+                         OSSLRSA.cpp
+                         OSSLRSAKeyPair.cpp
+diff --git a/src/lib/crypto/MLDSAMechanismParam.h b/src/lib/crypto/MLDSAMechanismParam.h
+index a934bb943..641a020fd 100644
+--- a/src/lib/crypto/MLDSAMechanismParam.h
++++ b/src/lib/crypto/MLDSAMechanismParam.h
+@@ -12,15 +12,6 @@
+ #include "ByteString.h"
+ #include "MechanismParam.h"
+ 
+-struct Hedge
+-{
+-	enum Type
+-	{
+-		HEDGE_PREFERRED,
+-		HEDGE_REQUIRED,
+-		DETERMINISTIC_REQUIRED
+-	};
+-};
+ 
+ class MLDSAMechanismParam : public MechanismParam
+ {
+@@ -37,7 +28,7 @@ class MLDSAMechanismParam : public MechanismParam
+ 	MLDSAMechanismParam(Hedge::Type hedgeType);
+ 
+ 	MLDSAMechanismParam(Hedge::Type hedgeType, ByteString additionalContext);
+-	
++
+ 	MLDSAMechanismParam* clone() const;
+ 
+ 	// Check if the mechanism param is of the given type
+diff --git a/src/lib/crypto/Makefile.am b/src/lib/crypto/Makefile.am
+index b40d33f52..9caada19f 100644
+--- a/src/lib/crypto/Makefile.am
++++ b/src/lib/crypto/Makefile.am
+@@ -35,6 +35,11 @@ libsofthsm_crypto_la_SOURCES =	AESKey.cpp \
+ 				MLDSAPrivateKey.cpp \
+ 				MLDSAPublicKey.cpp \
+ 				MLDSAUtil.cpp \
++				SLHDSAMechanismParam.cpp \
++				SLHDSAParameters.cpp \
++				SLHDSAPrivateKey.cpp \
++				SLHDSAPublicKey.cpp \
++				SLHDSAUtil.cpp \
+ 				RSAParameters.cpp \
+ 				RSAPrivateKey.cpp \
+ 				RSAPublicKey.cpp \
+@@ -87,6 +92,10 @@ libsofthsm_crypto_la_SOURCES +=	OSSLAES.cpp \
+ 				OSSLMLDSAKeyPair.cpp \
+ 				OSSLMLDSAPrivateKey.cpp \
+ 				OSSLMLDSAPublicKey.cpp \
++				OSSLSLHDSA.cpp \
++				OSSLSLHDSAKeyPair.cpp \
++				OSSLSLHDSAPrivateKey.cpp \
++				OSSLSLHDSAPublicKey.cpp \
+ 				OSSLRNG.cpp \
+ 				OSSLRSA.cpp \
+ 				OSSLRSAKeyPair.cpp \
+diff --git a/src/lib/crypto/MechanismParam.h b/src/lib/crypto/MechanismParam.h
+index a97a5f002..5b9db1fa5 100644
+--- a/src/lib/crypto/MechanismParam.h
++++ b/src/lib/crypto/MechanismParam.h
+@@ -9,6 +9,16 @@
+ 
+ #include "config.h"
+ 
++struct Hedge
++{
++	enum Type
++	{
++		HEDGE_PREFERRED,
++		HEDGE_REQUIRED,
++		DETERMINISTIC_REQUIRED
++	};
++};
++
+ class MechanismParam
+ {
+ public:
+diff --git a/src/lib/crypto/OSSLCryptoFactory.cpp b/src/lib/crypto/OSSLCryptoFactory.cpp
+index 7994b2029..062192016 100644
+--- a/src/lib/crypto/OSSLCryptoFactory.cpp
++++ b/src/lib/crypto/OSSLCryptoFactory.cpp
+@@ -61,6 +61,10 @@
+ #ifdef WITH_ML_DSA
+ #include "OSSLMLDSA.h"
+ #endif
++#ifdef WITH_SLH_DSA
++#include "OSSLSLHDSA.h"
++#endif
++
+ 
+ #include <algorithm>
+ #include <string.h>
+@@ -359,6 +363,10 @@ AsymmetricAlgorithm* OSSLCryptoFactory::getAsymmetricAlgorithm(AsymAlgo::Type al
+ #ifdef WITH_ML_DSA
+ 		case AsymAlgo::MLDSA:
+ 			return new OSSLMLDSA();
++#endif
++#ifdef WITH_SLH_DSA
++		case AsymAlgo::SLHDSA:
++			return new OSSLSLHDSA();
+ #endif
+ 		default:
+ 			break;
+diff --git a/src/lib/crypto/OSSLSLHDSA.cpp b/src/lib/crypto/OSSLSLHDSA.cpp
+new file mode 100644
+index 000000000..c96363666
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSA.cpp
+@@ -0,0 +1,716 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ OSSLSLHDSA.cpp
++
++ OpenSSL SLH-DSA asymmetric algorithm implementation
++ *****************************************************************************/
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "log.h"
++#include "OSSLSLHDSA.h"
++#include "CryptoFactory.h"
++#include "SLHDSAParameters.h"
++#include "SLHDSAMechanismParam.h"
++#include "OSSLSLHDSAKeyPair.h"
++#include "OSSLComp.h"
++#include "OSSLUtil.h"
++#include <algorithm>
++#include <openssl/core_names.h>
++#include <openssl/evp.h>
++#include <openssl/pem.h>
++#include <openssl/err.h>
++#include <string.h>
++
++
++// Signing functions
++/** \brief sign */
++bool OSSLSLHDSA::sign(PrivateKey *privateKey, const ByteString &dataToSign,
++                      ByteString &signature, const AsymMech::Type mechanism,
++                      const void * /* param  = NULL*/, const size_t  /* paramLen = 0 */,
++                      const MechanismParam* mechanismParam)
++{
++	if (mechanism != AsymMech::SLHDSA)
++	{
++		ERROR_MSG("Invalid mechanism supplied (%i)", mechanism);
++		return false;
++	}
++
++	if (privateKey == NULL)
++	{
++		ERROR_MSG("No private key supplied");
++		return false;
++	}
++
++	// Check if the private key is the right type
++	if (!privateKey->isOfType(OSSLSLHDSAPrivateKey::type))
++	{
++		ERROR_MSG("Invalid key type supplied");
++
++		return false;
++	}
++
++	OSSLSLHDSAPrivateKey *pk = (OSSLSLHDSAPrivateKey *)privateKey;
++
++	EVP_PKEY *pkey = pk->getOSSLKey();
++
++	if (pkey == NULL)
++	{
++		ERROR_MSG("Could not get the OpenSSL private key");
++
++		return false;
++	}
++
++	if (mechanismParam != NULL && !mechanismParam->isOfType(SLHDSAMechanismParam::type))
++	{
++		ERROR_MSG("Invalid mechanism parameter type supplied");
++
++		return false;
++	}
++
++	// Perform the signature operation
++	size_t len = 0;
++
++	OSSL_PARAM params[4], *p = params;
++
++	int local_deterministic = 1;
++	int local_random = 0;
++	const SLHDSAMechanismParam* slhdsaSignatureParam = dynamic_cast<const SLHDSAMechanismParam*>(mechanismParam);
++	ByteString context;
++	if (slhdsaSignatureParam != NULL)
++	{
++		Hedge::Type type = slhdsaSignatureParam->hedgeType;
++		if (slhdsaSignatureParam->additionalContext.size() > 0)
++		{
++			context = slhdsaSignatureParam->additionalContext;
++			size_t contextSize = context.size();
++			if (contextSize > 255)
++			{
++				ERROR_MSG("Invalid parameters, context length > 255");
++				return false;
++			}
++			*p++ = OSSL_PARAM_construct_octet_string(OSSL_SIGNATURE_PARAM_CONTEXT_STRING, context.byte_str(), contextSize);
++		}
++		switch (type)
++		{
++		case Hedge::Type::DETERMINISTIC_REQUIRED:
++			*p++ = OSSL_PARAM_construct_int(OSSL_SIGNATURE_PARAM_DETERMINISTIC, &local_deterministic);
++			break;
++		case Hedge::Type::HEDGE_REQUIRED:
++		default:
++			*p++ = OSSL_PARAM_construct_int(OSSL_SIGNATURE_PARAM_DETERMINISTIC, &local_random);
++			break;
++		}
++		*p = OSSL_PARAM_construct_end();
++	}
++
++	EVP_PKEY_CTX *sctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
++	if (sctx == NULL)
++	{
++		ERROR_MSG("SLH-DSA sign sctx alloc failed");
++		return false;
++	}
++
++	unsigned long parameterSet = pk->getParameterSet();
++	const char* name = OSSL::slhdsaParameterSet2Name(parameterSet);
++	if (name == NULL)
++	{
++		ERROR_MSG("Unknown SLH-DSA parameter set (%lu)", parameterSet);
++		EVP_PKEY_CTX_free(sctx);
++		return false;
++	}
++
++	EVP_SIGNATURE *sig_alg = EVP_SIGNATURE_fetch(NULL, name, NULL);
++	if (sig_alg == NULL)
++	{
++		ERROR_MSG("SLH-DSA EVP_SIGNATURE_fetch failed (0x%08lX)", ERR_get_error());
++		EVP_PKEY_CTX_free(sctx);
++		return false;
++	}
++	int initRv;
++	if (mechanismParam != NULL)
++	{
++		initRv = EVP_PKEY_sign_message_init(sctx, sig_alg, params);
++	}
++	else
++	{
++		initRv = EVP_PKEY_sign_message_init(sctx, sig_alg, NULL);
++	}
++	if (initRv <= 0)
++	{
++		ERROR_MSG("SLH-DSA sign_message_init failed (0x%08lX)", ERR_get_error());
++		EVP_SIGNATURE_free(sig_alg);
++		EVP_PKEY_CTX_free(sctx);
++		return false;
++	}
++	/* Calculate the required size for the signature by passing a NULL buffer. */
++	if (EVP_PKEY_sign(sctx, NULL, &len, dataToSign.const_byte_str(), dataToSign.size()) <= 0)
++	{
++		ERROR_MSG("SLH-DSA sign size query failed (0x%08lX)", ERR_get_error());
++		EVP_SIGNATURE_free(sig_alg);
++		EVP_PKEY_CTX_free(sctx);
++		return false;
++	}
++	signature.resize(len);
++	if (EVP_PKEY_sign(sctx, &signature[0], &len, dataToSign.const_byte_str(), dataToSign.size()) <= 0)
++	{
++		ERROR_MSG("SLH-DSA sign failed (0x%08lX)", ERR_get_error());
++		EVP_SIGNATURE_free(sig_alg);
++		EVP_PKEY_CTX_free(sctx);
++		return false;
++	}
++
++	EVP_SIGNATURE_free(sig_alg);
++	EVP_PKEY_CTX_free(sctx);
++
++	return true;
++}
++
++/** \brief signInit */
++bool OSSLSLHDSA::signInit(PrivateKey* privateKey, const AsymMech::Type mechanism,
++                          const void* param, const size_t paramLen,
++                          const MechanismParam* mechanismParam)
++{
++	message.resize(0);
++	delete mechanismParameters;
++	mechanismParameters = NULL;
++
++	if (!AsymmetricAlgorithm::signInit(privateKey, mechanism, param, paramLen))
++	{
++		return false;
++	}
++
++	// Check if the private key is the right type
++	if (!privateKey->isOfType(OSSLSLHDSAPrivateKey::type))
++	{
++		ERROR_MSG("Invalid key type supplied");
++
++		ByteString dummy;
++		AsymmetricAlgorithm::signFinal(dummy);
++
++		return false;
++	}
++
++	if (mechanismParam != NULL && !mechanismParam->isOfType(SLHDSAMechanismParam::type))
++	{
++		ERROR_MSG("Invalid mechanism parameter type supplied");
++
++		ByteString dummy;
++		AsymmetricAlgorithm::signFinal(dummy);
++
++		return false;
++	}
++
++	if (mechanismParam != NULL) {
++		mechanismParameters = mechanismParam->clone();
++	}
++
++	return true;
++}
++
++/** \brief signUpdate */
++bool OSSLSLHDSA::signUpdate(const ByteString &dataToSign)
++{
++	if (!AsymmetricAlgorithm::signUpdate(dataToSign))
++	{
++		return false;
++	}
++
++	message += dataToSign;
++
++	return true;
++}
++
++/** \brief signFinal */
++bool OSSLSLHDSA::signFinal(ByteString &signature)
++{
++	int rv = OSSLSLHDSA::sign(currentPrivateKey, message, signature, currentMechanism, NULL, 0, mechanismParameters);
++
++	delete mechanismParameters;
++	mechanismParameters = NULL;
++
++	message.resize(0);
++
++	if (!AsymmetricAlgorithm::signFinal(signature))
++	{
++		return false;
++	}
++
++	return rv;
++}
++
++// Verification functions
++/** \brief verify */
++bool OSSLSLHDSA::verify(PublicKey *publicKey, const ByteString &originalData,
++                        const ByteString &signature, const AsymMech::Type mechanism,
++                        const void * /* param  = NULL*/, const size_t  /* paramLen = 0 */,
++                        const MechanismParam* mechanismParam)
++{
++	if (mechanism != AsymMech::SLHDSA)
++	{
++		ERROR_MSG("Invalid mechanism supplied (%i)", mechanism);
++		return false;
++	}
++
++	if (publicKey == NULL)
++	{
++		ERROR_MSG("No public key supplied");
++		return false;
++	}
++
++	// Check if the public key is the right type
++	if (!publicKey->isOfType(OSSLSLHDSAPublicKey::type))
++	{
++		ERROR_MSG("Invalid key type supplied");
++
++		return false;
++	}
++
++	OSSLSLHDSAPublicKey *pk = (OSSLSLHDSAPublicKey *)publicKey;
++	EVP_PKEY *pkey = pk->getOSSLKey();
++
++	if (pkey == NULL)
++	{
++		ERROR_MSG("Could not get the OpenSSL public key");
++
++		return false;
++	}
++
++	// Perform the verify operation
++	size_t len = pk->getOutputLength();
++	if (len == 0)
++	{
++		ERROR_MSG("Could not get the signature length");
++		return false;
++	}
++	if (signature.size() != len)
++	{
++		ERROR_MSG("Invalid buffer length");
++		return false;
++	}
++
++	if (mechanismParam != NULL && !mechanismParam->isOfType(SLHDSAMechanismParam::type))
++	{
++		ERROR_MSG("Invalid mechanism parameter type supplied");
++
++		return false;
++	}
++
++	OSSL_PARAM params[3], *p = params;
++	const SLHDSAMechanismParam* slhdsaSignatureParam = dynamic_cast<const SLHDSAMechanismParam*>(mechanismParam);
++	ByteString context;
++	if (slhdsaSignatureParam != NULL)
++	{
++		if (slhdsaSignatureParam->additionalContext.size() > 0)
++		{
++			context = slhdsaSignatureParam->additionalContext;
++			size_t contextSize = context.size();
++			if (contextSize > 255)
++			{
++				ERROR_MSG("Invalid parameters, context length > 255");
++				return false;
++			}
++			*p++ = OSSL_PARAM_construct_octet_string(OSSL_SIGNATURE_PARAM_CONTEXT_STRING, context.byte_str(), contextSize);
++		}
++		*p = OSSL_PARAM_construct_end();
++	}
++
++	EVP_PKEY_CTX *vctx = NULL;
++	EVP_SIGNATURE *sig_alg = NULL;
++
++	vctx = EVP_PKEY_CTX_new_from_pkey(NULL, pkey, NULL);
++	if (vctx == NULL)
++	{
++		ERROR_MSG("SLH-DSA EVP_PKEY_CTX_new_from_pkey failed (0x%08lX)", ERR_get_error());
++		return false;
++	}
++
++	unsigned long parameterSet = pk->getParameterSet();
++	const char* name = OSSL::slhdsaParameterSet2Name(parameterSet);
++
++	if (name == NULL)
++	{
++		ERROR_MSG("Unknown SLH-DSA parameter set (%lu)", parameterSet);
++		EVP_PKEY_CTX_free(vctx);
++		return false;
++	}
++
++	sig_alg = EVP_SIGNATURE_fetch(NULL, name, NULL);
++	if (sig_alg == NULL)
++	{
++		ERROR_MSG("SLH-DSA EVP_SIGNATURE_fetch failed (0x%08lX)", ERR_get_error());
++		EVP_PKEY_CTX_free(vctx);
++		return false;
++	}
++
++	int initRv;
++	if (mechanismParam != NULL)
++	{
++		initRv = EVP_PKEY_verify_message_init(vctx, sig_alg, params);
++	}
++	else
++	{
++		initRv = EVP_PKEY_verify_message_init(vctx, sig_alg, NULL);
++	}
++
++	if (initRv <= 0)
++	{
++		ERROR_MSG("SLH-DSA verify init failed (0x%08lX)", ERR_get_error());
++		EVP_PKEY_CTX_free(vctx);
++		EVP_SIGNATURE_free(sig_alg);
++		return false;
++	}
++	int verifyRV = EVP_PKEY_verify(vctx, signature.const_byte_str(), signature.size(),
++	                               originalData.const_byte_str(), originalData.size());
++	EVP_PKEY_CTX_free(vctx);
++	EVP_SIGNATURE_free(sig_alg);
++	if (verifyRV != 1)
++	{
++		if (verifyRV != 0)
++		{
++			ERROR_MSG("SLH-DSA verify error (0x%08lX)", ERR_get_error());
++		}
++		return false;
++	}
++	return true;
++}
++
++/** \brief verifyInit */
++bool OSSLSLHDSA::verifyInit(PublicKey* publicKey, const AsymMech::Type mechanism,
++                            const void* param, const size_t paramLen,
++                            const MechanismParam* mechanismParam)
++{
++	message.resize(0);
++	delete mechanismParameters;
++	mechanismParameters = NULL;
++
++	if (!AsymmetricAlgorithm::verifyInit(publicKey, mechanism, param, paramLen))
++	{
++		return false;
++	}
++
++	// Check if the public key is the right type
++	if (!publicKey->isOfType(OSSLSLHDSAPublicKey::type))
++	{
++		ERROR_MSG("Invalid key type supplied");
++
++		ByteString dummy;
++		AsymmetricAlgorithm::verifyFinal(dummy);
++
++		return false;
++	}
++
++	if (mechanismParam != NULL && !mechanismParam->isOfType(SLHDSAMechanismParam::type))
++	{
++		ERROR_MSG("Invalid mechanism parameter type supplied");
++
++		ByteString dummy;
++		AsymmetricAlgorithm::verifyFinal(dummy);
++
++		return false;
++	}
++
++	if (mechanismParam != NULL) {
++		mechanismParameters = mechanismParam->clone();
++	}
++
++	return true;
++}
++
++/** \brief verifyUpdate */
++bool OSSLSLHDSA::verifyUpdate(const ByteString &originalData)
++{
++	if (!AsymmetricAlgorithm::verifyUpdate(originalData))
++	{
++		return false;
++	}
++
++	message += originalData;
++
++	return true;
++}
++
++/** \brief verifyFinal */
++bool OSSLSLHDSA::verifyFinal(const ByteString &signature)
++{
++	int rv = OSSLSLHDSA::verify(currentPublicKey, message, signature, currentMechanism, NULL, 0, mechanismParameters);
++
++	delete mechanismParameters;
++	mechanismParameters = NULL;
++
++	message.resize(0);
++
++	if (!AsymmetricAlgorithm::verifyFinal(signature))
++	{
++		return false;
++	}
++
++	return rv;
++}
++
++// Encryption functions
++/** \brief encrypt */
++bool OSSLSLHDSA::encrypt(PublicKey * /*publicKey*/, const ByteString & /*data*/,
++                         ByteString & /*encryptedData*/, const AsymMech::Type /*padding*/)
++{
++	ERROR_MSG("SLH-DSA does not support encryption");
++
++	return false;
++}
++
++// Decryption functions
++/** \brief decrypt */
++bool OSSLSLHDSA::decrypt(PrivateKey * /*privateKey*/, const ByteString & /*encryptedData*/,
++                         ByteString & /*data*/, const AsymMech::Type /*padding*/)
++{
++	ERROR_MSG("SLH-DSA does not support decryption");
++
++	return false;
++}
++
++/** \brief getMinKeySize */
++unsigned long OSSLSLHDSA::getMinKeySize()
++{
++	return SLHDSAParameters::SLH_DSA_SHA2_128S_PUB_LENGTH;
++}
++
++/** \brief getMaxKeySize */
++unsigned long OSSLSLHDSA::getMaxKeySize()
++{
++	return SLHDSAParameters::SLH_DSA_SHA2_256F_PUB_LENGTH;
++}
++
++/** \brief checkEncryptedDataSize */
++bool OSSLSLHDSA::checkEncryptedDataSize(PrivateKey * /* privateKey*/, const ByteString & /*encryptedData*/, int * /* errorCode*/)
++{
++	ERROR_MSG("SLH-DSA does not support encryption");
++
++	return false;
++}
++
++// Key factory
++/** \brief generateKeyPair */
++bool OSSLSLHDSA::generateKeyPair(AsymmetricKeyPair **ppKeyPair, AsymmetricParameters *parameters, RNG * /*rng = NULL */)
++{
++	// Check parameters
++	if ((ppKeyPair == NULL) ||
++	        (parameters == NULL))
++	{
++		return false;
++	}
++
++	if (!parameters->areOfType(SLHDSAParameters::type))
++	{
++		ERROR_MSG("Invalid parameters supplied for SLH-DSA key generation");
++
++		return false;
++	}
++
++	SLHDSAParameters *params = (SLHDSAParameters *)parameters;
++	unsigned long parameterSet = params->getParameterSet();
++	const char* name = OSSL::slhdsaParameterSet2Name(parameterSet);
++
++	if (name == NULL)
++	{
++		ERROR_MSG("Unknown SLH-DSA parameter set (%lu)", parameterSet);
++		return false;
++	}
++
++	EVP_PKEY_CTX *ctx = NULL;
++	EVP_PKEY *pkey = NULL;
++	ctx = EVP_PKEY_CTX_new_from_name(NULL, name, NULL);
++	if (ctx == NULL)
++	{
++		ERROR_MSG("SLH-DSA keygen context failed (0x%08lX)", ERR_get_error());
++		return false;
++	}
++	int initRV = EVP_PKEY_keygen_init(ctx);
++	if (initRV <= 0)
++	{
++		ERROR_MSG("SLH-DSA keygen init failed (0x%08lX)", ERR_get_error());
++		EVP_PKEY_CTX_free(ctx);
++		return false;
++	}
++
++	int keygenRV = EVP_PKEY_generate(ctx, &pkey);
++	if (keygenRV <= 0)
++	{
++		ERROR_MSG("SLH-DSA keygen failed (0x%08lX)", ERR_get_error());
++		EVP_PKEY_CTX_free(ctx);
++		return false;
++	}
++	// Create an asymmetric key-pair object to return
++	OSSLSLHDSAKeyPair *kp = new OSSLSLHDSAKeyPair();
++
++	if (!((OSSLSLHDSAPrivateKey*)kp->getPrivateKey())->setFromOSSL(pkey) ||
++	    !((OSSLSLHDSAPublicKey*) kp->getPublicKey())->setFromOSSL(pkey))
++	{
++		delete kp;
++		EVP_PKEY_free(pkey);
++		EVP_PKEY_CTX_free(ctx);
++		return false;
++	}
++
++	*ppKeyPair = kp;
++
++	// Release the context
++	EVP_PKEY_CTX_free(ctx);
++	// Release the key
++	EVP_PKEY_free(pkey);
++
++	return true;
++}
++
++/** \brief reconstructKeyPair */
++bool OSSLSLHDSA::reconstructKeyPair(AsymmetricKeyPair **ppKeyPair, ByteString &serialisedData)
++{
++	// Check input
++	if ((ppKeyPair == NULL) ||
++	        (serialisedData.size() == 0))
++	{
++		return false;
++	}
++
++	ByteString dPub = ByteString::chainDeserialise(serialisedData);
++	ByteString dPriv = ByteString::chainDeserialise(serialisedData);
++
++	OSSLSLHDSAKeyPair *kp = new OSSLSLHDSAKeyPair();
++
++	bool rv = true;
++
++	if (!((SLHDSAPublicKey *)kp->getPublicKey())->deserialise(dPub))
++	{
++		rv = false;
++	}
++
++	if (!((SLHDSAPrivateKey *)kp->getPrivateKey())->deserialise(dPriv))
++	{
++		rv = false;
++	}
++
++	if (!rv)
++	{
++		delete kp;
++
++		return false;
++	}
++
++	*ppKeyPair = kp;
++
++	return true;
++}
++
++/** \brief reconstructPublicKey */
++bool OSSLSLHDSA::reconstructPublicKey(PublicKey **ppPublicKey, ByteString &serialisedData)
++{
++	// Check input
++	if ((ppPublicKey == NULL) ||
++	        (serialisedData.size() == 0))
++	{
++		return false;
++	}
++
++	OSSLSLHDSAPublicKey *pub = new OSSLSLHDSAPublicKey();
++
++	if (!pub->deserialise(serialisedData))
++	{
++		delete pub;
++
++		return false;
++	}
++
++	*ppPublicKey = pub;
++
++	return true;
++}
++
++/** \brief reconstructPrivateKey */
++bool OSSLSLHDSA::reconstructPrivateKey(PrivateKey **ppPrivateKey, ByteString &serialisedData)
++{
++	// Check input
++	if ((ppPrivateKey == NULL) ||
++	        (serialisedData.size() == 0))
++	{
++		return false;
++	}
++
++	OSSLSLHDSAPrivateKey *priv = new OSSLSLHDSAPrivateKey();
++
++	if (!priv->deserialise(serialisedData))
++	{
++		delete priv;
++
++		return false;
++	}
++
++	*ppPrivateKey = priv;
++
++	return true;
++}
++
++/** \brief newPublicKey */
++PublicKey *OSSLSLHDSA::newPublicKey()
++{
++	return (PublicKey *)new OSSLSLHDSAPublicKey();
++}
++
++/** \brief newPrivateKey */
++PrivateKey *OSSLSLHDSA::newPrivateKey()
++{
++	return (PrivateKey *)new OSSLSLHDSAPrivateKey();
++}
++
++/** \brief newParameters */
++AsymmetricParameters *OSSLSLHDSA::newParameters()
++{
++	return (AsymmetricParameters *)new SLHDSAParameters();
++}
++
++/** \brief reconstructParameters */
++bool OSSLSLHDSA::reconstructParameters(AsymmetricParameters **ppParams, ByteString &serialisedData)
++{
++	// Check input parameters
++	if ((ppParams == NULL) || (serialisedData.size() == 0))
++	{
++		return false;
++	}
++
++	SLHDSAParameters *params = new SLHDSAParameters();
++
++	if (!params->deserialise(serialisedData))
++	{
++		delete params;
++
++		return false;
++	}
++
++	*ppParams = params;
++
++	return true;
++}
++#endif
+diff --git a/src/lib/crypto/OSSLSLHDSA.h b/src/lib/crypto/OSSLSLHDSA.h
+new file mode 100644
+index 000000000..be7af83d7
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSA.h
+@@ -0,0 +1,110 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ OSSLSLHDSA.h
++
++ OpenSSL SLH-DSA asymmetric algorithm implementation
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_OSSLSLHDSA_H
++#define _SOFTHSM_V2_OSSLSLHDSA_H
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "AsymmetricAlgorithm.h"
++
++class OSSLSLHDSA : public AsymmetricAlgorithm
++{
++public:
++	OSSLSLHDSA() : message(), parameters(NULL), paramLength(0), mechanismParameters(NULL) { }
++
++	/** \brief Destructor */
++	virtual ~OSSLSLHDSA()
++	{
++		delete mechanismParameters;
++	}
++
++	/** \brief Sign data */
++	virtual bool sign(PrivateKey *privateKey, const ByteString &dataToSign, ByteString &signature, const AsymMech::Type mechanism, const void *param = NULL, const size_t paramLen = 0, const MechanismParam* mechanismParam = NULL);
++	/** \brief Initialize signing */
++	virtual bool signInit(PrivateKey* privateKey, const AsymMech::Type mechanism, const void* param = NULL, const size_t paramLen = 0, const MechanismParam* mechanismParam = NULL);
++	/** \brief Update signing */
++	virtual bool signUpdate(const ByteString& dataToSign);
++	/** \brief Finalize signing */
++	virtual bool signFinal(ByteString& signature);
++
++	/** \brief Verify signature */
++	virtual bool verify(PublicKey* publicKey, const ByteString& originalData, const ByteString& signature, const AsymMech::Type mechanism, const void* param = NULL, const size_t paramLen = 0, const MechanismParam* mechanismParam = NULL);
++	/** \brief Initialize verification */
++	virtual bool verifyInit(PublicKey* publicKey, const AsymMech::Type mechanism, const void* param = NULL, const size_t paramLen = 0, const MechanismParam* mechanismParam = NULL);
++	/** \brief Update verification */
++	virtual bool verifyUpdate(const ByteString& originalData);
++	/** \brief Finalize verification */
++	virtual bool verifyFinal(const ByteString& signature);
++
++	/** \brief Encrypt data */
++	virtual bool encrypt(PublicKey* publicKey, const ByteString& data, ByteString& encryptedData, const AsymMech::Type padding);
++
++
++	/** \brief Check encrypted data size */
++	virtual bool checkEncryptedDataSize(PrivateKey* privateKey, const ByteString& encryptedData, int* errorCode);
++	/** \brief Decrypt data */
++	virtual bool decrypt(PrivateKey* privateKey, const ByteString& encryptedData, ByteString& data, const AsymMech::Type padding);
++
++
++// Key factory
++	/** \brief Generate key pair */
++	virtual bool generateKeyPair(AsymmetricKeyPair** ppKeyPair, AsymmetricParameters* parameters, RNG* rng = NULL);
++	/** \brief Get minimum key size */
++	virtual unsigned long getMinKeySize();
++	/** \brief Get maximum key size */
++	virtual unsigned long getMaxKeySize();
++	/** \brief Reconstruct key pair */
++	virtual bool reconstructKeyPair(AsymmetricKeyPair** ppKeyPair, ByteString& serialisedData);
++	/** \brief Reconstruct public key */
++	virtual bool reconstructPublicKey(PublicKey** ppPublicKey, ByteString& serialisedData);
++	/** \brief Reconstruct private key */
++	virtual bool reconstructPrivateKey(PrivateKey** ppPrivateKey, ByteString& serialisedData);
++	/** \brief Reconstruct parameters */
++	virtual bool reconstructParameters(AsymmetricParameters** ppParams, ByteString& serialisedData);
++	/** \brief Create new public key */
++	virtual PublicKey* newPublicKey();
++	/** \brief Create new private key */
++	virtual PrivateKey* newPrivateKey();
++	/** \brief Create new parameters */
++	virtual AsymmetricParameters* newParameters();
++
++private:
++	ByteString message;
++	void* parameters;
++	size_t paramLength;
++	const MechanismParam* mechanismParameters;
++};
++
++#endif // WITH_SLH_DSA
++#endif // !_SOFTHSM_V2_OSSLSLHDSA_H
++
+diff --git a/src/lib/crypto/OSSLSLHDSAKeyPair.cpp b/src/lib/crypto/OSSLSLHDSAKeyPair.cpp
+new file mode 100644
+index 000000000..c234e3eed
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSAKeyPair.cpp
+@@ -0,0 +1,55 @@
++/*****************************************************************************
++ OSSLSLHDSAKeyPair.cpp
++
++ OpenSSL SLH-DSA key-pair class
++ *****************************************************************************/
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "log.h"
++#include "OSSLSLHDSAKeyPair.h"
++
++// Set the public key
++/** \brief setPublicKey */
++void OSSLSLHDSAKeyPair::setPublicKey(const OSSLSLHDSAPublicKey& publicKey)
++{
++	// Copy only the public material; avoid sharing OpenSSL handles
++	pubKey.setValue(publicKey.getValue());
++	pubKey.setParameterSet(publicKey.getParameterSet());
++}
++
++// Set the private key
++/** \brief setPrivateKey */
++void OSSLSLHDSAKeyPair::setPrivateKey(const OSSLSLHDSAPrivateKey& privateKey)
++{
++	// Copy only the raw material; avoid sharing OpenSSL handles
++	privKey.setValue(privateKey.getValue());
++	privKey.setParameterSet(privateKey.getParameterSet());
++}
++
++// Return the public key
++/** \brief getPublicKey */
++PublicKey* OSSLSLHDSAKeyPair::getPublicKey()
++{
++	return &pubKey;
++}
++
++/** \brief getConstPublicKey */
++const PublicKey* OSSLSLHDSAKeyPair::getConstPublicKey() const
++{
++	return &pubKey;
++}
++
++// Return the private key
++/** \brief getPrivateKey */
++PrivateKey* OSSLSLHDSAKeyPair::getPrivateKey()
++{
++	return &privKey;
++}
++
++/** \brief getConstPrivateKey */
++const PrivateKey* OSSLSLHDSAKeyPair::getConstPrivateKey() const
++{
++	return &privKey;
++}
++#endif
+diff --git a/src/lib/crypto/OSSLSLHDSAKeyPair.h b/src/lib/crypto/OSSLSLHDSAKeyPair.h
+new file mode 100644
+index 000000000..68ee89fb6
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSAKeyPair.h
+@@ -0,0 +1,70 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ OSSLSLHDSAKeyPair.h
++
++ OpenSSL SLH-DSA key-pair class
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_OSSLSLHDSAKEYPAIR_H
++#define _SOFTHSM_V2_OSSLSLHDSAKEYPAIR_H
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "AsymmetricKeyPair.h"
++#include "OSSLSLHDSAPublicKey.h"
++#include "OSSLSLHDSAPrivateKey.h"
++
++class OSSLSLHDSAKeyPair : public AsymmetricKeyPair
++{
++public:
++	/** \brief Set the public key */
++	void setPublicKey(const OSSLSLHDSAPublicKey& publicKey);
++
++	/** \brief Set the private key */
++	void setPrivateKey(const OSSLSLHDSAPrivateKey& privateKey);
++
++	/** \brief Return the public key */
++	virtual PublicKey* getPublicKey();
++	/** \brief Return the constant public key */
++	virtual const PublicKey* getConstPublicKey() const;
++
++	/** \brief Return the private key */
++	virtual PrivateKey* getPrivateKey();
++	/** \brief Return the constant private key */
++	virtual const PrivateKey* getConstPrivateKey() const;
++
++private:
++	/** \brief The public key */
++	OSSLSLHDSAPublicKey pubKey;
++
++	/** \brief The private key */
++	OSSLSLHDSAPrivateKey privKey;
++};
++
++#endif // WITH_SLH_DSA
++#endif // !_SOFTHSM_V2_OSSLSLHDSAKEYPAIR_H
+diff --git a/src/lib/crypto/OSSLSLHDSAPrivateKey.cpp b/src/lib/crypto/OSSLSLHDSAPrivateKey.cpp
+new file mode 100644
+index 000000000..ec4f9744c
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSAPrivateKey.cpp
+@@ -0,0 +1,222 @@
++/*****************************************************************************
++ OSSLSLHDSAPrivateKey.cpp
++
++ OpenSSL SLH-DSA private key class
++ *****************************************************************************/
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "log.h"
++#include "OSSLSLHDSAPrivateKey.h"
++#include "SLHDSAParameters.h"
++#include "OSSLUtil.h"
++#include <cstring>
++#include <utility>
++#include <openssl/bn.h>
++#include <openssl/core_names.h>
++#include <openssl/x509.h>
++
++// Constructors
++/** \brief OSSLSLHDSAPrivateKey */
++OSSLSLHDSAPrivateKey::OSSLSLHDSAPrivateKey()
++{
++	pkey = NULL;
++}
++
++/** \brief OSSLSLHDSAPrivateKey */
++OSSLSLHDSAPrivateKey::OSSLSLHDSAPrivateKey(const EVP_PKEY* inSLHDSAKEY)
++{
++	pkey = NULL;
++
++	setFromOSSL(inSLHDSAKEY);
++}
++
++// Destructor
++/** \brief ~OSSLSLHDSAPrivateKey */
++OSSLSLHDSAPrivateKey::~OSSLSLHDSAPrivateKey()
++{
++	if (pkey != NULL)
++	{
++		EVP_PKEY_free(pkey);
++		pkey = NULL;
++	}
++}
++
++/** \brief OSSLSLHDSAPrivateKey */
++OSSLSLHDSAPrivateKey::OSSLSLHDSAPrivateKey(OSSLSLHDSAPrivateKey&& other) noexcept
++	: SLHDSAPrivateKey(std::move(other)), pkey(other.pkey)
++{
++	other.pkey = NULL;
++}
++
++OSSLSLHDSAPrivateKey& OSSLSLHDSAPrivateKey::operator=(OSSLSLHDSAPrivateKey&& other) noexcept
++{
++	if (this != &other)
++	{
++		SLHDSAPrivateKey::operator=(std::move(other));
++		if (pkey) EVP_PKEY_free(pkey);
++		pkey = other.pkey;
++		other.pkey = NULL;
++	}
++	return *this;
++}
++
++// The type
++const char* OSSLSLHDSAPrivateKey::type = "OpenSSL SLH-DSA Private Key";
++
++// Set from OpenSSL representation
++/** \brief setFromOSSL */
++bool OSSLSLHDSAPrivateKey::setFromOSSL(const EVP_PKEY* inSLHDSAKEY)
++{
++	// let's use max priv length
++	uint8_t priv[SLHDSAParameters::SLH_DSA_SHA2_256F_PRIV_LENGTH];
++	size_t priv_len;
++	int rv = EVP_PKEY_get_octet_string_param(inSLHDSAKEY, OSSL_PKEY_PARAM_PRIV_KEY,
++	         priv, sizeof(priv), &priv_len);
++	if(!rv)
++	{
++		ERROR_MSG("Could not get private key, rv: %d", rv);
++		memset(priv, 0, sizeof(priv));
++		return false;
++	}
++
++
++	const char* type_name = EVP_PKEY_get0_type_name(inSLHDSAKEY);
++	unsigned long paramSet = OSSL::name2slhdsaParameterSet(type_name);
++	if (paramSet == 0)
++	{
++		ERROR_MSG("Unsupported SLH-DSA private key type: %s", type_name ? type_name : "unknown");
++		memset(priv, 0, sizeof(priv));
++		return false;
++	}
++
++	// Commit state atomically after successful extraction
++	setValue(ByteString(priv, priv_len));
++	setParameterSet(paramSet);
++	memset(priv, 0, sizeof(priv));
++	return true;
++}
++
++// Check if the key is of the given type
++/** \brief isOfType */
++bool OSSLSLHDSAPrivateKey::isOfType(const char* inType)
++{
++	return !strcmp(type, inType) || SLHDSAPrivateKey::isOfType(inType);
++}
++
++
++/** \brief setValue */
++void OSSLSLHDSAPrivateKey::setValue(const ByteString& inValue)
++{
++	SLHDSAPrivateKey::setValue(inValue);
++	if (pkey != NULL)
++	{
++		EVP_PKEY_free(pkey);
++		pkey = NULL;
++	}
++}
++// Encode into PKCS#8 DER
++/** \brief PKCS8Encode */
++ByteString OSSLSLHDSAPrivateKey::PKCS8Encode()
++{
++	ByteString der;
++	EVP_PKEY* key = getOSSLKey();
++	if (key == NULL) return der;
++	PKCS8_PRIV_KEY_INFO* p8inf = EVP_PKEY2PKCS8(key);
++	if (p8inf == NULL) return der;
++	int len = i2d_PKCS8_PRIV_KEY_INFO(p8inf, NULL);
++	if (len < 0)
++	{
++		PKCS8_PRIV_KEY_INFO_free(p8inf);
++		return der;
++	}
++	der.resize(len);
++	unsigned char* priv = &der[0];
++	int len2 = i2d_PKCS8_PRIV_KEY_INFO(p8inf, &priv);
++	PKCS8_PRIV_KEY_INFO_free(p8inf);
++	if (len2 != len) der.wipe();
++	return der;
++}
++
++// Decode from PKCS#8 BER
++/** \brief PKCS8Decode */
++bool OSSLSLHDSAPrivateKey::PKCS8Decode(const ByteString& ber)
++{
++	int len = ber.size();
++	if (len <= 0) return false;
++	const unsigned char* priv = ber.const_byte_str();
++	PKCS8_PRIV_KEY_INFO* p8 = d2i_PKCS8_PRIV_KEY_INFO(NULL, &priv, len);
++	if (p8 == NULL) return false;
++	EVP_PKEY* localPKey = EVP_PKCS82PKEY(p8);
++	PKCS8_PRIV_KEY_INFO_free(p8);
++	if (localPKey == NULL) return false;
++	const bool ok = setFromOSSL(localPKey);
++	EVP_PKEY_free(localPKey);
++	return ok;
++}
++
++// Retrieve the OpenSSL representation of the key
++/** \brief getOSSLKey */
++EVP_PKEY* OSSLSLHDSAPrivateKey::getOSSLKey()
++{
++	if (pkey == NULL) createOSSLKey();
++
++	return pkey;
++}
++
++// Create the OpenSSL representation of the key
++/** \brief createOSSLKey */
++void OSSLSLHDSAPrivateKey::createOSSLKey()
++{
++	if (pkey != NULL) return;
++
++	ByteString localValue = getValue();
++
++	const char* name = OSSL::slhdsaParameterSet2Name(getParameterSet());
++	if (name == NULL)
++	{
++		ERROR_MSG("Unknown SLH-DSA parameter set (value length: %zu)", localValue.size());
++		return;
++	}
++	if (localValue.size() == 0)
++	{
++		ERROR_MSG("Empty SLH-DSA private key value; cannot create EVP_PKEY");
++		return;
++	}
++
++	int selection = 0;
++	EVP_PKEY_CTX *ctx = NULL;
++	OSSL_PARAM params[3], *p = params;
++
++	*p++ = OSSL_PARAM_construct_octet_string(OSSL_PKEY_PARAM_PRIV_KEY,
++	       localValue.byte_str(), localValue.size());
++	selection = OSSL_KEYMGMT_SELECT_PRIVATE_KEY;
++
++	*p = OSSL_PARAM_construct_end();
++
++	ctx = EVP_PKEY_CTX_new_from_name(NULL, name, NULL);
++	if (ctx == NULL)
++	{
++		ERROR_MSG("Could not create context");
++		return;
++	}
++	int rv = EVP_PKEY_fromdata_init(ctx);
++	if (rv <= 0)
++	{
++		ERROR_MSG("Could not EVP_PKEY_fromdata_init:%d", rv);
++		EVP_PKEY_CTX_free(ctx);
++		return;
++	}
++	rv = EVP_PKEY_fromdata(ctx, &pkey, selection, params);
++	if (rv <= 0)
++	{
++		ERROR_MSG("Could not EVP_PKEY_fromdata:%d", rv);
++		EVP_PKEY_CTX_free(ctx);
++		return;
++	}
++
++	EVP_PKEY_CTX_free(ctx);
++
++}
++
++#endif
+diff --git a/src/lib/crypto/OSSLSLHDSAPrivateKey.h b/src/lib/crypto/OSSLSLHDSAPrivateKey.h
+new file mode 100644
+index 000000000..05473dffe
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSAPrivateKey.h
+@@ -0,0 +1,96 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ OSSLSLHDSAPrivateKey.h
++
++ OpenSSL SLH-DSA private key class
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_OSSLSLHDSAPRIVATEKEY_H
++#define _SOFTHSM_V2_OSSLSLHDSAPRIVATEKEY_H
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "SLHDSAParameters.h"
++#include "SLHDSAPrivateKey.h"
++#include <openssl/evp.h>
++
++class OSSLSLHDSAPrivateKey : public SLHDSAPrivateKey
++{
++public:
++	/** \brief Constructors */
++	OSSLSLHDSAPrivateKey();
++
++	/** \brief Constructor from OpenSSL representation */
++	OSSLSLHDSAPrivateKey(const EVP_PKEY* inSLHDSAKEY);
++
++	/** \brief Destructor */
++	virtual ~OSSLSLHDSAPrivateKey();
++
++	/** \brief Non-copyable (raw ownership of EVP_PKEY) */
++	OSSLSLHDSAPrivateKey(const OSSLSLHDSAPrivateKey&) = delete;
++	/** \brief Non-copyable assignment */
++	OSSLSLHDSAPrivateKey& operator=(const OSSLSLHDSAPrivateKey&) = delete;
++
++	/** \brief Movable */
++	OSSLSLHDSAPrivateKey(OSSLSLHDSAPrivateKey&&) noexcept;
++	/** \brief Movable assignment */
++	OSSLSLHDSAPrivateKey& operator=(OSSLSLHDSAPrivateKey&&) noexcept;
++
++	/** \brief The type */
++	static const char* type;
++
++	/** \brief Check if the key is of the given type */
++	virtual bool isOfType(const char* inType);
++
++	/** \brief Setters for the SLH-DSA private key components */
++	virtual void setValue(const ByteString& value);
++
++	/** \brief Encode into PKCS#8 DER */
++	virtual ByteString PKCS8Encode();
++
++	/** \brief Decode from PKCS#8 BER */
++	virtual bool PKCS8Decode(const ByteString& ber);
++
++	/** \brief Set from OpenSSL representation */
++	virtual bool setFromOSSL(const EVP_PKEY* inSLHDSAKEY);
++
++	/** \brief Retrieve the OpenSSL representation of the key */
++	EVP_PKEY* getOSSLKey();
++
++private:
++	/** \brief The internal OpenSSL representation */
++	EVP_PKEY* pkey;
++
++	/** \brief Create the OpenSSL representation of the key */
++	void createOSSLKey();
++
++};
++
++#endif // WITH_SLH_DSA
++#endif // !_SOFTHSM_V2_OSSLSLHDSAPRIVATEKEY_H
++
+diff --git a/src/lib/crypto/OSSLSLHDSAPublicKey.cpp b/src/lib/crypto/OSSLSLHDSAPublicKey.cpp
+new file mode 100644
+index 000000000..573276d77
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSAPublicKey.cpp
+@@ -0,0 +1,186 @@
++/*****************************************************************************
++ OSSLSLHDSAPublicKey.cpp
++
++ OpenSSL SLH-DSA public key class
++ *****************************************************************************/
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "log.h"
++#include "OSSLSLHDSAPublicKey.h"
++#include "SLHDSAParameters.h"
++#include "OSSLUtil.h"
++#include <openssl/evp.h>
++#include <openssl/core_names.h>
++#include <string.h>
++
++// Constructors
++/** \brief OSSLSLHDSAPublicKey */
++OSSLSLHDSAPublicKey::OSSLSLHDSAPublicKey()
++{
++	pkey = NULL;
++}
++
++/** \brief OSSLSLHDSAPublicKey */
++OSSLSLHDSAPublicKey::OSSLSLHDSAPublicKey(const EVP_PKEY* inEVPPKEY)
++{
++	pkey = NULL;
++
++	setFromOSSL(inEVPPKEY);
++}
++
++// Destructor
++/** \brief ~OSSLSLHDSAPublicKey */
++OSSLSLHDSAPublicKey::~OSSLSLHDSAPublicKey()
++{
++	if (pkey != NULL)
++	{
++		EVP_PKEY_free(pkey);
++		pkey = NULL;
++	}
++}
++
++/** \brief OSSLSLHDSAPublicKey */
++OSSLSLHDSAPublicKey::OSSLSLHDSAPublicKey(OSSLSLHDSAPublicKey&& other) noexcept
++	: SLHDSAPublicKey(std::move(other)), pkey(other.pkey)
++{
++	other.pkey = NULL;
++}
++
++OSSLSLHDSAPublicKey& OSSLSLHDSAPublicKey::operator=(OSSLSLHDSAPublicKey&& other) noexcept
++{
++	if (this != &other)
++	{
++		// move base
++		SLHDSAPublicKey::operator=(std::move(other));
++		// release current
++		if (pkey)
++		{
++			EVP_PKEY_free(pkey);
++		}
++		// steal
++		pkey = other.pkey;
++		other.pkey = NULL;
++	}
++	return *this;
++}
++
++// The type
++/*static*/ const char* OSSLSLHDSAPublicKey::type = "OpenSSL SLH-DSA Public Key";
++
++// Set from OpenSSL representation
++/** \brief setFromOSSL */
++bool OSSLSLHDSAPublicKey::setFromOSSL(const EVP_PKEY* inEVPPKEY)
++{
++	if (inEVPPKEY == NULL)
++	{
++		ERROR_MSG("inEVPPKEY is NULL");
++		return false;
++	}
++
++	// let's use max pub length
++	uint8_t localPub[SLHDSAParameters::SLH_DSA_SHA2_256F_PUB_LENGTH];
++	size_t pub_len;
++	// Note: OpenSSL does not modify the key in this API, but the signature may lack const in some versions.
++	int rv = EVP_PKEY_get_octet_string_param(const_cast<EVP_PKEY*>(inEVPPKEY), OSSL_PKEY_PARAM_PUB_KEY,
++	         localPub, sizeof(localPub), &pub_len);
++
++	if(rv <= 0)
++	{
++		ERROR_MSG("Could not get SLH-DSA public key, rv: %d", rv);
++		return false;
++	}
++
++
++	const char* type_name = EVP_PKEY_get0_type_name(inEVPPKEY);
++	unsigned long paramSet = OSSL::name2slhdsaParameterSet(type_name);
++	if (paramSet == 0)
++	{
++		ERROR_MSG("Unsupported SLH-DSA public key type: %s", type_name ? type_name : "unknown");
++		return false;
++	}
++
++	ByteString pubBS = ByteString(localPub, pub_len);
++	setValue(pubBS);
++	setParameterSet(paramSet);
++
++	return true;
++}
++
++// Check if the key is of the given type
++/** \brief isOfType */
++bool OSSLSLHDSAPublicKey::isOfType(const char* inType)
++{
++	return !strcmp(OSSLSLHDSAPublicKey::type, inType) || SLHDSAPublicKey::isOfType(inType);
++}
++
++/** \brief setValue */
++void OSSLSLHDSAPublicKey::setValue(const ByteString& inValue)
++{
++	SLHDSAPublicKey::setValue(inValue);
++	if (pkey)
++	{
++		EVP_PKEY_free(pkey);
++		pkey = NULL;
++	}
++}
++
++// Retrieve the OpenSSL representation of the key
++/** \brief getOSSLKey */
++EVP_PKEY* OSSLSLHDSAPublicKey::getOSSLKey()
++{
++	if (pkey == NULL) createOSSLKey();
++
++	return pkey;
++}
++
++// Create the OpenSSL representation of the key
++/** \brief createOSSLKey */
++void OSSLSLHDSAPublicKey::createOSSLKey()
++{
++	if (pkey != NULL) return;
++
++	ByteString localValue = getValue();
++
++	const char* name = OSSL::slhdsaParameterSet2Name(getParameterSet());
++	if (name == NULL)
++	{
++		ERROR_MSG("Unknown SLH-DSA parameter set (%lu)", getParameterSet());
++		return;
++	}
++
++	int selection = 0;
++	EVP_PKEY_CTX *ctx = NULL;
++	OSSL_PARAM params[3], *p = params;
++
++	*p++ = OSSL_PARAM_construct_octet_string(OSSL_PKEY_PARAM_PUB_KEY,
++	       localValue.byte_str(), localValue.size());
++	selection = OSSL_KEYMGMT_SELECT_PUBLIC_KEY;
++
++	*p = OSSL_PARAM_construct_end();
++
++	ctx = EVP_PKEY_CTX_new_from_name(NULL, name, NULL);
++	if (ctx == NULL)
++	{
++		ERROR_MSG("Could not create context");
++		return;
++	}
++	int rv = EVP_PKEY_fromdata_init(ctx);
++	if (rv <= 0)
++	{
++		ERROR_MSG("Could not EVP_PKEY_fromdata_init:%d", rv);
++		EVP_PKEY_CTX_free(ctx);
++		return;
++	}
++	rv = EVP_PKEY_fromdata(ctx, &pkey, selection, params);
++	if (rv <= 0)
++	{
++		ERROR_MSG("Could not EVP_PKEY_fromdata:%d", rv);
++		EVP_PKEY_CTX_free(ctx);
++		return;
++	}
++
++	EVP_PKEY_CTX_free(ctx);
++
++}
++#endif
+diff --git a/src/lib/crypto/OSSLSLHDSAPublicKey.h b/src/lib/crypto/OSSLSLHDSAPublicKey.h
+new file mode 100644
+index 000000000..b08b77f22
+--- /dev/null
++++ b/src/lib/crypto/OSSLSLHDSAPublicKey.h
+@@ -0,0 +1,89 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ OSSLSLHDSAPublicKey.h
++
++ OpenSSL SLH-DSA public key class
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_OSSLSLHDSAPUBLICKEY_H
++#define _SOFTHSM_V2_OSSLSLHDSAPUBLICKEY_H
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "SLHDSAParameters.h"
++#include "SLHDSAPublicKey.h"
++#include <openssl/evp.h>
++
++class OSSLSLHDSAPublicKey : public SLHDSAPublicKey
++{
++public:
++	/** \brief Constructors */
++	OSSLSLHDSAPublicKey();
++
++	/** \brief Constructor from OpenSSL representation */
++	OSSLSLHDSAPublicKey(const EVP_PKEY* inSLHDSAKEY);
++
++	/** \brief Destructor */
++	virtual ~OSSLSLHDSAPublicKey();
++
++	/** \brief Non-copyable (raw ownership of EVP_PKEY) */
++	OSSLSLHDSAPublicKey(const OSSLSLHDSAPublicKey&) = delete;
++	/** \brief Non-copyable assignment */
++	OSSLSLHDSAPublicKey& operator=(const OSSLSLHDSAPublicKey&) = delete;
++
++	/** \brief Movable */
++	OSSLSLHDSAPublicKey(OSSLSLHDSAPublicKey&&) noexcept;
++	/** \brief Movable assignment */
++	OSSLSLHDSAPublicKey& operator=(OSSLSLHDSAPublicKey&&) noexcept;
++
++	/** \brief The type */
++	static const char* type;
++
++	/** \brief Check if the key is of the given type */
++	virtual bool isOfType(const char* inType);
++
++	/** \brief Setters for the SLH-DSA public key components */
++	virtual void setValue(const ByteString& value);
++
++	/** \brief Set from OpenSSL representation */
++	virtual bool setFromOSSL(const EVP_PKEY* inSLHDSAKEY);
++
++	/** \brief Retrieve the OpenSSL representation of the key */
++	EVP_PKEY* getOSSLKey();
++
++private:
++	/** \brief The internal OpenSSL representation */
++	EVP_PKEY* pkey;
++
++	/** \brief Create the OpenSSL representation of the key */
++	void createOSSLKey();
++};
++
++#endif // WITH_SLH_DSA
++#endif // !_SOFTHSM_V2_OSSLSLHDSAPUBLICKEY_H
++
+diff --git a/src/lib/crypto/OSSLUtil.cpp b/src/lib/crypto/OSSLUtil.cpp
+index 8293624d4..e8b888b73 100644
+--- a/src/lib/crypto/OSSLUtil.cpp
++++ b/src/lib/crypto/OSSLUtil.cpp
+@@ -36,12 +36,35 @@
+ #include "OSSLUtil.h"
+ #ifdef WITH_ML_DSA
+ #include "MLDSAParameters.h"
++#endif
++#ifdef WITH_SLH_DSA
++#include "SLHDSAParameters.h"
++#endif
++#if defined(WITH_ML_DSA) || defined(WITH_SLH_DSA)
+ #include <map>
+ #endif
++
+ #include <openssl/asn1.h>
+ #include <openssl/evp.h>
+ #include <openssl/err.h>
+ 
++
++#ifdef WITH_SLH_DSA
++static const std::map<unsigned long, const char*> slhdsaAlgNameFromParameterSet {
++	{SLHDSAParameters::SLH_DSA_SHA2_128S_PARAMETER_SET, "SLH-DSA-SHA2-128s"},
++	{SLHDSAParameters::SLH_DSA_SHAKE_128S_PARAMETER_SET, "SLH-DSA-SHAKE-128s"},
++	{SLHDSAParameters::SLH_DSA_SHA2_128F_PARAMETER_SET, "SLH-DSA-SHA2-128f"},
++	{SLHDSAParameters::SLH_DSA_SHAKE_128F_PARAMETER_SET, "SLH-DSA-SHAKE-128f"},
++	{SLHDSAParameters::SLH_DSA_SHA2_192S_PARAMETER_SET, "SLH-DSA-SHA2-192s"},
++	{SLHDSAParameters::SLH_DSA_SHAKE_192S_PARAMETER_SET, "SLH-DSA-SHAKE-192s"},
++	{SLHDSAParameters::SLH_DSA_SHA2_192F_PARAMETER_SET, "SLH-DSA-SHA2-192f"},
++	{SLHDSAParameters::SLH_DSA_SHAKE_192F_PARAMETER_SET, "SLH-DSA-SHAKE-192f"},
++	{SLHDSAParameters::SLH_DSA_SHA2_256S_PARAMETER_SET, "SLH-DSA-SHA2-256s"},
++	{SLHDSAParameters::SLH_DSA_SHAKE_256S_PARAMETER_SET, "SLH-DSA-SHAKE-256s"},
++	{SLHDSAParameters::SLH_DSA_SHA2_256F_PARAMETER_SET, "SLH-DSA-SHA2-256f"},
++	{SLHDSAParameters::SLH_DSA_SHAKE_256F_PARAMETER_SET, "SLH-DSA-SHAKE-256f"},
++};
++#endif
+ #ifdef WITH_ML_DSA
+ static const std::map<unsigned long, const char*> mldsaAlgNameFromParameterSet {
+ 	{MLDSAParameters::ML_DSA_44_PARAMETER_SET, "ML-DSA-44"},
+@@ -251,3 +274,21 @@ const char* OSSL::mldsaParameterSet2Name(unsigned long parameterSet) {
+ 	return NULL;
+ }
+ #endif
++
++#ifdef WITH_SLH_DSA
++const char* OSSL::slhdsaParameterSet2Name(unsigned long parameterSet) {
++	std::map<unsigned long, const char*>::const_iterator it = slhdsaAlgNameFromParameterSet.find(parameterSet);
++	if (it != slhdsaAlgNameFromParameterSet.end()) {
++		return it->second;
++	}
++	return NULL;
++}
++
++unsigned long OSSL::name2slhdsaParameterSet(const char* name) {
++	if (!name) return 0;
++	for (std::map<unsigned long, const char*>::const_iterator it = slhdsaAlgNameFromParameterSet.begin(); it != slhdsaAlgNameFromParameterSet.end(); ++it) {
++		if (strcmp(it->second, name) == 0) return it->first;
++	}
++	return 0;
++}
++#endif
+diff --git a/src/lib/crypto/OSSLUtil.h b/src/lib/crypto/OSSLUtil.h
+index 5f41e9fde..0d21f4c78 100644
+--- a/src/lib/crypto/OSSLUtil.h
++++ b/src/lib/crypto/OSSLUtil.h
+@@ -76,6 +76,10 @@ namespace OSSL
+ #ifdef WITH_ML_DSA
+ 	const char* mldsaParameterSet2Name(unsigned long parameterSet);
+ #endif
++#ifdef WITH_SLH_DSA
++const char* slhdsaParameterSet2Name(unsigned long parameterSet);
++unsigned long name2slhdsaParameterSet(const char* name);
++#endif
+ }
+ 
+ #endif // !_SOFTHSM_V2_OSSLUTIL_H
+diff --git a/src/lib/crypto/SLHDSAMechanismParam.cpp b/src/lib/crypto/SLHDSAMechanismParam.cpp
+new file mode 100644
+index 000000000..b2db86365
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAMechanismParam.cpp
+@@ -0,0 +1,47 @@
++/*****************************************************************************
++ SLHDSAMechanismParam.cpp
++
++ SLH-DSA mechanism parameters used for signing/verifying operations
++ *****************************************************************************/
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "ByteString.h"
++#include "MechanismParam.h"
++#include "SLHDSAMechanismParam.h"
++
++/** \brief SLHDSAMechanismParam */
++SLHDSAMechanismParam::SLHDSAMechanismParam()
++{
++	this->hedgeType = Hedge::HEDGE_PREFERRED;
++}
++
++/** \brief SLHDSAMechanismParam */
++SLHDSAMechanismParam::SLHDSAMechanismParam(Hedge::Type hedgeType)
++{
++	this->hedgeType = hedgeType;
++}
++
++/** \brief SLHDSAMechanismParam */
++SLHDSAMechanismParam::SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& additionalContext)
++{
++	this->hedgeType = hedgeType;
++	this->additionalContext = additionalContext;
++}
++
++// Set the type
++/*static*/ const char* SLHDSAMechanismParam::type = "SLH-DSA Signature param";
++
++/** \brief clone */
++SLHDSAMechanismParam* SLHDSAMechanismParam::clone() const
++{
++	return new SLHDSAMechanismParam(static_cast<const SLHDSAMechanismParam&>(*this)); // call the copy ctor.
++}
++
++// Check if the parameter is of the given type
++/** \brief isOfType */
++bool SLHDSAMechanismParam::isOfType(const char* inType) const
++{
++	return !strcmp(type, inType);
++}
++#endif
+\ No newline at end of file
+diff --git a/src/lib/crypto/SLHDSAMechanismParam.h b/src/lib/crypto/SLHDSAMechanismParam.h
+new file mode 100644
+index 000000000..4277b9ff7
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAMechanismParam.h
+@@ -0,0 +1,72 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ SLHDSAMechanismParam.h
++
++ SLH-DSA mechanism parameters used for signing/verifying operations
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_SLHDSAMECHANISMPARAM_H
++#define _SOFTHSM_V2_SLHDSAMECHANISMPARAM_H
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "ByteString.h"
++#include "MechanismParam.h"
++
++
++class SLHDSAMechanismParam : public MechanismParam
++{
++public:
++
++	/** \brief The Hedge Type */
++	Hedge::Type hedgeType;
++	/** \brief Additional Context */
++	ByteString additionalContext;
++
++	/** \brief The type */
++	static const char* type;
++
++	/** \brief Default constructor */
++	SLHDSAMechanismParam();
++
++	/** \brief Constructor with Hedge Type */
++	SLHDSAMechanismParam(Hedge::Type hedgeType);
++
++	/** \brief Constructor with Hedge Type and Additional Context */
++	SLHDSAMechanismParam(Hedge::Type hedgeType, const ByteString& additionalContext);
++
++	/** \brief Clone */
++	virtual SLHDSAMechanismParam* clone() const override;
++
++	/** \brief Check if the mechanism param is of the given type */
++	virtual bool isOfType(const char* inType) const;
++};
++
++#endif // WITH_SLH_DSA
++#endif // !_SOFTHSM_V2_SLHDSAMECHANISMPARAM_H
++
+diff --git a/src/lib/crypto/SLHDSAParameters.cpp b/src/lib/crypto/SLHDSAParameters.cpp
+new file mode 100644
+index 000000000..b7165beaf
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAParameters.cpp
+@@ -0,0 +1,79 @@
++/*****************************************************************************
++ SLHDSAParameters.cpp
++
++ SLH-DSA parameters (only used for key generation)
++ *****************************************************************************/
++
++#include "config.h"
++#include "log.h"
++#include "SLHDSAParameters.h"
++#include <string.h>
++
++// The type
++/*static*/ const char* SLHDSAParameters::type = "SLH-DSA parameters";
++
++// Constructor
++/** \brief SLHDSAParameters */
++SLHDSAParameters::SLHDSAParameters()
++{
++	parameterSet = 0;
++}
++
++// Set the parameter set
++/** \brief setParameterSet */
++void SLHDSAParameters::setParameterSet(const unsigned long inParameterSet)
++{
++	parameterSet = inParameterSet;
++}
++
++// Get the parameter set
++/** \brief getParameterSet */
++unsigned long SLHDSAParameters::getParameterSet() const
++{
++	return parameterSet;
++}
++
++// Are the parameters of the given type?
++/** \brief areOfType */
++bool SLHDSAParameters::areOfType(const char* inType)
++{
++	return (strcmp(type, inType) == 0);
++}
++
++// Serialisation
++/** \brief serialise */
++ByteString SLHDSAParameters::serialise() const
++{
++	return ByteString(getParameterSet());
++}
++
++/** \brief deserialise */
++bool SLHDSAParameters::deserialise(ByteString& serialised)
++{
++	if (serialised.size() != 8)
++	{
++		return false;
++	}
++
++	unsigned long parameter = serialised.long_val();
++	if (parameter != SLH_DSA_SHA2_128S_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHAKE_128S_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHA2_128F_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHAKE_128F_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHA2_192S_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHAKE_192S_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHA2_192F_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHAKE_192F_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHA2_256S_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHAKE_256S_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHA2_256F_PARAMETER_SET &&
++	        parameter != SLH_DSA_SHAKE_256F_PARAMETER_SET)
++	{
++		return false;
++	}
++
++	setParameterSet(parameter);
++
++	return true;
++}
++
+diff --git a/src/lib/crypto/SLHDSAParameters.h b/src/lib/crypto/SLHDSAParameters.h
+new file mode 100644
+index 000000000..5a187d114
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAParameters.h
+@@ -0,0 +1,148 @@
++/*****************************************************************************
++ SLHDSAParameters.h
++
++ SLH-DSA parameters (only used for key generation)
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_SLHDSAPARAMETERS_H
++#define _SOFTHSM_V2_SLHDSAPARAMETERS_H
++
++#include "config.h"
++#include "ByteString.h"
++#include "AsymmetricParameters.h"
++
++
++class SLHDSAParameters : public AsymmetricParameters
++{
++public:
++	/** \brief Constructor */
++	SLHDSAParameters();
++
++	/** \brief The type */
++	static const char* type;
++
++	/** \brief Get the SLH-DSA parameter set */
++	virtual unsigned long getParameterSet() const;
++
++	/** \brief Setters for the SLH-DSA parameter set */
++	virtual void setParameterSet(const unsigned long parameterSet);
++
++	/** \brief Are the parameters of the given type? */
++	virtual bool areOfType(const char* inType);
++
++	/** \brief Serialisation */
++	virtual ByteString serialise() const;
++	virtual bool deserialise(ByteString& serialised);
++
++
++	/* SLH-DSA values for CKA_PARAMETER_SETS */
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128S_PARAMETER_SET = CKP_SLH_DSA_SHA2_128S;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128S_PARAMETER_SET = CKP_SLH_DSA_SHAKE_128S;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128F_PARAMETER_SET = CKP_SLH_DSA_SHA2_128F;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128F_PARAMETER_SET = CKP_SLH_DSA_SHAKE_128F;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192S_PARAMETER_SET = CKP_SLH_DSA_SHA2_192S;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192S_PARAMETER_SET = CKP_SLH_DSA_SHAKE_192S;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192F_PARAMETER_SET = CKP_SLH_DSA_SHA2_192F;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192F_PARAMETER_SET = CKP_SLH_DSA_SHAKE_192F;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256S_PARAMETER_SET = CKP_SLH_DSA_SHA2_256S;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256S_PARAMETER_SET = CKP_SLH_DSA_SHAKE_256S;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256F_PARAMETER_SET = CKP_SLH_DSA_SHA2_256F;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256F_PARAMETER_SET = CKP_SLH_DSA_SHAKE_256F;
++
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128S_PRIV_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128S_PRIV_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128F_PRIV_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128F_PRIV_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192S_PRIV_LENGTH = 96;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192S_PRIV_LENGTH = 96;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192F_PRIV_LENGTH = 96;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192F_PRIV_LENGTH = 96;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256S_PRIV_LENGTH = 128;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256S_PRIV_LENGTH = 128;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256F_PRIV_LENGTH = 128;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256F_PRIV_LENGTH = 128;
++
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128S_PUB_LENGTH = 32;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128S_PUB_LENGTH = 32;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128F_PUB_LENGTH = 32;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128F_PUB_LENGTH = 32;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192S_PUB_LENGTH = 48;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192S_PUB_LENGTH = 48;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192F_PUB_LENGTH = 48;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192F_PUB_LENGTH = 48;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256S_PUB_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256S_PUB_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256F_PUB_LENGTH = 64;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256F_PUB_LENGTH = 64;
++
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128S_SIGNATURE_LENGTH = 7856;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128S_SIGNATURE_LENGTH = 7856;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_128F_SIGNATURE_LENGTH = 17088;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_128F_SIGNATURE_LENGTH = 17088;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192S_SIGNATURE_LENGTH = 16224;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192S_SIGNATURE_LENGTH = 16224;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_192F_SIGNATURE_LENGTH = 35664;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_192F_SIGNATURE_LENGTH = 35664;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256S_SIGNATURE_LENGTH = 29792;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256S_SIGNATURE_LENGTH = 29792;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHA2_256F_SIGNATURE_LENGTH = 49856;
++	/** \brief SLH-DSA constant */
++	static const unsigned long SLH_DSA_SHAKE_256F_SIGNATURE_LENGTH = 49856;
++
++
++
++private:
++	/** \brief The parameter set */
++	unsigned long parameterSet;
++
++};
++
++#endif // !_SOFTHSM_V2_SLHDSAPARAMETERS_H
++
+diff --git a/src/lib/crypto/SLHDSAPrivateKey.cpp b/src/lib/crypto/SLHDSAPrivateKey.cpp
+new file mode 100644
+index 000000000..e8b91f22a
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAPrivateKey.cpp
+@@ -0,0 +1,124 @@
++/*****************************************************************************
++ SLHDSAPrivateKey.cpp
++
++ SLH-DSA private key class
++ *****************************************************************************/
++
++#include "config.h"
++#include "log.h"
++#include "SLHDSAParameters.h"
++#include "SLHDSAPrivateKey.h"
++#include <string.h>
++
++// Set the type
++/*static*/ const char* SLHDSAPrivateKey::type = "Abstract SLH-DSA private key";
++
++// Constructor
++/** \brief SLHDSAPrivateKey */
++SLHDSAPrivateKey::SLHDSAPrivateKey()
++{
++	parameterSet = 0;
++}
++
++// Check if the key is of the given type
++/** \brief isOfType */
++bool SLHDSAPrivateKey::isOfType(const char* inType)
++{
++	if (inType == NULL)
++	{
++		return false;
++	}
++	return !strcmp(type, inType);
++}
++
++/** \brief getBitLength */
++unsigned long SLHDSAPrivateKey::getBitLength() const
++{
++	return getValue().bits();
++}
++
++// Get the parameter set
++/** \brief getParameterSet */
++unsigned long SLHDSAPrivateKey::getParameterSet() const
++{
++	return parameterSet;
++}
++
++// Get the signatureLength length
++/** \brief getOutputLength */
++unsigned long SLHDSAPrivateKey::getOutputLength() const
++{
++	switch(parameterSet)
++{
++case SLHDSAParameters::SLH_DSA_SHA2_128S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_128S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_128S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_128S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_128F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_128F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_128F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_128F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_192S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_192S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_192S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_192S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_192F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_192F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_192F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_192F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_256S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_256S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_256S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_256S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_256F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_256F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_256F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_256F_SIGNATURE_LENGTH;
++}
++return 0UL;
++}
++
++/** \brief setValue */
++void SLHDSAPrivateKey::setValue(const ByteString& inValue)
++{
++	value = inValue;
++}
++
++/** \brief getValue */
++const ByteString& SLHDSAPrivateKey::getValue() const
++{
++	return value;
++}
++
++/** \brief serialise */
++ByteString SLHDSAPrivateKey::serialise() const
++{
++	return value.serialise() + ByteString((const unsigned char*)&parameterSet, sizeof(unsigned long)).serialise();
++}
++
++/** \brief deserialise */
++bool SLHDSAPrivateKey::deserialise(ByteString& serialised)
++{
++	ByteString deserializedValue = ByteString::chainDeserialise(serialised);
++	ByteString deserializedParam = ByteString::chainDeserialise(serialised);
++
++	if (deserializedValue.size() == 0 || deserializedParam.size() != sizeof(unsigned long))
++	{
++		return false;
++	}
++
++	unsigned long paramSet = 0;
++	memcpy(&paramSet, deserializedParam.const_byte_str(), sizeof(unsigned long));
++
++	setValue(deserializedValue);
++	setParameterSet(paramSet);
++
++	return true;
++}
++
++
++/** \brief setParameterSet */
++void SLHDSAPrivateKey::setParameterSet(unsigned long inParameterSet)
++{
++	parameterSet = inParameterSet;
++}
+diff --git a/src/lib/crypto/SLHDSAPrivateKey.h b/src/lib/crypto/SLHDSAPrivateKey.h
+new file mode 100644
+index 000000000..001908bc2
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAPrivateKey.h
+@@ -0,0 +1,80 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ SLHDSAPrivateKey.h
++
++ SLH-DSA private key class
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_SLHDSAPRIVATEKEY_H
++#define _SOFTHSM_V2_SLHDSAPRIVATEKEY_H
++
++#include "config.h"
++#include "PrivateKey.h"
++
++class SLHDSAPrivateKey : public PrivateKey
++{
++public:
++	/** \brief The type */
++	static const char* type;
++
++	/** \brief Constructor */
++	SLHDSAPrivateKey();
++
++	/** \brief Check if the key is of the given type */
++	virtual bool isOfType(const char* inType);
++
++	/** \brief Get the SLH-DSA parameter set */
++	virtual unsigned long getParameterSet() const;
++
++	/** \brief Get the signature length */
++	virtual unsigned long getOutputLength() const;
++
++	/** \brief Get the bit length */
++	virtual unsigned long getBitLength() const;
++
++	/** \brief Setters for the SLH-DSA private key components */
++	virtual void setValue(const ByteString& value);
++	virtual void setParameterSet(unsigned long inParameterSet);
++
++	/** \brief Getters for the SLH-DSA private key components */
++	virtual const ByteString& getValue() const;
++
++	/** \brief Serialisation */
++	virtual ByteString serialise() const;
++	virtual bool deserialise(ByteString& serialised);
++
++protected:
++
++	/** \brief Private key value */
++	ByteString value;
++	/** \brief Parameter set */
++	unsigned long parameterSet;
++};
++
++#endif // !_SOFTHSM_V2_SLHDSAPRIVATEKEY_H
++
+diff --git a/src/lib/crypto/SLHDSAPublicKey.cpp b/src/lib/crypto/SLHDSAPublicKey.cpp
+new file mode 100644
+index 000000000..3ca0df302
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAPublicKey.cpp
+@@ -0,0 +1,130 @@
++/*****************************************************************************
++ SLHDSAPublicKey.cpp
++
++ SLH-DSA public key class
++ *****************************************************************************/
++
++#include "config.h"
++#include "log.h"
++#include "SLHDSAParameters.h"
++#include "SLHDSAPublicKey.h"
++#include <string.h>
++
++// Set the type
++/*static*/ const char* SLHDSAPublicKey::type = "Abstract SLH-DSA public key";
++
++// Constructor
++/** \brief SLHDSAPublicKey */
++SLHDSAPublicKey::SLHDSAPublicKey()
++{
++	parameterSet = 0;
++}
++
++// Check if the key is of the given type
++/** \brief isOfType */
++bool SLHDSAPublicKey::isOfType(const char* inType)
++{
++	if (inType == NULL)
++	{
++		return false;
++	}
++	return !strcmp(type, inType);
++}
++
++/** \brief getBitLength */
++unsigned long SLHDSAPublicKey::getBitLength() const
++{
++	return getValue().bits();
++}
++
++// Get the parameter set length
++/** \brief getParameterSet */
++unsigned long SLHDSAPublicKey::getParameterSet() const
++{
++	return parameterSet;
++}
++
++// Get the signature length
++/** \brief getOutputLength */
++unsigned long SLHDSAPublicKey::getOutputLength() const
++{
++	switch(parameterSet)
++{
++case SLHDSAParameters::SLH_DSA_SHA2_128S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_128S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_128S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_128S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_128F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_128F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_128F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_128F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_192S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_192S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_192S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_192S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_192F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_192F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_192F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_192F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_256S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_256S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_256S_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_256S_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHA2_256F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHA2_256F_SIGNATURE_LENGTH;
++case SLHDSAParameters::SLH_DSA_SHAKE_256F_PARAMETER_SET:
++	return SLHDSAParameters::SLH_DSA_SHAKE_256F_SIGNATURE_LENGTH;
++}
++return 0UL;
++}
++
++/** \brief getValue */
++const ByteString& SLHDSAPublicKey::getValue() const
++{
++	return value;
++}
++
++/** \brief setValue */
++void SLHDSAPublicKey::setValue(const ByteString& inValue)
++{
++	value = inValue;
++}
++
++/** \brief serialise */
++ByteString SLHDSAPublicKey::serialise() const
++{
++	return value.serialise() + ByteString((const unsigned char*)&parameterSet, sizeof(unsigned long)).serialise();
++}
++
++/** \brief deserialise */
++bool SLHDSAPublicKey::deserialise(ByteString& serialised)
++{
++	ByteString deserializedValue = ByteString::chainDeserialise(serialised);
++	ByteString deserializedParam = ByteString::chainDeserialise(serialised);
++
++	if (deserializedValue.size() == 0)
++	{
++		return false;
++	}
++
++	unsigned long paramSet = 0;
++	if (deserializedParam.size() == sizeof(unsigned long))
++	{
++		memcpy(&paramSet, deserializedParam.const_byte_str(), sizeof(unsigned long));
++	}
++	else if (deserializedParam.size() != 0)
++	{
++		return false;
++	}
++
++	setValue(deserializedValue);
++	setParameterSet(paramSet);
++
++	return true;
++}
++
++/** \brief setParameterSet */
++void SLHDSAPublicKey::setParameterSet(unsigned long inParameterSet)
++{
++	parameterSet = inParameterSet;
++}
+diff --git a/src/lib/crypto/SLHDSAPublicKey.h b/src/lib/crypto/SLHDSAPublicKey.h
+new file mode 100644
+index 000000000..e95b5f3f3
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAPublicKey.h
+@@ -0,0 +1,82 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ SLHDSAPublicKey.h
++
++ SLH-DSA public key class
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_SLHDSAPUBLICKEY_H
++#define _SOFTHSM_V2_SLHDSAPUBLICKEY_H
++
++#include "config.h"
++#include "PublicKey.h"
++#include "ByteString.h"
++
++class SLHDSAPublicKey : public PublicKey
++{
++public:
++	/** \brief The type */
++	static const char* type;
++
++	/** \brief Constructor */
++	SLHDSAPublicKey();
++
++	/** \brief Check if the key is of the given type */
++	virtual bool isOfType(const char* inType);
++
++	/** \brief Get the parameter set */
++	virtual unsigned long getParameterSet() const;
++
++	/** \brief Get the signature length */
++	virtual unsigned long getOutputLength() const;
++
++	/** \brief Get the bit length */
++	virtual unsigned long getBitLength() const;
++
++	/** \brief Setters for the SLH-DSA public key components */
++	virtual void setValue(const ByteString& value);
++	virtual void setParameterSet(unsigned long inParameterSet);
++
++	/** \brief Getters for the SLH-DSA public key components */
++	virtual const ByteString& getValue() const;
++
++	/** \brief Serialisation */
++	virtual ByteString serialise() const;
++	virtual bool deserialise(ByteString& serialised);
++
++protected:
++
++	/** \brief Public components */
++	ByteString value;
++	/** \brief Parameter set */
++	unsigned long parameterSet;
++
++};
++
++#endif // !_SOFTHSM_V2_SLHDSAPUBLICKEY_H
++
+diff --git a/src/lib/crypto/SLHDSAUtil.cpp b/src/lib/crypto/SLHDSAUtil.cpp
+new file mode 100644
+index 000000000..d33ac5619
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAUtil.cpp
+@@ -0,0 +1,169 @@
++/*****************************************************************************
++ SLHDSAUtil.cpp
++
++ SLH-DSA convenience functions
++ *****************************************************************************/
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "SLHDSAUtil.h"
++#include "SLHDSAMechanismParam.h"
++
++/** \brief getSLHDSAPrivateKey */
++/*static*/ CK_RV SLHDSAUtil::getSLHDSAPrivateKey(SLHDSAPrivateKey* privateKey, Token* token, OSObject* key)
++{
++	if (privateKey == NULL) return CKR_ARGUMENTS_BAD;
++	if (token == NULL) return CKR_ARGUMENTS_BAD;
++	if (key == NULL) return CKR_ARGUMENTS_BAD;
++
++	// Get the CKA_PRIVATE attribute, when the attribute is not present use default false
++	bool isKeyPrivate = key->getBooleanValue(CKA_PRIVATE, false);
++
++	// SLH-DSA Private Key Attributes
++	ByteString value;
++	if (isKeyPrivate)
++	{
++		bool bOK = true;
++		bOK = bOK && token->decrypt(key->getByteStringValue(CKA_VALUE), value);
++		if (!bOK)
++			return CKR_GENERAL_ERROR;
++	}
++	else
++	{
++		value = key->getByteStringValue(CKA_VALUE);
++	}
++
++	if (key->attributeExists(CKA_PARAMETER_SET))
++	{
++		unsigned long parameterSet = key->getUnsignedLongValue(CKA_PARAMETER_SET, 0);
++		privateKey->setParameterSet(parameterSet);
++	}
++	privateKey->setValue(value);
++
++	return CKR_OK;
++}
++
++/** \brief getSLHDSAPublicKey */
++/*static*/ CK_RV SLHDSAUtil::getSLHDSAPublicKey(SLHDSAPublicKey* publicKey, Token* token, OSObject* key)
++{
++	if (publicKey == NULL) return CKR_ARGUMENTS_BAD;
++	if (token == NULL) return CKR_ARGUMENTS_BAD;
++	if (key == NULL) return CKR_ARGUMENTS_BAD;
++
++	// Get the CKA_PRIVATE attribute, when the attribute is not present use default false
++	bool isKeyPrivate = key->getBooleanValue(CKA_PRIVATE, false);
++
++	// SLH-DSA Public Key Attributes
++	ByteString value;
++	if (isKeyPrivate)
++	{
++		bool bOK = true;
++		bOK = bOK && token->decrypt(key->getByteStringValue(CKA_VALUE), value);
++		if (!bOK)
++			return CKR_GENERAL_ERROR;
++	}
++	else
++	{
++		value = key->getByteStringValue(CKA_VALUE);
++	}
++
++	if (key->attributeExists(CKA_PARAMETER_SET))
++	{
++		unsigned long parameterSet = key->getUnsignedLongValue(CKA_PARAMETER_SET, 0);
++		publicKey->setParameterSet(parameterSet);
++	}
++	publicKey->setValue(value);
++
++	return CKR_OK;
++}
++
++/** \brief setSLHDSAPrivateKey */
++/*static*/ CK_RV SLHDSAUtil::setSLHDSAPrivateKey(OSObject* key, const ByteString &ber, Token* token, bool isPrivate)
++{
++	if (key == NULL)
++	{
++		return CKR_ARGUMENTS_BAD;
++	}
++
++	AsymmetricAlgorithm* slhdsa = CryptoFactory::i()->getAsymmetricAlgorithm(AsymAlgo::SLHDSA);
++	if (slhdsa == NULL)
++	{
++		return CKR_GENERAL_ERROR;
++	}
++	PrivateKey* priv = slhdsa->newPrivateKey();
++	if (priv == NULL)
++	{
++		CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++		return CKR_HOST_MEMORY;
++	}
++	if (!priv->PKCS8Decode(ber))
++	{
++		slhdsa->recyclePrivateKey(priv);
++		CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++		return CKR_ATTRIBUTE_VALUE_INVALID;
++	}
++	// SLH-DSA Private Key Attributes
++	ByteString value;
++	if (isPrivate)
++	{
++		if (token == NULL)
++		{
++			slhdsa->recyclePrivateKey(priv);
++			CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++			return CKR_ARGUMENTS_BAD;
++		}
++		if (!token->encrypt(((SLHDSAPrivateKey*)priv)->getValue(), value))
++		{
++			slhdsa->recyclePrivateKey(priv);
++			CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++			return CKR_GENERAL_ERROR;
++		}
++	}
++	else
++	{
++		value = ((SLHDSAPrivateKey*)priv)->getValue();
++	}
++	bool bOK = true;
++	bOK = bOK && key->setAttribute(CKA_PARAMETER_SET, ((SLHDSAPrivateKey*)priv)->getParameterSet());
++	bOK = bOK && key->setAttribute(CKA_VALUE, value);
++
++	slhdsa->recyclePrivateKey(priv);
++	CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++
++	return bOK ? CKR_OK : CKR_GENERAL_ERROR;
++}
++
++/** \brief setHedge */
++/*static*/ CK_RV SLHDSAUtil::setHedge(CK_HEDGE_TYPE inHedgeType, Hedge::Type* outHedgeType)
++{
++
++	if (outHedgeType == NULL)
++	{
++		ERROR_MSG("Invalid parameters, outHedgeType is NULL");
++		return CKR_ARGUMENTS_BAD;
++	}
++
++	Hedge::Type hedgeType = Hedge::HEDGE_PREFERRED;
++
++	switch (inHedgeType)
++	{
++	case CKH_HEDGE_REQUIRED:
++		hedgeType = Hedge::HEDGE_REQUIRED;
++		break;
++	case CKH_DETERMINISTIC_REQUIRED:
++		hedgeType = Hedge::DETERMINISTIC_REQUIRED;
++		break;
++	case CKH_HEDGE_PREFERRED:
++		// Per PKCS11v3.2 section 6.67.5
++		// "If no parameter is supplied the hedgeVariant will be CKH_HEDGE_PREFERRED"
++		hedgeType = Hedge::HEDGE_PREFERRED;
++		break;
++	default:
++		ERROR_MSG("SLH-DSA: Invalid parameters, unknown hedgeVariant");
++		return CKR_ARGUMENTS_BAD;
++	}
++	*outHedgeType = hedgeType;
++	return CKR_OK;
++}
++
++#endif
+\ No newline at end of file
+diff --git a/src/lib/crypto/SLHDSAUtil.h b/src/lib/crypto/SLHDSAUtil.h
+new file mode 100644
+index 000000000..263b5054f
+--- /dev/null
++++ b/src/lib/crypto/SLHDSAUtil.h
+@@ -0,0 +1,66 @@
++/*
++ * Copyright (c) 2010 SURFnet bv
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
++ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
++ * GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
++ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
++ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
++ * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*****************************************************************************
++ SLHDSAUtil.h
++
++ SLH-DSA convenience functions
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_SLHDSAUTIL_H
++#define _SOFTHSM_V2_SLHDSAUTIL_H
++
++#include "config.h"
++#ifdef WITH_SLH_DSA
++#include "SLHDSAPrivateKey.h"
++#include "SLHDSAPublicKey.h"
++#include "SLHDSAParameters.h"
++#include "SLHDSAMechanismParam.h"
++#include "CryptoFactory.h"
++#include "ByteString.h"
++#include "Token.h"
++#include "OSObject.h"
++
++class SLHDSAUtil
++{
++public:
++	/** \brief Delete constructor */
++	SLHDSAUtil() = delete;
++	/** \brief Get the private key */
++	static CK_RV getSLHDSAPrivateKey(SLHDSAPrivateKey* privateKey, Token* token, OSObject* key);
++	/** \brief Get the public key */
++	static CK_RV getSLHDSAPublicKey(SLHDSAPublicKey* publicKey, Token* token, OSObject* key);
++
++	/** \brief Set the private key */
++	static CK_RV setSLHDSAPrivateKey(OSObject* key, const ByteString &ber, Token* token, bool isPrivate);
++
++	/** \brief Set the hedge type */
++	static CK_RV setHedge(CK_HEDGE_TYPE inHedgeType, Hedge::Type* outHedgeType);
++
++};
++
++#endif // WITH_SLH_DSA
++#endif // !_SOFTHSM_V2_SLHDSAUTIL_H
+\ No newline at end of file
+diff --git a/src/lib/crypto/test/CMakeLists.txt b/src/lib/crypto/test/CMakeLists.txt
+index b77f9bc05..8afac6e2f 100644
+--- a/src/lib/crypto/test/CMakeLists.txt
++++ b/src/lib/crypto/test/CMakeLists.txt
+@@ -23,6 +23,7 @@ set(SOURCES cryptotest.cpp
+             HashTests.cpp
+             MacTests.cpp
+             MLDSATests.cpp
++            SLHDSATests.cpp
+             RNGTests.cpp
+             RSATests.cpp
+             chisq.c
+diff --git a/src/lib/crypto/test/Makefile.am b/src/lib/crypto/test/Makefile.am
+index 3833ffa87..ea8ee3354 100644
+--- a/src/lib/crypto/test/Makefile.am
++++ b/src/lib/crypto/test/Makefile.am
+@@ -25,6 +25,7 @@ cryptotest_SOURCES =		cryptotest.cpp \
+ 				HashTests.cpp \
+ 				MacTests.cpp \
+ 				MLDSATests.cpp \
++				SLHDSATests.cpp \
+ 				RNGTests.cpp \
+ 				RSATests.cpp \
+ 				chisq.c \
+diff --git a/src/lib/crypto/test/SLHDSATests.cpp b/src/lib/crypto/test/SLHDSATests.cpp
+new file mode 100644
+index 000000000..5be84c9ef
+--- /dev/null
++++ b/src/lib/crypto/test/SLHDSATests.cpp
+@@ -0,0 +1,500 @@
++/*****************************************************************************
++ SLHDSATests.cpp
++
++ Contains test cases to test the SLH-DSA class
++ *****************************************************************************/
++
++#include <stdlib.h>
++#include <utility>
++#include <vector>
++#include <cppunit/extensions/HelperMacros.h>
++#include "SLHDSATests.h"
++#include "CryptoFactory.h"
++#include "RNG.h"
++#include "AsymmetricKeyPair.h"
++#include "AsymmetricAlgorithm.h"
++#ifdef WITH_SLH_DSA
++#include "SLHDSAMechanismParam.h"
++#include "SLHDSAParameters.h"
++#include "SLHDSAPublicKey.h"
++#include "SLHDSAPrivateKey.h"
++
++CPPUNIT_TEST_SUITE_REGISTRATION(SLHDSATests);
++
++static const std::vector<unsigned long> allParameterSets =
++{
++	CKP_SLH_DSA_SHA2_128S, CKP_SLH_DSA_SHAKE_128S, CKP_SLH_DSA_SHA2_128F, CKP_SLH_DSA_SHAKE_128F, CKP_SLH_DSA_SHA2_192S, CKP_SLH_DSA_SHAKE_192S, CKP_SLH_DSA_SHA2_192F, CKP_SLH_DSA_SHAKE_192F, CKP_SLH_DSA_SHA2_256S, CKP_SLH_DSA_SHAKE_256S, CKP_SLH_DSA_SHA2_256F, CKP_SLH_DSA_SHAKE_256F
++};
++
++void SLHDSATests::setUp()
++{
++	slhdsa = NULL;
++
++	slhdsa = CryptoFactory::i()->getAsymmetricAlgorithm(AsymAlgo::SLHDSA);
++
++	// Check the SLHDSA object
++	CPPUNIT_ASSERT(slhdsa != NULL);
++}
++
++void SLHDSATests::tearDown()
++{
++	if (slhdsa != NULL)
++	{
++		CryptoFactory::i()->recycleAsymmetricAlgorithm(slhdsa);
++	}
++
++	fflush(stdout);
++}
++
++void SLHDSATests::testKeyGeneration()
++{
++	for (const unsigned long parameterSet : allParameterSets)
++	{
++		// Set domain parameters
++		SLHDSAParameters *p = new SLHDSAParameters();
++		p->setParameterSet(parameterSet);
++
++		// Generate key-pair
++		AsymmetricKeyPair *kp;
++		CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++		SLHDSAPublicKey *pub = (SLHDSAPublicKey *)kp->getPublicKey();
++		SLHDSAPrivateKey *priv = (SLHDSAPrivateKey *)kp->getPrivateKey();
++
++		CPPUNIT_ASSERT(pub->getParameterSet() == parameterSet);
++		CPPUNIT_ASSERT(priv->getParameterSet() == parameterSet);
++
++		slhdsa->recycleParameters(p);
++		slhdsa->recycleKeyPair(kp);
++	}
++}
++
++void SLHDSATests::testSerialisation()
++{
++	for (const unsigned long parameterSet : allParameterSets)
++	{
++		// Get domain parameters
++		SLHDSAParameters *p = new SLHDSAParameters();
++		p->setParameterSet(parameterSet);
++
++		// Serialise the parameters
++		ByteString serialisedParams = p->serialise();
++
++		// Deserialise the parameters
++		AsymmetricParameters *dSLHDSA;
++
++		CPPUNIT_ASSERT(slhdsa->reconstructParameters(&dSLHDSA, serialisedParams));
++
++		CPPUNIT_ASSERT(dSLHDSA->areOfType(SLHDSAParameters::type));
++
++		SLHDSAParameters *ddSLHDSA = (SLHDSAParameters *)dSLHDSA;
++
++		CPPUNIT_ASSERT(p->getParameterSet() == ddSLHDSA->getParameterSet());
++
++		// Generate a key-pair
++		AsymmetricKeyPair *kp;
++
++		CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, dSLHDSA));
++
++
++		// Serialise the key-pair
++		ByteString serialisedKP = kp->serialise();
++
++		// Deserialise the key-pair
++
++		AsymmetricKeyPair *dKP;
++
++		CPPUNIT_ASSERT(slhdsa->reconstructKeyPair(&dKP, serialisedKP));
++
++		// Check the deserialised key-pair
++		SLHDSAPrivateKey *privKey = (SLHDSAPrivateKey *)kp->getPrivateKey();
++		SLHDSAPublicKey *pubKey = (SLHDSAPublicKey *)kp->getPublicKey();
++
++		SLHDSAPrivateKey *dPrivKey = (SLHDSAPrivateKey *)dKP->getPrivateKey();
++		SLHDSAPublicKey *dPubKey = (SLHDSAPublicKey *)dKP->getPublicKey();
++
++		CPPUNIT_ASSERT(privKey->getParameterSet() == dPrivKey->getParameterSet());
++		CPPUNIT_ASSERT(privKey->getValue() == dPrivKey->getValue());
++
++		CPPUNIT_ASSERT(pubKey->getParameterSet() == dPubKey->getParameterSet());
++		CPPUNIT_ASSERT(pubKey->getValue() == dPubKey->getValue());
++
++		slhdsa->recycleParameters(p);
++		slhdsa->recycleParameters(dSLHDSA);
++		slhdsa->recycleKeyPair(kp);
++		slhdsa->recycleKeyPair(dKP);
++	}
++}
++
++void SLHDSATests::testPKCS8()
++{
++	for (const unsigned long parameterSet : allParameterSets)
++	{
++		// Get domain parameters
++		SLHDSAParameters *p = new SLHDSAParameters();
++		p->setParameterSet(parameterSet);
++
++		// Generate a key-pair
++		AsymmetricKeyPair *kp;
++
++		CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++		CPPUNIT_ASSERT(kp != NULL);
++
++		SLHDSAPrivateKey *priv = (SLHDSAPrivateKey *)kp->getPrivateKey();
++		CPPUNIT_ASSERT(priv != NULL);
++
++		SLHDSAPublicKey *pub = (SLHDSAPublicKey *)kp->getPublicKey();
++		CPPUNIT_ASSERT(pub != NULL);
++
++		// Encode and decode the private key
++		ByteString pkcs8 = priv->PKCS8Encode();
++		CPPUNIT_ASSERT(pkcs8.size() != 0);
++
++		SLHDSAPrivateKey *dPriv = (SLHDSAPrivateKey *)slhdsa->newPrivateKey();
++		CPPUNIT_ASSERT(dPriv != NULL);
++
++		CPPUNIT_ASSERT(dPriv->PKCS8Decode(pkcs8));
++
++		CPPUNIT_ASSERT(priv->getParameterSet() == dPriv->getParameterSet());
++		CPPUNIT_ASSERT(priv->getValue() == dPriv->getValue());
++
++		slhdsa->recycleParameters(p);
++		slhdsa->recyclePrivateKey(dPriv);
++		slhdsa->recycleKeyPair(kp);
++	}
++}
++
++void SLHDSATests::testSigningVerifying()
++{
++	for (const unsigned long parameterSet : allParameterSets)
++	{
++		// Get domain parameters
++		SLHDSAParameters *p = new SLHDSAParameters();
++		CPPUNIT_ASSERT(p != NULL);
++		p->setParameterSet(parameterSet);
++
++		// Generate key-pair
++		AsymmetricKeyPair *kp;
++		CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++		// Generate some data to sign
++		ByteString dataToSign;
++
++		RNG *rng = CryptoFactory::i()->getRNG();
++		CPPUNIT_ASSERT(rng != NULL);
++
++		CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++		// Sign the data
++		ByteString sig;
++		CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA));
++
++		// And verify it
++		CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA));
++
++		slhdsa->recycleKeyPair(kp);
++		slhdsa->recycleParameters(p);
++	}
++}
++
++
++
++void SLHDSATests::testSigningVerifyingHedgePreferred()
++{
++
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgePreferredWithContext()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	std::string contextStr = std::string("HEDGE_PREFERRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED, contextBS);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgePreferredWithContextTooLong()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	std::string contextStr = std::string("HEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERREDHEDGE_PREFERRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::HEDGE_PREFERRED, contextBS);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT_EQUAL(false, slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgeRequired()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::HEDGE_REQUIRED);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgeRequiredWithContext()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	std::string contextStr = std::string("HEDGE_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::HEDGE_REQUIRED, contextBS);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingHedgeRequiredWithContextTooLong()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	std::string contextStr = std::string("HEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIREDHEDGE_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::HEDGE_REQUIRED, contextBS);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(!slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingDeterministic()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::DETERMINISTIC_REQUIRED);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingDeterministicWithContext()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	std::string contextStr = std::string("DETERMINISTIC_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::DETERMINISTIC_REQUIRED, contextBS);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	// And verify it
++	CPPUNIT_ASSERT(slhdsa->verify(kp->getPublicKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++void SLHDSATests::testSigningVerifyingDeterministicWithContextTooLong()
++{
++	// Get domain parameters
++	SLHDSAParameters *p = new SLHDSAParameters();
++	CPPUNIT_ASSERT(p != NULL);
++	p->setParameterSet(CKP_SLH_DSA_SHA2_128S);
++
++	// Generate key-pair
++	AsymmetricKeyPair *kp;
++	CPPUNIT_ASSERT(slhdsa->generateKeyPair(&kp, p));
++
++	// Generate some data to sign
++	ByteString dataToSign;
++
++	RNG *rng = CryptoFactory::i()->getRNG();
++	CPPUNIT_ASSERT(rng != NULL);
++
++	CPPUNIT_ASSERT(rng->generateRandom(dataToSign, 567));
++
++	std::string contextStr = std::string("DETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIREDDETERMINISTIC_REQUIRED");
++	ByteString contextBS((const unsigned char*)contextStr.c_str(), contextStr.size());
++
++	SLHDSAMechanismParam context = SLHDSAMechanismParam(Hedge::Type::DETERMINISTIC_REQUIRED, contextBS);
++
++	// Sign the data
++	ByteString sig;
++	CPPUNIT_ASSERT(!slhdsa->sign(kp->getPrivateKey(), dataToSign, sig, AsymMech::SLHDSA, NULL, 0UL, &context));
++
++	slhdsa->recycleKeyPair(kp);
++	slhdsa->recycleParameters(p);
++}
++
++#endif
+diff --git a/src/lib/crypto/test/SLHDSATests.h b/src/lib/crypto/test/SLHDSATests.h
+new file mode 100644
+index 000000000..dfc933cf7
+--- /dev/null
++++ b/src/lib/crypto/test/SLHDSATests.h
+@@ -0,0 +1,57 @@
++/*****************************************************************************
++ SLHDSATests.h
++
++ Contains test cases to test the SLH-DSA class
++ *****************************************************************************/
++
++#ifndef _SOFTHSM_V2_SLHDSATESTS_H
++#define _SOFTHSM_V2_SLHDSATESTS_H
++
++#include <cppunit/extensions/HelperMacros.h>
++#include "AsymmetricAlgorithm.h"
++
++class SLHDSATests : public CppUnit::TestFixture
++{
++	CPPUNIT_TEST_SUITE(SLHDSATests);
++	CPPUNIT_TEST(testKeyGeneration);
++	CPPUNIT_TEST(testSerialisation);
++	CPPUNIT_TEST(testPKCS8);
++	CPPUNIT_TEST(testSigningVerifying);
++
++	CPPUNIT_TEST(testSigningVerifyingHedgePreferred);
++	CPPUNIT_TEST(testSigningVerifyingHedgePreferredWithContext);
++	CPPUNIT_TEST(testSigningVerifyingHedgePreferredWithContextTooLong);
++	CPPUNIT_TEST(testSigningVerifyingHedgeRequired);
++	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredWithContext);
++	CPPUNIT_TEST(testSigningVerifyingHedgeRequiredWithContextTooLong);
++	CPPUNIT_TEST(testSigningVerifyingDeterministic);
++	CPPUNIT_TEST(testSigningVerifyingDeterministicWithContext);
++	CPPUNIT_TEST(testSigningVerifyingDeterministicWithContextTooLong);
++	CPPUNIT_TEST_SUITE_END();
++
++public:
++	void testKeyGeneration();
++	void testSerialisation();
++	void testPKCS8();
++	void testSigningVerifying();
++
++	void testSigningVerifyingHedgePreferred();
++	void testSigningVerifyingHedgePreferredWithContext();
++	void testSigningVerifyingHedgePreferredWithContextTooLong();
++	void testSigningVerifyingHedgeRequired();
++	void testSigningVerifyingHedgeRequiredWithContext();
++	void testSigningVerifyingHedgeRequiredWithContextTooLong();
++	void testSigningVerifyingDeterministic();
++	void testSigningVerifyingDeterministicWithContext();
++	void testSigningVerifyingDeterministicWithContextTooLong();
++
++	void setUp();
++	void tearDown();
++
++private:
++	// SLHDSA instance
++	AsymmetricAlgorithm* slhdsa;
++};
++
++#endif // !_SOFTHSM_V2_SLHDSATESTS_H
++
+diff --git a/src/lib/handle_mgr/HandleManager.cpp b/src/lib/handle_mgr/HandleManager.cpp
+index b28e0e1ae..d887c1545 100644
+--- a/src/lib/handle_mgr/HandleManager.cpp
++++ b/src/lib/handle_mgr/HandleManager.cpp
+@@ -102,6 +102,10 @@ CK_OBJECT_HANDLE HandleManager::addSessionObject(CK_SLOT_ID slotID, CK_SESSION_H
+ 	h.object = object;
+ 	handles[++handleCounter] = h;
+ 	objects[object] = handleCounter;
++
++	DEBUG_MSG("Added session object - handle: %lu, slot ID: %lu, session ID: %lu, private: %d, obj: %p",
++		handleCounter, slotID, hSession, isPrivate, object);
++
+ 	sessionObjectHandles[hSession].insert(handleCounter);
+ 	slotHandles[slotID].insert(handleCounter);
+ 	return (CK_OBJECT_HANDLE)handleCounter;
+@@ -128,6 +132,10 @@ CK_OBJECT_HANDLE HandleManager::addTokenObject(CK_SLOT_ID slotID, bool isPrivate
+ 	h.object = object;
+ 	handles[++handleCounter] = h;
+ 	objects[object] = handleCounter;
++
++	DEBUG_MSG("Added token object - handle: %lu, slot ID: %lu, private: %d, obj: %p",
++		handleCounter, slotID, isPrivate, object);
++
+ 	slotHandles[slotID].insert(handleCounter);
+ 	return (CK_OBJECT_HANDLE)handleCounter;
+ }
+@@ -165,6 +173,9 @@ void HandleManager::destroyObject(const CK_OBJECT_HANDLE hObject)
+ 
+ 		objects.erase(it->second.object);
+ 		handles.erase(it);
++		DEBUG_MSG("Destroyed object handle: %lu", hObject);
++	} else {
++		DEBUG_MSG("Cannot destroy handle %lu that is not found or not an object handle", hObject);
+ 	}
+ }
+ 
+@@ -174,14 +185,18 @@ void HandleManager::sessionClosed(const CK_SESSION_HANDLE hSession)
+ 
+ 	std::map< CK_ULONG, Handle>::iterator it = handles.find(hSession);
+ 	if (it == handles.end() || CKH_SESSION != it->second.kind)
++	{
++		DEBUG_MSG("Session %lu not found and cannot be closed", hSession);
+ 		return; // Unable to find the specified session.
+-
++	}
+ 	CK_SLOT_ID slotID = it->second.slotID;
+ 
+ 	// session closed, so we can erase information about it.
+ 	slotHandles[slotID].erase(hSession);
+ 	handles.erase(it);
+ 
++	DEBUG_MSG("Session %lu (slot %lu) closed", hSession, slotID);
++
+ 	// Erase all session object handles associated with the given session handle
+ 	// using the secondary index instead of scanning the entire handles map.
+ 	std::map< CK_SESSION_HANDLE, std::set<CK_ULONG> >::iterator soit = sessionObjectHandles.find(hSession);
+@@ -191,6 +206,7 @@ void HandleManager::sessionClosed(const CK_SESSION_HANDLE hSession)
+ 			std::map< CK_ULONG, Handle>::iterator hit = handles.find(*oit);
+ 			if (hit != handles.end()) {
+ 				objects.erase(hit->second.object);
++				DEBUG_MSG("Erasing object %lu for closed session %lu", hit->first, hSession);
+ 				slotHandles[slotID].erase(*oit);
+ 				handles.erase(hit);
+ 			}
+@@ -216,6 +232,9 @@ void HandleManager::allSessionsClosed(const CK_SLOT_ID slotID, bool isLocked)
+ {
+ 	MutexLocker lock(isLocked ? NULL : handlesMutex);
+ 
++
++	DEBUG_MSG("Closing all sessions for slot %lu", slotID);
++
+ 	// Erase all "session", "session object" and "token object" handles for a given slot id
+ 	// using the per-slot index instead of scanning the entire handles map.
+ 	std::map< CK_SLOT_ID, std::set<CK_ULONG> >::iterator sit = slotHandles.find(slotID);
+@@ -224,8 +243,10 @@ void HandleManager::allSessionsClosed(const CK_SLOT_ID slotID, bool isLocked)
+ 		for (std::set<CK_ULONG>::iterator it = handleSet.begin(); it != handleSet.end(); ++it) {
+ 			std::map< CK_ULONG, Handle>::iterator hit = handles.find(*it);
+ 			if (hit != handles.end()) {
+-				if (CKH_OBJECT == hit->second.kind)
++				if (CKH_OBJECT == hit->second.kind) {
++					DEBUG_MSG("Erasing object %lu for empty slot %lu", hit->first, slotID);
+ 					objects.erase(hit->second.object);
++				}
+ 				if (CKH_SESSION == hit->second.kind)
+ 					sessionObjectHandles.erase(*it);
+ 				handles.erase(hit);
+@@ -253,6 +274,7 @@ void HandleManager::tokenLoggedOut(const CK_SLOT_ID slotID)
+ 		if (hit != handles.end() && CKH_OBJECT == hit->second.kind && hit->second.isPrivate) {
+ 			// A private object is present for the given slotID so we need to remove it.
+ 			objects.erase(hit->second.object);
++			DEBUG_MSG("Erasing private object %lu for logged out token slot %lu", hit->first, slotID);
+ 			if (hit->second.hSession != CK_INVALID_HANDLE)
+ 				sessionObjectHandles[hit->second.hSession].erase(*it);
+ 			handles.erase(hit);
+diff --git a/src/lib/test/SignVerifyTests.cpp b/src/lib/test/SignVerifyTests.cpp
+index a85b91d52..fe678ac9c 100644
+--- a/src/lib/test/SignVerifyTests.cpp
++++ b/src/lib/test/SignVerifyTests.cpp
+@@ -271,6 +271,52 @@ CK_RV SignVerifyTests::generateMLDSA(CK_ULONG parameterSet, CK_SESSION_HANDLE hS
+ }
+ #endif
+ 
++#ifdef WITH_SLH_DSA
++CK_RV SignVerifyTests::generateSLHDSA(CK_ULONG parameterSet, CK_SESSION_HANDLE hSession, CK_BBOOL bTokenPuk, CK_BBOOL bPrivatePuk, CK_BBOOL bTokenPrk, CK_BBOOL bPrivatePrk, CK_OBJECT_HANDLE &hPuk, CK_OBJECT_HANDLE &hPrk) {
++	CK_MECHANISM mechanism = { CKM_SLH_DSA_KEY_PAIR_GEN, NULL_PTR, 0 };
++	CK_KEY_TYPE keyType = CKK_SLH_DSA;
++	CK_BYTE label[] = { 0x12, 0x34 }; // dummy
++	CK_BYTE id[] = { 123 } ; // dummy
++	CK_BBOOL bFalse = CK_FALSE;
++	CK_BBOOL bTrue = CK_TRUE;
++
++	CK_ATTRIBUTE pukAttribs[] =
++	{
++		{ CKA_PARAMETER_SET, &parameterSet, sizeof(parameterSet) },
++		{ CKA_LABEL, &label[0], sizeof(label) },
++		{ CKA_ID, &id[0], sizeof(id) },
++		{ CKA_KEY_TYPE, &keyType, sizeof(keyType) },
++		{ CKA_VERIFY, &bTrue, sizeof(bTrue) },
++		{ CKA_ENCRYPT, &bFalse, sizeof(bFalse) },
++		{ CKA_WRAP, &bFalse, sizeof(bFalse) },
++		{ CKA_TOKEN, &bTokenPuk, sizeof(bTokenPuk) },
++		{ CKA_PRIVATE, &bPrivatePuk, sizeof(bPrivatePuk) }
++	};
++	CK_ATTRIBUTE prkAttribs[] =
++	{
++		{ CKA_LABEL, &label[0], sizeof(label) },
++		{ CKA_ID, &id[0], sizeof(id) },
++		{ CKA_KEY_TYPE, &keyType, sizeof(keyType) },
++		{ CKA_SIGN, &bTrue, sizeof(bTrue) },
++		{ CKA_DECRYPT, &bFalse, sizeof(bFalse) },
++		{ CKA_UNWRAP, &bFalse, sizeof(bFalse) },
++		{ CKA_SENSITIVE, &bTrue, sizeof(bTrue) },
++		{ CKA_TOKEN, &bTokenPrk, sizeof(bTokenPrk) },
++		{ CKA_PRIVATE, &bPrivatePrk, sizeof(bPrivatePrk) },
++		{ CKA_EXTRACTABLE, &bFalse, sizeof(bFalse) }
++	};
++
++	hPuk = CK_INVALID_HANDLE;
++	hPrk = CK_INVALID_HANDLE;
++	return CRYPTOKI_F_PTR( C_GenerateKeyPair(hSession, &mechanism,
++							 pukAttribs, sizeof(pukAttribs)/sizeof(CK_ATTRIBUTE),
++							 prkAttribs, sizeof(prkAttribs)/sizeof(CK_ATTRIBUTE),
++							 &hPuk, &hPrk) );
++}
++#endif
++
++
++
+ void SignVerifyTests::signVerifySingle(CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param /* = NULL_PTR */, CK_ULONG paramLen /* = 0 */)
+ {
+ 	CK_RV rv;
+@@ -344,7 +390,7 @@ void SignVerifyTests::signVerifyMulti(CK_MECHANISM_TYPE mechanismType, CK_SESSIO
+ 	CK_RV rv;
+ 	CK_MECHANISM mechanism = { mechanismType, param, paramLen };
+ 	CK_BYTE data[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,0x0C, 0x0D, 0x0F };
+-	CK_BYTE signature[256];
++	CK_BYTE signature[64 * 1024];
+ 	CK_ULONG ulSignatureLen = 0;
+ 
+ 	rv = CRYPTOKI_F_PTR( C_SignInit(hSession,&mechanism,hPrivateKey) );
+@@ -937,6 +983,126 @@ void SignVerifyTests::testMLDSASignVerify(CK_ULONG parameterSet)
+ }
+ #endif
+ 
++#ifdef WITH_SLH_DSA
++void SignVerifyTests::testSLHDSASignVerify(CK_ULONG parameterSet)
++{
++	CK_RV rv;
++	CK_SESSION_HANDLE hSessionRO;
++	CK_SESSION_HANDLE hSessionRW;
++
++	// Just make sure that we finalize any previous tests
++	CRYPTOKI_F_PTR( C_Finalize(NULL_PTR) );
++
++	// Open read-only session on when the token is not initialized should fail
++	rv = CRYPTOKI_F_PTR( C_OpenSession(m_initializedTokenSlotID, CKF_SERIAL_SESSION, NULL_PTR, NULL_PTR, &hSessionRO) );
++	CPPUNIT_ASSERT(rv == CKR_CRYPTOKI_NOT_INITIALIZED);
++
++	// Initialize the library and start the test.
++	rv = CRYPTOKI_F_PTR( C_Initialize(NULL_PTR) );
++	CPPUNIT_ASSERT(rv == CKR_OK);
++
++	// Open read-only session
++	rv = CRYPTOKI_F_PTR( C_OpenSession(m_initializedTokenSlotID, CKF_SERIAL_SESSION, NULL_PTR, NULL_PTR, &hSessionRO) );
++	CPPUNIT_ASSERT(rv == CKR_OK);
++
++	// Open read-write session
++	rv = CRYPTOKI_F_PTR( C_OpenSession(m_initializedTokenSlotID, CKF_SERIAL_SESSION | CKF_RW_SESSION, NULL_PTR, NULL_PTR, &hSessionRW) );
++	CPPUNIT_ASSERT(rv == CKR_OK);
++
++	// Login USER into the sessions so we can create a private objects
++	rv = CRYPTOKI_F_PTR( C_Login(hSessionRO,CKU_USER,m_userPin1,m_userPin1Length) );
++	CPPUNIT_ASSERT(rv == CKR_OK);
++
++	CK_OBJECT_HANDLE hPuk = CK_INVALID_HANDLE;
++	CK_OBJECT_HANDLE hPrk = CK_INVALID_HANDLE;
++
++	CK_BYTE data[] = "context-context-context";
++	CK_ULONG dataSize = (CK_ULONG)(sizeof(data) - 1); // exclude trailing NULL
++
++	CK_SIGN_ADDITIONAL_CONTEXT params[] =
++	{
++		{ CKH_HEDGE_PREFERRED,  NULL,   0  },
++		{ CKH_HEDGE_PREFERRED,  data,   dataSize  },
++		{ CKH_HEDGE_REQUIRED,  NULL,   0  },
++		{ CKH_HEDGE_REQUIRED,  data,   dataSize  },
++		{ CKH_DETERMINISTIC_REQUIRED,  NULL,   0  },
++		{ CKH_DETERMINISTIC_REQUIRED,  data,   dataSize  },
++	};
++
++	// Public Session keys
++	rv = generateSLHDSA(parameterSet,hSessionRW,IN_SESSION,IS_PUBLIC,IN_SESSION,IS_PUBLIC,hPuk,hPrk);
++	CPPUNIT_ASSERT(rv == CKR_OK);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++
++	// Private Session Keys
++	rv = generateSLHDSA(parameterSet,hSessionRW,IN_SESSION,IS_PRIVATE,IN_SESSION,IS_PRIVATE,hPuk,hPrk);
++	CPPUNIT_ASSERT(rv == CKR_OK);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++
++	// Public Token Keys
++	rv = generateSLHDSA(parameterSet,hSessionRW,ON_TOKEN,IS_PUBLIC,ON_TOKEN,IS_PUBLIC,hPuk,hPrk);
++	CPPUNIT_ASSERT(rv == CKR_OK);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++
++	// Private Token Keys
++	rv = generateSLHDSA(parameterSet, hSessionRW,ON_TOKEN,IS_PRIVATE,ON_TOKEN,IS_PRIVATE,hPuk,hPrk);
++	CPPUNIT_ASSERT(rv == CKR_OK);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk);
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[0], sizeof(params[0]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[1], sizeof(params[1]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[2], sizeof(params[2]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[3], sizeof(params[3]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[4], sizeof(params[4]));
++	signVerifySingle(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++	signVerifyMulti(CKM_SLH_DSA, hSessionRO, hPuk,hPrk, &params[5], sizeof(params[5]));
++}
++#endif
++
+ CK_RV SignVerifyTests::generateKey(CK_SESSION_HANDLE hSession, CK_KEY_TYPE keyType, CK_BBOOL bToken, CK_BBOOL bPrivate, CK_OBJECT_HANDLE &hKey)
+ {
+ #ifndef WITH_BOTAN
+diff --git a/src/lib/test/SignVerifyTests.h b/src/lib/test/SignVerifyTests.h
+index a7c22e083..55bc5654b 100644
+--- a/src/lib/test/SignVerifyTests.h
++++ b/src/lib/test/SignVerifyTests.h
+@@ -51,6 +51,9 @@ class SignVerifyTests : public TestsBase
+ 	CPPUNIT_TEST(testMacSignVerify);
+ #ifdef WITH_ML_DSA
+ 	CPPUNIT_TEST_PARAMETERIZED(testMLDSASignVerify, {CKP_ML_DSA_44, CKP_ML_DSA_65, CKP_ML_DSA_87});
++#endif
++#ifdef WITH_SLH_DSA
++	CPPUNIT_TEST_PARAMETERIZED(testSLHDSASignVerify, {CKP_SLH_DSA_SHA2_128S, CKP_SLH_DSA_SHAKE_128F});
+ #endif
+ 	CPPUNIT_TEST(testSignInitWrongKeyType);
+ 	CPPUNIT_TEST(testVerifyInitWrongKeyType);
+@@ -67,6 +70,9 @@ class SignVerifyTests : public TestsBase
+ 	void testMacSignVerify();
+ #ifdef WITH_ML_DSA
+ 	void testMLDSASignVerify(CK_ULONG parameterSet);
++#endif
++#ifdef WITH_SLH_DSA
++	void testSLHDSASignVerify(CK_ULONG parameterSet);
+ #endif
+ 	void testSignInitWrongKeyType();
+ 	void testVerifyInitWrongKeyType();
+@@ -81,6 +87,9 @@ class SignVerifyTests : public TestsBase
+ #endif
+ #ifdef WITH_ML_DSA
+ 	CK_RV generateMLDSA(CK_ULONG parameterSet, CK_SESSION_HANDLE hSession, CK_BBOOL bTokenPuk, CK_BBOOL bPrivatePuk, CK_BBOOL bTokenPrk, CK_BBOOL bPrivatePrk, CK_OBJECT_HANDLE &hPuk, CK_OBJECT_HANDLE &hPrk);
++#endif
++#ifdef WITH_SLH_DSA
++	CK_RV generateSLHDSA(CK_ULONG parameterSet, CK_SESSION_HANDLE hSession, CK_BBOOL bTokenPuk, CK_BBOOL bPrivatePuk, CK_BBOOL bTokenPrk, CK_BBOOL bPrivatePrk, CK_OBJECT_HANDLE &hPuk, CK_OBJECT_HANDLE &hPrk);
+ #endif
+ 	void signVerifySingle(CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param = NULL_PTR, CK_ULONG paramLen = 0);
+ 	void signVerifySingleData(size_t dataSize, CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hPublicKey, CK_OBJECT_HANDLE hPrivateKey, CK_VOID_PTR param = NULL_PTR, CK_ULONG paramLen = 0);
+@@ -92,4 +101,4 @@ class SignVerifyTests : public TestsBase
+ 	void macSignVerify(CK_MECHANISM_TYPE mechanismType, CK_SESSION_HANDLE hSession, CK_OBJECT_HANDLE hKey);
+ };
+ 
+-#endif // !_SOFTHSM_V2_SIGNVERIFYTESTS_H
++#endif // !_SOFTHSM_V2_SIGNVERIFYTESTS_H
+\ No newline at end of file
+
