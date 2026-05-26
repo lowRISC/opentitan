@@ -163,6 +163,27 @@ cryptotest(
     ],
 )
 
+# Runs AES-ECB and AES-GCM ACVP test vectors and compares against expected
+# results.  To also save the results to a file, append --output=<path> when
+# invoking with `bazelisk.sh run`:
+#
+#   ./bazelisk.sh run \
+#       //sw/device/tests/crypto/cryptotest:aes_acvp_fpga_cw340_sival_rom_ext -- \
+#           --output=/tmp/aes_acvp_results.json
+cryptotest(
+    name = "aes_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:aes_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:aes_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:aes_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:aes_expected.hjson",
+    ],
+)
+
 AES_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
@@ -811,6 +832,7 @@ cryptotest(
 test_suite(
     name = "crypto_kat_test_suite",
     tests = [
+        ":aes_acvp",
         ":aes_gcm_kat",
         ":aes_kat",
         ":cshake_acvp",
