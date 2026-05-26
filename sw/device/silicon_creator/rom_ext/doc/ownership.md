@@ -108,6 +108,8 @@ All ownership-related boot services commands include the nonce and a signature b
 Each successful ownership-related boot services request (ie: `OwnershipUnlock` and `OwnershipActivate`) will cause a new nonce to be generated
 Any subsequent ownership-related request must use the new nonce value.
 
+To support offline or pre-calculated detached signatures, the nonce in the detached signature block may be set to zero (`0`). A nonce of zero acts as a wildcard, allowing the detached signature block to be verified against any current challenge nonce. Since the nonce in a detached signature block is not cryptographically bound (and the signature itself remains cryptographically bound to the original message or block), this does not impact the security posture. Instead, the nonce field in a detached signature is primarily used as a token to uniquely identify and locate a specific detached signature block when multiple signatures are stored in flash, avoiding confusion with older leftover signatures.
+
 The ownership nonce is stored in the `boot_data` record.
 
 ### Owner Key

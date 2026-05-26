@@ -873,6 +873,34 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "anyversion_wildcard_nonce_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-key-alg=HybridSpxPure
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-owner-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx)
+            --next-unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key_spx)
+            --next-activate-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key_spx)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+            --config-version=0
+            --use-zero-nonce
+            # We expect the transfer to successfully complete using the zero wildcard nonce,
+            # so the owner key is the dummy key (665ff5e3), and transfers = 1.
+            --expect "config_version = 0"
+            --expect "owner_key = 665ff5e3"
+            --expect "ownership_transfers = 1"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
     name = "newversion_badlock_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",

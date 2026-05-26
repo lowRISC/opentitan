@@ -55,6 +55,9 @@ struct Opts {
     )]
     config_version: u32,
 
+    #[arg(long, help = "Use zero nonce for detached signature")]
+    use_zero_nonce: bool,
+
     #[arg(
         long,
         help = "Lock the owner config to the device identification number"
@@ -84,11 +87,17 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     rescue.enter(transport, EntryMode::Reset)?;
     let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
 
+    let nonce = if opts.use_zero_nonce {
+        0
+    } else {
+        data.rom_ext_nonce
+    };
+
     log::info!("###### Upload Owner Block ######");
     transfer_lib::create_owner(
         transport,
         &rescue,
-        data.rom_ext_nonce,
+        nonce,
         opts.next_key_alg,
         HybridPair::load(
             opts.next_owner_key.as_deref(),

@@ -342,6 +342,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   // thunk the ownership state to LockedOwner.
   bootdata->ownership_state = TEST_OWNERSHIP_STATE;
 
+  // Set the nonce to something other than zero to test wildcard match for the
+  // detached signature.
+  bootdata->nonce.value[0] = 0xdeadbeef;
+  bootdata->nonce.value[1] = 0x12345678;
+
   // Write the configuration to both owner page 0.  The next boot of the ROM_EXT
   // will make a redundant copyh in page 1.
   OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
