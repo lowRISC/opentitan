@@ -74,7 +74,9 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
     uint32_t flash_exec = 0;
     switch (owner_page[0].update_mode) {
       case kOwnershipUpdateModeOpen:
+      case kOwnershipUpdateModeAnyVersion:
         // The Open mode allows unlock to any unlock state.
+        // The AnyVersion mode is very permissive and permits unlocks.
         break;
       case kOwnershipUpdateModeNewVersion:
         // The NewVersion mode forbids all unlocks.
@@ -82,7 +84,7 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
       case kOwnershipUpdateModeSelf:
       case kOwnershipUpdateModeSelfVersion:
       default:
-        // The `unlock` funciton services UnlockAny and UnlockEndorsed requests,
+        // The `unlock` function services UnlockAny and UnlockEndorsed requests,
         // neither of which are valid for the `Self` mode.
         return kErrorOwnershipInvalidMode;
     }
@@ -124,6 +126,7 @@ static rom_error_t unlock_update(boot_svc_msg_t *msg, boot_data_t *bootdata) {
         return kErrorOwnershipUnlockDenied;
       case kOwnershipUpdateModeSelf:
       case kOwnershipUpdateModeSelfVersion:
+      case kOwnershipUpdateModeAnyVersion:
       case kOwnershipUpdateModeOpen:
       default:
           // The `unlock_update` funciton services UnlockUpdate update requests,

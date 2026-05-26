@@ -33,6 +33,11 @@ const owner_detached_signature_t *ownership_signature_scan(
     uintptr_t start, size_t length, uint32_t command, const nonce_t *nonce) {
   if (length < sizeof(owner_detached_signature_t))
     return NULL;
+  // The nonce in the detached signature is not cryptographically bound.  It is
+  // merely a token to uniquely identify a detached signature block and not
+  // confuse it with any other block that may be left over in flash.  We'll
+  // allow a nonce of zero as a wildcard to match any detached signature block.
+  nonce_t zero = {0, 0};
   length -= sizeof(owner_detached_signature_t);
   uintptr_t end = start + length;
   while (start < end) {
@@ -41,7 +46,9 @@ const owner_detached_signature_t *ownership_signature_scan(
     if (sig->header.tag == kTlvTagDetachedSignature &&
         sig->header.length == sizeof(owner_detached_signature_t) &&
         sig->header.version.major == 0 && sig->command == command &&
-        nonce_equal(&sig->nonce, nonce)) {
+        (
+            nonce_equal(&sig->nonce, zero ) || nonce_equal(&sig->nonce, nonce)
+        )) {
       return sig;
     }
     start += FLASH_CTRL_PARAM_BYTES_PER_PAGE;
