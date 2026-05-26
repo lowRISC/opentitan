@@ -208,6 +208,8 @@ static status_t hasheddsa_test(void) {
 
   CHECK_STATUS_OK(
       otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  LOG_INFO("OTBN keygen instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   otcrypto_const_byte_buf_t input_message =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
@@ -220,6 +222,7 @@ static status_t hasheddsa_test(void) {
   CHECK_STATUS_OK(otcrypto_ed25519_sign(&private_key, &input_message,
                                         kOtcryptoEddsaSignModeHashEddsa,
                                         &signature));
+  LOG_INFO("OTBN sign instruction count: 0x%08x", otbn_instruction_count_get());
 
   const uint32_t *const signature_verif_data =
       (const uint32_t *const)signature_data;

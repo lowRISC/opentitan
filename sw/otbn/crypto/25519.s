@@ -172,6 +172,7 @@ ed25519_gen_public_key:
 
   /* Compute the public key point A = [s0 - s1]B.
        [w13:w10] <= (w2 - w4) * [w9:w6] = [s0 - s1]B */
+  li       x5, 0  /* Ed25519 mode: use rnd * L */
   jal      x1, ext_scmul_sca
 
   /* Convert A to affine coordinates.
@@ -558,7 +559,7 @@ ed25519_sign_stage1:
 
   /* Compute the signature point R = [r0 - r1]B.
        [w13:w10] <= (w2 - w4) * [w9:w6] = [r0 - r1]B */
-  /* bn.mov   w28, w5 */
+  li       x5, 0  /* Ed25519 mode: use rnd * L */
   jal      x1, ext_scmul_sca
 
   /* Convert R to affine coordinates.
@@ -1276,6 +1277,7 @@ ext_scmul:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
+ * @param[in]   x5: Blinding mode flag (0 for Ed25519, 1 for X25519) passed to sc_blind.
  * @param[in]   w2: s0, first scalar share, s0 < L
  * @param[in]   w4: s1, second scalar share, s1 < L
  * @param[in]   w6: input X1 (X1 < p)
@@ -2076,6 +2078,7 @@ x25519:
   bn.addm  w29, w29, w29
 
   /* Perform masked scalar multiplication: [w13:w10] = (w2 - w4) * [w9:w6] */
+  li       x5, 1  /* X25519 mode: use 8 * rnd * L */
   jal      x1, ext_scmul_sca
 
   /* Convert result back to affine (x, y) */
