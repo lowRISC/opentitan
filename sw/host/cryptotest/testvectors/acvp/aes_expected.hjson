@@ -32,9 +32,11 @@
 //
 // Based on:
 // https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ACVP-AES-ECB-1.0/expectedResults.json
+// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ACVP-AES-GCM-1.0/expectedResults.json
 // Modifications:
-// This file was modified on 13.05.2026 as following:
-// - For AES-ECB, removed all test groups except tgId 1.
+// This file was modified on 26.05.2026 as following:
+// - Combined AES-ECB and AES-GCM test vectors.
+// - For AES-ECB and AES-GCM, removed all test groups except tgId 1.
 [
   {
     "vsId": 0,
@@ -72,6 +74,94 @@
           {
             "tcId": 7,
             "ct": "DC43BE40BE0E53712F7E2BF5CA707209"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "vsId": 0,
+    "algorithm": "ACVP-AES-GCM",
+    "revision": "1.0",
+    "isSample": false,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "tests": [
+          {
+            "tcId": 1,
+            "ct": "",
+            "tag": "9E557D92647C1510D4101EBEED0C52DD"
+          },
+          {
+            "tcId": 2,
+            "ct": "",
+            "tag": "6A7BBCDB4834109B6AA067B5358D94F3"
+          },
+          {
+            "tcId": 3,
+            "ct": "",
+            "tag": "72445E31C5DF05DFA2CCBA54AE385DFD"
+          },
+          {
+            "tcId": 4,
+            "ct": "",
+            "tag": "4F8508CB9C385C72935DEFD397BEB317"
+          },
+          {
+            "tcId": 5,
+            "ct": "",
+            "tag": "374A8920101702D1CCDE488A3ED7BD74"
+          },
+          {
+            "tcId": 6,
+            "ct": "",
+            "tag": "350DB3900067E56F16C77C835DAC544C"
+          },
+          {
+            "tcId": 7,
+            "ct": "",
+            "tag": "F150351CD6C3D09ED6F65CCDD9016329"
+          },
+          {
+            "tcId": 8,
+            "ct": "",
+            "tag": "7F6917FC8C4437E897DED97F56BAF97E"
+          },
+          {
+            "tcId": 9,
+            "ct": "",
+            "tag": "7C0487B32951712B1C8B5A383D1D2C7D"
+          },
+          {
+            "tcId": 10,
+            "ct": "",
+            "tag": "3EB7851F7C2C22FE454487DC6F3DF568"
+          },
+          {
+            "tcId": 11,
+            "ct": "",
+            "tag": "D4FAB95E8D69AEA9FBD8F5828D3BD431"
+          },
+          {
+            "tcId": 12,
+            "ct": "",
+            "tag": "142EC77E700EA07AFEDCA19968237921"
+          },
+          {
+            "tcId": 13,
+            "ct": "",
+            "tag": "25A704866524EDF070813B81D076BC0A"
+          },
+          {
+            "tcId": 14,
+            "ct": "",
+            "tag": "17FFF7D09A61124C5D7B41EC93A030CF"
+          },
+          {
+            "tcId": 15,
+            "ct": "",
+            "tag": "935A4D11F33268110BB7EC6ED1DA7440"
           }
         ]
       }
