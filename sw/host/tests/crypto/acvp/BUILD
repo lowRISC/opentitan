@@ -15,6 +15,7 @@ rust_binary(
         "src/ecdsa.rs",
         "src/eddsa.rs",
         "src/hmac.rs",
+        "src/kmac.rs",
         "src/main.rs",
         "src/rsa.rs",
         "src/x25519.rs",
