@@ -82,44 +82,24 @@ struct Opts {
     output_eddsa: Option<std::path::PathBuf>,
 }
 
-#[derive(Deserialize, PartialEq, Serialize)]
-#[serde(rename_all_fields = "camelCase")]
-#[serde(untagged)]
 enum AcvpVectors {
     Header {
         url: String,
         vector_set_urls: Vec<String>,
         time: String,
     },
-    Hmac(hmac::HmacTestVectorSet),
+    Aes(aes::AesTestVectorSet),
     Cshake(cshake::CshakeTestVectorSet),
-    // EcdsaTestVectorSet (sigVer) has required qx/qy/r/s in each test case;
-    // EcdsaSignGenTestVectorSet (sigGen) has only message, so sigVer vectors
-    // match Ecdsa first and sigGen vectors fall through to EcdsaSigGen.
-    // EcdsaKeyGenTestVectorSet (keyGen) groups have secretGenerationMode but
-    // no hashAlg, so they fall through both Ecdsa and EcdsaSigGen to EcdsaKeyGen.
     Ecdsa(ecdsa::EcdsaTestVectorSet),
     EcdsaSigGen(ecdsa::EcdsaSignGenTestVectorSet),
     EcdsaKeyGen(ecdsa::EcdsaKeyGenTestVectorSet),
-    // EddsaTestVectorSet (sigVer) requires `q` and `signature` in each test
-    // case; EddsaSignGenTestVectorSet (sigGen) has only `message`, so sigVer
-    // vectors match Eddsa first and sigGen vectors fall through to EddsaSigGen.
     Eddsa(eddsa::EddsaTestVectorSet),
     EddsaSigGen(eddsa::EddsaSignGenTestVectorSet),
-    // X25519TestVectorSet must precede EddsaKeyGen: EddsaKeygenTestVectorSet test
-    // cases only require `tc_id`, so they would silently match x25519 test cases
-    // (which also have `tc_id` plus `publicServer`) if X25519 came later.
-    X25519(x25519::X25519TestVectorSet),
-    // EddsaKeygenTestVectorSet has no `preHash` in groups, so sigGen vectors
-    // (which require preHash) fall through to EddsaKeyGen.
     EddsaKeyGen(eddsa::EddsaKeygenTestVectorSet),
-    // RsaSigGen must precede Rsa: sigGen test cases have a required `message`
-    // field that sigVer test cases lack, so sigVer vectors will fall through to Rsa.
+    Hmac(hmac::HmacTestVectorSet),
     RsaSigGen(rsa::RsaSignGenTestVectorSet),
     Rsa(rsa::RsaTestVectorSet),
-    // AesTestVectorSet groups require a `direction` field that no other
-    // algorithm's groups have, so AES vectors fall through all prior variants.
-    Aes(aes::AesTestVectorSet),
+    X25519(x25519::X25519TestVectorSet),
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -139,6 +119,51 @@ enum AcvpResults {
     Rsa(rsa::RsaResultVectorSet),
     X25519(x25519::X25519ResultVectorSet),
     Aes(aes::AesResultVectorSet),
+}
+
+fn parse_vector_set(raw: serde_json::Value) -> Result<AcvpVectors> {
+    if raw.get("url").is_some() {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct Header {
+            url: String,
+            vector_set_urls: Vec<String>,
+            time: String,
+        }
+        let h: Header = serde_json::from_value(raw)?;
+        return Ok(AcvpVectors::Header {
+            url: h.url,
+            vector_set_urls: h.vector_set_urls,
+            time: h.time,
+        });
+    }
+
+    // Extract as owned Strings so `raw` can be moved into serde_json::from_value below.
+    let algorithm = raw["algorithm"]
+        .as_str()
+        .ok_or_else(|| anyhow::anyhow!("vector set missing 'algorithm' field"))?
+        .to_owned();
+    let mode = raw
+        .get("mode")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_owned();
+
+    Ok(match (algorithm.as_str(), mode.as_str()) {
+        (a, _) if a.starts_with("HMAC") => AcvpVectors::Hmac(serde_json::from_value(raw)?),
+        (a, _) if a.starts_with("cSHAKE") => AcvpVectors::Cshake(serde_json::from_value(raw)?),
+        (a, _) if a.starts_with("ACVP-AES") => AcvpVectors::Aes(serde_json::from_value(raw)?),
+        ("ECDSA", "sigVer") => AcvpVectors::Ecdsa(serde_json::from_value(raw)?),
+        ("ECDSA", "sigGen") => AcvpVectors::EcdsaSigGen(serde_json::from_value(raw)?),
+        ("ECDSA", "keyGen") => AcvpVectors::EcdsaKeyGen(serde_json::from_value(raw)?),
+        ("EDDSA", "sigVer") => AcvpVectors::Eddsa(serde_json::from_value(raw)?),
+        ("EDDSA", "sigGen") => AcvpVectors::EddsaSigGen(serde_json::from_value(raw)?),
+        ("EDDSA", "keyGen") => AcvpVectors::EddsaKeyGen(serde_json::from_value(raw)?),
+        ("RSA-sigGen", _) => AcvpVectors::RsaSigGen(serde_json::from_value(raw)?),
+        ("RSA-sigVer", _) => AcvpVectors::Rsa(serde_json::from_value(raw)?),
+        ("XECDH", _) => AcvpVectors::X25519(serde_json::from_value(raw)?),
+        _ => anyhow::bail!("Unknown algorithm/mode: {:?}/{:?}", algorithm, mode),
+    })
 }
 
 fn validate_subset(actual: &[AcvpResults], expected_json: &serde_json::Value) -> Result<()> {
@@ -225,7 +250,11 @@ fn run<R: std::io::Read, W: std::io::Write>(
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
-    let acvp_vectors: Vec<AcvpVectors> = deser_hjson::from_reader(input)?;
+    let raw_vectors: Vec<serde_json::Value> = deser_hjson::from_reader(input)?;
+    let acvp_vectors = raw_vectors
+        .into_iter()
+        .map(parse_vector_set)
+        .collect::<Result<Vec<_>>>()?;
     let mut acvp_results: Vec<AcvpResults> = Vec::with_capacity(acvp_vectors.len());
     // All EdDSA results (sigVer, sigGen, keyGen) are collected for --output-eddsa.
     let mut eddsa_results: Vec<serde_json::Value> = Vec::new();
