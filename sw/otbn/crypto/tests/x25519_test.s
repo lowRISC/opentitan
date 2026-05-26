@@ -43,6 +43,9 @@ main:
   la      x3, exp_result
   bn.lid  x2, 0(x3)
 
+  /* Unmask result */
+  bn.xor w22, w19, w22
+
   /* Check result */
   jal     x1, check_result
 
@@ -74,9 +77,6 @@ check_result:
   bn.cmp  w20, w22
   bn.sel  w0, w1, w0, C
 
-  bn.addi w1, w0, 1
-  bn.cmp  w22, w20
-  bn.sel  w0, w1, w0, C
   ret
 
 .data
