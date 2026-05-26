@@ -91,10 +91,6 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
     return kErrorOwnershipInvalidDin;
   }
 
-  // Copy the prior owner's key so we can save it in the key history.
-  uint32_t prior_key_alg = owner_page[0].ownership_key_alg;
-  owner_keydata_t prior_owner_key = owner_page[0].owner_key;
-
   HARDENED_RETURN_IF_ERROR(
       ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolTrue));
 
@@ -113,9 +109,7 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
   } else {
     // All other activations are transfers and need to regenerate entropy stored
     // in the OwnerSecret page.
-    HARDENED_RETURN_IF_ERROR(
-        ownership_secret_new(prior_key_alg, &prior_owner_key));
-    bootdata->ownership_transfers += 1;
+    HARDENED_RETURN_IF_ERROR(ownership_secret_update(bootdata));
   }
 
   // Set the ownership state to LockedOwner.

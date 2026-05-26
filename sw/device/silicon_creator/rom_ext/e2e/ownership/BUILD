@@ -812,6 +812,124 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "anyversion_update_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    shared_params = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+            --config-version=2
+            # We expect to see the version updated, the owner key the same, and transfers = 0.
+            --expect "config_version = 2"
+            --expect "owner_key = 8e3dcb50"
+            --expect "ownership_transfers = 0"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
+    name = "anyversion_update_fails_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    shared_params = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+            --config-version=0
+            # We expect the update to fail (since version 0 is not greater than current 1),
+            # so config_version must remain 1.
+            --expect "config_version = 1"
+            --expect "ownership_transfers = 0"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
+    name = "anyversion_transfer_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    shared_params = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+            --config-version=0
+            # We expect to see the version is 0 (transfer under AnyVersion doesn't require newer version),
+            # the owner key is the dummy key (665ff5e3), and transfers = 1.
+            --expect "config_version = 0"
+            --expect "owner_key = 665ff5e3"
+            --expect "ownership_transfers = 1"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
+    name = "anyversion_unlock_update_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    shared_params = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --unlock-mode=Update
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+            --non-transfer-update=true
+        """,
+        "test_harness": "//sw/host/tests/ownership:transfer_test",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
+    name = "anyversion_unlock_transfer_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    shared_params = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+        """,
+        "test_harness": "//sw/host/tests/ownership:transfer_test",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
     name = "newversion_badlock_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",

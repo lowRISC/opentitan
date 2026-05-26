@@ -85,7 +85,7 @@ These update modes are motivated by two scenarios:
 - The Unlock Key is a very powerful key and owners may want to attenuate the power of the unlock key to mitigate the risk of the key leaking.
 - An owner may want to provide a configuration update for devices in the field that does not require the unlock and activate procedure.
 
-The update mode provides for four types of owner configuration update procedures:
+The update mode provides for five types of owner configuration update procedures:
 
 - `Open` mode allows the unlock key to unlock the device into any of the unlocked states.
 - `Self` mode allows the unlock key to unlock the device into only the `UnlockedSelf` state.
@@ -93,6 +93,10 @@ The update mode provides for four types of owner configuration update procedures
   Instead, the device may accept an ownership configuration update at any time _if and only if_ the new configuration is signed by the self-same owner _and_ the configuration has a newer `config_version` number.
 - `SelfVersion` is a combination of the `Self` and `NewVersion` modes.
   Instead, the device may accept an ownership configuration update at any time _if and only if_ the new configuration is signed by the self-same owner _and_ the configuration has a newer `config_version` number.  The device will _also_ allow the unlock key to unlock the device into the `UnlockedSelf` state.  When in the `UnlockedSelf` state, the device can accept a configuration that would move the `config_version` backwards.
+- `AnyVersion` mode allows the device to accept an ownership configuration update or transfer directly in the `LockedOwner` state.
+  - If the new configuration is signed by the self-same owner, it must have a newer `config_version` (same as `NewVersion`).
+  - If the new configuration is signed by a different owner (i.e., a transfer), it is accepted unconditionally without needing to match the prior owner key or a newer `config_version`, performing a direct in-place transfer of ownership.
+  - The unlock key is still permitted to unlock the device to any unlocked state (same as `Open` mode).
 
 When the update mode is `Self`, `NewVersion` or `SelfVersion`, the power of the unlock key is reduced to only allow ownership operations that do not change the owner.
 
@@ -394,6 +398,63 @@ subgraph container["<font size=6>Flow: Endorsed Ownership Transfer</font>"]
 end
 ```
 
+### Direct Ownership Transfer
+
+A direct ownership transfer allows ownership of the chip to be transferred to a new owner directly in the `LockedOwner` state without utilizing the Boot Services unlock and activate procedure. This flow is only possible if the current owner has previously configured the update mode of the chip to `AnyVersion`.
+
+1. The current owner delivers the chip (device) to the next owner.
+2. The next owner prepares a new Owner Configuration signed with the next owner's key.
+3. The next owner writes this new Owner Configuration directly into Owner Page 1, then reboots the chip.
+4. Upon booting, the ROM_EXT detects that Owner Page 1 has a valid signed configuration and that the owner key has changed.
+5. Since the current update mode is `AnyVersion`, the ROM_EXT automatically accepts the new configuration:
+   - It validates and seals the new configuration in Owner Page 1.
+   - It regenerates the Owner Secret seed and increments the `ownership_transfers` counter in `boot_data`.
+   - It invalidates Owner Page 0 and schedules a reboot to finalize the transfer.
+6. Upon reboot, the ROM_EXT copies the newly sealed configuration from Owner Page 1 to Owner Page 0, establishing a redundant backup of the new configuration.
+7. The chip is now locked to the next owner and will boot application firmware signed with the new owner's keys.
+
+```mermaid
+flowchart LR
+subgraph container["<font size=6>Flow: Direct Ownership Transfer</font>"]
+    subgraph flow[" "]
+        direction TB
+        start((<b>Start</b>))
+        deliver((Deliver to next owner.))
+        write[<b>Write Owner Config</b>
+            Store new Owner Config in Owner Page 1.
+            Reboot.
+        ]
+        process[<b>ROM_EXT Processing</b>
+            Validate & seal Owner Page 1.
+            Update Owner Secret & transfers counter.
+            Invalidate Owner Page 0.
+            Reboot.
+        ]
+        restore[<b>ROM_EXT Redundancy Restore</b>
+            Copy sealed Owner Config from Page 1 to Page 0.
+        ]
+        done((<b>Done</b>))
+        start --> deliver
+        deliver --> write
+        write --> process
+        process --> restore
+        restore --> done((<b>Done</b>))
+    end
+
+    signing[
+        <span style="color:black"><b>Signing Service</b>
+        Next Owner
+        </span>
+    ]
+
+    write <-- "Sign Owner Config with Next Owner Key" --> signing
+
+    style flow fill:none,stroke:none
+    style signing fill:#aee,stroke:#6cc
+    style container fill:none,stroke:black
+end
+```
+
 ## Boot Services Commands
 
 All ownership operations are facilitated by boot services commands to the ROM\_EXT.
@@ -558,7 +619,7 @@ typedef struct owner_block {
   uint32_t sram_exec_mode;
   /** Ownership key algorithm (currently, only ECDSA is supported). */
   uint32_t ownership_key_alg;
-  /** Ownership update mode (one of OPEN, SELF, NEWV) */
+  /** Ownership update mode (one of OPEN, SELF, NEWV, SELV, ANYV) */
   uint32_t update_mode;
   /** Set the minimum security version to this value (UINT32_MAX: no change) */
   uint32_t min_security_version_bl0;
