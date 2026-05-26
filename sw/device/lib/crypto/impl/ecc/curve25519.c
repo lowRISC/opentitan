@@ -359,7 +359,7 @@ status_t curve25519_x25519_sideload_start(
 }
 
 status_t curve25519_x25519_finalize(
-    uint32_t shared_secret[kCurve25519PointWords]) {
+    uint32_t shared_secret[kCurve25519MaskedPointWords]) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 
@@ -374,11 +374,11 @@ status_t curve25519_x25519_finalize(
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
-  // Read the shared secret from OTBN dmem.
+  // Read both shares of the shared secret from OTBN dmem.
   const otbn_addr_t kOtbnVarX25519SharedKey =
       OTBN_ADDR_T_INIT(run_curve25519, x25519_shared_key);
-  HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarX25519SharedKey,
-                              shared_secret));
+  HARDENED_TRY(otbn_dmem_read(kCurve25519MaskedPointWords,
+                              kOtbnVarX25519SharedKey, shared_secret));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

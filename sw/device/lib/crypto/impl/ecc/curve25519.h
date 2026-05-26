@@ -126,6 +126,11 @@ enum {
    */
   kCurve25519MaskedScalarTotalShareWords =
       kCurve25519MaskedScalarNumShares * kCurve25519MaskedScalarShareWords,
+  /**
+   * Number of words needed to hold a masked encoded point for Curve25519.
+   * (2 boolean shares * 8 words)
+   */
+  kCurve25519MaskedPointWords = kCurve25519PointWords * 2,
 };
 
 /**
@@ -319,7 +324,7 @@ status_t curve25519_x25519_sideload_start(
  */
 OT_WARN_UNUSED_RESULT
 status_t curve25519_x25519_finalize(
-    uint32_t shared_secret[kCurve25519PointWords]);
+    uint32_t shared_secret[kCurve25519MaskedPointWords]);
 
 /**
  * Start an async X25519 keygen operation on OTBN.
