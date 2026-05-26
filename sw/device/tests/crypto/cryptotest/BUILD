@@ -42,6 +42,20 @@ cryptotest(
 )
 
 cryptotest(
+    name = "kmac_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:kmac_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:kmac_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:kmac_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:kmac_expected.hjson",
+    ],
+)
+
+cryptotest(
     name = "cshake_acvp",
     slow_test = True,
     test_args = " ".join([

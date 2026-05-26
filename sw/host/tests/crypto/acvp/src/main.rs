@@ -20,6 +20,7 @@ mod cshake;
 mod ecdsa;
 mod eddsa;
 mod hmac;
+mod kmac;
 mod rsa;
 mod x25519;
 
@@ -97,6 +98,7 @@ enum AcvpVectors {
     EddsaSigGen(eddsa::EddsaSignGenTestVectorSet),
     EddsaKeyGen(eddsa::EddsaKeygenTestVectorSet),
     Hmac(hmac::HmacTestVectorSet),
+    Kmac(kmac::KmacTestVectorSet),
     RsaSigGen(rsa::RsaSignGenTestVectorSet),
     Rsa(rsa::RsaTestVectorSet),
     X25519(x25519::X25519TestVectorSet),
@@ -112,6 +114,7 @@ enum AcvpResults {
         time: String,
     },
     Hmac(hmac::HmacResultVectorSet),
+    Kmac(kmac::KmacResultVectorSet),
     Cshake(cshake::CshakeResultVectorSet),
     Ecdsa(ecdsa::EcdsaResultVectorSet),
     Eddsa(eddsa::EddsaResultVectorSet),
@@ -151,6 +154,7 @@ fn parse_vector_set(raw: serde_json::Value) -> Result<AcvpVectors> {
 
     Ok(match (algorithm.as_str(), mode.as_str()) {
         (a, _) if a.starts_with("HMAC") => AcvpVectors::Hmac(serde_json::from_value(raw)?),
+        (a, _) if a.starts_with("KMAC") => AcvpVectors::Kmac(serde_json::from_value(raw)?),
         (a, _) if a.starts_with("cSHAKE") => AcvpVectors::Cshake(serde_json::from_value(raw)?),
         (a, _) if a.starts_with("ACVP-AES") => AcvpVectors::Aes(serde_json::from_value(raw)?),
         ("ECDSA", "sigVer") => AcvpVectors::Ecdsa(serde_json::from_value(raw)?),
@@ -284,6 +288,15 @@ fn run<R: std::io::Read, W: std::io::Write>(
             }),
             AcvpVectors::Hmac(vs) => {
                 acvp_results.push(AcvpResults::Hmac(hmac::run_hmac_vector_set(
+                    opts.timeout,
+                    &spi_console_device,
+                    &vs,
+                    opts.skip_stride,
+                    opts.seed,
+                )?))
+            }
+            AcvpVectors::Kmac(vs) => {
+                acvp_results.push(AcvpResults::Kmac(kmac::run_kmac_vector_set(
                     opts.timeout,
                     &spi_console_device,
                     &vs,
