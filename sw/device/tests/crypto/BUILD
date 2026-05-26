@@ -246,6 +246,7 @@ opentitan_test(
     deps = [
         ":aes_gcm_testvectors",
         "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:profile",

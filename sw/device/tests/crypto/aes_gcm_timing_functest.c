@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
@@ -50,12 +51,18 @@ static status_t test_decrypt_timing(void) {
   aes_gcm_context_t base_ctx;
   size_t iv_num_words = current_test->iv_len / sizeof(uint32_t);
 
-  TRY(aes_gcm_decrypt_init(aes_key, iv_num_words, (uint32_t *)current_test->iv,
-                           &base_ctx));
+  otcrypto_const_word32_buf_t iv_buf = otcrypto_make_const_word32_buf(
+      (const uint32_t *)current_test->iv, iv_num_words);
+
+  TRY(aes_gcm_decrypt_init(aes_key, &iv_buf, &base_ctx));
 
   aes_gcm_context_t test_ctx;
   size_t output_len;
   uint8_t dummy_output[16];
+
+  otcrypto_byte_buf_t output_buf =
+      otcrypto_make_byte_buf(dummy_output, sizeof(dummy_output));
+
   hardened_bool_t valid;
   uint32_t cycles[3];
 
@@ -69,10 +76,12 @@ static status_t test_decrypt_timing(void) {
 
     current_test->tag[idx]++;
 
+    otcrypto_const_word32_buf_t tag_buf = otcrypto_make_const_word32_buf(
+        (const uint32_t *)current_test->tag, tag_num_words);
+
     uint64_t t_start = profile_start();
-    TRY(aes_gcm_decrypt_final(&test_ctx, tag_num_words,
-                              (uint32_t *)current_test->tag, &output_len,
-                              dummy_output, &valid));
+    TRY(aes_gcm_decrypt_final(&test_ctx, &tag_buf, &output_buf, &output_len,
+                              &valid));
     cycles[i] = profile_end(t_start);
 
     TRY_CHECK(valid == kHardenedBoolFalse);
