@@ -782,19 +782,7 @@ otcrypto_status_t otcrypto_x25519_async_start(
 
 otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
-  uint32_t unmasked_secret[kCurve25519PointWords];
-  memset(unmasked_secret, 0, sizeof(unmasked_secret));
-  HARDENED_TRY(curve25519_x25519_finalize(unmasked_secret));
-
-  uint32_t *share0 = shared_secret->keyblob;
-  uint32_t *share1 =
-      shared_secret->keyblob + keyblob_share_num_words(shared_secret->config);
-
-  HARDENED_TRY(hardened_memshred(share1, kCurve25519PointWords));
-
-  HARDENED_TRY(
-      hardened_sub(unmasked_secret, share1, kCurve25519PointWords, share0));
-
+  HARDENED_TRY(curve25519_x25519_finalize(shared_secret->keyblob));
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

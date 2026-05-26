@@ -2021,17 +2021,23 @@ x25519_ed_y_to_mont_u:
   ret
 
 /**
- * Top-level x25519 function using Twisted Edwards scalar multiplication.
+ * Top-level X25519 function using Twisted Edwards scalar multiplication.
  *
  * This routine saves instruction memory by reusing the Ed25519 point arithmetic.
  * It maps the Montgomery u-coordinate to a Twisted Edwards y-coordinate,
- * performs the scalar multiplication, and maps the result back.
+ * performs a masked scalar multiplication, and maps the result back.
  *
- * @param[in]  w8: scalar (private key, already clamped by host CPU)
+ * To prevent side-channel leakage, the return mapping is done inline using
+ * projective coordinates. The result is returned arithmetically masked
+ * (u_masked = u - r mod p).
+ *
+ * @param[in]  w2: s0, first share of the scalar
+ * @param[in]  w4: s1, second share of the scalar
  * @param[in]  w9: Montgomery u-coordinate (public key or base point 9)
- * @param[out] w22: result, x25519(k, u) as an encoded u-coordinate
+ * @param[out] w19: r, the random arithmetic mask applied to the output
+ * @param[out] w22: u_masked, the arithmetically masked X25519 result
  * @param[out] x20: SUCCESS if the public key decoding passed,
- *                  FAILURE if the public key decoding failed
+ * FAILURE if the public key decoding failed or u=0
  *
  * clobbered registers: x2, x3, x21, w2, w6 to w30
  * clobbered flag groups: FG0
@@ -2081,11 +2087,43 @@ x25519:
   li       x5, 1  /* X25519 mode: use 8 * rnd * L */
   jal      x1, ext_scmul_sca
 
-  /* Convert result back to affine (x, y) */
-  jal      x1, ext_to_affine
+  /* Map the resulting Ed25519 point from extended projective coordinates  */
+  /* to its affine Curve25519 (Montgomery) u-coordinate equivalent.        */
 
-  /* Convert Edwards y back to Montgomery u */
-  jal      x1, x25519_ed_y_to_mont_u
+  /* The standard mapping is u = (Z + Y) / (Z - Y) mod p.                  */
+  /* To prevent unmasking the shared secret in registers, we apply a       */
+  /* random arithmetic mask 'r' during the projective conversion:          */
+  /* u_masked = u - r mod p                                                */
+  /* = ((Z + Y) - r * (Z - Y)) / (Z - Y) mod p                             */
+  /* = (U - r * W) * W^-1 mod p                                            */
+
+  /* W = (Z - Y) mod p */
+  bn.subm  w23, w12, w11
+
+  /* U = (Z + Y) mod p  */
+  /* Note that this value is still masked by the coord rand. */
+  bn.addm  w24, w12, w11
+
+  /* Fetch random mask r and reduce it modulo p. */
+  bn.wsrr  w25, URND
+  bn.addm  w25, w25, w31
+
+  /* Compute T1 = (r * W) mod p. */
+  bn.mov   w22, w25
+  jal      x1, fe_mul
+
+  /* U_masked = U - (r * W) mod p */
+  bn.subm  w24, w24, w22
+
+  /* Compute W^-1 mod p. */
+  bn.mov   w16, w23
+  jal      x1, fe_inv
+
+  /* Compute u_masked = U_masked * W^-1 mod p. */
+  bn.mov   w23, w24
+  jal      x1, fe_mul
+
+  bn.mov   w19, w25
 
   /* Signal success to caller via x20. */
   li       x20, 0x739
