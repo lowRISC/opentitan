@@ -7,16 +7,16 @@ use clap::Args;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::app::config::process_config_file;
-use crate::app::{TransportWrapper, TransportWrapperBuilder};
-use crate::transport::chip_whisperer::board::{Cw310, Cw340};
-use crate::transport::dediprog::Dediprog;
-use crate::transport::ftdi::chip::Ft4232hq;
-use crate::transport::hyperdebug::{
+use opentitanlib_app::config::process_config_file;
+use opentitanlib_app::{TransportWrapper, TransportWrapperBuilder};
+use opentitanlib_transports::chip_whisperer::board::{Cw310, Cw340};
+use opentitanlib_transports::dediprog::Dediprog;
+use opentitanlib_transports::ftdi::chip::Ft4232hq;
+use opentitanlib_transports::hyperdebug::{
     C2d2Flavor, ChipWhispererFlavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
 };
-use crate::transport::{EmptyTransport, Transport};
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::transport::{EmptyTransport, Transport};
+use opentitanlib_core::util::parse_int::ParseInt;
 
 pub mod chip_whisperer;
 mod ftdi;
@@ -87,10 +87,7 @@ pub enum Error {
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
     let mut env = TransportWrapperBuilder::new(interface.to_string(), args.disable_dft_on_reset);
-    env.register_io_expander_driver(
-        crate::app::config::IoExpanderDriver::Sx1503,
-        crate::transport::ioexpander::sx1503::create,
-    );
+    env.register_io_expander_factory(opentitanlib_transports::ioexpander::create);
 
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file.as_ref())?

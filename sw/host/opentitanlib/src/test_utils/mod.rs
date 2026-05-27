@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+pub use crate as test_utils;
+
 pub mod bitbanging;
 pub mod bootstrap;
 pub mod crashdump;

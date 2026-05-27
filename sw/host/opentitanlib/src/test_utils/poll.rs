@@ -4,4 +4,4 @@
 
 //! Helper functions for polling in tests.
 
-pub use crate::util::poll::poll_until;
+pub use opentitanlib_core::util::poll::poll_until;

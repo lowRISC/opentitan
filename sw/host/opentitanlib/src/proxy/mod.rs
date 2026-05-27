@@ -13,12 +13,12 @@ use socket_server::{Connection, JsonSocketServer};
 use std::collections::HashMap;
 use std::net::SocketAddr;
 
-use crate::app::TransportWrapper;
+use opentitanlib_app::TransportWrapper;
 
-pub mod errors;
+pub use opentitanlib_proxy_protocol::errors;
 mod handler;
 mod nonblocking_uart;
-pub mod protocol;
+pub use opentitanlib_proxy_protocol::protocol;
 mod socket_server;
 
 /// Interface for handlers of protocol messages, responding to each message with a single

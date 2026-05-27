@@ -19,14 +19,14 @@ use super::protocol::{
     I2cTransferResponse, Message, ProxyRequest, ProxyResponse, Request, Response, SpiRequest,
     SpiResponse, SpiTransferRequest, SpiTransferResponse, UartRequest, UartResponse,
 };
-use crate::app::TransportWrapper;
+use opentitanlib_app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
-use crate::io::gpio::{
+use opentitanlib_core::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
-use crate::io::{i2c, nonblocking_help, spi};
+use opentitanlib_core::io::{i2c, nonblocking_help, spi};
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
-use crate::transport::TransportError;
+use opentitanlib_core::transport::TransportError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
 /// `Transport` implementation.

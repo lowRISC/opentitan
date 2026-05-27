@@ -5,10 +5,10 @@
 use anyhow::Result;
 use clap::Args;
 
-use crate::backend::BackendOpts;
-use crate::transport::Transport;
-use crate::transport::chip_whisperer::ChipWhisperer;
-use crate::transport::chip_whisperer::board::Board;
+use crate::BackendOpts;
+use opentitanlib_core::transport::Transport;
+use opentitanlib_transports::chip_whisperer::ChipWhisperer;
+use opentitanlib_transports::chip_whisperer::board::Board;
 
 #[derive(Debug, Args)]
 pub struct ChipWhispererOpts {

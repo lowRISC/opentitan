@@ -4,10 +4,10 @@
 
 use crate::image::manifest::*;
 use crate::image::manifest_ext::{ManifestExtEntrySpec, ManifestExtId};
-use crate::util::bigint::fixed_size_bigint;
-use crate::util::known_keys::KNOWN_KEYS;
-use crate::util::num_de::HexEncoded;
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::fixed_size_bigint;
+use opentitanlib_core::util::known_keys::KNOWN_KEYS;
+use opentitanlib_core::util::num_de::HexEncoded;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 use anyhow::{Result, bail};
 use serde::{Deserialize, Serialize};
@@ -582,7 +582,7 @@ impl From<&ManifestExtTable> for [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TA
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::testdata;
+    use opentitanlib_core::util::testdata;
     use deser_hjson::from_str;
 
     #[test]

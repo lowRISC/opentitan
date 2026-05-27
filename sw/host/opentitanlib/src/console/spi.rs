@@ -8,9 +8,9 @@ use std::collections::VecDeque;
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::io::console::ConsoleDevice;
-use crate::io::gpio::GpioPin;
-use crate::io::spi::Target;
+use opentitanlib_core::io::console::ConsoleDevice;
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::spi::Target;
 use crate::spiflash::flash::SpiFlash;
 
 pub struct SpiConsoleDevice<'a> {

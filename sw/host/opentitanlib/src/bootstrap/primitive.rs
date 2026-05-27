@@ -7,10 +7,10 @@ use sha2::{Digest, Sha256};
 use std::time::Duration;
 use zerocopy::{Immutable, IntoBytes};
 
-use crate::app::TransportWrapper;
+use opentitanlib_app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
-use crate::io::spi::Transfer;
-use crate::transport::{Capability, ProgressIndicator};
+use opentitanlib_core::io::spi::Transfer;
+use opentitanlib_core::transport::{Capability, ProgressIndicator};
 
 #[derive(Immutable, IntoBytes, Debug, Default)]
 #[repr(C)]

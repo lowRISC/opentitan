@@ -7,10 +7,10 @@ use std::time::Duration;
 use anyhow::Result;
 use arrayvec::ArrayVec;
 
-use crate::app::{TransportWrapper, UartRx};
-use crate::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
-use crate::io::jtag::{JtagParams, JtagTap};
-use crate::test_utils::lc_transition::wait_for_status;
+use opentitanlib_app::{TransportWrapper, UartRx};
+use opentitanlib_chip::dif::lc_ctrl::{DifLcCtrlState, JtagLcExt, LcCtrlReg, LcCtrlStatus};
+use opentitanlib_core::io::jtag::{JtagParams, JtagTap};
+use crate::lc_transition::wait_for_status;
 
 pub fn read_lc_state(
     transport: &TransportWrapper,

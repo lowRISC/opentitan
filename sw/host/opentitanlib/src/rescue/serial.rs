@@ -7,11 +7,11 @@ use std::cell::Cell;
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::app::{TransportWrapper, UartRx};
-use crate::io::uart::Uart;
+use opentitanlib_app::{TransportWrapper, UartRx};
+use opentitanlib_core::io::uart::Uart;
 use crate::rescue::xmodem::Xmodem;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode};
-use crate::uart::console::UartConsole;
+use opentitanlib_core::uart::console::UartConsole;
 
 pub struct RescueSerial {
     uart: Rc<dyn Uart>,

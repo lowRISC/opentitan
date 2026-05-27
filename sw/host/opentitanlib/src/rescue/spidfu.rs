@@ -8,9 +8,9 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 use zerocopy::{Immutable, IntoBytes};
 
-use crate::app::{TransportWrapper, UartRx};
-use crate::chip::rom_error::RomError;
-use crate::io::spi::Target;
+use opentitanlib_app::{TransportWrapper, UartRx};
+use opentitanlib_chip::chip::rom_error::RomError;
+use opentitanlib_core::io::spi::Target;
 use crate::rescue::dfu::*;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode, RescueParams};
 use crate::spiflash::SpiFlash;

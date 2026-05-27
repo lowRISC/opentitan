@@ -197,7 +197,7 @@ pub type IoExpanderFactory = fn(
 ) -> Result<opentitanlib_core::io::ioexpander::IoExpander>;
 
 pub struct TransportWrapperBuilder {
-    io_expander_drivers: HashMap<config::IoExpanderDriver, IoExpanderFactory>,
+    io_expander_factory: Option<IoExpanderFactory>,
     interface: String,
     disable_dft_on_reset: bool,
     reset_delay: Duration,
@@ -250,7 +250,7 @@ pub struct TransportWrapper {
 impl TransportWrapperBuilder {
     pub fn new(interface: String, disable_dft_on_reset: bool) -> Self {
         Self {
-            io_expander_drivers: HashMap::new(),
+            io_expander_factory: None,
             interface,
             disable_dft_on_reset,
             reset_delay: Duration::from_millis(100),
@@ -269,12 +269,8 @@ impl TransportWrapperBuilder {
         }
     }
 
-    pub fn register_io_expander_driver(
-        &mut self,
-        driver: config::IoExpanderDriver,
-        factory: IoExpanderFactory,
-    ) {
-        self.io_expander_drivers.insert(driver, factory);
+    pub fn register_io_expander_factory(&mut self, factory: IoExpanderFactory) {
+        self.io_expander_factory = Some(factory);
     }
 
     fn record_pin_conf(
@@ -684,8 +680,8 @@ impl TransportWrapperBuilder {
         };
         let mut io_expanders: HashMap<String, IoExpander> = HashMap::new();
         for (name, conf) in self.io_expander_conf_map {
-            let Some(factory) = self.io_expander_drivers.get(&conf.driver) else {
-                bail!("Unsupported IO expander driver {:?}", conf.driver);
+            let Some(factory) = self.io_expander_factory else {
+                bail!("No IO expander factory registered");
             };
             io_expanders.insert(
                 name.to_string(),

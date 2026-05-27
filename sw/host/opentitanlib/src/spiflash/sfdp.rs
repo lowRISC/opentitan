@@ -10,7 +10,7 @@ use std::convert::TryFrom;
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::util::bitfield::BitField;
+use opentitanlib_core::util::bitfield::BitField;
 
 #[derive(Debug, Error)]
 pub enum Error {

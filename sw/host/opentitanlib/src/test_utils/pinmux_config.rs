@@ -8,15 +8,15 @@ use std::time::Duration;
 
 use anyhow::Result;
 
-use crate::chip::autogen::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
-use crate::dif::pinmux::PinmuxPadAttr;
-use crate::io::uart::Uart;
-use crate::test_utils::e2e_command::TestCommand;
-use crate::test_utils::rpc::{ConsoleRecv, ConsoleSend};
-use crate::test_utils::status::Status;
+use opentitanlib_chip::chip::autogen::earlgrey::{PinmuxInsel, PinmuxMioOut, PinmuxOutsel, PinmuxPeripheralIn};
+use opentitanlib_chip::dif::pinmux::PinmuxPadAttr;
+use opentitanlib_core::io::uart::Uart;
+use crate::e2e_command::TestCommand;
+use crate::rpc::{ConsoleRecv, ConsoleSend};
+use crate::status::Status;
 
 // Bring in the auto-generated sources.
-use crate::chip::autogen::earlgrey::ujson_alias::*;
+use opentitanlib_chip::chip::autogen::earlgrey::ujson_alias::*;
 include!(env!("pinmux_config"));
 
 /// Capacity of a single configuration message.

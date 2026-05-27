@@ -4,9 +4,9 @@
 
 use anyhow::Result;
 
-use crate::app::TransportWrapper;
-use crate::dif::rstmgr::{DifRstmgrResetInfo, RstmgrReg};
-use crate::io::jtag::{JtagParams, JtagTap};
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_chip::dif::rstmgr::{DifRstmgrResetInfo, RstmgrReg};
+use opentitanlib_core::io::jtag::{JtagParams, JtagTap};
 
 use top_earlgrey::top_earlgrey;
 

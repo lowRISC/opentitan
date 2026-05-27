@@ -4,10 +4,10 @@
 
 use anyhow::Result;
 
-use crate::app::TransportWrapper;
+use opentitanlib_app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, UpdateProtocol};
 use crate::spiflash::SpiFlash;
-use crate::transport::{Capability, ProgressIndicator};
+use opentitanlib_core::transport::{Capability, ProgressIndicator};
 
 /// Implements the SPI EEPROM bootstrap protocol.
 pub struct Eeprom;

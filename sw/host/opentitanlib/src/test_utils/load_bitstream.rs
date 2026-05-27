@@ -7,8 +7,8 @@ use clap::Args;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use crate::app::{StagedProgressBar, TransportWrapper};
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
+use opentitanlib_app::{StagedProgressBar, TransportWrapper};
+use opentitanlib_transports::common::fpga::{ClearBitstream, FpgaProgram};
 
 /// Load a bitstream into the FPGA.
 #[derive(Debug, Args)]

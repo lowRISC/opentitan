@@ -6,10 +6,10 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use std::time::Duration;
 
-use crate::io::console::ConsoleDevice;
-use crate::test_utils::e2e_command::TestCommand;
-use crate::test_utils::rpc::{ConsoleRecv, ConsoleSend};
-use crate::test_utils::status::Status;
+use opentitanlib_core::io::console::ConsoleDevice;
+use crate::e2e_command::TestCommand;
+use crate::rpc::{ConsoleRecv, ConsoleSend};
+use crate::status::Status;
 
 // Bring in the auto-generated sources.
 include!(env!("mem"));

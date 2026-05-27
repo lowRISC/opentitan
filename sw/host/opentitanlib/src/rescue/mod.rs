@@ -7,15 +7,15 @@ use clap::{Args, ValueEnum};
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
-use crate::chip::boot_log::BootLog;
-use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
-use crate::chip::device_id::DeviceId;
-use crate::io::gpio::PinMode;
-use crate::io::spi::SpiParams;
-use crate::io::uart::UartParams;
-use crate::util::parse_int::ParseInt;
-use crate::with_unknown;
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_chip::chip::boot_log::BootLog;
+use opentitanlib_chip::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
+use opentitanlib_chip::chip::device_id::DeviceId;
+use opentitanlib_core::io::gpio::PinMode;
+use opentitanlib_core::io::spi::SpiParams;
+use opentitanlib_core::io::uart::UartParams;
+use opentitanlib_core::util::parse_int::ParseInt;
+use opentitanlib_core::with_unknown;
 
 pub mod dfu;
 pub mod serial;

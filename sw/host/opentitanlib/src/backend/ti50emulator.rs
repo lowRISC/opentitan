@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::transport::Transport;
-use crate::transport::ti50emulator::Ti50Emulator;
+use opentitanlib_core::transport::Transport;
+use opentitanlib_transports::ti50emulator::Ti50Emulator;
 use anyhow::Result;
 use clap::Args;
 use std::path::PathBuf;

@@ -9,10 +9,10 @@ use std::vec::Vec;
 use anyhow::{Result, bail};
 use thiserror::Error;
 
-use crate::io::gpio::{
+use opentitanlib_core::io::gpio::{
     ClockNature, Edge, MonitoringEvent, MonitoringReadResponse, MonitoringStartResponse,
 };
-use crate::test_utils::bitbanging::uart::{UartBitbangDecoder, UartTransfer};
+use crate::bitbanging::uart::{UartBitbangDecoder, UartTransfer};
 
 #[derive(Error, Debug, PartialEq)]
 pub enum UartBitbangError {
@@ -307,7 +307,7 @@ mod test {
     use once_cell::sync::Lazy;
     use serialport::Parity;
 
-    use crate::test_utils::bitbanging::uart::{UartBitbangConfig, UartStopBits};
+    use crate::bitbanging::uart::{UartBitbangConfig, UartStopBits};
 
     static CLOCK_NATURE: ClockNature = ClockNature::Wallclock {
         resolution: 1_000_000,

@@ -83,7 +83,7 @@ impl LcSecded {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::testdata;
+    use opentitanlib_core::util::testdata;
     use anyhow::Result;
     use deser_hjson::from_str;
     use std::fs::read_to_string;

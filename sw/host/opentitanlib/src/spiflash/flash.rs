@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::app::NoProgressBar;
-use crate::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, Mode, Transaction};
-use crate::io::spi::Target;
+use opentitanlib_app::NoProgressBar;
+use opentitanlib_core::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, Mode, Transaction};
+use opentitanlib_core::io::spi::Target;
 use crate::spiflash::sfdp::{
     BlockEraseSize, FastReadParam, SectorErase, Sfdp, SupportedAddressModes,
 };
-use crate::transport::ProgressIndicator;
+use opentitanlib_core::transport::ProgressIndicator;
 use anyhow::{Result, ensure};
 use clap::ValueEnum;
 use std::convert::TryFrom;

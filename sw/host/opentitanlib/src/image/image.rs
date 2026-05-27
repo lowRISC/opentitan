@@ -15,11 +15,11 @@ use std::path::{Path, PathBuf};
 use thiserror::Error;
 use zerocopy::FromBytes;
 
-use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
-use crate::crypto::rsa::Modulus;
-use crate::crypto::rsa::RsaPublicKey;
-use crate::crypto::rsa::Signature as RsaSignature;
-use crate::crypto::sha256::Sha256Digest;
+use opentitanlib_core::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
+use opentitanlib_core::crypto::rsa::Modulus;
+use opentitanlib_core::crypto::rsa::RsaPublicKey;
+use opentitanlib_core::crypto::rsa::Signature as RsaSignature;
+use opentitanlib_core::crypto::sha256::Sha256Digest;
 use crate::image::manifest::{
     CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2, CHIP_MANIFEST_VERSION_MINOR1,
     CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX, MANIFEST_EXT_ID_SPX_KEY,
@@ -27,8 +27,8 @@ use crate::image::manifest::{
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec};
-use crate::util::file::{FromReader, ToWriter};
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::file::{FromReader, ToWriter};
+use opentitanlib_core::util::parse_int::ParseInt;
 
 #[derive(Debug, Error)]
 pub enum ImageError {
@@ -698,7 +698,7 @@ impl ImageAssembler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::testdata;
+    use opentitanlib_core::util::testdata;
 
     #[test]
     fn test_assemble_concat() -> Result<()> {

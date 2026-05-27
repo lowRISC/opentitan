@@ -16,12 +16,12 @@ use thiserror::Error;
 
 use top_earlgrey::top_earlgrey;
 
-use crate::dif::otp_ctrl::{
+use opentitanlib_chip::dif::otp_ctrl::{
     DaiParam, DirectAccessCmd, Granularity, OtpCtrlReg, OtpCtrlStatus, OtpParamMmap, Partition,
     SECRET_PARTITIONS,
 };
-use crate::io::jtag::Jtag;
-use crate::test_utils::poll;
+use opentitanlib_core::io::jtag::Jtag;
+use crate::poll;
 
 /// Controls for reading and writing OTP parameters.
 pub struct OtpParam;

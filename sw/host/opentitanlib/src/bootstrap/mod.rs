@@ -8,14 +8,14 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-pub use crate::io::{BootstrapOptions, BootstrapProtocol};
+pub use opentitanlib_core::io::{BootstrapOptions, BootstrapProtocol};
 
-use crate::app::{NoProgressBar, TransportWrapper, UartRx};
-use crate::impl_serializable_error;
-use crate::io::gpio::GpioPin;
-use crate::io::spi::SpiParams;
-use crate::io::uart::UartParams;
-use crate::transport::{Capability, ProgressIndicator};
+use opentitanlib_app::{NoProgressBar, TransportWrapper, UartRx};
+use opentitanlib_core::impl_serializable_error;
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::spi::SpiParams;
+use opentitanlib_core::io::uart::UartParams;
+use opentitanlib_core::transport::{Capability, ProgressIndicator};
 
 mod eeprom;
 mod legacy;

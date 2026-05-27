@@ -6,4 +6,5 @@
 
 pub mod chip;
 pub mod dif;
+pub mod image;
 pub mod ownership;

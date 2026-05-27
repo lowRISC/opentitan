@@ -10,10 +10,10 @@ use thiserror::Error;
 
 use top_earlgrey::top_earlgrey;
 
-use crate::chip::boolean::MultiBitBool4;
-use crate::dif::clkmgr::{ClkmgrExtclkCtrl, ClkmgrReg};
-use crate::io::jtag::Jtag;
-use crate::test_utils::poll;
+use opentitanlib_chip::chip::boolean::MultiBitBool4;
+use opentitanlib_chip::dif::clkmgr::{ClkmgrExtclkCtrl, ClkmgrReg};
+use opentitanlib_core::io::jtag::Jtag;
+use crate::poll;
 
 /// Available speeds for the external clock.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

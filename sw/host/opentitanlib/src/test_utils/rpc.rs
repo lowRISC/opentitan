@@ -9,9 +9,9 @@ use serde::de::DeserializeOwned;
 use std::io::Write;
 use std::time::Duration;
 
-use crate::io::console::{ConsoleDevice, ConsoleError};
-use crate::test_utils::status::Status;
-use crate::uart::console::{ExitStatus, UartConsole};
+use opentitanlib_core::io::console::{ConsoleDevice, ConsoleError};
+use crate::status::Status;
+use opentitanlib_core::uart::console::{ExitStatus, UartConsole};
 
 // Bring in the auto-generated sources.
 include!(env!("ottf"));

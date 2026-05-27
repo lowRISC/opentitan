@@ -9,14 +9,14 @@ use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::app::{TransportWrapper, UartRx};
-use crate::chip::boolean::MultiBitBool8;
-use crate::dif::lc_ctrl::{
-    DifLcCtrlState, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
+use opentitanlib_app::{TransportWrapper, UartRx};
+use opentitanlib_chip::chip::boolean::MultiBitBool8;
+use opentitanlib_chip::dif::lc_ctrl::{
+    DifLcCtrlState, JtagLcExt, LcCtrlReg, LcCtrlStatus, LcCtrlTransitionCmd, LcCtrlTransitionCtrl,
 };
-use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, JtagParams, JtagTap};
-use crate::test_utils::poll;
+use opentitanlib_core::impl_serializable_error;
+use opentitanlib_core::io::jtag::{Jtag, JtagParams, JtagTap};
+use crate::poll;
 
 use top_earlgrey::top_earlgrey;
 

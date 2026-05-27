@@ -6,8 +6,8 @@ use anyhow::{Context, Result, bail};
 use std::cell::{Cell, Ref, RefCell};
 use std::time::Duration;
 
-use crate::app::{TransportWrapper, UartRx};
-use crate::io::usb::UsbDevice;
+use opentitanlib_app::{TransportWrapper, UartRx};
+use opentitanlib_core::io::usb::UsbDevice;
 use crate::rescue::dfu::*;
 use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode, RescueParams};
 

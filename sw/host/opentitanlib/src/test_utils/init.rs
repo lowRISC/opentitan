@@ -15,9 +15,9 @@ use std::str::FromStr;
 
 use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
-use crate::app::TransportWrapper;
-use crate::backend;
-use crate::io::jtag::JtagParams;
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_backend as backend;
+use opentitanlib_core::io::jtag::JtagParams;
 // use opentitanlib::io::uart::UartParams;
 
 #[derive(Debug, Args)]
