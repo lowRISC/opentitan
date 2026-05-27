@@ -243,7 +243,7 @@ impl OwnerFlashConfig {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::util::hexdump::{hexdump_parse, hexdump_string};
+    use opentitanlib_core::util::hexdump::{hexdump_parse, hexdump_string};
 
     #[rustfmt::skip]
     const OWNER_FLASH_CONFIG_BIN: &str =

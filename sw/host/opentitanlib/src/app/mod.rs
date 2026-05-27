@@ -10,19 +10,18 @@ mod gpio;
 mod i2c;
 mod spi;
 
-use crate::debug::openocd::OpenOcdJtagChain;
-use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
-use crate::io::i2c::Bus;
-use crate::io::ioexpander::IoExpander;
-use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::spi::{Target, TransferMode};
-use crate::io::uart::Uart;
-use crate::io::usb::UsbContext;
-use crate::transport::{
+use opentitanlib_debug::openocd::OpenOcdJtagChain;
+use opentitanlib_core::io::emu::Emulator;
+use opentitanlib_core::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
+use opentitanlib_core::io::i2c::Bus;
+use opentitanlib_core::io::ioexpander::IoExpander;
+use opentitanlib_core::io::jtag::{JtagChain, JtagParams};
+use opentitanlib_core::io::nonblocking_help::NonblockingHelp;
+use opentitanlib_core::io::spi::{Target, TransferMode};
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::io::usb::UsbContext;
+use opentitanlib_core::transport::{
     Capability, ProgressIndicator, ProxyOps, Transport, TransportError, TransportInterfaceType,
-    ioexpander,
 };
 
 use anyhow::{Result, bail, ensure};
@@ -192,7 +191,13 @@ pub struct I2cConfiguration {
     pub bits_per_sec: Option<u32>,
 }
 
+pub type IoExpanderFactory = fn(
+    conf: &config::IoExpander,
+    transport: &TransportWrapper,
+) -> Result<opentitanlib_core::io::ioexpander::IoExpander>;
+
 pub struct TransportWrapperBuilder {
+    io_expander_drivers: HashMap<config::IoExpanderDriver, IoExpanderFactory>,
     interface: String,
     disable_dft_on_reset: bool,
     reset_delay: Duration,
@@ -245,6 +250,7 @@ pub struct TransportWrapper {
 impl TransportWrapperBuilder {
     pub fn new(interface: String, disable_dft_on_reset: bool) -> Self {
         Self {
+            io_expander_drivers: HashMap::new(),
             interface,
             disable_dft_on_reset,
             reset_delay: Duration::from_millis(100),
@@ -261,6 +267,14 @@ impl TransportWrapperBuilder {
             io_expander_conf_map: HashMap::new(),
             gpio_conf: HashSet::new(),
         }
+    }
+
+    pub fn register_io_expander_driver(
+        &mut self,
+        driver: config::IoExpanderDriver,
+        factory: IoExpanderFactory,
+    ) {
+        self.io_expander_drivers.insert(driver, factory);
     }
 
     fn record_pin_conf(
@@ -621,7 +635,7 @@ impl TransportWrapperBuilder {
 
     pub fn build(
         self,
-        transport: Box<dyn crate::transport::Transport>,
+        transport: Box<dyn opentitanlib_core::transport::Transport>,
     ) -> Result<TransportWrapper> {
         let mut provides_map = if transport
             .capabilities()?
@@ -670,9 +684,12 @@ impl TransportWrapperBuilder {
         };
         let mut io_expanders: HashMap<String, IoExpander> = HashMap::new();
         for (name, conf) in self.io_expander_conf_map {
+            let Some(factory) = self.io_expander_drivers.get(&conf.driver) else {
+                bail!("Unsupported IO expander driver {:?}", conf.driver);
+            };
             io_expanders.insert(
                 name.to_string(),
-                ioexpander::create(&conf, &transport_wrapper)?,
+                factory(&conf, &transport_wrapper)?,
             );
         }
         transport_wrapper
@@ -705,7 +722,7 @@ impl TransportWrapper {
 
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
-    pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
+    pub fn capabilities(&self) -> Result<opentitanlib_core::transport::Capabilities> {
         let capabilities = self.transport.capabilities()?;
         if self.openocd_adapter_config.is_some() {
             Ok(capabilities.add(Capability::JTAG))
@@ -1038,7 +1055,7 @@ impl TransportWrapper {
         Ok(())
     }
 
-    pub fn create_uart(&self, params: &crate::io::uart::UartParams) -> Result<Rc<dyn Uart>> {
+    pub fn create_uart(&self, params: &opentitanlib_core::io::uart::UartParams) -> Result<Rc<dyn Uart>> {
         let uart = self.uart(&params.uart)?;
         if let Some(baudrate) = params.baudrate {
             uart.set_baudrate(baudrate)?;
@@ -1050,7 +1067,7 @@ impl TransportWrapper {
 
     pub fn create_spi(
         &self,
-        params: &crate::io::spi::SpiParams,
+        params: &opentitanlib_core::io::spi::SpiParams,
         default_instance: &str,
     ) -> Result<Rc<dyn Target>> {
         let spi = self.spi(params.bus.as_deref().unwrap_or(default_instance))?;
@@ -1071,7 +1088,7 @@ impl TransportWrapper {
 
     pub fn create_i2c(
         &self,
-        params: &crate::io::i2c::I2cParams,
+        params: &opentitanlib_core::io::i2c::I2cParams,
         default_instance: &str,
     ) -> Result<Rc<dyn Bus>> {
         let i2c = self.i2c(params.bus.as_deref().unwrap_or(default_instance))?;

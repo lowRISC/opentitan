@@ -11,7 +11,7 @@ use std::io::{Read, Write};
 
 use super::GlobalFlags;
 use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum ApplicationKeyDomain: u32 [default = Self::Unknown] {
@@ -101,8 +101,8 @@ impl OwnerApplicationKey {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::crypto::ecdsa::EcdsaRawPublicKey;
-    use crate::util::hexdump::{hexdump_parse, hexdump_string};
+    use opentitanlib_core::crypto::ecdsa::EcdsaRawPublicKey;
+    use opentitanlib_core::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_APPLICATION_KEY_BIN: &str = "\
 00000000: 41 50 50 4b 70 00 00 00 50 32 35 36 70 72 6f 64  APPKp...P256prod\n\

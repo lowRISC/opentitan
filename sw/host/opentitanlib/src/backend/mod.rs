@@ -87,6 +87,10 @@ pub enum Error {
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
     let mut env = TransportWrapperBuilder::new(interface.to_string(), args.disable_dft_on_reset);
+    env.register_io_expander_driver(
+        crate::app::config::IoExpanderDriver::Sx1503,
+        crate::transport::ioexpander::sx1503::create,
+    );
 
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file.as_ref())?

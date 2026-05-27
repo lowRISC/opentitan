@@ -9,7 +9,7 @@
 
 #![allow(dead_code)]
 
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum PinmuxPeripheralIn: u32 [default = Self::End] {

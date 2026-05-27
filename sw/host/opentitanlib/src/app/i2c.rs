@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::i2c::{self, Bus, DeviceStatus, Mode};
-use crate::transport::Transport;
+use opentitanlib_core::io::i2c::{self, Bus, DeviceStatus, Mode};
+use opentitanlib_core::transport::Transport;
 
 use anyhow::Result;
 use std::cell::Cell;

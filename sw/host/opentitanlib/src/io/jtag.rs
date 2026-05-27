@@ -11,8 +11,12 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 
-use crate::debug::openocd::OpenOcd;
-use crate::dif::lc_ctrl::LcCtrlReg;
+use std::any::Any;
+
+pub trait OpenOcdOps {
+    fn execute(&mut self, cmd: &str) -> Result<String>;
+}
+
 use crate::impl_serializable_error;
 
 #[derive(Debug, Args, Clone)]
@@ -54,16 +58,16 @@ pub trait JtagChain {
     fn connect(self: Box<Self>, tap: JtagTap) -> Result<Box<dyn Jtag>>;
 
     /// Stop further setup and returns raw OpenOCD instance.
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn Any>>;
 }
 
 /// A trait which represents a TAP on a JTAG chain.
 pub trait Jtag {
     /// Stop further operation and returns raw OpenOCD instance.
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn Any>>;
 
     /// Returns the underlying OpenOCD instance.
-    fn as_raw(&mut self) -> Result<&mut OpenOcd>;
+    fn as_raw(&mut self) -> Result<&mut dyn OpenOcdOps>;
 
     /// Disconnect from the TAP.
     fn disconnect(self: Box<Self>) -> Result<()>;
@@ -71,10 +75,10 @@ pub trait Jtag {
     fn tap(&self) -> JtagTap;
 
     /// Read a lifecycle controller register.
-    fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32>;
+    fn read_lc_reg(&mut self, reg_offset: u32) -> Result<u32>;
 
     /// Write a value to a lifecycle controller register.
-    fn write_lc_ctrl_reg(&mut self, reg: &LcCtrlReg, value: u32) -> Result<()>;
+    fn write_lc_reg(&mut self, reg_offset: u32, value: u32) -> Result<()>;
 
     /// Read bytes/words from memory into the provided buffer.
     /// When reading bytes, each memory access is 8 bits.

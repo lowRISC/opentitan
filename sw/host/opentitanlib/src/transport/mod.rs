@@ -18,17 +18,7 @@ use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::io::usb::UsbContext;
 
-pub mod chip_whisperer;
-pub mod common;
-pub mod dediprog;
-pub mod ftdi;
-pub mod hyperdebug;
-pub mod ioexpander;
-pub mod proxy;
-pub mod qemu;
-pub mod ti50emulator;
-pub mod ultradebug;
-pub mod verilator;
+
 
 // Export custom error types
 pub use crate::io::{Capabilities, Capability, NeededCapabilities, TransportError, TransportInterfaceType};

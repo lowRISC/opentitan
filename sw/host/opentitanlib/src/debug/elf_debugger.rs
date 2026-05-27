@@ -12,7 +12,7 @@ use std::time::Duration;
 use anyhow::Result;
 use object::{Object, ObjectSymbol};
 
-use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
+use opentitanlib_core::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 
 pub struct ElfSymbols {
     symbols: HashMap<String, u32>,

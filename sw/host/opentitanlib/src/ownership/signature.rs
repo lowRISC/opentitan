@@ -12,9 +12,9 @@ use std::path::Path;
 
 use super::GlobalFlags;
 use super::misc::{OwnershipKeyAlg, TlvHeader, TlvTag};
-use crate::crypto::Error;
-use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
-use crate::crypto::sha256::Sha256Digest;
+use opentitanlib_core::crypto::Error;
+use opentitanlib_core::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
+use opentitanlib_core::crypto::sha256::Sha256Digest;
 
 #[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct DetachedSignature {

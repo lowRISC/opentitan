@@ -106,7 +106,7 @@ impl OwnerIsfbConfig {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::util::hexdump::{hexdump_parse, hexdump_string};
+    use opentitanlib_core::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_ISFB_CONF: &str = "\
 00000000: 49 53 46 42 2c 00 00 00 01 08 00 00 66 06 00 00  ISFB,.......f...

@@ -12,7 +12,7 @@ use std::io::{Read, Write};
 use super::GlobalFlags;
 use super::misc::{TlvHeader, TlvTag};
 use crate::chip::boot_svc::BootSvcKind;
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum RescueProtocol: u8 [default = Self::None] {
@@ -236,7 +236,7 @@ impl OwnerRescueConfig {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::util::hexdump::{hexdump_parse, hexdump_string};
+    use opentitanlib_core::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_RESCUE_CONFIG_BIN: &str = "\
 00000000: 52 45 53 51 4c 00 00 00 58 80 00 40 20 00 64 00  RESQL...X..@ .d.\n\

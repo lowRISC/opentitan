@@ -7,7 +7,7 @@ use bitflags::bitflags;
 use num_enum::IntoPrimitive;
 use serde::{Deserialize, Serialize};
 
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum DifLcCtrlState: u32 [default = Self::StateInvalid] {
@@ -446,6 +446,20 @@ bitflags! {
     pub struct LcCtrlTransitionCtrl: u32 {
         const EXT_CLOCK_EN = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_EXT_CLOCK_EN_BIT;
         const VOLATILE_RAW_UNLOCK = 0b1 << bindgen::dif::LC_CTRL_TRANSITION_CTRL_VOLATILE_RAW_UNLOCK_BIT;
+    }
+}
+
+pub trait JtagLcExt {
+    fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32>;
+    fn write_lc_ctrl_reg(&mut self, reg: &LcCtrlReg, value: u32) -> Result<()>;
+}
+
+impl<T: opentitanlib_core::io::jtag::Jtag + ?Sized> JtagLcExt for T {
+    fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32> {
+        self.read_lc_reg(reg.word_offset())
+    }
+    fn write_lc_ctrl_reg(&mut self, reg: &LcCtrlReg, value: u32) -> Result<()> {
+        self.write_lc_reg(reg.word_offset(), value)
     }
 }
 
