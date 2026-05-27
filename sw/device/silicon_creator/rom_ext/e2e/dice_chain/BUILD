@@ -29,7 +29,7 @@ package(default_visibility = ["//visibility:public"])
 
 [
     opentitan_test(
-        name = "no_refresh_{}_test".format(variation),
+        name = "no_refresh_{}_test".format(variation_name),
         srcs = ["no_refresh_test.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -39,13 +39,14 @@ package(default_visibility = ["//visibility:public"])
         fpga = fpga_params(
             exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
         ),
         qemu = qemu_params(
             exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
         ),
+        slot_spec = variation.slot_spec,
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/runtime:log",
@@ -55,7 +56,7 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
         ],
     )
-    for variation in ROM_EXT_VARIATIONS.keys()
+    for variation_name, variation in ROM_EXT_VARIATIONS.items()
 ]
 
 manifest({
@@ -85,23 +86,6 @@ opentitan_binary(
     ],
 )
 
-[
-    opentitan_binary_assemble(
-        name = "{}_rom_ext_owner_bundle".format(variation),
-        testonly = True,
-        bins = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation): SLOTS["a"],
-            ":print_certs_for_assemble": OWNER_SLOTS["a"],
-        },
-        exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys",
-        ],
-    )
-    for variation in ROM_EXT_VARIATIONS.keys()
-]
-
 _VARIATION_INTEROP_TEST_CASES = [
     {
         "first": "x509",
@@ -111,6 +95,23 @@ _VARIATION_INTEROP_TEST_CASES = [
         "first": "cwt",
         "second": "x509",
     },
+]
+
+[
+    opentitan_binary_assemble(
+        name = "dice_{}_rom_ext_owner_bundle".format(name),
+        testonly = True,
+        bins = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_{}_slot_a".format(name): SLOTS["a"],
+            ":print_certs_for_assemble": OWNER_SLOTS["a"],
+        },
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys",
+        ],
+    )
+    for name in _VARIATION_INTEROP_TEST_CASES[0].values()
 ]
 
 [
@@ -243,7 +244,7 @@ DEBUG_MODE_TESTCASES = [
     opentitan_test(
         name = "debug_mode_{}_{}_test".format(
             testcase["name"],
-            variation,
+            variation_name,
         ),
         srcs = ["debug_mode_test.c"],
         defines = testcase["defines"],
@@ -254,11 +255,12 @@ DEBUG_MODE_TESTCASES = [
             "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
         ),
         qemu = qemu_params(
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation),
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
         ),
+        slot_spec = variation.slot_spec,
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/runtime:log",
@@ -269,5 +271,5 @@ DEBUG_MODE_TESTCASES = [
         ],
     )
     for testcase in DEBUG_MODE_TESTCASES
-    for variation in ROM_EXT_VARIATIONS.keys()
+    for variation_name, variation in ROM_EXT_VARIATIONS.items()
 ]
