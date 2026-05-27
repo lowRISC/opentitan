@@ -984,6 +984,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                 hardened_memcpy_address = parser.get_function_start_address("hardened_memcpy")
                 hardened_memshred_address = parser.get_function_start_address("hardened_memshred")
                 hardened_memeq_address = parser.get_function_start_address("hardened_memeq")
+                ghash_process_block_address = parser.get_function_start_address(
+                    "ghash_process_block"
+                )
                 ghash_context_integrity_checksum_address = parser.get_function_start_address(
                     "ghash_context_integrity_checksum"
                 )
@@ -1017,6 +1020,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                         hardened_memeq_address,
                         ghash_context_integrity_checksum_address,
                         hmac_key_integrity_checksum_address,
+                        ghash_process_block_address,
                     ],
                 )
                 gdb.send_command("c", check_response=False)
@@ -1118,7 +1122,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
                                         if testos_response_json["status"] == 0:
-                                            gcm_out[i] = testos_response_json["data"]
+                                            gcm_out[i] = testos_response_json["tag"]
 
                                             if (
                                                 utils.is_partial_collision(
