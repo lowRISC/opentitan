@@ -26,7 +26,7 @@ pub enum ManifestError {
     MissingField(&'static str),
 }
 
-fixed_size_bigint!(ManifestSigverifyBuffer, at_most 3072);
+fixed_size_bigint!(ManifestSigverifyBuffer, at_most 512);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestSigverifyBigInt(Option<HexEncoded<ManifestSigverifyBuffer>>);
@@ -306,8 +306,12 @@ impl ManifestPacked<Manifest> for ManifestSpec {
             // Call `unpack()` on each field with the field's name included for use in
             // error messages.
             signature: self.signature.unpack("signature")?.try_into()?,
+            reserved_signature: Default::default(),
+            reserved_unsigned: Default::default(),
             usage_constraints: self.usage_constraints.unpack("usage_constraints")?,
             pub_key: self.pub_key.unpack("pub_key")?.try_into()?,
+            reserved_public_key: Default::default(),
+            reserved: Default::default(),
             address_translation: self.address_translation.unpack("address_translation")?,
             identifier: self.identifier.unpack("identifier")?,
             manifest_version: self.manifest_version.unpack("manifest_version")?,
@@ -444,7 +448,7 @@ impl TryFrom<ManifestSigverifyBuffer> for SigverifyBuffer {
     fn try_from(buffer: ManifestSigverifyBuffer) -> Result<SigverifyBuffer> {
         if buffer.eq(&ManifestSigverifyBuffer::from_le_bytes([0])?) {
             // In the case where the BigInt fields are defined but == 0 we should just keep it 0.
-            // Without this the conversion to [u32; 96] would fail.
+            // Without this the conversion to [u32; 16] would fail.
             Ok(SigverifyBuffer {
                 data: le_slice_to_arr(&[0]),
             })
@@ -477,10 +481,10 @@ fn le_slice_to_arr<T: Default + Copy, const N: usize>(slice: &[T]) -> [T; N] {
     arr
 }
 
-impl TryFrom<[u32; 96]> for SigverifyBuffer {
+impl TryFrom<[u32; 16]> for SigverifyBuffer {
     type Error = anyhow::Error;
 
-    fn try_from(words: [u32; 96]) -> Result<SigverifyBuffer> {
+    fn try_from(words: [u32; 16]) -> Result<SigverifyBuffer> {
         Ok(SigverifyBuffer { data: words })
     }
 }

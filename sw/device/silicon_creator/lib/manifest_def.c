@@ -28,7 +28,7 @@ OT_USED OT_SECTION(".manifest") static manifest_t kManifest_ = {
     .manifest_version =
         (manifest_version_t){
             .minor = kManifestVersionMinor1,
-            .major = kManifestVersionMajor1,
+            .major = kManifestVersionMajor2,
         },
     .code_start = (uint32_t)_manifest_code_start,
     .code_end = (uint32_t)_manifest_code_end,

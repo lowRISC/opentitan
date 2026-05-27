@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -18,7 +18,6 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
-use opentitanlib::crypto::rsa::{RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
@@ -120,9 +119,6 @@ pub struct ManifestUpdateCommand {
     /// Filename for an external ECDSA signature file.
     #[arg(long)]
     ecdsa_signature: Option<PathBuf>,
-    /// Filename for an external RSA signature file.
-    #[arg(long)]
-    rsa_signature: Option<PathBuf>,
     /// Filename for an external SPHINCS+ signature file.
     #[arg(short, long)]
     spx_signature: Option<PathBuf>,
@@ -131,11 +127,6 @@ pub struct ManifestUpdateCommand {
     /// Passing a private key indicates the key will be used for signing.
     #[arg(long)]
     ecdsa_key: Option<PathBuf>,
-    /// Filename for the RSA PKCS8 key corresponding to the signature.
-    ///
-    /// Passing a private key indicates the key will be used for signing.
-    #[arg(long)]
-    rsa_key: Option<PathBuf>,
     /// Filename for the SPHINCS+ key corresponding to the signature.
     ///
     /// Passing a private key indicates the key will be used for signing.
@@ -156,16 +147,6 @@ pub struct ManifestUpdateCommand {
     /// Sign the image when private keys are are given.
     #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     private_keys_sign: bool,
-}
-
-fn load_rsa_key(key_file: &Path) -> Result<(RsaPublicKey, Option<RsaPrivateKey>)> {
-    match RsaPublicKey::from_pkcs1_der_file(key_file) {
-        Ok(key) => Ok((key, None)),
-        Err(_) => match RsaPrivateKey::from_pkcs8_der_file(key_file) {
-            Ok(key) => Ok((RsaPublicKey::from_private_key(&key), Some(key))),
-            Err(e) => Err(e),
-        },
-    }
 }
 
 fn load_ecdsa_key(key_file: &Path) -> Result<(EcdsaPublicKey, Option<EcdsaPrivateKey>)> {
@@ -206,27 +187,9 @@ impl CommandDispatch for ManifestUpdateCommand {
         image.add_signed_manifest_extensions(&ext)?;
 
         // Update the manifest fields that are in the signed region.
-        // Load / write RSA public key.
-        let mut rsa_private_key: Option<RsaPrivateKey> = None;
-        if let Some(key) = &self.rsa_key {
-            ensure!(
-                self.ecdsa_key.is_none(),
-                "Cannot specify both RSA and ECDSA keys"
-            );
-            let (public, private) = load_rsa_key(key)?;
-            image.update_modulus(public.modulus())?;
-            if let Some(private) = private {
-                rsa_private_key = Some(private);
-            }
-        }
-
         // Load / write ECDSA public key.
         let mut ecdsa_private_key: Option<EcdsaPrivateKey> = None;
         if let Some(key) = &self.ecdsa_key {
-            ensure!(
-                self.rsa_key.is_none(),
-                "Cannot specify both RSA and ECDSA keys"
-            );
             let (public, private) = load_ecdsa_key(key)?;
             image.update_ecdsa_public_key(EcdsaRawPublicKey::try_from(&public)?)?;
             if let Some(private) = private {
@@ -296,10 +259,6 @@ impl CommandDispatch for ManifestUpdateCommand {
         // There are cases in which we need to not always sign the image
         if self.private_keys_sign {
             // Online signing takes place if private keys are provided.
-            // Sign with RSA.
-            if let Some(key) = rsa_private_key {
-                image.update_rsa_signature(key.sign(&image.compute_digest()?)?)?;
-            }
             // Sign with ECDSA.
             if let Some(key) = ecdsa_private_key {
                 image.update_ecdsa_signature(key.sign(&image.compute_digest()?)?)?;
@@ -327,21 +286,8 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
 
         // Offline signing takes place if signatures are provided.
-        // Attach RSA signature.
-        if let Some(rsa_signature) = &self.rsa_signature {
-            ensure!(
-                self.ecdsa_signature.is_none(),
-                "Cannot specify both RSA and ECDSA signatures"
-            );
-            let signature = RsaSignature::read_from_file(rsa_signature)?;
-            image.update_rsa_signature(signature)?;
-        }
         // Attach ECDSA signature.
         if let Some(ecdsa_signature) = &self.ecdsa_signature {
-            ensure!(
-                self.rsa_signature.is_none(),
-                "Cannot specify both RSA and ECDSA signatures"
-            );
             let signature = EcdsaRawSignature::read_from_file(ecdsa_signature)?;
             image.update_ecdsa_signature(signature)?;
         }
