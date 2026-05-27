@@ -26,6 +26,8 @@ pub struct Options {
     /// slot number (defaults to 0).
     /// Example: ["app.bin", "app.bin:1", "data.bin:2"]
     pub flash_images: Vec<String>,
+    /// The image to load into RRAM.
+    pub rram_image: String,
     /// The image to load into CTN RAM.
     pub ctn_ram_image: String,
     /// The OTP settings.
@@ -80,6 +82,9 @@ impl Subprocess {
                 };
                 args.push(format!("--meminit=flash{},{}", slot, image_file));
             }
+        }
+        if !options.rram_image.is_empty() {
+            args.push(format!("--meminit=rram,{}", options.rram_image));
         }
         if !options.ctn_ram_image.is_empty() {
             args.push(format!("--meminit=ctn_ram,{}", options.ctn_ram_image));
