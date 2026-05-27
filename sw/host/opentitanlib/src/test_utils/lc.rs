@@ -22,7 +22,7 @@ pub fn read_lc_state(
     // enabled.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    let mut jtag = transport.create_jtag(jtag_params)?.connect(JtagTap::LcTap)?;
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
         &mut *jtag,
@@ -46,7 +46,7 @@ pub fn read_device_id(
     // enabled.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    let mut jtag = transport.create_jtag(jtag_params)?.connect(JtagTap::LcTap)?;
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
         &mut *jtag,

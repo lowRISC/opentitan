@@ -27,7 +27,7 @@ impl CommandDispatch for UartOsDevice {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let context = context.downcast_ref::<UartCommand>().unwrap();
-        let uart = context.params.create(transport)?;
+        let uart = transport.create_uart(&context.params)?;
         Ok(Some(Box::new(UartOsDeviceResponse {
             path: uart.get_device_path()?,
         })))

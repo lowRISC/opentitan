@@ -107,7 +107,7 @@ impl RescueParams {
             ))
         );
         Ok(Box::new(RescueSerial::new(
-            self.uart.create(transport)?,
+            transport.create_uart(&self.uart)?,
             None,
         )))
     }
@@ -140,7 +140,7 @@ impl RescueParams {
             RescueError::Configuration("Usb-DFU requires a trigger value".into())
         );
         Ok(Box::new(SpiDfu::new(
-            self.spi.create(transport, "BOOTSTRAP")?,
+            transport.create_spi(&self.spi, "BOOTSTRAP")?,
             self.clone(),
         )))
     }

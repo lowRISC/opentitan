@@ -9,7 +9,7 @@ use std::time::Duration;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
-use crate::transport::TransportError;
+use crate::io::TransportError;
 
 /// Errors related to the GPIO interface.
 #[derive(Debug, Error, Serialize, Deserialize)]

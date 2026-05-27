@@ -97,9 +97,8 @@ impl CommandDispatch for LcStateRead {
         }
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
@@ -136,9 +135,8 @@ impl CommandDispatch for LcRegRead {
         transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         // Read the CSR
@@ -169,9 +167,8 @@ impl CommandDispatch for LcDeviceIdRead {
         transport.reset(UartRx::Clear)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         // Read and concatenate device ID registers.
@@ -224,9 +221,8 @@ impl CommandDispatch for RawUnlock {
         transport.reset(UartRx::Clear)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         let token = parse_token_str(self.token.as_str())?;
@@ -243,9 +239,8 @@ impl CommandDispatch for RawUnlock {
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
 
-        jtag = self
-            .jtag_params
-            .create(transport)?
+        jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
@@ -291,9 +286,8 @@ impl CommandDispatch for Transition {
         transport.reset(UartRx::Clear)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         let strap_name = if self.use_rma_bootstrap {
@@ -324,9 +318,8 @@ impl CommandDispatch for Transition {
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
 
-        jtag = self
-            .jtag_params
-            .create(transport)?
+        jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.
@@ -373,9 +366,8 @@ impl CommandDispatch for Status {
         transport.reset(UartRx::Clear)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
         let status = jtag.read_lc_ctrl_reg(&LcCtrlReg::Status)?;
         jtag.disconnect()?;
@@ -420,9 +412,8 @@ impl CommandDispatch for TransitionCount {
         transport.reset(UartRx::Clear)?;
 
         // Spawn an OpenOCD process, connect to the LC JTAG TAP, read register, and shutdown OpenOCD.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
         let transition_count = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcTransitionCnt)?;
         jtag.disconnect()?;
@@ -453,9 +444,8 @@ impl CommandDispatch for VolatileRawUnlock {
         transport.reset(UartRx::Clear)?;
 
         // Spawn an OpenOCD process and connect to the LC JTAG TAP.
-        let mut jtag = self
-            .jtag_params
-            .create(transport)?
+        let mut jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         let token = parse_token_str(self.token.as_str())?;
@@ -476,9 +466,8 @@ impl CommandDispatch for VolatileRawUnlock {
             false,
         )?;
 
-        jtag = self
-            .jtag_params
-            .create(transport)?
+        jtag = transport
+            .create_jtag(&self.jtag_params)?
             .connect(JtagTap::LcTap)?;
 
         // Read and decode the LC state.

@@ -10,6 +10,7 @@ pub mod hexdump;
 pub mod known_keys;
 pub mod num_de;
 pub mod parse_int;
+pub mod poll;
 pub mod present;
 pub mod printer;
 pub mod raw_tty;

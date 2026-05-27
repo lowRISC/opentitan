@@ -10,7 +10,7 @@ use thiserror::Error;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::app::TransportWrapper;
+
 use crate::debug::openocd::OpenOcd;
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
@@ -28,12 +28,7 @@ pub struct JtagParams {
     pub log_stdio: bool,
 }
 
-impl JtagParams {
-    pub fn create<'t>(&self, transport: &'t TransportWrapper) -> Result<Box<dyn JtagChain + 't>> {
-        let jtag = transport.jtag(self)?;
-        Ok(jtag)
-    }
-}
+
 
 /// Errors related to the JTAG interface.
 #[derive(Error, Debug, Deserialize, Serialize)]

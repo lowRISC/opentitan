@@ -314,7 +314,7 @@ impl UpdateProtocol for LegacyRescue {
         progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         let frames = Frame::from_payload(payload)?;
-        let uart = container.uart_params.create(transport)?;
+        let uart = transport.create_uart(container.uart_params)?;
 
         self.enter_rescue_mode(transport, &*uart)?;
 

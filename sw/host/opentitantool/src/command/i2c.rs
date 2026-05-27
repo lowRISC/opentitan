@@ -36,7 +36,7 @@ impl CommandDispatch for I2cRawRead {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        let i2c_bus = transport.create_i2c(&context.params, "DEFAULT")?;
         let mut v = vec![0u8; self.length];
         i2c_bus.run_transaction(None, &mut [Transfer::Read(&mut v)])?;
         Ok(Some(Box::new(I2cRawReadResponse {
@@ -61,7 +61,7 @@ impl CommandDispatch for I2cRawWrite {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        let i2c_bus = transport.create_i2c(&context.params, "DEFAULT")?;
         i2c_bus.run_transaction(None, &mut [Transfer::Write(&hex::decode(&self.hexdata)?)])?;
         Ok(None)
     }
@@ -91,7 +91,7 @@ impl CommandDispatch for I2cRawWriteRead {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        let i2c_bus = transport.create_i2c(&context.params, "DEFAULT")?;
         let mut v = vec![0u8; self.length];
         i2c_bus.run_transaction(
             None,
@@ -133,7 +133,7 @@ impl CommandDispatch for I2cSetMode {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        let i2c_bus = transport.create_i2c(&context.params, "DEFAULT")?;
         match self.mode {
             Mode::Host => i2c_bus.set_mode(i2c::Mode::Host)?,
             Mode::Device => match self.addr {
@@ -221,7 +221,7 @@ impl CommandDispatch for I2cGetDeviceStatus {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        let i2c_bus = transport.create_i2c(&context.params, "DEFAULT")?;
         let status = i2c_bus.get_device_status(self.timeout)?;
         let response = I2cGetDeviceStatusResponse::from(status);
         Ok(Some(Box::new(response)))
@@ -250,7 +250,7 @@ impl CommandDispatch for I2cPrepareRead {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let i2c_bus = context.params.create(transport, "DEFAULT")?;
+        let i2c_bus = transport.create_i2c(&context.params, "DEFAULT")?;
         i2c_bus.prepare_read_data(&hex::decode(&self.hexdata)?, self.sticky)?;
         Ok(None)
     }
@@ -278,7 +278,7 @@ impl CommandDispatch for I2cTpm {
             None => None,
         };
         let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::I2cDriver::new(
-            context.params.create(transport, "TPM")?,
+            transport.create_i2c(&context.params, "TPM")?,
             ready_pin,
         )?);
         self.command.run(&tpm_driver, transport)

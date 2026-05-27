@@ -41,7 +41,7 @@ impl CommandDispatch for SpiSfdp {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport, "BOOTSTRAP")?;
+        let spi = transport.create_spi(&context.params, "BOOTSTRAP")?;
 
         if let Some(length) = self.raw {
             let offset = self.offset.unwrap_or(0);
@@ -83,7 +83,7 @@ impl CommandDispatch for SpiReadId {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport, "BOOTSTRAP")?;
+        let spi = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let jedec_id = SpiFlash::read_jedec_id(&*spi, self.length)?;
         Ok(Some(Box::new(SpiReadIdResponse { jedec_id })))
     }
@@ -141,7 +141,7 @@ impl CommandDispatch for SpiRead {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport, "BOOTSTRAP")?;
+        let spi = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
         flash.read_mode = self.mode;
@@ -207,7 +207,7 @@ impl CommandDispatch for SpiErase {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport, "BOOTSTRAP")?;
+        let spi = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
         flash.erase_mode = self.mode;
@@ -262,7 +262,7 @@ impl CommandDispatch for SpiProgram {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport, "BOOTSTRAP")?;
+        let spi = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
@@ -299,7 +299,7 @@ impl CommandDispatch for SpiTpm {
             None => None,
         };
         let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::SpiDriver::new(
-            context.params.create(transport, "TPM")?,
+            transport.create_spi(&context.params, "TPM")?,
             ready_pin,
         )?);
         self.command.run(&tpm_driver, transport)
@@ -327,7 +327,7 @@ impl CommandDispatch for SpiRawRead {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let spi_bus = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let mut v = vec![0u8; self.length];
         spi_bus.run_transaction(&mut [Transfer::Read(&mut v)])?;
         Ok(Some(Box::new(SpiRawReadResponse {
@@ -352,7 +352,7 @@ impl CommandDispatch for SpiRawWrite {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let spi_bus = transport.create_spi(&context.params, "BOOTSTRAP")?;
         spi_bus.run_transaction(&mut [Transfer::Write(&hex::decode(&self.hexdata)?)])?;
         Ok(None)
     }
@@ -378,7 +378,7 @@ impl CommandDispatch for SpiRawWriteRead {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let spi_bus = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let mut v = vec![0u8; self.length];
         spi_bus.run_transaction(&mut [
             Transfer::Write(&hex::decode(&self.hexdata)?),
@@ -406,7 +406,7 @@ impl CommandDispatch for SpiRawTransceive {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let spi_bus = transport.create_spi(&context.params, "BOOTSTRAP")?;
         let write_data = hex::decode(&self.hexdata)?;
         let mut read_data = vec![0u8; write_data.len()];
         spi_bus.run_transaction(&mut [Transfer::Both(&write_data, &mut read_data)])?;
@@ -434,7 +434,7 @@ impl CommandDispatch for SpiFlashromArgs {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        let spi_bus = transport.create_spi(&context.params, "BOOTSTRAP")?;
         Ok(Some(Box::new(SpiFlashromArgsResponse {
             programmer: spi_bus.get_flashrom_programmer()?,
         })))
