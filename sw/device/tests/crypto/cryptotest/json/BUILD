@@ -96,6 +96,14 @@ cc_library(
 )
 
 cc_library(
+    name = "sha_commands",
+    srcs = ["sha_commands.c"],
+    hdrs = ["sha_commands.h"],
+    features = ["-coverage"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "sphincsplus_commands",
     srcs = ["sphincsplus_commands.c"],
     hdrs = ["sphincsplus_commands.h"],

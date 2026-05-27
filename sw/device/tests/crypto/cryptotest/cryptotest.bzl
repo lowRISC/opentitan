@@ -36,6 +36,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:hmac",
     "//sw/device/tests/crypto/cryptotest/firmware:kmac",
     "//sw/device/tests/crypto/cryptotest/firmware:rsa",
+    "//sw/device/tests/crypto/cryptotest/firmware:sha",
     "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
     "//sw/device/tests/crypto/cryptotest/firmware:x25519",
     "//sw/device/lib/base:csr",
