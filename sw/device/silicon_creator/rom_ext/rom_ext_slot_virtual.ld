@@ -20,8 +20,9 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 _rom_ext_start_address = ORIGIN(rom_ext_virtual);
-_rom_ext_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
+ASSERT(
+  LENGTH(rom_ext_virtual) <= LENGTH(eflash) / 2,
+  "Error: rom ext virtual space is bigger than slot");
 
 REGION_ALIAS("rom_ext_flash", rom_ext_virtual);
 
