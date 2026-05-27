@@ -198,6 +198,20 @@ cryptotest(
     ],
 )
 
+cryptotest(
+    name = "sha_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:sha_vectors.hjson)\"",
+        "--expected=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:sha_expected.hjson)\"",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:sha_vectors.hjson",
+        "//sw/host/cryptotest/testvectors/acvp:sha_expected.hjson",
+    ],
+)
+
 AES_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
