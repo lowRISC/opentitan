@@ -28,6 +28,8 @@ struct ShaTestCase {
     tc_id: usize,
     len: usize,
     msg: String,
+    // Present for SHAKE AFT; absent for fixed-length SHA2/SHA3.
+    out_len: Option<usize>,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -54,6 +56,9 @@ pub struct ShaTestVectorSet {
 pub struct ShaResultCase {
     pub tc_id: usize,
     pub md: String,
+    // Present in SHAKE results (bits); absent for fixed-length SHA2/SHA3.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub out_len: Option<usize>,
 }
 
 #[derive(Deserialize, PartialEq, Serialize)]
@@ -91,6 +96,10 @@ fn run_sha_case(
         full[..msg_len_bytes].to_vec()
     };
 
+    // `out_len` in the test case is in bits; convert to bytes.
+    // Absent for fixed-length SHA2/SHA3 (firmware ignores the field); present for SHAKE AFT.
+    let out_len_bytes = tc.out_len.map(|bits| bits / 8).unwrap_or(0);
+
     CryptotestCommand::Sha.send(spi_console)?;
     mode.send(spi_console)?;
 
@@ -100,6 +109,7 @@ fn run_sha_case(
     CryptotestShaInput {
         msg: msg_arr,
         msg_len: msg_len_bytes as u32,
+        out_len: out_len_bytes as u32,
     }
     .send(spi_console)?;
 
@@ -110,6 +120,7 @@ fn run_sha_case(
     Ok(ShaResultCase {
         tc_id: tc.tc_id,
         md,
+        out_len: tc.out_len,
     })
 }
 
@@ -168,6 +179,8 @@ pub fn run_sha_vector_set(
         "SHA3-256" => CryptotestShaMode::SHA3_256,
         "SHA3-384" => CryptotestShaMode::SHA3_384,
         "SHA3-512" => CryptotestShaMode::SHA3_512,
+        "SHAKE-128" => CryptotestShaMode::SHAKE_128,
+        "SHAKE-256" => CryptotestShaMode::SHAKE_256,
         _ => anyhow::bail!("Unsupported SHA algorithm: {}", vs.algorithm),
     };
 
