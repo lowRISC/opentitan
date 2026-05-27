@@ -297,6 +297,211 @@ class SymCryptolibFiSim(unittest.TestCase):
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
+    def test_aes(self):
+        print("Starting the aes test")
+        data_len = 16
+        # We prepare two data inputs and check for collisions between them
+        data1 = [i for i in range(data_len)]
+        data2 = [data_len - i for i in range(data_len)]
+        data = [data1, data2]
+        key_len = 16
+        key = [i for i in range(key_len)]
+        iv = [i for i in range(16)]
+        op_enc = True
+        cfg = 0
+        trigger = 0
+
+        # We just test the first padding mode (no padding) and the first mode (ECB)
+        padding = 0
+        mode = 0
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "aes_pc_trace.log")
+        # Directory for the the log of the campaign
+        campaign_file = os.path.join(log_dir, "aes_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w") as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_AES"
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+
+                # Trigger the hmac from the testOS (we do not read its output)
+                symfi.handle_aes(
+                    data[0], data_len, key, key_len, iv, padding, mode, op_enc, cfg, trigger
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                # Sometimes the tracing fails due to race conditions,
+                # we have a quick initial timeout to catch this
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                data_out = [None, None]
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the hmac instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print(
+                                "Applying instruction skip in ", pc, "occurence", i_count, "data", i
+                            )
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                symfi.handle_aes(
+                                    data[i], data_len, key, key_len, iv,
+                                    padding, mode, op_enc, cfg, trigger
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                data_out[i] = None
+                                if "instruction skip applied" in gdb_response:
+                                    i_count += 1
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+                                        if testos_response_json["status"] == 0:
+                                            data_out[i] = tuple(testos_response_json["data"])
+
+                                            if (
+                                                utils.is_partial_collision(
+                                                    data_out[0],
+                                                    data_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=16
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                data_out[i], total_length=16
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                                else:
+                                    print("No break point found, something went wrong", flush=True)
+                                    gdb = reset_target_and_gdb(gdb)
+
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
+                # Close the OpenOCD and GDB connection at the end
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
     def test_drbg_generate(self):
         print("Starting the drbg generate test")
         entropy_len = 32
