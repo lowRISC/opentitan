@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define SHA_CMD_MAX_DIGEST_BYTES 64
+#define SHA_CMD_MAX_DIGEST_BYTES 256
 #define SHA_CMD_MAX_MSG_BYTES 256
 
 // clang-format off
@@ -21,12 +21,15 @@ extern "C" {
     value(_, SHA3_224) \
     value(_, SHA3_256) \
     value(_, SHA3_384) \
-    value(_, SHA3_512)
+    value(_, SHA3_512) \
+    value(_, SHAKE_128) \
+    value(_, SHAKE_256)
 UJSON_SERDE_ENUM(CryptotestShaMode, cryptotest_sha_mode_t, SHA_MODE);
 
 #define SHA_INPUT(field, string) \
     field(msg, uint8_t, SHA_CMD_MAX_MSG_BYTES) \
-    field(msg_len, uint32_t)
+    field(msg_len, uint32_t) \
+    field(out_len, uint32_t)
 UJSON_SERDE_STRUCT(CryptotestShaInput, cryptotest_sha_input_t, SHA_INPUT);
 
 #define SHA_OUTPUT(field, string) \
