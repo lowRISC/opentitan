@@ -22,6 +22,7 @@ mod eddsa;
 mod hmac;
 mod kmac;
 mod rsa;
+mod sha;
 mod x25519;
 
 #[derive(Debug, Parser)]
@@ -101,6 +102,7 @@ enum AcvpVectors {
     Kmac(kmac::KmacTestVectorSet),
     RsaSigGen(rsa::RsaSignGenTestVectorSet),
     Rsa(rsa::RsaTestVectorSet),
+    Sha(sha::ShaTestVectorSet),
     X25519(x25519::X25519TestVectorSet),
 }
 
@@ -120,6 +122,7 @@ enum AcvpResults {
     Eddsa(eddsa::EddsaResultVectorSet),
     RsaSigGen(rsa::RsaSignGenResultVectorSet),
     Rsa(rsa::RsaResultVectorSet),
+    Sha(sha::ShaResultVectorSet),
     X25519(x25519::X25519ResultVectorSet),
     Aes(aes::AesResultVectorSet),
 }
@@ -157,6 +160,7 @@ fn parse_vector_set(raw: serde_json::Value) -> Result<AcvpVectors> {
         (a, _) if a.starts_with("KMAC") => AcvpVectors::Kmac(serde_json::from_value(raw)?),
         (a, _) if a.starts_with("cSHAKE") => AcvpVectors::Cshake(serde_json::from_value(raw)?),
         (a, _) if a.starts_with("ACVP-AES") => AcvpVectors::Aes(serde_json::from_value(raw)?),
+        (a, _) if a.starts_with("SHA") => AcvpVectors::Sha(serde_json::from_value(raw)?),
         ("ECDSA", "sigVer") => AcvpVectors::Ecdsa(serde_json::from_value(raw)?),
         ("ECDSA", "sigGen") => AcvpVectors::EcdsaSigGen(serde_json::from_value(raw)?),
         ("ECDSA", "keyGen") => AcvpVectors::EcdsaKeyGen(serde_json::from_value(raw)?),
@@ -385,6 +389,17 @@ fn run<R: std::io::Read, W: std::io::Write>(
             AcvpVectors::Rsa(vs) => {
                 if opts.expected.is_some() || opts.output.is_some() {
                     acvp_results.push(AcvpResults::Rsa(rsa::run_rsa_vector_set(
+                        opts.timeout,
+                        &spi_console_device,
+                        &vs,
+                        opts.skip_stride,
+                        opts.seed,
+                    )?));
+                }
+            }
+            AcvpVectors::Sha(vs) => {
+                if opts.expected.is_some() || opts.output.is_some() {
+                    acvp_results.push(AcvpResults::Sha(sha::run_sha_vector_set(
                         opts.timeout,
                         &spi_console_device,
                         &vs,

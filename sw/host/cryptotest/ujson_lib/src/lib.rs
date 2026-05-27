@@ -12,5 +12,6 @@ pub mod hash_commands;
 pub mod hmac_commands;
 pub mod kmac_commands;
 pub mod rsa_commands;
+pub mod sha_commands;
 pub mod sphincsplus_commands;
 pub mod x25519_commands;
