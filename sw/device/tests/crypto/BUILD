@@ -303,7 +303,10 @@ opentitan_binary_blob(
         "//sw/device/lib/crypto/configs:crypto_fips_all": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    transitive_features = ["no_jump_tables"],
+    transitive_features = [
+        "no_jump_tables",
+        "minsize",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/include:crypto_hdrs",
