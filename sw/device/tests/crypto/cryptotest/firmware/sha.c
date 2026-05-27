@@ -91,6 +91,24 @@ status_t handle_sha(ujson_t *uj) {
       TRY(otcrypto_sha3_512(&msg, &msg_digest));
       break;
     }
+    case kCryptotestShaModeSHAKE_128: {
+      digest_len = uj_input.out_len;
+      otcrypto_hash_digest_t msg_digest = {
+          .data = msg_digest_data,
+          .len = digest_len / sizeof(uint32_t),
+      };
+      TRY(otcrypto_shake128(&msg, &msg_digest));
+      break;
+    }
+    case kCryptotestShaModeSHAKE_256: {
+      digest_len = uj_input.out_len;
+      otcrypto_hash_digest_t msg_digest = {
+          .data = msg_digest_data,
+          .len = digest_len / sizeof(uint32_t),
+      };
+      TRY(otcrypto_shake256(&msg, &msg_digest));
+      break;
+    }
     default:
       LOG_ERROR("Unrecognized SHA mode: %d", uj_mode);
       return INVALID_ARGUMENT();
