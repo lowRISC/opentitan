@@ -70,11 +70,8 @@ enum {
   kNvmPageSize = NVM_BYTES_PER_PAGE,
   kNvmTotalSize = 2 * kNvmBankSize,
 
-  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
   kRomExtAStart = 0 / kNvmPageSize,
-  kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
   kRomExtBStart = kNvmBankSize + kRomExtAStart,
-  kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 };
 
 // Declaration for the ROM_EXT manifest start address, populated by the linker
@@ -220,7 +217,7 @@ extern char _owner_virtual_size[];
 OT_WARN_UNUSED_RESULT
 static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
   return (lma_addr - (uintptr_t)manifest +
-          (uintptr_t)_owner_virtual_start_address + CHIP_ROM_EXT_SIZE_MAX);
+          (uintptr_t)_owner_virtual_start_address + (uint32_t)_rom_ext_size);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -434,6 +431,9 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 }
 
 static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
+  uint32_t actual_size = (uint32_t)_rom_ext_size;
+  uint32_t pages = (actual_size + kNvmPageSize - 1) / kNvmPageSize;
+
   nvm_page_cfg_t cfg = nvm_ctrl_data_default_cfg_get();
   nvm_page_perms_t read = {
       .read = kMultiBitBool4True,
@@ -445,10 +445,10 @@ static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4True,
   };
-  nvm_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
+  nvm_ctrl_data_region_protect(0, kRomExtAStart, pages,
                                rom_ext_slot == kBootSlotA ? read : write, cfg,
                                kHardenedBoolTrue);
-  nvm_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
+  nvm_ctrl_data_region_protect(1, kRomExtBStart, pages,
                                rom_ext_slot == kBootSlotB ? read : write, cfg,
                                kHardenedBoolTrue);
 }
@@ -552,7 +552,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
   boot_log->rom_ext_major = self->version_major;
   boot_log->rom_ext_minor = self->version_minor;
-  boot_log->rom_ext_size = CHIP_ROM_EXT_SIZE_MAX;
+  boot_log->rom_ext_size = (uint32_t)_rom_ext_size;
   // Even though `primary_bl0_slot` can be changed by boot svc, we initialize
   // it here so the "SetNextBl0" can do a one-time override of the RAM copy
   // of `boot_data`.
