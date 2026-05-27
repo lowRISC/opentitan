@@ -26,6 +26,10 @@ load(
     "qemu_params",
 )
 load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
+)
+load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMMUTABLE_HASH_UNENFORCED_MSG",
     "IMM_SECTION_MAJOR_VERSION",
@@ -82,6 +86,15 @@ _POSITIONS = {
         "success": "bl0_slot = __BB\r\n",
         "otp_img": None,
     },
+    "owner_slot_b_shifted": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
+        "owner_offset": "{owner_slot_b}",
+        "success": "bl0_slot = __BB\r\n",
+        "otp_img": None,
+        "slot_spec": ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    },
     "owner_virtual_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "{rom_ext_slot_a}",
@@ -97,6 +110,15 @@ _POSITIONS = {
         "owner_offset": "{owner_slot_b}",
         "success": "bl0_slot = __BB\r\n",
         "otp_img": None,
+    },
+    "owner_virtual_b_shifted": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        "owner_offset": "{owner_slot_b}",
+        "success": "bl0_slot = __BB\r\n",
+        "otp_img": None,
+        "slot_spec": ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
     },
     "romext_slot_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
@@ -181,6 +203,7 @@ _POSITIONS = {
             owner_offset = position["owner_offset"],
             romext_offset = position["romext_offset"],
         ),
+        slot_spec = position.get("slot_spec", {}),
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
