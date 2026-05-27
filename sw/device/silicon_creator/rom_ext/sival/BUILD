@@ -38,7 +38,7 @@ manifest(d = {
 #   --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized
 [
     opentitan_binary(
-        name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
+        name = "rom_ext_{}_fake_slot_{}".format(variation_name, slot),
         ecdsa_key = select({
             "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
             "//conditions:default": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
@@ -56,10 +56,11 @@ manifest(d = {
         # In order to prevent the linker from prematurely discarding symbols, we
         # need to give the CRT library last.
         linkopts = [
-            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation),
+            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation_name),
             "$(location //sw/device/lib/crt)",
         ],
         manifest = ":manifest_sival",
+        slot_spec = variation.slot_spec,
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
             # as it is typically used to test FPGA flows and the FPGA doesn't
@@ -69,17 +70,17 @@ manifest(d = {
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:isfb_null",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
-            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
-            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
+            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation_name),
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation_name, slot),
         ],
     )
-    for variation in ROM_EXT_VARIATIONS.keys()
+    for variation_name, variation in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
 ]
 
 [
     opentitan_binary(
-        name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
+        name = "rom_ext_{}_prod_slot_{}".format(variation_name, slot),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
@@ -91,9 +92,10 @@ manifest(d = {
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = [
-            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation),
+            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation_name),
             "$(location //sw/device/lib/crt)",
         ],
+        slot_spec = variation.slot_spec,
         deps = [
             # The sival_owner C library is excluded from the real ROM_EXT,
             # as chips maintain their ownership configuration in flash.
@@ -101,11 +103,11 @@ manifest(d = {
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:isfb_null",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
-            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
-            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
+            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation_name),
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation_name, slot),
         ],
     )
-    for variation in ROM_EXT_VARIATIONS.keys()
+    for variation_name, variation in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
 ]
 
@@ -164,8 +166,8 @@ offline_presigning_artifacts(
     name = "presigning",
     testonly = True,
     srcs = [
-        ":rom_ext_{}_prod_slot_{}".format(variation, slot)
-        for variation in ROM_EXT_VARIATIONS.keys()
+        ":rom_ext_{}_prod_slot_{}".format(variation_name, slot)
+        for variation_name in ROM_EXT_VARIATIONS.keys()
         for slot in SLOTS
     ],
     ecdsa_key = {
