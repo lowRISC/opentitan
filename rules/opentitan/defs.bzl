@@ -215,6 +215,7 @@ def opentitan_test(
         silicon = _silicon_params(),
         verilator = _verilator_params(),
         qemu = _qemu_params(),
+        slot_spec = {},
         run_in_ci = None,
         **kwargs):
     """Instantiate a test per execution environment.
@@ -329,6 +330,7 @@ def opentitan_test(
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
+            slot_spec = slot_spec,
             needs_jtag = getattr(tparam, "needs_jtag", False),
         )
 
