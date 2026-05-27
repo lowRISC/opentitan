@@ -180,11 +180,13 @@ status_t cryptolib_fi_drbg_generate_impl(
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger2) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_GENERATE_START);
     pentest_set_trigger_high();
   }
   HARDENED_TRY(otcrypto_drbg_generate(&nonce, &output));
   if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_GENERATE_END);
   }
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&output));
@@ -210,11 +212,13 @@ status_t cryptolib_fi_drbg_reseed_impl(
 
   // Trigger window 0.
   if (uj_input.trigger & kPentestTrigger1) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_RESEED_START);
     pentest_set_trigger_high();
   }
   HARDENED_TRY(otcrypto_drbg_instantiate(&entropy));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_DRBG_RESEED_END);
   }
 
   // Return data back to host.
