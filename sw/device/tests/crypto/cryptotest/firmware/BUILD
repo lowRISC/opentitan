@@ -170,6 +170,22 @@ cc_library(
 )
 
 cc_library(
+    name = "sha",
+    srcs = ["sha.c"],
+    hdrs = ["sha.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:sha_commands",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
+    ],
+)
+
+cc_library(
     name = "sphincsplus",
     srcs = ["sphincsplus.c"],
     hdrs = ["sphincsplus.h"],
@@ -211,6 +227,7 @@ FIRMWARE_DEPS = [
     ":hmac",
     ":kmac",
     ":rsa",
+    ":sha",
     ":sphincsplus",
     ":x25519",
     "//sw/device/lib/base:csr",
