@@ -7,17 +7,17 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use super::ProxyError;
-use crate::io::gpio::{
+use opentitanlib_core::io::gpio::{
     BitbangEntry, ClockNature, DacBangEntry, GpioBitbangOperation, GpioBitbanging,
     GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringReadResponse,
     MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::proxy::protocol::{
+use opentitanlib_proxy_protocol::protocol::{
     BitbangEntryRequest, BitbangEntryResponse, DacBangEntryRequest, GpioBitRequest,
     GpioBitResponse, GpioDacRequest, GpioDacResponse, GpioMonRequest, GpioMonResponse, GpioRequest,
     GpioResponse, Request, Response,
 };
-use crate::transport::proxy::{Inner, Proxy};
+use crate::proxy::{Inner, Proxy};
 
 pub struct ProxyGpioPin {
     inner: Rc<Inner>,

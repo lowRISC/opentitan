@@ -11,11 +11,11 @@ use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
 use super::UartInterface;
-use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::uart::Uart;
-use crate::transport::TransportError;
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::hyperdebug::Inner;
+use opentitanlib_core::io::nonblocking_help::NonblockingHelp;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::transport::TransportError;
+use crate::common::uart::SerialPortUart;
+use crate::hyperdebug::Inner;
 
 const UART_BAUD: u32 = 115200;
 

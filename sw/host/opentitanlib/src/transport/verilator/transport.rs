@@ -10,15 +10,15 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use crate::io::gpio::{GpioError, GpioPin};
-use crate::io::uart::Uart;
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
-use crate::transport::verilator::subprocess::{Options, Subprocess};
-use crate::transport::{
+use opentitanlib_core::io::gpio::{GpioError, GpioPin};
+use opentitanlib_core::io::uart::Uart;
+use crate::common::uart::SerialPortUart;
+use crate::verilator::gpio::{GpioInner, VerilatorGpioPin};
+use crate::verilator::subprocess::{Options, Subprocess};
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 const UART_BAUD: u32 = 40;
 

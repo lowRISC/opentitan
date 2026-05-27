@@ -34,7 +34,7 @@ struct Opts {
 
 fn main() -> anyhow::Result<()> {
     let opts = Opts::parse();
-    let qemu = Qemu::from_options(opts.qemu_opts)?;
+    let qemu = Qemu::from_options(opts.qemu_opts.to_params())?;
 
     let mut monitor = qemu.monitor.borrow_mut();
 

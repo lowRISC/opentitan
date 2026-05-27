@@ -12,12 +12,12 @@ use std::rc::{Rc, Weak};
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::vec::Vec;
 
-use crate::io::emu::Emulator;
-use crate::io::gpio::GpioPin;
-use crate::io::i2c::Bus;
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::transport::{
+use opentitanlib_core::io::emu::Emulator;
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::i2c::Bus;
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 
@@ -27,10 +27,10 @@ mod i2c;
 mod spi;
 mod uart;
 
-use crate::transport::ti50emulator::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
-use crate::transport::ti50emulator::gpio::Ti50GpioPin;
-use crate::transport::ti50emulator::i2c::Ti50I2cBus;
-use crate::transport::ti50emulator::uart::Ti50Uart;
+use crate::ti50emulator::emu::{EmulatorImpl, EmulatorProcess, ResetPin};
+use crate::ti50emulator::gpio::Ti50GpioPin;
+use crate::ti50emulator::i2c::Ti50I2cBus;
+use crate::ti50emulator::uart::Ti50Uart;
 
 pub struct Ti50Emulator {
     /// Mapping of SPI handles to their symbolic names.

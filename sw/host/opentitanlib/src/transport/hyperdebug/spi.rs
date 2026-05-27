@@ -10,14 +10,14 @@ use std::rc::Rc;
 use std::time::Duration;
 use zerocopy::{FromBytes, Immutable, IntoBytes};
 
-use crate::io::eeprom;
-use crate::io::gpio::GpioPin;
-use crate::io::spi::{
+use opentitanlib_core::io::eeprom;
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::spiflash::flash::SpiFlash;
-use crate::transport::TransportError;
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+
+use opentitanlib_core::transport::TransportError;
+use crate::hyperdebug::{BulkInterface, Inner};
 
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
@@ -912,10 +912,10 @@ impl Target for HyperdebugSpiTarget {
                 }
                 [eeprom::Transaction::WaitForBusyClear, rest @ ..] => {
                     self.get_last_streamed_data(stream_state)?;
-                    let mut status = SpiFlash::STATUS_WIP;
-                    while status & SpiFlash::STATUS_WIP != 0 {
+                    let mut status = eeprom::STATUS_WIP;
+                    while status & eeprom::STATUS_WIP != 0 {
                         self.run_transaction(&mut [
-                            Transfer::Write(&[SpiFlash::READ_STATUS]),
+                            Transfer::Write(&[eeprom::READ_STATUS]),
                             Transfer::Read(std::slice::from_mut(&mut status)),
                         ])?;
                     }

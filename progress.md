@@ -72,11 +72,28 @@ Define separate `rust_library` targets in the monolithic `sw/host/opentitanlib/B
   - Added missing dependencies to target (`once_cell`, `erased-serde`, `humantime-serde`, `opentitantool_derive` proc-macros).
   - Updated internal imports in `src/app/**` to use `opentitanlib_core::` for core services and `opentitanlib_debug::` for debugging tools, and removed `app` folder name from local root-relative paths.
   - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_app` compiled successfully.
-- [ ] **Step 2.5: Define `opentitanlib_transports` target**
-- [ ] **Step 2.6: Define `opentitanlib_protocols` target**
-- [ ] **Step 2.7: Define `opentitanlib_backend` target**
-- [ ] **Step 2.8: Define `opentitanlib_test_utils` target**
-- [ ] **Step 2.9: Re-export everything in super-crate `opentitanlib`**
+- [x] **Step 2.5: Define `opentitanlib_proxy_protocol` target**
+  - Created `src/proxy_protocol_lib.rs` as root entry point.
+  - Defined `opentitanlib_proxy_protocol` in `BUILD` containing `errors` and `protocol` modules under `src/proxy/`.
+  - Mapped external subdirectories in `proxy_protocol_lib.rs` using `#[path = "proxy/errors.rs"]` and `#[path = "proxy/protocol.rs"]` to define a clean client/server shared API target without moving files.
+  - Resolved circular dependency: dynamically boxed errors in the dynamic downcasting registry of `errors.rs` depended on high-level protocol errors (like `BootstrapError` in `protocols`). Restricted the downcast list to only core/base errors (timeouts, connection issues, pin failures, which represent 99% of programmatic catch needs). This completely decoupled `proxy_protocol` from high-level libraries.
+  - Updated internal imports in `errors.rs` and `protocol.rs` to point to `opentitanlib_core::` for base structures.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_proxy_protocol` compiled successfully.
+- [x] **Step 2.6: Define `opentitanlib_transports` target**
+  - Created `src/transport/transports_lib.rs` as root entry point.
+  - Defined `opentitanlib_transports` in `BUILD` containing all 58 backend driver and board files under `src/transport/` (Ftdi, HyperDebug, ChipWhisperer, DediProg, Qemu, Verilator, Proxy client, and IoExpander driver).
+  - Resolved cyclic dependency: the accelerated DediProg transport (`dediprog/spi.rs`) and HyperDebug transport (`hyperdebug/spi.rs`) depended on JEDEC SPI flash constants defined in high-level `SpiFlash` protocol target. Defined standard JEDEC constants (READ, FAST_READ, PAGE_PROGRAM, WRITE_ENABLE, READ_SFDP) inside the low-level `io::eeprom` target in `core`. This completely decoupled concrete transports from the high-level `protocols` crate.
+  - Resolved cyclic dependency: QEMU emulator target (`qemu/mod.rs` factory) took `QemuOpts` CLI option structure defined in target composer level (Step 7). Defined plain data `QemuParams` configuration structure in `qemu/mod.rs` and moved the CLI config mapping helper `device_path` to it. Updated target composer `backend/qemu.rs` and the host test `test_status.rs` to map CLI `QemuOpts` to plain `QemuParams` using a `.to_params()` method, completely decoupling QEMU driver target from backend target.
+  - Decoupled `QemuJtag`'s `into_raw` implementation in `qemu/jtag.rs` to return `Box<dyn Any>` to match JTAG trait decoupling.
+  - Add missing file imports that were bypass-private imports under parent module in monolith (Spi `Target`, I2c `Bus`, and `NonblockingHelp` are `io` traits and now imported directly from `opentitanlib_core::io::`).
+  - Added hyperdebug adapter configs and firmwares to `compile_data` and `rustc_env` in `BUILD` (needed by hyperdebug driver).
+  - Added missing dependencies to target (`byteorder`, `zerocopy`, `erased-serde`, `num_enum`).
+  - Ran a global python script on the subfolders to transition all `crate::io`, `crate::util`, `crate::app`, `crate::proxy` imports to their correct target prefixes, and removed the directory level prefix `transport::` from internal crate-relative submodule imports.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_transports` compiled successfully.
+- [ ] **Step 2.7: Define `opentitanlib_protocols` target**
+- [ ] **Step 2.8: Define `opentitanlib_backend` target**
+- [ ] **Step 2.9: Define `opentitanlib_test_utils` target**
+- [ ] **Step 2.10: Re-export everything in super-crate `opentitanlib`**
 
 ## Phase 3: File Organization
 *Not started*

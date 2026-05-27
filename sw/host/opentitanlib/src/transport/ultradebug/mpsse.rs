@@ -10,8 +10,8 @@ use bitflags::bitflags;
 use log;
 use thiserror::Error;
 
-use crate::io::gpio::GpioError;
-use crate::io::spi::SpiError;
+use opentitanlib_core::io::gpio::GpioError;
+use opentitanlib_core::io::spi::SpiError;
 
 pub const MPSSE_WRCLK_FALLING: u8 = 0x01;
 pub const MPSSE_RDCLK_FALLING: u8 = 0x04;

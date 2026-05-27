@@ -10,9 +10,9 @@ use anyhow::Context;
 use anyhow::bail;
 use serialport::TTYPort;
 
-use crate::io::i2c::I2cError;
-use crate::io::i2c::{Bus, Transfer};
-use crate::transport::TransportError;
+use opentitanlib_core::io::i2c::I2cError;
+use opentitanlib_core::io::i2c::{Bus, Transfer};
+use opentitanlib_core::transport::TransportError;
 
 pub struct QemuI2c {
     pty: RefCell<TTYPort>,

@@ -6,10 +6,10 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::gpio;
-use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
-use crate::transport::TransportError;
-use crate::transport::chip_whisperer::usb::Backend;
+use opentitanlib_core::io::gpio;
+use opentitanlib_core::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
+use opentitanlib_core::transport::TransportError;
+use crate::chip_whisperer::usb::Backend;
 
 use super::board::Board;
 

@@ -9,9 +9,9 @@ use std::rc::Rc;
 use std::time::Duration;
 use zerocopy::{FromBytes, Immutable, IntoBytes};
 
-use crate::io::i2c::{self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer};
-use crate::transport::hyperdebug::{BulkInterface, Inner};
-use crate::transport::{TransportError, TransportInterfaceType};
+use opentitanlib_core::io::i2c::{self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer};
+use crate::hyperdebug::{BulkInterface, Inner};
+use opentitanlib_core::transport::{TransportError, TransportInterfaceType};
 
 pub struct HyperdebugI2cBus {
     inner: Rc<Inner>,

@@ -18,11 +18,11 @@ use log;
 use rustix::process::{Pid, Signal};
 use serde::{Deserialize, Serialize};
 
-use crate::io::emu::{EmuError, EmuState, EmuValue, Emulator};
-use crate::io::gpio::{self, GpioError, PinMode, PullMode};
-use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::gpio::Logic;
-use crate::util::file;
+use opentitanlib_core::io::emu::{EmuError, EmuState, EmuValue, Emulator};
+use opentitanlib_core::io::gpio::{self, GpioError, PinMode, PullMode};
+use crate::ti50emulator::Inner;
+use crate::ti50emulator::gpio::Logic;
+use opentitanlib_core::util::file;
 
 const SPAWN_TIMEOUT: Duration = Duration::from_secs(10);
 const TIMEOUT: Duration = Duration::from_millis(1000);

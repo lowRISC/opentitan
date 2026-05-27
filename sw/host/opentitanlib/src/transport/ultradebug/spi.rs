@@ -6,12 +6,12 @@ use anyhow::{Context, Result};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::spi::{
+use opentitanlib_core::io::spi::{
     AssertChipSelect, ClockPolarity, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer,
     TransferMode,
 };
-use crate::transport::ultradebug::Ultradebug;
-use crate::transport::ultradebug::mpsse;
+use crate::ultradebug::Ultradebug;
+use crate::ultradebug::mpsse;
 
 struct Inner {
     mode: TransferMode,

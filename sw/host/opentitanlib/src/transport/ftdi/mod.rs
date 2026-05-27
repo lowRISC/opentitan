@@ -9,15 +9,15 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode};
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::io::uart::UartError;
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::{
+use opentitanlib_core::io::gpio::{GpioPin, PinMode};
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::io::uart::UartError;
+use crate::common::uart::SerialPortUart;
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::parse_int::ParseInt;
 use serialport::SerialPortType;
 
 use chip::Chip;

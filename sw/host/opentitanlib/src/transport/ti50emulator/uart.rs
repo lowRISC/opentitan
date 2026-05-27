@@ -11,9 +11,9 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::io::emu::EmuState;
-use crate::io::uart::{Uart, UartError};
-use crate::transport::ti50emulator::Inner;
+use opentitanlib_core::io::emu::EmuState;
+use opentitanlib_core::io::uart::{Uart, UartError};
+use crate::ti50emulator::Inner;
 
 const TI50_UART_BAUDRATE: u32 = 115200;
 

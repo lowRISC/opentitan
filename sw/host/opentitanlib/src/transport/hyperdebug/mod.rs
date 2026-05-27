@@ -18,19 +18,19 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use crate::debug::openocd::OpenOcdJtagChain;
-use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
-use crate::io::i2c::Bus;
-use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::io::usb::{UsbContext, UsbDevice, desc};
-use crate::transport::chip_whisperer::ChipWhisperer;
-use crate::transport::chip_whisperer::board::Board;
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::flock_serial;
-use crate::transport::common::usb::RusbContext;
-use crate::transport::{
+use opentitanlib_debug::openocd::OpenOcdJtagChain;
+use opentitanlib_core::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
+use opentitanlib_core::io::i2c::Bus;
+use opentitanlib_core::io::jtag::{JtagChain, JtagParams};
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::io::usb::{UsbContext, UsbDevice, desc};
+use crate::chip_whisperer::ChipWhisperer;
+use crate::chip_whisperer::board::Board;
+use crate::common::fpga::{ClearBitstream, FpgaProgram};
+use crate::common::uart::flock_serial;
+use crate::common::usb::RusbContext;
+use opentitanlib_core::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
 };

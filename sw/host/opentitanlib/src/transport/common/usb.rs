@@ -6,8 +6,8 @@ use anyhow::{Context, Result, ensure};
 use rusb::{self, UsbContext};
 use std::time::{Duration, Instant};
 
-use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc::Configuration};
-use crate::transport::TransportError;
+use opentitanlib_core::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc::Configuration};
+use opentitanlib_core::transport::TransportError;
 
 /// Represents a device provided by the `rusb` crate.
 pub struct RusbDevice {

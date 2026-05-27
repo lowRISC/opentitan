@@ -7,10 +7,10 @@ use std::rc::Rc;
 
 use anyhow::{Context, Result, bail, ensure};
 
-use crate::io::gpio::GpioPin;
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::transport::{
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 

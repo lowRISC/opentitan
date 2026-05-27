@@ -14,18 +14,18 @@ use std::rc::Rc;
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::bootstrap::BootstrapOptions;
-use crate::impl_serializable_error;
-use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
-use crate::io::i2c::Bus;
-use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::spi::Target;
-use crate::io::uart::Uart;
-use crate::proxy::protocol::{
+use opentitanlib_core::io::BootstrapOptions;
+use opentitanlib_core::impl_serializable_error;
+use opentitanlib_core::io::emu::Emulator;
+use opentitanlib_core::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
+use opentitanlib_core::io::i2c::Bus;
+use opentitanlib_core::io::nonblocking_help::NonblockingHelp;
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_proxy_protocol::protocol::{
     AsyncMessage, Message, ProxyRequest, ProxyResponse, Request, Response,
 };
-use crate::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
+use opentitanlib_core::transport::{Capabilities, Capability, ProxyOps, Transport, TransportError};
 
 mod emu;
 mod gpio;

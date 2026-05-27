@@ -5,17 +5,17 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::bootstrap::BootstrapOptions;
-use crate::io::emu::{EmuState, EmuValue};
-use crate::io::gpio::{
+use opentitanlib_core::io::BootstrapOptions;
+use opentitanlib_core::io::emu::{EmuState, EmuValue};
+use opentitanlib_core::io::gpio::{
     ClockNature, MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::io::i2c::DeviceStatus;
-use crate::io::spi::{MaxSizes, TransferMode};
-use crate::io::uart::Parity;
-use crate::proxy::errors::SerializedError;
-use crate::transport::Capabilities;
-use crate::util::voltage::Voltage;
+use opentitanlib_core::io::i2c::DeviceStatus;
+use opentitanlib_core::io::spi::{MaxSizes, TransferMode};
+use opentitanlib_core::io::uart::Parity;
+use crate::errors::SerializedError;
+use opentitanlib_core::transport::Capabilities;
+use opentitanlib_core::util::voltage::Voltage;
 
 #[derive(Serialize, Deserialize)]
 pub enum Message {

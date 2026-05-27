@@ -10,10 +10,10 @@ use std::io::{self, ErrorKind, Read, Write};
 use std::rc::Rc;
 use std::time::Duration;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::TransportError;
-use crate::transport::verilator::transport::Inner;
-use crate::util::file;
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use opentitanlib_core::transport::TransportError;
+use crate::verilator::transport::Inner;
+use opentitanlib_core::util::file;
 
 pub struct VerilatorGpioPin {
     inner: Rc<RefCell<Inner>>,

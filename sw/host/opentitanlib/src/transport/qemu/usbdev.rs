@@ -14,8 +14,8 @@ use std::time::{Duration, Instant};
 use thiserror::Error;
 use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned, byteorder::little_endian};
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
+use opentitanlib_core::io::gpio::{GpioPin, PinMode, PullMode};
+use opentitanlib_core::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
 
 /// Pin-like interface for controlling USB VBUS.
 pub struct QemuVbusSense {

@@ -8,6 +8,11 @@ use serde::{Deserialize, Serialize};
 use super::spi::{SpiError, Target, Transfer};
 pub const READ_STATUS: u8 = 0x05;
 pub const STATUS_WIP: u8 = 0x01;
+pub const READ: u8 = 0x03;
+pub const FAST_READ: u8 = 0x0b;
+pub const PAGE_PROGRAM: u8 = 0x02;
+pub const WRITE_ENABLE: u8 = 0x06;
+pub const READ_SFDP: u8 = 0x5a;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 /// Declarations of if and when to switch from single-lane SPI to a faster mode.
