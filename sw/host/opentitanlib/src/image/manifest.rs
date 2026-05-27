@@ -66,13 +66,35 @@ with_unknown! {
     }
 }
 
+/// Buffer of reserved bytes.
+///
+/// This struct is used to hold reserved bytes in the manifest to pad fields
+/// with 0xa5 to match layout specifications.
+#[repr(C)]
+#[derive(KnownLayout, Immutable, IntoBytes, FromBytes, Debug, Clone, Copy)]
+pub struct ReservedBuffer<const COUNT: usize> {
+    a: [u8; COUNT],
+}
+
+impl<const COUNT: usize> Default for ReservedBuffer<COUNT> {
+    fn default() -> Self {
+        Self {
+            a: std::array::from_fn(|_| 0xa5),
+        }
+    }
+}
+
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
 #[derive(KnownLayout, Immutable, IntoBytes, FromBytes, Debug, Default)]
 pub struct Manifest {
     pub signature: SigverifyBuffer,
+    pub reserved_signature: ReservedBuffer<160>,
+    pub reserved_unsigned: ReservedBuffer<160>,
     pub usage_constraints: ManifestUsageConstraints,
     pub pub_key: SigverifyBuffer,
+    pub reserved_public_key: ReservedBuffer<160>,
+    pub reserved: ReservedBuffer<160>,
     pub address_translation: u32,
     pub identifier: u32,
     pub manifest_version: ManifestVersion,
@@ -151,17 +173,11 @@ pub struct ManifestExtSpxKey {
     pub key: SigverifySpxKey,
 }
 
-/// A type that holds 96 32-bit words for RSA-3072.
+/// A type that holds 16 32-bit words for ECDSA-P256.
 #[repr(C)]
-#[derive(Immutable, IntoBytes, FromBytes, Debug)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Clone, Copy, Default)]
 pub struct SigverifyBuffer {
-    pub data: [u32; 96usize],
-}
-
-impl Default for SigverifyBuffer {
-    fn default() -> Self {
-        Self { data: [0; 96usize] }
-    }
+    pub data: [u32; 16usize],
 }
 
 /// SecVer Write manifest extension
@@ -293,8 +309,12 @@ mod tests {
     #[test]
     pub fn test_manifest_layout() {
         assert_eq!(offset_of!(Manifest, signature), 0);
+        assert_eq!(offset_of!(Manifest, reserved_signature), 64);
+        assert_eq!(offset_of!(Manifest, reserved_unsigned), 224);
         assert_eq!(offset_of!(Manifest, usage_constraints), 384);
         assert_eq!(offset_of!(Manifest, pub_key), 432);
+        assert_eq!(offset_of!(Manifest, reserved_public_key), 496);
+        assert_eq!(offset_of!(Manifest, reserved), 656);
         assert_eq!(offset_of!(Manifest, address_translation), 816);
         assert_eq!(offset_of!(Manifest, identifier), 820);
         assert_eq!(offset_of!(Manifest, manifest_version), 824);
