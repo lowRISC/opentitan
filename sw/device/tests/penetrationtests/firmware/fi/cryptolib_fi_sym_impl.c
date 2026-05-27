@@ -343,11 +343,11 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   // Ciphertext.
   uj_output->data_len = uj_input.data_len;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
-  memcpy(uj_output->data, actual_ciphertext_data, uj_output->data_len);
+  memcpy(uj_output->data, actual_ciphertext.data, uj_output->data_len);
   // Tag.
   uj_output->tag_len = uj_input.tag_len;
   memset(uj_output->tag, 0, AES_CMD_MAX_MSG_BYTES);
-  memcpy(uj_output->tag, actual_tag_data, uj_output->tag_len);
+  memcpy(uj_output->tag, actual_tag.data, uj_output->tag_len);
   uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
