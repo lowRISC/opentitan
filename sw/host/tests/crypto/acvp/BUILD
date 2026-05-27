@@ -18,6 +18,7 @@ rust_binary(
         "src/kmac.rs",
         "src/main.rs",
         "src/rsa.rs",
+        "src/sha.rs",
         "src/x25519.rs",
     ],
     deps = [
