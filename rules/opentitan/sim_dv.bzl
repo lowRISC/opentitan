@@ -131,17 +131,20 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = signed_bin if signed_bin else binary,
             word_size = 32,
         )
-        vmem = scramble_rram(
-            ctx,
-            name = name,
-            suffix = "128.scr.vmem",
-            src = vmem_base,
-            otp = get_fallback(ctx, "file.otp", exec_env),
-            otp_mmap = exec_env.otp_mmap,
-            top_secret_cfg = exec_env.top_secret_cfg,
-            otp_data_perm = exec_env.otp_data_perm,
-            _tool = exec_env.rram_scramble_tool.files_to_run,
-        )
+        if exec_env.rram_scramble_tool != None:
+            vmem = scramble_rram(
+                ctx,
+                name = name,
+                suffix = "128.scr.vmem",
+                src = vmem_base,
+                otp = get_fallback(ctx, "file.otp", exec_env),
+                otp_mmap = exec_env.otp_mmap,
+                top_secret_cfg = exec_env.top_secret_cfg,
+                otp_data_perm = exec_env.otp_data_perm,
+                _tool = exec_env.rram_scramble_tool.files_to_run,
+            )
+        else:
+            vmem = vmem_base
         rom = None
         rom32 = None
         default = vmem
