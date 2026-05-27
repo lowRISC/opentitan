@@ -24,6 +24,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/rsa_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/sha_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/x25519_commands.h"
 
@@ -38,6 +39,7 @@
 #include "hmac.h"
 #include "kmac.h"
 #include "rsa.h"
+#include "sha.h"
 #include "sphincsplus.h"
 #include "x25519.h"
 
@@ -81,6 +83,9 @@ status_t process_cmd(ujson_t *uj) {
         return OK_STATUS(0);
       case kCryptotestCommandRsa:
         RESP_ERR(uj, handle_rsa(uj));
+        break;
+      case kCryptotestCommandSha:
+        RESP_ERR(uj, handle_sha(uj));
         break;
       case kCryptotestCommandSphincsPlus:
         RESP_ERR(uj, handle_sphincsplus(uj));
