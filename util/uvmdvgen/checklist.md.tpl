@@ -45,7 +45,7 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Not Started |
 Documentation | [BLOCK_DIAGRAM][]         | Not Started |
 Documentation | [DOC_INTERFACE][]         | Not Started |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Not Started |
+Documentation | [DOC_INTEGRATION_D2][]    | Not Started |
 Documentation | [MISSING_FUNC][]          | Not Started |
 Documentation | [FEATURE_FROZEN][]        | Not Started |
 RTL           | [FEATURE_COMPLETE][]      | Not Started |
@@ -64,7 +64,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 [NEW_FEATURES]:          /doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         /doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         /doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: /doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    /doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          /doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        /doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      /doc/project_governance/checklist/README.md#feature_complete
@@ -105,6 +105,7 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
 Documentation | [NEW_FEATURES_D3][]     | Not Started |
+Documentation | [DOC_INTEGRATION_D3][]  | Not Started |
 RTL           | [TODO_COMPLETE][]       | Not Started |
 Code Quality  | [LINT_COMPLETE][]       | Not Started |
 Code Quality  | [CDC_COMPLETE][]        | Not Started |
@@ -117,6 +118,7 @@ Review        | Reviewer(s)             | Not Started |
 Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      /doc/project_governance/checklist/README.md#new_features_d3
+[DOC_INTEGRATION_D3]:   /doc/project_governance/checklist/README.md#doc_integration_d3
 [TODO_COMPLETE]:        /doc/project_governance/checklist/README.md#todo_complete
 [LINT_COMPLETE]:        /doc/project_governance/checklist/README.md#lint_complete
 [CDC_COMPLETE]:         /doc/project_governance/checklist/README.md#cdc_complete
