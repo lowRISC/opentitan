@@ -32,8 +32,7 @@ def bytes_to_words(byte_array):
 
     word_list = []
     for i in range(0, len(byte_array), 4):
-        chunk = byte_array[i
-                           : i + 4]
+        chunk = byte_array[i: i + 4]
         word = struct.unpack(">I", chunk)[0]
         word_list.append(word)
     return word_list
