@@ -449,7 +449,7 @@ status_t cryptolib_fi_cmac_impl(cryptolib_fi_sym_cmac_in_t uj_input,
       .key_mode = kOtcryptoKeyModeAesCmac,
       .key_length = uj_input.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
 
   size_t key_words =
