@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 
+#include "hw/top/dt/keymgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
@@ -15,11 +16,16 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "keymgr_regs.h"
+#include "hw/top/keymgr_regs.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
+
+static const dt_keymgr_t kKeymgrDt = kDtKeymgr;
+
+static inline uint32_t keymgr_base(void) {
+  return dt_keymgr_primary_reg_block(kKeymgrDt);
+}
 
 static dif_keymgr_t keymgr;
 
@@ -177,23 +183,20 @@ static status_t run_negative_test(void) {
   // Negative test keymgr_is_idle()
   CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
       kTopEarlgreyAlertIdKeymgrRecovOperationErr));
-  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_START_REG_OFFSET,
+  abs_mmio_write32(keymgr_base() + KEYMGR_START_REG_OFFSET,
                    1 << KEYMGR_START_EN_BIT);
   CHECK(keymgr_generate_key_sw(kTestDiversification, &dummy_key).value ==
         OTCRYPTO_RECOV_ERR.value);
   uint32_t status;
   uint32_t reg;
   do {
-    reg = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
-                          KEYMGR_OP_STATUS_REG_OFFSET);
+    reg = abs_mmio_read32(keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET);
     status = bitfield_field32_read(reg, KEYMGR_OP_STATUS_STATUS_FIELD);
   } while (status == KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
-  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_OP_STATUS_REG_OFFSET,
-                   reg);
-  uint32_t err_code = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
-                                      KEYMGR_ERR_CODE_REG_OFFSET);
-  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_ERR_CODE_REG_OFFSET,
-                   err_code);
+  abs_mmio_write32(keymgr_base() + KEYMGR_OP_STATUS_REG_OFFSET, reg);
+  uint32_t err_code =
+      abs_mmio_read32(keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET);
+  abs_mmio_write32(keymgr_base() + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
   CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
       kTopEarlgreyAlertIdKeymgrRecovOperationErr));
 
