@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/aes.h"
 
+#include "hw/top/dt/aes.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -13,8 +14,13 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "aes_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top/aes_regs.h"  // Generated.
+
+static const dt_aes_t kAesDt = kDtAes;
+
+static inline uint32_t aes_base(void) {
+  return dt_aes_primary_reg_block(kAesDt);
+}
 
 static const aes_block_t kIv = {
     .data =
@@ -135,13 +141,6 @@ static status_t run_negative_test(void) {
   bad_key_len.checksum = aes_key_integrity_checksum(&bad_key_len);
   CHECK(aes_encrypt_begin(bad_key_len, &kIv).value == OTCRYPTO_BAD_ARGS.value);
 
-  aes_key_t valid_key = {
-      .mode = kAesCipherModeCtr,
-      .sideload = kHardenedBoolFalse,
-      .key_len = 4,
-      .key_shares = {share0, share1},
-  };
-
   // Attempt to read output without providing any input
   aes_key_t premature_output_key = base_key;
   premature_output_key.checksum =
@@ -157,8 +156,7 @@ static status_t run_negative_test(void) {
   shadow_reg_key.checksum = aes_key_integrity_checksum(&shadow_reg_key);
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdAesRecovCtrlUpdateErr));
-  uint32_t ctrl_addr =
-      TOP_EARLGREY_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET;
+  uint32_t ctrl_addr = aes_base() + AES_CTRL_SHADOWED_REG_OFFSET;
   abs_mmio_write32(ctrl_addr, 0xAAAAAAAA);  // First write
   abs_mmio_write32(ctrl_addr, 0xBBBBBBBB);  // Second write (mismatch)
   CHECK(aes_encrypt_begin(shadow_reg_key, &kIv).value ==

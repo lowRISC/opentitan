@@ -66,8 +66,8 @@ opentitan_test(
     deps = [
         ":aes",
         ":rv_core_ibex",
-        "//hw/ip/aes/data:aes_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:aes_c_regs",
+        "//hw/top/dt:aes",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
