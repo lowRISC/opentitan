@@ -7,9 +7,9 @@
  *
  * Portions of this file are Ibex-specific.
  *
- * The ROM_EXT is actually kept in flash, rather than ROM. While a ROM_EXT can
- * be loaded into either Slot A (the start of flash), or Slot B (the start of
- * the upper half of flash), this linker script targets both by using a virtual
+ * The ROM_EXT is actually kept in NVM, rather than ROM. While a ROM_EXT can
+ * be loaded into either Slot A (the start of NVM), or Slot B (the start of
+ * the upper half of NVM), this linker script targets both by using a virtual
  * address. The ROM must configure the address translation before jumping to
  * to the virtual address.
  */
@@ -21,8 +21,8 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _rom_ext_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
+ASSERT((_rom_ext_size <= (LENGTH(nvm) / 2)), "Error: rom ext NVM is bigger than slot");
 
-REGION_ALIAS("rom_ext_flash", rom_ext_virtual);
+REGION_ALIAS("rom_ext_nvm", rom_ext_virtual);
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld

@@ -7,6 +7,8 @@
 /*${gencmd_out}
  */
 <%!
+import topgen.lib as lib
+
 # TODO(#4709): Remove this function, once the old way of defining memories has been deprecated.
 def memory_to_flags(memory):
     memory_type = memory["type"]
@@ -75,6 +77,19 @@ MEMORY {
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
 }
 
+% if lib.has_module_type(top, "rram_ctrl") or lib.has_module_type(top, "flash_ctrl"):
+/**
+ * Alias for the NVM technology this top actually boots from, so downstream
+ * linker scripts can place sections with `> nvm` instead of hardcoding one
+ * technology.
+ */
+  % if lib.has_module_type(top, "flash_ctrl"):
+REGION_ALIAS("nvm", eflash);
+  % else:
+REGION_ALIAS("nvm", rram);
+  % endif
+
+% endif
 /**
  * Exception frame at the top of main SRAM
  */

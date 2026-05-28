@@ -25,7 +25,7 @@ static_assert(kNonVolatileCounterFlashWords ==
 static_assert(
     FLASH_CTRL_PARAM_BYTES_PER_WORD == sizeof(uint64_t),
     "Elements of the counter array must be the same size as a flash word");
-extern char _non_volatile_counter_flash_words[];
+extern char _non_volatile_counter_nvm_words[];
 
 OT_SET_BSS_SECTION(".non_volatile_counter_0",
                    uint64_t nv_counter_0[kNonVolatileCounterFlashWords];)
@@ -73,7 +73,7 @@ static status_t nv_counter_testutils_counter_set_at_least(size_t counter,
 status_t nv_counter_testutils_counter_get(size_t counter, uint32_t *value) {
   TRY_CHECK(value != NULL);
   TRY_CHECK(counter < ARRAYSIZE(kNvCounters));
-  TRY_CHECK((uint32_t)&_non_volatile_counter_flash_words ==
+  TRY_CHECK((uint32_t)&_non_volatile_counter_nvm_words ==
             kNonVolatileCounterFlashWords);
 
   // Use a reverse loop since `nv_counter_testutils_counter_set_at_least()` can

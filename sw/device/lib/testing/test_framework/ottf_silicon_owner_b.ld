@@ -23,6 +23,6 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 _ottf_size = (LENGTH(ottf_storage) / 2) - _rom_ext_size;
 _ottf_start_address = ORIGIN(ottf_storage) + (LENGTH(ottf_storage) / 2) + _rom_ext_size;
 
-REGION_ALIAS("ottf_flash", ottf_storage);
+REGION_ALIAS("ottf_nvm", ottf_storage);
 
 INCLUDE ottf_common.ld

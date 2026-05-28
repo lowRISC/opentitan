@@ -49,14 +49,14 @@ _manifest_code_end = _text_end - _rom_ext_start_address;
 _manifest_entry_point = _rom_ext_start_boot - _rom_ext_start_address;
 /*
  * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
- * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is
+ * the NVM region.  Otherwise, the value kHardenedBoolTrue (0x739) is
  * selected.
  */
-_manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
-                                 _text_start < (ORIGIN(eflash)
-                                              + LENGTH(eflash))) ? 0x1d4 : 0x739;
+_manifest_address_translation = (_text_start >= ORIGIN(nvm) &&
+                                 _text_start < (ORIGIN(nvm)
+                                              + LENGTH(nvm))) ? 0x1d4 : 0x739;
 
-REGION_ALIAS("coverage_flash", rom_ext_flash);
+REGION_ALIAS("coverage_nvm", rom_ext_nvm);
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -66,7 +66,7 @@ SECTIONS {
   .manifest _rom_ext_start_address : {
     KEEP(*(.manifest))
     . = ALIGN(4);
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Immutable ROM_EXT section.
@@ -81,7 +81,7 @@ SECTIONS {
     _rom_ext_immutable_end = .;
 
     _rom_ext_immutable_size = SIZEOF(.rom_ext_immutable);
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Ibex interrupt vector.
@@ -91,14 +91,14 @@ SECTIONS {
    */
   .vectors : ALIGN(256) {
     KEEP(*(.vectors))
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Standard text section, containing program code.
@@ -109,11 +109,11 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * ROM_EXT ISRs text section, containing the exception handler entry/exit logic
-   * used for handling load access faults due to flash ECC errors during boot.
+   * used for handling load access faults due to NVM ECC errors during boot.
    *
    * This is placed next to the ".shutdown" section.
    */
@@ -123,12 +123,12 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Shutdown text section, containing shutdown function(s).
    *
-   * This must be the last executable section in the ROM_EXT flash image.
+   * This must be the last executable section in the ROM_EXT NVM image.
    */
   .shutdown : ALIGN(4) {
     *(.shutdown)
@@ -137,7 +137,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -150,7 +150,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   INCLUDE sw/device/lib/coverage/rodata.ld
 
@@ -168,7 +168,7 @@ SECTIONS {
 
   /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
-   * from flash at runtime by the CRT.
+   * from NVM at runtime by the CRT.
    *
    * Load this by copying the bytes from [_data_init_start, _data_init_end] into
    * the range [_data_start, _data_end].
@@ -203,12 +203,12 @@ SECTIONS {
     _data_init_end = LOADADDR(.data) + SIZEOF(.data);
 
     /* This puts it in ram_main at runtime (for the VMA), but puts the section
-     * into flash for load time (for the LMA). This is why `_data_init_*` uses
+     * into NVM for load time (for the LMA). This is why `_data_init_*` uses
      * `LOADADDR`.
      *
      * Using `AT>` means we don't have to keep track of the next free part of
-     * flash, as we do in our other linker scripts. */
-  } > ram_main AT> rom_ext_flash
+     * NVM, as we do in our other linker scripts. */
+  } > ram_main AT> rom_ext_nvm
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
