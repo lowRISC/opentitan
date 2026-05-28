@@ -131,7 +131,15 @@ fn run_x25519_testcase(
 
     let device_secret = &output.shared_secret[..output.shared_secret_len];
 
-    let success = match test_case.result {
+    let is_all_zeros = test_case.shared_secret.iter().all(|&b| b == 0);
+
+    // We expect the all zero secret outputs to be invalid
+    let mut expected_result = &test_case.result;
+    if is_all_zeros && *expected_result == X25519Result::Valid {
+        expected_result = &X25519Result::Invalid;
+    }
+
+    let success = match expected_result {
         X25519Result::Valid => output.result && device_secret == test_case.shared_secret.as_slice(),
         X25519Result::Invalid => !output.result,
     };

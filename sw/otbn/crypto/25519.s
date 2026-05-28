@@ -2128,9 +2128,16 @@ x25519:
   bn.mov   w16, w23
   jal      x1, fe_inv
 
-  /* Compute u_masked = U_masked * W^-1 mod p. */
+  /* u_masked = U_masked * W^-1 mod p */
   bn.mov   w23, w24
   jal      x1, fe_mul
+
+  /* Check if W == 0 mod p */
+  bn.cmp   w16, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8      /* Extract the Z flag */
+  addi     x3, x0, 8
+  beq      x2, x3, .L_x25519_fail  /* Reject if we have the identity point */
 
   bn.mov   w19, w25
 
