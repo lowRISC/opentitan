@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
+#include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -13,8 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "otbn_regs.h"  // Generated.
+#include "hw/top/otbn_regs.h"  // Generated.
 
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
@@ -22,6 +22,12 @@
 #define CMD_SEC_WIPE_DMEM 0xc3
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_otbn_t kOtbnDt = kDtOtbn;
+
+static inline uint32_t otbn_base(void) {
+  return dt_otbn_primary_reg_block(kOtbnDt);
+}
 
 static status_t dummy_wipe_dmem_macro_test(void) {
   HARDENED_TRY_WIPE_DMEM((status_t){.value = OTCRYPTO_BAD_ARGS.value});
@@ -50,8 +56,7 @@ static status_t run_negative_test(void) {
   CHECK(otbn_load_app(bad_range_app).value == OTCRYPTO_BAD_ARGS.value);
 
   // Force OTBN out of the IDLE state by manually triggering a Secure Wipe.
-  abs_mmio_write32(TOP_EARLGREY_OTBN_BASE_ADDR + OTBN_CMD_REG_OFFSET,
-                   CMD_SEC_WIPE_DMEM);
+  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, CMD_SEC_WIPE_DMEM);
   CHECK(otbn_execute().value == OTCRYPTO_ASYNC_INCOMPLETE.value);
   CHECK(otbn_busy_wait_for_done().value == OTCRYPTO_OK.value);
 
