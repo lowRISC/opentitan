@@ -24,7 +24,7 @@ import sys
 import os
 import time
 from Crypto.PublicKey import RSA, ECC
-from Crypto.Signature import pkcs1_15, DSS
+from Crypto.Signature import pkcs1_15, DSS, pss
 from Crypto.Hash import SHA256, SHA384
 
 ignored_keys_set = set(["status"])
@@ -1319,7 +1319,8 @@ class AsymCryptolibFiSim(unittest.TestCase):
         data_len = 13
         data = [i for i in range(data_len)]
         h = SHA256.new(bytes(data))
-        signer = pkcs1_15.new(key)
+
+        signer = pss.new(key)
         signature = signer.sign(h)
         sig = [x for x in signature]
         # Corrupt the signature for FiSim Testing
