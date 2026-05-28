@@ -22,8 +22,8 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 _ottf_size = LENGTH(owner_virtual) - _rom_ext_size;
 _ottf_start_address = ORIGIN(owner_virtual) + _rom_ext_size;
 ASSERT((_ottf_size <= (LENGTH(ottf_storage) / 2)),
-  "Error: BL0 flash is bigger than slot.");
+  "Error: BL0 NVM is bigger than slot.");
 
-REGION_ALIAS("ottf_flash", owner_virtual);
+REGION_ALIAS("ottf_nvm", owner_virtual);
 
 INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld

@@ -443,7 +443,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   return error;
 }
 
-static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
+static void rom_ext_nvm_protect_self(uint32_t rom_ext_slot) {
   nvm_page_cfg_t cfg = nvm_ctrl_data_default_cfg_get();
   nvm_page_perms_t read = {
       .read = kMultiBitBool4True,
@@ -568,8 +568,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // of `boot_data`.
   boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
 
-  // Protect the flash pages where the ROM_EXT is located.
-  rom_ext_flash_protect_self(boot_log->rom_ext_slot);
+  // Protect the NVM pages where the ROM_EXT is located.
+  rom_ext_nvm_protect_self(boot_log->rom_ext_slot);
 
   // Initialize the chip ownership state.
   rom_error_t error;

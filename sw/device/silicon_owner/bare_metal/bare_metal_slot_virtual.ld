@@ -7,7 +7,7 @@
  *
  * Portions of this file are Ibex-specific.
  *
- * The first Silicon Owner stage is kept in flash, and can be loaded into either
+ * The first Silicon Owner stage is kept in NVM, and can be loaded into either
  * Slot A, or Slot B. This linker script a single binary that can be executed in
  * both slots.
  */
@@ -20,6 +20,6 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _slot_start_address = ORIGIN(owner_virtual) + _rom_ext_size;
 _slot_size = LENGTH(owner_virtual) - _rom_ext_size;
 
-REGION_ALIAS("owner_flash", owner_virtual);
+REGION_ALIAS("owner_nvm", owner_virtual);
 
 INCLUDE sw/device/silicon_owner/bare_metal/bare_metal_common.ld

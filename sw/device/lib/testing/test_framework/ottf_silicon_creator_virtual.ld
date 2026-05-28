@@ -23,6 +23,6 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 _ottf_start_address = ORIGIN(rom_ext_virtual);
 _ottf_size = LENGTH(rom_ext_virtual);
 
-REGION_ALIAS("ottf_flash", rom_ext_virtual);
+REGION_ALIAS("ottf_nvm", rom_ext_virtual);
 
 INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld

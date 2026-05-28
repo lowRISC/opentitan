@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -40,9 +41,8 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t rom = {.start = (uintptr_t)_text_end,
                              .end = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
                                     TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES};
-  const epmp_region_t eflash = {.start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                                       TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES};
+  const epmp_region_t nvm = {.start = NVM_DATA_BASE_ADDR,
+                             .end = NVM_DATA_BASE_ADDR + NVM_DATA_SIZE_BYTES};
   const epmp_region_t mmio = {
       .start = TOP_EARLGREY_MMIO_BASE_ADDR,
       .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES};
@@ -93,7 +93,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   memset(&epmp_state, 0, sizeof(epmp_state));
   epmp_state_configure_tor(1, rom_text, kEpmpPermLockedReadExecute);
   epmp_state_configure_tor(2, rom, kEpmpPermLockedReadOnly);
-  epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);
+  epmp_state_configure_napot(5, nvm, kEpmpPermLockedReadOnly);
   epmp_state_configure_tor(11, mmio, kEpmpPermLockedReadWrite);
   epmp_state_configure_napot(13, debug_rom, debug_rom_access);
   epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);

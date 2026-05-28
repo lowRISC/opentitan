@@ -21,6 +21,6 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _ottf_size = LENGTH(ottf_storage) / 2;
 _ottf_start_address = ORIGIN(ottf_storage) + _ottf_size;
 
-REGION_ALIAS("ottf_flash", ottf_storage);
+REGION_ALIAS("ottf_nvm", ottf_storage);
 
 INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld

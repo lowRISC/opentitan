@@ -19,7 +19,7 @@ _dv_log_offset = 0x10000;
 
 ENTRY(_imm_section_start_boot)
 
-REGION_ALIAS("coverage_flash", rom_ext_flash);
+REGION_ALIAS("coverage_nvm", rom_ext_nvm);
 
 SECTIONS {
   /**
@@ -32,14 +32,14 @@ SECTIONS {
     _text_start = .;
     _rom_ext_immutable_start = .;
     KEEP(*(.vectors))
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Standard text section, containing program code.
@@ -50,12 +50,12 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Shutdown text section, containing shutdown function(s).
    *
-   * This must be the last executable section in the ROM_EXT flash image.
+   * This must be the last executable section in the ROM_EXT NVM image.
    */
   .shutdown : ALIGN(4) {
     *(.shutdown)
@@ -64,7 +64,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -77,7 +77,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   INCLUDE sw/device/lib/coverage/rodata.ld
 
@@ -95,7 +95,7 @@ SECTIONS {
 
   /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
-   * from flash at runtime by the CRT.
+   * from NVM at runtime by the CRT.
    *
    * Load this by copying the bytes from [_data_init_start, _data_init_end] into
    * the range [_data_start, _data_end].
@@ -131,12 +131,12 @@ SECTIONS {
     _rom_ext_immutable_end = LOADADDR(.data) + SIZEOF(.data);
 
     /* This puts it in ram_main at runtime (for the VMA), but puts the section
-     * into flash for load time (for the LMA). This is why `_data_init_*` uses
+     * into NVM for load time (for the LMA). This is why `_data_init_*` uses
      * `LOADADDR`.
      *
      * Using `AT>` means we don't have to keep track of the next free part of
-     * flash, as we do in our other linker scripts. */
-  } > ram_main AT> rom_ext_flash
+     * NVM, as we do in our other linker scripts. */
+  } > ram_main AT> rom_ext_nvm
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -173,5 +173,5 @@ SECTIONS {
     ASSERT(
       SIZEOF(.imm_section_version) == 32,
       "Error: immutable section version string should be exactly 32 bytes");
-  } > rom_ext_flash
+  } > rom_ext_nvm
 }

@@ -436,6 +436,12 @@ def get_module_by_name(top: ConfigT, name: str,
     return module
 
 
+def has_module_type(top: ConfigT, module_type: str) -> bool:
+    """Check whether top["module"] contains an instance of `module_type`.
+    """
+    return any(m["type"] == module_type for m in top["module"])
+
+
 def intersignal_to_signalname(top, m_name: str, s_name: str) -> str:
 
     # TODO: Find the signal in the `inter_module_list` and get the correct

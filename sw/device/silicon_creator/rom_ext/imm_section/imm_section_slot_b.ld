@@ -19,10 +19,10 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  * Symbols to be used in the setup of the address translation for IMM_SECTION.
  */
 
-/* Slot B starts at the half-size mark of the eFlash. */
+/* Slot B starts at the half-size mark of the NVM. */
 MEMORY {
-  imm_section_slot_b(rx) : ORIGIN = ORIGIN(eflash) + LENGTH(eflash) / 2 + 0x400, LENGTH = LENGTH(eflash) / 2 - 0x400
+  imm_section_slot_b(rx) : ORIGIN = ORIGIN(nvm) + LENGTH(nvm) / 2 + 0x400, LENGTH = LENGTH(nvm) / 2 - 0x400
 }
-REGION_ALIAS("rom_ext_flash", imm_section_slot_b);
+REGION_ALIAS("rom_ext_nvm", imm_section_slot_b);
 
 INCLUDE sw/device/silicon_creator/rom_ext/imm_section/imm_section_common.ld

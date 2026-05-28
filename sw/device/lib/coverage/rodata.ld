@@ -12,7 +12,7 @@
  *
  * This partial linker script requires the main linker script to define the
  * following memory region or alias:
- * - coverage_flash
+ * - coverage_nvm
  */
 
 /**
@@ -27,4 +27,4 @@
   ASSERT(
     DEFINED(_ot_coverage_enabled) || SIZEOF(.note.gnu.build-id) == 0,
     "Build ID section must be empty when coverage is disabled.");
-} > coverage_flash
+} > coverage_nvm
