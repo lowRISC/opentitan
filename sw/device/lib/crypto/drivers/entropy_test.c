@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/crypto/drivers/entropy.h"
 
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/entropy_src.h"
 #include "hw/top/dt/otbn.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
@@ -16,13 +19,24 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
-#include "csrng_regs.h"
-#include "edn_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top/csrng_regs.h"        // Generated
+#include "hw/top/edn_regs.h"          // Generated
+#include "hw/top/entropy_src_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 't')
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_csrng_t kCsrngDt = kDtCsrng;
+static const dt_edn_t kEdn0Dt = kDtEdn0;
+
+static inline uint32_t csrng_base(void) {
+  return dt_csrng_primary_reg_block(kCsrngDt);
+}
+
+static inline uint32_t edn0_base(void) {
+  return dt_edn_primary_reg_block(kEdn0Dt);
+}
 
 static status_t entropy_complex_init_test(void) {
   TRY(entropy_complex_init());
@@ -51,8 +65,7 @@ static status_t run_negative_test(void) {
   CHECK(entropy_csrng_update(&bad_len_seed).value == OTCRYPTO_RECOV_ERR.value);
 
   // Test entropy_complex_check with a disabled CSRNG
-  uint32_t csrng_ctrl_addr =
-      TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET;
+  uint32_t csrng_ctrl_addr = csrng_base() + CSRNG_CTRL_REG_OFFSET;
   uint32_t old_csrng_ctrl = abs_mmio_read32(csrng_ctrl_addr);
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdCsrngRecovAlert));
@@ -63,7 +76,7 @@ static status_t run_negative_test(void) {
       ottf_alerts_expect_alert_finish(kTopEarlgreyAlertIdCsrngRecovAlert));
 
   // Test entropy_complex_check with a disabled EDN0
-  uint32_t edn0_ctrl_addr = TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET;
+  uint32_t edn0_ctrl_addr = edn0_base() + EDN_CTRL_REG_OFFSET;
   uint32_t old_edn0_ctrl = abs_mmio_read32(edn0_ctrl_addr);
   CHECK_STATUS_OK(
       ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdEdn0RecovAlert));
