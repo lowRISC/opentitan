@@ -105,8 +105,8 @@ opentitan_test(
     ),
     deps = [
         ":keymgr",
-        "//hw/ip/keymgr/data:keymgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:keymgr_c_regs",
+        "//hw/top/dt:keymgr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
