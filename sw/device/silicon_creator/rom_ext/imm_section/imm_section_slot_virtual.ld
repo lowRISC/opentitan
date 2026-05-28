@@ -22,6 +22,6 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 MEMORY {
   imm_section_virtual(rx) : ORIGIN = ORIGIN(rom_ext_virtual) + 0x400, LENGTH = 0x80000 - 0x400
 }
-REGION_ALIAS("rom_ext_flash", imm_section_virtual);
+REGION_ALIAS("rom_ext_nvm", imm_section_virtual);
 
 INCLUDE sw/device/silicon_creator/rom_ext/imm_section/imm_section_common.ld

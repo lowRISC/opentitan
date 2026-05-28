@@ -1064,8 +1064,8 @@ extern "C" {
 // These functions aren't defined in owner_block.h because they aren't meant
 // to be public APIs.  They aren't static so we can access the symbols here
 // for testing.
-hardened_bool_t rom_ext_flash_overlap(uint32_t, uint32_t);
-hardened_bool_t rom_ext_flash_exclusive(uint32_t, uint32_t);
+hardened_bool_t rom_ext_nvm_overlap(uint32_t, uint32_t);
+hardened_bool_t rom_ext_nvm_exclusive(uint32_t, uint32_t);
 rom_error_t owner_block_application_key_check(
     const owner_application_key_t *key);
 rom_error_t owner_block_flash_info_check(const owner_flash_info_config_t *info);
@@ -1075,8 +1075,8 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue);
 // Test the flash bounds checking functions.
 TEST_P(RomExtFlashBoundsTest, FlashBoundsTest) {
   FlashRegion p = GetParam();
-  hardened_bool_t overlap = rom_ext_flash_overlap(p.start, p.end);
-  hardened_bool_t exclusive = rom_ext_flash_exclusive(p.start, p.end);
+  hardened_bool_t overlap = rom_ext_nvm_overlap(p.start, p.end);
+  hardened_bool_t exclusive = rom_ext_nvm_exclusive(p.start, p.end);
   EXPECT_EQ(overlap, p.overlap ? kHardenedBoolTrue : kHardenedBoolFalse);
   EXPECT_EQ(exclusive, p.exclusive ? kHardenedBoolTrue : kHardenedBoolFalse);
 }

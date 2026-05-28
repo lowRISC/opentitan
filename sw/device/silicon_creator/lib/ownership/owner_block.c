@@ -120,7 +120,7 @@ static inline hardened_bool_t is_owner_page(const uint8_t bank,
 
 // Checks if the half-open range [start..end) overlaps with the ROM_EXT region.
 // The RomExt_Start/End constants are also expressed as half-open ranges.
-hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
+hardened_bool_t rom_ext_nvm_overlap(uint32_t start, uint32_t end) {
   return (start < kRomExtAEnd && end > kRomExtAStart) ||
                  (start < kRomExtBEnd && end > kRomExtBStart)
              ? kHardenedBoolTrue
@@ -130,7 +130,7 @@ hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
 // Checks if the half-open range [start..end) is exclusively within the ROM_EXT
 // region. The RomExt_Start/End constants are also expressed as half-open
 // ranges.
-hardened_bool_t rom_ext_flash_exclusive(uint32_t start, uint32_t end) {
+hardened_bool_t rom_ext_nvm_exclusive(uint32_t start, uint32_t end) {
   return (kRomExtAStart <= start && start < kRomExtAEnd &&
           kRomExtAStart < end && end <= kRomExtAEnd) ||
                  (kRomExtBStart <= start && start < kRomExtBEnd &&
@@ -341,7 +341,7 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
     // When checking the flash configuration, a region is a ROM_EXT region if
     // it overlaps the ROM_EXT bounds.  It is an error to accept a new config
     // with a flash region that overlaps the ROM_EXT.
-    if (rom_ext_flash_overlap(start, end) == kHardenedBoolTrue) {
+    if (rom_ext_nvm_overlap(start, end) == kHardenedBoolTrue) {
       return kErrorOwnershipFlashConfigRomExt;
     } else if (in_flash_slot(kFlashSlotAStart, start, end) ==
                kHardenedBoolTrue) {
