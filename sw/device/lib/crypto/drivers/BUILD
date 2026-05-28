@@ -149,8 +149,8 @@ opentitan_test(
     deps = [
         ":kmac",
         ":rv_core_ibex",
-        "//hw/ip/kmac/data:kmac_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:kmac_c_regs",
+        "//hw/top/dt:kmac",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
