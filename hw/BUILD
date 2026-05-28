@@ -132,6 +132,16 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# Ibex's licensing files, needed for releases:
+exports_files(
+    [
+        "vendor/lowrisc_ibex/CREDITS.md",
+        "vendor/lowrisc_ibex/NOTICE",
+        "vendor/lowrisc_ibex/LICENSE",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 pkg_files(
     name = "package",
     srcs = ["verilator_bin"],

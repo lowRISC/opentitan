@@ -96,7 +96,31 @@ pkg_tar(
         # middleware libraries are typically dynamically linked and load
         # glibc and friends.
         "//sw/host/hsmtool:package",
+        # Credits
+        ":opentitan_credits",
+        ":ibex_credits",
     ],
     extension = "tar.xz",
     tags = ["manual"],
+)
+
+pkg_files(
+    name = "opentitan_credits",
+    srcs = [
+        # OpenTitan's Apache-2.0 license and NOTICE files:
+        "//:LICENSE",
+        "//:NOTICE",
+    ],
+    prefix = "CREDITS/opentitan/",
+)
+
+pkg_files(
+    name = "ibex_credits",
+    srcs = [
+        # Ibex's Apache-2.0 license, NOTICE file, and CREDITS.md file.
+        "//hw:vendor/lowrisc_ibex/LICENSE",
+        "//hw:vendor/lowrisc_ibex/NOTICE",
+        "//hw:vendor/lowrisc_ibex/CREDITS.md",
+    ],
+    prefix = "CREDITS/ibex/",
 )
