@@ -1649,7 +1649,7 @@ status_t cryptolib_fi_x25519_ecdh_impl(
                                            &ss_share1_buf));
 
   uint32_t ss_unmasked[8];
-  HARDENED_TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+  HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
 
   uj_output->cfg = 0;
   memset(uj_output->shared_key, 0, X25519_CMD_BYTES);
@@ -1738,7 +1738,7 @@ status_t cryptolib_fi_x25519_point_mul_impl(
                                            &ss_share1_buf));
 
   uint32_t ss_unmasked[8];
-  HARDENED_TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+  HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
 
   // Map the unmasked secret back to the point multiplication output
   uj_output->cfg = 0;
