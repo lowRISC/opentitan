@@ -228,7 +228,7 @@ status_t rsa_padding_pkcs1v15_verify(
                                            expected_encoded_message));
 
   // Compare with the expected value.
-  *result = hardened_memeq(encoded_message, expected_encoded_message,
+  *result = hardened_memeq(expected_encoded_message, encoded_message,
                            ARRAYSIZE(expected_encoded_message));
   // Clear the register file in order to ensure we clear any kHardenedBoolTrue
   // value in there
