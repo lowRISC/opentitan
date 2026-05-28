@@ -106,7 +106,7 @@ status_t handle_x25519_key_exchange(ujson_t *uj) {
 
   TRY(otcrypto_x25519(&private_key, &server_public_key, &shared_secret));
 
-  // Unmask the shared secret by adding its two shares.
+  // Unmask the shared secret by xoring its two shares.
   uint32_t dest_share0[kX25519SharedSecretWords];
   uint32_t dest_share1[kX25519SharedSecretWords];
   otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
@@ -116,7 +116,7 @@ status_t handle_x25519_key_exchange(ujson_t *uj) {
   TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
 
   uint32_t unblinded_secret[kX25519SharedSecretWords];
-  TRY(hardened_add(dest_share0, dest_share1, kX25519SharedSecretWords,
+  TRY(hardened_xor(dest_share0, dest_share1, kX25519SharedSecretWords,
                    unblinded_secret));
 
   cryptotest_x25519_kex_output_t uj_output;
@@ -228,7 +228,7 @@ status_t handle_x25519_shared_secret_generation(ujson_t *uj) {
   TRY(otcrypto_export_blinded_key(&shared_secret, &share0_buf, &share1_buf));
 
   uint32_t unblinded_secret[kX25519SharedSecretWords];
-  TRY(hardened_add(dest_share0, dest_share1, kX25519SharedSecretWords,
+  TRY(hardened_xor(dest_share0, dest_share1, kX25519SharedSecretWords,
                    unblinded_secret));
 
   memcpy(uj_output.shared_secret, unblinded_secret,
