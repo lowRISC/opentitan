@@ -1442,6 +1442,7 @@ status_t cryptolib_fi_ed25519_sign_impl(
 
   // Trigger window 1: FI-hardened sign-and-verify.
   if (uj_input.trigger == 1) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_ED25519_SIGN_START);
     pentest_set_trigger_high();
   }
   HARDENED_TRY(
@@ -1449,6 +1450,7 @@ status_t cryptolib_fi_ed25519_sign_impl(
                                    kOtcryptoEddsaSignModeEddsa, &signature));
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_ED25519_SIGN_END);
   }
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature));
@@ -1502,11 +1504,13 @@ status_t cryptolib_fi_ed25519_verify_impl(
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_ED25519_VERIFY_START);
   pentest_set_trigger_high();
   HARDENED_TRY(otcrypto_ed25519_verify(&public_key, &input_message,
                                        kOtcryptoEddsaSignModeEddsa, &signature,
                                        &verification_result));
   pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_ED25519_VERIFY_END);
 
   // Return data back to host.
   uj_output->result = true;
@@ -1636,11 +1640,13 @@ status_t cryptolib_fi_x25519_ecdh_impl(
 
   // FI Trigger window
   if (uj_input.trigger) {
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_X25519_START);
     pentest_set_trigger_high();
   }
   HARDENED_TRY(otcrypto_x25519(&private_key, &public_key, &shared_secret));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
+    PENTEST_MARKER_LABEL(PENTEST_MARKER_X25519_END);
   }
 
   uint32_t ss_share0[8];
