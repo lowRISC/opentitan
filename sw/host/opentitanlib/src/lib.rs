@@ -19,7 +19,9 @@ pub use opentitanlib_debug as debug;
 pub use opentitanlib_app as app;
 
 // 5. Re-export protocol modules
-pub use opentitanlib_protocols::{bootstrap, console, otp, proxy, rescue, spiflash, tpm};
+pub use opentitanlib_protocols::{
+    bootstrap, console, otp, proxy_server as proxy, rescue, spiflash, tpm,
+};
 
 // 6. Unified transport module (combines traits from core and drivers from transports)
 pub mod transport {

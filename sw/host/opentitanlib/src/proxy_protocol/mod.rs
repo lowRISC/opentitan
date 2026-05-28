@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//! Wire protocol and serialization helpers for opentitanlib proxy.
+//! Shared JSON-RPC over TCP/IP client-server wire protocol for opentitanlib proxy transport.
 
-#[path = "proxy/errors.rs"]
 pub mod errors;
-#[path = "proxy/protocol.rs"]
 pub mod protocol;

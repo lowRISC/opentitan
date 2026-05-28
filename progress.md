@@ -121,8 +121,22 @@ Define separate `rust_library` targets in the monolithic `sw/host/opentitanlib/B
   - Re-defined the aggregate unit tests target `opentitanlib_test` to compile as an independent test binary targeting `src/lib.rs` and depending directly on the 8 modular sub-crates (removing the super-crate dependency itself), completely bypassing Bazel's `crate` sandbox path mapping bug inside modular targets while keeping CI/presubmits test contracts intact.
   - Verified: built downstream CLI `//sw/host/opentitantool` (after importing DIF helper extension trait `JtagLcExt` inside `opentitantool`'s `lc` commands). Downstream tool and test target compiled, built, and **PASSED** successfully under Bazel with zero changes to downstream command source imports!
 
-## Phase 3: File Organization
-*Not started*
+## Phase 3: File Organization (Minor Reorganization)
+- [x] **Relocated `transport/mod.rs` to `transport.rs` (traits)**:
+  - Physically moved `sw/host/opentitanlib/src/transport/mod.rs` $\rightarrow$ `sw/host/opentitanlib/src/transport.rs` (using `git mv`).
+  - *Result:* The directory tree `src/transport/` now uniquely and exclusively maps 100% to the `opentitanlib_transports` target.
+  - Updated the `opentitanlib_core` target in `BUILD` accordingly.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_core` built successfully with zero other sub-crates changes required.
+- [x] **Modularized overlapping `src/proxy` folder**:
+  - Split the overlapping proxy directory into two congruent target folders:
+    - Created a flat `src/proxy_protocol/` folder containing the client-server shared serialization modules (`errors.rs` and `protocol.rs`).
+    - Created entry point `src/proxy_protocol/mod.rs` for `opentitanlib_proxy_protocol` target, completely replacing the temporary flat entry point `src/proxy_protocol_lib.rs`.
+    - Renamed remaining server modules directory `src/proxy/` $\rightarrow$ `src/proxy_server/` which now exclusively maps to `opentitanlib_protocols` target.
+  - Updated local sub-crate namespace imports (`crate::proxy::...` $\rightarrow$ `crate::proxy_server::...` in `handler.rs`), protocols entry points, and aggregate `src/lib.rs` re-exports to match.
+  - Updated target definitions in the `BUILD` file.
+  - Verified: built both `opentitanlib_proxy_protocol` and `opentitanlib_protocols` targets with 100% success!
+- [x] **Aggregate Downstream Verification**:
+  - Ran global test compile and verified downstream target `//sw/host/opentitantool` built, compiled, and passed Clippy successfully with zero import changes in downstream tools!
 
 ## Phase 4: Feature Gating Transports
 *Not started*

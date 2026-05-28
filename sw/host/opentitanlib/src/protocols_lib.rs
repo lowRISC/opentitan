@@ -7,7 +7,7 @@
 pub mod bootstrap;
 pub mod console;
 pub mod otp;
-pub mod proxy;
+pub mod proxy_server;
 pub mod rescue;
 pub mod spiflash;
 pub mod tpm;

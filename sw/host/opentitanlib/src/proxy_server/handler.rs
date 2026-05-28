@@ -25,7 +25,7 @@ use opentitanlib_core::io::gpio::{
     BitbangEntry, DacBangEntry, GpioBitbangOperation, GpioDacBangOperation, GpioPin,
 };
 use opentitanlib_core::io::{i2c, nonblocking_help, spi};
-use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
+use crate::proxy_server::nonblocking_uart::NonblockingUartRegistry;
 use opentitanlib_core::transport::TransportError;
 
 /// Implementation of the handling of each protocol request, by means of an underlying
