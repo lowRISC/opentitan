@@ -164,6 +164,7 @@ mod test {
             executable: "/bin/echo".to_owned(),
             rom_images: vec!["/dev/null:1".to_owned()],
             flash_images: vec!["/dev/null:1".to_owned()],
+            rram_image: "".to_owned(),
             otp_image: "".to_owned(),
             ctn_ram_image: "".to_owned(),
             extra_args: vec!["abc 123 def 456".to_owned()],
