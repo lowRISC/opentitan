@@ -1523,6 +1523,638 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 self.assertEqual(started, True)
                 print("-" * 80)
 
+    def test_rsa_sign(self):
+        print("Starting the rsa sign test")
+
+        # Prepare the RSA key parameters
+        key = RSA.generate(2048)
+        public_exponent = key.e
+        n = [x for x in (key.n).to_bytes(256, "little")]
+        n_len = 256
+        d = [x for x in (key.d).to_bytes(256, "little")]
+
+        # Create a second set of inputs with a single bit flipped to check for collisions
+        data1 = [i for i in range(16)]
+        data2 = data1.copy()
+        data2[0] ^= 1
+        data_inputs = [data1, data2]
+        data_len = len(data1)
+
+        cfg = 0
+        trigger = 0x4
+        hashing = 0
+        padding = 0
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "rsa_sign_pc_trace.log")
+        # Directory for the log of the campaign
+        campaign_file = os.path.join(log_dir, "rsa_sign_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        sign_output = [None, None]
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w") as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+
+                # Provide the marker name and extract the start and end address from the dis file
+                function_name = "PENTEST_MARKER_RSA_SIGN"
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+
+                # Trigger the rsa sign from the testOS (we do not read its output)
+                asymfi.handle_rsa_sign(
+                    data_inputs[0],
+                    data_len,
+                    public_exponent,
+                    n,
+                    n_len,
+                    d,
+                    padding,
+                    hashing,
+                    cfg,
+                    trigger,
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurrence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print("Tracing has a total of", len(pc_count_dict), "unique PCs", flush=True)
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the sign instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print("Applying instruction skip in ", pc, "occurrence", i_count)
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                asymfi.handle_rsa_sign(
+                                    data_inputs[i],
+                                    data_len,
+                                    public_exponent,
+                                    n,
+                                    n_len,
+                                    d,
+                                    padding,
+                                    hashing,
+                                    cfg,
+                                    trigger,
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                sign_output[i] = None
+
+                                if "instruction skip applied" in gdb_response:
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+
+                                        if testos_response_json.get("status") == 0:
+                                            # Record the signature from the JSON response
+                                            sign_output[i] = testos_response_json.get("sig", [])
+
+                                            # Check for partial collisions
+                                            if utils.is_partial_collision(
+                                                sign_output[0],
+                                                sign_output[1],
+                                                match_threshold_ratio=0.75,
+                                            ) or utils.is_majority_zeros(
+                                                sign_output[i], total_length=256
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print("Location:", pc, "iteration", i_count)
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
+    def test_x25519_ecdh(self):
+        print("Starting the x25519 ecdh test")
+        # Preparing the inputs (Using RFC 7748 test vectors)
+        private_key_bytes1 = bytes.fromhex(
+            "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a"
+        )
+        private_key_array1 = list(private_key_bytes1)
+
+        # Create a second set of inputs with a single bit flipped to check for collisions
+        private_key_array2 = private_key_array1.copy()
+        # Flipping a more significant bit to not flip a clamped bit
+        private_key_array2[2] ^= 1
+        private_key_array = [private_key_array1, private_key_array2]
+
+        # Bob's Public Key
+        public_bob_bytes = bytes.fromhex(
+            "de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f"
+        )
+        public_x = list(public_bob_bytes)
+        public_y = [0] * 32  # X25519 uses the u-coordinate (x) exclusively
+        cfg = 0
+        trigger = 1
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "x25519_ecdh_pc_trace.log")
+        # Directory for the log of the campaign
+        campaign_file = os.path.join(log_dir, "x25519_ecdh_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        ecdh_output = [None, None]
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w") as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(
+                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                )
+
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_X25519"
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print(
+                    "Start and stop addresses of ", function_name, ": ", trace_address
+                )
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+
+                # Trigger the x25519 ecdh from the testOS (we do not read its output)
+                asymfi.handle_x25519_ecdh(
+                    private_key_array[0], public_x, public_y, cfg, trigger
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurrence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print(
+                    "Tracing has a total of",
+                    len(pc_count_dict),
+                    "unique PCs",
+                    flush=True,
+                )
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        # Search for collisions in outputs between the ecdh instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print(
+                                "Applying instruction skip in ",
+                                pc,
+                                "occurrence",
+                                i_count,
+                            )
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                asymfi.handle_x25519_ecdh(
+                                    private_key_array[i],
+                                    public_x,
+                                    public_y,
+                                    cfg,
+                                    trigger,
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                ecdh_output[i] = None
+                                if "instruction skip applied" in gdb_response:
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        testos_response_json = json.loads(
+                                            testos_response
+                                        )
+                                        print(
+                                            "Output:", testos_response_json, flush=True
+                                        )
+                                        if testos_response_json["status"] == 0:
+                                            ecdh_output[i] = testos_response_json[
+                                                "shared_key"
+                                            ]
+                                            if utils.is_partial_collision(
+                                                ecdh_output[0],
+                                                ecdh_output[1],
+                                                match_threshold_ratio=0.75,
+                                            ) or utils.is_majority_zeros(
+                                                ecdh_output[i]
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print(
+                                                    "Location:",
+                                                    pc,
+                                                    "iteration",
+                                                    i_count,
+                                                )
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                            except json.JSONDecodeError:
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except TimeoutError:
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(
+                    f"Total attacks {total_attacks}, successful attacks {successful_faults}"
+                )
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
+    def test_ed25519_verify(self):
+        print("Starting the ed25519 verify test")
+
+        # Prepare inputs representing an invalid signature.
+        pubx = [149, 147, 40, 32, 52, 171, 254, 225, 244, 49, 56, 85, 102, 168, 58, 149, 215,
+                1, 178, 34, 239, 134, 228, 59, 25, 25, 166, 4, 20, 252, 106, 127]
+        puby = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0]
+        r = [179, 233, 109, 11, 158, 166, 221, 245, 31, 170, 150, 231, 193, 167, 36, 93, 15,
+             224, 39, 117, 62, 182, 19, 173, 252, 159, 107, 165, 211, 94, 217, 145, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+             0, 0]
+        s = [130, 235, 236, 78, 193, 33, 148, 169, 18, 146, 45, 70, 195, 43, 187, 205, 121, 185,
+             91, 162, 203, 178, 76, 62, 53, 180, 33, 146, 45, 128, 191, 3, 0, 0, 0, 0, 0, 0, 0,
+             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        message_padded = [81, 67, 237, 157, 177, 57, 129, 5, 154, 9, 80, 122, 120, 229, 232, 245,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        message_len = 16
+
+        cfg = 0
+        trigger = 1
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "ed25519_verify_pc_trace.log")
+        # Directory for the the log of the campaign
+        campaign_file = os.path.join(log_dir, "ed25519_verify_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w") as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                target.initialize_target()
+                trigger_testos_init()
+
+                gdb = GDBController(
+                    gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path
+                )
+
+                function_name = "PENTEST_MARKER_ED25519_VERIFY"
+                trace_address = parser.get_marker_addresses(function_name)
+                print(
+                    "Start and stop addresses of ", function_name, ": ", trace_address
+                )
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+
+                asymfi.handle_ed25519_verify(
+                    pubx, puby, r, s, message_padded, message_len, cfg, trigger
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again")
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print(
+                    "Tracing has a total of",
+                    len(pc_count_dict),
+                    "unique PCs",
+                    flush=True,
+                )
+
+                gdb = reset_target_and_gdb(gdb)
+
+                started = True
+                for pc, count in pc_count_dict.items():
+                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        print("-" * 80)
+                        print(
+                            "Applying instruction skip in ", pc, "occurrence", i_count
+                        )
+                        print("-" * 80)
+
+                        crash_observation = "crash detected"
+
+                        try:
+                            observations = {
+                                crash_observation_address: f"{crash_observation}",
+                            }
+                            gdb.add_observation(observations)
+
+                            gdb.apply_instruction_skip(
+                                pc, parser.parse_next_instruction(pc), i_count
+                            )
+                            gdb.send_command("c", check_response=False)
+
+                            asymfi.handle_ed25519_verify(
+                                pubx,
+                                puby,
+                                r,
+                                s,
+                                message_padded,
+                                message_len,
+                                cfg,
+                                trigger,
+                            )
+                            testos_response = read_testos_output()
+
+                            gdb_response = gdb.read_output()
+                            if "instruction skip applied" in gdb_response:
+                                total_attacks += 1
+
+                                if crash_observation in gdb_response:
+                                    print("Crash detected, resetting", flush=True)
+                                    gdb = reset_target_and_gdb(gdb)
+                                else:
+                                    testos_response_json = json.loads(testos_response)
+                                    print("Output:", testos_response_json, flush=True)
+                                    verification_result = testos_response_json["result"]
+                                    verification_status = testos_response_json["status"]
+
+                                    # Verification passing on invalid payload implies successful FI
+                                    if verification_result and (
+                                        verification_status == 0
+                                    ):
+                                        successful_faults += 1
+                                        print("-" * 80)
+                                        print("Successful FI attack!")
+                                        print("Location:", pc, "iteration", i_count)
+                                        print(gdb_response)
+                                        print("Response:", testos_response_json)
+                                        print("-" * 80)
+                                gdb = reset_gdb(gdb)
+                        except json.JSONDecodeError:
+                            print(
+                                "Error: JSON decoding failed. Invalid response format",
+                                flush=True,
+                            )
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
+
+                        except TimeoutError as e:
+                            print("Timeout error, retrying", flush=True)
+                            print(e, flush=True)
+                            try:
+                                gdb = reset_target_and_gdb(gdb)
+                            except TimeoutError:
+                                gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(
+                    f"Total attacks {total_attacks}, successful attacks {successful_faults}"
+                )
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
 
 if __name__ == "__main__":
     r = Runfiles.Create()
