@@ -139,4 +139,19 @@ Define separate `rust_library` targets in the monolithic `sw/host/opentitanlib/B
   - Ran global test compile and verified downstream target `//sw/host/opentitantool` built, compiled, and passed Clippy successfully with zero import changes in downstream tools!
 
 ## Phase 4: Feature Gating Transports
-*Not started*
+- [x] **Declared User-Configurable Build Flags in Bazel**:
+  - Dynamically created **9 bool_flag targets** (`:ftdi`, `:hyperdebug`...) and **9 config_setting targets** (`:ftdi_enabled`, `:hyperdebug_enabled`...) inside `sw/host/opentitanlib/BUILD` using Starlark loop comprehensions.
+  - Declared a **generic `:usb` configuration flag** designed to isolate all physical USB connectivity, satisfying all non-hermetic C dependency crates (`ftdi`, `rusb`) compilation.
+- [x] **Feature Gated Crate Modules & Exports**:
+  - Gated the concrete driver submodules in `transports_lib.rs` and their aggregate re-exports inside `src/lib.rs` under `#[cfg(feature = "...")]` attributes.
+  - Configured `srcs`, `deps`, `compile_data`, and `rustc_env` blocks inside the `opentitanlib_transports` target inside `BUILD` to map conditionally depending on selected configuration flags via dynamic Bazel `select()` blocks.
+  - Gated target-specific C USB modules (`common/usb.rs`) under the custom `:usb_enabled` configuration settings.
+- [x] **Feature Gated Downstream Subcommands (Crate: `opentitantool`)**:
+  - Gated physical target subcommands (`sam3x`, `set_pll`) and their `FpgaCommand` enum mappings under `#[cfg(feature = "chip_whisperer")]`.
+  - Gated simulation watch subcommands (`VerilatorWatch`) and their JTAG `TransportCommand` mappings under `#[cfg(feature = "verilator")]`.
+  - Feature gated compiler imports (`Regex`, `Duration`) under `#[cfg(feature = "verilator")]` inside `command/transport.rs`, permanently clearing Clippy warning denials.
+  - Updated backend imports (`PathBuf`) and refactored compiler imports inside `backend/mod.rs` to use absolute fully-qualified namespace pathings (`std::path::Path::new`), avoiding unused import warnings on all builds features sets.
+  - Configured `crate_features` on downstream `rust_binary(name = "opentitantool")` target to query and align features dynamically in sync with our workspace flags.
+- [x] **Validation Verification**:
+  - Verified: `bazel build //sw/host/opentitantool` built and ran successfully with standard defaults (all features enabled).
+  - Verified: `bazel build //sw/host/opentitantool --//sw/host/opentitanlib:usb=False --//sw/host/opentitanlib:ftdi=False ...` built, compiled, and passed Clippy successfully under target hardware-disabled configurations (pruning exactly 27 USB/C files and third-party library sandbox dependencies!).

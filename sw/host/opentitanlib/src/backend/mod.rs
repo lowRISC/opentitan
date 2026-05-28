@@ -4,27 +4,39 @@
 
 use anyhow::Result;
 use clap::Args;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use thiserror::Error;
 
 use opentitanlib_app::config::process_config_file;
 use opentitanlib_app::{TransportWrapper, TransportWrapperBuilder};
+#[cfg(feature = "chip_whisperer")]
 use opentitanlib_transports::chip_whisperer::board::{Cw310, Cw340};
+#[cfg(feature = "dediprog")]
 use opentitanlib_transports::dediprog::Dediprog;
+#[cfg(feature = "ftdi")]
 use opentitanlib_transports::ftdi::chip::Ft4232hq;
+#[cfg(feature = "hyperdebug")]
 use opentitanlib_transports::hyperdebug::{
     C2d2Flavor, ChipWhispererFlavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
 };
 use opentitanlib_core::transport::{EmptyTransport, Transport};
 use opentitanlib_core::util::parse_int::ParseInt;
 
+#[cfg(feature = "chip_whisperer")]
 pub mod chip_whisperer;
+#[cfg(feature = "ftdi")]
 mod ftdi;
+#[cfg(feature = "hyperdebug")]
 mod hyperdebug;
+#[cfg(feature = "proxy")]
 pub mod proxy;
+#[cfg(feature = "qemu")]
 pub mod qemu;
+#[cfg(feature = "ti50emulator")]
 pub mod ti50emulator;
+#[cfg(feature = "ultradebug")]
 mod ultradebug;
+#[cfg(feature = "verilator")]
 pub mod verilator;
 
 #[derive(Debug, Args)]
@@ -50,18 +62,23 @@ pub struct BackendOpts {
     #[arg(long)]
     pub usb_serial: Option<String>,
 
+    #[cfg(feature = "chip_whisperer")]
     #[command(flatten)]
     pub opts: chip_whisperer::ChipWhispererOpts,
 
+    #[cfg(feature = "verilator")]
     #[command(flatten)]
     pub verilator_opts: verilator::VerilatorOpts,
 
+    #[cfg(feature = "proxy")]
     #[command(flatten)]
     pub proxy_opts: proxy::ProxyOpts,
 
+    #[cfg(feature = "ti50emulator")]
     #[command(flatten)]
     pub ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
+    #[cfg(feature = "qemu")]
     #[command(flatten)]
     pub qemu_opts: Option<qemu::QemuOpts>,
 
@@ -94,69 +111,87 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     }
     let (backend, default_conf) = match env.get_interface() {
         "" => (create_empty_transport()?, None),
+        #[cfg(feature = "proxy")]
         "proxy" => (proxy::create(&args.proxy_opts)?, None),
+        #[cfg(feature = "verilator")]
         "verilator" => (
             verilator::create(&args.verilator_opts)?,
-            Some(Path::new("/__builtin__/opentitan_verilator.json")),
+            Some(std::path::Path::new("/__builtin__/opentitan_verilator.json")),
         ),
+        #[cfg(feature = "ti50emulator")]
         "ti50emulator" => (
             ti50emulator::create(&args.ti50emulator_opts)?,
-            Some(Path::new("/__builtin__/ti50emulator.json")),
+            Some(std::path::Path::new("/__builtin__/ti50emulator.json")),
         ),
+        #[cfg(feature = "ultradebug")]
         "ultradebug" => (
             ultradebug::create(args)?,
-            Some(Path::new("/__builtin__/opentitan_ultradebug.json")),
+            Some(std::path::Path::new("/__builtin__/opentitan_ultradebug.json")),
         ),
+        #[cfg(all(feature = "hyperdebug", feature = "chip_whisperer"))]
         "hyper310" => (
             hyperdebug::create::<ChipWhispererFlavor<Cw310>>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
+            Some(std::path::Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
+        #[cfg(feature = "hyperdebug")]
         "teacup" => (
             hyperdebug::create::<StandardFlavor>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_teacup_default.json")),
+            Some(std::path::Path::new("/__builtin__/hyperdebug_teacup_default.json")),
         ),
+        #[cfg(feature = "hyperdebug")]
         "teacup-bga69" => (
             hyperdebug::create::<StandardFlavor>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_teacup_bga69.json")),
+            Some(std::path::Path::new("/__builtin__/hyperdebug_teacup_bga69.json")),
         ),
+        #[cfg(all(feature = "hyperdebug", feature = "chip_whisperer"))]
         "hyper340" => (
             hyperdebug::create::<ChipWhispererFlavor<Cw340>>(args)?,
-            Some(Path::new("/__builtin__/hyperdebug_cw340.json")),
+            Some(std::path::Path::new("/__builtin__/hyperdebug_cw340.json")),
         ),
+        #[cfg(feature = "hyperdebug")]
         "hyperdebug" => (hyperdebug::create::<StandardFlavor>(args)?, None),
+        #[cfg(feature = "hyperdebug")]
         "hyperdebug_dfu" => (hyperdebug::create_dfu(args)?, None),
+        #[cfg(feature = "hyperdebug")]
         "c2d2" => (
             hyperdebug::create::<C2d2Flavor>(args)?,
-            Some(Path::new("/__builtin__/h1dx_devboard_c2d2.json")),
+            Some(std::path::Path::new("/__builtin__/h1dx_devboard_c2d2.json")),
         ),
+        #[cfg(feature = "hyperdebug")]
         "servo_micro" => (
             hyperdebug::create::<ServoMicroFlavor>(args)?,
-            Some(Path::new("/__builtin__/servo_micro.json")),
+            Some(std::path::Path::new("/__builtin__/servo_micro.json")),
         ),
+        #[cfg(feature = "hyperdebug")]
         "ti50" => (hyperdebug::create::<Ti50Flavor>(args)?, None),
+        #[cfg(feature = "chip_whisperer")]
         "cw310" => (
             chip_whisperer::create::<Cw310>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw310.json")),
+            Some(std::path::Path::new("/__builtin__/opentitan_cw310.json")),
         ),
+        #[cfg(feature = "chip_whisperer")]
         "cw340" => (
             chip_whisperer::create::<Cw340>(args)?,
-            Some(Path::new("/__builtin__/opentitan_cw340.json")),
+            Some(std::path::Path::new("/__builtin__/opentitan_cw340.json")),
         ),
+        #[cfg(feature = "ftdi")]
         "ftdi" => (
             ftdi::create::<Ft4232hq>(args)?,
-            Some(Path::new("/__builtin__/opentitan_ftdi_voyager.json")),
+            Some(std::path::Path::new("/__builtin__/opentitan_ftdi_voyager.json")),
         ),
+        #[cfg(feature = "dediprog")]
         "dediprog" => {
             let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
                 args.usb_vid,
                 args.usb_pid,
                 args.usb_serial.as_deref(),
             )?);
-            (dediprog, Some(Path::new("/__builtin__/dediprog.json")))
+            (dediprog, Some(std::path::Path::new("/__builtin__/dediprog.json")))
         }
+        #[cfg(feature = "qemu")]
         "qemu" => (
             qemu::create(args.qemu_opts.as_ref().unwrap())?,
-            Some(Path::new("/__builtin__/opentitan_qemu.json")),
+            Some(std::path::Path::new("/__builtin__/opentitan_qemu.json")),
         ),
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };

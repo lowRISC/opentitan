@@ -30,10 +30,26 @@ pub mod transport {
         SetJtagPins, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
     };
 
-    pub use opentitanlib_transports::{
-        chip_whisperer, common, dediprog, ftdi, hyperdebug, ioexpander, proxy, qemu,
-        ti50emulator, ultradebug, verilator,
-    };
+    #[cfg(feature = "chip_whisperer")]
+    pub use opentitanlib_transports::chip_whisperer;
+    pub use opentitanlib_transports::common;
+    #[cfg(feature = "dediprog")]
+    pub use opentitanlib_transports::dediprog;
+    #[cfg(feature = "ftdi")]
+    pub use opentitanlib_transports::ftdi;
+    #[cfg(feature = "hyperdebug")]
+    pub use opentitanlib_transports::hyperdebug;
+    pub use opentitanlib_transports::ioexpander;
+    #[cfg(feature = "proxy")]
+    pub use opentitanlib_transports::proxy;
+    #[cfg(feature = "qemu")]
+    pub use opentitanlib_transports::qemu;
+    #[cfg(feature = "ti50emulator")]
+    pub use opentitanlib_transports::ti50emulator;
+    #[cfg(feature = "ultradebug")]
+    pub use opentitanlib_transports::ultradebug;
+    #[cfg(feature = "verilator")]
+    pub use opentitanlib_transports::verilator;
 }
 
 // 7. Re-export backend module

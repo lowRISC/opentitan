@@ -5,6 +5,53 @@
 load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
 load("//rules:ujson.bzl", "ujson_rust")
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+# Define user-configurable feature flags for hardware transport options.
+# These can be toggled via command line flags, e.g. `--//sw/host/opentitanlib:ftdi=False`.
+TRANSPORTS = [
+    "chip_whisperer",
+    "dediprog",
+    "ftdi",
+    "hyperdebug",
+    "proxy",
+    "qemu",
+    "ti50emulator",
+    "ultradebug",
+    "verilator",
+]
+
+[
+    bool_flag(
+        name = name,
+        build_setting_default = True,
+    )
+    for name in TRANSPORTS
+]
+
+[
+    config_setting(
+        name = name + "_enabled",
+        flag_values = {
+            ":" + name: "True",
+        },
+    )
+    for name in TRANSPORTS
+]
+
+# Generic USB support option (gating non-hermetic third-party C library dependencies)
+bool_flag(
+    name = "usb",
+    build_setting_default = True,
+)
+
+config_setting(
+    name = "usb_enabled",
+    flag_values = {
+        ":usb": "True",
+    },
+)
+
 package(default_visibility = ["//visibility:public"])
 
 ujson_rust(
@@ -329,76 +376,152 @@ rust_library(
     name = "opentitanlib_transports",
     srcs = [
         "src/transport/transports_lib.rs",
-        "src/transport/chip_whisperer/board.rs",
-        "src/transport/chip_whisperer/gpio.rs",
-        "src/transport/chip_whisperer/mod.rs",
-        "src/transport/chip_whisperer/spi.rs",
-        "src/transport/chip_whisperer/usb.rs",
         "src/transport/common/fpga.rs",
         "src/transport/common/mod.rs",
         "src/transport/common/uart.rs",
-        "src/transport/common/usb.rs",
-        "src/transport/dediprog/mod.rs",
-        "src/transport/dediprog/gpio.rs",
-        "src/transport/dediprog/spi.rs",
-        "src/transport/ftdi/chip.rs",
-        "src/transport/ftdi/gpio.rs",
-        "src/transport/ftdi/mod.rs",
-        "src/transport/ftdi/spi.rs",
-        "src/transport/hyperdebug/c2d2.rs",
-        "src/transport/hyperdebug/dfu.rs",
-        "src/transport/hyperdebug/gpio.rs",
-        "src/transport/hyperdebug/i2c.rs",
-        "src/transport/hyperdebug/mod.rs",
-        "src/transport/hyperdebug/servo_micro.rs",
-        "src/transport/hyperdebug/spi.rs",
-        "src/transport/hyperdebug/ti50.rs",
-        "src/transport/hyperdebug/uart.rs",
         "src/transport/ioexpander/mod.rs",
         "src/transport/ioexpander/sx1503.rs",
-        "src/transport/proxy/emu.rs",
-        "src/transport/proxy/gpio.rs",
-        "src/transport/proxy/i2c.rs",
-        "src/transport/proxy/mod.rs",
-        "src/transport/proxy/spi.rs",
-        "src/transport/proxy/uart.rs",
-        "src/transport/qemu/gpio.rs",
-        "src/transport/qemu/i2c.rs",
-        "src/transport/qemu/jtag.rs",
-        "src/transport/qemu/mod.rs",
-        "src/transport/qemu/monitor.rs",
-        "src/transport/qemu/reset.rs",
-        "src/transport/qemu/spi.rs",
-        "src/transport/qemu/uart.rs",
-        "src/transport/qemu/usbdev.rs",
-        "src/transport/ti50emulator/emu.rs",
-        "src/transport/ti50emulator/gpio.rs",
-        "src/transport/ti50emulator/i2c.rs",
-        "src/transport/ti50emulator/mod.rs",
-        "src/transport/ti50emulator/spi.rs",
-        "src/transport/ti50emulator/uart.rs",
-        "src/transport/ultradebug/gpio.rs",
-        "src/transport/ultradebug/mod.rs",
-        "src/transport/ultradebug/mpsse.rs",
-        "src/transport/ultradebug/spi.rs",
-        "src/transport/ultradebug/uart.rs",
-        "src/transport/verilator/gpio.rs",
-        "src/transport/verilator/mod.rs",
-        "src/transport/verilator/subprocess.rs",
-        "src/transport/verilator/transport.rs",
-    ],
-    compile_data = [
-        "@hyperdebug_firmware//:hyperdebug/ec.bin",
-        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
-    ],
-    crate_features = [
+    ] + select({
+        ":chip_whisperer_enabled": [
+            "src/transport/chip_whisperer/board.rs",
+            "src/transport/chip_whisperer/gpio.rs",
+            "src/transport/chip_whisperer/mod.rs",
+            "src/transport/chip_whisperer/spi.rs",
+            "src/transport/chip_whisperer/usb.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":dediprog_enabled": [
+            "src/transport/dediprog/gpio.rs",
+            "src/transport/dediprog/mod.rs",
+            "src/transport/dediprog/spi.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":ftdi_enabled": [
+            "src/transport/ftdi/chip.rs",
+            "src/transport/ftdi/gpio.rs",
+            "src/transport/ftdi/mod.rs",
+            "src/transport/ftdi/spi.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":hyperdebug_enabled": [
+            "src/transport/hyperdebug/c2d2.rs",
+            "src/transport/hyperdebug/dfu.rs",
+            "src/transport/hyperdebug/gpio.rs",
+            "src/transport/hyperdebug/i2c.rs",
+            "src/transport/hyperdebug/mod.rs",
+            "src/transport/hyperdebug/servo_micro.rs",
+            "src/transport/hyperdebug/spi.rs",
+            "src/transport/hyperdebug/ti50.rs",
+            "src/transport/hyperdebug/uart.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":proxy_enabled": [
+            "src/transport/proxy/emu.rs",
+            "src/transport/proxy/gpio.rs",
+            "src/transport/proxy/i2c.rs",
+            "src/transport/proxy/mod.rs",
+            "src/transport/proxy/spi.rs",
+            "src/transport/proxy/uart.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":qemu_enabled": [
+            "src/transport/qemu/gpio.rs",
+            "src/transport/qemu/i2c.rs",
+            "src/transport/qemu/jtag.rs",
+            "src/transport/qemu/mod.rs",
+            "src/transport/qemu/monitor.rs",
+            "src/transport/qemu/reset.rs",
+            "src/transport/qemu/spi.rs",
+            "src/transport/qemu/uart.rs",
+            "src/transport/qemu/usbdev.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":ti50emulator_enabled": [
+            "src/transport/ti50emulator/emu.rs",
+            "src/transport/ti50emulator/gpio.rs",
+            "src/transport/ti50emulator/i2c.rs",
+            "src/transport/ti50emulator/mod.rs",
+            "src/transport/ti50emulator/spi.rs",
+            "src/transport/ti50emulator/uart.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":ultradebug_enabled": [
+            "src/transport/ultradebug/gpio.rs",
+            "src/transport/ultradebug/mod.rs",
+            "src/transport/ultradebug/mpsse.rs",
+            "src/transport/ultradebug/spi.rs",
+            "src/transport/ultradebug/uart.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":usb_enabled": [
+            "src/transport/common/usb.rs",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        ":verilator_enabled": [
+            "src/transport/verilator/gpio.rs",
+            "src/transport/verilator/mod.rs",
+            "src/transport/verilator/subprocess.rs",
+            "src/transport/verilator/transport.rs",
+        ],
+        "//conditions:default": [],
+    }),
+    compile_data = select({
+        ":hyperdebug_enabled": [
+            "@hyperdebug_firmware//:hyperdebug/ec.bin",
+            "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+        ],
+        "//conditions:default": [],
+    }),
+    crate_features = select({
+        ":chip_whisperer_enabled": ["chip_whisperer"],
+        "//conditions:default": [],
+    }) + select({
+        ":dediprog_enabled": ["dediprog"],
+        "//conditions:default": [],
+    }) + select({
+        ":ftdi_enabled": ["ftdi"],
+        "//conditions:default": [],
+    }) + select({
+        ":hyperdebug_enabled": ["hyperdebug"],
+        "//conditions:default": [],
+    }) + select({
+        ":proxy_enabled": ["proxy"],
+        "//conditions:default": [],
+    }) + select({
+        ":qemu_enabled": ["qemu"],
+        "//conditions:default": [],
+    }) + select({
+        ":ti50emulator_enabled": ["ti50emulator"],
+        "//conditions:default": [],
+    }) + select({
+        ":ultradebug_enabled": ["ultradebug"],
+        "//conditions:default": [],
+    }) + select({
+        ":usb_enabled": ["usb"],
+        "//conditions:default": [],
+    }) + select({
+        ":verilator_enabled": ["verilator"],
+        "//conditions:default": [],
+    }) + [
         "include_hyperdebug_firmware",
     ],
     crate_root = "src/transport/transports_lib.rs",
-    rustc_env = {
-        "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
-        "openocd_cmsis_dap_adapter_cfg": "$(location //third_party/openocd:jtag_cmsis_dap_adapter_cfg)",
-    },
+    rustc_env = select({
+        ":hyperdebug_enabled": {
+            "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
+            "openocd_cmsis_dap_adapter_cfg": "$(location //third_party/openocd:jtag_cmsis_dap_adapter_cfg)",
+        },
+        "//conditions:default": {},
+    }),
     deps = [
         ":opentitanlib_app",
         ":opentitanlib_core",
@@ -411,16 +534,12 @@ rust_library(
         "@crate_index//:crc",
         "@crate_index//:embedded-hal",
         "@crate_index//:erased-serde",
-        "@crate_index//:ftdi",
-        "@crate_index//:ftdi-embedded-hal",
-        "@crate_index//:ftdi-mpsse",
         "@crate_index//:indicatif",
         "@crate_index//:log",
         "@crate_index//:mio",
         "@crate_index//:num_enum",
         "@crate_index//:once_cell",
         "@crate_index//:regex",
-        "@crate_index//:rusb",
         "@crate_index//:rustix",
         "@crate_index//:scopeguard",
         "@crate_index//:serde",
@@ -430,7 +549,15 @@ rust_library(
         "@crate_index//:thiserror",
         "@crate_index//:typetag",
         "@crate_index//:zerocopy",
-    ],
+    ] + select({
+        ":usb_enabled": [
+            "@crate_index//:ftdi",
+            "@crate_index//:ftdi-embedded-hal",
+            "@crate_index//:ftdi-mpsse",
+            "@crate_index//:rusb",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 rust_library(

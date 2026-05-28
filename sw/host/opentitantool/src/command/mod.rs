@@ -20,7 +20,9 @@ pub mod otp;
 pub mod ownership;
 pub mod rescue;
 pub mod rsa;
+#[cfg(feature = "chip_whisperer")]
 pub mod sam3x;
+#[cfg(feature = "chip_whisperer")]
 pub mod set_pll;
 pub mod spi;
 pub mod spx;

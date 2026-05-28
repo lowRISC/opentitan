@@ -4,4 +4,5 @@
 
 pub mod fpga;
 pub mod uart;
+#[cfg(feature = "usb")]
 pub mod usb;

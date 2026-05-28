@@ -11,8 +11,11 @@ use opentitanlib::app::command::CommandDispatch;
 pub enum FpgaCommand {
     LoadBitstream(crate::command::load_bitstream::LoadBitstream),
     ClearBitstream(crate::command::clear_bitstream::ClearBitstream),
+    #[cfg(feature = "chip_whisperer")]
     GetSam3xFwVersion(crate::command::sam3x::GetFwVersion),
+    #[cfg(feature = "chip_whisperer")]
     ResetSam3x(crate::command::sam3x::Reset),
+    #[cfg(feature = "chip_whisperer")]
     SetPll(crate::command::set_pll::SetPll),
     UpdateUsrAccess(crate::command::update_usr_access::UpdateUsrAccess),
 }
