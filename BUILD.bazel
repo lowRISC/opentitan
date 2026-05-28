@@ -8,6 +8,8 @@ exports_files([
     "MODULE.bazel",
     "python-requirements.txt",
     "tool_requirements.py",
+    "NOTICE",
+    "LICENSE",
 ])
 
 filegroup(
