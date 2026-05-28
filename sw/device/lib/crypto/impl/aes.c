@@ -266,6 +266,9 @@ static status_t get_block(const otcrypto_const_byte_buf_t *input,
 
   // Apply padding.
   HARDENED_TRY(aes_padding_apply(padding, partial_data_len, block));
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input));
+
   return OTCRYPTO_OK;
 }
 
@@ -461,6 +464,9 @@ static otcrypto_status_t otcrypto_aes_impl(
     HARDENED_TRY(hardened_memcpy(iv->data, aes_iv.data, kAesBlockNumWords));
   }
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(cipher_output));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
+
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -619,11 +625,6 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
         consttime_memeq_byte(cipher_input->data, output_buf, cipher_input->len),
         kHardenedBoolTrue);
   }
-
-  // Verify given buffers
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(cipher_input));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(cipher_output));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
