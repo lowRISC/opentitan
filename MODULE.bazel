@@ -258,6 +258,9 @@ use_repo(lychee, "lychee")
 serde_annotate = use_extension("//third_party/rust:extensions.bzl", "serde_annotate")
 use_repo(serde_annotate, "lowrisc_serde_annotate")
 
+rust_openssl = use_extension("//third_party/rust:extensions.bzl", "rust_openssl")
+use_repo(rust_openssl, "rust_openssl")
+
 shellcheck = use_extension("//third_party/shellcheck:extensions.bzl", "shellcheck")
 use_repo(shellcheck, "shellcheck")
 

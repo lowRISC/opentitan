@@ -99,6 +99,7 @@ pkg_tar(
         # Credits
         ":opentitan_credits",
         ":ibex_credits",
+        ":rust_openssl_credits",
     ],
     extension = "tar.xz",
     tags = ["manual"],
@@ -123,4 +124,13 @@ pkg_files(
         "//hw:vendor/lowrisc_ibex/CREDITS.md",
     ],
     prefix = "CREDITS/ibex/",
+)
+
+pkg_files(
+    name = "rust_openssl_credits",
+    srcs = [
+        # OpenSSL is included in OpenTitanLib, we must distribute this file:
+        "@rust_openssl//:THIRD_PARTY",
+    ],
+    prefix = "CREDITS/rust_openssl/",
 )

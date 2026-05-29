@@ -800,9 +800,36 @@
         ]
       }
     },
+    "//third_party/rust:extensions.bzl%rust_openssl": {
+      "general": {
+        "bzlTransitiveDigest": "xHgXjQc4JIX4zLXwP/VljXsTkFESPsBBc3es4U29I6I=",
+        "usagesDigest": "i2w16skLnN4LhyxY8Ksh1pPAF9zHYVdrTVvyUgXiQcI=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "rust_openssl": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "sha256": "f928dd655d5738fcc273bd20169d50114e7c8bb179c859e9f4dc7fbb4ef472c9",
+              "strip_prefix": "rust-openssl-openssl-sys-v0.9.102",
+              "url": "https://github.com/rust-openssl/rust-openssl/archive/refs/tags/openssl-sys-v0.9.102.tar.gz",
+              "build_file_content": "\nexports_files(\n    [\"THIRD_PARTY\"],\n    visibility = [\"//visibility:public\"],\n)\n        "
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/rust:extensions.bzl%serde_annotate": {
       "general": {
-        "bzlTransitiveDigest": "O9r8WKuFZnnqM1mSyOxmoqo+Cxns5tj86MbyhPhQB1o=",
+        "bzlTransitiveDigest": "xHgXjQc4JIX4zLXwP/VljXsTkFESPsBBc3es4U29I6I=",
         "usagesDigest": "Tsf/q9LjKCtQ8nKZW4yKxNPGltd7MZ1oZ54ZaytQHiI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
