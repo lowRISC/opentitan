@@ -46,6 +46,14 @@
 .equ MODE_RSA_4096_MODEXP_F4, 0x3d4
 
 /**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
+/**
  * Make the mode constants visible to Ibex.
  */
 .globl MODE_RSA_1024_KEYGEN
@@ -67,6 +75,11 @@
 start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
+
+  /* Initialize the 'ok' flag to FALSE. */
+  la      x2, ok
+  addi    x3, x0, HARDENED_BOOL_FALSE
+  sw      x3, 0(x2)
 
   /* Read the mode and tail-call the requested operation. */
   la      x2, mode
@@ -272,6 +285,11 @@ do_keygen:
   lw x18, 0(x17)
   sw x18, 0(x16)
 
+  /* Write success. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
+
   ecall
 
 /**
@@ -306,6 +324,11 @@ do_modexp:
   la x16, mode
   sw x28, 0(x16)
 
+  /* Write success. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
+
   ecall
 
 /**
@@ -339,5 +362,10 @@ do_modexp_f4:
   loop  x30, 2
     bn.lid x0, 0(x3++)
     bn.sid x0, 0(x4++)
+
+  /* Write success. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
 
   ecall

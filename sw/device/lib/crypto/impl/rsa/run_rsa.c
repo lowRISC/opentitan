@@ -19,6 +19,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_n);   // Public modulus n.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d0);  // Private exponent d0.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_d1);  // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, inout);   // Input/output buffer.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, ok);      // Status of the operation.
 
 // Miller-Rabin iteration counter for p.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mr_iter_p);
@@ -55,6 +56,25 @@ enum {
    */
   kMrIters = 4
 };
+
+OT_NOINLINE
+OT_WARN_UNUSED_RESULT
+static status_t rsa_check_otbn_status(void) {
+  uint32_t ok;
+  const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_rsa, ok);
+
+  // Read the status flag from OTBN memory
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
+
+  // Check if it matches the expected magic value
+  if (launder32(ok) != kHardenedBoolTrue) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+
+  return OTCRYPTO_OK;
+}
 
 status_t rsa_modexp_wait(size_t *num_words) {
   // Spin here waiting for OTBN to complete.
@@ -116,6 +136,8 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   }
   HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
 
+  HARDENED_TRY(rsa_check_otbn_status());
+
   // Read the result.
   const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
   HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
@@ -162,6 +184,8 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
                                 uint32_t *n, uint32_t *d0, uint32_t *d1) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  HARDENED_TRY(rsa_check_otbn_status());
 
   // Read the mode from OTBN dmem and panic if it's not as expected.
   uint32_t act_mode = 0;
