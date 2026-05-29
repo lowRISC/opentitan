@@ -6,7 +6,6 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 
@@ -104,14 +103,13 @@ static const keymgr_testutils_secret_t kOwnerSecret = {.value = {
  * This is normally a subfunction of keymgr_testutils_startup, but some tests
  * use the function separately as well.
  *
- * @param flash An initialized flash_ctrl handle.
- * @param creator_secret The creator secret to be programmed to flash.
+ * @param creator_secret The creator secret to be programmed to flash, or NULL
+ *                       to skip writing the creator secret.
  * @param owner_secret The owner secret to be programmed to flash.
  *
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_flash_init(
-    dif_flash_ctrl_state_t *flash,
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret);
 

@@ -73,16 +73,17 @@ static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
 }
 
 status_t keymgr_testutils_flash_init(
-    dif_flash_ctrl_state_t *flash,
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
-  // Initialize flash secrets.
+  dif_flash_ctrl_state_t flash;
+  TRY(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   if (creator_secret) {
-    write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret,
-                    /*scramble=*/true);
+    TRY(write_info_page(&flash, kFlashInfoPageIdCreatorSecret, creator_secret,
+                        /*scramble=*/true));
   }
-  write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret,
-                  /*scramble=*/true);
+  TRY(write_info_page(&flash, kFlashInfoPageIdOwnerSecret, owner_secret,
+                      /*scramble=*/true));
   return OK_STATUS();
 }
 
@@ -187,7 +188,6 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
 }
 
 status_t keymgr_testutils_init_nvm_then_reset(void) {
-  dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
   dif_otp_ctrl_t otp_ctrl;
 
@@ -200,8 +200,6 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
   if (reset_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
 
-    TRY(dif_flash_ctrl_init_state(
-        &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
     TRY(dif_otp_ctrl_init(
         mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR),
         &otp_ctrl));
@@ -217,7 +215,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
     if (!secret2_computed) {
       creator_secret = &kCreatorSecret;
     }
-    TRY(keymgr_testutils_flash_init(&flash, creator_secret, &kOwnerSecret));
+    TRY(keymgr_testutils_flash_init(creator_secret, &kOwnerSecret));
 
     TRY(check_lock_otp_partition());
 

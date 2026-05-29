@@ -28,8 +28,6 @@ static dif_otp_ctrl_t otp;
 static dif_rstmgr_t rstmgr;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
-static dif_flash_ctrl_state_t flash;
-
 // LC RMA token value in OTP SECRET2 partition.
 static const uint8_t kOtpRmaToken[OTP_CTRL_PARAM_RMA_TOKEN_SIZE] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -82,9 +80,6 @@ static void init_peripherals(void) {
   // Keymgr
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
-  // Flash
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 
 /**
@@ -309,8 +304,8 @@ bool test_main(void) {
       if (rst_info & kDifRstmgrResetInfoPor) {
         LOG_INFO("First access test iteration...");
         // Make sure the secrets in flash are non-zero.
-        CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash, &kCreatorSecret,
-                                                    &kOwnerSecret));
+        CHECK_STATUS_OK(
+            keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
         // Program the SECRET2 partition and perform read back test.
         run_otp_access_tests(kWriteReadMode, kExpectPassed);
         // We expect the root key to be invalid at this point.

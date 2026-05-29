@@ -8,7 +8,6 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -45,21 +44,6 @@
 #define ASSERT_EQZ(x) CHECK((x) == 0)
 
 enum {
-  /** Flash Secret partition ID. */
-  kFlashInfoPartitionId = 0,
-
-  /** Secret partition flash bank ID. */
-  kFlashInfoBankId = 0,
-
-  /** Creator Secret flash info page ID. */
-  kFlashInfoPageIdCreatorSecret = 1,
-
-  /** Owner Secret flash info page ID. */
-  kFlashInfoPageIdOwnerSecret = 2,
-
-  /** Key manager secret word size. */
-  kSecretWordSize = 16,
-
   /** KMAC prefix word size. */
   kKmacPrefixSize = 11,
 };
@@ -105,17 +89,6 @@ const uint32_t kMaxVerRomExt = 2;
 const uint32_t kMaxVerBl0 = 3;
 
 OTTF_DEFINE_TEST_CONFIG();
-
-static void init_flash(void) {
-  dif_flash_ctrl_state_t flash;
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
-  // Initialize flash secrets.
-  CHECK_STATUS_OK(
-      keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret));
-}
 
 static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
   bool is_computed;
@@ -283,9 +256,11 @@ bool test_main(void) {
 
   if (info & kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
-    init_flash();
+    CHECK_STATUS_OK(
+        keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
 
-    // This is done after `init_flash()` because in DEV and PROD stages the
+    // This is done after keymgr_testutils_flash_init() because in DEV and
+    // PROD stages the
     // info flash secret partition becomes unavailable.
     check_lock_otp_partition(&otp);
 

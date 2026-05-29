@@ -11,7 +11,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -57,12 +56,9 @@ static const dt_rstmgr_t kRstmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this test expects a rstmgr");
 static const dt_alert_handler_t kAlertHandlerDt = 0;
 static_assert(kDtAlertHandlerCount == 1, "this test expects an alert_handler");
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-static_assert(kDtFlashCtrlCount == 1, "this test expects a flash_ctrl");
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
@@ -81,8 +77,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
   CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
 
   // Enable all the alert_handler interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
@@ -213,8 +207,8 @@ bool test_main(void) {
   if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
     dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
     if (rst_info & kDifRstmgrResetInfoPor) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
+      CHECK_STATUS_OK(
+          keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
       chip_sw_reset();
     }
   }

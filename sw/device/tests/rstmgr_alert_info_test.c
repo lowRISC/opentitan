@@ -770,8 +770,8 @@ bool test_main(void) {
     // storing the Creator and Owner secrets to avoid getting the flash
     // controller into a fatal error state.
     if (kBootStage != kBootStageOwner) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
+      CHECK_STATUS_OK(
+          keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
     }
     CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
 #endif  // OPENTITAN_IS_EARLGREY
