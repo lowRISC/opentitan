@@ -44,13 +44,13 @@ cc_library(
         "alert.h",
     ],
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
