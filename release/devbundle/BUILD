@@ -103,6 +103,8 @@ pkg_tar(
         "//hw:vendor/lowrisc_ibex/LICENSE",
         "//hw:vendor/lowrisc_ibex/NOTICE",
         "//hw:vendor/lowrisc_ibex/CREDITS.md",
+        # OpenSSL is included in OpenTitanLib, we must distribute this file:
+        "@crate_index//:openssl_third_party",
     ],
     extension = "tar.xz",
     tags = ["manual"],

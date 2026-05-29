@@ -157,12 +157,21 @@ crate.annotation(
     repositories = ["crate_index"],
 )
 crate.annotation(
+    additive_build_file_content = """
+        filegroup(
+            name = "third_party",
+            srcs = ["THIRD_PARTY"],
+        )
+    """,
     build_script_env = {
         "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
         "OPENSSL_STATIC": "1",
     },
     build_script_toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
     crate = "openssl-sys",
+    extra_aliased_targets = {
+        "openssl_third_party": "third_party",
+    },
     repositories = ["crate_index"],
 )
 use_repo(crate, "crate_index")
