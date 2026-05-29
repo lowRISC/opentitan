@@ -715,6 +715,7 @@ opentitan_test(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
