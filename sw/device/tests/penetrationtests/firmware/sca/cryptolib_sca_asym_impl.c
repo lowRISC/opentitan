@@ -227,7 +227,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
+  TRY(otcrypto_ecc_p256_public_key_import(&x_buf, &y_buf, &public_key));
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP256Words * 2];
@@ -489,7 +489,7 @@ status_t cryptolib_sca_p256_sign_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP256Words);
 
-  TRY(otcrypto_ecc_p256_public_key_import(x_buf, y_buf, &public_key));
+  TRY(otcrypto_ecc_p256_public_key_import(&x_buf, &y_buf, &public_key));
 
   // Create a key pair if requested.
   // This will overwrite the private and public key above.
@@ -605,7 +605,7 @@ status_t cryptolib_sca_p384_ecdh_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
+  TRY(otcrypto_ecc_p384_public_key_import(&x_buf, &y_buf, &public_key));
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP384Words * 2];
@@ -700,7 +700,7 @@ status_t cryptolib_sca_p384_sign_impl(
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, pub_y, kPentestP384Words);
 
-  TRY(otcrypto_ecc_p384_public_key_import(x_buf, y_buf, &public_key));
+  TRY(otcrypto_ecc_p384_public_key_import(&x_buf, &y_buf, &public_key));
 
   // Create a key pair if requested.
   // This will overwrite the private and public key above.
