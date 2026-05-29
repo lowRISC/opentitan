@@ -324,11 +324,13 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
-    otcrypto_const_word32_buf_t d_share0, otcrypto_const_word32_buf_t d_share1,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
+    otcrypto_const_word32_buf_t *d_share0,
+    otcrypto_const_word32_buf_t *d_share1,
     otcrypto_blinded_key_t *private_key) {
-  if (modulus.data == NULL || d_share0.data == NULL || d_share1.data == NULL ||
-      private_key == NULL || private_key->keyblob == NULL) {
+  if (modulus->data == NULL || d_share0->data == NULL ||
+      d_share1->data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   // Entropy complex must be initialized for `hardened_memcpy`.
@@ -337,8 +339,8 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   HARDENED_TRY(rsa_mode_check(private_key->config.key_mode));
 
   // Ensure that the length of the private exponent shares matches the length
-  // of the modulus.
-  if (d_share0.len != modulus.len || d_share1.len != modulus.len) {
+  // of the modulus->
+  if (d_share0->len != modulus->len || d_share1->len != modulus->len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -353,38 +355,38 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   switch (size) {
     case kOtcryptoRsaSize2048: {
       if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
-          modulus.len != kRsa2048NumWords) {
+          modulus->len != kRsa2048NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
-      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1.data, d_share1.len));
+      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus->data, modulus->len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0->data, d_share0->len));
+      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1->data, d_share1->len));
       break;
     }
     case kOtcryptoRsaSize3072: {
       if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t) ||
-          modulus.len != kRsa3072NumWords) {
+          modulus->len != kRsa3072NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
-      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1.data, d_share1.len));
+      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus->data, modulus->len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0->data, d_share0->len));
+      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1->data, d_share1->len));
       break;
     }
     case kOtcryptoRsaSize4096: {
       if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t) ||
-          modulus.len != kRsa4096NumWords) {
+          modulus->len != kRsa4096NumWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus.data, modulus.len));
-      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0.data, d_share0.len));
-      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1.data, d_share1.len));
+      HARDENED_TRY(hardened_memcpy(sk->n.data, modulus->data, modulus->len));
+      HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0->data, d_share0->len));
+      HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1->data, d_share1->len));
       break;
     }
     default:
@@ -396,9 +398,9 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 }
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
-    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t modulus,
-    otcrypto_const_word32_buf_t cofactor_share0,
-    otcrypto_const_word32_buf_t cofactor_share1,
+    otcrypto_rsa_size_t size, otcrypto_const_word32_buf_t *modulus,
+    otcrypto_const_word32_buf_t *cofactor_share0,
+    otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
@@ -426,11 +428,11 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
   switch (size) {
     case kOtcryptoRsaSize2048: {
       if (public_key->key_length != sizeof(rsa_2048_public_key_t) ||
-          modulus.len != kRsa2048NumWords) {
+          modulus->len != kRsa2048NumWords) {
         return OTCRYPTO_RECOV_ERR;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      modulus_eq = hardened_memeq(modulus.data, pk->n.data, modulus.len);
+      modulus_eq = hardened_memeq(modulus->data, pk->n.data, modulus->len);
       return OTCRYPTO_OK;
     }
     case kOtcryptoRsaSize3072:
@@ -454,8 +456,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
 otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
                                     const otcrypto_hash_digest_t message_digest,
                                     otcrypto_rsa_padding_t padding_mode,
-                                    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL) {
+                                    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(
@@ -466,7 +468,7 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t signature,
+    otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   if (verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -483,9 +485,9 @@ otcrypto_status_t otcrypto_rsa_verify(
 
 otcrypto_status_t otcrypto_rsa_encrypt(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t message,
-    otcrypto_const_byte_buf_t label, otcrypto_word32_buf_t ciphertext) {
-  if (ciphertext.data == NULL) {
+    const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t *message,
+    otcrypto_const_byte_buf_t *label, otcrypto_word32_buf_t *ciphertext) {
+  if (ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(
@@ -496,25 +498,23 @@ otcrypto_status_t otcrypto_rsa_encrypt(
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
-    otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
-  if (plaintext.data == NULL || plaintext_bytelen == NULL) {
+    otcrypto_const_word32_buf_t *ciphertext, otcrypto_const_byte_buf_t *label,
+    otcrypto_byte_buf_t *plaintext, size_t *plaintext_bytelen) {
+  if (plaintext->data == NULL || plaintext_bytelen == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   uint8_t dummy_label_data[1] = {0};
-  otcrypto_const_byte_buf_t local_label = {
-      // Catch the case where the data is NULL but the length is zero
-      .data = (label.data == NULL && label.len == 0) ? dummy_label_data
-                                                     : label.data,
-      .len = label.len,
-  };
+  otcrypto_const_byte_buf_t local_label = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t,
+      (label->data == NULL && label->len == 0) ? dummy_label_data : label->data,
+      label->len);
   otcrypto_status_t status =
       otcrypto_rsa_decrypt_async_start(private_key, ciphertext);
   if (status.value != kOtcryptoStatusValueOk) {
     return status;
   }
   HARDENED_CHECK_EQ(launder32(status.value), kOtcryptoStatusValueOk);
-  return otcrypto_rsa_decrypt_async_finalize(hash_mode, local_label, plaintext,
+  return otcrypto_rsa_decrypt_async_finalize(hash_mode, &local_label, plaintext,
                                              plaintext_bytelen);
 }
 
@@ -529,7 +529,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  // Infer the RSA size from the public key modulus.
+  // Infer the RSA size from the public key modulus->
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
@@ -608,7 +608,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
   HARDENED_TRY(entropy_complex_check());
 
   // Ensure that the length of the cofactor shares is half the length
-  // of the modulus.
+  // of the modulus->
   if (cofactor_share0->len != modulus->len / 2 ||
       cofactor_share1->len != modulus->len / 2) {
     return OTCRYPTO_BAD_ARGS;
@@ -656,7 +656,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
   // Check that the entropy complex is initialized.
   HARDENED_TRY(entropy_complex_check());
 
-  // Infer the RSA size from the public key modulus.
+  // Infer the RSA size from the public key modulus->
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
 
