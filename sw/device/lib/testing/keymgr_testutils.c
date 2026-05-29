@@ -72,7 +72,7 @@ static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
   return OK_STATUS();
 }
 
-status_t keymgr_testutils_flash_init(
+status_t keymgr_testutils_nvm_init(
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
   dif_flash_ctrl_state_t flash;
@@ -215,7 +215,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
     if (!secret2_computed) {
       creator_secret = &kCreatorSecret;
     }
-    TRY(keymgr_testutils_flash_init(creator_secret, &kOwnerSecret));
+    TRY(keymgr_testutils_nvm_init(creator_secret, &kOwnerSecret));
 
     TRY(check_lock_otp_partition());
 

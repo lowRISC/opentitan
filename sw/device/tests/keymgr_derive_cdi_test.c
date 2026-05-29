@@ -337,12 +337,12 @@ static void derive_keys(const char *state_name,
  *
  * This check is implemented in the keymgr DIF (see `dif_keymgr_advance_state`).
  *
- * - OTP SECRET2 partition (which contains the CREATOR_ROOT_KEY) and flash info
+ * - OTP SECRET2 partition (which contains the CREATOR_ROOT_KEY) and NVM info
  *   pages 1 and 2 in partition 0 must be configured, otherwise the keymgr will
  * fail to advance into operational states.
  *
  * The provisioning of the device secrets in the OTP SECRET2 partition is
- * handled by the Bazel execution environment, and the flash info secrets are
+ * handled by the Bazel execution environment, and the NVM info secrets are
  * handled by the keymgr testutils (see `keymgr_testutils_init_nvm_then_reset`).
  *
  * - Ensure the entropy complex is running in continuous mode, and that KMAC is

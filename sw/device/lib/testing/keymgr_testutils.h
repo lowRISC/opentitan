@@ -109,7 +109,7 @@ static const keymgr_testutils_secret_t kOwnerSecret = {.value = {
  *
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_testutils_flash_init(
+status_t keymgr_testutils_nvm_init(
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret);
 

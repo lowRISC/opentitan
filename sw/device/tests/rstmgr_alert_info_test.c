@@ -771,7 +771,7 @@ bool test_main(void) {
     // controller into a fatal error state.
     if (kBootStage != kBootStageOwner) {
       CHECK_STATUS_OK(
-          keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
+          keymgr_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
     }
     CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
 #endif  // OPENTITAN_IS_EARLGREY

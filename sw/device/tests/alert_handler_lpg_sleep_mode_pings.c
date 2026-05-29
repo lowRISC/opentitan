@@ -298,7 +298,7 @@ static size_t test_step_cnt;
 
 /**
  * Helper function to keep the test body clean
- * Initializes the flash_ctrl and test counters.
+ * Initializes NVM and test counters.
  * This is called once per reset.
  */
 void init_test_components(void) {
@@ -495,12 +495,12 @@ bool test_main(void) {
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
 
-    // We need to initialize the info FLASH partitions storing the Creator and
+    // We need to initialize the NVM partitions storing the Creator and
     // Owner secrets to avoid getting the flash controller into a fatal error
     // state.
     if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
       CHECK_STATUS_OK(
-          keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
+          keymgr_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
       chip_sw_reset();
     }
   }
