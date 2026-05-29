@@ -39,7 +39,8 @@ class sram_ctrl_bkdr_util extends mem_bkdr_util;
       addr_arr[i] = addr[addr_lsb + i];
     end
 
-    scr_addr_arr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, full_addr_width, nonce_arr);
+    scr_addr_arr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, full_addr_width,
+                                                         2**full_addr_width, nonce_arr);
 
     // Convert to bus address output.
     for (int i = 0; i < addr_lsb; i++) begin
