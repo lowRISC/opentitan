@@ -782,7 +782,7 @@ otcrypto_status_t otcrypto_x25519_async_start(
 
 otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
-  HARDENED_TRY(curve25519_x25519_finalize(shared_secret->keyblob));
+  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shared_secret->keyblob));
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
