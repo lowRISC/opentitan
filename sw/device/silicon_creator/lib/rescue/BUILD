@@ -21,7 +21,6 @@ package(default_visibility = ["//visibility:public"])
 
 RESCUE_DEPS = [
     "//hw/top/dt",
-    "//hw/top:flash_ctrl_c_regs",
     "//sw/device/lib/base:macros",
     "//sw/device/lib/base:memory",
     "//sw/device/silicon_creator/lib:manifest",

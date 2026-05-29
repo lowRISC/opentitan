@@ -137,7 +137,6 @@ opentitan_binary(
         ],
         spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
         deps = [
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/arch:boot_stage",

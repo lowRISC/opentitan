@@ -116,7 +116,6 @@ cc_test(
     srcs = ["cert_unittest.cc"],
     deps = [
         ":cert",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -216,7 +215,6 @@ opentitan_test(
     },
     deps = [
         ":dice_cwt",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
