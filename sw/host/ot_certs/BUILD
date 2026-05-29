@@ -2,13 +2,28 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test", "rust_test_suite")
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_doc",
+    "rust_library",
+    "rust_test",
+    "rust_test_suite",
+)
+load(
+    "//rules:certificates.bzl",
+    "certificate_template",
+)
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "generic_cert",
     srcs = ["tests/generic.hjson"],
+)
+
+filegroup(
+    name = "mldsa_cert",
+    srcs = ["tests/mldsa.hjson"],
 )
 
 filegroup(
@@ -89,6 +104,7 @@ rust_test_suite(
         ":generic_cert",
         ":example_cert",
         ":example_data",
+        ":mldsa_cert",
     ],
     edition = "2024",
     deps = [
@@ -103,4 +119,9 @@ rust_test_suite(
 rust_doc(
     name = "ot_certs_doc",
     crate = ":ot_certs",
+)
+
+certificate_template(
+    name = "mldsa_test_template",
+    template = "tests/mldsa.hjson",
 )
