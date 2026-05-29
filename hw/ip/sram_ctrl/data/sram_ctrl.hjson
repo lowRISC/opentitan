@@ -107,6 +107,13 @@
       expose:    "true",
       default:   "3"
     },
+    { name:      "NumAddrScrRounds",
+      desc:      "Number of address scrambling rounds. 0 disables address scrambling",
+      type:      "int",
+      local:     "false",
+      expose:    "true",
+      default:   "2"
+    },
     { name:      "Outstanding",
       desc:      "Number of outstanding TLUL transactions",
       type:      "int",
