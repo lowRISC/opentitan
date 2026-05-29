@@ -181,7 +181,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     idx_arr = new[ImemIndexWidth]; idx_arr = {<<{idx}};
 
     // Scramble the index to find the word in physical memory
-    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, ImemIndexWidth, nonce_arr);
+    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, ImemIndexWidth,
+                                                         2**ImemIndexWidth, nonce_arr);
     phys_idx = {<<{phys_idx_arr}};
 
     // Read the memory at that location to get scrambled data
@@ -212,7 +213,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     idx_arr = new[DmemIndexWidth]; idx_arr = {<<{idx}};
 
     // Scramble the index to find the word in physical memory
-    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth, nonce_arr);
+    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth,
+                                                         2**DmemIndexWidth, nonce_arr);
     phys_idx = {<<{phys_idx_arr}};
 
     // Read the memory at that location to get scrambled data
@@ -245,7 +247,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     idx_arr = new[ImemIndexWidth]; idx_arr = {<<{idx}};
 
     // Scramble the index to find the word in physical memory
-    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, ImemIndexWidth, nonce_arr);
+    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, ImemIndexWidth,
+                                                         2**ImemIndexWidth, nonce_arr);
     phys_idx = {<<{phys_idx_arr}};
 
     // flip some bits to inject integrity fault
@@ -279,7 +282,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     idx_arr = new[DmemIndexWidth]; idx_arr = {<<{idx}};
 
     // Scramble the index to find the word in physical memory
-    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth, nonce_arr);
+    phys_idx_arr = sram_scrambler_pkg::encrypt_sram_addr(idx_arr, DmemIndexWidth,
+                                                         2**DmemIndexWidth, nonce_arr);
     phys_idx = {<<{phys_idx_arr}};
     // flip some bits to inject integrity fault
     clr_data ^= flip_bits;

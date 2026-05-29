@@ -191,12 +191,43 @@ package sram_scrambler_pkg;
     return key_out;
   endfunction : gen_keystream
 
-  // Encrypts the target SRAM address using the custom S&P network.
+  // Encrypts the target SRAM address using the custom S&P network. For details, refer to
+  // hw/ip/prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network .
   function automatic state_t encrypt_sram_addr(logic addr[], int addr_width,
-                                               logic full_nonce[]);
+                                               int depth, logic full_nonce[]);
 
-    logic nonce[] = new[addr_width];
     logic encrypted_addr[] = new[addr_width];
+    logic sp_addr[];
+    logic sp_nonce[];
+    logic sp_encrypted_addr[];
+
+    int sp_width;
+    int off_width;
+    int num_chunks;
+
+    if (depth > 2**addr_width) begin
+      `uvm_error("encrypt_sram_addr",
+          $sformatf("Can't address %d elements with just %d address bits", depth, addr_width))
+    end else if (depth == 2**addr_width) begin
+      // Because the memory depth is exactly the size addressable by addr_width, we can simply pass
+      // the full address through the S&P network.
+      sp_width = addr_width;
+      num_chunks = 1;
+      off_width = 0;
+    end else begin
+      // The memory depth is not a power of two. We split the memory into `num_chunks` chunks with
+      // a power-of-two depth. Within the chunks, addresses get scrambled with the custom S&P
+      // network. The distribution of the chunks onto the actual memory is determined by the
+      // `off_addr` bits of the nonce.
+      int sp_depth = depth & (-depth);
+      num_chunks = depth / sp_depth;
+      sp_width = $clog2(sp_depth);
+      off_width = addr_width - sp_width;
+    end
+
+    sp_addr = new[sp_width];
+    sp_nonce = new[sp_width];
+    sp_encrypted_addr = new[sp_width];
 
     // The address encryption nonce is the same width as the address,
     // and is constructed from the top addr_width bits of the full nonce.
@@ -205,20 +236,86 @@ package sram_scrambler_pkg;
     // uncomment once support has been added
     //
     // nonce = {>> {full_nonce with [SRAM_BLOCK_WIDTH - addr_width +: addr_width]}};
-    for (int i = 0; i < addr_width; i++) begin
-      nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + i];
+    for (int i = 0; i < sp_width; i++) begin
+      sp_addr[i] = addr[i];
+      sp_nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + i];
     end
-    encrypted_addr = sp_encrypt(addr, addr_width, nonce);
+
+    // Pass the address through the S&P network.
+    sp_encrypted_addr = sp_encrypt(sp_addr, sp_width, sp_nonce);
+
+    if (depth == 2**addr_width) begin
+      // The memory depth is a power of two. The encrypted address is the one coming out of the S&P
+      // network.
+      encrypted_addr = sp_encrypted_addr;
+    end else begin
+      // The memory depth is not a power of two. We have to apply the chunk offset and then stich
+      // the encrypted address together.
+      int unsigned off_addr = 0;
+      int unsigned off_nonce = 0;
+      int unsigned off_encrypted = 0;
+
+      // Strip off the top-most `off_width` bits of the address and nonce to compute the chunk
+      // offset.
+      for (int i = 0; i < off_width; i++) begin
+        off_addr[i] = addr[sp_width + i];
+        off_nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + sp_width + i];
+      end
+
+      // Compute the offset and wrap around if necessary.
+      off_encrypted = off_addr + off_nonce;
+      if (off_encrypted >= num_chunks) begin
+        off_encrypted -= num_chunks;
+      end
+
+      // Stitch the encrypted address together.
+      for (int i = 0; i < addr_width; i++) begin
+        encrypted_addr[i] = i < sp_width ? sp_encrypted_addr[i] :
+                                           off_encrypted[i - sp_width];
+      end
+    end
+
     return encrypted_addr;
 
   endfunction : encrypt_sram_addr
 
-  // Decrypts the target SRAM address using the custom S&P network.
+  // Decrypts the target SRAM address using the custom S&P network. For details, refer to
+  // hw/ip/prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network .
   function automatic state_t decrypt_sram_addr(logic addr[], int addr_width,
-                                               logic full_nonce[]);
+                                               int depth, logic full_nonce[]);
 
-    logic nonce[] = new[addr_width];
     logic encrypted_addr[] = new[addr_width];
+    logic sp_addr[];
+    logic sp_nonce[];
+    logic sp_encrypted_addr[];
+
+    int sp_width;
+    int off_width;
+    int num_chunks;
+
+    if (depth > 2**addr_width) begin
+      `uvm_error("decrypt_sram_addr",
+          $sformatf("Can't address %d elements with just %d address bits", depth, addr_width))
+    end else if (depth == 2**addr_width) begin
+      // Because the memory depth is exactly the size addressable by addr_width, we can simply pass
+      // the full address through the S&P network.
+      sp_width = addr_width;
+      num_chunks = 1;
+      off_width = 0;
+    end else begin
+      // The memory depth is not a power of two. We split the memory into `num_chunks` chunks with
+      // a power-of-two depth. Within the chunks, addresses get scrambled with the custom S&P
+      // network. The distribution of the chunks onto the actual memory is determined by the
+      // `off_addr` bits of the nonce.
+      int sp_depth = depth & (-depth);
+      num_chunks = depth / sp_depth;
+      sp_width = $clog2(sp_depth);
+      off_width = addr_width - sp_width;
+    end
+
+    sp_addr = new[sp_width];
+    sp_nonce = new[sp_width];
+    sp_encrypted_addr = new[sp_width];
 
     // The address encryption nonce is the same width as the address,
     // and is constructed from the top addr_width bits of the full nonce.
@@ -227,11 +324,45 @@ package sram_scrambler_pkg;
     // uncomment once support has been added
     //
     // nonce = {>> {full_nonce with [SRAM_BLOCK_WIDTH - addr_width +: addr_width]}};
-    for (int i = 0; i < addr_width; i++) begin
-      nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + i];
+    for (int i = 0; i < sp_width; i++) begin
+      sp_addr[i] = addr[i];
+      sp_nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + i];
     end
 
-    encrypted_addr = sp_decrypt(addr, addr_width, nonce);
+    // Pass the address through the S&P network.
+    sp_encrypted_addr = sp_decrypt(sp_addr, sp_width, sp_nonce);
+
+    if (depth == 2**addr_width) begin
+      // The memory depth is a power of two. The encrypted address is the one coming out of the S&P
+      // network.
+      encrypted_addr = sp_encrypted_addr;
+    end else begin
+      // The memory depth is not a power of two. We have to apply the chunk offset and then stich
+      // the encrypted address together.
+      int unsigned off_addr = 0;
+      int unsigned off_nonce = 0;
+      int unsigned off_encrypted = 0;
+
+      // Strip off the top-most `off_width` bits of the address and nonce to compute the chunk
+      // offset.
+      for (int i = 0; i < off_width; i++) begin
+        off_addr[i] = addr[sp_width + i];
+        off_nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + sp_width + i];
+      end
+
+      // Compute the offset and wrap around if necessary.
+      off_encrypted = off_addr + off_nonce;
+      if (off_encrypted >= num_chunks) begin
+        off_encrypted -= num_chunks;
+      end
+
+      // Stitch the encrypted address together.
+      for (int i = 0; i < addr_width; i++) begin
+        encrypted_addr[i] = i < sp_width ? sp_encrypted_addr[i] :
+                                           off_encrypted[i - sp_width];
+      end
+    end
+
     return encrypted_addr;
 
   endfunction : decrypt_sram_addr
