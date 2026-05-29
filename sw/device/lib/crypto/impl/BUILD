@@ -276,9 +276,10 @@ cc_library(
     deps = [
         ":integrity",
         ":status",
-        "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
+        "//hw/top:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
 )
