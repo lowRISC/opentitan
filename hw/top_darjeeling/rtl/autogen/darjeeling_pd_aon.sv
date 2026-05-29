@@ -23,6 +23,7 @@ module darjeeling_pd_aon #(
   parameter int SramCtrlRetNumRamInst = 1,
   parameter bit SramCtrlRetInstrExec = 0,
   parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
+  parameter int SramCtrlRetNumAddrScrRounds = 2,
   parameter bit SramCtrlRetEccCorrection = 0
 ) (
   // Inter-module Signal External type
@@ -380,6 +381,7 @@ module darjeeling_pd_aon #(
     .NumRamInst(SramCtrlRetNumRamInst),
     .InstrExec(SramCtrlRetInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetNumPrinceRoundsHalf),
+    .NumAddrScrRounds(SramCtrlRetNumAddrScrRounds),
     .Outstanding(SramCtrlRetOutstanding),
     .EccCorrection(SramCtrlRetEccCorrection)
   ) u_sram_ctrl_ret (

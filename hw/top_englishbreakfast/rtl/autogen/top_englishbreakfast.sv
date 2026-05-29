@@ -42,6 +42,7 @@ module top_englishbreakfast #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
+  parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
@@ -206,6 +207,7 @@ module top_englishbreakfast #(
   .SramCtrlMainNumRamInst(SramCtrlMainNumRamInst),
   .SramCtrlMainInstrExec(SramCtrlMainInstrExec),
   .SramCtrlMainNumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+  .SramCtrlMainNumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
   .SramCtrlMainEccCorrection(SramCtrlMainEccCorrection),
   .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
   .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
