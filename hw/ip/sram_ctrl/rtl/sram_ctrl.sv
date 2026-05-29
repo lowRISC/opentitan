@@ -26,6 +26,8 @@ module sram_ctrl
   // PRINCE has 5 half rounds in its original form, which corresponds to 2*5 + 1 effective rounds.
   // Setting this to 3 lowers this to approximately 7 effective rounds.
   parameter int NumPrinceRoundsHalf                        = 3,
+  // Number of address scrambling rounds. Setting this to 0 disables address scrambling.
+  parameter int NumAddrScrRounds                           = 2,
   // Number of outstanding TLUL transfers
   parameter int Outstanding                                = 2,
   // Enable single-bit error correction and error logging
@@ -682,7 +684,8 @@ module sram_ctrl
     .InstDepth(InstDepth),
     .EnableParity(0),
     .DataBitsPerMask(DataWidth),
-    .NumPrinceRoundsHalf(NumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(NumPrinceRoundsHalf),
+    .NumAddrScrRounds(NumAddrScrRounds)
   ) u_prim_ram_1p_scr (
     .clk_i,
     .rst_ni,
