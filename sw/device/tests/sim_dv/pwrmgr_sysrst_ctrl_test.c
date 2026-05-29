@@ -10,14 +10,12 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -28,7 +26,6 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
-static dif_flash_ctrl_state_t flash_ctrl;
 
 /**
  * Configure the sysrst.
@@ -162,27 +159,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
-  // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
-  // Enable flash access
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
-  // First check the flash stored value
+  // First check the NVM stored value
   uint32_t event_idx = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
 
-  // Increment flash counter to know where we are
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+  // Increment NVM counter to know where we are
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(0));
 
   LOG_INFO("Test round %d", event_idx);
   LOG_INFO("RST_IDX[%d] = %d", event_idx, RST_IDX[event_idx]);

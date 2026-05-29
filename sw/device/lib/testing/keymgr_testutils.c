@@ -6,14 +6,13 @@
 
 #include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -23,20 +22,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 't')
-
-enum {
-  /** Flash Secret partition ID. */
-  kFlashInfoPartitionId = 0,
-
-  /** Secret partition flash bank ID. */
-  kFlashInfoBankId = 0,
-
-  /** Creator Secret flash info page ID. */
-  kFlashInfoPageIdCreatorSecret = 1,
-
-  /** Owner Secret flash info page ID. */
-  kFlashInfoPageIdOwnerSecret = 2,
-};
 
 const static char *kKeymgrStageNames[] = {
     [kDifKeymgrStateReset] = "Reset",
@@ -48,42 +33,19 @@ const static char *kKeymgrStageNames[] = {
     [kDifKeymgrStateInvalid] = "Invalid",
 };
 
-static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
-                                const keymgr_testutils_secret_t *data,
-                                bool scramble) {
-  uint32_t address = 0;
-  if (scramble) {
-    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
-  } else {
-    TRY(flash_ctrl_testutils_info_region_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
-  }
-
-  TRY(flash_ctrl_testutils_erase_and_write_page(
-      flash, address, kFlashInfoPartitionId, data->value,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
-
-  keymgr_testutils_secret_t readback_data;
-  TRY(flash_ctrl_testutils_read(
-      flash, address, kFlashInfoPartitionId, readback_data.value,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
-  TRY_CHECK(memcmp(data->value, readback_data.value, sizeof(data->value)) == 0);
-  return OK_STATUS();
-}
-
 status_t keymgr_testutils_nvm_init(
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
-  dif_flash_ctrl_state_t flash;
-  TRY(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   if (creator_secret) {
-    TRY(write_info_page(&flash, kFlashInfoPageIdCreatorSecret, creator_secret,
-                        /*scramble=*/true));
+    TRY(nvm_testutils_write_info_page(kNvmInfoPageCreatorSecret,
+                                      creator_secret->value,
+                                      ARRAYSIZE(creator_secret->value),
+                                      /*scramble=*/true));
   }
-  TRY(write_info_page(&flash, kFlashInfoPageIdOwnerSecret, owner_secret,
-                      /*scramble=*/true));
+  TRY(nvm_testutils_write_info_page(kNvmInfoPageOwnerSecret,
+                                    owner_secret->value,
+                                    ARRAYSIZE(owner_secret->value),
+                                    /*scramble=*/true));
   return OK_STATUS();
 }
 
@@ -198,7 +160,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
 
   // POR reset.
   if (reset_info == kDifRstmgrResetInfoPor) {
-    LOG_INFO("Powered up for the first time, program flash");
+    LOG_INFO("Powered up for the first time, program NVM");
 
     TRY(dif_otp_ctrl_init(
         mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR),
@@ -209,8 +171,8 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
                                         &secret2_computed));
 
     // Only initialise the creator secret if `SECRET2` digest has not been
-    // computed. `flash_ctrl` will throw a recoverable error if we try to write
-    // this afterwards.
+    // computed. The NVM controller will throw a recoverable error if we try to
+    // write this afterwards.
     const keymgr_testutils_secret_t *creator_secret = NULL;
     if (!secret2_computed) {
       creator_secret = &kCreatorSecret;

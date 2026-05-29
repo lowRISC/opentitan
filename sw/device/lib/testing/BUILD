@@ -182,6 +182,21 @@ cc_library(
 )
 
 cc_library(
+    name = "nvm_testutils",
+    srcs = ["nvm_testutils.c"],
+    hdrs = ["nvm_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":flash_ctrl_testutils",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "nv_counter_testutils",
     srcs = ["nv_counter_testutils.c"],
     hdrs = ["nv_counter_testutils.h"],
@@ -190,6 +205,7 @@ cc_library(
         ":flash_ctrl_testutils",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -250,8 +266,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":entropy_testutils",
-        ":flash_ctrl_testutils",
         ":kmac_testutils",
+        ":nvm_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
         "//hw/top:keymgr_c_regs",
@@ -259,7 +275,6 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
