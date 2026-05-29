@@ -98,26 +98,30 @@ static status_t run_negative_tests(void) {
 
   // Base valid buffers
   uint8_t msg_data[] = "test";
-  otcrypto_const_byte_buf_t msg = {.data = msg_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_msg = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_data, 4);
+  otcrypto_const_byte_buf_t bad_msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t tag_data[8] = {0};
-  otcrypto_word32_buf_t tag = {.data = tag_data, .len = 8};
-  otcrypto_word32_buf_t bad_tag = {.data = NULL, .len = 8};
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 8);
+  otcrypto_word32_buf_t bad_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 8);
 
   // otcrypto_hmac
-  CHECK(otcrypto_hmac(&valid_key, msg, bad_tag).value ==
+  CHECK(otcrypto_hmac(&valid_key, &msg, &bad_tag).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hmac(&valid_key, bad_msg, tag).value ==
+  CHECK(otcrypto_hmac(&valid_key, &bad_msg, &tag).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hmac(NULL, msg, tag).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac(NULL, &msg, &tag).value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_key_null = {
       .config = valid_cfg,
       .keyblob_length = sizeof(keyblob),
       .keyblob = NULL,
   };
-  CHECK(otcrypto_hmac(&bad_key_null, msg, tag).value ==
+  CHECK(otcrypto_hmac(&bad_key_null, &msg, &tag).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_key_chk = {
@@ -126,7 +130,8 @@ static status_t run_negative_tests(void) {
       .keyblob = keyblob,
   };
   bad_key_chk.checksum = valid_key.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_hmac(&bad_key_chk, msg, tag).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac(&bad_key_chk, &msg, &tag).value ==
+        OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_mode_cfg = valid_cfg;
   bad_mode_cfg.key_mode = kOtcryptoKeyModeAesCtr;
@@ -136,7 +141,7 @@ static status_t run_negative_tests(void) {
       .keyblob = keyblob,
   };
   bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
-  CHECK(otcrypto_hmac(&bad_key_mode, msg, tag).value ==
+  CHECK(otcrypto_hmac(&bad_key_mode, &msg, &tag).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // otcrypto_hmac_init
@@ -154,15 +159,16 @@ static status_t run_negative_tests(void) {
   CHECK(otcrypto_hmac_init(&ctx, &valid_key).value == OTCRYPTO_OK.value);
 
   // otcrypto_hmac_update
-  CHECK(otcrypto_hmac_update(NULL, msg).value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hmac_update(&ctx, bad_msg).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac_update(NULL, &msg).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac_update(&ctx, &bad_msg).value == OTCRYPTO_BAD_ARGS.value);
 
   // otcrypto_hmac_final
-  CHECK(otcrypto_hmac_final(NULL, tag).value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_hmac_final(&ctx, bad_tag).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac_final(NULL, &tag).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac_final(&ctx, &bad_tag).value == OTCRYPTO_BAD_ARGS.value);
 
-  otcrypto_word32_buf_t bad_tag_len = {.data = tag_data, .len = 7};
-  CHECK(otcrypto_hmac_final(&ctx, bad_tag_len).value ==
+  otcrypto_word32_buf_t bad_tag_len =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 7);
+  CHECK(otcrypto_hmac_final(&ctx, &bad_tag_len).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;
