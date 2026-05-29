@@ -380,7 +380,6 @@ status_t curve25519_x25519_finalize(
       OTBN_ADDR_T_INIT(run_curve25519, x25519_ok);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarX25519Ok, &ok));
   if (launder32(ok) != kHardenedBoolTrue) {
-    HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
