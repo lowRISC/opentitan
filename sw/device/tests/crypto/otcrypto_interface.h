@@ -328,7 +328,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecc_p256_point_on_curve)(const otcrypto_unblinded_key_t *,
                                                hardened_bool_t *);
   otcrypto_status_t (*ecc_p256_public_key_import)(
-      const otcrypto_const_word32_buf_t *, const otcrypto_const_word32_buf_t *,
+      const otcrypto_const_word32_buf_t, const otcrypto_const_word32_buf_t,
       otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ecc_p256_public_key_export)(
       const otcrypto_unblinded_key_t *, otcrypto_word32_buf_t *,
@@ -388,7 +388,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*ecc_p384_point_on_curve)(
       const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
   otcrypto_status_t (*ecc_p384_public_key_import)(
-      const otcrypto_const_word32_buf_t *, const otcrypto_const_word32_buf_t *,
+      const otcrypto_const_word32_buf_t, const otcrypto_const_word32_buf_t,
       otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ecc_p384_private_key_import)(otcrypto_const_word32_buf_t,
                                                    otcrypto_const_word32_buf_t,

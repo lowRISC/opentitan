@@ -121,7 +121,7 @@ static status_t import_then_verify_test(void) {
       .key = imported_pk_buf,
   };
   LOG_INFO("Importing public key from coordinates...");
-  TRY(otcrypto_ecc_p256_public_key_import(&x, &y, &imported_public_key));
+  TRY(otcrypto_ecc_p256_public_key_import(x, y, &imported_public_key));
   TRY_CHECK_ARRAYS_EQ(imported_pk_buf, pk_buf, kP256PublicKeyWords);
 
   // Export the imported public key back to affine coordinates and confirm they
@@ -195,7 +195,7 @@ static status_t ecdh_key_mode_test(void) {
       .key_length = sizeof(pk_buf),
       .key = pk_buf,
   };
-  TRY(otcrypto_ecc_p256_public_key_import(&x, &y, &public_key));
+  TRY(otcrypto_ecc_p256_public_key_import(x, y, &public_key));
 
   // Confirm the coordinates were stored as [x || y].
   TRY_CHECK_ARRAYS_EQ(pk_buf, x_data, kP256CoordWords);
