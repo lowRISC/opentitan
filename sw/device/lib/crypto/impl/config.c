@@ -5,9 +5,10 @@
 #include "sw/device/lib/crypto/include/config.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
-#include "clkmgr_regs.h"
+#include "hw/top/clkmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 otcrypto_status_t otcrypto_security_config_check(
@@ -15,8 +16,10 @@ otcrypto_status_t otcrypto_security_config_check(
 #if defined(OPENTITAN_IS_EARLGREY)
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
     // Check if the jittery clock is enabled on OpenTitan EarlGrey.
-    uint32_t jittery_clk_en = abs_mmio_read32(
-        TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET);
+    mmio_region_t clkmgr =
+        mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+    uint32_t jittery_clk_en =
+        mmio_region_read32(clkmgr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
     if (launder32(jittery_clk_en) != kMultiBitBool4True) {
       return OTCRYPTO_FATAL_ERR;
     }
