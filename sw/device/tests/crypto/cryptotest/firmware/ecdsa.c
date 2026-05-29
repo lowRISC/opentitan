@@ -89,7 +89,7 @@ int set_nist_p256_params(cryptotest_ecdsa_coordinate_t uj_qx,
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, x, kP256CoordWords);
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, y, kP256CoordWords);
-  otcrypto_ecc_p256_public_key_import(x_buf, y_buf, public_key);
+  otcrypto_ecc_p256_public_key_import(&x_buf, &y_buf, public_key);
 
   *digest_len = kP256ScalarWords;
   if (uj_signature.r_len > kP256ScalarBytes) {
@@ -152,7 +152,7 @@ int set_nist_p384_params(cryptotest_ecdsa_coordinate_t uj_qx,
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, x, kP384CoordWords);
   otcrypto_const_word32_buf_t y_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, y, kP384CoordWords);
-  otcrypto_ecc_p384_public_key_import(x_buf, y_buf, public_key);
+  otcrypto_ecc_p384_public_key_import(&x_buf, &y_buf, public_key);
 
   *digest_len = kP384ScalarWords;
   if (uj_signature.r_len > kP384ScalarBytes) {

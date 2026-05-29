@@ -248,32 +248,30 @@ static status_t run_ecdsa_negative_tests(void) {
         OTCRYPTO_BAD_ARGS.value);
 
   // ECDSA sign negative tests
-  CHECK(otcrypto_ecdsa_p384_sign(NULL, valid_digest, valid_sig).value ==
+  CHECK(otcrypto_ecdsa_p384_sign(NULL, valid_digest, &valid_sig).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_hash_digest_t bad_digest_null = {
       .data = NULL,
       .len = 12,
   };
-  CHECK(
-      otcrypto_ecdsa_p384_sign(&valid_priv, bad_digest_null, valid_sig).value ==
-      OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p384_sign(&valid_priv, bad_digest_null, &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_hash_digest_t bad_digest_len = {
       .data = digest_data,
       .len = 11,
   };
   CHECK(
-      otcrypto_ecdsa_p384_sign(&valid_priv, bad_digest_len, valid_sig).value ==
+      otcrypto_ecdsa_p384_sign(&valid_priv, bad_digest_len, &valid_sig).value ==
       OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_word32_buf_t bad_sig_null = {
       .data = NULL,
       .len = 24,
   };
-  CHECK(
-      otcrypto_ecdsa_p384_sign(&valid_priv, valid_digest, bad_sig_null).value ==
-      OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p384_sign(&valid_priv, valid_digest, &bad_sig_null)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_priv_chk = {
       .config = kPrivateKeyConfig,
@@ -282,14 +280,14 @@ static status_t run_ecdsa_negative_tests(void) {
   };
   bad_priv_chk.checksum = valid_priv.checksum ^ 0xFFFFFFFF;
   CHECK(
-      otcrypto_ecdsa_p384_sign(&bad_priv_chk, valid_digest, valid_sig).value ==
+      otcrypto_ecdsa_p384_sign(&bad_priv_chk, valid_digest, &valid_sig).value ==
       OTCRYPTO_BAD_ARGS.value);
 
   // ECDSA verify negative tests
-  CHECK(otcrypto_ecdsa_p384_verify(NULL, valid_digest, valid_const_sig,
+  CHECK(otcrypto_ecdsa_p384_verify(NULL, valid_digest, &valid_const_sig,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_ecdsa_p384_verify(&valid_pub, valid_digest, valid_const_sig,
+  CHECK(otcrypto_ecdsa_p384_verify(&valid_pub, valid_digest, &valid_const_sig,
                                    NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -299,7 +297,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .key = pub_key_data,
   };
   bad_pub_chk.checksum = valid_pub.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_ecdsa_p384_verify(&bad_pub_chk, valid_digest, valid_const_sig,
+  CHECK(otcrypto_ecdsa_p384_verify(&bad_pub_chk, valid_digest, &valid_const_sig,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
@@ -307,7 +305,7 @@ static status_t run_ecdsa_negative_tests(void) {
       .data = sig_data,
       .len = 23,
   };
-  CHECK(otcrypto_ecdsa_p384_verify(&valid_pub, valid_digest, bad_const_sig_len,
+  CHECK(otcrypto_ecdsa_p384_verify(&valid_pub, valid_digest, &bad_const_sig_len,
                                    &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
