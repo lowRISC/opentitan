@@ -273,21 +273,27 @@ static status_t run_negative_tests(void) {
 
   // Base valid buffers
   uint8_t dummy_data[] = "test";
-  otcrypto_const_byte_buf_t valid_msg = {.data = dummy_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_msg_null = {.data = NULL, .len = 4};
-  otcrypto_const_byte_buf_t valid_cust = {.data = dummy_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_cust_null = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t valid_msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_msg_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
+  otcrypto_const_byte_buf_t valid_cust =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, dummy_data, 4);
+  otcrypto_const_byte_buf_t bad_cust_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t tag_data[8] = {0};
-  otcrypto_word32_buf_t valid_tag = {.data = tag_data, .len = 8};
-  otcrypto_word32_buf_t bad_tag_null = {.data = NULL, .len = 8};
+  otcrypto_word32_buf_t valid_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 8);
+  otcrypto_word32_buf_t bad_tag_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 8);
   size_t valid_req_len = 32;
 
   // Null pointer tests
-  CHECK(otcrypto_kmac(NULL, valid_msg, valid_cust, valid_req_len, valid_tag)
+  CHECK(otcrypto_kmac(NULL, &valid_msg, &valid_cust, valid_req_len, &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, valid_req_len,
-                      bad_tag_null)
+  CHECK(otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, valid_req_len,
+                      &bad_tag_null)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_blinded_key_t bad_key_null = {
@@ -295,23 +301,24 @@ static status_t run_negative_tests(void) {
       .keyblob_length = sizeof(valid_keyblob),
       .keyblob = NULL,
   };
-  CHECK(otcrypto_kmac(&bad_key_null, valid_msg, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&bad_key_null, &valid_msg, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Null Data with non-zero length tests
-  CHECK(otcrypto_kmac(&valid_key, bad_msg_null, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&valid_key, &bad_msg_null, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, bad_cust_null, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&valid_key, &valid_msg, &bad_cust_null, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // Tag and output length checks
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, 31, valid_tag).value ==
-        OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_kmac(&valid_key, valid_msg, valid_cust, 0, valid_tag).value ==
-        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 31, &valid_tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 0, &valid_tag).value ==
+      OTCRYPTO_BAD_ARGS.value);
 
   // Checksum and mode tests
   otcrypto_blinded_key_t bad_key_chk = {
@@ -320,8 +327,8 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_key_chk.checksum = valid_key.checksum ^ 0xFFFFFFFF;
-  CHECK(otcrypto_kmac(&bad_key_chk, valid_msg, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&bad_key_chk, &valid_msg, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_mode_cfg = valid_cfg;
@@ -332,8 +339,8 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_key_mode.checksum = integrity_blinded_checksum(&bad_key_mode);
-  CHECK(otcrypto_kmac(&bad_key_mode, valid_msg, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&bad_key_mode, &valid_msg, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // SW backed constraints
@@ -343,8 +350,8 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_sw_len.checksum = integrity_blinded_checksum(&bad_sw_len);
-  CHECK(otcrypto_kmac(&bad_sw_len, valid_msg, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&bad_sw_len, &valid_msg, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   // HW backed constraints
@@ -356,8 +363,8 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_hw_enum.checksum = integrity_blinded_checksum(&bad_hw_enum);
-  CHECK(otcrypto_kmac(&bad_hw_enum, valid_msg, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&bad_hw_enum, &valid_msg, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_hw_len_cfg = valid_cfg;
@@ -369,8 +376,8 @@ static status_t run_negative_tests(void) {
       .keyblob = valid_keyblob,
   };
   bad_hw_len.checksum = integrity_blinded_checksum(&bad_hw_len);
-  CHECK(otcrypto_kmac(&bad_hw_len, valid_msg, valid_cust, valid_req_len,
-                      valid_tag)
+  CHECK(otcrypto_kmac(&bad_hw_len, &valid_msg, &valid_cust, valid_req_len,
+                      &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;
