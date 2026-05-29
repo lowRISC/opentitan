@@ -4191,6 +4191,15 @@
           name_top: SramCtrlRetNumPrinceRoundsHalf
         }
         {
+          name: NumAddrScrRounds
+          desc: Number of address scrambling rounds. 0 disables address scrambling.
+          type: int
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetNumAddrScrRounds
+        }
+        {
           name: Outstanding
           desc: Number of outstanding TLUL transactions
           type: int
@@ -6808,6 +6817,15 @@
           name_top: SramCtrlMainNumPrinceRoundsHalf
         }
         {
+          name: NumAddrScrRounds
+          desc: Number of address scrambling rounds. 0 disables address scrambling.
+          type: int
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainNumAddrScrRounds
+        }
+        {
           name: Outstanding
           desc: Number of outstanding TLUL transactions
           type: int
@@ -7076,6 +7094,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMboxNumPrinceRoundsHalf
+        }
+        {
+          name: NumAddrScrRounds
+          desc: Number of address scrambling rounds. 0 disables address scrambling.
+          type: int
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxNumAddrScrRounds
         }
         {
           name: Outstanding

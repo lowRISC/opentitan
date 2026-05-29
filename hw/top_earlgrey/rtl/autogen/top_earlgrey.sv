@@ -47,6 +47,7 @@ module top_earlgrey #(
   parameter int SramCtrlRetNumRamInst = 1,
   parameter bit SramCtrlRetInstrExec = 0,
   parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
+  parameter int SramCtrlRetNumAddrScrRounds = 2,
   parameter bit SramCtrlRetEccCorrection = 0,
   // parameters for rram_ctrl
   parameter bit SecRramCtrlScrambleEn = 1,
@@ -94,12 +95,14 @@ module top_earlgrey #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
   // parameters for sram_ctrl_sec
   parameter int SramCtrlSecInstSize = 65536,
   parameter int SramCtrlSecNumRamInst = 1,
   parameter bit SramCtrlSecInstrExec = 1,
   parameter int SramCtrlSecNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlSecNumAddrScrRounds = 2,
   parameter bit SramCtrlSecEccCorrection = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
@@ -377,11 +380,13 @@ module top_earlgrey #(
   .SramCtrlMainNumRamInst(SramCtrlMainNumRamInst),
   .SramCtrlMainInstrExec(SramCtrlMainInstrExec),
   .SramCtrlMainNumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+  .SramCtrlMainNumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
   .SramCtrlMainEccCorrection(SramCtrlMainEccCorrection),
   .SramCtrlSecInstSize(SramCtrlSecInstSize),
   .SramCtrlSecNumRamInst(SramCtrlSecNumRamInst),
   .SramCtrlSecInstrExec(SramCtrlSecInstrExec),
   .SramCtrlSecNumPrinceRoundsHalf(SramCtrlSecNumPrinceRoundsHalf),
+  .SramCtrlSecNumAddrScrRounds(SramCtrlSecNumAddrScrRounds),
   .SramCtrlSecEccCorrection(SramCtrlSecEccCorrection),
   .RomCtrlBootRomInitFile(RomCtrlBootRomInitFile),
   .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
@@ -585,6 +590,7 @@ module top_earlgrey #(
   .SramCtrlRetNumRamInst(SramCtrlRetNumRamInst),
   .SramCtrlRetInstrExec(SramCtrlRetInstrExec),
   .SramCtrlRetNumPrinceRoundsHalf(SramCtrlRetNumPrinceRoundsHalf),
+  .SramCtrlRetNumAddrScrRounds(SramCtrlRetNumAddrScrRounds),
   .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection)
   ) earlgrey_pd_aon (
     // All externally supplied clocks

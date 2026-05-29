@@ -85,12 +85,14 @@ module earlgrey_pd_main #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlMainNumAddrScrRounds = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
   // parameters for sram_ctrl_sec
   parameter int SramCtrlSecInstSize = 65536,
   parameter int SramCtrlSecNumRamInst = 1,
   parameter bit SramCtrlSecInstrExec = 1,
   parameter int SramCtrlSecNumPrinceRoundsHalf = 2,
+  parameter int SramCtrlSecNumAddrScrRounds = 2,
   parameter bit SramCtrlSecEccCorrection = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
@@ -2386,6 +2388,7 @@ module earlgrey_pd_main #(
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+    .NumAddrScrRounds(SramCtrlMainNumAddrScrRounds),
     .Outstanding(SramCtrlMainOutstanding),
     .EccCorrection(SramCtrlMainEccCorrection)
   ) u_sram_ctrl_main (
@@ -2431,6 +2434,7 @@ module earlgrey_pd_main #(
     .NumRamInst(SramCtrlSecNumRamInst),
     .InstrExec(SramCtrlSecInstrExec),
     .NumPrinceRoundsHalf(SramCtrlSecNumPrinceRoundsHalf),
+    .NumAddrScrRounds(SramCtrlSecNumAddrScrRounds),
     .Outstanding(SramCtrlSecOutstanding),
     .EccCorrection(SramCtrlSecEccCorrection)
   ) u_sram_ctrl_sec (
