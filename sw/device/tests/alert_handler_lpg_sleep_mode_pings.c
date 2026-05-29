@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -44,8 +43,6 @@ static const dt_alert_handler_t kAlertHandlerDt = 0;
 static_assert(kDtAlertHandlerCount == 1, "this test expects an alert_handler");
 static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
 static_assert(kDtRvCoreIbexCount == 1, "this test expects exactly one Ibex");
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-static_assert(kDtFlashCtrlCount == 1, "this test expects a flash_ctrl");
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 
@@ -59,7 +56,6 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
-static dif_flash_ctrl_state_t flash_ctrl;
 
 static dif_pwrmgr_request_sources_t wakeup_sources;
 
@@ -83,8 +79,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &ibex));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
 }
 
 /**
@@ -505,8 +499,8 @@ bool test_main(void) {
     // Owner secrets to avoid getting the flash controller into a fatal error
     // state.
     if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
+      CHECK_STATUS_OK(
+          keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
       chip_sw_reset();
     }
   }
