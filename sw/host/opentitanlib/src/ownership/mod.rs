@@ -20,7 +20,9 @@ pub use isfb::OwnerIsfbConfig;
 pub use misc::{
     DetachedSignatureCommand, HybridRawPublicKey, KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag,
 };
-pub use owner::{OwnerBlock, OwnerConfigItem, SramExecMode, MinSecurityVersion, OwnershipUpdateMode};
+pub use owner::{
+    MinSecurityVersion, OwnerBlock, OwnerConfigItem, OwnershipUpdateMode, SramExecMode,
+};
 pub use rescue::{CommandTag, OwnerRescueConfig, RescueProtocol};
 pub use signature::DetachedSignature;
 

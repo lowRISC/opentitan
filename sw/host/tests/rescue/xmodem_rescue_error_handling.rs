@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::bool_assert_comparison)]
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use clap::Parser;
 
 use std::rc::Rc;
@@ -350,10 +350,12 @@ fn rescue_image_too_big(
     rescue: &RescueSerial,
 ) -> Result<()> {
     rescue.enter(transport, EntryMode::Reset)?;
-    let image_too_big = [0u8; 1026*1024];
+    let image_too_big = [0u8; 1026 * 1024];
     match rescue.update_firmware(BootSlot::SlotB, &image_too_big) {
         Ok(_) => {
-            return Err(anyhow!("Expects cancel during firmware rescue, but got OK."));
+            return Err(anyhow!(
+                "Expects cancel during firmware rescue, but got OK."
+            ));
         }
         Err(e) => {
             if e.to_string().contains("Cancelled") {
