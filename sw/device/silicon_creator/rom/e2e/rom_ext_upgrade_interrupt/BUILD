@@ -86,6 +86,7 @@ otp_json(
         deps = [
             "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:nv_counter_testutils",
+            "//sw/device/lib/testing:nvm_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_data",

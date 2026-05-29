@@ -13,7 +13,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -24,7 +23,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -43,7 +41,6 @@ static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 /**
  * Objects to access the peripherals used in this test via dif API.
  */
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
@@ -60,9 +57,6 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount >= 1, "this test expects at least one rv_plic");
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-static_assert(kDtFlashCtrlCount >= 1,
-              "this test expects at least one flash_ctrl");
 static const dt_alert_handler_t kAlertHandlerDt = 0;
 static_assert(kDtAlertHandlerCount == 1,
               "this library expects exactly one alert_handler");
@@ -165,9 +159,6 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
       kDtAonTimerWakeupWkupReq, &aon_timer_wakeup_sources));
-
-  // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
 
   // Initialize plic.
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
@@ -411,22 +402,12 @@ bool test_main(void) {
 
   alert_handler_config();
 
-  // First check the flash stored value
+  // First check the NVM stored value
   uint32_t event_idx = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
 
-  // Enable flash access
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
-
-  // Increment flash counter to know where we are
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+  // Increment NVM counter to know where we are
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(0));
 
   LOG_INFO("Test round %d", event_idx);
   LOG_INFO("RST_IDX[%d] = %d", event_idx, RST_IDX[event_idx]);

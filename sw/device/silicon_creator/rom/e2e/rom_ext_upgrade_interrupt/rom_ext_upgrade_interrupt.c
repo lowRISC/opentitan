@@ -5,8 +5,8 @@
 #include <assert.h>
 
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
@@ -30,18 +30,11 @@ static void print_boot_data(const boot_data_t *boot_data) {
 }
 
 static void increment_flash_counter(void) {
-  dif_flash_ctrl_state_t flash_ctrl;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash_ctrl,
-      /*rd_en*/ true,
-      /*prog_en*/ true, false, false, false, false));
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId));
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash_ctrl, false, false, false, false, false, false));
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(kFlashCounterId));
+  // Disable default region access after the counter operation.
+  CHECK_STATUS_OK(nvm_testutils_enable_data_access(
+      /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
+      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
 }
 
 static rom_error_t first_boot_test(void) {

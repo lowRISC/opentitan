@@ -5,14 +5,12 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -41,9 +39,6 @@ static const dt_pwrmgr_t kPwrmgrDt = 0;
 static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
 static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-static_assert(kDtFlashCtrlCount >= 1,
-              "this library expects at least one flash_ctrl");
 static_assert(kDtSysrstCtrlCount >= 1,
               "this test expects at least one sysrst_ctrl");
 static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
@@ -52,7 +47,6 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 
 static volatile const uint8_t kNumRound;
 
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_pinmux_t pinmux;
 
@@ -90,30 +84,18 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
-  // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
-
   // Initialize sysrst_ctrl
   CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
 
   // Initialize pinmux
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
-  // First check the flash stored value
+  // First check the NVM stored value
   uint32_t event_idx = 0;
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
-  // Enable flash access
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
 
-  // Increment flash counter to know where we are
-  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
+  // Increment NVM counter to know where we are
+  CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(0));
 
   // Read wakeup reason before check
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
