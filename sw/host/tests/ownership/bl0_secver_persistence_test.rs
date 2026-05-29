@@ -10,9 +10,9 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
-use opentitanlib::io::uart::Uart;
 use opentitanlib::chip::rom_error::RomError;
-use opentitanlib::ownership::{OwnershipKeyAlg, MinSecurityVersion, OwnershipUpdateMode};
+use opentitanlib::io::uart::Uart;
+use opentitanlib::ownership::{MinSecurityVersion, OwnershipKeyAlg, OwnershipUpdateMode};
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -57,7 +57,12 @@ struct Opts {
     config_kind: transfer_lib::OwnerConfigKind,
 }
 
-fn wait_for_boot(uart: &dyn Uart, timeout: Duration, expected_ver: u32, expected_min: u32) -> Result<()> {
+fn wait_for_boot(
+    uart: &dyn Uart,
+    timeout: Duration,
+    expected_ver: u32,
+    expected_min: u32,
+) -> Result<()> {
     let capture = UartConsole::wait_for(
         uart,
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
@@ -66,7 +71,9 @@ fn wait_for_boot(uart: &dyn Uart, timeout: Duration, expected_ver: u32, expected
     if capture[0].starts_with("BFV") {
         let err = u32::from_str_radix(&capture[1], 16)?;
         if err == 0 {
-            log::info!("Detected expected write-and-reboot (BFV:00000000). Waiting for next boot...");
+            log::info!(
+                "Detected expected write-and-reboot (BFV:00000000). Waiting for next boot..."
+            );
             // Wait again for the actual boot to PASS!
             let capture2 = UartConsole::wait_for(
                 uart,
@@ -76,14 +83,26 @@ fn wait_for_boot(uart: &dyn Uart, timeout: Duration, expected_ver: u32, expected
             if capture2[0].starts_with("BFV") {
                 return RomError(u32::from_str_radix(&capture2[1], 16)?).into();
             }
-            ensure!(capture2[0].contains(&format!("config_version = {expected_ver}")), "Expected config_version = {expected_ver}");
-            ensure!(capture2[0].contains(&format!("bl0_min_sec_ver = {expected_min}")), "Expected bl0_min_sec_ver = {expected_min}");
+            ensure!(
+                capture2[0].contains(&format!("config_version = {expected_ver}")),
+                "Expected config_version = {expected_ver}"
+            );
+            ensure!(
+                capture2[0].contains(&format!("bl0_min_sec_ver = {expected_min}")),
+                "Expected bl0_min_sec_ver = {expected_min}"
+            );
         } else {
             return RomError(err).into();
         }
     } else {
-        ensure!(capture[0].contains(&format!("config_version = {expected_ver}")), "Expected config_version = {expected_ver}");
-        ensure!(capture[0].contains(&format!("bl0_min_sec_ver = {expected_min}")), "Expected bl0_min_sec_ver = {expected_min}");
+        ensure!(
+            capture[0].contains(&format!("config_version = {expected_ver}")),
+            "Expected config_version = {expected_ver}"
+        );
+        ensure!(
+            capture[0].contains(&format!("bl0_min_sec_ver = {expected_min}")),
+            "Expected bl0_min_sec_ver = {expected_min}"
+        );
     }
     Ok(())
 }
@@ -135,9 +154,18 @@ fn bl0_secver_persistence_test(opts: &Opts, transport: &TransportWrapper) -> Res
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
-    ensure!(!capture[0].starts_with("BFV"), "Boot failed or triggered unexpected reboot");
-    ensure!(capture[0].contains("config_version = 2"), "Expected config_version = 2");
-    ensure!(capture[0].contains("bl0_min_sec_ver = 5"), "Expected bl0_min_sec_ver = 5");
+    ensure!(
+        !capture[0].starts_with("BFV"),
+        "Boot failed or triggered unexpected reboot"
+    );
+    ensure!(
+        capture[0].contains("config_version = 2"),
+        "Expected config_version = 2"
+    );
+    ensure!(
+        capture[0].contains("bl0_min_sec_ver = 5"),
+        "Expected bl0_min_sec_ver = 5"
+    );
 
     log::info!("###### BL0 SecVer Persistence test passed! ######");
     Ok(())

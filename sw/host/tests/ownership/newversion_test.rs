@@ -133,7 +133,9 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     if capture[0].starts_with("BFV") {
         let err = u32::from_str_radix(&capture[1], 16)?;
         if err == 0 {
-            log::info!("Detected expected write-and-reboot (BFV:00000000). Waiting for next boot...");
+            log::info!(
+                "Detected expected write-and-reboot (BFV:00000000). Waiting for next boot..."
+            );
             // Wait again for the actual boot to PASS!
             capture = UartConsole::wait_for(
                 &*uart,
