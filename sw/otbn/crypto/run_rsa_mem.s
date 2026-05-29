@@ -58,12 +58,12 @@ r0:
 inout:
 .zero 512
 
-.globl r1, mode, rsa_g
+.globl r1, mode, ok, rsa_g
 .balign 32
 /*----------------+----------+----------*
  |                |    r1    |          |
  |      256B      |  (mode)  |          |
- |                |          |          |
+ |                |   (ok)   |          |
  +----------------+----------+    r1    |
  |                |          |          |
  |      256B      |  rsa_g   |          |
@@ -71,7 +71,11 @@ inout:
  *----------------+----------+----------*/
 r1:
 mode:
-.zero 256
+.zero 4
+ok:
+.zero 4
+/* 248 bytes of padding */
+.zero 248
 rsa_g:
 .zero 256
 

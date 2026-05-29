@@ -6,6 +6,13 @@
 .globl rsa_key_from_cofactor
 
 /**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+
+/**
  * Construct an RSA key pair from a modulus and cofactor.
  *
  * This routine does not check the validity of the RSA key pair; it does not
@@ -151,4 +158,10 @@ derive_d:
   # Reset the limb count.
   #      x30 <= (n*2) >> 1 = n
   srli     x30, x30, 1
+
+  /* Write success. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
+
   ret
