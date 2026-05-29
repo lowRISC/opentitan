@@ -141,20 +141,14 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   // cut occurred after the owner page was updated but before bootdata
   // was persisted.
   // We only perform this check once both pages are fully validated and sealed.
-  if (launder32(owner_page_valid[0]) == kOwnerPageStatusSealed &&
-      launder32(owner_page_valid[1]) == kOwnerPageStatusSealed) {
-    HARDENED_CHECK_EQ(owner_page_valid[0], kOwnerPageStatusSealed);
-    HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSealed);
-    if (launder32(owner_page[0].min_security_version_bl0) != UINT32_MAX &&
-        launder32(bootdata->min_security_version_bl0) <
-            launder32(owner_page[0].min_security_version_bl0)) {
-      HARDENED_CHECK_NE(owner_page[0].min_security_version_bl0, UINT32_MAX);
-      HARDENED_CHECK_LT(bootdata->min_security_version_bl0,
-                        owner_page[0].min_security_version_bl0);
-      bootdata->min_security_version_bl0 =
-          owner_page[0].min_security_version_bl0;
-      bootdata_dirty = kHardenedBoolTrue;
-    }
+  if (launder32(owner_page[0].min_security_version_bl0) != UINT32_MAX &&
+      launder32(bootdata->min_security_version_bl0) <
+          launder32(owner_page[0].min_security_version_bl0)) {
+    HARDENED_CHECK_NE(owner_page[0].min_security_version_bl0, UINT32_MAX);
+    HARDENED_CHECK_LT(bootdata->min_security_version_bl0,
+                      owner_page[0].min_security_version_bl0);
+    bootdata->min_security_version_bl0 = owner_page[0].min_security_version_bl0;
+    bootdata_dirty = kHardenedBoolTrue;
   }
 
   if (launder32(bootdata_dirty) == kHardenedBoolTrue) {
