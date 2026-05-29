@@ -420,6 +420,13 @@ module rv_core_ibex
                                                   lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0],
                                                                             pwrmgr_cpu_en[0]));
 
+  prim_mubi_pkg::mubi4_t mcounteren_writable_mubi4;
+  ibex_pkg::ibex_mubi_t mcounteren_writable_ibex;
+  assign mcounteren_writable_mubi4 = prim_mubi_pkg::mubi4_t'(reg2hw.mcounteren_writable.q);
+  // Convert the mubi4 to ibex_mubi. They are both four bit, but with different encodings.
+  assign mcounteren_writable_ibex = mcounteren_writable_mubi4 == prim_mubi_pkg::MuBi4True ?
+                                    ibex_pkg::IbexMuBiOn : ibex_pkg::IbexMuBiOff;
+
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
     .PMPEnable                   ( PMPEnable                ),
@@ -562,6 +569,7 @@ module rv_core_ibex
 `endif
     // SEC_CM: FETCH.CTRL.LC_GATED
     .fetch_enable_i         (fetch_enable),
+    .mcounteren_writable_i  (mcounteren_writable_ibex),
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
     .alert_major_bus_o      (alert_major_bus),
@@ -1086,7 +1094,8 @@ module rv_core_ibex
 
     assign unused_reg2hw_shadow = ^{reg2hw_shadow.alert_test, reg2hw_shadow.nmi_enable,
                                     reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
-                                    reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err};
+                                    reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
+                                    reg2hw_shadow.mcounteren_writable};
 
     /////////////////////////////////////////////////////////////////
     // Shadow Core Data Address Translation Unit and TL-UL Adapter //
