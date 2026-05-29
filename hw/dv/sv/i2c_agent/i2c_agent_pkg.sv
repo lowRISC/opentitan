@@ -82,6 +82,15 @@ package i2c_agent_pkg;
   typedef i2c_item i2c_transfer_q[$];
   typedef i2c_transfer_q i2c_transaction;
 
+  // Assign drv_type and wdata to within each I2C transfer for i2c_driver so that it can generate
+  // the appropriate bus traffic.
+  function automatic i2c_item assign_drv_type_and_data(drv_type_e drv_type, bit [7:0] data);
+    i2c_item item = i2c_item::type_id::create("item");
+    item.drv_type = drv_type;
+    item.wdata = data;
+    return item;
+  endfunction
+
   // The i2c_driver is controlled by providing it a queue of sequence items, each of which
   // specifies the driving behaviour with the following fields:
   // - drv_type
@@ -102,75 +111,45 @@ package i2c_agent_pkg;
       i2c_item xfer = txn[transfer_i];
 
       // The transfer must begin with a 'START' or 'RSTART' condition
-      if (xfer.start) begin
+      if (xfer.start)
         // 'START' condition begins the transfer (and transaction)
-        i2c_item start_txn;
-        `uvm_create_obj(i2c_item, start_txn)
-        start_txn.drv_type = HostStart;
-        drv_q.push_back(start_txn);
-      end else if (xfer.rstart_front) begin
-        // 'RSTART' condition begins the transfer (which is only possible if the previous
-        // transfer ends with an RSTART).
-        // Sending duplicate messages with .drv_type = HostRStart would cause the driver to
-        // produce invalid traffic, so simply omit sending it here.
+        drv_q.push_back(assign_drv_type_and_data(HostStart, '0));
+      else if (xfer.rstart_front)
+        // If we are here then the last transfer ended with a rstart_back which should have been
+        // assigned with .drv_type = HostRStart, so omit assigning it here.
         `uvm_info($sformatf("%m"),
                   "Omitting .drv_type = HostRStart item from driver queue.",
                   UVM_FULL)
-      end else begin
+      else
         `uvm_fatal($sformatf("%m"),
                    "Can't create a transfer that doesn't start with either START or RSTART!")
-      end
 
       // Add the address+direction byte
-      begin
-        i2c_item addr_txn;
-        `uvm_create_obj(i2c_item, addr_txn)
-        addr_txn.drv_type = HostData;
-        addr_txn.wdata[7:1] = xfer.addr[6:0];
-        addr_txn.wdata[0] = xfer.dir;
-        drv_q.push_back(addr_txn);
-      end
+      drv_q.push_back(assign_drv_type_and_data(HostData, (xfer.addr[6:0] << 1) | xfer.dir));
 
-      // Add items for all the data bytes
-      foreach (xfer.data_q[i]) begin
+      // Push data bytes and responses based on the bus operation
+      for (int i = 0; i < xfer.num_data; i++) begin
         case (xfer.bus_op)
-          BusOpWrite: begin
-            // For write bytes, we drive the data using 'HostData'
-            i2c_item data_txn;
-            `uvm_create_obj(i2c_item, data_txn)
-            data_txn.drv_type = HostData;
-            data_txn.wdata = xfer.data_q[i];
-            drv_q.push_back(data_txn);
-          end
+          BusOpWrite:
+            drv_q.push_back(assign_drv_type_and_data(HostData, xfer.data_q[i]));
           BusOpRead: begin
-            // For read bytes, we wait 8 bit-periods then ack or nack (The driver behaviour
-            // for both 'HostAck' and 'HostNAck' include this 8-bit wait)
-            i2c_item acknack_txn;
-            `uvm_create_obj(i2c_item, acknack_txn)
-            acknack_txn.drv_type = (xfer.data_ack_q[i] == i2c_pkg::ACK) ? HostAck : HostNAck;
-            drv_q.push_back(acknack_txn);
+            drv_type_e ack_nack = (xfer.data_ack_q[i] == i2c_pkg::ACK) ? HostAck : HostNAck;
+            drv_q.push_back(assign_drv_type_and_data(ack_nack, '0));
           end
           default:;
         endcase
       end
 
-      // Add the 'STOP' or 'RSTART' condition to end the transfer
-      if (xfer.stop) begin
+      // Add the 'STOP' or 'RSTART' condition to end the transaction / transfer
+      if (xfer.stop)
         // 'STOP' condition ends the transfer (and transaction)
-        i2c_item stop_txn;
-        `uvm_create_obj(i2c_item, stop_txn)
-        stop_txn.drv_type = HostStop;
-        drv_q.push_back(stop_txn);
-      end else if (xfer.rstart_back) begin
+        drv_q.push_back(assign_drv_type_and_data(HostStop, '0));
+      else if (xfer.rstart_back)
         // 'RSTART' condition ends the transfer
-        i2c_item rstart_txn;
-        `uvm_create_obj(i2c_item, rstart_txn)
-        rstart_txn.drv_type = HostRStart;
-        drv_q.push_back(rstart_txn);
-      end else begin
+        drv_q.push_back(assign_drv_type_and_data(HostRStart, '0));
+      else
         `uvm_fatal($sformatf("%m"),
                    "Can't create a transfer that doesn't end with either STOP or RSTART!")
-      end
     end
 
   endfunction : convert_i2c_txn_to_drv_q
