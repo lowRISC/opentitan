@@ -412,6 +412,9 @@ impl X509 {
                     builder.push_oid(&Oid::EcPublicKey)?;
                     Self::push_ec_public_key_params(builder, ec_pubkey)
                 }
+                SubjectPublicKeyInfo::Mldsa44(_) => builder.push_oid(&Oid::Mldsa44),
+                SubjectPublicKeyInfo::Mldsa65(_) => builder.push_oid(&Oid::Mldsa65),
+                SubjectPublicKeyInfo::Mldsa87(_) => builder.push_oid(&Oid::Mldsa87),
             },
         )
     }
@@ -423,6 +426,11 @@ impl X509 {
         match pubkey_info {
             SubjectPublicKeyInfo::EcPublicKey(ec_pubkey) => {
                 Self::push_ec_public_key(builder, ec_pubkey)
+            }
+            SubjectPublicKeyInfo::Mldsa44(mldsa_pubkey)
+            | SubjectPublicKeyInfo::Mldsa65(mldsa_pubkey)
+            | SubjectPublicKeyInfo::Mldsa87(mldsa_pubkey) => {
+                builder.push_byte_array(Some("pubkey_mldsa".into()), &mldsa_pubkey.public_key)
             }
         }
     }
@@ -510,6 +518,9 @@ impl X509 {
         // Per the X509 specification, the signature parameters must not contain any parameters
         builder.push_seq(Some("algorithm_identifier".into()), |builder| match sig {
             Signature::EcdsaWithSha256 { .. } => builder.push_oid(&Oid::EcdsaWithSha256),
+            Signature::Mldsa44 { .. } => builder.push_oid(&Oid::Mldsa44),
+            Signature::Mldsa65 { .. } => builder.push_oid(&Oid::Mldsa65),
+            Signature::Mldsa87 { .. } => builder.push_oid(&Oid::Mldsa87),
         })
     }
 
@@ -522,6 +533,15 @@ impl X509 {
                     s: Value::Literal(zero.clone()),
                 };
                 Self::push_ecdsa_sig(builder, value.as_ref().unwrap_or(&empty_ecdsa))
+            }
+            Signature::Mldsa44 { value }
+            | Signature::Mldsa65 { value }
+            | Signature::Mldsa87 { value } => {
+                let empty_sig = Value::Literal(Vec::new());
+                builder.push_byte_array(
+                    Some("sig_mldsa_value".into()),
+                    value.as_ref().unwrap_or(&empty_sig),
+                )
             }
         }
     }

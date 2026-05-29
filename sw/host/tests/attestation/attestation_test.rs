@@ -69,15 +69,22 @@ fn get_base64_blob(haystack: &str, rx: &str) -> Result<Vec<u8>> {
 }
 
 fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Result<bool> {
-    let SubjectPublicKeyInfo::EcPublicKey(info) = key;
+    let material = match key {
+        SubjectPublicKeyInfo::EcPublicKey(info) => {
+            let mut material = Vec::new();
+            let x = &info.public_key.x.get_value().to_bytes_be();
+            let y = &info.public_key.y.get_value().to_bytes_be();
+            material.extend(vec![0; 32 - x.len()]);
+            material.extend(x);
+            material.extend(vec![0; 32 - y.len()]);
+            material.extend(y);
+            material
+        }
+        SubjectPublicKeyInfo::Mldsa44(info)
+        | SubjectPublicKeyInfo::Mldsa65(info)
+        | SubjectPublicKeyInfo::Mldsa87(info) => info.public_key.get_value().clone(),
+    };
 
-    let mut material = Vec::new();
-    let x = &info.public_key.x.get_value().to_bytes_be();
-    let y = &info.public_key.y.get_value().to_bytes_be();
-    material.extend(vec![0; 32 - x.len()]);
-    material.extend(x);
-    material.extend(vec![0; 32 - y.len()]);
-    material.extend(y);
     let hash = Sha256Digest::hash(&material).to_vec();
     let keyid = &hash[..20];
     log::info!("computed id = {:?}", hex::encode(keyid));

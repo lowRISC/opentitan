@@ -15,7 +15,8 @@ use serde::{Deserialize, Serialize};
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
     DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
-    Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
+    MldsaPublicKeyInfo, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable,
+    VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -505,7 +506,24 @@ impl Subst for SubjectPublicKeyInfo {
             SubjectPublicKeyInfo::EcPublicKey(ec) => {
                 Ok(SubjectPublicKeyInfo::EcPublicKey(ec.subst(data)?))
             }
+            SubjectPublicKeyInfo::Mldsa44(mldsa) => {
+                Ok(SubjectPublicKeyInfo::Mldsa44(mldsa.subst(data)?))
+            }
+            SubjectPublicKeyInfo::Mldsa65(mldsa) => {
+                Ok(SubjectPublicKeyInfo::Mldsa65(mldsa.subst(data)?))
+            }
+            SubjectPublicKeyInfo::Mldsa87(mldsa) => {
+                Ok(SubjectPublicKeyInfo::Mldsa87(mldsa.subst(data)?))
+            }
         }
+    }
+}
+
+impl Subst for MldsaPublicKeyInfo {
+    fn subst(&self, data: &SubstData) -> Result<MldsaPublicKeyInfo> {
+        Ok(MldsaPublicKeyInfo {
+            public_key: self.public_key.subst(data)?,
+        })
     }
 }
 
@@ -531,6 +549,15 @@ impl Subst for Signature {
     fn subst(&self, data: &SubstData) -> Result<Signature> {
         match self {
             Signature::EcdsaWithSha256 { value } => Ok(Signature::EcdsaWithSha256 {
+                value: value.subst(data)?,
+            }),
+            Signature::Mldsa44 { value } => Ok(Signature::Mldsa44 {
+                value: value.subst(data)?,
+            }),
+            Signature::Mldsa65 { value } => Ok(Signature::Mldsa65 {
+                value: value.subst(data)?,
+            }),
+            Signature::Mldsa87 { value } => Ok(Signature::Mldsa87 {
                 value: value.subst(data)?,
             }),
         }

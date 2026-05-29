@@ -1,0 +1,61 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "mldsa",
+
+    variables: {
+        serial_number: {
+            type: "integer",
+            range-size: [0, 32],
+        },
+        not_before: {
+            type: "string",
+            exact-size: 15,
+        }
+        not_after: {
+            type: "string",
+            exact-size: 15,
+        }
+        pub_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        auth_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        mldsa_pub_key: {
+            type: "byte-array",
+            exact-size: 1952,
+        },
+        mldsa_sig: {
+            type: "byte-array",
+            exact-size: 3300,
+        }
+    },
+
+    certificate: {
+        serial_number: { var: "serial_number" },
+        issuer: [
+            { common_name: "Test Issuer" },
+        ],
+        subject: [
+            { common_name: "Test Subject" },
+        ],
+        not_before: { var: "not_before" },
+        not_after: { var: "not_after" },
+        subject_public_key_info: {
+            algorithm: "mldsa-65",
+            public_key: { var: "mldsa_pub_key" },
+        },
+        authority_key_identifier: { var: "auth_key_id" },
+        subject_key_identifier: { var: "pub_key_id" },
+        signature: {
+            algorithm: "mldsa-65",
+            value: { var: "mldsa_sig" }
+        }
+    }
+}
