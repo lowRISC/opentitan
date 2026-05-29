@@ -44,7 +44,6 @@ filegroup(
         "//hw/top/tock:alert_handler_regs",
         "//hw/top/tock:ast_regs",
         "//hw/top/tock:clkmgr_regs",
-        "//hw/top/tock:flash_ctrl_regs",
         "//hw/top/tock:otp_ctrl_regs",
         "//hw/top/tock:pinmux_regs",
         "//hw/top/tock:pwrmgr_regs",

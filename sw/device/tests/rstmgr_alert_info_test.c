@@ -38,7 +38,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #ifdef OPENTITAN_IS_EARLGREY
-#include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"

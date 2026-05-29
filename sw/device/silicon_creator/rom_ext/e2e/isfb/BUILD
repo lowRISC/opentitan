@@ -58,7 +58,6 @@ opentitan_binary(
     ],
     manifest = ":manifest_allow_isfb_erase",
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -112,7 +111,6 @@ opentitan_test(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest_bad_erase_contraint",
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",

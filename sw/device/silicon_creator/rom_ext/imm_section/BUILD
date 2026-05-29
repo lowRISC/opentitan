@@ -44,7 +44,6 @@ cc_library(
         ":imm_section_epmp",
         ":imm_section_start",
         ":imm_section_version_def",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
