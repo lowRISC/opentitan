@@ -179,8 +179,10 @@ static status_t run_negative_tests(void) {
   LOG_INFO("Running SHA2 negative tests");
 
   uint8_t msg_data[] = "test";
-  otcrypto_const_byte_buf_t valid_msg = {.data = msg_data, .len = 4};
-  otcrypto_const_byte_buf_t bad_msg_null = {.data = NULL, .len = 4};
+  otcrypto_const_byte_buf_t valid_msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_data, 4);
+  otcrypto_const_byte_buf_t bad_msg_null =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 4);
 
   uint32_t digest_data[16] = {0};
   otcrypto_hash_digest_t valid_digest_256 = {.data = digest_data, .len = 8};
@@ -189,11 +191,11 @@ static status_t run_negative_tests(void) {
   otcrypto_hash_digest_t bad_digest_len_256 = {.data = digest_data, .len = 7};
 
   // otcrypto_sha2_256 negative tests
-  CHECK(otcrypto_sha2_256(bad_msg_null, &valid_digest_256).value ==
+  CHECK(otcrypto_sha2_256(&bad_msg_null, &valid_digest_256).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_256(valid_msg, &bad_digest_null).value ==
+  CHECK(otcrypto_sha2_256(&valid_msg, &bad_digest_null).value ==
         OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_256(valid_msg, &bad_digest_len_256).value ==
+  CHECK(otcrypto_sha2_256(&valid_msg, &bad_digest_len_256).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Streaming API: otcrypto_sha2_init
@@ -208,8 +210,9 @@ static status_t run_negative_tests(void) {
         OTCRYPTO_OK.value);
 
   // Streaming API: otcrypto_sha2_update
-  CHECK(otcrypto_sha2_update(NULL, valid_msg).value == OTCRYPTO_BAD_ARGS.value);
-  CHECK(otcrypto_sha2_update(&ctx, bad_msg_null).value ==
+  CHECK(otcrypto_sha2_update(NULL, &valid_msg).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_sha2_update(&ctx, &bad_msg_null).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Streaming API: otcrypto_sha2_final
