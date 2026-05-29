@@ -88,6 +88,11 @@
       run_opts: ["+test_timeout_ns=1000000"]
     }
     {
+      name: pwrmgr_repeat_wakeup_reset
+      uvm_test_seq: pwrmgr_repeat_wakeup_reset_vseq
+      run_opts: ["+test_timeout_ns=4000000", "+pwrmgr_mubi_mode=PwrmgrMubiRomCtrl"]
+    }
+    {
       name: pwrmgr_aborted_low_power
       uvm_test_seq: pwrmgr_aborted_low_power_vseq
     }
