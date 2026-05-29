@@ -255,13 +255,11 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   if (info & kDifRstmgrResetInfoPor) {
-    LOG_INFO("Powered up for the first time, program flash");
-    CHECK_STATUS_OK(
-        keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
+    LOG_INFO("Powered up for the first time, program NVM");
+    CHECK_STATUS_OK(keymgr_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
 
-    // This is done after keymgr_testutils_flash_init() because in DEV and
-    // PROD stages the
-    // info flash secret partition becomes unavailable.
+    // This is done after keymgr_testutils_nvm_init() because in DEV and
+    // PROD stages the NVM secret partition becomes unavailable.
     check_lock_otp_partition(&otp);
 
     // Issue and wait for reset.

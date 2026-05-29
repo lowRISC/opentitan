@@ -201,14 +201,14 @@ bool test_main(void) {
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
       kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
-  // We need to initialize the info FLASH partitions storing the Creator and
+  // We need to initialize the NVM partitions storing the Creator and
   // Owner secrets to avoid getting the flash controller into a fatal error
   // state.
   if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
     dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
     if (rst_info & kDifRstmgrResetInfoPor) {
       CHECK_STATUS_OK(
-          keymgr_testutils_flash_init(&kCreatorSecret, &kOwnerSecret));
+          keymgr_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
       chip_sw_reset();
     }
   }
@@ -219,7 +219,7 @@ bool test_main(void) {
     dif_rstmgr_reset_info_t reset_info = kDifRstmgrResetInfoPor;
 
     // Update the expected `reset_info` value for the FPGA target, as we have
-    // a soft reset required to apply the info flash page configuration.
+    // a soft reset required to apply the NVM info page configuration.
     if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
       reset_info = kDifRstmgrResetInfoSw;
     }
