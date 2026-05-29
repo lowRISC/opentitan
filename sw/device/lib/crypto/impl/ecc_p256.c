@@ -157,8 +157,8 @@ static status_t internal_p256_keygen_finalize(
 /**
  * Check the length of a signature buffer for ECDSA with P-256.
  *
- * If this check passes on `signature.len`, it is safe to interpret
- * `signature.data` as `p256_ecdsa_signature_t *`.
+ * If this check passes on `signature->len`, it is safe to interpret
+ * `signature->data` as `p256_ecdsa_signature_t *`.
  *
  * @param len Length to check.
  * @return OK if the lengths are correct or BAD_ARGS otherwise.
@@ -224,12 +224,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL || private_key == NULL ||
+    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (!status_ok(p256_signature_length_check(signature.len)) ||
+  if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -241,12 +241,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
 otcrypto_status_t otcrypto_ecdsa_p256_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
-  if (signature.data == NULL || private_key == NULL ||
+    otcrypto_word32_buf_t *signature) {
+  if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (!status_ok(p256_signature_length_check(signature.len)) ||
+  if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -258,13 +258,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
+    otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  if (verification_result == NULL || signature.data == NULL ||
+  if (verification_result == NULL || signature->data == NULL ||
       public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (!status_ok(p256_signature_length_check(signature.len)) ||
+  if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_public_key_length_check(public_key))) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -278,19 +278,17 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_word32_buf_t signature) {
+    otcrypto_word32_buf_t *signature) {
   // Signature generation.
   HARDENED_TRY(
       otcrypto_ecdsa_p256_sign(private_key, message_digest, signature));
 
   // Verify signature before releasing it.
-  otcrypto_const_word32_buf_t signature_check = {
-      .data = signature.data,
-      .len = signature.len,
-  };
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_ecdsa_p256_verify(
-      public_key, message_digest, signature_check, &verification_result));
+      public_key, message_digest, &signature_check, &verification_result));
 
   // Trap if signature verification failed.
   HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
