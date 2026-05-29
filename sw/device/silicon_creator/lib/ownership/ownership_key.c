@@ -89,29 +89,22 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
   hmac_digest_t digest;
   hmac_sha256(message, len, &digest);
 
-  if ((key & kOwnershipKeyUnlock) == kOwnershipKeyUnlock) {
-    if (owner_verify(key_alg, &owner_page[page].unlock_key, ecdsa, spx, NULL, 0,
-                     NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
-      return kErrorOk;
+  const struct {
+    ownership_key_t mask;
+    const owner_keydata_t *key;
+  } keys[] = {
+      {kOwnershipKeyUnlock, &owner_page[page].unlock_key},
+      {kOwnershipKeyActivate, &owner_page[page].activate_key},
+      {kOwnershipKeyRecovery, kNoOwnerRecoveryKey},
+      {0, &owner_page[page].owner_key},
+  };
+  for (size_t i = 0; i < ARRAYSIZE(keys); ++i) {
+    if (keys[i].key != NULL && (key & keys[i].mask) == keys[i].mask) {
+      if (owner_verify(key_alg, keys[i].key, ecdsa, spx, NULL, 0, NULL, 0,
+                       message, len, &digest, flash_exec) == kErrorOk) {
+        return kErrorOk;
+      }
     }
-  }
-  if ((key & kOwnershipKeyActivate) == kOwnershipKeyActivate) {
-    if (owner_verify(key_alg, &owner_page[page].activate_key, ecdsa, spx, NULL,
-                     0, NULL, 0, message, len, &digest,
-                     flash_exec) == kErrorOk) {
-      return kErrorOk;
-    }
-  }
-  if (kNoOwnerRecoveryKey &&
-      (key & kOwnershipKeyRecovery) == kOwnershipKeyRecovery) {
-    if (owner_verify(key_alg, kNoOwnerRecoveryKey, ecdsa, spx, NULL, 0, NULL, 0,
-                     message, len, &digest, flash_exec) == kErrorOk) {
-      return kErrorOk;
-    }
-  }
-  if (owner_verify(key_alg, &owner_page[page].owner_key, ecdsa, spx, NULL, 0,
-                   NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
-    return kErrorOk;
   }
   return kErrorOwnershipInvalidSignature;
 }
