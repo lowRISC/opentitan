@@ -428,7 +428,7 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecc_p384_public_key_import(
-    const otcrypto_const_word32_buf_t *x, const otcrypto_const_word32_buf_t *y,
+    const otcrypto_const_word32_buf_t x, const otcrypto_const_word32_buf_t y,
     otcrypto_unblinded_key_t *public_key);
 
 /**
