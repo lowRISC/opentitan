@@ -143,7 +143,7 @@ typedef struct p256_ecdh_shared_key {
  *
  * Call this routine after creating or modifying the p256 scalar structure.
  *
- * @param key p256 masked scalar.
+ * @param scalar p256 masked scalar.
  * @returns Checksum value.
  */
 uint32_t p256_masked_scalar_checksum(const p256_masked_scalar_t *scalar);
