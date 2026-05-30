@@ -96,6 +96,20 @@ static status_t curve25519_masked_scalar_write(const uint32_t *share0,
   return OTCRYPTO_OK;
 }
 
+uint32_t curve25519_masked_scalar_checksum(
+    const curve25519_masked_scalar_t *scalar) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  // Compute the checksum only over a single share to avoid side-channel
+  // leakage. From a FI perspective only covering one key share is fine as
+  // (a) manipulating the second share with FI has only limited use to an
+  // adversary and (b) when manipulating the entire pointer to the key structure
+  // the checksum check fails.
+  crc32_add(&ctx, (unsigned char *)scalar->share0,
+            kCurve25519MaskedScalarShareBytes);
+  return crc32_finish(&ctx);
+}
+
 status_t curve25519_keygen_start(const curve25519_masked_scalar_s_t *s) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
@@ -297,8 +311,7 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
 }
 
 status_t curve25519_x25519_start(
-    const uint32_t s0[kCurve25519ScalarWords],
-    const uint32_t s1[kCurve25519ScalarWords],
+    const curve25519_masked_scalar_t *scalar,
     const uint32_t public_key[kCurve25519PointWords]) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
@@ -312,8 +325,12 @@ status_t curve25519_x25519_start(
   // Write the private key arithmetic shares to DMEM.
   const otbn_addr_t kOtbnVarS0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
   const otbn_addr_t kOtbnVarS1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
-  HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, s0, kOtbnVarS0));
-  HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, s1, kOtbnVarS1));
+  HARDENED_TRY(
+      otbn_dmem_write(kCurve25519ScalarWords, scalar->share0, kOtbnVarS0));
+  HARDENED_TRY(
+      otbn_dmem_write(kCurve25519ScalarWords, scalar->share1, kOtbnVarS1));
+  HARDENED_CHECK_EQ(scalar->checksum,
+                    launder32(curve25519_masked_scalar_checksum(scalar)));
 
   // Write the public key to DMEM.
   const otbn_addr_t kOtbnVarX25519PublicKey =
@@ -385,8 +402,7 @@ status_t curve25519_x25519_finalize(
 }
 
 status_t curve25519_x25519_keygen_start(
-    const uint32_t s0[kCurve25519ScalarWords],
-    const uint32_t s1[kCurve25519ScalarWords]) {
+    const curve25519_masked_scalar_t *scalar) {
   // Load the Curve25519 app. Fails if OTBN is non-idle.
   const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
   HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
@@ -399,8 +415,12 @@ status_t curve25519_x25519_keygen_start(
   // Write the private key arithmetic shares to DMEM.
   const otbn_addr_t kOtbnVarS0 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s0);
   const otbn_addr_t kOtbnVarS1 = OTBN_ADDR_T_INIT(run_curve25519, ed25519_s1);
-  HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, s0, kOtbnVarS0));
-  HARDENED_TRY(otbn_dmem_write(kCurve25519ScalarWords, s1, kOtbnVarS1));
+  HARDENED_TRY(
+      otbn_dmem_write(kCurve25519ScalarWords, scalar->share0, kOtbnVarS0));
+  HARDENED_TRY(
+      otbn_dmem_write(kCurve25519ScalarWords, scalar->share1, kOtbnVarS1));
+  HARDENED_CHECK_EQ(scalar->checksum,
+                    launder32(curve25519_masked_scalar_checksum(scalar)));
 
   // Start the OTBN routine.
   return otbn_execute();

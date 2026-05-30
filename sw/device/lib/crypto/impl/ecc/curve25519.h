@@ -178,6 +178,40 @@ typedef struct curve25519_masked_scalar_r {
 } curve25519_masked_scalar_r_t;
 
 /**
+ * A type that holds a masked value from the Curve25519 scalar field.
+ *
+ * This struct is used to represent secret keys or shared secrets.
+ * The scalar is represented in two 256-bit shares, share0 and share1.
+ */
+typedef struct curve25519_masked_scalar {
+  /**
+   * First share of the secret scalar.
+   */
+  uint32_t share0[kCurve25519MaskedScalarShareWords];
+
+  /**
+   * Second share of the secret scalar.
+   */
+  uint32_t share1[kCurve25519MaskedScalarShareWords];
+  /**
+   * Checksum over share0.
+   */
+  uint32_t checksum;
+} curve25519_masked_scalar_t;
+
+/**
+ * Compute the checksum of a curve25519 masked scalar.
+ *
+ * Call this routine after creating or modifying the curve25519 scalar
+ * structure.
+ *
+ * @param key curve25519 masked scalar.
+ * @returns Checksum value.
+ */
+uint32_t curve25519_masked_scalar_checksum(
+    const curve25519_masked_scalar_t *scalar);
+
+/**
  * Start an async Ed25519 keygen operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
@@ -282,15 +316,13 @@ status_t curve25519_verify_finalize(hardened_bool_t *result);
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
- * @param s0 The first arithmetic share of the masked private key.
- * @param s1 The second arithmetic share of the masked private key.
+ * @param scalar The masked private key.
  * @param public_key The public key from the other party.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t curve25519_x25519_start(
-    const uint32_t s0[kCurve25519ScalarWords],
-    const uint32_t s1[kCurve25519ScalarWords],
+    const curve25519_masked_scalar_t *scalar,
     const uint32_t public_key[kCurve25519PointWords]);
 
 /**
@@ -331,14 +363,12 @@ status_t curve25519_x25519_finalize(
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
  *
- * @param s0 The first arithmetic share of the masked private key.
- * @param s1 The second arithmetic share of the masked private key.
+ * @param scalar The masked private key.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t curve25519_x25519_keygen_start(
-    const uint32_t s0[kCurve25519ScalarWords],
-    const uint32_t s1[kCurve25519ScalarWords]);
+    const curve25519_masked_scalar_t *scalar);
 
 /**
  * Finish an async X25519 keygen operation on OTBN.
