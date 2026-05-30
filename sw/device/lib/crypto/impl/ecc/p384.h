@@ -139,7 +139,7 @@ typedef struct p384_ecdh_shared_key {
  *
  * Call this routine after creating or modifying the p384 scalar structure.
  *
- * @param key p384 masked scalar.
+ * @param scalar p384 masked scalar.
  * @returns Checksum value.
  */
 uint32_t p384_masked_scalar_checksum(const p384_masked_scalar_t *scalar);
