@@ -25,6 +25,38 @@ static const uint8_t kDom2Prefix[34] = {
 };
 
 /**
+ * Extracts and verifies a Curve25519 masked scalar from a blinded key struct.
+ *
+ * This safely copies the blinded key material (two shares) from the opaque
+ * keyblob into the internal `curve25519_masked_scalar_t` representation.
+ *
+ * @param key The blinded key containing the raw 256-bit masked scalar shares.
+ * @param[out] scalar Destination struct for the extracted shares and checksum.
+ * @return OK on success, or an error code if a fault is detected.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t load_private_scalar(const otcrypto_blinded_key_t *key,
+                                    curve25519_masked_scalar_t *scalar) {
+  // From the key config we have two additional empty words per share in the
+  // keyblob Hence we copy from each share individually
+  size_t share_words = keyblob_share_num_words(key->config);
+
+  HARDENED_TRY(hardened_memcpy(scalar->share0, key->keyblob,
+                               kCurve25519MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(scalar->share1, key->keyblob + share_words,
+                               kCurve25519MaskedScalarShareWords));
+
+  // We only verify share0 as one badly copied share due to FI would only leave
+  // randomness
+  HARDENED_CHECK_EQ(hardened_memeq(key->keyblob, scalar->share0,
+                                   kCurve25519MaskedScalarShareWords),
+                    kHardenedBoolTrue);
+
+  scalar->checksum = curve25519_masked_scalar_checksum(scalar);
+  return OTCRYPTO_OK;
+}
+
+/**
  * Check the lengths of private keys for curve 25519.
  *
  * Checks the length of caller-allocated buffers for a 25519 private key.
@@ -729,11 +761,13 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 
     return otcrypto_eval_exit(curve25519_x25519_keygen_sideload_start());
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    uint32_t *share0 = private_key->keyblob;
-    uint32_t *share1 =
-        private_key->keyblob + keyblob_share_num_words(private_key->config);
+    curve25519_masked_scalar_t private_scalar;
+    HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
 
-    HARDENED_TRY(curve25519_x25519_keygen_start(share0, share1));
+    HARDENED_TRY(curve25519_x25519_keygen_start(&private_scalar));
+
+    HARDENED_TRY(hardened_memshred((uint32_t *)&private_scalar,
+                                   kCurve25519MaskedScalarTotalShareWords));
 
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
@@ -768,11 +802,13 @@ otcrypto_status_t otcrypto_x25519_async_start(
         curve25519_x25519_sideload_start(public_key->key));
 
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    uint32_t *share0 = private_key->keyblob;
-    uint32_t *share1 =
-        private_key->keyblob + keyblob_share_num_words(private_key->config);
+    curve25519_masked_scalar_t private_scalar;
+    HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
 
-    HARDENED_TRY(curve25519_x25519_start(share0, share1, public_key->key));
+    HARDENED_TRY(curve25519_x25519_start(&private_scalar, public_key->key));
+
+    HARDENED_TRY(hardened_memshred((uint32_t *)&private_scalar,
+                                   kCurve25519MaskedScalarTotalShareWords));
 
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
