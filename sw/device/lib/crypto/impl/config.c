@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/alert.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 
@@ -77,6 +78,9 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 
   // Instantiate the RNG.
   HARDENED_TRY(otcrypto_entropy_init());
+
+  // The OTBN is still left with DMEM from the boot.
+  HARDENED_TRY(otbn_dmem_sec_wipe());
 
 #ifdef HASH_SELF_CHECK_ENABLE
   HARDENED_TRY(otcrypto_integrity_check());
