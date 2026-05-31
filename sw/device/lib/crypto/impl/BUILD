@@ -494,5 +494,6 @@ test_suite(
         ":keyblob_unittest",
         ":status_debug_unittest",
         ":status_unittest",
+        "//sw/device/lib/crypto/impl/aes_gcm:ghash_unittest",
     ],
 )
