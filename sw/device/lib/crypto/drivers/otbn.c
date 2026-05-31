@@ -322,7 +322,6 @@ status_t otbn_load_app(const otbn_app_t app) {
       (size_t)(app.dmem_data_end - app.dmem_data_start);
 
   HARDENED_TRY(otbn_imem_sec_wipe());
-  HARDENED_TRY(otbn_dmem_sec_wipe());
 
   // Reset the LOAD_CHECKSUM register.
   abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
