@@ -8,13 +8,7 @@
 //     run_opts: ["+i2c_idx=i"]
 
 class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
-
-  typedef i2c_item i2c_transfer_q[$];
-  typedef i2c_transfer_q i2c_transaction;
-
-  ///////////////
-  // VARIABLES //
-  ///////////////
+  import i2c_pkg::*;
 
   int tran_id = 0;
 
@@ -31,10 +25,6 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   `uvm_object_utils(chip_sw_i2c_device_tx_rx_vseq)
   `uvm_object_new
 
-  /////////////////
-  // CONSTRAINTS //
-  /////////////////
-
   constraint i2c_idx_c {
     i2c_idx inside {[0 : NUM_I2CS-1]};
   }
@@ -42,10 +32,6 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   constraint i2c_byte_count_c {
     byte_count inside {[30 : 60]};
   }
-
-  /////////////
-  // METHODS //
-  /////////////
 
   // Override the base-class impl to pass software backdoor symbols that configure the DUT via SW.
   // - The I2C peripheral instance to test is selected via the plusarg '+i2c_idx'
@@ -104,7 +90,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Data written to fifo");
 
     // Drive the i2c_agent to create the test stimulus.
-    drive_i2c_agent_stimulus(byte_count);
+    drive_i2c_agent_stimulus();
   endtask
 
 
@@ -141,171 +127,82 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
   endfunction : configure_agent_timing_cfg
 
+  // Convert the transfer into a suitable form for the agent to drive. Then drive it.
+  local task convert_and_drive_xfer(i2c_transaction txn);
+    i2c_target_base_seq i2c_host_seq = i2c_target_base_seq::type_id::create("i2c_host_seq");
+    convert_i2c_txn_to_drv_q(txn, i2c_host_seq.req_q);
+    i2c_host_seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]);
+  endtask
+
+  // Fill in the I2C transfer before driving it
+  local function void fill_i2c_xfer_flds(i2c_item item, rw_e dir, bus_op_e bus_op);
+    item.addr = choose_address ? (i2c_device_address_0 | (r & ~i2c_device_mask_0)) :
+                                 (i2c_device_address_1 | (r & ~i2c_device_mask_1));
+    item.addr_ack = ACK;
+    item.num_data = byte_count;
+    item.bus_op   = bus_op;
+    item.dir      = dir;
+    item.start    = 1;
+    item.stop     = 1;
+
+    // For BusOpWrite, the job for N/Acking the bytes is on the I2C device.
+    if (bus_op == BusOpRead) begin
+      for (int j = 0; j < byte_count; j++) begin
+        // By default, everything should be ACK'd except for the final byte to terminate the
+        // transfer.
+        acknack_e acknack = (j == (byte_count - 1)) ? NACK : ACK;
+        item.data_ack_q.push_back(acknack);
+      end
+    end
+  endfunction
+
+  local task create_and_drive_i2c_xfer(i2c_item item, rw_e dir, bus_op_e bus_op);
+    i2c_transaction txn;
+
+    fill_i2c_xfer_flds(item, dir, bus_op);
+    txn.push_back(item);
+    convert_and_drive_xfer(txn);
+  endtask
 
   // Drive the i2c_agent to create test stimulus, which in this case is the following:
   // - Drive a READ transfer
   // - Drive a WRITE transfer, writing the same data collected by the READ transfer
-  //
-  virtual task drive_i2c_agent_stimulus(input int size);
+  virtual task drive_i2c_agent_stimulus();
+    // Create the single read transfer
+    i2c_item xfer = i2c_item::type_id::create("xfer");
 
-    // Drive a READ-transfer with the Agent-Controller
-    begin
-      i2c_transaction txn;
-      i2c_target_base_seq m_i2c_host_seq;
+    create_and_drive_i2c_xfer(xfer, READ, BusOpRead);
 
-      // Create the single read transfer
-      begin
-        i2c_item xfer;
-        `uvm_create_obj(i2c_item, xfer)
-        xfer.addr = choose_address ? (i2c_device_address_0 | (r & ~i2c_device_mask_0)) :
-                                     (i2c_device_address_1 | (r & ~i2c_device_mask_1));
-        xfer.addr_ack = i2c_pkg::ACK;
-        xfer.dir = i2c_pkg::READ;
-        xfer.bus_op = BusOpRead;
-        xfer.num_data = size;
-        for (int j = 0; j < size; j++) begin
-          // By default, everything should be ACK'd except for the final byte of any read transfer
-          i2c_pkg::acknack_e acknack = (j == (size - 1)) ? i2c_pkg::NACK :
-                                                           i2c_pkg::ACK;
-          xfer.data_ack_q.push_back(acknack);
-          xfer.data_q.push_back('0); // It's a read operation, so this data is just a placeholder.
-        end
-        xfer.start = 1;
-        xfer.stop = 1;
-
-        txn.push_back(xfer);
-      end
-
-      // Convert the transfer into a suitable form for the agent to drive. Then drive it.
-      `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
-      convert_i2c_txn_to_drv_q(txn, m_i2c_host_seq.req_q);
-      m_i2c_host_seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]);
+    // Check if the agent has received all the data bytes contained in the TX FIFO of device.
+    if (cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte != byte_count) begin
+      `uvm_fatal(`gfn,
+                 $sformatf("Agent received %0d / %0d bytes",
+                           cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte,
+                           byte_count))
     end
 
-    `uvm_info(`gfn, $sformatf("cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte = %0d",
-      cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte), UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf("size = %0d", size), UVM_MEDIUM)
-    // Check the above read-transfer has completed.
-    `DV_CHECK(cfg.m_i2c_agent_cfgs[i2c_idx].rcvd_rd_byte == size)
-    `DV_CHECK(p_sequencer.i2c_rd_fifos[i2c_idx].used() == 1,
-      "Exactly one READ-transfer item should have been captured!")
-    `uvm_info(`gfn, "Read transfer complete.", UVM_MEDIUM)
+    // Check if the i2c_monitor has pushed the transfer item contains the information of the read.
+    if (!p_sequencer.i2c_rd_fifos[i2c_idx].used())
+      `uvm_fatal(`gfn, "Analysis FIFO is not yet filled with the transferred item")
 
-    // Take the read-data from the previous transfer, then create a WRITE-transfer which
-    // returns the same data to the DUT.
-    begin
-      i2c_transaction txn;
-      i2c_target_base_seq m_i2c_host_seq;
+    `uvm_info(`gfn, "Read transfer completed.", UVM_MEDIUM)
 
-      // The i2c_agent monitor's analysis port is connected up to a TLM fifo 'i2c_rd_fifos' in the
-      // chip_env vseqr. Pull the item from this fifo to get the previously read data, and use it to
-      // populate the new write transfer.
-      begin
-        i2c_item xfer;
-        `DV_CHECK(p_sequencer.i2c_rd_fifos[i2c_idx].try_get(xfer))
+    // De-allocate and emptied the storage of the i2c_item and i2c_transaction queue for the next
+    // write transfer.
+    xfer = null;
 
-        // We can re-use the data fields of the READ transfer item to create the WRITE transfer.
-        // Since no one else will be using this item, just modify in place and reuse it.
-        xfer.addr = choose_address ? (i2c_device_address_0 | (r & ~i2c_device_mask_0)) :
-                                     (i2c_device_address_1 | (r & ~i2c_device_mask_1));
-        xfer.addr_ack = i2c_pkg::ACK;
-        xfer.dir = i2c_pkg::WRITE;
-        xfer.bus_op = BusOpWrite;
-        // For a WRITE transfer, all data bytes should be ACK'd.
-        xfer.data_ack_q.delete();
-        repeat (xfer.num_data) xfer.data_ack_q.push_back(i2c_pkg::ACK);
-        xfer.start = 1;
-        xfer.stop = 1;
+    // Take the read bytes from the previous transfer, then create a WRITE-transfer that write
+    // those bytes to the device.
+    //
+    // The i2c_agent monitor's analysis port is connected up to a TLM fifo 'i2c_rd_fifos' in the
+    // chip_env vseqr. Pull the item from this fifo to get the previously read data, and use it to
+    // populate the new write transfer.
+    `DV_CHECK(p_sequencer.i2c_rd_fifos[i2c_idx].try_get(xfer))
 
-        txn.push_back(xfer);
-      end
-
-      `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
-      convert_i2c_txn_to_drv_q(txn, m_i2c_host_seq.req_q);
-      m_i2c_host_seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]);
-    end
-
+    // The read bytes are pushed into data_q by the i2c_monitor. data_ack_q still contains the N/Ack
+    // information from the previous read transfer but that shouldn't matter for this Vseq as
+    // N/Acking is a device's job entirely in a write transfer.
+    create_and_drive_i2c_xfer(xfer, WRITE, BusOpWrite);
   endtask : drive_i2c_agent_stimulus
-
-
-  // This function is duplicated from the block level i2c_base_vseq
-  // TODO(#23920) Find a unified home for this logic, which will probably be inside the i2c agent.
-  //
-  virtual function void convert_i2c_txn_to_drv_q(i2c_transaction txn, ref i2c_item drv_q[$]);
-
-    // Loop over each transfer, determine what to drive based on the control flags
-    foreach (txn[transfer_i]) begin
-      i2c_item xfer = txn[transfer_i];
-
-      // The transfer must begin with a 'START' or 'RSTART' condition
-      if (xfer.start) begin
-        // 'START' condition begins the transfer (and transaction)
-        i2c_item start_txn;
-        `uvm_create_obj(i2c_item, start_txn)
-        start_txn.drv_type = HostStart;
-        drv_q.push_back(start_txn);
-      end else if (xfer.rstart_front) begin
-        // 'RSTART' condition begins the transfer (which is only possible if the previous
-        // transfer ends with an RSTART).
-        // Sending duplicate messages with .drv_type = HostRStart would cause the driver to
-        // produce invalid traffic, so simply omit sending it here.
-        `uvm_info(`gfn, "Omitting .drv_type = HostRStart item from driver queue.", UVM_FULL)
-      end else begin
-        `uvm_fatal(`gfn, "Can't create a transfer that doesn't start with either START or RSTART!")
-      end
-
-      // Add the address+direction byte
-      begin
-        i2c_item addr_txn;
-        `uvm_create_obj(i2c_item, addr_txn)
-        addr_txn.drv_type = HostData;
-        addr_txn.wdata[7:1] = xfer.addr[6:0];
-        addr_txn.wdata[0] = xfer.dir;
-        drv_q.push_back(addr_txn);
-      end
-
-      // Add items for all the data bytes
-      foreach (xfer.data_q[i]) begin
-        case (xfer.bus_op)
-          BusOpWrite: begin
-            // For write bytes, we drive the data using 'HostData'
-            i2c_item data_txn;
-            `uvm_create_obj(i2c_item, data_txn)
-            data_txn.drv_type = HostData;
-            data_txn.wdata = xfer.data_q[i];
-            drv_q.push_back(data_txn);
-          end
-          BusOpRead: begin
-            // For read bytes, we wait 8 bit-periods then ack or nack (The driver behaviour
-            // for both 'HostAck' and 'HostNAck' include this 8-bit wait)
-            i2c_item acknack_txn;
-            `uvm_create_obj(i2c_item, acknack_txn)
-            acknack_txn.drv_type = (xfer.data_ack_q[i] == i2c_pkg::ACK) ? HostAck : HostNAck;
-            drv_q.push_back(acknack_txn);
-          end
-          default:;
-        endcase
-      end
-
-      // Add the 'STOP' or 'RSTART' condition to end the transfer
-      if (xfer.stop) begin
-        // 'STOP' condition ends the transfer (and transaction)
-        i2c_item stop_txn;
-        `uvm_create_obj(i2c_item, stop_txn)
-        stop_txn.drv_type = HostStop;
-        drv_q.push_back(stop_txn);
-      end else if (xfer.rstart_back) begin
-        // 'RSTART' condition ends the transfer
-        i2c_item rstart_txn;
-        `uvm_create_obj(i2c_item, rstart_txn)
-        rstart_txn.drv_type = HostRStart;
-        drv_q.push_back(rstart_txn);
-      end else begin
-        `uvm_fatal(`gfn, "Can't create a transfer that doesn't end with either STOP or RSTART!")
-      end
-    end
-
-  endfunction : convert_i2c_txn_to_drv_q
-
 
 endclass : chip_sw_i2c_device_tx_rx_vseq
