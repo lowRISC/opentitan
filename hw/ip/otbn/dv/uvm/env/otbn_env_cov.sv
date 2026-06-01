@@ -2299,7 +2299,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_ADDV_OVERFLOW_CP(6)
     `DEF_ADDV_OVERFLOW_CP(7)
 
-    
+
   endgroup
 
   covergroup insn_bn_addvm_cg
@@ -2333,7 +2333,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `define DEF_ADDVM_SUM_EQ_MOD_CP(elem) \
       `DEF_SEEN_CP(sum_eq_mod_elem``elem``_cp, \
         (mod[31:0] != 0) && \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} + {1'b0, wdr_operand_b[32*elem+31:32*elem]} ==  {1'b0, mod[31:0]}))    
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} + {1'b0, wdr_operand_b[32*elem+31:32*elem]} ==  {1'b0, mod[31:0]}))
 
     `DEF_ADDVM_SUM_EQ_MOD_CP(0)
     `DEF_ADDVM_SUM_EQ_MOD_CP(1)
@@ -2360,7 +2360,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_ADDVM_SUM_GT_MOD_CP(5)
     `DEF_ADDVM_SUM_GT_MOD_CP(6)
     `DEF_ADDVM_SUM_GT_MOD_CP(7)
-  
+
   endgroup
 
   covergroup insn_bn_subv_cg
@@ -2397,7 +2397,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       `DEF_SEEN_CP(diff_nonneg_elem``elem``_cp, \
         (mod[31:0] != 0) && \
         ({1'b0, wdr_operand_a[32*elem+31:32*elem]} >= {1'b0, wdr_operand_b[32*elem+31:32*elem]}))
-    
+
     `DEF_SUBVM_DIFF_NONNEG_CP(0)
     `DEF_SUBVM_DIFF_NONNEG_CP(1)
     `DEF_SUBVM_DIFF_NONNEG_CP(2)
@@ -2417,7 +2417,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       `DEF_SEEN_CP(diff_minus_mod_elem``elem``_cp, \
         (mod[31:0] != 0) && \
         ({1'b0, wdr_operand_a[32*elem+31:32*elem]} + {1'b0, mod[31:0]} == {1'b0, wdr_operand_b[32*elem+31:32*elem]}))
-    
+
     `DEF_SUBVM_DIFF_MINUS_MOD_CP(0)
     `DEF_SUBVM_DIFF_MINUS_MOD_CP(1)
     `DEF_SUBVM_DIFF_MINUS_MOD_CP(2)
@@ -2434,7 +2434,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         (mod[31:0] != 0) && \
         ({1'b0, wdr_operand_a[32*elem+31:32*elem]} < {1'b0, wdr_operand_b[32*elem+31:32*elem]}) && \
         ({1'b0, wdr_operand_a[32*elem+31:32*elem]} + {1'b0, mod[31:0]} > {1'b0, wdr_operand_b[32*elem+31:32*elem]}))
-    
+
     `DEF_SUBVM_DIFF_NEG_CP(0)
     `DEF_SUBVM_DIFF_NEG_CP(1)
     `DEF_SUBVM_DIFF_NEG_CP(2)
@@ -2466,7 +2466,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     // See that the destination WDR is only updated when the intstruction retires (correct multi-cycle handling).
     // This can be checked by running an instruction where one source WDR is akso the destination WDR
-    
+
     `DEF_SEEN_CP(dest_a_after_insn_cp,
                   wdr_write_addr == wdr_addr_a)
 
@@ -2615,7 +2615,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_MULVM_OVERFLOW_CP(5)
     `DEF_MULVM_OVERFLOW_CP(6)
     `DEF_MULVM_OVERFLOW_CP(7)
-    
+
   endgroup
 
   covergroup insn_bn_pack_cg
@@ -2623,15 +2623,15 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     // coverpoint to check that wdr_write_data[upper 64 bits] are one of the four expected values based on the shift bits
     `DEF_SEEN_CP(exp_packed_shift_cp,
-      $countbits(wdr_write_data[255-:64] == {wdr_operand_b[247-:24], wdr_operand_b[215-:24], wdr_operand_b[183-:16]}, 
+      $countbits(wdr_write_data[255-:64] == {wdr_operand_b[247-:24], wdr_operand_b[215-:24], wdr_operand_b[183-:16]},
               wdr_write_data[255-:64] == {wdr_operand_a[79-:16], wdr_operand_a[55-:24], wdr_operand_a[23-:24]},
               wdr_write_data[255-:64] == {wdr_operand_a[151-:16], wdr_operand_a[119-:24], wdr_operand_a[87-:24]},
               wdr_write_data[255-:64] == {wdr_operand_a[247-:24], wdr_operand_a[216-:24], wdr_operand_a[183-:16]}) == 1
     )
-    
-    // Coverpoint to check the correct extraction of the lower 24 bits of each element 
+
+    // Coverpoint to check the correct extraction of the lower 24 bits of each element
     // With shift bits 0
-    `DEF_SEEN_CP(correct_pack_0_cp, 
+    `DEF_SEEN_CP(correct_pack_0_cp,
                   (insn_data[28:27] == 2'b00) &&
                     (wdr_write_data == {wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24], wdr_operand_b[128+:24], wdr_operand_b[96+:24], wdr_operand_b[64+:24], wdr_operand_b[32+:24], wdr_operand_b[0+:24], 64'b0 }))
 
@@ -2648,7 +2648,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // With shift bits 3
     `DEF_SEEN_CP(correct_pack_sb_3_cp,
                  (insn_data[28:27] == 2'b11) &&
-                   (wdr_write_data == { wdr_operand_a[224+:24], wdr_operand_a[192+:24], wdr_operand_a[160+:24], wdr_operand_a[128+:24], wdr_operand_a[96+:24], wdr_operand_a[64+:24], wdr_operand_a[32+:24], wdr_operand_a[0+:24], wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24]}))    
+                   (wdr_write_data == { wdr_operand_a[224+:24], wdr_operand_a[192+:24], wdr_operand_a[160+:24], wdr_operand_a[128+:24], wdr_operand_a[96+:24], wdr_operand_a[64+:24], wdr_operand_a[32+:24], wdr_operand_a[0+:24], wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24]}))
 
   endgroup
 
@@ -2657,7 +2657,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     // coverpoint to check that wdr_write_data[upper 64 bits] are one of the four expected values based on the shift bits
     `DEF_SEEN_CP(exp_unpacked_shift_cp,
-      $countbits(wdr_write_data[255-:64] == {8'b0, wdr_operand_b[224+:24], 8'b0, wdr_operand_b[192+:24]}, 
+      $countbits(wdr_write_data[255-:64] == {8'b0, wdr_operand_b[224+:24], 8'b0, wdr_operand_b[192+:24]},
               wdr_write_data[255-:64] == {8'b0, wdr_operand_a[32+:24], 8'b0, wdr_operand_a[23:0]},
               wdr_write_data[255-:64] == {8'b0, wdr_operand_a[96+:24], 8'b0, wdr_operand_a[64+:24]},
               wdr_write_data[255-:64] == {8'b0, wdr_operand_a[224+:24], 8'b0, wdr_operand_a[192+:24]}) == 1

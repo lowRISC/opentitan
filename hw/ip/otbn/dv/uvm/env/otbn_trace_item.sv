@@ -29,7 +29,7 @@ class otbn_trace_item extends uvm_sequence_item;
   logic [255:0] wdr_write_data;
 
   // WDR write addr
-  logic [4:0] wdr_write_addr;  
+  logic [4:0] wdr_write_addr;
 
   // Flags showing call stack pushes and pops
   call_stack_flags_t call_stack_flags;
