@@ -19,9 +19,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-// Keymgr handle for this test.
-static dif_keymgr_t keymgr;
-
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t dice_test(void) {
