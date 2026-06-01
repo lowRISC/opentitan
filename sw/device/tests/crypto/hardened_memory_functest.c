@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "rv_core_ibex_regs.h"
+#include "hw/top/rv_core_ibex_regs.h"
 
 #define MULTI_WORD_TEST_SIZE 4
 
