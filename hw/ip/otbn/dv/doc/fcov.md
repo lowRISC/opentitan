@@ -1138,123 +1138,125 @@ These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
 
 ## BN.ADDV
 
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
 
 This instruction uses the `bnva` encoding schema, with covergroup `enc_bnva_cg`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_addv_cg`.
 
 - See the element wise overflow to test the carry propagation logic (it should not propagate between separate vector elements).
-  Tracked as X.
+  Tracked as `overflow_elemX_cp` where `X` represents the vector element index.
 
 ## BN.ADDVM
 
 > TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
 
 This instruction uses the `bnva` encoding schema, with covergroup `enc_bnva_cg`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_addvm_cg`.
 In the following `MOD` refers to `MOD[ELEN-1:0]` as only these bits are used as modulus and it is replicated for each vector element.
 
 For each vector element:
 - Execute with the two extreme values of `MOD` (zero and all ones).
   Tracked as `mod_cp`.
 - Don't perform a subtraction (because the sum is less than `MOD`) when `MOD` is nonzero.
-  Tracked as `sum_lt_cp`.
+  Tracked as `sum_lt_mod_elemX_cp` where `X` represents the vector element index.
 - A calculation where the sum exactly equals a nonzero `MOD`
-  Tracked as `sum_eq_cp`.
+  Tracked as `sum_eq_mod_elemX_cp`.
 - A calculation where the sum is greater than a nonzero `MOD`.
-  Tracked as `sum_gt_cp`.
-- Perform a subtraction where the sum is at least twice a nonzero value of `MOD`.
-  Tracked as `sum_gt2_cp`.
-- A calculation where the intermediate sum is greater than `2^ELEN-1`, crossed with whether the subtraction of `MOD` results in a value that will wrap.
-  Tracked as `overflow_wrap_cross`.
+  Tracked as `sum_gt_mod_elemX_cp`.
+
 
 ## BN.SUBV
 
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
 
 This instruction uses the `bnva` encoding schema, with covergroup `enc_bnva_cg`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_subv_cg`.
 
 - See the element-wise subtraction underflow to test the carry propagation logic (it should not propagate between separate vector elements).
-  Tracked as X.
+  Tracked as `underflow_elemX_cp` where `X` represents the vector element index.
 
 ## BN.SUBVM
 
 > TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
 
 This instruction uses the `bnva` encoding schema, with covergroup `enc_bnva_cg`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_subvm_cg`.
 In the following `MOD` refers to `MOD[ELEN-1:0]` as only these bits are used as modulus and it is replicated for each vector element.
 
 For each vector element:
 - Execute with the two extreme values of `MOD` (zero and all ones).
   Tracked as `mod_cp`.
 - A non-negative intermediate result with a nonzero `MOD` (so `MOD` is not added).
-  Tracked as `diff_nonneg_cp`.
+  Tracked as `diff_nonneg_elemX_cp` where `X` represents the vector element index.
 - An intermediate result that exactly equals a nonzero `-MOD`.
-  Tracked as `diff_minus_mod_cp`.
+  Tracked as `diff_minus_mod_elemX_cp`.
 - A negative intermediate result with a nonzero `MOD`, so `MOD` is added and the result is positive.
-  Tracked as `diff_neg_cp`.
-- A very negative intermediate result with a nonzero `MOD` (so `MOD` is added, but the top bit is still set).
-  Tracked as `diff_neg2_cp`.
+  Tracked as `diff_neg_elemX_cp`.
+
 
 ## BN.MULV
 
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
-
 This instruction uses the `bnvm` encoding schema, with covergroup `enc_bnvm_cg`.
 The immediate `lane` of this encoding is unused and is treated as don't care.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_mulv_cg`.
+
+- See the element-wise multiplication overflow to test the carry propagation logic (it should not propagate between separate vector elements)
+  Tracked as `overflow_elemX_cp` where `X` represents the vector element index.
 
 - See that the destination WDR is only updated when the instructions retires (correct multi-cycle handling).
   This can be checked by running an instruction where one source WDR is also the destination WDR.
-  Tracked as X.
+  Tracked as `dest_a_after_insn_cp` and `dest_b_after_insn_cp`.
 
 ## BN.MULVL
 
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
-
 This instruction uses the `bnvm` encoding schema, with covergroup `enc_bnvm_cg`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_mulvl_cg`.
+
+- See the element-wise multiplication overflow to test the carry propagation logic (it should not propagate between separate vector elements)
+  Tracked as `overflow_elemX_cp` where `X` represents the vector element index.
 
 - See that the destination WDR is only updated when the instructions retires (correct multi-cycle handling).
   This can be checked by running an instruction where one source WDR is also the destination WDR.
-  Tracked as X.
+  Tracked as `dest_a_after_insn_cp` and `dest_b_after_insn_cp`.
 
 ## BN.MULVM
-
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
 
 This instruction uses the `bnvm` encoding schema, with covergroup `enc_bnvm_cg`.
 The immediate `lane` of this encoding is unused and is treated as don't care.
 The actual value of the `MOD` register has impact on the result value but no direct influence on the control flow as the conditional subtraction step of the Montgomery algorithm is not performed.
 It therefore needs no explicit coverage as the result correctness is ensured by comparing the results with simulator results.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_mulvm_cg`.
 
 - See that the destination WDR is only updated when the instructions retires (correct multi-cycle handling).
   This can be checked by running an instruction where one source WDR is also the destination WDR.
-  Tracked as X.
-- See that the ACC WSR is cleared with randomness at the end of the instruction.
-  Tracked as X.
-- See that the internal registers of BN MAC are cleared with randomness after every 3 cycles.
-  Tracked as X.
+  Tracked as `dest_a_after_insn_cp` and `dest_b_after_insn_cp`.
+
+- See that the multiplication of a*b * 2^(-d) produces a result greater than mod q.
+  Tracked as `gt_mod_elemX_cp` where `X` represents the vector element index.
+
+- The multiplication of a*b * 2^(-d) produces a result less than mod q.
+  Tracked as `ls_mod_elemX_cp`.
+
+- See the element-wise multiplication overflow to etst the carry propagation logic (it should not propagate between separate vector elements)
+  Tracked as `overflow_elemX_cp`.
 
 ## BN.MULVML
-
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups.
 
 This instruction uses the `bnvm` encoding schema, with covergroup `enc_bnvm_cg`.
 The actual value of the `MOD` register has impact on the result value but no direct influence on the control flow as the conditional subtraction step of the Montgomery algorithm is not performed.
 It therefore needs no explicit coverage as the result correctness is ensured by comparing the results with simulator results.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_mulvml_cg`.
 
 - See that the destination WDR is only updated when the instructions retires (correct multi-cycle handling).
   This can be checked by running an instruction where one source WDR is also the destination WDR.
-  Tracked as X.
-- See that the ACC WSR is cleared with randomness at the end of the instruction.
-  Tracked as X.
-- See that the internal registers of BN MAC are cleared with randomness after every 3 cycles.
-  Tracked as X.
+  Tracked as `dest_a_after_insn_cp` and `dest_b_after_insn_cp`.
+
+- See that the multiplication of a*b * 2^(-d) produces a result greater than mod q.
+  Tracked as `gt_mod_elemX_cp` where `X` represents the vector element index.
+
+- The multiplication of a*b * 2^(-d) produces a result less than mod q.
+  Tracked as `ls_mod_elemX_cp`.
+
+- See the element-wise multiplication overflow to etst the carry propagation logic (it should not propagate between separate vector elements)
+  Tracked as `overflow_elemX_cp`.
 
 ## BN.TRN1
 
@@ -1288,19 +1290,22 @@ For each vector element:
 
 ## BN.PACK
 
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
-
 This instruction uses the `bnpk` encoding schema, with covergroup `enc_bnpk`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_pack_cg`.
 
 - See that the elements are truncated correctly. I.e., the highest byte of the 32-bit element is discarded correctly.
+  Tracked as `exp_packed_shift_cp`.
+
+- See that the correct bits of each 32-bit element are extracted.
+  Tracked as `correct_pack_X_cp` where `X` represents the shift bit value.
 
 ## BN.UNPK
 
-> TODO(lowrisc/opentitan#29465): Refine the coverage, implement it and link covergroups
-
 This instruction uses the `bnpk` encoding schema, with covergroup `enc_bnpk`.
-The instruction-specific covergroup is X.
+The instruction-specific covergroup is `insn_bn_unpk_cg`.
 
 - See that the unpacked elements are zero extended correctly.
+  Tracked as `exp_unpacked_shift_cp`.
+
 - See the correct unpacking of a vector split over two WDRs.
+  Tracked as `correct_unpack_sb_X_cp` where `X` represents the shift bit.
