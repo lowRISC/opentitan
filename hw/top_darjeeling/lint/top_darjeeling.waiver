@@ -9,7 +9,7 @@ set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_darjeeling.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_darjeeling.sv top_darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 waive -rules RESET_MUX -location {rstmgr.sv} -msg {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
@@ -28,6 +28,9 @@ waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port 'scanmode_
 
 waive -rules CLOCK_MUX -location {top_darjeeling.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
       -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
+
+waive -rules CLOCK_MUX -location {top_darjeeling_pd_aon.sv} -regexp {Clock 'clk_io_i' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
 
 waive -rules {CLOCK_USE} -location {pinmux.sv}  -regexp {'dio_wkup_mux\[(42|43)\]' is used for some other purpose, and as clock} \
       -comment "DioSpiDeviceSck and DioSpiDeviceCsb at indices 42 and 43 both can act as clocks"
@@ -49,8 +52,8 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv mbx.sv} -regexp {'mbx' is u
 waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"
 
-waive -rules {LINE_LENGTH} -location {top_darjeeling.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
-      -comment "top_darjeeling is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+waive -rules {LINE_LENGTH} -location {top_darjeeling.sv top_darjeeling_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "Darjeeling toplevels are auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
 
 waive -rules LINE_LENGTH -location {top_darjeeling_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_darjeeling_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"

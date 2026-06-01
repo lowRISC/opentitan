@@ -52,6 +52,9 @@ waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -msg {'sck_monitor'
 waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port 'sns_clks_i..*', and used as a clock} \
       -comment "This is a clock struct that is fed back into AST."
 
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'top_darjeeling' port 'clkmgr_aon_clocks..*', and used as a clock} \
+      -comment "This is a clock struct that is fed back into AST."
+
 waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv}  -msg {'mio_in_raw[11]' is used for some other purpose, and as clock} \
       -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
 

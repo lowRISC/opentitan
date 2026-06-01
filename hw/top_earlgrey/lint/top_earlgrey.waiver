@@ -9,7 +9,7 @@ set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_earlgrey.sv top_earlgrey_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regexp {Asynchronous reset '(resets_o\.)?rst_[A-Za-z_0-9]+_n(\[[0-9:]+\])?' is driven by a multiplexer} \
@@ -24,8 +24,11 @@ waive -rules RESET_MUX -location {spi_device.sv} -regexp {Asynchronous reset '(r
 waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div2_peri' is connected to 'spi_device' port 'scan_clk_i', and used as a clock} \
       -comment "This connection is a scan clock connection."
 
-waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv top_earlgrey_pd_aon.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
+
+waive -rules CLOCK_MUX -location {top_earlgrey_pd_aon.sv} -regexp {Clock 'clk_io_i' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
 
 waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
       -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
@@ -69,8 +72,8 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv rstmgr_pkg.sv} -regexp {'sp
 waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv otbn_pkg.sv} -regexp {'M' is used as a (parameter|reg) here, and as a (reg|parameter) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
 
-waive -rules {LINE_LENGTH} -location {top_earlgrey.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
-      -comment "top_earlgrey is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+waive -rules {LINE_LENGTH} -location {top_earlgrey.sv top_earlgrey_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "Earlgrey toplevels are auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
 
 waive -rules LINE_LENGTH -location {top_earlgrey_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_earlgrey_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
