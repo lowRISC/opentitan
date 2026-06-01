@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ibex:ibex_top
       - lowrisc:ibex:ibex_tracer
+      # Map the prims in ibex_top to prim_generic implementations for simulation and linting
       - "fileset_partner ? (partner:prim_generic:all)"
       - "!fileset_partner ? (lowrisc:prim_generic:all)"
     files:

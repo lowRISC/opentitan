@@ -27,6 +27,11 @@ filesets:
       - rtl/ibex_top.sv
     file_type: systemVerilogSource
 
+  # Map the prims listed above to the prim_generic implementations for linting
+  files_map_prim_generic:
+      depend:
+        - lowrisc:prim_generic:all
+
   files_lint_verilator:
     files:
       - lint/verilator_waiver.vlt: {file_type: vlt}
@@ -161,6 +166,7 @@ targets:
   default: &default_target
     filesets:
       - tool_verilator ? (files_lint_verilator)
+      - tool_verilator ? (files_map_prim_generic)
       - files_rtl
       - files_check_tool_requirements
     toplevel: ibex_top
@@ -168,6 +174,8 @@ targets:
       - tool_vivado ? (FPGA_XILINX=true)
   lint:
     <<: *default_target
+    filesets:
+      - files_map_prim_generic
     parameters:
       - SYNTHESIS=true
       - RVFI=true
