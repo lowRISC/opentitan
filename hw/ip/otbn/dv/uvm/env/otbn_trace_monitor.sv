@@ -44,11 +44,14 @@ class otbn_trace_monitor extends dv_base_monitor #(
             item.gpr_operand_b = cfg.trace_vif.rf_base_rd_data_b;
             item.wdr_operand_a = cfg.trace_vif.rf_bignum_rd_data_a;
             item.wdr_operand_b = cfg.trace_vif.rf_bignum_rd_data_b;
+            item.wdr_addr_a = cfg.trace_vif.rf_bignum_rd_addr_a;
+            item.wdr_addr_b = cfg.trace_vif.rf_bignum_rd_addr_b;
             item.flags_read_data = cfg.trace_vif.flags_read_data;
             item.flags_write_valid = cfg.trace_vif.flags_write;
             item.flags_write_data = cfg.trace_vif.flags_write_data;
             item.gpr_write_data = cfg.trace_vif.rf_base_wr_data;
             item.wdr_write_data = cfg.trace_vif.rf_bignum_wr_data;
+            item.wdr_write_addr = cfg.trace_vif.rf_bignum_wr_addr;
             item.call_stack_flags = cfg.rf_base_vif.get_call_stack_flags();
             item.loop_stack_fullness = cfg.loop_vif.get_fullness();
             item.call_stack_fullness = cfg.rf_base_vif.get_call_stack_fullness();

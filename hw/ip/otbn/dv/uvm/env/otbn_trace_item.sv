@@ -15,6 +15,10 @@ class otbn_trace_item extends uvm_sequence_item;
   logic [255:0] wdr_operand_a;
   logic [255:0] wdr_operand_b;
 
+  // WDR operand addr
+  logic [4:0] wdr_addr_a;
+  logic [4:0] wdr_addr_b;
+
   // Flag read/write data
   otbn_pkg::flags_t flags_read_data [2];
   logic [1:0]       flags_write_valid;
@@ -23,6 +27,9 @@ class otbn_trace_item extends uvm_sequence_item;
   // GPR and WDR write data
   logic [31:0]  gpr_write_data;
   logic [255:0] wdr_write_data;
+
+  // WDR write addr
+  logic [4:0] wdr_write_addr;  
 
   // Flags showing call stack pushes and pops
   call_stack_flags_t call_stack_flags;
@@ -55,11 +62,14 @@ class otbn_trace_item extends uvm_sequence_item;
     `uvm_field_int        (gpr_operand_b,            UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_operand_a,            UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_operand_b,            UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (wdr_addr_a,               UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (wdr_addr_b,               UVM_DEFAULT | UVM_HEX)
     `uvm_field_sarray_int (flags_read_data,          UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (flags_write_valid,        UVM_DEFAULT | UVM_BIN)
     `uvm_field_sarray_int (flags_write_data,         UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (gpr_write_data,           UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (wdr_write_data,           UVM_DEFAULT | UVM_HEX)
+    `uvm_field_int        (wdr_write_addr,           UVM_DEFAULT | UVM_HEX)
     `uvm_field_int        (call_stack_flags,         UVM_DEFAULT)
     `uvm_field_enum       (stack_fullness_e, loop_stack_fullness, UVM_DEFAULT)
     `uvm_field_enum       (stack_fullness_e, call_stack_fullness, UVM_DEFAULT)
