@@ -698,7 +698,7 @@ interface chip_if;
 
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
-  wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
+  wire adc_data_valid = `AST_HIER.u_ast_aon.u_adc.adc_d_val_o;
 
   task static force_adc_d_o(input bit [9:0] channel_val);
     force `AST_HIER.adc_d_o = channel_val;
