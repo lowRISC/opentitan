@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/config.h"
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/crypto/drivers/alert.h"
