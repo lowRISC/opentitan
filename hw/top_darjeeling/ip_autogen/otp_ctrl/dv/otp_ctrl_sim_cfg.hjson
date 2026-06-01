@@ -134,6 +134,7 @@
     {
       name: otp_ctrl_dai_errs
       uvm_test_seq: otp_ctrl_dai_errs_vseq
+      reseed: 25
     }
 
     {
