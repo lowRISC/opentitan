@@ -84,6 +84,7 @@
     {
       name: gpio_inp_prd_cnt
       uvm_test_seq: ${module_instance_name}_inp_prd_cnt_vseq
+      reseed: 50
     }
 
 % endif
