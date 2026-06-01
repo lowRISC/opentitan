@@ -501,10 +501,8 @@ status_t hmac_hmac_sha256_redundant(const hmac_key_t *key,
 
   uint32_t h_i_key_pad_msg[kHmacSha256DigestWords];
   memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
-  otcrypto_word32_buf_t inner_digest = {
-      .data = h_i_key_pad_msg,
-      .len = kHmacSha256DigestWords,
-  };
+  otcrypto_word32_buf_t inner_digest = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, h_i_key_pad_msg, kHmacSha256DigestWords);
   HARDENED_TRY(hmac_final(&ctx, &inner_digest));
 
   // hmac = H(o_key_pad || h_i_key_pad_msg).
@@ -557,10 +555,8 @@ status_t hmac_hmac_sha384_redundant(const hmac_key_t *key,
 
   uint32_t h_i_key_pad_msg[kHmacSha384DigestWords];
   memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
-  otcrypto_word32_buf_t inner_digest = {
-      .data = h_i_key_pad_msg,
-      .len = kHmacSha384DigestWords,
-  };
+  otcrypto_word32_buf_t inner_digest = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, h_i_key_pad_msg, kHmacSha384DigestWords);
   HARDENED_TRY(hmac_final(&ctx, &inner_digest));
 
   // hmac = H(o_key_pad || h_i_key_pad_msg).
@@ -613,10 +609,8 @@ status_t hmac_hmac_sha512_redundant(const hmac_key_t *key,
 
   uint32_t h_i_key_pad_msg[kHmacSha512DigestWords];
   memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
-  otcrypto_word32_buf_t inner_digest = {
-      .data = h_i_key_pad_msg,
-      .len = kHmacSha512DigestWords,
-  };
+  otcrypto_word32_buf_t inner_digest = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, h_i_key_pad_msg, kHmacSha512DigestWords);
   HARDENED_TRY(hmac_final(&ctx, &inner_digest));
 
   // hmac = H(o_key_pad || h_i_key_pad_msg).
