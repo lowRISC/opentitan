@@ -240,7 +240,7 @@ rom_error_t usb_test(void) {
 }
 
 bool test_main(void) {
-  CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   pinmux_init_usb();
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, usb_test);
