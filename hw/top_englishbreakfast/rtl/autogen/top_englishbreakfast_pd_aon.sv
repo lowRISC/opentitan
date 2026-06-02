@@ -153,6 +153,7 @@ module top_englishbreakfast_pd_aon #(
   assign outgoing_lpg_cg_en_englishbreakfast_o[12] = clkmgr_aon_cg_en.main_infra;
   assign outgoing_lpg_rst_en_englishbreakfast_o[12] = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainMainSel];
 
+
   // Instantiation of IPs
   pwrmgr #(
     .AlertAsyncOn(AsyncOnOutgoingAlertEnglishbreakfast[7]),

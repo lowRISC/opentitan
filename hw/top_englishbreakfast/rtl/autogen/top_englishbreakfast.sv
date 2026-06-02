@@ -365,6 +365,42 @@ module top_englishbreakfast #(
     .tdo_oe_i (1'b0)
   );
 
+// Tie off unused clocks and resets
+//VCS coverage off
+// pragma coverage off
+  logic [6:0] unused_clocks;
+  assign unused_clocks[0] = clkmgr_aon_clocks_i.clk_aon_timers;
+  assign unused_clocks[1] = clkmgr_aon_clocks_i.clk_io_div2_powerup;
+  assign unused_clocks[2] = clkmgr_aon_clocks_i.clk_io_infra;
+  assign unused_clocks[3] = clkmgr_aon_clocks_i.clk_io_powerup;
+  assign unused_clocks[4] = clkmgr_aon_clocks_i.clk_main_powerup;
+  assign unused_clocks[5] = clkmgr_aon_clocks_i.clk_usb_infra;
+  assign unused_clocks[6] = clkmgr_aon_clocks_i.clk_usb_powerup;
+
+  logic [20:0] unused_resets;
+  assign unused_resets[0] = rstmgr_aon_resets_i.rst_lc_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[1] = rstmgr_aon_resets_i.rst_lc_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[2] = rstmgr_aon_resets_i.rst_por_aon_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[3] = rstmgr_aon_resets_i.rst_por_aon_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[4] = rstmgr_aon_resets_i.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[5] = rstmgr_aon_resets_i.rst_por_io_div2_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[6] = rstmgr_aon_resets_i.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[7] = rstmgr_aon_resets_i.rst_por_io_div4_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[8] = rstmgr_aon_resets_i.rst_por_io_div4_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[9] = rstmgr_aon_resets_i.rst_por_io_div4_shadowed_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[10] = rstmgr_aon_resets_i.rst_por_io_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[11] = rstmgr_aon_resets_i.rst_por_io_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[12] = rstmgr_aon_resets_i.rst_por_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[13] = rstmgr_aon_resets_i.rst_por_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[14] = rstmgr_aon_resets_i.rst_por_usb_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[15] = rstmgr_aon_resets_i.rst_por_usb_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[16] = rstmgr_aon_resets_i.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[17] = rstmgr_aon_resets_i.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[18] = rstmgr_aon_resets_i.rst_sys_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[19] = rstmgr_aon_resets_i.rst_sys_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[20] = rstmgr_aon_resets_i.rst_usb_n[rstmgr_pkg::DomainAonSel];
+// pragma coverage on
+//VCS coverage on
 
   // Instantiation of IPs
   uart #(

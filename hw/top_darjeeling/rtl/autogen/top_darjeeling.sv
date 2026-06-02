@@ -921,6 +921,31 @@ module top_darjeeling #(
 // pragma coverage on
 //VCS coverage on
 
+// Tie off unused clocks and resets
+//VCS coverage off
+// pragma coverage off
+  logic [2:0] unused_clocks;
+  assign unused_clocks[0] = clkmgr_aon_clocks_i.clk_aon_infra;
+  assign unused_clocks[1] = clkmgr_aon_clocks_i.clk_aon_timers;
+  assign unused_clocks[2] = clkmgr_aon_clocks_i.clk_main_powerup;
+
+  logic [13:0] unused_resets;
+  assign unused_resets[0] = rstmgr_aon_resets_i.rst_i2c0_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[1] = rstmgr_aon_resets_i.rst_lc_aon_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[2] = rstmgr_aon_resets_i.rst_lc_io_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[3] = rstmgr_aon_resets_i.rst_lc_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[4] = rstmgr_aon_resets_i.rst_lc_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[5] = rstmgr_aon_resets_i.rst_por_aon_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[6] = rstmgr_aon_resets_i.rst_por_aon_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[7] = rstmgr_aon_resets_i.rst_por_io_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[8] = rstmgr_aon_resets_i.rst_por_io_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[9] = rstmgr_aon_resets_i.rst_por_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[10] = rstmgr_aon_resets_i.rst_por_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[11] = rstmgr_aon_resets_i.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[12] = rstmgr_aon_resets_i.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[13] = rstmgr_aon_resets_i.rst_sys_n[rstmgr_pkg::DomainAonSel];
+// pragma coverage on
+//VCS coverage on
 
   // Instantiation of IPs
   uart #(
