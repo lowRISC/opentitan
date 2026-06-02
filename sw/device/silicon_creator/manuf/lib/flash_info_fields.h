@@ -66,7 +66,7 @@ enum {
    *
    * The version of the AST calibration words that are stored in flash / OTP.
    */
-  kFlashInfoFieldAstCfgVersionStartOffset = 304,
+  kFlashInfoFieldAstCfgVersionStartOffset = 368,
   kFlashInfoFieldAstCfgVersionSizeIn32BitWords = 1,
 
   /**

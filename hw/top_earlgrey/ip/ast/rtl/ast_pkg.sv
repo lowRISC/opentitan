@@ -49,7 +49,7 @@ parameter int unsigned Pad2AstInWidth   = 8;
 // AstRegsNum is the number of AST registers programmed during initialization. It includes
 // the register that marks the finalization of init, which asserts the ast_init_done_o.
 // The offset of this register is represented with the AstLastRegOffset parameter.
-parameter int unsigned AstRegsNum       = 39;
+parameter int unsigned AstRegsNum       = 54;
 parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 
 // Memories Read-Write Margin Interface
