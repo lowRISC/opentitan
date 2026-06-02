@@ -126,6 +126,21 @@ cc_test(
 )
 
 cc_library(
+    name = "dice_storage",
+    srcs = ["dice_storage.c"],
+    hdrs = ["dice_storage.h"],
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+    ],
+)
+
+cc_library(
     name = "dice_api",
     hdrs = ["dice.h"],
     deps = [
