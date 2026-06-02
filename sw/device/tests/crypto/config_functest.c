@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/abs_mmio.h"
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/alert_handler.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
@@ -15,10 +16,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "aes_regs.h"
-#include "alert_handler_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "rv_core_ibex_regs.h"
+#include "hw/top/aes_regs.h"
+#include "hw/top/alert_handler_regs.h"  // Generated
 
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
@@ -97,7 +96,7 @@ static status_t test_alert_caught_by_eval_exit(void) {
   // Force a recoverable alert of the AES
   uint32_t alert_test_reg =
       bitfield_bit32_write(0, AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
+  mmio_region_write32(mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)),
                       (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET, alert_test_reg);
 
   // Verify eval_exit catches the alert.
@@ -123,7 +122,7 @@ static status_t test_alert_caught_by_eval_exit(void) {
   TRY(ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdAesRecovCtrlUpdateErr));
 
   // Provide a new alert.
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
+  mmio_region_write32(mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)),
                       (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET, alert_test_reg);
 
   // The CPU jumps to the ISR immediately. The ISR sees the second alert, marks
@@ -146,23 +145,21 @@ static status_t test_lock(void) {
   irq_global_ctrl(false);
 
   // Lock the accumulators
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET,
-                            0);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET,
-                            0);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET,
-                            0);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET,
-                            0);
+  mmio_region_t alert_handler = mmio_region_from_addr(
+      dt_alert_handler_primary_reg_block(kDtAlertHandler));
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET, 0);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET, 0);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET, 0);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET, 0);
 
   // Recoverable alert
   uint32_t alert_test_reg =
       bitfield_bit32_write(0, AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
+  mmio_region_write32(mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)),
                       (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET, alert_test_reg);
 
   // eval_exit catches the alert.
@@ -190,7 +187,7 @@ static status_t test_lock(void) {
 
   // Cleanup
   TRY(ottf_alerts_expect_alert_start(kTopEarlgreyAlertIdAesRecovCtrlUpdateErr));
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR),
+  mmio_region_write32(mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)),
                       (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET, alert_test_reg);
   irq_global_ctrl(true);
   TRY(ottf_alerts_expect_alert_finish(
