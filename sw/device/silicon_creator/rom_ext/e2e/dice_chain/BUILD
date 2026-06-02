@@ -37,12 +37,12 @@ package(default_visibility = ["//visibility:public"])
             "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
-            exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
+            exit_failure = "Rebooting[\\s\\S]*DICE cert cache miss[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
         ),
         qemu = qemu_params(
-            exit_failure = "Rebooting[\\s\\S]*CDI_1 certificate not valid[\\s\\S]*Rebooted",
+            exit_failure = "Rebooting[\\s\\S]*DICE cert cache miss[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
         ),
