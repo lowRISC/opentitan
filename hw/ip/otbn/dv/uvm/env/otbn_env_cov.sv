@@ -2303,7 +2303,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_addvm_cg
-    with function sample(logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [255:0] mod);
+    with function sample(logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [255:0] mod);
 
 
     // For each vector element:
@@ -2384,7 +2385,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_subvm_cg
-    with function sample(logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [255:0] mod);
+    with function sample(logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [255:0] mod);
     // For each vector element:
     // Execute with the two extreme values of MOD
 
@@ -2447,7 +2449,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulv_cg
-    with function sample(logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // Coverpoint for overflow
     `define DEF_MULV_OVERFLOW_CP(elem) \
@@ -2475,7 +2478,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulvl_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // See here that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
     // This can be checked by running an instruction where one source WDR is also the destination WDR
@@ -2504,7 +2508,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulvm_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [255:0] mod, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [255:0] mod, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // See that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
     // This ca be checked by running an instruction where one source WDR is also the destination WDR
@@ -2518,7 +2523,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Checking for when the multiplications give a result greater than mod
     `define DEF_MULVM_GT_MOD_CP(elem) \
       `DEF_SEEN_CP(gt_mod_elem``elem``_cp, \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * {1'b0, wdr_operand_b[32*elem+31:32*elem]} * (2**(-32))) >= {1'b0,mod[31:0]})
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * \
+        {1'b0, wdr_operand_b[32*elem+31:32*elem]} * \
+        (2**(-32))) >= {1'b0,mod[31:0]})
 
 
       `DEF_MULVM_GT_MOD_CP(0)
@@ -2533,7 +2540,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       // Checking for when the multiplications give a result less than mod
     `define DEF_MULVM_LS_MOD_CP(elem) \
       `DEF_SEEN_CP(ls_mod_elem``elem``_cp, \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * {1'b0, wdr_operand_b[32*elem+31:32*elem]} * (2**(-32))) < {1'b0,mod[31:0]})
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * \
+        {1'b0, wdr_operand_b[32*elem+31:32*elem]} * \
+        (2**(-32))) < {1'b0,mod[31:0]})
 
       `DEF_MULVM_LS_MOD_CP(0)
       `DEF_MULVM_LS_MOD_CP(1)
@@ -2547,7 +2556,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Coverpoint for overflow
     `define DEF_MULVM_OVERFLOW_CP(elem) \
       `DEF_SEEN_CP(overflow_elem``elem``_cp, \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * {1'b0, wdr_operand_b[32*elem+31:32*elem]} * (2**(-32))) > 32'hFFFFFFFF)
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * \
+          {1'b0, wdr_operand_b[32*elem+31:32*elem]} * \
+          (2**(-32))) > 32'hFFFFFFFF)
 
     `DEF_MULVM_OVERFLOW_CP(0)
     `DEF_MULVM_OVERFLOW_CP(1)
@@ -2560,7 +2571,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulvml_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [255:0] mod, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [255:0] mod, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // This is the same as the previous covergroup but for the mulvml instruction which does the same calculation but across lanes
 
@@ -2576,7 +2588,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Checking for when the multiplications give a result greater than mod
     `define DEF_MULVML_GT_MOD_CP(elem) \
       `DEF_SEEN_CP(gt_mod_elem``elem``_cp, \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * {1'b0, wdr_operand_b[31+insn_data[30:28]*32 -: 32]} * (2**(-32))) >= {1'b0,mod[31:0]})
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * \
+        {1'b0, wdr_operand_b[31+insn_data[30:28]*32 -: 32]} * \
+        (2**(-32))) >= {1'b0,mod[31:0]})
 
 
       `DEF_MULVML_GT_MOD_CP(0)
@@ -2591,7 +2605,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       // Checking for when the multiplications give a result less than mod
     `define DEF_MULVML_LS_MOD_CP(elem) \
       `DEF_SEEN_CP(ls_mod_elem``elem``_cp, \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * {1'b0, wdr_operand_b[31+insn_data[30:28]*32 -: 32]} * (2**(-32))) < {1'b0,mod[31:0]})
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * \
+        {1'b0, wdr_operand_b[31+insn_data[30:28]*32 -: 32]} * \
+        (2**(-32))) < {1'b0,mod[31:0]})
 
       `DEF_MULVML_LS_MOD_CP(0)
       `DEF_MULVML_LS_MOD_CP(1)
@@ -2605,7 +2621,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // Coverpoint for overflow
     `define DEF_MULVM_OVERFLOW_CP(elem) \
       `DEF_SEEN_CP(overflow_elem``elem``_cp, \
-        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * {1'b0, wdr_operand_b[31+insn_data[30:28]*32 -: 32]} * (2**(-32))) > 32'hFFFFFFFF)
+        ({1'b0, wdr_operand_a[32*elem+31:32*elem]} * \
+          {1'b0, wdr_operand_b[31+insn_data[30:28]*32 -: 32]} * \
+          (2**(-32))) \
+          > 32'hFFFFFFFF)
 
     `DEF_MULVM_OVERFLOW_CP(0)
     `DEF_MULVM_OVERFLOW_CP(1)
@@ -2619,70 +2638,131 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_pack_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [255:0] wdr_write_data);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [255:0] wdr_write_data);
 
-    // coverpoint to check that wdr_write_data[upper 64 bits] are one of the four expected values based on the shift bits
+    // coverpoint to check that wdr_write_data[upper 64 bits] 
+      // are one of the four expected values based on the shift bits
     `DEF_SEEN_CP(exp_packed_shift_cp,
-      $countbits(wdr_write_data[255-:64] == {wdr_operand_b[247-:24], wdr_operand_b[215-:24], wdr_operand_b[183-:16]},
-              wdr_write_data[255-:64] == {wdr_operand_a[79-:16], wdr_operand_a[55-:24], wdr_operand_a[23-:24]},
-              wdr_write_data[255-:64] == {wdr_operand_a[151-:16], wdr_operand_a[119-:24], wdr_operand_a[87-:24]},
-              wdr_write_data[255-:64] == {wdr_operand_a[247-:24], wdr_operand_a[216-:24], wdr_operand_a[183-:16]}) == 1
-    )
+      $countbits(wdr_write_data[255-:64] == {wdr_operand_b[247-:24], wdr_operand_b[215-:24], 
+                                            wdr_operand_b[183-:16]},
+                wdr_write_data[255-:64] ==  {wdr_operand_a[79-:16], wdr_operand_a[55-:24], 
+                                            wdr_operand_a[23-:24]},
+                wdr_write_data[255-:64] ==  {wdr_operand_a[167-:8], wdr_operand_a[151-:24], 
+                                            wdr_operand_a[119-:24], wdr_operand_a[87-:8]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[247-:24], wdr_operand_a[216-:24], 
+                                            wdr_operand_a[183-:8]})
+      == 1)
 
     // Coverpoint to check the correct extraction of the lower 24 bits of each element
     // With shift bits 0
     `DEF_SEEN_CP(correct_pack_0_cp,
                   (insn_data[28:27] == 2'b00) &&
-                    (wdr_write_data == {wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24], wdr_operand_b[128+:24], wdr_operand_b[96+:24], wdr_operand_b[64+:24], wdr_operand_b[32+:24], wdr_operand_b[0+:24], 64'b0 }))
+                    (wdr_write_data == {wdr_operand_b[224+:24], wdr_operand_b[192+:24], 
+                                        wdr_operand_b[160+:24], wdr_operand_b[128+:24], 
+                                        wdr_operand_b[96+:24], wdr_operand_b[64+:24], 
+                                        wdr_operand_b[32+:24], wdr_operand_b[0+:24], 
+                                        64'b0 }))
 
      // With shift bits 1
     `DEF_SEEN_CP(correct_pack_sb_1_cp,
                  (insn_data[28:27] == 2'b01) &&
-                   (wdr_write_data == { wdr_operand_a[64+:16], wdr_operand_a[32+:24], wdr_operand_a[0+:24], wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24], wdr_operand_b[128+:24], wdr_operand_b[96+:24], wdr_operand_b[64+:24], wdr_operand_b[32+:24], wdr_operand_b[0+:24]}))
+                   (wdr_write_data == { wdr_operand_a[64+:16], wdr_operand_a[32+:24], 
+                                        wdr_operand_a[0+:24], wdr_operand_b[224+:24], 
+                                        wdr_operand_b[192+:24], wdr_operand_b[160+:24], 
+                                        wdr_operand_b[128+:24], wdr_operand_b[96+:24], 
+                                        wdr_operand_b[64+:24], wdr_operand_b[32+:24], 
+                                        wdr_operand_b[0+:24]}))
 
     // With shift bits 2
     `DEF_SEEN_CP(correct_pack_sb_2_cp,
                  (insn_data[28:27] == 2'b10) &&
-                   (wdr_write_data == { wdr_operand_a[128+:16], wdr_operand_a[96+:24], wdr_operand_a[64+:24], wdr_operand_a[32+:24], wdr_operand_a[0+:24], wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24], wdr_operand_b[128+:24], wdr_operand_b[96+:24], wdr_operand_b[64+:24]}))
+                   (wdr_write_data == { wdr_operand_a[160+:8],
+                                        wdr_operand_a[128+:24], wdr_operand_a[96+:24], 
+                                        wdr_operand_a[64+:24], wdr_operand_a[32+:24], 
+                                        wdr_operand_a[0+:24], wdr_operand_b[224+:24], 
+                                        wdr_operand_b[192+:24], wdr_operand_b[160+:24], 
+                                        wdr_operand_b[128+:24], wdr_operand_b[96+:24], 
+                                        wdr_operand_b[80+:8]})) // wdr_operand_b[64+:24] with shift 2 has only 8 bits that fit in
 
     // With shift bits 3
     `DEF_SEEN_CP(correct_pack_sb_3_cp,
                  (insn_data[28:27] == 2'b11) &&
-                   (wdr_write_data == { wdr_operand_a[224+:24], wdr_operand_a[192+:24], wdr_operand_a[160+:24], wdr_operand_a[128+:24], wdr_operand_a[96+:24], wdr_operand_a[64+:24], wdr_operand_a[32+:24], wdr_operand_a[0+:24], wdr_operand_b[224+:24], wdr_operand_b[192+:24], wdr_operand_b[160+:24]}))
+                   (wdr_write_data == { 8'b0, 
+                                        wdr_operand_a[224+:24], wdr_operand_a[192+:24], 
+                                        wdr_operand_a[160+:24], wdr_operand_a[128+:24], 
+                                        wdr_operand_a[96+:24], wdr_operand_a[64+:24], 
+                                        wdr_operand_a[32+:24], wdr_operand_a[0+:24], 
+                                        wdr_operand_b[224+:24], wdr_operand_b[192+:24], 
+                                        wdr_operand_b[176+:8]})) // wdr_operand_b[160+:24] with shift 3 has only 8 bits that fit in
 
   endgroup
 
   covergroup insn_bn_unpk_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, logic [255:0] wdr_write_data);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b, 
+      logic [255:0] wdr_write_data);
 
-    // coverpoint to check that wdr_write_data[upper 64 bits] are one of the four expected values based on the shift bits
+    // coverpoint to check that wdr_write_data[upper 64 bits] are 
+      //one of the four expected values based on the shift bits
     `DEF_SEEN_CP(exp_unpacked_shift_cp,
-      $countbits(wdr_write_data[255-:64] == {8'b0, wdr_operand_b[224+:24], 8'b0, wdr_operand_b[192+:24]},
-              wdr_write_data[255-:64] == {8'b0, wdr_operand_a[32+:24], 8'b0, wdr_operand_a[23:0]},
-              wdr_write_data[255-:64] == {8'b0, wdr_operand_a[96+:24], 8'b0, wdr_operand_a[64+:24]},
-              wdr_write_data[255-:64] == {8'b0, wdr_operand_a[224+:24], 8'b0, wdr_operand_a[192+:24]}) == 1
-    )
+      $countbits(wdr_write_data[255-:64] == {8'b0, wdr_operand_b[224+:24], 
+                                             8'b0, wdr_operand_b[192+:24]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[32+:24], 
+                                            8'b0, wdr_operand_a[0+:24]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[96+:24], 
+                                            8'b0, wdr_operand_a[64+:24]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[160+:24], 
+                                            8'b0, wdr_operand_a[128+:24]})
+      == 1)
 
     // Coverpoint to check the correct unpacking of the lower 24 bits of each element
     // With shift bits 0
     `DEF_SEEN_CP(correct_unpack_sb_0_cp,
                   (insn_data[28:27] == 2'b00) &&
-                    (wdr_write_data == { 8'b0, wdr_operand_b[224+:24], 8'b0, wdr_operand_b[192+:24], 8'b0, wdr_operand_b[160+:24], 8'b0, wdr_operand_b[128+:24], 8'b0, wdr_operand_b[96+:24], 8'b0, wdr_operand_b[64+:24], 8'b0, wdr_operand_b[32+:24], 8'b0, wdr_operand_b[0+:24]}))
+                    (wdr_write_data == { 8'b0, wdr_operand_b[224+:24],
+                                         8'b0, wdr_operand_b[192+:24], 
+                                         8'b0, wdr_operand_b[160+:24], 
+                                         8'b0, wdr_operand_b[128+:24], 
+                                         8'b0, wdr_operand_b[96+:24], 
+                                         8'b0, wdr_operand_b[64+:24], 
+                                         8'b0, wdr_operand_b[32+:24], 
+                                         8'b0, wdr_operand_b[0+:24]}))
 
     // With shift bits 1
     `DEF_SEEN_CP(correct_unpack_sb_1_cp,
                  (insn_data[28:27] == 2'b01) &&
-                   (wdr_write_data == { 8'b0, wdr_operand_a[32+:24], 8'b0, wdr_operand_a[0+:24], 8'b0, wdr_operand_b[224+:24], 8'b0, wdr_operand_b[192+:24], 8'b0, wdr_operand_b[160+:24], 8'b0, wdr_operand_b[128+:24], 8'b0, wdr_operand_b[96+:24], 8'b0, wdr_operand_b[64+:24]}))
+                   (wdr_write_data == { 8'b0, wdr_operand_a[32+:24], 
+                                        8'b0, wdr_operand_a[0+:24], 
+                                        8'b0, wdr_operand_b[224+:24], 
+                                        8'b0, wdr_operand_b[192+:24], 
+                                        8'b0, wdr_operand_b[160+:24], 
+                                        8'b0, wdr_operand_b[128+:24], 
+                                        8'b0, wdr_operand_b[96+:24], 
+                                        8'b0, wdr_operand_b[64+:24]}))
 
     // With shift bits 2
     `DEF_SEEN_CP(correct_unpack_sb_2_cp,
                  (insn_data[28:27] == 2'b10) &&
-                   (wdr_write_data == { 8'b0, wdr_operand_a[96+:24], 8'b0, wdr_operand_a[64+:24], 8'b0, wdr_operand_a[32+:24], 8'b0, wdr_operand_a[0+:24], 8'b0, wdr_operand_b[224+:24], 8'b0, wdr_operand_b[192+:24], 8'b0, wdr_operand_b[160+:24], 8'b0, wdr_operand_b[128+:24]}))
+                   (wdr_write_data == { 8'b0, wdr_operand_a[96+:24], 
+                                        8'b0, wdr_operand_a[64+:24], 
+                                        8'b0, wdr_operand_a[32+:24], 
+                                        8'b0, wdr_operand_a[0+:24], 
+                                        8'b0, wdr_operand_b[224+:24], 
+                                        8'b0, wdr_operand_b[192+:24], 
+                                        8'b0, wdr_operand_b[160+:24], 
+                                        8'b0, wdr_operand_b[128+:24]}))
 
     // With shift bits 3
     `DEF_SEEN_CP(correct_unpack_sb_3_cp,
                  (insn_data[28:27] == 2'b11) &&
-                   (wdr_write_data == { 8'b0, wdr_operand_a[224+:24], 8'b0, wdr_operand_a[192+:24], 8'b0, wdr_operand_a[160+:24], 8'b0, wdr_operand_a[128+:24], 8'b0, wdr_operand_a[96+:24], 8'b0, wdr_operand_a[64+:24], 8'b0, wdr_operand_a[32+:24], 8'b0, wdr_operand_a[0+:24]}))
+                   (wdr_write_data == { 8'b0, wdr_operand_a[160+:24], 
+                                        8'b0, wdr_operand_a[128+:24], 
+                                        8'b0, wdr_operand_a[96+:24], 
+                                        8'b0, wdr_operand_a[64+:24], 
+                                        8'b0, wdr_operand_a[32+:24], 
+                                        8'b0, wdr_operand_a[0+:24],
+                                        8'b0, wdr_operand_b[224+:24], 
+                                        8'b0, wdr_operand_b[192+:24]}))
   endgroup
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
@@ -3335,23 +3415,31 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
       mnem_bn_addv:
         insn_bn_addv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       mnem_bn_addvm:
-        insn_bn_addvm_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.mod);
+        insn_bn_addvm_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.mod);
       mnem_bn_subv:
         insn_bn_subv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
       mnem_bn_subvm:
-        insn_bn_subvm_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.mod);
+        insn_bn_subvm_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.mod);
       mnem_bn_mulv:
-        insn_bn_mulv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
       mnem_bn_mulvl:
-        insn_bn_mulvl_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulvl_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
       mnem_bn_mulvm:
-        insn_bn_mulvm_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.mod, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulvm_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.mod, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
       mnem_bn_mulvml:
-        insn_bn_mulvml_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.mod, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulvml_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                                rtl_item.mod, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
       mnem_bn_pack:
-        insn_bn_pack_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.wdr_write_data);
+        insn_bn_pack_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.wdr_write_data);
       mnem_bn_unpk:
-        insn_bn_unpk_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, rtl_item.wdr_write_data);
+        insn_bn_unpk_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b, 
+                                rtl_item.wdr_write_data);
       default:
         // No special handling for this instruction yet.
         ;
