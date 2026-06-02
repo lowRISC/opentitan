@@ -141,7 +141,6 @@ status_t dice_test(void) {
 
   // Read the attestation seed from flash.
   uint32_t kAttestationSeedWords = 10;
-  uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
   uint32_t attestation_data[10] = {0};
   TRY(read_attestation_seed_configured(attestation_data));
   otcrypto_const_word32_buf_t attestation_seed = OTCRYPTO_MAKE_BUF(

@@ -46,12 +46,6 @@ static const uint32_t kPublicKeyAlice[] = {
     0x0d3abf0d, 0xf41a3826, 0x8ea9a4eb, 0x6a4e9baa,
 };
 
-// Private key of Bob.
-static const uint32_t kPrivateKeyBob[] = {
-    0x7e08ab5d, 0x4b8a4a62, 0x8b7fe179, 0xe60e8083,
-    0x29b13b6f, 0xfdb61826, 0x278b2f1c, 0xebe088ff,
-};
-
 // Public key of Bob.
 static const uint32_t kPublicKeyBob[] = {
     0x7ddb9ede, 0xb4c17d7b, 0xc2615bd3, 0x3735e4ec,
