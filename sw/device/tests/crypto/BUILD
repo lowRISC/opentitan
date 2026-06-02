@@ -276,7 +276,8 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top/dt:rv_core_ibex",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:status",
