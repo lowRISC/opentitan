@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-workspace(name = "provisioning_exts")
+module(name = "ot_provisioning_exts")
 
 # This is a sample workspace to demonstrate how to write custom provisioning
 # flow extensions. This bazel repository is not stand-alone project: it must
