@@ -96,7 +96,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // some registers won't set to default value until otp_init is done
-  virtual task read_and_check_all_csrs_after_reset();
+  virtual protected task read_and_check_all_csrs_after_reset();
     lc_ctrl_init();
     super.read_and_check_all_csrs_after_reset();
   endtask
