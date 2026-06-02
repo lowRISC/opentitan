@@ -250,14 +250,14 @@ static status_t run_async_wrong_finalize_tests(void) {
 
   CHECK(otcrypto_rsa_keypair_from_cofactor_async_finalize(&valid_pub_2048,
                                                           &valid_priv_2048)
-            .value == OTCRYPTO_FATAL_ERR.value);
+            .value == OTCRYPTO_RECOV_ERR.value);
 
   LOG_INFO(
       "Starting 2048 standard keygen, attempting 3072 standard finalize...");
   CHECK_STATUS_OK(otcrypto_rsa_keygen_async_start(kOtcryptoRsaSize2048));
 
   CHECK(otcrypto_rsa_keygen_async_finalize(&valid_pub_3072, &valid_priv_3072)
-            .value == OTCRYPTO_FATAL_ERR.value);
+            .value == OTCRYPTO_RECOV_ERR.value);
 
   return OK_STATUS();
 }

@@ -112,7 +112,7 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
   // Check if it matches the expected magic value
   if (launder32(ok) != kHardenedBoolTrue) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
@@ -154,7 +154,7 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
-    return OTCRYPTO_FATAL_ERR;
+    return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
 
