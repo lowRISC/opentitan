@@ -82,7 +82,7 @@ static status_t execute_test(void) {
   uint32_t crc =
       crc32(ast_cfg_data, (kFlashInfoAstCalibrationDataSizeIn32BitWords - 3) *
                               sizeof(uint32_t));
-  TRY_CHECK(ast_nr_writes == 36);
+  TRY_CHECK(ast_nr_writes == kFlashInfoAstCalibrationDataSizeIn32BitWords - 3);
   TRY_CHECK(crc32_finish(&ast_crc) == crc);
   return OK_STATUS();
 }
