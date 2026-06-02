@@ -12,6 +12,8 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/ed25519_commands.h"
 
+#define MODULE_ID MAKE_MODULE_ID('e', 'd', 's')
+
 // Copied from internal headers to remove dependencies.
 // kOtcryptoKeyModeEd25519 is typed as kOtcryptoKeyTypeEcc, so the keyblob
 // library appends 64 redundant bits per share to all Ed25519 keys (see
