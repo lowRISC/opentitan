@@ -686,10 +686,16 @@ static status_t edn_configure(const edn_config_t *config) {
   // Determine which EDN instance this is based on the config pointer
   uint32_t base_address;
   if (config ==
-      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn0) {
+          &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn0 ||
+      config ==
+          &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous].edn0) {
     base_address = edn0_base();
   } else if (config ==
-             &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn1) {
+                 &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous]
+                      .edn1 ||
+             config ==
+                 &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous]
+                      .edn1) {
     base_address = edn1_base();
   } else {
     return OTCRYPTO_FATAL_ERR;
@@ -1032,10 +1038,16 @@ static status_t edn_check(const edn_config_t *config) {
   // Determine which EDN instance this is based on the config pointer
   uint32_t base_address;
   if (config ==
-      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn0) {
+          &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn0 ||
+      config ==
+          &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous].edn0) {
     base_address = edn0_base();
   } else if (config ==
-             &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous].edn1) {
+                 &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous]
+                      .edn1 ||
+             config ==
+                 &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous]
+                      .edn1) {
     base_address = edn1_base();
   } else {
     return OTCRYPTO_FATAL_ERR;
