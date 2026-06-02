@@ -334,7 +334,8 @@ opentitan_test(
     srcs = ["hardened_memory_functest.c"],
     exec_env = BASE_EXEC_ENVS,
     deps = [
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top/dt:rv_core_ibex",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
