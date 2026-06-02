@@ -156,12 +156,6 @@ static volatile status_t test_result;
 bool test_main(void) {
   test_result = OK_STATUS();
 
-  const otcrypto_key_security_level_t security_levels[] = {
-      kOtcryptoKeySecurityLevelLow,
-      kOtcryptoKeySecurityLevelMedium,
-      kOtcryptoKeySecurityLevelHigh,
-  };
-
   // Testing overall cryptolib low security, i.e., no jittery clock or dummy
   // instructions
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
