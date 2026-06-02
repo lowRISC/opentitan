@@ -4,12 +4,13 @@
 
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_verify.h"
 
 #include "otp_ctrl_regs.h"
 
-rom_error_t sigverify_spx_key_get(uint32_t key_id, lifecycle_state_t lc_state,
+rom_error_t sigverify_spx_key_get(const sigverify_otp_key_ctx_t *sigverify_ctx,
+                                  uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_spx_key_t **key) {
   *key = NULL;
   uint32_t spx_en = sigverify_spx_verify_enabled(lc_state);
@@ -17,16 +18,15 @@ rom_error_t sigverify_spx_key_get(uint32_t key_id, lifecycle_state_t lc_state,
 
   if (launder32(spx_en) != kSigverifySpxDisabledOtp) {
     const sigverify_rom_key_header_t *rom_key = NULL;
-    error = sigverify_key_get(
-        (sigverify_key_get_in_params_t){
+    error = sigverify_otp_keys_get(
+        (sigverify_otp_keys_get_params_t){
             .key_id = key_id,
             .lc_state = lc_state,
-            .key_array = (const sigverify_rom_key_header_t *)kSigverifySpxKeys,
-            .otp_offset =
-                OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET,
-            .key_cnt = kSigverifySpxKeysCnt,
+            .key_array =
+                (const sigverify_rom_key_header_t *)(sigverify_ctx->keys.spx),
+            .key_cnt = kSigVerifyOtpKeysSpxCount,
             .key_size = sizeof(sigverify_rom_spx_key_t),
-            .step = kSigverifySpxKeysStep,
+            .key_states = (uint32_t *)&sigverify_ctx->states.spx[0],
         },
         &rom_key);
     if (error == kErrorOk) {

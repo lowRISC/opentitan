@@ -119,12 +119,6 @@ static const sigverify_rsa_key_t kKeyExp3 = {
         },
 };
 
-void compute_digest(void) {
-  hmac_sha256_init();
-  hmac_sha256_update(&kMessage, sizeof(kMessage) - 1);
-  hmac_sha256_final(&act_digest);
-}
-
 rom_error_t rsa_verify_test_exp_3(void) {
   uint32_t flash_exec = 0;
   // Signature verification should fail when using exponent 3.
@@ -161,7 +155,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  compute_digest();
+  hmac_sha256(&kMessage, sizeof(kMessage) - 1, &act_digest);
 
   EXECUTE_TEST(result, rsa_verify_test_exp_3);
   EXECUTE_TEST(result, rsa_verify_test_exp_65537);

@@ -111,6 +111,7 @@ cc_library(
         "//sw/lib/sw/device/silicon_creator:keymgr_binding",
         "//sw/lib/sw/device/silicon_creator/base:chip",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
+        "//sw/lib/sw/device/silicon_creator/sigverify:ecdsa_p256_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
     ],
