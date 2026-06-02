@@ -70,9 +70,9 @@ static status_t test_decrypt_timing(void) {
     current_test->tag[idx]++;
 
     uint64_t t_start = profile_start();
-    aes_gcm_decrypt_final(&test_ctx, tag_num_words,
-                          (uint32_t *)current_test->tag, &output_len,
-                          dummy_output, &valid);
+    TRY(aes_gcm_decrypt_final(&test_ctx, tag_num_words,
+                              (uint32_t *)current_test->tag, &output_len,
+                              dummy_output, &valid));
     cycles[i] = profile_end(t_start);
 
     TRY_CHECK(valid == kHardenedBoolFalse);
