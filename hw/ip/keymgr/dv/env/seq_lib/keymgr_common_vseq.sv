@@ -36,7 +36,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
-  virtual task read_and_check_all_csrs_after_reset();
+  virtual protected task read_and_check_all_csrs_after_reset();
     // need to set keymgr_en to be On, before it can be read back with correct init values
     cfg.keymgr_vif.init(do_rand_otp_key, do_invalid_otp_key);
     delay_after_reset_before_access_csr();
