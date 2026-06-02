@@ -151,6 +151,8 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
   } > rom_ext_flash
 
   INCLUDE sw/device/lib/coverage/rodata.ld
