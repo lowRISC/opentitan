@@ -69,7 +69,7 @@ static status_t rsa_check_otbn_status(void) {
   // Check if it matches the expected magic value
   if (launder32(ok) != kHardenedBoolTrue) {
     HARDENED_TRY(otbn_dmem_sec_wipe());
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
@@ -193,7 +193,7 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
-    return OTCRYPTO_FATAL_ERR;
+    return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
 
