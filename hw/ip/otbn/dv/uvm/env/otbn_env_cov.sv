@@ -2478,8 +2478,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulvl_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b,
-      logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, 
+    logic [255:0] wdr_operand_b, logic [4:0] wdr_addr_a, 
+    logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // See here that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
     // This can be checked by running an instruction where one source WDR is also the destination WDR
@@ -2508,8 +2509,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulvm_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b,
-      logic [255:0] mod, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, 
+    logic [255:0] wdr_operand_b, logic [255:0] mod, logic [4:0] wdr_addr_a, 
+    logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // See that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
     // This ca be checked by running an instruction where one source WDR is also the destination WDR
@@ -2571,8 +2573,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_mulvml_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b,
-      logic [255:0] mod, logic [4:0] wdr_addr_a, logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a,
+     logic [255:0] wdr_operand_b,logic [255:0] mod, logic [4:0] wdr_addr_a, 
+     logic [4:0] wdr_addr_b, logic [4:0] wdr_write_addr);
 
     // This is the same as the previous covergroup but for the mulvml instruction which does the same calculation but across lanes
 
@@ -2638,8 +2641,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   endgroup
 
   covergroup insn_bn_pack_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b,
-      logic [255:0] wdr_write_data);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, 
+    logic [255:0] wdr_operand_b, logic [255:0] wdr_write_data);
 
     // coverpoint to check that wdr_write_data[upper 64 bits]
       // are one of the four expected values based on the shift bits
@@ -2683,7 +2686,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                         wdr_operand_a[0+:24], wdr_operand_b[224+:24],
                                         wdr_operand_b[192+:24], wdr_operand_b[160+:24],
                                         wdr_operand_b[128+:24], wdr_operand_b[96+:24],
-                                        wdr_operand_b[80+:8]})) // wdr_operand_b[64+:24] with shift 2 has only 8 bits that fit in
+                                        wdr_operand_b[80+:8]})) 
+                                        // wdr_operand_b[64+:24] has oly 8 bits that fit
 
     // With shift bits 3
     `DEF_SEEN_CP(correct_pack_sb_3_cp,
@@ -2694,13 +2698,14 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                         wdr_operand_a[96+:24], wdr_operand_a[64+:24],
                                         wdr_operand_a[32+:24], wdr_operand_a[0+:24],
                                         wdr_operand_b[224+:24], wdr_operand_b[192+:24],
-                                        wdr_operand_b[176+:8]})) // wdr_operand_b[160+:24] with shift 3 has only 8 bits that fit in
+                                        wdr_operand_b[176+:8]})) 
+                                        // wdr_operand_b[160+:24] has only 8 bits that fit
 
   endgroup
 
   covergroup insn_bn_unpk_cg
-    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, logic [255:0] wdr_operand_b,
-      logic [255:0] wdr_write_data);
+    with function sample(logic [31:0] insn_data, logic [255:0] wdr_operand_a, 
+    logic [255:0] wdr_operand_b, logic [255:0] wdr_write_data);
 
     // coverpoint to check that wdr_write_data[upper 64 bits] are
       //one of the four expected values based on the shift bits
@@ -3426,14 +3431,27 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         insn_bn_mulv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
                                 rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
       mnem_bn_mulvl:
-        insn_bn_mulvl_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
-                                rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulvl_cg.sample(insn_data, 
+                                rtl_item.wdr_operand_a, 
+                                rtl_item.wdr_operand_b,
+                                rtl_item.wdr_addr_a, 
+                                rtl_item.wdr_addr_b, 
+                                rtl_item.wdr_write_addr);
       mnem_bn_mulvm:
-        insn_bn_mulvm_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
-                                rtl_item.mod, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulvm_cg.sample(insn_data, 
+                                rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
+                                rtl_item.mod, 
+                                rtl_item.wdr_addr_a, 
+                                rtl_item.wdr_addr_b, 
+                                rtl_item.wdr_write_addr);
       mnem_bn_mulvml:
-        insn_bn_mulvml_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
-                                rtl_item.mod, rtl_item.wdr_addr_a, rtl_item.wdr_addr_b, rtl_item.wdr_write_addr);
+        insn_bn_mulvml_cg.sample(insn_data, 
+                                rtl_item.wdr_operand_a, 
+                                rtl_item.wdr_operand_b,
+                                rtl_item.mod, 
+                                rtl_item.wdr_addr_a, 
+                                rtl_item.wdr_addr_b, 
+                                rtl_item.wdr_write_addr);
       mnem_bn_pack:
         insn_bn_pack_cg.sample(insn_data, rtl_item.wdr_operand_a, rtl_item.wdr_operand_b,
                                 rtl_item.wdr_write_data);
