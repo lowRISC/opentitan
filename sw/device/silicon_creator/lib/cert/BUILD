@@ -163,6 +163,7 @@ cc_library(
     deps = [
         ":cert",
         ":dice_api",
+        ":dice_storage",
         ":template",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
@@ -214,6 +215,7 @@ cc_library(
         ":cert",
         ":cwt_template",
         ":dice_api",
+        ":dice_storage",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
@@ -281,7 +283,7 @@ cc_library(
     srcs = ["dice_chain.c"],
     hdrs = ["dice_chain.h"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        ":dice_storage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -299,6 +301,5 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )

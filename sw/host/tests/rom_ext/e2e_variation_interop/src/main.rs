@@ -42,13 +42,7 @@ fn main() -> anyhow::Result<()> {
     let uart = transport.uart("console").context("failed to get UART")?;
 
     // Wait for CDI_* update messags.
-    for i in 0..2 {
-        let _ = UartConsole::wait_for(
-            &*uart,
-            format!(r"warning: CDI_{:?} certificate not valid; updating", i).as_str(),
-            opts.timeout,
-        )?;
-    }
+    let _ = UartConsole::wait_for(&*uart, "DICE cert cache miss; updating", opts.timeout)?;
 
     // Wait for pass message from first owner firmware stage.
     let _ = UartConsole::wait_for(&*uart, r"PASS!", opts.timeout)?;

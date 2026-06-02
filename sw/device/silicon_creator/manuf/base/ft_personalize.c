@@ -37,6 +37,7 @@
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
+#include "sw/device/silicon_creator/lib/cert/dice_storage.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -158,7 +159,7 @@ static uint8_t all_certs[8192];
 // 1K should be enough for the largest certificate perso LTV object.
 enum { kBufferSize = 1024 };
 static alignas(uint32_t) uint8_t cert_buffer[kBufferSize];
-static alignas(uint64_t) dice_page_t dice_page;
+static alignas(uint64_t) dice_storage_page_t dice_page;
 static size_t uds_offset;
 static size_t cdi_0_offset;
 static size_t cdi_1_offset;
