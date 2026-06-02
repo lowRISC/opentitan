@@ -37,7 +37,7 @@ module top_${top["name"]}_pd_${domain.lower()} #(
 
 <%include file="/toplevel_snippets/intermodule_signals.tpl" args="top=top, domain=domain" />\
 
-<%include file="/toplevel_snippets/alert_handler_lpg.tpl" args="top=top, feature_info=feature_info, domain=domain" />\
+<%include file="/toplevel_snippets/clk_reset_lpg_assigns.tpl" args="top=top, feature_info=feature_info, domain=domain" />\
 
 <%include file="/toplevel_snippets/module_instantiations.tpl" args="top=top, domain=domain" />\
 

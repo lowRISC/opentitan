@@ -685,6 +685,20 @@ def get_clock_prefixes(top, domain_mod: str = None) -> dict:
     return prefixes
 
 
+def get_clock_path(top: object,
+                   clk_name: str,
+                   domain_mod: str = None,
+                   unmanaged_clock: bool = False) -> str:
+    """Return the appropriate clock path given the clock name
+    """
+    prefixes = get_clock_prefixes(top, domain_mod)
+    if unmanaged_clock:
+        return top['unmanaged_clocks'].get_clock_by_signal_name(
+            clk_name).signal_name
+    else:
+        return prefixes['top'] + clk_name
+
+
 def get_clock_lpg_path(top: object,
                        clk_name: str,
                        domain_mod: str = None,

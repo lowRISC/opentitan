@@ -198,6 +198,7 @@ module top_earlgrey_pd_aon #(
 
 
 
+
   // Instantiation of IPs
   pwrmgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22]),

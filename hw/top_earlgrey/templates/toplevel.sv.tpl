@@ -92,7 +92,7 @@ module top_${top["name"]} #(
     .tdo_oe_i (1'b0)
   );
 
-<%include file="/toplevel_snippets/alert_handler_lpg.tpl" args="top=top, feature_info=feature_info, domain=domain" />\
+<%include file="/toplevel_snippets/clk_reset_lpg_assigns.tpl" args="top=top, feature_info=feature_info, domain=domain" />\
 
 <%include file="/toplevel_snippets/module_instantiations.tpl" args="top=top, domain=domain" />\
 

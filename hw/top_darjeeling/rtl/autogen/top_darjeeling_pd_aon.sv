@@ -165,6 +165,7 @@ module top_darjeeling_pd_aon #(
 
 
 
+
   // Instantiation of IPs
   pwrmgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[14]),

@@ -14,6 +14,7 @@ clocks = top['clocks']
 assert isinstance(clocks, Clocks)
 typed_clocks = clocks.typed_clocks()
 unused_cg_en = {lib.get_clock_lpg_path(top, clk, domain) for clk in typed_clocks.all_clocks()}
+unused_clocks = {lib.get_clock_path(top, clk, domain) for clk in typed_clocks.all_clocks()}
 
 # get all known resets and add them to a dict
 # this is used to generate the tie-off assignments further below
@@ -21,14 +22,27 @@ resets = top['resets']
 assert isinstance(resets, Resets)
 output_rsts = resets.get_top_resets()
 unused_rst_en = set()
+unused_resets = set()
 
 for rst in output_rsts:
   for dom in top['power']['domains']:
     path = lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(), domain, False, dom)
     unused_rst_en.add(path)
+    unused_resets.add(lib.get_reset_path(top, {'name': rst.name, 'domain': dom}, domain))
     if rst.shadowed:
       path = lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(), domain, True, dom)
       unused_rst_en.add(path)
+      unused_resets.add(lib.get_reset_path(top, {'name': rst.name, 'domain': dom}, domain, True))
+
+# Go over all modules of power domain at hand and remove all used resets and clocks from the
+# respective unused_ set.
+for m in lib.get_all_modules(top, domain=domain):
+  for clock_sig in m.get("clock_connections").values():
+    unused_clocks.discard(clock_sig)
+  for port, reset in m.get("reset_connections").items():
+    unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain))
+    if lib.is_shadowed_port(name_to_block[m['type']], port):
+      unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain, True))
 %>\
 % if lib.find_module(top["module"], "alert_handler", domain=domain):
   // Alert handler low power groups (LPGs)
@@ -91,4 +105,27 @@ for rst in output_rsts:
 % endif
   % endfor
 % endfor
+
+% endif\
+
+% if not domain_has_clkmgr or not domain_has_rstmgr:
+// Tie off unused clocks and resets
+//VCS coverage off
+// pragma coverage off
+% if not domain_has_clkmgr:
+  logic [${len(unused_clocks)-1}:0] unused_clocks;
+% for i, clk in enumerate(sorted(unused_clocks)):
+  assign unused_clocks[${i}] = ${clk};
+% endfor
+
+% endif\
+
+% if not domain_has_rstmgr:
+  logic [${len(unused_resets)-1}:0] unused_resets;
+% for i, rst_path in enumerate(sorted(unused_resets)):
+  assign unused_resets[${i}] = ${rst_path};
+% endfor
+% endif
+// pragma coverage on
+//VCS coverage on
 % endif
