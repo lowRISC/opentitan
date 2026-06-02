@@ -28,14 +28,14 @@ uint32_t read_alert_registers(void) {
   uint32_t combined_alerts = sensors_recov_alerts | sensors_fatal_alerts;
 
   // Read out the alerts accumulation of the classes
-  combined_alerts |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                     ALERT_HANDLER_CLASSA_ACCUM_CNT_REG_OFFSET);
-  combined_alerts |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                     ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET);
-  combined_alerts |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                     ALERT_HANDLER_CLASSC_ACCUM_CNT_REG_OFFSET);
-  combined_alerts |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                     ALERT_HANDLER_CLASSD_ACCUM_CNT_REG_OFFSET);
+  combined_alerts |= mmio_region_read32(
+      alert_handler, ALERT_HANDLER_CLASSA_ACCUM_CNT_REG_OFFSET);
+  combined_alerts |= mmio_region_read32(
+      alert_handler, ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET);
+  combined_alerts |= mmio_region_read32(
+      alert_handler, ALERT_HANDLER_CLASSC_ACCUM_CNT_REG_OFFSET);
+  combined_alerts |= mmio_region_read32(
+      alert_handler, ALERT_HANDLER_CLASSD_ACCUM_CNT_REG_OFFSET);
   // Read out the local alerts
   for (uint32_t local_alert = 0; local_alert < ALERT_HANDLER_PARAM_N_LOC_ALERT;
        local_alert++) {
@@ -48,31 +48,30 @@ uint32_t read_alert_registers(void) {
 }
 
 status_t clear_alert_class_accum(void) {
+  mmio_region_t alert_handler =
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+
   // Check whether we can write to the class accumulators
-  uint32_t regwen = abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                    ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET);
-  regwen |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                            ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET);
-  regwen |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                            ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET);
-  regwen |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                            ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET);
+  uint32_t regwen = mmio_region_read32(
+      alert_handler, ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET);
+  regwen |= mmio_region_read32(alert_handler,
+                               ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET);
+  regwen |= mmio_region_read32(alert_handler,
+                               ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET);
+  regwen |= mmio_region_read32(alert_handler,
+                               ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET);
   if ((regwen & 0x1) != 1) {
     return OTCRYPTO_FATAL_ERR;
   }
 
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSA_CLR_SHADOWED_REG_OFFSET,
-                            1);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSB_CLR_SHADOWED_REG_OFFSET,
-                            1);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSC_CLR_SHADOWED_REG_OFFSET,
-                            1);
-  abs_mmio_write32_shadowed(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                                ALERT_HANDLER_CLASSD_CLR_SHADOWED_REG_OFFSET,
-                            1);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSA_CLR_SHADOWED_REG_OFFSET, 1);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSB_CLR_SHADOWED_REG_OFFSET, 1);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSC_CLR_SHADOWED_REG_OFFSET, 1);
+  mmio_region_write32_shadowed(alert_handler,
+                               ALERT_HANDLER_CLASSD_CLR_SHADOWED_REG_OFFSET, 1);
 
   return OTCRYPTO_OK;
 }
@@ -113,9 +112,8 @@ status_t init_alert_registers(void) {
   }
 
   // Clear the interupt states.
-  abs_mmio_write32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
-                       ALERT_HANDLER_INTR_STATE_REG_OFFSET,
-                   0xffffffff);
+  mmio_region_write32(alert_handler, ALERT_HANDLER_INTR_STATE_REG_OFFSET,
+                      0xffffffff);
 
   // Clear the class accumulators.
   return clear_alert_class_accum();
