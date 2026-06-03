@@ -46,7 +46,11 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_software_reset, &spi_host);
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
-  EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
+  if (is_quad_mode_supported()) {
+    EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
+  } else {
+    LOG_WARNING("Quad Mode is not supported by this flash.");
+  }
   EXECUTE_TEST(result, test_page_program, &spi_host);
   return status_ok(result);
 }
