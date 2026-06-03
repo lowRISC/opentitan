@@ -393,6 +393,20 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
 
   HARDENED_TRY(p384_check_otbn_status());
 
+  *result = kHardenedBoolFalse;
+  // The input r should not be zero
+  size_t i = 0;
+  uint32_t r_bits_or = 0;
+  for (; launder32(i) < kP384ScalarWords; ++i) {
+    r_bits_or |= signature->r[i];
+  }
+  HARDENED_CHECK_EQ(i, kP384ScalarWords);
+  if (launder32(r_bits_or) == 0) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(r_bits_or, 0);
+
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP384ScalarWords];
   const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p384, x_r);
