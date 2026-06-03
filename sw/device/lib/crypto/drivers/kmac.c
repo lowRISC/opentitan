@@ -629,6 +629,7 @@ static status_t kmac_process_msg_blocks(
     uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
   // This variable guarantees kmac_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
