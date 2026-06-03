@@ -161,12 +161,12 @@ scalar_mult_int_p384:
   bn.wsrr   w3, URND
 
   /* Set the loop iteration variable for the multiplication. */
-  addi      x16, x0, 448
+  addi      x16, x0, 448    /* SCA_TEST_REPLACE: addi      x16, x0, 3 */
 
   /* perform the scalar multiplication. */
   jal       x1, scalar_mult_int_p384_internal
 
-  addi      x2, x0, 448
+  addi      x2, x0, 448    /* SCA_TEST_REPLACE: addi      x2, x0, 3 */
   beq       x2, x16, scalar_mult_int_p384_ret
 
   /* The number of iterations has been faulted; fail. */
@@ -239,12 +239,12 @@ scalar_mult_int_p384_reblind:
   bn.rshi   w3, w3, w6 >> 66
 
   /* Set the loop iteration variable for the multiplication. */
-  addi      x16, x0, 578
+  addi      x16, x0, 578    /* SCA_TEST_REPLACE: addi      x16, x0, 3 */
 
   /* perform the scalar multiplication. */
   jal       x1, scalar_mult_int_p384_internal
 
-  addi      x2, x0, 578
+  addi      x2, x0, 578    /* SCA_TEST_REPLACE: addi      x2, x0, 3 */
   beq       x2, x16, scalar_mult_int_p384_reblind_ret
 
   /* The number of iterations has been faulted; fail. */
