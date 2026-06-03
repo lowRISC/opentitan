@@ -411,6 +411,7 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
                         const otcrypto_const_byte_buf_t *msg,
                         size_t digest_wordlen, uint32_t *digest) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // Check that the block is idle.
   HARDENED_TRY(ensure_idle());
@@ -796,6 +797,7 @@ hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
 
 status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
@@ -844,6 +846,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // Restore context will restore the context and also hit start or continue
   // button as necessary.
