@@ -307,6 +307,7 @@ static otcrypto_status_t otcrypto_aes_impl(
     otcrypto_aes_padding_t aes_padding, otcrypto_byte_buf_t *cipher_output) {
   // Guarantees hw_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
