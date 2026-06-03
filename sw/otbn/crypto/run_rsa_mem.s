@@ -16,7 +16,7 @@ rsa_n:
 
 # Enc/Sign: First private exponent share (d) up to 4096 bits.
 # Keygen: Temp storage for rsa_p and second exponent share for primality tests.
-.globl rsa_d0, rsa_p
+.globl rsa_d0, rsa_g
 .balign 32
 /*----------------+----------+----------*
  |                |          |          |
@@ -24,17 +24,17 @@ rsa_n:
  |                |          |          |
  +----------------+----------+    d0    |
  |                |          |          |
- |      256B      |  rsa_p   |          |
+ |      256B      |  rsa_g   |          |
  |                |          |          |
  *----------------+----------+----------*/
 rsa_d0:
 .zero 256
-rsa_p:
+rsa_g:
 .zero 256
 
 # Enc/Sign: Second private exponent share (d) for signing, up to 4096 bits.
 # Keygen: Temp storage for rsa_q and second exponent share for primality tests.
-.globl rsa_d1, rsa_q
+.globl rsa_d1, rsa_h
 .balign 32
 /*----------------+----------+----------*
  |                |          |          |
@@ -42,12 +42,12 @@ rsa_p:
  |                |          |          |
  +----------------+----------+    d1    |
  |                |          |          |
- |      256B      |  rsa_q   |          |
+ |      256B      |  rsa_h   |          |
  |                |          |          |
  *----------------+----------+----------*/
 rsa_d1:
 .zero 256
-rsa_q:
+rsa_h:
 .zero 256
 
 # r0, r1, r2 are the primary three 4096-bit computation regision for `modexp`.
@@ -58,7 +58,7 @@ r0:
 inout:
 .zero 512
 
-.globl r1, mode, ok, rsa_g
+.globl r1, mode, ok, rsa_p
 .balign 32
 /*----------------+----------+----------*
  |                |    r1    |          |
@@ -66,7 +66,7 @@ inout:
  |                |   (ok)   |          |
  +----------------+----------+    r1    |
  |                |          |          |
- |      256B      |  rsa_g   |          |
+ |      256B      |  rsa_p   |          |
  |                |          |          |
  *----------------+----------+----------*/
 r1:
@@ -76,10 +76,10 @@ ok:
 .zero 4
 /* 248 bytes of padding */
 .zero 248
-rsa_g:
+rsa_p:
 .zero 256
 
-.globl r2, rsa_h, mr_iter_p, mr_iter_q
+.globl r2, rsa_q, mr_iter_p, mr_iter_q
 .balign 32
 /*----------------+----------+----------*
  |                |          |          |
@@ -87,7 +87,7 @@ rsa_g:
  |                |          |          |
  +----------------+----------+    r2    |
  |                |          |          |
- |      256B      |  rsa_h   |          |
+ |      256B      |  rsa_q   |          |
  |                |          |          |
  *----------------+----------+----------*/
 r2:
@@ -96,7 +96,7 @@ mr_iter_p:
 mr_iter_q:
 .zero 4
 .zero 248
-rsa_h:
+rsa_q:
 .zero 256
 
 .section .scratchpad
