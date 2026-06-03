@@ -26,6 +26,10 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mr_iter_p);
 // Miller-Rabin iteration counter for q.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, mr_iter_q);
 
+// RSA primes, testing only.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_p);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_q);
+
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_KEYGEN);
@@ -178,10 +182,13 @@ static status_t keygen_start(uint32_t mode) {
  * @param[out] n Buffer for the modulus.
  * @param[out] d0 Buffer for the private exponent share 0.
  * @param[out] d1 Buffer for the private exponent share 1.
+ * @param[out] p Buffer for the prime p, optionally read out if not null.
+ * @param[out] q Buffer for the prime q, optionally read out if not null.
  * @return OK or error.
  */
 static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
-                                uint32_t *n, uint32_t *d0, uint32_t *d1) {
+                                uint32_t *n, uint32_t *d0, uint32_t *d1,
+                                uint32_t *p, uint32_t *q) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 
@@ -233,6 +240,16 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   // Read the second share of the private exponent (d) from OTBN dmem.
   const otbn_addr_t kOtbnVarRsaD1 = OTBN_ADDR_T_INIT(run_rsa, rsa_d1);
   HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaD1, d1));
+
+  // Optionally read out the primes p and q.
+  if (p != NULL) {
+    const otbn_addr_t kOtbnVarRsaP = OTBN_ADDR_T_INIT(run_rsa, rsa_p);
+    HARDENED_TRY(otbn_dmem_read(num_words >> 1, kOtbnVarRsaP, p));
+  }
+  if (q != NULL) {
+    const otbn_addr_t kOtbnVarRsaQ = OTBN_ADDR_T_INIT(run_rsa, rsa_q);
+    HARDENED_TRY(otbn_dmem_read(num_words >> 1, kOtbnVarRsaQ, q));
+  }
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -398,7 +415,7 @@ status_t rsa_keygen_start(rsa_size_t size) {
 }
 
 status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
-                                  uint32_t *d1) {
+                                  uint32_t *d1, uint32_t *p, uint32_t *q) {
   uint32_t mode = 0;
   size_t expected_words = 0;
 
@@ -430,5 +447,5 @@ status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
       return OTCRYPTO_FATAL_ERR;
   }
 
-  return keygen_finalize(mode, expected_words, n, d0, d1);
+  return keygen_finalize(mode, expected_words, n, d0, d1, p, q);
 }
