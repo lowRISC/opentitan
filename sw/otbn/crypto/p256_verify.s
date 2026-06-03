@@ -153,6 +153,33 @@ p256_verify:
   /* Abort if they do not match */
   jal       x1, trigger_fault_if_fg0_z
 
+  /* Reverse check: We verify that (u1 * s) mod n == msg mod n */
+
+  /* Put u1 into w24 for multiplication */
+  bn.mov    w24, w1
+
+  /* Load original s from dmem directly into w25 */
+  la        x20, s
+  li        x2, 25
+  bn.lid    x2, 0(x20)
+
+  /* Compute w19 = (u1 * s) mod n */
+  jal       x1, mod_mul_256x256
+
+  /* Load original msg from dmem into w20 */
+  la        x19, msg
+  li        x2, 20
+  bn.lid    x2, 0(x19)
+
+  /* w20 = (w20 + 0) mod n */
+  bn.addm   w20, w20, w31
+
+  /* Compare calculated msg (w19) with reduced msg (w20) */
+  bn.cmp    w19, w20
+
+  /* Abort if they do not match */
+  jal       x1, trigger_fault_if_fg0_z
+
   /* Set up for coordinate arithmetic.
        MOD <= p
        w28 <= r256
