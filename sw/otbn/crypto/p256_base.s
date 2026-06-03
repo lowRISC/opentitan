@@ -1358,7 +1358,8 @@ scalar_mult_int:
   bn.rshi   w2,  w2,  w20 >> 65
 
   /* double-and-add loop with decreasing index */
-  loopi     321, 63
+  /* if updating the loop, please change the test replacement as well */
+  loopi     321, 63    /* SCA_TEST_REPLACE: loopi 3, 63 */
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */

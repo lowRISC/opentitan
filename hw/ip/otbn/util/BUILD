@@ -69,3 +69,26 @@ py_binary(
         requirement("pyelftools"),
     ],
 )
+
+py_binary(
+    name = "otbn_fi_campaign",
+    srcs = ["otbn_fi_campaign.py"],
+    imports = ["../dv/otbnsim"],
+    deps = [
+        "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
+        "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
+        requirement("pyelftools"),
+    ],
+)
+
+py_binary(
+    name = "otbn_tvla_campaign",
+    srcs = ["otbn_tvla_campaign.py"],
+    data = ["//hw/ip/otbn/dv/otbnsim:standalone"],
+    imports = ["../dv/otbnsim"],
+    deps = [
+        "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
+        "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
+        requirement("pyelftools"),
+    ],
+)

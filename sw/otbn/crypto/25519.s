@@ -1339,7 +1339,7 @@ ext_scmul_sca:
 
 
   /* Iterate over all scalar bits starting at the MSB. */
-  loopi  385, 56
+  loopi  385, 56    /* SCA_TEST_REPLACE: loopi 3, 56 */
     /* Compute Q = 2 * Q.
          [w13:w10] <= [w13:w10] + [w13:w10] = 2 * Q  */
     jal x1, ext_double
