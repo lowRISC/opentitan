@@ -817,6 +817,13 @@ pub enum AttributeType {
         serialize = "auth_pin_flags"
     )]
     AuthPinFlags = CKA_AUTH_PIN_FLAGS,
+    #[serde(rename = "CKA_PARAMETER_SET")]
+    #[strum(
+        serialize = "CKA_PARAMETER_SET",
+        serialize = "ParameterSet",
+        serialize = "parameter_set"
+    )]
+    ParameterSet = CKA_PARAMETER_SET,
     #[num_enum(catch_all)]
     UnknownAttributeType(u64) = u64::MAX,
 }
