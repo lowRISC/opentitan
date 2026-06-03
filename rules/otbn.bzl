@@ -579,3 +579,133 @@ otbn_insn_count_range = rule(
         ),
     },
 )
+
+def _otbn_fi_sim_test_impl(ctx):
+    elf = ctx.attr.target[OutputGroupInfo].elf.to_list()
+    if len(elf) != 1:
+        fail("target must provide exactly one .elf")
+    elf = elf[0]
+
+    campaign_tool = ctx.executable._fi_campaign
+    simulator = ctx.executable._simulator
+
+    test_runner = ctx.actions.declare_file(ctx.label.name + "_runner.sh")
+
+    script_content = "{} {} --elf {} --attack-mode {} --ok-sym {} --ok-size {} --ok-val {} --col-sym {} --col-size {} --col-threshold {} --col-mode {}".format(
+        campaign_tool.short_path,
+        simulator.short_path,
+        elf.short_path,
+        ctx.attr.attack_mode,
+        ctx.attr.ok_symbol,
+        ctx.attr.ok_size,
+        ctx.attr.ok_value,
+        ctx.attr.collision_symbol,
+        ctx.attr.collision_size,
+        ctx.attr.col_threshold,
+        ctx.attr.collision_mode,
+    )
+
+    if ctx.attr.collision_modulus:
+        script_content += " --col-modulus {}".format(ctx.attr.collision_modulus)
+
+    if ctx.attr.fixed_instruction_count:
+        script_content += " --fixed-instruction-count"
+
+    for syms, config in ctx.attr.target_a_secrets.items():
+        script_content += ' --target-a-secret "{}:{}"'.format(syms, config)
+
+    for syms, config in ctx.attr.target_b_secrets.items():
+        script_content += ' --target-b-secret "{}:{}"'.format(syms, config)
+
+    ctx.actions.write(
+        output = test_runner,
+        content = script_content,
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(files = [campaign_tool, simulator, elf])
+    runfiles = runfiles.merge(ctx.attr._fi_campaign[DefaultInfo].default_runfiles)
+    runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
+
+    return [DefaultInfo(
+        executable = test_runner,
+        runfiles = runfiles,
+    )]
+
+otbn_fi_sim_test = rule(
+    implementation = _otbn_fi_sim_test_impl,
+    test = True,
+    attrs = {
+        "target": attr.label(providers = [OutputGroupInfo], mandatory = True),
+        "attack_mode": attr.string(default = "collision", values = ["collision", "corruption", "bypass"]),
+        "target_a_secrets": attr.string_dict(default = {}),
+        "target_b_secrets": attr.string_dict(default = {}),
+        "ok_symbol": attr.string(mandatory = True),
+        "ok_size": attr.int(mandatory = True),
+        "ok_value": attr.string(mandatory = True),
+        "col_threshold": attr.string(default = "1.0"),
+        "collision_symbol": attr.string(mandatory = True),
+        "collision_size": attr.int(mandatory = True),
+        "collision_mode": attr.string(default = "unmasked", values = ["unmasked", "boolean", "additive"]),
+        "collision_modulus": attr.string(default = ""),
+        "fixed_instruction_count": attr.bool(default = False),
+        "_fi_campaign": attr.label(default = "//hw/ip/otbn/util:otbn_fi_campaign", executable = True, cfg = "exec"),
+        "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone", executable = True, cfg = "exec"),
+    },
+)
+
+def _otbn_tvla_sim_test_impl(ctx):
+    elf = ctx.attr.target[OutputGroupInfo].elf.to_list()[0]
+
+    campaign_tool = ctx.executable._tvla_campaign
+    simulator = ctx.executable._simulator
+
+    test_runner = ctx.actions.declare_file(ctx.label.name + "_runner.sh")
+
+    script_content = "{} {} --elf {} --num-experiments {} --t-threshold {}".format(
+        campaign_tool.short_path,
+        simulator.short_path,
+        elf.short_path,
+        ctx.attr.num_experiments,
+        ctx.attr.t_threshold,
+    )
+
+    # Append TVLA targets
+    for syms, config in ctx.attr.tvla_secrets.items():
+        script_content += ' --tvla-secret "{}:{}"'.format(syms, config)
+
+    for syms, config in ctx.attr.fixed_background_secrets.items():
+        script_content += ' --fixed-bg-secret "{}:{}"'.format(syms, config)
+
+    for syms, config in ctx.attr.random_background_secrets.items():
+        script_content += ' --random-bg-secret "{}:{}"'.format(syms, config)
+
+    ctx.actions.write(
+        output = test_runner,
+        content = script_content,
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(files = [campaign_tool, elf])
+    runfiles = runfiles.merge(ctx.attr._tvla_campaign[DefaultInfo].default_runfiles)
+    runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
+
+    return [DefaultInfo(
+        executable = test_runner,
+        runfiles = runfiles,
+    )]
+
+otbn_tvla_sim_test = rule(
+    implementation = _otbn_tvla_sim_test_impl,
+    test = True,
+    attrs = {
+        "target": attr.label(providers = [OutputGroupInfo], mandatory = True),
+        "num_experiments": attr.int(default = 1000),
+        "t_threshold": attr.string(default = "4.5"),
+        "tvla_secrets": attr.string_dict(mandatory = True),
+        "fixed_background_secrets": attr.string_dict(default = {}),
+        "random_background_secrets": attr.string_dict(default = {}),
+        "_tvla_campaign": attr.label(default = "//hw/ip/otbn/util:otbn_tvla_campaign", executable = True, cfg = "exec"),
+        "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone", executable = True, cfg = "exec"),
+    },
+)

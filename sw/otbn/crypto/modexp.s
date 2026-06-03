@@ -307,7 +307,7 @@ _message_blinding_prologue_end:
     addi   x2, x2, 1
 
   # Compute bit length of current bigint size.
-  slli  x21, x30, 8
+  slli  x21, x30, 8    /* SCA_TEST_REPLACE: addi x21, x0, 3 */
 
   # Main loop of the exponentiation, iterate over all exponent bits:
   loop x21, 68
