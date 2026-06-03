@@ -1,19 +1,13 @@
 diff --git a/cryptoki/src/mechanism/mod.rs b/cryptoki/src/mechanism/mod.rs
-index 4b9041e..0986133 100644
+index 41497c7..d3b7b5b 100644
 --- a/cryptoki/src/mechanism/mod.rs
 +++ b/cryptoki/src/mechanism/mod.rs
-@@ -765,8 +765,12 @@ impl TryFrom<CK_MECHANISM_TYPE> for MechanismType {
-             CKM_HKDF_DERIVE => Ok(MechanismType::HKDF_DERIVE),
-             CKM_HKDF_DATA => Ok(MechanismType::HKDF_DATA),
+@@ -1019,6 +1019,7 @@ impl TryFrom<CK_MECHANISM_TYPE> for MechanismType {
+             CKM_HASH_SLH_DSA_SHA3_384 => Ok(MechanismType::HASH_SLH_DSA_SHA3_384),
+             CKM_HASH_SLH_DSA_SHA3_512 => Ok(MechanismType::HASH_SLH_DSA_SHA3_512),
+             CKM_HASH_SLH_DSA_SHAKE128 => Ok(MechanismType::HASH_SLH_DSA_SHAKE128),
++            val if val >= CKM_VENDOR_DEFINED => Ok(MechanismType { val }),
              other => {
--                error!("Mechanism type {} is not supported.", other);
--                Err(Error::NotSupported)
-+                if mechanism_type >= CKM_VENDOR_DEFINED {
-+                    Ok(MechanismType { val: other })
-+                } else {
-+                    error!("Mechanism type {} is not supported.", other);
-+                    Err(Error::NotSupported)
-+                }
-             }
-         }
-     }
+                 error!("Mechanism type {other} is not supported.");
+                 Err(Error::NotSupported)
+
