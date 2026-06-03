@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashSet;
+use std::str::FromStr;
+
 use anyhow::Result;
 use cryptoki::object::{Attribute, AttributeInfo, ObjectHandle};
 use cryptoki::session::Session;
+use cryptoki::types::Ulong;
 use indexmap::IndexMap;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::str::FromStr;
 use strum::IntoEnumIterator;
 
 use super::AttributeError;
@@ -137,6 +139,10 @@ fn into_kv(attr: &Attribute) -> Result<(AttributeType, AttrData)> {
                 AttrData::Str(val.into()),
             ))
         }
+        Attribute::ParameterSet(set) => Ok((
+            AttributeType::from(attr.attribute_type()),
+            AttrData::from(Ulong::from(*set)),
+        )),
         _ => Err(AttributeError::UnknownAttribute(attr.clone()).into()),
     }
 }
@@ -199,6 +205,10 @@ fn from_kv(atype: AttributeType, data: &AttrData) -> Result<Attribute> {
         AttributeType::NeverExtractable => Ok(Attribute::NeverExtractable(data.try_into()?)),
         AttributeType::ObjectId => Ok(Attribute::ObjectId(data.try_into()?)),
         AttributeType::Owner => Ok(Attribute::Owner(data.try_into()?)),
+        AttributeType::ParameterSet => {
+            let ulong: Ulong = data.try_into()?;
+            Ok(Attribute::ParameterSet(ulong.try_into()?))
+        }
         AttributeType::Prime => Ok(Attribute::Prime(data.try_into()?)),
         AttributeType::Prime1 => Ok(Attribute::Prime1(data.try_into()?)),
         AttributeType::Prime2 => Ok(Attribute::Prime2(data.try_into()?)),
