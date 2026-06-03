@@ -506,7 +506,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
-          kRsaSize2048, sk->n.data, sk->d0.data, sk->d1.data));
+          kRsaSize2048, sk->n.data, sk->d0.data, sk->d1.data, NULL, NULL));
       HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa2048NumWords));
       size_used = launder32(size_used) | kOtcryptoRsaSize2048;
       break;
@@ -517,7 +517,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
-          kRsaSize3072, sk->n.data, sk->d0.data, sk->d1.data));
+          kRsaSize3072, sk->n.data, sk->d0.data, sk->d1.data, NULL, NULL));
       HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa3072NumWords));
       size_used = launder32(size_used) | kOtcryptoRsaSize3072;
       break;
@@ -528,7 +528,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
-          kRsaSize4096, sk->n.data, sk->d0.data, sk->d1.data));
+          kRsaSize4096, sk->n.data, sk->d0.data, sk->d1.data, NULL, NULL));
       HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa4096NumWords));
       size_used = launder32(size_used) | kOtcryptoRsaSize4096;
       break;
