@@ -86,17 +86,25 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
   EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufactureId);
-  EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
+  if (is_quad_mode_supported()) {
+    EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
+  } else {
+    LOG_WARNING("Quad Mode is not supported by this flash.");
+  }
   EXECUTE_TEST(result, test_page_program, &spi_host);
   if (is_4_bytes_address_mode_supported()) {
     EXECUTE_TEST(result, test_4bytes_address, &spi_host);
   }
   EXECUTE_TEST(result, test_fast_read, &spi_host);
   EXECUTE_TEST(result, test_dual_read, &spi_host);
-  EXECUTE_TEST(result, test_quad_read, &spi_host);
-  // The Winbond flash `4PP` opcode operates in 1-1-4 mode.
-  EXECUTE_TEST(result, test_page_program_quad, &spi_host,
-               kPageQuadProgramOpcode, kTransactionWidthMode114);
+  if (is_quad_mode_supported()) {
+    EXECUTE_TEST(result, test_quad_read, &spi_host);
+    // The Winbond flash `4PP` opcode operates in 1-1-4 mode.
+    EXECUTE_TEST(result, test_page_program_quad, &spi_host,
+                 kPageQuadProgramOpcode, kTransactionWidthMode114);
+  } else {
+    LOG_WARNING("Quad Mode is not supported by this flash.");
+  }
   EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
   EXECUTE_TEST(result, test_erase_64k_block, &spi_host);
 
