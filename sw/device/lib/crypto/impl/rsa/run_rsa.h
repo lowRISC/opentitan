@@ -100,10 +100,12 @@ status_t rsa_keygen_start(rsa_size_t size);
  * @param[out] n Generated public key modulus (n).
  * @param[out] d0 Generated private key exponent share 0 (d0).
  * @param[out] d1 Generated private key exponent share 1 (d1).
+ * @param[out] p Generated prime p, optionally read out if not null.
+ * @param[out] q Generated prime q, optionally read out if not null.
  * @return Result of the operation (OK or error).
  */
 status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
-                                  uint32_t *d1);
+                                  uint32_t *d1, uint32_t *p, uint32_t *q);
 
 #ifdef __cplusplus
 }  // extern "C"
