@@ -21,7 +21,7 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_test_unlock.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
@@ -370,9 +370,9 @@ void rom_main(void) {
   pinmux_testutils_init(&pinmux);
 
   // Enable execution of code in flash.
-  flash_ctrl_init();
-  flash_ctrl_exec_set(FLASH_CTRL_PARAM_EXEC_EN);
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit + kFlashCtrlSecMmioExecSet);
+  nvm_ctrl_init();
+  nvm_ctrl_exec_set(FLASH_CTRL_PARAM_EXEC_EN);
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInit + kNvmCtrlSecMmioExecSet);
 
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);

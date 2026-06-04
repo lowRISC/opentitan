@@ -25,7 +25,7 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/epmp.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -266,13 +266,13 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_owner_restrict(&kNvmCtrlInfoPageDiceCerts);
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
   epmp_clear_lock_bits();
@@ -437,21 +437,21 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 }
 
 static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
-  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
-  flash_ctrl_perms_t read = {
+  nvm_ctrl_cfg_t cfg = nvm_ctrl_data_default_cfg_get();
+  nvm_ctrl_perms_t read = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4False,
   };
-  flash_ctrl_perms_t write = {
+  nvm_ctrl_perms_t write = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4True,
   };
-  flash_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
+  nvm_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
                                  rom_ext_slot == kBootSlotA ? read : write, cfg,
                                  kHardenedBoolTrue);
-  flash_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
+  nvm_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
                                  rom_ext_slot == kBootSlotB ? read : write, cfg,
                                  kHardenedBoolTrue);
 }
@@ -467,7 +467,7 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   epmp_set_lock_bits();
   epmp_clear_rlb();
   // Disable access to creator-level INFO pages.
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
   // Set the OWNER_CONFIG pages for rescue mode (page0=ro, page1=rw).
   ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
   // Lock access to owner-level INFO pages.  During normal boot, this

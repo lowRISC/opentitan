@@ -7,7 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
@@ -169,12 +169,12 @@ static void reverse(void *buf, size_t len) {
 }
 
 static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
-  flash_ctrl_perms_t perm = {
+  nvm_ctrl_perms_t perm = {
       .read = (uint8_t)read,
       .write = (uint8_t)write,
       .erase = (uint8_t)write,
   };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSecret, perm);
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageOwnerSecret, perm);
 }
 
 rom_error_t ownership_secret_new(uint32_t prior_key_alg,
@@ -183,7 +183,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
 
   secret_page_enable(/*read=*/kMultiBitBool4True, /*write=*/kMultiBitBool4True);
   rom_error_t error =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret, 0,
+      nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSecret, 0,
                            sizeof(secret) / sizeof(uint32_t), &secret);
   if (error != kErrorOk) {
     if (kDeviceType == kDeviceSilicon) {
@@ -195,8 +195,8 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
       // transfer.
       HARDENED_CHECK_NE(error, kErrorOk);
       HARDENED_CHECK_NE(kDeviceType, kDeviceSilicon);
-      error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
-                                    kFlashCtrlEraseTypePage);
+      error = nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSecret,
+                                    kNvmCtrlEraseTypePage);
       memset(&secret, 0xFF, sizeof(secret));
     }
   }
@@ -238,11 +238,11 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
   hmac_sha256_process();
   hmac_sha256_final(&secret.owner_secret);
 
-  error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
-                                kFlashCtrlEraseTypePage);
+  error = nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSecret,
+                                kNvmCtrlEraseTypePage);
   if (error != kErrorOk)
     goto exitproc;
-  error = flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSecret, 0,
+  error = nvm_ctrl_info_write(&kNvmCtrlInfoPageOwnerSecret, 0,
                                 sizeof(secret) / sizeof(uint32_t), &secret);
 
 exitproc:
@@ -255,7 +255,7 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
   secret_page_enable(/*read=*/kMultiBitBool4True,
                      /*write=*/kMultiBitBool4False);
   rom_error_t error =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret,
+      nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSecret,
                            offsetof(owner_secret_page_t, owner_history),
                            sizeof(*history) / sizeof(uint32_t), history);
   if (error != kErrorOk) {

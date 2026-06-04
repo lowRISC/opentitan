@@ -6,7 +6,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
@@ -144,9 +144,9 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   bootdata->ownership_state = kOwnershipStateLockedOwner;
 
   // Write the configuration to page 0.
-  OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
-                                   kFlashCtrlEraseTypePage));
-  OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  OT_DISCARD(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot0,
+                                   kNvmCtrlEraseTypePage));
+  OT_DISCARD(nvm_ctrl_info_write(&kNvmCtrlInfoPageOwnerSlot0, 0,
                                    sizeof(owner_page[0]) / sizeof(uint32_t),
                                    &owner_page[0]));
   owner_page_valid[0] = kOwnerPageStatusSealed;

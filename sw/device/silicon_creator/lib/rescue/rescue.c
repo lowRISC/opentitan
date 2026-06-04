@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_enter_rescue.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -70,7 +70,7 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
   if (state->flash_offset == 0) {
     // TODO(#24428): Make sure we interact correctly with owner flash region
     // configuration.
-    flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+    nvm_ctrl_data_default_perms_set((nvm_ctrl_perms_t){
         .read = kMultiBitBool4True,
         .write = kMultiBitBool4True,
         .erase = kMultiBitBool4True,
@@ -87,7 +87,7 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
     for (uint32_t addr = state->flash_begin; addr < state->flash_limit;
          addr += kFlashPageSize) {
       HARDENED_RETURN_IF_ERROR(
-          flash_ctrl_data_erase(bank_offset + addr, kFlashCtrlEraseTypePage));
+          nvm_ctrl_data_erase(bank_offset + addr, kNvmCtrlEraseTypePage));
     }
     // Regardless of whether we're allowed to flash the ROM_EXT, set the flash
     // offset to zero if the data stream contains a ROM_EXT, otherwise, set to
@@ -104,7 +104,7 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
     return kErrorRescueImageTooBig;
   } else {
     // In the allowed range; flash the data.
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_data_write(
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_data_write(
         bank_offset + state->flash_offset,
         sizeof(state->data) / sizeof(uint32_t), state->data));
     state->flash_offset += sizeof(state->data);
@@ -118,10 +118,10 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
       state->bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
       (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
        owner_block_newversion_mode() == kHardenedBoolTrue)) {
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-        &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageOwnerSlot1, 0,
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(
+        &kNvmCtrlInfoPageOwnerSlot1, kNvmCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
+        &kNvmCtrlInfoPageOwnerSlot1, 0,
         sizeof(state->data) / sizeof(uint32_t), state->data));
   } else {
     rescue_msg("error: cannot accept owner_block in current state\r\n");
@@ -139,10 +139,10 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
 static void ownership_erase(void) {
   lifecycle_state_t lc_state = lifecycle_state_get();
   if (lc_state == kLcStateDev) {
-    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
-                                     kFlashCtrlEraseTypePage));
-    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
-                                     kFlashCtrlEraseTypePage));
+    OT_DISCARD(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot0,
+                                     kNvmCtrlEraseTypePage));
+    OT_DISCARD(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot1,
+                                     kNvmCtrlEraseTypePage));
     rescue_msg("ok: erased owner blocks\r\n");
   } else {
     rescue_msg("error: erase not allowed in state %x\r\n", lc_state);
@@ -266,9 +266,9 @@ rom_error_t rescue_send_handler(rescue_state_t *state) {
     }
     case kRescueModeOwnerPage0:
     case kRescueModeOwnerPage1:
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(
-          state->mode == kRescueModeOwnerPage0 ? &kFlashCtrlInfoPageOwnerSlot0
-                                               : &kFlashCtrlInfoPageOwnerSlot1,
+      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(
+          state->mode == kRescueModeOwnerPage0 ? &kNvmCtrlInfoPageOwnerSlot0
+                                               : &kNvmCtrlInfoPageOwnerSlot1,
           0, sizeof(state->data) / sizeof(uint32_t), state->data));
       state->staged_len = sizeof(state->data);
       break;

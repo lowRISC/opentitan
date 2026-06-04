@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -35,10 +35,10 @@ static rom_error_t imm_section_start(void) {
 
   // Lockdown the attestation seed to readonly as soon as possible to prevent
   // key tampering and exfiltration.
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_owner_restrict(
-      &kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_owner_restrict(
+      &kNvmCtrlInfoPageAttestationKeySeeds);
+  nvm_ctrl_info_cfg_lock(&kNvmCtrlInfoPageAttestationKeySeeds);
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();

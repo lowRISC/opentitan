@@ -288,7 +288,7 @@ cc_library(
             "//sw/device/silicon_creator/lib/cert:dice_chain",
             "//sw/device/silicon_creator/lib/drivers:ast",
             "//sw/device/silicon_creator/lib/drivers:epmp",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:ibex",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",

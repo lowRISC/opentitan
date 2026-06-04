@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_CERT_H_
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -94,7 +94,7 @@ typedef struct cert_flash_info_layout {
   /**
    * The flash info page a set of certificates will be written too.
    */
-  const flash_ctrl_info_page_t *info_page;
+  const nvm_ctrl_info_page_t *info_page;
   /**
    * The number of certificates that will be written to the flash info page.
    */

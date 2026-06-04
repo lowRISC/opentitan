@@ -25,7 +25,7 @@
 #include "sw/device/silicon_creator/lib/cfi.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -219,8 +219,8 @@ static rom_error_t rom_init(void) {
   // Initialize the shutdown policy.
   HARDENED_RETURN_IF_ERROR(shutdown_init(lc_state));
 
-  flash_ctrl_init();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
+  nvm_ctrl_init();
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInit);
   flash_ecc_exc_handler_en = otp_read32(
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
 
@@ -624,8 +624,8 @@ static rom_error_t rom_boot(const manifest_t *manifest,
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
 
   // Enable execution of code from flash if signature is verified.
-  flash_ctrl_exec_set(flash_exec);
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet);
+  nvm_ctrl_exec_set(flash_exec);
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioExecSet);
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/5);

@@ -11,21 +11,6 @@
 // functions with calls to the new driver.
 
 // ---------------------------------------------------------------------------
-// Info page instances: re-export the flash_ctrl info page structs.
-// ---------------------------------------------------------------------------
-
-#define INFO_PAGE_NVM_CTRL_INST_(name_, bank_, page_) \
-  const nvm_ctrl_info_page_t nvm_ctrl_##name_ = name_;
-
-NVM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_NVM_CTRL_INST_)
-#undef INFO_PAGE_NVM_CTRL_INST_
-
-// Certificate page configuration and permissions
-const nvm_ctrl_cfg_t   kNvmCertificateInfoPageCfg           = kCertificateInfoPageCfg;
-const nvm_ctrl_perms_t kNvmCertificateInfoPageCreatorAccess  = kCertificateInfoPageCreatorAccess;
-const nvm_ctrl_perms_t kNvmCertificateInfoPageOwnerAccess    = kCertificateInfoPageOwnerAccess;
-
-// ---------------------------------------------------------------------------
 // Functions
 // ---------------------------------------------------------------------------
 

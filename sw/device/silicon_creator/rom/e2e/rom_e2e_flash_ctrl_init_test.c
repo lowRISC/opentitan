@@ -6,7 +6,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
@@ -50,7 +50,7 @@ typedef struct flash_cfg_reg {
 /**
  * Check that an info page is in the expected bank.
  */
-static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
+static void check_info_page_bank(const nvm_ctrl_info_page_t *info_page,
                                  uint32_t expected_bank) {
 #define INFO_PAGE_BANK_CASE_(name_, bank_, page_) \
   if (&name_ == info_page) {                      \
@@ -58,7 +58,7 @@ static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
     return;                                       \
   }
 
-  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_BANK_CASE_);
+  NVM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_BANK_CASE_);
   CHECK(false);
 
 #undef INFO_PAGE_BANK_CASE_
@@ -67,7 +67,7 @@ static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
 /**
  * Check that an info page has the expected page number.
  */
-static void check_info_page_pagenum(const flash_ctrl_info_page_t *info_page,
+static void check_info_page_pagenum(const nvm_ctrl_info_page_t *info_page,
                                     uint32_t expected_pagenum) {
 #define INFO_PAGE_PAGENUM_CASE_(name_, bank_, page_) \
   if (&name_ == info_page) {                         \
@@ -75,7 +75,7 @@ static void check_info_page_pagenum(const flash_ctrl_info_page_t *info_page,
     return;                                          \
   }
 
-  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_PAGENUM_CASE_);
+  NVM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_PAGENUM_CASE_);
   CHECK(false);
 
 #undef INFO_PAGE_PAGENUM_CASE_
@@ -113,9 +113,9 @@ static void default_cfg_test(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
   flash_cfg_reg_t otp_default_cfg = {
       .reg_value = otp_default_cfg_value,
-      .scrambling_en = FLASH_CTRL_OTP_FIELD_SCRAMBLING,
-      .ecc_en = FLASH_CTRL_OTP_FIELD_ECC,
-      .he_en = FLASH_CTRL_OTP_FIELD_HE,
+      .scrambling_en = NVM_CTRL_OTP_FIELD_SCRAMBLING,
+      .ecc_en = NVM_CTRL_OTP_FIELD_ECC,
+      .he_en = NVM_CTRL_OTP_FIELD_HE,
   };
 
   // Read actual values from the flash controller.
@@ -137,8 +137,8 @@ static void default_cfg_test(void) {
  *
  * The `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP value should match the
  * scrambling, ecc, and he settings in info0 for the boot partitions
- * `kFlashCtrlInfoPageBootData0` (bank 1, page 0) and
- * `kFlashCtrlInfoPageBootData1` (bank 1, page 1).
+ * `kNvmCtrlInfoPageBootData0` (bank 1, page 0) and
+ * `kNvmCtrlInfoPageBootData1` (bank 1, page 1).
  */
 static void boot_info_cfg_test(void) {
   // Double-check the expected bank and page number for the boot info pages.
@@ -146,21 +146,21 @@ static void boot_info_cfg_test(void) {
   // that construct the page-specific constants.
   //
   // Expected values:
-  // * kFlashCtrlInfoPageBootData0 -> bank 1, page 0
-  // * kFlashCtrlInfoPageBootData1 -> bank 1, page 1
-  check_info_page_bank(&kFlashCtrlInfoPageBootData0, 1);
-  check_info_page_pagenum(&kFlashCtrlInfoPageBootData0, 0);
-  check_info_page_bank(&kFlashCtrlInfoPageBootData1, 1);
-  check_info_page_pagenum(&kFlashCtrlInfoPageBootData1, 1);
+  // * kNvmCtrlInfoPageBootData0 -> bank 1, page 0
+  // * kNvmCtrlInfoPageBootData1 -> bank 1, page 1
+  check_info_page_bank(&kNvmCtrlInfoPageBootData0, 1);
+  check_info_page_pagenum(&kNvmCtrlInfoPageBootData0, 0);
+  check_info_page_bank(&kNvmCtrlInfoPageBootData1, 1);
+  check_info_page_pagenum(&kNvmCtrlInfoPageBootData1, 1);
 
   // Extract expected values from OTP.
   uint32_t otp_boot_info_cfg_value =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
   flash_cfg_reg_t otp_boot_info_cfg = {
       .reg_value = otp_boot_info_cfg_value,
-      .scrambling_en = FLASH_CTRL_OTP_FIELD_SCRAMBLING,
-      .ecc_en = FLASH_CTRL_OTP_FIELD_ECC,
-      .he_en = FLASH_CTRL_OTP_FIELD_HE,
+      .scrambling_en = NVM_CTRL_OTP_FIELD_SCRAMBLING,
+      .ecc_en = NVM_CTRL_OTP_FIELD_ECC,
+      .he_en = NVM_CTRL_OTP_FIELD_HE,
   };
 
   // Check the configuration for bank 1, page 0.

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
 
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -41,8 +41,8 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
 
   // The ISFB info page configuration is handled in the owner's
   // `FlashInfoConfig` settings.
-  flash_ctrl_info_page_t isfb_info_page;
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+  nvm_ctrl_info_page_t isfb_info_page;
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
       isfb->bank, isfb->page, &isfb_info_page));
 
   // There are in total 128 bits in the strike mask. Each bit corresponds to a
@@ -54,7 +54,7 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
   static_assert(sizeof(strikes) == kExpectedStrikeRegionBytesCount,
                 "Data size mismatch");
 
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(&isfb_info_page, /*offset=*/0,
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(&isfb_info_page, /*offset=*/0,
                                                 ARRAYSIZE(strikes), strikes));
 
   uint32_t strike_cnt_ok = 0;
@@ -86,7 +86,7 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
                 "Product expressions data size mismatch");
 
   // Read the product expressions from the ISFB info page.
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(
       &isfb_info_page, /*offset=*/1024, ARRAYSIZE(product_expr), product_expr));
 
   uint32_t pe_cnt_ok = 0;

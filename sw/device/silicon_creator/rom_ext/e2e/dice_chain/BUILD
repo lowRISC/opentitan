@@ -72,7 +72,7 @@ opentitan_binary(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:nvm_ctrl",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
@@ -153,7 +153,7 @@ opentitan_binary(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
@@ -228,7 +228,7 @@ DEBUG_MODE_TESTCASES = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:nvm_ctrl",
             "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         ],
     )

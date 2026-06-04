@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
@@ -58,16 +58,16 @@ static rom_error_t first_boot_test(void) {
   CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
 
   uint32_t corrupted_words[4] = {0};
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
-                            (flash_ctrl_perms_t){
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageBootData0,
+                            (nvm_ctrl_perms_t){
                                 .read = kMultiBitBool4False,
                                 .write = kMultiBitBool4True,
                                 .erase = kMultiBitBool4False,
                             });
-  RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData0, 0, 4,
+  RETURN_IF_ERROR(nvm_ctrl_info_write(&kNvmCtrlInfoPageBootData0, 0, 4,
                                         &corrupted_words));
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
-                            (flash_ctrl_perms_t){
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageBootData0,
+                            (nvm_ctrl_perms_t){
                                 .read = kMultiBitBool4False,
                                 .write = kMultiBitBool4False,
                                 .erase = kMultiBitBool4False,

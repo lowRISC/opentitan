@@ -9,12 +9,12 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #ifdef WITH_OWNERSHIP_INFO
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
 status_t ownership_print(void) {
   owner_block_t config;
-  TRY(flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  TRY(nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSlot0, 0,
                            sizeof(config) / sizeof(uint32_t), &config));
 
   LOG_INFO("owner_page0 tag = %C", config.header.tag);

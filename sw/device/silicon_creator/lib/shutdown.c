@@ -31,7 +31,7 @@
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
 
 #ifdef HAS_FLASH_CTRL
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #endif
 
 #ifdef HAS_KEYMGR
@@ -452,7 +452,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_reset(void)) {
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
 #ifdef HAS_FLASH_CTRL
-  flash_ctrl_disable();
+  nvm_ctrl_disable();
 #endif
 }
 

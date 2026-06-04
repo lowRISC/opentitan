@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -33,18 +33,18 @@ rom_error_t ownership_activate(boot_data_t *bootdata,
   // flash writes succeeded.
   //
   // Program the sealed page into slot 1.
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
-                                                 kFlashCtrlEraseTypePage));
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageOwnerSlot1, 0,
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot1,
+                                                 kNvmCtrlEraseTypePage));
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
+      &kNvmCtrlInfoPageOwnerSlot1, 0,
       sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
 
   if (write_both_pages == kHardenedBoolTrue) {
     // Program the same data into slot 0.
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-        &kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage));
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageOwnerSlot0, 0,
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(
+        &kNvmCtrlInfoPageOwnerSlot0, kNvmCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
+        &kNvmCtrlInfoPageOwnerSlot0, 0,
         sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
   }
 

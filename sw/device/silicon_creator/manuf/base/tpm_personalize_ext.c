@@ -10,7 +10,7 @@
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/tpm.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
@@ -46,9 +46,9 @@ static status_t peripheral_handles_init(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_tpm_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageOwnerReserved6);
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerReserved6,
-                            kFlashCtrlEraseTypePage));
+  nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageOwnerReserved6);
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerReserved6,
+                            kNvmCtrlEraseTypePage));
   return OK_STATUS();
 }
 

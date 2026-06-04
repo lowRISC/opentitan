@@ -38,7 +38,7 @@
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
@@ -172,14 +172,14 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .used = true,
         .need_digest = true,
         .group_name = "FACTORY",
-        .info_page = &kFlashCtrlInfoPageFactoryCerts,
+        .info_page = &kNvmCtrlInfoPageFactoryCerts,
         .num_certs = 1,
     },
     {
         .used = true,
         .need_digest = true,
         .group_name = "DICE",
-        .info_page = &kFlashCtrlInfoPageDiceCerts,
+        .info_page = &kNvmCtrlInfoPageDiceCerts,
         .num_certs = 2,
     },
     // These flash info pages can be used by provisioning extensions to store
@@ -188,14 +188,14 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .used = false,
         .need_digest = false,
         .group_name = "Ext0",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved6,
+        .info_page = &kNvmCtrlInfoPageOwnerReserved6,
         .num_certs = 0,
     },
     {
         .used = false,
         .need_digest = false,
         .group_name = "Ext1",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved7,
+        .info_page = &kNvmCtrlInfoPageOwnerReserved7,
         .num_certs = 0,
     },
 };
@@ -276,15 +276,15 @@ static void sw_reset(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
-  // No need to erase the kFlashCtrlInfoPageAttestationKeySeeds page as it is
+  nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageFactoryCerts);
+  nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageDiceCerts);
+  // No need to erase the kNvmCtrlInfoPageAttestationKeySeeds page as it is
   // erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageFactoryCerts,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
-                            kFlashCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageFactoryCerts,
+                            kNvmCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageDiceCerts,
+                            kNvmCtrlEraseTypePage));
   return OK_STATUS();
 }
 
@@ -292,21 +292,21 @@ static status_t config_and_erase_certificate_flash_pages(void) {
  * Erase all of the owner's INFO pages so that they're in a known state.
  */
 static status_t erase_owner_info_pages(owner_config_t *config) {
-  const flash_ctrl_info_page_t *pages[] = {
-      &kFlashCtrlInfoPageOwnerReserved0, &kFlashCtrlInfoPageOwnerReserved1,
-      &kFlashCtrlInfoPageOwnerReserved2, &kFlashCtrlInfoPageOwnerReserved3,
-      &kFlashCtrlInfoPageOwnerReserved4, &kFlashCtrlInfoPageOwnerReserved5,
-      &kFlashCtrlInfoPageOwnerReserved6, &kFlashCtrlInfoPageOwnerReserved7,
+  const nvm_ctrl_info_page_t *pages[] = {
+      &kNvmCtrlInfoPageOwnerReserved0, &kNvmCtrlInfoPageOwnerReserved1,
+      &kNvmCtrlInfoPageOwnerReserved2, &kNvmCtrlInfoPageOwnerReserved3,
+      &kNvmCtrlInfoPageOwnerReserved4, &kNvmCtrlInfoPageOwnerReserved5,
+      &kNvmCtrlInfoPageOwnerReserved6, &kNvmCtrlInfoPageOwnerReserved7,
   };
 
   // First, initialize all of the owner INFO pages with ECC & Scrambling.
   for (size_t i = 0; i < ARRAYSIZE(pages); ++i) {
-    flash_ctrl_cfg_t cfg = {
+    nvm_ctrl_cfg_t cfg = {
         .scrambling = kMultiBitBool4True,
         .ecc = kMultiBitBool4True,
         .he = kMultiBitBool4False,
     };
-    flash_ctrl_info_cfg_set(pages[i], cfg);
+    nvm_ctrl_info_cfg_set(pages[i], cfg);
   }
 
   // Next, overwrite the INFO page configuration for those pages defined
@@ -315,13 +315,13 @@ static status_t erase_owner_info_pages(owner_config_t *config) {
 
   // Finally, erase each page.
   for (size_t i = 0; i < ARRAYSIZE(pages); ++i) {
-    flash_ctrl_perms_t perms = {
+    nvm_ctrl_perms_t perms = {
         .read = kMultiBitBool4True,
         .write = kMultiBitBool4True,
         .erase = kMultiBitBool4True,
     };
-    flash_ctrl_info_perms_set(pages[i], perms);
-    TRY(flash_ctrl_info_erase(pages[i], kFlashCtrlEraseTypePage));
+    nvm_ctrl_info_perms_set(pages[i], perms);
+    TRY(nvm_ctrl_info_erase(pages[i], kNvmCtrlEraseTypePage));
   }
 
   return OK_STATUS();
@@ -453,14 +453,14 @@ static void compute_keymgr_owner_binding(void) {
  *
  * If the caller passed a pointer, save there the certificate size.
  */
-static status_t hash_certificate(const flash_ctrl_info_page_t *page,
+static status_t hash_certificate(const nvm_ctrl_info_page_t *page,
                                  size_t offset, size_t *size) {
   memset(cert_buffer, 0, sizeof(cert_buffer));
 
   // Read first word of the certificate perso LTV object (contains the size).
   perso_tlv_object_header_t objh;
   uint16_t obj_size;
-  TRY(flash_ctrl_info_read(page, offset, 1, cert_buffer));
+  TRY(nvm_ctrl_info_read(page, offset, 1, cert_buffer));
   memcpy(&objh, cert_buffer, sizeof(perso_tlv_object_header_t));
   PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
 
@@ -485,7 +485,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
 
   // Read the entire perso LTV object from flash and parse it.
   perso_tlv_cert_obj_t cert_obj;
-  TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
+  TRY(nvm_ctrl_info_read(page, offset, util_size_to_words(obj_size),
                            cert_buffer));
   TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, kPersoBlobVersionV0,
                              &cert_obj));
@@ -716,9 +716,9 @@ static status_t boot_data_cfg_initialize(void) {
   }
 
   // Loads the boot data configuration from OTP.
-  flash_ctrl_cfg_t boot_data_cfg = flash_ctrl_boot_data_cfg_get();
+  nvm_ctrl_cfg_t boot_data_cfg = nvm_ctrl_boot_data_cfg_get();
 
-  flash_ctrl_perms_t perm = {
+  nvm_ctrl_perms_t perm = {
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4True,
@@ -727,15 +727,15 @@ static status_t boot_data_cfg_initialize(void) {
   // Erase the BootData pages. This is necessary to ensure that the owner
   // block is written to a clean page and to avoid ECC errors in the
   // next boot.
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0, perm);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageBootData0, perm);
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageBootData1, perm);
+  nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageBootData0, boot_data_cfg);
+  nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageBootData1, boot_data_cfg);
 
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData0,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData1,
-                            kFlashCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageBootData0,
+                            kNvmCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageBootData1,
+                            kNvmCtrlEraseTypePage));
 
   return OK_STATUS();
 }
@@ -748,20 +748,20 @@ static status_t install_owner(owner_config_t *config,
   TRY(boot_data_read(kLcStateProd, &boot_data));
 
   // Initialize the ownership-related flash pages.
-  flash_ctrl_perms_t perm = {
+  nvm_ctrl_perms_t perm = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4True,
   };
-  flash_ctrl_cfg_t cfg = {
+  nvm_ctrl_cfg_t cfg = {
       .scrambling = kMultiBitBool4True,
       .ecc = kMultiBitBool4True,
       .he = kMultiBitBool4False,
   };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageOwnerSlot0, perm);
+  nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageOwnerSlot0, cfg);
+  nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageOwnerSlot1, perm);
+  nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageOwnerSlot1, cfg);
 
   // Initializes the boot data flash configuration in OTP, and erases the boot
   // data pages to avoid integrity errors in the next boot.
@@ -994,7 +994,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       TRY(write_digest_to_dice_page(&curr_layout, page_offset));
     }
 
-    TRY(flash_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
+    TRY(nvm_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
                               util_size_to_words(sizeof(dice_page)),
                               &dice_page));
   }

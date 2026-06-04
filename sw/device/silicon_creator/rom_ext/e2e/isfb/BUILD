@@ -243,7 +243,7 @@ _ISFB_CONTRAINT_TESTS = {
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_log",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/silicon_creator/lib/ownership:datatypes",
         ],

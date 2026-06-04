@@ -10,7 +10,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -87,15 +87,15 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
   }
   addr &= kPageAddrMask;
 
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  nvm_ctrl_data_default_perms_set((nvm_ctrl_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4True,
   });
-  rom_error_t err_0 = flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage);
-  rom_error_t err_1 = flash_ctrl_data_erase(
-      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kFlashCtrlEraseTypePage);
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  rom_error_t err_0 = nvm_ctrl_data_erase(addr, kNvmCtrlEraseTypePage);
+  rom_error_t err_1 = nvm_ctrl_data_erase(
+      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kNvmCtrlEraseTypePage);
+  nvm_ctrl_data_default_perms_set((nvm_ctrl_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4False,
@@ -158,7 +158,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   }
   size_t rem_word_count = byte_count / sizeof(uint32_t);
 
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  nvm_ctrl_data_default_perms_set((nvm_ctrl_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4True,
       .erase = kMultiBitBool4False,
@@ -173,7 +173,7 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
     if (word_count > rem_word_count) {
       word_count = rem_word_count;
     }
-    err_0 = flash_ctrl_data_write(addr, word_count, data);
+    err_0 = nvm_ctrl_data_write(addr, word_count, data);
     rem_word_count -= word_count;
     data += word_count * sizeof(uint32_t);
     // Wrap to the beginning of the current page since PAGE_PROGRAM modifies
@@ -182,9 +182,9 @@ static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
   }
   rom_error_t err_1 = kErrorOk;
   if (rem_word_count > 0) {
-    err_1 = flash_ctrl_data_write(addr, rem_word_count, data);
+    err_1 = nvm_ctrl_data_write(addr, rem_word_count, data);
   }
-  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+  nvm_ctrl_data_default_perms_set((nvm_ctrl_perms_t){
       .read = kMultiBitBool4False,
       .write = kMultiBitBool4False,
       .erase = kMultiBitBool4False,

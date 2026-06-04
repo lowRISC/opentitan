@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -19,20 +19,20 @@
 static const dt_gpio_t kGpioDt = kDtGpio;
 
 rom_error_t bootstrap_chip_erase(void) {
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
-  rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                            kFlashCtrlEraseTypeBank);
-  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
+  nvm_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
+  rom_error_t err_0 = nvm_ctrl_data_erase(0, kNvmCtrlEraseTypeBank);
+  rom_error_t err_1 = nvm_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                            kNvmCtrlEraseTypeBank);
+  nvm_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
 
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
 }
 
 rom_error_t bootstrap_erase_verify(void) {
-  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
-  rom_error_t err_1 = flash_ctrl_data_erase_verify(
-      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  rom_error_t err_0 = nvm_ctrl_data_erase_verify(0, kNvmCtrlEraseTypeBank);
+  rom_error_t err_1 = nvm_ctrl_data_erase_verify(
+      FLASH_CTRL_PARAM_BYTES_PER_BANK, kNvmCtrlEraseTypeBank);
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
 }

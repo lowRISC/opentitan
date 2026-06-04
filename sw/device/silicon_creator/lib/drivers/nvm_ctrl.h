@@ -75,14 +75,32 @@ enum {
   kNvmCtrlSecMmioDataRegionProtectLock       = kFlashCtrlSecMmioDataRegionProtectLock,
 };
 
-// Info pages — re-export via the same X-macro interface
+// Info pages — same X-macro interface as flash_ctrl
 #define NVM_CTRL_INFO_PAGES_DEFINE(X) FLASH_CTRL_INFO_PAGES_DEFINE(X)
 
-#define INFO_PAGE_NVM_CTRL_DECL_(name_, bank_, page_) \
-  extern const nvm_ctrl_info_page_t nvm_ctrl_##name_;
-
-NVM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_NVM_CTRL_DECL_)
-#undef INFO_PAGE_NVM_CTRL_DECL_
+// kNvmCtrlInfoPage* aliases for every kFlashCtrlInfoPage* constant.
+// The underlying objects are the same flash_ctrl_info_page_t structs; the
+// typedef makes them compatible with nvm_ctrl_info_page_t.
+#define kNvmCtrlInfoPageFactoryId             kFlashCtrlInfoPageFactoryId
+#define kNvmCtrlInfoPageCreatorSecret         kFlashCtrlInfoPageCreatorSecret
+#define kNvmCtrlInfoPageOwnerSecret           kFlashCtrlInfoPageOwnerSecret
+#define kNvmCtrlInfoPageWaferAuthSecret       kFlashCtrlInfoPageWaferAuthSecret
+#define kNvmCtrlInfoPageAttestationKeySeeds   kFlashCtrlInfoPageAttestationKeySeeds
+#define kNvmCtrlInfoPageOwnerReserved0        kFlashCtrlInfoPageOwnerReserved0
+#define kNvmCtrlInfoPageOwnerReserved1        kFlashCtrlInfoPageOwnerReserved1
+#define kNvmCtrlInfoPageOwnerReserved2        kFlashCtrlInfoPageOwnerReserved2
+#define kNvmCtrlInfoPageOwnerReserved3        kFlashCtrlInfoPageOwnerReserved3
+#define kNvmCtrlInfoPageFactoryCerts          kFlashCtrlInfoPageFactoryCerts
+#define kNvmCtrlInfoPageBootData0             kFlashCtrlInfoPageBootData0
+#define kNvmCtrlInfoPageBootData1             kFlashCtrlInfoPageBootData1
+#define kNvmCtrlInfoPageOwnerSlot0            kFlashCtrlInfoPageOwnerSlot0
+#define kNvmCtrlInfoPageOwnerSlot1            kFlashCtrlInfoPageOwnerSlot1
+#define kNvmCtrlInfoPageCreatorReserved0      kFlashCtrlInfoPageCreatorReserved0
+#define kNvmCtrlInfoPageOwnerReserved4        kFlashCtrlInfoPageOwnerReserved4
+#define kNvmCtrlInfoPageOwnerReserved5        kFlashCtrlInfoPageOwnerReserved5
+#define kNvmCtrlInfoPageOwnerReserved6        kFlashCtrlInfoPageOwnerReserved6
+#define kNvmCtrlInfoPageOwnerReserved7        kFlashCtrlInfoPageOwnerReserved7
+#define kNvmCtrlInfoPageDiceCerts             kFlashCtrlInfoPageDiceCerts
 
 // OTP field macros
 #define NVM_CTRL_OTP_FIELD_SCRAMBLING FLASH_CTRL_OTP_FIELD_SCRAMBLING
@@ -93,10 +111,10 @@ NVM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_NVM_CTRL_DECL_)
 #define NVM_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS \
   FLASH_CTRL_OTP_FIELD_HW_INFO_CFG_OVERRIDE_ECC_DIS
 
-// Certificate info page configuration and permissions (extern objects)
-extern const nvm_ctrl_cfg_t   kNvmCertificateInfoPageCfg;
-extern const nvm_ctrl_perms_t kNvmCertificateInfoPageCreatorAccess;
-extern const nvm_ctrl_perms_t kNvmCertificateInfoPageOwnerAccess;
+// Certificate info page configuration and permissions
+#define kNvmCertificateInfoPageCfg            kCertificateInfoPageCfg
+#define kNvmCertificateInfoPageCreatorAccess  kCertificateInfoPageCreatorAccess
+#define kNvmCertificateInfoPageOwnerAccess    kCertificateInfoPageOwnerAccess
 
 // ---------------------------------------------------------------------------
 // Functions

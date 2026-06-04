@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -413,13 +413,13 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (config->start >= start && config->start + config->size <= end) {
       uint32_t val = config->properties ^ crypt;
-      flash_ctrl_cfg_t cfg = {
+      nvm_ctrl_cfg_t cfg = {
           .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
           .ecc = bitfield_field32_read(val, FLASH_CONFIG_ECC),
           .he = bitfield_field32_read(val, FLASH_CONFIG_HIGH_ENDURANCE),
       };
       val = config->access ^ crypt;
-      flash_ctrl_perms_t perm = {
+      nvm_ctrl_perms_t perm = {
           .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
           .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
           .erase = bitfield_field32_read(val, FLASH_CONFIG_ERASE),
@@ -449,12 +449,12 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
       if (*mp_index < 2 * FLASH_CONFIG_REGIONS_PER_SLOT) {
         // We can only apply the region protection of mp_index is
         // within its acceptable bounds.
-        flash_ctrl_data_region_protect(kRomExtRegions + *mp_index,
+        nvm_ctrl_data_region_protect(kRomExtRegions + *mp_index,
                                        config->start, config->size, perm, cfg,
                                        lock);
-        SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect +
+        SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioDataRegionProtect +
                                  (lock == kHardenedBoolTrue
-                                      ? kFlashCtrlSecMmioDataRegionProtectLock
+                                      ? kNvmCtrlSecMmioDataRegionProtectLock
                                       : 0));
       }
       *mp_index += 1;
@@ -472,24 +472,24 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
-      flash_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+      nvm_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
           config->bank, config->page, &page));
       uint32_t val = config->properties ^ crypt;
-      flash_ctrl_cfg_t cfg = {
+      nvm_ctrl_cfg_t cfg = {
           .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
           .ecc = bitfield_field32_read(val, FLASH_CONFIG_ECC),
           .he = bitfield_field32_read(val, FLASH_CONFIG_HIGH_ENDURANCE),
       };
-      flash_ctrl_info_cfg_set(&page, cfg);
+      nvm_ctrl_info_cfg_set(&page, cfg);
 
       val = config->access ^ crypt;
-      flash_ctrl_perms_t perm = {
+      nvm_ctrl_perms_t perm = {
           .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
           .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
           .erase = bitfield_field32_read(val, FLASH_CONFIG_ERASE),
       };
-      flash_ctrl_info_perms_set(&page, perm);
+      nvm_ctrl_info_perms_set(&page, perm);
     }
   }
   return kErrorOk;
@@ -504,14 +504,14 @@ rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info) {
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
-      flash_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+      nvm_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
           config->bank, config->page, &page));
       uint32_t val = config->access ^ crypt;
       if (bitfield_field32_read(val, FLASH_CONFIG_LOCK) !=
           kMultiBitBool4False) {
-        flash_ctrl_info_cfg_lock(&page);
-        SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgLock);
+        nvm_ctrl_info_cfg_lock(&page);
+        SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInfoCfgLock);
       }
     }
   }
@@ -539,17 +539,17 @@ rom_error_t owner_block_info_isfb_erase_enable(
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue &&
         config->bank == owner_config->isfb->bank &&
         config->page == owner_config->isfb->page) {
-      flash_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+      nvm_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
           config->bank, config->page, &page));
 
       uint32_t val = config->access ^ crypt;
-      flash_ctrl_perms_t perm = {
+      nvm_ctrl_perms_t perm = {
           .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
           .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
           .erase = kMultiBitBool4True,
       };
-      flash_ctrl_info_perms_set(&page, perm);
+      nvm_ctrl_info_perms_set(&page, perm);
     }
   }
   return kErrorOk;
