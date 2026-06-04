@@ -10,8 +10,9 @@ use std::time::Duration;
 
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
-    CryptotestRsaKeygen, CryptotestRsaKeygenResp, CryptotestRsaSign, CryptotestRsaSignResp,
-    CryptotestRsaVerify, CryptotestRsaVerifyResp, RsaSubcommand,
+    CryptotestRsaKeygen, CryptotestRsaKeygenAcvp, CryptotestRsaKeygenAcvpResp,
+    CryptotestRsaKeygenResp, CryptotestRsaSign, CryptotestRsaSignResp, CryptotestRsaVerify,
+    CryptotestRsaVerifyResp, RsaSubcommand,
 };
 
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -530,6 +531,144 @@ fn run_rsa_siggen_group(
         n: n_hex,
         e: e_hex,
         tests: result_cases,
+    })
+}
+
+// RSA Key Generation (ACVP keyGen mode)
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RsaKeyGenTestCase {
+    tc_id: usize,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RsaKeyGenTestGroup {
+    tg_id: usize,
+    modulo: usize,
+    tests: Vec<RsaKeyGenTestCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RsaKeyGenTestVectorSet {
+    vs_id: usize,
+    algorithm: String,
+    mode: String,
+    revision: String,
+    #[serde(default)]
+    is_sample: bool,
+    test_groups: Vec<RsaKeyGenTestGroup>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RsaKeyGenResultCase {
+    pub tc_id: usize,
+    pub e: String,
+    pub p: String,
+    pub q: String,
+    pub n: String,
+    pub d: String,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RsaKeyGenResultGroup {
+    pub tg_id: usize,
+    pub tests: Vec<RsaKeyGenResultCase>,
+}
+
+#[derive(Deserialize, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RsaKeyGenResultVectorSet {
+    pub vs_id: usize,
+    pub algorithm: String,
+    pub mode: String,
+    pub revision: String,
+    #[serde(default)]
+    pub is_sample: bool,
+    pub test_groups: Vec<RsaKeyGenResultGroup>,
+}
+
+fn run_rsa_keygen_acvp_case(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    security_level: usize,
+    tc: &RsaKeyGenTestCase,
+) -> Result<RsaKeyGenResultCase> {
+    CryptotestCommand::Rsa.send(spi_console)?;
+    RsaSubcommand::RsaKeygenAcvp.send(spi_console)?;
+
+    CryptotestRsaKeygenAcvp { security_level }.send(spi_console)?;
+
+    let resp = CryptotestRsaKeygenAcvpResp::recv(spi_console, timeout, false, false)?;
+
+    let n_le = resp.n.as_slice()[..resp.n_len].to_vec();
+    let d_le = resp.d.as_slice()[..resp.d_len].to_vec();
+    let p_le = resp.p.as_slice()[..resp.p_len].to_vec();
+    let q_le = resp.q.as_slice()[..resp.q_len].to_vec();
+
+    // Convert from little-endian to big-endian hex for ACVP output.
+    let mut n_be = n_le;
+    n_be.reverse();
+    let mut d_be = d_le;
+    d_be.reverse();
+    let mut p_be = p_le;
+    p_be.reverse();
+    let mut q_be = q_le;
+    q_be.reverse();
+
+    Ok(RsaKeyGenResultCase {
+        tc_id: tc.tc_id,
+        e: u32_to_be_hex(resp.e),
+        p: hex::encode_upper(&p_be),
+        q: hex::encode_upper(&q_be),
+        n: hex::encode_upper(&n_be),
+        d: hex::encode_upper(&d_be),
+    })
+}
+
+fn run_rsa_keygen_acvp_group(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    tg: &RsaKeyGenTestGroup,
+) -> Result<RsaKeyGenResultGroup> {
+    log::info!("tg_id: {}", tg.tg_id);
+    let mut result_cases = Vec::new();
+    for tc in &tg.tests {
+        log::info!("tc_id: {}", tc.tc_id);
+        result_cases.push(run_rsa_keygen_acvp_case(
+            timeout,
+            spi_console,
+            tg.modulo,
+            tc,
+        )?);
+    }
+    Ok(RsaKeyGenResultGroup {
+        tg_id: tg.tg_id,
+        tests: result_cases,
+    })
+}
+
+pub fn run_rsa_keygen_acvp_vector_set(
+    timeout: Duration,
+    spi_console: &SpiConsoleDevice,
+    vs: &RsaKeyGenTestVectorSet,
+) -> Result<RsaKeyGenResultVectorSet> {
+    log::info!("vs_id: {}", vs.vs_id);
+    let mut result_groups = Vec::new();
+    for tg in &vs.test_groups {
+        result_groups.push(run_rsa_keygen_acvp_group(timeout, spi_console, tg)?);
+    }
+    Ok(RsaKeyGenResultVectorSet {
+        vs_id: vs.vs_id,
+        algorithm: vs.algorithm.clone(),
+        mode: vs.mode.clone(),
+        revision: vs.revision.clone(),
+        is_sample: false,
+        test_groups: result_groups,
     })
 }
 
