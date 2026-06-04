@@ -177,6 +177,20 @@ cryptotest(
     ],
 )
 
+cryptotest(
+    name = "rsa_keygen_acvp",
+    slow_test = True,
+    test_args = " ".join([
+        "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_keygen_vectors.json)\"",
+        "--run-keygen",
+        "--timeout=250s",
+    ]),
+    test_harness = "//sw/host/tests/crypto/acvp:harness",
+    test_vectors = [
+        "//sw/host/cryptotest/testvectors/acvp:rsa_keygen_vectors.json",
+    ],
+)
+
 # Runs AES-ECB and AES-GCM ACVP test vectors and compares against expected
 # results.  To also save the results to a file, append --output=<path> when
 # invoking with `bazelisk.sh run`:
@@ -883,6 +897,7 @@ test_suite(
         ":rsa_acvp",
         ":rsa_acvp_siggen",
         ":rsa_kat",
+        ":rsa_keygen_acvp",
         ":sha256_kat",
         ":sha384_kat",
         ":sha3_224_kat",
