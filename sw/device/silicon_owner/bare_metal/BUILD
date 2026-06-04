@@ -123,7 +123,7 @@ opentitan_binary(
 # Bare metal ROM_EXT + BL0 test that DOES NOT use OTTF.
 # - This test uses stand-alone binaries emitted by the opentitan_binary rule.
 # - The test assembles an image containing the ROM_EXT from the exec_env and
-#   the binary specified in the cw310 parameters.
+#   the binary specified in the cw310/cw340 parameters.
 ################################################################################
 BOOT_SUCCESS_MSG = "Bare metal PASS!"
 
@@ -131,6 +131,7 @@ opentitan_test(
     name = "rom_ext_virtual_bare_metal_virtual_boot_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         binaries = {
@@ -150,6 +151,7 @@ opentitan_test(
     srcs = ["empty_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest",
