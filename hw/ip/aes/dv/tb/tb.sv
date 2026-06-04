@@ -14,7 +14,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire                                    clk, rst_n, rst_shadowed_n;
-  wire [NUM_MAX_INTERRUPTS-1:0]           interrupts;
   wire [$bits(lc_ctrl_pkg::lc_tx_t) : 0]  lc_escalate;
   wire                                    idle;
   prim_mubi_pkg::mubi4_t                  idle_s;
@@ -25,7 +24,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   rst_shadowed_if rst_shadowed_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
-  pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
 
   pins_if #($bits(lc_escalate)) lc_escalate_if (lc_escalate);
   pins_if #(1) idle_if (idle);
@@ -76,7 +74,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
                                                  rst_shadowed_if);
-    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual aes_cov_if)::set(null, "*.env", "aes_cov_if", dut.u_aes_cov_if );
     uvm_config_db#(virtual key_sideload_if)
