@@ -83,22 +83,85 @@ module rom_ctrl_scrambled_rom
 
   // Parameter Checks ==========================================================
 
-  // The depth needs to be a power of 2 to use address scrambling
-  `ASSERT_INIT(DepthPow2Check_A, (Depth & (Depth - 1)) == 0)
+  // The depth needs to be a power of 2 or divisible by 4096 in case address scrambling is turned
+  // on.
+  localparam bit DepthPow2 = 2**$clog2(Depth) == Depth;
+  localparam int MinChunkDepth = 4096;
+
+  // Trigger an SVA and further a lint error to reduce the risk of accidentally going below the
+  // minimum ChunkDepth.
+  `ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
+      DepthPow2 || Depth % MinChunkDepth == 0)
+  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
+      DepthPow2 || Depth % MinChunkDepth == 0)
+
   // We only support a width up to 64
   `ASSERT_INIT(MaxWidthCheck_A, Width <= 64)
 
   // Address scrambling ========================================================
-
   logic [Aw-1:0] addr_scr;
+
+  // Choose the maximum chunk depth.
+  localparam int unsigned ChunkDepth = DepthPow2 ? Depth : Depth & (-Depth);
+  localparam int unsigned NumChunks = Depth / ChunkDepth;
+  localparam int unsigned ChunkAddrWidth = prim_util_pkg::vbits(ChunkDepth);
+  localparam int unsigned ChunkIdxWidth = Aw - ChunkAddrWidth;
+
+  logic [ChunkAddrWidth-1:0] addr_scr_in_data;
+  logic [ChunkAddrWidth-1:0] addr_scr_in_key;
+  logic [ChunkAddrWidth-1:0] addr_scr_out;
+
+  if (DepthPow2) begin : gen_pow_2_addr_scr
+    // The depth is a power of 2 and we have AddrWidth == ChunkAddrWidth. We can use a single
+    // bijective mapping across the full address space for the address scrambling.
+    assign addr_scr_in_data = rom_addr_i;
+    assign addr_scr_in_key  = addr_scr_nonce;
+    assign addr_scr         = addr_scr_out;
+
+    // Tie-off unused parameters.
+    logic unused_params;
+    assign unused_params = ^{MinChunkDepth};
+
+  end else begin : gen_non_pow_2_addr_scr
+    // The depth is NOT a power of 2 and we have AddrWidth > ChunkAddrWidth. We have to split the
+    // address. Only the LSBs are re-mapped with a bijective mapping. For the MSBs, a random start
+    // offset is used.
+
+    // Take care of the MSBs
+    logic [ChunkIdxWidth-1:0] chunk_idx_in;
+    logic [ChunkIdxWidth-1:0] chunk_offset;
+    logic [ChunkIdxWidth-1:0] chunk_idx_out;
+
+    assign chunk_idx_in = rom_addr_i[Aw-1:ChunkAddrWidth];
+    assign chunk_offset = addr_scr_nonce[Aw-1:ChunkAddrWidth];
+
+    // We use the MSBs of the nonce as a static offset and have to wrap around the computed index
+    // to fall back into the range of chunks actually implemented.
+    always_comb begin
+      logic [ChunkIdxWidth:0] chunk_idx;
+      chunk_idx = chunk_offset + chunk_idx_in;
+      if (chunk_idx >= NumChunks[ChunkIdxWidth:0]) begin
+        chunk_idx = chunk_idx - NumChunks[ChunkIdxWidth:0];
+      end
+      chunk_idx_out = chunk_idx[ChunkIdxWidth-1:0];
+    end
+
+    // Assign the LSBs.
+    assign addr_scr_in_data = rom_addr_i[ChunkAddrWidth-1:0];
+    assign addr_scr_in_key  = addr_scr_nonce[ChunkAddrWidth-1:0];
+
+    // Stitch the scrambled address together.
+    assign addr_scr = {chunk_idx_out, addr_scr_out};
+  end
+
   prim_subst_perm #(
-    .DataWidth (Aw),
+    .DataWidth (ChunkAddrWidth),
     .NumRounds (2),
     .Decrypt   (0)
   ) u_sp_addr (
-    .data_i (rom_addr_i),
-    .key_i  (addr_scr_nonce),
-    .data_o (addr_scr)
+    .data_i (addr_scr_in_data),
+    .key_i  (addr_scr_in_key),
+    .data_o (addr_scr_out)
   );
 
   // Keystream generation ======================================================
