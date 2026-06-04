@@ -27,8 +27,12 @@ filegroup(
 )
 
 filegroup(
-    name = "mldsa_cert",
-    srcs = ["tests/mldsa.hjson"],
+    name = "mldsa_certs",
+    srcs = [
+        "tests/mldsa_44.hjson",
+        "tests/mldsa_65.hjson",
+        "tests/mldsa_87.hjson",
+    ],
 )
 
 filegroup(
@@ -106,7 +110,7 @@ rust_test_suite(
         ":generic_cert",
         ":example_cert",
         ":example_data",
-        ":mldsa_cert",
+        ":mldsa_certs",
     ],
     deps = [
         ":ot_certs",
@@ -123,6 +127,16 @@ rust_doc(
 )
 
 certificate_template(
-    name = "mldsa_test_template",
-    template = "tests/mldsa.hjson",
+    name = "mldsa_44_test_template",
+    template = "tests/mldsa_44.hjson",
+)
+
+certificate_template(
+    name = "mldsa_65_test_template",
+    template = "tests/mldsa_65.hjson",
+)
+
+certificate_template(
+    name = "mldsa_87_test_template",
+    template = "tests/mldsa_87.hjson",
 )
