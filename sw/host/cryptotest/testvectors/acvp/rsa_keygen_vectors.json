@@ -1,0 +1,33 @@
+[
+  {
+    "vsId": 0,
+    "algorithm": "RSA",
+    "mode": "keyGen",
+    "revision": "FIPS186-4",
+    "isSample": true,
+    "testGroups": [
+      {
+        "tgId": 1,
+        "infoGeneratedByServer": false,
+        "modulo": 2048,
+        "testType": "GDT",
+        "keyFormat": "standard",
+        "primeTest": "2powSecStr",
+        "randPQ": "probable",
+        "pubExp": "fixed",
+        "fixedPubExp": "010001",
+        "tests": [
+          {
+            "tcId": 1
+          },
+          {
+            "tcId": 2
+          },
+          {
+            "tcId": 3
+          }
+        ]
+      }
+    ]
+  }
+]
