@@ -146,6 +146,17 @@ DIFS = {
 ]
 
 cc_library(
+    name = "nvm_ctrl",
+    srcs = ["dif_nvm_ctrl.c"],
+    hdrs = ["dif_nvm_ctrl.h"],
+    deps = [
+        ":flash_ctrl",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+    ],
+)
+
+cc_library(
     name = "csrng_shared",
     srcs = [
         "dif_csrng_shared.c",
