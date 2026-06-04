@@ -6,6 +6,8 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
+#include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -757,6 +759,64 @@ status_t handle_rsa_keygen(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_rsa_keygen_acvp(ujson_t *uj) {
+  cryptotest_rsa_keygen_acvp_t uj_input;
+  TRY(ujson_deserialize_cryptotest_rsa_keygen_acvp_t(uj, &uj_input));
+
+  otcrypto_rsa_size_t otcrypto_size;
+  size_t rsa_num_words;
+  size_t n_bytes = uj_input.security_level / 8;
+  TRY(rsa_size_params(uj_input.security_level, &otcrypto_size, &rsa_num_words,
+                      NULL, NULL, NULL));
+
+  rsa_size_t rsa_size;
+  switch (otcrypto_size) {
+    case kOtcryptoRsaSize2048:
+      rsa_size = kRsaSize2048;
+      break;
+    case kOtcryptoRsaSize3072:
+      rsa_size = kRsaSize3072;
+      break;
+    case kOtcryptoRsaSize4096:
+      rsa_size = kRsaSize4096;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA size: %d", (uint32_t)uj_input.security_level);
+      return INVALID_ARGUMENT();
+  }
+
+  uint32_t n_buf[rsa_num_words];
+  uint32_t d0_buf[rsa_num_words];
+  uint32_t d1_buf[rsa_num_words];
+  size_t prime_words = rsa_num_words / 2;
+  size_t prime_bytes = n_bytes / 2;
+  uint32_t p_buf[prime_words];
+  uint32_t q_buf[prime_words];
+
+  TRY(rsa_keygen_start(rsa_size));
+  TRY(rsa_keygen_finalize_size(rsa_size, n_buf, d0_buf, d1_buf, p_buf, q_buf));
+
+  uint32_t d_buf[rsa_num_words];
+  for (size_t i = 0; i < rsa_num_words; i++) {
+    d_buf[i] = d0_buf[i] ^ d1_buf[i];
+  }
+
+  cryptotest_rsa_keygen_acvp_resp_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  memcpy(uj_output.n, n_buf, n_bytes);
+  uj_output.n_len = n_bytes;
+  memcpy(uj_output.d, d_buf, n_bytes);
+  uj_output.d_len = n_bytes;
+  memcpy(uj_output.p, p_buf, prime_bytes);
+  uj_output.p_len = prime_bytes;
+  memcpy(uj_output.q, q_buf, prime_bytes);
+  uj_output.q_len = prime_bytes;
+  uj_output.e = kCryptotestRsaSupportedE;
+
+  RESP_OK(ujson_serialize_cryptotest_rsa_keygen_acvp_resp_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_rsa(ujson_t *uj) {
   rsa_subcommand_t cmd;
   TRY(ujson_deserialize_rsa_subcommand_t(uj, &cmd));
@@ -773,6 +833,8 @@ status_t handle_rsa(ujson_t *uj) {
       return handle_rsa_keygen_check(uj);
     case kRsaSubcommandRsaKeygen:
       return handle_rsa_keygen(uj);
+    case kRsaSubcommandRsaKeygenAcvp:
+      return handle_rsa_keygen_acvp(uj);
     default:
       LOG_ERROR("Unrecognized RSA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
