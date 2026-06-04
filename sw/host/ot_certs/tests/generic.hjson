@@ -97,7 +97,7 @@
         }
         tpm_vendor: {
             type: "string",
-            exact-size: 100,
+            range-size: [10, 150],
         }
         tpm_model: {
             type: "string",
