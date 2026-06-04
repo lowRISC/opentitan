@@ -18,6 +18,7 @@ exports_files([
     "kmac_expected.hjson",
     "kmac_vectors.hjson",
     "rsa_expected.json",
+    "rsa_keygen_vectors.json",
     "rsa_vectors.json",
     "sha_expected.hjson",
     "sha_vectors.hjson",
