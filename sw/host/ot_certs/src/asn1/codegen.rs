@@ -60,6 +60,8 @@ enum CodeChunk {
     ConstBytes(Vec<u8>),
     // Patch the last two bytes with length delta.
     SizePatchMemo(i16),
+    // Patch the length field using DER encoding (reserving 3 bytes).
+    DerSizePatchMemo,
     // Create a new nested block with left curly brace.
     OpenBlock,
     // Close a nested block. It should be paired with OpenBlock.
@@ -72,6 +74,7 @@ impl CodeChunk {
             CodeChunk::Code(_) => false,
             CodeChunk::ConstBytes(_) => true,
             CodeChunk::SizePatchMemo(_) => true,
+            CodeChunk::DerSizePatchMemo => true,
             CodeChunk::OpenBlock => true,
             CodeChunk::CloseBlock => true,
         }
@@ -158,6 +161,16 @@ impl Codegen<'_> {
                             output.push_str(&format!(
                                 "
                                     /* Size patch with delta {delta} */
+                                    template_pos_t memo = template_save_pos(&state, {patch_offset});
+                                "
+                            ));
+                        }
+                        CodeChunk::DerSizePatchMemo => {
+                            // Always 3 bytes reserved for DER patch.
+                            let patch_offset = nbytes - 3;
+                            output.push_str(&format!(
+                                "
+                                    /* DER Size patch memo */
                                     template_pos_t memo = template_save_pos(&state, {patch_offset});
                                 "
                             ));
@@ -279,26 +292,16 @@ impl Codegen<'_> {
     }
 
     /// Get the placeholder for length octet encoded with DER.
-    fn get_size_placeholder(min_size: usize, max_size: usize) -> Result<Vec<u8>> {
-        // DER requires the length octet encoded in minimum bytes.
-        let tag_size = Self::tag_size(max_size);
-        ensure!(
-            Self::tag_size(min_size) == tag_size,
-            "Var-sized length octet is not supported,\
-             max={max_size},\
-             min={min_size}"
-        );
-
+    fn get_size_placeholder(size: usize) -> Vec<u8> {
         let mut len_enc = Vec::<u8>::new();
-        if max_size <= 0x7f {
+        if size <= 0x7f {
             len_enc.push(0);
         } else {
-            let nbytes = Self::tag_size(max_size) - 2;
+            let nbytes = Self::tag_size(size) - 2;
             len_enc.push(0x80 | (nbytes as u8));
             len_enc.extend(std::iter::repeat(0).take(nbytes));
         }
-
-        Ok(len_enc)
+        len_enc
     }
 
     /// Return the maximum size of ASN1 tag, ie the tag itself, the length.
@@ -794,9 +797,15 @@ impl Builder for Codegen<'_> {
         let max_size: usize = self.max_out_size - old_max_size;
 
         // Generate size patching code.
-        let len_enc = Self::get_size_placeholder(min_size, max_size)?;
-        self.min_out_size += len_enc.len();
-        self.max_out_size += len_enc.len();
+        let len_enc_min = Self::get_size_placeholder(min_size);
+        let len_enc_max = Self::get_size_placeholder(max_size);
+
+        // Calculate size bounds updates.
+        let use_der_patch = min_size != max_size && len_enc_min.len() != len_enc_max.len();
+        let reserved_max_len = if use_der_patch { 3 } else { len_enc_max.len() };
+
+        self.min_out_size += len_enc_min.len();
+        self.max_out_size += reserved_max_len;
 
         if min_size == max_size {
             self.output[len_idx].comment = Some(format!("Length of fixed-sized {tag_name}"));
@@ -822,15 +831,30 @@ impl Builder for Codegen<'_> {
             let len_enc = Der::encode_size(max_size);
             self.output[len_idx].code = CodeChunk::ConstBytes(len_enc);
             // The memo placeholder is left empty / no-op in this branch.
+        } else if use_der_patch {
+            // Use DER patch. Always reserve 3 bytes.
+            let len_enc = vec![0x82, 0x00, 0x00];
+
+            self.output[len_idx].comment = Some(format!(
+                "Length of {tag_name} between {min_size} ~ {max_size} (DER patch)"
+            ));
+            self.output[len_idx].code = CodeChunk::ConstBytes(len_enc);
+
+            self.output[memo_idx] = CodeChunkWithComment {
+                code: CodeChunk::DerSizePatchMemo,
+                comment: Some(format!("Start of {tag_name}")),
+            };
+            self.push_chunk(
+                CodeChunk::Code("template_patch_size_der(&state, memo);\n".to_string()),
+                Some(format!("End of {tag_name}")),
+            );
         } else {
-            /* var-sized tag */
+            // Equal-size var-sized
             self.output[len_idx].comment = Some(format!(
                 "Length of {tag_name} between {min_size} ~ {max_size}"
             ));
+            self.output[len_idx].code = CodeChunk::ConstBytes(len_enc_max);
 
-            self.output[len_idx].code = CodeChunk::ConstBytes(len_enc);
-
-            // Add the memo statement.
             self.output[memo_idx] = CodeChunkWithComment {
                 code: CodeChunk::SizePatchMemo(-2),
                 comment: Some(format!("Start of {tag_name}")),

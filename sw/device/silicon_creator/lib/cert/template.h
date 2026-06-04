@@ -219,6 +219,11 @@ static inline template_pos_t template_save_pos(template_state_t *state,
 void template_patch_size_be_impl(template_pos_t memo, uint8_t *out_end);
 
 /**
+ * Private implementation of `template_patch_size_der`.
+ */
+uint8_t* template_patch_size_der_impl(template_pos_t memo, uint8_t *out_end);
+
+/**
  * Add the actual output size after the memo to the patch location.
  *
  * The function will perform addition as BE u16 (i.e. mod 65536).
@@ -229,6 +234,17 @@ void template_patch_size_be_impl(template_pos_t memo, uint8_t *out_end);
 static inline void template_patch_size_be(template_state_t *state,
                                           template_pos_t memo) {
   template_patch_size_be_impl(memo, state->out_end);
+}
+
+/**
+ * Patch the length field using DER encoding (reserving 3 bytes), and shift the content if needed.
+ *
+ * @param state Pointer to the template engine state.
+ * @param memo The memorized location from `template_save_pos`.
+ */
+static inline void template_patch_size_der(template_state_t *state,
+                                           template_pos_t memo) {
+  state->out_end = template_patch_size_der_impl(memo, state->out_end);
 }
 
 /**
