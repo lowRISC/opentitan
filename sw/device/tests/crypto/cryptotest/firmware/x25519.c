@@ -13,6 +13,8 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/x25519_commands.h"
 
+#define MODULE_ID MAKE_MODULE_ID('x', 't', 't')
+
 // Copied from internal headers to remove dependencies.
 // kOtcryptoKeyModeX25519 is typed as kOtcryptoKeyTypeEcc, so the keyblob
 // library appends 64 redundant bits per share (see keyblob.c). These extra
