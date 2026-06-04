@@ -185,6 +185,7 @@ module rom_ctrl
   tlul_adapter_sram #(
     .SramAw(RomIndexWidth),
     .SramDw(32),
+    .SramDepth(RomSizeWords),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1),

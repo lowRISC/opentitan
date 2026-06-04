@@ -35,11 +35,11 @@ package rom_ctrl_prim_ral_pkg;
   endfunction : new
 
 
-  class rom_ctrl_prim_reg_block #(parameter int AddrWidth = 10) extends dv_base_reg_block;
+  class rom_ctrl_prim_reg_block #(parameter int MemDepth = 32) extends dv_base_reg_block;
     // memories
-    rand rom_ctrl_prim_mem_rom_mem #(2 ** AddrWidth) rom_mem;
+    rand rom_ctrl_prim_mem_rom_mem #(MemDepth) rom_mem;
 
-    `uvm_object_param_utils(rom_ctrl_prim_reg_block#(AddrWidth))
+    `uvm_object_param_utils(rom_ctrl_prim_reg_block#(MemDepth))
 
     extern function new(string name = "",
                         int has_coverage = UVM_NO_COVERAGE);
@@ -66,7 +66,7 @@ package rom_ctrl_prim_ral_pkg;
     end
 
     // create memories
-    rom_mem = rom_ctrl_prim_mem_rom_mem#(2 ** AddrWidth)::type_id::create("rom_mem");
+    rom_mem = rom_ctrl_prim_mem_rom_mem#(MemDepth)::type_id::create("rom_mem");
     rom_mem.configure(.parent(this));
     default_map.add_mem(.mem(rom_mem),
                         .offset(32'h0),

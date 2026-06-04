@@ -99,7 +99,7 @@ function dv_base_reg_block rom_ctrl_env_cfg::create_ral_by_name(string name);
   if (name == RAL_T::type_name) begin
     return super.create_ral_by_name(name);
   end else if (name == rom_ral_name) begin
-    return rom_ctrl_prim_reg_block#(ROM_WORD_ADDR_WIDTH)::type_id::create(rom_ral_name);
+    return rom_ctrl_prim_reg_block#(ROM_SIZE_WORDS)::type_id::create(rom_ral_name);
   end else begin
     `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
   end

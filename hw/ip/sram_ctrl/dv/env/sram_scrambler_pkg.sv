@@ -207,7 +207,7 @@ package sram_scrambler_pkg;
 
     if (depth > 2**addr_width) begin
       `uvm_error("encrypt_sram_addr",
-          $sformatf("Can't address %d elements with just %d address bits", depth, addr_width))
+          $sformatf("Can't address %0d elements with just %0d address bits", depth, addr_width))
     end else if (depth == 2**addr_width) begin
       // Because the memory depth is exactly the size addressable by addr_width, we can simply pass
       // the full address through the S&P network.
@@ -221,6 +221,10 @@ package sram_scrambler_pkg;
       // `off_addr` bits of the nonce.
       int sp_depth = depth & (-depth);
       num_chunks = depth / sp_depth;
+      if (num_chunks * sp_depth != depth) begin
+        `uvm_error("encrypt_sram_addr", $sformatf("%0d chunks of depth %0d don't give %0d elements",
+            num_chunks, sp_depth, depth))
+      end
       sp_width = $clog2(sp_depth);
       off_width = addr_width - sp_width;
     end
@@ -295,7 +299,7 @@ package sram_scrambler_pkg;
 
     if (depth > 2**addr_width) begin
       `uvm_error("decrypt_sram_addr",
-          $sformatf("Can't address %d elements with just %d address bits", depth, addr_width))
+          $sformatf("Can't address %0d elements with just %0d address bits", depth, addr_width))
     end else if (depth == 2**addr_width) begin
       // Because the memory depth is exactly the size addressable by addr_width, we can simply pass
       // the full address through the S&P network.
@@ -309,6 +313,10 @@ package sram_scrambler_pkg;
       // `off_addr` bits of the nonce.
       int sp_depth = depth & (-depth);
       num_chunks = depth / sp_depth;
+      if (num_chunks * sp_depth != depth) begin
+        `uvm_error("encrypt_sram_addr", $sformatf("%0d chunks of depth %0d don't give %0d elements",
+            num_chunks, sp_depth, depth))
+      end
       sp_width = $clog2(sp_depth);
       off_width = addr_width - sp_width;
     end
