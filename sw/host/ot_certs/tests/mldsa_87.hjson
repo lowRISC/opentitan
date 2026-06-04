@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-    name: "mldsa",
+    name: "mldsa_87",
 
     variables: {
         serial_number: {
@@ -29,11 +29,11 @@
         },
         mldsa_pub_key: {
             type: "byte-array",
-            exact-size: 1952,
+            exact-size: 2592,
         },
         mldsa_sig: {
             type: "byte-array",
-            exact-size: 3300,
+            exact-size: 4627,
         }
     },
 
@@ -48,13 +48,13 @@
         not_before: { var: "not_before" },
         not_after: { var: "not_after" },
         subject_public_key_info: {
-            algorithm: "mldsa-65",
+            algorithm: "mldsa-87",
             public_key: { var: "mldsa_pub_key" },
         },
         authority_key_identifier: { var: "auth_key_id" },
         subject_key_identifier: { var: "pub_key_id" },
         signature: {
-            algorithm: "mldsa-65",
+            algorithm: "mldsa-87",
             value: { var: "mldsa_sig" }
         }
     }
