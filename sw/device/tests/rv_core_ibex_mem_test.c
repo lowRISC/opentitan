@@ -20,12 +20,12 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/pmp.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
@@ -133,21 +133,21 @@ static void setup_flash(void) {
         "Load configuration failed, error code = %d", configure_result);
 
   // Initialise the flash controller.
-  dif_flash_ctrl_state_t flash_ctrl;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  dif_nvm_ctrl_state_t flash_ctrl;
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
+  CHECK_STATUS_OK(nvm_testutils_wait_for_init(&flash_ctrl));
 
-  dif_flash_ctrl_region_properties_t region_properties = {
+  dif_nvm_ctrl_region_properties_t region_properties = {
       .rd_en = kMultiBitBool4True,
       .prog_en = kMultiBitBool4True,
       .erase_en = kMultiBitBool4True,
       .scramble_en = kMultiBitBool4False,
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
-  dif_flash_ctrl_data_region_properties_t data_region = {
+  dif_nvm_ctrl_data_region_properties_t data_region = {
       .base = kBank1StartPageNum, .size = 0x1, .properties = region_properties};
 
   CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
@@ -160,12 +160,12 @@ static void setup_flash(void) {
       dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
 
   // Write the wanted value to flash
-  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
+  CHECK_STATUS_OK(nvm_testutils_erase_and_write_page(
       /*flash_state=*/&flash_ctrl,
       /*byte_address=*/kFlashTestLoc,
       /*partition_id=*/0,
       /*data=*/&kFlashTestLocContent,
-      /*partition_type=*/kDifFlashCtrlPartitionTypeData,
+      /*partition_type=*/kDifNvmCtrlPartitionTypeData,
       /*word_count=*/1));
 }
 

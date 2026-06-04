@@ -8,7 +8,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -39,7 +39,7 @@ static_assert(kDtFlashCtrlCount >= 1,
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 
 enum {
   kPlicTarget = 0,
@@ -102,7 +102,7 @@ bool test_main(void) {
   if (kDeviceType == kDeviceSimDV) {
     // Enable access to flash for storing info across resets.
     CHECK_STATUS_OK(
-        flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+        nvm_testutils_default_region_access(&flash_ctrl_state,
                                                    /*rd_en*/ true,
                                                    /*prog_en*/ true,
                                                    /*erase_en*/ true,
@@ -123,11 +123,11 @@ bool test_main(void) {
     wakeup_detector_selected =
         rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
     if (kDeviceType == kDeviceSimDV) {
-      CHECK_STATUS_OK(flash_ctrl_testutils_write(
+      CHECK_STATUS_OK(nvm_testutils_write(
           &flash_ctrl_state,
           (uint32_t)(&wakeup_detector_idx) -
               TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-          0, &wakeup_detector_selected, kDifFlashCtrlPartitionTypeData, 1));
+          0, &wakeup_detector_selected, kDifNvmCtrlPartitionTypeData, 1));
     }
     LOG_INFO("detector %d is selected", wakeup_detector_selected);
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be

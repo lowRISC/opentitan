@@ -9,10 +9,10 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -73,8 +73,8 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
 }
 
 status_t manuf_individualize_device_hw_cfg(
-    dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
+    dif_nvm_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
+    dif_nvm_ctrl_region_properties_t flash_info_page_0_permissions,
     const uint32_t *ft_device_id) {
   bool is_locked;
 
@@ -84,7 +84,7 @@ status_t manuf_individualize_device_hw_cfg(
   if (!is_locked) {
     // Configure flash info page permissions in case we started from a cold
     // boot. Note: cp_device_id and manuf_state are on the same flash info page.
-    TRY(flash_ctrl_testutils_info_region_setup_properties(
+    TRY(nvm_testutils_info_region_setup_properties(
         flash_state, kFlashInfoFieldCpDeviceId.page,
         kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
         flash_info_page_0_permissions,

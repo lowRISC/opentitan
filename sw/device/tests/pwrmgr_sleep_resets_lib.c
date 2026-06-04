@@ -14,7 +14,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -41,7 +41,7 @@ static_assert(
         kWdogBiteMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros),
     "The wdog bark and bite should happen during the escalation phase 1");
 
-dif_flash_ctrl_state_t *flash_ctrl;
+dif_nvm_ctrl_state_t *flash_ctrl;
 dif_rv_plic_t *plic;
 dif_alert_handler_t *alert_handler;
 dif_aon_timer_t *aon_timer;
@@ -49,7 +49,7 @@ dif_pwrmgr_t *pwrmgr;
 dif_sysrst_ctrl_t *sysrst_ctrl_aon;
 dif_rstmgr_t *rstmgr;
 
-dif_flash_ctrl_state_t flash_ctrl_actual;
+dif_nvm_ctrl_state_t flash_ctrl_actual;
 dif_rv_plic_t plic_actual;
 dif_alert_handler_t alert_handler_actual;
 dif_aon_timer_t aon_timer_actual;

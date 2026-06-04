@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 
 /**
  * Returns the value of a non-volatile counter in flash.
@@ -29,7 +29,7 @@ status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value);
  */
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_increment(
-    dif_flash_ctrl_state_t *flash_state, size_t counter);
+    dif_nvm_ctrl_state_t *flash_state, size_t counter);
 
 /**
  * Sets a non-volatile counter to at least `val`.
@@ -46,7 +46,7 @@ status_t flash_ctrl_testutils_counter_increment(
  */
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_set_at_least(
-    dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val);
+    dif_nvm_ctrl_state_t *flash_state, size_t counter, uint32_t val);
 
 /**
  * At the beginning of the simulation (Verilator, VCS,etc.),
@@ -62,6 +62,6 @@ status_t flash_ctrl_testutils_counter_set_at_least(
  **/
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_counter_init_zero(
-    dif_flash_ctrl_state_t *flash_state, size_t counter);
+    dif_nvm_ctrl_state_t *flash_state, size_t counter);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_NV_COUNTER_TESTUTILS_H_

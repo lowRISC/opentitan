@@ -33,8 +33,8 @@
 #endif
 
 #ifdef HAS_FLASH_CTRL
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 #endif
@@ -54,7 +54,7 @@ static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
 
 #ifdef HAS_FLASH_CTRL
 static const dt_flash_ctrl_t kFlashCtrlDt = kDtFlashCtrl;
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 #endif
 
 static const dt_uart_t kUart0Dt = kDtUart0;
@@ -142,14 +142,14 @@ bool rom_test_main(void) {
 #ifdef HAS_FLASH_CTRL
   CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
   CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
+  CHECK_STATUS_OK(nvm_testutils_wait_for_init(&flash_ctrl));
 #ifdef HAS_OTP_CTRL
   // Check the otp to see if flash scramble should be enabled.
   otp_val = abs_mmio_read32(
       otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
   if (otp_val != 0) {
-    dif_flash_ctrl_region_properties_t default_properties;
+    dif_nvm_ctrl_region_properties_t default_properties;
     CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
         &flash_ctrl, &default_properties));
     default_properties.scramble_en =

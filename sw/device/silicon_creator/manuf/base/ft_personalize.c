@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -16,7 +16,7 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -94,7 +94,7 @@ static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
 /**
  * Peripheral handles.
  */
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
@@ -248,7 +248,7 @@ static status_t check_next_slot_bootable(void) {
  * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
@@ -655,7 +655,7 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   static_assert(
       kFlashInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
       "WAS size expected to be same size as HMAC-SHA256 key.");
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
+  TRY(nvm_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
       kFlashInfoFieldWaferAuthSecret.bank,
       kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3ReadPermissions,

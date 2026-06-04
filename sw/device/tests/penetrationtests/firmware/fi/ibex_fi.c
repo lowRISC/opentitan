@@ -10,12 +10,12 @@
 #include "sw/device/lib/base/csr_registers.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -377,8 +377,8 @@ OT_ALWAYS_INLINE void restore_all_regs(uint32_t buffer[]) {
 #define DUMP_TMP_REGISTER_FILE save_tmp_regs(registers_dumped);
 
 // Flash information.
-static dif_flash_ctrl_state_t flash;
-static dif_flash_ctrl_device_info_t flash_info;
+static dif_nvm_ctrl_state_t flash;
+static dif_nvm_ctrl_device_info_t flash_info;
 #define FLASH_PAGES_PER_BANK flash_info.data_pages
 #define FLASH_WORD_SZ flash_info.bytes_per_word
 #define FLASH_PAGE_SZ flash_info.bytes_per_page
@@ -2493,7 +2493,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   if (!flash_init) {
     // Configure the data flash.
     // Flash configuration.
-    dif_flash_ctrl_region_properties_t region_properties = {
+    dif_nvm_ctrl_region_properties_t region_properties = {
         .rd_en = kMultiBitBool4True,
         .prog_en = kMultiBitBool4True,
         .erase_en = kMultiBitBool4True,
@@ -2501,7 +2501,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
         .ecc_en = kMultiBitBool4True,
         .high_endurance_en = kMultiBitBool4False};
 
-    dif_flash_ctrl_data_region_properties_t data_region = {
+    dif_nvm_ctrl_data_region_properties_t data_region = {
         .base = FLASH_PAGES_PER_BANK,
         .size = 0x1,
         .properties = region_properties};
@@ -2534,9 +2534,9 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
     }
 
     // Erase flash and write page with reference values.
-    TRY(flash_ctrl_testutils_erase_and_write_page(
+    TRY(nvm_testutils_erase_and_write_page(
         &flash, flash_test_page_addr, /*partition_id=*/0, input_page,
-        kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+        kDifNvmCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
 
     flash_data_valid = true;
   }
@@ -2628,7 +2628,7 @@ status_t handle_ibex_fi_char_flash_read_static(ujson_t *uj)
 
   // Configure the data flash.
   // Flash configuration with ECC and scramble disabled
-  dif_flash_ctrl_region_properties_t region_properties = {
+  dif_nvm_ctrl_region_properties_t region_properties = {
       .rd_en = kMultiBitBool4True,
       .prog_en = kMultiBitBool4True,
       .erase_en = kMultiBitBool4True,
@@ -2636,7 +2636,7 @@ status_t handle_ibex_fi_char_flash_read_static(ujson_t *uj)
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
 
-  dif_flash_ctrl_data_region_properties_t data_region = {
+  dif_nvm_ctrl_data_region_properties_t data_region = {
       .base = FLASH_PAGES_PER_BANK,
       .size = 0x1,
       .properties = region_properties};
@@ -2674,9 +2674,9 @@ status_t handle_ibex_fi_char_flash_read_static(ujson_t *uj)
     }
 
     // Erase flash and write page with reference values.
-    TRY(flash_ctrl_testutils_erase_and_write_page(
+    TRY(nvm_testutils_erase_and_write_page(
         &flash, flash_addr, /*partition_id=*/0, input_page,
-        kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+        kDifNvmCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   }
 
   PENTEST_ASM_TRIGGER_HIGH
@@ -2746,7 +2746,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   if (!flash_init) {
     // Configure the data flash.
     // Flash configuration.
-    dif_flash_ctrl_region_properties_t region_properties = {
+    dif_nvm_ctrl_region_properties_t region_properties = {
         .rd_en = kMultiBitBool4True,
         .prog_en = kMultiBitBool4True,
         .erase_en = kMultiBitBool4True,
@@ -2754,7 +2754,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
         .ecc_en = kMultiBitBool4True,
         .high_endurance_en = kMultiBitBool4False};
 
-    dif_flash_ctrl_data_region_properties_t data_region = {
+    dif_nvm_ctrl_data_region_properties_t data_region = {
         .base = FLASH_PAGES_PER_BANK,
         .size = 0x1,
         .properties = region_properties};
@@ -2787,9 +2787,9 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   // Erase flash and write page with reference values.
-  TRY(flash_ctrl_testutils_erase_and_write_page(
+  TRY(nvm_testutils_erase_and_write_page(
       &flash, flash_test_page_addr, /*partition_id=*/0, input_page,
-      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+      kDifNvmCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   PENTEST_ASM_TRIGGER_LOW
 
   // Get registered alerts from alert handler.
@@ -4829,9 +4829,9 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
 status_t handle_ibex_fi_init(ujson_t *uj) {
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(flash_ctrl_testutils_wait_for_init(&flash));
+  TRY(nvm_testutils_wait_for_init(&flash));
 
   // Init OTP.
   TRY(dif_otp_ctrl_init(

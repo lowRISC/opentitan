@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_SW_CFG_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_img_types.h"
 
@@ -67,7 +67,7 @@ extern const otp_kv_t kOtpKvRotCreatorAuthState[];
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_creator_sw_cfg(
-    const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state);
+    const dif_otp_ctrl_t *otp_ctrl, dif_nvm_ctrl_state_t *flash_state);
 
 /**
  * This must be called before both

@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -62,7 +62,7 @@ static_assert(kDtFlashCtrlCount == 1, "this test expects a flash_ctrl");
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;

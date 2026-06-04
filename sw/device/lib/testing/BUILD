@@ -201,7 +201,7 @@ cc_library(
         ":flash_ctrl_testutils",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:nvm_ctrl",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
@@ -270,7 +270,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:nvm_ctrl",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",

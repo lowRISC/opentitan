@@ -13,7 +13,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -24,7 +24,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -43,7 +43,7 @@ static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 /**
  * Objects to access the peripherals used in this test via dif API.
  */
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
@@ -417,7 +417,7 @@ bool test_main(void) {
 
   // Enable flash access
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+      nvm_testutils_default_region_access(&flash_ctrl,
                                                  /*rd_en*/ true,
                                                  /*prog_en*/ true,
                                                  /*erase_en*/ true,

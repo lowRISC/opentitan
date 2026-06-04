@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_BASE_PERSONALIZE_EXT_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
@@ -52,7 +52,7 @@ typedef struct personalize_extension_pre_endorse {
   /**
    * Pointer to the flash controller handle necessary for proper flash access.
    */
-  dif_flash_ctrl_state_t *flash_ctrl_handle;
+  dif_nvm_ctrl_state_t *flash_ctrl_handle;
   /**
    * Pointer to the UDS public key. Personalization extensions may require
    * accessing it to generate different certificate chains that fit a specific

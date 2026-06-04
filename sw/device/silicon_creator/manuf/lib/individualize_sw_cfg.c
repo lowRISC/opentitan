@@ -8,9 +8,9 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
@@ -182,18 +182,18 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 }
 
 static status_t manuf_individualize_device_ast_cfg(
-    const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
+    const dif_otp_ctrl_t *otp_ctrl, dif_nvm_ctrl_state_t *flash_state) {
   // Clear flash info page buffer.
   memset(flash_info_page_buf, UINT8_MAX, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
 
   // Copy all of flash info page 0 into RAM. This contains the AST configuration
   // data, which we will extract and then delete.
   uint32_t page_byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
+  TRY(nvm_testutils_info_region_setup_properties(
       flash_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
       kFlashInfoFieldAstCalibrationData.partition,
-      (dif_flash_ctrl_region_properties_t){
+      (dif_nvm_ctrl_region_properties_t){
           .ecc_en = kMultiBitBool4False,
           .high_endurance_en = kMultiBitBool4False,
           .erase_en = kMultiBitBool4True,
@@ -201,10 +201,10 @@ static status_t manuf_individualize_device_ast_cfg(
           .rd_en = kMultiBitBool4True,
           .scramble_en = kMultiBitBool4False},
       &page_byte_address));
-  TRY(flash_ctrl_testutils_read(
+  TRY(nvm_testutils_read(
       flash_state, page_byte_address,
       kFlashInfoFieldAstCalibrationData.partition, flash_info_page_buf,
-      kDifFlashCtrlPartitionTypeInfo,
+      kDifNvmCtrlPartitionTypeInfo,
       FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
       /*delay=*/0));
 
@@ -231,21 +231,21 @@ static status_t manuf_individualize_device_ast_cfg(
 
   // Erase AST data from flash by erasing the entire page and rewriting the
   // modified buffered contents back to the page.
-  TRY(flash_ctrl_testutils_erase_page(
+  TRY(nvm_testutils_erase_page(
       flash_state, page_byte_address,
       kFlashInfoFieldAstCalibrationData.partition,
-      kDifFlashCtrlPartitionTypeInfo));
-  TRY(flash_ctrl_testutils_write(
+      kDifNvmCtrlPartitionTypeInfo));
+  TRY(nvm_testutils_write(
       flash_state, page_byte_address,
       kFlashInfoFieldAstCalibrationData.partition, flash_info_page_buf,
-      kDifFlashCtrlPartitionTypeInfo,
+      kDifNvmCtrlPartitionTypeInfo,
       FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t)));
 
   return OK_STATUS();
 }
 
 status_t manuf_individualize_device_creator_sw_cfg(
-    const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
+    const dif_otp_ctrl_t *otp_ctrl, dif_nvm_ctrl_state_t *flash_state) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
                     kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
   TRY(manuf_individualize_device_ast_cfg(otp_ctrl, flash_state));

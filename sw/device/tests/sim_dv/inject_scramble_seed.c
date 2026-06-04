@@ -6,13 +6,13 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -25,7 +25,7 @@
 
 static dif_rstmgr_t rstmgr;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 
 enum {
   kFlashWordSize = FLASH_CTRL_PARAM_BYTES_PER_WORD,
@@ -42,11 +42,11 @@ OTTF_DEFINE_TEST_CONFIG();
 // partition to be written.
 OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t kIsoPartExpData[16];)
 
-static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
+static void check_iso_data(dif_nvm_ctrl_state_t *flash_ctrl) {
   // Disable scramble on expected data page
   uint32_t exp_data_addr = (uint32_t)&kIsoPartExpData;
   uint32_t base_page = (exp_data_addr - kFlashStartAddr) / kFlashPageSize;
-  dif_flash_ctrl_region_properties_t exp_page = {
+  dif_nvm_ctrl_region_properties_t exp_page = {
       .rd_en = kMultiBitBool4True,
       .prog_en = kMultiBitBool4False,
       .erase_en = kMultiBitBool4False,
@@ -54,7 +54,7 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
   uint32_t addr = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
+  CHECK_STATUS_OK(nvm_testutils_data_region_setup_properties(
       flash_ctrl, base_page, /*data_region=*/kFlashMpRegions - 1,
       /*region_size=*/1, exp_page, &addr));
 
@@ -63,7 +63,7 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
         (exp_data_addr < (addr + kFlashPageSize + kFlashStartAddr)));
 
   // Enable access to isolated page.
-  dif_flash_ctrl_region_properties_t iso_page = {
+  dif_nvm_ctrl_region_properties_t iso_page = {
       .rd_en = kMultiBitBool4True,
       .prog_en = kMultiBitBool4False,
       .erase_en = kMultiBitBool4False,
@@ -71,14 +71,14 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
       .ecc_en = kMultiBitBool4False,
       .high_endurance_en = kMultiBitBool4False};
 
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
+  CHECK_STATUS_OK(nvm_testutils_info_region_setup_properties(
       flash_ctrl, /*page_id=*/3,
       /*bank=*/0, /*partition_id=*/0, iso_page, &addr));
 
   uint32_t read_data[16];
-  CHECK_STATUS_OK(flash_ctrl_testutils_read(
+  CHECK_STATUS_OK(nvm_testutils_read(
       flash_ctrl, addr, /*partition_id=*/0, read_data,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(read_data), 0));
+      kDifNvmCtrlPartitionTypeInfo, ARRAYSIZE(read_data), 0));
 
   CHECK_ARRAYS_EQ(kIsoPartExpData, read_data, ARRAYSIZE(read_data),
                   "Isolated info page data mismatch.");
@@ -91,7 +91,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 

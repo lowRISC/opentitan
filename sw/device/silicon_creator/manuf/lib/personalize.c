@@ -7,10 +7,10 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -52,7 +52,7 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
 
 OT_WARN_UNUSED_RESULT
 status_t manuf_personalize_flash_asymm_key_seed(
-    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
+    dif_nvm_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
@@ -65,23 +65,23 @@ status_t manuf_personalize_flash_asymm_key_seed(
   // we only need to set up the permissions on the page, and erase it once.
   uint32_t byte_address = 0;
   if (field.byte_offset == 0) {
-    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+    TRY(nvm_testutils_info_region_scrambled_setup(
         flash_state, field.page, field.bank, field.partition, &byte_address));
-    TRY(flash_ctrl_testutils_erase_and_write_page(
+    TRY(nvm_testutils_erase_and_write_page(
         flash_state, byte_address, field.partition, seed,
-        kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+        kDifNvmCtrlPartitionTypeInfo, kAttestationSeedWords));
   } else {
-    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+    dif_nvm_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
     byte_address =
         (field.page * device_info.bytes_per_page) + field.byte_offset;
-    TRY(flash_ctrl_testutils_write(flash_state, byte_address, field.partition,
-                                   seed, kDifFlashCtrlPartitionTypeInfo,
+    TRY(nvm_testutils_write(flash_state, byte_address, field.partition,
+                                   seed, kDifNvmCtrlPartitionTypeInfo,
                                    kAttestationSeedWords));
   }
 
   uint32_t seed_result[kAttestationSeedWords];
-  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
-                                seed_result, kDifFlashCtrlPartitionTypeInfo,
+  TRY(nvm_testutils_read(flash_state, byte_address, field.partition,
+                                seed_result, kDifNvmCtrlPartitionTypeInfo,
                                 len,
                                 /*delay=*/0));
   bool found_error = false;
@@ -106,7 +106,7 @@ status_t manuf_personalize_flash_asymm_key_seed(
  */
 OT_WARN_UNUSED_RESULT
 static status_t flash_keymgr_secret_seed_write(
-    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
+    dif_nvm_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
@@ -116,16 +116,16 @@ static status_t flash_keymgr_secret_seed_write(
   TRY(entropy_csrng_uninstantiate());
 
   uint32_t address = 0;
-  TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+  TRY(nvm_testutils_info_region_scrambled_setup(
       flash_state, field.page, field.bank, field.partition, &address));
 
-  TRY(flash_ctrl_testutils_erase_and_write_page(
+  TRY(nvm_testutils_erase_and_write_page(
       flash_state, address, field.partition, seed,
-      kDifFlashCtrlPartitionTypeInfo, len));
+      kDifNvmCtrlPartitionTypeInfo, len));
 
   uint32_t seed_result[kFlashInfoFieldKeySeedSizeIn32BitWords];
-  TRY(flash_ctrl_testutils_read(flash_state, address, field.partition,
-                                seed_result, kDifFlashCtrlPartitionTypeInfo,
+  TRY(nvm_testutils_read(flash_state, address, field.partition,
+                                seed_result, kDifNvmCtrlPartitionTypeInfo,
                                 len,
                                 /*delay=*/0));
   bool found_error = false;
@@ -190,7 +190,7 @@ static status_t otp_partition_secret2_configure(
 }
 
 status_t manuf_personalize_device_secrets(
-    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
+    dif_nvm_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
     const dif_otp_ctrl_t *otp_ctrl,
     const lc_token_hash_t *rma_unlock_token_hash) {
   // Check life cycle in either PROD, PROD_END, or DEV.

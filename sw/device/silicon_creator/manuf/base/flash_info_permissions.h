@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_BASE_FLASH_INFO_PERMISSIONS_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_BASE_FLASH_INFO_PERMISSIONS_H_
 
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 
 /**
  * Access permissions for flash info page 0 (holds device_id and manuf_state).
@@ -13,7 +13,7 @@
  * We keep ECC disabled on this page as the ATE cannot use ECC when writing this
  * page earlier during the provisioning process.
  */
-dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
+dif_nvm_ctrl_region_properties_t kFlashInfoPage0Permissions = {
     .ecc_en = kMultiBitBool4False,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4True,
@@ -27,7 +27,7 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
  * Note: scrambling must be disabled as the flash scrambling seeds are not
  * programmed into OTP until the individualization FW is executed.
  */
-dif_flash_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
+dif_nvm_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
     .ecc_en = kMultiBitBool4True,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4True,
@@ -41,7 +41,7 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
  * Note: scrambling and ECC must be disabled as it is disabled when the page is
  * written during CP.
  */
-dif_flash_ctrl_region_properties_t kFlashInfoPage3ReadPermissions = {
+dif_nvm_ctrl_region_properties_t kFlashInfoPage3ReadPermissions = {
     .ecc_en = kMultiBitBool4False,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4False,
@@ -52,7 +52,7 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage3ReadPermissions = {
 /**
  * Access permissions for flash info page 4 (holds attestation key seeds).
  */
-dif_flash_ctrl_region_properties_t kFlashInfoPage4Permissions = {
+dif_nvm_ctrl_region_properties_t kFlashInfoPage4Permissions = {
     .ecc_en = kMultiBitBool4True,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4True,

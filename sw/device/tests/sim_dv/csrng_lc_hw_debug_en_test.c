@@ -6,7 +6,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -15,7 +15,7 @@
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -52,7 +52,7 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_csrng_t csrng;
 static dif_entropy_src_t entropy_src;
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 static dif_kmac_t kmac;
 static dif_rstmgr_t rstmgr;
 
@@ -114,7 +114,7 @@ static void peripherals_init(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
@@ -291,7 +291,7 @@ static void csrng_static_generate_run(uint32_t *output, size_t output_len) {
 bool test_main(void) {
   peripherals_init();
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
+      nvm_testutils_default_region_access(&flash_ctrl_state,
                                                  /*rd_en=*/true,
                                                  /*prog_en=*/true,
                                                  /*erase_en=*/true,
@@ -315,9 +315,9 @@ bool test_main(void) {
         (uint32_t)(nv_csrng_output)-TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
     uint32_t expected[kEntropyFifoBufferSize];
     csrng_static_generate_run(expected, ARRAYSIZE(expected));
-    CHECK_STATUS_OK(flash_ctrl_testutils_write(&flash_ctrl_state, address,
+    CHECK_STATUS_OK(nvm_testutils_write(&flash_ctrl_state, address,
                                                /*partition_id=*/0, expected,
-                                               kDifFlashCtrlPartitionTypeData,
+                                               kDifNvmCtrlPartitionTypeData,
                                                ARRAYSIZE(expected)));
     CHECK_ARRAYS_EQ(nv_csrng_output, expected, ARRAYSIZE(expected));
 

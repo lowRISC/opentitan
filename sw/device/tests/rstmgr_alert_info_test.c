@@ -38,8 +38,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #ifdef OPENTITAN_IS_EARLGREY
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
@@ -127,7 +127,7 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 
 #ifdef OPENTITAN_IS_EARLGREY
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 static const dt_flash_ctrl_t kFlashCtrlDt = 0;
 #endif  // OPENTITAN_IS_EARLGREY
 
@@ -725,7 +725,7 @@ bool test_main(void) {
 
 #ifdef OPENTITAN_IS_EARLGREY
   CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
-  CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
+  CHECK_STATUS_OK(nvm_testutils_show_faults(&flash_ctrl));
 #endif  // OPENTITAN_IS_EARLGREY
 
   peripheral_init();
@@ -773,7 +773,7 @@ bool test_main(void) {
       CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
                                                   &kOwnerSecret));
     }
-    CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
+    CHECK_STATUS_OK(nvm_testutils_show_faults(&flash_ctrl));
 #endif  // OPENTITAN_IS_EARLGREY
 
     global_test_round = kRound1;

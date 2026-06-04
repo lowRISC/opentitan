@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
@@ -155,33 +155,33 @@ const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion = {
     .byte_offset = FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(uint32_t),
 };
 
-status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
+status_t manuf_flash_info_field_read(dif_nvm_ctrl_state_t *flash_state,
                                      flash_info_field_t field,
                                      uint32_t *data_out, size_t num_words) {
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+  dif_nvm_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
   uint32_t byte_address =
       (field.page * device_info.bytes_per_page) + field.byte_offset;
-  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
-                                data_out, kDifFlashCtrlPartitionTypeInfo,
+  TRY(nvm_testutils_read(flash_state, byte_address, field.partition,
+                                data_out, kDifNvmCtrlPartitionTypeInfo,
                                 num_words,
                                 /*delay=*/0));
   return OK_STATUS();
 }
 
-status_t manuf_flash_info_field_write(dif_flash_ctrl_state_t *flash_state,
+status_t manuf_flash_info_field_write(dif_nvm_ctrl_state_t *flash_state,
                                       flash_info_field_t field,
                                       uint32_t *data_in, size_t num_words,
                                       bool erase_page_before_write) {
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
+  dif_nvm_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
   uint32_t byte_address =
       (field.page * device_info.bytes_per_page) + field.byte_offset;
   if (erase_page_before_write) {
-    TRY(flash_ctrl_testutils_erase_and_write_page(
+    TRY(nvm_testutils_erase_and_write_page(
         flash_state, byte_address, field.partition, data_in,
-        kDifFlashCtrlPartitionTypeInfo, num_words));
+        kDifNvmCtrlPartitionTypeInfo, num_words));
   } else {
-    TRY(flash_ctrl_testutils_write(flash_state, byte_address, field.partition,
-                                   data_in, kDifFlashCtrlPartitionTypeInfo,
+    TRY(nvm_testutils_write(flash_state, byte_address, field.partition,
+                                   data_in, kDifNvmCtrlPartitionTypeInfo,
                                    num_words));
   }
   return OK_STATUS();

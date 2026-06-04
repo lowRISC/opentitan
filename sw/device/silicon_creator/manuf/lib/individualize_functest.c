@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -26,7 +26,7 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  * Keep this list sorted in alphabetical order.
  */
-static dif_flash_ctrl_state_t flash_state;
+static dif_nvm_ctrl_state_t flash_state;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
@@ -40,7 +40,7 @@ static dif_rstmgr_t rstmgr;
 static const uint32_t kFtDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
     0xAAAA99AA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
 
-static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
+static dif_nvm_ctrl_region_properties_t kFlashInfoPage0Permissions = {
     .ecc_en = kMultiBitBool4True,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4True,
@@ -52,7 +52,7 @@ static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
  * Initializes all DIF handles used in this module.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_lc_ctrl_init(
@@ -81,7 +81,7 @@ bool test_main(void) {
   if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
     // Setup page permissions on flash info page 0.
     uint32_t byte_address = 0;
-    CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
+    CHECK_STATUS_OK(nvm_testutils_info_region_setup_properties(
         &flash_state, kFlashInfoFieldCpDeviceId.page,
         kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
         kFlashInfoPage0Permissions, &byte_address));

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "perso_tlv_data.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
@@ -21,7 +21,7 @@
 /**
  * Peripheral handles.
  */
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 
 /**
  * Certificate data.
@@ -36,7 +36,7 @@ static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
  * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   return OK_STATUS();

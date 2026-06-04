@@ -5,14 +5,14 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -52,7 +52,7 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 
 static volatile const uint8_t kNumRound;
 
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_pinmux_t pinmux;
 
@@ -104,7 +104,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
   // Enable flash access
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+      nvm_testutils_default_region_access(&flash_ctrl,
                                                  /*rd_en*/ true,
                                                  /*prog_en*/ true,
                                                  /*erase_en*/ true,

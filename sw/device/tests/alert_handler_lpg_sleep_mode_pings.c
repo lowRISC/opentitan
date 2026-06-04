@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -59,7 +59,7 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 
 static dif_pwrmgr_request_sources_t wakeup_sources;
 

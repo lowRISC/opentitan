@@ -6,13 +6,13 @@
 
 #include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -48,32 +48,32 @@ const static char *kKeymgrStageNames[] = {
     [kDifKeymgrStateInvalid] = "Invalid",
 };
 
-static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
+static status_t write_info_page(dif_nvm_ctrl_state_t *flash, uint32_t page_id,
                                 const keymgr_testutils_secret_t *data,
                                 bool scramble) {
   uint32_t address = 0;
   if (scramble) {
-    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
+    TRY(nvm_testutils_info_region_scrambled_setup(
         flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
   } else {
-    TRY(flash_ctrl_testutils_info_region_setup(
+    TRY(nvm_testutils_info_region_setup(
         flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
   }
 
-  TRY(flash_ctrl_testutils_erase_and_write_page(
+  TRY(nvm_testutils_erase_and_write_page(
       flash, address, kFlashInfoPartitionId, data->value,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
+      kDifNvmCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
 
   keymgr_testutils_secret_t readback_data;
-  TRY(flash_ctrl_testutils_read(
+  TRY(nvm_testutils_read(
       flash, address, kFlashInfoPartitionId, readback_data.value,
-      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
+      kDifNvmCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
   TRY_CHECK(memcmp(data->value, readback_data.value, sizeof(data->value)) == 0);
   return OK_STATUS();
 }
 
 status_t keymgr_testutils_flash_init(
-    dif_flash_ctrl_state_t *flash,
+    dif_nvm_ctrl_state_t *flash,
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
   // Initialize flash secrets.
@@ -187,7 +187,7 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
 }
 
 status_t keymgr_testutils_init_nvm_then_reset(void) {
-  dif_flash_ctrl_state_t flash;
+  dif_nvm_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
   dif_otp_ctrl_t otp_ctrl;
 
@@ -200,7 +200,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
   if (reset_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
 
-    TRY(dif_flash_ctrl_init_state(
+    TRY(dif_nvm_ctrl_init_state(
         &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
     TRY(dif_otp_ctrl_init(
         mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR),

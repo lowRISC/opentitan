@@ -10,14 +10,14 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -28,7 +28,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 
 /**
  * Configure the sysrst.
@@ -163,13 +163,13 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Enable flash access
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl,
+      nvm_testutils_default_region_access(&flash_ctrl,
                                                  /*rd_en*/ true,
                                                  /*prog_en*/ true,
                                                  /*erase_en*/ true,

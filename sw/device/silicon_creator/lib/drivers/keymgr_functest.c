@@ -8,7 +8,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -107,9 +107,9 @@ const uint32_t kMaxVerBl0 = 3;
 OTTF_DEFINE_TEST_CONFIG();
 
 static void init_flash(void) {
-  dif_flash_ctrl_state_t flash;
+  dif_nvm_ctrl_state_t flash;
 
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize flash secrets.

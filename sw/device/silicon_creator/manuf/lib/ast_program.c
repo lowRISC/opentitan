@@ -4,12 +4,12 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print_uart.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -19,7 +19,7 @@
 // peripheral.  The DIF variables should be only visible to this
 // source unit.
 #define ast_write(addr, data) abs_mmio_write32(addr, data)
-static dif_flash_ctrl_state_t flash_state;
+static dif_nvm_ctrl_state_t flash_state;
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 #else
@@ -27,7 +27,7 @@ static dif_uart_t uart0;
 // and make the DIFs externally visible so the test program can verify
 // the written values and examine/modify the flash.
 extern void ast_write(uint32_t addr, uint32_t data);
-dif_flash_ctrl_state_t flash_state;
+dif_nvm_ctrl_state_t flash_state;
 dif_pinmux_t pinmux;
 dif_uart_t uart0;
 #endif
@@ -64,18 +64,18 @@ status_t ast_program_init(bool verbose) {
   setup_uart(verbose);
   LOG_INFO("Starting AST config");
   // Initialize the flash_ctrl DIF.
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
+  TRY(nvm_testutils_wait_for_init(&flash_state));
 
   // Set up parameters for accessing the AST calibration data in flash info page
   // 0.
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
+  TRY(nvm_testutils_info_region_setup_properties(
       &flash_state, kFlashInfoFieldAstCalibrationData.page,
       kFlashInfoFieldAstCalibrationData.bank,
       kFlashInfoFieldAstCalibrationData.partition,
-      (dif_flash_ctrl_region_properties_t){
+      (dif_nvm_ctrl_region_properties_t){
           .ecc_en = kMultiBitBool4False,
           .high_endurance_en = kMultiBitBool4False,
           .erase_en = kMultiBitBool4True,
@@ -92,7 +92,7 @@ status_t ast_program_config(bool verbose) {
 
   // Read AST calibration values from flash.
   LOG_INFO("Reading AST data");
-  TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
+  TRY(nvm_testutils_wait_for_init(&flash_state));
   uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
   TRY(manuf_flash_info_field_read(
       &flash_state, kFlashInfoFieldAstCalibrationData, ast_data,

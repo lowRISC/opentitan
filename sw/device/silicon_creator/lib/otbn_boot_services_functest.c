@@ -6,7 +6,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
@@ -234,11 +234,11 @@ bool test_main(void) {
       keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
 
   // Initialize flash.
-  dif_flash_ctrl_state_t flash_ctrl;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  dif_nvm_ctrl_state_t flash_ctrl;
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
+  CHECK_STATUS_OK(nvm_testutils_wait_for_init(&flash_ctrl));
 
   // Program the attestation key seeds in flash. The setup step only needs to
   // be done once, since the seeds are on the same page.
@@ -248,21 +248,21 @@ bool test_main(void) {
       kFlashInfoFieldCdi1AttestationKeySeed,
   };
   uint32_t page_address = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
+  CHECK_STATUS_OK(nvm_testutils_info_region_scrambled_setup(
       &flash_ctrl, seed_fields[0].page, seed_fields[0].bank,
       seed_fields[0].partition, &page_address));
-  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
+  CHECK_STATUS_OK(nvm_testutils_erase_and_write_page(
       &flash_ctrl, page_address, seed_fields[0].partition, kSeedValues[0],
-      kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+      kDifNvmCtrlPartitionTypeInfo, kAttestationSeedWords));
   CHECK(ARRAYSIZE(seed_fields) == ARRAYSIZE(kSeedValues));
   for (size_t i = 1; i < ARRAYSIZE(seed_fields); i++) {
     CHECK(seed_fields[i].page == seed_fields[i - 1].page);
     CHECK(seed_fields[i].bank == seed_fields[i - 1].bank);
     CHECK(seed_fields[i].partition == seed_fields[i - 1].partition);
-    CHECK_STATUS_OK(flash_ctrl_testutils_write(
+    CHECK_STATUS_OK(nvm_testutils_write(
         &flash_ctrl, page_address + seed_fields[i].byte_offset,
         seed_fields[i].partition, kSeedValues[i],
-        kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+        kDifNvmCtrlPartitionTypeInfo, kAttestationSeedWords));
   }
 
   // Load the boot services OTBN app.

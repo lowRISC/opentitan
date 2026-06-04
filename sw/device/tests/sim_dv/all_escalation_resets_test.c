@@ -37,7 +37,7 @@
 #include "hw/top/dt/sensor_ctrl.h"  // Generated
 #include "hw/top/dt/sysrst_ctrl.h"  // Generated
 #include "hw/top/dt/usbdev.h"       // Generated
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
@@ -191,7 +191,7 @@ static uint32_t kSramRetStart;
  */
 // Top-specific objects
 #if defined(OPENTITAN_IS_EARLGREY)
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
 static_assert(kDtFlashCtrlCount >= 1, "This test requires a Flash Ctrl");
 static dif_rom_ctrl_t rom_ctrl;
@@ -366,7 +366,7 @@ static void generic_sram_ctrl_fault_checker(const dif_sram_ctrl_t *sram_ctrl,
 #if defined(OPENTITAN_IS_EARLGREY)
 static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
                                      const char *type) {
-  dif_flash_ctrl_faults_t faults;
+  dif_nvm_ctrl_faults_t faults;
   CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
   uint32_t fault_code = (type == we_check) ? faults.register_integrity_error
                                            : faults.host_gnt_error;
@@ -377,7 +377,7 @@ static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
 
 static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
                                           const char *type) {
-  dif_flash_ctrl_faults_t faults;
+  dif_nvm_ctrl_faults_t faults;
   CHECK_DIF_OK(dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults));
 
   CHECK(faults.memory_properties_error == 0,

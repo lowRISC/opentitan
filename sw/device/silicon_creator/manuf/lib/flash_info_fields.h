@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 
 #include "hw/top/ast_regs.h"  // Generated.
 
@@ -146,7 +146,7 @@ extern const flash_info_field_t kFlashInfoFieldAttestationKeyGenVersion;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
+status_t manuf_flash_info_field_read(dif_nvm_ctrl_state_t *flash_state,
                                      flash_info_field_t field,
                                      uint32_t *data_out, size_t num_words);
 
@@ -164,7 +164,7 @@ status_t manuf_flash_info_field_read(dif_flash_ctrl_state_t *flash_state,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_flash_info_field_write(dif_flash_ctrl_state_t *flash_state,
+status_t manuf_flash_info_field_write(dif_nvm_ctrl_state_t *flash_state,
                                       flash_info_field_t field,
                                       uint32_t *data_in, size_t num_words,
                                       bool erase_page_before_write);

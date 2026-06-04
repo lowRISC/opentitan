@@ -28,7 +28,7 @@ static dif_otp_ctrl_t otp;
 static dif_rstmgr_t rstmgr;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
-static dif_flash_ctrl_state_t flash;
+static dif_nvm_ctrl_state_t flash;
 
 // LC RMA token value in OTP SECRET2 partition.
 static const uint8_t kOtpRmaToken[OTP_CTRL_PARAM_RMA_TOKEN_SIZE] = {
@@ -83,7 +83,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
   // Flash
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 }
 

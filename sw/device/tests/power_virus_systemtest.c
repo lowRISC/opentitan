@@ -12,7 +12,7 @@
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
@@ -66,7 +66,7 @@ static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
 static dif_entropy_src_t entropy_src;
-static dif_flash_ctrl_state_t flash_ctrl;
+static dif_nvm_ctrl_state_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c_0;
@@ -399,7 +399,7 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+  CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_rv_plic_init(
@@ -1479,7 +1479,7 @@ static void max_power_task(void *task_parameters) {
 }
 
 static void check_otp_csr_configs(void) {
-  dif_flash_ctrl_region_properties_t default_properties;
+  dif_nvm_ctrl_region_properties_t default_properties;
   CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
       &flash_ctrl, &default_properties));
   CHECK(default_properties.scramble_en == kMultiBitBool4True);

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -58,7 +58,7 @@ typedef enum pwrmgr_sleep_resets_lib_modes {
 /**
  * Objects to access the peripherals used in this test via dif API.
  */
-extern dif_flash_ctrl_state_t *flash_ctrl;
+extern dif_nvm_ctrl_state_t *flash_ctrl;
 extern dif_rv_plic_t *plic;
 extern dif_rstmgr_t *rstmgr;
 

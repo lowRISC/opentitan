@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 
@@ -111,7 +111,7 @@ static const keymgr_testutils_secret_t kOwnerSecret = {.value = {
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_flash_init(
-    dif_flash_ctrl_state_t *flash,
+    dif_nvm_ctrl_state_t *flash,
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret);
 

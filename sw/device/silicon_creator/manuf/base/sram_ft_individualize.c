@@ -7,12 +7,12 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -31,7 +31,7 @@
 #include "hw/top/ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
@@ -64,7 +64,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
@@ -110,7 +110,7 @@ static status_t configure_ate_gpio_indicators(void) {
  */
 static status_t patch_ast_config_value(void) {
   uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
+  TRY(nvm_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr.page,
       kFlashInfoFieldAstIndividPatchAddr.bank,
       kFlashInfoFieldAstIndividPatchAddr.partition, kFlashInfoPage0Permissions,

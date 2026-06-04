@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
@@ -41,8 +41,8 @@
  * @return OK_STATUS on success.
  */
 status_t manuf_individualize_device_hw_cfg(
-    dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
+    dif_nvm_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
+    dif_nvm_ctrl_region_properties_t flash_info_page_0_permissions,
     const uint32_t *ft_device_id);
 
 /**

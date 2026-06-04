@@ -8,8 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
@@ -19,7 +19,7 @@ enum {
   kNonVolatileCounterFlashWords = 256,
 };
 static_assert(kNonVolatileCounterFlashWords ==
-                  kFlashCtrlTestUtilsCounterMaxCount,
+                  kNvmTestutilsCounterMaxCount,
               "Word count must be equal to max count.");
 static_assert(
     FLASH_CTRL_PARAM_BYTES_PER_WORD == sizeof(uint64_t),
@@ -61,7 +61,7 @@ status_t flash_ctrl_testutils_counter_get(size_t counter, uint32_t *value) {
 }
 
 status_t flash_ctrl_testutils_counter_increment(
-    dif_flash_ctrl_state_t *flash_state, size_t counter) {
+    dif_nvm_ctrl_state_t *flash_state, size_t counter) {
   size_t i;
   TRY(flash_ctrl_testutils_counter_get(counter, &i));
   TRY_CHECK(i < kNonVolatileCounterFlashWords,
@@ -74,7 +74,7 @@ status_t flash_ctrl_testutils_counter_increment(
 }
 
 status_t flash_ctrl_testutils_counter_set_at_least(
-    dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val) {
+    dif_nvm_ctrl_state_t *flash_state, size_t counter, uint32_t val) {
   TRY_CHECK(val <= kNonVolatileCounterFlashWords,
             "Non-volatile counter %u new value %u > max value %u", counter, val,
             kNonVolatileCounterFlashWords);
@@ -82,10 +82,10 @@ status_t flash_ctrl_testutils_counter_set_at_least(
     return OK_STATUS();
   }
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
-  return flash_ctrl_testutils_write(flash_state,
+  return nvm_testutils_write(flash_state,
                                     (uint32_t)&kNvCounters[counter][val - 1] -
                                         TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                    0, new_val, kDifFlashCtrlPartitionTypeData,
+                                    0, new_val, kDifNvmCtrlPartitionTypeData,
                                     ARRAYSIZE(new_val));
 }
 
@@ -96,15 +96,15 @@ status_t flash_ctrl_testutils_counter_set_at_least(
 // This function can be used to initialize a NVM counter to zero by filling
 // its flash region with non-zero values.
 status_t flash_ctrl_testutils_counter_init_zero(
-    dif_flash_ctrl_state_t *flash_state, size_t counter) {
+    dif_nvm_ctrl_state_t *flash_state, size_t counter) {
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0xaa,
                                                                           0xbb};
   for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
-    TRY(flash_ctrl_testutils_erase_and_write_page(
+    TRY(nvm_testutils_erase_and_write_page(
         flash_state,
         (uint32_t)&kNvCounters[counter][ii] -
             TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
+        0, new_val, kDifNvmCtrlPartitionTypeData, ARRAYSIZE(new_val)));
   }
   return OK_STATUS();
 }

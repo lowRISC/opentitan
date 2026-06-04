@@ -60,9 +60,9 @@ opentitan_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:nvm_ctrl",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -85,9 +85,9 @@ opentitan_test(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:nvm_ctrl",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -113,9 +113,9 @@ opentitan_test(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:nvm_ctrl",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

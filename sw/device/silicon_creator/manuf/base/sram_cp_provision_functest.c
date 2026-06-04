@@ -6,13 +6,13 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -40,7 +40,7 @@ OTTF_DEFINE_TEST_CONFIG(
         .console_tx_indicator.spi_console_tx_ready_gpio =
             kGpioPinSpiConsoleTxReady);
 
-static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_nvm_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
@@ -50,7 +50,7 @@ static dif_pinmux_t pinmux;
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
+  TRY(dif_nvm_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
@@ -83,7 +83,7 @@ static status_t configure_ate_gpio_indicators(void) {
 static status_t prep_flash_info_page_0(manuf_cp_test_data_t *test_data) {
   // Setup page permissions on flash info page 0.
   uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
+  TRY(nvm_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
       kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
       kFlashInfoPage0Permissions, &byte_address));
@@ -141,7 +141,7 @@ bool test_main(void) {
     uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {0};
     static_assert(kFlashInfoFieldCpDeviceIdSizeIn32BitWords == 4,
                   "CP device ID should fit in four 32bit words.");
-    CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
+    CHECK_STATUS_OK(nvm_testutils_info_region_setup_properties(
         &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
         kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
         kFlashInfoPage0Permissions, /*offset=*/NULL));

@@ -38,6 +38,22 @@ typedef dif_flash_ctrl_partition_type_t dif_nvm_ctrl_partition_type_t;
 #define kDifNvmCtrlPartitionTypeData kDifFlashCtrlPartitionTypeData
 #define kDifNvmCtrlPartitionTypeInfo kDifFlashCtrlPartitionTypeInfo
 
+/** Additional type aliases. */
+typedef dif_flash_ctrl_data_region_properties_t dif_nvm_ctrl_data_region_properties_t;
+typedef dif_flash_ctrl_device_info_t            dif_nvm_ctrl_device_info_t;
+typedef dif_flash_ctrl_faults_t                 dif_nvm_ctrl_faults_t;
+
+/** Function aliases — map nvm names to the underlying flash DIF. */
+#define dif_nvm_ctrl_get_device_info              dif_flash_ctrl_get_device_info
+#define dif_nvm_ctrl_get_faults                   dif_flash_ctrl_get_faults
+#define dif_nvm_ctrl_get_default_region_properties dif_flash_ctrl_get_default_region_properties
+#define dif_nvm_ctrl_set_default_region_properties dif_flash_ctrl_set_default_region_properties
+#define dif_nvm_ctrl_set_data_region_properties   dif_flash_ctrl_set_data_region_properties
+#define dif_nvm_ctrl_set_data_region_enablement   dif_flash_ctrl_set_data_region_enablement
+#define dif_nvm_ctrl_set_exec_enablement          dif_flash_ctrl_set_exec_enablement
+#define dif_nvm_ctrl_set_flash_enablement         dif_flash_ctrl_set_flash_enablement
+#define dif_nvm_ctrl_start_controller_init        dif_flash_ctrl_start_controller_init
+
 /**
  * Initialise an NVM controller state handle.
  *

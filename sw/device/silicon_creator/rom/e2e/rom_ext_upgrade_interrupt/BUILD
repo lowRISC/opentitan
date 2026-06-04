@@ -84,7 +84,7 @@ otp_json(
         ),
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         deps = [
-            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:nvm_testutils",
             "//sw/device/lib/testing:nv_counter_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",

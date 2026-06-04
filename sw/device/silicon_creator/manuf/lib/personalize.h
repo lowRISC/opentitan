@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PERSONALIZE_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
@@ -72,7 +72,7 @@ status_t manuf_personalize_device_secret1_check(const dif_otp_ctrl_t *otp_ctrl);
  * @return OK_STATUS on success.
  */
 status_t manuf_personalize_device_secrets(
-    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
+    dif_nvm_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
     const dif_otp_ctrl_t *otp_ctrl,
     const lc_token_hash_t *rma_unlock_token_hash);
 
@@ -94,7 +94,7 @@ status_t manuf_personalize_device_secrets(
  * @return OK_STATUS on success.
  */
 status_t manuf_personalize_flash_asymm_key_seed(
-    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len);
+    dif_nvm_ctrl_state_t *flash_state, flash_info_field_t field, size_t len);
 
 /**
  * Checks the device personalization end state.
