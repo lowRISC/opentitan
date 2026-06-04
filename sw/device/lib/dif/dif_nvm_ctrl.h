@@ -33,7 +33,9 @@ typedef dif_flash_ctrl_state_t dif_nvm_ctrl_state_t;
  */
 typedef dif_flash_ctrl_region_properties_t dif_nvm_ctrl_region_properties_t;
 
-/** Partition-type identifier for info partitions. */
+/** Partition types (data vs. info). */
+typedef dif_flash_ctrl_partition_type_t dif_nvm_ctrl_partition_type_t;
+#define kDifNvmCtrlPartitionTypeData kDifFlashCtrlPartitionTypeData
 #define kDifNvmCtrlPartitionTypeInfo kDifFlashCtrlPartitionTypeInfo
 
 /**

@@ -166,6 +166,17 @@ cc_library(
 )
 
 cc_library(
+    name = "nvm_testutils",
+    srcs = ["nvm_testutils.c"],
+    hdrs = ["nvm_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":flash_ctrl_testutils",
+        "//sw/device/lib/dif:nvm_ctrl",
+    ],
+)
+
+cc_library(
     name = "flash_ctrl_testutils",
     srcs = ["flash_ctrl_testutils.c"],
     hdrs = ["flash_ctrl_testutils.h"],
