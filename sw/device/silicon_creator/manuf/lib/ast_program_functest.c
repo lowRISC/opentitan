@@ -45,9 +45,9 @@ static status_t erase_page(void) {
   uint32_t byte_address =
       (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page);
 
-  return nvm_testutils_erase_page(
-      &flash_state, byte_address, kFlashInfoFieldAstCalibrationData.partition,
-      kDifNvmCtrlPartitionTypeInfo);
+  return nvm_testutils_erase_page(&flash_state, byte_address,
+                                  kFlashInfoFieldAstCalibrationData.partition,
+                                  kDifNvmCtrlPartitionTypeInfo);
 }
 
 /**
@@ -63,10 +63,10 @@ static status_t program_page(void) {
   for (size_t i = 0; i < ARRAYSIZE(ast_cfg_data); ++i) {
     ast_cfg_data[i] = i;
   }
-  return nvm_testutils_write(
-      &flash_state, byte_address, kFlashInfoFieldAstCalibrationData.partition,
-      ast_cfg_data, kDifNvmCtrlPartitionTypeInfo,
-      kFlashInfoAstCalibrationDataSizeIn32BitWords);
+  return nvm_testutils_write(&flash_state, byte_address,
+                             kFlashInfoFieldAstCalibrationData.partition,
+                             ast_cfg_data, kDifNvmCtrlPartitionTypeInfo,
+                             kFlashInfoAstCalibrationDataSizeIn32BitWords);
 }
 
 static status_t execute_test(void) {

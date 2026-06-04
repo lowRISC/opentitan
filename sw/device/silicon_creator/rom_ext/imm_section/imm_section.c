@@ -36,8 +36,7 @@ static rom_error_t imm_section_start(void) {
   // Lockdown the attestation seed to readonly as soon as possible to prevent
   // key tampering and exfiltration.
   nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageAttestationKeySeeds);
-  nvm_ctrl_cert_info_page_owner_restrict(
-      &kNvmCtrlInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_owner_restrict(&kNvmCtrlInfoPageAttestationKeySeeds);
   nvm_ctrl_info_cfg_lock(&kNvmCtrlInfoPageAttestationKeySeeds);
 
   // Establish our identity.

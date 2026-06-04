@@ -243,8 +243,8 @@ cc_library(
     ) + opentitan_if_ip(
         "flash_ctrl",
         [
-            "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/dif:nvm_ctrl",
+            "//sw/device/lib/testing:nvm_testutils",
         ],
         [],
     ) + opentitan_if_ip(

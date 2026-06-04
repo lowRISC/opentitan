@@ -6,14 +6,14 @@
 
 #include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
-#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -56,8 +56,8 @@ static status_t write_info_page(dif_nvm_ctrl_state_t *flash, uint32_t page_id,
     TRY(nvm_testutils_info_region_scrambled_setup(
         flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
   } else {
-    TRY(nvm_testutils_info_region_setup(
-        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId, &address));
+    TRY(nvm_testutils_info_region_setup(flash, page_id, kFlashInfoBankId,
+                                        kFlashInfoPartitionId, &address));
   }
 
   TRY(nvm_testutils_erase_and_write_page(
@@ -65,9 +65,9 @@ static status_t write_info_page(dif_nvm_ctrl_state_t *flash, uint32_t page_id,
       kDifNvmCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
 
   keymgr_testutils_secret_t readback_data;
-  TRY(nvm_testutils_read(
-      flash, address, kFlashInfoPartitionId, readback_data.value,
-      kDifNvmCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
+  TRY(nvm_testutils_read(flash, address, kFlashInfoPartitionId,
+                         readback_data.value, kDifNvmCtrlPartitionTypeInfo,
+                         ARRAYSIZE(readback_data.value), 0));
   TRY_CHECK(memcmp(data->value, readback_data.value, sizeof(data->value)) == 0);
   return OK_STATUS();
 }

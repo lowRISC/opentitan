@@ -7,12 +7,12 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
@@ -74,16 +74,15 @@ status_t manuf_personalize_flash_asymm_key_seed(
     dif_nvm_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
     byte_address =
         (field.page * device_info.bytes_per_page) + field.byte_offset;
-    TRY(nvm_testutils_write(flash_state, byte_address, field.partition,
-                                   seed, kDifNvmCtrlPartitionTypeInfo,
-                                   kAttestationSeedWords));
+    TRY(nvm_testutils_write(flash_state, byte_address, field.partition, seed,
+                            kDifNvmCtrlPartitionTypeInfo,
+                            kAttestationSeedWords));
   }
 
   uint32_t seed_result[kAttestationSeedWords];
   TRY(nvm_testutils_read(flash_state, byte_address, field.partition,
-                                seed_result, kDifNvmCtrlPartitionTypeInfo,
-                                len,
-                                /*delay=*/0));
+                         seed_result, kDifNvmCtrlPartitionTypeInfo, len,
+                         /*delay=*/0));
   bool found_error = false;
   for (size_t i = 0; i < len; ++i) {
     found_error |=
@@ -119,15 +118,14 @@ static status_t flash_keymgr_secret_seed_write(
   TRY(nvm_testutils_info_region_scrambled_setup(
       flash_state, field.page, field.bank, field.partition, &address));
 
-  TRY(nvm_testutils_erase_and_write_page(
-      flash_state, address, field.partition, seed,
-      kDifNvmCtrlPartitionTypeInfo, len));
+  TRY(nvm_testutils_erase_and_write_page(flash_state, address, field.partition,
+                                         seed, kDifNvmCtrlPartitionTypeInfo,
+                                         len));
 
   uint32_t seed_result[kFlashInfoFieldKeySeedSizeIn32BitWords];
-  TRY(nvm_testutils_read(flash_state, address, field.partition,
-                                seed_result, kDifNvmCtrlPartitionTypeInfo,
-                                len,
-                                /*delay=*/0));
+  TRY(nvm_testutils_read(flash_state, address, field.partition, seed_result,
+                         kDifNvmCtrlPartitionTypeInfo, len,
+                         /*delay=*/0));
   bool found_error = false;
   for (size_t i = 0; i < len; ++i) {
     found_error |=

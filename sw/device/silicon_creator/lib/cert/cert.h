@@ -6,8 +6,8 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_CERT_H_
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus

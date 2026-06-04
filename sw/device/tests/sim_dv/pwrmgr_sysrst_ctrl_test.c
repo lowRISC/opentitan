@@ -17,8 +17,8 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -168,14 +168,13 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Enable flash access
-  CHECK_STATUS_OK(
-      nvm_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_access(&flash_ctrl,
+                                                      /*rd_en*/ true,
+                                                      /*prog_en*/ true,
+                                                      /*erase_en*/ true,
+                                                      /*scramble_en*/ false,
+                                                      /*ecc_en*/ false,
+                                                      /*he_en*/ false));
 
   // First check the flash stored value
   uint32_t event_idx = 0;

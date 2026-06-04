@@ -18,8 +18,7 @@
 enum {
   kNonVolatileCounterFlashWords = 256,
 };
-static_assert(kNonVolatileCounterFlashWords ==
-                  kNvmTestutilsCounterMaxCount,
+static_assert(kNonVolatileCounterFlashWords == kNvmTestutilsCounterMaxCount,
               "Word count must be equal to max count.");
 static_assert(
     FLASH_CTRL_PARAM_BYTES_PER_WORD == sizeof(uint64_t),
@@ -83,10 +82,10 @@ status_t flash_ctrl_testutils_counter_set_at_least(
   }
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
   return nvm_testutils_write(flash_state,
-                                    (uint32_t)&kNvCounters[counter][val - 1] -
-                                        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                    0, new_val, kDifNvmCtrlPartitionTypeData,
-                                    ARRAYSIZE(new_val));
+                             (uint32_t)&kNvCounters[counter][val - 1] -
+                                 TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+                             0, new_val, kDifNvmCtrlPartitionTypeData,
+                             ARRAYSIZE(new_val));
 }
 
 // At the beginning of the simulation (Verilator, VCS,etc.),

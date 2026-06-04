@@ -55,7 +55,7 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
                 "Data size mismatch");
 
   HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(&isfb_info_page, /*offset=*/0,
-                                                ARRAYSIZE(strikes), strikes));
+                                              ARRAYSIZE(strikes), strikes));
 
   uint32_t strike_cnt_ok = 0;
   uint32_t strike_cnt_bad = 0;

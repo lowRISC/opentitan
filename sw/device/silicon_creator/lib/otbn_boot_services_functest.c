@@ -6,8 +6,8 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -261,8 +261,8 @@ bool test_main(void) {
     CHECK(seed_fields[i].partition == seed_fields[i - 1].partition);
     CHECK_STATUS_OK(nvm_testutils_write(
         &flash_ctrl, page_address + seed_fields[i].byte_offset,
-        seed_fields[i].partition, kSeedValues[i],
-        kDifNvmCtrlPartitionTypeInfo, kAttestationSeedWords));
+        seed_fields[i].partition, kSeedValues[i], kDifNvmCtrlPartitionTypeInfo,
+        kAttestationSeedWords));
   }
 
   // Load the boot services OTBN app.

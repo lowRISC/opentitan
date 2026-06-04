@@ -7,9 +7,9 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
 
@@ -184,7 +184,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
   secret_page_enable(/*read=*/kMultiBitBool4True, /*write=*/kMultiBitBool4True);
   rom_error_t error =
       nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSecret, 0,
-                           sizeof(secret) / sizeof(uint32_t), &secret);
+                         sizeof(secret) / sizeof(uint32_t), &secret);
   if (error != kErrorOk) {
     if (kDeviceType == kDeviceSilicon) {
       // This should never happen on silicon because this page is initialized
@@ -196,7 +196,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
       HARDENED_CHECK_NE(error, kErrorOk);
       HARDENED_CHECK_NE(kDeviceType, kDeviceSilicon);
       error = nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSecret,
-                                    kNvmCtrlEraseTypePage);
+                                  kNvmCtrlEraseTypePage);
       memset(&secret, 0xFF, sizeof(secret));
     }
   }
@@ -238,12 +238,12 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
   hmac_sha256_process();
   hmac_sha256_final(&secret.owner_secret);
 
-  error = nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSecret,
-                                kNvmCtrlEraseTypePage);
+  error =
+      nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSecret, kNvmCtrlEraseTypePage);
   if (error != kErrorOk)
     goto exitproc;
   error = nvm_ctrl_info_write(&kNvmCtrlInfoPageOwnerSecret, 0,
-                                sizeof(secret) / sizeof(uint32_t), &secret);
+                              sizeof(secret) / sizeof(uint32_t), &secret);
 
 exitproc:
   secret_page_enable(/*read=*/kMultiBitBool4False,
@@ -256,8 +256,8 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
                      /*write=*/kMultiBitBool4False);
   rom_error_t error =
       nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSecret,
-                           offsetof(owner_secret_page_t, owner_history),
-                           sizeof(*history) / sizeof(uint32_t), history);
+                         offsetof(owner_secret_page_t, owner_history),
+                         sizeof(*history) / sizeof(uint32_t), history);
   if (error != kErrorOk) {
     // If there was an error reading the history, use all ones as a result.
     memset(history, 0xFF, sizeof(*history));

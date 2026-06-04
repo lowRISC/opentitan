@@ -537,14 +537,13 @@ bool test_main(void) {
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  CHECK_STATUS_OK(
-      nvm_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_access(&flash_ctrl_state,
+                                                      /*rd_en*/ true,
+                                                      /*prog_en*/ true,
+                                                      /*erase_en*/ true,
+                                                      /*scramble_en*/ false,
+                                                      /*ecc_en*/ false,
+                                                      /*he_en*/ false));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;

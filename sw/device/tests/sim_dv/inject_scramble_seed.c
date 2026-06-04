@@ -76,9 +76,9 @@ static void check_iso_data(dif_nvm_ctrl_state_t *flash_ctrl) {
       /*bank=*/0, /*partition_id=*/0, iso_page, &addr));
 
   uint32_t read_data[16];
-  CHECK_STATUS_OK(nvm_testutils_read(
-      flash_ctrl, addr, /*partition_id=*/0, read_data,
-      kDifNvmCtrlPartitionTypeInfo, ARRAYSIZE(read_data), 0));
+  CHECK_STATUS_OK(nvm_testutils_read(flash_ctrl, addr, /*partition_id=*/0,
+                                     read_data, kDifNvmCtrlPartitionTypeInfo,
+                                     ARRAYSIZE(read_data), 0));
 
   CHECK_ARRAYS_EQ(kIsoPartExpData, read_data, ARRAYSIZE(read_data),
                   "Isolated info page data mismatch.");

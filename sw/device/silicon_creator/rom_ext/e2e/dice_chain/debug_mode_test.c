@@ -65,7 +65,7 @@ const char kCwtCdi1DebugOn[] = {
 static status_t test_debug_mode(void) {
   uint8_t data[2048];
   TRY(nvm_ctrl_info_read(&kNvmCtrlInfoPageDiceCerts, 0,
-                           sizeof(data) / sizeof(uint32_t), data));
+                         sizeof(data) / sizeof(uint32_t), data));
 
   uint32_t offset = 0;
   size_t len = sizeof(data);

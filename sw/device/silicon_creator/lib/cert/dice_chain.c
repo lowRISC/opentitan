@@ -14,8 +14,8 @@
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
@@ -531,7 +531,7 @@ rom_error_t dice_chain_init(void) {
   // Configure DICE certificate flash info page and buffer it into RAM.
   nvm_ctrl_cert_info_page_creator_cfg(&kNvmCtrlInfoPageDiceCerts);
   nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageFactoryCerts,
-                          kNvmCertificateInfoPageCfg);
+                        kNvmCertificateInfoPageCfg);
   nvm_ctrl_cert_info_page_owner_restrict(&kNvmCtrlInfoPageFactoryCerts);
   return kErrorOk;
 }

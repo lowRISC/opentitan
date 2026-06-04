@@ -35,15 +35,15 @@ status_t isfb_page_properties(dif_nvm_ctrl_state_t *f) {
 status_t isfb_page_erase(dif_nvm_ctrl_state_t *f) {
   uint32_t info0_page5 = 5 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
   TRY(nvm_testutils_erase_page(f, info0_page5,
-                                      /*partition_id=*/0,
-                                      kDifNvmCtrlPartitionTypeInfo));
+                               /*partition_id=*/0,
+                               kDifNvmCtrlPartitionTypeInfo));
 
   uint32_t strike_mask[] = {0};
   // The strike_mask starts at 0 bytes into the ISFB info page.
   TRY(nvm_testutils_write(f, info0_page5 + 0,
-                                 /*partition_id=*/0, strike_mask,
-                                 kDifNvmCtrlPartitionTypeInfo,
-                                 sizeof(strike_mask) / sizeof(uint32_t)));
+                          /*partition_id=*/0, strike_mask,
+                          kDifNvmCtrlPartitionTypeInfo,
+                          sizeof(strike_mask) / sizeof(uint32_t)));
 
   uint32_t product_words[] = {
       // ascii: `ABCD`
@@ -53,9 +53,9 @@ status_t isfb_page_erase(dif_nvm_ctrl_state_t *f) {
   };
   // The product_words start at 1024 bytes into the ISFB info page.
   TRY(nvm_testutils_write(f, info0_page5 + 1024,
-                                 /*partition_id=*/0, product_words,
-                                 kDifNvmCtrlPartitionTypeInfo,
-                                 sizeof(product_words) / sizeof(uint32_t)));
+                          /*partition_id=*/0, product_words,
+                          kDifNvmCtrlPartitionTypeInfo,
+                          sizeof(product_words) / sizeof(uint32_t)));
 
   return OK_STATUS();
 }

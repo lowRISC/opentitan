@@ -29,8 +29,7 @@ static void base64_encode(char *dest, const uint8_t *data, int32_t len) {
   *dest = '\0';
 }
 
-static status_t print_cert(char *dest,
-                           const nvm_ctrl_info_page_t *info_page) {
+static status_t print_cert(char *dest, const nvm_ctrl_info_page_t *info_page) {
   uint8_t data[2048];
   TRY(nvm_ctrl_info_read_zeros_on_read_error(
       info_page, 0, sizeof(data) / sizeof(uint32_t), data));
@@ -56,8 +55,7 @@ static status_t print_cert(char *dest,
 static status_t print_owner_block(char *dest,
                                   const nvm_ctrl_info_page_t *info_page) {
   uint8_t data[2048];
-  TRY(nvm_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t),
-                           data));
+  TRY(nvm_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t), data));
   base64_encode(dest, data, sizeof(data));
   return OK_STATUS();
 }

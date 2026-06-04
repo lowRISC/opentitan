@@ -344,11 +344,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 
   // Write the configuration to both owner page 0.  The next boot of the ROM_EXT
   // will make a redundant copyh in page 1.
-  OT_DISCARD(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot0,
-                                   kNvmCtrlEraseTypePage));
+  OT_DISCARD(
+      nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot0, kNvmCtrlEraseTypePage));
   OT_DISCARD(nvm_ctrl_info_write(&kNvmCtrlInfoPageOwnerSlot0, 0,
-                                   sizeof(owner_page[0]) / sizeof(uint32_t),
-                                   &owner_page[0]));
+                                 sizeof(owner_page[0]) / sizeof(uint32_t),
+                                 &owner_page[0]));
   owner_page_valid[0] = kOwnerPageStatusSealed;
 
   OT_DISCARD(boot_data_write(bootdata));

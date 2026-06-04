@@ -32,9 +32,8 @@ status_t nvm_testutils_data_region_setup(dif_nvm_ctrl_state_t *nvm,
                                          uint32_t data_region,
                                          uint32_t region_size,
                                          uint32_t *offset) {
-  return flash_ctrl_testutils_data_region_setup(nvm, base_page_index,
-                                                data_region, region_size,
-                                                offset);
+  return flash_ctrl_testutils_data_region_setup(
+      nvm, base_page_index, data_region, region_size, offset);
 }
 
 status_t nvm_testutils_data_region_scrambled_setup(dif_nvm_ctrl_state_t *nvm,

@@ -61,10 +61,10 @@ static void boot_data_pages_mp_set(hardened_bool_t perm) {
       perm == kHardenedBoolTrue ? kMultiBitBool4True : kMultiBitBool4False;
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
     nvm_ctrl_info_perms_set(kPages[i], (nvm_ctrl_perms_t){
-                                             .read = mubi_perm,
-                                             .write = mubi_perm,
-                                             .erase = mubi_perm,
-                                         });
+                                           .read = mubi_perm,
+                                           .write = mubi_perm,
+                                           .erase = mubi_perm,
+                                       });
   }
 }
 

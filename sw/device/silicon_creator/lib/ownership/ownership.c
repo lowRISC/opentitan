@@ -11,9 +11,9 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
@@ -95,8 +95,8 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
              owner_page_valid[1] == kOwnerPageStatusSealed) {
     // Page 0 bad, Page 1 good: copy page 1 to page 0.
     memcpy(&owner_page[0], &owner_page[1], sizeof(owner_page[0]));
-    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(
-        &kNvmCtrlInfoPageOwnerSlot0, kNvmCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot0,
+                                                 kNvmCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
         &kNvmCtrlInfoPageOwnerSlot0, 0,
         sizeof(owner_page[0]) / sizeof(uint32_t), &owner_page[0]));
@@ -106,8 +106,8 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
              owner_page_valid[0] == kOwnerPageStatusSealed) {
     // Page 1 bad, Page 0 good: copy page 0 to page 1.
     memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
-    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(
-        &kNvmCtrlInfoPageOwnerSlot1, kNvmCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot1,
+                                                 kNvmCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
         &kNvmCtrlInfoPageOwnerSlot1, 0,
         sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
@@ -199,16 +199,16 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   // We don't want to abort ownership setup if we fail to
   // read the INFO pages, so we discard the error result.
   if (nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSlot0, 0,
-                           sizeof(owner_page[0]) / sizeof(uint32_t),
-                           &owner_page[0]) == kErrorOk) {
+                         sizeof(owner_page[0]) / sizeof(uint32_t),
+                         &owner_page[0]) == kErrorOk) {
     owner_page_valid[0] = owner_page_validity_check(0, bootdata);
   } else {
     owner_page_valid[0] = kOwnerPageStatusInvalid;
     memset(&owner_page[0], 0xff, sizeof(owner_page[0]));
   }
   if (nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSlot1, 0,
-                           sizeof(owner_page[1]) / sizeof(uint32_t),
-                           &owner_page[1]) == kErrorOk) {
+                         sizeof(owner_page[1]) / sizeof(uint32_t),
+                         &owner_page[1]) == kErrorOk) {
     owner_page_valid[1] = owner_page_validity_check(1, bootdata);
   } else {
     owner_page_valid[1] = kOwnerPageStatusInvalid;

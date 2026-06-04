@@ -449,9 +449,8 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
       if (*mp_index < 2 * FLASH_CONFIG_REGIONS_PER_SLOT) {
         // We can only apply the region protection of mp_index is
         // within its acceptable bounds.
-        nvm_ctrl_data_region_protect(kRomExtRegions + *mp_index,
-                                       config->start, config->size, perm, cfg,
-                                       lock);
+        nvm_ctrl_data_region_protect(kRomExtRegions + *mp_index, config->start,
+                                     config->size, perm, cfg, lock);
         SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioDataRegionProtect +
                                  (lock == kHardenedBoolTrue
                                       ? kNvmCtrlSecMmioDataRegionProtectLock
@@ -473,8 +472,8 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
       nvm_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
-          config->bank, config->page, &page));
+      HARDENED_RETURN_IF_ERROR(
+          nvm_ctrl_info_type0_params_build(config->bank, config->page, &page));
       uint32_t val = config->properties ^ crypt;
       nvm_ctrl_cfg_t cfg = {
           .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
@@ -505,8 +504,8 @@ rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info) {
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
       nvm_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
-          config->bank, config->page, &page));
+      HARDENED_RETURN_IF_ERROR(
+          nvm_ctrl_info_type0_params_build(config->bank, config->page, &page));
       uint32_t val = config->access ^ crypt;
       if (bitfield_field32_read(val, FLASH_CONFIG_LOCK) !=
           kMultiBitBool4False) {
@@ -540,8 +539,8 @@ rom_error_t owner_block_info_isfb_erase_enable(
         config->bank == owner_config->isfb->bank &&
         config->page == owner_config->isfb->page) {
       nvm_ctrl_info_page_t page;
-      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_type0_params_build(
-          config->bank, config->page, &page));
+      HARDENED_RETURN_IF_ERROR(
+          nvm_ctrl_info_type0_params_build(config->bank, config->page, &page));
 
       uint32_t val = config->access ^ crypt;
       nvm_ctrl_perms_t perm = {

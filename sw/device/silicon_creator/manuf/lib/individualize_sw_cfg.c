@@ -201,12 +201,11 @@ static status_t manuf_individualize_device_ast_cfg(
           .rd_en = kMultiBitBool4True,
           .scramble_en = kMultiBitBool4False},
       &page_byte_address));
-  TRY(nvm_testutils_read(
-      flash_state, page_byte_address,
-      kFlashInfoFieldAstCalibrationData.partition, flash_info_page_buf,
-      kDifNvmCtrlPartitionTypeInfo,
-      FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
-      /*delay=*/0));
+  TRY(nvm_testutils_read(flash_state, page_byte_address,
+                         kFlashInfoFieldAstCalibrationData.partition,
+                         flash_info_page_buf, kDifNvmCtrlPartitionTypeInfo,
+                         FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
+                         /*delay=*/0));
 
   // Write AST configuration data to OTP.
   size_t ast_cfg_offset =
@@ -231,15 +230,13 @@ static status_t manuf_individualize_device_ast_cfg(
 
   // Erase AST data from flash by erasing the entire page and rewriting the
   // modified buffered contents back to the page.
-  TRY(nvm_testutils_erase_page(
-      flash_state, page_byte_address,
-      kFlashInfoFieldAstCalibrationData.partition,
-      kDifNvmCtrlPartitionTypeInfo));
-  TRY(nvm_testutils_write(
-      flash_state, page_byte_address,
-      kFlashInfoFieldAstCalibrationData.partition, flash_info_page_buf,
-      kDifNvmCtrlPartitionTypeInfo,
-      FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t)));
+  TRY(nvm_testutils_erase_page(flash_state, page_byte_address,
+                               kFlashInfoFieldAstCalibrationData.partition,
+                               kDifNvmCtrlPartitionTypeInfo));
+  TRY(nvm_testutils_write(flash_state, page_byte_address,
+                          kFlashInfoFieldAstCalibrationData.partition,
+                          flash_info_page_buf, kDifNvmCtrlPartitionTypeInfo,
+                          FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t)));
 
   return OK_STATUS();
 }

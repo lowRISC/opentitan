@@ -26,47 +26,46 @@ void nvm_ctrl_error_code_get(nvm_ctrl_error_code_t *error_code) {
   flash_ctrl_error_code_get(error_code);
 }
 
-rom_error_t nvm_ctrl_data_read(uint32_t addr, uint32_t word_count,
-                                void *data) {
+rom_error_t nvm_ctrl_data_read(uint32_t addr, uint32_t word_count, void *data) {
   return flash_ctrl_data_read(addr, word_count, data);
 }
 
 rom_error_t nvm_ctrl_info_read(const nvm_ctrl_info_page_t *info_page,
-                                uint32_t offset, uint32_t word_count,
-                                void *data) {
+                               uint32_t offset, uint32_t word_count,
+                               void *data) {
   return flash_ctrl_info_read(info_page, offset, word_count, data);
 }
 
 rom_error_t nvm_ctrl_info_read_zeros_on_read_error(
-    const nvm_ctrl_info_page_t *info_page, uint32_t offset,
-    uint32_t word_count, void *data) {
-  return flash_ctrl_info_read_zeros_on_read_error(info_page, offset,
-                                                   word_count, data);
+    const nvm_ctrl_info_page_t *info_page, uint32_t offset, uint32_t word_count,
+    void *data) {
+  return flash_ctrl_info_read_zeros_on_read_error(info_page, offset, word_count,
+                                                  data);
 }
 
 rom_error_t nvm_ctrl_data_write(uint32_t addr, uint32_t word_count,
-                                 const void *data) {
+                                const void *data) {
   return flash_ctrl_data_write(addr, word_count, data);
 }
 
 rom_error_t nvm_ctrl_info_write(const nvm_ctrl_info_page_t *info_page,
-                                 uint32_t offset, uint32_t word_count,
-                                 const void *data) {
+                                uint32_t offset, uint32_t word_count,
+                                const void *data) {
   return flash_ctrl_info_write(info_page, offset, word_count, data);
 }
 
 rom_error_t nvm_ctrl_data_erase(uint32_t addr,
-                                 nvm_ctrl_erase_type_t erase_type) {
+                                nvm_ctrl_erase_type_t erase_type) {
   return flash_ctrl_data_erase(addr, erase_type);
 }
 
 rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr,
-                                        nvm_ctrl_erase_type_t erase_type) {
+                                       nvm_ctrl_erase_type_t erase_type) {
   return flash_ctrl_data_erase_verify(addr, erase_type);
 }
 
 rom_error_t nvm_ctrl_info_erase(const nvm_ctrl_info_page_t *info_page,
-                                 nvm_ctrl_erase_type_t erase_type) {
+                                nvm_ctrl_erase_type_t erase_type) {
   return flash_ctrl_info_erase(info_page, erase_type);
 }
 
@@ -75,7 +74,7 @@ void nvm_ctrl_data_default_perms_set(nvm_ctrl_perms_t perms) {
 }
 
 void nvm_ctrl_info_perms_set(const nvm_ctrl_info_page_t *info_page,
-                              nvm_ctrl_perms_t perms) {
+                             nvm_ctrl_perms_t perms) {
   flash_ctrl_info_perms_set(info_page, perms);
 }
 
@@ -92,15 +91,15 @@ nvm_ctrl_cfg_t nvm_ctrl_boot_data_cfg_get(void) {
 }
 
 void nvm_ctrl_data_region_protect(nvm_ctrl_region_index_t region,
-                                   uint32_t page_offset, uint32_t num_pages,
-                                   nvm_ctrl_perms_t perms, nvm_ctrl_cfg_t cfg,
-                                   hardened_bool_t lock) {
+                                  uint32_t page_offset, uint32_t num_pages,
+                                  nvm_ctrl_perms_t perms, nvm_ctrl_cfg_t cfg,
+                                  hardened_bool_t lock) {
   flash_ctrl_data_region_protect(region, page_offset, num_pages, perms, cfg,
-                                  lock);
+                                 lock);
 }
 
 void nvm_ctrl_info_cfg_set(const nvm_ctrl_info_page_t *info_page,
-                            nvm_ctrl_cfg_t cfg) {
+                           nvm_ctrl_cfg_t cfg) {
   flash_ctrl_info_cfg_set(info_page, cfg);
 }
 
@@ -129,6 +128,6 @@ void nvm_ctrl_cert_info_page_owner_restrict(
 }
 
 rom_error_t nvm_ctrl_info_type0_params_build(uint8_t bank, uint8_t page,
-                                              nvm_ctrl_info_page_t *info_page) {
+                                             nvm_ctrl_info_page_t *info_page) {
   return flash_ctrl_info_type0_params_build(bank, page, info_page);
 }

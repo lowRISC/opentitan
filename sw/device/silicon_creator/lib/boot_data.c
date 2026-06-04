@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -175,9 +175,10 @@ static rom_error_t boot_data_entry_read(const nvm_ctrl_info_page_t *page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_write_impl(
-    const nvm_ctrl_info_page_t *page, size_t index,
-    const boot_data_t *boot_data, hardened_bool_t erase) {
+static rom_error_t boot_data_entry_write_impl(const nvm_ctrl_info_page_t *page,
+                                              size_t index,
+                                              const boot_data_t *boot_data,
+                                              hardened_bool_t erase) {
   // This function assumes the following layout for the first three fields.
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
@@ -239,10 +240,10 @@ static rom_error_t boot_data_entry_write(const nvm_ctrl_info_page_t *page,
             });
   rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
   nvm_ctrl_info_perms_set(page, (nvm_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
+                                    .read = kMultiBitBool4False,
+                                    .write = kMultiBitBool4False,
+                                    .erase = kMultiBitBool4False,
+                                });
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
   return error;
 }
@@ -262,8 +263,8 @@ static rom_error_t boot_data_entry_write(const nvm_ctrl_info_page_t *page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_invalidate(
-    const nvm_ctrl_info_page_t *page, size_t index) {
+static rom_error_t boot_data_entry_invalidate(const nvm_ctrl_info_page_t *page,
+                                              size_t index) {
   // Assertions for the assumptions below.
   OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, 8);
   static_assert(kBootDataInvalidEntry == 0,
@@ -273,16 +274,16 @@ static rom_error_t boot_data_entry_invalidate(
       index * sizeof(boot_data_t) + offsetof(boot_data_t, is_valid);
   const uint32_t val[2] = {0, 0};
   nvm_ctrl_info_perms_set(page, (nvm_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4True,
-                                      .erase = kMultiBitBool4False,
-                                  });
+                                    .read = kMultiBitBool4False,
+                                    .write = kMultiBitBool4True,
+                                    .erase = kMultiBitBool4False,
+                                });
   rom_error_t error = nvm_ctrl_info_write(page, offset, 2, val);
   nvm_ctrl_info_perms_set(page, (nvm_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
+                                    .read = kMultiBitBool4False,
+                                    .write = kMultiBitBool4False,
+                                    .erase = kMultiBitBool4False,
+                                });
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
   return error;
 }
@@ -441,21 +442,21 @@ static rom_error_t boot_data_page_info_update_impl(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_page_info_update(
-    const nvm_ctrl_info_page_t *page, active_page_info_t *page_info,
-    boot_data_t *boot_data) {
+static rom_error_t boot_data_page_info_update(const nvm_ctrl_info_page_t *page,
+                                              active_page_info_t *page_info,
+                                              boot_data_t *boot_data) {
   nvm_ctrl_info_perms_set(page, (nvm_ctrl_perms_t){
-                                      .read = kMultiBitBool4True,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
+                                    .read = kMultiBitBool4True,
+                                    .write = kMultiBitBool4False,
+                                    .erase = kMultiBitBool4False,
+                                });
   rom_error_t error =
       boot_data_page_info_update_impl(page, page_info, boot_data);
   nvm_ctrl_info_perms_set(page, (nvm_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
+                                    .read = kMultiBitBool4False,
+                                    .write = kMultiBitBool4False,
+                                    .erase = kMultiBitBool4False,
+                                });
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
   return error;
 }

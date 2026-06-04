@@ -14,9 +14,9 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_enter_rescue.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -118,11 +118,11 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
       state->bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
       (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
        owner_block_newversion_mode() == kHardenedBoolTrue)) {
-    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(
-        &kNvmCtrlInfoPageOwnerSlot1, kNvmCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot1,
+                                                 kNvmCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
-        &kNvmCtrlInfoPageOwnerSlot1, 0,
-        sizeof(state->data) / sizeof(uint32_t), state->data));
+        &kNvmCtrlInfoPageOwnerSlot1, 0, sizeof(state->data) / sizeof(uint32_t),
+        state->data));
   } else {
     rescue_msg("error: cannot accept owner_block in current state\r\n");
   }
@@ -140,9 +140,9 @@ static void ownership_erase(void) {
   lifecycle_state_t lc_state = lifecycle_state_get();
   if (lc_state == kLcStateDev) {
     OT_DISCARD(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot0,
-                                     kNvmCtrlEraseTypePage));
+                                   kNvmCtrlEraseTypePage));
     OT_DISCARD(nvm_ctrl_info_erase(&kNvmCtrlInfoPageOwnerSlot1,
-                                     kNvmCtrlEraseTypePage));
+                                   kNvmCtrlEraseTypePage));
     rescue_msg("ok: erased owner blocks\r\n");
   } else {
     rescue_msg("error: erase not allowed in state %x\r\n", lc_state);

@@ -5,13 +5,13 @@
 #include <assert.h>
 
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
@@ -34,10 +34,10 @@ static void increment_flash_counter(void) {
   CHECK_DIF_OK(dif_nvm_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_STATUS_OK(nvm_testutils_default_region_access(
-      &flash_ctrl,
-      /*rd_en*/ true,
-      /*prog_en*/ true, false, false, false, false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_access(&flash_ctrl,
+                                                      /*rd_en*/ true,
+                                                      /*prog_en*/ true, false,
+                                                      false, false, false));
   CHECK_STATUS_OK(
       flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId));
   CHECK_STATUS_OK(nvm_testutils_default_region_access(
@@ -59,19 +59,19 @@ static rom_error_t first_boot_test(void) {
 
   uint32_t corrupted_words[4] = {0};
   nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageBootData0,
-                            (nvm_ctrl_perms_t){
-                                .read = kMultiBitBool4False,
-                                .write = kMultiBitBool4True,
-                                .erase = kMultiBitBool4False,
-                            });
-  RETURN_IF_ERROR(nvm_ctrl_info_write(&kNvmCtrlInfoPageBootData0, 0, 4,
-                                        &corrupted_words));
+                          (nvm_ctrl_perms_t){
+                              .read = kMultiBitBool4False,
+                              .write = kMultiBitBool4True,
+                              .erase = kMultiBitBool4False,
+                          });
+  RETURN_IF_ERROR(
+      nvm_ctrl_info_write(&kNvmCtrlInfoPageBootData0, 0, 4, &corrupted_words));
   nvm_ctrl_info_perms_set(&kNvmCtrlInfoPageBootData0,
-                            (nvm_ctrl_perms_t){
-                                .read = kMultiBitBool4False,
-                                .write = kMultiBitBool4False,
-                                .erase = kMultiBitBool4False,
-                            });
+                          (nvm_ctrl_perms_t){
+                              .read = kMultiBitBool4False,
+                              .write = kMultiBitBool4False,
+                              .erase = kMultiBitBool4False,
+                          });
   return kErrorOk;
 }
 

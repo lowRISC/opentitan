@@ -15,7 +15,7 @@
 status_t ownership_print(void) {
   owner_block_t config;
   TRY(nvm_ctrl_info_read(&kNvmCtrlInfoPageOwnerSlot0, 0,
-                           sizeof(config) / sizeof(uint32_t), &config));
+                         sizeof(config) / sizeof(uint32_t), &config));
 
   LOG_INFO("owner_page0 tag = %C", config.header.tag);
   LOG_INFO("owner_page0 ownership_key_alg = %C", config.ownership_key_alg);

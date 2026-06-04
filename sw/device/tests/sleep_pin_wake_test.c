@@ -101,14 +101,13 @@ bool test_main(void) {
 
   if (kDeviceType == kDeviceSimDV) {
     // Enable access to flash for storing info across resets.
-    CHECK_STATUS_OK(
-        nvm_testutils_default_region_access(&flash_ctrl_state,
-                                                   /*rd_en*/ true,
-                                                   /*prog_en*/ true,
-                                                   /*erase_en*/ true,
-                                                   /*scramble_en*/ false,
-                                                   /*ecc_en*/ false,
-                                                   /*he_en*/ false));
+    CHECK_STATUS_OK(nvm_testutils_default_region_access(&flash_ctrl_state,
+                                                        /*rd_en*/ true,
+                                                        /*prog_en*/ true,
+                                                        /*erase_en*/ true,
+                                                        /*scramble_en*/ false,
+                                                        /*ecc_en*/ false,
+                                                        /*he_en*/ false));
   }
 
   // Randomly pick one of the wakeup detectors

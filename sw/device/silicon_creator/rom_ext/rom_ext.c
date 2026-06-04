@@ -25,11 +25,11 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/epmp.h"
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -449,11 +449,11 @@ static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
       .erase = kMultiBitBool4True,
   };
   nvm_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
-                                 rom_ext_slot == kBootSlotA ? read : write, cfg,
-                                 kHardenedBoolTrue);
+                               rom_ext_slot == kBootSlotA ? read : write, cfg,
+                               kHardenedBoolTrue);
   nvm_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
-                                 rom_ext_slot == kBootSlotB ? read : write, cfg,
-                                 kHardenedBoolTrue);
+                               rom_ext_slot == kBootSlotB ? read : write, cfg,
+                               kHardenedBoolTrue);
 }
 
 static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {

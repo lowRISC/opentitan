@@ -8,17 +8,17 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/device/lib/dif/dif_nvm_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -38,11 +38,11 @@
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
-#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
@@ -282,9 +282,8 @@ static status_t config_and_erase_certificate_flash_pages(void) {
   // No need to erase the kNvmCtrlInfoPageAttestationKeySeeds page as it is
   // erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
   TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageFactoryCerts,
-                            kNvmCtrlEraseTypePage));
-  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageDiceCerts,
-                            kNvmCtrlEraseTypePage));
+                          kNvmCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageDiceCerts, kNvmCtrlEraseTypePage));
   return OK_STATUS();
 }
 
@@ -486,7 +485,7 @@ static status_t hash_certificate(const nvm_ctrl_info_page_t *page,
   // Read the entire perso LTV object from flash and parse it.
   perso_tlv_cert_obj_t cert_obj;
   TRY(nvm_ctrl_info_read(page, offset, util_size_to_words(obj_size),
-                           cert_buffer));
+                         cert_buffer));
   TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, kPersoBlobVersionV0,
                              &cert_obj));
 
@@ -732,10 +731,8 @@ static status_t boot_data_cfg_initialize(void) {
   nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageBootData0, boot_data_cfg);
   nvm_ctrl_info_cfg_set(&kNvmCtrlInfoPageBootData1, boot_data_cfg);
 
-  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageBootData0,
-                            kNvmCtrlEraseTypePage));
-  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageBootData1,
-                            kNvmCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageBootData0, kNvmCtrlEraseTypePage));
+  TRY(nvm_ctrl_info_erase(&kNvmCtrlInfoPageBootData1, kNvmCtrlEraseTypePage));
 
   return OK_STATUS();
 }
@@ -995,8 +992,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     }
 
     TRY(nvm_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
-                              util_size_to_words(sizeof(dice_page)),
-                              &dice_page));
+                            util_size_to_words(sizeof(dice_page)), &dice_page));
   }
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in

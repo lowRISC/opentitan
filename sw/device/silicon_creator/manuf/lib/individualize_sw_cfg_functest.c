@@ -70,10 +70,9 @@ static status_t init_flash_info_page0(bool write_ast_data) {
   if (!write_ast_data) {
     return OK_STATUS();
   }
-  TRY(nvm_testutils_erase_page(
-      &flash_ctrl_state, byte_address,
-      kFlashInfoFieldAstCalibrationData.partition,
-      kDifNvmCtrlPartitionTypeInfo));
+  TRY(nvm_testutils_erase_page(&flash_ctrl_state, byte_address,
+                               kFlashInfoFieldAstCalibrationData.partition,
+                               kDifNvmCtrlPartitionTypeInfo));
   // Set dummy AST values for testing.
   uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {0};
   for (size_t i = 0; i < ARRAYSIZE(ast_cfg_data); ++i) {

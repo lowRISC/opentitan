@@ -22,7 +22,7 @@ rom_error_t bootstrap_chip_erase(void) {
   nvm_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
   rom_error_t err_0 = nvm_ctrl_data_erase(0, kNvmCtrlEraseTypeBank);
   rom_error_t err_1 = nvm_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
-                                            kNvmCtrlEraseTypeBank);
+                                          kNvmCtrlEraseTypeBank);
   nvm_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
 
   HARDENED_RETURN_IF_ERROR(err_0);

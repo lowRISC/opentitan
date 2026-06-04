@@ -39,8 +39,8 @@
 
 #ifdef OPENTITAN_IS_EARLGREY
 #include "sw/device/lib/dif/dif_nvm_ctrl.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
 #include "hw/top/alert_handler_regs.h"  // Generated.

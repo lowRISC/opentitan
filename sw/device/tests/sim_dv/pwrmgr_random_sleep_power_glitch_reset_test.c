@@ -24,8 +24,8 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -416,14 +416,13 @@ bool test_main(void) {
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_get(0, &event_idx));
 
   // Enable flash access
-  CHECK_STATUS_OK(
-      nvm_testutils_default_region_access(&flash_ctrl,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_access(&flash_ctrl,
+                                                      /*rd_en*/ true,
+                                                      /*prog_en*/ true,
+                                                      /*erase_en*/ true,
+                                                      /*scramble_en*/ false,
+                                                      /*ecc_en*/ false,
+                                                      /*he_en*/ false));
 
   // Increment flash counter to know where we are
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(&flash_ctrl, 0));
