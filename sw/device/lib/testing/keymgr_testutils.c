@@ -38,14 +38,15 @@ status_t keymgr_testutils_nvm_init(
     const keymgr_testutils_secret_t *owner_secret) {
   if (creator_secret) {
     TRY(nvm_testutils_write_info_page(kNvmInfoPageCreatorSecret,
-                                      creator_secret->value,
+                                      /*byte_offset=*/0, creator_secret->value,
                                       ARRAYSIZE(creator_secret->value),
-                                      /*scramble=*/true));
+                                      /*scramble=*/true,
+                                      /*erase_before_write=*/true));
   }
-  TRY(nvm_testutils_write_info_page(kNvmInfoPageOwnerSecret,
-                                    owner_secret->value,
-                                    ARRAYSIZE(owner_secret->value),
-                                    /*scramble=*/true));
+  TRY(nvm_testutils_write_info_page(
+      kNvmInfoPageOwnerSecret,
+      /*byte_offset=*/0, owner_secret->value, ARRAYSIZE(owner_secret->value),
+      /*scramble=*/true, /*erase_before_write=*/true));
   return OK_STATUS();
 }
 

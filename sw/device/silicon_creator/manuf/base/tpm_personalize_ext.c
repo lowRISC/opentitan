@@ -69,9 +69,8 @@ static status_t personalize_gen_tpm_ek_certificate(
   cert_flash_layout[kCertFlashLayoutExt0Idx].num_certs = 1;
 
   // Provision TPM keygen seeds to flash info.
-  TRY(manuf_personalize_flash_asymm_key_seed(
-      &flash_ctrl_state, kFlashInfoFieldTpmEkAttestationKeySeed,
-      kAttestationSeedWords));
+  TRY(manuf_personalize_nvm_asymm_key_seed(kNvmInfoFieldTpmEkAttestationKeySeed,
+                                           kAttestationSeedWords));
 
   // Generate TPM EK keys and (TBS) cert.
   TRY(otbn_boot_cert_ecc_p256_keygen(kTpmKeyEk, &tpm_pubkey_id, &curr_pubkey));

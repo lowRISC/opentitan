@@ -7,16 +7,15 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/util.h"
 
@@ -51,8 +50,8 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
 }
 
 OT_WARN_UNUSED_RESULT
-status_t manuf_personalize_flash_asymm_key_seed(
-    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
+status_t manuf_personalize_nvm_asymm_key_seed(nvm_info_field_t field,
+                                              size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
@@ -61,29 +60,22 @@ status_t manuf_personalize_flash_asymm_key_seed(
                              /*fips_check=*/kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
 
-  // Since all seeds are on stored consecutively on the same flash info page,
-  // we only need to set up the permissions on the page, and erase it once.
-  uint32_t byte_address = 0;
+  // Since all seeds are stored consecutively on the same flash info page,
+  // we only need to erase it once (on the first write at byte_offset==0).
   if (field.byte_offset == 0) {
-    TRY(flash_ctrl_testutils_info_region_scrambled_setup(
-        flash_state, field.page, field.bank, field.partition, &byte_address));
-    TRY(flash_ctrl_testutils_erase_and_write_page(
-        flash_state, byte_address, field.partition, seed,
-        kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+    TRY(nvm_testutils_write_info_page(
+        field.page, /*byte_offset=*/0, seed, kAttestationSeedWords,
+        /*scramble=*/true, /*erase_before_write=*/true));
   } else {
-    dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-    byte_address =
-        (field.page * device_info.bytes_per_page) + field.byte_offset;
-    TRY(flash_ctrl_testutils_write(flash_state, byte_address, field.partition,
-                                   seed, kDifFlashCtrlPartitionTypeInfo,
-                                   kAttestationSeedWords));
+    TRY(nvm_testutils_write_info_page(field.page, field.byte_offset, seed,
+                                      kAttestationSeedWords,
+                                      /*scramble=*/true,
+                                      /*erase_before_write=*/false));
   }
 
   uint32_t seed_result[kAttestationSeedWords];
-  TRY(flash_ctrl_testutils_read(flash_state, byte_address, field.partition,
-                                seed_result, kDifFlashCtrlPartitionTypeInfo,
-                                len,
-                                /*delay=*/0));
+  TRY(nvm_testutils_read_info_page(field.page, field.byte_offset, seed_result,
+                                   len));
   bool found_error = false;
   for (size_t i = 0; i < len; ++i) {
     found_error |=
@@ -105,29 +97,23 @@ status_t manuf_personalize_flash_asymm_key_seed(
  * @return OK_STATUS on success.
  */
 OT_WARN_UNUSED_RESULT
-static status_t flash_keymgr_secret_seed_write(
-    dif_flash_ctrl_state_t *flash_state, flash_info_field_t field, size_t len) {
+static status_t nvm_keymgr_secret_seed_write(nvm_info_field_t field,
+                                             size_t len) {
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
-  uint32_t seed[kFlashInfoFieldKeySeedSizeIn32BitWords];
+  uint32_t seed[kNvmInfoFieldKeySeedSizeIn32BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len,
                              /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
 
-  uint32_t address = 0;
-  TRY(flash_ctrl_testutils_info_region_scrambled_setup(
-      flash_state, field.page, field.bank, field.partition, &address));
+  TRY(nvm_testutils_write_info_page(field.page, field.byte_offset, seed, len,
+                                    /*scramble=*/true,
+                                    /*erase_before_write=*/true));
 
-  TRY(flash_ctrl_testutils_erase_and_write_page(
-      flash_state, address, field.partition, seed,
-      kDifFlashCtrlPartitionTypeInfo, len));
-
-  uint32_t seed_result[kFlashInfoFieldKeySeedSizeIn32BitWords];
-  TRY(flash_ctrl_testutils_read(flash_state, address, field.partition,
-                                seed_result, kDifFlashCtrlPartitionTypeInfo,
-                                len,
-                                /*delay=*/0));
+  uint32_t seed_result[kNvmInfoFieldKeySeedSizeIn32BitWords];
+  TRY(nvm_testutils_read_info_page(field.page, field.byte_offset, seed_result,
+                                   len));
   bool found_error = false;
   for (size_t i = 0; i < len; ++i) {
     found_error |=
@@ -190,8 +176,7 @@ static status_t otp_partition_secret2_configure(
 }
 
 status_t manuf_personalize_device_secrets(
-    dif_flash_ctrl_state_t *flash_state, const dif_lc_ctrl_t *lc_ctrl,
-    const dif_otp_ctrl_t *otp_ctrl,
+    const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
     const lc_token_hash_t *rma_unlock_token_hash) {
   // Check life cycle in either PROD, PROD_END, or DEV.
   TRY(lc_ctrl_testutils_operational_state_check(lc_ctrl));
@@ -223,13 +208,13 @@ status_t manuf_personalize_device_secrets(
 
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
-  TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldCreatorSeed,
-                                     kFlashInfoFieldKeySeedSizeIn32BitWords));
+  TRY(nvm_keymgr_secret_seed_write(kNvmInfoFieldCreatorSeed,
+                                   kNvmInfoFieldKeySeedSizeIn32BitWords));
   // Provision preliminary OwnerSeed into target flash info page (with
   // expectation that SiliconOwner will rotate this value during ownership
   // transfer).
-  TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldOwnerSeed,
-                                     kFlashInfoFieldKeySeedSizeIn32BitWords));
+  TRY(nvm_keymgr_secret_seed_write(kNvmInfoFieldOwnerSeed,
+                                   kNvmInfoFieldKeySeedSizeIn32BitWords));
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl, rma_unlock_token_hash));

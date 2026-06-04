@@ -3,18 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -26,7 +25,6 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  * Keep this list sorted in alphabetical order.
  */
-static dif_flash_ctrl_state_t flash_state;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
@@ -37,7 +35,7 @@ static dif_rstmgr_t rstmgr;
  * Note, the second byte of the FT device ID is set by the CP calibration step
  * and written to flash info page 0. We set it to 0x99 for testing.
  */
-static const uint32_t kFtDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
+static const uint32_t kFtDeviceId[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] = {
     0xAAAA99AA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
 
 static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
@@ -52,9 +50,6 @@ static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
  * Initializes all DIF handles used in this module.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
@@ -79,28 +74,21 @@ bool test_main(void) {
       lc_ctrl_testutils_check_lc_state(&lc_ctrl, kDifLcCtrlStateTestUnlocked1));
 
   if (!status_ok(manuf_individualize_device_hw_cfg_check(&otp_ctrl))) {
-    // Setup page permissions on flash info page 0.
-    uint32_t byte_address = 0;
-    CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
-        &flash_state, kFlashInfoFieldCpDeviceId.page,
-        kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
-        kFlashInfoPage0Permissions, &byte_address));
-
     // Write the CP device ID to flash info page 0 and try to program HW_CFG0
     // partition.
-    uint32_t kCpDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
+    uint32_t kCpDeviceId[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] = {
         0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
-    CHECK_STATUS_OK(manuf_flash_info_field_write(
-        &flash_state, kFlashInfoFieldCpDeviceId, kCpDeviceId,
-        kFlashInfoFieldCpDeviceIdSizeIn32BitWords,
-        /*erase_page_before_write=*/true));
+    CHECK_STATUS_OK(
+        manuf_nvm_info_field_write(kNvmInfoFieldCpDeviceId, kCpDeviceId,
+                                   kNvmInfoFieldCpDeviceIdSizeIn32BitWords,
+                                   /*erase_page_before_write=*/true));
     uint32_t ast_cfg_version = 0x99;
-    CHECK_STATUS_OK(manuf_flash_info_field_write(
-        &flash_state, kFlashInfoFieldAstCfgVersion, &ast_cfg_version,
-        kFlashInfoFieldAstCfgVersionSizeIn32BitWords,
-        /*erase_page_before_write=*/false));
+    CHECK_STATUS_OK(
+        manuf_nvm_info_field_write(kNvmInfoFieldAstCfgVersion, &ast_cfg_version,
+                                   kNvmInfoFieldAstCfgVersionSizeIn32BitWords,
+                                   /*erase_page_before_write=*/false));
     CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
-        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
+        &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
 
     // Check the value of the DeviceId in the HW_CFG0 partition.
     uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
@@ -112,9 +100,9 @@ bool test_main(void) {
     LOG_INFO("FT Device ID in OTP: %08x%08x%08x%08x", device_id[7],
              device_id[6], device_id[5], device_id[4]);
     CHECK_ARRAYS_EQ(device_id, kCpDeviceId,
-                    kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
-    CHECK_ARRAYS_EQ(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords],
-                    kFtDeviceId, kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
+                    kNvmInfoFieldCpDeviceIdSizeIn32BitWords);
+    CHECK_ARRAYS_EQ(&device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords],
+                    kFtDeviceId, kNvmInfoFieldCpDeviceIdSizeIn32BitWords);
 
     sw_reset();
   }

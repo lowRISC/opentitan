@@ -766,7 +766,7 @@ bool test_main(void) {
     LOG_INFO("Test round %d", event_idx);
 
 #ifdef OPENTITAN_IS_EARLGREY
-    // If not running rom_ext we need to initialize the info FLASH partitions
+    // If not running rom_ext we need to initialize the info partitions
     // storing the Creator and Owner secrets to avoid getting the flash
     // controller into a fatal error state.
     if (kBootStage != kBootStageOwner) {

@@ -23,7 +23,7 @@
 #include "sw/device/silicon_creator/lib/cert/dice_keys.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -94,7 +94,7 @@ static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
   uint32_t kAttestationSeedWords = 10;
   uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
   uint32_t seed_flash_offset =
-      kFlashInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
+      kNvmInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
 
   TRY(flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
                            seed_flash_offset, kAttestationSeedWords,

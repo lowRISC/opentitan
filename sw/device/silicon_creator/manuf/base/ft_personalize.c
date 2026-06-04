@@ -55,8 +55,8 @@
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
@@ -281,7 +281,7 @@ static status_t config_and_erase_certificate_flash_pages(void) {
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
   // No need to erase the kFlashCtrlInfoPageAttestationKeySeeds page as it is
-  // erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
+  // erased on the first call to `manuf_personalize_nvm_asymm_key_seed()`.
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageFactoryCerts,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
@@ -395,24 +395,19 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     TRY(UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
-    TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
-                                         &token_hash));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldUdsAttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldCdi0AttestationKeySeed,
-        kAttestationSeedWords));
-    TRY(manuf_personalize_flash_asymm_key_seed(
-        &flash_ctrl_state, kFlashInfoFieldCdi1AttestationKeySeed,
-        kAttestationSeedWords));
+    TRY(manuf_personalize_device_secrets(&lc_ctrl, &otp_ctrl, &token_hash));
+    TRY(manuf_personalize_nvm_asymm_key_seed(kNvmInfoFieldUdsAttestationKeySeed,
+                                             kAttestationSeedWords));
+    TRY(manuf_personalize_nvm_asymm_key_seed(
+        kNvmInfoFieldCdi0AttestationKeySeed, kAttestationSeedWords));
+    TRY(manuf_personalize_nvm_asymm_key_seed(
+        kNvmInfoFieldCdi1AttestationKeySeed, kAttestationSeedWords));
     // Provision the attestation key generation version field (at the end of the
     // attestation seed info page).
     uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
-    TRY(manuf_flash_info_field_write(
-        &flash_ctrl_state, kFlashInfoFieldAttestationKeyGenVersion,
-        /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
-        /*erase_page_before_write=*/false));
+    TRY(manuf_nvm_info_field_write(kNvmInfoFieldAttestationKeyGenVersion,
+                                   /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
+                                   /*erase_page_before_write=*/false));
     sw_reset();
   }
 
@@ -657,16 +652,10 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   // Read out the WAS from flash.
   hmac_key_t was;
   static_assert(
-      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
+      kNvmInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
       "WAS size expected to be same size as HMAC-SHA256 key.");
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
-      kFlashInfoFieldWaferAuthSecret.bank,
-      kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3ReadPermissions,
-      /*offset=*/NULL));
-  TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret, was.key,
-      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferAuthSecret, was.key,
+                                kNvmInfoFieldWaferAuthSecretSizeIn32BitWords));
 
   // Compute HMAC of TBS certs with WAS as the key.
   // HSMs and host tooling will compute an HMAC in big endian format, so we do

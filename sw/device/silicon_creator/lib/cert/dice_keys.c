@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 // UDS (Creator) attestation key diverisfier constants.
 // Note: versions are always set to 0 so these keys are always valid from the
@@ -55,21 +55,21 @@ const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
 
 const sc_keymgr_ecc_key_t kDiceKeyUds = {
     .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = kFlashInfoFieldUdsKeySeedIdx,
+    .keygen_seed_idx = kNvmInfoFieldUdsKeySeedIdx,
     .keymgr_diversifier = &kUdsKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateCreatorRootKey,
 };
 
 const sc_keymgr_ecc_key_t kDiceKeyCdi0 = {
     .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = kFlashInfoFieldCdi0KeySeedIdx,
+    .keygen_seed_idx = kNvmInfoFieldCdi0KeySeedIdx,
     .keymgr_diversifier = &kCdi0KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
 };
 
 const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
     .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = kFlashInfoFieldCdi1KeySeedIdx,
+    .keygen_seed_idx = kNvmInfoFieldCdi1KeySeedIdx,
     .keymgr_diversifier = &kCdi1KeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };

@@ -6,14 +6,14 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -93,19 +93,19 @@ rom_error_t sigverify_with_bad_signature_test(void) {
 rom_error_t attestation_keygen_test(void) {
   // Check that key generations with different seeds result in different keys.
   ecdsa_p256_public_key_t pk_uds;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
                                                kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_uds));
   ecdsa_p256_public_key_t pk_cdi0;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldCdi0KeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldCdi0KeySeedIdx,
                                                kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_cdi0));
   ecdsa_p256_public_key_t pk_cdi1;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldCdi1KeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldCdi1KeySeedIdx,
                                                kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_cdi1));
   ecdsa_p256_public_key_t pk_tpm_ek;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldTpmEkKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldTpmEkKeySeedIdx,
                                                kScKeymgrKeyTypeSealing,
                                                kDiversification, &pk_tpm_ek));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds, (unsigned char *)&pk_cdi0,
@@ -120,8 +120,8 @@ rom_error_t attestation_keygen_test(void) {
   // Check that running the same key generation twice results in the same key.
   ecdsa_p256_public_key_t pk_uds_again;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kFlashInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation,
-      kDiversification, &pk_uds_again));
+      kNvmInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation, kDiversification,
+      &pk_uds_again));
   CHECK_ARRAYS_EQ((unsigned char *)&pk_uds_again, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
 
@@ -133,7 +133,7 @@ rom_error_t attestation_keygen_test(void) {
   diversification_modified.salt[0] ^= 1;
   ecdsa_p256_public_key_t pk_uds_div;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kFlashInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation,
+      kNvmInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation,
       diversification_modified, &pk_uds_div));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds_div, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
@@ -143,10 +143,10 @@ rom_error_t attestation_keygen_test(void) {
 rom_error_t attestation_advance_and_endorse_test(void) {
   // Generate and save the a keypair.
   ecdsa_p256_public_key_t pk;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
                                                kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk));
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(kNvmInfoFieldUdsKeySeedIdx,
                                                  kScKeymgrKeyTypeAttestation,
                                                  kDiversification));
 
@@ -179,7 +179,7 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   // Check that generating a new key with the same diversification as before
   // now gets a different public key because keymgr has advanced.
   ecdsa_p256_public_key_t pk_adv;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
                                                kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk_adv));
   CHECK_ARRAYS_NE((unsigned char *)&pk, (unsigned char *)&pk_adv, sizeof(pk));
@@ -191,18 +191,18 @@ rom_error_t attestation_advance_and_endorse_test(void) {
 rom_error_t attestation_save_clear_key_test(void) {
   // We need the public key to pass to the endorse routine's self-test.
   ecdsa_p256_public_key_t pk;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
                                                kScKeymgrKeyTypeAttestation,
                                                kDiversification, &pk));
 
   // Save and then clear a private key.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(kNvmInfoFieldUdsKeySeedIdx,
                                                  kScKeymgrKeyTypeAttestation,
                                                  kDiversification));
   RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
 
   // Save the private key again and check that endorsing succeeds.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(kNvmInfoFieldUdsKeySeedIdx,
                                                  kScKeymgrKeyTypeAttestation,
                                                  kDiversification));
   hmac_digest_t digest;
@@ -231,36 +231,22 @@ bool test_main(void) {
   CHECK_STATUS_OK(
       keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
 
-  // Initialize flash.
-  dif_flash_ctrl_state_t flash_ctrl;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
-
   // Program the attestation key seeds in flash. The setup step only needs to
   // be done once, since the seeds are on the same page.
-  flash_info_field_t seed_fields[] = {
-      kFlashInfoFieldUdsAttestationKeySeed,
-      kFlashInfoFieldCdi0AttestationKeySeed,
-      kFlashInfoFieldCdi1AttestationKeySeed,
+  nvm_info_field_t seed_fields[] = {
+      kNvmInfoFieldUdsAttestationKeySeed,
+      kNvmInfoFieldCdi0AttestationKeySeed,
+      kNvmInfoFieldCdi1AttestationKeySeed,
   };
-  uint32_t page_address = 0;
-  CHECK_STATUS_OK(flash_ctrl_testutils_info_region_scrambled_setup(
-      &flash_ctrl, seed_fields[0].page, seed_fields[0].bank,
-      seed_fields[0].partition, &page_address));
-  CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
-      &flash_ctrl, page_address, seed_fields[0].partition, kSeedValues[0],
-      kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+  CHECK_STATUS_OK(nvm_testutils_write_info_page(
+      seed_fields[0].page, seed_fields[0].byte_offset, kSeedValues[0],
+      kAttestationSeedWords, /*scramble=*/true, /*erase_before_write=*/true));
   CHECK(ARRAYSIZE(seed_fields) == ARRAYSIZE(kSeedValues));
   for (size_t i = 1; i < ARRAYSIZE(seed_fields); i++) {
-    CHECK(seed_fields[i].page == seed_fields[i - 1].page);
-    CHECK(seed_fields[i].bank == seed_fields[i - 1].bank);
-    CHECK(seed_fields[i].partition == seed_fields[i - 1].partition);
-    CHECK_STATUS_OK(flash_ctrl_testutils_write(
-        &flash_ctrl, page_address + seed_fields[i].byte_offset,
-        seed_fields[i].partition, kSeedValues[i],
-        kDifFlashCtrlPartitionTypeInfo, kAttestationSeedWords));
+    CHECK_STATUS_OK(nvm_testutils_write_info_page(
+        seed_fields[i].page, seed_fields[i].byte_offset, kSeedValues[i],
+        kAttestationSeedWords, /*scramble=*/true,
+        /*erase_before_write=*/false));
   }
 
   // Load the boot services OTBN app.

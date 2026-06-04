@@ -5,19 +5,18 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/tests/test_wafer_auth_secret.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
@@ -27,16 +26,12 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_lc_ctrl_t lc_ctrl;
 
 /**
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
@@ -68,22 +63,16 @@ bool test_main(void) {
     case kDifLcCtrlStateTestUnlocked5:
     case kDifLcCtrlStateTestUnlocked6:
     case kDifLcCtrlStateTestUnlocked7:
-      LOG_INFO("Writing to the isolated flash partition.");
-      uint32_t byte_address = 0;
-      CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
-          &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
-          kFlashInfoFieldWaferAuthSecret.bank,
-          kFlashInfoFieldWaferAuthSecret.partition, &byte_address));
-      CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
-          &flash_ctrl_state, byte_address,
-          kFlashInfoFieldWaferAuthSecret.partition, kExpectedWaferAuthSecret,
-          kDifFlashCtrlPartitionTypeInfo,
-          kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
+      LOG_INFO("Writing to the isolated NVM partition.");
+      CHECK_STATUS_OK(nvm_testutils_write_info_page(
+          kNvmInfoFieldWaferAuthSecret.page,
+          kNvmInfoFieldWaferAuthSecret.byte_offset, kExpectedWaferAuthSecret,
+          kNvmInfoFieldWaferAuthSecretSizeIn32BitWords, /*scramble=*/false,
+          /*erase_before_write=*/true));
       LOG_INFO("Enabling ROM execution to enable bootstrap after reset.");
-      CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(
-          &otp_ctrl, &flash_ctrl_state));
+      CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
       CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-      LOG_INFO("Done. Perform an LC transition and run flash stage.");
+      LOG_INFO("Done. Perform an LC transition and run NVM stage.");
       break;
     default:
       return false;
