@@ -156,6 +156,14 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "nvm_ctrl",
+    srcs = ["nvm_ctrl.c"],
+    hdrs = ["nvm_ctrl.h"],
+    visibility = ["//visibility:public"],
+    deps = [":flash_ctrl"],
+)
+
 dual_cc_library(
     name = "flash_ctrl",
     srcs = dual_inputs(
