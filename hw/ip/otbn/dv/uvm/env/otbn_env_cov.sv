@@ -1425,6 +1425,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     `DEF_ELEN_32_CP
 
+    lane_cp: coverpoint (insn_data[30:28]);
+
+
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
     `DEF_WDR_TOGGLE_CROSS(wrs1)
@@ -1498,6 +1501,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     }
 
     `DEF_ELEN_32_CP
+
+    shift_bits_cp: coverpoint (insn_data[28:27]);
 
     `DEF_WDR_TOGGLE_COV(wrs1, wdr_operand_a)
     `DEF_WDR_TOGGLE_COV(wrs2, wdr_operand_b)
@@ -1989,8 +1994,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic [255:0] wdr_operand_b,
                          logic [255:0] mod);
 
-    // Extreme values of MOD
-    mod_cp: coverpoint mod { bins extremes[] = {'0, '1}; }
+    // Extreme values and intermdiate of MOD
+    mod_cp: coverpoint mod { bins extremes[] = {'0, '1};
+                             bins intermediate = {256'h1 << 255}; }
 
     // Sum less than MOD (so we don't do a subtraction). Here, and below, we zero-extend explicitly
     // in the sum, which uses 257 bits internally.
@@ -2065,8 +2071,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic [255:0] wdr_operand_b,
                          logic [255:0] mod);
 
-    // Extreme values of MOD
-    mod_cp: coverpoint mod { bins extremes[] = {'0, '1}; }
+    // Extreme values and intermediate of MOD
+    mod_cp: coverpoint mod { bins extremes[] = {'0, '1};
+                             bins intermediate = {256'h1 << 255}; }
 
     // A non-negative difference with a nonzero MOD.
     `DEF_SEEN_CP(diff_nonneg_cp,
@@ -2269,6 +2276,521 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   endgroup
 
+  covergroup insn_bn_addv_cg
+    with function sample(logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b);
+
+    // For each vector element:
+    // Execute with vector element values wrs1 and wrs2 such that intermediate value value wrs1 + wrs2 > (2^elen-1) to check for overflow
+
+    `define DEF_ADDV_OVERFLOW_CP(elem) \
+      `DEF_SEEN_CP(overflow_elem``elem``_cp, \
+          (({1'b0, wdr_operand_a[32*elem +: 32]} + \
+          {1'b0, wdr_operand_b[32*elem +: 32]} > 32'hFFFFFFFF)))
+
+    `DEF_ADDV_OVERFLOW_CP(0)
+    `DEF_ADDV_OVERFLOW_CP(1)
+    `DEF_ADDV_OVERFLOW_CP(2)
+    `DEF_ADDV_OVERFLOW_CP(3)
+    `DEF_ADDV_OVERFLOW_CP(4)
+    `DEF_ADDV_OVERFLOW_CP(5)
+    `DEF_ADDV_OVERFLOW_CP(6)
+    `DEF_ADDV_OVERFLOW_CP(7)
+    `undef DEF_ADDV_OVERFLOW_CP
+
+  endgroup
+
+  covergroup insn_bn_addvm_cg
+    with function sample(logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [8*33-1:0] wide_sum,
+                         logic [31:0] mod;
+
+    // For each vector element:
+    // Execute with  two extreme values and intermediate of MOD
+
+    mod_cp: coverpoint mod { bins extremes[] = {'0, '1};
+                             bins intermediate = {32'h1 << 31};}
+
+    // Don't perform a subtraction when sum is less than mod, i.e. when MOD is non-zero
+
+    `define DEF_ADDVM_SUM_LT_MOD_CP(elem) \
+      `DEF_SEEN_CP(sum_lt_mod_elem``elem``_cp, \
+        (mod != 0) && \
+        wide_sum[33*elem +: 33] < {1'b0, mod}))
+
+    `DEF_ADDVM_SUM_LT_MOD_CP(0)
+    `DEF_ADDVM_SUM_LT_MOD_CP(1)
+    `DEF_ADDVM_SUM_LT_MOD_CP(2)
+    `DEF_ADDVM_SUM_LT_MOD_CP(3)
+    `DEF_ADDVM_SUM_LT_MOD_CP(4)
+    `DEF_ADDVM_SUM_LT_MOD_CP(5)
+    `DEF_ADDVM_SUM_LT_MOD_CP(6)
+    `DEF_ADDVM_SUM_LT_MOD_CP(7)
+    `undef DEF_ADDVM_SUM_LT_MOD_CP
+
+    // Sum exactly equals a nonzero MOD (subtracting down to zero)
+
+    `define DEF_ADDVM_SUM_EQ_MOD_CP(elem) \
+      `DEF_SEEN_CP(sum_eq_mod_elem``elem``_cp, \
+        (mod != 0) && \
+        (wide_sum[33*elem +: 33] == {1'b0, mod})))
+
+    `DEF_ADDVM_SUM_EQ_MOD_CP(0)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(1)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(2)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(3)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(4)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(5)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(6)
+    `DEF_ADDVM_SUM_EQ_MOD_CP(7)
+    `undef DEF_ADDVM_SUM_EQ_MOD_CP
+
+    // Sum is greater than a nonzero MOD, but not twice as big
+
+    `define DEF_ADDVM_SUM_GT_MOD_CP(elem) \
+      `DEF_SEEN_CP(sum_gt_mod_elem``elem``_cp, \
+        (mod != 0) && \
+        (wide_sum[33*elem +: 33] > {1'b0, mod}) && \
+        (wide_sum[33*elem +: 33] < {mod, 1'b0}))
+
+    `DEF_ADDVM_SUM_GT_MOD_CP(0)
+    `DEF_ADDVM_SUM_GT_MOD_CP(1)
+    `DEF_ADDVM_SUM_GT_MOD_CP(2)
+    `DEF_ADDVM_SUM_GT_MOD_CP(3)
+    `DEF_ADDVM_SUM_GT_MOD_CP(4)
+    `DEF_ADDVM_SUM_GT_MOD_CP(5)
+    `DEF_ADDVM_SUM_GT_MOD_CP(6)
+    `DEF_ADDVM_SUM_GT_MOD_CP(7)
+    `undef DEF_ADDVM_SUM_GT_MOD_CP
+
+  endgroup
+
+  covergroup insn_bn_subv_cg
+    with function sample(logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b);
+
+    // For each vector element:
+    // Execute with vector element values wrs1 and wrs2 such that intermediate values wrs1 - wrs2 < 0 to check for underflow
+
+    `define DEF_SUBV_UNDERFLOW_CP(elem) \
+      `DEF_SEEN_CP(underflow_elem``elem``_cp, \
+        ((wdr_operand_a[32*elem +: 32] < wdr_operand_b[32*elem +: 32])))
+
+    `DEF_SUBV_UNDERFLOW_CP(0)
+    `DEF_SUBV_UNDERFLOW_CP(1)
+    `DEF_SUBV_UNDERFLOW_CP(2)
+    `DEF_SUBV_UNDERFLOW_CP(3)
+    `DEF_SUBV_UNDERFLOW_CP(4)
+    `DEF_SUBV_UNDERFLOW_CP(5)
+    `DEF_SUBV_UNDERFLOW_CP(6)
+    `DEF_SUBV_UNDERFLOW_CP(7)
+    `undef DEF_SUBV_UNDERFLOW_CP
+
+  endgroup
+
+  covergroup insn_bn_subvm_cg
+    with function sample(logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [31:0] mod);
+
+    // For each vector element:
+    // Execute with  two extreme values and intermediate of MOD
+
+    mod_cp: coverpoint mod { bins extremes[] = {'0, '1};
+                             bins intermediate = {32'h1 << 31};}
+
+    // A non-negative result with a non-zero MOD (so no MOD addition occurs)
+
+    `define DEF_SUBVM_DIFF_NONNEG_CP(elem) \
+      `DEF_SEEN_CP(diff_nonneg_elem``elem``_cp, \
+        (mod != 0) && \
+        ({1'b0, wdr_operand_a[32*elem +: 32]} >= {1'b0, wdr_operand_b[32*elem +: 32]}))
+
+    `DEF_SUBVM_DIFF_NONNEG_CP(0)
+    `DEF_SUBVM_DIFF_NONNEG_CP(1)
+    `DEF_SUBVM_DIFF_NONNEG_CP(2)
+    `DEF_SUBVM_DIFF_NONNEG_CP(3)
+    `DEF_SUBVM_DIFF_NONNEG_CP(4)
+    `DEF_SUBVM_DIFF_NONNEG_CP(5)
+    `DEF_SUBVM_DIFF_NONNEG_CP(6)
+    `DEF_SUBVM_DIFF_NONNEG_CP(7)
+    `undef DEF_SUBVM_DIFF_NONNEG_CP
+
+    // A diiference that exactly equals a non-zero -MOD (adding back up to zero)
+
+    // A - B = -MOD
+    // A - B + MOD = 0
+    // A + MOD = B
+
+    `define DEF_SUBVM_DIFF_MINUS_MOD_CP(elem) \
+      `DEF_SEEN_CP(diff_minus_mod_elem``elem``_cp, \
+        (mod != 0) && \
+        ({1'b0, wdr_operand_a[32*elem+:32]} + {1'b0, mod} == {1'b0, wdr_operand_b[32*elem+:32]}))
+
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(0)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(1)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(2)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(3)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(4)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(5)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(6)
+    `DEF_SUBVM_DIFF_MINUS_MOD_CP(7)
+    `undef DEF_SUBVM_DIFF_MINUS_MOD_CP
+
+    // A negative intermidate difference with a non-zero MOD, so MOD is added back to give a positive result
+
+    `define DEF_SUBVM_DIFF_NEG_CP(elem) \
+      `DEF_SEEN_CP(diff_neg_elem``elem``_cp, \
+        (mod != 0) && \
+        ({1'b0, wdr_operand_a[32*elem+:32]} < {1'b0, wdr_operand_b[32*elem +:32]}) && \
+        ({1'b0, wdr_operand_a[32*elem+:32]} + {1'b0, mod} > {1'b0, wdr_operand_b[32*elem+:32]}))
+
+    `DEF_SUBVM_DIFF_NEG_CP(0)
+    `DEF_SUBVM_DIFF_NEG_CP(1)
+    `DEF_SUBVM_DIFF_NEG_CP(2)
+    `DEF_SUBVM_DIFF_NEG_CP(3)
+    `DEF_SUBVM_DIFF_NEG_CP(4)
+    `DEF_SUBVM_DIFF_NEG_CP(5)
+    `DEF_SUBVM_DIFF_NEG_CP(6)
+    `DEF_SUBVM_DIFF_NEG_CP(7)
+    `undef DEF_SUBVM_DIFF_NEG_CP
+  endgroup
+
+  covergroup insn_bn_mulv_cg
+    with function sample(logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [4:0] wdr_addr_a,
+                         logic [4:0] wdr_addr_b,
+                         logic [4:0] wdr_write_addr);
+
+    // Coverpoint for overflow
+    `define DEF_MULV_OVERFLOW_CP(elem) \
+      `DEF_SEEN_CP(overflow_elem``elem``_cp, \
+          (({1'b0, wdr_operand_a[32*elem +: 32]} * \
+          {1'b0, wdr_operand_b[32*elem +: 32]} > 32'hFFFFFFFF)))
+
+    `DEF_MULV_OVERFLOW_CP(0)
+    `DEF_MULV_OVERFLOW_CP(1)
+    `DEF_MULV_OVERFLOW_CP(2)
+    `DEF_MULV_OVERFLOW_CP(3)
+    `DEF_MULV_OVERFLOW_CP(4)
+    `DEF_MULV_OVERFLOW_CP(5)
+    `DEF_MULV_OVERFLOW_CP(6)
+    `DEF_MULV_OVERFLOW_CP(7)
+    `undef DEF_MULV_OVERFLOW_CP
+
+    // See that the destination WDR is only updated when the intstruction retires (correct multi-cycle handling).
+    // This can be checked by running an instruction where one source WDR is akso the destination WDR
+
+    `DEF_SEEN_CP(dest_a_after_insn_cp,
+                  wdr_write_addr == wdr_addr_a)
+
+
+    `DEF_SEEN_CP(dest_b_after_insn_cp,
+                  wdr_write_addr == wdr_addr_b)
+  endgroup
+
+  covergroup insn_bn_mulvl_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [4:0] wdr_addr_a,
+                         logic [4:0] wdr_addr_b,
+                         logic [4:0] wdr_write_addr);
+
+    // See here that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
+    // This can be checked by running an instruction where one source WDR is also the destination WDR
+
+    // Coverpoint for overflow
+    `define DEF_MULVL_OVERFLOW_CP(elem) \
+      `DEF_SEEN_CP(overflow_elem``elem``_cp, \
+          (({1'b0, wdr_operand_a[32*elem+:32]} * \
+          {1'b0, wdr_operand_b[32*insn_data[30:28]+:32]} > 32'hFFFFFFFF)))
+
+    `DEF_MULVL_OVERFLOW_CP(0)
+    `DEF_MULVL_OVERFLOW_CP(1)
+    `DEF_MULVL_OVERFLOW_CP(2)
+    `DEF_MULVL_OVERFLOW_CP(3)
+    `DEF_MULVL_OVERFLOW_CP(4)
+    `DEF_MULVL_OVERFLOW_CP(5)
+    `DEF_MULVL_OVERFLOW_CP(6)
+    `DEF_MULVL_OVERFLOW_CP(7)
+    `undef DEF_MULVL_OVERFLOW_CP
+
+    `DEF_SEEN_CP(dest_a_after_insn_cp,
+                  wdr_write_addr == wdr_addr_a)
+
+    `DEF_SEEN_CP(dest_b_after_insn_cp,
+                  wdr_write_addr == wdr_addr_b)
+  endgroup
+
+  covergroup insn_bn_mulvm_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [31:0] mod,
+                         logic [8*33-1:0] wide_prod,
+                         logic [4:0] wdr_addr_a,
+                         logic [4:0] wdr_addr_b,
+                         logic [4:0] wdr_write_addr);
+
+    // See that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
+    // This ca be checked by running an instruction where one source WDR is also the destination WDR
+
+    `DEF_SEEN_CP(dest_a_after_insn_cp,
+                  wdr_write_addr == wdr_addr_a)
+
+    `DEF_SEEN_CP(dest_b_after_insn_cp,
+                  wdr_write_addr == wdr_addr_b)
+
+    // Checking for when the multiplications give a result greater than mod
+    `define DEF_MULVM_GT_MOD_CP(elem) \
+      `DEF_SEEN_CP(gt_mod_elem``elem``_cp, \
+        wide_prod >= {1'b0,mod})
+
+    `DEF_MULVM_GT_MOD_CP(0)
+    `DEF_MULVM_GT_MOD_CP(1)
+    `DEF_MULVM_GT_MOD_CP(2)
+    `DEF_MULVM_GT_MOD_CP(3)
+    `DEF_MULVM_GT_MOD_CP(4)
+    `DEF_MULVM_GT_MOD_CP(5)
+    `DEF_MULVM_GT_MOD_CP(6)
+    `DEF_MULVM_GT_MOD_CP(7)
+    `undef DEF_MULVM_GT_MOD_CP
+
+    // Checking for when the multiplications give a result less than mod
+    `define DEF_MULVM_LS_MOD_CP(elem) \
+      `DEF_SEEN_CP(ls_mod_elem``elem``_cp, \
+        wide_prod < {1'b0,mod})
+
+    `DEF_MULVM_LS_MOD_CP(0)
+    `DEF_MULVM_LS_MOD_CP(1)
+    `DEF_MULVM_LS_MOD_CP(2)
+    `DEF_MULVM_LS_MOD_CP(3)
+    `DEF_MULVM_LS_MOD_CP(4)
+    `DEF_MULVM_LS_MOD_CP(5)
+    `DEF_MULVM_LS_MOD_CP(6)
+    `DEF_MULVM_LS_MOD_CP(7)
+    `undef DEF_MULVM_LS_MOD_CP
+
+    // Coverpoint for overflow
+    `define DEF_MULVM_OVERFLOW_CP(elem) \
+      `DEF_SEEN_CP(overflow_elem``elem``_cp, \
+        wide_prod > 32'hFFFFFFFF)
+
+    `DEF_MULVM_OVERFLOW_CP(0)
+    `DEF_MULVM_OVERFLOW_CP(1)
+    `DEF_MULVM_OVERFLOW_CP(2)
+    `DEF_MULVM_OVERFLOW_CP(3)
+    `DEF_MULVM_OVERFLOW_CP(4)
+    `DEF_MULVM_OVERFLOW_CP(5)
+    `DEF_MULVM_OVERFLOW_CP(6)
+    `DEF_MULVM_OVERFLOW_CP(7)
+    `undef DEF_MULVM_OVERFLOW_CP
+
+  endgroup
+
+  covergroup insn_bn_mulvml_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [31:0] mod,
+                         logic [8*33-1:0] wide_prod,
+                         logic [4:0] wdr_addr_a,
+                         logic [4:0] wdr_addr_b,
+                         logic [4:0] wdr_write_addr);
+
+    // This is the same as the previous covergroup but for the mulvml instruction which does the same calculation but across lanes
+
+    // See that the destination WDR is only updated when the instruction retires (correct multi-cycle handling).
+    // This ca be checked by running an instruction where one source WDR is also the destination WDR
+
+    `DEF_SEEN_CP(dest_a_after_insn_cp,
+                  wdr_write_addr == wdr_addr_a)
+
+    `DEF_SEEN_CP(dest_b_after_insn_cp,
+                  wdr_write_addr == wdr_addr_b)
+
+    // Checking for when the multiplications give a result greater than mod
+    `define DEF_MULVML_GT_MOD_CP(elem) \
+      `DEF_SEEN_CP(gt_mod_elem``elem``_cp, \
+        wide_prod >= {1'b0,mod})
+
+    `DEF_MULVML_GT_MOD_CP(0)
+    `DEF_MULVML_GT_MOD_CP(1)
+    `DEF_MULVML_GT_MOD_CP(2)
+    `DEF_MULVML_GT_MOD_CP(3)
+    `DEF_MULVML_GT_MOD_CP(4)
+    `DEF_MULVML_GT_MOD_CP(5)
+    `DEF_MULVML_GT_MOD_CP(6)
+    `DEF_MULVML_GT_MOD_CP(7)
+    `undef DEF_MULVML_GT_MOD_CP
+
+    // Checking for when the multiplications give a result less than mod
+    `define DEF_MULVML_LS_MOD_CP(elem) \
+      `DEF_SEEN_CP(ls_mod_elem``elem``_cp, \
+        wide_prod < {1'b0,mod})
+
+    `DEF_MULVML_LS_MOD_CP(0)
+    `DEF_MULVML_LS_MOD_CP(1)
+    `DEF_MULVML_LS_MOD_CP(2)
+    `DEF_MULVML_LS_MOD_CP(3)
+    `DEF_MULVML_LS_MOD_CP(4)
+    `DEF_MULVML_LS_MOD_CP(5)
+    `DEF_MULVML_LS_MOD_CP(6)
+    `DEF_MULVML_LS_MOD_CP(7)
+    `undef DEF_MULVML_LS_MOD_CP
+
+    // Coverpoint for overflow
+    `define DEF_MULVML_OVERFLOW_CP(elem) \
+      `DEF_SEEN_CP(overflow_elem``elem``_cp, \
+        wide_prod > 32'hFFFFFFFF)
+
+    `DEF_MULVML_OVERFLOW_CP(0)
+    `DEF_MULVML_OVERFLOW_CP(1)
+    `DEF_MULVML_OVERFLOW_CP(2)
+    `DEF_MULVML_OVERFLOW_CP(3)
+    `DEF_MULVML_OVERFLOW_CP(4)
+    `DEF_MULVML_OVERFLOW_CP(5)
+    `DEF_MULVML_OVERFLOW_CP(6)
+    `DEF_MULVML_OVERFLOW_CP(7)
+    `undef DEF_MULVML_OVERFLOW_CP
+  endgroup
+
+  covergroup insn_bn_pack_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [255:0] wdr_write_data);
+
+    // coverpoint to check that wdr_write_data[upper 64 bits]
+    // are one of the four expected values based on the shift bits
+    `DEF_SEEN_CP(exp_packed_shift_cp,
+      $countbits(wdr_write_data[255-:64] == {wdr_operand_b[247-:24], wdr_operand_b[215-:24],
+                                            wdr_operand_b[183-:16]},
+                wdr_write_data[255-:64] ==  {wdr_operand_a[79-:16], wdr_operand_a[55-:24],
+                                            wdr_operand_a[23-:24]},
+                wdr_write_data[255-:64] ==  {wdr_operand_a[167-:8], wdr_operand_a[151-:24],
+                                            wdr_operand_a[119-:24], wdr_operand_a[87-:8]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[247-:24], wdr_operand_a[216-:24],
+                                            wdr_operand_a[183-:8]})
+      == 1)
+
+    // Coverpoint to check the correct extraction of the lower 24 bits of each element
+    // With shift bits 0
+    `DEF_SEEN_CP(correct_pack_0_cp,
+                  (insn_data[28:27] == 2'b00) &&
+                    (wdr_write_data == {wdr_operand_b[224+:24], wdr_operand_b[192+:24],
+                                        wdr_operand_b[160+:24], wdr_operand_b[128+:24],
+                                        wdr_operand_b[96+:24], wdr_operand_b[64+:24],
+                                        wdr_operand_b[32+:24], wdr_operand_b[0+:24],
+                                        64'b0 }))
+
+     // With shift bits 1
+    `DEF_SEEN_CP(correct_pack_sb_1_cp,
+                 (insn_data[28:27] == 2'b01) &&
+                   (wdr_write_data == { wdr_operand_a[64+:16], wdr_operand_a[32+:24],
+                                        wdr_operand_a[0+:24], wdr_operand_b[224+:24],
+                                        wdr_operand_b[192+:24], wdr_operand_b[160+:24],
+                                        wdr_operand_b[128+:24], wdr_operand_b[96+:24],
+                                        wdr_operand_b[64+:24], wdr_operand_b[32+:24],
+                                        wdr_operand_b[0+:24]}))
+
+    // With shift bits 2
+    `DEF_SEEN_CP(correct_pack_sb_2_cp,
+                 (insn_data[28:27] == 2'b10) &&
+                   (wdr_write_data == { wdr_operand_a[160+:8],
+                                        wdr_operand_a[128+:24], wdr_operand_a[96+:24],
+                                        wdr_operand_a[64+:24], wdr_operand_a[32+:24],
+                                        wdr_operand_a[0+:24], wdr_operand_b[224+:24],
+                                        wdr_operand_b[192+:24], wdr_operand_b[160+:24],
+                                        wdr_operand_b[128+:24], wdr_operand_b[96+:24],
+                                        wdr_operand_b[80+:8]}))
+                                        // wdr_operand_b[64+:24] has oly 8 bits that fit
+
+    // With shift bits 3
+    `DEF_SEEN_CP(correct_pack_sb_3_cp,
+                 (insn_data[28:27] == 2'b11) &&
+                   (wdr_write_data == { 8'b0,
+                                        wdr_operand_a[224+:24], wdr_operand_a[192+:24],
+                                        wdr_operand_a[160+:24], wdr_operand_a[128+:24],
+                                        wdr_operand_a[96+:24], wdr_operand_a[64+:24],
+                                        wdr_operand_a[32+:24], wdr_operand_a[0+:24],
+                                        wdr_operand_b[224+:24], wdr_operand_b[192+:24],
+                                        wdr_operand_b[176+:8]}))
+                                        // wdr_operand_b[160+:24] has only 8 bits that fit
+  endgroup
+
+  covergroup insn_bn_unpk_cg
+    with function sample(logic [31:0] insn_data,
+                         logic [255:0] wdr_operand_a,
+                         logic [255:0] wdr_operand_b,
+                         logic [255:0] wdr_write_data);
+
+    // coverpoint to check that wdr_write_data[upper 64 bits] are
+      //one of the four expected values based on the shift bits
+    `DEF_SEEN_CP(exp_unpacked_shift_cp,
+      $countbits(wdr_write_data[255-:64] == {8'b0, wdr_operand_b[224+:24],
+                                             8'b0, wdr_operand_b[192+:24]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[32+:24],
+                                            8'b0, wdr_operand_a[0+:24]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[96+:24],
+                                            8'b0, wdr_operand_a[64+:24]},
+                wdr_write_data[255-:64] == {8'b0, wdr_operand_a[160+:24],
+                                            8'b0, wdr_operand_a[128+:24]})
+      == 1)
+
+    // Coverpoint to check the correct unpacking of the lower 24 bits of each element
+    // With shift bits 0
+    `DEF_SEEN_CP(correct_unpack_sb_0_cp,
+                  (insn_data[28:27] == 2'b00) &&
+                    (wdr_write_data == { 8'b0, wdr_operand_b[224+:24],
+                                         8'b0, wdr_operand_b[192+:24],
+                                         8'b0, wdr_operand_b[160+:24],
+                                         8'b0, wdr_operand_b[128+:24],
+                                         8'b0, wdr_operand_b[96+:24],
+                                         8'b0, wdr_operand_b[64+:24],
+                                         8'b0, wdr_operand_b[32+:24],
+                                         8'b0, wdr_operand_b[0+:24]}))
+
+    // With shift bits 1
+    `DEF_SEEN_CP(correct_unpack_sb_1_cp,
+                 (insn_data[28:27] == 2'b01) &&
+                   (wdr_write_data == { 8'b0, wdr_operand_a[32+:24],
+                                        8'b0, wdr_operand_a[0+:24],
+                                        8'b0, wdr_operand_b[224+:24],
+                                        8'b0, wdr_operand_b[192+:24],
+                                        8'b0, wdr_operand_b[160+:24],
+                                        8'b0, wdr_operand_b[128+:24],
+                                        8'b0, wdr_operand_b[96+:24],
+                                        8'b0, wdr_operand_b[64+:24]}))
+
+    // With shift bits 2
+    `DEF_SEEN_CP(correct_unpack_sb_2_cp,
+                 (insn_data[28:27] == 2'b10) &&
+                   (wdr_write_data == { 8'b0, wdr_operand_a[96+:24],
+                                        8'b0, wdr_operand_a[64+:24],
+                                        8'b0, wdr_operand_a[32+:24],
+                                        8'b0, wdr_operand_a[0+:24],
+                                        8'b0, wdr_operand_b[224+:24],
+                                        8'b0, wdr_operand_b[192+:24],
+                                        8'b0, wdr_operand_b[160+:24],
+                                        8'b0, wdr_operand_b[128+:24]}))
+
+    // With shift bits 3
+    `DEF_SEEN_CP(correct_unpack_sb_3_cp,
+                 (insn_data[28:27] == 2'b11) &&
+                   (wdr_write_data == { 8'b0, wdr_operand_a[160+:24],
+                                        8'b0, wdr_operand_a[128+:24],
+                                        8'b0, wdr_operand_a[96+:24],
+                                        8'b0, wdr_operand_a[64+:24],
+                                        8'b0, wdr_operand_a[32+:24],
+                                        8'b0, wdr_operand_a[0+:24],
+                                        8'b0, wdr_operand_b[224+:24],
+                                        8'b0, wdr_operand_b[192+:24]}))
+  endgroup
+
   // A mapping from instruction name to the name of that instruction's encoding.
   string insn_encodings[mnem_str_t];
 
@@ -2352,7 +2874,16 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     insn_bn_xid_cg = new;
     insn_bn_movr_cg = new;
     insn_bn_wsrr_cg = new;
-    // TODO(lowrisc/opentitan#29465): Add insn specific vectorized instruction covergroups
+    insn_bn_addv_cg = new;
+    insn_bn_addvm_cg = new;
+    insn_bn_subv_cg = new;
+    insn_bn_subvm_cg = new;
+    insn_bn_mulv_cg = new;
+    insn_bn_mulvl_cg = new;
+    insn_bn_mulvm_cg = new;
+    insn_bn_mulvml_cg = new;
+    insn_bn_pack_cg = new;
+    insn_bn_unpk_cg = new;
 
     // Set up instruction encoding mapping
     insn_encodings[mnem_add]           = "R";
@@ -2908,7 +3439,95 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         logic [7:0] wsr_imm = insn_data[27:20];
         insn_bn_wsrr_cg.sample(wsr_imm, rtl_item.has_sideload_key);
       end
-      // TODO(lowrisc/opentitan#29465): Add insns specific covergroup for vectorized instructions
+      // insns specific covergroup for vectorized instructions
+      mnem_bn_addv:
+        insn_bn_addv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+      mnem_bn_addvm: begin
+        logic [8*33-1:0] wide_sum;
+        logic [31:0] mod = rtl_item.mod[31:0];
+
+        for (int elem = 0; elem < 8; elem++) begin
+          wide_sum[33*elem+:33] =
+            {1'b0, wdr_operand_a[32*elem+:32]} +
+            {1'b0, wdr_operand_b[32*elem+:32]};
+        end
+
+        insn_bn_addvm_cg.sample(rtl_item.wdr_operand_a,
+                                rtl_item.wdr_operand_b,
+                                wide_sum,
+                                mod);
+      end
+      mnem_bn_subv:
+        insn_bn_subv_cg.sample(rtl_item.wdr_operand_a, rtl_item.wdr_operand_b);
+      mnem_bn_subvm: begin
+        logic [31:0] mod = rtl_item.mod[31:0];
+        insn_bn_subvm_cg.sample(rtl_item.wdr_operand_a,
+                                rtl_item.wdr_operand_b,
+                                mod);
+      end
+      mnem_bn_mulv:
+        insn_bn_mulv_cg.sample(rtl_item.wdr_operand_a,
+                                rtl_item.wdr_operand_b,
+                                rtl_item.wdr_addr_a,
+                                rtl_item.wdr_addr_b,
+                                rtl_item.wdr_write_addr);
+      mnem_bn_mulvl:
+        insn_bn_mulvl_cg.sample(insn_data,
+                                rtl_item.wdr_operand_a,
+                                rtl_item.wdr_operand_b,
+                                rtl_item.wdr_addr_a,
+                                rtl_item.wdr_addr_b,
+                                rtl_item.wdr_write_addr);
+      mnem_bn_mulvm: begin
+        logic [8*33-1:0] wide_prod;
+        logic [31:0] mod = rtl_item.mod[31:0];
+
+        for (int elem = 0; elem < 8; elem++) begin
+          wide_prod[33*elem+:33] =
+          {1'b0, wdr_operand_a[32*elem+:32]} *
+          {1'b0, wdr_operand_b[32*elem+:32]} *
+          (2**(-32));
+        end
+
+        insn_bn_mulvm_cg.sample(insn_data,
+                                rtl_item.wdr_operand_a,
+                                rtl_item.wdr_operand_b,
+                                mod,
+                                wide_prod,
+                                rtl_item.wdr_addr_a,
+                                rtl_item.wdr_addr_b,
+                                rtl_item.wdr_write_addr);
+      end
+      mnem_bn_mulvml: begin
+        logic [8*33-1:0] wide_prod;
+        logic [31:0] mod = rtl_item.mod[31:0];
+
+        for (int elem = 0; elem < 8; elem++) begin
+          wide_prod[33*elem+:33] =
+          {1'b0, wdr_operand_a[32*elem+:32]} *
+          {1'b0, wdr_operand_b[32*insn_data[30:28]+:32]} *
+          (2**(-32));
+        end
+
+        insn_bn_mulvml_cg.sample(insn_data,
+                                rtl_item.wdr_operand_a,
+                                rtl_item.wdr_operand_b,
+                                mod,
+                                wide_prod,
+                                rtl_item.wdr_addr_a,
+                                rtl_item.wdr_addr_b,
+                                rtl_item.wdr_write_addr);
+      end
+      mnem_bn_pack:
+        insn_bn_pack_cg.sample(insn_data,
+                               rtl_item.wdr_operand_a,
+                               rtl_item.wdr_operand_b,
+                               rtl_item.wdr_write_data);
+      mnem_bn_unpk:
+        insn_bn_unpk_cg.sample(insn_data,
+                               rtl_item.wdr_operand_a,
+                               rtl_item.wdr_operand_b,
+                               rtl_item.wdr_write_data);
       default:
         // No special handling for this instruction yet.
         ;
