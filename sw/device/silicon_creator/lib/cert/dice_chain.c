@@ -234,7 +234,8 @@ static rom_error_t dice_chain_load_flash(
 // Add the hash digest to the last of the page.
 static rom_error_t dice_chain_seal_page(void) {
   // Hash the entire page before the digest.
-  hmac_sha256(dice_chain.page.data, sizeof(dice_chain.page.data),
+  hmac_sha256(&dice_chain.page,
+              sizeof(dice_chain.page) - sizeof(dice_chain.page.digest),
               &dice_chain.page.digest);
 
   // The page is going to be updated.
@@ -306,6 +307,12 @@ rom_error_t dice_chain_attestation_silicon(void) {
   return kErrorOk;
 }
 
+static rom_error_t dice_chain_get_cdi_0_id(uint64_t *cdi_0_id) {
+  return flash_ctrl_info_read_zeros_on_read_error(
+      &kFlashCtrlInfoPageDiceCerts, offsetof(dice_page_t, cdi_0_key_id),
+      sizeof(uint64_t) / sizeof(uint32_t), cdi_0_id);
+}
+
 rom_error_t dice_chain_attestation_creator(
     keymgr_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest) {
@@ -322,14 +329,14 @@ rom_error_t dice_chain_attestation_creator(
       kDiceKeyCdi0, &static_dice_cdi_0.cdi_0_pubkey_id,
       &static_dice_cdi_0.cdi_0_pubkey));
 
-  // Switch page for the device generated CDI_0.
-  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
-
   // Check if the current CDI_0 cert is valid.
-  dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
-  dice_chain.subject_pubkey = static_dice_cdi_0.cdi_0_pubkey;
-  RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
-  if (dice_chain.cert_valid == kHardenedBoolFalse) {
+  uint64_t expected_cdi0_id =
+      *(uint64_t *)static_dice_cdi_0.cdi_0_pubkey_id.digest;
+  uint64_t cached_cdi0_id;
+  RETURN_IF_ERROR(dice_chain_get_cdi_0_id(&cached_cdi0_id));
+  bool cache_valid = cached_cdi0_id == expected_cdi0_id;
+
+  if (!cache_valid) {
     // Update the cert page buffer.
     static_dice_cdi_0.cert_size = sizeof(static_dice_cdi_0.cert_data);
     HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
@@ -387,6 +394,8 @@ static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   // Save cdi 0 to flash if regenerated.
   if (static_dice_cdi_0.cert_size != 0) {
     dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
+    dice_chain.page.cdi_0_key_id =
+        read_64(static_dice_cdi_0.cdi_0_pubkey_id.digest);
     return dice_chain_push_cert("CDI_0", static_dice_cdi_0.cert_data,
                                 static_dice_cdi_0.cert_size);
   } else {
@@ -400,7 +409,8 @@ static rom_error_t dice_chain_seal_page_check(
   RETURN_IF_ERROR(dice_chain_load_flash(info_page));
   // Hash the entire page before the digest.
   hmac_digest_t expected_digest;
-  hmac_sha256(dice_chain.page.data, sizeof(dice_chain.page.data),
+  hmac_sha256(&dice_chain.page,
+              sizeof(dice_chain.page) - sizeof(dice_chain.page.digest),
               &expected_digest);
 
   // Compare with the digest stored at the end of the page.
@@ -469,9 +479,11 @@ rom_error_t dice_chain_attestation_owner(
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
-  // Check if the current CDI_1 cert is valid.
-  RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
-  if (dice_chain.cert_valid == kHardenedBoolFalse) {
+  uint64_t expected_cdi1_id = read_64(dice_chain.subject_pubkey_id.digest);
+  bool cache_valid = (static_dice_cdi_0.cert_size == 0 &&
+                      dice_chain.page.cdi_1_key_id == expected_cdi1_id);
+
+  if (!cache_valid) {
     dbg_puts("warning: CDI_1 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kDicePageDataSize;
@@ -480,12 +492,12 @@ rom_error_t dice_chain_attestation_owner(
         owner_manifest->security_version, key_domain, &dice_chain.key_ids,
         &static_dice_cdi_0.cdi_0_pubkey, &dice_chain.subject_pubkey,
         dice_chain.scratch_cert, &updated_cert_size));
+
+    dice_chain.page.cdi_1_key_id = expected_cdi1_id;
+
     RETURN_IF_ERROR(dice_chain_push_cert("CDI_1", dice_chain.scratch_cert,
                                          updated_cert_size));
   } else {
-    // Cert is valid, move to the next one.
-    dice_chain_next_cert_obj();
-
     // Replace CDI_0 with CDI_1 key for endorsing next stage cert.
     HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
         kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,

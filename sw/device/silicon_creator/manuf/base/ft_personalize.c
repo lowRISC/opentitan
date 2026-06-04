@@ -158,7 +158,7 @@ static uint8_t all_certs[8192];
 // 1K should be enough for the largest certificate perso LTV object.
 enum { kBufferSize = 1024 };
 static alignas(uint32_t) uint8_t cert_buffer[kBufferSize];
-static alignas(uint32_t) dice_page_t dice_page;
+static alignas(uint64_t) dice_page_t dice_page;
 static size_t uds_offset;
 static size_t cdi_0_offset;
 static size_t cdi_1_offset;
@@ -893,7 +893,8 @@ static status_t write_digest_to_dice_page(
     const cert_flash_info_layout_t *layout, uint32_t page_offset) {
   base_printf("Digesting %s page ...\n", layout->group_name);
 
-  hmac_sha256(dice_page.data, sizeof(dice_page.data), &dice_page.digest);
+  hmac_sha256(&dice_page, sizeof(dice_page) - sizeof(dice_page.digest),
+              &dice_page.digest);
 
   return OK_STATUS();
 }
