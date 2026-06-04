@@ -49,7 +49,7 @@ void template_patch_size_be_impl(template_pos_t memo, uint8_t *out_end) {
                                         (uint16_t)(out_end - (uint8_t *)memo));
 }
 
-uint8_t* template_patch_size_der_impl(template_pos_t memo, uint8_t* out_end) {
+uint8_t *template_patch_size_der_impl(template_pos_t memo, uint8_t *out_end) {
   uint8_t *memo_ptr = (uint8_t *)memo;
   const size_t kReservedLen = 3;
 

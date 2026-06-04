@@ -221,7 +221,7 @@ void template_patch_size_be_impl(template_pos_t memo, uint8_t *out_end);
 /**
  * Private implementation of `template_patch_size_der`.
  */
-uint8_t* template_patch_size_der_impl(template_pos_t memo, uint8_t *out_end);
+uint8_t *template_patch_size_der_impl(template_pos_t memo, uint8_t *out_end);
 
 /**
  * Add the actual output size after the memo to the patch location.
@@ -237,7 +237,8 @@ static inline void template_patch_size_be(template_state_t *state,
 }
 
 /**
- * Patch the length field using DER encoding (reserving 3 bytes), and shift the content if needed.
+ * Patch the length field using DER encoding (reserving 3 bytes), and shift the
+ * content if needed.
  *
  * @param state Pointer to the template engine state.
  * @param memo The memorized location from `template_save_pos`.
