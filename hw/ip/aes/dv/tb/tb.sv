@@ -15,7 +15,6 @@ module tb;
 
   wire                                    clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0]           interrupts;
-  wire                                    edn_req;
   wire [$bits(lc_ctrl_pkg::lc_tx_t) : 0]  lc_escalate;
   wire                                    idle;
   prim_mubi_pkg::mubi4_t                  idle_s;
