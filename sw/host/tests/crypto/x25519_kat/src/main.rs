@@ -151,12 +151,7 @@ fn run_x25519_testcase(
 
 fn test_x25519(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(
-        &*spi,
-        None,
-        /*ignore_frame_num=*/ false,
-        Some(opts.init.backend_opts.interface.as_str()),
-    )?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let seed = opts.seed.unwrap_or_else(rand::random::<u64>);
