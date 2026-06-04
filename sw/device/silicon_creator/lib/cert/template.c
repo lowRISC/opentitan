@@ -48,3 +48,36 @@ void template_patch_size_be_impl(template_pos_t memo, uint8_t *out_end) {
   *(uint16_t *)memo = __builtin_bswap16(__builtin_bswap16(*(uint16_t *)memo) +
                                         (uint16_t)(out_end - (uint8_t *)memo));
 }
+
+uint8_t* template_patch_size_der_impl(template_pos_t memo, uint8_t* out_end) {
+  uint8_t *memo_ptr = (uint8_t *)memo;
+  const size_t kReservedLen = 3;
+
+  size_t content_size = (size_t)(out_end - (memo_ptr + kReservedLen));
+
+  size_t der_len_bytes = 0;
+  if (content_size <= 0x7f) {
+    memo_ptr[0] = (uint8_t)content_size;
+    der_len_bytes = 1;
+  } else if (content_size <= 0xff) {
+    memo_ptr[0] = 0x81;
+    memo_ptr[1] = (uint8_t)content_size;
+    der_len_bytes = 2;
+  } else {
+    memo_ptr[0] = 0x82;
+    memo_ptr[1] = (uint8_t)(content_size >> 8);
+    memo_ptr[2] = (uint8_t)(content_size & 0xff);
+    der_len_bytes = 3;
+  }
+
+  if (der_len_bytes < kReservedLen) {
+    uint8_t *src = memo_ptr + kReservedLen;
+    uint8_t *dst = memo_ptr + der_len_bytes;
+    while (src < out_end) {
+      *dst++ = *src++;
+    }
+    out_end = dst;
+  }
+
+  return out_end;
+}
