@@ -19,7 +19,8 @@ extern "C" {
 #endif
 
 enum {
-  kDicePageDataSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(hmac_digest_t),
+  kDicePageDataSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE -
+                      (2 * sizeof(uint64_t) + sizeof(hmac_digest_t)),
 };
 
 /**
@@ -27,6 +28,8 @@ enum {
  */
 typedef struct dice_page {
   uint8_t data[kDicePageDataSize];
+  uint64_t cdi_0_key_id;
+  uint64_t cdi_1_key_id;
   hmac_digest_t digest;
 } dice_page_t;
 
