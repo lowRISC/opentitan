@@ -705,6 +705,11 @@ task cip_base_vseq::check_interrupts(bit [BUS_DW-1:0]  interrupts,
   bit [BUS_DW-1:0] exp_pins;
   bit [BUS_DW-1:0] exp_intr_state;
 
+  if (cfg.intr_vif == null) begin
+    `uvm_error(get_full_name(), "Can't check interrupts: there is no intr_vif")
+    return;
+  end
+
   if (cfg.under_reset) return;
 
   act_pins = cfg.intr_vif.sample() & interrupts;
@@ -768,6 +773,11 @@ task cip_base_vseq::run_intr_test_vseq(int num_times = 1);
   import dv_utils_pkg::interrupt_t;
   dv_base_reg intr_csrs[$];
   dv_base_reg intr_test_csrs[$];
+
+  if (cfg.intr_vif == null) begin
+    `uvm_error(get_full_name(), "Can't run intr_test sequence: there is no intr_vif")
+    return;
+  end
 
   foreach (all_csrs[i]) begin
     string csr_name = all_csrs[i].get_name();
