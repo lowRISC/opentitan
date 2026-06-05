@@ -53,10 +53,11 @@ def ownership_transfer_test(
         **kwargs):
     # FPGA should always clear the bitstream & bootstrap first, so
     # enable these on every FPGA test unless overridden
-    if "test_cmd" in fpga:
-        fpga["test_cmd"] = """
-            --clear-bitstream
-        """ + fpga["test_cmd"]
+    fpga = {
+        "testopt_clear_after_test": "True",
+        "testopt_clear_before_test": "True",
+        "testopt_bootstrap": "True",
+    } | (fpga or {})
     fpga = fpga_params(**fpga)
 
     opentitan_test(
