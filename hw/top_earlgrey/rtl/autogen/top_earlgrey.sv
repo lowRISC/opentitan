@@ -18,7 +18,7 @@ module top_earlgrey #(
   parameter bit GpioGpioAsyncOn = 1,
   parameter bit GpioGpioAsHwStrapsEn = 0,
   // parameters for spi_device
-  parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
+  parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::SramType1r1w,
   // parameters for i2c0
   parameter int I2c0InputDelayCycles = 0,
   // parameters for i2c1

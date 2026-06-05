@@ -1128,12 +1128,15 @@
           domain: Main
         }
       }
+      param_decl:
+      {
+        SramType: spi_device_pkg::SramType1r1w
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         scan_clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -1141,7 +1144,7 @@
           name: SramType
           desc: Sram Entries. Word size is 32bit width.
           type: spi_device_pkg::sram_type_e
-          default: spi_device_pkg::DefaultSramType
+          default: spi_device_pkg::SramType1r1w
           local: "false"
           expose: "true"
           name_top: SpiDeviceSramType

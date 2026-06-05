@@ -372,6 +372,9 @@
       base_addr: {
         hart: "0x40050000",
       },
+      param_decl: {
+        "SramType": "spi_device_pkg::SramType1r1w"
+      }
     },
     { name: "i2c0",
       type: "i2c",
