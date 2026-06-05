@@ -117,6 +117,11 @@ waive -rules STRUCT_INDEX -location {dmi_jtag.sv} -msg {Bit select '[0]' of 'dtm
       -comment "dtmcs is a vector that is continuously shifted into where its lsb is then fed to tdo"
 waive -rules RESET_MUX -location {dmi_jtag.sv} -regexp {Asynchronous reset 'dmi_rst_no' is driven by a multiplexer here, used as a reset} \
       -comment "This mux gates the DMI reset based on the 'testmode_i' input."
+waive -rules CLOCK_EDGE -location {dmi_jtag_tap.sv}
+      -msg {Falling edge of clock 'tck_i' used here, should use rising edge} \
+      -comment "JTAG protcol drives on the falling edge of tck"
+waive -rules DUAL_EDGE_CLOCK -location {dmi_jtag_tap.sv} -regexp {.*} \
+      -comment "JTAG protcol drives on the falling edge of tck"
 
 # dmi_cdc
 waive -rules RESET_MUX -location {dmi_cdc.sv} \
