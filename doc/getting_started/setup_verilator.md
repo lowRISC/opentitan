@@ -1,3 +1,15 @@
+sudo apt install gcc-11 g++-11
+
+export VERILATOR_VERSION=4.210
+
+git clone https://github.com/verilator/verilator.git
+cd verilator
+git checkout v$VERILATOR_VERSION
+
+autoconf
+CC=gcc-11 CXX=g++-11 ./configure --prefix=/tools/verilator/$VERILATOR_VERSION
+CC=gcc-11 CXX=g++-11 make
+sudo CC=gcc-11 CXX=g++-11 make install
 # Verilator Setup
 
 _Before following this guide, make sure you've followed the [dependency installation instructions](README.md)._
