@@ -237,7 +237,7 @@ static rom_error_t dice_chain_load_flash(
   RETURN_IF_ERROR(perso_tlv_get_blob_version(
       dice_chain.page.data, sizeof(dice_chain.page.data),
       &dice_chain.blob_version, &offset));
-  dice_chain.tail_offset = offset;
+  dice_chain.tail_offset = util_round_up_to(offset, 3);
 
   return kErrorOk;
 }
