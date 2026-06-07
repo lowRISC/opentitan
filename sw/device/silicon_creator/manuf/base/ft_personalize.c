@@ -453,15 +453,13 @@ static void compute_keymgr_owner_binding(void) {
  * If the caller passed a pointer, save there the certificate size.
  */
 static status_t hash_certificate(const flash_ctrl_info_page_t *page,
-                                 size_t offset, size_t *size) {
+                                 size_t offset, perso_blob_version_t version,
+                                 size_t *size) {
   memset(cert_buffer, 0, sizeof(cert_buffer));
 
   // Read first word of the certificate perso LTV object (contains the size).
-  perso_tlv_object_header_t objh;
-  uint16_t obj_size;
   TRY(flash_ctrl_info_read(page, offset, 1, cert_buffer));
-  memcpy(&objh, cert_buffer, sizeof(perso_tlv_object_header_t));
-  PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
+  uint32_t obj_size = perso_tlv_object_size(cert_buffer, version);
 
   // Validate the perso LTV object size.
   if (obj_size == 0) {
@@ -486,8 +484,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   perso_tlv_cert_obj_t cert_obj;
   TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size),
                            cert_buffer));
-  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, kPersoBlobVersionV0,
-                             &cert_obj));
+  TRY(perso_tlv_get_cert_obj(cert_buffer, kBufferSize, version, &cert_obj));
   hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
@@ -503,14 +500,29 @@ static status_t hash_all_certs(void) {
 
   // Push all certificates into the hash.
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
-    uint32_t page_offset = 0;
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     // Skip the page if it is not in use.
     if (!curr_layout.used) {
       continue;
     }
+
+    uint32_t page_offset = 0;
+    perso_blob_version_t page_version = kPersoBlobVersionV0;
+
+    // Read the first 16 bytes of the page to check for version block.
+    alignas(uint32_t) uint8_t head[16];
+    TRY(flash_ctrl_info_read(curr_layout.info_page, 0,
+                             util_size_to_words(sizeof(head)), head));
+
+    size_t version_offset = 0;
+    TRY(perso_tlv_get_blob_version(head, sizeof(head), &page_version,
+                                   &version_offset));
+
+    page_offset = util_round_up_to(version_offset, 3);
+
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_obj_size));
+      TRY(hash_certificate(curr_layout.info_page, page_offset, page_version,
+                           &cert_obj_size));
       page_offset += util_size_to_words(cert_obj_size) * sizeof(uint32_t);
       page_offset = util_round_up_to(page_offset, 3);
     }
@@ -541,7 +553,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
-  switch ((perso_blob_version_t)certgen_inputs.blob_version) {
+  perso_blob_version_t blob_version =
+      (perso_blob_version_t)certgen_inputs.blob_version;
+  switch (blob_version) {
     case kPersoBlobVersionV1:
       TRY(perso_tlv_init_v1_blob(&perso_blob_to_host));
       break;
@@ -612,7 +626,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
-      kDiceCertFormat, all_certs, curr_cert_size, kPersoBlobVersionV0,
+      kDiceCertFormat, all_certs, curr_cert_size, blob_version,
       &perso_blob_to_host));
 
   // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
@@ -637,7 +651,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
       "CDI_0", /*needs_endorsement=*/false, kDiceCertFormat, all_certs,
-      curr_cert_size, kPersoBlobVersionV0, &perso_blob_to_host));
+      curr_cert_size, blob_version, &perso_blob_to_host));
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
@@ -655,7 +669,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob(
       "CDI_1", /*needs_endorsement=*/false, kDiceCertFormat, all_certs,
-      curr_cert_size, kPersoBlobVersionV0, &perso_blob_to_host));
+      curr_cert_size, blob_version, &perso_blob_to_host));
 
   return OK_STATUS();
 }
@@ -675,22 +689,30 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret, was.key,
       kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
 
+  // Detect the version of the blob.
+  perso_blob_version_t version = kPersoBlobVersionV0;
+  size_t offset = 0;
+  TRY(perso_tlv_get_blob_version(perso_blob_to_host->body,
+                                 sizeof(perso_blob_to_host->body), &version,
+                                 &offset));
+
   // Compute HMAC of TBS certs with WAS as the key.
   // HSMs and host tooling will compute an HMAC in big endian format, so we do
   // the same to make the comparison easier.
   hmac_hmac_sha256_init(was, /*big_endian_digest=*/true);
-  uint8_t *tlv_buf = perso_blob_to_host->body;
-  uint16_t obj_size;
+  uint8_t *tlv_buf = perso_blob_to_host->body + offset;
+  size_t num_objs = perso_blob_to_host->num_objs;
+  if (offset > 0) {
+    num_objs--;
+  }
+  uint32_t obj_size;
   perso_tlv_object_type_t obj_type;
   perso_tlv_cert_obj_t cert_obj;
-  for (size_t i = 0; i < perso_blob_to_host->num_objs; ++i) {
-    // Parse the TLV object header.
-    perso_tlv_object_header_t obj_header = *(uint16_t *)tlv_buf;
-    PERSO_TLV_GET_FIELD(Objh, Type, obj_header, &obj_type);
-    PERSO_TLV_GET_FIELD(Objh, Size, obj_header, &obj_size);
+  for (size_t i = 0; i < num_objs; ++i) {
+    obj_type = perso_tlv_object_type(tlv_buf, version);
+    obj_size = perso_tlv_object_size(tlv_buf, version);
     if (obj_type == kPersoObjectTypeX509Tbs) {
-      TRY(perso_tlv_get_cert_obj(tlv_buf, obj_size, kPersoBlobVersionV0,
-                                 &cert_obj));
+      TRY(perso_tlv_get_cert_obj(tlv_buf, obj_size, version, &cert_obj));
       hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
     }
     tlv_buf += obj_size;
@@ -700,9 +722,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   hmac_sha256_final(&digest);
 
   // Push hash into perso blob.
-  TRY(perso_tlv_push_object_to_perso_blob(
-      kPersoObjectTypeWasTbsHmac, digest.digest, kHmacDigestNumBytes,
-      kPersoBlobVersionV0, perso_blob_to_host));
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeWasTbsHmac,
+                                          digest.digest, kHmacDigestNumBytes,
+                                          version, perso_blob_to_host));
 
   // Read complete device ID and push into perso blob. The host will need the
   // device ID to reconstruct the WAS.
@@ -710,9 +732,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                           kHwCfgDeviceIdOffset, device_id,
                                           ARRAYSIZE(device_id)));
-  TRY(perso_tlv_push_object_to_perso_blob(
-      kPersoObjectTypeDeviceId, device_id, kHwCfgDeviceIdSizeInBytes,
-      kPersoBlobVersionV0, perso_blob_to_host));
+  TRY(perso_tlv_push_object_to_perso_blob(kPersoObjectTypeDeviceId, device_id,
+                                          kHwCfgDeviceIdSizeInBytes, version,
+                                          perso_blob_to_host));
 
   return OK_STATUS();
 }
@@ -823,7 +845,7 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
     // Extract the next perso LTV object, aborting if it is not a certificate.
     rom_error_t err = perso_tlv_get_cert_obj(
         perso_blob_from_host.body + perso_blob_from_host.next_free,
-        max_available(), kPersoBlobVersionV0, &block);
+        max_available(), perso_blob_from_host_version, &block);
     switch (err) {
       case kErrorOk:
         break;
@@ -925,6 +947,12 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     }
   }
 
+  perso_blob_version_t blob_version =
+      (perso_blob_version_t)certgen_inputs.blob_version;
+  if (perso_blob_from_host_version != blob_version) {
+    return INVALID_ARGUMENT();
+  }
+
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
    *
@@ -935,10 +963,10 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
    * 3. CDI_1 cert
    * 4. Provision Extension certs
    ****************************************************************************/
-  // We start scanning the perso LTV buffer we received from the host from the
-  // beginnging. We assume that the endorsed UDS cert is the first certificate
+  // We start scanning the received perso LTV buffer we received from the host.
+  // We assume that the endorsed UDS cert is the first certificate
   // in the buffer (even if preceeded by other types of perso LTV objects).
-  perso_blob_from_host.next_free = 0;
+  //
   // Location where the next cert perso LTV object will be copied to in the
   // `all_certs` buffer.
   uint8_t *next_cert = all_certs;
@@ -968,7 +996,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     size_t offset = cert_offsets[i];
     TRY(perso_tlv_get_cert_obj(perso_blob_to_host.body + offset,
                                sizeof(perso_blob_to_host.body) - offset,
-                               kPersoBlobVersionV0, &block));
+                               blob_version, &block));
     if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
     memcpy(next_cert, block.obj_p, block.obj_size);
@@ -999,13 +1027,30 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 
     memset(&dice_page, 0, sizeof(dice_page));
 
+    if (blob_version == kPersoBlobVersionV1) {
+      // Write version block to start of the page.
+      uint16_t header = 0;
+      PERSO_TLV_SET_FIELD(Objh, Type, header, kPersoObjectTypeBlobVersion);
+      PERSO_TLV_SET_FIELD(Objh, Size, header,
+                          sizeof(perso_tlv_object_header_t) +
+                              sizeof(perso_tlv_blob_version_payload_t));
+      memcpy(dice_page.data + page_offset, &header, sizeof(uint16_t));
+      page_offset += sizeof(uint16_t);
+
+      uint16_t version_val = __builtin_bswap16(kPersoBlobVersionV1);
+      memcpy(dice_page.data + page_offset, &version_val, sizeof(uint16_t));
+      page_offset += sizeof(uint16_t);
+
+      // Pad to 8 bytes alignment.
+      page_offset = util_round_up_to(page_offset, 3);
+    }
+
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
     // in the following flash layout sections to be equal to the number of
     // endorsed extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
       // Extract the cert block from the `all_certs` buffer.
-      TRY(perso_tlv_get_cert_obj(next_cert, free_room, kPersoBlobVersionV0,
-                                 &block));
+      TRY(perso_tlv_get_cert_obj(next_cert, free_room, blob_version, &block));
       // Round up the size to the nearest word boundary.
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
