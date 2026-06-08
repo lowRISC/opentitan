@@ -25,7 +25,6 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/epmp.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -40,6 +39,7 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
@@ -60,21 +60,20 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_verify.h"
 
-#include "hw/top/flash_ctrl_regs.h"                   // Generated.
 #include "hw/top/otp_ctrl_regs.h"                     // Generated.
 #include "hw/top/sram_ctrl_regs.h"                    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-// Useful constants for flash sizes and ROM_EXT locations.
+// Useful constants for NVM sizes and ROM_EXT locations.
 enum {
-  kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
-  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-  kFlashTotalSize = 2 * kFlashBankSize,
+  kNvmBankSize = NVM_PAGES_PER_BANK,
+  kNvmPageSize = NVM_BYTES_PER_PAGE,
+  kNvmTotalSize = 2 * kNvmBankSize,
 
-  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
-  kRomExtAStart = 0 / kFlashPageSize,
+  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
+  kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kFlashBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmBankSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 };
 
@@ -118,16 +117,14 @@ static uint32_t rom_ext_current_slot(void) {
     asm("auipc %[pc], 0;" : [pc] "=r"(pc));
   }
 
-  const uint32_t kFlashSlotA = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
-  const uint32_t kFlashSlotB =
-      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
-  const uint32_t kFlashSlotEnd =
-      kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES;
+  const uint32_t kNvmSlotA = NVM_DATA_BASE_ADDR;
+  const uint32_t kNvmSlotB = kNvmSlotA + NVM_DATA_SIZE_BYTES / 2;
+  const uint32_t kNvmSlotEnd = kNvmSlotA + NVM_DATA_SIZE_BYTES;
   uint32_t side = 0;
-  if (pc >= kFlashSlotA && pc < kFlashSlotB) {
+  if (pc >= kNvmSlotA && pc < kNvmSlotB) {
     // Running in Slot A.
     side = kBootSlotA;
-  } else if (pc >= kFlashSlotB && pc < kFlashSlotEnd) {
+  } else if (pc >= kNvmSlotB && pc < kNvmSlotEnd) {
     // Running in Slot B.
     side = kBootSlotB;
   } else {
@@ -229,7 +226,7 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest,
-                                uint32_t *flash_exec) {
+                                uint32_t *nvm_exec) {
   // Determine which owner block the key came from and measure that block.
   hmac_digest_t owner_measurement;
   const owner_application_key_t *key = keyring.key[verify_key];
@@ -266,13 +263,13 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_owner_restrict(kNvmInfoPageDiceCerts);
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
   otp_creator_sw_cfg_lockdown();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
   epmp_clear_lock_bits();
@@ -373,7 +370,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
                                    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
 
-  HARDENED_CHECK_EQ(*flash_exec, kSigverifyFlashExec);
+  HARDENED_CHECK_EQ(*nvm_exec, kSigverifyFlashExec);
 
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
@@ -393,19 +390,19 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t error = kErrorRomExtBootFailed;
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    uint32_t flash_exec = 0;
+    uint32_t nvm_exec = 0;
     char slot_id =
         (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) ? 'A'
                                                                        : 'B';
     error =
-        rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &flash_exec,
+        rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &nvm_exec,
                        &keyring, &verify_key, &owner_config, &isfb_check_count);
     slot[i] = error;
     if (error != kErrorOk) {
       dbg_printf("verifyfail: Slot%c;%x\r\n", slot_id, error);
       continue;
     }
-    HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
+    HARDENED_CHECK_EQ(nvm_exec, kSigverifyFlashExec);
 
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
@@ -418,7 +415,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 
     // Boot fails if a verified ROM_EXT cannot be booted.
     RETURN_IF_ERROR(
-        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &flash_exec));
+        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &nvm_exec));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;
@@ -437,23 +434,23 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 }
 
 static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
-  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
-  flash_ctrl_perms_t read = {
-      .read = kMultiBitBool4True,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4False,
+  nvm_page_cfg_t cfg = nvm_ctrl_data_default_cfg_get();
+  nvm_page_perms_t read = {
+      .read = true,
+      .write = false,
+      .erase = false,
   };
-  flash_ctrl_perms_t write = {
-      .read = kMultiBitBool4True,
-      .write = kMultiBitBool4True,
-      .erase = kMultiBitBool4True,
+  nvm_page_perms_t write = {
+      .read = true,
+      .write = true,
+      .erase = true,
   };
-  flash_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
-                                 rom_ext_slot == kBootSlotA ? read : write, cfg,
-                                 kHardenedBoolTrue);
-  flash_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
-                                 rom_ext_slot == kBootSlotB ? read : write, cfg,
-                                 kHardenedBoolTrue);
+  nvm_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
+                               rom_ext_slot == kBootSlotA ? read : write, cfg,
+                               kHardenedBoolTrue);
+  nvm_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
+                               rom_ext_slot == kBootSlotB ? read : write, cfg,
+                               kHardenedBoolTrue);
 }
 
 static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
@@ -467,7 +464,7 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   epmp_set_lock_bits();
   epmp_clear_rlb();
   // Disable access to creator-level INFO pages.
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
   // Set the OWNER_CONFIG pages for rescue mode (page0=ro, page1=rw).
   ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
   // Lock access to owner-level INFO pages.  During normal boot, this
