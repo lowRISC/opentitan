@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_python//python:defs.bzl", "py_binary")
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/coverage:view.bzl", "coverage_view_test")
 load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
@@ -184,4 +185,12 @@ imm_section_bundle(
         variation_name: ":main_binaries_{}_slot_virtual".format(variation_name)
         for variation_name, _ in ROM_EXT_VARIATIONS.items()
     },
+)
+
+py_binary(
+    name = "exportability_test_tool",
+    testonly = True,
+    srcs = ["exportability_test_tool.py"],
+    main = "exportability_test_tool.py",
+    visibility = ["//sw/device/silicon_creator/rom_ext/imm_section:__subpackages__"],
 )

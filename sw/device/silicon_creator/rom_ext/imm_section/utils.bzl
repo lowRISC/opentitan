@@ -12,7 +12,9 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "@rules_cc//cc:action_names.bzl",
     "CPP_LINK_STATIC_LIBRARY_ACTION_NAME",
+    "OBJ_COPY_ACTION_NAME",
 )
+load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_blob")
 load(
@@ -210,3 +212,99 @@ def imm_section_bundle(name, variants, **kwargs):
         variants_values = variants.values(),
         **kwargs
     )
+
+def _exportability_test_impl(ctx):
+    cc_toolchain = find_cc_toolchain(ctx)
+    features = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+    )
+
+    # Partial link
+    linking_contexts = [dep[CcInfo].linking_context for dep in ctx.attr.deps]
+    linkopts = [
+        "-nostdlib",
+        "-Wl,-r",
+        "-Wl,--gc-sections",
+    ]
+    for sym in ctx.attr.exports:
+        linkopts.append("-Wl,-u,{}".format(sym))
+
+    name_relocatable_o = ctx.attr.name + "_relocatable.o"
+    linking_outputs = cc_common.link(
+        name = name_relocatable_o,
+        actions = ctx.actions,
+        output_type = "executable",
+        feature_configuration = features,
+        cc_toolchain = cc_toolchain,
+        linking_contexts = linking_contexts,
+        user_link_flags = linkopts,
+    )
+    relocatable_o = linking_outputs.executable
+
+    # Find objdump in toolchain
+    objdump_path = cc_common.get_tool_for_action(
+        feature_configuration = features,
+        action_name = OT_ACTION_OBJDUMP,
+    )
+
+    test_script = ctx.actions.declare_file(ctx.attr.name + "_test.sh")
+    script_content = """
+        exec "{test_tool}" "{object}" --objdump "{objdump}" {expect_fail_flag}
+    """.format(
+        test_tool = ctx.executable._test_tool.short_path,
+        object = relocatable_o.short_path,
+        objdump = objdump_path,
+        expect_fail_flag = "--expect-fail" if ctx.attr.expect_fail else "",
+    )
+
+    ctx.actions.write(
+        output = test_script,
+        content = script_content,
+        is_executable = True,
+    )
+
+    # Runfiles
+    runfiles = ctx.runfiles(
+        files = [
+            relocatable_o,
+            ctx.executable._test_tool,
+        ],
+        transitive_files = cc_toolchain.all_files,
+    ).merge(ctx.attr._test_tool[DefaultInfo].default_runfiles)
+
+    return [
+        DefaultInfo(
+            executable = test_script,
+            runfiles = runfiles,
+        ),
+    ]
+
+exportability_test = rv_rule(
+    implementation = _exportability_test_impl,
+    attrs = {
+        "deps": attr.label_list(
+            providers = [CcInfo],
+            doc = "The libraries to test for exportability. Usually contains the imm_section library under test.",
+        ),
+        "exports": attr.string_list(
+            default = [],
+            doc = "The list of symbols that are expected to be exported from the library. These will be used as GC roots during partial link.",
+        ),
+        "expect_fail": attr.bool(
+            default = False,
+            doc = "If True, the test is expected to fail (i.e. validation finds BSS/data). Used for negative testing.",
+        ),
+        "_test_tool": attr.label(
+            default = "//sw/device/silicon_creator/rom_ext/imm_section:exportability_test_tool",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_cc_toolchain": attr.label(
+            default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
+        ),
+    },
+    fragments = ["cpp"],
+    test = True,
+    toolchains = ["@rules_cc//cc:toolchain_type"],
+)
