@@ -68,6 +68,19 @@ module otbn_sec_add
   logic [Stages+1:0] en;
   logic [Stages:0] update_en;
 
+  // Registered stall: used for valid_o so that stall glitches cannot
+  // propagate combinatorially to the output.
+  logic stall_q;
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_prim_flop_stall (
+    .clk_i,
+    .rst_ni,
+    .d_i(stall_i),
+    .q_o(stall_q)
+  );
+
   assign en[0] = valid_i;
 
   always_comb begin
@@ -301,8 +314,8 @@ module otbn_sec_add
     assign result_o[s][Width] = g[Stages][s][Width-1];
   end
 
-  // Output valid signal only when there's no stall.
-  assign valid_o = en[Stages+1] && !stall_i;
+  // Output valid signal only when there was no stall in the previous cycle.
+  assign valid_o = en[Stages+1] && !stall_q;
 
 `ifdef INC_ASSERT
   // Assert that all rand_i bits are assigned.
