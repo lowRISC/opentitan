@@ -98,3 +98,8 @@ py_binary(
     name = "gen_stamped_tarball",
     srcs = ["gen_stamped_tarball.py"],
 )
+
+py_binary(
+    name = "add_shared_symbols",
+    srcs = ["add_shared_symbols.py"],
+)
