@@ -119,21 +119,6 @@ typedef enum nvm_info_page {
 } nvm_info_page_t;
 
 // ---------------------------------------------------------------------------
-// Erase type
-// ---------------------------------------------------------------------------
-
-/**
- * Whether to erase a page or an entire bank.
- *
- * Hardened encoding: values are identical to flash_ctrl_erase_type_t and are
- * verified by static_assert in nvm_ctrl.c.
- */
-typedef enum nvm_ctrl_erase_type {
-  kNvmCtrlEraseTypePage = 0xaf0eab8b,
-  kNvmCtrlEraseTypeBank = 0x80329be9,
-} nvm_ctrl_erase_type_t;
-
-// ---------------------------------------------------------------------------
 // SEC_MMIO write-increment constants
 // ---------------------------------------------------------------------------
 // Drop-in replacements for kFlashCtrlSecMmio* — identical numeric values.
@@ -205,12 +190,55 @@ rom_error_t nvm_ctrl_data_write(uint32_t addr, uint32_t word_count,
                                 const void *data);
 
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_data_erase(uint32_t addr,
-                                nvm_ctrl_erase_type_t erase_type);
+rom_error_t nvm_ctrl_data_erase(uint32_t addr);
 
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr,
-                                       nvm_ctrl_erase_type_t erase_type);
+rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr);
+
+/**
+ * Erases all NVM data banks.
+ *
+ * Enables bank-erase permissions, erases every bank, then re-disables
+ * bank-erase permissions.  Bank count and addresses are internal details.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t nvm_ctrl_chip_erase(void);
+
+/**
+ * Verifies that all NVM data banks have been erased.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t nvm_ctrl_chip_erase_verify(void);
+
+/**
+ * Programs up to 256 bytes of NVM data starting at `addr`.
+ *
+ * If `byte_count` is not a multiple of the NVM word size it is rounded up to
+ * the next word boundary and padding bytes in `data` are set to 0xff.  If
+ * `addr` is not 256-byte aligned the write is split so the first chunk fills
+ * up to the 256-byte boundary and the second starts at the aligned address,
+ * matching SPI PAGE_PROGRAM wrapping semantics.  Write permissions are managed
+ * internally; the caller is responsible for address range validation.
+ *
+ * @param addr  Start address; must be NVM-word aligned.
+ * @param byte_count  Number of bytes to write.
+ * @param data  Buffer; must be word aligned with room for up to one extra word
+ *              of 0xff padding beyond `byte_count`.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
+                                  uint8_t *data);
+
+/**
+ * Erases the 4 KiB sector containing `addr` in the data partition.
+ *
+ * Because the NVM page size is 2 KiB, erasing a 4 KiB sector requires two
+ * consecutive page erases.  `addr` is truncated to the nearest 4 KiB boundary
+ * before erasing; the caller is responsible for range validation.
+ * Erase permissions are managed internally.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t nvm_ctrl_sector_erase(uint32_t addr);
 
 // ---------------------------------------------------------------------------
 // Info page I/O
@@ -233,8 +261,7 @@ rom_error_t nvm_ctrl_info_write(nvm_info_page_t page, uint32_t offset,
                                 uint32_t word_count, const void *data);
 
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page,
-                                nvm_ctrl_erase_type_t erase_type);
+rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page);
 
 // ---------------------------------------------------------------------------
 // Permissions and configuration

@@ -10,16 +10,6 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 // ---------------------------------------------------------------------------
-// Static assertions: verify nvm_ctrl_erase_type_t values match the driver.
-// ---------------------------------------------------------------------------
-static_assert((uint32_t)kNvmCtrlEraseTypePage ==
-                  (uint32_t)kFlashCtrlEraseTypePage,
-              "erase type Page value mismatch");
-static_assert((uint32_t)kNvmCtrlEraseTypeBank ==
-                  (uint32_t)kFlashCtrlEraseTypeBank,
-              "erase type Bank value mismatch");
-
-// ---------------------------------------------------------------------------
 // Internal: info page count per bank in the type-0 info partition.
 // ---------------------------------------------------------------------------
 enum { kNvmInfoPagesPerBank = 10 };
@@ -144,15 +134,107 @@ rom_error_t nvm_ctrl_data_write(uint32_t addr, uint32_t word_count,
   return flash_ctrl_data_write(addr, word_count, data);
 }
 
-rom_error_t nvm_ctrl_data_erase(uint32_t addr,
-                                nvm_ctrl_erase_type_t erase_type) {
-  return flash_ctrl_data_erase(addr, (flash_ctrl_erase_type_t)erase_type);
+rom_error_t nvm_ctrl_data_erase(uint32_t addr) {
+  return flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage);
 }
 
-rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr,
-                                       nvm_ctrl_erase_type_t erase_type) {
-  return flash_ctrl_data_erase_verify(addr,
-                                      (flash_ctrl_erase_type_t)erase_type);
+rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr) {
+  return flash_ctrl_data_erase_verify(addr, kFlashCtrlEraseTypePage);
+}
+
+rom_error_t nvm_ctrl_chip_erase(void) {
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
+  rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
+  rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                            kFlashCtrlEraseTypeBank);
+  flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
+}
+
+rom_error_t nvm_ctrl_chip_erase_verify(void) {
+  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
+  rom_error_t err_1 = flash_ctrl_data_erase_verify(
+      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
+}
+
+rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
+                                  uint8_t *data) {
+  static_assert((FLASH_CTRL_PARAM_BYTES_PER_WORD &
+                 (FLASH_CTRL_PARAM_BYTES_PER_WORD - 1)) == 0,
+                "Bytes per NVM word must be a power of two.");
+  enum {
+    kWordMask = FLASH_CTRL_PARAM_BYTES_PER_WORD - 1,
+    kProgPageSize = 256,
+    kProgPageMask = kProgPageSize - 1,
+  };
+
+  // Round up to next NVM word and fill missing bytes with 0xff.
+  size_t word_misalignment = byte_count & kWordMask;
+  if (word_misalignment > 0) {
+    size_t pad = FLASH_CTRL_PARAM_BYTES_PER_WORD - word_misalignment;
+    for (size_t i = 0; i < pad; ++i) {
+      data[byte_count++] = 0xff;
+    }
+  }
+  size_t rem_word_count = byte_count / sizeof(uint32_t);
+
+  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4False,
+  });
+  // Split the write if addr is not 256-byte aligned: first chunk fills up to
+  // the 256-byte boundary, second chunk starts at the aligned address (SPI
+  // PAGE_PROGRAM wrapping semantics).
+  rom_error_t err_0 = kErrorOk;
+  size_t prog_page_misalignment = addr & kProgPageMask;
+  if (prog_page_misalignment > 0) {
+    size_t word_count =
+        (kProgPageSize - prog_page_misalignment) / sizeof(uint32_t);
+    if (word_count > rem_word_count) {
+      word_count = rem_word_count;
+    }
+    err_0 = flash_ctrl_data_write(addr, word_count, data);
+    rem_word_count -= word_count;
+    data += word_count * sizeof(uint32_t);
+    addr &= ~(uint32_t)kProgPageMask;
+  }
+  rom_error_t err_1 = kErrorOk;
+  if (rem_word_count > 0) {
+    err_1 = flash_ctrl_data_write(addr, rem_word_count, data);
+  }
+  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  });
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
+}
+
+rom_error_t nvm_ctrl_sector_erase(uint32_t addr) {
+  static_assert(FLASH_CTRL_PARAM_BYTES_PER_PAGE == 2048,
+                "Page size must be 2 KiB");
+  enum { kSectorAddrMask = ~UINT32_C(4096) + 1 };
+  addr &= kSectorAddrMask;
+  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4True,
+  });
+  rom_error_t err_0 = flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage);
+  rom_error_t err_1 = flash_ctrl_data_erase(
+      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kFlashCtrlEraseTypePage);
+  flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  });
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
 }
 
 // ---------------------------------------------------------------------------
@@ -176,10 +258,8 @@ rom_error_t nvm_ctrl_info_write(nvm_info_page_t page, uint32_t offset,
   return flash_ctrl_info_write(page_ptr(page), offset, word_count, data);
 }
 
-rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page,
-                                nvm_ctrl_erase_type_t erase_type) {
-  return flash_ctrl_info_erase(page_ptr(page),
-                               (flash_ctrl_erase_type_t)erase_type);
+rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page) {
+  return flash_ctrl_info_erase(page_ptr(page), kFlashCtrlEraseTypePage);
 }
 
 // ---------------------------------------------------------------------------

@@ -180,7 +180,7 @@ static rom_error_t boot_data_entry_write_impl(nvm_info_page_t page,
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
 
   if (erase == kHardenedBoolTrue) {
-    RETURN_IF_ERROR(nvm_ctrl_info_erase(page, kNvmCtrlEraseTypePage));
+    RETURN_IF_ERROR(nvm_ctrl_info_erase(page));
   }
 
   // Write digest
