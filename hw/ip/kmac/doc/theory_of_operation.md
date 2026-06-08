@@ -6,22 +6,31 @@
 
 The above figure shows the KMAC/SHA3 HWIP block diagram.
 The KMAC has register interfaces for SW to configure the module, initiate the hashing process, and acquire the result digest from the STATE memory region.
-It also has an interface to the KeyMgr to get the secret key (masked).
-The IP has N x [application interfaces](#application-interface), which allows other HWIPs to request any pre-defined hashing operations.
+It also has a sideload interface to the KeyMgr to get a secret key for KMAC operation.
+The key is always Boolean masked with two shares.
+The IP has N x [application interfaces](#application-interface), which allows other HWIPs to request hashing operations.
+An application interface can either be static where the hashing operation is predefined at compile-time or it can be dynamic where the application can select the hashing mode at runtime.
 
-As similar with HMAC, KMAC HWIP also has a message FIFO (MSG_FIFO) whose depth was determined based on a few criteria such as the register interface width, and its latency, the latency of hashing algorithm (Keccak).
+Similar to HMAC, the KMAC HWIP also has a message FIFO (MSG_FIFO) whose depth was determined based on criteria such as the register interface width, its latency, and the latency of the hashing algorithm (Keccak).
 Based on the given criteria, the MSG_FIFO depth was determined to store the incoming message while the SHA3 core is in computation.
 
-The MSG_FIFO has a packer in front.
-It packs any partial writes into the size of internal datapath (64bit) and stores in MSG_FIFO.
-It frees the software from having to align the messages.
-It also doesn't need the message length information.
+To support partial writes from SW and an app interface, the MSG_FIFO has a packer in front which packs writes to the size of the internal datapath (64bit).
+This frees the software from having to align the messages and it also simplifies the app interface when the message length must be appended (for KMAC operation).
+Note that this FIFO is bypassed if the application interface is configured to send the message in shares.
 
 The fed messages go into the KMAC core regardless of KMAC enabled or not.
 The KMAC core forwards the messages to SHA3 core in case KMAC hash functionality is disabled.
-KMAC core prepends the encoded secret key as described in the SHA3 Derived Functions specification.
+When performing a KMAC operation, the KMAC core prepends the encoded secret key as described in the SHA3 Derived Functions specification.
 It is expected that the software writes the encoded output length at the end of the message.
 For hashing operations triggered by an IP through the application interface, the encoded output length is appended inside the AppIntf module in the KMAC HWIP.
+
+There are two ways for a key to be supplied to the KMAC core.
+One way is the sideload interface that is connected to the key manager.
+The other is to pass the key in two shares with registers ([`KEY_SHARE0`](registers.md#key_share0) and [`KEY_SHARE1`](registers.md#key_share1)).
+
+The software can set [`CFG_SHADOWED.sideload`](registers.md#cfg_shadowed) to use the sideloaded key for the SW and app-initiated KMAC operations.
+The key manager always provides the sideloaded key in two-share masked form regardless of the compile-time Verilog parameter `EnMasking`.
+If `EnMasking` is false, the KMAC converts the shared key to the unmasked form before the key is used.
 
 The SHA3 core is the main Keccak processing module.
 It supports SHA3 hashing functions, SHAKE128, SHAKE256 extended output functions, and also cSHAKE128, cSHAKE256 functions in order to support KMAC operation.
@@ -38,13 +47,13 @@ If desired, the masking can be disabled and the internal state width can be redu
 
 ### Keccak Round
 
-A Keccak round implements the Keccak_f function described in the SHA3 specification.
-Keccak round logic in KMAC/SHA3 HWIP not only supports 1600 bit internal states but also all possible values {50, 100, 200, 400, 800, 1600} based on a parameter `Width`.
-If masking is disabled via compile-time Verilog parameter `EnMasking`, also 25 can be selected as state width.
+In the KMAC HWIP the Keccak round module is instantiated with a 1600 bit internal state.
+Note, this Keccak round implementation not only supports 1600 bit internal states but also all possible values {50, 100, 200, 400, 800, 1600} based on a compile-time Verilog parameter `Width`.
+If the compile-time Verilog parameter `EnMasking` is false, disabling masking, then the state width can also be set to 25.
+
 Keccak permutations in the specification allow arbitrary number of rounds.
 This module, however, supports Keccak_f which always runs `12 + 2*L` rounds, where $$ L = log_2 {( {Width \over 25} )} $$ .
 For instance, 200 bits of internal state run 18 rounds.
-KMAC/SHA3 instantiates the Keccak round module with 1600 bit.
 
 ![](../doc/keccak-round.svg)
 
@@ -133,6 +142,10 @@ The message FIFO receives incoming message bitstream regardless of its byte posi
 Then it packs the partial message bytes into the internal 64 bit data width.
 After packing the data, the logic stores the data into the FIFO until the internal KMAC/SHA3 engine consumes the data.
 
+This FIFO does not support the handling of masked input messages.
+For app interfaces providing masked input messages, the FIFO is bypassed.
+If the FIFO is bypassed, there is no packer and therefore these apps must always provide full 64-bit messages (except the last message).
+
 #### FIFO Depth calculation
 
 The depth of the message FIFO is chosen to cover the throughput of the software or other producers such as DMA engine.
@@ -169,78 +182,515 @@ Refer to [Preventing potential deadlocks in EDN mode](programmers_guide.md#preve
 
 #### Masking
 
-The message FIFO does not generate the masked message data.
-Incoming message bitstream is not sensitive to the leakage.
-If the `EnMasking` parameter is set and [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is enabled, the message is masked upon loading into the Keccak core using the internal entropy generator.
-The secret key, however, is stored as masked form always.
+The hashing engine supports a fully masked operation if the `EnMasking` compile-time Verilog parameter is set.
+The software, however, can only push unmasked messages into the hashing engine.
+The app interfaces operate on either unmasked or masked data, depending on their parameterization.
 
-If the `EnMasking` parameter is not set, the masking is disabled.
-Then, the software has to provide the key in unmasked form by default.
+For all cases, if `EnMasking` is set and [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is true, the message is masked (or re-masked) upon loading into the Keccak core using the internal entropy generator.
+The secret key is always stored/used in masked form.
+
+If `EnMasking` is not set, masking is disabled and the software has to provide the key in unmasked form.
 Any write operations to [`KEY_SHARE1_0`](registers.md#key_share1) - [`KEY_SHARE1_15`](registers.md#key_share1) are ignored.
 
-If the `EnMasking` parameter is not set and the `SwKeyMasked` parameter is set, software has to provide the key in masked form.
+If `EnMasking` is not set and the `SwKeyMasked` compile-time Verilog parameter is set, software has to provide the key in masked form.
 Internally, the design then unmasks the key by XORing the two key shares together when loading the key into the engine.
 This is useful when software interface compatibility between the masked and unmasked configuration is desirable.
 
-If the `EnMasking` parameter is set, the `SwKeyMasked` parameter has no effect: Software always provides the key in two shares.
+If `EnMasking` is set, `SwKeyMasked` has no effect: Software must always provide the key in two shares.
 
 ### Keccak State Access
 
 After the Keccak round completes the KMAC/SHA3 operation, the contents of the Keccak state contain the digest value.
 The software can access the 1600 bit of the Keccak state directly through the window of the KMAC/SHA3 register.
 
-If the compile-time parameter masking feature is enabled, the upper 256B of the window is the second share of the Keccak state.
-If not, the upper address space is zero value.
-The software reads both of the Keccak state shares and XORed in the software to get the unmasked digest value if masking feature is set.
+If `EnMasking` is set, the upper 256B of the window is the second share of the Keccak state.
+The software can read both of the Keccak state shares and can recover the plain, unmasked digest value by XORing the two shares.
+If `EnMasking` is not set, the upper half of the window reads as zero.
 
 The Keccak state is valid after the sponge absorbing process is completed.
 While in an idle state or in the sponge absorbing stage, the value is zero.
 This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software.
 In addition to that, the KMAC/SHA3 blocks the software access to the Keccak state when it processes the request from KeyMgr for Key Derivation Function (KDF).
 
-### Application Interface
+### Application Interfaces
 
-![](../doc/application-interface.svg)
+The IP has a number of instances of an application interface.
+Each of these interfaces can be either static or dynamic, which is defined at compile time.
+A static interface has the hashing operation defined as a compile-time parameter in its `kmac_pkg::AppCfg` struct and only a fixed digest length is returned.
+A dynamic interface can specify the hashing operation at runtime and supports XOF operation (eXtendable Output Function), so an unlimited digest size can be retrieved.
 
-KMAC/SHA3 HWIP has an option to receive the secret key from the KeyMgr via sideload key interface.
-The software should set [`CFG_SHADOWED.sideload`](registers.md#cfg_shadowed) to use the KeyMgr sideloaded key for the SW-initiated KMAC operation.
-`keymgr_pkg::hw_key_t` defines the structure of the sideloaded key.
-KeyMgr provides the sideloaded key in two-share masked form regardless of the compile-time parameter `EnMasking`.
-If `EnMasking` is not defined, the KMAC merges the shared key to the unmasked form before uses the key.
+In the current version of this IP, there are the following application interfaces implemented:
 
-The IP has N number of the application interface. The apps connected to the KMAC IP may initiate the SHA3/cSHAKE/KMAC hashing operation via the application interface `kmac_pkg::app_{req|rsp}_t`.
-The type of the hashing operation is determined in the compile-time parameter `kmac_pkg::AppCfg`.
+| Index | App      | Type    | Algorithm | Prefix for cSHAKE / KMAC |
+|-------|----------|---------|-----------|------------|
+| 0     | KeyMgr   | Static  | KMAC      | "KMAC"     |
+| 1     | LC_CTRL  | Static  | cSHAKE128 | "LC_CTRL"  |
+| 2     | ROM_CTRL | Static  | cSHAKE256 | "ROM_CTRL" |
+| 3     | OTBN     | Dynamic | Dynamic   | "KMAC" for KMAC mode, otherwise the prefix is taken from the `PREFIX` CSRs. |
 
-| Index | App      | Algorithm | Prefix
-|:-----:|:--------:|:---------:|------------
-| 0     | KeyMgr   | KMAC      | CSR prefix
-| 1     | LC_CTRL  | cSHAKE128 | "LC_CTRL"
-| 2     | ROM_CTRL | cSHAKE256 | "ROM_CTRL"
+#### Interface channels
+The interface operates with two channels, each with a valid/ready handshake.
+The request channel is used by the apps to initiate and control a session and also to send the message.
+Once a digest is computed, the KMAC sends it back over the response channel.
+The signals of the channels are described below.
 
-In the current version of IP, the IP has three application interfaces, which are KeyMgr, LC_CTRL, and ROM_CTRL.
-KeyMgr uses the KMAC operation with CSR prefix value.
-LC_CTRL and ROM_CTRL use the cSHAKE operation with the compile-time parameter prefixes.
+| Channel  | Signal       | Description |
+|----------|--------------|-------------|
+| Request  | `req_valid`  | The valid signal of the request channel. |
+| Request  | `data_s0`    | The first share of the message data. |
+| Request  | `data_s1`    | The second share of the message data. |
+| Request  | `strb`       | The byte-level strobe for the message. Either all-ones, all-zeros (empty message) or a LSB-aligned contiguous mask. |
+| Request  | `req_last`   | A flag to signal the end of the message or session. |
+| Request  | `req_ready`  | The ready signal of the request channel. |
+| Response | `rsp_valid`  | The valid signal of the response channel. |
+| Response | `digest_s0`  | First share of the digest data. |
+| Response | `digest_s1`  | Second share of the digest data. |
+| Response | `error`      | A flag which is set if there was an error and the receiver should discard the digest. |
+| Response | `rsp_finish` | A flag which is set to indicate that it is the last response of the session. |
+| Response | `rsp_ready`  | The ready signal of the response channel. |
 
-The app sends 64-bit data (`MsgWidth`) in a beat with the message strobe signal.
-The state machine inside the AppIntf logic starts when it receives the first valid data from any of the AppIntf.
-The AppIntf module chooses the winner based on the fixed priority.
-Then it forwards the selected App to the next stage.
-Because this logic sees the first valid data as an initiator, the Apps cannot run the hashing operation with an empty message.
-After the logic switches to accept the message bitstream from the selected App, if the hashing operation is KMAC, the logic forces the sideloaded key to be used as a secret.
-Also it ignores the command issued from the software.
-Instead it generates the commands and sends them to the KMAC core.
+#### Configuration
+The type and functionality of an interface are configured by a struct of type `app_config_t`.
+The configuration options are listed in the following table.
+For a more detailed description see the type definition.
+Any parameter marked as 'Session' can be configured by a dynamic interface at runtime for each hashing session.
+For static interfaces, these parameters are also fixed at compile time.
+Note that the output length for a KMAC operation is the same as the `digest_sx` signal width (`AppDigestW`).
 
-The last beat of the App data moves the state machine to append the encoded output length if the hashing operation is KMAC.
-The output length is the digest width, which is 256 bit always.
-It means that the logic appends `0x020100` (little-endian) to the end of the message.
-The output data from this logic goes to MSG_FIFO.
-Because the MSG_FIFO handles un-aligned data inside, KeyMgr interface logic sends the encoded output length value in a separate beat.
+| Parameter       | Validity | Description |
+|-----------------|----------|-------------|
+| `if_type`       | Static   | Selects the type of the interface. Either `static` or `dynamic`. |
+| `masked`        | Static   | Defines whether the message comes in shares or not. If `EnMasking` is enabled and `masked` is 1, both shares are forwarded as are. If `EnMasking` is disabled and `masked` is 1, the shares are XORed. If `masked` is 0, `data_s1` is ignored. |
+| `prefix`        | Static   | A compile-time defined prefix used for cSHAKE or KMAC operations. See `prefix_mode` for when this value is used. |
+| `en_unsup_comb` | Static   | If 1, non-standard combinations of `mode` and `kstrength` are supported for this interface. Otherwise a non-standard combination will result in a service rejected error. |
+| `prefix_mode`   | Static   | The `prefix_mode` determines whether to take the prefix from the CSR or use the hardcoded prefix. For static interfaces, if `prefix_mode` is 1, the `prefix` will be used for both cSHAKE and KMAC operations. If 0, the CSR value is used. For dynamic interfaces, `prefix_mode` has no effect. Independently of the value, if the `mode` is cSHAKE, the CSR prefix is used. If the mode is KMAC, the compile-time value is used. |
+| `mode`          | Session  | The hashing mode which is performed. |
+| `kstrength`     | Session  | The strength of the selected `mode`. Not to be confused with the output length of a hashing operation. |
+| `en_xof`        | Session  | If 1, the app interface will automatically trigger a RUN command once it has pushed the full rate on the response channel. If 0, no squeeze can be performed at all. Usually enabled for SHAKE and cSHAKE and disabled for SHA3 and KMAC. Has no effect on static interfaces. |
 
-After the encoded output length is pushed to the KMAC core, the interface logic issues a Process command to run the hashing logic.
+The session configuration is sent as the first message request and the configuration values are read from `data_s0` as defined by the struct `app_ses_config_t`.
 
-After hashing operation is completed, KMAC does not raise a `kmac_done` interrupt; rather it triggers the `done` status in the App response channel.
-The result digest always comes in two shares.
-If the `EnMasking` parameter is not set, the second share is always zero.
+In addition to the static and session configuration, SW must configure the KMAC HWIP before an app uses its interface.
+The relevant CSRs / Fields are:
+- `Prefix`
+  - See `prefix_mode` configuration for when this CSR is relevant.
+- `CFG_SHADOWED.entropy_ready`
+- `CFG_SHADOWED.entropy_mode`
+- `CFG_SHADOWED.entropy_fast_process`
+- `CFG_SHADOWED.sideload`
+- `CFG_SHADOWED.msg_mask`
+  - Whether masking is performed or not.
+    Must be set if `masked` is set in the configuration.
+
+See the KMAC [register description](./registers.md) for more details.
+These configuration values are left to the SW as setting these requires system state knowledge, i.e., whether entropy is available or not.
+
+#### Message and digest datapath
+The image below depicts the message data path and its related control signals.
+![](../doc/kmac-data-path.svg)
+
+The compile-time parameter `EnMasking` and the static parameter `masked` control whether the message FIFO is used or bypassed.
+The FIFO is used unless `EnMasking` and `masked` are both set in which case the FIFO is bypassed.
+
+For both types of interface, messages other than the last are sent using the full width of the `data_s0` / `data_s1` width.
+See the operation principle section for more details about the last message.
+
+Although the message requests make full use of the `data_s0` / `data_s1` signal width (`MsgWidth`), the returned digest size depends on the interface's `if_type`.
+A static interface response uses the full width of the `digest_s0` / `digest_s1` signals (`AppDigestW`) which allows it to transfer the full digest in one response beat.
+For dynamic interfaces, the response carries smaller digest parts (`DynAppDigestW`) and only the upper bits of the `digest_s0` / `digest_s1` are invalid.
+This width is chosen so that it divides the response width for most supported mode and strength combinations, especially for XOF operation.
+This allows the interface not to use a strobe signal.
+Doing so simplifies response handing in the receiver and it also reduces the area required if the interface is pipelined.
+
+The number of digest responses can be computed from the selected mode and strength.
+For SHA3, the number of responses is `Strength / DynAppDigestW = Strength / 64`.
+Note, for SHA3-224 this does not divide properly.
+As such, the interface sends back 4 responses where the last one contains some bits which must be ignored.
+
+For SHAKE, cSHAKE and KMAC the standard defines the `StateWidth` to be 1600 bits (Same as SHA3) and these algorithms produce `StateWidth - 2 * Strength` bits of digest per squeeze.
+A dynamic app interface then returns this digest data in `(StateWidth - 2 * Strength) / DynAppDigestW` responses.
+For example, when performing a SHAKE128 operation, the interface sends `(1600 - 2*128) / 64 = 21` response beats before it triggers a RUN command.
+
+Digest parts are always returned in two shares.
+The `masked` parameter affects only the message path.
+If `EnMasking` is not active, the second share is set to `'0`.
+
+#### Operation principle
+The app interface follows the same command order (START, PROCESS, RUN, DONE) as software but commands are implicitly send with message requests.
+An FSM inside the app interface controls the hashing operation.
+Its state diagram is shown below and the following text explains how an app can use the interface.
+The transitions into error states from an invalid key or a hashing engine error (SHA3 error) are not drawn: see error handling section.
+
+Any app starts a session by placing its first request.
+More than one app can have a session request active at a particular time.
+The interface uses a fixed priority to arbitrate between multiple outstanding requests.
+
+The sequence of requests for a static app is just its sequence of message words.
+A dynamic app sends the message words after sending a request carrying its desired session configuration.
+When starting a session for a dynamic app, the interface checks the requested configuration.
+For both types of interfaces, if the hashing operation is KMAC, the interface also checks that the `entropy_ready` bit is 1.
+
+If the configuration is not valid, a service rejected error is raised, see error handling section.
+If the configuration is valid, the message requests are forwarded to the hashing engine.
+This engine then starts absorbing, depending on the hashing mode, the key and the prefix data.
+Afterwards it starts absorbing messages from the app interface.
+
+An app must send the full message split up into message requests which make use of the full width.
+This means `strb` must be all ones.
+An exception is the last message part, which can be less than the full width of the interface.
+Sending this last message part is closely related to how the message phase is ended.
+There are two ways for an app to terminate the message phase.
+In both cases there must be at most one request which has `req_last` asserted.
+
+- Termination on the last data beat
+  - The app sets `req_last` on the beat that carries the final data bytes.
+  - The strobe on this beat may be partial or zero.
+    Its value must always be contiguous and lsb-aligned.
+  - A strobe of zero means no bytes are valid, representing an empty message.
+- Termination with an explicit empty message
+  - The app sends all data beats without ever setting `req_last`.
+  - The last beat carrying data is allowed to have a partial strobe which must be contiguous and lsb-aligned (a strobe of zero would be the same as the first option).
+  - The app then sends a single empty message (`req_last = 1`, `strb = '0`) to explicitly ending the message phase.
+  - Once a partial beat has been sent without `req_last` asserted, no further data beats are permitted.
+
+In any case, a message request with `req_last = 1` causes the state machine to end the message phase.
+It then starts to append the encoded output length if the hashing mode is KMAC.
+This encoded output length is hard coded to `AppDigestW` which is also the size of the `digest_s0` / `digest_s1` signals.
+
+After the message is completely pushed into the KMAC core (or after the encoded output length if in KMAC mode), the interface logic issues a PROCESS command to run the hashing logic.
+
+Once the hashing operation has completed, the app interface starts to send a digest on the response channel.
+Unlike as when SW initiates a hashing operation, the KMAC HW IP does not produce a `kmac_done` interrupt at this point.
+
+For a static app, one full digest is sent (handshaked) and the app interface returns back to its idle state.
+
+For a dynamic app, the interface starts to push the full rate of the hashing operation in `DynAppDigestW` sized responses.
+The app can exert back pressure on the response channel to control how fast it consumes the digest data.
+If `en_xof` is false, the operation is complete once the full digest has been sent.
+The interface will just wait for a termination request.
+If `en_xof` is true, the interface automatically sends a RUN command to the hashing engine after sending the first full digest.
+It then waits until the new digest is available and begins to push responses again.
+After each full digest is sent, the interface will send another RUN command to the hashing engine and repeat.
+
+When the app has received the desired amount of responses, it should send another "message" request with the `req_last` signal asserted.
+This termination request tells the interface to stop sending digest responses and it will issue a DONE command to the hashing engine.
+One final finish response (`rsp_finish=1`) is sent to the app to acknowledge the end of the session.
+Once the app has sent the termination request it must make sure to drain the (pipelined) response channel until the finish response is received.
+Once the interface has sent the finish response, it will return to its idle state, ready to serve the next app request.
+
+When the app receives the finish response, it must check it for errors.
+The reason is that there could have been an error in the last digest but this was not reported immediately to satisfy to the valid locked-in property (valid locked-in means that once the valid is asserted, the data signals may not change until the handshake happened).
+
+In case `en_xof` is disabled, once the first full digest is sent, the interface will just wait for a termination request and not trigger any RUN commands.
+
+```mermaid
+stateDiagram-v2
+[*] --> StIdle
+
+StIdle --> StAppCfg: app selected
+StIdle --> StSw: Start command
+
+StSw --> StIdle: Done command
+
+StAppCfg --> StAppMsg: valid config
+
+StAppMsg --> StAppProcess: Last message handshaked && !KMAC
+StAppMsg --> StAppOutLen: Last message handshaked && KMAC
+StErrorKeyNotValid --> StErrorAwaitMsg: if APP
+
+StAppCfg --> StErrorAwaitMsg: invalid config
+StAppOutLen --> StAppProcess: KMAC output length appended
+
+StAppProcess --> StAppWait
+
+StAppWait --> StAppPushDigest: Digest available
+
+StAppPushDigest --> StAppWait:   DYN && digest pushed && en_xof
+StAppPushDigest --> StAppFinish: STATIC && first digest part pushed
+StAppPushDigest --> StAppFinish: DYN && termination request
+
+StAppFinish --> StIdle: finish rsp sent || STATIC
+
+StErrorKeyNotValid --> StErrorAwaitSw: if SW error
+
+StErrorAwaitMsg --> StErrorNotify: last message part received
+StErrorNotify --> StErrorAwaitTermination: DYN && error rsp sent
+StErrorNotify --> StErrorFinish: STATIC && error rsp sent
+StErrorAwaitTermination --> StErrorFinish: termination req
+
+StErrorFinish --> StIdle: (finish rsp sent || STATIC) && ServiceRejected && !SHA3 error
+StErrorFinish --> StErrorAwaitSw: (finish rsp sent || STATIC) && (!ServiceRejected || SHA3 error)
+
+StErrorAwaitSw --> StErrorAwaitAbsorb: err_processed
+
+StErrorAwaitAbsorb --> StIdle: absorbed
+
+StAppPushDigest --> StErrorPush: DYN && SHA3 error
+
+StErrorPush --> StAppFinish: termination req
+
+```
+
+#### Example operation
+
+For a SHAKE operation via a dynamic interface instance the interactions look like shown in the waves below.
+First, the app sends a request with the configuration.
+Once the interface has accepted the request, the app starts sending message parts until in cycle 4 the last message part is sent.
+KMAC HWIP then starts processing the data and once finished it starts to send back digest data (states AppProcess and AppWait).
+This happens in cycle 7 below (in reality, it takes around 100 cycles).
+Once the app has received 2 digest parts, it deasserts `rsp_ready` (cycle 9) and sends the session end request (cycle 10).
+The app then must drain the response channel (cycle 10) and must wait for the finish response to arrive which is sent in cycle 11.
+
+```wavejson
+{
+  signal: [
+    {name: 'App state',  wave: '2.22.222...22', data: ["Idle","AppCfg","AppMsg","AppProcess","AppWait","AppPushDigest","AppFinish","Idle"]},
+    {},
+    ['Request',
+    {name: 'req_valid',  wave: '01...0....10.'},
+    {name: 'data_s0',    wave: 'x2.22x.......', data: ["config"]},
+    {name: 'data_s1',    wave: 'x..22x.......'},
+    {name: 'strb',       wave: 'x..22x.......', data: ["","0xFF","0x03"]},
+    {name: 'req_last',   wave: 'x0..1x....1x.'},
+    {name: 'req_ready',  wave: '0.1..0....10.'},
+    ],
+    {},
+    ['Response',
+    {name: 'rsp_valid',  wave: '0......1....0'},
+    {name: 'digest_s0',  wave: 'x......222.x.'},
+    {name: 'digest_s1',  wave: 'x......222.x.'},
+    {name: 'error',      wave: 'x......0....x'},
+    {name: 'rsp_finish', wave: 'x......0...1x'},
+    {name: 'rsp_ready',  wave: '1........01.0'},
+    ],
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:2},
+}
+```
+
+If the app requires more digest parts than a complete rate (in this example 3), a RUN command is automatically triggered by the interface.
+Note, this example starts when the last message is received and the app stalls the response in cycle 4 for one cycle.
+
+```wavejson
+{
+  signal: [
+    {name: 'App state',  wave: '2222...2.2..2', data: ["AppMsg","AppProcess","AppWait","AppPushDigest","AppWait","AppPushDigest","AppWait"]},
+    {},
+    ['Request',
+    {name: 'req_valid',  wave: '10...........'},
+    {name: 'data_s0',    wave: '2x...........', data: [""]},
+    {name: 'data_s1',    wave: '2x...........'},
+    {name: 'strb',       wave: '2x...........', data: ["0x03"]},
+    {name: 'req_last',   wave: '1x...........'},
+    {name: 'req_ready',  wave: '10...........'},
+    ],
+    {},
+    ['Response',
+    {name: 'rsp_valid',  wave: '0..1...0.1..0'},
+    {name: 'digest_s0',  wave: 'x..22.2x.222x'},
+    {name: 'digest_s1',  wave: 'x..22.2x.222x'},
+    {name: 'error',      wave: 'x..0...x.0..x'},
+    {name: 'rsp_finish', wave: 'x..0...x.0..x'},
+    {name: 'rsp_ready',  wave: '1...01.......'},
+    ],
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:2},
+}
+```
+
+#### Error handling
+
+The following errors can occur when an app is active:
+
+- Terminal state error
+- Service rejected error
+- Key invalid error
+- SHA3 engine command error
+
+The handling of these errors is described below.
+
+Note, the `WaitTimerExpired` error is not handled by an app interface.
+The reason is that it is planned to rework when the entropy engine places EDN requests such that this error cannot occur during a hashing operation.
+
+##### Terminal state error
+This error occurs if an FSM in the interface entered its terminal error state because one of the following is true:
+- The escalate_i signal is asserted.
+- The FSM itself entered an invalid state.
+
+The terminal error state leads to a fatal alert which will result in a chip reset.
+As such, this error case does not need to end the app session gracefully.
+
+##### Service rejected error
+This error occurs when the configuration is invalid (only for a dynamic interface) or a KMAC operation is requested when the entropy is not ready.
+If the app interface rejects an application request, it enters `StErrorAwaitMsg` and the messages from the application are still accepted but directly discarded.
+After such an error, no data is sent to the hashing engine until the next session.
+After the last message request, the app interface then immediately sends a response with the error flag set.
+The data values in this response have no meaning.
+A static interface then directly returns into the Idle state without waiting for SW to set the `error_processed` bit.
+A dynamic interface waits until a termination request is received and answers with a finish acknowledgment response.
+If any other request is sent, the interface will deadlock as it only accepts termination requests in this state.
+This finish response has the error bit reset (= 0) indicating that another operation is possible.
+After sending the finish response, the interface also immediately returns to the Idle state.
+The reason for immediately returning to Idle is to support the case where an app tries to use KMAC before SW is loaded.
+If in this case the entropy is not ready yet the app can try again at a later point in time.
+
+The diagram below shows an example for a dynamic interface (note the response backpressure cycles, these are optional).
+
+```wavejson
+{
+  signal: [
+    {name: 'App state',  wave: '222..2.2.2.2', data: ["Idle","AppCfg","ErrorAwaitMsg","ErrorNotify","ErrorAwaitTermination","ErrorFinish","Idle"]},
+    {},
+    ['Request',
+    {name: 'req_valid',  wave: '1....0..10..'},
+    {name: 'data_s0',    wave: '2..22x......'},
+    {name: 'data_s1',    wave: '2..22x......'},
+    {name: 'strb',       wave: '2...2x......', data: ["0xFF","0x03"]},
+    {name: 'req_last',   wave: '0...1x..1x..'},
+    {name: 'req_ready',  wave: '0.1..0.1.0..'},
+    ],
+    {},
+    ['Response',
+    {name: 'rsp_valid',  wave: '0....1.0.1.0'},
+    {name: 'digest_s0',  wave: 'x....2.x....'},
+    {name: 'digest_s1',  wave: 'x....2.x....'},
+    {name: 'error',      wave: 'x1.....x.0.x'},
+    {name: 'rsp_finish', wave: 'x......x.1.0'},
+    {name: 'rsp_ready',  wave: '0.....10..10'},
+    ],
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:2},
+}
+```
+
+#### Key invalid error
+This error occurs if the sideloaded key is used but the key is invalid.
+The sideloaded key is considered as used when either SW has full control over the KMAC or for an app session from the start of the message absorption phase (`StAppMsg`) until the digest is valid (the processing has finished, `StAppPushDigest`).
+
+There are three cases to consider:
+- The key is already invalid when starting the operation because SW didn't configure the KeyMgr correctly.
+- The key gets invalidated before the interface sent the PROCESS command.
+- The key gets invalidated after the interface sent the PROCESS command.
+
+In case 1 & 2 the interface transitions into the `StErrorAwaitMsg` state as soon as the key is detected as invalid (when entering the message phase).
+The app interface then no longer forwards message requests to the hashing engine.
+Similar to the service rejected error, the interface still accepts all the message requests but discards the data.
+Once the last message has arrived, a static app interface sends an error response (garbage digest with the `error` signal set).
+A dynamic interface also sends an immediate error response but then waits until a termination request arrives.
+The termination request is then answered with a finish response which has the error flag set (= 1).
+Both interface types then wait for SW to acknowledge the error by writing to the `error_processed` bit.
+Once SW has cleared the error, the interface then triggers a PROCESS command to bring the hashing engine back into the idle state.
+
+Case 3: If the key gets invalidated after the interface has sent the PROCESS command (i.e., if in `StAppProcess` or `StAppWait`) the message is already complete and the PROCESS command may not be issued again.
+The app interface still sends the error response and a dynamic interface waits for the termination request which it responds to with a finish response which has the error flag set (= 1).
+Finally, both types of interfaces wait for the SW acknowledgement.
+Once acknowledged, the interface waits until the already issued PROCESS command has finished and finally returns to Idle.
+
+Note, the acknowledge of the software can also happen before the app accepted the response.
+In case the KMAC is controlled by SW, the app related states are skipped.
+
+The following wave shows an example (case 2) where the key invalid error occurs in cycle 4.
+
+```wavejson
+{
+  signal: [
+    {name: 'App state',  wave: '2222.22.22.2.2', data: ["Idle","AppCfg","AppMsg","ErrorAwaitMsg","ErrorNotify","ErrorAwaitTermination","ErrorFinish","ErrorAwaitSw","ErrorWaitAbsorbed","Idle"]},
+    {},
+    ['Request',
+    {name: 'req_valid',  wave: '1....0.10.....'},
+    {name: 'data_s0',    wave: '2..22x........'},
+    {name: 'data_s1',    wave: '2..22x........'},
+    {name: 'strb',       wave: '2...2x........', data: ["0xFF","0x03"]},
+    {name: 'req_last',   wave: '0...1x.10.....'},
+    {name: 'req_ready',  wave: '0.1..01.0.....'},
+    ],
+    {},
+    ['Response',
+    {name: 'rsp_valid',  wave: '0....10.10....'},
+    {name: 'digest_s0',  wave: 'x....2x.......'},
+    {name: 'digest_s1',  wave: 'x....2x.......'},
+    {name: 'error',      wave: 'x..1..x.1x....'},
+    {name: 'rsp_finish', wave: 'x....0x.10....'},
+    {name: 'rsp_ready',  wave: '0....10.10....'},
+    ],
+    {},
+    {name: 'error_processed_i', wave: '0.........10..'}
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:2},
+}
+```
+
+#### SHA3 engine internal error
+This error arises if an invalid command sequence is sent to the hashing engine or one of these control signals is manipulated.
+Usually this error cannot occur during an app session.
+However, if the control signals are faulted, this error occurs and any digest value should be considered as invalid.
+
+This error must be handled in two cases, namely:
+- The error occurs in the message phase.
+- The error occurs after the complete message is received.
+
+The first case is simple and is handled the same way as a key invalid error.
+Once the error occurs, the message data is voided.
+As soon as the complete message is received the hashing engine is brought back to idle by issuing a process and done command.
+There is only one error response sent and a dynamic interface waits for the termination request.
+It then waits for SW to acknowledge the error.
+
+If the error occurs after the complete message is received, the behavior depends on the interface type.
+A static interface continues to process the message and simply sets the error flag for the digest response.
+Once the digest response is sent it then waits for SW to acknowledge the error.
+
+A dynamic interface begins to continuously send error responses once the message is processed.
+It continues to send error responses until a termination request arrives.
+The interface then sends a finish response with the error flag set (= 1) and returns back to idle without waiting for SW to process the error.
+The finish response must have set the error flag so that errors occurred during the last digest handshake are still propagated.
+
+The following wave shows an example for a dynamic interface where the error occurs in cycle 4 / after the complete message is received.
+```wavejson
+{
+  signal: [
+    {name: 'App state',  wave: '2222.2..22', data: ["AppMsg","AppProcess","AppWait","AppPushDigest","ErrorPush","AppFinish","Idle"]},
+    {},
+    ['Request',
+    {name: 'req_valid',  wave: '10.....10.'},
+    {name: 'data_s0',    wave: '2x........', data: [""]},
+    {name: 'data_s1',    wave: '2x........'},
+    {name: 'strb',       wave: '2x........', data: ["0x03"]},
+    {name: 'req_last',   wave: '1x.....1x.'},
+    {name: 'req_ready',  wave: '10.....10.'},
+    ],
+    {},
+    ['Response',
+    {name: 'rsp_valid',  wave: '0..1.....0'},
+    {name: 'digest_s0',  wave: 'x..22x..2x'},
+    {name: 'digest_s1',  wave: 'x..22x..2x'},
+    {name: 'error',      wave: 'x..0.1...x'},
+    {name: 'rsp_finish', wave: 'x..0....1x'},
+    {name: 'rsp_ready',  wave: '1.........'},
+    ],
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:2},
+}
+```
 
 ### Entropy Generator
 
