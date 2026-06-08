@@ -585,13 +585,12 @@ genrule(
     """,
 )
 
-opentitan_test(
-    name = "stack_utilization_test",
-    cw310 = fpga_params(
+STACK_UTILIZATION_FPGA_PARAMS = {
+    fpga: fpga_params(
         binaries = {
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_a",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0_fpga_cw310_rom_with_fake_keys_signed_bin": "good_b",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin": "bad_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0": "good_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0": "good_b",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_{}_rom_with_fake_keys_signed_bin".format(fpga): "bad_a",
             ":empty_flash": "empty",
         },
         stack_usage = "STK:[0-9A-Fa-f/]+\r\n",
@@ -646,8 +645,16 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='PASS|FAIL'"
             no-op
         """,
-    ),
+    )
+    for fpga in ("cw310", "cw340")
+}
+
+opentitan_test(
+    name = "stack_utilization_test",
+    cw310 = STACK_UTILIZATION_FPGA_PARAMS["cw310"],
+    cw340 = STACK_UTILIZATION_FPGA_PARAMS["cw340"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "cw310",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "cw340",
     },
 )
