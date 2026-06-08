@@ -70,7 +70,8 @@ package rstmgr_pkg;
   };
 
   // Enumeration for pwrmgr hw reset inputs
-  localparam int ResetWidths = $clog2(rstmgr_reg_pkg::NumTotalResets);
+  import rstmgr_reg_pkg::NumTotalResets;
+  localparam int ResetWidths = $clog2(NumTotalResets);
   typedef enum logic [ResetWidths-1:0] {
     ReqPeriResetIdx[0:${len(peri_reqs)-1}],
     % for req in (int_reqs + debug_reqs):
