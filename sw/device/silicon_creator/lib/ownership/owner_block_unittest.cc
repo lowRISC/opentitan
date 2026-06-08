@@ -49,59 +49,59 @@ class OwnerBlockTest : public rom_test::RomTest {
 // Create and "encrypt" the `access` word of a flash region config.
 #define FLASH_ACCESS(index, read, program, erase, pwp, lock) ( \
     ( \
-      bitfield_field32_write(0, FLASH_CONFIG_READ, read ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, FLASH_CONFIG_PROGRAM, program ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, FLASH_CONFIG_ERASE, erase ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, FLASH_CONFIG_PROTECT_WHEN_PRIMARY, pwp ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, FLASH_CONFIG_LOCK, lock ? kMultiBitBool4True : kMultiBitBool4False) \
+      bitfield_field32_write(0, NVM_CONFIG_READ, read ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, NVM_CONFIG_PROGRAM, program ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, NVM_CONFIG_ERASE, erase ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, NVM_CONFIG_PROTECT_WHEN_PRIMARY, pwp ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, NVM_CONFIG_LOCK, lock ? kMultiBitBool4True : kMultiBitBool4False) \
     ) ^ (0x11111111 * index) \
   )
 
 // Create and "encrypt" the `properties` word of a flash region config.
 #define FLASH_PROP(index, scramble, ecc, he) ( \
     ( \
-      bitfield_field32_write(0, FLASH_CONFIG_SCRAMBLE, scramble ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, FLASH_CONFIG_ECC, ecc ? kMultiBitBool4True : kMultiBitBool4False) | \
-      bitfield_field32_write(0, FLASH_CONFIG_HIGH_ENDURANCE, he ? kMultiBitBool4True : kMultiBitBool4False) \
+      bitfield_field32_write(0, NVM_CONFIG_SCRAMBLE, scramble ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, NVM_CONFIG_ECC, ecc ? kMultiBitBool4True : kMultiBitBool4False) | \
+      bitfield_field32_write(0, NVM_CONFIG_HIGH_ENDURANCE, he ? kMultiBitBool4True : kMultiBitBool4False) \
     ) ^ (0x11111111 * index) \
   )
 // clang-format on
 
-struct owner_flash_config_1 {
+struct owner_nvm_config_1 {
   tlv_header_t header;
-  owner_flash_region_t config[1];
+  owner_nvm_region_t config[1];
 };
 
-struct owner_flash_config_2 {
+struct owner_nvm_config_2 {
   tlv_header_t header;
-  owner_flash_region_t config[2];
+  owner_nvm_region_t config[2];
 };
 
-struct owner_flash_config_4 {
+struct owner_nvm_config_4 {
   tlv_header_t header;
-  owner_flash_region_t config[4];
+  owner_nvm_region_t config[4];
 };
 
-struct owner_flash_config_8 {
+struct owner_nvm_config_8 {
   tlv_header_t header;
-  owner_flash_region_t config[8];
+  owner_nvm_region_t config[8];
 };
 
-struct owner_flash_config_9 {
+struct owner_nvm_config_9 {
   tlv_header_t header;
-  owner_flash_region_t config[9];
+  owner_nvm_region_t config[9];
 };
 
-struct owner_flash_info_config_2 {
+struct owner_nvm_info_config_2 {
   tlv_header_t header;
   owner_info_page_t config[2];
 };
 
-const owner_flash_config_4 simple_flash_config_wrapped = {
+const owner_nvm_config_4 simple_flash_config_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_4),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_4),
         },
     .config =
         {
@@ -176,26 +176,26 @@ const owner_flash_config_4 simple_flash_config_wrapped = {
         },
 };
 
-const owner_flash_config_t &simple_flash_config =
-    reinterpret_cast<const owner_flash_config_t &>(simple_flash_config_wrapped);
+const owner_nvm_config_t &simple_flash_config =
+    reinterpret_cast<const owner_nvm_config_t &>(simple_flash_config_wrapped);
 
-const owner_flash_config_9 flash_config_too_many_entries_wrapped = {
+const owner_nvm_config_9 flash_config_too_many_entries_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_9),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_9),
         },
 };
 
-const owner_flash_config_t &flash_config_too_many_entries =
-    reinterpret_cast<const owner_flash_config_t &>(
+const owner_nvm_config_t &flash_config_too_many_entries =
+    reinterpret_cast<const owner_nvm_config_t &>(
         flash_config_too_many_entries_wrapped);
 
-const owner_flash_info_config_2 info_config_wrapped = {
+const owner_nvm_info_config_2 info_config_wrapped = {
     .header =
         {
             .tag = kTlvTagInfoConfig,
-            .length = sizeof(owner_flash_info_config_2),
+            .length = sizeof(owner_nvm_info_config_2),
         },
     .config =
         {
@@ -238,14 +238,14 @@ const owner_flash_info_config_2 info_config_wrapped = {
         },
 };
 
-const owner_flash_info_config_t &info_config =
-    reinterpret_cast<const owner_flash_info_config_t &>(info_config_wrapped);
+const owner_nvm_info_config_t &info_config =
+    reinterpret_cast<const owner_nvm_info_config_t &>(info_config_wrapped);
 
 TEST_F(OwnerBlockTest, FlashConfigTooManyEntries) {
   uint32_t mp_index = 0;
   rom_error_t error =
-      owner_block_flash_apply(&flash_config_too_many_entries, kBootSlotA,
-                              /*owner_lockdown=*/0, &mp_index);
+      owner_block_nvm_apply(&flash_config_too_many_entries, kBootSlotA,
+                            /*owner_lockdown=*/0, &mp_index);
   EXPECT_EQ(error, kErrorOwnershipFlashConfigLength);
 }
 
@@ -271,8 +271,8 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
                         kHardenedBoolFalse));
 
   uint32_t mp_index = 0;
-  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotA,
-                                              /*owner_lockdown=*/0, &mp_index);
+  rom_error_t error = owner_block_nvm_apply(&simple_flash_config, kBootSlotA,
+                                            /*owner_lockdown=*/0, &mp_index);
   EXPECT_EQ(error, kErrorOk);
 }
 
@@ -301,8 +301,8 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA_Active) {
 
   uint32_t mp_index = 0;
   rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotA,
-                              /*owner_lockdown=*/kBootSlotA, &mp_index);
+      owner_block_nvm_apply(&simple_flash_config, kBootSlotA,
+                            /*owner_lockdown=*/kBootSlotA, &mp_index);
   EXPECT_EQ(error, kErrorOk);
 }
 
@@ -331,8 +331,8 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
 
   uint32_t mp_index = 0;
   rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotB,
-                              /*owner_lockdown=*/kBootSlotA, &mp_index);
+      owner_block_nvm_apply(&simple_flash_config, kBootSlotB,
+                            /*owner_lockdown=*/kBootSlotA, &mp_index);
   EXPECT_EQ(error, kErrorOk);
 }
 
@@ -373,7 +373,7 @@ TEST_F(OwnerBlockTest, ParseBlock) {
       block.get(), /*check_only=*/kHardenedBoolFalse, &config, &keyring);
   EXPECT_EQ(error, kErrorOk);
   EXPECT_EQ(config.sram_exec, kOwnerSramExecModeDisabledLocked);
-  EXPECT_EQ(config.flash->header.tag, kTlvTagFlashConfig);
+  EXPECT_EQ(config.nvm->header.tag, kTlvTagNvmConfig);
   EXPECT_EQ(config.info->header.tag, kTlvTagInfoConfig);
   EXPECT_EQ(config.rescue->header.tag, kTlvTagRescueConfig);
   EXPECT_EQ(config.isfb->header.tag, kTlvTagIntegrationSpecificFirmwareBinding);
@@ -459,7 +459,7 @@ TEST_F(OwnerBlockTest, ParseBlockDupFlash) {
       .WillRepeatedly(Return(default_config));
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the RESQ tag as a FLSH tag to test duplicate detection.
-  block.Find(kTlvTagRescueConfig).Write(kTlvTagFlashConfig);
+  block.Find(kTlvTagRescueConfig).Write(kTlvTagNvmConfig);
   owner_config_t config;
   owner_application_keyring_t keyring{};
   rom_error_t error = owner_block_parse(
@@ -483,7 +483,7 @@ TEST_F(OwnerBlockTest, ParseBlockDupInfo) {
 TEST_F(OwnerBlockTest, ParseBlockDupRescue) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the FLSH tag as a RESQ tag to test duplicate detection.
-  block.Find(kTlvTagFlashConfig).Write(kTlvTagRescueConfig);
+  block.Find(kTlvTagNvmConfig).Write(kTlvTagRescueConfig);
   owner_config_t config;
   owner_application_keyring_t keyring{};
   rom_error_t error = owner_block_parse(
@@ -527,7 +527,7 @@ TEST_F(OwnerBlockTest, NonExistInfoConfig) {
   bootdata.ownership_state = kOwnershipStateLockedOwner;
   owner_config_t owner_config = {};
   owner_config.isfb = (const owner_isfb_config_t *)kHardenedBoolTrue;
-  owner_config.info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
+  owner_config.info = (const owner_nvm_info_config_t *)kHardenedBoolFalse;
   EXPECT_EQ(owner_block_info_isfb_erase_enable(&bootdata, &owner_config),
             kErrorOk);
 }
@@ -622,18 +622,18 @@ INSTANTIATE_TEST_SUITE_P(
     AllCases, OwnerBlockPerTagTest,
     testing::Values(TagError{kTlvTagOwner, kErrorOwnershipOWNRVersion},
                     TagError{kTlvTagApplicationKey, kErrorOwnershipAPPKVersion},
-                    TagError{kTlvTagFlashConfig, kErrorOwnershipFLSHVersion},
+                    TagError{kTlvTagNvmConfig, kErrorOwnershipFLSHVersion},
                     TagError{kTlvTagInfoConfig, kErrorOwnershipINFOVersion},
                     TagError{kTlvTagRescueConfig, kErrorOwnershipRESQVersion},
                     TagError{kTlvTagIntegrationSpecificFirmwareBinding,
                              kErrorOwnershipISFBVersion}));
 
 // Flash region is the exact size of the ROM_EXT and has a bad ECC setting.
-const owner_flash_config_1 invalid_flash_0_wrapped = {
+const owner_nvm_config_1 invalid_flash_0_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_1),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_1),
         },
     .config =
         {
@@ -657,15 +657,15 @@ const owner_flash_config_1 invalid_flash_0_wrapped = {
         },
 };
 
-const owner_flash_config_t &invalid_flash_0 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_0_wrapped);
+const owner_nvm_config_t &invalid_flash_0 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_0_wrapped);
 
 // Flash region overlaps ROM_EXT and APP.
-const owner_flash_config_1 invalid_flash_1_wrapped = {
+const owner_nvm_config_1 invalid_flash_1_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_1),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_1),
         },
     .config =
         {
@@ -689,15 +689,15 @@ const owner_flash_config_1 invalid_flash_1_wrapped = {
         },
 };
 
-const owner_flash_config_t &invalid_flash_1 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_1_wrapped);
+const owner_nvm_config_t &invalid_flash_1 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_1_wrapped);
 
 // Flash regions straddle ROM_EXT.
-const owner_flash_config_2 invalid_flash_2_wrapped = {
+const owner_nvm_config_2 invalid_flash_2_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_2),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_2),
         },
     .config =
         {
@@ -738,15 +738,15 @@ const owner_flash_config_2 invalid_flash_2_wrapped = {
         },
 };
 
-const owner_flash_config_t &invalid_flash_2 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_2_wrapped);
+const owner_nvm_config_t &invalid_flash_2 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_2_wrapped);
 
 // Flash region is the exact size of the ROM_EXT.
-const owner_flash_config_2 invalid_flash_3_wrapped = {
+const owner_nvm_config_2 invalid_flash_3_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_2),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_2),
         },
     .config =
         {
@@ -788,27 +788,27 @@ const owner_flash_config_2 invalid_flash_3_wrapped = {
 
 };
 
-const owner_flash_config_t &invalid_flash_3 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_3_wrapped);
+const owner_nvm_config_t &invalid_flash_3 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_3_wrapped);
 
 // Flash configuration has too many entries.
 // We don't have to include the entries because the length is checked first
 // and none of the non-existent entries will be accessed.
-const owner_flash_config_t invalid_flash_4 = {
+const owner_nvm_config_t invalid_flash_4 = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
+            .tag = kTlvTagNvmConfig,
             .length =
-                sizeof(owner_flash_config_t) + 8 * sizeof(owner_flash_region_t),
+                sizeof(owner_nvm_config_t) + 8 * sizeof(owner_nvm_region_t),
         },
 };
 
 // Flash configuration extends beyond end of flash
-const owner_flash_config_1 invalid_flash_5_wrapped = {
+const owner_nvm_config_1 invalid_flash_5_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_1),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_1),
         },
     .config =
         {
@@ -832,15 +832,15 @@ const owner_flash_config_1 invalid_flash_5_wrapped = {
         },
 };
 
-const owner_flash_config_t &invalid_flash_5 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_5_wrapped);
+const owner_nvm_config_t &invalid_flash_5 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_5_wrapped);
 
 // Flash configuration has too many entries for Slot A.
-const owner_flash_config_4 invalid_flash_6_wrapped = {
+const owner_nvm_config_4 invalid_flash_6_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_4),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_4),
         },
     .config = {{
                    // SideA APP
@@ -912,15 +912,15 @@ const owner_flash_config_4 invalid_flash_6_wrapped = {
                }},
 };
 
-const owner_flash_config_t &invalid_flash_6 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_6_wrapped);
+const owner_nvm_config_t &invalid_flash_6 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_6_wrapped);
 
 // Flash configuration has too many entries for Slot B.
-const owner_flash_config_4 invalid_flash_7_wrapped = {
+const owner_nvm_config_4 invalid_flash_7_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_4),
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_4),
         },
     .config = {{
                    // SideB APP
@@ -992,43 +992,43 @@ const owner_flash_config_4 invalid_flash_7_wrapped = {
                }},
 };
 
-const owner_flash_config_t &invalid_flash_7 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_7_wrapped);
+const owner_nvm_config_t &invalid_flash_7 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_7_wrapped);
 
 // Flash configuration has a zero length.
-const owner_flash_config_4 invalid_flash_8_wrapped = {
+const owner_nvm_config_4 invalid_flash_8_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
+            .tag = kTlvTagNvmConfig,
             .length = 0,
         },
 };
 
-const owner_flash_config_t &invalid_flash_8 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_8_wrapped);
+const owner_nvm_config_t &invalid_flash_8 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_8_wrapped);
 
 // Flash configuration has mis-aligned length.
-const owner_flash_config_4 invalid_flash_9_wrapped = {
+const owner_nvm_config_4 invalid_flash_9_wrapped = {
     .header =
         {
-            .tag = kTlvTagFlashConfig,
-            .length = sizeof(owner_flash_config_4) + 1,
+            .tag = kTlvTagNvmConfig,
+            .length = sizeof(owner_nvm_config_4) + 1,
         },
 };
 
-const owner_flash_config_t &invalid_flash_9 =
-    reinterpret_cast<const owner_flash_config_t &>(invalid_flash_9_wrapped);
+const owner_nvm_config_t &invalid_flash_9 =
+    reinterpret_cast<const owner_nvm_config_t &>(invalid_flash_9_wrapped);
 
 class RomExtFlashConfigTest
     : public OwnerBlockTest,
       public testing::WithParamInterface<
-          std::tuple<const owner_flash_config_t *, rom_error_t>> {};
+          std::tuple<const owner_nvm_config_t *, rom_error_t>> {};
 
 // Test bad ROM_EXT region configs with respect to the default config.
 TEST_P(RomExtFlashConfigTest, BadFlashConfig) {
   EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
       .WillRepeatedly(Return(default_config));
-  const owner_flash_config_t *param;
+  const owner_nvm_config_t *param;
   rom_error_t expected;
   std::tie(param, expected) = GetParam();
   rom_error_t error = owner_block_flash_check(param);
@@ -1064,19 +1064,19 @@ extern "C" {
 // These functions aren't defined in owner_block.h because they aren't meant
 // to be public APIs.  They aren't static so we can access the symbols here
 // for testing.
-hardened_bool_t rom_ext_flash_overlap(uint32_t, uint32_t);
-hardened_bool_t rom_ext_flash_exclusive(uint32_t, uint32_t);
+hardened_bool_t rom_ext_nvm_overlap(uint32_t, uint32_t);
+hardened_bool_t rom_ext_nvm_exclusive(uint32_t, uint32_t);
 rom_error_t owner_block_application_key_check(
     const owner_application_key_t *key);
-rom_error_t owner_block_flash_info_check(const owner_flash_info_config_t *info);
+rom_error_t owner_block_nvm_info_check(const owner_nvm_info_config_t *info);
 rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue);
 }
 
 // Test the flash bounds checking functions.
 TEST_P(RomExtFlashBoundsTest, FlashBoundsTest) {
   FlashRegion p = GetParam();
-  hardened_bool_t overlap = rom_ext_flash_overlap(p.start, p.end);
-  hardened_bool_t exclusive = rom_ext_flash_exclusive(p.start, p.end);
+  hardened_bool_t overlap = rom_ext_nvm_overlap(p.start, p.end);
+  hardened_bool_t exclusive = rom_ext_nvm_exclusive(p.start, p.end);
   EXPECT_EQ(overlap, p.overlap ? kHardenedBoolTrue : kHardenedBoolFalse);
   EXPECT_EQ(exclusive, p.exclusive ? kHardenedBoolTrue : kHardenedBoolFalse);
 }
@@ -1134,9 +1134,9 @@ INSTANTIATE_TEST_SUITE_P(AllCases, OwnerBlockConfigCheckTest,
 testing::Values(
     OwnerBlockLengths{kTlvTagApplicationKey, 40, kErrorOwnershipInvalidTagLength},
     OwnerBlockLengths{kTlvTagApplicationKey, 512, kErrorOwnershipInvalidTagLength},
-    OwnerBlockLengths{kTlvTagFlashConfig, 4, kErrorOwnershipInvalidTagLength},
+    OwnerBlockLengths{kTlvTagNvmConfig, 4, kErrorOwnershipInvalidTagLength},
     OwnerBlockLengths{kTlvTagInfoConfig, 4, kErrorOwnershipInvalidTagLength},
-    OwnerBlockLengths{kTlvTagFlashConfig, 12, kErrorOwnershipInvalidTagLength},
+    OwnerBlockLengths{kTlvTagNvmConfig, 12, kErrorOwnershipInvalidTagLength},
     OwnerBlockLengths{kTlvTagInfoConfig, 12, kErrorOwnershipInvalidTagLength},
     OwnerBlockLengths{kTlvTagRescueConfig, 12, kErrorOwnershipInvalidTagLength}
 ));
@@ -1221,14 +1221,13 @@ class FlashInfoCheckTest : public OwnerBlockTest,
                                std::tuple<uint8_t, uint8_t, rom_error_t>> {};
 
 TEST_F(FlashInfoCheckTest, FlashInfoCheckInvalidLength) {
-  const owner_flash_info_config_t info = {
+  const owner_nvm_info_config_t info = {
       .header =
           {
               .length = 0,
           },
   };
-  EXPECT_EQ(owner_block_flash_info_check(&info),
-            kErrorOwnershipInvalidTagLength);
+  EXPECT_EQ(owner_block_nvm_info_check(&info), kErrorOwnershipInvalidTagLength);
 }
 
 TEST_P(FlashInfoCheckTest, ValidPage) {
@@ -1237,14 +1236,13 @@ TEST_P(FlashInfoCheckTest, ValidPage) {
   std::tie(bank, page, expect) = GetParam();
 
   union {
-    owner_flash_info_config_t info;
-    uint8_t
-        memory[sizeof(owner_flash_info_config_t) + sizeof(owner_info_page_t)];
+    owner_nvm_info_config_t info;
+    uint8_t memory[sizeof(owner_nvm_info_config_t) + sizeof(owner_info_page_t)];
   } data = {.info = {
                 .header =
                     {
                         .tag = kTlvTagInfoConfig,
-                        .length = sizeof(owner_flash_info_config_t) +
+                        .length = sizeof(owner_nvm_info_config_t) +
                                   sizeof(owner_info_page_t),
                     },
             }};
@@ -1252,7 +1250,7 @@ TEST_P(FlashInfoCheckTest, ValidPage) {
   data.info.config[0].bank = bank;
   data.info.config[0].page = page;
 
-  rom_error_t error = owner_block_flash_info_check(&data.info);
+  rom_error_t error = owner_block_nvm_info_check(&data.info);
   EXPECT_EQ(error, expect);
 }
 
