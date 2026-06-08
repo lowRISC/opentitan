@@ -84,7 +84,7 @@ rom_error_t dice_chain_attestation_owner(
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_flush_flash(void);
+rom_error_t dice_chain_flush_nvm(void);
 
 /**
  * Checks that the factory-provisioned certificates in flash are valid and

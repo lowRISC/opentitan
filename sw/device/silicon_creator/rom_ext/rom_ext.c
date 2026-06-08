@@ -259,7 +259,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       &sealing_binding, key->key_domain));
 
   // Write the DICE certs to flash if they have been updated.
-  HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
+  HARDENED_RETURN_IF_ERROR(dice_chain_flush_nvm());
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
