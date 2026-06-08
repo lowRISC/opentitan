@@ -10,15 +10,12 @@ class aes_base_vseq extends cip_base_vseq #(
   );
 
   `uvm_object_utils(aes_base_vseq)
-  `uvm_object_new
 
   aes_reg2hw_t       aes_reg;
   aes_seq_item       aes_item;
   aes_seq_item       aes_item_queue[$];
   aes_message_item   aes_message;
   aes_message_item   message_queue[$];
-
-  key_sideload_set_seq req_key_seq;
 
   // various knobs to enable certain routines
   bit                do_aes_init   = 1'b1;
@@ -29,6 +26,20 @@ class aes_base_vseq extends cip_base_vseq #(
   bit                key_used      = 0;
   bit                key_rdy       = 0;
   bit                new_key       = 0;
+
+  // A flag used by start_sideload_seq / stop_sideload_seq to track whether a sideload sequence is
+  // currently running. If true, there is currently a process running the sideload_sequences task.
+  local bit          m_sideload_seq_running;
+
+  // An event to control a sideload_sequences task if one is running. When the event is triggered,
+  // the task will tell the currently running sequence to stop, then will clear
+  // m_sideload_seq_running and exit.
+  local uvm_event    m_stop_sideload_seqs_event;
+
+  function new (string name="");
+    super.new(name);
+    m_stop_sideload_seqs_event = new();
+  endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
@@ -162,6 +173,8 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
       ral.ctrl_shadowed.sideload.set(sideload);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      if (cfg.under_reset) return;
+
       void'(ral.ctrl_shadowed.sideload.predict(sideload));
     end
   endtask
@@ -185,11 +198,23 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask
 
 
+  // Write the supplied key to registers, in two shares
+  //
+  // If do_b2b is true, enqueue the write transactions as quickly as possible, which should mean the
+  // writes are back-to-back.
+  //
+  // Exits early on reset.
   virtual task write_key(bit [7:0][31:0] key [2], bit do_b2b);
     `uvm_info(`gfn, $sformatf("\n\t --- back to back transactions : %b", do_b2b), UVM_MEDIUM)
-    // Share 0/1 (the masked key share = key ^ mask)
-    foreach (key[0][i]) csr_wr(.ptr(ral.key_share0[i]), .value(key[0][i]), .blocking(~do_b2b));
-    foreach (key[1][i]) csr_wr(.ptr(ral.key_share1[i]), .value(key[1][i]), .blocking(~do_b2b));
+
+    foreach (key[0][i]) begin
+      csr_wr(.ptr(ral.key_share0[i]), .value(key[0][i]), .blocking(~do_b2b));
+      if (cfg.under_reset) return;
+    end
+    foreach (key[1][i]) begin
+      csr_wr(.ptr(ral.key_share1[i]), .value(key[1][i]), .blocking(~do_b2b));
+      if (cfg.under_reset) return;
+    end
   endtask // write_key
 
 
@@ -448,8 +473,7 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-
-  virtual task generate_aes_item_queue(aes_message_item msg_item);
+  function void generate_aes_item_queue(aes_message_item msg_item);
     // init aes item
     aes_item_init(msg_item);
     // generate DUT cfg
@@ -464,11 +488,11 @@ class aes_base_vseq extends cip_base_vseq #(
       generate_data_stream(msg_item, 0, 1);
     end
     aes_print_item_queue(aes_item_queue);
-  endtask
+  endfunction
 
   // Generate the data for a single message based
   // on the configuration in the message Item
-  virtual task generate_data_stream(aes_message_item msg_item, bit aad, bit tag);
+  virtual function void generate_data_stream(aes_message_item msg_item, bit aad, bit tag);
     aes_seq_item item_clone;
     bit [3:0][31:0] len_aad_data_conc;
     bit [3:0][31:0] len_aad_data;
@@ -524,7 +548,7 @@ class aes_base_vseq extends cip_base_vseq #(
       `downcast(item_clone, aes_item.clone());
       aes_item_queue.push_front(item_clone);
     end
-  endtask // generate_data_stream
+  endfunction // generate_data_stream
 
 
   virtual task write_data_key_iv(
@@ -641,40 +665,81 @@ class aes_base_vseq extends cip_base_vseq #(
                         txt, data), UVM_MEDIUM)
   endtask // write_data_key_iv
 
-
-  // Repeatedly run a sideload sequences. These generate new keys at random times, presenting them
-  // through the key sideload interface.
+  // Repeatedly run the sideload sequence, which generates new keys at random times.
   //
-  // Return if reset is asserted
+  // This task runs until there is a reset or stop_sideload_seq() is called. The sequences that pass
+  // the new keys are run with priority 100: to pass a different key, send a sequence with a higher
+  // priority.
   task start_sideload_seq();
     typedef key_sideload_set_seq#(keymgr_pkg::hw_key_req_t) sideload_seq_t;
 
-    while (!cfg.under_reset) begin
+    bit end_loop = 0;
+
+    if (m_sideload_seq_running) begin
+      `uvm_fatal(get_name(), "Cannot start multiple sideload sequences.")
+    end
+    m_sideload_seq_running = 1;
+
+    while (!cfg.under_reset && !end_loop) begin
       sideload_seq_t sideload_seq = sideload_seq_t::type_id::create("sideload_seq");
 
       if (!sideload_seq.randomize()) begin
         `uvm_fatal(get_name(), "Failed to randomize sideload_seq.")
       end
 
-      sideload_seq.start(p_sequencer.key_sideload_sequencer_h);
+      fork : isolation_fork begin
+        fork
+          sideload_seq.start(p_sequencer.key_sideload_sequencer_h, this, 100);
+          begin
+            m_stop_sideload_seqs_event.wait_ptrigger();
+            end_loop = 1;
+            sideload_seq.request_stop();
+            wait(0);
+          end
+        join_any
+        disable fork;
+      end join
     end
+
+    m_sideload_seq_running = 0;
   endtask
 
+  // Stop a sideload sequence if there is one running. Returns when the sequence has finished.
+  task stop_sideload_seq();
+    m_stop_sideload_seqs_event.trigger();
+    wait (!m_sideload_seq_running);
+  endtask
+
+  // Repeatedly send a sideload key sequence, setting key_rdy each time, until key_used is set. The
+  // first sequence is randomised. When new_key is set, a later sequence will be randomised before
+  // it is sent, then new_key will be cleared.
+  //
+  // The sequences used send their items with a higher priority than the ones generated by
+  // start_sideload_seq.
+  //
+  // Exit immediately on reset.
   task req_sideload_key();
-    req_key_seq = key_sideload_set_seq#(keymgr_pkg::hw_key_req_t)::type_id::create("req_key_seq");
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(req_key_seq, sideload_key.valid == 1;)
-    req_key_seq.start(p_sequencer.key_sideload_sequencer_h);
-    while (!key_used) begin
-      // if a clear is triggered, Dut will be reprogrammed
-      // but the key agent will not send a new key unless
-      // the key is different than prev.
+    typedef key_sideload_set_seq#(keymgr_pkg::hw_key_req_t) sideload_seq_t;
+
+    sideload_seq_t req_key_seq = sideload_seq_t::type_id::create("req_key_seq");
+
+    if (cfg.under_reset) return;
+
+    new_key = 1;
+    do begin
       if (new_key) begin
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(req_key_seq, sideload_key.valid == 1;)
+        if (!std::randomize(req_key_seq) with { req_key_seq.sideload_key.valid == 1; }) begin
+          `uvm_fatal(get_name(), "Failed to randomize req_key_seq.")
+        end
         new_key = 0;
       end
-      `uvm_send_pri(req_key_seq, 400)
+
+      req_key_seq.start(p_sequencer.key_sideload_sequencer_h, this, 400);
+      if (cfg.under_reset) return;
+
       key_rdy = 1;
-    end
+    end while (!key_used);
+
     key_used = 0;
   endtask // req_sideload_key
 
@@ -1259,22 +1324,27 @@ class aes_base_vseq extends cip_base_vseq #(
 
   endtask // try_recover
 
-
-  virtual task send_msg_queue (
-     bit unbalanced, // uses the probabilities to randomize if we read or write
-     int read_prob,  // chance of reading an available output
-     int write_prob  // chance of writing input data to a ready DUT
-     );
-    // variables
-    aes_message_item my_message;
+  // Send the messages in message_queue, removing them as we go
+  //
+  // The unbalanced, read_prob and write_prob arguments are passed to send_msg, controlling to read
+  // or write each message.
+  //
+  // If reset is asserted, exit immediately.
+  virtual task send_msg_queue (bit unbalanced, int read_prob, int write_prob);
     bit  rst_set = 0;
-    while (message_queue.size() > 0 ) begin
+    bit  enable_sideload = 0;
+
+    while (message_queue.size() > 0 && !cfg.under_reset) begin
+      aes_message_item my_message;
+
       `uvm_info(`gfn, $sformatf("Starting New Message - messages left %d",
                                  message_queue.size() ), UVM_MEDIUM)
-      my_message = new();
       my_message = message_queue.pop_back();
       generate_aes_item_queue(my_message);
+
       fork
+        // This process supplies sideload keys, then setting key_rdy. It will exit when key_used is
+        // set. If sideload_en is false, key_rdy is set immediately.
         begin
           if (my_message.sideload_en) begin
             req_sideload_key();
@@ -1282,42 +1352,46 @@ class aes_base_vseq extends cip_base_vseq #(
             key_rdy = 1;
           end
         end
-        // stay in for until a valid key is ready
-        wait(key_rdy);
-      join_any
-      send_msg(my_message.manual_operation, my_message.sideload_en,
-               unbalanced, read_prob, write_prob, rst_set);
-      if (my_message.sideload_en) begin
-        // release sideload
-        key_used = 1;
-        csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-        clear_regs(2'b11);
-        csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-      end
 
-      // when using sideload we need to wait for sequence to release key
-      // before starting a new message
-      wait(!key_used);
-      key_rdy = 0;
+        begin
+          // Send the message. This will consume the key (waiting for key_rdy)
+          send_msg(my_message.manual_operation, my_message.sideload_en,
+                   unbalanced, read_prob, write_prob, rst_set);
 
+          if (my_message.sideload_en && !cfg.under_reset) begin
+            // If we sent a sideload message, set key_used. This tells req_sideload_key that we are
+            // done, causing that task to clear key_used again and exit.
+            key_used = 1;
 
-      if (rst_set) begin
-        aes_item_queue.delete();
-        message_queue.delete();
-        // send a few msg to make sure
-        // everything still works
-        cfg.num_messages = 2;
-        generate_message_queue();
-        // if process was halted from the outside //
-        if (global_reset) begin
-          global_reset = 0;
-          // wait for resset to get set
-          wait(cfg.under_reset);
-          `uvm_info(`gfn, $sformatf("WAITING FOR RESET RELEASE"), UVM_MEDIUM)
-          wait(cfg.clk_rst_vif.rst_n);
-          #1ps;
-          dut_init("HARD");
+            if (!cfg.under_reset) csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+            if (!cfg.under_reset) clear_regs(2'b11);
+            if (!cfg.under_reset) csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
+          end
         end
+      join
+
+      // Clear key_rdy again for the next loop
+      key_rdy = 0;
+    end
+
+    // If we are in reset (which means that either rst_set or cfg.under_reset will be true) then we
+    // want to clean up the contents of the message queue.
+    if (rst_set || cfg.under_reset) begin
+      aes_item_queue.delete();
+      message_queue.delete();
+      // send a few msg to make sure
+      // everything still works
+      cfg.num_messages = 2;
+      generate_message_queue();
+      // if process was halted from the outside //
+      if (global_reset) begin
+        global_reset = 0;
+        // wait for resset to get set
+        wait(cfg.under_reset);
+        `uvm_info(`gfn, $sformatf("WAITING FOR RESET RELEASE"), UVM_MEDIUM)
+        wait(cfg.clk_rst_vif.rst_n);
+        #1ps;
+        dut_init("HARD");
       end
     end
   endtask // send_msg_queue
