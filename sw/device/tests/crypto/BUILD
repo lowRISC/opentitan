@@ -298,6 +298,10 @@ opentitan_binary_blob(
         "//sw/device/lib/runtime:log",
     ],
     rom_origin = "0x10000",
+    target_compatible_with = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/include:crypto_hdrs",
