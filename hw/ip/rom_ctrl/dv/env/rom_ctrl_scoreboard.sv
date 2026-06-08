@@ -147,7 +147,7 @@ task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
     // it's a DV bug: we should already have failed when the KMAC request was sent a few cycles ago.
     `DV_CHECK_FATAL(!rom_check_complete, "Extra KMAC response seen.")
 
-    kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
+    kmac_digest = kmac_rsp.digest_s0 ^ kmac_rsp.digest_s1;
     expected_digest = get_expected_digest();
     update_ral_digests(kmac_digest, expected_digest);
     digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(

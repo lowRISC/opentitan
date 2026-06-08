@@ -11,25 +11,24 @@ class kmac_app_item extends uvm_sequence_item;
   // also used by the monitor to assemble the full request message
   rand byte byte_data_q[$];
 
-  // response digest/error
-  rand bit [kmac_pkg::AppDigestW-1:0] rsp_digest_share0;
-  rand bit [kmac_pkg::AppDigestW-1:0] rsp_digest_share1;
-  rand bit                            rsp_error;
-
-  rand int unsigned       rsp_delay;
+  // Static mode: single full-width digest.
+  rand bit [kmac_pkg::AppDigestW-1:0] digest_s0;
+  rand bit [kmac_pkg::AppDigestW-1:0] digest_s1;
+  rand bit error;
+  rand int unsigned rsp_delay;
 
   `uvm_object_utils_begin(kmac_app_item)
     `uvm_field_queue_int(byte_data_q, UVM_DEFAULT)
-    `uvm_field_int(rsp_digest_share0, UVM_DEFAULT)
-    `uvm_field_int(rsp_digest_share1, UVM_DEFAULT)
-    `uvm_field_int(rsp_error,         UVM_DEFAULT)
+    `uvm_field_int(digest_s0,         UVM_DEFAULT)
+    `uvm_field_int(digest_s1,         UVM_DEFAULT)
+    `uvm_field_int(error,             UVM_DEFAULT)
     `uvm_field_int(rsp_delay,         UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
 
   virtual function bit get_is_kmac_rsp_data_invalid();
-    return is_constant_share(rsp_digest_share0) || is_constant_share(rsp_digest_share1);
+    return is_constant_share(digest_s0) || is_constant_share(digest_s1);
   endfunction
 
   static function bit is_constant_share(bit [kmac_pkg::AppDigestW-1:0] share);

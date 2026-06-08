@@ -71,16 +71,18 @@ module lc_ctrl_kmac_if
     .dst_ack_i  ( kmac_ack             ),
     // Truncate hash to 128bit and remove masking (not required here).
     .data_i     ( {kmac_data_i.error,
-                   kmac_data_i.digest_share0[LcTokenWidth-1:0] ^
-                   kmac_data_i.digest_share1[LcTokenWidth-1:0]} ),
+                   kmac_data_i.digest_s0[LcTokenWidth-1:0] ^
+                   kmac_data_i.digest_s1[LcTokenWidth-1:0]} ),
     .data_o     ( {token_hash_err_d,
                    hashed_token_d}     )
   );
 
   logic unused_sigs;
   assign unused_sigs = ^{
-    kmac_data_i.digest_share0[LcTokenWidth +: (kmac_pkg::AppDigestW - LcTokenWidth)],
-    kmac_data_i.digest_share1[LcTokenWidth +: (kmac_pkg::AppDigestW - LcTokenWidth)]
+    kmac_data_i.digest_s0[LcTokenWidth +: (kmac_pkg::AppDigestW - LcTokenWidth)],
+    kmac_data_i.digest_s1[LcTokenWidth +: (kmac_pkg::AppDigestW - LcTokenWidth)],
+    // A static interface has no finish response.
+    kmac_data_i.rsp_finish
   };
 
   // Hashed Token Register Running on LC Clock
@@ -157,36 +159,40 @@ module lc_ctrl_kmac_if
   // Serialize the 128bit token into two 64bit beats.
   always_comb begin : p_kmac
     state_d = state_q;
-    kmac_data_o = '0;
     kmac_ack = 1'b0;
     kmac_fsm_err_d = 1'b0;
+
+    // LC ctrl operates on unshared data and accepts digest responses immediately.
+    kmac_data_o           = '0;
+    kmac_data_o.data_s1   = '0;
+    kmac_data_o.rsp_ready = 1'b1;
 
     unique case (state_q)
       // Wait for request and transfer first half of
       // LC token.
       FirstSt: begin
         if (kmac_req) begin
-          kmac_data_o.valid = 1'b1;
-          kmac_data_o.strb  = 8'hFF;
-          kmac_data_o.data  = kmac_transition_token[0 +: 64];
-          if (kmac_data_i.ready) begin
+          kmac_data_o.req_valid = 1'b1;
+          kmac_data_o.strb      = 8'hFF;
+          kmac_data_o.data_s0   = kmac_transition_token[0 +: 64];
+          if (kmac_data_i.req_ready) begin
             state_d = SecondSt;
           end
         end
       end
       // Transfer second half of LC token.
       SecondSt: begin
-        kmac_data_o.valid = 1'b1;
-        kmac_data_o.strb  = 8'hFF;
-        kmac_data_o.last = 1'b1;
-        kmac_data_o.data  = kmac_transition_token[64 +: 64];
-        if (kmac_data_i.ready) begin
+        kmac_data_o.req_valid = 1'b1;
+        kmac_data_o.strb      = 8'hFF;
+        kmac_data_o.req_last  = 1'b1;
+        kmac_data_o.data_s0   = kmac_transition_token[64 +: 64];
+        if (kmac_data_i.req_ready) begin
           state_d = WaitSt;
         end
       end
       // Wait for hashed token response and go to terminal state.
       WaitSt: begin
-        if (kmac_data_i.done) begin
+        if (kmac_data_i.rsp_valid) begin
           kmac_ack = 1'b1;
           state_d = DoneSt;
         end

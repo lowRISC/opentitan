@@ -23,7 +23,7 @@ task rom_ctrl_kmac_err_chk_vseq::body();
     fork
       wait(cfg.under_reset);
       begin
-        wait(cfg.m_kmac_agent_cfg.vif.mon_cb.rsp_done);
+        wait(cfg.m_kmac_agent_cfg.vif.mon_cb.rsp_valid);
         wait_for_fatal_alert(.max_delay(4), .max_wait_cycle(7));
         `DV_CHECK_EQ(cfg.rom_ctrl_vif.pwrmgr_data.done, MuBi4False)
       end

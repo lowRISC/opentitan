@@ -50,10 +50,11 @@ class keymgr_cfg_regwen_vseq extends keymgr_random_vseq;
       // writing during cfg_regwen is timing sensitive
       // 1. make sure no other thread is accessing register
       // 2. use backdoor check op_status again in case it's not OpWip after front-door read
-      // 3. make sure done isn't high, because if done is high, next cycle status won't be WIP
+      // 3. make sure rsp_valid isn't high, because if rsp_valid is high, next cycle status won't
+      //    be WIP
       wait_no_outstanding_access();
       csr_rd(ral.op_status, op_status_val, .backdoor(1));
-      if (op_status_val == keymgr_pkg::OpWip && !cfg.keymgr_vif.kmac_data_rsp.done) begin
+      if (op_status_val == keymgr_pkg::OpWip && !cfg.keymgr_vif.kmac_data_rsp.rsp_valid) begin
         write_and_check_regwen_lockable_reg();
       end
     end

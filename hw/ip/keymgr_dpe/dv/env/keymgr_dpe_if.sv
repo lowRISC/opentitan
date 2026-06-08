@@ -372,9 +372,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       valid_done_window <= 0;
-    end else if (kmac_data_req.last) begin
+    end else if (kmac_data_req.req_last) begin
       valid_done_window <= 1;
-    end else if (kmac_data_rsp.done) begin
+    end else if (kmac_data_rsp.rsp_valid) begin
       valid_done_window <= 0;
     end
   end
@@ -418,7 +418,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         inject_cmd_err(force_cmds);
       end
       FaultKmacDoneError: begin
-        // wait until it's not a valid window to issue done
+        // wait until it's not a valid window to issue rsp_valid
         `DV_SPINWAIT(
           while (1) begin
             @(negedge clk);
@@ -427,8 +427,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
           msg_id
         )
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
-        // set `done` to 1, force the other fields to a random value to avoid X propagation
-        invalid_kmac_rsp.done = 1;
+        // set `rsp_valid` to 1, force the other fields to a random value to avoid X propagation
+        invalid_kmac_rsp.rsp_valid = 1;
         force tb.keymgr_dpe_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
         @(negedge clk);
         release tb.keymgr_dpe_kmac_intf.kmac_data_rsp;
@@ -442,7 +442,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         force tb.dut.u_sideload_ctrl.valids = force_sideload_valids;
         @(posedge clk);
 
-        `DV_WAIT(kmac_data_rsp.done, , 500_000, // TIMEOUT_NS_
+        `DV_WAIT(kmac_data_rsp.rsp_valid, , 500_000, // TIMEOUT_NS_
                   msg_id)
         @(posedge clk);
         release tb.dut.u_sideload_ctrl.valids;
@@ -486,8 +486,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
       string path = "tb.dut.kmac_data_i";
       `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
       // don't change these control signals, otherwise, handshaking may get stuck
-      invalid_kmac_rsp.ready = kmac_data_rsp.ready;
-      invalid_kmac_rsp.done = kmac_data_rsp.done;
+      invalid_kmac_rsp.req_ready = kmac_data_rsp.req_ready;
+      invalid_kmac_rsp.rsp_valid = kmac_data_rsp.rsp_valid;
       // use deposit rather than force, so that the valid can be preserved until next update
       `DV_CHECK_FATAL(uvm_hdl_deposit(path, invalid_kmac_rsp), , msg_id)
     end
@@ -524,7 +524,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
       force tb.dut.u_ctrl.u_data_en.data_sw_en_o = 1;
     end
     // force until the transaction is done.
-    @(negedge kmac_data_rsp.done);
+    @(negedge kmac_data_rsp.rsp_valid);
     if (force_hw_key_sel_or_data_en) begin
       trigger_force_hw_key_sel = 0;
     end else begin
@@ -555,11 +555,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
   end
 
   // if kmac sideload key is available, switch to it after an operation is completed
-  // if not available, de-assert valid after done is asserted
+  // if not available, de-assert valid after rsp_valid is asserted
   initial begin
     forever begin
       @(posedge clk);
-      if (kmac_data_rsp.done) begin
+      if (kmac_data_rsp.rsp_valid) begin
         if (kmac_sideload_status == SideLoadAvail) begin
           kmac_key_exp <= '{1'b1, kmac_sideload_key_shares};
           is_kmac_key_good <= 1;
@@ -567,7 +567,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
           kmac_key_exp.valid <= 0;
           is_kmac_key_good   <= 0;
         end
-      end // kmac_data_rsp.done
+      end // kmac_data_rsp.rsp_valid
     end // forever
   end
 
