@@ -147,13 +147,12 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top/dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )
