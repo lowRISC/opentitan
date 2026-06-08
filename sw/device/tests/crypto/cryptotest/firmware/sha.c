@@ -12,6 +12,8 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/sha_commands.h"
 
+#define MODULE_ID MAKE_MODULE_ID('s', 't', 't')
+
 status_t handle_sha(ujson_t *uj) {
   cryptotest_sha_mode_t uj_mode;
   cryptotest_sha_input_t uj_input;
