@@ -36,7 +36,7 @@ CONNECTION, LC_HW_DEBUG_EN_RV_DM,          top_earlgrey.u_lc_ctrl, lc_hw_debug_e
 CONNECTION, LC_HW_DEBUG_EN_CSRNG,          top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_csrng,             lc_hw_debug_en_i
 
 # Verify that lc_ctrl's lc_dft_en_o signal is correctly connected to IPs.
-CONNECTION, LC_DFT_EN_OTP,    top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_otp_ctrl,   lc_dft_en_i
+CONNECTION, LC_DFT_EN_OTP,    top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_otp_macro,  lc_dft_en_i
 CONNECTION, LC_DFT_EN_PWRMGR, top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_pwrmgr_aon, lc_dft_en_i
 CONNECTION, LC_DFT_EN_PINMUX, top_earlgrey.u_lc_ctrl, lc_dft_en_o, top_earlgrey.u_pinmux_aon, lc_dft_en_i
 CONNECTION, LC_DFT_EN_AST,    top_earlgrey.u_lc_ctrl, lc_dft_en_o, u_ast,                     lc_dft_en_i

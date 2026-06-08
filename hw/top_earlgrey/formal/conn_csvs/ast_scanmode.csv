@@ -12,7 +12,7 @@ CONNECTION, AST_SCANMODE_PADRING,      u_ast, dft_scan_md_o, u_padring,         
 CONNECTION, AST_SCANMODE_CLKMGR,       u_ast, dft_scan_md_o, top_earlgrey.u_clkmgr_aon,   scanmode_i
 CONNECTION, AST_SCANMODE_FLASH_CTRL,   u_ast, dft_scan_md_o, top_earlgrey.u_flash_ctrl,   scanmode_i
 CONNECTION, AST_SCANMODE_LC_CTRL,      u_ast, dft_scan_md_o, top_earlgrey.u_lc_ctrl,      scanmode_i
-CONNECTION, AST_SCANMODE_OTP_CTRL,     u_ast, dft_scan_md_o, top_earlgrey.u_otp_ctrl,     scanmode_i
+CONNECTION, AST_SCANMODE_OTP_CTRL,     u_ast, dft_scan_md_o, top_earlgrey.u_otp_macro,    scanmode_i
 CONNECTION, AST_SCANMODE_PINMUX,       u_ast, dft_scan_md_o, top_earlgrey.u_pinmux_aon,   scanmode_i
 CONNECTION, AST_SCANMODE_RSTMGR,       u_ast, dft_scan_md_o, top_earlgrey.u_rstmgr_aon,   scanmode_i
 CONNECTION, AST_SCANMODE_RV_CORE_IBEX, u_ast, dft_scan_md_o, top_earlgrey.u_rv_core_ibex, scanmode_i
