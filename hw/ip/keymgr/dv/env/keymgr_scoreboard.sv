@@ -192,7 +192,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     bit process_update;
 
     // fault error is preserved until reset
-    if (!is_kmac_rsp_err) is_kmac_rsp_err = item.rsp_error;
+    if (!is_kmac_rsp_err) is_kmac_rsp_err = item.error;
     if (!is_kmac_invalid_data) is_kmac_invalid_data = item.get_is_kmac_rsp_data_invalid();
 
     update_result = process_update_after_op_done();
@@ -200,8 +200,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     case (update_result)
       UpdateInternalKey: begin
         // digest is 384 bits wide while internal key is only 256, need to truncate it
-        current_internal_key[current_cdi] = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                                             item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
+        current_internal_key[current_cdi] = {item.digest_s1[keymgr_pkg::KeyWidth-1:0],
+                                             item.digest_s0[keymgr_pkg::KeyWidth-1:0]};
         cfg.keymgr_vif.store_internal_key(current_internal_key[current_cdi], current_state,
                                           current_cdi);
 
@@ -212,8 +212,8 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         if (!get_fault_err) begin
           bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
           // digest is 384 bits wide while SW output is only 256, need to truncate it
-          sw_share_output = {item.rsp_digest_share1[keymgr_pkg::KeyWidth-1:0],
-                             item.rsp_digest_share0[keymgr_pkg::KeyWidth-1:0]};
+          sw_share_output = {item.digest_s1[keymgr_pkg::KeyWidth-1:0],
+                             item.digest_s0[keymgr_pkg::KeyWidth-1:0]};
           foreach (sw_share_output[i, j]) begin
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);
@@ -226,7 +226,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       UpdateHwOut: begin
-        kmac_digests_t key_shares = {item.rsp_digest_share1, item.rsp_digest_share0};
+        kmac_digests_t key_shares = {item.digest_s1, item.digest_s0};
         keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
             `gmv(ral.control_shadowed.dest_sel));
 

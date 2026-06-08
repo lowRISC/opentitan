@@ -72,9 +72,10 @@ package kmac_env_pkg;
   parameter uint NUM_EDN = 1;
 
   // Earlgrey has 3 application interfaces
-  parameter uint NUM_APP_INTF = 3;
+  parameter uint NUM_APP_INTF = 4;
   parameter app_config_t APP_CFG[NUM_APP_INTF] =
-    '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl};
+    '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl,
+      kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOtbn};
 
   /////////////////////////////
   // Timing Model Parameters //
@@ -145,7 +146,8 @@ package kmac_env_pkg;
   typedef enum int {
     AppKeymgr,
     AppLc,
-    AppRom
+    AppRom,
+    AppOtbn
   } kmac_app_e;
 
   // state values of the App FSM
@@ -156,8 +158,10 @@ package kmac_env_pkg;
     StAppOutLen             = 10'b1011001111,
     StAppProcess            = 10'b1000100110,
     StAppWait               = 10'b0010010110,
+    StAppPushDigest         = 10'b0000000001,
+    StAppFinish             = 10'b0000000010,
     StSw                    = 10'b0111111111,
-    StKeyMgrErrKeyNotValid  = 10'b1001110100,
+    StErrorKeyNotValid      = 10'b1001110100,
     StError                 = 10'b1101011101
   } kmac_app_st_e;
 

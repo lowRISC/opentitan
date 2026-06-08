@@ -38,12 +38,12 @@ class kmac_app_device_seq extends kmac_app_base_seq;
         rsp_delay inside {[cfg.rsp_delay_min : cfg.rsp_delay_max]};
       }
       if (set_share) {
-        rsp_digest_share0 == rsp_digest_h.digest_share0;
-        rsp_digest_share1 == rsp_digest_h.digest_share1;
+        digest_s0 == rsp_digest_h.digest_share0;
+        digest_s1 == rsp_digest_h.digest_share1;
       }
-      gen_error == (rsp_error ||
+      gen_error == (error ||
                     (cfg.constant_share_means_error &&
-                     (rsp_digest_share0 inside {'0, '1} || rsp_digest_share1 inside {'0, '1})));
+                     (digest_s0 inside {'0, '1} || digest_s1 inside {'0, '1})));
     )
   endfunction
 

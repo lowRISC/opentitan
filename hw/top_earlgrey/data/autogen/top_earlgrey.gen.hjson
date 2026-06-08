@@ -7227,7 +7227,7 @@
           name: NumAppIntf
           desc: Number of application interfaces
           type: int
-          default: 3
+          default: 4
           local: "false"
           expose: "true"
           name_top: KmacNumAppIntf
@@ -7241,7 +7241,7 @@
             '''
           type: kmac_pkg::app_config_t
           unpacked_dimensions: "[KmacNumAppIntf]"
-          default: "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl}"
+          default: "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOtbn}"
           local: "false"
           expose: "true"
           name_top: KmacAppCfg
@@ -7273,15 +7273,15 @@
             desc: Number of application interfaces
             param_type: int
             unpacked_dimensions: null
-            default: 3
+            default: 4
             local: false
             expose: true
             name_top: KmacNumAppIntf
           }
+          default: kmac_pkg::APP_REQ_DEFAULT
           inst_name: kmac
-          default: ""
-          end_idx: -1
-          top_type: one-to-N
+          end_idx: 3
+          top_type: partial-one-to-N
           top_signame: kmac_app
           index: -1
         }
@@ -23506,15 +23506,15 @@
           desc: Number of application interfaces
           param_type: int
           unpacked_dimensions: null
-          default: 3
+          default: 4
           local: false
           expose: true
           name_top: KmacNumAppIntf
         }
+        default: kmac_pkg::APP_REQ_DEFAULT
         inst_name: kmac
-        default: ""
-        end_idx: -1
-        top_type: one-to-N
+        end_idx: 3
+        top_type: partial-one-to-N
         top_signame: kmac_app
         index: -1
       }
@@ -27330,16 +27330,16 @@
           desc: Number of application interfaces
           param_type: int
           unpacked_dimensions: null
-          default: 3
+          default: 4
           local: false
           expose: true
           name_top: KmacNumAppIntf
         }
         type: req_rsp
-        end_idx: -1
+        end_idx: 3
         act: rsp
         suffix: req
-        default: "'{kmac_pkg::APP_REQ_DEFAULT}"
+        default: kmac_pkg::APP_REQ_DEFAULT
       }
       {
         package: kmac_pkg
@@ -27351,13 +27351,13 @@
           desc: Number of application interfaces
           param_type: int
           unpacked_dimensions: null
-          default: 3
+          default: 4
           local: false
           expose: true
           name_top: KmacNumAppIntf
         }
         type: req_rsp
-        end_idx: -1
+        end_idx: 3
         act: rsp
         suffix: rsp
         default: ""

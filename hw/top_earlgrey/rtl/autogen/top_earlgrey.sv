@@ -87,9 +87,9 @@ module top_earlgrey #(
   parameter bit KmacSwKeyMasked = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
-  parameter int KmacNumAppIntf = 3,
+  parameter int KmacNumAppIntf = 4,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
-      '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl},
+      '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOtbn},
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
@@ -819,10 +819,13 @@ module top_earlgrey #(
 
   // Define partial inter-module tie-off
   otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
+  kmac_pkg::app_rsp_t unused_kmac_app_rsp3;
 
   // Assign partial inter-module tie-off
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
+  assign unused_kmac_app_rsp3 = kmac_app_rsp[3];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
+  assign kmac_app_req[3] = kmac_pkg::APP_REQ_DEFAULT;
 
   // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to

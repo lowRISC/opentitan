@@ -36,12 +36,12 @@ interface rom_ctrl_if ();
     release dut.u_mux.sel_bus_qq;
   endtask
 
-  // Override the kmac_data_i.done signal to be true for a cycle, returning on the next negedge.
-  // (This will be one cycle if we start before the posedge)
+  // Override the kmac_data_i.rsp_valid signal to be true for a cycle, returning on the next
+  // negedge. This will be one cycle if we start before the posedge.
   task static force_kmac_data_done();
-    force dut.kmac_data_i.done = 1;
+    force dut.kmac_data_i.rsp_valid = 1;
     @(negedge dut.clk_i);
-    release dut.kmac_data_i.done;
+    release dut.kmac_data_i.rsp_valid;
   endtask
 
 endinterface

@@ -11,10 +11,11 @@ class kmac_app_device_driver extends kmac_app_driver;
   endtask
 
   virtual function void invalidate_signals();
-    cfg.vif.device_cb.rsp_done          <= 0;
+    cfg.vif.device_cb.rsp_valid         <= 0;
     cfg.vif.device_cb.rsp_digest_share0 <= 'x;
     cfg.vif.device_cb.rsp_digest_share1 <= 'x;
     cfg.vif.device_cb.rsp_error         <= 'x;
+    cfg.vif.device_cb.rsp_finish        <= 'x;
   endfunction
 
   // drive trans received from sequencer
@@ -28,10 +29,11 @@ class kmac_app_device_driver extends kmac_app_driver;
       `DV_SPINWAIT_EXIT(repeat (rsp.rsp_delay) @(cfg.vif.device_cb);,
                         wait(!cfg.vif.rst_n))
 
-      cfg.vif.device_cb.rsp_done          <= 1;
-      cfg.vif.device_cb.rsp_digest_share0 <= rsp.rsp_digest_share0;
-      cfg.vif.device_cb.rsp_digest_share1 <= rsp.rsp_digest_share1;
-      cfg.vif.device_cb.rsp_error         <= rsp.rsp_error;
+      cfg.vif.device_cb.rsp_valid         <= 1;
+      cfg.vif.device_cb.rsp_digest_share0 <= rsp.digest_s0;
+      cfg.vif.device_cb.rsp_digest_share1 <= rsp.digest_s1;
+      cfg.vif.device_cb.rsp_error         <= rsp.error;
+      cfg.vif.device_cb.rsp_finish        <= 0;
 
       `DV_SPINWAIT_EXIT(@(cfg.vif.device_cb);,
                         wait(!cfg.vif.rst_n))
