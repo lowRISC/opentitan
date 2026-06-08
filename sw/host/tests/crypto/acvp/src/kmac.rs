@@ -94,7 +94,7 @@ fn run_kmac_case(
     let msg = Vec::<u8>::from_hex(tc.msg.as_bytes())?;
     let cust_str = tc.customization.as_bytes().to_vec();
 
-    let mac_bytes = (tc.mac_len + 7) / 8;
+    let mac_bytes = tc.mac_len.div_ceil(8);
     // Firmware divides required_tag_length by sizeof(uint32_t) to size the tag
     // buffer, so it must be word-aligned.
     let mac_bytes_aligned = (mac_bytes + 3) & !3;
