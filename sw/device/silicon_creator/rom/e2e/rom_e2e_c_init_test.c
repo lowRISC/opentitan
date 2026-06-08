@@ -78,10 +78,11 @@ static void fault(void) {
  * write-any-read-legal behavior.
  */
 static uint32_t pad_attr_mask_get(void) {
-  CHECK_EQ(kDeviceType, kDeviceFpgaCw310,
-           "This test is only supported for CW310");
+  if (kDeviceType != kDeviceFpgaCw310 && kDeviceType != kDeviceFpgaCw340) {
+    LOG_ERROR("This test is only supported for CW310 and CW340");
+  }
 
-  // The only legal attributes on CW310 are `invert`, `virtual_od_en`, and
+  // The only legal attributes on the FPGA are `invert`, `virtual_od_en`, and
   // `input_disable`.
   uint32_t mask = 0;
   mask = bitfield_bit32_write(mask, PINMUX_MIO_PAD_ATTR_0_INVERT_0_BIT, true);

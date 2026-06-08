@@ -372,6 +372,7 @@ opentitan_test(
     srcs = ["rom_e2e_c_init_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
