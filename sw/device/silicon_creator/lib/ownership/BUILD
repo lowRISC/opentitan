@@ -39,9 +39,10 @@ cc_library(
         ":owner_block",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
     ],
 )
 
@@ -143,9 +144,10 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:rnd",

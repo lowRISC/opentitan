@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -384,6 +385,24 @@ void nvm_ctrl_cert_info_page_creator_cfg(nvm_info_page_t page);
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioCertInfoPageOwnerRestrict)`.
  */
 void nvm_ctrl_cert_info_page_owner_restrict(nvm_info_page_t page);
+
+// clang-format off
+/**
+ * Bitfields for the `access` word of owner NVM region configs.
+ */
+#define NVM_CONFIG_READ                 ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
+#define NVM_CONFIG_PROGRAM              ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
+#define NVM_CONFIG_ERASE                ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
+#define NVM_CONFIG_PROTECT_WHEN_PRIMARY ((bitfield_field32_t) { .mask = 0xF, .index = 24 })
+#define NVM_CONFIG_LOCK                 ((bitfield_field32_t) { .mask = 0xF, .index = 28 })
+
+/**
+ * Bitfields for the `properties` word of owner NVM region configs.
+ */
+#define NVM_CONFIG_SCRAMBLE             ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
+#define NVM_CONFIG_ECC                  ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
+#define NVM_CONFIG_HIGH_ENDURANCE       ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
+// clang-format on
 
 #ifdef __cplusplus
 }

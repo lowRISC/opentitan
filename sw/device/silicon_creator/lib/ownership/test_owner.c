@@ -296,10 +296,10 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   end = (uintptr_t)rescue + rescue->header.length;
 #endif
 #ifdef WITH_ISFB
-  owner_flash_info_config_t *info = (owner_flash_info_config_t *)end;
+  owner_nvm_info_config_t *info = (owner_nvm_info_config_t *)end;
   info->header = (tlv_header_t){
       .tag = kTlvTagInfoConfig,
-      .length = sizeof(owner_flash_info_config_t) + sizeof(owner_info_page_t),
+      .length = sizeof(owner_nvm_info_config_t) + sizeof(owner_info_page_t),
   };
   info->config[0] = (owner_info_page_t){
       .bank = 0,
