@@ -525,6 +525,22 @@ cc_library(
 )
 
 cc_library(
+    name = "nvm_ctrl",
+    srcs = ["nvm_ctrl.c"],
+    hdrs = ["nvm_ctrl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":error",
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
     name = "otbn_boot_services",
     srcs = ["otbn_boot_services.c"],
     hdrs = ["otbn_boot_services.h"],
