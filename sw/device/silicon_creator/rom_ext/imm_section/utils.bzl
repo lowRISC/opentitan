@@ -12,9 +12,9 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "@rules_cc//cc:action_names.bzl",
     "CPP_LINK_STATIC_LIBRARY_ACTION_NAME",
-    "OBJ_COPY_ACTION_NAME",
 )
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_blob")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMM_SECTION_VERSION",
@@ -61,55 +61,32 @@ def _cc_import(ctx, cc_toolchain, object):
     return static_library, cc_info
 
 def _choose_one_build(src):
-    # Returns binary_file, [Runfiles]
-
     if type(src) == "File":
-        return src, []
+        return src
 
     # e2e/exec_env tests ensure the immutable rom_ext is the same across all
     # exec env.
-    bin = get_one_binary_file(src, field = "binary", providers = [SiliconBinaryInfo])
-    elf = get_one_binary_file(src, field = "elf", providers = [SiliconBinaryInfo])
-    return bin, [elf]
+    return get_one_binary_file(src, field = "elf", providers = [SiliconBinaryInfo])
 
 def _create_imm_section_targets_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
-    feature_config = cc_common.configure_features(
-        ctx = ctx,
-        cc_toolchain = cc_toolchain,
-        requested_features = ctx.features,
-        unsupported_features = ctx.disabled_features,
-    )
-    objcopy = cc_common.get_tool_for_action(
-        feature_configuration = feature_config,
-        action_name = OBJ_COPY_ACTION_NAME,
+    src_file = _choose_one_build(ctx.attr.src)
+    runfiles = [src_file]
+
+    if not src_file:
+        fail("create_imm_section_targets requires src file")
+
+    # Use the new generic obj_blob helper
+    final_object = obj_blob(
+        ctx,
+        output_section = ".rom_ext_immutable",
+        exports = ctx.attr.exports,
+        abs = True,
+        prefix_exports = ctx.attr.prefix_exports,
+        src = src_file,
     )
 
-    src, runfiles = _choose_one_build(ctx.attr.src)
-
-    object = ctx.actions.declare_file(
-        "{}.{}".format(
-            src.basename.replace("." + src.extension, ""),
-            "o",
-        ),
-    )
-    ctx.actions.run(
-        outputs = [object],
-        inputs = [src] + cc_toolchain.all_files.to_list(),
-        arguments = [
-            "-I",
-            "binary",
-            "-O",
-            "elf32-littleriscv",
-            "--rename-section",
-            ".data=.rom_ext_immutable,alloc,load,readonly,data,contents",
-            src.path,
-            object.path,
-        ],
-        executable = objcopy,
-    )
-
-    lib, cc_info = _cc_import(ctx, cc_toolchain, object)
+    lib, cc_info = _cc_import(ctx, cc_toolchain, final_object)
 
     return [
         DefaultInfo(
@@ -122,7 +99,28 @@ def _create_imm_section_targets_impl(ctx):
 create_imm_section_targets = rv_rule(
     implementation = _create_imm_section_targets_impl,
     attrs = {
-        "src": attr.label(allow_files = True),
+        "src": attr.label(
+            allow_files = True,
+            doc = "The source test binary (typically an ELF or a SiliconBinaryInfo target) from which to extract the immutable section.",
+        ),
+        "exports": attr.string_list(
+            default = [],
+            doc = "The list of exact symbol names to export from the binary blob. These symbols will be made public in the generated object file.",
+        ),
+        "prefix_exports": attr.string(
+            default = "imm_shared_",
+            doc = "A prefix to prepend to each exported symbol name to avoid naming collisions.",
+        ),
+        "_add_shared_symbols_tool": attr.label(
+            default = "//util:add_shared_symbols",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_check_initial_coverage": attr.label(
+            default = "//util/coverage:check_initial_coverage",
+            executable = True,
+            cfg = "exec",
+        ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     fragments = ["cpp"],
