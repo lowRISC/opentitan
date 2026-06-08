@@ -271,11 +271,20 @@ static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
 }
 
 rom_error_t dice_chain_attestation_silicon(void) {
-  // Initialize the entropy complex and KMAC for key manager operations.
-  // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
-  // assertion here since its definition is not an integer constant expression.
+  // Depending on whether the device is in production, the entropy_src is given
+  // the restrictive health test thresholds or left at dummy values.
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  hardened_bool_t fips_enabled = kHardenedBoolFalse;
+  if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
+    fips_enabled = kHardenedBoolTrue;
+  }
+
+  // Initialize the entropy complex and KMAC for key manager operations and for
+  // the EDN usage in dice signing. Note: `OTCRYPTO_OK.value` is equal to
+  // `kErrorOk` but we cannot add a static assertion here since its definition
+  // is not an integer constant expression.
   HARDENED_RETURN_IF_ERROR(
-      (rom_error_t)entropy_complex_init(kHardenedBoolFalse).value);
+      (rom_error_t)entropy_complex_init(fips_enabled).value);
   HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
   // Set keymgr reseed interval. Start with the maximum value to avoid

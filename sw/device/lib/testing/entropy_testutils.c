@@ -3,12 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/testing/entropy_testutils.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -21,15 +24,32 @@ static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
 }
 
 dif_entropy_src_config_t entropy_testutils_config_default(void) {
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  hardened_bool_t fips_enabled = kHardenedBoolFalse;
+  if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
+    fips_enabled = kHardenedBoolTrue;
+  }
+
+  const entropy_src_config_t *base_config =
+      &kEntropyComplexConfigs[(fips_enabled == kHardenedBoolTrue)
+                                  ? kEntropyComplexConfigIdFipsContinuous
+                                  : kEntropyComplexConfigIdContinuous]
+           .entropy_src;
+
   return (dif_entropy_src_config_t){
-      .fips_enable = true,
-      .fips_flag = true,
-      .rng_fips = true,
-      .route_to_firmware = false,
-      .bypass_conditioner = false,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_window_size = 0x0200,
-      .alert_threshold = 2,
+      .fips_enable = base_config->fips_enable == kMultiBitBool4True,
+      .fips_flag = base_config->fips_flag == kMultiBitBool4True,
+      .rng_fips = base_config->rng_fips == kMultiBitBool4True,
+      .route_to_firmware = base_config->route_to_firmware == kMultiBitBool4True,
+      .bypass_conditioner =
+          base_config->bypass_conditioner == kMultiBitBool4True,
+      // Map multi-bit bool to the specific DIF enum
+      .single_bit_mode = (base_config->single_bit_mode == kMultiBitBool4True)
+                             ? kDifEntropySrcSingleBitMode0
+                             : kDifEntropySrcSingleBitModeDisabled,
+      .health_test_threshold_scope = false,
+      .health_test_window_size = base_config->fips_test_window_size,
+      .alert_threshold = base_config->alert_threshold,
   };
 }
 
