@@ -10,60 +10,217 @@ class aes_reseed_vseq extends aes_base_vseq;
   `uvm_object_new
   aes_message_item my_message;
   bit finished_all_msgs = 0;
-  rand bit [7:0][31:0] init_key[2];
   // Regular wait time - in the order of a block.
   int wait_timeout_cycles = 100;
   // Max wait time to accommodate long entropy delays and DUT stalls.
   int wait_timeout_cycles_max = 100000;
 
-  task check_clearing_prng_reseed();
-    // Wait for entropy_clearing_req to verify the reseeding is triggered.
-    bit request_seen = 0;
-    `uvm_info(`gfn, $sformatf("Checking that entropy_clearing_req goes high, currently %d",
-        cfg.aes_reseed_vif.entropy_clearing_req), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-        wait (cfg.aes_reseed_vif.entropy_clearing_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);,
-        "Timeout waiting for entropy_clearing_req")
-    `DV_CHECK_EQ_FATAL(request_seen, 1'b1)
+  // Wait until the entropy_clearing_req signal goes high, verifying reseeding is triggered. This
+  // runs with a timeout: if the timeout is hit, it will generate an error.
+  //
+  // Exit immediately on reset.
+  local task check_clearing_prng_reseed();
+    `uvm_info(get_full_name(),
+              $sformatf("Waiting for entropy_clearing_req to go high (currently %d)",
+                        cfg.aes_reseed_vif.entropy_clearing_req),
+              UVM_MEDIUM)
+
+    fork : isolation_fork begin
+      fork
+        cfg.aes_reseed_vif.wait_entropy_clearing_req();
+        begin
+          cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);
+          `uvm_error(get_full_name(), "Timeout waiting for entropy_clearing_req")
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
-  task check_masking_prng_reseed();
-    // Wait for entropy_masking_req to go high to verify the reseeding is triggered.
-    bit request_seen = 0;
-    `uvm_info(`gfn, $sformatf("Checking that entropy_masking_req goes high, currently %d",
-        cfg.aes_reseed_vif.entropy_masking_req), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-        wait (cfg.aes_reseed_vif.entropy_masking_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);,
-        "Timeout waiting for entropy_masking_req")
-    `DV_CHECK_EQ_FATAL(request_seen | finished_all_msgs, 1'b1)
-    // Wait for entropy_masking_req to go low again to verify the reseeding finishes.
-    request_seen = 0;
-    `uvm_info(`gfn, $sformatf("Checking that entropy_masking_req goes low, currently %d",
-        cfg.aes_reseed_vif.entropy_masking_req), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-        wait (!cfg.aes_reseed_vif.entropy_masking_req) request_seen = 1;,
-        cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);,
-        "Timeout waiting for entropy_masking_req")
-    `DV_CHECK_EQ_FATAL(request_seen | finished_all_msgs, 1'b1)
+  // Wait for entropy_masking_req to go high and then low again.
+  //
+  // Exit immediately on reset or if finished_all_msgs becomes true.
+  local task check_masking_prng_reseed();
+    `uvm_info(get_full_name(),
+              $sformatf("Waiting for entropy_masking_req to go high (currently %d)",
+                        cfg.aes_reseed_vif.entropy_masking_req),
+              UVM_MEDIUM)
+    fork : isolation_fork_rise begin
+      fork
+        cfg.aes_reseed_vif.wait_entropy_masking_req(1);
+        wait(finished_all_msgs);
+        begin
+          cfg.clk_rst_vif.wait_clks(wait_timeout_cycles);
+          `uvm_error(get_full_name(), "Timeout waiting for entropy_masking_req to go high")
+        end
+      join_any
+      disable fork;
+    end join
+    if (cfg.under_reset || finished_all_msgs) return;
+
+    `uvm_info(get_full_name(), "Waiting for entropy_masking_req to go low again", UVM_MEDIUM)
+    fork : isolation_fork_fall begin
+      fork
+        cfg.aes_reseed_vif.wait_entropy_masking_req(0);
+        wait(finished_all_msgs);
+        begin
+          cfg.clk_rst_vif.wait_clks(wait_timeout_cycles_max);
+          `uvm_error(get_full_name(), "Timeout waiting for entropy_masking_req to go low again")
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
-  task check_prng_reseed();
-    // Check entropy_clearing_req to verify the reseeding is actually triggered.
+  // Wait for the PRNG to reseed (with a reseeding that should have already been requested)
+  local task check_prng_reseed();
     check_clearing_prng_reseed();
+    if (cfg.under_reset) return;
+
     if (`EN_MASKING) begin
       check_masking_prng_reseed();
     end
+    if (cfg.under_reset) return;
+
     // Wait for the DUT to become idle again. This happens once the reseed operation finishes.
     csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
   endtask
 
-  task check_no_prng_reseed();
-    // No reseed operation is supposed to be triggered.
-    cfg.clk_rst_vif.wait_clks(1);
-    `DV_CHECK_EQ_FATAL(cfg.aes_reseed_vif.entropy_clearing_req |
-                       cfg.aes_reseed_vif.entropy_masking_req, 1'b0)
+  // Wait a cycle and check that no reseed operation has been triggered.
+  local task check_no_prng_reseed();
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
+    if (cfg.under_reset) return;
+
+    if (cfg.aes_reseed_vif.entropy_clearing_req)
+      `uvm_error(get_name(), "entropy_clearing_req should not have been set.")
+    if (cfg.aes_reseed_vif.entropy_masking_req)
+      `uvm_error(get_name(), "entropy_masking_req should not have been set.")
+  endtask
+
+  // Trigger reseed by writing a new key to the initial key registers. In case
+  // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered. The
+  // default configuration written after reset is not using the sideload interface for the key.
+  local task write_key_regs();
+    bit [7:0][31:0] init_key[2];
+
+    if (!std::randomize(init_key)) `uvm_fatal(get_name(), "Failed to randomize init_key")
+
+    // Wait for the DUT to be idle before writing the key.
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    if (cfg.under_reset) return;
+
+    if (cfg.do_reseed) begin
+      fork
+        write_key(init_key, 1'b0);
+        check_prng_reseed();
+      join
+    end else begin
+      write_key(init_key, 1'b0);
+      check_no_prng_reseed();
+    end
+  endtask
+
+  // Do a backdoor read to get the value of the keymgr_key_i.valid port, treating 'x and 'z as
+  // invalid.
+  function bit snoop_sideload_valid();
+    string sideload_valid_path = "tb.dut.keymgr_key_i.valid";
+    logic  valid;
+
+    if (!uvm_hdl_check_path(sideload_valid_path)) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
+    end
+
+    if (!uvm_hdl_read(sideload_valid_path, valid)) begin
+      `uvm_fatal(get_name(), {"Failed to backdoor read from ", sideload_valid_path})
+    end
+
+    return valid === 1;
+  endfunction
+
+  // Trigger reseed by loading a new key via sideload interface. In case KEY_TOUCH_FORCES_RESEED is
+  // not set, no reseed operation is supposed to be triggered. Wait for the DUT to be idle before
+  // enabling sideload.
+  task pass_new_sideload_key();
+    bit sideload_setup_done;
+
+    while (!sideload_setup_done) begin
+      bit sideload_valid;
+      bit sideload_enabled;
+
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      if (cfg.under_reset) return;
+
+      // Make sure sideload is disabled.
+      set_sideload(1'b0);
+      if (cfg.under_reset) return;
+
+      // Wait for sideload key to be valid before enabling sideload, timing out after
+      // wait_timeout_cycles.
+      fork : isolation_fork begin
+        fork
+          begin
+            cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles);
+            `uvm_error(get_name(), "Timeout waiting for valid sideload key")
+          end
+          begin
+            while (!sideload_valid && !cfg.under_reset) begin
+              cfg.clk_rst_vif.wait_clks_or_rst(1);
+              sideload_valid = snoop_sideload_valid();
+            end
+          end
+        join_any
+        disable fork;
+      end join
+      if (cfg.under_reset) return;
+
+      // Enable sideload by writing to CTRL_SHADOWED, doing repeated backdoor reads of the sideload
+      // valid flag and clearing sideload_valid if it becomes false.
+      //
+      // If reset is asserted, set_sideload will exit and the first process will set
+      // sideload_enabled, causing the second process to complete.
+      fork
+        // Enable sideload.
+        begin
+          set_sideload(1'b1);
+          sideload_enabled = 1'b1;
+        end
+        // Detect if the sideload valid bit gets de-asserted while trying to enable sideload.
+        begin
+          while (sideload_valid && !sideload_enabled) begin
+            cfg.clk_rst_vif.wait_clks_or_rst(1);
+            sideload_valid = snoop_sideload_valid();
+          end
+        end
+      join
+      if (cfg.under_reset) return;
+
+      // If the sideload valid bit got de-asserted again before fully enabling sideload, the key
+      // did not get loaded and we have to repeat the setup procedure. Otherwise, sideload was
+      // enabled successfully.
+      if (sideload_valid) begin
+        sideload_setup_done = 1;
+      end
+    end
+    if (cfg.under_reset) return;
+
+    // Sideload got enabled with a valid sideload key present. This must trigger a reseed in
+    // case KEY_TOUCH_FORCES_RESEED is set.
+    if (cfg.do_reseed) begin
+      check_prng_reseed();
+    end else begin
+      check_no_prng_reseed();
+    end
+  endtask
+
+  // Wait for a single negedge of the clock, exiting early if reset is asserted
+  local task wait_n_clk_or_rst();
+    fork : isolation_fork begin
+      fork
+        wait(cfg.under_reset);
+        @(cfg.clk_rst_vif.cbn);
+      join_any
+      disable fork;
+    end join
   endtask
 
   task check_reseed_rate();
@@ -80,7 +237,6 @@ class aes_reseed_vseq extends aes_base_vseq;
     string cipher_out_valid_path = $sformatf("%s.cipher_out_valid_i", base_path);
     string cipher_out_ready_path = $sformatf("%s.cipher_out_ready_o", base_path);
     status_t status;
-    bit block_done;
 
     if (`EN_MASKING) begin
       // Check paths to signals we need to probe.
@@ -98,10 +254,11 @@ class aes_reseed_vseq extends aes_base_vseq;
       end
     end
 
-    while (!finished_all_msgs) begin
+    while (!finished_all_msgs && !cfg.under_reset) begin
       // Wait for next negative clock edge.
       #1step;
-      @(cfg.clk_rst_vif.cbn);
+      wait_n_clk_or_rst();
+      if (cfg.under_reset) return;
 
       if (`EN_MASKING) begin
         // Read the block counter.
@@ -110,37 +267,51 @@ class aes_reseed_vseq extends aes_base_vseq;
         // Force a lower value to get more action.
         if (block_ctr == 8188 || // Speed up testing of the PER_8K setting.
             block_ctr == 60) begin // Speed up testing of the PER_64 setting.
-          `uvm_info(`gfn, $sformatf("Lowering block counter from %0d to %0d to speed up testing",
-              block_ctr, block_ctr_set_val), UVM_LOW)
+          `uvm_info(`gfn,
+                    $sformatf("Lowering block counter from %0d to %0d to speed up testing",
+                              block_ctr, block_ctr_set_val),
+                    UVM_LOW)
           `DV_CHECK(uvm_hdl_force(block_ctr_path, block_ctr_set_val));
-          cfg.clk_rst_vif.wait_n_clks(1);
+          wait_n_clk_or_rst();
           `DV_CHECK_FATAL(uvm_hdl_release(block_ctr_path))
-
+          if (cfg.under_reset) return;
         end else if (block_ctr == 0) begin
           // Check whether the DUT is actually busy. Unless it's doing a block operation, no reseed
           // operation is getting triggered.
           csr_rd(.ptr(ral.status), .value(status), .blocking(1), .backdoor(1));
+          if (cfg.under_reset) return;
+
           `DV_CHECK_FATAL(uvm_hdl_read(cipher_crypt_path, cipher_crypt))
           if (!status.idle && cipher_crypt) begin
             // Check entropy_masking_req to verify the reseeding is actually triggered.
             check_masking_prng_reseed();
+            if (cfg.under_reset) return;
 
-            // Wait for the DUT to finish the current block.
-            block_done = 0;
-            `DV_SPINWAIT_EXIT(
-                while (!block_done) begin
-                  `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_valid_path, cipher_out_valid))
-                  `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_ready_path, cipher_out_ready))
-                  if (cipher_out_valid && cipher_out_ready) begin
-                    block_done = 1;
+            // Wait for the DUT to finish the current block, exiting early on reset
+            fork : isolation_fork begin
+              fork
+                wait(cfg.under_reset);
+                begin
+                  cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles_max);
+                  `uvm_error(get_name(), "Timeout waiting for block to finish")
+                end
+                begin
+                  bit block_done;
+                  while (!block_done) begin
+                    `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_valid_path, cipher_out_valid))
+                    `DV_CHECK_FATAL(uvm_hdl_read(cipher_out_ready_path, cipher_out_ready))
+                    if (cipher_out_valid && cipher_out_ready) begin
+                      block_done = 1;
+                    end
+                    cfg.clk_rst_vif.wait_n_clks(1);
                   end
-                  cfg.clk_rst_vif.wait_n_clks(1);
-                end;,
-                cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles_max);,
-                "Timeout waiting for block to finish")
+                end
+              join_any
+              disable fork;
+            end join
+            if (cfg.under_reset) return;
           end
         end
-
       end else begin
         // There is no masking PRNG and hence no block counter. entropy_masking_req must never be
         // asserted.
@@ -149,123 +320,64 @@ class aes_reseed_vseq extends aes_base_vseq;
     end
   endtask
 
+  // The core of the body() task, which is split out from body so that it can return more easily
+  // (even though other processes are in a fork).
+  //
+  // This task is run in an isolation fork.
+  task body_main_thread();
+    // Trigger reseed by manually setting the PRNG_RESEED bit in the TRIGGER register.
+    `uvm_info(`gfn, "Triggering PRNG reseed via trigger register", UVM_LOW)
+    fork
+      prng_reseed();
+      check_prng_reseed();
+    join
+    if (cfg.under_reset) return;
+
+    `uvm_info(get_name(),
+              $sformatf("Writing a new key, which should%0s trigger a PRNG reseed.",
+                        cfg.do_reseed ? "" : " not"),
+              UVM_LOW)
+    write_key_regs();
+    if (cfg.under_reset) return;
+
+    // Trigger reseed by loading a new key via sideload interface. In case
+    // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered.
+    // Wait for the DUT to be idle before enabling sideload.
+    `uvm_info(get_name(),
+              "Potentially triggering PRNG reseed by providing a new sideload key",
+              UVM_LOW)
+    pass_new_sideload_key();
+    if (cfg.under_reset) return;
+
+    // Test that the PRNGs are reseeded at the proper rate during message processing.
+    `uvm_info(`gfn, "Testing automatic / block counter based reseeding of the masking PRNG",
+        UVM_LOW)
+    fork
+      basic: begin
+        // Kick off the message processing.
+        send_msg_queue(cfg.unbalanced, cfg.read_prob, cfg.write_prob);
+        finished_all_msgs = 1;
+        `uvm_info(`gfn, "Done with sending messages", UVM_LOW)
+      end
+
+      // Check that the reseeds happens when the counter expires.
+      check_reseed_rate();
+    join
+  endtask
+
   task body();
-    bit sideload_valid;
-    string sideload_valid_path = "tb.dut.keymgr_key_i.valid";
-    bit sideload_enabled;
-    bit sideload_setup_done;
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
                               cfg.convert2string()), UVM_LOW)
 
-    // Create one thread such that we can kill all its children without unwanted side effects on the
-    // caller.
+    // generate list of messages
+    generate_message_queue();
+
     fork
+      start_sideload_seq();
       begin
-
-        fork
-          // generate list of messages //
-          generate_message_queue();
-          // start sideload (even if not used)
-          start_sideload_seq();
-        join_any
-
-        // Trigger reseed by manually setting the PRNG_RESEED bit in the TRIGGER register.
-        `uvm_info(`gfn, "Triggering PRNG reseed via trigger register", UVM_LOW)
-        fork
-          prng_reseed();
-          check_prng_reseed();
-        join
-
-        // Trigger reseed by writing a new key to the initial key registers. In case
-        // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered. The
-        // default configuration written after reset is not using the sideload interface for the
-        // key.
-        `uvm_info(`gfn, "Potentially triggering PRNG reseed by writing a new key", UVM_LOW)
-        `DV_CHECK_STD_RANDOMIZE_FATAL(init_key)
-        // Wait for the DUT to be idle before writing the key.
-        csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-        if (cfg.do_reseed) begin
-          fork
-            write_key(init_key, 1'b0);
-            check_prng_reseed();
-          join
-        end else begin
-          write_key(init_key, 1'b0);
-          check_no_prng_reseed();
-        end
-
-        // Trigger reseed by loading a new key via sideload interface. In case
-        // KEY_TOUCH_FORCES_RESEED is not set, no reseed operation is supposed to be triggered.
-        // Wait for the DUT to be idle before enabling sideload.
-        `uvm_info(`gfn, "Potentially triggering PRNG reseed by providing a new sideload key",
-            UVM_LOW)
-        if (!uvm_hdl_check_path(sideload_valid_path)) begin
-          `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
-        end
-        sideload_setup_done = 0;
-        while (!sideload_setup_done) begin
-          csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-          // Make sure sideload is disabled.
-          set_sideload(1'b0);
-          sideload_enabled = 1'b0;
-          // Wait for sideload key to be valid before enabling sideload.
-          sideload_valid = 0;
-          `DV_SPINWAIT_EXIT(
-            while (!sideload_valid) begin
-              cfg.clk_rst_vif.wait_n_clks(1);
-              `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
-            end,
-            cfg.clk_rst_vif.wait_n_clks(wait_timeout_cycles);,
-            "Timeout waiting for valid sideload key")
-          fork
-            // Enable sideload.
-            begin
-              set_sideload(1'b1);
-              sideload_enabled = 1'b1;
-            end
-            // Detect if the sideload valid bit gets de-asserted while trying to enable sideload.
-            begin
-              while (sideload_valid && !sideload_enabled) begin
-                cfg.clk_rst_vif.wait_n_clks(1);
-                `DV_CHECK_FATAL(uvm_hdl_read(sideload_valid_path, sideload_valid))
-              end
-            end
-          join
-
-          // If the sideload valid bit got de-asserted again before fully enabling sideload, the key
-          // did not get loaded and we have to repeat the setup procedure. Otherwise, sideload was
-          // enabled successfully.
-          if (sideload_valid) begin
-            sideload_setup_done = 1;
-          end
-        end
-
-        // Sideload got enabled with a valid sideload key present. This must trigger a reseed in
-        // case KEY_TOUCH_FORCES_RESEED is set.
-        if (cfg.do_reseed) begin
-          check_prng_reseed();
-        end else begin
-          check_no_prng_reseed();
-        end
-
-        // Test that the PRNGs are reseeded at the proper rate during message processing.
-        `uvm_info(`gfn, "Testing automatic / block counter based reseeding of the masking PRNG",
-            UVM_LOW)
-        fork
-          basic: begin
-            // Kick off the message processing.
-            send_msg_queue(cfg.unbalanced, cfg.read_prob, cfg.write_prob);
-            finished_all_msgs = 1;
-            `uvm_info(`gfn, "Done with sending messages", UVM_LOW)
-          end
-
-          // Check that the reseeds happens when the counter expires.
-          check_reseed_rate();
-        join_any
-
+        body_main_thread();
+        stop_sideload_seq();
       end
-    // Kill all children.
-    disable fork;
     join
 
   endtask : body

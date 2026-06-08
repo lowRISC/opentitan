@@ -13,6 +13,10 @@ class key_sideload_item #(
   rand bit [KeyWidth-1:0] key1;
   rand int unsigned       rsp_delay = 0;
 
+  // A flag that can be set from outside by calling request_stop(). When this is true, the
+  // wait_stop_requested() task will exit.
+  local bit               m_stop_requested;
+
   constraint rsp_delay_constraint_c {rsp_delay inside {[0:9]};}
 
   `uvm_object_utils_begin(key_sideload_item#(KEY_T))
@@ -22,6 +26,20 @@ class key_sideload_item #(
     `uvm_field_int(rsp_delay,  UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new (string name="");
+    super.new(name);
+  endfunction
+
+  // Set a flag that will cause wait_stop_requested to exit
+  function void request_stop();
+    m_stop_requested = 1;
+  endfunction
+
+  // A task that runs until request_stop is called.
+  //
+  // This task is safe to kill.
+  task wait_stop_requested();
+    wait(m_stop_requested);
+  endtask
 
 endclass
