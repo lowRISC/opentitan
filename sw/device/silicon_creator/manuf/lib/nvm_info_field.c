@@ -17,43 +17,43 @@
  * Partition 0, page 0 fields.
  */
 const nvm_info_field_t kNvmInfoFieldLotName = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldLotNameStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldWaferNumber = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldWaferNumberStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldWaferXCoord = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldWaferXCoordStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldWaferYCoord = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldWaferYCoordStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldProcessData = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldProcessDataStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldAstCalibrationData = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldAstCalibrationDataStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldAstCfgVersion = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldAstCfgVersionStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldCpDeviceId = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldCpDeviceIdStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldAstIndividPatchAddr = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldAstIndividPatchAddrStartOffset};
 
 const nvm_info_field_t kNvmInfoFieldAstIndividPatchVal = {
-    .page = kNvmInfoPageFactory,
+    .page = kNvmInfoPageFactoryId,
     .byte_offset = kNvmInfoFieldAstIndividPatchValStartOffset};
 
 /**
@@ -95,7 +95,7 @@ const nvm_info_field_t kNvmInfoFieldTpmEkAttestationKeySeed = {
 
 const nvm_info_field_t kNvmInfoFieldAttestationKeyGenVersion = {
     .page = kNvmInfoPageAttestationKeySeeds,
-    .byte_offset = NVM_INFO_PAGE_SIZE - 4u};
+    .byte_offset = NVM_BYTES_PER_PAGE - 4u};
 
 status_t manuf_nvm_info_field_read(nvm_info_field_t field, uint32_t *data_out,
                                    size_t num_words) {

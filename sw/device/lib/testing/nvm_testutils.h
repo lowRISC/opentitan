@@ -5,57 +5,18 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_NVM_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_NVM_TESTUTILS_H_
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
-
-/** Size of a logical NVM info page in bytes. */
-#define NVM_INFO_PAGE_SIZE FLASH_CTRL_PARAM_BYTES_PER_PAGE
-
-/**
- * Logical NVM info page identifiers.
- *
- * Each constant identifies one info partition page.  The mapping to physical
- * (page_id, bank, partition_id) lives in nvm_testutils.c and can be updated
- * when the underlying NVM technology changes.
- */
-typedef enum nvm_info_page {
-  kNvmInfoPageFactory = 0,              // Bank 0, Page 0: wafer / CP / AST data
-  kNvmInfoPageCreatorSecret = 1,        // Bank 0, Page 1
-  kNvmInfoPageOwnerSecret = 2,          // Bank 0, Page 2
-  kNvmInfoPageWaferAuthSecret = 3,      // Bank 0, Page 3
-  kNvmInfoPageAttestationKeySeeds = 4,  // Bank 0, Page 4
-} nvm_info_page_t;
-
-/**
- * Access permission bitmask for an NVM info page.
- *
- * Each `true` field selects that permission for the operation.  The meaning
- * depends on the function used:
- *   - nvm_testutils_info_page_setup: `true` enables, `false` disables.
- *   - nvm_testutils_info_page_set:   `true` enables, `false` leaves unchanged.
- *   - nvm_testutils_info_page_clear: `true` disables, `false` leaves unchanged.
- */
-typedef struct nvm_page_perms {
-  bool read;
-  bool write;
-  bool erase;
-} nvm_page_perms_t;
-
-/**
- * Configuration bitmask for an NVM info page.
- *
- * Semantics mirror nvm_page_perms_t: `true` selects a field for the operation.
- */
-typedef struct nvm_page_cfg {
-  bool scrambling;
-  bool ecc;
-  bool he;
-} nvm_page_cfg_t;
+// nvm_page_perms_t, nvm_page_cfg_t, and nvm_info_page_t are defined in
+// nvm_ctrl.h (included
+// above).  The semantics for nvm_testutils functions are:
+//   - nvm_testutils_info_page_setup: `true` enables, `false` disables.
+//   - nvm_testutils_info_page_set:   `true` enables, `false` leaves unchanged.
+//   - nvm_testutils_info_page_clear: `true` disables, `false` leaves unchanged.
 
 /** Read-only: read selected, write and erase not selected. */
 extern const nvm_page_perms_t kPageReadOnly;

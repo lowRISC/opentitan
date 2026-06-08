@@ -28,7 +28,7 @@ enum {
   kSha256DigestWords = 256 / 32,
 };
 
-static uint32_t flash_info_page_buf[NVM_INFO_PAGE_SIZE / sizeof(uint32_t)];
+static uint32_t flash_info_page_buf[NVM_BYTES_PER_PAGE / sizeof(uint32_t)];
 
 /**
  * Writes OTP values to target OTP `partition`.
@@ -181,7 +181,7 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 static status_t manuf_individualize_device_ast_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
   // Clear flash info page buffer.
-  memset(flash_info_page_buf, UINT8_MAX, NVM_INFO_PAGE_SIZE);
+  memset(flash_info_page_buf, UINT8_MAX, NVM_BYTES_PER_PAGE);
 
   // Copy all of flash info page 0 into RAM. This contains the AST configuration
   // data, which we will extract and then delete.
@@ -189,7 +189,7 @@ static status_t manuf_individualize_device_ast_cfg(
                                     kPageReadOnly, kPageRawCfg));
   TRY(nvm_testutils_read_info_page(kNvmInfoFieldAstCalibrationData.page,
                                    /*byte_offset=*/0, flash_info_page_buf,
-                                   NVM_INFO_PAGE_SIZE / sizeof(uint32_t)));
+                                   NVM_BYTES_PER_PAGE / sizeof(uint32_t)));
 
   // Write AST configuration data to OTP.
   size_t ast_cfg_offset =
@@ -218,7 +218,7 @@ static status_t manuf_individualize_device_ast_cfg(
                                     kPageReadWrite, kPageRawCfg));
   TRY(nvm_testutils_write_info_page(kNvmInfoFieldAstCalibrationData.page,
                                     /*byte_offset=*/0, flash_info_page_buf,
-                                    NVM_INFO_PAGE_SIZE / sizeof(uint32_t),
+                                    NVM_BYTES_PER_PAGE / sizeof(uint32_t),
                                     /*erase_before_write=*/true,
                                     /*readback=*/true));
 

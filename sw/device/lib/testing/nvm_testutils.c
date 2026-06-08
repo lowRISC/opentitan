@@ -27,15 +27,32 @@ typedef struct {
   uint32_t partition_id;
 } nvm_page_phys_t;
 
-// Mapping from logical nvm_info_page_t to physical flash parameters.
+// Mapping from nvm_info_page_t to physical flash parameters.
 // Update this table when switching to a different NVM technology.
 // clang-format off
 static const nvm_page_phys_t kPageMap[] = {
-    [kNvmInfoPageFactory] =             {.page_id = 0, .bank = 0, .partition_id = 0},
-    [kNvmInfoPageCreatorSecret] =       {.page_id = 1, .bank = 0, .partition_id = 0},
-    [kNvmInfoPageOwnerSecret] =         {.page_id = 2, .bank = 0, .partition_id = 0},
-    [kNvmInfoPageWaferAuthSecret] =     {.page_id = 3, .bank = 0, .partition_id = 0},
-    [kNvmInfoPageAttestationKeySeeds] = {.page_id = 4, .bank = 0, .partition_id = 0},
+    // Bank 0, pages 0-9
+    [kNvmInfoPageFactoryId]            = {.page_id = 0, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageCreatorSecret]        = {.page_id = 1, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageOwnerSecret]          = {.page_id = 2, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageWaferAuthSecret]      = {.page_id = 3, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageAttestationKeySeeds]  = {.page_id = 4, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved0]       = {.page_id = 5, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved1]       = {.page_id = 6, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved2]       = {.page_id = 7, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved3]       = {.page_id = 8, .bank = 0, .partition_id = 0},
+    [kNvmInfoPageFactoryCerts]         = {.page_id = 9, .bank = 0, .partition_id = 0},
+    // Bank 1, pages 0-9
+    [kNvmInfoPageBootData0]            = {.page_id = 0, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageBootData1]            = {.page_id = 1, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageOwnerSlot0]           = {.page_id = 2, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageOwnerSlot1]           = {.page_id = 3, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageCreatorReserved0]     = {.page_id = 4, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved4]       = {.page_id = 5, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved5]       = {.page_id = 6, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved6]       = {.page_id = 7, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageOwnerReserved7]       = {.page_id = 8, .bank = 1, .partition_id = 0},
+    [kNvmInfoPageDiceCerts]            = {.page_id = 9, .bank = 1, .partition_id = 0},
 };
 // clang-format on
 
@@ -57,7 +74,7 @@ const nvm_page_cfg_t kPagePlainCfg = {
 const nvm_page_cfg_t kPageRawCfg = {
     .scrambling = false, .ecc = false, .he = false};
 
-static status_t nvm_ctrl_init(dif_flash_ctrl_state_t *flash) {
+static status_t dif_flash_state_init(dif_flash_ctrl_state_t *flash) {
   TRY(dif_flash_ctrl_init_state(
       flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   return OK_STATUS();
@@ -65,7 +82,7 @@ static status_t nvm_ctrl_init(dif_flash_ctrl_state_t *flash) {
 
 status_t nvm_testutils_wait_for_init(void) {
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
   return OK_STATUS();
 }
@@ -98,7 +115,7 @@ static status_t info_page_set_props(dif_flash_ctrl_state_t *flash,
 
 status_t nvm_testutils_rom_init(uint32_t otp_flash_default_cfg) {
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   TRY(dif_flash_ctrl_start_controller_init(&flash));
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
   if (otp_flash_default_cfg != 0) {
@@ -125,7 +142,7 @@ status_t nvm_testutils_info_page_setup(nvm_info_page_t page,
   TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
   const nvm_page_phys_t p = kPageMap[page];
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props = {
       .rd_en = perms.read ? kMultiBitBool4True : kMultiBitBool4False,
       .prog_en = perms.write ? kMultiBitBool4True : kMultiBitBool4False,
@@ -144,7 +161,7 @@ status_t nvm_testutils_info_page_set(nvm_info_page_t page,
   TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
   const nvm_page_phys_t p = kPageMap[page];
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props;
   TRY(info_page_get_props(&flash, &p, &props));
   if (perms.read)
@@ -169,7 +186,7 @@ status_t nvm_testutils_info_page_clear(nvm_info_page_t page,
   TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
   const nvm_page_phys_t p = kPageMap[page];
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props;
   TRY(info_page_get_props(&flash, &p, &props));
   if (perms.read)
@@ -194,10 +211,10 @@ status_t nvm_testutils_write_info_page(nvm_info_page_t page,
                                        bool erase_before_write, bool readback) {
   TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
   const nvm_page_phys_t p = kPageMap[page];
-  uint32_t address = p.page_id * NVM_INFO_PAGE_SIZE + byte_offset;
+  uint32_t address = p.page_id * NVM_BYTES_PER_PAGE + byte_offset;
 
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
 
   if (erase_before_write) {
     TRY(flash_ctrl_testutils_erase_and_write_page(
@@ -233,10 +250,10 @@ status_t nvm_testutils_read_info_page(nvm_info_page_t page,
                                       size_t word_count) {
   TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
   const nvm_page_phys_t p = kPageMap[page];
-  uint32_t address = p.page_id * NVM_INFO_PAGE_SIZE + byte_offset;
+  uint32_t address = p.page_id * NVM_BYTES_PER_PAGE + byte_offset;
 
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
 
   TRY(flash_ctrl_testutils_read(&flash, address, p.partition_id, data,
                                 kDifFlashCtrlPartitionTypeInfo, word_count, 0));
@@ -250,7 +267,7 @@ status_t nvm_testutils_info_page_lock(nvm_info_page_t page, bool lock) {
   TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
   const nvm_page_phys_t p = kPageMap[page];
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   TRY(dif_flash_ctrl_lock_info_region_properties(&flash, phys_to_region(&p)));
   return OK_STATUS();
 }
@@ -259,7 +276,7 @@ status_t nvm_testutils_data_region_setup(uint32_t region, uint32_t base,
                                          uint32_t size, nvm_page_perms_t perms,
                                          nvm_page_cfg_t cfg) {
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_data_region_properties_t config = {
       .base = base,
       .size = size,
@@ -287,7 +304,7 @@ status_t nvm_testutils_data_region_lock(uint32_t region, bool lock) {
     return OK_STATUS();
   }
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   TRY(dif_flash_ctrl_lock_data_region_properties(&flash, region));
   return OK_STATUS();
 }
@@ -303,7 +320,7 @@ status_t nvm_testutils_show_faults(void) {
 status_t nvm_testutils_default_region_setup(nvm_page_perms_t perms,
                                             nvm_page_cfg_t cfg) {
   dif_flash_ctrl_state_t flash;
-  TRY(nvm_ctrl_init(&flash));
+  TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props = {
       .rd_en = perms.read ? kMultiBitBool4True : kMultiBitBool4False,
       .prog_en = perms.write ? kMultiBitBool4True : kMultiBitBool4False,

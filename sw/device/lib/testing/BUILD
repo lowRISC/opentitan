@@ -195,6 +195,7 @@ cc_library(
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
 )

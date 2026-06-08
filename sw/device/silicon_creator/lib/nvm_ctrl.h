@@ -93,7 +93,7 @@ extern const nvm_page_cfg_t kNvmPageCfgPlain;
  * pages 0-9 map to values 10-19.  The mapping to physical hardware addresses
  * is an internal detail of nvm_ctrl.c.
  */
-typedef enum nvm_ctrl_info_page {
+typedef enum nvm_info_page {
   // Bank 0
   kNvmInfoPageFactoryId = 0,
   kNvmInfoPageCreatorSecret = 1,
@@ -116,7 +116,7 @@ typedef enum nvm_ctrl_info_page {
   kNvmInfoPageOwnerReserved6 = 17,
   kNvmInfoPageOwnerReserved7 = 18,
   kNvmInfoPageDiceCerts = 19,
-} nvm_ctrl_info_page_t;
+} nvm_info_page_t;
 
 // ---------------------------------------------------------------------------
 // Erase type
@@ -191,7 +191,7 @@ void nvm_ctrl_disable(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t nvm_ctrl_info_page_lookup(uint8_t bank, uint8_t page,
-                                      nvm_ctrl_info_page_t *out);
+                                      nvm_info_page_t *out);
 
 // ---------------------------------------------------------------------------
 // Data partition I/O
@@ -217,23 +217,23 @@ rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr,
 // ---------------------------------------------------------------------------
 
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_info_read(nvm_ctrl_info_page_t page, uint32_t offset,
+rom_error_t nvm_ctrl_info_read(nvm_info_page_t page, uint32_t offset,
                                uint32_t word_count, void *data);
 
 /**
  * Read from an info page, returning all-zeros words on a read error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_info_read_zeros_on_error(nvm_ctrl_info_page_t page,
+rom_error_t nvm_ctrl_info_read_zeros_on_error(nvm_info_page_t page,
                                               uint32_t offset,
                                               uint32_t word_count, void *data);
 
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_info_write(nvm_ctrl_info_page_t page, uint32_t offset,
+rom_error_t nvm_ctrl_info_write(nvm_info_page_t page, uint32_t offset,
                                 uint32_t word_count, const void *data);
 
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_info_erase(nvm_ctrl_info_page_t page,
+rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page,
                                 nvm_ctrl_erase_type_t erase_type);
 
 // ---------------------------------------------------------------------------
@@ -254,7 +254,7 @@ void nvm_ctrl_data_default_perms_set(nvm_page_perms_t perms);
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInfoPermsSet)`.
  */
-void nvm_ctrl_info_perms_set(nvm_ctrl_info_page_t page, nvm_page_perms_t perms);
+void nvm_ctrl_info_perms_set(nvm_info_page_t page, nvm_page_perms_t perms);
 
 /**
  * Sets default configuration for the data partition.
@@ -276,7 +276,7 @@ nvm_page_cfg_t nvm_ctrl_boot_data_cfg_get(void);
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInfoCfgSet)`.
  */
-void nvm_ctrl_info_cfg_set(nvm_ctrl_info_page_t page, nvm_page_cfg_t cfg);
+void nvm_ctrl_info_cfg_set(nvm_info_page_t page, nvm_page_cfg_t cfg);
 
 /**
  * Write-locks configuration for a named info page.
@@ -284,7 +284,7 @@ void nvm_ctrl_info_cfg_set(nvm_ctrl_info_page_t page, nvm_page_cfg_t cfg);
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInfoCfgLock)`.
  */
-void nvm_ctrl_info_cfg_lock(nvm_ctrl_info_page_t page);
+void nvm_ctrl_info_cfg_lock(nvm_info_page_t page);
 
 // ---------------------------------------------------------------------------
 // Data region protection
@@ -348,7 +348,7 @@ void nvm_ctrl_creator_info_pages_lockdown(void);
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioCertInfoPageCreatorCfg)`.
  */
-void nvm_ctrl_cert_info_page_creator_cfg(nvm_ctrl_info_page_t page);
+void nvm_ctrl_cert_info_page_creator_cfg(nvm_info_page_t page);
 
 /**
  * Restricts a certificate info page to read-only for the silicon owner.
@@ -356,7 +356,7 @@ void nvm_ctrl_cert_info_page_creator_cfg(nvm_ctrl_info_page_t page);
  * The caller is responsible for calling
  * `SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioCertInfoPageOwnerRestrict)`.
  */
-void nvm_ctrl_cert_info_page_owner_restrict(nvm_ctrl_info_page_t page);
+void nvm_ctrl_cert_info_page_owner_restrict(nvm_info_page_t page);
 
 #ifdef __cplusplus
 }

@@ -25,8 +25,8 @@ static_assert((uint32_t)kNvmCtrlEraseTypeBank ==
 enum { kNvmInfoPagesPerBank = 10 };
 
 // ---------------------------------------------------------------------------
-// Internal: mapping from nvm_ctrl_info_page_t enum to flash_ctrl page pointer.
-// Order must match nvm_ctrl_info_page_t definition in nvm_ctrl.h.
+// Internal: mapping from nvm_info_page_t enum to flash_ctrl page pointer.
+// Order must match nvm_info_page_t definition in nvm_ctrl.h.
 // ---------------------------------------------------------------------------
 static const flash_ctrl_info_page_t *const kPageTable[] = {
     [kNvmInfoPageFactoryId] = &kFlashCtrlInfoPageFactoryId,
@@ -58,7 +58,7 @@ static_assert(ARRAYSIZE(kPageTable) == NVM_NUM_BANKS * kNvmInfoPagesPerBank,
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-static const flash_ctrl_info_page_t *page_ptr(nvm_ctrl_info_page_t page) {
+static const flash_ctrl_info_page_t *page_ptr(nvm_info_page_t page) {
   HARDENED_CHECK_LT((uint32_t)page, ARRAYSIZE(kPageTable));
   return kPageTable[(uint32_t)page];
 }
@@ -122,12 +122,12 @@ void nvm_ctrl_disable(void) { flash_ctrl_disable(); }
 // ---------------------------------------------------------------------------
 
 rom_error_t nvm_ctrl_info_page_lookup(uint8_t bank, uint8_t page,
-                                      nvm_ctrl_info_page_t *out) {
+                                      nvm_info_page_t *out) {
   if ((uint32_t)bank >= (uint32_t)NVM_NUM_BANKS ||
       (uint32_t)page >= (uint32_t)kNvmInfoPagesPerBank) {
     return kErrorNvmCtrlInvalidInfoPage;
   }
-  *out = (nvm_ctrl_info_page_t)(bank * kNvmInfoPagesPerBank + page);
+  *out = (nvm_info_page_t)(bank * kNvmInfoPagesPerBank + page);
   return kErrorOk;
 }
 
@@ -159,24 +159,24 @@ rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr,
 // Info page I/O
 // ---------------------------------------------------------------------------
 
-rom_error_t nvm_ctrl_info_read(nvm_ctrl_info_page_t page, uint32_t offset,
+rom_error_t nvm_ctrl_info_read(nvm_info_page_t page, uint32_t offset,
                                uint32_t word_count, void *data) {
   return flash_ctrl_info_read(page_ptr(page), offset, word_count, data);
 }
 
-rom_error_t nvm_ctrl_info_read_zeros_on_error(nvm_ctrl_info_page_t page,
+rom_error_t nvm_ctrl_info_read_zeros_on_error(nvm_info_page_t page,
                                               uint32_t offset,
                                               uint32_t word_count, void *data) {
   return flash_ctrl_info_read_zeros_on_read_error(page_ptr(page), offset,
                                                   word_count, data);
 }
 
-rom_error_t nvm_ctrl_info_write(nvm_ctrl_info_page_t page, uint32_t offset,
+rom_error_t nvm_ctrl_info_write(nvm_info_page_t page, uint32_t offset,
                                 uint32_t word_count, const void *data) {
   return flash_ctrl_info_write(page_ptr(page), offset, word_count, data);
 }
 
-rom_error_t nvm_ctrl_info_erase(nvm_ctrl_info_page_t page,
+rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page,
                                 nvm_ctrl_erase_type_t erase_type) {
   return flash_ctrl_info_erase(page_ptr(page),
                                (flash_ctrl_erase_type_t)erase_type);
@@ -190,8 +190,7 @@ void nvm_ctrl_data_default_perms_set(nvm_page_perms_t perms) {
   flash_ctrl_data_default_perms_set(perms_to_flash(perms));
 }
 
-void nvm_ctrl_info_perms_set(nvm_ctrl_info_page_t page,
-                             nvm_page_perms_t perms) {
+void nvm_ctrl_info_perms_set(nvm_info_page_t page, nvm_page_perms_t perms) {
   flash_ctrl_info_perms_set(page_ptr(page), perms_to_flash(perms));
 }
 
@@ -207,11 +206,11 @@ nvm_page_cfg_t nvm_ctrl_boot_data_cfg_get(void) {
   return cfg_from_flash(flash_ctrl_boot_data_cfg_get());
 }
 
-void nvm_ctrl_info_cfg_set(nvm_ctrl_info_page_t page, nvm_page_cfg_t cfg) {
+void nvm_ctrl_info_cfg_set(nvm_info_page_t page, nvm_page_cfg_t cfg) {
   flash_ctrl_info_cfg_set(page_ptr(page), cfg_to_flash(cfg));
 }
 
-void nvm_ctrl_info_cfg_lock(nvm_ctrl_info_page_t page) {
+void nvm_ctrl_info_cfg_lock(nvm_info_page_t page) {
   flash_ctrl_info_cfg_lock(page_ptr(page));
 }
 
@@ -241,10 +240,10 @@ void nvm_ctrl_creator_info_pages_lockdown(void) {
   flash_ctrl_creator_info_pages_lockdown();
 }
 
-void nvm_ctrl_cert_info_page_creator_cfg(nvm_ctrl_info_page_t page) {
+void nvm_ctrl_cert_info_page_creator_cfg(nvm_info_page_t page) {
   flash_ctrl_cert_info_page_creator_cfg(page_ptr(page));
 }
 
-void nvm_ctrl_cert_info_page_owner_restrict(nvm_ctrl_info_page_t page) {
+void nvm_ctrl_cert_info_page_owner_restrict(nvm_info_page_t page) {
   flash_ctrl_cert_info_page_owner_restrict(page_ptr(page));
 }
