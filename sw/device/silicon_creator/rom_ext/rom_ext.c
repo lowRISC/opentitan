@@ -21,7 +21,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
-#include "sw/device/silicon_creator/lib/cert/dice_chain.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/epmp.h"
@@ -252,17 +252,10 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
     memset(&sealing_binding, 0x55, sizeof(sealing_binding));
   }
 
-  // Prepare dice chain builder for CDI_1.
-  HARDENED_RETURN_IF_ERROR(dice_chain_init());
-  HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
-
   // Generate CDI_1 attestation keys and certificate.
-  HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner(
+  HARDENED_RETURN_IF_ERROR(dice_attest_cdi_1(
       manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
       &sealing_binding, key->key_domain));
-
-  // Write the DICE certs to flash if they have been updated.
-  HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).

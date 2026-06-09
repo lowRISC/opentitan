@@ -283,7 +283,7 @@ asm_library_with_coverage(
             "//sw/device/silicon_creator/lib/base:static_dice",
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-            "//sw/device/silicon_creator/lib/cert:dice_chain",
+            "//sw/device/silicon_creator/lib/cert:dice_api",
             "//sw/device/silicon_creator/lib/drivers:ast",
             "//sw/device/silicon_creator/lib/drivers:epmp",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
