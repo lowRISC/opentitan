@@ -18,7 +18,7 @@ use ot_hal::util::multibits::MultiBitBool8;
 use crate::app::{TransportWrapper, UartRx};
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, JtagParams, JtagTap};
-use crate::test_utils::poll;
+use crate::util::poll;
 
 /// Errors related to performing an LcTransition.
 #[derive(Error, Debug, Deserialize, Serialize)]

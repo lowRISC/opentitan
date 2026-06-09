@@ -5,8 +5,8 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use super::Capability;
 use crate::impl_serializable_error;
+use crate::io::capabilities::Capability;
 
 /// Contains all the errors that any method on the `Transport` trait could generate.  This
 /// struct is serializable, such that it can be transmitted across a network for instance as
@@ -73,7 +73,7 @@ pub enum TransportError {
 impl_serializable_error!(TransportError);
 
 /// Enum value used by `TransportError::InvalidInstance`.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 pub enum TransportInterfaceType {
     Gpio,
     Uart,

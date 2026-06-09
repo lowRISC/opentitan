@@ -13,11 +13,11 @@ mod spi;
 use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
-use crate::io::i2c::Bus;
+use crate::io::i2c::{Bus, I2cParams};
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::spi::{Target, TransferMode};
-use crate::io::uart::Uart;
+use crate::io::spi::{SpiParams, Target, TransferMode};
+use crate::io::uart::{Uart, UartParams};
 use crate::io::usb::UsbContext;
 use crate::transport::{
     Capability, FpgaOps, ProgressIndicator, ProxyOps, Transport, TransportError,
@@ -36,12 +36,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use std::vec::Vec;
 
-pub struct NoProgressBar;
-
-impl ProgressIndicator for NoProgressBar {
-    fn new_stage(&self, _name: &str, _total: usize) {}
-    fn progress(&self, _absolute: usize) {}
-}
+pub use crate::transport::NoProgressBar;
 
 /// Helper struct for displaying progress bars for operations which may have multiple stages
 /// (e.g. erasing then writing), or whose byte size may not be known until the operation is
@@ -1159,6 +1154,49 @@ impl TransportWrapper {
             ret = Some(callback());
         }))?;
         Ok(ret.unwrap())
+    }
+
+    pub fn create_uart(&self, params: &UartParams) -> Result<Rc<dyn Uart>> {
+        let uart = self.uart(&params.uart)?;
+        if let Some(baudrate) = params.baudrate {
+            uart.set_baudrate(baudrate)?;
+        }
+        log::info!("set_flow_control to {}", params.flow_control);
+        uart.set_flow_control(params.flow_control)?;
+        Ok(uart)
+    }
+
+    pub fn create_spi(&self, params: &SpiParams, default_instance: &str) -> Result<Rc<dyn Target>> {
+        let spi = self.spi(params.bus.as_deref().unwrap_or(default_instance))?;
+        if let Some(ref cs) = params.chip_select {
+            spi.set_pins(None, None, None, Some(&self.gpio_pin(cs.as_str())?), None)?;
+        }
+        if let Some(speed) = params.speed {
+            spi.set_max_speed(speed)?;
+        }
+        if let Some(voltage) = params.voltage {
+            spi.set_voltage(voltage)?;
+        }
+        if let Some(mode) = params.mode {
+            spi.set_transfer_mode(mode)?;
+        }
+        Ok(spi)
+    }
+
+    pub fn create_i2c(&self, params: &I2cParams, default_instance: &str) -> Result<Rc<dyn Bus>> {
+        let i2c = self.i2c(params.bus.as_deref().unwrap_or(default_instance))?;
+        if let Some(speed) = params.speed {
+            i2c.set_max_speed(speed)?;
+        }
+        if let Some(addr) = params.addr {
+            i2c.set_default_address(addr)?;
+        }
+        Ok(i2c)
+    }
+
+    pub fn create_jtag<'t>(&'t self, params: &JtagParams) -> Result<Box<dyn JtagChain + 't>> {
+        let jtag = self.jtag(params)?;
+        Ok(jtag)
     }
 }
 

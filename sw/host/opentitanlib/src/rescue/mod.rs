@@ -106,7 +106,9 @@ impl RescueParams {
                 self.value
             ))
         );
-        Ok(Box::new(RescueSerial::new(self.uart.create(transport)?)))
+        Ok(Box::new(RescueSerial::new(
+            transport.create_uart(&self.uart)?,
+        )))
     }
 
     fn create_usbdfu(&self, _transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
@@ -137,7 +139,7 @@ impl RescueParams {
             RescueError::Configuration("Usb-DFU requires a trigger value".into())
         );
         Ok(Box::new(SpiDfu::new(
-            self.spi.create(transport, "BOOTSTRAP")?,
+            transport.create_spi(&self.spi, "BOOTSTRAP")?,
             self.clone(),
         )))
     }

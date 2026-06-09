@@ -50,7 +50,9 @@ pub fn test_unlock(
     // Connect to LC TAP.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -68,7 +70,9 @@ pub fn test_unlock(
         /*reset_tap_straps=*/ Some(JtagTap::LcTap),
     )?;
 
-    jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state has transitioned to `TestUnlocked1`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -96,7 +100,9 @@ pub fn run_sram_ft_individualize(
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
@@ -161,7 +167,9 @@ pub fn test_exit(
     // transition to a mission mode state. We do not need to reset the chip to switch TAPs because
     // TAP straps are continuously sampled in TEST_UNLOCKED* LC state.
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state is currently `TEST_UNLOCKED*`.
     let state =

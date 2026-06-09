@@ -114,7 +114,7 @@ impl CommandDispatch for Console {
         // We need the UART for the console command to operate.
         transport.capabilities()?.request(Capability::UART).ok()?;
 
-        let uart = self.params.create(transport)?;
+        let uart = transport.create_uart(&self.params)?;
         if let Some(send) = self.send.as_ref() {
             log::info!("Sending: {:?}", send);
             uart.write(send.as_bytes())?;

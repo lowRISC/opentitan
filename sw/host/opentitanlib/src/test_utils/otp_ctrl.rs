@@ -21,7 +21,7 @@ use ot_hal::dif::otp_ctrl::{
 use ot_hal::top::earlgrey as top_earlgrey;
 
 use crate::io::jtag::Jtag;
-use crate::test_utils::poll;
+use crate::util::poll;
 
 /// Controls for reading and writing OTP parameters.
 pub struct OtpParam;

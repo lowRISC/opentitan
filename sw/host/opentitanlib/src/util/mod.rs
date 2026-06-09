@@ -9,6 +9,7 @@ pub mod fs;
 pub mod hexdump;
 pub mod num_de;
 pub mod parse_int;
+pub mod poll;
 pub mod present;
 pub mod printer;
 pub mod raw_tty;
@@ -45,7 +46,6 @@ macro_rules! collection {
 }
 
 /// The `testdata` function can be used in tests to reference testdata directories.
-#[cfg(test)]
 pub fn testdata(test: &str) -> std::path::PathBuf {
     let mut path: std::path::PathBuf = std::env::var_os("TESTDATA").unwrap().into();
     // TESTDATA points an arbitrary test, remove two levels to get the directory.

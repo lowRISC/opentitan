@@ -7,13 +7,12 @@ use clap::Args;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use std::any::Any;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use ot_hal::dif::lc_ctrl::LcCtrlReg;
 
-use crate::app::TransportWrapper;
-use crate::debug::openocd::OpenOcd;
 use crate::impl_serializable_error;
 
 #[derive(Debug, Args, Clone)]
@@ -27,13 +26,6 @@ pub struct JtagParams {
 
     #[arg(long, default_value = "false")]
     pub log_stdio: bool,
-}
-
-impl JtagParams {
-    pub fn create<'t>(&self, transport: &'t TransportWrapper) -> Result<Box<dyn JtagChain + 't>> {
-        let jtag = transport.jtag(self)?;
-        Ok(jtag)
-    }
 }
 
 /// Errors related to the JTAG interface.
@@ -60,16 +52,16 @@ pub trait JtagChain {
     fn connect(self: Box<Self>, tap: JtagTap) -> Result<Box<dyn Jtag>>;
 
     /// Stop further setup and returns raw OpenOCD instance.
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn Any>>;
 }
 
 /// A trait which represents a TAP on a JTAG chain.
 pub trait Jtag {
     /// Stop further operation and returns raw OpenOCD instance.
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn Any>>;
 
     /// Returns the underlying OpenOCD instance.
-    fn as_raw(&mut self) -> Result<&mut OpenOcd>;
+    fn as_raw(&mut self) -> Result<&mut dyn Any>;
 
     /// Disconnect from the TAP.
     fn disconnect(self: Box<Self>) -> Result<()>;

@@ -9,7 +9,7 @@ use anyhow::{Result, bail, ensure};
 use thiserror::Error;
 
 use super::openocd::OpenOcd;
-use crate::test_utils::poll::poll_until;
+use crate::util::poll::poll_until;
 
 /// Constants defined by RISC-V Debug Specification 0.13.
 pub mod consts {
