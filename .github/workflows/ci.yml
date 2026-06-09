@@ -191,7 +191,7 @@ jobs:
 
   airgapped_build:
     name: Airgapped build
-    runs-on: ubuntu-22.04-vivado
+    runs-on: ubuntu-22.04
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
@@ -203,8 +203,8 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
           configure-bazel: false
-      # - name: Free disk space
-      #   uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
       - name: Check disk space
         run: |
           df -h
