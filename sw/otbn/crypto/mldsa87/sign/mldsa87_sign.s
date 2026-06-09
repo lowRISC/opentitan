@@ -75,9 +75,8 @@ _rej_loop:
   la x4, mldsa87_sign_sk_rho
   la x5, mldsa87_sign_var_rho_prime_share0
   la x6, mldsa87_sign_var_rho_prime_share1
-  la x7, mldsa87_sign_poly_slot0
-  la x8, mldsa87_sign_poly_slot1
-  la x9, mldsa87_sign_poly_slot2
+  la x7, mldsa87_sign_kappa
+  la x8, mldsa87_sign_poly_slot0
   jal x1, compute_w
 
   /* Decompose W into W0 (Vector slots 0, 1) and W1. */
@@ -124,15 +123,13 @@ _rej_loop:
   /* Compute Z and place in vector slot 1. */
   la x2, mldsa87_sign_var_rho_prime_share0
   la x3, mldsa87_sign_var_rho_prime_share1
-  la x4, mldsa87_sign_var_c
-  la x5, mldsa87_sign_sk_s1_share0
-  la x6, mldsa87_sign_sk_s1_share1
-  la x7, mldsa87_sign_const_gamma1_beta_bound
-  la x8, mldsa87_sign_vector_slot1
-  la x9, mldsa87_sign_poly_slot0
-  la x10, mldsa87_sign_poly_slot1
-  la x11, mldsa87_sign_poly_slot2
-  la x12, mldsa87_sign_poly_slot3
+  la x4, mldsa87_sign_kappa
+  la x5, mldsa87_sign_var_c
+  la x6, mldsa87_sign_sk_s1_share0
+  la x7, mldsa87_sign_sk_s1_share1
+  la x8, mldsa87_sign_const_gamma1_beta_bound
+  la x9, mldsa87_sign_vector_slot1
+  la x10, mldsa87_sign_poly_slot0
   jal x1, compute_z
   jal x1, _rejection_check
 
@@ -166,19 +163,19 @@ _rej_loop:
 
 /*
  * Check whether the value in w0 is not 0, if so return to the routine,
- * otherwise increment the nonce and jump back to the beginning of the
- * rejection loop.
+ * otherwise increment KAPPA and jump back to the beginning of the rejection
+ * loop.
  */
 _rejection_check:
   bn.cmp w0, w31, FG0
   csrrs x2, FG0, x0
   andi x2, x2, 8
-  bne x2, x0, _rejection_check_increment_nonce
+  bne x2, x0, _rejection_check_increment_kappa
   ret
-_rejection_check_increment_nonce:
-  la x2, mldsa87_sign_var_rho_prime_share0
-  lw x3, 64(x2)
+_rejection_check_increment_kappa:
+  la x2, mldsa87_sign_kappa
+  lw x3, 0(x2)
   addi x3, x3, 7
-  sw x3, 64(x2)
+  sw x3, 0(x2)
   xor x0, x0, x1 /* Pop address from call stack */
   jal x0, _rej_loop
