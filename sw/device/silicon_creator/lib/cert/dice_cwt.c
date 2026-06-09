@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/cert/cwt_dice_chain_entry_input.h"
 #include "sw/device/silicon_creator/lib/cert/cwt_dice_chain_entry_payload.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
+#include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/dice_keys.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -21,6 +22,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
@@ -489,4 +491,26 @@ rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
   }
 
   return kErrorDiceCwtCoseKeyNotFound;
+}
+
+rom_error_t dice_attest_cdi_0(keymgr_binding_value_t *rom_ext_measurement,
+                              const manifest_t *rom_ext_manifest) {
+  HARDENED_RETURN_IF_ERROR(dice_chain_init());
+  HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
+  HARDENED_RETURN_IF_ERROR(ownership_seal_init());
+  return dice_chain_attestation_creator(rom_ext_measurement, rom_ext_manifest);
+}
+
+rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
+                              keymgr_binding_value_t *bl0_measurement,
+                              hmac_digest_t *owner_measurement,
+                              hmac_digest_t *owner_history_hash,
+                              keymgr_binding_value_t *sealing_binding,
+                              owner_app_domain_t key_domain) {
+  HARDENED_RETURN_IF_ERROR(dice_chain_init());
+  HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
+  HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner(
+      owner_manifest, bl0_measurement, owner_measurement, owner_history_hash,
+      sealing_binding, key_domain));
+  return dice_chain_flush_flash();
 }

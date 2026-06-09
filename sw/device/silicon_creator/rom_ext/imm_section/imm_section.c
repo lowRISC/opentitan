@@ -10,14 +10,13 @@
 #include "sw/device/lib/coverage/api.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/cert/dice_chain.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
-#include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/rom_ext/imm_section/imm_section_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 
@@ -50,14 +49,8 @@ static rom_error_t imm_section_start(void) {
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
-  HARDENED_RETURN_IF_ERROR(dice_chain_init());
-  HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
-
-  // Sideload sealing key to KMAC hw keyslot.
-  HARDENED_RETURN_IF_ERROR(ownership_seal_init());
-
   HARDENED_RETURN_IF_ERROR(
-      dice_chain_attestation_creator(&boot_measurements.rom_ext, rom_ext));
+      dice_attest_cdi_0(&boot_measurements.rom_ext, rom_ext));
 
   // Make mutable part executable.
   HARDENED_RETURN_IF_ERROR(imm_section_epmp_mutable_rx(rom_ext));
