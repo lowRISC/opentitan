@@ -306,6 +306,7 @@ py_library(
         ":register",
         ":signal",
         ":window",
+        "//util:version_file",
     ],
 )
 
@@ -354,6 +355,7 @@ py_library(
         ":reg_block",
         ":register",
         ":window",
+        "//util/reggen/systemrdl:udp",
         requirement("peakrdl_systemrdl"),
     ],
 )
@@ -374,6 +376,52 @@ py_library(
 py_library(
     name = "version",
     srcs = ["version.py"],
+)
+
+py_library(
+    name = "gen_cfg_md",
+    srcs = ["gen_cfg_md.py"],
+    deps = [
+        ":ip_block",
+        ":md_helpers",
+        ":params",
+    ],
+)
+
+py_library(
+    name = "gen_cfg_html",
+    srcs = ["gen_cfg_html.py"],
+    deps = [
+        ":html_helpers",
+        ":ip_block",
+        ":signal",
+    ],
+)
+
+py_library(
+    name = "gen_md",
+    srcs = ["gen_md.py"],
+    deps = [
+        ":ip_block",
+        ":md_helpers",
+        ":multi_register",
+        ":reg_block",
+        ":register",
+        ":window",
+    ],
+)
+
+py_library(
+    name = "vendor_specific",
+    srcs = ["vendor_specific.py"],
+    deps = [
+        ":field",
+        ":ip_block",
+        ":multi_register",
+        ":register",
+        ":window",
+        requirement("hjson"),
+    ],
 )
 
 filegroup(
