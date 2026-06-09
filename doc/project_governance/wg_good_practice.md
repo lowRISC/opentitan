@@ -1,6 +1,6 @@
 # Good Practices for Working Groups
 
-This document outlines good practices for [OpenTitan Working Groups](./working_group.md).
+This document outlines good practices for OpenTitan Working Groups.
 It is written primarily as a guide for Working Group Chairs, but is also valuable to members of a Working Group.
 
 In this document, "OpenTitan Working Group" is abbreviated to "OTWG".
@@ -9,7 +9,7 @@ In this document, "OpenTitan Working Group" is abbreviated to "OTWG".
 
 ## Scheduling meetings
 
-- Find a slot for the OTWG meeting by coordinating with the [Technical Committee](./technical_committee.md).
+- Find a slot for the OTWG meeting by coordinating with the Technical Committee.
 The default interval for OTWG meetings is once every two weeks.
 
 - Add a recurring event to the [OpenTitan Team calendar](https://calendar.google.com/calendar/embed?src=c_gfaeihutdj5bu6bvf5n9j3datc%40group.calendar.google.com) and invite *workgroup\-contributors@opentitan.org*.
@@ -83,7 +83,7 @@ This serves two main purposes:
 - At the end of each discussion, repeat the conclusion and ask if there are any objections.
 This conclusion and any objections (or the absence of objections) have to be captured in the notes.
 
-- If a discussion is blocked and progress in the workgroup is not possible or not at the pace required to meet deadlines, raise it to the [Technical Committee](./technical_committee.md).
+- If a discussion is blocked and progress in the workgroup is not possible or not at the pace required to meet deadlines, raise it to the Technical Committee.
 
 ## Updating issues
 
@@ -99,4 +99,4 @@ Send an email to [onboarding@opentitan.org](mailto:onboarding@opentitan.org) ask
 
 # Related information
 
-- [OpenTitan Working Groups Terms of Reference](./working_group.md)
+- [OpenTitan Working Groups Terms of Reference](https://opentitan.org/working-group/)

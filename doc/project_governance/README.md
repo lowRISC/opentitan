@@ -23,7 +23,7 @@ As a lowRISC CIC Chartered Project, OpenTitan governance is handled via lowRISC'
 
 As described in full detail in the [OpenTitan Technical Charter](https://static.opentitan.org/technical-charter.pdf), our governance structure consists of:
 * The Governing Board, responsible for project oversight and agreeing the technical roadmap.
-* The [Technical Committee](./technical_committee.md), responsible for technical decision making required to implement the technical roadmap.
+* The Technical Committee, responsible for technical decision making required to implement the technical roadmap.
 
 ## Initiating new development
 
