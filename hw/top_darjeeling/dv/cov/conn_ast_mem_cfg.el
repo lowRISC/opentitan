@@ -107,7 +107,7 @@ Toggle rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_1p_cfg_i.ram_cfg.cfg "logic ram_1p_cfg_i.ram_cfg.cfg[3:0]"
 CHECKSUM: "2518565141 1739668335"
-INSTANCE: tb.dut.top_darjeeling.u_sram_ctrl_ret_aon
+INSTANCE: tb.dut.top_darjeeling_pd_aon.u_sram_ctrl_ret_aon
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle cfg_i.ram_cfg.cfg_en "logic cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
