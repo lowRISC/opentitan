@@ -26,7 +26,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   extern constraint kmac_accept_delay_max_c;
   extern function new (string name="");
-  extern virtual function void initialize();
+  extern virtual function void initialize(bit inherit_ral_models = 1'b0);
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
 
   `uvm_object_utils_begin(rom_ctrl_env_cfg)
@@ -51,7 +51,10 @@ function rom_ctrl_env_cfg::new (string name="");
 
   list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
   tl_intg_alert_name = "fatal";
-  ral_model_names.push_back("rom_ctrl_prim_reg_block");
+
+  // Add rom_ctrl_prim_reg_block to the set of known model names. The associated value has no
+  // meaning.
+  ral_model_names["rom_ctrl_prim_reg_block"] = 1'b0;
 
   num_interrupts = 0;
 
@@ -67,8 +70,8 @@ function rom_ctrl_env_cfg::new (string name="");
   sec_cm_alert_name = "fatal";
 endfunction
 
-function void rom_ctrl_env_cfg::initialize();
-  super.initialize();
+function void rom_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
+  super.initialize(inherit_ral_models);
 
   // default TLUL supports 1 outstanding item, the rom TLUL supports 2 outstanding items.
   m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;

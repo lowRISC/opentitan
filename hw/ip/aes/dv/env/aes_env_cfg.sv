@@ -244,13 +244,13 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block_extended));
     return str;
   endfunction
 
-  virtual function void initialize();
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = aes_env_pkg::LIST_OF_ALERTS;
     keymgr_sideload_agent_cfg = key_sideload_agent_cfg#(keymgr_pkg::hw_key_req_t)::type_id
                                 ::create("keymgr_sideload_agent_cfg");
     keymgr_sideload_agent_cfg.start_default_seq = 0;
     num_edn = 1;
-    super.initialize();
+    super.initialize(inherit_ral_models);
 
     can_reset_with_csr_accesses = 1;
 

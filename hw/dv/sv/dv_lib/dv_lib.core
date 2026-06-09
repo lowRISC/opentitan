@@ -13,7 +13,6 @@ filesets:
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:dv_base_agent
       - lowrisc:dv:common_ifs
-      - lowrisc:opentitan:bus_params_pkg
     files:
       - dv_lib_pkg.sv
 
