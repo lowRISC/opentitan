@@ -60,6 +60,7 @@ enum RootCommandHierarchy {
     Version(command::version::Version),
     #[command(subcommand)]
     Status(command::status_cmd::StatusCommand),
+    #[cfg(feature = "ot_certs")]
     #[command(subcommand)]
     Certificate(command::certificate::CertificateCommand),
 

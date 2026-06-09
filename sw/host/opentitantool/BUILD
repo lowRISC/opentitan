@@ -4,8 +4,18 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
+bool_flag(
+    name = "ot_certs",
+    build_setting_default = True,
+)
+
+config_setting(
+    name = "ot_certs_enabled",
+    flag_values = {":ot_certs": "True"},
+)
 
 rust_binary(
     name = "opentitantool",
@@ -42,6 +52,10 @@ rust_binary(
         "src/command/xmodem.rs",
         "src/main.rs",
     ],
+    crate_features = select({
+        ":ot_certs_enabled": ["ot_certs"],
+        "//conditions:default": [],
+    }),
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
@@ -52,7 +66,6 @@ rust_binary(
     stamp = -1,
     deps = [
         "//sw/host/opentitanlib",
-        "//sw/host/ot_certs",
         "//sw/host/ot_hal",
         "//sw/host/ot_transports/chipwhisperer",
         "//sw/host/ot_transports/verilator",
@@ -74,7 +87,10 @@ rust_binary(
         "@crate_index//:thiserror",
         "@crate_index//:tokio",
         "@lowrisc_serde_annotate//serde_annotate",
-    ],
+    ] + select({
+        ":ot_certs_enabled": ["//sw/host/ot_certs"],
+        "//conditions:default": [],
+    }),
 )
 
 pkg_files(
