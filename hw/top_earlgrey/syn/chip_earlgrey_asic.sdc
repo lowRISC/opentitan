@@ -143,11 +143,11 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 set CLK_DST_NAME $CLK_DST_PIN
 
 # generated clocks (div2/div4)
-set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div
+set CLK_PATH top_earlgrey_pd_aon/u_clkmgr_aon/u_no_scan_io_div2_div
 create_generated_clock -name IO_DIV2_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
-set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div
+set CLK_PATH top_earlgrey_pd_aon/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
@@ -187,7 +187,7 @@ set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 
 # MIO paths that go into sysrst_ctrl and fan out into MIOs or dedicated sysrst_ctrl outputs are async in nature, hence we constrain them using a max delay.
 set SYSRST_MAXDELAY 70.0
-set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY}
+set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey_pd_aon/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY}
 
 #####################
 # AON clk           #
@@ -1207,10 +1207,10 @@ set_multicycle_path -setup 2 -from [get_ports ${TPM_CSB_PORT}]     -to [get_cloc
 set_multicycle_path -hold -end 1 -from [get_ports ${TPM_CSB_PORT}] -to [get_clocks SPI_TPM_CLK]
 
 
-set_false_path -from [get_clocks SPI_DEV_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*]
-set_false_path -from [get_clocks SPI_DEV_HC_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*]
-set_false_path -from [get_clocks SPI_HOST_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*]
-set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ; #leonids updated based on interaction with Alex
+set_false_path -from [get_clocks SPI_DEV_CLK] -through [get_cells top_earlgrey_pd_aon/u_sysrst_ctrl_aon/*]
+set_false_path -from [get_clocks SPI_DEV_HC_CLK] -through [get_cells top_earlgrey_pd_aon/u_sysrst_ctrl_aon/*]
+set_false_path -from [get_clocks SPI_HOST_CLK] -through [get_cells top_earlgrey_pd_aon/u_sysrst_ctrl_aon/*]
+set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_cells top_earlgrey_pd_aon/u_sysrst_ctrl_aon/*] ; #leonids updated based on interaction with Alex
 
 set_false_path -from SPI_HOST_D* -to SPI_HOST_D*
 set_false_path -from SPI_DEV_D* -to SPI_DEV_D*
@@ -1691,7 +1691,7 @@ if { $synopsys_program_name  == "pt_shell" } {
                   -to   [get_ports USB_*] -probe
   set_max_delay 5 -from [get_ports USB_*] \
                   -to   [get_pins top_earlgrey/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_generic_u_impl_generic/u_sync_1/gen_techlib_u_impl_techlib/gen_flops_0__gen_reset_to_0_u_size_only_reg/D] -probe
-  set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY} -probe
+  set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey_pd_aon/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY} -probe
 }
 
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV2_CLK]
