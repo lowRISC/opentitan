@@ -215,7 +215,7 @@ static rom_error_t dice_chain_load_nvm(nvm_info_page_t info_page) {
   // Read in a DICE certificate(s) page.
   static_assert(sizeof(dice_chain.page) == kNvmPageSize,
                 "Invalid dice_chain buffer size");
-  RETURN_IF_ERROR(nvm_ctrl_info_read_zeros_on_error(
+  RETURN_IF_ERROR(nvm_ctrl_info_read_zeros_on_read_error(
       info_page, /*offset=*/0,
       /*word_count=*/kNvmPageSize / sizeof(uint32_t), &dice_chain.page));
 

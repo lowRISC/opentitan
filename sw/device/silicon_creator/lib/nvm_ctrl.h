@@ -254,9 +254,10 @@ rom_error_t nvm_ctrl_info_read(nvm_info_page_t page, uint32_t offset,
  * Read from an info page, returning all-zeros words on a read error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t nvm_ctrl_info_read_zeros_on_error(nvm_info_page_t page,
-                                              uint32_t offset,
-                                              uint32_t word_count, void *data);
+rom_error_t nvm_ctrl_info_read_zeros_on_read_error(nvm_info_page_t page,
+                                                   uint32_t offset,
+                                                   uint32_t word_count,
+                                                   void *data);
 
 OT_WARN_UNUSED_RESULT
 rom_error_t nvm_ctrl_info_write(nvm_info_page_t page, uint32_t offset,

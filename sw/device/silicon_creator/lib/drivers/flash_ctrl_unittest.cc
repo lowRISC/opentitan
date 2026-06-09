@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 #include <array>
 
@@ -15,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/flash_ctrl_regs.h"

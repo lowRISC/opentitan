@@ -31,8 +31,8 @@ static void base64_encode(char *dest, const uint8_t *data, int32_t len) {
 
 static status_t print_cert(char *dest, nvm_info_page_t info_page) {
   uint8_t data[2048];
-  TRY(nvm_ctrl_info_read_zeros_on_error(info_page, 0,
-                                        sizeof(data) / sizeof(uint32_t), data));
+  TRY(nvm_ctrl_info_read_zeros_on_read_error(
+      info_page, 0, sizeof(data) / sizeof(uint32_t), data));
 
   uint32_t offset = 0;
   size_t len = sizeof(data);
