@@ -706,16 +706,15 @@ rust_test(
 
 rust_test(
     name = "opentitanlib_protocols_test",
-    crate = ":opentitanlib_protocols",
     compile_data = [
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
+    crate = ":opentitanlib_protocols",
     deps = [
         "@crate_index//:hex",
     ],
 )
-
 
 rust_doc(
     name = "opentitanlib_doc",
@@ -726,5 +725,3 @@ filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]),
 )
-
-

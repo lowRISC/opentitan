@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Dummy comment to force rebuild
 
-
 pub use opentitanlib_test_utils::test_utils;
 pub mod transport;
 
