@@ -445,15 +445,31 @@ class dv_base_reg_block extends uvm_reg_block;
 
     // If randomize_base_addr is set, randomly pick an aligned base address.
     if (randomize_base_addr) begin
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(base_addr,
-                                         (base_addr & mask) == '0;
-                                         base_addr >> m_addr_width == 0;)
-    end else begin
-      `DV_CHECK_FATAL((base_addr & mask) == '0)
-      `DV_CHECK_FATAL((base_addr >> m_addr_width) == '0)
+      if (!std::randomize(base_addr) with {
+              (base_addr & mask) == '0;
+              base_addr >> m_addr_width == 0;
+          }) begin
+        `uvm_fatal(get_name(),
+                   $sformatf("Failed to randomise base address with mask 0x%0x and width %0d.",
+                             mask, m_addr_width))
+      end
     end
 
-    `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
+    // Check that the base address is appropriately aligned, based on the mask we computed from map.
+    if (base_addr & mask) begin
+      `uvm_error(get_name(),
+                 $sformatf("Base address of 0x%0h is not aligned to mask 0x%0x.",
+                           base_addr, mask))
+    end
+
+    // Check that the base address is actually representable with m_addr_width bits
+    if (base_addr >> m_addr_width) begin
+      `uvm_error(get_name(),
+                 $sformatf("Base address of 0x%0h is not representable with %0d bits.",
+                           base_addr, m_addr_width))
+    end
+
+    `uvm_info(get_name(), $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
     map.set_base_addr(base_addr);
 
     m_mem_ranges_known = 0;
