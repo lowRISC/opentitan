@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//rules:ujson.bzl", "ujson_rust")
 
 package(default_visibility = ["//visibility:public"])
@@ -577,6 +578,78 @@ rust_library(
 # To avoid having all existing `opentitanlib` to carry dependency of individual splitted crates,
 # re-export everything under the original `opentitanlib` name.
 
+_TRANSPORTS = [
+    "chipwhisperer",
+    "dediprog",
+    "ftdi",
+    "hyperdebug",
+    "proxy",
+    "ti50emulator",
+    "verilator",
+]
+
+[
+    bool_flag(
+        name = "transport_{}".format(t),
+        build_setting_default = True,
+    )
+    for t in _TRANSPORTS
+]
+
+[
+    config_setting(
+        name = "transport_{}_enabled".format(t),
+        flag_values = {":transport_{}".format(t): "True"},
+    )
+    for t in _TRANSPORTS
+]
+
+_TRANSPORT_DEPS = select({
+    ":transport_chipwhisperer_enabled": ["//sw/host/ot_transports/chipwhisperer"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_dediprog_enabled": ["//sw/host/ot_transports/dediprog"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_ftdi_enabled": ["//sw/host/ot_transports/ftdi"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_hyperdebug_enabled": ["//sw/host/ot_transports/hyperdebug"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_proxy_enabled": ["//sw/host/ot_transports/proxy"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_ti50emulator_enabled": ["//sw/host/ot_transports/ti50emulator"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_verilator_enabled": ["//sw/host/ot_transports/verilator"],
+    "//conditions:default": [],
+})
+
+_TRANSPORT_FEATURES = select({
+    ":transport_chipwhisperer_enabled": ["chipwhisperer"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_dediprog_enabled": ["dediprog"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_ftdi_enabled": ["ftdi"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_hyperdebug_enabled": ["hyperdebug"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_proxy_enabled": ["proxy"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_ti50emulator_enabled": ["ti50emulator"],
+    "//conditions:default": [],
+}) + select({
+    ":transport_verilator_enabled": ["verilator"],
+    "//conditions:default": [],
+})
+
 rust_library(
     name = "opentitanlib",
     srcs = [
@@ -585,16 +658,10 @@ rust_library(
     aliases = {
         ":opentitanlib_base": "opentitanlib_base",
     },
+    crate_features = _TRANSPORT_FEATURES,
     deps = [
         ":opentitanlib_base",
-        "//sw/host/ot_transports/chipwhisperer",
-        "//sw/host/ot_transports/dediprog",
-        "//sw/host/ot_transports/ftdi",
-        "//sw/host/ot_transports/hyperdebug",
-        "//sw/host/ot_transports/proxy",
-        "//sw/host/ot_transports/ti50emulator",
-        "//sw/host/ot_transports/verilator",
-    ],
+    ] + _TRANSPORT_DEPS,
 )
 
 test_suite(
