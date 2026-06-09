@@ -16,7 +16,7 @@ enum {
   kNumWords = NVM_BYTES_PER_PAGE / sizeof(uint32_t),
 };
 
-static status_t clear_digest_page(nvm_ctrl_info_page_t info_page) {
+static status_t clear_digest_page(nvm_info_page_t info_page) {
   uint32_t data[kNumWords];
 
   TRY(nvm_ctrl_info_read_zeros_on_read_error(info_page, 0, kNumWords, data));
