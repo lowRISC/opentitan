@@ -61,7 +61,11 @@ impl Subprocess {
                         .with_context(|| format!("Invalid ROM slot '{}'", x.as_str()))?,
                     None => 0,
                 };
-                args.push(format!("--meminit=rom{},{}", slot, image_file));
+                if slot == 0 {
+                    args.push(format!("--meminit=rom,{}", image_file));
+                } else {
+                    args.push(format!("--meminit=rom{},{}", slot, image_file));
+                }
             }
         }
         if !options.flash_images.is_empty() {
