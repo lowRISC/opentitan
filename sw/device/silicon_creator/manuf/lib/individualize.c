@@ -71,10 +71,8 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_hw_cfg(
-    const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    const uint32_t *ft_device_id) {
+status_t manuf_individualize_device_hw_cfg(const dif_otp_ctrl_t *otp_ctrl,
+                                           const uint32_t *ft_device_id) {
   bool is_locked;
 
   // Provision HW_CFG0 if it is not locked.
@@ -82,6 +80,8 @@ status_t manuf_individualize_device_hw_cfg(
                                       &is_locked));
   if (!is_locked) {
     // Read CpDeviceId & AST configuration version from flash info page 0.
+    TRY(nvm_testutils_info_page_setup(kNvmInfoFieldCpDeviceId.page,
+                                      kPageReadOnly, kPageRawCfg));
     uint32_t cp_device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords];
     TRY(manuf_nvm_info_field_read(kNvmInfoFieldCpDeviceId, cp_device_id,
                                   kNvmInfoFieldCpDeviceIdSizeIn32BitWords));

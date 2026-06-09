@@ -37,16 +37,21 @@ status_t keymgr_testutils_nvm_init(
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
   if (creator_secret) {
+    TRY(nvm_testutils_info_page_setup(kNvmInfoPageCreatorSecret, kPageReadWrite,
+                                      kPageScrambleCfg));
     TRY(nvm_testutils_write_info_page(kNvmInfoPageCreatorSecret,
                                       /*byte_offset=*/0, creator_secret->value,
                                       ARRAYSIZE(creator_secret->value),
-                                      /*scramble=*/true,
-                                      /*erase_before_write=*/true));
+                                      /*erase_before_write=*/true,
+                                      /*readback=*/true));
   }
-  TRY(nvm_testutils_write_info_page(
-      kNvmInfoPageOwnerSecret,
-      /*byte_offset=*/0, owner_secret->value, ARRAYSIZE(owner_secret->value),
-      /*scramble=*/true, /*erase_before_write=*/true));
+  TRY(nvm_testutils_info_page_setup(kNvmInfoPageOwnerSecret, kPageReadWrite,
+                                    kPageScrambleCfg));
+  TRY(nvm_testutils_write_info_page(kNvmInfoPageOwnerSecret,
+                                    /*byte_offset=*/0, owner_secret->value,
+                                    ARRAYSIZE(owner_secret->value),
+                                    /*erase_before_write=*/true,
+                                    /*readback=*/true));
   return OK_STATUS();
 }
 

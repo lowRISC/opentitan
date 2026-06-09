@@ -20,7 +20,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
@@ -76,28 +75,34 @@ static status_t configure_ate_gpio_indicators(void) {
  * read it out.
  */
 static status_t prep_flash_info_page_0(manuf_cp_test_data_t *test_data) {
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldLotName.page, kPageReadWrite,
+                                    kPageRawCfg));
   // Lot name.
   TRY(manuf_nvm_info_field_write(kNvmInfoFieldLotName, &test_data->lot_name,
                                  kNvmInfoFieldLotNameSizeIn32BitWords,
-                                 /*erase_page_before_write=*/true));
+                                 /*erase_page_before_write=*/true,
+                                 /*readback=*/true));
 
   // Wafer number.
   TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferNumber,
                                  &test_data->wafer_number,
                                  kNvmInfoFieldWaferNumberSizeIn32BitWords,
-                                 /*erase_page_before_write=*/false));
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/true));
 
   // Wafer X coord.
   TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferXCoord,
                                  &test_data->wafer_x_coord,
                                  kNvmInfoFieldWaferXCoordSizeIn32BitWords,
-                                 /*erase_page_before_write=*/false));
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/true));
 
   // Wafer Y coord.
   TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferYCoord,
                                  &test_data->wafer_y_coord,
                                  kNvmInfoFieldWaferYCoordSizeIn32BitWords,
-                                 /*erase_page_before_write=*/false));
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/true));
 
   return OK_STATUS();
 }
@@ -128,6 +133,8 @@ bool test_main(void) {
     uint32_t cp_device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] = {0};
     static_assert(kNvmInfoFieldCpDeviceIdSizeIn32BitWords == 4,
                   "CP device ID should fit in four 32bit words.");
+    CHECK_STATUS_OK(nvm_testutils_info_page_setup(kNvmInfoFieldCpDeviceId.page,
+                                                  kPageReadOnly, kPageRawCfg));
     CHECK_STATUS_OK(
         manuf_nvm_info_field_read(kNvmInfoFieldCpDeviceId, cp_device_id,
                                   kNvmInfoFieldCpDeviceIdSizeIn32BitWords));

@@ -39,10 +39,8 @@
  *                     portion before writing it into OTP.
  * @return OK_STATUS on success.
  */
-status_t manuf_individualize_device_hw_cfg(
-    const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    const uint32_t *ft_device_id);
+status_t manuf_individualize_device_hw_cfg(const dif_otp_ctrl_t *otp_ctrl,
+                                           const uint32_t *ft_device_id);
 
 /**
  * Checks the HW_CFG0/1 OTP partition end state.

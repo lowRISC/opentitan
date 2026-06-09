@@ -38,14 +38,6 @@ static dif_rstmgr_t rstmgr;
 static const uint32_t kFtDeviceId[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] = {
     0xAAAA99AA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
 
-static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
-    .ecc_en = kMultiBitBool4True,
-    .high_endurance_en = kMultiBitBool4False,
-    .erase_en = kMultiBitBool4True,
-    .prog_en = kMultiBitBool4True,
-    .rd_en = kMultiBitBool4True,
-    .scramble_en = kMultiBitBool4False};
-
 /**
  * Initializes all DIF handles used in this module.
  */
@@ -78,17 +70,20 @@ bool test_main(void) {
     // partition.
     uint32_t kCpDeviceId[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] = {
         0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
+    CHECK_STATUS_OK(nvm_testutils_info_page_setup(
+        kNvmInfoFieldCpDeviceId.page, kPageReadWrite, kPagePlainCfg));
     CHECK_STATUS_OK(
         manuf_nvm_info_field_write(kNvmInfoFieldCpDeviceId, kCpDeviceId,
                                    kNvmInfoFieldCpDeviceIdSizeIn32BitWords,
-                                   /*erase_page_before_write=*/true));
+                                   /*erase_page_before_write=*/true,
+                                   /*readback=*/true));
     uint32_t ast_cfg_version = 0x99;
     CHECK_STATUS_OK(
         manuf_nvm_info_field_write(kNvmInfoFieldAstCfgVersion, &ast_cfg_version,
                                    kNvmInfoFieldAstCfgVersionSizeIn32BitWords,
-                                   /*erase_page_before_write=*/false));
-    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
-        &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
+                                   /*erase_page_before_write=*/false,
+                                   /*readback=*/true));
+    CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(&otp_ctrl, kFtDeviceId));
 
     // Check the value of the DeviceId in the HW_CFG0 partition.
     uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];

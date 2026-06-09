@@ -69,6 +69,8 @@ status_t ast_program_config(bool verbose) {
 
   // Read AST calibration values from flash.
   LOG_INFO("Reading AST data");
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
+                                    kPageReadOnly, kPageRawCfg));
   uint32_t ast_data[kNvmInfoAstCalibrationDataSizeIn32BitWords];
   TRY(manuf_nvm_info_field_read(kNvmInfoFieldAstCalibrationData, ast_data,
                                 kNvmInfoAstCalibrationDataSizeIn32BitWords));

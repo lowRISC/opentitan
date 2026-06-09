@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -16,9 +15,9 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -52,7 +51,6 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
@@ -94,7 +92,6 @@ static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
 /**
  * Peripheral handles.
  */
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
@@ -249,9 +246,6 @@ static status_t check_next_slot_bootable(void) {
  * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
@@ -405,9 +399,13 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     // Provision the attestation key generation version field (at the end of the
     // attestation seed info page).
     uint32_t kKeyGenVersion = kAttestationKeyGenVersion0;
+    TRY(nvm_testutils_info_page_setup(
+        kNvmInfoFieldAttestationKeyGenVersion.page, kPageReadWrite,
+        kPageScrambleCfg));
     TRY(manuf_nvm_info_field_write(kNvmInfoFieldAttestationKeyGenVersion,
                                    /*data_in=*/&kKeyGenVersion, /*num_words=*/1,
-                                   /*erase_page_before_write=*/false));
+                                   /*erase_page_before_write=*/false,
+                                   /*readback=*/true));
     sw_reset();
   }
 
@@ -654,6 +652,8 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   static_assert(
       kNvmInfoFieldWaferAuthSecretSizeIn32BitWords == kHmacKeyNumWords,
       "WAS size expected to be same size as HMAC-SHA256 key.");
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldWaferAuthSecret.page,
+                                    kPageReadOnly, kPageRawCfg));
   TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferAuthSecret, was.key,
                                 kNvmInfoFieldWaferAuthSecretSizeIn32BitWords));
 
@@ -1115,7 +1115,6 @@ static status_t provision(ujson_t *uj) {
       .certgen_inputs = &certgen_inputs,
       .perso_blob_to_host = &perso_blob_to_host,
       .cert_flash_layout = cert_flash_layout,
-      .flash_ctrl_handle = &flash_ctrl_state,
       .uds_pubkey = &uds_pubkey,
       .uds_pubkey_id = &uds_pubkey_id,
       .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,

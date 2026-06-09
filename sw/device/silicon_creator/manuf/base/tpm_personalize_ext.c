@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "perso_tlv_data.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
@@ -16,13 +15,6 @@
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-/**
- * Peripheral handles.
- */
-static dif_flash_ctrl_state_t flash_ctrl_state;
-
 /**
  * Certificate data.
  */
@@ -31,16 +23,6 @@ static hmac_digest_t tpm_pubkey_id;
 static cert_key_id_pair_t tpm_key_ids = {.endorsement = &tpm_endorsement_key_id,
                                          .cert = &tpm_pubkey_id};
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-
-/**
- * Initializes all DIF handles used in this program.
- */
-static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  return OK_STATUS();
-}
 
 /**
  * Configures flash info pages to store device certificates.
@@ -86,7 +68,6 @@ static status_t personalize_gen_tpm_ek_certificate(
 
 status_t personalize_extension_pre_cert_endorse(
     personalize_extension_pre_endorse_t *pre_params) {
-  TRY(peripheral_handles_init());
   TRY(config_and_erase_tpm_certificate_flash_pages());
   TRY(personalize_gen_tpm_ek_certificate(pre_params->certgen_inputs,
                                          pre_params->perso_blob_to_host,

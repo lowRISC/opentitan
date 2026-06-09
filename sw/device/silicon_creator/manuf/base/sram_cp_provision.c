@@ -20,7 +20,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
@@ -104,6 +103,8 @@ static void manually_init_ast(uint32_t *data) {
 
 static status_t flash_info_page_0_read_and_validate(
     manuf_cp_provisioning_data_out_t *console_out) {
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldLotName.page, kPageReadOnly,
+                                    kPageRawCfg));
   // Read (wafer) lot name.
   uint32_t lot_name = 0;
   static_assert(kNvmInfoFieldLotNameSizeIn32BitWords == 1,
@@ -155,20 +156,25 @@ static status_t flash_info_page_0_read_and_validate(
   console_out->cp_device_id[3] = 0;
 
   // Write CP device ID.
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldCpDeviceId.page,
+                                    kPageReadWrite, kPageRawCfg));
   TRY(manuf_nvm_info_field_write(kNvmInfoFieldCpDeviceId,
                                  console_out->cp_device_id,
                                  kNvmInfoFieldCpDeviceIdSizeIn32BitWords,
-                                 /*erase_page_before_write=*/false));
-
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/false));
   return OK_STATUS();
 }
 
 static status_t wafer_auth_secret_flash_info_page_write(
     manuf_cp_provisioning_data_t *console_in) {
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldWaferAuthSecret.page,
+                                    kPageReadWrite, kPageRawCfg));
   TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferAuthSecret,
                                  console_in->wafer_auth_secret,
                                  kNvmInfoFieldWaferAuthSecretSizeIn32BitWords,
-                                 /*erase_page_before_write=*/true));
+                                 /*erase_page_before_write=*/true,
+                                 /*readback=*/false));
   return OK_STATUS();
 }
 
@@ -206,6 +212,9 @@ bool test_main(void) {
   ottf_console_init();
   CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   ujson_t uj = ujson_ottf_console();
+
+  // Wait for flash controller to finish initialization before any flash access.
+  CHECK_STATUS_OK(nvm_testutils_wait_for_init());
 
   // Extract factory data from flash info page 0.
   manuf_cp_provisioning_data_out_t console_out;

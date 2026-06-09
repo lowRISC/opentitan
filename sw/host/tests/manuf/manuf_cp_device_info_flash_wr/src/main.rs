@@ -68,7 +68,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
     // transition initiated on the host side.
     let _ = UartConsole::wait_for(
         &*uart,
-        r"Done. Perform an LC transition and run flash stage.",
+        r"Done. Perform an LC transition and run NVM stage.",
         opts.timeout,
     )?;
 

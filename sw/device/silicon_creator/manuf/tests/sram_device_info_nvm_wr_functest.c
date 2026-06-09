@@ -64,11 +64,13 @@ bool test_main(void) {
     case kDifLcCtrlStateTestUnlocked6:
     case kDifLcCtrlStateTestUnlocked7:
       LOG_INFO("Writing to the isolated NVM partition.");
+      CHECK_STATUS_OK(nvm_testutils_info_page_setup(
+          kNvmInfoFieldWaferAuthSecret.page, kPageReadWrite, kPagePlainCfg));
       CHECK_STATUS_OK(nvm_testutils_write_info_page(
           kNvmInfoFieldWaferAuthSecret.page,
           kNvmInfoFieldWaferAuthSecret.byte_offset, kExpectedWaferAuthSecret,
-          kNvmInfoFieldWaferAuthSecretSizeIn32BitWords, /*scramble=*/false,
-          /*erase_before_write=*/true));
+          kNvmInfoFieldWaferAuthSecretSizeIn32BitWords,
+          /*erase_before_write=*/true, /*readback=*/false));
       LOG_INFO("Enabling ROM execution to enable bootstrap after reset.");
       CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
       CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));

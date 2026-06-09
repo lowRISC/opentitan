@@ -163,11 +163,15 @@ status_t manuf_nvm_info_field_read(nvm_info_field_t field, uint32_t *data_out,
  * @param data_in Input buffer.
  * @param num_words Number of words to write from `data_in` to flash.
  * @param erase_page_before_write Whether to erase the page before writing it.
+ * @param readback Read back and verify data after writing. Set false for pages
+ *                 not readable in the current LC state (e.g. WaferAuthSecret
+ *                 in TEST_UNLOCKED).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_nvm_info_field_write(nvm_info_field_t field, uint32_t *data_in,
                                     size_t num_words,
-                                    bool erase_page_before_write);
+                                    bool erase_page_before_write,
+                                    bool readback);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_NVM_INFO_FIELD_H_

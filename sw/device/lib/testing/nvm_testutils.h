@@ -10,7 +10,6 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
 
@@ -33,32 +32,136 @@ typedef enum nvm_info_page {
 } nvm_info_page_t;
 
 /**
+ * Access permission bitmask for an NVM info page.
+ *
+ * Each `true` field selects that permission for the operation.  The meaning
+ * depends on the function used:
+ *   - nvm_testutils_info_page_setup: `true` enables, `false` disables.
+ *   - nvm_testutils_info_page_set:   `true` enables, `false` leaves unchanged.
+ *   - nvm_testutils_info_page_clear: `true` disables, `false` leaves unchanged.
+ */
+typedef struct nvm_page_perms {
+  bool read;
+  bool write;
+  bool erase;
+} nvm_page_perms_t;
+
+/**
+ * Configuration bitmask for an NVM info page.
+ *
+ * Semantics mirror nvm_page_perms_t: `true` selects a field for the operation.
+ */
+typedef struct nvm_page_cfg {
+  bool scrambling;
+  bool ecc;
+  bool he;
+} nvm_page_cfg_t;
+
+/** Read-only: read selected, write and erase not selected. */
+extern const nvm_page_perms_t kPageReadOnly;
+/** Read-write: read, write, and erase all selected. */
+extern const nvm_page_perms_t kPageReadWrite;
+/** Write-only: read not selected, write and erase selected. */
+extern const nvm_page_perms_t kPageWriteOnly;
+
+/** Scrambled: scrambling and ECC selected, high-endurance not selected. */
+extern const nvm_page_cfg_t kPageScrambleCfg;
+/** Plain: scrambling not selected, ECC selected, high-endurance not selected.
+ */
+extern const nvm_page_cfg_t kPagePlainCfg;
+/** Raw: scrambling not selected, ECC not selected, high-endurance not selected.
+ * Use for pages written without ECC encoding (e.g. AST calibration data).
+ */
+extern const nvm_page_cfg_t kPageRawCfg;
+
+/**
+ * Wait for the flash controller to finish its initialization sequence.
+ *
+ * Must be called before any flash operations when running from SRAM (e.g. in
+ * SRAM provisioning programs) to ensure the controller is ready.
+ *
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_wait_for_init(void);
+
+/**
+ * Set all access permissions and configuration flags for an NVM info page.
+ *
+ * Writes all fields unconditionally: `true` → enabled, `false` → disabled.
+ *
+ * @param page  Logical info page identifier.
+ * @param perms Permission values to apply to all fields.
+ * @param cfg   Configuration values to apply to all fields.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_info_page_setup(nvm_info_page_t page,
+                                       nvm_page_perms_t perms,
+                                       nvm_page_cfg_t cfg);
+
+/**
+ * Enable selected permission and configuration bits, leaving others unchanged.
+ *
+ * For each field set to `true` in `perms`/`cfg`, the corresponding bit is
+ * enabled (kMultiBitBool4True).  Fields set to `false` are not modified.
+ *
+ * @param page  Logical info page identifier.
+ * @param perms Bitmask of permissions to enable.
+ * @param cfg   Bitmask of configuration bits to enable.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_info_page_set(nvm_info_page_t page,
+                                     nvm_page_perms_t perms,
+                                     nvm_page_cfg_t cfg);
+
+/**
+ * Disable selected permission and configuration bits, leaving others unchanged.
+ *
+ * For each field set to `true` in `perms`/`cfg`, the corresponding bit is
+ * disabled (kMultiBitBool4False).  Fields set to `false` are not modified.
+ *
+ * @param page  Logical info page identifier.
+ * @param perms Bitmask of permissions to disable.
+ * @param cfg   Bitmask of configuration bits to disable.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_info_page_clear(nvm_info_page_t page,
+                                       nvm_page_perms_t perms,
+                                       nvm_page_cfg_t cfg);
+
+/**
  * Write data to a logical NVM info page.
  *
- * Initialises the NVM controller internally, resolves the physical location
- * from `page`, configures the info region (with or without scrambling), and
- * programs the page.  When `erase_before_write` is true the page is erased
- * first and a readback is performed to verify the write.
+ * The caller must call nvm_testutils_info_page_setup() before this function to
+ * configure the region properties (scrambling, ECC, permissions).
+ *
+ * When `erase_before_write` is true the page is erased first and a readback
+ * is performed to verify the write.
  *
  * @param page               Logical info page identifier.
  * @param byte_offset        Byte offset from the start of the page.
  * @param data               Data words to write.
  * @param word_count         Number of 32-bit words to write (max 64).
- * @param scramble           Whether to enable scrambling for this region.
  * @param erase_before_write Erase the page before writing.
+ * @param readback           Read back and verify data after writing.
+ *                           Set false for pages not readable in the current LC
+ *                           state (e.g. WaferAuthSecret in TEST_UNLOCKED).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t nvm_testutils_write_info_page(nvm_info_page_t page,
                                        uint32_t byte_offset,
                                        const uint32_t *data, size_t word_count,
-                                       bool scramble, bool erase_before_write);
+                                       bool erase_before_write, bool readback);
 
 /**
  * Read data from a logical NVM info page.
  *
- * Initialises the NVM controller internally and resolves the physical location
- * from `page` before reading.
+ * The caller must call nvm_testutils_info_page_setup() before this function to
+ * configure the region properties (scrambling, ECC, permissions).
  *
  * @param page         Logical info page identifier.
  * @param byte_offset  Byte offset from the start of the page.
@@ -72,116 +175,90 @@ status_t nvm_testutils_read_info_page(nvm_info_page_t page,
                                       size_t word_count);
 
 /**
- * Configure the NVM controller default data region access permissions.
+ * Initialize the NVM controller at ROM/boot time.
  *
- * Initialises the NVM controller internally and sets the default region
- * properties.  Callers do not need to hold a controller handle.  Hardware
- * register state persists, so subsequent NVM operations issued by other
- * utilities (e.g. nv_counter_testutils) will observe these settings.
+ * Starts the flash controller, waits for initialization to complete,
+ * optionally applies default region properties read from OTP, and enables
+ * flash access and instruction fetch.  Call this once from test ROM before any
+ * other NVM operation.
  *
- * @param rd_en            Enable reads.
- * @param prog_en          Enable programming.
- * @param erase_en         Enable erasing.
- * @param scramble_en      Enable scrambling.
- * @param ecc_en           Enable ECC.
- * @param high_endurance_en Enable high-endurance mode.
+ * @param otp_flash_default_cfg CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG OTP word;
+ *   pass 0 when HAS_OTP_CTRL is not available or the field reads as zero.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_enable_data_access(bool rd_en, bool prog_en,
-                                          bool erase_en, bool scramble_en,
-                                          bool ecc_en, bool high_endurance_en);
+status_t nvm_testutils_rom_init(uint32_t otp_flash_default_cfg);
 
 /**
- * Configure an NVM info region for scrambled access.
+ * Lock the region configuration for an NVM info page.
  *
- * Initialises the NVM controller internally and sets up the info region at
- * (page_id, bank, partition_id) with scrambling enabled.  Returns the byte
- * address of the page in `offset`.  Callers do not need to hold a controller
- * handle.
+ * Once locked the region properties cannot be changed until the device is
+ * reset. Passing `lock = false` is a no-op and always returns OK_STATUS.
  *
- * @param page_id      Info page index within the bank.
- * @param bank         Bank index.
- * @param partition_id Info partition ID.
- * @param[out] offset  Byte address of the page.
+ * @param page Logical info page identifier.
+ * @param lock If true, lock the region configuration; if false, do nothing.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_info_region_setup(uint32_t page_id, uint32_t bank,
-                                         uint32_t partition_id,
-                                         uint32_t *offset);
-
-OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_info_region_scrambled_setup(uint32_t page_id,
-                                                   uint32_t bank,
-                                                   uint32_t partition_id,
-                                                   uint32_t *offset);
+status_t nvm_testutils_info_page_lock(nvm_info_page_t page, bool lock);
 
 /**
- * Configure an NVM info region with caller-supplied properties.
+ * Set properties for an NVM data region and enable it.
  *
- * Initialises the NVM controller internally and sets up the info region at
- * (page_id, bank, partition_id) using the provided region properties.  Returns
- * the byte address of the page in `offset`.  Callers do not need to hold a
- * controller handle.
+ * Configures the base page, size, access permissions, and memory properties
+ * for a data region, then enables it.  Writes all fields unconditionally.
  *
- * @param page_id      Info page index within the bank.
- * @param bank         Bank index.
- * @param partition_id Info partition ID.
- * @param props        Region properties to apply.
- * @param[out] offset  Byte address of the page.
+ * @param region Data region index.
+ * @param base   Base page index of the region.
+ * @param size   Size of the region in pages.
+ * @param perms  Permission values to apply (read, write, erase).
+ * @param cfg    Configuration values to apply (scrambling, ECC, HE).
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_info_region_setup_properties(
-    uint32_t page_id, uint32_t bank, uint32_t partition_id,
-    dif_flash_ctrl_region_properties_t props, uint32_t *offset);
+status_t nvm_testutils_data_region_setup(uint32_t region, uint32_t base,
+                                         uint32_t size, nvm_page_perms_t perms,
+                                         nvm_page_cfg_t cfg);
 
 /**
- * Configure access permissions for an NVM info page.
+ * Lock the region configuration for an NVM data region.
  *
- * Initialises the NVM controller internally and sets up the info region at
- * (page_id, bank, partition_id) with the given individual permission flags.
- * Returns the byte address of the page in `offset`.  Callers do not need to
- * hold a controller handle or use any flash-specific types.
+ * Once locked the region properties cannot be changed until the device is
+ * reset. Passing `lock = false` is a no-op and always returns OK_STATUS.
  *
- * @param page_id           Info page index within the bank.
- * @param bank              Bank index.
- * @param partition_id      Info partition ID.
- * @param rd_en             Enable reads.
- * @param prog_en           Enable programming.
- * @param erase_en          Enable erasing.
- * @param scramble_en       Enable scrambling.
- * @param ecc_en            Enable ECC.
- * @param high_endurance_en Enable high-endurance mode.
- * @param[out] offset       Byte address of the page.
+ * @param region Data region index.
+ * @param lock   If true, lock the region configuration; if false, do nothing.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_set_info_page_access(uint32_t page_id, uint32_t bank,
-                                            uint32_t partition_id, bool rd_en,
-                                            bool prog_en, bool erase_en,
-                                            bool scramble_en, bool ecc_en,
-                                            bool high_endurance_en,
-                                            uint32_t *offset);
+status_t nvm_testutils_data_region_lock(uint32_t region, bool lock);
 
 /**
- * Erase and write an NVM info page at a raw byte address.
+ * Log any outstanding flash controller fault status registers.
  *
- * Initialises the NVM controller internally, erases the info page that
- * contains `byte_address`, then programs `word_count` words of `data`
- * starting at `byte_address`.  The partition is identified by `partition_id`.
+ * Initialises the NVM controller internally, reads the fault status registers
+ * via flash_ctrl_testutils_show_faults, and logs any faults.  Useful at the
+ * start of a test to confirm the controller is in a clean state.
  *
- * @param byte_address Byte address of the start of the page to erase/write.
- * @param partition_id Info partition ID.
- * @param data         Data words to write.
- * @param word_count   Number of 32-bit words to write.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_erase_and_write_info_page(uint32_t byte_address,
-                                                 uint32_t partition_id,
-                                                 const uint32_t *data,
-                                                 size_t word_count);
+status_t nvm_testutils_show_faults(void);
+
+/**
+ * Set the NVM controller default data region properties.
+ *
+ * Writes all fields of the default region unconditionally using the same
+ * bool-to-MultiBitBool4 semantics as nvm_testutils_info_page_setup.
+ * Hardware register state persists, so subsequent NVM operations will observe
+ * these settings.
+ *
+ * @param perms Permission values to apply (read, write, erase).
+ * @param cfg   Configuration values to apply (scrambling, ECC, HE).
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_default_region_setup(nvm_page_perms_t perms,
+                                            nvm_page_cfg_t cfg);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_NVM_TESTUTILS_H_

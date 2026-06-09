@@ -32,9 +32,9 @@ static void print_boot_data(const boot_data_t *boot_data) {
 static void increment_flash_counter(void) {
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(kFlashCounterId));
   // Disable default region access after the counter operation.
-  CHECK_STATUS_OK(nvm_testutils_enable_data_access(
-      /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_setup(
+      (nvm_page_perms_t){.read = false, .write = false, .erase = false},
+      (nvm_page_cfg_t){.scrambling = false, .ecc = false, .he = false}));
 }
 
 static rom_error_t first_boot_test(void) {

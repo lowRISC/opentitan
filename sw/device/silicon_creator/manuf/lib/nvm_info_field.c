@@ -106,9 +106,10 @@ status_t manuf_nvm_info_field_read(nvm_info_field_t field, uint32_t *data_out,
 
 status_t manuf_nvm_info_field_write(nvm_info_field_t field, uint32_t *data_in,
                                     size_t num_words,
-                                    bool erase_page_before_write) {
+                                    bool erase_page_before_write,
+                                    bool readback) {
   TRY(nvm_testutils_write_info_page(field.page, field.byte_offset, data_in,
-                                    num_words, /*scramble=*/false,
-                                    erase_page_before_write));
+                                    num_words, erase_page_before_write,
+                                    readback));
   return OK_STATUS();
 }

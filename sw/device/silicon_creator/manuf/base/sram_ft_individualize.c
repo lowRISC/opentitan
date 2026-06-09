@@ -20,7 +20,6 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/ft_device_id.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
@@ -107,6 +106,8 @@ static status_t patch_ast_config_value(void) {
   // Read patch address and value from flash info 0.
   uint32_t ast_patch_addr_offset;
   uint32_t ast_patch_value;
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstIndividPatchAddr.page,
+                                    kPageReadOnly, kPageRawCfg));
   TRY(manuf_nvm_info_field_read(
       kNvmInfoFieldAstIndividPatchAddr, &ast_patch_addr_offset,
       kNvmInfoFieldAstIndividPatchAddrSizeIn32BitWords));
@@ -162,11 +163,9 @@ static status_t provision(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
-  TRY(manuf_individualize_device_hw_cfg(&otp_ctrl, kFlashInfoPage0Permissions,
-                                        in_data.ft_device_id));
+  TRY(manuf_individualize_device_hw_cfg(&otp_ctrl, in_data.ft_device_id));
 #else
-  TRY(manuf_individualize_device_hw_cfg(&otp_ctrl, kFlashInfoPage0Permissions,
-                                        kFtDeviceId));
+  TRY(manuf_individualize_device_hw_cfg(&otp_ctrl, kFtDeviceId));
 #endif
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));

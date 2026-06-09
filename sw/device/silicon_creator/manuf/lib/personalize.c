@@ -62,15 +62,18 @@ status_t manuf_personalize_nvm_asymm_key_seed(nvm_info_field_t field,
 
   // Since all seeds are stored consecutively on the same flash info page,
   // we only need to erase it once (on the first write at byte_offset==0).
+  TRY(nvm_testutils_info_page_setup(field.page, kPageReadWrite,
+                                    kPageScrambleCfg));
   if (field.byte_offset == 0) {
-    TRY(nvm_testutils_write_info_page(
-        field.page, /*byte_offset=*/0, seed, kAttestationSeedWords,
-        /*scramble=*/true, /*erase_before_write=*/true));
+    TRY(nvm_testutils_write_info_page(field.page, /*byte_offset=*/0, seed,
+                                      kAttestationSeedWords,
+                                      /*erase_before_write=*/true,
+                                      /*readback=*/true));
   } else {
     TRY(nvm_testutils_write_info_page(field.page, field.byte_offset, seed,
                                       kAttestationSeedWords,
-                                      /*scramble=*/true,
-                                      /*erase_before_write=*/false));
+                                      /*erase_before_write=*/false,
+                                      /*readback=*/true));
   }
 
   uint32_t seed_result[kAttestationSeedWords];
@@ -107,9 +110,11 @@ static status_t nvm_keymgr_secret_seed_write(nvm_info_field_t field,
                              /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
 
+  TRY(nvm_testutils_info_page_setup(field.page, kPageReadWrite,
+                                    kPageScrambleCfg));
   TRY(nvm_testutils_write_info_page(field.page, field.byte_offset, seed, len,
-                                    /*scramble=*/true,
-                                    /*erase_before_write=*/true));
+                                    /*erase_before_write=*/true,
+                                    /*readback=*/true));
 
   uint32_t seed_result[kNvmInfoFieldKeySeedSizeIn32BitWords];
   TRY(nvm_testutils_read_info_page(field.page, field.byte_offset, seed_result,

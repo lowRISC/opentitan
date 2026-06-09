@@ -531,9 +531,9 @@ bool test_main(void) {
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
   // Enable NVM access for storing info across resets.
   LOG_INFO("Setting default region accesses");
-  CHECK_STATUS_OK(nvm_testutils_enable_data_access(
-      /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  CHECK_STATUS_OK(nvm_testutils_default_region_setup(
+      kPageReadWrite,
+      (nvm_page_cfg_t){.scrambling = false, .ecc = false, .he = false}));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;

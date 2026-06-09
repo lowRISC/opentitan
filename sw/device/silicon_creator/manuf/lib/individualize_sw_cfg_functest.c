@@ -56,12 +56,14 @@ static status_t init_flash_info_page0(bool write_ast_data) {
   for (size_t i = 0; i < ARRAYSIZE(ast_cfg_data); ++i) {
     ast_cfg_data[i] = i;
   }
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
+                                    kPageReadWrite, kPagePlainCfg));
   TRY(nvm_testutils_write_info_page(kNvmInfoFieldAstCalibrationData.page,
                                     kNvmInfoFieldAstCalibrationData.byte_offset,
                                     ast_cfg_data,
                                     kNvmInfoAstCalibrationDataSizeIn32BitWords,
-                                    /*scramble=*/false,
-                                    /*erase_before_write=*/true));
+                                    /*erase_before_write=*/true,
+                                    /*readback=*/true));
   return OK_STATUS();
 }
 
@@ -85,6 +87,8 @@ static status_t check_otp_ast_cfg(void) {
   // Check that the AST configuration data was erased from flash info page 0.
   TRY(init_flash_info_page0(false));
   uint32_t ast_cfg_data[kNvmInfoAstCalibrationDataSizeIn32BitWords] = {0};
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
+                                    kPageReadOnly, kPagePlainCfg));
   TRY(manuf_nvm_info_field_read(kNvmInfoFieldAstCalibrationData, ast_cfg_data,
                                 kNvmInfoAstCalibrationDataSizeIn32BitWords));
   for (size_t i = 0; i < kNvmInfoAstCalibrationDataSizeIn32BitWords; ++i) {

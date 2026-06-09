@@ -43,6 +43,8 @@ bool test_main(void) {
       LOG_INFO("Reading the isolated flash partition.");
       uint32_t actual_wafer_auth_secret
           [kNvmInfoFieldWaferAuthSecretSizeIn32BitWords] = {0};
+      CHECK_STATUS_OK(nvm_testutils_info_page_setup(
+          kNvmInfoFieldWaferAuthSecret.page, kPageReadOnly, kPagePlainCfg));
       CHECK_STATUS_OK(nvm_testutils_read_info_page(
           kNvmInfoFieldWaferAuthSecret.page,
           kNvmInfoFieldWaferAuthSecret.byte_offset, actual_wafer_auth_secret,

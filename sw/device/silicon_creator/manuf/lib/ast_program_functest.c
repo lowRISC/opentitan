@@ -43,11 +43,13 @@ static status_t erase_and_program_page(void) {
     ast_cfg_data[i] = i;
   }
 
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
+                                    kPageReadWrite, kPagePlainCfg));
   return nvm_testutils_write_info_page(
       kNvmInfoFieldAstCalibrationData.page,
       kNvmInfoFieldAstCalibrationData.byte_offset, ast_cfg_data,
-      kNvmInfoAstCalibrationDataSizeIn32BitWords, /*scramble=*/false,
-      /*erase_before_write=*/true);
+      kNvmInfoAstCalibrationDataSizeIn32BitWords,
+      /*erase_before_write=*/true, /*readback=*/true);
 }
 
 static status_t execute_test(void) {
@@ -62,7 +64,7 @@ static status_t execute_test(void) {
   uint32_t crc =
       crc32(ast_cfg_data, (kNvmInfoAstCalibrationDataSizeIn32BitWords - 3) *
                               sizeof(uint32_t));
-  TRY_CHECK(ast_nr_writes == kFlashInfoAstCalibrationDataSizeIn32BitWords - 3);
+  TRY_CHECK(ast_nr_writes == kNvmInfoAstCalibrationDataSizeIn32BitWords - 3);
   TRY_CHECK(crc32_finish(&ast_crc) == crc);
   return OK_STATUS();
 }

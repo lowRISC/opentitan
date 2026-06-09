@@ -238,15 +238,17 @@ bool test_main(void) {
       kNvmInfoFieldCdi0AttestationKeySeed,
       kNvmInfoFieldCdi1AttestationKeySeed,
   };
+  CHECK_STATUS_OK(nvm_testutils_info_page_setup(
+      seed_fields[0].page, kPageReadWrite, kPageScrambleCfg));
   CHECK_STATUS_OK(nvm_testutils_write_info_page(
       seed_fields[0].page, seed_fields[0].byte_offset, kSeedValues[0],
-      kAttestationSeedWords, /*scramble=*/true, /*erase_before_write=*/true));
+      kAttestationSeedWords, /*erase_before_write=*/true, /*readback=*/true));
   CHECK(ARRAYSIZE(seed_fields) == ARRAYSIZE(kSeedValues));
   for (size_t i = 1; i < ARRAYSIZE(seed_fields); i++) {
     CHECK_STATUS_OK(nvm_testutils_write_info_page(
         seed_fields[i].page, seed_fields[i].byte_offset, kSeedValues[i],
-        kAttestationSeedWords, /*scramble=*/true,
-        /*erase_before_write=*/false));
+        kAttestationSeedWords, /*erase_before_write=*/false,
+        /*readback=*/true));
   }
 
   // Load the boot services OTBN app.

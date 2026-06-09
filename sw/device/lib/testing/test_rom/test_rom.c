@@ -16,6 +16,9 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print_uart.h"
+#ifdef OPENTITAN_IS_EARLGREY
+#include "sw/device/lib/testing/nvm_testutils.h"
+#endif
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
@@ -32,13 +35,6 @@
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #endif
 
-#ifdef HAS_FLASH_CTRL
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-
-#endif
-
 #ifdef HAS_OTP_CTRL
 #include "hw/top/dt/otp_ctrl.h"
 
@@ -51,11 +47,6 @@
 
 static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
 static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
-
-#ifdef HAS_FLASH_CTRL
-static const dt_flash_ctrl_t kFlashCtrlDt = kDtFlashCtrl;
-static dif_flash_ctrl_state_t flash_ctrl;
-#endif
 
 static const dt_uart_t kUart0Dt = kDtUart0;
 static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
@@ -138,33 +129,18 @@ bool rom_test_main(void) {
 
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
-  // Initialize the flash.
-#ifdef HAS_FLASH_CTRL
-  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
-  CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
+  // Initialize the NVM.
+#ifdef OPENTITAN_IS_EARLGREY
+  {
+    uint32_t otp_nvm_default_cfg = 0;
 #ifdef HAS_OTP_CTRL
-  // Check the otp to see if flash scramble should be enabled.
-  otp_val = abs_mmio_read32(
-      otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
-  if (otp_val != 0) {
-    dif_flash_ctrl_region_properties_t default_properties;
-    CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
-        &flash_ctrl, &default_properties));
-    default_properties.scramble_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING);
-    default_properties.ecc_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC);
-    default_properties.high_endurance_en =
-        bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE);
-    CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
-        &flash_ctrl, default_properties));
+    otp_nvm_default_cfg = abs_mmio_read32(
+        otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+#endif
+    CHECK_STATUS_OK(nvm_testutils_rom_init(otp_nvm_default_cfg));
   }
-#endif /* HAS_OTP_CTRL */
-  CHECK_DIF_OK(
-      dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
-#endif /* HAS_FLASH_CTRL */
+#endif /* OPENTITAN_IS_EARLGREY */
 
   // Setup the UART for printing messages to the console.
   if (kDeviceType != kDeviceSimDV) {
@@ -228,11 +204,6 @@ bool rom_test_main(void) {
       test_status_set(kTestStatusFailed);
     }
   }
-#endif
-
-#ifdef OPENTITAN_IS_EARLGREY
-  CHECK_DIF_OK(
-      dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
 #endif
 
   const manifest_t *manifest = (const manifest_t *)_manifest_address;

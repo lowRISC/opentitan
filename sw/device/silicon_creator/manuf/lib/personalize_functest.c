@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -115,6 +116,9 @@ bool test_main(void) {
           kNvmInfoFieldCdi1AttestationKeySeed, kAttestationSeedWords));
 
       // Read the attestation key seed fields to ensure they are non-zero.
+      CHECK_STATUS_OK(
+          nvm_testutils_info_page_setup(kNvmInfoFieldUdsAttestationKeySeed.page,
+                                        kPageReadOnly, kPageScrambleCfg));
       uint32_t uds_attestation_key_seed[kAttestationSeedWords];
       uint32_t cdi_0_attestation_key_seed[kAttestationSeedWords];
       uint32_t cdi_1_attestation_key_seed[kAttestationSeedWords];
