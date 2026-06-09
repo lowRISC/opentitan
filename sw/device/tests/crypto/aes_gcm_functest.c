@@ -464,8 +464,9 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t result = OK_STATUS();
+  otcrypto_state_t state = {0};
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
 
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {
     LOG_INFO("Starting AES-GCM test %d of %d...", i + 1,

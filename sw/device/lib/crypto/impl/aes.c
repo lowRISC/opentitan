@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -312,6 +313,9 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Guarantees hw_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
   (void)hw_cleanup_guard;
+
+  // Run the AES ECB 256 KAT exactly once before utilizing the block
+  HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.

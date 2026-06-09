@@ -127,7 +127,8 @@ static status_t test_setup(void) {
   // Initialize entropy complex for cryptolib, which the key manager uses to
   // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
   // the device, so this should happen afterwards.
-  return otcrypto_init(kOtcryptoKeySecurityLevelLow);
+  otcrypto_state_t state = {0};
+  return otcrypto_init(kOtcryptoKeySecurityLevelLow, &state);
 }
 
 OTTF_DEFINE_TEST_CONFIG();

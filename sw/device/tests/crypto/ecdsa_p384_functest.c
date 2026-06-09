@@ -532,7 +532,8 @@ static status_t run_ecdsa_negative_tests(void) {
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   EXECUTE_TEST(result, sign_then_verify_test);
   EXECUTE_TEST(result, sign_kat);
   EXECUTE_TEST(result, run_ecdsa_negative_tests);

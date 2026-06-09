@@ -7,10 +7,13 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/alert.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
+#include "sw/device/lib/crypto/include/self_integrity.h"
 
 #include "clkmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -72,13 +75,22 @@ otcrypto_status_t otcrypto_clear_alerts(void) {
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
+otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level,
+                                otcrypto_state_t *state) {
   HARDENED_TRY(otcrypto_set_security_config(security_level));
 
   HARDENED_TRY(init_alert_registers());
 
-  // Instantiate the RNG.
-  HARDENED_TRY(otcrypto_entropy_init());
+  // Instantiate the state.
+  HARDENED_TRY(init_state(state, security_level));
+
+  // The state can only be written with a disabled entropy source.
+  entropy_complex_stop_all();
+
+  HARDENED_TRY(store_state(state));
+
+  // Instantiate the entropy source in FIPS mode.
+  HARDENED_TRY(entropy_complex_start(kHardenedBoolTrue));
 
   // The OTBN is still left with DMEM from the boot.
   HARDENED_TRY(otbn_dmem_sec_wipe());
@@ -86,7 +98,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(keymgr_sideload_clear_otbn());
   HARDENED_TRY(keymgr_sideload_clear_kmac());
 
-#ifdef HASH_SELF_CHECK_ENABLE
+#ifdef FIPS_MODE
   HARDENED_TRY(otcrypto_integrity_check());
 #endif
 
@@ -94,12 +106,18 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 }
 
 otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
-  if (read_alert_registers()) {
-    return OTCRYPTO_FATAL_ERR;
-  }
+  crypto_state_t *state = NULL;
 
-  // Verify the entropy source before leaving.
-  HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+  HARDENED_TRY(read_state_pointer(&state));
+
+  if (state->security_level != kOtcryptoKeySecurityLevelLow) {
+    if (read_alert_registers()) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+
+    // Verify the entropy source before leaving.
+    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+  }
 
   return status;
 }

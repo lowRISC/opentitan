@@ -491,7 +491,8 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib KMAC driver.");
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   // Initialize the core with default parameters
   CHECK_STATUS_OK(kmac_hwip_default_configure());
 

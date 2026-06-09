@@ -102,7 +102,8 @@ static status_t test_decrypt_timing(void) {
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   hardened_bool_t icache_enabled;
   CHECK_STATUS_OK(otcrypto_disable_icache(&icache_enabled));
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {

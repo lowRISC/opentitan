@@ -180,7 +180,8 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   LOG_INFO("Testing cryptolib HMAC/SHA-2 streaming implementations.");
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   for (size_t i = 0; i < ARRAYSIZE(kHmacTestVectors); i++) {
     current_test_vector = &kHmacTestVectors[i];
     LOG_INFO("Running test %d of %d, test vector identifier: %s", i + 1,

@@ -13,7 +13,9 @@ cc_library(
     name = "otcrypto_api",
     defines =
         select({
-            "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+            "//sw/device/lib/crypto/configs:hashed": [
+                "FIPS_MODE",
+            ],
             "//conditions:default": [],
         }),
     deps = [
@@ -30,6 +32,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:kats",
         "//sw/device/lib/crypto/impl:kdf_ctr",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
@@ -38,6 +41,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:self_integrity",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
+        "//sw/device/lib/crypto/impl:state",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -55,6 +59,10 @@ opentitan_binary_blob(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
     ],
+    target_compatible_with = select({
+        "//sw/device/lib/crypto/configs:crypto_fips_all": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     # We add the compiler option -fno-jump-tables to prevent the compiler making the code position dependent.
     # Minsize is added to reduce code size.
     transitive_features = [
@@ -130,4 +138,5 @@ pkg_tar(
 filegroup(
     name = "otcrypto_binary_blob_inspection",
     srcs = [":otcrypto_binary_blob_api"],
+    tags = ["manual"],
 )

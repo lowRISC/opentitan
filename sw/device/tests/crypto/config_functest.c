@@ -39,7 +39,8 @@ static status_t test_set_and_check_config(void) {
 static status_t test_init_and_exit(void) {
   otcrypto_key_security_level_t sec_level = kOtcryptoKeySecurityLevelHigh;
 
-  TRY(otcrypto_init(sec_level));
+  otcrypto_state_t state = {0};
+  TRY(otcrypto_init(sec_level, &state));
   TRY(otcrypto_security_config_check(sec_level));
   TRY(otcrypto_eval_exit(OTCRYPTO_OK));
 
@@ -51,8 +52,9 @@ static status_t test_multiple_inits(void) {
 
   TRY(otcrypto_set_security_config(sec_level));
 
+  otcrypto_state_t state = {0};
   for (size_t i = 0; i < 50; i++) {
-    TRY(otcrypto_init(sec_level));
+    TRY(otcrypto_init(sec_level, &state));
   }
 
   return OK_STATUS();
@@ -87,7 +89,8 @@ static status_t test_alert_caught_by_eval_exit(void) {
   LOG_INFO("Testing otcrypto_eval_exit with forced AES alert");
 
   // Initialize crypto (this also clears alert accumulators)
-  TRY(otcrypto_init(kOtcryptoKeySecurityLevelHigh));
+  otcrypto_state_t state = {0};
+  TRY(otcrypto_init(kOtcryptoKeySecurityLevelHigh, &state));
 
   // OTTF has its own alert management system, we have to bypass it.
   // Disable interrupts globally.
@@ -142,7 +145,8 @@ static status_t test_lock(void) {
   // Locking the accumulators causes the alert to no longer be clearable.
   // The test is similar to test_alert_caught_by_eval_exit
 
-  TRY(otcrypto_init(kOtcryptoKeySecurityLevelHigh));
+  otcrypto_state_t state = {0};
+  TRY(otcrypto_init(kOtcryptoKeySecurityLevelHigh, &state));
   irq_global_ctrl(false);
 
   // Lock the accumulators
