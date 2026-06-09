@@ -43,10 +43,14 @@ mldsa87_verify_sig_h:
  * Verification result
  */
 
-.globl mldsa87_verify_result
+.globl mldsa87_verify_res_ok
+.globl mldsa87_verify_c_tilde_prime
 
-mldsa87_verify_result:
-.zero 32
+mldsa87_verify_res_ok:
+.zero 4
+.zero 28 /* Padding */
+mldsa87_verify_res_c_tilde_prime:
+.zero 64
 
 /*
  * Intermediate variables

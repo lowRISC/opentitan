@@ -18,11 +18,9 @@
     }
   },
   "output": {
-    "regs": {
-      "w0": "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
-    },
     "dmem": {
-      "mldsa87_verify_var_c": "0x568cce1c192c26b2c7d6de7bbc97854bde83c51a0c5690328d88887ac37976e28cf479c48d68896c7039689621f8127f409eac80074054a8e5d22535e020419a",
+      "mldsa87_verify_res_ok": "0x000000000000000000000000000000000000000000000000000000007baf73d2",
+      "mldsa87_verify_res_c_tilde_prime": "0x568cce1c192c26b2c7d6de7bbc97854bde83c51a0c5690328d88887ac37976e28cf479c48d68896c7039689621f8127f409eac80074054a8e5d22535e020419a",
     }
   }
 }
