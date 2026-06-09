@@ -7,6 +7,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_fil
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
+
 bool_flag(
     name = "ot_certs",
     build_setting_default = True,
@@ -62,6 +63,10 @@ rust_binary(
     rustc_env_files = [
         "stamp-env.txt",
     ],
+    rustc_flags = [
+        "-C",
+        "link-arg=-Wl,--allow-shlib-undefined",
+    ],
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = -1,
     deps = [
@@ -70,7 +75,7 @@ rust_binary(
         "//sw/host/ot_transports/chipwhisperer",
         "//sw/host/ot_transports/verilator",
         "//sw/host/sphincsplus",
-        "//util:bfv_decoder",
+        "//util/bfv_decoder",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:directories",
