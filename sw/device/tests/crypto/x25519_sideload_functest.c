@@ -209,7 +209,8 @@ static status_t test_setup(void) {
   TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
 
   // Initialize entropy complex for cryptolib.
-  return otcrypto_init(kOtcryptoKeySecurityLevelLow);
+  otcrypto_state_t state = {0};
+  return otcrypto_init(kOtcryptoKeySecurityLevelLow, &state);
 }
 
 OTTF_DEFINE_TEST_CONFIG();

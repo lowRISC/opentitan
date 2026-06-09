@@ -440,7 +440,8 @@ bool test_main(void) {
   LOG_INFO("Keymgr entered %s State", state_name);
   LOG_INFO("Testing cryptolib KDF-KMAC driver with sideloaded key.");
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   // Initialize the core with default parameters
   CHECK_STATUS_OK(kmac_hwip_default_configure());
 

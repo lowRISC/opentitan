@@ -277,7 +277,8 @@ status_t handle_gdb(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   ujson_t uj = ujson_ottf_console();
   return status_ok(handle_gdb(&uj));
 }

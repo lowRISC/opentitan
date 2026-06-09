@@ -13,6 +13,7 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 config_setting(
     name = "crypto_status_debug",
@@ -43,6 +44,7 @@ cc_library(
         ":config",
         ":integrity",
         ":keyblob",
+        ":state",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
@@ -194,13 +196,14 @@ cc_library(
     srcs = ["self_integrity.c"],
     hdrs = ["//sw/device/lib/crypto/include:self_integrity.h"],
     local_defines = select({
-        "//sw/device/lib/crypto/configs:hashed": ["HASH_SELF_CHECK_ENABLE"],
+        "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
         "//conditions:default": [],
     }),
     deps = [
-        ":sha2",
+        ":state",
         ":status",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -214,10 +217,19 @@ cc_test(
     ],
 )
 
+# Created to deal with the circular dependency (the KATs need the crypto dependencies, but crypto needs to call the KAT)
+cc_library(
+    name = "kats_hdrs",
+    hdrs = ["kats.h"],
+    deps = [
+        ":status",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
 cc_library(
     name = "kats",
     srcs = ["kats.c"],
-    hdrs = ["kats.h"],
     deps = [
         ":aes",
         ":aes_gcm",
@@ -229,6 +241,7 @@ cc_library(
         ":entropy_src",
         ":hmac",
         ":integrity",
+        ":kats_hdrs",
         ":keyblob",
         ":kmac",
         ":rsa",
@@ -239,6 +252,7 @@ cc_library(
         "//sw/device/lib/crypto/drivers:entropy_kat",
         "//sw/device/lib/crypto/include:datatypes",
     ],
+    alwayslink = True,
 )
 
 cc_library(
@@ -347,19 +361,55 @@ cc_library(
     name = "config",
     srcs = ["config.c"],
     hdrs = ["//sw/device/lib/crypto/include:config.h"],
+    defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":entropy_src",
         ":integrity",
+        ":self_integrity",
+        ":state",
         ":status",
         "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:alert",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
+)
+
+dual_cc_library(
+    name = "state",
+    srcs = dual_inputs(
+        device = ["state.c"],
+        host = ["mock_state.cc"],
+    ),
+    hdrs = ["state.h"],
+    defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
+        "//conditions:default": [],
+    }),
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/entropy_src/data:entropy_src_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/crypto/drivers:entropy",
+        ],
+        host = [
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:memory",
+        ],
+        shared = [
+            ":kats_hdrs",
+            "//sw/device/lib/base:hardened_memory",
+        ],
+    ),
 )
 
 cc_library(

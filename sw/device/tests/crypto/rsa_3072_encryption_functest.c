@@ -249,7 +249,8 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   EXECUTE_TEST(test_result, oaep_decrypt_valid_test);
   EXECUTE_TEST(test_result, oaep_encrypt_decrypt_test);
   return status_ok(test_result);

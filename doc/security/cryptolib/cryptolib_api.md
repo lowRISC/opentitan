@@ -3,6 +3,7 @@
 This page is intended for users of the OpenTitan cryptographic library.
 The library is written in C and uses OpenTitan's hardware blocks for accelerated cryptography.
 It generally attempts to minimize code size and protect against side-channel and fault-injection attacks, including by physically present attackers.
+For a secure setting, the cryptolib should be the only software in the firmware authorized to interact with the crypto blocks in OpenTitan.
 
 This page:
 - Lists a quick reference for [supported algorithms](#supported-algorithms)
@@ -39,6 +40,7 @@ For more details, see later sections (links in the "category" column).
 
 Before using the cryptolib, the user should initialize the system with the dedicated `otcrypto_init` function.
 Depending on the provided `security_level` (`kOtcryptoKeySecurityLevelLow`, `kOtcryptoKeySecurityLevelMedium`, `kOtcryptoKeySecurityLevelHigh`), the initialization function enables certain countermeasures (e.g., the Ibex dummy instruction [feature][dummy-instruction]).
+The function also takes a pointer to an `otcrypto_state_t` structure, which is used to track the library's internal state (such as KATs and integrity checks) across calls.
 Please note that this function only can be called from the machine (M) mode privilege level as it writes to system registers.
 
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_init }}
@@ -72,11 +74,42 @@ This specialized target hashes the library's contents and fuses the hash onto th
 You can trigger this build using the `--config=crypto_fips_all` Bazel flag.
 The exact functions included in this blob are strictly governed by an allowlist configuration file located in `//sw/device/lib/crypto/configs`.
 
-Because the FIPS blob is relocatable and contiguous, developers contributing to the cryptolib must adhere to strict memory and structural constraints:
+Because the FIPS blob is relocatable and contiguous, developers contributing to the cryptolib must adhere to strict memory and structural constraints.
 
-*   **No `.bss` or `.data` Sections:** The linker script enforces that the `.bss`, `.sbss`, `.data`, and `.sdata2` sections have a size of exactly 0. You **cannot** use static (non-const) variables or uninitialized global variables. All data must reside in `.text`, `.rodata`, or `.srodata`.
+### Cryptolib Contributor Constraints
+
+*   **No `.bss` or `.data` sections:** The linker script enforces that the `.bss`, `.sbss`, `.data`, and `.sdata2` sections have a size of exactly 0.
+You **cannot** use static (non-const) variables or uninitialized global variables.
+All data must reside in `.text`, `.rodata`, or `.srodata`.
 *   **Strict Position Independence:** Code must be completely position-independent (PIC) and cannot rely on a Global Offset Table (GOT).
-*   **No Jump Tables:** The library is explicitly compiled with `-fno-jump-tables`. This forces the compiler to handle `switch` statements without generating position-dependent jump tables.
+*   **No Jump Tables:** The library is explicitly compiled with `-fno-jump-tables`.
+This forces the compiler to handle `switch` statements without generating position-dependent jump tables.
+*   **No Function Pointer Arrays:** Do not use `static const` arrays of function pointers (such as execution dispatch tables).
+The compiler will bake absolute memory addresses into the `.rodata` section.
+Instead, use sequential `if` statements or `switch` blocks, which force the compiler to generate safe, PC-relative jump instructions (`jal` or `auipc`).
+*   **Dynamic Pointer Initialization:** When initializing structs that contain pointers (like `otcrypto_byte_buf_t` or `otcrypto_unblinded_key_t`) with global constant arrays, **do not** use static curly-brace initialization or macros like `OTCRYPTO_MAKE_BUF`.
+The GCC optimizer will trap this and embed absolute addresses into `.rodata`.
+Instead, construct these structs dynamically at runtime using the inline builder functions provided in `integrity.h` (e.g., `otcrypto_make_const_byte_buf()`).
+This forces the compiler to calculate the pointer offsets safely on the stack.
+
+### Stateful Known Answer Tests (KATs)
+
+In the FIPS build, cryptographic operations are gated by Power-On Self-Tests (POSTs), Known Answer Tests (KATs), and self-integrity checks.
+The cryptolib handles these seamlessly, but internal contributors and host applications must observe the following rules to prevent lockups and memory faults:
+
+*   **Run-Once State Tracking:** To minimize latency, KATs execute lazily upon the first invocation of a module.
+Because the cryptolib cannot maintain its own `.bss` section to track this execution state, the ledger relies on a host-provided state pointer passed during `otcrypto_init()`.
+*   **Hardware Pointer Stashing:** To avoid passing this pointer through every internal crypto function call, the cryptolib splits and stashes the 32-bit state address inside two unused 16-bit threshold registers within the hardware's `ENTROPY_SRC` block (`ENTROPY_SRC_EXTHT_HI_THRESHOLDS` and `ENTROPY_SRC_EXTHT_LO_THRESHOLDS`).
+These registers do not influence the entropy source's health tests.
+*   **Register Integrity:** Never manually configure or overwrite the `ENTROPY_SRC_EXTHT_HI_THRESHOLDS` or `ENTROPY_SRC_EXTHT_LO_THRESHOLDS` registers in the entropy source after initialization.
+Doing so will corrupt the stashed pointer.
+*   **Host Memory Stability:** The host firmware calling `otcrypto_init()` must ensure that the memory address backing the KAT state is globally stable.
+Do not pass a stack-allocated variable unless its scope is guaranteed to outlive all cryptographic operations.
+*   **Self-Integrity Check:** In FIPS mode, `otcrypto_init()` performs a self-integrity check by hashing the library's binary blob and comparing it to a pre-calculated hash.
+The result is stored in the tracking state.
+Subsequent operations verify that this check has passed, returning a recoverable error (`kOtcryptoStatusValueInternalError`) if it has not.
+*   **Locked State:** If the self-integrity check fails, or if any subsequent KAT fails, the library enters a locked state.
+Once locked, the library is disabled, and all subsequent cryptographic operations will immediately return a fatal error (`kOtcryptoStatusValueFatalError`), this is only reverted by resetting the chip.
 
 ### Testing PIC Compliance
 

@@ -85,21 +85,40 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_clear_alerts(void);
 
 /**
- * Initializes the crypto library for use.
+ * Initializes the cryptographic library for use.
  *
- * Check the security configuration
- * Set up alert management
- * Perform (some) KATs for FIPS
- * Set up the entropy source
+ * This function prepares the cryptolib for secure operation by performing the
+ * following initialization sequence:
+ * - Validates the system security configuration.
+ * - Configures alert management and Ibex registers.
+ * - Initializes the entropy complex for random number generation.
+ * - Executes baseline Power-On Self-Tests (POSTs) and initial Known Answer
+ *   Tests (KATs) required for FIPS compliance.
  *
- * This function writes to alert manager and Ibex registers.
- * It is only usable in M mode.
+ * To support lazy evaluation of subsequent KATs without violating memory
+ * constraints, this function stashes the provided `state` pointer into the
+ * hardware entropy complex.
  *
- * @param security_level Security level of the used key.
- * @returns OK when the security check passed.
+ * The given security level (abusin the key security structure) determines the
+ * security level the library will use. Non-low security level will set the ibex
+ * CSRs to enable a jittery clock and dummy instructions; manually verify alerts
+ * from the HW and sensors after every cryptographic operation; and verify
+ * whether the entropy source is not tampered with.
+ *
+ * @note Because this function writes directly to alert manager and Ibex
+ *       registers, it can only be executed in Machine mode (M mode).
+ *
+ * @param security_level Minimum security level targeted for the environment
+ * (this abuses the key security structure).
+ * @param state          Pointer to a stable 32-bit memory location (e.g., in
+ * `.bss` or Retention SRAM) used to continuously track KAT execution.
+ * @return Result of the initialization operation. Returns
+ * `kOtcryptoStatusValueOk` on success, or an appropriate error code if any
+ * check or test fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level);
+otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level,
+                                otcrypto_state_t *state);
 
 /**
  * Function used to return to the user, the last function call of every crypto

@@ -602,7 +602,8 @@ static status_t run_negative_tests(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
 
   status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, rfc_test1);

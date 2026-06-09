@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/impl/kats.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -21,15 +22,6 @@
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
-
-#ifdef KAT_CHECK_ENABLE
-
-#include "sw/device/lib/base/abs_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-#endif
 
 // We first provide all configs and test vectors
 static const uint32_t kTestMask[] = {
@@ -1171,7 +1163,7 @@ static status_t kat_ed25519_verify(void) {
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t run_kats(otcrypto_kat_id_t tests) {
+otcrypto_status_t run_kats(kat_id_t tests) {
   if (tests.flags == 0 || tests.flags >= (1UL << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
   }

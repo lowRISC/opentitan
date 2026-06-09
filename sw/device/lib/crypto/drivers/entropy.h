@@ -86,15 +86,48 @@ extern const entropy_seed_material_t kEntropyEmptySeed;
 /**
  * Configures the entropy complex in continuous mode.
  *
- * The complex is configured in continuous mode with FIPS mode enabled. This is
- * the default operational mode of the entropy_src, csrng, edn0 and edn1 blocks.
+ * This function configures the entropy_src, csrng, edn0, and edn1 blocks for
+ * default operation in continuous mode. If FIPS mode is enabled, it applies
+ * strict health test thresholds; otherwise, it defaults to boot-level settings.
  *
- * @param fips kHardenedTrue to enable FIPS health test threshold settings,
- * otherwise use the boot settings.
+ * Calls both entropy_complex_stop_all and entropy_complex_start.
+ *
+ * @param fips Set to `kHardenedBoolTrue` to enable FIPS health test thresholds,
+ *             or `kHardenedBoolFalse` to use boot settings.
  * @return Operation status in `status_t` format.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_complex_init(hardened_bool_t fips);
+
+/**
+ * Disables the entropy complex.
+ *
+ * The order of operations is important to avoid synchronization issues across
+ * blocks. For Example, EDN has FIFOs used to send commands to the downstream
+ * CSRNG instances. Such FIFOs are not cleared when EDN is reconfigured, and an
+ * explicit clear FIFO command needs to be set by software (see #14506). There
+ * may be additional race conditions for downstream blocks that are
+ * processing requests from an upstream endpoint (e.g. entropy_src processing a
+ * request from CSRNG, or CSRNG processing a request from EDN). To avoid these
+ * issues, it is recommended to first disable EDN, then CSRNG and entropy_src
+ * last.
+ *
+ * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
+ */
+void entropy_complex_stop_all(void);
+
+/**
+ * Configures the entropy complex in continuous mode.
+ *
+ * Similar to entropy_complex_init but does not stop the entropy source.
+ * Expects entropy_complex_stop_all to be called before.
+ *
+ * @param fips Set to `kHardenedBoolTrue` to enable FIPS health test thresholds,
+ *             or `kHardenedBoolFalse` to use boot settings.
+ * @return Operation status in `status_t` format.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_complex_start(hardened_bool_t fips);
 
 /**
  * Ensures that the entropy complex is ready for use.

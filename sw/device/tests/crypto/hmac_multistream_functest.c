@@ -471,7 +471,8 @@ bool test_main(void) {
 
   // Testing overall cryptolib low security, i.e., no jittery clock or dummy
   // instructions
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
 
   for (size_t i = 0; i < ARRAYSIZE(available_security_levels); ++i) {
     current_sec_level = available_security_levels[i];

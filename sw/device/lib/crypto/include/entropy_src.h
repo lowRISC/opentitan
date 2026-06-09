@@ -19,9 +19,13 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Configures the entropy source in continuous mode with FIPS thresholds.
+ * Configures the entropy complex in continuous mode with FIPS thresholds.
  *
- * @return Operation status in `otcrypto_status_t` format.
+ * This function initializes the hardware entropy source, CSRNG, and EDN blocks
+ * for FIPS-compliant continuous operation.
+ *
+ * @return Result of the initialization operation. Returns
+ * `kOtcryptoStatusValueOk` on success.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_entropy_init(void);

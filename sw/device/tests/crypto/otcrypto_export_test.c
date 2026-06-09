@@ -74,7 +74,8 @@ int32_t hash_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  RETURN_IF_ERROR(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  RETURN_IF_ERROR(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   int result = hash_test();
   return result == 0;
 }

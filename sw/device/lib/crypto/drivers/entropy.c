@@ -747,7 +747,7 @@ static void entropy_src_stop(void) {
  *
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
-static void entropy_complex_stop_all(void) {
+void entropy_complex_stop_all(void) {
   edn_stop(kBaseEdn0);
   edn_stop(kBaseEdn1);
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
@@ -838,8 +838,6 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   SET_FIPS_THRESH(BUCKET, config->bucket_threshold);
   SET_FIPS_THRESH(MARKOV_HI, config->markov_hi_threshold);
   SET_FIPS_THRESH(MARKOV_LO, config->markov_lo_threshold);
-  SET_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
-  SET_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
 
   HARDENED_CHECK_EQ(
       abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET),
@@ -977,8 +975,6 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   VERIFY_FIPS_THRESH(BUCKET, config->bucket_threshold);
   VERIFY_FIPS_THRESH(MARKOV_HI, config->markov_hi_threshold);
   VERIFY_FIPS_THRESH(MARKOV_LO, config->markov_lo_threshold);
-  VERIFY_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
-  VERIFY_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
 
   return OTCRYPTO_OK;
 }
@@ -1022,9 +1018,7 @@ static status_t edn_check(const edn_config_t *config) {
   return OTCRYPTO_RECOV_ERR;
 }
 
-status_t entropy_complex_init(hardened_bool_t fips) {
-  entropy_complex_stop_all();
-
+status_t entropy_complex_start(hardened_bool_t fips) {
   const entropy_complex_config_t *config =
       &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous];
 
@@ -1066,6 +1060,11 @@ status_t entropy_complex_check(hardened_bool_t fips) {
   HARDENED_TRY(csrng_check());
   HARDENED_TRY(edn_check(&config->edn0));
   return edn_check(&config->edn1);
+}
+
+status_t entropy_complex_init(hardened_bool_t fips) {
+  entropy_complex_stop_all();
+  return entropy_complex_start(fips);
 }
 
 OT_WARN_UNUSED_RESULT

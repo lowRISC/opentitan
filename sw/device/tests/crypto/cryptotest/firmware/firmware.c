@@ -110,7 +110,8 @@ bool test_main(void) {
   // Coverage becomes flaky with the jittery clock and dummy operations.
   sec_level = kOtcryptoKeySecurityLevelLow;
 #endif
-  CHECK_STATUS_OK(otcrypto_init(sec_level));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(sec_level, &state));
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
 }

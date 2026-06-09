@@ -53,7 +53,8 @@ bool test_main(void) {
   // Stays true only if all tests pass.
   bool result = true;
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
 
   // The definition of `RULE_NAME` comes from the autogen Bazel rule.
   LOG_INFO("Starting ecdsa_p256_verify_test:%s", RULE_NAME);

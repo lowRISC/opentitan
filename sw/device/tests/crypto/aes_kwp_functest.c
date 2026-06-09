@@ -107,7 +107,8 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   EXECUTE_TEST(result, wrap_unwrap_random_test);
 
   return status_ok(result);

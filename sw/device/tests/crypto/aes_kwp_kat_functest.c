@@ -156,7 +156,8 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   EXECUTE_TEST(result, no_padding_test);
   EXECUTE_TEST(result, needs_padding_test);
 

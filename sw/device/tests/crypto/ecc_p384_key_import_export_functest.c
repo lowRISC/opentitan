@@ -434,7 +434,8 @@ static status_t run_import_export_negative_tests(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  otcrypto_state_t state = {0};
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
 
   CHECK_STATUS_OK(ecdh_key_mode_test());
 
