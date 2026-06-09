@@ -146,14 +146,6 @@ py_library(
     srcs = ["repo_top.py"],
 )
 
-cc_library(
-    name = "bfv_decoder",
-    srcs = ["bfv_decoder.c"],
-    deps = [
-        "//sw/device/silicon_creator/lib:error",
-    ],
-)
-
 [
     py_binary(
         name = "mdbook_{}".format(preprocessor),
