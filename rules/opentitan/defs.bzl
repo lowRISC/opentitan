@@ -358,10 +358,6 @@ def opentitan_test(
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
 
-        # Temporary fallback to "cw310" if "fpga" parameters were not provided.
-        # Prevents merge skew problems while the default parameter name changes.
-        if pname == "fpga" and pname not in kwargs_unused:
-            pname = "cw310"
         if pname in kwargs_unused:
             kwargs_unused.remove(pname)
         if pname not in test_parameters:

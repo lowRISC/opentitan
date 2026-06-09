@@ -5403,14 +5403,6 @@ opentitan_test(
     srcs = [
         "usbdev_suspend_resume_test.c",
     ],
-    cw310 = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            --fin-phase=suspend
-            --init-phase=suspend
-        """,
-        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
-    ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_CW340_TEST_ENVS,
@@ -5419,6 +5411,14 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=suspend
+            --init-phase=suspend
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5442,14 +5442,6 @@ opentitan_test(
     srcs = [
         "usbdev_sleep_resume_test.c",
     ],
-    cw310 = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            --fin-phase=sleep-resume
-            --init-phase=sleep-resume
-        """,
-        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
-    ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_CW340_TEST_ENVS,
@@ -5458,6 +5450,14 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-resume
+            --init-phase=sleep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5482,14 +5482,6 @@ opentitan_test(
     srcs = [
         "usbdev_sleep_reset_test.c",
     ],
-    cw310 = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            --fin-phase=sleep-reset
-            --init-phase=sleep-resume
-        """,
-        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
-    ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_CW340_TEST_ENVS,
@@ -5499,6 +5491,14 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-reset
+            --init-phase=sleep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5523,7 +5523,16 @@ opentitan_test(
     srcs = [
         "usbdev_sleep_disconnect_test.c",
     ],
-    cw310 = fpga_params(
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    fpga = fpga_params(
         timeout = "eternal",
         tags = [
             "manual",
@@ -5535,15 +5544,6 @@ opentitan_test(
             --init-phase=sleep-disconnect
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
-    ),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_CW340_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:sim_dv": None,
-        },
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5568,14 +5568,6 @@ opentitan_test(
     srcs = [
         "usbdev_deep_resume_test.c",
     ],
-    cw310 = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            --fin-phase=deep-resume
-            --init-phase=deep-resume
-        """,
-        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
-    ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_CW340_TEST_ENVS,
@@ -5585,6 +5577,14 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-resume
+            --init-phase=deep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
         test_cmd = """
@@ -5609,16 +5609,6 @@ opentitan_test(
     srcs = [
         "usbdev_deep_reset_test.c",
     ],
-    cw310 = fpga_params(
-        # FIXME (#29490) - we are temporarily experiencing USB issues in CI.
-        tags = ["broken"],
-        test_cmd = """
-            --bootstrap="{firmware}"
-            --fin-phase=deep-reset
-            --init-phase=deep-resume
-        """,
-        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
-    ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_CW340_TEST_ENVS,
@@ -5628,6 +5618,16 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        # FIXME (#29490) - we are temporarily experiencing USB issues in CI.
+        tags = ["broken"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-reset
+            --init-phase=deep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
         test_cmd = """
