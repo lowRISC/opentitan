@@ -41,8 +41,8 @@ CONNECTION, AST_DFT_SRAM_MAIN_RAM_1P_CFG0, u_ast.u_ast_dft, spram_rm_o, top_earl
 CONNECTION, AST_DFT_SRAM_MAIN_RAM_1P_CFG1, u_ast.u_ast_dft, sprgf_rm_o, top_earlgrey.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i.rf_cfg
 
 # To sram_ctrl (ret).
-CONNECTION, AST_DFT_SRAM_RET_RAM_1P_CFG0, u_ast.u_ast_dft, spram_rm_o, top_earlgrey.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i.ram_cfg
-CONNECTION, AST_DFT_SRAM_RET_RAM_1P_CFG1, u_ast.u_ast_dft, sprgf_rm_o, top_earlgrey.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i.rf_cfg
+CONNECTION, AST_DFT_SRAM_RET_RAM_1P_CFG0, u_ast.u_ast_dft, spram_rm_o, top_earlgrey_pd_aon.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i.ram_cfg
+CONNECTION, AST_DFT_SRAM_RET_RAM_1P_CFG1, u_ast.u_ast_dft, sprgf_rm_o, top_earlgrey_pd_aon.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i.rf_cfg
 
 # To rom.
 CONNECTION, AST_DFT_ROM_CFG, u_ast.u_ast_dft, sprom_rm_o,top_earlgrey.u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom, cfg_i
