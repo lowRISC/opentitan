@@ -169,6 +169,9 @@ stack:
  * Vector slots
  */
 
+.globl mldsa87_sign_vector_slot0
+.globl mldsa87_sign_vector_slot1
+
 mldsa87_sign_vector_slot0:
 .zero 8192
 mldsa87_sign_vector_slot1:
