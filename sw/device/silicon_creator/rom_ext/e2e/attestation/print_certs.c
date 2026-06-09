@@ -6,7 +6,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -29,11 +29,10 @@ static void base64_encode(char *dest, const uint8_t *data, int32_t len) {
   *dest = '\0';
 }
 
-static status_t print_cert(char *dest,
-                           const flash_ctrl_info_page_t *info_page) {
+static status_t print_cert(char *dest, nvm_info_page_t info_page) {
   uint8_t data[2048];
-  TRY(flash_ctrl_info_read_zeros_on_read_error(
-      info_page, 0, sizeof(data) / sizeof(uint32_t), data));
+  TRY(nvm_ctrl_info_read_zeros_on_error(info_page, 0,
+                                        sizeof(data) / sizeof(uint32_t), data));
 
   uint32_t offset = 0;
   size_t len = sizeof(data);
@@ -53,11 +52,9 @@ static status_t print_cert(char *dest,
   return OK_STATUS();
 }
 
-static status_t print_owner_block(char *dest,
-                                  const flash_ctrl_info_page_t *info_page) {
+static status_t print_owner_block(char *dest, nvm_info_page_t info_page) {
   uint8_t data[2048];
-  TRY(flash_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t),
-                           data));
+  TRY(nvm_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t), data));
   base64_encode(dest, data, sizeof(data));
   return OK_STATUS();
 }
@@ -71,15 +68,15 @@ static status_t print_certs(void) {
   // trigger an ECC error when trying to read a page that has scrambling setup
   // by the ROM_EXT but is not erased after.
   if (kDeviceType == kDeviceSilicon) {
-    TRY(print_cert(buf, &kFlashCtrlInfoPageFactoryCerts));
+    TRY(print_cert(buf, kNvmInfoPageFactoryCerts));
   }
-  TRY(print_cert(buf, &kFlashCtrlInfoPageDiceCerts));
+  TRY(print_cert(buf, kNvmInfoPageDiceCerts));
 
   // Print owner information.
-  TRY(print_owner_block(buf, &kFlashCtrlInfoPageOwnerSlot0));
+  TRY(print_owner_block(buf, kNvmInfoPageOwnerSlot0));
   LOG_INFO("OWNER_PAGE_0: %s", buf);
 
-  TRY(print_owner_block(buf, &kFlashCtrlInfoPageOwnerSlot1));
+  TRY(print_owner_block(buf, kNvmInfoPageOwnerSlot1));
   LOG_INFO("OWNER_PAGE_1: %s", buf);
 
   return OK_STATUS();
