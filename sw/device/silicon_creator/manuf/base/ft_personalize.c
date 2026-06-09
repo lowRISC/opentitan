@@ -47,6 +47,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -271,9 +272,9 @@ static void sw_reset(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageFactoryCerts);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageDiceCerts);
   // No need to erase the kFlashCtrlInfoPageAttestationKeySeeds page as it is
   // erased on the first call to `manuf_personalize_nvm_asymm_key_seed()`.
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageFactoryCerts,

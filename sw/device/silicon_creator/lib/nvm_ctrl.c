@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 // ---------------------------------------------------------------------------
@@ -316,14 +317,38 @@ void nvm_ctrl_exec_set(uint32_t exec_val) { flash_ctrl_exec_set(exec_val); }
 // Lockdown and certificate page management
 // ---------------------------------------------------------------------------
 
+static const nvm_info_page_t kNvmPagesNoOwnerAccess[] = {
+    kNvmInfoPageFactoryId,        kNvmInfoPageCreatorSecret,
+    kNvmInfoPageOwnerSecret,      kNvmInfoPageWaferAuthSecret,
+    kNvmInfoPageBootData0,        kNvmInfoPageBootData1,
+    kNvmInfoPageCreatorReserved0,
+};
+
+enum {
+  kNvmPagesNoOwnerAccessCount = ARRAYSIZE(kNvmPagesNoOwnerAccess),
+};
+
 void nvm_ctrl_creator_info_pages_lockdown(void) {
-  flash_ctrl_creator_info_pages_lockdown();
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kNvmCtrlSecMmioCreatorInfoPagesLockdown,
+                                  2 * kNvmPagesNoOwnerAccessCount);
+  size_t i = 0, r = kNvmPagesNoOwnerAccessCount - 1;
+  for (; launder32(i) < kNvmPagesNoOwnerAccessCount &&
+         launder32(r) < kNvmPagesNoOwnerAccessCount;
+       ++i, --r) {
+    flash_ctrl_info_page_lockdown(page_ptr(kNvmPagesNoOwnerAccess[i]));
+  }
+  HARDENED_CHECK_EQ(i, kNvmPagesNoOwnerAccessCount);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 void nvm_ctrl_cert_info_page_creator_cfg(nvm_info_page_t page) {
-  flash_ctrl_cert_info_page_creator_cfg(page_ptr(page));
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kNvmCtrlSecMmioCertInfoPageCreatorCfg, 2);
+  nvm_ctrl_info_cfg_set(page, kNvmCertInfoPageCfg);
+  nvm_ctrl_info_perms_set(page, kNvmCertInfoPageCreatorAccess);
 }
 
 void nvm_ctrl_cert_info_page_owner_restrict(nvm_info_page_t page) {
-  flash_ctrl_cert_info_page_owner_restrict(page_ptr(page));
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kNvmCtrlSecMmioCertInfoPageOwnerRestrict, 2);
+  nvm_ctrl_info_perms_set(page, kNvmCertInfoPageOwnerAccess);
+  nvm_ctrl_info_cfg_lock(page);
 }

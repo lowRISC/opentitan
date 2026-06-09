@@ -135,6 +135,7 @@ enum {
   kNvmCtrlSecMmioExecSet = 1,
   kNvmCtrlSecMmioInfoCfgSet = 1,
   kNvmCtrlSecMmioInfoCfgLock = 1,
+  kNvmCtrlSecMmioInfoPageLockdown = 2,
   kNvmCtrlSecMmioInfoPermsSet = 1,
   kNvmCtrlSecMmioBankErasePermsSet = 1,
   kNvmCtrlSecMmioInit = 3,

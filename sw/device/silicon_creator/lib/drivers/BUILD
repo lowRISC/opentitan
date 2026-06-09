@@ -196,6 +196,7 @@ cc_test(
     srcs = ["flash_ctrl_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":flash_ctrl"),
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "@abseil-cpp//absl/strings:str_format",
         "@googletest//:gtest_main",
     ],
