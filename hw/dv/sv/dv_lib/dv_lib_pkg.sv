@@ -5,7 +5,6 @@
 package dv_lib_pkg;
   // dep packages
   import uvm_pkg::*;
-  import bus_params_pkg::*;
   import dv_utils_pkg::*;
   import csr_utils_pkg::*;
   import dv_base_reg_pkg::*;
