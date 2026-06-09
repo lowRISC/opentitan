@@ -17,6 +17,16 @@ mldsa87_sign_rnd:
 .zero 32
 
 /*
+ * Kappa
+ */
+
+.globl mldsa87_sign_kappa
+
+mldsa87_sign_kappa:
+.zero 2
+.zero 30 /* Padding */
+
+/*
  * Secret key
  */
 

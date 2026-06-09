@@ -22,29 +22,30 @@
  * Y to produce the commitment vector W (2 * 8192 bytes). The individual
  * polynomials of both A and Y are generated on-the-fly through `expand_a` and
  * `expand_mask` respectively. `expand_a` requires a 34-byte seed RHO (in a
- * 64-byte region) and `expand_mask` requires a Boolean-shared 66-byte seed
- * RHO_PRIME (in a 96-byte region). Furthermore, three polynomial slots are
- * required for the storage of intermediate results.
+ * 64-byte region) and `expand_mask` requires a Boolean-shared 64-byte seed
+ * RHO_PRIME and 2-byte nonce KAPPA (in a 32-byte DMEM region). Furthermore,
+ * three polynomial slots are required for the storage of intermediate results.
  *
  * @param[in] x2: DMEM address of first share of the commitment vector W.
  * @param[in] x3: DMEM address of second share of the commitment vector W.
  * @param[in] x4: DMEM address of the matrix seed RHO.
  * @param[in] x5: DMEM address of the first share of the vector seed RHO_PRIME.
  * @param[in] x6: DMEM address of the second share of the vector seed RHO_PRIME.
- * @param[in] x7: DMEM address of polynomial slot 0 (1024 bytes).
- * @param[in] x8: DMEM address of polynomial slot 1 (1024 bytes).
- * @param[in] x9: DMEM address of polynomial slot 2 (1024 bytes).
+ * @param[in] x7: DMEM address of KAPPA.
+ * @param[in] x8: DMEM address of the polynomial slots (slots 0-2 are used).
  */
 compute_w:
+  /* Save address of slot 2 for easier access later. */
+  addi x9, x8, 2047
+  addi x9, x9, 1
+
   /* Prepare DMEM address registers. */
   addi x10, x2, 0 /* W0 (W share 0) */
   addi x11, x3, 0 /* W1 (W share 1) */
   addi x12, x4, 0 /* RHO */
   addi x13, x5, 0 /* RHO_PRIME_0 (RHO_PRIME share 0) */
   addi x14, x6, 0 /* RHO_PRIME_1 (RHO_PRIME share 1) */
-  addi x15, x7, 0 /* Slot 0 */
-  addi x16, x8, 0 /* Slot 1 */
-  addi x17, x9, 0 /* Slot 2 */
+  addi x15, x7, 0 /* KAPPA */
 
   /* Zeroize the output DMEM locations just to be safe. */
   addi x20, x10, 0
@@ -56,8 +57,8 @@ compute_w:
   jal x1, zeroize
 
   /* Loop indices for the `expand_a` and `expand_mask`. */
-  addi x18, x0, 0 /* r */
-  addi x19, x0, 0 /* s */
+  addi x16, x0, 0 /* r */
+  addi x17, x0, 0 /* s */
 
   /*
    * The matrix-vector multiplication proceeds in column-major order:
@@ -72,56 +73,57 @@ compute_w:
    *   end for
    * end for
    */
-  loopi 7, 37
+  loopi 7, 38
     /* Expand polynomials Y0[s] and Y1[s] and store them in slots 1 and 2. */
-    addi x2, x16, 0
-    addi x3, x17, 0
+    addi x2, x8, 1024 /* Slot 1 */
+    addi x3, x9, 0    /* Slot 2 */
     addi x4, x13, 0
     addi x5, x14, 0
-    addi x6, x19, 0
+    addi x6, x15, 0
+    addi x7, x17, 0
     jal x1, expand_mask
 
     /* Compute NTT(Y0[s]). */
-    addi x2, x16, 0
-    addi x3, x16, 0
+    addi x2, x8, 1024
+    addi x3, x8, 1024
     jal x1, ntt
 
     /* Compute NTT(Y1[s]). */
-    addi x2, x17, 0
-    addi x3, x17, 0
+    addi x2, x9, 0
+    addi x3, x9, 0
     jal x1, ntt
 
     loopi 8, 18
       /* Expand polynomial A[r][s] and store it at slot 0. */
-      addi x2, x15, 0
+      addi x2, x8, 0
       addi x3, x12, 0
-      addi x4, x18, 0
-      addi x5, x19, 0
+      addi x4, x16, 0
+      addi x5, x17, 0
       jal x1, expand_a
 
       /* W0[r] += A[r][s] * NTT(Y0[s]). */
-      addi x2, x15, 0
-      addi x3, x16, 0
+      addi x2, x8, 0    /* Slot 0 */
+      addi x3, x8, 1024 /* Slot 1 */
       addi x4, x10, 0
       addi x5, x10, 0
       jal x1, poly_mul_add
 
       /* W1[r] += A[r][s] * NTT(Y1[s]). */
-      addi x2, x15, 0
-      addi x3, x17, 0
+      addi x2, x8, 0 /* Slot 0 */
+      addi x3, x9, 0 /* Slot 2 */
       addi x4, x11, 0
       addi x5, x11, 0
       jal x1, poly_mul_add
 
       /* Increment r and advance output addresses. */
-      addi x18, x18, 1
+      addi x16, x16, 1
       addi x10, x10, 1024
       addi x11, x11, 1024
       /* End of loop */
 
     /* Reset r and increment s. */
-    addi x18, x0, 0
-    addi x19, x19, 1
+    addi x16, x0, 0
+    addi x17, x17, 1
 
     /* Reset the output addresses, i.e., subtract 8192. */
     addi x20, x0, 1024
@@ -206,42 +208,43 @@ decompose_w:
  * This routine calculates Z = Y + INTT(NTT(C) * NTT(S1)) with arithmetically
  * shared vectors Y and S1 which are expanded, decoded and converted to
  * arithmetic shares on on-the-fly (see `expand_mask` and `decode_s`). The
- * `expand_mask` seed RHO_PRIME is assumed to be passed as 66-bytes in a
- * 96-byte region as two Boolean shares. The S1 vector is assumed to be passed
- * in encoded form, i.e., as two 672-byte Boolean shares.
+ * 64-byte `expand_mask` seed RHO_PRIME is assumed to be passed as two Boolean
+ * shares and KAPPA is a 2-byte value (in a 32-byte DMEM region). The S1 vector
+ * is assumed to be passed in encoded form, i.e., as two 672-byte Boolean
+ * shares.
  *
  * Each derived signature polynomial Z[i] undergoes a secure infinity norm
  * check |Z[i]|_inf < 2^19 - BETA before being unmasked.
  *
  * @param[in] x2:  DMEM address of the first share of RHO_PRIME seed.
  * @param[in] x3:  DMEM address of the second share of RHO_PRIME seed.
- * @param[in] x4:  DMEM address of the challenge polynomial C in NTT domain.
- * @param[in] x5:  DMEM address of the first share of the encoded vector S1.
- * @param[in] x6:  DMEM address of the second share of the encoded vector S1.
- * @param[in] x7:  DMEM address of the vectorized bound 2^19 - BETA (32 bytes).
- * @param[in] x8:  DMEM address of the resulting signature vector Z.
- * @param[in] x9:  DMEM address of the polynomial slot 0.
- * @param[in] x10: DMEM address of the polynomial slot 1.
- * @param[in] x11: DMEM address of the polynomial slot 2.
- * @param[in] x12: DMEM address of the polynomial slot 3.
+ * @param[in] x4:  DMEM address of KAPPA.
+ * @param[in] x5:  DMEM address of the challenge polynomial C in NTT domain.
+ * @param[in] x6:  DMEM address of the first share of the encoded vector S1.
+ * @param[in] x7:  DMEM address of the second share of the encoded vector S1.
+ * @param[in] x8:  DMEM address of the vectorized bound 2^19 - BETA (32 bytes).
+ * @param[in] x9:  DMEM address of the resulting signature vector Z.
+ * @param[in] x10: DMEM address of the polynomial slots (slots 0-3 are used).
  * @param[out] w0: 2^256-1 if the norm check passes, 0 otherwise.
  */
 compute_z:
+  /* Save address of slot 2 for easier access later. */
+  addi x11, x10, 2047
+  addi x11, x11, 1
+
   /* Save DMEM address pointers. */
-  addi x13, x2, 0 /* RHO_PRIME_0 (RHO_PRIME share 0) */
-  addi x14, x3, 0 /* RHO_PRIME_1 (RHO_PRIME share 1) */
-  addi x15, x4, 0 /* NTT(C) */
-  addi x16, x5, 0 /* S1_0_enc (encoded S1 share 0) */
-  addi x17, x6, 0 /* S1_1_enc (encoded S1 share 1) */
+  addi x12, x2, 0 /* RHO_PRIME_0 (RHO_PRIME share 0) */
+  addi x13, x3, 0 /* RHO_PRIME_1 (RHO_PRIME share 1) */
+  addi x14, x4, 0 /* KAPPA */
+  addi x15, x5, 0 /* NTT(C) */
+  addi x16, x6, 0 /* S1_0_enc (encoded S1 share 0) */
+  addi x17, x7, 0 /* S1_1_enc (encoded S1 share 1) */
 
   /*
    * Do not save those address pointers which are not overwritten:
-   *   x7:  Bound
-   *   x8:  Z
-   *   x9:  Slot 0
-   *   x10: Slot 1
-   *   x11: Slot 2
-   *   x12: Slot 3
+   *   x8:  Bound
+   *   x9:  Z
+   *   x10: Slots
    */
 
   /* Loop index for `expand_mask`. */
@@ -296,9 +299,9 @@ _compute_z_norm_check_loop:
 
   /* Compute the infinity norm check on the shared signature polynomial and
      exit the routine if it fails. */
-  addi x2, x9, 0
-  addi x3, x10, 0
-  addi x4, x7, 0
+  addi x2, x10, 0    /* Slot 0 */
+  addi x3, x10, 1024 /* Slot 1 */
+  addi x4, x8, 0
   jal x1, sec_bound_check
 
   /* Fail if w0 = 0. */
@@ -332,16 +335,16 @@ _compute_z_norm_check_loop:
     /* At this point, due to the passed infinity norm check, Z0 and Z1 are not
        considered sensitive anymore and can be unmasked (see Section 3.2 in [1]).
          Z[s] = D0 + D1 (unmasking). */
-    addi x2, x9, 0
-    addi x3, x10, 0
-    addi x4, x8, 0
+    addi x2, x10, 0    /* Slot 0 */
+    addi x3, x10, 1024 /* Slot 1 */
+    addi x4, x9, 0
     jal x1, sec_unmask
 
     /* Increment s, advance S1 and Z pointers. */
     addi x18, x18, 1
     addi x16, x16, 96
     addi x17, x17, 96
-    addi x8, x8, 1024
+    addi x9, x9, 1024
     /* End of loop */
 
   /* At this point, all the signature polynomials have been computed and have
@@ -354,18 +357,19 @@ _compute_z_norm_check_loop:
  */
 _compute_z_kernel:
   /* Expand Y0[s] and Y1[s] as arithmetic shares into slots 0 and 1. */
-  addi x2, x9, 0
-  addi x3, x10, 0
-  addi x4, x13, 0
-  addi x5, x14, 0
-  addi x6, x18, 0
+  addi x2, x10, 0    /* Slot 0 */
+  addi x3, x10, 1024 /* Slot 1 */
+  addi x4, x12, 0
+  addi x5, x13, 0
+  addi x6, x14, 0
+  addi x7, x18, 0
   jal x1, expand_mask
 
   /* Decode S1_0_enc[s] and S1_1_enc[s] as arithmetic shares into slots 2 and 3. */
   addi x2, x16, 0
   addi x3, x17, 0
-  addi x4, x11, 0
-  addi x5, x12, 0
+  addi x4, x11, 0    /* Slot 2 */
+  addi x5, x11, 1024 /* Slot 3 */
   jal x1, decode_s
 
   /* A0 = NTT(S1_0[s]). */
@@ -374,8 +378,8 @@ _compute_z_kernel:
   jal x1, ntt
 
   /* A1 = NTT(S1_1[s]). */
-  addi x2, x12, 0
-  addi x3, x12, 0
+  addi x2, x11, 1024
+  addi x3, x11, 1024
   jal x1, ntt
 
   /* B0 = NTT(C) * A0 = NTT(C) * S1_0[s]. */
@@ -386,8 +390,8 @@ _compute_z_kernel:
 
   /* B1 = NTT(C) * A1 = NTT(C) * S1_1[s]. */
   addi x2, x15, 0
-  addi x3, x12, 0
-  addi x4, x12, 0
+  addi x3, x11, 1024
+  addi x4, x11, 1024
   jal x1, poly_mul
 
   /* C0 = INTT(B0) = INTT(NTT(C) * S1_0[s]). */
@@ -396,20 +400,20 @@ _compute_z_kernel:
   jal x1, intt
 
   /* C1 = INTT(B1) = INTT(NTT(C) * S1_1[s]). */
-  addi x2, x12, 0
-  addi x3, x12, 0
+  addi x2, x11, 1024
+  addi x3, x11, 1024
   jal x1, intt
 
   /* D0 = Y0[s] + C0 = Y0[s] + INTT(NTT(C) * S1_0[s]). */
-  addi x2, x9, 0
-  addi x3, x11, 0
-  addi x4, x9, 0
+  addi x2, x10, 0 /* Slot 0 */
+  addi x3, x11, 0 /* Slot 2 */
+  addi x4, x10, 0
   jal x1, poly_add
 
   /* D1 = Y1[s] + C1 = Y1[s] + INTT(NTT(C) * S1_1[s]). */
-  addi x2, x10, 0
-  addi x3, x12, 0
-  addi x4, x10, 0
+  addi x2, x10, 1024 /* Slot 1 */
+  addi x3, x11, 1024 /* Slot 3 */
+  addi x4, x10, 1024
   jal x1, poly_add
 
   ret
