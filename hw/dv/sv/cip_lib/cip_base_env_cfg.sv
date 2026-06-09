@@ -130,8 +130,19 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
   `uvm_object_new
 
+  // Initialize the register models in the environment
+  //
+  // This works by calling initialize_ral (implemented in dv_base_env_cfg) after ral_model_names has
+  // been initialised. To add a new RAL model, a subclass should extend cip_base_env_cfg::initialize
+  // with a function that adds the model's name to ral_model_names before calling
+  // super.initialize().
   virtual function void initialize();
-    super.initialize();
+    // Initialize the register models themselves. This uses initialize_ral, which is implemented in
+    // dv_base_env_cfg.
+    initialize_ral(bus_params_pkg::BUS_AW,
+                   bus_params_pkg::BUS_DW,
+                   bus_params_pkg::BUS_DBW);
+
     // Create downstream agent cfg objects.
     foreach (ral_model_names[i]) begin
       string ral_name = ral_model_names[i];
