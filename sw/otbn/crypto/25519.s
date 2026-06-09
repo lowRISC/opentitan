@@ -371,6 +371,14 @@ ed25519_verify_var:
   /* [w13:w10] <= [w13:w10] + [w13:w10] = [8]R */
   jal      x1, ext_double
 
+  /* Check if [8]R is the identity point.
+     If [8]R = O, its X-coordinate (w10) is 0 mod p. */
+  bn.cmp   w10, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  li       x3, 8
+  beq      x2, x3, verify_fail
+
   /* Compute the right-hand side of the curve equation.
        [w13:w10] <= [w13:w10] + [w5:w2] = [8]R + [8][k]A */
   bn.mov   w14, w2
