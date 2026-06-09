@@ -320,7 +320,7 @@ p256_verify:
   la        x3, p256_n
   bn.lid    x0, 0(x3)
   bn.wsrw   MOD, w0
-  bn.addm   w24, w19, w31
+  bn.addm   w19, w19, w31
 
   /* Verify that w31 still holds zero */
   bn.xor w30, w30, w30
@@ -333,9 +333,9 @@ p256_verify:
   xor      x3, x3, x12
   sw       x3, 0(x2)
 
-  /* store affine x-coordinate in dmem: dmem[x_r] = w24 = x_r */
+  /* store affine x-coordinate in dmem: dmem[x_r] = w19 = x_r */
   la        x17, x_r
-  li        x2, 24
+  li        x2, 19
   bn.sid    x2, 0(x17)
 
   ret
