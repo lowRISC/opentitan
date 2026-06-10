@@ -5,11 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_NVM_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_NVM_CTRL_H_
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 // Hardware parameter and address constants.  Only nvm_ctrl.{h,c} may include
@@ -48,27 +48,29 @@ enum { kNvmErasedWord = UINT32_MAX };
 // ---------------------------------------------------------------------------
 
 /**
- * Access permission bitmask for an NVM page.
+ * Access permission settings for an NVM page.
  *
- * `true` enables the operation; `false` disables it.
- * Conversion to hardware multi-bit boolean values is handled internally by
- * nvm_ctrl and is not visible to callers.
+ * Fields use `multi_bit_bool_t` values: `kMultiBitBool4True` enables the
+ * operation; `kMultiBitBool4False` disables it. Raw hardware register values
+ * are passed through without normalisation.
  */
 typedef struct nvm_page_perms {
-  bool read;
-  bool write;
-  bool erase;
+  multi_bit_bool_t read;
+  multi_bit_bool_t write;
+  multi_bit_bool_t erase;
 } nvm_page_perms_t;
 
 /**
- * Configuration bitmask for an NVM page.
+ * Configuration settings for an NVM page.
  *
- * `true` enables the feature; `false` disables it.
+ * Fields use `multi_bit_bool_t` values: `kMultiBitBool4True` enables the
+ * feature; `kMultiBitBool4False` disables it. Raw hardware register values
+ * are passed through without normalisation.
  */
 typedef struct nvm_page_cfg {
-  bool scrambling;
-  bool ecc;
-  bool he;
+  multi_bit_bool_t scrambling;
+  multi_bit_bool_t ecc;
+  multi_bit_bool_t he;
 } nvm_page_cfg_t;
 
 /** Read, write, and erase all enabled. */

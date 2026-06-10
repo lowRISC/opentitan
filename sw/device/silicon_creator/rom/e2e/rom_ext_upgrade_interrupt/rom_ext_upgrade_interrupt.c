@@ -33,8 +33,12 @@ static void increment_flash_counter(void) {
   CHECK_STATUS_OK(flash_ctrl_testutils_counter_increment(kFlashCounterId));
   // Disable default region access after the counter operation.
   CHECK_STATUS_OK(nvm_testutils_default_region_setup(
-      (nvm_page_perms_t){.read = false, .write = false, .erase = false},
-      (nvm_page_cfg_t){.scrambling = false, .ecc = false, .he = false}));
+      (nvm_page_perms_t){.read = kMultiBitBool4False,
+                         .write = kMultiBitBool4False,
+                         .erase = kMultiBitBool4False},
+      (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,
+                       .ecc = kMultiBitBool4False,
+                       .he = kMultiBitBool4False}));
 }
 
 static rom_error_t first_boot_test(void) {

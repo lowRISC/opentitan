@@ -163,7 +163,7 @@ static void reverse(void *buf, size_t len) {
   }
 }
 
-static void secret_page_enable(bool read, bool write) {
+static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
   nvm_ctrl_info_perms_set(
       kNvmInfoPageOwnerSecret,
       (nvm_page_perms_t){.read = read, .write = write, .erase = write});
@@ -173,7 +173,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
                                  const owner_keydata_t *prior_owner_key) {
   owner_secret_page_t secret;
 
-  secret_page_enable(/*read=*/true, /*write=*/true);
+  secret_page_enable(/*read=*/kMultiBitBool4True, /*write=*/kMultiBitBool4True);
   rom_error_t error = nvm_ctrl_info_read(
       kNvmInfoPageOwnerSecret, 0, sizeof(secret) / sizeof(uint32_t), &secret);
   if (error != kErrorOk) {
@@ -235,12 +235,14 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
                               sizeof(secret) / sizeof(uint32_t), &secret);
 
 exitproc:
-  secret_page_enable(/*read=*/false, /*write=*/false);
+  secret_page_enable(/*read=*/kMultiBitBool4False,
+                     /*write=*/kMultiBitBool4False);
   return error;
 }
 
 rom_error_t ownership_history_get(hmac_digest_t *history) {
-  secret_page_enable(/*read=*/true, /*write=*/false);
+  secret_page_enable(/*read=*/kMultiBitBool4True,
+                     /*write=*/kMultiBitBool4False);
   rom_error_t error = nvm_ctrl_info_read(
       kNvmInfoPageOwnerSecret, offsetof(owner_secret_page_t, owner_history),
       sizeof(*history) / sizeof(uint32_t), history);
@@ -248,6 +250,7 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
     // If there was an error reading the history, use all ones as a result.
     memset(history, 0xFF, sizeof(*history));
   }
-  secret_page_enable(/*read=*/false, /*write=*/false);
+  secret_page_enable(/*read=*/kMultiBitBool4False,
+                     /*write=*/kMultiBitBool4False);
   return error;
 }

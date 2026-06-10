@@ -436,14 +436,14 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
   nvm_page_cfg_t cfg = nvm_ctrl_data_default_cfg_get();
   nvm_page_perms_t read = {
-      .read = true,
-      .write = false,
-      .erase = false,
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
   };
   nvm_page_perms_t write = {
-      .read = true,
-      .write = true,
-      .erase = true,
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4True,
   };
   nvm_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
                                rom_ext_slot == kBootSlotA ? read : write, cfg,

@@ -176,8 +176,12 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
 
 rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
                            owner_application_keyring_t *keyring) {
-  nvm_page_perms_t perm = {.read = true, .write = true, .erase = true};
-  nvm_page_cfg_t cfg = {.scrambling = true, .ecc = true, .he = false};
+  nvm_page_perms_t perm = {.read = kMultiBitBool4True,
+                           .write = kMultiBitBool4True,
+                           .erase = kMultiBitBool4True};
+  nvm_page_cfg_t cfg = {.scrambling = kMultiBitBool4True,
+                        .ecc = kMultiBitBool4True,
+                        .he = kMultiBitBool4False};
   nvm_ctrl_info_perms_set(kNvmInfoPageOwnerSlot0, perm);
   nvm_ctrl_info_cfg_set(kNvmInfoPageOwnerSlot0, cfg);
   nvm_ctrl_info_perms_set(kNvmInfoPageOwnerSlot1, perm);
@@ -290,8 +294,12 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
     return;
   }
 #endif
-  nvm_page_perms_t perm = {.read = true, .write = false, .erase = false};
-  nvm_page_cfg_t cfg = {.scrambling = true, .ecc = true, .he = false};
+  nvm_page_perms_t perm = {.read = kMultiBitBool4True,
+                           .write = kMultiBitBool4False,
+                           .erase = kMultiBitBool4False};
+  nvm_page_cfg_t cfg = {.scrambling = kMultiBitBool4True,
+                        .ecc = kMultiBitBool4True,
+                        .he = kMultiBitBool4False};
   // Always make page 0 read only.
   nvm_ctrl_info_perms_set(kNvmInfoPageOwnerSlot0, perm);
   nvm_ctrl_info_cfg_set(kNvmInfoPageOwnerSlot0, cfg);

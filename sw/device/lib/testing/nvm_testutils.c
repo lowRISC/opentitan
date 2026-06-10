@@ -56,23 +56,29 @@ static const nvm_page_phys_t kPageMap[] = {
 };
 // clang-format on
 
-const nvm_page_perms_t kPageReadOnly = {
-    .read = true, .write = false, .erase = false};
+const nvm_page_perms_t kPageReadOnly = {.read = kMultiBitBool4True,
+                                        .write = kMultiBitBool4False,
+                                        .erase = kMultiBitBool4False};
 
-const nvm_page_perms_t kPageReadWrite = {
-    .read = true, .write = true, .erase = true};
+const nvm_page_perms_t kPageReadWrite = {.read = kMultiBitBool4True,
+                                         .write = kMultiBitBool4True,
+                                         .erase = kMultiBitBool4True};
 
-const nvm_page_perms_t kPageWriteOnly = {
-    .read = false, .write = true, .erase = true};
+const nvm_page_perms_t kPageWriteOnly = {.read = kMultiBitBool4False,
+                                         .write = kMultiBitBool4True,
+                                         .erase = kMultiBitBool4True};
 
-const nvm_page_cfg_t kPageScrambleCfg = {
-    .scrambling = true, .ecc = true, .he = false};
+const nvm_page_cfg_t kPageScrambleCfg = {.scrambling = kMultiBitBool4True,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False};
 
-const nvm_page_cfg_t kPagePlainCfg = {
-    .scrambling = false, .ecc = true, .he = false};
+const nvm_page_cfg_t kPagePlainCfg = {.scrambling = kMultiBitBool4False,
+                                      .ecc = kMultiBitBool4True,
+                                      .he = kMultiBitBool4False};
 
-const nvm_page_cfg_t kPageRawCfg = {
-    .scrambling = false, .ecc = false, .he = false};
+const nvm_page_cfg_t kPageRawCfg = {.scrambling = kMultiBitBool4False,
+                                    .ecc = kMultiBitBool4False,
+                                    .he = kMultiBitBool4False};
 
 static status_t dif_flash_state_init(dif_flash_ctrl_state_t *flash) {
   TRY(dif_flash_ctrl_init_state(
@@ -144,12 +150,12 @@ status_t nvm_testutils_info_page_setup(nvm_info_page_t page,
   dif_flash_ctrl_state_t flash;
   TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props = {
-      .rd_en = perms.read ? kMultiBitBool4True : kMultiBitBool4False,
-      .prog_en = perms.write ? kMultiBitBool4True : kMultiBitBool4False,
-      .erase_en = perms.erase ? kMultiBitBool4True : kMultiBitBool4False,
-      .scramble_en = cfg.scrambling ? kMultiBitBool4True : kMultiBitBool4False,
-      .ecc_en = cfg.ecc ? kMultiBitBool4True : kMultiBitBool4False,
-      .high_endurance_en = cfg.he ? kMultiBitBool4True : kMultiBitBool4False,
+      .rd_en = perms.read,
+      .prog_en = perms.write,
+      .erase_en = perms.erase,
+      .scramble_en = cfg.scrambling,
+      .ecc_en = cfg.ecc,
+      .high_endurance_en = cfg.he,
   };
   TRY(info_page_set_props(&flash, &p, props));
   return OK_STATUS();
@@ -164,17 +170,17 @@ status_t nvm_testutils_info_page_set(nvm_info_page_t page,
   TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props;
   TRY(info_page_get_props(&flash, &p, &props));
-  if (perms.read)
+  if (perms.read == kMultiBitBool4True)
     props.rd_en = kMultiBitBool4True;
-  if (perms.write)
+  if (perms.write == kMultiBitBool4True)
     props.prog_en = kMultiBitBool4True;
-  if (perms.erase)
+  if (perms.erase == kMultiBitBool4True)
     props.erase_en = kMultiBitBool4True;
-  if (cfg.scrambling)
+  if (cfg.scrambling == kMultiBitBool4True)
     props.scramble_en = kMultiBitBool4True;
-  if (cfg.ecc)
+  if (cfg.ecc == kMultiBitBool4True)
     props.ecc_en = kMultiBitBool4True;
-  if (cfg.he)
+  if (cfg.he == kMultiBitBool4True)
     props.high_endurance_en = kMultiBitBool4True;
   TRY(info_page_set_props(&flash, &p, props));
   return OK_STATUS();
@@ -189,17 +195,17 @@ status_t nvm_testutils_info_page_clear(nvm_info_page_t page,
   TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props;
   TRY(info_page_get_props(&flash, &p, &props));
-  if (perms.read)
+  if (perms.read == kMultiBitBool4True)
     props.rd_en = kMultiBitBool4False;
-  if (perms.write)
+  if (perms.write == kMultiBitBool4True)
     props.prog_en = kMultiBitBool4False;
-  if (perms.erase)
+  if (perms.erase == kMultiBitBool4True)
     props.erase_en = kMultiBitBool4False;
-  if (cfg.scrambling)
+  if (cfg.scrambling == kMultiBitBool4True)
     props.scramble_en = kMultiBitBool4False;
-  if (cfg.ecc)
+  if (cfg.ecc == kMultiBitBool4True)
     props.ecc_en = kMultiBitBool4False;
-  if (cfg.he)
+  if (cfg.he == kMultiBitBool4True)
     props.high_endurance_en = kMultiBitBool4False;
   TRY(info_page_set_props(&flash, &p, props));
   return OK_STATUS();
@@ -282,15 +288,12 @@ status_t nvm_testutils_data_region_setup(uint32_t region, uint32_t base,
       .size = size,
       .properties =
           {
-              .rd_en = perms.read ? kMultiBitBool4True : kMultiBitBool4False,
-              .prog_en = perms.write ? kMultiBitBool4True : kMultiBitBool4False,
-              .erase_en =
-                  perms.erase ? kMultiBitBool4True : kMultiBitBool4False,
-              .scramble_en =
-                  cfg.scrambling ? kMultiBitBool4True : kMultiBitBool4False,
-              .ecc_en = cfg.ecc ? kMultiBitBool4True : kMultiBitBool4False,
-              .high_endurance_en =
-                  cfg.he ? kMultiBitBool4True : kMultiBitBool4False,
+              .rd_en = perms.read,
+              .prog_en = perms.write,
+              .erase_en = perms.erase,
+              .scramble_en = cfg.scrambling,
+              .ecc_en = cfg.ecc,
+              .high_endurance_en = cfg.he,
           },
   };
   TRY(dif_flash_ctrl_set_data_region_properties(&flash, region, config));
@@ -322,12 +325,12 @@ status_t nvm_testutils_default_region_setup(nvm_page_perms_t perms,
   dif_flash_ctrl_state_t flash;
   TRY(dif_flash_state_init(&flash));
   dif_flash_ctrl_region_properties_t props = {
-      .rd_en = perms.read ? kMultiBitBool4True : kMultiBitBool4False,
-      .prog_en = perms.write ? kMultiBitBool4True : kMultiBitBool4False,
-      .erase_en = perms.erase ? kMultiBitBool4True : kMultiBitBool4False,
-      .scramble_en = cfg.scrambling ? kMultiBitBool4True : kMultiBitBool4False,
-      .ecc_en = cfg.ecc ? kMultiBitBool4True : kMultiBitBool4False,
-      .high_endurance_en = cfg.he ? kMultiBitBool4True : kMultiBitBool4False,
+      .rd_en = perms.read,
+      .prog_en = perms.write,
+      .erase_en = perms.erase,
+      .scramble_en = cfg.scrambling,
+      .ecc_en = cfg.ecc,
+      .high_endurance_en = cfg.he,
   };
   TRY(dif_flash_ctrl_set_default_region_properties(&flash, props));
   return OK_STATUS();

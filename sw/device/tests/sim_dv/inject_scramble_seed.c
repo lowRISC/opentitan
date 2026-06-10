@@ -64,8 +64,9 @@ static void check_iso_data(dif_flash_ctrl_state_t *flash_ctrl) {
         (exp_data_addr < (addr + kFlashPageSize + kFlashStartAddr)));
 
   // Enable access to isolated page (no scramble, no ECC — seeds not yet set).
-  const nvm_page_cfg_t kIsoPageCfg = {
-      .scrambling = false, .ecc = false, .he = false};
+  const nvm_page_cfg_t kIsoPageCfg = {.scrambling = kMultiBitBool4False,
+                                      .ecc = kMultiBitBool4False,
+                                      .he = kMultiBitBool4False};
   CHECK_STATUS_OK(nvm_testutils_info_page_setup(kNvmInfoPageWaferAuthSecret,
                                                 kPageReadOnly, kIsoPageCfg));
   uint32_t read_data[16];

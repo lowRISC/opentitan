@@ -225,11 +225,13 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_entry_write(nvm_info_page_t page, size_t index,
                                          const boot_data_t *boot_data,
                                          hardened_bool_t erase) {
-  nvm_ctrl_info_perms_set(page, (nvm_page_perms_t){
-                                    .read = true,
-                                    .write = true,
-                                    .erase = erase == kHardenedBoolTrue,
-                                });
+  nvm_ctrl_info_perms_set(
+      page, (nvm_page_perms_t){
+                .read = kMultiBitBool4True,
+                .write = kMultiBitBool4True,
+                .erase = erase == kHardenedBoolTrue ? kMultiBitBool4True
+                                                    : kMultiBitBool4False,
+            });
   rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
   nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
@@ -261,8 +263,10 @@ static rom_error_t boot_data_entry_invalidate(nvm_info_page_t page,
   const uint32_t offset =
       index * sizeof(boot_data_t) + offsetof(boot_data_t, is_valid);
   const uint32_t val[2] = {0, 0};
-  nvm_ctrl_info_perms_set(
-      page, (nvm_page_perms_t){.read = false, .write = true, .erase = false});
+  nvm_ctrl_info_perms_set(page,
+                          (nvm_page_perms_t){.read = kMultiBitBool4False,
+                                             .write = kMultiBitBool4True,
+                                             .erase = kMultiBitBool4False});
   rom_error_t error = nvm_ctrl_info_write(page, offset, 2, val);
   nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);

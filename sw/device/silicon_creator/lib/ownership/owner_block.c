@@ -408,21 +408,15 @@ rom_error_t owner_block_nvm_apply(const owner_nvm_config_t *nvm,
     if (config->start >= start && config->start + config->size <= end) {
       uint32_t val = config->properties ^ crypt;
       nvm_page_cfg_t cfg = {
-          .scrambling = bitfield_field32_read(val, NVM_CONFIG_SCRAMBLE) !=
-                        kMultiBitBool4False,
-          .ecc =
-              bitfield_field32_read(val, NVM_CONFIG_ECC) != kMultiBitBool4False,
-          .he = bitfield_field32_read(val, NVM_CONFIG_HIGH_ENDURANCE) !=
-                kMultiBitBool4False,
+          .scrambling = bitfield_field32_read(val, NVM_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, NVM_CONFIG_ECC),
+          .he = bitfield_field32_read(val, NVM_CONFIG_HIGH_ENDURANCE),
       };
       val = config->access ^ crypt;
       nvm_page_perms_t perm = {
-          .read = bitfield_field32_read(val, NVM_CONFIG_READ) !=
-                  kMultiBitBool4False,
-          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM) !=
-                   kMultiBitBool4False,
-          .erase = bitfield_field32_read(val, NVM_CONFIG_ERASE) !=
-                   kMultiBitBool4False,
+          .read = bitfield_field32_read(val, NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM),
+          .erase = bitfield_field32_read(val, NVM_CONFIG_ERASE),
       };
 
       uint32_t pwp =
@@ -436,8 +430,8 @@ rom_error_t owner_block_nvm_apply(const owner_nvm_config_t *nvm,
       // If the config_side is the same as the owner lockdown side, and
       // protect_when_primary is requested, deny write/erase to the region.
       if (config_side == owner_lockdown && pwp != kMultiBitBool4False) {
-        perm.write = false;
-        perm.erase = false;
+        perm.write = kMultiBitBool4False;
+        perm.erase = kMultiBitBool4False;
       }
 
       // If we aren't in a lockdown state, then do not lock the region
@@ -476,23 +470,17 @@ rom_error_t owner_block_info_apply(const owner_nvm_info_config_t *info) {
           nvm_ctrl_info_page_lookup(config->bank, config->page, &page));
       uint32_t val = config->properties ^ crypt;
       nvm_page_cfg_t cfg = {
-          .scrambling = bitfield_field32_read(val, NVM_CONFIG_SCRAMBLE) !=
-                        kMultiBitBool4False,
-          .ecc =
-              bitfield_field32_read(val, NVM_CONFIG_ECC) != kMultiBitBool4False,
-          .he = bitfield_field32_read(val, NVM_CONFIG_HIGH_ENDURANCE) !=
-                kMultiBitBool4False,
+          .scrambling = bitfield_field32_read(val, NVM_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, NVM_CONFIG_ECC),
+          .he = bitfield_field32_read(val, NVM_CONFIG_HIGH_ENDURANCE),
       };
       nvm_ctrl_info_cfg_set(page, cfg);
 
       val = config->access ^ crypt;
       nvm_page_perms_t perm = {
-          .read = bitfield_field32_read(val, NVM_CONFIG_READ) !=
-                  kMultiBitBool4False,
-          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM) !=
-                   kMultiBitBool4False,
-          .erase = bitfield_field32_read(val, NVM_CONFIG_ERASE) !=
-                   kMultiBitBool4False,
+          .read = bitfield_field32_read(val, NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM),
+          .erase = bitfield_field32_read(val, NVM_CONFIG_ERASE),
       };
       nvm_ctrl_info_perms_set(page, perm);
     }
@@ -549,11 +537,9 @@ rom_error_t owner_block_info_isfb_erase_enable(
 
       uint32_t val = config->access ^ crypt;
       nvm_page_perms_t perm = {
-          .read = bitfield_field32_read(val, NVM_CONFIG_READ) !=
-                  kMultiBitBool4False,
-          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM) !=
-                   kMultiBitBool4False,
-          .erase = true,
+          .read = bitfield_field32_read(val, NVM_CONFIG_READ),
+          .write = bitfield_field32_read(val, NVM_CONFIG_PROGRAM),
+          .erase = kMultiBitBool4True,
       };
       nvm_ctrl_info_perms_set(page, perm);
     }

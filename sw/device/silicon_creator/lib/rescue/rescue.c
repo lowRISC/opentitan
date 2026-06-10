@@ -68,9 +68,9 @@ rom_error_t nvm_firmware_block(rescue_state_t *state) {
     // TODO(#24428): Make sure we interact correctly with owner flash region
     // configuration.
     nvm_ctrl_data_default_perms_set((nvm_page_perms_t){
-        .read = true,
-        .write = true,
-        .erase = true,
+        .read = kMultiBitBool4True,
+        .write = kMultiBitBool4True,
+        .erase = kMultiBitBool4True,
     });
     // Detect if we're allowed to flash the ROM_EXT _and_ if the data stream
     // starts with a ROM_EXT.  If so, we start flashing at offset 0 in this

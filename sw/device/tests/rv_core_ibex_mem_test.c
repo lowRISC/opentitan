@@ -143,7 +143,9 @@ static void setup_flash(void) {
 
   CHECK_STATUS_OK(nvm_testutils_data_region_setup(
       kFlashRegionNum, kBank1StartPageNum, /*size=*/1, kPageReadWrite,
-      (nvm_page_cfg_t){.scrambling = false, .ecc = false, .he = false}));
+      (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,
+                       .ecc = kMultiBitBool4False,
+                       .he = kMultiBitBool4False}));
 
   // Make flash executable
   CHECK_DIF_OK(

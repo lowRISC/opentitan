@@ -6,7 +6,6 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
@@ -56,25 +55,25 @@ static const flash_ctrl_info_page_t *page_ptr(nvm_info_page_t page) {
 
 static flash_ctrl_perms_t perms_to_flash(nvm_page_perms_t p) {
   return (flash_ctrl_perms_t){
-      .read = p.read ? kMultiBitBool4True : kMultiBitBool4False,
-      .write = p.write ? kMultiBitBool4True : kMultiBitBool4False,
-      .erase = p.erase ? kMultiBitBool4True : kMultiBitBool4False,
+      .read = (uint32_t)p.read,
+      .write = (uint32_t)p.write,
+      .erase = (uint32_t)p.erase,
   };
 }
 
 static flash_ctrl_cfg_t cfg_to_flash(nvm_page_cfg_t c) {
   return (flash_ctrl_cfg_t){
-      .scrambling = c.scrambling ? kMultiBitBool4True : kMultiBitBool4False,
-      .ecc = c.ecc ? kMultiBitBool4True : kMultiBitBool4False,
-      .he = c.he ? kMultiBitBool4True : kMultiBitBool4False,
+      .scrambling = (uint32_t)c.scrambling,
+      .ecc = (uint32_t)c.ecc,
+      .he = (uint32_t)c.he,
   };
 }
 
 static nvm_page_cfg_t cfg_from_flash(flash_ctrl_cfg_t c) {
   return (nvm_page_cfg_t){
-      .scrambling = (c.scrambling == kMultiBitBool4True),
-      .ecc = (c.ecc == kMultiBitBool4True),
-      .he = (c.he == kMultiBitBool4True),
+      .scrambling = (multi_bit_bool_t)c.scrambling,
+      .ecc = (multi_bit_bool_t)c.ecc,
+      .he = (multi_bit_bool_t)c.he,
   };
 }
 
@@ -82,24 +81,34 @@ static nvm_page_cfg_t cfg_from_flash(flash_ctrl_cfg_t c) {
 // Named constants
 // ---------------------------------------------------------------------------
 
-const nvm_page_perms_t kNvmPagePermsReadWrite = {
-    .read = true, .write = true, .erase = true};
-const nvm_page_perms_t kNvmPagePermsReadOnly = {
-    .read = true, .write = false, .erase = false};
-const nvm_page_perms_t kNvmPagePermsNone = {
-    .read = false, .write = false, .erase = false};
+const nvm_page_perms_t kNvmPagePermsReadWrite = {.read = kMultiBitBool4True,
+                                                 .write = kMultiBitBool4True,
+                                                 .erase = kMultiBitBool4True};
+const nvm_page_perms_t kNvmPagePermsReadOnly = {.read = kMultiBitBool4True,
+                                                .write = kMultiBitBool4False,
+                                                .erase = kMultiBitBool4False};
+const nvm_page_perms_t kNvmPagePermsNone = {.read = kMultiBitBool4False,
+                                            .write = kMultiBitBool4False,
+                                            .erase = kMultiBitBool4False};
 
-const nvm_page_cfg_t kNvmPageCfgScrambled = {
-    .scrambling = true, .ecc = true, .he = false};
-const nvm_page_cfg_t kNvmPageCfgPlain = {
-    .scrambling = false, .ecc = true, .he = false};
+const nvm_page_cfg_t kNvmPageCfgScrambled = {.scrambling = kMultiBitBool4True,
+                                             .ecc = kMultiBitBool4True,
+                                             .he = kMultiBitBool4False};
+const nvm_page_cfg_t kNvmPageCfgPlain = {.scrambling = kMultiBitBool4False,
+                                         .ecc = kMultiBitBool4True,
+                                         .he = kMultiBitBool4False};
 
-const nvm_page_cfg_t kNvmCertInfoPageCfg = {
-    .scrambling = true, .ecc = true, .he = false};
+const nvm_page_cfg_t kNvmCertInfoPageCfg = {.scrambling = kMultiBitBool4True,
+                                            .ecc = kMultiBitBool4True,
+                                            .he = kMultiBitBool4False};
 const nvm_page_perms_t kNvmCertInfoPageCreatorAccess = {
-    .read = true, .write = true, .erase = true};
+    .read = kMultiBitBool4True,
+    .write = kMultiBitBool4True,
+    .erase = kMultiBitBool4True};
 const nvm_page_perms_t kNvmCertInfoPageOwnerAccess = {
-    .read = true, .write = false, .erase = false};
+    .read = kMultiBitBool4True,
+    .write = kMultiBitBool4False,
+    .erase = kMultiBitBool4False};
 
 // ---------------------------------------------------------------------------
 // Lifecycle

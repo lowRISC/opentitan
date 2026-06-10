@@ -56,10 +56,12 @@ boot_data_t kTestBootData = (boot_data_t){
  * @param enable New read, write, and erase permissions.
  */
 static void boot_data_pages_mp_set(hardened_bool_t perm) {
-  bool b = (perm == kHardenedBoolTrue);
+  uint8_t mubi_perm =
+      perm == kHardenedBoolTrue ? kMultiBitBool4True : kMultiBitBool4False;
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
-    nvm_ctrl_info_perms_set(
-        kPages[i], (nvm_page_perms_t){.read = b, .write = b, .erase = b});
+    nvm_ctrl_info_perms_set(kPages[i], (nvm_page_perms_t){.read = mubi_perm,
+                                                          .write = mubi_perm,
+                                                          .erase = mubi_perm});
   }
 }
 

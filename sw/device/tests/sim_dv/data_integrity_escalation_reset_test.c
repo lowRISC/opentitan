@@ -532,8 +532,9 @@ bool test_main(void) {
   // Enable NVM access for storing info across resets.
   LOG_INFO("Setting default region accesses");
   CHECK_STATUS_OK(nvm_testutils_default_region_setup(
-      kPageReadWrite,
-      (nvm_page_cfg_t){.scrambling = false, .ecc = false, .he = false}));
+      kPageReadWrite, (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,
+                                       .ecc = kMultiBitBool4False,
+                                       .he = kMultiBitBool4False}));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
