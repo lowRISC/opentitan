@@ -327,36 +327,9 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   ibex_addr_remap_lockdown(0);
   ibex_addr_remap_lockdown(1);
 
-  if (launder32((hardened_bool_t)owner_config.isfb) != kHardenedBoolFalse) {
-    hardened_bool_t node_locked = manifest->usage_constraints.selector_bits
-                                      ? kHardenedBoolTrue
-                                      : kHardenedBoolFalse;
-
-    const manifest_ext_isfb_erase_t *ext_isfb_erase;
-    rom_error_t ext_error =
-        manifest_ext_get_isfb_erase(manifest, &ext_isfb_erase);
-
-    hardened_bool_t erase_en = kHardenedBoolFalse;
-    HARDENED_RETURN_IF_ERROR(isfb_info_flash_erase_policy_get(
-        &owner_config, keyring.key[verify_key]->key_domain, node_locked,
-        (ext_error == kErrorOk) ? ext_isfb_erase : NULL, &erase_en));
-
-    if (launder32(erase_en) == kHardenedBoolTrue) {
-      HARDENED_RETURN_IF_ERROR(
-          owner_block_info_isfb_erase_enable(boot_data, &owner_config));
-      HARDENED_CHECK_EQ(erase_en, kHardenedBoolTrue);
-    }
-
-    // Redundant check to ensure that the ISFB check was performed earlier in
-    // the boot process.
-    const manifest_ext_isfb_t *ext_isfb;
-    rom_error_t error = manifest_ext_get_isfb(manifest, &ext_isfb);
-    if (error == kErrorOk) {
-      HARDENED_CHECK_EQ(isfb_check_count, isfb_expected_count_get(ext_isfb));
-    } else {
-      HARDENED_CHECK_NE(error, kErrorOk);
-    }
-  }
+  HARDENED_RETURN_IF_ERROR(isfb_boot_verify(manifest, &owner_config, &keyring,
+                                            verify_key, boot_data,
+                                            isfb_check_count));
 
   // Lock the flash according to the ownership configuration.
   HARDENED_RETURN_IF_ERROR(

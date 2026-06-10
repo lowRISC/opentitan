@@ -233,6 +233,18 @@ hardened_bool_t owner_rescue_command_allowed(
  * @param measurement The measurement value.
  */
 void owner_block_measurement(size_t page, hmac_digest_t *mesaurment);
+
+static inline hardened_bool_t is_owner_page(const uint8_t bank,
+                                            const uint8_t page) {
+  (void)bank;
+  // On earlgrey_a1, in banks 0 and 1, pages 5-8 (inclusive) are reserved
+  // for the owner.
+  if (page >= 5 && page <= 8) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

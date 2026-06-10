@@ -71,9 +71,38 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
  * @return The result of the operation.
  */
 rom_error_t isfb_info_flash_erase_policy_get(
-    owner_config_t *owner_config, uint32_t key_domain,
+    const owner_config_t *owner_config, uint32_t key_domain,
     hardened_bool_t manifest_is_node_locked,
     const manifest_ext_isfb_erase_t *ext_isfb_erase, hardened_bool_t *erase_en);
+
+/**
+ * Perform checks for ISFB when verifying the owner image during rom_ext_verify.
+ *
+ * @param manifest The manifest of the image to verify.
+ * @param owner_config The owner configuration.
+ * @param[out] isfb_check_count The number of checks performed.
+ * @return The result of the operation.
+ */
+rom_error_t isfb_check_and_verify(const manifest_t *manifest,
+                                  const owner_config_t *owner_config,
+                                  uint32_t *isfb_check_count);
+
+/**
+ * Perform ISFB boot-time verification before jumping to the owner code.
+ *
+ * @param manifest The manifest of the image to boot.
+ * @param owner_config The owner configuration.
+ * @param keyring The keyring of owner keys.
+ * @param verify_key The index of the verified key.
+ * @param boot_data Boot data.
+ * @param isfb_check_count The number of checks performed during verification.
+ * @return The result of the operation.
+ */
+rom_error_t isfb_boot_verify(const manifest_t *manifest,
+                             const owner_config_t *owner_config,
+                             const owner_application_keyring_t *keyring,
+                             size_t verify_key, boot_data_t *boot_data,
+                             uint32_t isfb_check_count);
 
 #ifdef __cplusplus
 }
