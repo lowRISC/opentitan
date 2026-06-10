@@ -74,7 +74,6 @@ status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -143,7 +142,6 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 

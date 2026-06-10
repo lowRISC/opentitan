@@ -98,7 +98,6 @@ otcrypto_status_t otcrypto_kmac(
 
     // Check `key_len` matches `keyblob_length`.
     if (key->keyblob_length != 2 * key->config.key_length) {
-      // COVERAGE (MISSING) We do not cover bad key_len inputs
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_TRY(keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));

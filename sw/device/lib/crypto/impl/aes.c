@@ -171,12 +171,9 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
       break;
     case kOtcryptoAesPaddingNull:
       // This routine should not be called if padding is not needed.
-      // COVERAGE (SW ERR) The internal routine is not called with PaddingNull
       return OTCRYPTO_RECOV_ERR;
     default:
       // Unrecognized padding mode.
-      // COVERAGE (SW ERR) This is an internal routine which is given correct
-      // inputs
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to
@@ -371,7 +368,6 @@ static otcrypto_status_t otcrypto_aes_impl(
           launder32(aes_operation_started) | kOtcryptoAesOperationDecrypt;
       break;
     default:
-      // COVERAGE (MISSING) The default bad argument input is not covered.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to

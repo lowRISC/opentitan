@@ -34,7 +34,6 @@ status_t rsa_encrypt_start(rsa_size_t size, const uint32_t *n,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -127,12 +126,10 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
     }
     default:
       // Unexpected number of words; should never get here.
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }

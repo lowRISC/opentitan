@@ -64,7 +64,6 @@ static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -228,7 +227,6 @@ static status_t rsa_size_from_public_key(
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -264,7 +262,6 @@ static status_t rsa_size_from_private_key(
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -304,7 +301,6 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -359,7 +355,6 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     case kOtcryptoRsaSize2048: {
       if (private_key->keyblob_length != sizeof(rsa_2048_private_key_t) ||
           modulus->len != kRsa2048NumWords) {
-        // COVERAGE (MISSING) We do not cover bad key lengths.
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_private_key_t *sk =
@@ -372,7 +367,6 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     case kOtcryptoRsaSize3072: {
       if (private_key->keyblob_length != sizeof(rsa_3072_private_key_t) ||
           modulus->len != kRsa3072NumWords) {
-        // COVERAGE (MISSING) We do not cover bad key lengths.
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_private_key_t *sk =
@@ -385,7 +379,6 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     case kOtcryptoRsaSize4096: {
       if (private_key->keyblob_length != sizeof(rsa_4096_private_key_t) ||
           modulus->len != kRsa4096NumWords) {
-        // COVERAGE (MISSING) We do not cover bad key lengths.
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_private_key_t *sk =
@@ -396,7 +389,6 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       break;
     }
     default:
-      // COVERAGE (MISSING) We do not cover bad sizes.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -535,7 +527,6 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     }
     default:
       // Invalid key size.
-      // COVERAGE (FI CM) size is internally generated.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -584,7 +575,6 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
       if (cofactor_share0->len !=
               sizeof(rsa_2048_cofactor_t) / sizeof(uint32_t) ||
           modulus->len != kRsa2048NumWords) {
-        // COVERAGE (MISSING) We do not cover bad size.
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
@@ -617,7 +607,6 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -677,7 +666,6 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     }
     default:
       // Invalid key size.
-      // COVERAGE (FI CM) size is internally generated.
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -701,8 +689,6 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
     case kOtcryptoRsaPaddingPkcs:
       HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPkcs);
       if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
-        // COVERAGE (MISSING) We do not cover mismatching key_mode and
-        // padding_modes.
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
@@ -721,7 +707,6 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -785,13 +770,11 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -830,7 +813,6 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -909,13 +891,11 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -1009,13 +989,11 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -1056,7 +1034,6 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -1127,7 +1104,6 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       // Check that ciphertext is < n.
       if (bignum_lt(ciphertext->data, sk->n.data, kRsa3072NumWords) ==
           kHardenedBoolFalse) {
-        // COVERAGE (MISSING) We do not cover ciphertexts larger than n
         return OTCRYPTO_BAD_ARGS;
       }
 
@@ -1149,7 +1125,6 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       // Check that ciphertext is < n.
       if (bignum_lt(ciphertext->data, sk->n.data, kRsa4096NumWords) ==
           kHardenedBoolFalse) {
-        // COVERAGE (MISSING) We do not cover ciphertexts larger than n
         return OTCRYPTO_BAD_ARGS;
       }
 
@@ -1161,13 +1136,11 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -1191,7 +1164,6 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
   // Consistency check; this should never happen.
   if (launder32(*plaintext_bytelen) > plaintext->len) {
     HARDENED_TRAP();
-    // COVERAGE (FI CM) Unreachable code, checked against fault injections.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_LE(*plaintext_bytelen, plaintext->len);
