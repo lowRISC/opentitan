@@ -34,6 +34,19 @@ class tl_host_driver extends tl_base_driver;
   extern protected task a_channel_thread();
 
   // Send a request, req, on the A channel
+  //
+  // The steps to drive the request:
+  //
+  //    - Wait until there is no pending response for req.a_source.
+  //    - Call send_a_request_body to assert a_valid and similar signals, looping if
+  //      send_a_request_body reports a timeout.
+  //
+  // Once the request has been driven call seq_item_port.item_done(), causing the sequencer to allow
+  // the item to finish.
+  //
+  // If a reset is asserted at any point, the task will stop driving the request and send a response
+  // as well as calling seq_item_port.item_done() (representing the D channel message that would
+  // normally come back).
   extern protected task send_a_channel_request(tl_seq_item req);
 
   // Send the body of a request on the A channel.
