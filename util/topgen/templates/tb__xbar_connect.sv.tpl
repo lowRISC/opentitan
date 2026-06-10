@@ -12,6 +12,8 @@ import topgen.lib as lib
 top_hier = 'tb.dut.top_' + top["name"] + '.'
 clk_hier = lib.get_clock_prefixes(top)["top"]
 
+default_pd = top["power"]["default"]
+
 clk_src = OrderedDict()
 for xbar in top["xbar"]:
   for clk, src in xbar["clock_srcs"].items():
@@ -37,17 +39,17 @@ def escape_if_name(qual_if_name):
 %>\
 
 ## Need to use a variable assignment for "\" to bypass the newline filter.
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) ${"\\"}
-     force ``tl_name``_tl_if.d2h = dut.top_${top["name"]}.u_``inst_name``.``sig_name``_i; ${"\\"}
-     force dut.top_${top["name"]}.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; ${"\\"}
-     force dut.top_${top["name"]}.u_``inst_name``.clk_i = 0; ${"\\"}
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, pd_hier = ) ${"\\"}
+     force ``tl_name``_tl_if.d2h = dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_i; ${"\\"}
+     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; ${"\\"}
+     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.clk_i = 0; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) ${"\\"}
-     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}.u_``inst_name``.``sig_name``_i; ${"\\"}
-     force dut.top_${top["name"]}.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
-     force dut.top_${top["name"]}.u_``inst_name``.clk_i = 0; ${"\\"}
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, pd_hier = ) ${"\\"}
+     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_i; ${"\\"}
+     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
+     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.clk_i = 0; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
@@ -105,13 +107,19 @@ esc_name = node['name'].replace('.', '__')
 inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + esc_name)
 inst_name = inst_sig_list[0][1]
 sig_name = inst_sig_list[0][2]
+
+inst_pd = lib.find_module_by_name(top["module"] + top["xbar"], inst_name).get("domain")
+if inst_pd != default_pd:
+  pd_str = f", _pd_{inst_pd.lower()}"
+else:
+  pd_str = ""
 %>\
     % if node["type"] == "host" and not node["xbar"]:
-    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name}${pd_str})
     % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
-    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
+    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name}${pd_str})
     % endif
   % endfor
 % endfor

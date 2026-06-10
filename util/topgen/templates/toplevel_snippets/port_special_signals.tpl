@@ -5,6 +5,7 @@
 <%from topgen.merge import alert_handler_signals%>\
 <%page args="top, feature_info, cio_info, domain"/>\
 % if feature_info["has_pinmux"]:
+% if lib.find_module(top["module"], "pinmux").get("domain") == domain:
 % if cio_info["num_mio_pads"] != 0:
   // Multiplexed I/O
   input  logic ${lib.bitarray(cio_info["num_mio_pads"], cio_info["max_sigwidth"])} mio_in_i,
@@ -25,6 +26,7 @@
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 
+% endif
 % endif\
 
 % for irq_group, irqs in top['incoming_interrupt'].items():
@@ -40,7 +42,7 @@
 % for name, plic in top["plic_info"].items():
 <% prefix = "_" + name if len(top["plic_info"]) > 1 else "" %>\
 % if plic["domain"] == domain:
-  % for pd in top["power"]["physical"]:
+  % for pd in top["power"]["domains"]:
 <% if pd == domain: continue %>\
 <% pd_len = plic["count_pd"][pd] - 1 %>\
     % if pd_len >= 0:
@@ -82,19 +84,20 @@
 
 % endif\
 
-  // All externally supplied clocks
-% for clk in top['clocks'].typed_clocks().ast_clks:
-  input ${clk},
-% endfor\
-
 % for alert_group in top['outgoing_alert'].keys():
   // Outgoing alerts for group ${alert_group}
-  output prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_tx_o,
-  input  prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_rx_i,
+  output prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}Pd${domain.capitalize()}-1:0] outgoing_alert_${alert_group}_tx_o,
+  input  prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}Pd${domain.capitalize()}-1:0] outgoing_alert_${alert_group}_rx_i,
+% if lib.find_module(top["module"], "clkmgr", domain=domain):
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_cg_en_${alert_group}_o,
+% endif
+% if lib.find_module(top["module"], "rstmgr", domain=domain):
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_rst_en_${alert_group}_o,
+% endif
+
 % endfor\
 
+% if lib.find_module(top["module"], "alert_handler", domain=domain):
 % for alert_group in top['incoming_alert'].keys():
   // Incoming alerts for group ${alert_group}
   input  prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_tx_i,
@@ -102,6 +105,7 @@
   input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_cg_en_${alert_group}_i,
   input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_rst_en_${alert_group}_i,
 % endfor
+% endif\
 
 <%
   clkmgr = lib.find_module(top['module'], 'clkmgr')
@@ -144,8 +148,9 @@
 
 % endif\
 
-  input                      scan_rst_ni, // reset used for test mode
-% if feature_info["has_scan_en"]:
-  input                      scan_en_i,
+  // Manual DFT signals
+  input                        scan_rst_ni, // reset used for test mode
+% if feature_info["has_scan_en"][domain]:
+  input                        scan_en_i,
 % endif
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
