@@ -55,7 +55,7 @@ on:
         description: Bazel target(s) to look for tests in
 
       timeout:
-        default: 60
+        default: 70
         type: number
         description: Timeout for the job in minutes
       vivado_version:
