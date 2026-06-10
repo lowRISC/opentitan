@@ -29,17 +29,9 @@
   ]
 
   // This is the clock data structure of the design.
-  // The hier path refers to the clock reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
-
-    hier_paths: {
-      top: "clkmgr_aon_clocks.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "clkmgr_aon_cg_en.",  // top level struct for alert lpg reset enables
-    },
 
     // Clock Source attributes
     // name: Name of group.
@@ -108,16 +100,8 @@
   // unmanaged_resets: []
 
   // This is the reset data structure of the design.
-  // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
-
-    hier_paths: {
-      top: "rstmgr_aon_resets.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "rstmgr_aon_rst_en.", // top level struct for alert lpg reset enables
-    },
 
     // Reset node attributes
     // name: name of reset.
@@ -670,11 +654,21 @@
       template_type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io_div4",
-                          rst_aon_ni: "lc_aon",
-                          rst_sys_ni: "sys_io_div4"
-                         },
-      domain: "Aon",
+      reset_connections: {
+        rst_ni: {
+          name: "lc_io_div4",
+          domain: "Aon",
+        },
+        rst_aon_ni: {
+          name: "lc_aon",
+          domain: "Aon"
+        },
+        rst_sys_ni: {
+          name: "sys_io_div4",
+          domain: "Aon",
+        },
+      },
+      domain: "Main",
       base_addr: {
         hart: "0x40460000",
       },
@@ -751,7 +745,7 @@
           domain: "Main"
         }
       },
-      domain: "Aon",
+      domain: "Main",
       base_addr: {
         hart: "0x40480000",
       },
@@ -1381,6 +1375,8 @@
         'ast.spi_ram_2p_cfg'                 : 'spi_ram_2p_cfg',
         'ast.usb_ram_1p_cfg'                 : 'usb_ram_1p_cfg',
         'ast.rom_cfg'                        : 'rom_cfg',
+        'clkmgr_aon.clocks'                  : '',
+        'clkmgr_aon.cg_en'                   : '',
         'clkmgr_aon.jitter_en'               : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'          : 'io_clk_byp_req',
         'clkmgr_aon.io_clk_byp_ack'          : 'io_clk_byp_ack',
@@ -1410,6 +1406,8 @@
         'otp_macro.ext_voltage_h'            : 'otp_ext_voltage_h',
         'otp_macro.otp_obs'                  : 'otp_obs',
         'rstmgr_aon.por_n'                   : 'por_n',
+        'rstmgr_aon.resets'                  : '',
+        'rstmgr_aon.rst_en'                  : '',
         'rv_core_ibex.fpga_info'             : 'fpga_info',
         'sensor_ctrl_aon.ast_alert'          : 'sensor_ctrl_ast_alert',
         'sensor_ctrl_aon.ast_status'         : 'sensor_ctrl_ast_status',
