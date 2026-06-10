@@ -564,12 +564,27 @@ def get_pad_list(padstr: str) -> List[Dict[str, Union[str, int]]]:
     return pads
 
 
-def idx_of_last_module_with_params(top: ConfigT) -> int:
+def idx_of_last_module_with_params(top: ConfigT, domain: str = None) -> int:
     last = -1
-    for idx, module in enumerate(top["module"]):
+
+    if domain is not None:
+        default_domain = top["power"]["default"]
+        modlist = [m for m in top["module"] if m.get("domain", default_domain) == domain]
+    else:
+        modlist = top["module"]
+
+    for idx, module in enumerate(modlist):
         if len(module["param_list"]):
             last = idx
+
     return last
+
+
+def get_all_modules(top: ConfigT, domain: str = None):
+    if domain is not None:
+        return [m for m in top["module"] if m.get("domain") == domain]
+    else:
+        return top["module"]
 
 
 # Template functions
@@ -954,12 +969,14 @@ def make_bit_concatenation(sig_name: str, indices: List[int],
     return ''.join(acc)
 
 
-def num_rom_ctrl(modules: List[ConfigT]) -> int:
+def num_rom_ctrl(modules: List[ConfigT], domain: str = None) -> int:
     '''Return number of rom_ctrl's instantiated in the design
     '''
     num = 0
+
     for m in modules:
-        if m['type'] == 'rom_ctrl':
+        if m['type'] == 'rom_ctrl' and \
+           (domain is None or m.get('domain') == domain):
             num += 1
 
     return num
@@ -967,7 +984,8 @@ def num_rom_ctrl(modules: List[ConfigT]) -> int:
 
 def find_modules(modules: List[Dict[str, object]],
                  type: str,
-                 use_base_template_type=True) -> List[Dict[str, object]]:
+                 use_base_template_type=True,
+                 domain: str = None) -> List[Dict[str, object]]:
     '''Returns the modules of a given type
 
     If use_base_template_type is set to True, ipgen-based modules are
@@ -977,10 +995,12 @@ def find_modules(modules: List[Dict[str, object]],
     modules_found = []
     for m in modules:
         if m.get('attr') == 'ipgen' and use_base_template_type:
-            if m['template_type'] == type:
+            if m['template_type'] == type and \
+               (domain is None or m.get('domain') == domain):
                 modules_found.append(m)
         else:
-            if m['type'] == type:
+            if m['type'] == type and \
+               (domain is None or m.get('domain') == domain):
                 modules_found.append(m)
 
     return modules_found
@@ -989,14 +1009,15 @@ def find_modules(modules: List[Dict[str, object]],
 def find_module(
         modules: List[Dict[str, object]],
         type: str,
-        use_base_template_type=True) -> Optional[Dict[str, object]]:
+        use_base_template_type=True,
+        domain: str = None) -> Optional[Dict[str, object]]:
     '''Returns the first module of a given type
 
     If use_base_template_type is set to True, ipgen-based modules are
     searched using the "template_type" attribute. If set to False,
     the search uses the "type" attribute instead.
     '''
-    mods = find_modules(modules, type, use_base_template_type)
+    mods = find_modules(modules, type, use_base_template_type, domain)
     return mods[0] if mods else None
 
 
