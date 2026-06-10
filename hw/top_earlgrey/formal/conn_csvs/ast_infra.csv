@@ -10,15 +10,47 @@
 #################################
 # Pad connections to/from AST
 #################################
-CONNECTION, AST_PAD0,            u_ast,                      ast2pad_t0_ao,                                       , IOA2,
-CONNECTION, AST_PAD1,            u_ast,                      ast2pad_t1_ao,                                       , IOA3,
-CONNECTION, AST_PINMUX,          u_ast,                      ast2padmux_o,              top_earlgrey.u_sensor_ctrl_aon, ast2pinmux_i,
-CONNECTION, PAD_AST,                  ,                      "{IOC3, IOC2, IOC1, IOB2, IOB1, IOB0, IOA5, IOA4}", u_ast, padmux2ast_i,
-# The inputs of above pads can be disabled using the mio_attr[25:23, 11:9, 5:4] control signals driven by pinmux.
-# Whenever pinmux is in reset, the inputs of these pads must be enabled.
-# Below conditions evaluate to: (mio_attr[x] == 1'b1 && rst_ni == 1'b1) || (rst_ni == 1'b0)
-CONDITION,                            ,                      "{mio_attr[25], mio_attr[24], mio_attr[23], mio_attr[11], mio_attr[10], mio_attr[9], mio_attr[5], mio_attr[4]}",    1'b1
-CONDITION,   top_earlgrey.u_pinmux_aon,                      rst_ni,                    1'b1,                    1'b0
+CONNECTION, AST_PAD0,   u_ast, ast2pad_t0_ao, ,                               IOA2,
+CONNECTION, AST_PAD1,   u_ast, ast2pad_t1_ao, ,                               IOA3,
+CONNECTION, AST_PINMUX, u_ast, ast2padmux_o,  top_earlgrey.u_sensor_ctrl_aon, ast2pinmux_i,
+
+# There are fixed connections from MIO pads to the AST's padmux2ast_i. These are listed in a
+# definition called PAD2AST_WIRES (in ast_pkg.sv). Check that chip_earlgrey_asic.sv connects the
+# pads up as expected.
+#
+# These pad connections can be disabled and are controlled by bits in mio_attr, with indices
+# controlled by the sizes the blocks of named pads (IOA* starts at index 0; IOB* starts at index 9;
+# IOC* starts at index 23).
+#
+# A pad is enabled if its associated mio_attr field is true or if pinmux is in reset. The latter
+# condition isn't currently checked by this file because the connectivity app's auto-generated
+# properties are disabled by the reset that applies to pinmux.
+#
+# Note: This check contains a manual copy of that list of pads and also the mapping from pad names
+#       to MIO indices. If either changes, the list in this file will need updating.
+CONNECTION, PAD_AST_0, , IOA4,        u_ast, padmux2ast_i[0],
+, CONDITION, ,                          mio_attr[4], 1'b1
+
+CONNECTION, PAD_AST_1, , IOA5, u_ast, padmux2ast_i[1],
+, CONDITION, ,                          mio_attr[5], 1'b1
+
+CONNECTION, PAD_AST_2, , IOB0, u_ast, padmux2ast_i[2],
+, CONDITION, ,                          mio_attr[9], 1'b1
+
+CONNECTION, PAD_AST_3, , IOB1, u_ast, padmux2ast_i[3],
+, CONDITION, ,                          mio_attr[10], 1'b1
+
+CONNECTION, PAD_AST_4, , IOB2, u_ast, padmux2ast_i[4],
+, CONDITION, ,                          mio_attr[11], 1'b1
+
+CONNECTION, PAD_AST_5, , IOC1, u_ast, padmux2ast_i[5],
+, CONDITION, ,                          mio_attr[23], 1'b1
+
+CONNECTION, PAD_AST_6, , IOC2, u_ast, padmux2ast_i[6],
+, CONDITION, ,                          mio_attr[24], 1'b1
+
+CONNECTION, PAD_AST_7, , IOC3, u_ast, padmux2ast_i[7],
+, CONDITION, ,                          mio_attr[25], 1'b1
 
 #################################
 # Other clocks
