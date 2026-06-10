@@ -9,7 +9,7 @@
 
 # AST DFT module emits some configuration bits for single and dual port memories in the chip. These
 # cannot be covered functionally in the open source repo, since they are not used by the generic
-# memory models. TThese signals are excluded from coverage collection AFTER they have been added to
+# memory models. These signals are excluded from coverage collection AFTER they have been added to
 # this checker.
 #
 #  The source path (within AST) is inferred manually from the RTL. The destination paths are
@@ -17,7 +17,7 @@
 
 # Dual port RAMs.
 # To spi_device.
-CONNECTION, AST_DFT_SPI_DEVICE_RAM_2P_CFG, u_ast.u_ast_dft, "{12'h0, dpram_rml_o}", top_earlgrey.u_spi_device.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem, cfg_i
+CONNECTION, AST_DFT_SPI_DEVICE_RAM_2P_CFG, u_ast.u_ast_dft, "dpram_rml_o", top_earlgrey.u_spi_device.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem, cfg_i
 
 # Single port RAMs.
 # To otbn.
