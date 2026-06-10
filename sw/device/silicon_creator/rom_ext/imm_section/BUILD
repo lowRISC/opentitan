@@ -140,6 +140,7 @@ ld_library(
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = "//hw/top_earlgrey:none_manifest",
