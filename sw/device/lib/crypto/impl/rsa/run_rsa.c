@@ -110,7 +110,6 @@ status_t rsa_modexp_wait(size_t *num_words) {
     *num_words = kRsa4096NumWords;
   } else {
     // Unrecognized mode.
-    // COVERAGE (SW ERR) We only provide OTBN with correct modes.
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -134,8 +133,6 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
 
   // Check that the inferred result size matches expectations.
   if (num_words != num_words_inferred) {
-    // COVERAGE (SW ERR) This is an internal functions only provided with
-    // correct inputs.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
@@ -211,8 +208,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   const otbn_addr_t kOtbnVarRsaMrIterP = OTBN_ADDR_T_INIT(run_rsa, mr_iter_p);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
   if (mr_iters != kMrIters) {
-    // COVERAGE (FI CM) The number of iterations can only deviate if there was a
-    // fault injection or fatal error.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
@@ -222,8 +217,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   const otbn_addr_t kOtbnVarRsaMrIterQ = OTBN_ADDR_T_INIT(run_rsa, mr_iter_q);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
   if (mr_iters != kMrIters) {
-    // COVERAGE (FI CM) The number of iterations can only deviate if there was a
-    // fault injection or fatal error.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
@@ -288,7 +281,6 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -343,7 +335,6 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -378,7 +369,6 @@ status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result) {
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
   return rsa_modexp_finalize(expected_words, result);
@@ -407,7 +397,6 @@ status_t rsa_keygen_start(rsa_size_t size) {
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
   return keygen_start(mode);
@@ -442,7 +431,6 @@ status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 

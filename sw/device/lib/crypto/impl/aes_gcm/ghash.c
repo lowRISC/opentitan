@@ -170,8 +170,6 @@ hardened_bool_t ghash_context_integrity_checksum_check(
       launder32(ghash_context_integrity_checksum(ghash_ctx))) {
     return kHardenedBoolTrue;
   }
-  // COVERAGE (FI CM) We only provide correct encoded contexts, this is to check
-  // for faults.
   return kHardenedBoolFalse;
 }
 

@@ -356,7 +356,6 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
   } else {
     // Hardware backed keys are not possible due to the keys being SHA2 seeds
     // which does not allow sideloading.
-    // COVERAGE (SW ERR) Sideloading is not allowed with 25519.
     return OTCRYPTO_BAD_ARGS;
   }
 

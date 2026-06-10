@@ -517,7 +517,6 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
   // than NIST requires, but SP800-38D also allows implementations to stipulate
   // lower length limits.
   if (input->len > UINT32_MAX - ctx->input_len) {
-    // COVERAGE (MISSING) We do not cover too large inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -551,8 +550,6 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
     // Since we only generate ciphertext in full-block increments, no partial
     // blocks are possible in this case.
     if (*bytes_written % kGhashBlockNumBytes != 0) {
-      // COVERAGE (SW ERR) Since we call aes_gcm_gctr before, this should
-      // normally not be called.
       return OTCRYPTO_RECOV_ERR;
     }
     otcrypto_const_byte_buf_t written_buf = OTCRYPTO_MAKE_BUF(
