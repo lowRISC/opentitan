@@ -40,6 +40,15 @@ mldsa87_verify:
   andi x2, x2, 0x8
   bne x2, x0, _mldsa87_verify_failure
 
+  /* Check the validity of the hint. */
+  la x2, mldsa87_verify_var_h
+  jal x1, check_hint
+
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _mldsa87_verify_failure
+
   /* Sample the challenge polynomial C. */
   la x2, mldsa87_verify_var_c
   la x3, mldsa87_verify_sig_c_tilde
