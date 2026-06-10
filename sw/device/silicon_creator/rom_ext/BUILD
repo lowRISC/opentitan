@@ -143,6 +143,7 @@ cc_test(
     deps = [
         ":rom_ext_boot_services",
         dual_cc_device_library_of("//sw/device/silicon_creator/lib/boot_svc:boot_svc_header"),
+        "//sw/device/silicon_creator/lib/ownership:isfb",
         "//sw/device/silicon_creator/lib/rescue:rescue_null",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -190,7 +191,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/base:boot_measurements",
-        "//sw/device/silicon_creator/lib/ownership:isfb",
+        "//sw/device/silicon_creator/lib/ownership:isfb_headers",
         "//sw/device/silicon_creator/lib/ownership:owner_block",
         "//sw/device/silicon_creator/lib/ownership:owner_verify",
         "//sw/device/silicon_creator/lib/sigverify:usage_constraints",
@@ -298,7 +299,7 @@ asm_library_with_coverage(
             "//sw/device/silicon_creator/lib/drivers:uart",
             "//sw/device/silicon_creator/lib/drivers:watchdog",
             "//sw/device/silicon_creator/lib/ownership",
-            "//sw/device/silicon_creator/lib/ownership:isfb",
+            "//sw/device/silicon_creator/lib/ownership:isfb_headers",
             "//sw/device/silicon_creator/lib/ownership:owner_block",
             "//sw/device/silicon_creator/lib/ownership:owner_verify",
             "//sw/device/silicon_creator/lib/ownership:ownership_activate",
@@ -346,6 +347,7 @@ manifest(d = {
             ":rom_ext_{}".format(variation_name),
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:isfb_null",
             "//sw/device/silicon_creator/lib/ownership:test_owner",
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
@@ -385,7 +387,10 @@ ROM_EXT_LABELS.extend([
             "//sw/device/silicon_creator/lib/ownership:test_owner_{}".format(name),
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_virtual",
-        ] + param["rescue_module"],
+        ] + param.get(
+            "isfb_module",
+            ["//sw/device/silicon_creator/lib/ownership:isfb_null"],
+        ) + param["rescue_module"],
     )
     for name, param in TEST_OWNER_CONFIGS.items()
 ]
@@ -422,6 +427,7 @@ opentitan_binary(
         ":rom_ext_dice_x509",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:isfb_null",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
         "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",

@@ -88,21 +88,8 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
       digest_region.length, &act_digest, flash_exec));
 
   // Perform ISFB checks if the extension is present.
-  if ((hardened_bool_t)owner_config->isfb != kHardenedBoolFalse) {
-    const manifest_ext_isfb_t *ext_isfb;
-    rom_error_t error = manifest_ext_get_isfb(manifest, &ext_isfb);
-    if (error == kErrorOk) {
-      *isfb_check_count = kHardenedBoolFalse;
-      RETURN_IF_ERROR(
-          isfb_boot_request_process(ext_isfb, owner_config, isfb_check_count));
-      // The previous function returns `kErrorOwnershipISFBFailed` if the strike
-      // check or product expression check fails. The following check is to
-      // detect any faults.
-      HARDENED_CHECK_EQ(*isfb_check_count, isfb_expected_count_get(ext_isfb));
-    } else {
-      HARDENED_CHECK_NE(error, kErrorOk);
-    }
-  }
+  RETURN_IF_ERROR(
+      isfb_check_and_verify(manifest, owner_config, isfb_check_count));
 
   // This is given that we are expected to perform redundant checks on
   // `flash_exec` and `isfb_check_count`. This is also the reason why don't use

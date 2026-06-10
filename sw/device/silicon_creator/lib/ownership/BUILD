@@ -31,19 +31,35 @@ cc_library(
 )
 
 cc_library(
-    name = "isfb",
-    srcs = ["isfb.c"],
+    name = "isfb_headers",
     hdrs = ["isfb.h"],
     deps = [
         ":datatypes",
         ":owner_block",
         "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:manifest",
+    ],
+)
+
+cc_library(
+    name = "isfb",
+    srcs = ["isfb.c"],
+    deps = [
+        ":isfb_headers",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:rnd",
+    ],
+)
+
+cc_library(
+    name = "isfb_null",
+    srcs = ["isfb_null.c"],
+    deps = [
+        ":isfb_headers",
+        "//sw/device/silicon_creator/lib:error",
     ],
 )
 
@@ -164,6 +180,7 @@ cc_test(
     ],
     deps = [
         ":datatypes",
+        ":isfb",
         ":owner_block",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/testing:binary_blob",

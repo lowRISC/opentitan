@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
 
+#include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -126,7 +128,7 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
 }
 
 rom_error_t isfb_info_flash_erase_policy_get(
-    owner_config_t *owner_config, uint32_t key_domain,
+    const owner_config_t *owner_config, uint32_t key_domain,
     hardened_bool_t manifest_is_node_locked,
     const manifest_ext_isfb_erase_t *ext_isfb_erase,
     hardened_bool_t *erase_en) {
@@ -187,3 +189,100 @@ rom_error_t isfb_info_flash_erase_policy_get(
 }
 
 extern uint32_t isfb_expected_count_get(const manifest_ext_isfb_t *ext);
+
+rom_error_t owner_block_info_isfb_erase_enable(
+    boot_data_t *bootdata, const owner_config_t *owner_config) {
+  if (bootdata->ownership_state != kOwnershipStateLockedOwner)
+    return kErrorOk;
+  // Check whether the ISFB configuration exists.
+  if ((hardened_bool_t)owner_config->isfb == kHardenedBoolFalse)
+    return kErrorOk;
+  // Check whether the FLASH INFO configuration exists.
+  if ((hardened_bool_t)owner_config->info == kHardenedBoolFalse)
+    return kErrorOk;
+
+  const owner_flash_info_config_t *info = owner_config->info;
+  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+               sizeof(owner_info_page_t);
+
+  const owner_info_page_t *config = info->config;
+  uint32_t crypt = 0;
+  for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
+    if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue &&
+        config->bank == owner_config->isfb->bank &&
+        config->page == owner_config->isfb->page) {
+      flash_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+          config->bank, config->page, &page));
+
+      uint32_t val = config->access ^ crypt;
+      flash_ctrl_perms_t perm = {
+          .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
+          .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
+          .erase = kMultiBitBool4True,
+      };
+      flash_ctrl_info_perms_set(&page, perm);
+    }
+  }
+  return kErrorOk;
+}
+
+rom_error_t isfb_check_and_verify(const manifest_t *manifest,
+                                  const owner_config_t *owner_config,
+                                  uint32_t *isfb_check_count) {
+  // Perform ISFB checks if the extension is present.
+  if ((hardened_bool_t)owner_config->isfb != kHardenedBoolFalse) {
+    const manifest_ext_isfb_t *ext_isfb;
+    rom_error_t error = manifest_ext_get_isfb(manifest, &ext_isfb);
+    if (error == kErrorOk) {
+      *isfb_check_count = kHardenedBoolFalse;
+      RETURN_IF_ERROR(
+          isfb_boot_request_process(ext_isfb, owner_config, isfb_check_count));
+      // The previous function returns `kErrorOwnershipISFBFailed` if the strike
+      // check or product expression check fails. The following check is to
+      // detect any faults.
+      HARDENED_CHECK_EQ(*isfb_check_count, isfb_expected_count_get(ext_isfb));
+    } else {
+      HARDENED_CHECK_NE(error, kErrorOk);
+    }
+  }
+  return kErrorOk;
+}
+
+rom_error_t isfb_boot_verify(const manifest_t *manifest,
+                             const owner_config_t *owner_config,
+                             const owner_application_keyring_t *keyring,
+                             size_t verify_key, boot_data_t *boot_data,
+                             uint32_t isfb_check_count) {
+  if (launder32((hardened_bool_t)owner_config->isfb) != kHardenedBoolFalse) {
+    hardened_bool_t node_locked = manifest->usage_constraints.selector_bits
+                                      ? kHardenedBoolTrue
+                                      : kHardenedBoolFalse;
+
+    const manifest_ext_isfb_erase_t *ext_isfb_erase;
+    rom_error_t ext_error =
+        manifest_ext_get_isfb_erase(manifest, &ext_isfb_erase);
+
+    hardened_bool_t erase_en = kHardenedBoolFalse;
+    HARDENED_RETURN_IF_ERROR(isfb_info_flash_erase_policy_get(
+        owner_config, keyring->key[verify_key]->key_domain, node_locked,
+        (ext_error == kErrorOk) ? ext_isfb_erase : NULL, &erase_en));
+
+    if (launder32(erase_en) == kHardenedBoolTrue) {
+      HARDENED_RETURN_IF_ERROR(
+          owner_block_info_isfb_erase_enable(boot_data, owner_config));
+      HARDENED_CHECK_EQ(erase_en, kHardenedBoolTrue);
+    }
+
+    // Redundant check to ensure that the ISFB check was performed earlier in
+    // the boot process.
+    const manifest_ext_isfb_t *ext_isfb;
+    rom_error_t error = manifest_ext_get_isfb(manifest, &ext_isfb);
+    if (error == kErrorOk) {
+      HARDENED_CHECK_EQ(isfb_check_count, isfb_expected_count_get(ext_isfb));
+    } else {
+      HARDENED_CHECK_NE(error, kErrorOk);
+    }
+  }
+  return kErrorOk;
+}

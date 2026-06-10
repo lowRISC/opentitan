@@ -39,5 +39,10 @@ rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
   return MockManifest::Instance().Isfb(manifest, isfb);
 }
 
+rom_error_t manifest_ext_get_isfb_erase(
+    const manifest_t *manifest, const manifest_ext_isfb_erase_t **isfb_erase) {
+  return MockManifest::Instance().IsfbErase(manifest, isfb_erase);
+}
+
 }  // extern "C"
 }  // namespace rom_test

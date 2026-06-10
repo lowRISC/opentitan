@@ -278,6 +278,7 @@ TEST_OWNER_CONFIGS = {
         "owner_defines": [
             "WITH_ISFB=1",
         ],
+        "isfb_module": ["//sw/device/silicon_creator/lib/ownership:isfb"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
     "custom_fallback_owner": {

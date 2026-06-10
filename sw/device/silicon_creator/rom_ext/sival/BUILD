@@ -66,6 +66,7 @@ manifest(d = {
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:isfb_null",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
@@ -97,6 +98,7 @@ manifest(d = {
             # as chips maintain their ownership configuration in flash.
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:isfb_null",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
@@ -141,6 +143,7 @@ ROM_EXT_CONFIGS = {
             # as chips maintain their ownership configuration in flash.
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:isfb_null",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(config["dice"]),
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_virtual".format(config["dice"]),
         ] + config["deps"],
