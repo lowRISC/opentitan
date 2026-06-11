@@ -249,7 +249,7 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
        ++iter_cnt, --r_iter_cnt) {
     const sigverify_rom_key_header_t *k =
         array_get_generic(params.key_array, params.key_size, i);
-    if (k->key_id == params.key_id) {
+    if (launder32(k->key_id) == params.key_id) {
       HARDENED_CHECK_EQ(k->key_id, params.key_id);
       if (params.key_states[i] == kSigVerifyKeyAuthStateProvisioned) {
         rom_error_t error = key_is_valid(k->key_type, params.lc_state);
