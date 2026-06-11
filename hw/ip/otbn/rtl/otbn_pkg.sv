@@ -24,6 +24,9 @@ package otbn_pkg;
   // Width of base (32b) data path with added integrity bits
   parameter int BaseIntgWidth = 39;
 
+  // Width of the base (32b) integrity part.
+  parameter int BaseEccWidth = BaseIntgWidth - 32;
+
   // Number of 32-bit words per WLEN / HWLEN / QWLEN
   parameter int BaseWordsPerWLEN  = WLEN / 32;
   parameter int BaseWordsPerHWLEN = HWLEN / 32;
@@ -73,6 +76,23 @@ package otbn_pkg;
 
   // Number of vector chunk processing elements
   parameter int NVecProc = VLEN / VChunkLEN;
+
+  // A type to split a base word into integrity and data bits.
+  typedef struct packed {
+    logic [BaseEccWidth-1:0] intg;
+    logic [31:0]             word;
+  } otbn_base_intg_word_t;
+
+  // A wide register (WDR or WSR) split into base words with integrity and data each.
+  typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] otbn_wide_intg_word_t;
+
+  // A type to select bits from URND to secure wipe a full WSR.
+  localparam int unsigned IsprRndRsvdWidth = UrndLen - ExtWLEN;
+
+  typedef struct packed {
+    logic [IsprRndRsvdWidth-1:0] rsvd;
+    logic [ExtWLEN-1:0]          urnd;
+  } otbn_ispr_urnd_t;
 
   // Toplevel constants ============================================================================
 
