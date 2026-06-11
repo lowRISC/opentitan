@@ -192,6 +192,35 @@ cc_library(
 )
 
 cc_library(
+    name = "dice_mldsa",
+    srcs = ["dice_mldsa.c"],
+    deps = [
+        ":cert",
+        ":dice_api",
+        ":dice_storage",
+        ":seeds",
+        "//sw/device/lib/base:crc32",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib/base:static_dice_cdi_0",
+        "//sw/device/silicon_creator/lib/base:static_dice_mldsa_cdi",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/cert:cdi_hybrid_template_library",
+        "//sw/device/silicon_creator/lib/cert:dice_chain",
+        "//sw/device/silicon_creator/lib/cert:dice_keys",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/lib/ownership:ownership_key",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        "//third_party/embedpqc:mldsa44_tiny",
+        "//third_party/embedpqc/ports:mldsa44_tiny_caller",
+    ],
+)
+
+cc_library(
     name = "cbor",
     srcs = ["cbor.c"],
     hdrs = ["cbor.h"],
