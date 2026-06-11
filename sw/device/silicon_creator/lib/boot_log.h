@@ -94,6 +94,14 @@ enum {
 #define BOOT_LOG_EVENT_REDUNDANCY 0
 
 /**
+ * Boot log event (bit 1): ISFB configuration error.
+ *
+ * Set to 1 if the chip requires ISFB checks (owner config has isfb enabled),
+ * but the ROM_EXT is linked with the isfb_null stub.
+ */
+#define BOOT_LOG_EVENT_ISFB_ERROR 1
+
+/**
  * Updates the digest of the boot_log.
  *
  * This function computes the digest over all fields of the boot_log_t struct

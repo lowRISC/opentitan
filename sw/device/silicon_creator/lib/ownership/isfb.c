@@ -286,3 +286,5 @@ rom_error_t isfb_boot_verify(const manifest_t *manifest,
   }
   return kErrorOk;
 }
+
+hardened_bool_t isfb_is_present(void) { return kHardenedBoolTrue; }

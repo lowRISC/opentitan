@@ -597,6 +597,14 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
     }
   }
 
+  // Detect if ISFB is required by owner block but missing from the linked
+  // ROM_EXT.
+  if (isfb_is_present() == kHardenedBoolFalse &&
+      (hardened_bool_t)owner_config.isfb != kHardenedBoolFalse) {
+    boot_log->events =
+        bitfield_bit32_write(boot_log->events, BOOT_LOG_EVENT_ISFB_ERROR, true);
+  }
+
   // Synchronize the boot_log entries that could be changed by boot services.
   boot_log->rom_ext_nonce = boot_data->nonce;
   boot_log->ownership_state = boot_data->ownership_state;

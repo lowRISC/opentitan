@@ -104,6 +104,13 @@ rom_error_t isfb_boot_verify(const manifest_t *manifest,
                              size_t verify_key, boot_data_t *boot_data,
                              uint32_t isfb_check_count);
 
+/**
+ * Returns whether this is a real ISFB implementation or a null stub.
+ *
+ * @return kHardenedBoolTrue if this is the real implementation.
+ */
+hardened_bool_t isfb_is_present(void);
+
 #ifdef __cplusplus
 }
 #endif
