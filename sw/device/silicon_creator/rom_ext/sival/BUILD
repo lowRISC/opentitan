@@ -129,6 +129,7 @@ ROM_EXT_CONFIGS = {
 [
     opentitan_binary(
         name = "rom_ext_prod_{}".format(name),
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
         ],
@@ -141,6 +142,7 @@ ROM_EXT_CONFIGS = {
             "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(config["dice"]),
             "$(location //sw/device/lib/crt)",
         ],
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         deps = [
             # The sival_owner C library is excluded from the real ROM_EXT,
             # as chips maintain their ownership configuration in flash.
