@@ -38,11 +38,9 @@ static const uint32_t kExpectedOutput[kMgf1OutputWords] = {
     0x935e9381, 0xaeb9abeb, 0x2f22425d, 0xa2c8dfd2,
 };
 
-OT_WARN_UNUSED_RESULT
 static rom_error_t mgf1_test(void) {
-  // Run spx_hash_initialize() to configure the HMAC block.
   spx_ctx_t ctx;
-  HARDENED_RETURN_IF_ERROR(spx_hash_initialize(&ctx));
+  spx_hash_initialize(&ctx);
 
   uint32_t actual_output[kMgf1OutputWords];
   mgf1_sha256(kTestInput, ARRAYSIZE(kTestInput), ARRAYSIZE(actual_output),

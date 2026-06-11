@@ -45,7 +45,7 @@ static uint32_t kExpectedResult[kSpxNWords] = {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t thash_test(void) {
-  RETURN_IF_ERROR(spx_hash_initialize(&kTestCtx));
+  spx_hash_initialize(&kTestCtx);
 
   size_t msg_blocks = sizeof(kTestMsg) / kSpxN;
   uint32_t result[kSpxNWords];

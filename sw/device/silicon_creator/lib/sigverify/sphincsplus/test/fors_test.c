@@ -41,7 +41,7 @@ static uint32_t kExpectedPk[kSpxNWords] = {
 OT_WARN_UNUSED_RESULT
 static rom_error_t pk_from_sig_test(void) {
   // Initialize the KMAC block.
-  RETURN_IF_ERROR(spx_hash_initialize(&kTestCtx));
+  spx_hash_initialize(&kTestCtx);
 
   // Extract the public key from the signature.
   uint32_t actual_pk[kSpxNWords];
