@@ -12,7 +12,7 @@ use openssl::x509::X509;
 use crate::asn1::Oid;
 use crate::template::{
     BasicConstraints, CertificateExtension, DiceTcbInfoExtension, DiceTcbInfoFlags, FirmwareId,
-    HashAlgorithm, KeyUsage, Value,
+    HashAlgorithm, KeyUsage, RawOr, Value,
 };
 
 /// X509 extension reference.
@@ -181,7 +181,8 @@ impl DiceTcbInfo<'_> {
                     .collect::<Result<Vec<_>>>()
             })
             .transpose()
-            .context("cannot parse DICE TCB firmware IDs")?;
+            .context("cannot parse DICE TCB firmware IDs")?
+            .map(RawOr::Type);
 
         // Vendor info is not supported.
         ensure!(

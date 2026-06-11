@@ -130,9 +130,25 @@ pub struct DiceTcbInfoExtension {
     /// TCB layer.
     pub layer: Option<Value<BigUint>>,
     /// TCB firmware IDs.
-    pub fw_ids: Option<Vec<FirmwareId>>,
+    pub fw_ids: Option<RawOr<Vec<FirmwareId>>>,
     /// TCB flags.
     pub flags: Option<DiceTcbInfoFlags>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum RawOr<T> {
+    Type(T),
+    Raw(Value<Vec<u8>>),
+}
+
+impl<T> RawOr<T> {
+    pub fn as_type(&self) -> Option<&T> {
+        match self {
+            Self::Type(val) => Some(val),
+            Self::Raw(_) => None,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display, Serialize)]
@@ -918,7 +934,7 @@ mod tests {
                 )),
                 layer: Some(Value::variable("layer")),
                 version: Some(Value::literal("ES")),
-                fw_ids: Some(Vec::from([
+                fw_ids: Some(RawOr::Type(Vec::from([
                     FirmwareId {
                         hash_algorithm: HashAlgorithm::Sha256,
                         digest: Value::variable("rom_ext_hash"),
@@ -927,7 +943,7 @@ mod tests {
                         hash_algorithm: HashAlgorithm::Sha256,
                         digest: Value::variable("ownership_manifest_hash"),
                     },
-                ])),
+                ]))),
                 flags: Some(DiceTcbInfoFlags {
                     not_configured: Value::Literal(true),
                     not_secure: Value::Literal(false),

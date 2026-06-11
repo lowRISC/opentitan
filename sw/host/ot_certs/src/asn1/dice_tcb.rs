@@ -101,21 +101,23 @@ impl DiceTcbInfoExtension {
                         value: 6,
                     },
                     |builder| {
-                        for (idx, fwid) in fwids.iter().enumerate() {
-                            builder.push_seq(Some("fwid".into()), |builder| {
-                                builder.push_oid(&fwid.hash_algorithm.oid())?;
-                                builder.push_octet_string(
-                                    Some(format!("dice_fwids_{}", idx)),
-                                    |builder| {
-                                        builder.push_byte_array(
-                                            Some(format!("dice_fwids_{}", idx)),
-                                            &fwid.digest,
-                                        )
-                                    },
-                                )
-                            })?;
-                        }
-                        Ok(())
+                        builder.push_raw_or(Some("dice_fwids".into()), fwids, |builder, list| {
+                            for (idx, fwid) in list.iter().enumerate() {
+                                builder.push_seq(Some("fwid".into()), |builder| {
+                                    builder.push_oid(&fwid.hash_algorithm.oid())?;
+                                    builder.push_octet_string(
+                                        Some(format!("dice_fwids_{}", idx)),
+                                        |builder| {
+                                            builder.push_byte_array(
+                                                Some(format!("dice_fwids_{}", idx)),
+                                                &fwid.digest,
+                                            )
+                                        },
+                                    )
+                                })?;
+                            }
+                            Ok(())
+                        })
                     },
                 )?;
             }

@@ -10,7 +10,7 @@ use num_traits::cast::FromPrimitive;
 
 use ot_certs::asn1::der::Der;
 use ot_certs::template::{
-    DiceTcbInfoExtension, DiceTcbInfoFlags, FirmwareId, HashAlgorithm, Value,
+    DiceTcbInfoExtension, DiceTcbInfoFlags, FirmwareId, HashAlgorithm, RawOr, Value,
 };
 use ot_certs::x509::extension::parse_dice_tcb_info_extension;
 
@@ -58,7 +58,7 @@ fn main() -> Result<()> {
             10,
         )?)),
         layer: None,
-        fw_ids: Some(vec![
+        fw_ids: Some(RawOr::Type(vec![
             FirmwareId {
                 hash_algorithm: HashAlgorithm::Sha256,
                 digest: Value::Literal(vec![
@@ -73,7 +73,7 @@ fn main() -> Result<()> {
                     0x3f, 0x53, 0x90, 0x78, 0x62, 0x65, 0x89,
                 ]),
             },
-        ]),
+        ])),
         flags: None,
     })?;
 

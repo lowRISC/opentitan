@@ -15,8 +15,8 @@ use serde::{Deserialize, Serialize};
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
     DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
-    MldsaPublicKeyInfo, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable,
-    VariableType,
+    MldsaPublicKeyInfo, RawOr, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value,
+    Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -68,19 +68,23 @@ impl SubstValue {
     // the size constraint will be enforced.
     pub fn parse(&self, var_type: &VariableType) -> Result<SubstValue> {
         match *var_type {
-            VariableType::ByteArray { .. } => self.parse_as_byte_array(var_type.size()),
+            VariableType::ByteArray { .. } => {
+                let (min_size, max_size) = var_type.array_size();
+                self.parse_as_byte_array(min_size, max_size)
+            }
             VariableType::Integer { .. } => self.parse_as_integer(var_type.size()),
             VariableType::String { .. } => self.parse_as_string(var_type.size()),
             VariableType::Boolean => self.parse_as_boolean(),
         }
     }
 
-    fn parse_as_byte_array(&self, size: usize) -> Result<SubstValue> {
+    fn parse_as_byte_array(&self, min_size: usize, max_size: usize) -> Result<SubstValue> {
         match self {
             SubstValue::ByteArray(bytes) => {
                 ensure!(
-                    size == 0 || bytes.len() == size,
-                    "expected a byte array of size {size} but got {} bytes",
+                    (min_size == 0 && max_size == 0)
+                        || (bytes.len() >= min_size && bytes.len() <= max_size),
+                    "expected a byte array of size between {min_size} and {max_size} but got {} bytes",
                     bytes.len()
                 );
                 Ok(self.clone())
@@ -91,8 +95,9 @@ impl SubstValue {
                 let bytes = Vec::<u8>::from_hex(s)
                     .with_context(|| format!("cannot parse {s} as an hexstring"))?;
                 ensure!(
-                    size == 0 || bytes.len() == size,
-                    "expected a byte array of size {size} but got {} bytes",
+                    (min_size == 0 && max_size == 0)
+                        || (bytes.len() >= min_size && bytes.len() <= max_size),
+                    "expected a byte array of size between {min_size} and {max_size} but got {} bytes",
                     bytes.len()
                 );
                 Ok(SubstValue::ByteArray(bytes))
@@ -446,6 +451,15 @@ impl Subst for DiceTcbInfoExtension {
                 .subst(data)
                 .context("cannot substitute DICE flags")?,
         })
+    }
+}
+
+impl<T: Subst> Subst for RawOr<T> {
+    fn subst(&self, data: &SubstData) -> Result<RawOr<T>> {
+        match self {
+            Self::Type(val) => Ok(Self::Type(val.subst(data)?)),
+            Self::Raw(val) => Ok(Self::Raw(val.subst(data)?)),
+        }
     }
 }
 
