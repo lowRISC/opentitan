@@ -40,6 +40,11 @@ certificate_template(
 )
 
 certificate_template(
+    name = "cdi_hybrid_template",
+    template = "cdi_hybrid.hjson",
+)
+
+certificate_template(
     name = "cwt_cose_key_template",
     cert_format = "cwt",
     template = "cwt_cose_key.hjson",
