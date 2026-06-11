@@ -45,6 +45,16 @@ rom_error_t kmac_kmac256_sw_configure(void);
 rom_error_t kmac_kmac256_hw_configure(void);
 
 /**
+ * Configure the KMAC block at startup for SHAKE-128 operation.
+ *
+ * Sets the KMAC block to use software entropy and sets the mode to SHAKE-128.
+ *
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_shake128_configure(void);
+
+/**
  * Configure the KMAC block at startup.
  *
  * Sets the KMAC block to use software entropy (since we have no secret inputs
@@ -144,6 +154,41 @@ void kmac_shake256_squeeze_start(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen);
+
+/**
+ * Squeeze arbitrary number of words from the Keccak state.
+ *
+ * This function will read out_words from the Keccak state, and if necessary
+ * triggers additional hardware permutation runs using the rate_words.
+ * Unlike squeeze_end, it does not mark the operation as DONE.
+ *
+ * When calling this function multiple times sequentially on the same state,
+ * each call (except potentially the final call) must request out_words as a
+ * multiple of rate_words. Otherwise, it's undefined behavior.
+ *
+ * @param out Output buffer.
+ * @param out_words Desired length of output in 32-bit words.
+ * @param rate_words Keccak rate in 32-bit words.
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
+                               size_t rate_words);
+
+/**
+ * End the squeeze phase and release the KMAC hardware block.
+ *
+ * @return Error code indicating if the operation succeeded.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t kmac_done(void);
+
+/**
+ * Check if the KMAC block is in the squeezing phase.
+ *
+ * @return True if KMAC is squeezing, false otherwise.
+ */
+bool kmac_is_squeezing(void);
 
 /**
  * Load an unmasked software key into KMAC.
