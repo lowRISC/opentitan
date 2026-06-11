@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 
 use foreign_types::ForeignTypeRef;
-use openssl::asn1::{Asn1IntegerRef, Asn1ObjectRef, Asn1StringRef, Asn1TimeRef};
+use openssl::asn1::{Asn1IntegerRef, Asn1Object, Asn1ObjectRef, Asn1StringRef, Asn1TimeRef};
 use openssl::bn::{BigNum, BigNumContext, BigNumRef};
 use openssl::ec::{EcGroupRef, EcKey};
 use openssl::ecdsa::EcdsaSig;
@@ -143,10 +143,44 @@ fn extract_pub_key(pubkey: &PKey<Public>) -> Result<SubjectPublicKeyInfo> {
         openssl::pkey::Id::EC => Ok(SubjectPublicKeyInfo::EcPublicKey(extract_ec_pubkey(
             &pubkey.ec_key().unwrap(),
         )?)),
-        id => bail!("key type {:?} not supported by the parser", id),
+        _ => {
+            // TODO: ML-DSA is not fully supported by the rust-openssl bindings yet, so we test the OID manually.
+            // We also return an empty public key value as a placeholder.
+            let der = pubkey
+                .public_key_to_der()
+                .context("failed to export public key to DER")?;
+            // OID prefix for ML-DSA: 2.16.840.1.101.3.4.3 (DER: 06 09 60 86 48 01 65 03 04 03)
+            let oid_prefix = [0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x03];
+            if let Some(pos) = der.windows(oid_prefix.len()).position(|w| w == oid_prefix) {
+                let variant_byte_pos = pos + oid_prefix.len();
+                ensure!(
+                    variant_byte_pos < der.len(),
+                    "DER truncated: no variant byte"
+                );
+                match der[variant_byte_pos] {
+                    0x11 => Ok(SubjectPublicKeyInfo::Mldsa44(
+                        template::MldsaPublicKeyInfo {
+                            public_key: Value::Literal(vec![]),
+                        },
+                    )),
+                    0x12 => Ok(SubjectPublicKeyInfo::Mldsa65(
+                        template::MldsaPublicKeyInfo {
+                            public_key: Value::Literal(vec![]),
+                        },
+                    )),
+                    0x13 => Ok(SubjectPublicKeyInfo::Mldsa87(
+                        template::MldsaPublicKeyInfo {
+                            public_key: Value::Literal(vec![]),
+                        },
+                    )),
+                    v => bail!("unsupported ML-DSA variant byte: {:#02x}", v),
+                }
+            } else {
+                bail!("key type not supported by the parser");
+            }
+        }
     }
 }
-
 fn extract_ecdsa_signature(x509: &X509) -> Result<EcdsaSignature> {
     let ecdsa_sig = EcdsaSig::from_der(x509.signature().as_slice())
         .context("cannot extract ECDSA signature from certificate")?;
@@ -157,11 +191,56 @@ fn extract_ecdsa_signature(x509: &X509) -> Result<EcdsaSignature> {
 }
 
 fn extract_signature(x509: &X509) -> Result<Signature> {
+    let mldsa44_nid = Asn1Object::from_str("2.16.840.1.101.3.4.3.17")
+        .context("failed to resolve ML-DSA-44 OID string")?
+        .nid();
+    let mldsa65_nid = Asn1Object::from_str("2.16.840.1.101.3.4.3.18")
+        .context("failed to resolve ML-DSA-65 OID string")?
+        .nid();
+    let mldsa87_nid = Asn1Object::from_str("2.16.840.1.101.3.4.3.19")
+        .context("failed to resolve ML-DSA-87 OID string")?
+        .nid();
+
+    let sig_bytes = x509.signature().as_slice();
+
     match x509.signature_algorithm().object().nid() {
         Nid::ECDSA_WITH_SHA256 => Ok(Signature::EcdsaWithSha256 {
             value: Some(extract_ecdsa_signature(x509)?),
         }),
-        alg => bail!("unsupported signature algorithm {:?}", alg),
+        alg if alg == mldsa44_nid => {
+            ensure!(
+                sig_bytes.len() == 2420,
+                "Unexpected ML-DSA-44 signature length: {}",
+                sig_bytes.len()
+            );
+            Ok(Signature::Mldsa44 {
+                value: Some(Value::Literal(sig_bytes.to_vec())),
+            })
+        }
+        alg if alg == mldsa65_nid => {
+            ensure!(
+                sig_bytes.len() == 3300,
+                "Unexpected ML-DSA-65 signature length: {}",
+                sig_bytes.len()
+            );
+            Ok(Signature::Mldsa65 {
+                value: Some(Value::Literal(sig_bytes.to_vec())),
+            })
+        }
+        alg if alg == mldsa87_nid => {
+            ensure!(
+                sig_bytes.len() == 4627,
+                "Unexpected ML-DSA-87 signature length: {}",
+                sig_bytes.len()
+            );
+            Ok(Signature::Mldsa87 {
+                value: Some(Value::Literal(sig_bytes.to_vec())),
+            })
+        }
+        _ => bail!(
+            "unsupported signature algorithm {:?}",
+            x509.signature_algorithm().object()
+        ),
     }
 }
 
