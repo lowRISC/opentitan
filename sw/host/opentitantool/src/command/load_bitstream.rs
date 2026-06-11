@@ -20,9 +20,14 @@ pub struct LoadBitstream {
     /// Duration of the reset pulse.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "50ms")]
     pub rom_reset_pulse: Duration,
+
     /// Duration of ROM detection timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "2s")]
     pub rom_timeout: Duration,
+
+    /// Load the bitstream, regardless of a matching USR_ACCESS.
+    #[arg(long)]
+    pub force: bool,
 }
 
 impl CommandDispatch for LoadBitstream {
@@ -36,6 +41,7 @@ impl CommandDispatch for LoadBitstream {
             bitstream: Some(self.filename.clone()),
             rom_reset_pulse: self.rom_reset_pulse,
             rom_timeout: self.rom_timeout,
+            force: self.force,
         }
         .init(transport)?;
 

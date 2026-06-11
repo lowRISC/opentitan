@@ -28,6 +28,10 @@ pub struct LoadBitstream {
     /// Duration of ROM detection timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "2s")]
     pub rom_timeout: Duration,
+
+    /// Load the bitstream, regardless of a matching USR_ACCESS.
+    #[arg(long)]
+    pub force: bool,
 }
 
 impl LoadBitstream {
@@ -56,7 +60,7 @@ impl LoadBitstream {
             progress: Box::new(progress),
         };
 
-        if operation.should_skip(transport)? {
+        if !self.force && operation.should_skip(transport)? {
             return Ok(());
         }
 
