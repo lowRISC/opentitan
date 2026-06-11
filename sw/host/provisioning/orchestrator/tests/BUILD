@@ -32,7 +32,7 @@ py_test(
         "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
         "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
         "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
-        "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "//sw/host/provisioning/orchestrator/configs/skus:emulation",
     ],
     deps = [
         requirement("hjson"),
@@ -75,7 +75,7 @@ sh_test(
     srcs = ["e2e_option_flags.sh"],
     data = [
         ":orchestrator_hyper310_zip",
-        "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "//sw/host/provisioning/orchestrator/configs/skus:emulation",
         "@python3",
     ],
     env = {
@@ -125,7 +125,7 @@ sh_test(
     srcs = ["e2e_ate_individ.sh"],
     data = [
         ":orchestrator_hyper310_zip",
-        "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "//sw/host/provisioning/orchestrator/configs/skus:emulation",
         "@python3",
     ],
     env = {

@@ -17,12 +17,18 @@ class CaConfig:
     key_type: str  # valid: must be in ["Raw", "Token"]
     key_id: str  # valid: 160-bit serial number of CA certificate
     key: str  # valid: valid path to DER CA private key file or key token ID
+    resolve_paths: bool = True
 
     def __post_init__(self):
         # Update certificate and key members to Path objs if necessary.
-        self.certificate = Path(resolve_runfile(self.certificate))
-        if self.key_type == "Raw":
-            self.key = Path(resolve_runfile(self.key))
+        if self.resolve_paths:
+            self.certificate = Path(resolve_runfile(self.certificate))
+            if self.key_type == "Raw":
+                self.key = Path(resolve_runfile(self.key))
+        else:
+            self.certificate = Path(self.certificate)
+            if self.key_type == "Raw":
+                self.key = Path(self.key)
         self.validate()
 
     def validate(self) -> None:
@@ -30,26 +36,28 @@ class CaConfig:
         # Validate name.
         if self.name not in {"dice_ca", "ext_ca"}:
             raise ValueError("CA name must be in [\"dice_ca\", \"ext_ca\"]")
-        # Validate certificate path.
-        if not self.certificate.exists():
-            raise ValueError("CA certificate file ({}) does not exist.".format(
-                self.certificate))
-        if self.certificate.suffix != ".pem":
-            raise ValueError(
-                "CA certificate file ({}) must be a PEM file.".format(
-                    self.certificate))
         # Validate key_type.
         if self.key_type not in {"Raw", "Token"}:
             raise ValueError("CA key type must be in [\"Raw\", \"Token\"]")
-        # TODO: validate key_id
-        # Validate key.
-        if self.key_type == "Raw":
-            if not self.key.exists():
-                raise ValueError("CA private file does not exist.")
-            if self.key.suffix != ".der":
+
+        if self.resolve_paths:
+            # Validate certificate path.
+            if not self.certificate.exists():
                 raise ValueError(
-                    "CA private file ({}) must be a DER file.".format(
-                        self.key))
+                    "CA certificate file ({}) does not exist.".format(
+                        self.certificate))
+            if self.certificate.suffix != ".pem":
+                raise ValueError(
+                    "CA certificate file ({}) must be a PEM file.".format(
+                        self.certificate))
+            # Validate key.
+            if self.key_type == "Raw":
+                if not self.key.exists():
+                    raise ValueError("CA private file does not exist.")
+                if self.key.suffix != ".der":
+                    raise ValueError(
+                        "CA private file ({}) must be a DER file.".format(
+                            self.key))
         elif self.key_type == "Token":
             # TODO: check if Cloud KMS / Nitokey token ID exists.
             pass

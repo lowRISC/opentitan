@@ -19,12 +19,17 @@ def _device_id_header_gen_impl(ctx):
         "--template={}".format(ctx.file.template.path),
     ]
 
+    inputs_depset = depset(
+        [ctx.file.template],
+        transitive = [
+            ctx.attr.sku_config[DefaultInfo].files,
+            ctx.attr.sku_config[DefaultInfo].default_runfiles.files,
+        ],
+    )
+
     ctx.actions.run(
         outputs = [pre_formatted_c],
-        inputs = [
-            ctx.file.sku_config,
-            ctx.file.template,
-        ],
+        inputs = inputs_depset,
         arguments = args,
         executable = tc.tools.gen_devid,
         mnemonic = "GenDeviceId",
@@ -76,20 +81,23 @@ device_id_header_gen = rule(
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def device_id_header(name, mode, headers, sku_config, template):
+def device_id_header(name, mode, headers, sku_config, template, testonly = None):
     device_id_header_gen(
         name = name,
         mode = mode,
         sku_config = sku_config,
         template = template,
+        testonly = testonly,
     )
     native.filegroup(
         name = "{}_srcs".format(name),
         srcs = [":{}".format(name)],
         output_group = "sources",
+        testonly = testonly,
     )
     native.cc_library(
         name = "{}_library".format(name),
         srcs = [":{}_srcs".format(name)],
         hdrs = headers,
+        testonly = testonly,
     )
