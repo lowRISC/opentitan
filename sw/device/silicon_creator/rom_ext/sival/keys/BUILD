@@ -17,3 +17,5 @@ keyset(
     profile = "earlgrey_a1_sival_owner",
     tool = "//signing:token",
 )
+
+exports_files(glob(["*.pub.der"]))

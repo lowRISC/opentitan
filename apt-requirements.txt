@@ -12,6 +12,7 @@
 autoconf
 bison
 brotli
+bsdextrautils
 build-essential
 clang
 clang-format
