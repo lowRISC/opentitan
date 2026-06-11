@@ -491,6 +491,9 @@ ed25519_verify_var:
  *
  * This routine runs in constant time.
  *
+ * If the computed signature point R is in the small subgroup (i.e. [8]R is the
+ * identity), this routine will trigger a fault and abort.
+ *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  w31: all-zero
@@ -563,8 +566,54 @@ ed25519_sign_stage1:
   jal      x1, ext_scmul_sca
 
   /* Check that R is a curve point in projective space. */
+  /* With instruction count checking this will cause a crash but this only triggers on a fault. */
   jal      x1, ed25519_isoncurve_ext
   jal      x1, trigger_fault_if_fg0_not_z
+
+  /* Save R to DMEM because we are going to clobber it to check if [8]R is identity. */
+  la       x3, ed25519_temp_R
+  li       x2, 10
+  bn.sid   x2++, 0(x3)
+  bn.sid   x2++, 32(x3)
+  bn.sid   x2++, 64(x3)
+  bn.sid   x2, 96(x3)
+
+  /* Compute [8]R = [2][2][2]R */
+  jal      x1, ext_double
+  jal      x1, ext_double
+  jal      x1, ext_double
+
+  /* Check if [8]R is the identity element (0, Z, Z, 0) mod p.
+     Since [8]R is on the curve, it is the identity if and only if X == 0.
+     (The only other point on the curve with X == 0 is (0, -1) which has order 2,
+     implying R has order 16, which is impossible since the curve has no points
+     of order 16).
+     X is w10. */
+
+  /* Check X == 0 */
+  bn.cmp   w10, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8      /* x2 is 8 if X == 0 (identity), else 0 */
+
+  /* We want to fail if it IS identity.
+     So we want FG0.Z to be 0 if identity (x2 is 8), and 1 if not identity (x2 is 0).
+     FG0.Z is bit 3 (value 8).
+     So we set FG0.Z = 8 - x2 = x2 ^ 8. */
+  xori     x2, x2, 8      /* x2 is 0 if identity, 8 if not */
+
+  /* Write to FG0. This clears other flags but we don't care. */
+  csrrw    x0, FG0, x2
+
+  /* Trigger fault if FG0.Z is 0 (which means it was identity) */
+  jal      x1, trigger_fault_if_fg0_not_z
+
+  /* Restore R from DMEM */
+  la       x3, ed25519_temp_R
+  li       x2, 10
+  bn.lid   x2++, 0(x3)
+  bn.lid   x2++, 32(x3)
+  bn.lid   x2++, 64(x3)
+  bn.lid   x2, 96(x3)
 
   /* Convert R to affine coordinates.
        w10 <= R.x, w11 <= R.y */
@@ -2125,6 +2174,11 @@ x25519:
   ret
 
 .bss
+
+/* Temporary storage for R during sign checks (128 bytes). */
+.balign 32
+ed25519_temp_R:
+  .zero 128
 
 /* Verification result code (32 bits). Output for verify.
    If verification is successful, this will be SUCCESS = 0x739.
