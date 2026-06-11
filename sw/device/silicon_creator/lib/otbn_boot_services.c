@@ -8,6 +8,7 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
+#include "sw/device/silicon_creator/lib/cert/seeds.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -79,32 +80,6 @@ enum {
        kScOtbnWideWordNumWords) *
       kScOtbnWideWordNumWords,
 };
-
-OT_WARN_UNUSED_RESULT
-static rom_error_t load_attestation_keygen_seed(uint32_t additional_seed_idx,
-                                                uint32_t *seed) {
-  // Read seed from flash info page.
-  uint32_t seed_flash_offset =
-      0 + (additional_seed_idx * kAttestationSeedBytes);
-  rom_error_t err =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
-                           seed_flash_offset, kAttestationSeedWords, seed);
-
-  if (err != kErrorOk) {
-    flash_ctrl_error_code_t flash_ctrl_err_code;
-    flash_ctrl_error_code_get(&flash_ctrl_err_code);
-    if (flash_ctrl_err_code.rd_err) {
-      // If we encountered a read error, this means the attestation seed page
-      // has not been provisioned yet. In this case, we clear the seed and
-      // continue, which will simply result in generating an invalid identity.
-      memset(seed, 0, kAttestationSeedBytes);
-      return kErrorOk;
-    }
-    return err;
-  }
-
-  return kErrorOk;
-}
 
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
 
