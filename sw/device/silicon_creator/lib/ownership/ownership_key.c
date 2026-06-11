@@ -130,6 +130,7 @@ rom_error_t ownership_seal_clear(void) {
 
 static rom_error_t seal_generate(const owner_block_t *page, uint32_t *seal) {
   size_t sealed_len = offsetof(owner_block_t, seal);
+  HARDENED_RETURN_IF_ERROR(kmac_kmac256_hw_configure());
   HARDENED_RETURN_IF_ERROR(kmac_kmac256_start());
   kmac_kmac256_absorb(page, sealed_len);
   return kmac_kmac256_final(seal, ARRAYSIZE(page->seal));
