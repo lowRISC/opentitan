@@ -31,8 +31,8 @@ class alert_sender_driver extends alert_base_driver;
   // Drive sequence items for alerts and pings until either a reset or a change of cfg.en_alert_lpg
   extern local task drive_reqs_with_lpg_mode(bit en_alert_lpg);
 
-  // Drive a single sequence item to send an alert, possibly responding to a ping. Once the item has
-  // been driven, mark it done in seq_item_port.
+  // Drive a single sequence item to send an alert, possibly responding to a ping. This task doesn't
+  // mark the item done in seq_item_port: the caller should do that.
   //
   // This exits immediately on a reset.
   extern local task send_item(bit is_ping_rsp, alert_seq_item item);
@@ -140,7 +140,7 @@ endtask
 
 task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
   forever begin
-    alert_seq_item item;
+    alert_seq_item item, rsp;
 
     // Pick an item to drive, but keep track of resets and any change to the LPG flag.
     fork : isolation_fork begin
@@ -156,21 +156,21 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
     // task.
     if (item == null) return;
 
+    `downcast(rsp, item.clone());
+    rsp.set_id_info(item);
+
     // Handle the alert request or ping response.
     case (item.m_txn_type)
-      alert_seq_item::AlertTxn: send_item(1'b0, item);
-      alert_seq_item::PingTxn:  send_item(1'b1, item);
+      alert_seq_item::AlertTxn: send_item(1'b0, rsp);
+      alert_seq_item::PingTxn:  send_item(1'b1, rsp);
       default: `uvm_fatal(get_full_name(), "Unknown txn type.")
     endcase
 
-    seq_item_port.put_response(item);
+    seq_item_port.put_response(rsp);
   end
 endtask
 
 task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
-  alert_seq_item rsp;
-  `downcast(rsp, item.clone());
-  rsp.set_id_info(item);
 
   `uvm_info(`gfn,
             $sformatf("starting to send sender item: %0s, int_err_cyc=%0b",
@@ -186,11 +186,10 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
     join_any
     disable fork;
   end join
-  `uvm_info(`gfn,
-            $sformatf("finished sending sender item: %0s, int_err_cyc=%0b",
-                      item.m_txn_type.name(), item.m_int_err_cyc), UVM_HIGH)
-
-  seq_item_port.put_response(rsp);
+  `uvm_info("driving_item",
+            $sformatf("finished sender item: %0s, m_int_err_cyc=%0b",
+                      item.m_txn_type.name(), item.m_int_err_cyc),
+            UVM_HIGH)
 endtask
 
 task alert_sender_driver::drive_alert_pins(alert_seq_item req);
