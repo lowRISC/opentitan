@@ -13,6 +13,7 @@ extern char _manifest_code_start[];
 extern char _manifest_code_end[];
 extern char _manifest_entry_point[];
 extern char _manifest_address_translation[];
+extern char _manifest_base_address[];
 
 /**
  * Manifest definition.
@@ -34,6 +35,7 @@ OT_USED OT_SECTION(".manifest") static manifest_t kManifest_ = {
     .code_end = (uint32_t)_manifest_code_end,
     .entry_point = (uint32_t)_manifest_entry_point,
     .address_translation = (uint32_t)_manifest_address_translation,
+    .manifest_base_address = (uint32_t)_manifest_base_address,
 };
 
 const manifest_t *manifest_def_get(void) { return &kManifest_; }

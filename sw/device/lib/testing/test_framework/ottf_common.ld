@@ -79,6 +79,7 @@ SECTIONS {
   INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   .manifest _ottf_start_address : {
+    _manifest_base_address = .;
     KEEP(*(.manifest))
     . = ALIGN(4);
   } > ottf_flash : manifest_segment

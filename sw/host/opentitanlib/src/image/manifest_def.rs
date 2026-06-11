@@ -252,6 +252,9 @@ pub struct ManifestSpec {
     pub_key: ManifestSigverifyBigInt,
 
     #[serde(default)]
+    manifest_base_address: ManifestSmallInt<u32>,
+
+    #[serde(default)]
     address_translation: ManifestSmallInt<u32>,
 
     #[serde(default)]
@@ -312,6 +315,11 @@ impl ManifestPacked<Manifest> for ManifestSpec {
             pub_key: self.pub_key.unpack("pub_key")?.try_into()?,
             reserved_public_key: Default::default(),
             reserved: Default::default(),
+            manifest_base_address: self
+                .manifest_base_address
+                .0
+                .map(|v| v.0)
+                .unwrap_or(0xa5a5a5a5),
             address_translation: self.address_translation.unpack("address_translation")?,
             identifier: self.identifier.unpack("identifier")?,
             manifest_version: self.manifest_version.unpack("manifest_version")?,
@@ -334,6 +342,8 @@ impl ManifestPacked<Manifest> for ManifestSpec {
         self.signature.overwrite(o.signature);
         self.usage_constraints.overwrite(o.usage_constraints);
         self.pub_key.overwrite(o.pub_key);
+        self.manifest_base_address
+            .overwrite(o.manifest_base_address);
         self.address_translation.overwrite(o.address_translation);
         self.identifier.overwrite(o.identifier);
         self.manifest_version.overwrite(o.manifest_version);
@@ -370,6 +380,7 @@ impl TryFrom<&Manifest> for ManifestSpec {
             signature: (&o.signature).try_into()?,
             usage_constraints: (&o.usage_constraints).try_into()?,
             pub_key: (&o.pub_key).try_into()?,
+            manifest_base_address: (&o.manifest_base_address).into(),
             address_translation: (&o.address_translation).into(),
             identifier: (&o.identifier).into(),
             manifest_version: (&o.manifest_version).try_into()?,

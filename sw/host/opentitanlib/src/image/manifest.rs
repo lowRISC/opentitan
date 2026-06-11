@@ -94,7 +94,8 @@ pub struct Manifest {
     pub usage_constraints: ManifestUsageConstraints,
     pub pub_key: SigverifyBuffer,
     pub reserved_public_key: ReservedBuffer<160>,
-    pub reserved: ReservedBuffer<160>,
+    pub reserved: ReservedBuffer<156>,
+    pub manifest_base_address: u32,
     pub address_translation: u32,
     pub identifier: u32,
     pub manifest_version: ManifestVersion,
@@ -315,6 +316,7 @@ mod tests {
         assert_eq!(offset_of!(Manifest, pub_key), 432);
         assert_eq!(offset_of!(Manifest, reserved_public_key), 496);
         assert_eq!(offset_of!(Manifest, reserved), 656);
+        assert_eq!(offset_of!(Manifest, manifest_base_address), 812);
         assert_eq!(offset_of!(Manifest, address_translation), 816);
         assert_eq!(offset_of!(Manifest, identifier), 820);
         assert_eq!(offset_of!(Manifest, manifest_version), 824);

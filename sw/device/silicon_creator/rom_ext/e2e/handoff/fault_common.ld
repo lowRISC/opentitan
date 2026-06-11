@@ -56,6 +56,7 @@ _manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
  */
 SECTIONS {
   .manifest _slot_start_address : {
+    _manifest_base_address = .;
     KEEP(*(.manifest))
     . = ALIGN(256);
   } > owner_flash
