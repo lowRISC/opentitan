@@ -274,8 +274,6 @@ rom_error_t dice_chain_attestation_silicon(void) {
   // Initialize the entropy complex and KMAC for key manager operations.
   // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
   // assertion here since its definition is not an integer constant expression.
-  HARDENED_RETURN_IF_ERROR(
-      (rom_error_t)entropy_complex_init().value);
   HARDENED_RETURN_IF_ERROR((rom_error_t)entropy_complex_init().value);
   HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
@@ -519,7 +517,7 @@ rom_error_t dice_chain_flush_flash(void) {
   return kErrorOk;
 }
 
-rom_error_t dice_chain_init(void) {
+void dice_chain_init(void) {
   // Variable initialization.
   memset(&dice_chain, 0, sizeof(dice_chain));
   dice_chain.data_dirty = kHardenedBoolFalse;
@@ -534,5 +532,4 @@ rom_error_t dice_chain_init(void) {
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageFactoryCerts,
                           kCertificateInfoPageCfg);
   flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
-  return kErrorOk;
 }
