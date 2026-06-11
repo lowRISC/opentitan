@@ -74,10 +74,13 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       launder32(owner_page_valid[1]) == kOwnerPageStatusSigned &&
       owner_block_newversion_mode() == kHardenedBoolTrue &&
-      owner_page[1].config_version > owner_page[0].config_version &&
+      launder32(owner_page[1].config_version) >
+          launder32(owner_page[0].config_version) &&
       launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSigned);
     HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
+    HARDENED_CHECK_GT(owner_page[1].config_version,
+                      owner_page[0].config_version);
     rom_error_t error =
         ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
     if (launder32(error) == kErrorOk) {
