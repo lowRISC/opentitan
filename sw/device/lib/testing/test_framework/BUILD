@@ -56,6 +56,7 @@ ld_library(
         "//sw/device:info_sections",
         "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/device/silicon_creator/lib/base:static_dice_sections",
     ],
 )
 

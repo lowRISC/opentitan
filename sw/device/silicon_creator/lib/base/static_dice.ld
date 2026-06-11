@@ -13,13 +13,26 @@
  */
 
 .static_dice (NOLOAD) : ALIGN(4) {
+  _static_dice_start = .;
   ASSERT(
     . == ORIGIN(ram_main) + SIZEOF(.static_critical),
     "Error: .static_dice section does not follow the .static_critical section.");
 
+  _static_dice_cdi_0_start = .;
   KEEP(*(.static_dice.cdi_0))
+  _static_dice_cdi_0_end = .;
+  _static_dice_cdi_0_size = _static_dice_cdi_0_end - _static_dice_cdi_0_start;
+
+  _static_dice_mldsa_cdi_start = .;
+  KEEP(*(.static_dice.mldsa_cdi))
+  _static_dice_mldsa_cdi_end = .;
+  _static_dice_mldsa_cdi_size = _static_dice_mldsa_cdi_end - _static_dice_mldsa_cdi_start;
 
   ASSERT(
-    SIZEOF(.static_dice) == 1220,
-    "Error: .static_dice section size has changed");
+    _static_dice_cdi_0_size == 1220 || _static_dice_cdi_0_size == 0,
+    "Error: .static_dice.cdi_0 section size must be 1220 or 0");
+  ASSERT(
+    _static_dice_mldsa_cdi_size == 18984 || _static_dice_mldsa_cdi_size == 0,
+    "Error: .static_dice.mldsa_cdi section size must be 18984 or 0");
+  _static_dice_end = .;
 } > ram_main

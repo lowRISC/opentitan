@@ -78,6 +78,8 @@ SECTIONS {
    */
   INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
+  INCLUDE sw/device/silicon_creator/lib/base/static_dice.ld
+
   .manifest _ottf_start_address : {
     _manifest_base_address = .;
     KEEP(*(.manifest))
