@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import time
 from sw.host.penetrationtests.python.sca.communication.sca_aes_commands import OTAES
 from sw.host.penetrationtests.python.sca.communication.sca_prng_commands import OTPRNG
 from sw.host.penetrationtests.python.sca.communication.sca_trigger_commands import OTTRIGGER
@@ -23,6 +24,8 @@ def char_aes_single_encrypt(target, iterations, fpga, masking, key, text, reset 
     else:
         lfsr_seed = 0
     aessca.seed_lfsr(lfsr_seed.to_bytes(4, "little"))
+    # Give time to warm up the EDN when masking is requested to be disabled
+    time.sleep(0.5)
 
     # Set the trigger
     triggersca = OTTRIGGER(target)
@@ -52,6 +55,8 @@ def char_aes_batch_daisy_chain(
     else:
         lfsr_seed = 0
     aessca.seed_lfsr(lfsr_seed.to_bytes(4, "little"))
+    # Give time to warm up the EDN when masking is requested to be disabled
+    time.sleep(0.5)
 
     # Set the trigger
     triggersca = OTTRIGGER(target)
@@ -84,6 +89,8 @@ def char_aes_batch_fvsr_data(
     else:
         lfsr_seed = 0
     aessca.seed_lfsr(lfsr_seed.to_bytes(4, "little"))
+    # Give time to warm up the EDN when masking is requested to be disabled
+    time.sleep(0.5)
 
     # Set the trigger
     triggersca = OTTRIGGER(target)
@@ -115,6 +122,8 @@ def char_aes_batch_fvsr_key(target, iterations, num_segments, fpga, masking, key
     else:
         lfsr_seed = 0
     aessca.seed_lfsr(lfsr_seed.to_bytes(4, "little"))
+    # Give time to warm up the EDN when masking is requested to be disabled
+    time.sleep(0.5)
 
     # Set the trigger
     triggersca = OTTRIGGER(target)
@@ -147,6 +156,8 @@ def char_aes_batch_random(target, iterations, num_segments, fpga, masking, key, 
     else:
         lfsr_seed = 0
     aessca.seed_lfsr(lfsr_seed.to_bytes(4, "little"))
+    # Give time to warm up the EDN when masking is requested to be disabled
+    time.sleep(0.5)
 
     # Set the trigger
     triggersca = OTTRIGGER(target)

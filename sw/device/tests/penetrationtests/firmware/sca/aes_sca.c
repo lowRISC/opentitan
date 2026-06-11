@@ -19,6 +19,7 @@
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #endif
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -397,6 +398,9 @@ status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
 #if !OT_IS_ENGLISH_BREAKFAST
   if (transaction.force_masks) {
     LOG_INFO("Disabling masks.");
+    // The EDN will throw an error with this command since it will output a
+    // block of zeros. Hence expect and catch the alert
+    TRY(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdEdn0RecovAlert));
     status_t res = aes_testutils_masking_prng_zero_output_seed();
     if (res.value != 0) {
       return ABORTED();
