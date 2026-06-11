@@ -5,12 +5,12 @@
 
 import unittest
 
-import hjson
+import json
 from device_id import DeviceId, DeviceIdentificationNumber
 from sku_config import SkuConfig
 from util import bcd_encode, bytes_to_int, format_hex
 
-_SIVAL_SKU_CONFIG = "sw/host/provisioning/orchestrator/configs/skus/emulation.hjson"
+_SIVAL_SKU_CONFIG = "sw/host/provisioning/orchestrator/configs/skus/emulation.json"
 
 
 class TestDeviceId(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestDeviceId(unittest.TestCase):
     def setUp(self):
         # Create SKU config object.
         with open(_SIVAL_SKU_CONFIG, "r") as fp:
-            sku_config_args = hjson.load(fp)
+            sku_config_args = json.load(fp)
         self.sku_config = SkuConfig(**sku_config_args)
 
         # Override AST config version.

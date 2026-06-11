@@ -96,7 +96,29 @@ def resolve_runfile(path):
     else:
         corrected_path = os.path.join(REPO, path)
 
-    resolved = _runfiles.Rlocation(corrected_path)
+    # The filename hack below is to preserve functionality with the legacy
+    # "filenames-in-hjson-files" approach currently present in our downstream
+    # repo.
+    # TODO(opentitan#30454): Eliminate this filename hack after fixing the
+    # downstream repos to use sku configuration rules.
+    resolved = _runfiles.Rlocation(os.path.normpath(corrected_path))
+
     if resolved is None or not os.path.exists(resolved):
+        if os.path.exists(path):
+            return os.path.abspath(path)
+        if path.startswith("external/"):
+            parts = path.split("/")
+            if len(parts) > 2:
+                apparent_name = parts[1]
+                rest = parts[2:]
+                if os.path.exists("external"):
+                    for d in os.listdir("external"):
+                        if (d == apparent_name or
+                                d.endswith("+" + apparent_name) or
+                                d.startswith(apparent_name + "+") or
+                                "+" + apparent_name + "+" in d):
+                            candidate = os.path.join("external", d, *rest)
+                            if os.path.exists(candidate):
+                                return os.path.abspath(candidate)
         raise ValueError(f"Could not find runfile: {path}")
     return resolved

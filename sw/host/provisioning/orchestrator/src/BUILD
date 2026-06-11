@@ -26,7 +26,6 @@ py_library(
 py_binary(
     name = "devid_header_gen",
     srcs = ["devid_header_gen.py"],
-    data = ["//sw/device/silicon_creator/manuf/keys:ca_data_all"],
     imports = ["."],
     deps = [
         ":device_id",
