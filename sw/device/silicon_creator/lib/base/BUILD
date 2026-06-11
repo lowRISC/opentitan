@@ -137,6 +137,17 @@ cc_library(
     alwayslink = True,
 )
 
+cc_library(
+    name = "static_dice_mldsa_cdi",
+    srcs = ["static_dice_mldsa_cdi.c"],
+    hdrs = ["static_dice_mldsa_cdi.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+    # This library provides a special symbol that the linker will find.
+    alwayslink = True,
+)
+
 ld_library(
     name = "static_dice_sections",
     includes = [
