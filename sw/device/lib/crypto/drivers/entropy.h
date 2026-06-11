@@ -94,7 +94,15 @@ extern const entropy_seed_material_t kEntropyEmptySeed;
  * @return Operation status in `status_t` format.
  */
 OT_WARN_UNUSED_RESULT
-status_t entropy_complex_init(hardened_bool_t fips);
+status_t entropy_complex_init(void);
+
+/**
+ * Configures the entropy complex in continuous mode with FIPS enabled.
+ *
+ * @return Operation status in `status_t` format.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_complex_fips_init(void);
 
 /**
  * Ensures that the entropy complex is ready for use.

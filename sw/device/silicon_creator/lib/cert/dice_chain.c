@@ -275,7 +275,8 @@ rom_error_t dice_chain_attestation_silicon(void) {
   // Note: `OTCRYPTO_OK.value` is equal to `kErrorOk` but we cannot add a static
   // assertion here since its definition is not an integer constant expression.
   HARDENED_RETURN_IF_ERROR(
-      (rom_error_t)entropy_complex_init(kHardenedBoolFalse).value);
+      (rom_error_t)entropy_complex_init().value);
+  HARDENED_RETURN_IF_ERROR((rom_error_t)entropy_complex_init().value);
   HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
   // Set keymgr reseed interval. Start with the maximum value to avoid

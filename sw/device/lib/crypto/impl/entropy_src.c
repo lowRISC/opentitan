@@ -13,7 +13,7 @@
 #define MODULE_ID MAKE_MODULE_ID('e', 't', 's')
 
 otcrypto_status_t otcrypto_entropy_init(void) {
-  HARDENED_TRY(entropy_complex_init(kHardenedBoolTrue));
+  HARDENED_TRY(entropy_complex_fips_init());
   return OTCRYPTO_OK;
 }
 
