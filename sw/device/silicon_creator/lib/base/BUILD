@@ -145,13 +145,6 @@ ld_library(
 )
 
 cc_library(
-    name = "static_dice",
-    deps = [
-        ":static_dice_cdi_0",
-    ],
-)
-
-cc_library(
     name = "chip",
     hdrs = ["chip.h"],
 )
