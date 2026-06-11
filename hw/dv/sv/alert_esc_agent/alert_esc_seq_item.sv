@@ -44,7 +44,7 @@ constraint alert_esc_seq_item::int_err_cyc_c {
   // If the call-site *has* overridden the constraint (but hasn't disabled this whole constraint by
   // name), we want to control the distribution of values. The obvious way to express that would be
   // something like "m_int_err_cyc != 0 -> m_int_err_cyc dist {some_distribution_here};", but that
-  // doesn't work EDA tools that can't solve distributions in parallel with hard constraints.
+  // doesn't work in EDA tools that can't solve distributions in parallel with hard constraints.
   //
   // Fortunately, we can cheat! The trick is to use a single distribution statement that gives a
   // nonzero probability to m_int_err_cyc == 0. This allows the usual case (where the value is
