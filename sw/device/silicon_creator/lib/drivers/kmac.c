@@ -89,6 +89,10 @@ typedef struct kmac_config {
    * The algorithm: SHA3, SHAKE or cSHAKE
    */
   uint8_t mode;
+  /**
+   * Hashing strength: L128, L224, L256, L384 or L512
+   */
+  uint8_t kstrength;
 } kmac_config_t;
 
 /**
@@ -173,9 +177,9 @@ static rom_error_t kmac_configure(kmac_config_t config) {
   // poll `STATUS.fifo_depth` to avoid a specific EDN-KMAC-Ibex deadlock
   // scenario. See `absorb()` and the KMAC documentation for details.
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 0);
-  // Set `CFG.KSTRENGTH` field to 256-bit strength.
+  // Set `CFG.KSTRENGTH` field.
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
-                                   KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256);
+                                   config.kstrength);
   // Set `CFG.MODE` field to SHAKE.
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
                                    config.mode);
@@ -246,6 +250,7 @@ rom_error_t kmac_keymgr_configure(void) {
       .sideload = true,
       .kmac_en = false,
       .mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
+      .kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256,
   });
 }
 
@@ -257,6 +262,7 @@ rom_error_t kmac_kmac256_sw_configure(void) {
       .sideload = false,
       .kmac_en = true,
       .mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
+      .kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256,
   });
 }
 
@@ -268,6 +274,18 @@ rom_error_t kmac_kmac256_hw_configure(void) {
       .sideload = true,
       .kmac_en = true,
       .mode = KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
+      .kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256,
+  });
+}
+
+rom_error_t kmac_shake128_configure(void) {
+  return kmac_configure((kmac_config_t){
+      .entropy_fast_process = false,
+      .msg_mask = false,
+      .sideload = false,
+      .kmac_en = false,
+      .mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
+      .kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128,
   });
 }
 
@@ -278,6 +296,7 @@ rom_error_t kmac_shake256_configure(void) {
       .sideload = false,
       .kmac_en = false,
       .mode = KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
+      .kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256,
   });
 }
 
@@ -350,11 +369,18 @@ void kmac_shake256_squeeze_start(void) {
 }
 
 rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
+  HARDENED_RETURN_IF_ERROR(
+      kmac_squeeze_words(out, outlen, kShake256KeccakRateWords));
+  return kmac_done();
+}
+
+rom_error_t kmac_squeeze_words(uint32_t *out, size_t out_words,
+                               size_t rate_words) {
   size_t idx = 0;
-  while (launder32(idx) < outlen) {
-    // Since we always read in increments of the SHAKE-256 rate, the index at
-    // start should always be a multiple of the rate.
-    HARDENED_CHECK_EQ(idx % kShake256KeccakRateWords, 0);
+  while (launder32(idx) < out_words) {
+    // Since we always read in increments of the rate, the index at the start
+    // of each squeeze cycle must be a multiple of the rate.
+    HARDENED_CHECK_EQ(idx % rate_words, 0);
 
     // Poll the status register until in the 'squeeze' state.
     HARDENED_RETURN_IF_ERROR(poll_state(KMAC_STATUS_SHA3_SQUEEZE_BIT));
@@ -362,8 +388,7 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
     // Read words from the state registers (either `outlen` or the maximum
     // number of words available).
     size_t offset = 0;
-    for (; launder32(idx) < outlen && offset < kShake256KeccakRateWords;
-         ++offset) {
+    for (; launder32(idx) < out_words && offset < rate_words; ++offset) {
       uint32_t share0 =
           abs_mmio_read32(kAddrStateShare0 + offset * sizeof(uint32_t));
       uint32_t share1 =
@@ -372,15 +397,18 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
       ++idx;
     }
 
-    if (launder32(offset) == kShake256KeccakRateWords) {
+    if (launder32(offset) == rate_words) {
       // If we read all the remaining words, issue `CMD.RUN` to generate more
       // state.
-      HARDENED_CHECK_EQ(offset, kShake256KeccakRateWords);
+      HARDENED_CHECK_EQ(offset, rate_words);
       issue_command(KMAC_CMD_CMD_VALUE_RUN);
     }
   }
-  HARDENED_CHECK_EQ(idx, outlen);
+  HARDENED_CHECK_EQ(idx, out_words);
+  return kErrorOk;
+}
 
+rom_error_t kmac_done(void) {
   // Poll the status register until in the 'squeeze' state.
   HARDENED_RETURN_IF_ERROR(poll_state(KMAC_STATUS_SHA3_SQUEEZE_BIT));
 
@@ -388,6 +416,13 @@ rom_error_t kmac_shake256_squeeze_end(uint32_t *out, size_t outlen) {
   issue_command(KMAC_CMD_CMD_VALUE_DONE);
 
   return kErrorOk;
+}
+
+bool kmac_is_squeezing(void) {
+  uint32_t status = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+  bool sha3_idle = bitfield_bit32_read(status, KMAC_STATUS_SHA3_IDLE_BIT);
+  bool sha3_absorb = bitfield_bit32_read(status, KMAC_STATUS_SHA3_ABSORB_BIT);
+  return !sha3_idle && !sha3_absorb;
 }
 
 #define WORD_BITS (sizeof(uint32_t) * 8)
