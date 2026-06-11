@@ -21,3 +21,6 @@ const manifest_t *rom_ext_manifest(void) {
   pc &= ~((uintptr_t)kFlashHalf - 1);
   return (const manifest_t *)pc;
 }
+
+// Extern declarations for the inline functions in the header.
+extern uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr);

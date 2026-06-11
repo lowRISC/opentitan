@@ -245,7 +245,11 @@ typedef struct manifest {
    * When allocating reserved bytes, please allocate from the end of this field
    * to allow for the potential size expansion of the public key field above.
    */
-  uint32_t reserved[40];
+  uint32_t reserved[39];
+  /**
+   * Address where the manifest is expected to be loaded.
+   */
+  uint32_t manifest_base_address;
   /**
    * Address translation (hardened boolean).
    */
@@ -333,6 +337,7 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_public_key, 496);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved, 656);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_base_address, 812);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_version, 824);

@@ -58,6 +58,7 @@ REGION_ALIAS("coverage_flash", owner_flash);
  */
 SECTIONS {
   .manifest _slot_start_address : {
+    _manifest_base_address = .;
     KEEP(*(.manifest))
     . = ALIGN(256);
   } > owner_flash

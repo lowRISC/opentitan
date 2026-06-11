@@ -202,27 +202,6 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
   }
 }
 
-/**
- * These symbols are defined in
- * `opentitan/sw/device/silicon_creator/rom_ext/rom_ext.ld`, and describe the
- * location of the flash header.
- */
-extern char _owner_virtual_start_address[];
-extern char _owner_virtual_size[];
-
-/**
- * Compute the virtual address corresponding to the physical address `lma_addr`.
- *
- * @param manifest Pointer to the current manifest.
- * @param lma_addr Load address or physical address.
- * @return the computed virtual address.
- */
-OT_WARN_UNUSED_RESULT
-static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
-  return (lma_addr - (uintptr_t)manifest +
-          (uintptr_t)_owner_virtual_start_address + (uint32_t)_rom_ext_size);
-}
-
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest,

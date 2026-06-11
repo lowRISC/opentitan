@@ -109,6 +109,7 @@ enum module_ {
   X(kErrorManifestBadSignedRegion,    ERROR_(3, kModuleManifest, kInternal)), \
   X(kErrorManifestBadExtension,       ERROR_(4, kModuleManifest, kInternal)), \
   X(kErrorManifestBadVersionMajor,    ERROR_(5, kModuleManifest, kInternal)), \
+  X(kErrorManifestBadBaseAddress,     ERROR_(6, kModuleManifest, kInternal)), \
   \
   X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \

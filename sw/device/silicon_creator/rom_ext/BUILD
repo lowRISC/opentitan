@@ -98,6 +98,7 @@ cc_library(
     hdrs = ["rom_ext_boot_policy.h"],
     deps = [
         ":rom_ext_boot_policy_ptrs",
+        ":rom_ext_manifest",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",

@@ -64,6 +64,7 @@ REGION_ALIAS("coverage_flash", rom_ext_flash);
  */
 SECTIONS {
   .manifest _rom_ext_start_address : {
+    _manifest_base_address = .;
     KEEP(*(.manifest))
     . = ALIGN(4);
   } > rom_ext_flash
