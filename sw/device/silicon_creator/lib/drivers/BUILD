@@ -578,6 +578,7 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib:boot_log",
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+            "//sw/device/silicon_creator/lib/cert:ram_msg",
         ],
     ),
 )

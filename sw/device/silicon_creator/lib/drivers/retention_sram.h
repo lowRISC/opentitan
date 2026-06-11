@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/cert/ram_msg.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -48,12 +49,18 @@ typedef struct retention_sram_creator {
    * - We can add additional members at the end (growing up into reserved
    *   space) without affecting the layout of other structures.
    */
-  uint32_t reserved[(2044 - (sizeof(uint32_t)          // reset_reason
-                             + sizeof(boot_svc_msg_t)  // boot services message
-                             + sizeof(boot_log_t)      // boot_log
-                             + sizeof(rom_error_t)     // last_shutdown_reason
-                             )) /
-                    sizeof(uint32_t)];
+  uint32_t
+      reserved[(2044 - (sizeof(uint32_t)               // reset_reason
+                        + sizeof(boot_svc_msg_t)       // boot services message
+                        + sizeof(dice_cert_gen_msg_t)  // DICE handover message
+                        + sizeof(boot_log_t)           // boot_log
+                        + sizeof(rom_error_t)          // last_shutdown_reason
+                        )) /
+               sizeof(uint32_t)];
+  /**
+   * DICE certificate handover message.
+   */
+  dice_cert_gen_msg_t dice_cert_gen;
   /**
    * Boot log area.
    *
@@ -72,6 +79,7 @@ typedef struct retention_sram_creator {
 OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reset_reasons, 0);
 OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_svc_msg, 4);
 OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reserved, 260);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, dice_cert_gen, 1828);
 OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_log, 1912);
 OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, last_shutdown_reason, 2040);
 OT_ASSERT_SIZE(boot_svc_msg_t, 256);

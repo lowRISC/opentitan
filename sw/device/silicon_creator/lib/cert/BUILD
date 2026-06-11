@@ -287,3 +287,8 @@ cc_library(
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
+
+cc_library(
+    name = "ram_msg",
+    hdrs = ["ram_msg.h"],
+)
