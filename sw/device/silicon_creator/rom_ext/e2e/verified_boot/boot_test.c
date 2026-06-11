@@ -136,6 +136,9 @@ status_t boot_log_print(boot_log_t *boot_log) {
   LOG_INFO("boot_log rom_ext_min_sec_ver = %u", boot_log->rom_ext_min_sec_ver);
   LOG_INFO("boot_log bl0_min_sec_ver = %u", boot_log->bl0_min_sec_ver);
   LOG_INFO("boot_log primary_bl0_slot = %C", boot_log->primary_bl0_slot);
+  LOG_INFO("boot_log bl0_firmware_domain = %08x",
+           boot_log->bl0_firmware_domain);
+  LOG_INFO("boot_log bl0_failure_reason = %08x", boot_log->bl0_failure_reason);
   TRY(manifest_print());
   TRY(ownership_print());
   TRY(keymgr_print());

@@ -56,8 +56,12 @@ typedef struct boot_log {
   uint32_t retention_ram_initialized;
   /** Signals of events during boot. */
   uint32_t events;
+  /** The firmware domain of the application we booted. */
+  uint32_t bl0_firmware_domain;
+  /** If we didn't boot the preferred slot, the errorcode describing why. */
+  uint32_t bl0_failure_reason;
   /** Pad to 128 bytes. */
-  uint32_t reserved[7];
+  uint32_t reserved[5];
 } boot_log_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, digest, 0);
@@ -76,7 +80,10 @@ OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_min_sec_ver, 84);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, primary_bl0_slot, 88);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, retention_ram_initialized, 92);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, events, 96);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 100);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_firmware_domain, 100);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_failure_reason, 104);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 108);
+OT_ASSERT_SIZE(boot_log_t, 128);
 
 enum {
   /**

@@ -229,10 +229,10 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest,
+                                const owner_application_key_t *key,
                                 uint32_t *flash_exec) {
   // Determine which owner block the key came from and measure that block.
   hmac_digest_t owner_measurement;
-  const owner_application_key_t *key = keyring.key[verify_key];
   owner_block_measurement(owner_block_key_page(key), &owner_measurement);
 
   keymgr_binding_value_t sealing_binding;
@@ -363,6 +363,8 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
       rom_ext_boot_policy_manifests_get(boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
   rom_error_t slot[2] = {0, 0};
+  boot_log->bl0_failure_reason = kErrorOk;
+  boot_log->bl0_firmware_domain = 0;
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     uint32_t flash_exec = 0;
     char slot_id =
@@ -374,6 +376,8 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     slot[i] = error;
     if (error != kErrorOk) {
       dbg_printf("verifyfail: Slot%c;%x\r\n", slot_id, error);
+      boot_log->bl0_failure_reason = error;
+      boot_log_digest_update(boot_log);
       continue;
     }
     HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
@@ -385,11 +389,13 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     } else {
       return kErrorRomExtBootFailed;
     }
+    const owner_application_key_t *key = keyring.key[verify_key];
+    boot_log->bl0_firmware_domain = key->key_domain;
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(
-        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &flash_exec));
+    RETURN_IF_ERROR(rom_ext_boot(boot_data, boot_log, manifests.ordered[i], key,
+                                 &flash_exec));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;

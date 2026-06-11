@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/build_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
@@ -59,7 +60,21 @@ class BootLogTest : public rom_test::RomTest {
       .identifier = kBootLogIdentifier,
       .chip_version = expected_chip_version,
       .rom_ext_slot = expected_rom_ext_slot,
+      .rom_ext_major = 1,
+      .rom_ext_minor = 2,
+      .rom_ext_size = 0x1000,
+      .rom_ext_nonce = {{0x01234567, 0x89abcdef}},
       .bl0_slot = expected_bl0_slot,
+      .ownership_state = 0x55555555,
+      .ownership_transfers = 3,
+      .rom_ext_min_sec_ver = 1,
+      .bl0_min_sec_ver = 2,
+      .primary_bl0_slot = kBootSlotA,
+      .retention_ram_initialized = kHardenedBoolTrue,
+      .events = 0x12,
+      .bl0_firmware_domain = 0x34,
+      .bl0_failure_reason = 0x56,
+      .reserved = {1, 2, 3, 4, 5},
   };
 };
 
@@ -88,15 +103,15 @@ TEST_F(BootLogTest, DigestUpdate) {
                                    expected_digest_region_len, _))
       .WillOnce(testing::SetArgPointee<2>(new_digest));
 
+  boot_log_t boot_log_copy = boot_log;
   boot_log_digest_update(&boot_log);
 
   // Check that the digest field in boot_log has been updated correctly
   EXPECT_EQ(new_digest, boot_log.digest);
   // Ensure no other fields changed
-  EXPECT_EQ(kBootLogIdentifier, boot_log.identifier);
-  EXPECT_EQ(expected_rom_ext_slot, boot_log.rom_ext_slot);
-  EXPECT_EQ(expected_bl0_slot, boot_log.bl0_slot);
-  EXPECT_EQ(expected_chip_version, boot_log.chip_version);
+  EXPECT_EQ(0, std::memcmp((char *)&boot_log + sizeof(hmac_digest_t),
+                           (char *)&boot_log_copy + sizeof(hmac_digest_t),
+                           sizeof(boot_log_t) - sizeof(hmac_digest_t)));
 }
 
 TEST_F(BootLogTest, BootLogCheckSuccess) {
@@ -124,15 +139,12 @@ TEST_F(BootLogTest, BootLogCheckSuccess) {
                                    expected_digest_region_len, _))
       .WillOnce(testing::SetArgPointee<2>(new_digest));
 
+  boot_log_t boot_log_copy = boot_log;
   uint32_t error = boot_log_check(&boot_log);
   EXPECT_EQ(error, kErrorOk);
 
   // Ensure no fields have been changed
-  EXPECT_EQ(expected_digest, boot_log.digest);
-  EXPECT_EQ(kBootLogIdentifier, boot_log.identifier);
-  EXPECT_EQ(expected_rom_ext_slot, boot_log.rom_ext_slot);
-  EXPECT_EQ(expected_bl0_slot, boot_log.bl0_slot);
-  EXPECT_EQ(expected_chip_version, boot_log.chip_version);
+  EXPECT_EQ(0, std::memcmp(&boot_log, &boot_log_copy, sizeof(boot_log_t)));
 }
 
 TEST_F(BootLogTest, BootLogCheckFailure) {
@@ -160,15 +172,12 @@ TEST_F(BootLogTest, BootLogCheckFailure) {
                                    expected_digest_region_len, _))
       .WillOnce(testing::SetArgPointee<2>(new_digest));
 
+  boot_log_t boot_log_copy = boot_log;
   uint32_t error = boot_log_check(&boot_log);
   EXPECT_EQ(error, kErrorBootLogInvalid);
 
   // Ensure no fields have been changed
-  EXPECT_EQ(expected_digest, boot_log.digest);
-  EXPECT_EQ(kBootLogIdentifier, boot_log.identifier);
-  EXPECT_EQ(expected_rom_ext_slot, boot_log.rom_ext_slot);
-  EXPECT_EQ(expected_bl0_slot, boot_log.bl0_slot);
-  EXPECT_EQ(expected_chip_version, boot_log.chip_version);
+  EXPECT_EQ(0, std::memcmp(&boot_log, &boot_log_copy, sizeof(boot_log_t)));
 }
 
 }  // namespace
