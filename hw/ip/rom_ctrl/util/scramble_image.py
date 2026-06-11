@@ -368,16 +368,73 @@ class Scrambler:
         assert self._addr_width < self.nonce_width
         data_nonce_width = self.nonce_width - self._addr_width
         addr_scr_nonce = self.nonce >> data_nonce_width
-        return subst_perm_enc(log_addr, addr_scr_nonce, self._addr_width,
-                              self.subst_perm_rounds)
+        if (self.rom_size_words == 2**self._addr_width):
+            # Because the memory depth is exactly the size addressable by _addr_width, we can
+            # simply pass the full address through the S&P network.
+            sp_width = self._addr_width
+            num_chunks = 1
+        else:
+            # The memory depth is not a power of two. We split the memory into `num_chunks` chunks
+            # with a power-of-two depth. Within the chunks, addresses get scrambled with the S&P
+            # network. The distribution of the chunks onto the actual memory is determined by the
+            # `off_addr` bits of the nonce.
+            sp_depth = self.rom_size_words & (-self.rom_size_words)
+            num_chunks = self.rom_size_words // sp_depth
+            assert num_chunks * sp_depth == self.rom_size_words
+            sp_width = (sp_depth - 1).bit_length()
+        # Pass the `sp_width` LSBs through the S&P network.
+        sp_addr = log_addr & ((1 << sp_width) - 1)
+        sp_nonce = addr_scr_nonce & ((1 << sp_width) - 1)
+        sp_encrypted_addr = subst_perm_enc(sp_addr, sp_nonce, sp_width,
+                                           self.subst_perm_rounds)
+        if (self.rom_size_words == 2**self._addr_width):
+            encrypted_addr = sp_encrypted_addr
+        else:
+            # Strip off the top-most `off_width` bits of the address and nonce to compute the chunk
+            # offset.
+            off_addr = log_addr >> sp_width
+            off_nonce = addr_scr_nonce >> sp_width
+            # Compute the offset and wrap around if necessary.
+            off_encrypted = (off_addr + off_nonce) % num_chunks
+            # Stitch the decrypted address together.
+            encrypted_addr = (off_encrypted << sp_width) + sp_encrypted_addr
+        return encrypted_addr
 
     def addr_sp_dec(self, phy_addr: int) -> int:
         assert self._addr_width < self.nonce_width
-
         data_nonce_width = self.nonce_width - self._addr_width
         addr_scr_nonce = self.nonce >> data_nonce_width
-        return subst_perm_dec(phy_addr, addr_scr_nonce, self._addr_width,
-                              self.subst_perm_rounds)
+        if (self.rom_size_words == 2**self._addr_width):
+            # Because the memory depth is exactly the size addressable by _addr_width, we can
+            # simply pass the full address through the S&P network.
+            sp_width = self._addr_width
+            num_chunks = 1
+        else:
+            # The memory depth is not a power of two. We split the memory into `num_chunks` chunks
+            # with a power-of-two depth. Within the chunks, addresses get scrambled with the S&P
+            # network. The distribution of the chunks onto the actual memory is determined by the
+            # `off_addr` bits of the nonce.
+            sp_depth = self.rom_size_words & (-self.rom_size_words)
+            num_chunks = self.rom_size_words // sp_depth
+            assert num_chunks * sp_depth == self.rom_size_words
+            sp_width = (sp_depth - 1).bit_length()
+        # Pass the `sp_width` LSBs through the S&P network.
+        sp_addr = phy_addr & ((1 << sp_width) - 1)
+        sp_nonce = addr_scr_nonce & ((1 << sp_width) - 1)
+        sp_decrypted_addr = subst_perm_dec(sp_addr, sp_nonce, sp_width,
+                                           self.subst_perm_rounds)
+        if (self.rom_size_words == 2**self._addr_width):
+            decrypted_addr = sp_decrypted_addr
+        else:
+            # Strip off the top-most `off_width` bits of the address and nonce to compute the chunk
+            # offset.
+            off_addr = phy_addr >> sp_width
+            off_nonce = addr_scr_nonce >> sp_width
+            # Compute the offset and wrap around if necessary.
+            off_decrypted = (off_addr + off_nonce) % num_chunks
+            # Stitch the decrypted address together.
+            decrypted_addr = (off_decrypted << sp_width) + sp_decrypted_addr
+        return decrypted_addr
 
     def scramble_word(self, width: int, log_addr: int, clr_data: int) -> int:
         '''Scramble clr_data at the given logical address.'''
