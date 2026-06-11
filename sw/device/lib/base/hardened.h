@@ -400,10 +400,16 @@ typedef uint32_t ct_bool32_t;
  */
 OT_WARN_UNUSED_RESULT
 inline ct_bool32_t ct_sltz32(int32_t a) {
+#if defined(OT_PLATFORM_RV32)
+  int32_t res;
+  asm volatile("srai %[res], %[a], 31" : [res] "=r"(res) : [a] "r"(a));
+  return OT_UNSIGNED(res);
+#else
   // Proof. `a` is negative iff its MSB is set;
   // arithmetic-right-shifting by bits(a)-1 smears the sign bit across all
   // of `a`.
   return OT_UNSIGNED(a >> (sizeof(a) * 8 - 1));
+#endif
 }
 
 /**
@@ -415,8 +421,18 @@ inline ct_bool32_t ct_sltz32(int32_t a) {
  */
 OT_WARN_UNUSED_RESULT
 inline ct_bool32_t ct_sltu32(uint32_t a, uint32_t b) {
+#if defined(OT_PLATFORM_RV32)
+  uint32_t res;
+  asm volatile(
+      "sltu %[res], %[a], %[b];"
+      "neg %[res], %[res];"
+      : [res] "=r"(res)
+      : [a] "r"(a), [b] "r"(b));
+  return res;
+#else
   // Proof. See Hacker's Delight page 23.
   return ct_sltz32(OT_SIGNED(((~a & b) | ((~a | b) & (a - b)))));
+#endif
 }
 
 /**
@@ -428,6 +444,15 @@ inline ct_bool32_t ct_sltu32(uint32_t a, uint32_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline ct_bool32_t ct_seqz32(uint32_t a) {
+#if defined(OT_PLATFORM_RV32)
+  uint32_t res;
+  asm volatile(
+      "seqz %[res], %[a];"
+      "neg %[res], %[res];"
+      : [res] "=r"(res)
+      : [a] "r"(a));
+  return res;
+#else
   // Proof. See Hacker's Delight page 23.
   // HD gives this formula: `a == b := ~(a-b | b-a)`.
   //
@@ -437,6 +462,7 @@ inline ct_bool32_t ct_seqz32(uint32_t a) {
   //
   // This forumula is also given on page 11 for a different purpose.
   return ct_sltz32(OT_SIGNED(~a & (a - 1)));
+#endif
 }
 
 /**
@@ -448,8 +474,19 @@ inline ct_bool32_t ct_seqz32(uint32_t a) {
  */
 OT_WARN_UNUSED_RESULT
 inline ct_bool32_t ct_seq32(uint32_t a, uint32_t b) {
+#if defined(OT_PLATFORM_RV32)
+  uint32_t res;
+  asm volatile(
+      "xor %[res], %[a], %[b];"
+      "seqz %[res], %[res];"
+      "neg %[res], %[res];"
+      : [res] "=r"(res)
+      : [a] "r"(a), [b] "r"(b));
+  return res;
+#else
   // Proof. a ^ b == 0 -> a ^ a ^ b == a ^ 0 -> b == a.
   return ct_seqz32(a ^ b);
+#endif
 }
 
 /**
@@ -467,6 +504,17 @@ inline ct_bool32_t ct_seq32(uint32_t a, uint32_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline uint32_t ct_cmov32(ct_bool32_t c, uint32_t a, uint32_t b) {
+#if defined(OT_PLATFORM_RV32)
+  uint32_t res;
+  asm volatile(
+      ".option push;"
+      ".option arch, +zbt0p93;"
+      "cmov %[res], %[c], %[a], %[b];"
+      ".option pop;"
+      : [res] "=r"(res)
+      : [c] "r"(c), [a] "r"(a), [b] "r"(b));
+  return res;
+#else
   // Proof. See Hacker's Delight page 46. HD gives this as a branchless swap;
   // branchless select is a special case of that.
 
@@ -474,6 +522,7 @@ inline uint32_t ct_cmov32(ct_bool32_t c, uint32_t a, uint32_t b) {
   // exact pattern, but lacking a cmov instruction, it will almost certainly
   // select a branch instruction here.
   return (launder32(c) & a) | (launder32(~c) & b);
+#endif
 }
 
 /**
@@ -493,7 +542,13 @@ typedef uintptr_t ct_boolw_t;
  */
 OT_WARN_UNUSED_RESULT
 inline ct_boolw_t ct_sltzw(intptr_t a) {
+#if defined(OT_PLATFORM_RV32)
+  intptr_t res;
+  asm volatile("srai %[res], %[a], 31" : [res] "=r"(res) : [a] "r"(a));
+  return OT_UNSIGNED(res);
+#else
   return OT_UNSIGNED(a >> (sizeof(a) * 8 - 1));
+#endif
 }
 
 /**
@@ -505,7 +560,17 @@ inline ct_boolw_t ct_sltzw(intptr_t a) {
  */
 OT_WARN_UNUSED_RESULT
 inline ct_boolw_t ct_sltuw(uintptr_t a, uintptr_t b) {
+#if defined(OT_PLATFORM_RV32)
+  uintptr_t res;
+  asm volatile(
+      "sltu %[res], %[a], %[b];"
+      "neg %[res], %[res];"
+      : [res] "=r"(res)
+      : [a] "r"(a), [b] "r"(b));
+  return res;
+#else
   return ct_sltzw(OT_SIGNED((a & ~b) | ((a ^ ~b) & (a - b))));
+#endif
 }
 
 /**
@@ -517,7 +582,17 @@ inline ct_boolw_t ct_sltuw(uintptr_t a, uintptr_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline ct_boolw_t ct_seqzw(uintptr_t a) {
+#if defined(OT_PLATFORM_RV32)
+  uintptr_t res;
+  asm volatile(
+      "seqz %[res], %[a];"
+      "neg %[res], %[res];"
+      : [res] "=r"(res)
+      : [a] "r"(a));
+  return res;
+#else
   return ct_sltzw(OT_SIGNED(~a & (a - 1)));
+#endif
 }
 
 /**
@@ -528,7 +603,20 @@ inline ct_boolw_t ct_seqzw(uintptr_t a) {
  * @return `a == b`.
  */
 OT_WARN_UNUSED_RESULT
-inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) { return ct_seqzw(a ^ b); }
+inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) {
+#if defined(OT_PLATFORM_RV32)
+  uintptr_t res;
+  asm volatile(
+      "xor %[res], %[a], %[b];"
+      "seqz %[res], %[res];"
+      "neg %[res], %[res];"
+      : [res] "=r"(res)
+      : [a] "r"(a), [b] "r"(b));
+  return res;
+#else
+  return ct_seqzw(a ^ b);
+#endif
+}
 
 /**
  * Performs a constant-time select.
@@ -545,7 +633,19 @@ inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) { return ct_seqzw(a ^ b); }
  */
 OT_WARN_UNUSED_RESULT
 inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
+#if defined(OT_PLATFORM_RV32)
+  uintptr_t res;
+  asm volatile(
+      ".option push;"
+      ".option arch, +zbt0p93;"
+      "cmov %[res], %[c], %[a], %[b];"
+      ".option pop;"
+      : [res] "=r"(res)
+      : [c] "r"(c), [a] "r"(a), [b] "r"(b));
+  return res;
+#else
   return (launderw(c) & a) | (launderw(~c) & b);
+#endif
 }
 
 // Implementation details shared across shutdown macros.
