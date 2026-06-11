@@ -100,6 +100,9 @@ enum {
   kFlashInfoFieldCdi0KeySeedIdx = 1,
   kFlashInfoFieldCdi1KeySeedIdx = 2,
   kFlashInfoFieldTpmEkKeySeedIdx = 3,
+  kFlashInfoFieldMldsaUdsKeySeedIdx = 4,
+  kFlashInfoFieldMldsaCdi0KeySeedIdx = 5,
+  kFlashInfoFieldMldsaCdi1KeySeedIdx = 6,
 };
 
 // Info Page 0 fields.
