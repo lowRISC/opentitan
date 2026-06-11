@@ -33,7 +33,7 @@ ROM_EXT_VARIATIONS = {
     ),
     "dice_mldsa": struct(
         deps = [
-            "//sw/device/silicon_creator/lib/cert:dice",
+            "//sw/device/silicon_creator/lib/cert:dice_mldsa",
         ],
         slot_spec = {
             "owner_slot_a": "0x16000",
