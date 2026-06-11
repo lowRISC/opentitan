@@ -249,6 +249,22 @@ rom_error_t sc_keymgr_generate_key(sc_keymgr_dest_t destination,
                                    sc_keymgr_diversification_t diversification);
 
 /**
+ * Generate a versioned software output key from the key manager.
+ *
+ * Calls the key manager to generate a software output key, reads the shares,
+ * and XORs them to reconstruct the final seed.
+ *
+ * @param key_type Key type: attestation or sealing.
+ * @param diversification Diversification input for the key derivation.
+ * @param[out] key_out Reconstructed software key.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_generate_key_sw(
+    sc_keymgr_key_type_t key_type, sc_keymgr_diversification_t diversification,
+    keymgr_binding_value_t *key_out);
+
+/**
  * Clear the requested sideloaded key slot.
  *
  * The entropy complex needs to be initialized before calling this function, so

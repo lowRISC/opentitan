@@ -245,6 +245,58 @@ rom_error_t sc_keymgr_generate_key(
   return keymgr_wait_until_done();
 }
 
+rom_error_t sc_keymgr_generate_key_sw(
+    sc_keymgr_key_type_t key_type, sc_keymgr_diversification_t diversification,
+    keymgr_binding_value_t *key_out) {
+  HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
+
+  uint32_t ctrl = 0;
+
+  // Software key generation has no HW destination.
+  ctrl = bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                                KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
+
+  // Select the attestation CDI.
+  if (key_type == kScKeymgrKeyTypeAttestation) {
+    ctrl =
+        bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true);
+  }
+
+  // Select the "generate software output" operation.
+  ctrl = bitfield_field32_write(
+      ctrl, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_SW_OUTPUT);
+
+  // Write the control register.
+  abs_mmio_write32_shadowed(kBase + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, ctrl);
+
+  // Set the version.
+  abs_mmio_write32(kBase + KEYMGR_KEY_VERSION_REG_OFFSET,
+                   diversification.version);
+  // Set the salt.
+  for (size_t i = 0; i < kScKeymgrSaltNumWords; i++) {
+    abs_mmio_write32(kBase + KEYMGR_SALT_0_REG_OFFSET + (i * sizeof(uint32_t)),
+                     diversification.salt[i]);
+  }
+
+  // Issue the start command.
+  abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1 << KEYMGR_START_EN_BIT);
+
+  // Block until keymgr is done.
+  HARDENED_RETURN_IF_ERROR(keymgr_wait_until_done());
+
+  // Read the software output shares and XOR them to reconstruct the seed.
+  for (size_t i = 0; i < kScKeymgrSaltNumWords; i++) {
+    uint32_t share0 = abs_mmio_read32(
+        kBase + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET + (i * sizeof(uint32_t)));
+    uint32_t share1 = abs_mmio_read32(
+        kBase + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET + (i * sizeof(uint32_t)));
+    key_out->data[i] = share0 ^ share1;
+  }
+
+  return kErrorOk;
+}
+
 rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
