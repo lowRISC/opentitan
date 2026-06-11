@@ -117,8 +117,9 @@ class AesScaTest(unittest.TestCase):
         self.assertIn("PENTEST", version)
 
     def test_char_aes_single_encrypt(self):
-        # Note that setting this to false gives errors for production chips
-        masking = True
+        # Note that setting this to false does not actually
+        # turn off masking in silicon, only on FPGA
+        masking = False
         key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         actual_result = sca_aes_functions.char_aes_single_encrypt(
@@ -136,7 +137,6 @@ class AesScaTest(unittest.TestCase):
 
     def test_char_aes_batch_daisy_chain(self):
         for num_segments in num_segments_list:
-            # Note that setting this to false gives errors for production chips
             masking = True
             key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
             text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
@@ -161,7 +161,6 @@ class AesScaTest(unittest.TestCase):
 
     def test_char_aes_batch_fvsr_data(self):
         for num_segments in num_segments_list:
-            # Note that setting this to false gives errors for production chips
             masking = True
             key = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
             text = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]

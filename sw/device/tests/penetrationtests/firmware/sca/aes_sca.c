@@ -19,6 +19,7 @@
 
 #ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 #include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #endif
 
 #include "hw/top/aes_regs.h"  // Generated.
@@ -1020,6 +1021,9 @@ status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
 #ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   if (transaction.force_masks) {
     LOG_INFO("Disabling masks.");
+    // The EDN will throw an error with this command since it will output a
+    // block of zeros. Hence expect and catch the alert
+    TRY(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdEdn0RecovAlert));
     const dif_csrng_t csrng = {
         .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
     const dif_edn_t edn0 = {
