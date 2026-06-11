@@ -54,6 +54,7 @@ def main(args_in):
     sku_config_args = {}
     with open(args.sku_config, "r") as fp:
         sku_config_args = hjson.load(fp)
+    sku_config_args["resolve_paths"] = False
     sku_config = SkuConfig(**sku_config_args)
 
     # Generate CP/FT portion of device ID.

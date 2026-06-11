@@ -35,7 +35,7 @@ py_test(
         "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
         "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
         "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
-        "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "//sw/host/provisioning/orchestrator/configs/skus:emulation",
     ],
     deps = [
         requirement("hjson"),
@@ -74,7 +74,7 @@ orchestrator_cw340_test_settings_transition(
         srcs = ["e2e_option_flags.sh"],
         data = [
             ":orchestrator_{}_zip".format(fpga),
-            "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+            "//sw/host/provisioning/orchestrator/configs/skus:emulation",
             "@python3",
         ],
         env = {
@@ -101,7 +101,7 @@ orchestrator_cw340_test_settings_transition(
         srcs = ["e2e_ate_individ.sh"],
         data = [
             ":orchestrator_{}_zip".format(fpga),
-            "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+            "//sw/host/provisioning/orchestrator/configs/skus:emulation",
             "@python3",
         ],
         env = {
