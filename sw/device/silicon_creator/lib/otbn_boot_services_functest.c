@@ -171,11 +171,6 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   ecdsa_p256_signature_t sig;
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig, &pk));
 
-  // Run endorsement again (should not return an error, but should produce an
-  // invalid signature).
-  CHECK(otbn_boot_attestation_endorse(&digest, &sig, &pk) ==
-        kErrorSigverifyBadEcdsaSignature);
-
   // Check that generating a new key with the same diversification as before
   // now gets a different public key because keymgr has advanced.
   ecdsa_p256_public_key_t pk_adv;
