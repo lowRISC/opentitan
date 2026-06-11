@@ -47,6 +47,22 @@ status_t good_ge_test(void) {
   return OK_STATUS();
 }
 
+status_t good_cmov_test(void) {
+  uint32_t a = 0xdeadbeef;
+  uint32_t b = 0xc0ffee;
+
+  // Using ~0U for true, 0 for false.
+  HARDENED_CHECK_EQ(ct_cmov32(~0U, a, b), a);
+  HARDENED_CHECK_EQ(ct_cmov32(0U, a, b), b);
+
+  HARDENED_CHECK_EQ(ct_cmovw(~(uintptr_t)0, (uintptr_t)a, (uintptr_t)b),
+                    (uintptr_t)a);
+  HARDENED_CHECK_EQ(ct_cmovw((uintptr_t)0, (uintptr_t)a, (uintptr_t)b),
+                    (uintptr_t)b);
+
+  return OK_STATUS();
+}
+
 uint32_t exc_seen;
 void ottf_illegal_instr_fault_handler(uint32_t *exc_info) {
   switch (exc_seen) {
@@ -126,6 +142,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, good_gt_test);
   EXECUTE_TEST(result, good_le_test);
   EXECUTE_TEST(result, good_ge_test);
+  EXECUTE_TEST(result, good_cmov_test);
 
   // Test each hardened check when the check is invalid.
   // Each of these tests is expected to hit the `unimp` instruction in the
