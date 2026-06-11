@@ -352,6 +352,15 @@ jobs:
         with:
           artifact-name: verilator_earlgrey-test-results
 
+  chip_earlgrey_cw310_hyperdebug:
+    name: Earl Grey for CW310 Hyperdebug
+    needs: quick_lint
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw310_hyperdebug
+
   chip_earlgrey_cw340:
     name: Earl Grey for CW340
     needs: quick_lint
@@ -365,6 +374,7 @@ jobs:
     name: Cache bitstreams to GCP
     runs-on: ubuntu-22.04
     needs:
+      - chip_earlgrey_cw310_hyperdebug
       - chip_earlgrey_cw340
     steps:
       - name: Skipped message
@@ -383,7 +393,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         uses: ./.github/actions/download-partial-build-bin
         with:
-          job-patterns: chip_earlgrey_cw340
+          job-patterns: chip_earlgrey_{cw310,cw310_hyperdebug,cw340}
       - name: Create bitstream cache archive
         if: ${{ github.event_name != 'pull_request' }}
         run: |
