@@ -262,6 +262,17 @@ cc_library(
 )
 
 cc_library(
+    name = "seeds",
+    srcs = ["seeds.c"],
+    hdrs = ["seeds.h"],
+    deps = [
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
     name = "dice_chain",
     srcs = ["dice_chain.c"],
     hdrs = ["dice_chain.h"],
