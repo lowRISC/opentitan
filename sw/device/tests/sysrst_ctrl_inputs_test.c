@@ -111,7 +111,7 @@ bool test_main(void) {
       kDeviceType == kDeviceSimDV ? &kTestExpectedDV : &kTestExpectedReal;
 
   for (int i = 0; i < kNumPhases; ++i) {
-    OTTF_WAIT_FOR(i == *kTestPhase, kTestPhaseTimeoutUsec);
+    OTTF_WAIT_FOR(i == OTTF_BACKDOOR_READ(*kTestPhase), kTestPhaseTimeoutUsec);
     uint8_t input_pins = read_input_pins();
     LOG_INFO("Expect pins: %x, got: %x", *kTestExpected, input_pins);
     CHECK(*kTestExpected == input_pins);
