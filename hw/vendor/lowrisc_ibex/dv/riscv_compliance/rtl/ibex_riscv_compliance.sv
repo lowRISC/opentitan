@@ -216,6 +216,7 @@ module ibex_riscv_compliance (
       .double_fault_seen_o       (                     ),
 
       .fetch_enable_i            (ibex_pkg::IbexMuBiOn ),
+      .mcounteren_writable_i     (ibex_pkg::IbexMuBiOn ),
       .alert_minor_o             (                     ),
       .alert_major_internal_o    (                     ),
       .alert_major_bus_o         (                     ),

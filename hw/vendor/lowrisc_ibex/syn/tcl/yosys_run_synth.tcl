@@ -35,10 +35,10 @@ if { $lr_synth_ibex_secure_ibex } {
   # Place keep_hierarchy contraints on relevant modules to prevent aggressive
   # synthesis optimzations across the boundaries of these modules.
   yosys "hierarchy -check -top $lr_synth_top_module"
-  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_and2*"
-  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_buf*"
-  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_clock_mux2*"
-  yosys "setattr -mod -set keep_hierarchy 1 *prim_generic_flop*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_and2*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_buf*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_clock_mux2*"
+  yosys "setattr -mod -set keep_hierarchy 1 *prim_flop*"
 }
 
 yosys "synth $flatten_opt -top $lr_synth_top_module"
@@ -63,10 +63,10 @@ if { $lr_synth_timing_run } {
 if { $lr_synth_ibex_secure_ibex } {
   # Remove keep_hierarchy constraints before the final flattening step.
   # We're done optimizing.
-  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_and2*"
-  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_buf*"
-  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_clock_mux2*"
-  yosys "setattr -mod -set keep_hierarchy 0 *prim_generic_flop*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_and2*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_buf*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_clock_mux2*"
+  yosys "setattr -mod -set keep_hierarchy 0 *prim_flop*"
 }
 
 # Final flattening.

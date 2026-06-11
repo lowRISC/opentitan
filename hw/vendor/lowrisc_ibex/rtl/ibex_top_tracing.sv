@@ -96,6 +96,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
 
   // CPU Control Signals
   input  ibex_mubi_t                                                   fetch_enable_i,
+  input  ibex_mubi_t                                                   mcounteren_writable_i,
   output logic                                                         alert_minor_o,
   output logic                                                         alert_major_internal_o,
   output logic                                                         alert_major_bus_o,
@@ -313,6 +314,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .rvfi_ext_expanded_insn_last,
 
     .fetch_enable_i,
+    .mcounteren_writable_i,
     .alert_minor_o,
     .alert_major_internal_o,
     .alert_major_bus_o,

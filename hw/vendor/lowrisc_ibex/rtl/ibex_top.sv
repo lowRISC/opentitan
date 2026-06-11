@@ -160,6 +160,7 @@ module ibex_top import ibex_pkg::*; #(
 
   // CPU Control Signals
   input  ibex_mubi_t                                                  fetch_enable_i,
+  input  ibex_mubi_t                                                  mcounteren_writable_i,
   output logic                                                        alert_minor_o,
   output logic                                                        alert_major_internal_o,
   output logic                                                        alert_major_bus_o,
@@ -244,6 +245,7 @@ module ibex_top import ibex_pkg::*; #(
   logic                        scramble_req_d, scramble_req_q;
 
   ibex_mubi_t                  fetch_enable_buf;
+  ibex_mubi_t                  mcounteren_writable_buf;
 
   /////////////////////
   // Main clock gate //
@@ -294,6 +296,11 @@ module ibex_top import ibex_pkg::*; #(
   prim_buf #(.Width($bits(ibex_mubi_t))) u_fetch_enable_buf (
     .in_i (fetch_enable_i),
     .out_o(fetch_enable_buf)
+  );
+
+  prim_buf #(.Width($bits(ibex_mubi_t))) u_mcounteren_writable_buf (
+    .in_i (mcounteren_writable_i),
+    .out_o(mcounteren_writable_buf)
   );
 
   // ibex_core takes integrity and data bits together. Combine the separate integrity and data
@@ -449,6 +456,7 @@ module ibex_top import ibex_pkg::*; #(
 `endif
 
     .fetch_enable_i        (fetch_enable_buf),
+    .mcounteren_writable_i (mcounteren_writable_buf),
     .alert_minor_o         (core_alert_minor),
     .alert_major_internal_o(core_alert_major_internal),
     .alert_major_bus_o     (core_alert_major_bus),
@@ -829,6 +837,7 @@ module ibex_top import ibex_pkg::*; #(
       crash_dump_o,
       double_fault_seen_o,
       fetch_enable_i,
+      mcounteren_writable_i,
       core_busy_d
     });
 
@@ -879,6 +888,7 @@ module ibex_top import ibex_pkg::*; #(
     crash_dump_t                  crash_dump_local;
     logic                         double_fault_seen_local;
     ibex_mubi_t                   fetch_enable_local;
+    ibex_mubi_t                   mcounteren_writable_local;
 
     ibex_mubi_t                   core_busy_local;
 
@@ -922,6 +932,7 @@ module ibex_top import ibex_pkg::*; #(
       crash_dump_o,
       double_fault_seen_o,
       fetch_enable_i,
+      mcounteren_writable_i,
       core_busy_d
     };
 
@@ -965,6 +976,7 @@ module ibex_top import ibex_pkg::*; #(
       crash_dump_local,
       double_fault_seen_local,
       fetch_enable_local,
+      mcounteren_writable_local,
       core_busy_local
     } = buf_out;
 
@@ -1083,6 +1095,7 @@ module ibex_top import ibex_pkg::*; #(
       .double_fault_seen_i      (double_fault_seen_local),
 
       .fetch_enable_i           (fetch_enable_local),
+      .mcounteren_writable_i    (mcounteren_writable_local),
       .alert_minor_o            (lockstep_alert_minor_local),
       .alert_major_internal_o   (lockstep_alert_major_internal_local),
       .alert_major_bus_o        (lockstep_alert_major_bus_local),
