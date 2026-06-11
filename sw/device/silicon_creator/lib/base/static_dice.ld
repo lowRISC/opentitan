@@ -32,7 +32,7 @@
     _static_dice_cdi_0_size == 1220 || _static_dice_cdi_0_size == 0,
     "Error: .static_dice.cdi_0 section size must be 1220 or 0");
   ASSERT(
-    _static_dice_mldsa_cdi_size == 18984 || _static_dice_mldsa_cdi_size == 0,
-    "Error: .static_dice.mldsa_cdi section size must be 18984 or 0");
+    _static_dice_mldsa_cdi_size == 18988 || _static_dice_mldsa_cdi_size == 0,
+    "Error: .static_dice.mldsa_cdi section size must be 18988 or 0");
   _static_dice_end = .;
 } > ram_main
