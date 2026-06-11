@@ -1,0 +1,133 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    // Trigger regeneration 1
+    name: "cdi_hybrid",
+
+    variables: {
+        key_alg: {
+            type: "selector",
+            num_choices: 2,
+        },
+        pub_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        issuer_pub_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        pub_key_ec_x: {
+            type: "integer",
+            exact-size: 32,
+        },
+        pub_key_ec_y: {
+            type: "integer",
+            exact-size: 32,
+        },
+        pub_key_mldsa: {
+            type: "byte-array",
+            exact-size: 1312,
+        },
+        cert_signature_r: {
+            type: "integer",
+            range-size: [24, 32],
+        },
+        cert_signature_s: {
+            type: "integer",
+            range-size: [24, 32],
+        },
+        cert_signature_mldsa: {
+            type: "byte-array",
+            exact-size: 2420,
+        },
+        tcb_model: {
+            type: "string",
+            range-size: [5, 7],
+        },
+        tcb_svn: {
+            type: "byte-array",
+            exact-size: 4,
+            tweak-msb: true,
+        },
+        tcb_layer: {
+            type: "integer",
+            exact-size: 4,
+        },
+        tcb_fw_ids: {
+            type: "byte-array",
+            range-size: [47, 141],
+        },
+        debug_flag: {
+            type: "boolean",
+        },
+    },
+
+    certificate: {
+        serial_number: { var: "pub_key_id", convert: "big-endian" },
+        issuer: [
+            { serial_number: { var: "issuer_pub_key_id", convert: "lowercase-hex" } },
+        ],
+        subject: [
+            { serial_number: { var: "pub_key_id", convert: "lowercase-hex" } },
+        ],
+        not_before: "20180322235959Z",
+        not_after: "99991231235959Z",
+        subject_public_key_info: {
+            selector: "key_alg",
+            choices: [
+                {
+                    algorithm: "ec-public-key",
+                    curve: "prime256v1",
+                    public_key: {
+                        x: { var: "pub_key_ec_x" },
+                        y: { var: "pub_key_ec_y" },
+                    },
+                },
+                {
+                    algorithm: "mldsa-44",
+                    public_key: { var: "pub_key_mldsa" },
+                }
+            ]
+        },
+        authority_key_identifier: { var: "issuer_pub_key_id" },
+        subject_key_identifier: { var: "pub_key_id" },
+        basic_constraints: { ca: true },
+        key_usage: { cert_sign: true },
+        private_extensions: [
+            {
+                type: "dice_tcb_info",
+                vendor: "OpenTitan",
+                model: { var: "tcb_model" },
+                svn: { var: "tcb_svn", convert: "big-endian" },
+                layer: { var: "tcb_layer" },
+                fw_ids: { var: "tcb_fw_ids" },
+                flags: {
+                    not_configured: false,
+                    not_secure: false,
+                    recovery: false,
+                    debug: { var: "debug_flag" },
+                }
+            },
+        ],
+        signature: {
+            selector: "key_alg",
+            choices: [
+                {
+                    algorithm: "ecdsa-with-sha256",
+                    value: {
+                        r: { var: "cert_signature_r" },
+                        s: { var: "cert_signature_s" }
+                    }
+                },
+                {
+                    algorithm: "mldsa-44",
+                    value: { var: "cert_signature_mldsa" }
+                }
+            ]
+        }
+    }
+}
