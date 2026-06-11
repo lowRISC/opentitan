@@ -79,7 +79,7 @@ _POSITIONS = {
         "romext_offset": "{rom_ext_slot_a}",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "owner_offset": "{owner_slot_b}",
-        "success": "bl0_slot = __BB\r\n",
+        "success": r"bl0_slot = __BB[\s\S]*boot_log bl0_failure_reason = 0142500d",
         "otp_img": None,
     },
     "owner_virtual_a": {
