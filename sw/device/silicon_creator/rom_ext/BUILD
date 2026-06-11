@@ -281,7 +281,6 @@ asm_library_with_coverage(
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/base:static_critical",
-            "//sw/device/silicon_creator/lib/base:static_dice",
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
             "//sw/device/silicon_creator/lib/cert:dice_api",
