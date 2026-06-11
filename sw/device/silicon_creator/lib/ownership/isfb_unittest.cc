@@ -251,4 +251,6 @@ TEST_F(IsfbTest, ErasePolicyDisableExpectedCheck) {
   EXPECT_EQ(erase_en, kHardenedBoolTrue);
 }
 
+TEST_F(IsfbTest, IsPresent) { EXPECT_EQ(isfb_is_present(), kHardenedBoolTrue); }
+
 }  // namespace

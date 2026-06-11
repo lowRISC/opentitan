@@ -252,3 +252,28 @@ _ISFB_CONTRAINT_TESTS = {
     )
     for name, param in _ISFB_CONTRAINT_TESTS.items()
 ]
+
+opentitan_test(
+    name = "isfb_null_event_test",
+    srcs = ["isfb_null_event_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        timeout = "long",
+        exit_failure = DEFAULT_TEST_FAILURE_MSG,
+        exit_success = DEFAULT_TEST_SUCCESS_MSG,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb_error",
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = ":manifest_isfb_product_expr",
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)

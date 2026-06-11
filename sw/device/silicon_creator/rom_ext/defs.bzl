@@ -281,6 +281,14 @@ TEST_OWNER_CONFIGS = {
         "isfb_module": ["//sw/device/silicon_creator/lib/ownership:isfb"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "isfb_error": {
+        # Intended to use the default isfb_null for testing the case that the
+        # rom_ext is accidentally linked to isfb_null.
+        "owner_defines": [
+            "WITH_ISFB=1",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "custom_fallback_owner": {
         "owner_defines": [
             # Enable fallback default owner override.
