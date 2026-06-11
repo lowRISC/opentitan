@@ -124,6 +124,10 @@ ROM_EXT_CONFIGS = {
         "dice": "dice_x509",
         "deps": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
     },
+    "dice_mldsa_usbdfu": {
+        "dice": "dice_mldsa",
+        "deps": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
+    },
 }
 
 [
@@ -142,6 +146,7 @@ ROM_EXT_CONFIGS = {
             "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(config["dice"]),
             "$(location //sw/device/lib/crt)",
         ],
+        slot_spec = ROM_EXT_VARIATIONS[config["dice"]].slot_spec,
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
         deps = [
             # The sival_owner C library is excluded from the real ROM_EXT,
