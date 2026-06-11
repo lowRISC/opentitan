@@ -179,7 +179,7 @@
       }
     },
 % for i in range(target):
-    { skipto: "${"0x{:x}".format(0x00002000 + i * 0x100)}" }
+    { skipto: "${"0x{:x}".format(0x00002000 + i * 0x80)}" }
     { multireg: {
         name: "IE${i}",
         desc: "Interrupt Enable for Target ${i}",
