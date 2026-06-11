@@ -66,9 +66,9 @@
 module otbn_sec_add_mod
   import otbn_pkg::*;
 #(
-  parameter  int Width     = 32,
+  parameter  int Width     = SecAddWidth,
   localparam int Stages    = $clog2(Width),
-  localparam int RandWidth = 2*(Stages*Width + 1)
+  localparam int RandWidth = SecAddRandWidth(Width)
 ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -91,11 +91,10 @@ module otbn_sec_add_mod
   output logic                            ctr_err_o
 );
 
-  localparam int VecSize     = 8;
-  localparam int CtrWidth    = $clog2(VecSize);
+  localparam int CtrWidth    = $clog2(SecAddVecSize);
   localparam int Latency     = Stages + 1;
   localparam int BufferWidth = NumShares*(Width + 1);
-  localparam int BufferDepth = VecSize - Latency;
+  localparam int BufferDepth = SecAddVecSize - Latency;
 
   // Shift register tracking which adder cycles are part of pass-2.
   // Bit 0 indicates if the current input is part of pass-2.
@@ -183,7 +182,7 @@ module otbn_sec_add_mod
   // Input batch counter: increments each cycle a new input enters the adder.
   // Fires vector_inserted_pulse when the last element of a batch of VecSize is accepted,
   // which triggers the pass-2 flag toggle in mux_state_next.
-  assign add_inp_ctr_max       = (add_oup_cnt == CtrWidth'(VecSize-1));
+  assign add_inp_ctr_max       = (add_oup_cnt == CtrWidth'(SecAddVecSize - 32'd1));
   assign add_inp_cnt_incr_en   = sec_add_inp_valid && enable_mod_i;
   assign vector_inserted_pulse = add_inp_ctr_max && add_inp_cnt_incr_en;
   assign add_inp_cnt_clr       = vector_inserted_pulse || !enable_mod_i;
@@ -201,7 +200,7 @@ module otbn_sec_add_mod
 
     .incr_en_i(add_inp_cnt_incr_en),
     .decr_en_i(1'b0),
-    .step_i   (CtrWidth'(1)),
+    .step_i   (CtrWidth'(1'b1)),
     .commit_i (1'b1),
 
     .cnt_o             (add_oup_cnt),
@@ -227,7 +226,7 @@ module otbn_sec_add_mod
   );
 
   // Instantiate the buffer flops.
-  for (genvar d = 0; d < BufferDepth; d++) begin : gen_buffer
+  for (genvar di = 0; di < BufferDepth; di++) begin : gen_buffer
     prim_flop_en #(
       .Width      (BufferWidth),
       .ResetValue ('0)
@@ -235,8 +234,8 @@ module otbn_sec_add_mod
       .clk_i,
       .rst_ni,
       .en_i(buffer_advance),
-      .d_i(buffer_data[d]),
-      .q_o(buffer_data[d+1])
+      .d_i(buffer_data[di]),
+      .q_o(buffer_data[di+1])
     );
   end
 

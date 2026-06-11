@@ -12,9 +12,9 @@
 // gates are implemented with HPC3 or HPC3o gadgets providing glitch-robust PINI security.
 //
 // Pipeline structure (latency = log2(Width) + 1 cycles, 6 cycles for Width=32):
-//   Cycle 0:    Pre-processing: compute generate (g = inp1 & inp2) and propagate (p = inp1 ^ inp2)
+//   Cycle 0:    Pre-processing: pg = inp1 & inp2 (generate), pp = inp1 ^ inp2 (propagate)
 //   Cycles 1-5: Prefix tree:    log2(Width) stages of masked generate and propagate operations
-//   Cycle 5:    Combinatorial sum generation: result[i] = p_initial[i] ^ g_final[i]
+//   Cycle 5:    Combinatorial sum generation: result[bi] = p_initial[bi] ^ g_final[bi]
 //
 // rand_i (RandWidth = 2*(log2(Width)*Width + 1) bits = 322 bits for Width=32) is the random input
 // and must be fresh every cycle while data is being processed. Each HPC3 gadget has a dedicated
@@ -31,9 +31,9 @@
 module otbn_sec_add
   import otbn_pkg::*;
 #(
-  parameter  int Width     = 32,
-  localparam int Stages    = $clog2(Width),            // derived parameter
-  localparam int RandWidth = 2 * (Stages * Width + 1)  // derived parameter
+  parameter  int Width     = SecAddWidth,
+  localparam int Stages    = $clog2(Width),         // derived parameter
+  localparam int RandWidth = SecAddRandWidth(Width) // derived parameter
 ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -50,12 +50,12 @@ module otbn_sec_add
   // Width needs to be a power of 2.
   `ASSERT_INIT(OtbnSecAddWidthPow2_A, (Width & (Width - 1)) == 0)
 
-  // g[l][s][i]: prefix generate for share s, bit i, after l prefix stages.
-  // p[l][s][i]: prefix propagate for share s, bit i, after l prefix stages.
-  // pre_p[s][i]: initial propagate (inp1^inp2), combinational stage-0 value.
-  // pre_p_q[l][s][i]: pre_p delayed l+1 pipeline cycles.
-  logic [Stages:0][NumShares-1:0][Width-1:0] g;
-  logic [Stages:0][NumShares-1:0][Width-1:0] p;
+  // pg[l][si][bi]: prefix generate for share si, bit bi, after l prefix stages.
+  // pp[l][si][bi]: prefix propagate for share si, bit bi, after l prefix stages.
+  // pre_p[si][bi]: initial propagate (inp1^inp2), combinational stage-0 value.
+  // pre_p_q[l][si][bi]: pre_p delayed l pipeline cycles.
+  logic [Stages:0][NumShares-1:0][Width-1:0] pg;
+  logic [Stages:0][NumShares-1:0][Width-1:0] pp;
   logic [NumShares-1:0][Width-1:0] pre_p;
   logic [Stages:0][NumShares-1:0][Width-1:0] pre_p_q;
 
@@ -86,45 +86,51 @@ module otbn_sec_add
   assign en[0] = valid_i;
 
   always_comb begin
-    for (int i = 0; i <= Stages; i++) begin
-      update_en[i] = en[i] & ~stall_i;
+    for (int bi = 0; bi <= Stages; bi++) begin
+      update_en[bi] = en[bi] & ~stall_i;
     end
   end
 
   // Pre-computation stage.
   // pre_p = inp1 ^ inp2
-  for (genvar s = 0; s < NumShares; s++) begin : gen_pre_p
+  for (genvar si = 0; si < NumShares; si++) begin : gen_pre_p
     prim_xor2 #(
       .Width(Width)
     ) u_prim_xor2 (
-      .in0_i(inp1_i[s]),
-      .in1_i(inp2_i[s]),
-      .out_o(pre_p[s])
+      .in0_i(inp1_i[si]),
+      .in1_i(inp2_i[si]),
+      .out_o(pre_p[si])
     );
   end
 
-  // Align p[0] with g[0], which is delayed by one cycle.
-  assign p[0] = pre_p_q[0];
+  // Align pp[0] with pg[0], which is delayed by one cycle.
+  assign pp[0] = pre_p_q[0];
+  // pp[0][si][0] is structurally never consumed: group-0 feedthrough and active nodes
+  // suppress P without reading pp[level-1], so bit 0 of pp[0] is dead by construction.
+  logic unused_p0_s0;
+  logic unused_p0_s1;
+  assign unused_p0_s0 = pp[0][0][0];
+  assign unused_p0_s1 = pp[0][1][0];
 
-  // g[0] = inp1 & inp2
-  for (genvar i = 0; i < Width; i++) begin : gen_pre_g
+  // pg[0] = inp1 & inp2
+  for (genvar bi = 0; bi < Width; bi++) begin : gen_pre_g
     prim_hpc3 #(
       .EnW(1'b0)
     ) u_prim_hpc3_and_g (
       .clk_i,
       .rst_ni,
       .en_i(update_en[0]),
-      .x_i ({inp1_i[1][i], inp1_i[0][i]}),
-      .y_i ({inp2_i[1][i], inp2_i[0][i]}),
+      .x_i ({inp1_i[1][bi], inp1_i[0][bi]}),
+      .y_i ({inp2_i[1][bi], inp2_i[0][bi]}),
       .w_i ('0),
-      .r_i (rand_i[2*i]),
-      .rp_i(rand_i[2*i+1]),
-      .z_o ({g[0][1][i], g[0][0][i]})
+      .r_i (rand_i[2*bi]),
+      .rp_i(rand_i[2*bi+1]),
+      .z_o ({pg[0][1][bi], pg[0][0][bi]})
     );
 
 `ifdef INC_ASSERT
-    assign rand_coverage[2*i]   = 1'b1;
-    assign rand_coverage[2*i+1] = 1'b1;
+    assign rand_coverage[2*bi]   = 1'b1;
+    assign rand_coverage[2*bi+1] = 1'b1;
 `endif
   end
 
@@ -157,7 +163,7 @@ module otbn_sec_add
       localparam int GroupRandOffset = StageRandOffset + (gs == 0 ? 0 : 2*(gs - Step));
 
       // Feedthrough nodes: register G and P unchanged into the next level.
-      for (genvar i = gs; i < gs + Step; i++) begin : gen_feedthrough
+      for (genvar bi = gs; bi < gs + Step; bi++) begin : gen_feedthrough
         prim_flop_en #(
           .Width(NumShares),
           .ResetValue('0)
@@ -165,8 +171,8 @@ module otbn_sec_add
           .clk_i (clk_i),
           .rst_ni(rst_ni),
           .en_i  (update_en[level]),
-          .d_i   ({g[level-1][1][i], g[level-1][0][i]}),
-          .q_o   ({g[level][1][i],   g[level][0][i]})
+          .d_i   ({pg[level-1][1][bi], pg[level-1][0][bi]}),
+          .q_o   ({pg[level][1][bi],   pg[level][0][bi]})
         );
 
         // For group 0, P is never consumed as a Remote reference, so tie it to zero.
@@ -178,21 +184,21 @@ module otbn_sec_add
             .clk_i (clk_i),
             .rst_ni(rst_ni),
             .en_i  (update_en[level]),
-            .d_i   ({p[level-1][1][i], p[level-1][0][i]}),
-            .q_o   ({p[level][1][i],   p[level][0][i]})
+            .d_i   ({pp[level-1][1][bi], pp[level-1][0][bi]}),
+            .q_o   ({pp[level][1][bi],   pp[level][0][bi]})
           );
         end else begin : gen_no_reg_p
           logic unused_p;
-          assign p[level][0][i] = '0;
-          assign p[level][1][i] = '0;
-          assign unused_p = p[level][0][i] ^ p[level][1][i];
+          assign pp[level][0][bi] = '0;
+          assign pp[level][1][bi] = '0;
+          assign unused_p = pp[level][0][bi] ^ pp[level][1][bi];
         end
       end
 
       // Active nodes: compute updated G and optionally P.
-      for (genvar i = gs + Step; i < gs + 2 * Step; i++) begin : gen_gadgets
+      for (genvar bi = gs + Step; bi < gs + 2 * Step; bi++) begin : gen_gadgets
         // Absolute rand_i bit offset for this node's gadgets.
-        localparam int NodeRandOffset = GroupRandOffset + BitsPerNode * (i - gs - Step);
+        localparam int NodeRandOffset = GroupRandOffset + BitsPerNode * (bi - gs - Step);
 
         // 2-bit randomness register for the G gadget.
         // Loaded one cycle before the gadget fires.
@@ -208,19 +214,20 @@ module otbn_sec_add
           .q_o (rand_g_q)
         );
 
-        // Compute the prefix generate: G[level][i] = G[level-1][i] ^ (P[level-1][i] & G[level-1][Remote])
+        // Compute the prefix generate:
+        // G[level][bi] = G[level-1][bi] ^ (P[level-1][bi] & G[level-1][Remote])
         prim_hpc3 #(
           .EnW(1'b1)
         ) u_prim_hpc3o_g (
           .clk_i,
           .rst_ni,
           .en_i(update_en[level]),
-          .x_i ({g[level-1][1][Remote], g[level-1][0][Remote]}),
-          .y_i ({p[level-1][1][i],      p[level-1][0][i]}),
-          .w_i ({g[level-1][1][i],      g[level-1][0][i]}),
+          .x_i ({pg[level-1][1][Remote], pg[level-1][0][Remote]}),
+          .y_i ({pp[level-1][1][bi],      pp[level-1][0][bi]}),
+          .w_i ({pg[level-1][1][bi],      pg[level-1][0][bi]}),
           .r_i (rand_g_q[0]),
           .rp_i(rand_g_q[1]),
-          .z_o ({g[level][1][i], g[level][0][i]})
+          .z_o ({pg[level][1][bi], pg[level][0][bi]})
         );
 
 `ifdef INC_ASSERT
@@ -231,9 +238,9 @@ module otbn_sec_add
         // For group 0, P is never consumed as a Remote reference, so tie it to zero.
         if (gs == 0) begin : gen_no_gadget_p
           logic unused_p;
-          assign p[level][0][i] = '0;
-          assign p[level][1][i] = '0;
-          assign unused_p = p[level][0][i] ^ p[level][1][i];
+          assign pp[level][0][bi] = '0;
+          assign pp[level][1][bi] = '0;
+          assign unused_p = pp[level][0][bi] ^ pp[level][1][bi];
 
         end else begin : gen_gadget_p
           // 2-bit randomness register for the P gadget.
@@ -249,19 +256,19 @@ module otbn_sec_add
             .q_o (rand_p_q)
           );
 
-          // Compute the prefix propagate: P[level][i] = P[level-1][Remote] & P[level-1][i]
+          // Compute the prefix propagate: P[level][bi] = P[level-1][Remote] & P[level-1][bi]
           prim_hpc3 #(
             .EnW(1'b0)
           ) u_prim_hpc3_and_p (
             .clk_i,
             .rst_ni,
             .en_i(update_en[level]),
-            .x_i ({p[level-1][1][Remote], p[level-1][0][Remote]}),
-            .y_i ({p[level-1][1][i],      p[level-1][0][i]}),
+            .x_i ({pp[level-1][1][Remote], pp[level-1][0][Remote]}),
+            .y_i ({pp[level-1][1][bi],      pp[level-1][0][bi]}),
             .w_i ('0),
             .r_i (rand_p_q[0]),
             .rp_i(rand_p_q[1]),
-            .z_o ({p[level][1][i], p[level][0][i]})
+            .z_o ({pp[level][1][bi], pp[level][0][bi]})
           );
 
 `ifdef INC_ASSERT
@@ -312,21 +319,21 @@ module otbn_sec_add
     );
   end
 
-  // Final Sum Generation: result[i] = p_initial[i] ^ carry_in[i]
-  // carry_in[i] = g[Stages][i-1] (prefix generate for bits [0..i-1])
+  // Final Sum Generation: result[bi] = p_initial[bi] ^ carry_in[bi]
+  // carry_in[bi] = pg[Stages][bi-1] (prefix generate for bits [0..bi-1])
   // carry_in[0] = 0
-  for (genvar s = 0; s < NumShares; s++) begin : gen_sum_share
-    assign result_o[s][0] = pre_p_q[Stages][s][0];
-    for (genvar i = 1; i < Width; i++) begin : gen_sum_bit
+  for (genvar si = 0; si < NumShares; si++) begin : gen_sum_share
+    assign result_o[si][0] = pre_p_q[Stages][si][0];
+    for (genvar bi = 1; bi < Width; bi++) begin : gen_sum_bit
       prim_xor2 #(
         .Width(1)
       ) u_prim_xor2 (
-        .in0_i(pre_p_q[Stages][s][i]),
-        .in1_i(g[Stages][s][i-1]),
-        .out_o(result_o[s][i])
+        .in0_i(pre_p_q[Stages][si][bi]),
+        .in1_i(pg[Stages][si][bi-1]),
+        .out_o(result_o[si][bi])
       );
     end
-    assign result_o[s][Width] = g[Stages][s][Width-1];
+    assign result_o[si][Width] = pg[Stages][si][Width-1];
   end
 
   // Output valid signal only when there was no stall in the previous cycle.
