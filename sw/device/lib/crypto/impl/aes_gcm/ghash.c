@@ -330,12 +330,14 @@ static status_t ghash_process_block(ghash_context_t *ctx,
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
+    ibex_clear_rf();
     hardened_memcpy(ctx->state0.data, s0_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
     // Process share 1.
     // share1_tmp = tmp * H1
+    ibex_clear_rf();
     s1_tmp = galois_mul_state_key(tmp, ctx->tbl1);
 
     // Apply the correction terms for state share 1.
