@@ -15,7 +15,13 @@ case "$TARGET_TYPE" in
   hpc3)        export LR_SYNTH_TOP_MODULE=prim_hpc3_sca_wrapper ;;
   hpc3o)       export LR_SYNTH_TOP_MODULE=prim_hpc3o_sca_wrapper ;;
   sec_add)     export LR_SYNTH_TOP_MODULE=otbn_sec_add_sca_wrapper ;;
-  *)           export LR_SYNTH_TOP_MODULE=otbn_sec_add_sca_wrapper ;;
+  sec_add_mod) export LR_SYNTH_TOP_MODULE=otbn_sec_add_mod_sca_wrapper ;;
+  # Synthesize the DUT directly (no SCA wrapper); used for ProLEAD.
+  mask_accelerator_prolead)
+    export LR_SYNTH_TOP_MODULE=otbn_mask_accelerator
+    export LR_SYNTH_SCA_WRAPPER=""
+    ;;
+  *)           export LR_SYNTH_TOP_MODULE=otbn_mask_accelerator_sca_wrapper ;;
 esac
 
 # Setup cell library path.
