@@ -154,8 +154,10 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   return kErrorOwnershipNoOwner;
 #endif
 
+  boot_data_t *bd = (boot_data_t *)launder32((uintptr_t)bootdata);
+  owner_block_t *page0 = (owner_block_t *)launder32((uintptr_t)&owner_page[0]);
   owner_keydata_t owner = OWNER_KEYDATA;
-  ownership_state_t state = bootdata->ownership_state;
+  ownership_state_t state = bd->ownership_state;
 
   if (state == kOwnershipStateUnlockedSelf ||
       state == kOwnershipStateUnlockedAny ||
@@ -163,9 +165,9 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
     // Nothing to do when in an unlocked state.
     return kErrorOk;
   } else if (state == kOwnershipStateLockedOwner) {
-    if (hardened_memeq(owner.raw, owner_page[0].owner_key.raw,
-                       ARRAYSIZE(owner.raw)) != kHardenedBoolTrue ||
-        TEST_OWNER_CONFIG_VERSION <= owner_page[0].config_version) {
+    if (hardened_memeq(owner.raw, page0->owner_key.raw, ARRAYSIZE(owner.raw)) !=
+            kHardenedBoolTrue ||
+        TEST_OWNER_CONFIG_VERSION <= page0->config_version) {
       // Different owner or already newest config version; nothing to do.
       return kErrorOk;
     }
@@ -175,23 +177,22 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
     // into flash.
   }
 
-  owner_page[0].header.tag = kTlvTagOwner;
-  owner_page[0].header.length = 2048;
-  owner_page[0].header.version = (struct_version_t){0, 0};
-  owner_page[0].config_version = TEST_OWNER_CONFIG_VERSION;
-  owner_page[0].sram_exec_mode = TEST_OWNER_SRAM_EXEC_MODE;
-  owner_page[0].boot_svc_after_wakeup = TEST_OWNER_BOOT_SVC_AFTER_WAKEUP;
-  owner_page[0].ownership_key_alg = TEST_OWNER_KEY_ALG;
-  owner_page[0].update_mode = TEST_OWNER_UPDATE_MODE;
-  owner_page[0].min_security_version_bl0 = UINT32_MAX;
-  owner_page[0].lock_constraint = 0;
-  memset(owner_page[0].device_id, kLockConstraintNone,
-         sizeof(owner_page[0].device_id));
-  owner_page[0].owner_key = owner;
-  owner_page[0].activate_key = ACTIVATE_KEYDATA;
-  owner_page[0].unlock_key = UNLOCK_KEYDATA;
+  page0->header.tag = kTlvTagOwner;
+  page0->header.length = 2048;
+  page0->header.version = (struct_version_t){0, 0};
+  page0->config_version = TEST_OWNER_CONFIG_VERSION;
+  page0->sram_exec_mode = TEST_OWNER_SRAM_EXEC_MODE;
+  page0->boot_svc_after_wakeup = TEST_OWNER_BOOT_SVC_AFTER_WAKEUP;
+  page0->ownership_key_alg = TEST_OWNER_KEY_ALG;
+  page0->update_mode = TEST_OWNER_UPDATE_MODE;
+  page0->min_security_version_bl0 = UINT32_MAX;
+  page0->lock_constraint = 0;
+  memset(page0->device_id, kLockConstraintNone, sizeof(page0->device_id));
+  page0->owner_key = owner;
+  page0->activate_key = ACTIVATE_KEYDATA;
+  page0->unlock_key = UNLOCK_KEYDATA;
 
-  owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
+  owner_application_key_t *app = (owner_application_key_t *)page0->data;
   *app = (owner_application_key_t){
       .header =
           {
@@ -337,13 +338,12 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   end = (uintptr_t)isfb + isfb->header.length;
 #endif
   // Fill the remainder of the data segment with the end tag (0x5a5a5a5a).
-  size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -
-               (uintptr_t)end;
+  size_t len = (uintptr_t)(page0->data + sizeof(page0->data)) - (uintptr_t)end;
   memset((void *)end, 0x5a, len);
 
 #ifndef TEST_OWNER_DISABLE_OWNER_BLOCK_CHECK
   // Check that the owner_block will parse correctly.
-  RETURN_IF_ERROR(owner_block_parse(&owner_page[0],
+  RETURN_IF_ERROR(owner_block_parse(page0,
                                     /*check_only=*/kHardenedBoolTrue, NULL,
                                     NULL));
 #endif
@@ -351,7 +351,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 
   // Since this module should only get linked in to FPGA builds, we can simply
   // thunk the ownership state to LockedOwner.
-  bootdata->ownership_state = TEST_OWNERSHIP_STATE;
+  bd->ownership_state = TEST_OWNERSHIP_STATE;
 
   // Write the configuration to both owner page 0.  The next boot of the ROM_EXT
   // will make a redundant copyh in page 1.
@@ -359,12 +359,12 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
                                    kFlashCtrlEraseTypePage));
   OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,
                                    sizeof(owner_page[0]) / sizeof(uint32_t),
-                                   &owner_page[0]));
+                                   page0));
   owner_page_valid[0] = kOwnerPageStatusSealed;
 
-  OT_DISCARD(boot_data_write(bootdata));
+  OT_DISCARD(boot_data_write(bd));
   dbg_printf("sku_creator_owner_init: saved to flash\r\n");
-  return kErrorOk;
+  return launder32(kErrorOk);
 }
 
 #ifdef WITH_FALLBACK_OWNER
