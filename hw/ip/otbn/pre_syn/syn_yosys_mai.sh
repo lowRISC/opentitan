@@ -18,15 +18,15 @@ teelog () {
     tee "$LR_SYNTH_OUT_DIR/log/$1.log"
 }
 
-if [ ! -f syn_setup_sec_add.sh ]; then
-    error "No syn_setup_sec_add.sh file: see README.md for instructions"
+if [ ! -f syn_setup_mai.sh ]; then
+    error "No syn_setup_mai.sh file: see README.md for instructions"
 fi
 
 #-------------------------------------------------------------------------
 # setup flow variables
 #-------------------------------------------------------------------------
 export TARGET_TYPE="${1:-mask_accelerator}"
-source syn_setup_sec_add.sh
+source syn_setup_mai.sh
 
 #-------------------------------------------------------------------------
 # prepare output folders
@@ -44,8 +44,13 @@ ln -s "${LR_SYNTH_OUT_DIR#syn_out/}" syn_out/latest
 export LR_SYNTH_SRC_DIR="../../$LR_SYNTH_IP_NAME"
 
 # Get OpenTitan dependency sources.
+# If LR_SYNTH_SCA_WRAPPER is unset, default to LR_SYNTH_TOP_MODULE (the normal
+# case where the SCA wrapper is also the top module).  If set to "", no wrapper
+# file is added (e.g. mask_accelerator_prolead synthesizes the DUT directly).
+_sca_wrapper="${LR_SYNTH_SCA_WRAPPER-${LR_SYNTH_TOP_MODULE}}"
+
 OT_DEP_SOURCES=(
-    "$LR_SYNTH_SRC_DIR/pre_sca/rtl/${LR_SYNTH_TOP_MODULE}.sv"
+    ${_sca_wrapper:+"$LR_SYNTH_SRC_DIR/pre_sca/rtl/${_sca_wrapper}.sv"}
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_blanker.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_fifo_sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_fifo_sync_cnt.sv
@@ -73,6 +78,7 @@ OT_DEP_PACKAGES=(
     "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../keymgr/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../otp_ctrl/rtl/*_pkg.sv
+    "$LR_SYNTH_SRC_DIR"/../kmac/rtl/*_pkg.sv
 )
 
 # Convert OpenTitan dependency sources.
@@ -118,7 +124,7 @@ done
 #-------------------------------------------------------------------------
 # run Yosys synthesis
 #-------------------------------------------------------------------------
-yosys -c ./tcl/yosys_run_synth_sec_add.tcl |& teelog syn || {
+yosys -c ./tcl/yosys_run_synth_mai.tcl |& teelog syn || {
     error "Failed to synthesize RTL with Yosys"
 }
 
