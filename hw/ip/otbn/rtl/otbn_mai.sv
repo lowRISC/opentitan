@@ -82,15 +82,6 @@ module otbn_mai
     logic          busy;
   } ispr_mai_status_t;
 
-  localparam int unsigned MaiEccWidth = BaseIntgWidth - 32'd32;
-
-  typedef struct packed {
-    logic [MaiEccWidth-1:0] intg;
-    logic [31:0]            word;
-  } otbn_base_intg_word_t;
-
-  typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] ispr_mai_t;
-
   typedef struct packed {
     logic out_cnt;
     logic in_cnt;
@@ -117,13 +108,6 @@ module otbn_mai
 
   typedef logic [MaiCntWidth-1:0] mai_cnt_t;
 
-  localparam int unsigned MaiIsprRndRsvdWidth = UrndLen - ExtWLEN;
-
-  typedef struct packed {
-    logic [MaiIsprRndRsvdWidth-1:0] rsvd;
-    logic [ExtWLEN-1:0]             urnd;
-  } mai_ispr_urnd_t;
-
   typedef struct packed {
     logic [MaiCntWidth-1:0] cnt;
     logic [31:0]            mask_1;
@@ -137,9 +121,9 @@ module otbn_mai
   /////////////
 
   // PRNG input
-  mai_ispr_urnd_t mai_ispr_urnd;
-  mai_ma_urnd_t   mai_ma_urnd;
-  logic           unused_urnd;
+  otbn_ispr_urnd_t mai_ispr_urnd;
+  mai_ma_urnd_t    mai_ma_urnd;
+  logic            unused_urnd;
 
   // Error signals
   mai_reg_intg_violation_err_t mai_reg_intg_violation_err;
@@ -147,17 +131,17 @@ module otbn_mai
   mai_state_err_t              mai_state_err;
 
   // Masking accelerator signals
-  logic        ma_in_valid_q;
-  logic        ma_in_ready;
-  logic        ma_in_consume;
-  logic        ma_out_ready;
-  logic        ma_busy_q;
-  logic [31:0] ma_in0[32'd2];
-  logic [31:0] ma_in1[32'd2];
-  logic [31:0] ma_remask_rand[32'd2];
-  logic [31:0] ma_result[32'd2];
-  ispr_mai_t   ma_mod;
-  logic [31:0] ma_mod_lsw;
+  logic                 ma_in_valid_q;
+  logic                 ma_in_ready;
+  logic                 ma_in_consume;
+  logic                 ma_out_ready;
+  logic                 ma_busy_q;
+  logic [31:0]          ma_in0[32'd2];
+  logic [31:0]          ma_in1[32'd2];
+  logic [31:0]          ma_remask_rand[32'd2];
+  logic [31:0]          ma_result[32'd2];
+  otbn_wide_intg_word_t ma_mod;
+  logic [31:0]          ma_mod_lsw;
 
   // Counter load values
   mai_cnt_t cnt_load_val;
@@ -199,12 +183,12 @@ module otbn_mai
   ispr_mai_sw_err_t ispr_mai_sw_err;
 
   // WSRs
-  ispr_mai_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
-  ispr_mai_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
-  ispr_mai_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
-  ispr_mai_t ispr_mai_in1_s1_d, ispr_mai_in1_s1_q;
-  ispr_mai_t ispr_mai_res_s0_d, ispr_mai_res_s0_q;
-  ispr_mai_t ispr_mai_res_s1_d, ispr_mai_res_s1_q;
+  otbn_wide_intg_word_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
+  otbn_wide_intg_word_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
+  otbn_wide_intg_word_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
+  otbn_wide_intg_word_t ispr_mai_in1_s1_d, ispr_mai_in1_s1_q;
+  otbn_wide_intg_word_t ispr_mai_res_s0_d, ispr_mai_res_s0_q;
+  otbn_wide_intg_word_t ispr_mai_res_s1_d, ispr_mai_res_s1_q;
 
 
   ////////////
