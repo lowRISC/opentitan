@@ -142,7 +142,11 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     assert_eq!(dice.model.get_value(), "ROM_EXT");
     assert_eq!(dice.vendor.get_value(), "OpenTitan");
     assert_eq!(dice.layer.get_value(), &BigUint::from(1u8));
-    let fw_ids = dice.fw_ids.as_ref().expect("list of fw_ids");
+    let fw_ids = dice
+        .fw_ids
+        .as_ref()
+        .and_then(|ids| ids.as_type())
+        .expect("list of fw_ids");
     assert_eq!(fw_ids.len(), 1);
     assert_eq!(fw_ids[0].digest.get_value(), &measurements[0].as_ref());
 
@@ -165,7 +169,11 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     assert_eq!(dice.model.get_value(), "Owner");
     assert_eq!(dice.vendor.get_value(), "OpenTitan");
     assert_eq!(dice.layer.get_value(), &BigUint::from(2u8));
-    let fw_ids = dice.fw_ids.as_ref().expect("list of fw_ids");
+    let fw_ids = dice
+        .fw_ids
+        .as_ref()
+        .and_then(|ids| ids.as_type())
+        .expect("list of fw_ids");
     assert_eq!(fw_ids.len(), 3);
     assert_eq!(fw_ids[0].digest.get_value(), &measurements[1].as_ref());
     assert_eq!(fw_ids[1].digest.get_value(), &owner_measurements[0]);

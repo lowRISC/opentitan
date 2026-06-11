@@ -7,7 +7,7 @@ use indexmap::IndexSet;
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, DiceTcbInfoExtension, DiceTcbInfoFlags,
     EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage, MldsaPublicKeyInfo, Name,
-    Signature, SubjectPublicKeyInfo, Value, Variable,
+    RawOr, Signature, SubjectPublicKeyInfo, Value, Variable,
 };
 
 pub trait ListVariables {
@@ -136,12 +136,27 @@ impl ListVariables for DiceTcbInfoExtension {
             val.list_variables(names);
         }
         if let Some(ids) = &self.fw_ids {
-            for id in ids {
-                id.list_variables(names);
-            }
+            ids.list_variables(names);
         }
         if let Some(val) = &self.flags {
             val.list_variables(names);
+        }
+    }
+}
+
+impl<T: ListVariables> ListVariables for RawOr<T> {
+    fn list_variables(&self, names: &mut IndexSet<String>) {
+        match self {
+            Self::Type(val) => val.list_variables(names),
+            Self::Raw(val) => val.list_variables(names),
+        }
+    }
+}
+
+impl<T: ListVariables> ListVariables for Vec<T> {
+    fn list_variables(&self, names: &mut IndexSet<String>) {
+        for item in self {
+            item.list_variables(names);
         }
     }
 }

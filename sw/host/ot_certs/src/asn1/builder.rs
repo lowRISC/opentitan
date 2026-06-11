@@ -10,7 +10,7 @@ use anyhow::{Result, ensure};
 use num_bigint_dig::BigUint;
 
 use crate::asn1::{Oid, Tag};
-use crate::template::Value;
+use crate::template::{RawOr, Value};
 
 /// Helper function to add a suffix to a name hint.
 pub fn concat_suffix(name_hint: &Option<String>, suffix: &str) -> Option<String> {
@@ -131,4 +131,16 @@ pub trait Builder {
         tag: &Tag,
         bits: &[Value<bool>],
     ) -> Result<()>;
+
+    /// Push a `RawOr` value. If it is `Raw`, it will push the raw bytes. If it is `Type`, it will call the closure.
+    fn push_raw_or<T, F>(&mut self, name_hint: Option<String>, val: &RawOr<T>, cb: F) -> Result<()>
+    where
+        Self: Sized,
+        F: FnOnce(&mut Self, &T) -> Result<()>,
+    {
+        match val {
+            RawOr::Type(t) => cb(self, t),
+            RawOr::Raw(raw) => self.push_byte_array(name_hint, raw),
+        }
+    }
 }
