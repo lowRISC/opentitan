@@ -98,6 +98,7 @@ class SpikeCosim : public simif_t, public Cosim {
   void misaligned_pmp_fixup();
 
   unsigned int insn_cnt;
+  uint32_t mhpm_counter_num;
 
  public:
   SpikeCosim(const std::string &isa_string, uint32_t start_pc,

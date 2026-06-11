@@ -1076,9 +1076,15 @@ module ibex_id_stage #(
   end
 
   // Signal which instructions to count as retired in minstret, all traps along with ebrk and
-  // ecall instructions are not counted.
+  // ecall instructions are not counted. Writes to minstret/minstreth themselves are also excluded
+  // to avoid incrementing right after a write.
+  logic minstret_write;
+  assign minstret_write = csr_access_o &
+      (csr_op_o inside {CSR_OP_WRITE, CSR_OP_SET, CSR_OP_CLEAR}) &
+      (csr_addr_o inside {CSR_MINSTRET, CSR_MINSTRETH});
+
   assign instr_perf_count_id_o = ~ebrk_insn & ~ecall_insn_dec & ~illegal_insn_dec &
-      ~illegal_csr_insn_i & ~instr_fetch_err_i;
+      ~illegal_csr_insn_i & ~instr_fetch_err_i & ~minstret_write;
 
   // An instruction is ready to move to the writeback stage (or retire if there is no writeback
   // stage)

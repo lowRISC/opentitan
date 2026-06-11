@@ -39,7 +39,10 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
                        uint32_t pmp_num_regions, uint32_t pmp_granularity,
                        uint32_t mhpm_counter_num, uint32_t dm_start_addr,
                        uint32_t dm_end_addr)
-    : nmi_mode(false), pending_iside_error(false), insn_cnt(0) {
+    : nmi_mode(false),
+      pending_iside_error(false),
+      insn_cnt(0),
+      mhpm_counter_num(mhpm_counter_num) {
   FILE *log_file = nullptr;
   if (trace_log_path.length() != 0) {
     log = std::make_unique<log_file_t>(trace_log_path.c_str());
@@ -828,6 +831,19 @@ void SpikeCosim::fixup_csr(int csr_num, uint32_t csr_val) {
     case CSR_MISA: {
       // For Ibex, misa is hardwired
       reg_t new_val = 0x40901104;
+#ifdef OLD_SPIKE
+      processor->set_csr(csr_num, new_val);
+#else
+      processor->put_csr(csr_num, new_val);
+#endif
+      break;
+    }
+    case CSR_MCOUNTEREN: {
+      // Bits 3..3+mhpm_counter_num-1 correspond to implemented HPM counters
+      reg_t hpm_mask = ((1 << mhpm_counter_num) - 1) << 3;
+      // Bit 0 and 2 are for mcycle and minstret which are always implemented
+      // Bit 1 is for time which is not implemented, hence the mask 0x5
+      reg_t new_val = csr_val & (0x5 | hpm_mask);
 #ifdef OLD_SPIKE
       processor->set_csr(csr_num, new_val);
 #else

@@ -155,7 +155,7 @@ module ibex_wb_stage #(
     // Speculative versions of the signals do not factor in exceptions and whether the instruction
     // is done yet. These are used to get correct values for instructions reading the relevant
     // performance counters in the ID stage.
-    assign perf_instr_ret_wb_spec_o            = wb_count_q;
+    assign perf_instr_ret_wb_spec_o            = wb_count_q & wb_valid_q;
     assign perf_instr_ret_compressed_wb_spec_o = perf_instr_ret_wb_spec_o & wb_compressed_q;
     assign perf_instr_ret_wb_o                 = instr_done_wb_o & wb_count_q &
                                                  ~(lsu_resp_valid_i & lsu_resp_err_i);

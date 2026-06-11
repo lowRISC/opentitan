@@ -168,6 +168,7 @@ module ibex_core import ibex_pkg::*; #(
   // CPU Control Signals
   // SEC_CM: FETCH.CTRL.LC_GATED
   input  ibex_mubi_t                   fetch_enable_i,
+  input  ibex_mubi_t                   mcounteren_writable_i,
   output logic                         alert_minor_o,
   output logic                         alert_major_internal_o,
   output logic                         alert_major_bus_o,
@@ -1135,6 +1136,7 @@ module ibex_core import ibex_pkg::*; #(
     .icache_enable_o      (icache_enable),
     .csr_shadow_err_o     (csr_shadow_err),
     .ic_scr_key_valid_i   (ic_scr_key_valid_i),
+    .mcounteren_writable_i(mcounteren_writable_i),
 
     .csr_save_if_i     (csr_save_if),
     .csr_save_id_i     (csr_save_id),

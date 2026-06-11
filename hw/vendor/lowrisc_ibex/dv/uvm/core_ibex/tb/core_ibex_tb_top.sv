@@ -169,6 +169,7 @@ module core_ibex_tb_top;
     .double_fault_seen_o       (dut_if.double_fault_seen   ),
 
     .fetch_enable_i            (dut_if.fetch_enable        ),
+    .mcounteren_writable_i     (dut_if.mcounteren_writable ),
     .alert_minor_o             (dut_if.alert_minor         ),
     .alert_major_internal_o    (dut_if.alert_major_internal),
     .alert_major_bus_o         (dut_if.alert_major_bus     ),

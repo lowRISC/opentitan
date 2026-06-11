@@ -103,6 +103,7 @@ module top import ibex_pkg::*; #(
 
   // CPU Control Signals
   input  ibex_mubi_t                                                   fetch_enable_i,
+  input  ibex_mubi_t                                                   mcounteren_writable_i,
   output logic                                                         core_sleep_o,
   output logic                                                         alert_minor_o,
   output logic                                                         alert_major_internal_o,
@@ -162,7 +163,9 @@ NotDebug: assume property (!ibex_top_i.u_ibex_core.debug_mode & !debug_req_i);
 ConstantBoot: assume property (boot_addr_i == $past(boot_addr_i));
 // 3. Always fetch enable
 FetchEnable: assume property (fetch_enable_i == IbexMuBiOn);
-// 4. Never try to sleep if we couldn't ever wake up
+// 4. Always have mcounteren writable
+McounterenWritable: assume property (mcounteren_writable_i == IbexMuBiOn);
+// 5. Never try to sleep if we couldn't ever wake up
 WFIStart: assume property (`IDC.ctrl_fsm_cs == SLEEP |-> (
                                                           `CSR.mie_q.irq_software |
                                                           `CSR.mie_q.irq_timer |
@@ -441,17 +444,24 @@ logic ex_is_checkable_csr;
 assign ex_is_checkable_csr = ~(
   ((CSR_MHPMCOUNTER3H <= `CSR_ADDR) && (`CSR_ADDR <= CSR_MHPMCOUNTER31H)) |
   ((CSR_MHPMCOUNTER3 <= `CSR_ADDR) && (`CSR_ADDR <= CSR_MHPMCOUNTER31)) |
+  ((CSR_HPMCOUNTER3H <= `CSR_ADDR) && (`CSR_ADDR <= CSR_HPMCOUNTER31H)) |
+  ((CSR_HPMCOUNTER3 <= `CSR_ADDR) && (`CSR_ADDR <= CSR_HPMCOUNTER31)) |
   ((CSR_MHPMEVENT3 <= `CSR_ADDR) && (`CSR_ADDR <= CSR_MHPMEVENT31)) |
   (`CSR_ADDR == CSR_CPUCTRLSTS) | (`CSR_ADDR == CSR_SECURESEED) |
   (`CSR_ADDR == CSR_MIE) |
   (`CSR_ADDR == CSR_MCYCLE) | (`CSR_ADDR == CSR_MCYCLEH) |
+  (`CSR_ADDR == CSR_CYCLE) | (`CSR_ADDR == CSR_CYCLEH) |
 
   // TODO:
   (`CSR_ADDR == CSR_MINSTRET) | (`CSR_ADDR == CSR_MINSTRETH) |
+  (`CSR_ADDR == CSR_INSTRET) | (`CSR_ADDR == CSR_INSTRETH) |
   (`CSR_ADDR == CSR_MCOUNTINHIBIT)
 );
 
 `undef INSTR
+
+// Force mcounteren to always be zero to match the current Sail model.
+McounterenStubbedZero: assume property (`CSR.mcounteren_q == 32'h0);
 
 ////////////////////// Decompression Invariant Defs //////////////////////
 // These will be used to show that the decompressed instruction stored is in fact the decompressed version of the compressed instruction.

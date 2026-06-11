@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check the return code of run.py in order to give a pass/fail indication to Metrics
 echo "run.py return code:" $1

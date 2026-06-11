@@ -18,7 +18,10 @@ fi
 export LR_SYNTH_TIMING_RUN=1
 export LR_SYNTH_FLATTEN=1
 
-# SETUP CELL LIBRARY PATH
-# Uncomment the lines below and set the path to an appropriate .lib file
+# When using `nix develop .#syn_shell`, the following are set automatically by
+# the shell hook (via nix/syn.nix):
+#   LR_SYNTH_CELL_LIBRARY_PATH  (path to NangateOpenCellLibrary_typical.lib)
+#   LR_SYNTH_CELL_LIBRARY_NAME  (nangate)
+# For non-Nix environments, uncomment and set these manually:
 # export LR_SYNTH_CELL_LIBRARY_PATH=/path/to/NangateOpenCellLibrary_typical.lib
 # export LR_SYNTH_CELL_LIBRARY_NAME=nangate
