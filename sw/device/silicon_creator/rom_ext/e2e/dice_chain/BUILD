@@ -59,33 +59,6 @@ package(default_visibility = ["//visibility:public"])
     for variation_name, variation in ROM_EXT_VARIATIONS.items()
 ]
 
-manifest({
-    "name": "owner_manifest",
-    "identifier": hex(CONST.OWNER),
-    "visibility": ["//visibility:private"],
-})
-
-opentitan_binary(
-    name = "print_certs_for_assemble",
-    testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
-    },
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    manifest = ":owner_manifest",
-    deps = [
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-    ],
-)
-
 _VARIATION_INTEROP_TEST_CASES = [
     {
         "first": "x509",
@@ -103,7 +76,7 @@ _VARIATION_INTEROP_TEST_CASES = [
         testonly = True,
         bins = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_dice_{}_slot_a".format(name): SLOTS["a"],
-            ":print_certs_for_assemble": OWNER_SLOTS["a"],
+            "//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs": OWNER_SLOTS["a"],
         },
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",

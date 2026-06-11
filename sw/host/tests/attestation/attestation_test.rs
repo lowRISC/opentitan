@@ -19,9 +19,10 @@ use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::file::FromReader;
 
 use ot_certs::template::{
-    AttributeType, CertificateExtension, Name, Selectable, SubjectPublicKeyInfo, Value,
+    AttributeType, Certificate, CertificateExtension, Name, Selectable, SubjectPublicKeyInfo, Value,
 };
 use ot_certs::x509;
+use runfiles::{Runfiles, rlocation};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -31,6 +32,10 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
+
+    /// Enable verification of ML-DSA certificates.
+    #[arg(long)]
+    test_mldsa: bool,
 }
 
 // A helper trait for extracting data out of the `Value` type.
@@ -55,6 +60,24 @@ impl<T: std::fmt::Debug> GetValue<T> for Option<Value<T>> {
             Some(Value::Literal(x)) => x,
         }
     }
+}
+
+fn find_openssl_bin() -> Result<std::path::PathBuf> {
+    let r = Runfiles::create()?;
+    if let Some(path) = rlocation!(r, "openssl/openssl") {
+        if path.exists() {
+            return Ok(path);
+        }
+    }
+    anyhow::bail!("Could not find @openssl//:openssl binary in runfiles");
+}
+
+fn get_base64_str(haystack: &str, rx: &str) -> Result<String> {
+    let rx = Regex::new(rx)?;
+    let captured = rx
+        .captures(haystack)
+        .ok_or(anyhow!("Base64 blob not found"))?;
+    Ok(captured[1].trim().to_string())
 }
 
 fn get_base64_blob(haystack: &str, rx: &str) -> Result<Vec<u8>> {
@@ -127,6 +150,9 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     let cdi0 = x509::parse_certificate(&cdi0_bin)?;
     let cdi1 = x509::parse_certificate(&cdi1_bin)?;
 
+    if opts.test_mldsa {
+        verify_mldsa_certs(&capture[0], &cdi0, &cdi1)?;
+    }
     // TODO: verify signature chain from CDI_1 to CDI_0 to UDS.
 
     let image = Image::read_from_file(opts.init.bootstrap.bootstrap.as_deref().unwrap())?;
@@ -190,6 +216,108 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     assert_eq!(fw_ids[0].digest.get_value(), &measurements[1].as_ref());
     assert_eq!(fw_ids[1].digest.get_value(), &owner_measurements[0]);
     assert_eq!(fw_ids[2].digest.get_value(), &owner_history);
+    Ok(())
+}
+
+fn compare_certs_except_keys(cert1: &Certificate, cert2: &Certificate) -> Result<()> {
+    if cert1.not_before != cert2.not_before {
+        return Err(anyhow!(
+            "not_before mismatch: {:?} vs {:?}",
+            cert1.not_before,
+            cert2.not_before
+        ));
+    }
+    if cert1.not_after != cert2.not_after {
+        return Err(anyhow!(
+            "not_after mismatch: {:?} vs {:?}",
+            cert1.not_after,
+            cert2.not_after
+        ));
+    }
+    if cert1.basic_constraints != cert2.basic_constraints {
+        return Err(anyhow!(
+            "basic_constraints mismatch: {:?} vs {:?}",
+            cert1.basic_constraints,
+            cert2.basic_constraints
+        ));
+    }
+    if cert1.key_usage != cert2.key_usage {
+        return Err(anyhow!(
+            "key_usage mismatch: {:?} vs {:?}",
+            cert1.key_usage,
+            cert2.key_usage
+        ));
+    }
+    if cert1.private_extensions != cert2.private_extensions {
+        return Err(anyhow!(
+            "private_extensions mismatch: {:?} vs {:?}",
+            cert1.private_extensions,
+            cert2.private_extensions
+        ));
+    }
+    Ok(())
+}
+
+/// Verify ML-DSA certificates if requested and structurally compare them to ECDSA certs.
+fn verify_mldsa_certs(
+    console_output: &str,
+    cdi0_ecdsa: &Certificate,
+    cdi1_ecdsa: &Certificate,
+) -> Result<()> {
+    log::info!("ML-DSA verification requested. Performing verification...");
+    let cdi0_mldsa_bin = get_base64_blob(console_output, r"(?msR)CDI_0_MLDSA: (.*?)$")?;
+    let cdi1_mldsa_bin = get_base64_blob(console_output, r"(?msR)CDI_1_MLDSA: (.*?)$")?;
+
+    let cdi0_mldsa = x509::parse_certificate(&cdi0_mldsa_bin)?;
+    let cdi1_mldsa = x509::parse_certificate(&cdi1_mldsa_bin)?;
+
+    let openssl_bin = find_openssl_bin()?;
+    let cdi0_mldsa_b64 = get_base64_str(console_output, r"(?msR)CDI_0_MLDSA: (.*?)$")?;
+    let cdi1_mldsa_b64 = get_base64_str(console_output, r"(?msR)CDI_1_MLDSA: (.*?)$")?;
+
+    let cdi0_pem = format!(
+        "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----\n",
+        cdi0_mldsa_b64
+    );
+    let cdi1_pem = format!(
+        "-----BEGIN CERTIFICATE-----\n{}\n-----END CERTIFICATE-----\n",
+        cdi1_mldsa_b64
+    );
+
+    std::fs::write("cdi0_mldsa.pem", &cdi0_pem)?;
+    std::fs::write("cdi1_mldsa.pem", &cdi1_pem)?;
+
+    log::info!("Verifying ML-DSA chain with OpenSSL...");
+    let output = std::process::Command::new(openssl_bin)
+        .args([
+            "verify",
+            "-partial_chain",
+            "-ignore_critical",
+            "-CAfile",
+            "cdi0_mldsa.pem",
+            "cdi1_mldsa.pem",
+        ])
+        .output()?;
+
+    let _ = std::fs::remove_file("cdi0_mldsa.pem");
+    let _ = std::fs::remove_file("cdi1_mldsa.pem");
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        return Err(anyhow!(
+            "OpenSSL ML-DSA verification failed!\nStdout: {}\nStderr: {}",
+            stdout,
+            stderr
+        ));
+    }
+    log::info!("OpenSSL ML-DSA verification successful!");
+
+    log::info!("Comparing ML-DSA and ECDSA certificates for structural equivalence...");
+    compare_certs_except_keys(cdi0_ecdsa, &cdi0_mldsa)?;
+    compare_certs_except_keys(cdi1_ecdsa, &cdi1_mldsa)?;
+    log::info!("Structural equivalence verification successful!");
+
     Ok(())
 }
 

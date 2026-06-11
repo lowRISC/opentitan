@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "attestation_test",
     srcs = ["attestation_test.rs"],
+    data = ["@openssl"],
     edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
@@ -22,5 +23,6 @@ rust_binary(
         "@crate_index//:num-bigint-dig",
         "@crate_index//:regex",
         "@crate_index//:serde_json",
+        "@rules_rust//rust/runfiles",
     ],
 )

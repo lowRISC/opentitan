@@ -9,55 +9,90 @@ load(
     "opentitan_test",
     "qemu_params",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
-opentitan_binary(
-    name = "print_certs",
-    testonly = True,
-    srcs = ["print_certs.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+VARIANTS = {
+    "print_certs": {
+        "test_cmd": """
+            --bootstrap={firmware}
+        """,
+        "variation": "dice_x509",
     },
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-    deps = [
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-    ],
-)
+    "print_mldsa_certs": {
+        "test_cmd": """
+            --bootstrap={firmware}
+            --timeout=60s
+            --test-mldsa
+        """,
+        "variation": "dice_mldsa",
+    },
+}
 
-opentitan_test(
-    name = "print_certs_test",
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
-    },
-    fpga = fpga_params(
-        binaries = {
-            ":print_certs": "firmware",
+[
+    opentitan_binary(
+        name = name,
+        testonly = True,
+        srcs = ["print_certs.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
-        test_harness = "//sw/host/tests/attestation:attestation_test",
-        testopt_bootstrap = "False",
-    ),
-    qemu = qemu_params(
-        binaries = {
-            ":print_certs": "firmware",
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        slot_spec = ROM_EXT_VARIATIONS[info["variation"]].slot_spec,
+        deps = [
+            "//sw/device/lib/base:crc32",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/runtime:print",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/base:static_dice_cdi_0",
+            "//sw/device/silicon_creator/lib/base:static_dice_mldsa_cdi",
+            "//sw/device/silicon_creator/lib/base:static_dice_sections",
+            "//sw/device/silicon_creator/lib/cert:dice_storage",
+            "//sw/device/silicon_creator/lib/cert:ram_msg",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
+            "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        ],
+    )
+    for name, info in VARIANTS.items()
+]
+
+[
+    opentitan_test(
+        name = "{}_test".format(name),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
-        test_harness = "//sw/host/tests/attestation:attestation_test",
-    ),
-)
+        fpga = fpga_params(
+            binaries = {
+                ":{}".format(name): "firmware",
+            },
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(info["variation"]),
+            test_cmd = info["test_cmd"],
+            test_harness = "//sw/host/tests/attestation:attestation_test",
+            testopt_bootstrap = "False",
+        ),
+        qemu = qemu_params(
+            binaries = {
+                ":{}".format(name): "firmware",
+            },
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(info["variation"]),
+            test_cmd = info["test_cmd"],
+            test_harness = "//sw/host/tests/attestation:attestation_test",
+        ),
+        slot_spec = ROM_EXT_VARIATIONS[info["variation"]].slot_spec,
+    )
+    for name, info in VARIANTS.items()
+]
