@@ -15,6 +15,7 @@ load(
     "SLOTS",
     "secver_write_selection",
 )
+load("//rules:ownership.bzl", "bin2c", "owner_block_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -197,11 +198,30 @@ offline_signature_attach(
     tags = ["manual"],
 )
 
+owner_block_binary(
+    name = "sival_owner_config_bin",
+    src = "sival_owner.json5",
+    keys = [
+        "//sw/device/silicon_creator/rom_ext/sival/keys:sv00-ownership-owner-0.pub.der",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:sv00-ownership-activate-0.pub.der",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:sv00-ownership-unlock-0.pub.der",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:sv00-app-key-prod-0.pub.der",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:sv00-app-key-dev-0.pub.der",
+        "//sw/device/silicon_creator/rom_ext/sival/keys:sv00-app-key-test-0.pub.der",
+    ],
+)
+
+bin2c(
+    name = "sival_owner_config",
+    src = ":sival_owner_config_bin",
+    var_name = "sival_owner",
+)
+
 cc_library(
     name = "sival_owner",
     srcs = [
         "sival_owner.c",
-        "sival_owner.h",
+        ":sival_owner_config",
     ],
     deps = [
         "//sw/device/silicon_creator/lib:boot_data",
