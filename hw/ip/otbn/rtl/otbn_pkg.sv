@@ -18,9 +18,6 @@ package otbn_pkg;
   parameter int ExtHWLEN = HWLEN * 39 / 32;
   parameter int ExtQWLEN = QWLEN * 39 / 32;
 
-  // Output width of OTBN's Bivium URND
-  parameter int UrndLen = 389;
-
   // Width of base (32b) data path with added integrity bits
   parameter int BaseIntgWidth = 39;
 
@@ -46,9 +43,6 @@ package otbn_pkg;
 
   // Number of Wide Data Registers (WDRs)
   parameter int NWdr = 2 ** WdrAw;
-
-  // Number of shares used inside the mask accelerator
-  parameter int NumShares = 2;
 
   // Width of entropy input
   parameter int EdnDataWidth = 256;
@@ -85,14 +79,6 @@ package otbn_pkg;
 
   // A wide register (WDR or WSR) split into base words with integrity and data each.
   typedef otbn_base_intg_word_t [BaseWordsPerWLEN-1:0] otbn_wide_intg_word_t;
-
-  // A type to select bits from URND to secure wipe a full WSR.
-  localparam int unsigned IsprRndRsvdWidth = UrndLen - ExtWLEN;
-
-  typedef struct packed {
-    logic [IsprRndRsvdWidth-1:0] rsvd;
-    logic [ExtWLEN-1:0]          urnd;
-  } otbn_ispr_urnd_t;
 
   // Toplevel constants ============================================================================
 
@@ -889,7 +875,46 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
     BoolToArith = 5'b10000
   } mask_op_e;
 
+  // Number of shares used inside the mask accelerator
+  parameter int unsigned NumShares = 2;
+
+  // Bit width of the secure adder pipeline (otbn_sec_add / otbn_sec_add_mod)
+  parameter int unsigned SecAddWidth = 32;
+
+  // Convenience types for mask-accelerator element and share-pair values.
+  typedef logic [SecAddWidth-1:0]  ma_ele_t;
+  typedef ma_ele_t [NumShares-1:0] ma_sharing_t;
+
+  // Batch size of the modular secure adder pipeline (otbn_sec_add_mod)
+  parameter int unsigned SecAddVecSize = 8;
+
+  // Randomness input width for an otbn_sec_add instance of a given bit width.
+  // Derived from the HPC3 gadget count across the pre-compute stage and the log2(width)
+  // prefix-tree stages. Only valid for power-of-two widths.
+  function automatic int unsigned SecAddRandWidth(int unsigned width);
+    return 32'd2 * ($clog2(width) * width + 32'd1);
+  endfunction
+
   // Width of randomness required by the mask accelerator
-  localparam int unsigned MaRndLen = 32'd322;
+  localparam int unsigned MaRndLen = SecAddRandWidth(SecAddWidth);
+
+  // Output width of OTBN's Bivium URND.
+  //
+  // The MAI pipeline (mai_ma_urnd_t in otbn_mai.sv) sets the minimum required width. The 322-bit
+  // otbn_sec_add randomness is consumed fresh every cycle while otbn_sec_add is running. The two
+  // remasking words are consumed fresh every input cycle of a batch. The batch-counter start value
+  // is consumed once per batch.
+  localparam int unsigned UrndLen =
+      SecAddRandWidth(SecAddWidth)  // 322: consumed every cycle while otbn_sec_add runs
+      + 2 * int'(SecAddWidth)       //  64: two remasking words, consumed every input cycle
+      + $clog2(BaseWordsPerWLEN);   //   3: randomised batch-counter start value
+
+  // A type to select bits from URND to secure wipe a full WSR.
+  localparam int unsigned IsprRndRsvdWidth = UrndLen - ExtWLEN;
+
+  typedef struct packed {
+    logic [IsprRndRsvdWidth-1:0] rsvd;
+    logic [ExtWLEN-1:0]          urnd;
+  } otbn_ispr_urnd_t;
 
 endpackage

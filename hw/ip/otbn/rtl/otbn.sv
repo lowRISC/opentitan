@@ -1516,6 +1516,23 @@ module otbn
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    MaiMaskFifoWptrCheck_A,
+    u_otbn_core.gen_mai.u_otbn_mai.u_otbn_mask_accelerator.u_prim_fifo_sync_mask
+      .gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    MaiMaskFifoRptrCheck_A,
+    u_otbn_core.gen_mai.u_otbn_mai.u_otbn_mask_accelerator.u_prim_fifo_sync_mask
+      .gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnMaiMaskCntAlertCheck_A,
+    u_otbn_core.gen_mai.u_otbn_mai.u_otbn_mask_accelerator.u_otbn_sec_add_mod.u_prim_count_add_inp,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnMaiInputCntAlertCheck_A,
     u_otbn_core.gen_mai.u_otbn_mai.u_prim_count_input_word_select,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i

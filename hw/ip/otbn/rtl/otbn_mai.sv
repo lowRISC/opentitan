@@ -136,12 +136,12 @@ module otbn_mai
   logic                 ma_in_consume;
   logic                 ma_out_ready;
   logic                 ma_busy_q;
-  logic [31:0]          ma_in0[32'd2];
-  logic [31:0]          ma_in1[32'd2];
-  logic [31:0]          ma_remask_rand[32'd2];
-  logic [31:0]          ma_result[32'd2];
+  ma_sharing_t          ma_in0;
+  ma_sharing_t          ma_in1;
+  ma_sharing_t          ma_remask_rand;
+  ma_sharing_t          ma_result;
   otbn_wide_intg_word_t ma_mod;
-  logic [31:0]          ma_mod_lsw;
+  ma_ele_t              ma_mod_lsw;
 
   // Counter load values
   mai_cnt_t cnt_load_val;
@@ -194,8 +194,13 @@ module otbn_mai
   ////////////
   // Random //
   ////////////
-  assign mai_ispr_urnd = urnd_data_i;
+  // The fields of mai_ma_urnd feed the mask accelerator:
+  // urnd    (322b): rand_i, drives the HPC3 gadgets inside otbn_sec_add_mod
+  // mask_0  ( 32b): remask_rand_i[0], per-handshake re-masking word for adder input share 0
+  // mask_1  ( 32b): remask_rand_i[1], per-handshake re-masking word for adder input share 1
+  // cnt     (  3b): seeds the batch-counter start offset
   assign mai_ma_urnd   = urnd_data_i;
+  assign mai_ispr_urnd = urnd_data_i;
   assign unused_urnd   = ^mai_ispr_urnd.rsvd;
 
 

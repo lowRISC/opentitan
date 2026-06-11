@@ -56,16 +56,16 @@ module prim_hpc3 #(
   logic [NumShares-1:0] inner_prod_q;
 
   // Output-stage combinational nodes.
-  logic [NumShares-1:0] xy_masked;    // x[Share] & (y[Share] ^ r)
-  logic [NumShares-1:0] inner_prod_d; // ((x[Share] & (y[Share] ^ r)) ^ rp) (^ w_i[Share] if EnW)
-  logic [NumShares-1:0] cross_prod;   // x[Share] & (y[OtherShare] ^ r)
+  logic [NumShares-1:0] xy_masked;    // x[sh] & (y[sh] ^ r)
+  logic [NumShares-1:0] inner_prod_d; // ((x[sh] & (y[sh] ^ r)) ^ rp) (^ w_i[sh] if EnW)
+  logic [NumShares-1:0] cross_prod;   // x[sh] & (y[OtherShare] ^ r)
 
   // Stage (en_i): register x, y^r, and the inner product
-  for (genvar Share = 0; Share < NumShares; Share++) begin : gen_y_masked
+  for (genvar sh = 0; sh < NumShares; sh++) begin : gen_y_masked
     prim_xor2 u_prim_xor2 (
-      .in0_i(y_i[Share]),
+      .in0_i(y_i[sh]),
       .in1_i(r_i),
-      .out_o(y_masked_d[Share])
+      .out_o(y_masked_d[sh])
     );
   end
 
@@ -93,39 +93,39 @@ module prim_hpc3 #(
     .q_o   (x_q)
   );
 
-  for (genvar Share = 0; Share < NumShares; Share++) begin : gen_xy_masked
+  for (genvar sh = 0; sh < NumShares; sh++) begin : gen_xy_masked
     prim_and2 u_prim_and2 (
-      .in0_i(x_i[Share]),
-      .in1_i(y_masked_d[Share]),
-      .out_o(xy_masked[Share])
+      .in0_i(x_i[sh]),
+      .in1_i(y_masked_d[sh]),
+      .out_o(xy_masked[sh])
     );
   end
 
   // HPC3o (EnW=1): XOR w into the inner term before registering.
   // HPC3  (EnW=0): inner term is just (x&y_masked) ^ rp.
   if (EnW) begin : gen_xor_w
-    logic [NumShares-1:0] xyw_masked;  // (x[Share] & (y[Share] ^ r)) ^ w[Share]
+    logic [NumShares-1:0] xyw_masked;  // (x[sh] & (y[sh] ^ r)) ^ w[sh]
 
-    for (genvar Share = 0; Share < NumShares; Share++) begin : gen_inner_prod
+    for (genvar sh = 0; sh < NumShares; sh++) begin : gen_inner_prod
       prim_xor2 u_prim_xor2_w (
-        .in0_i(xy_masked[Share]),
-        .in1_i(w_i[Share]),
-        .out_o(xyw_masked[Share])
+        .in0_i(xy_masked[sh]),
+        .in1_i(w_i[sh]),
+        .out_o(xyw_masked[sh])
       );
 
       prim_xor2 u_prim_xor2_d (
-        .in0_i(xyw_masked[Share]),
+        .in0_i(xyw_masked[sh]),
         .in1_i(rp_i),
-        .out_o(inner_prod_d[Share])
+        .out_o(inner_prod_d[sh])
       );
     end
 
   end else begin : gen_no_xor_w
-    for (genvar Share = 0; Share < NumShares; Share++) begin : gen_inner_prod
+    for (genvar sh = 0; sh < NumShares; sh++) begin : gen_inner_prod
       prim_xor2 u_prim_xor2_x_masked (
-        .in0_i(xy_masked[Share]),
+        .in0_i(xy_masked[sh]),
         .in1_i(rp_i),
-        .out_o(inner_prod_d[Share])
+        .out_o(inner_prod_d[sh])
       );
     end
 
@@ -146,23 +146,23 @@ module prim_hpc3 #(
     .q_o   (inner_prod_q)
   );
 
-  // Output: cross products use the opposite share's y_masked_q (OtherShare = 1-Share),
-  //         then z[Share] = inner_prod_q[Share] ^ cross_prod[Share]
-  for (genvar Share = 0; Share < NumShares; Share++) begin : gen_cross_prod
-    localparam int OtherShare = (Share == 0) ? 1 : 0;
+  // Output: cross products use the opposite share's y_masked_q (OtherShare = 1-sh),
+  //         then z[sh] = inner_prod_q[sh] ^ cross_prod[sh]
+  for (genvar sh = 0; sh < NumShares; sh++) begin : gen_cross_prod
+    localparam int OtherShare = (sh == 0) ? 1 : 0;
 
     prim_and2 u_prim_and2 (
-      .in0_i(x_q[Share]),
+      .in0_i(x_q[sh]),
       .in1_i(y_masked_q[OtherShare]),
-      .out_o(cross_prod[Share])
+      .out_o(cross_prod[sh])
     );
   end
 
-  for (genvar Share = 0; Share < NumShares; Share++) begin : gen_z
+  for (genvar sh = 0; sh < NumShares; sh++) begin : gen_z
     prim_xor2 u_prim_xor2 (
-      .in0_i(inner_prod_q[Share]),
-      .in1_i(cross_prod[Share]),
-      .out_o(z_o[Share])
+      .in0_i(inner_prod_q[sh]),
+      .in1_i(cross_prod[sh]),
+      .out_o(z_o[sh])
     );
   end
 
