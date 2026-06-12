@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -15,7 +15,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/personalize.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -27,7 +27,6 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
  *
  * Keep this list sorted in alphabetical order.
  */
-static dif_flash_ctrl_state_t flash_state;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
@@ -36,9 +35,6 @@ static dif_rstmgr_t rstmgr;
  * Initializes all DIF handles used in this module.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
@@ -109,36 +105,36 @@ bool test_main(void) {
           UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, &uj, &token_hash));
 
       // Perform OTP and flash info writes.
-      CHECK_STATUS_OK(manuf_personalize_device_secrets(&flash_state, &lc_ctrl,
-                                                       &otp_ctrl, &token_hash));
+      CHECK_STATUS_OK(
+          manuf_personalize_device_secrets(&lc_ctrl, &otp_ctrl, &token_hash));
       LOG_INFO("Provisioning flash info asymmetric keygen seeds ...");
-      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
-          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
-          kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
-          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
-          kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_personalize_flash_asymm_key_seed(
-          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
-          kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_nvm_asymm_key_seed(
+          kNvmInfoFieldUdsAttestationKeySeed, kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_nvm_asymm_key_seed(
+          kNvmInfoFieldCdi0AttestationKeySeed, kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_personalize_nvm_asymm_key_seed(
+          kNvmInfoFieldCdi1AttestationKeySeed, kAttestationSeedWords));
 
       // Read the attestation key seed fields to ensure they are non-zero.
+      CHECK_STATUS_OK(
+          nvm_testutils_info_page_setup(kNvmInfoFieldUdsAttestationKeySeed.page,
+                                        kPageReadOnly, kPageScrambleCfg));
       uint32_t uds_attestation_key_seed[kAttestationSeedWords];
       uint32_t cdi_0_attestation_key_seed[kAttestationSeedWords];
       uint32_t cdi_1_attestation_key_seed[kAttestationSeedWords];
-      CHECK_STATUS_OK(manuf_flash_info_field_read(
-          &flash_state, kFlashInfoFieldUdsAttestationKeySeed,
-          uds_attestation_key_seed, kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_nvm_info_field_read(
+          kNvmInfoFieldUdsAttestationKeySeed, uds_attestation_key_seed,
+          kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(uds_attestation_key_seed,
                                            kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_flash_info_field_read(
-          &flash_state, kFlashInfoFieldCdi0AttestationKeySeed,
-          cdi_0_attestation_key_seed, kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_nvm_info_field_read(
+          kNvmInfoFieldCdi0AttestationKeySeed, cdi_0_attestation_key_seed,
+          kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(cdi_0_attestation_key_seed,
                                            kAttestationSeedWords));
-      CHECK_STATUS_OK(manuf_flash_info_field_read(
-          &flash_state, kFlashInfoFieldCdi1AttestationKeySeed,
-          cdi_1_attestation_key_seed, kAttestationSeedWords));
+      CHECK_STATUS_OK(manuf_nvm_info_field_read(
+          kNvmInfoFieldCdi1AttestationKeySeed, cdi_1_attestation_key_seed,
+          kAttestationSeedWords));
       CHECK_STATUS_OK(check_array_non_zero(cdi_1_attestation_key_seed,
                                            kAttestationSeedWords));
       LOG_INFO(

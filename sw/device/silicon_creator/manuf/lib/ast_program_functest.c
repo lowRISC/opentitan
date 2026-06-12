@@ -4,21 +4,18 @@
 
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);
 
-static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {
-    0};
+static uint32_t ast_cfg_data[kNvmInfoAstCalibrationDataSizeIn32BitWords] = {0};
 
 // These symbols come from the `ast_program` module.
 extern status_t ast_program_config(bool verbose);
 extern status_t ast_program_init(bool verbose);
-extern dif_flash_ctrl_state_t flash_state;
 
 // Light-weight mocking: we export `ast_write` to the `ast_program` module so we
 // can get a call for every word that would be written to AST.
@@ -38,35 +35,21 @@ static void test_state_reset(void) {
 }
 
 /**
- * Erase the INFO page containing the AST calibration data.
+ * Erase the AST calibration info page and program a test blob into it.
  */
-static status_t erase_page(void) {
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  uint32_t byte_address =
-      (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page);
-
-  return flash_ctrl_testutils_erase_page(
-      &flash_state, byte_address, kFlashInfoFieldAstCalibrationData.partition,
-      kDifFlashCtrlPartitionTypeInfo);
-}
-
-/**
- * Program a blob into the AST calibration info page.
- */
-static status_t program_page(void) {
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  uint32_t byte_address =
-      (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page) +
-      kFlashInfoFieldAstCalibrationData.byte_offset;
-
+static status_t erase_and_program_page(void) {
   // Set dummy AST values for testing.
   for (size_t i = 0; i < ARRAYSIZE(ast_cfg_data); ++i) {
     ast_cfg_data[i] = i;
   }
-  return flash_ctrl_testutils_write(
-      &flash_state, byte_address, kFlashInfoFieldAstCalibrationData.partition,
-      ast_cfg_data, kDifFlashCtrlPartitionTypeInfo,
-      kFlashInfoAstCalibrationDataSizeIn32BitWords);
+
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
+                                    kPageReadWrite, kPagePlainCfg));
+  return nvm_testutils_write_info_page(
+      kNvmInfoFieldAstCalibrationData.page,
+      kNvmInfoFieldAstCalibrationData.byte_offset, ast_cfg_data,
+      kNvmInfoAstCalibrationDataSizeIn32BitWords,
+      /*erase_before_write=*/true, /*readback=*/true);
 }
 
 static status_t execute_test(void) {
@@ -75,14 +58,13 @@ static status_t execute_test(void) {
   LOG_INFO(
       "Erase and program a sample blob into the INFO page, and verify AST "
       "programming.");
-  TRY(erase_page());
   test_state_reset();
-  TRY(program_page());
+  TRY(erase_and_program_page());
   TRY(ast_program_config(true));
   uint32_t crc =
-      crc32(ast_cfg_data, (kFlashInfoAstCalibrationDataSizeIn32BitWords - 3) *
+      crc32(ast_cfg_data, (kNvmInfoAstCalibrationDataSizeIn32BitWords - 3) *
                               sizeof(uint32_t));
-  TRY_CHECK(ast_nr_writes == kFlashInfoAstCalibrationDataSizeIn32BitWords - 3);
+  TRY_CHECK(ast_nr_writes == kNvmInfoAstCalibrationDataSizeIn32BitWords - 3);
   TRY_CHECK(crc32_finish(&ast_crc) == crc);
   return OK_STATUS();
 }
