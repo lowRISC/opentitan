@@ -8,5 +8,5 @@ cc_library(
     name = "fake",
     srcs = ["fake_calibration_values.c"],
     hdrs = ["calibration_values.h"],
-    deps = ["//sw/device/silicon_creator/manuf/lib:flash_info_fields"],
+    deps = ["//sw/device/silicon_creator/manuf/lib:nvm_info_field"],
 )

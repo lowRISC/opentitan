@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/manuf/data/ast/calibration_values.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 // clang-format off
-uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {
+uint32_t ast_cfg_data[kNvmInfoAstCalibrationDataSizeIn32BitWords] = {
     0x00000000,  // 0x00
     0x00000000,  // 0x04
     0x00000000,  // 0x08
