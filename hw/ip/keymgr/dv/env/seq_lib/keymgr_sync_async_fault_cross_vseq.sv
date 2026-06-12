@@ -47,7 +47,7 @@ class keymgr_sync_async_fault_cross_vseq extends keymgr_base_vseq;
     // Issue one operation, either advance or gen-out
     bit is_adv_op = $urandom_range(0, 1);
 
-    cfg.m_keymgr_kmac_agent_cfg.error_rsp_pct = 100;
+    cfg.m_kmac_agent_cfg.error_rsp_pct = 100;
     keymgr_operations(.advance_state(is_adv_op),
                       .num_gen_op(!is_adv_op),
                       .clr_output(0),
