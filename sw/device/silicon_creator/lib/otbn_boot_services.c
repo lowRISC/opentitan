@@ -304,6 +304,10 @@ rom_error_t otbn_boot_sigverify_finish(uint32_t *recovered_r) {
 
   // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
 
+  // Clear the status in OTBN.
+  uint32_t zero = 0;
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(1, &zero, kOtbnVarBootOk));
+
   // Read the recovered `r` value from DMEM.
   return sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords, kOtbnVarBootXr,
                            recovered_r);
