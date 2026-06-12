@@ -22,7 +22,6 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top/alert_handler_regs.h"
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rstmgr_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -30,7 +29,6 @@
 enum {
   kAlertBase = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR,
   kOtpCoreBase = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
-  kFlashBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
 };
 
 rom_error_t alert_no_escalate_test(void) {
@@ -65,15 +63,14 @@ rom_error_t alert_escalate_test(void) {
       .phase_cycles = {1, 10, 100, 1000},
   };
 
-  LOG_INFO("Configure FlashCtrlFatalErr as class A");
-  RETURN_IF_ERROR(alert_configure(kTopEarlgreyAlertIdFlashCtrlFatalErr,
+  LOG_INFO("Configure OtpCtrlFatalCheckError as class A");
+  RETURN_IF_ERROR(alert_configure(kTopEarlgreyAlertIdOtpCtrlFatalCheckError,
                                   kAlertClassA, kAlertEnableEnabled));
   LOG_INFO("Configure class A alerts");
   RETURN_IF_ERROR(alert_class_configure(kAlertClassA, &config));
 
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kFlashBase + FLASH_CTRL_ALERT_TEST_REG_OFFSET,
-                   1u << FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT);
+  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1u << 1);
   return kErrorUnknown;
 }
 
