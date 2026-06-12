@@ -14,7 +14,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -41,7 +40,6 @@ static_assert(
         kWdogBiteMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros),
     "The wdog bark and bite should happen during the escalation phase 1");
 
-dif_flash_ctrl_state_t *flash_ctrl;
 dif_rv_plic_t *plic;
 dif_alert_handler_t *alert_handler;
 dif_aon_timer_t *aon_timer;
@@ -49,7 +47,6 @@ dif_pwrmgr_t *pwrmgr;
 dif_sysrst_ctrl_t *sysrst_ctrl_aon;
 dif_rstmgr_t *rstmgr;
 
-dif_flash_ctrl_state_t flash_ctrl_actual;
 dif_rv_plic_t plic_actual;
 dif_alert_handler_t alert_handler_actual;
 dif_aon_timer_t aon_timer_actual;
@@ -70,9 +67,6 @@ static_assert(kDtAlertHandlerCount == 1,
 static const dt_aon_timer_t kAonTimerDt = 0;
 static_assert(kDtAonTimerCount == 1,
               "this library expects exactly one aon_timer");
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
-static_assert(kDtFlashCtrlCount >= 1,
-              "this test expects at least one flash_ctrl");
 static_assert(kDtSysrstCtrlCount >= 1,
               "this test expects at least one sysrst_ctrl");
 static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
@@ -96,11 +90,6 @@ void init_peripherals(void) {
   // Initialize aon timer to use the wdog.
   CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer_actual));
   aon_timer = &aon_timer_actual;
-
-  // Initialize flash_ctrl
-  CHECK_DIF_OK(
-      dif_flash_ctrl_init_state_from_dt(&flash_ctrl_actual, kFlashCtrlDt));
-  flash_ctrl = &flash_ctrl_actual;
 
   // Initialize plic.
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic_actual));
