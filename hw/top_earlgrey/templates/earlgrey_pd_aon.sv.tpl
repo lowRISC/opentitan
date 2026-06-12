@@ -13,7 +13,7 @@ cio_info = {}
 <%include file="/toplevel_snippets/info_dicts.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info" />\
 `include "prim_assert.sv"
 
-module top_${top["name"]}_pd_${domain.lower()} #(
+module ${top["name"]}_pd_${domain.lower()} #(
   // TODO Manual parameters for pwrmgr
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,

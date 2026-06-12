@@ -1826,19 +1826,11 @@ def main():
         # Top and chiplevel templates are top-specific
         top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
 
-        # SystemVerilog Top, equivalent to the default power domain:
-        # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
-        render_template(top_template_path / "toplevel.sv.tpl",
-                        out_path / "rtl" / "autogen" / f"{top_name}.sv",
-                        gencmd=gencmd_sv)
-
-        # Render all other power domains
+        # Render all SystemVerilog power domains
+        # "{top_name}_pd_{domain}.sv.tpl" -> "rtl/autogen/{top_name}_pd_{domain}.sv"
         for domain in completecfg["power"]["domains"]:
-            if domain == completecfg["power"]["default"]:
-                # Default power domain has already been rendered
-                continue
-            render_template(top_template_path / f"toplevel_{domain.lower()}.sv.tpl",
-                            out_path / "rtl" / "autogen" / f"{top_name}_pd_{domain.lower()}.sv",
+            render_template(top_template_path / f"{topname}_pd_{domain.lower()}.sv.tpl",
+                            out_path / "rtl" / "autogen" / f"{topname}_pd_{domain.lower()}.sv",
                             gencmd=gencmd_sv)
 
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)

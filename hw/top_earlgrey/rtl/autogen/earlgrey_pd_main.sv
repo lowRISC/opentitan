@@ -10,7 +10,7 @@
 
 `include "prim_assert.sv"
 
-module top_earlgrey #(
+module earlgrey_pd_main #(
   // Auto-inferred parameters
   // parameters for uart0
   // parameters for uart1

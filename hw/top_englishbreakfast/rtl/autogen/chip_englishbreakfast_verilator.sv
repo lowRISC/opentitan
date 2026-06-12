@@ -550,10 +550,10 @@ module chip_englishbreakfast_verilator (
   tlul_pkg::tl_h2d_t       clkmgr_aon_tl_req;
   tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-  top_englishbreakfast #(
+  ///////////////////////////
+  // Top-level Main Domain //
+  ///////////////////////////
+  englishbreakfast_pd_main #(
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
@@ -563,7 +563,7 @@ module chip_englishbreakfast_verilator (
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_englishbreakfast (
+  ) englishbreakfast_pd_main (
     // Clocks and clock gating control from clkmgr_aon
     .clkmgr_aon_clocks_i(clkmgr_aon_clocks),
     .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en),
@@ -635,10 +635,10 @@ module chip_englishbreakfast_verilator (
   );
 
 
-  //////////////////////
-  // Always-on Domain //
-  //////////////////////
-  top_englishbreakfast_pd_aon top_englishbreakfast_pd_aon (
+  ////////////////////////////////
+  // Top-level Always-On domain //
+  ////////////////////////////////
+  englishbreakfast_pd_aon englishbreakfast_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks.clk_sys),
     .clk_io_i  (ast_base_clks.clk_io ),
