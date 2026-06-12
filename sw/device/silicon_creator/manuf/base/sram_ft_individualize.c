@@ -7,13 +7,12 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
@@ -21,17 +20,15 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/base/ft_device_id.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
@@ -64,9 +61,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
@@ -109,23 +103,17 @@ static status_t configure_ate_gpio_indicators(void) {
  * Patch AST config if patch exists in flash info page 0.
  */
 static status_t patch_ast_config_value(void) {
-  uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr.page,
-      kFlashInfoFieldAstIndividPatchAddr.bank,
-      kFlashInfoFieldAstIndividPatchAddr.partition, kFlashInfoPage0Permissions,
-      &byte_address));
-
   // Read patch address and value from flash info 0.
   uint32_t ast_patch_addr_offset;
   uint32_t ast_patch_value;
-  TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr,
-      &ast_patch_addr_offset,
-      kFlashInfoFieldAstIndividPatchAddrSizeIn32BitWords));
-  TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchVal, &ast_patch_value,
-      kFlashInfoFieldAstIndividPatchValSizeIn32BitWords));
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstIndividPatchAddr.page,
+                                    kPageReadOnly, kPageRawCfg));
+  TRY(manuf_nvm_info_field_read(
+      kNvmInfoFieldAstIndividPatchAddr, &ast_patch_addr_offset,
+      kNvmInfoFieldAstIndividPatchAddrSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(
+      kNvmInfoFieldAstIndividPatchVal, &ast_patch_value,
+      kNvmInfoFieldAstIndividPatchValSizeIn32BitWords));
 
   // Only patch AST if the patch value is present.
   if (ast_patch_value != 0 && ast_patch_value != UINT32_MAX) {
@@ -175,17 +163,14 @@ static status_t provision(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
-  TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
-                                        kFlashInfoPage0Permissions,
-                                        in_data.ft_device_id));
+  TRY(manuf_individualize_device_hw_cfg(&otp_ctrl, in_data.ft_device_id));
 #else
-  TRY(manuf_individualize_device_hw_cfg(
-      &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
+  TRY(manuf_individualize_device_hw_cfg(&otp_ctrl, kFtDeviceId));
 #endif
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-  TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
+  TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl));
   TRY(provision_boot_data());
 
   return OK_STATUS();
