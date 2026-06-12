@@ -13,8 +13,10 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n, rst_shadowed_n;
+  wire                          clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire kmac_pkg::app_req_t      kmac_req;
+  wire kmac_pkg::app_rsp_t      kmac_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -22,11 +24,11 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   keymgr_if keymgr_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_if kmac_if(.clk(clk), .rst_n(rst_n));
+  kmac_app_if kmac_if(.clk_i(clk), .rst_ni(rst_n), .req(kmac_req), .rsp(kmac_rsp));
 
   // connect KDF interface for assertion check
-  assign keymgr_if.kmac_data_req = kmac_if.kmac_data_req;
-  assign keymgr_if.kmac_data_rsp = kmac_if.kmac_data_rsp;
+  assign keymgr_if.kmac_data_req = kmac_req;
+  assign keymgr_if.kmac_data_rsp = kmac_rsp;
 
   `DV_ALERT_IF_CONNECT()
 
@@ -53,8 +55,8 @@ module tb;
     .aes_key_o            (keymgr_if.aes_key),
     .otbn_key_o           (keymgr_if.otbn_key),
     .kmac_key_o           (keymgr_if.kmac_key),
-    .kmac_data_o          (kmac_if.kmac_data_req),
-    .kmac_data_i          (kmac_if.kmac_data_rsp),
+    .kmac_data_o          (kmac_req),
+    .kmac_data_i          (kmac_rsp),
     .kmac_en_masking_i    (1'b1),
     .lc_keymgr_en_i       (keymgr_if.keymgr_en),
     .lc_keymgr_div_i      (keymgr_if.keymgr_div),

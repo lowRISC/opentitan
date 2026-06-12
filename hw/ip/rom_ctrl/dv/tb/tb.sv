@@ -16,8 +16,8 @@ module tb;
 
   wire                        clk, rst_n;
   bit                         digest_cal_done;
-  kmac_pkg::app_rsp_t         kmac_data_in;
-  kmac_pkg::app_req_t         kmac_data_out;
+  wire kmac_pkg::app_rsp_t    kmac_data_in;
+  wire kmac_pkg::app_req_t    kmac_data_out;
   rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t keymgr_data;
   logic kmac_digest_handshake_occured;
@@ -27,13 +27,9 @@ module tb;
   clk_rst_if rom_clk_rst_if(.clk(), .rst_n()); // dummy clk_rst_vif for second RAL
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_if kmac_app_if(.clk(clk), .rst_n(rst_n));
+  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req (kmac_data_out), .rsp (kmac_data_in));
 
   `DV_ALERT_IF_CONNECT()
-
-  assign kmac_app_if.kmac_data_req = kmac_data_out;
-  assign kmac_data_in              = kmac_app_if.kmac_data_rsp;
-
 
   // dut
   rom_ctrl #(

@@ -27,7 +27,7 @@ class kmac_app_device_driver extends kmac_app_driver;
       `uvm_info(`gfn, $sformatf("rcvd item:\n%0s", req.sprint()), UVM_HIGH)
 
       `DV_SPINWAIT_EXIT(repeat (rsp.rsp_delay) @(cfg.vif.device_cb);,
-                        wait(!cfg.vif.rst_n))
+                        wait(!cfg.vif.rst_ni))
 
       cfg.vif.device_cb.rsp_valid         <= 1;
       cfg.vif.device_cb.rsp_digest_share0 <= rsp.digest_s0;
@@ -36,7 +36,7 @@ class kmac_app_device_driver extends kmac_app_driver;
       cfg.vif.device_cb.rsp_finish        <= 0;
 
       `DV_SPINWAIT_EXIT(@(cfg.vif.device_cb);,
-                        wait(!cfg.vif.rst_n))
+                        wait(!cfg.vif.rst_ni))
       invalidate_signals();
 
       `uvm_info(`gfn, "item sent", UVM_HIGH)
