@@ -587,9 +587,10 @@ opentitan_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 
