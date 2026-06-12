@@ -9,7 +9,7 @@ class kmac_app_item extends uvm_sequence_item;
   // request data/mask
   //
   // also used by the monitor to assemble the full request message
-  rand byte byte_data_q[$];
+  rand byte unsigned byte_data_q[$];
 
   // Static mode: single full-width digest.
   rand bit [kmac_pkg::AppDigestW-1:0] digest_s0;
