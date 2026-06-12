@@ -433,9 +433,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
         // set `rsp_valid` to 1, force the other fields to a random value to avoid X propagation
         invalid_kmac_rsp.rsp_valid = 1;
-        force tb.keymgr_dpe_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
+        force tb.kmac_if.kmac_data_rsp = invalid_kmac_rsp;
         @(negedge clk);
-        release tb.keymgr_dpe_kmac_intf.kmac_data_rsp;
+        release tb.kmac_if.kmac_data_rsp;
       end
       FaultSideloadNotConsistent: begin
         pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
@@ -541,9 +541,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // keymgr_dpe will sent constantly changed entropy data to KMAC for KDF operation.
   always_comb begin
     if (!is_kmac_data_good || keymgr_dpe_en_sync1 != lc_ctrl_pkg::On) begin
-      $assertoff(0, tb.keymgr_dpe_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
+      $assertoff(0, tb.kmac_if.req_data_if.H_DataStableWhenValidAndNotReady_A);
     end else begin
-      $asserton(0, tb.keymgr_dpe_kmac_intf.req_data_if.H_DataStableWhenValidAndNotReady_A);
+      $asserton(0, tb.kmac_if.req_data_if.H_DataStableWhenValidAndNotReady_A);
     end
   end
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // verilog_lint: waive interface-name-style
-interface kmac_app_intf (input clk, input rst_n);
+interface kmac_app_if (input clk, input rst_n);
 
   import keymgr_pkg::*;
 

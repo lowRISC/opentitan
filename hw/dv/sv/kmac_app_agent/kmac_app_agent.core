@@ -14,7 +14,7 @@ filesets:
       - lowrisc:ip:kmac_pkg
     files:
       - kmac_app_agent_pkg.sv
-      - kmac_app_intf.sv
+      - kmac_app_if.sv
       - kmac_app_item.sv: {is_include_file: true}
       - kmac_app_agent_cfg.sv: {is_include_file: true}
       - kmac_app_sequencer.sv: {is_include_file: true}

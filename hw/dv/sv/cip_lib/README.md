@@ -594,7 +594,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (enable) begin
-          $asserton(0, "tb.keymgr_kmac_intf");
+          $asserton(0, "tb.kmac_if");
           $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
           $asserton(0, "tb.dut.u_ctrl.DataEn_A");
           $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
@@ -602,7 +602,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
           $asserton(0, "tb.dut.u_kmac_if.LastStrb_A");
           $asserton(0, "tb.dut.KmacDataKnownO_A");
         end else begin
-          $assertoff(0, "tb.keymgr_kmac_intf");
+          $assertoff(0, "tb.kmac_if");
           $assertoff(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
           $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
           $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");

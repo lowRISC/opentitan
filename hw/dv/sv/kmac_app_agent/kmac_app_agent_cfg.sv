@@ -5,7 +5,7 @@
 class kmac_app_agent_cfg extends dv_reactive_agent_cfg;
 
   // Interface handle used by driver, monitor and the sequencer
-  virtual kmac_app_intf vif;
+  virtual kmac_app_if vif;
 
   // Minimum and maximum delays between requests
   int unsigned req_delay_min = 0;

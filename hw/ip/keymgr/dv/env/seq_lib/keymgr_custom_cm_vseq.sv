@@ -24,7 +24,7 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
     ral.default_map.set_auto_predict(1);
 
     // forcing internal design may cause uninitialized reg to be used, disable these checking
-    $assertoff(0, "tb.keymgr_kmac_intf");
+    $assertoff(0, "tb.kmac_if");
     $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
     $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");
     $assertoff(0, "tb.dut.u_ctrl.CntZero_A");
@@ -94,7 +94,7 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
     // fatal alert will be triggered, need reset to clear it
     expect_fatal_alerts = 1;
     super.post_start();
-    $asserton(0, "tb.keymgr_kmac_intf");
+    $asserton(0, "tb.kmac_if");
     $asserton(0, "tb.dut.u_ctrl.DataEn_A");
     $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
     $asserton(0, "tb.dut.u_ctrl.CntZero_A");
