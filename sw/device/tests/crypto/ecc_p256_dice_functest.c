@@ -21,18 +21,17 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/dice_keys.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static status_t get_stored_certificate(const char *cert_name, size_t name_size,
-                                       const flash_ctrl_info_page_t *info_page,
+                                       nvm_info_page_t info_page,
                                        perso_tlv_cert_obj_t *out_cert_obj) {
   uint8_t data[2048];
-  TRY(flash_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t),
-                           data));
+  TRY(nvm_ctrl_info_read(info_page, 0, sizeof(data) / sizeof(uint32_t), data));
 
   uint32_t offset = 0;
   size_t len = sizeof(data);
@@ -93,12 +92,11 @@ static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
 
   uint32_t kAttestationSeedWords = 10;
   uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
-  uint32_t seed_flash_offset =
-      kFlashInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
+  uint32_t seed_nvm_offset =
+      kNvmInfoFieldCdi1KeySeedIdx * kAttestationSeedBytes;
 
-  TRY(flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
-                           seed_flash_offset, kAttestationSeedWords,
-                           attestation_data));
+  TRY(nvm_ctrl_info_read(kNvmInfoPageAttestationKeySeeds, seed_nvm_offset,
+                         kAttestationSeedWords, attestation_data));
 
   return OK_STATUS();
 }
@@ -106,8 +104,7 @@ static status_t read_attestation_seed_configured(uint32_t *attestation_data) {
 status_t dice_test(void) {
   perso_tlv_cert_obj_t target_cert = {0};
 
-  TRY(get_stored_certificate("CDI_1", 5, &kFlashCtrlInfoPageDiceCerts,
-                             &target_cert));
+  TRY(get_stored_certificate("CDI_1", 5, kNvmInfoPageDiceCerts, &target_cert));
   LOG_INFO("Found CDI_1 cert. Size: %d bytes", target_cert.cert_body_size);
 
   uint32_t cert_pk[512 / 32] = {0};
@@ -140,7 +137,7 @@ status_t dice_test(void) {
       kDiceKeyCdi1.keymgr_diversifier->version,
       kDiceKeyCdi1.keymgr_diversifier->salt, &private_key));
 
-  // Read the attestation seed from flash.
+  // Read the attestation seed from NVM.
   uint32_t kAttestationSeedWords = 10;
   uint32_t attestation_data[10] = {0};
   TRY(read_attestation_seed_configured(attestation_data));

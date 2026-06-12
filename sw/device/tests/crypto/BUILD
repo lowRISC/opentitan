@@ -280,7 +280,7 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/cert:dice_keys",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 
