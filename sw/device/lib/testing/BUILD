@@ -269,8 +269,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":entropy_testutils",
-        ":flash_ctrl_testutils",
         ":kmac_testutils",
+        ":nvm_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
         "//hw/top:keymgr_c_regs",
@@ -278,7 +278,6 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
