@@ -6,24 +6,22 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
@@ -40,7 +38,6 @@ OTTF_DEFINE_TEST_CONFIG(
         .console_tx_indicator.spi_console_tx_ready_gpio =
             kGpioPinSpiConsoleTxReady);
 
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
@@ -50,9 +47,6 @@ static dif_pinmux_t pinmux;
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
@@ -81,36 +75,34 @@ static status_t configure_ate_gpio_indicators(void) {
  * read it out.
  */
 static status_t prep_flash_info_page_0(manuf_cp_test_data_t *test_data) {
-  // Setup page permissions on flash info page 0.
-  uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
-      kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
-      kFlashInfoPage0Permissions, &byte_address));
-
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldLotName.page, kPageReadWrite,
+                                    kPageRawCfg));
   // Lot name.
-  TRY(manuf_flash_info_field_write(&flash_ctrl_state, kFlashInfoFieldLotName,
-                                   &test_data->lot_name,
-                                   kFlashInfoFieldLotNameSizeIn32BitWords,
-                                   /*erase_page_before_write=*/true));
+  TRY(manuf_nvm_info_field_write(kNvmInfoFieldLotName, &test_data->lot_name,
+                                 kNvmInfoFieldLotNameSizeIn32BitWords,
+                                 /*erase_page_before_write=*/true,
+                                 /*readback=*/true));
 
   // Wafer number.
-  TRY(manuf_flash_info_field_write(
-      &flash_ctrl_state, kFlashInfoFieldWaferNumber, &test_data->wafer_number,
-      kFlashInfoFieldWaferNumberSizeIn32BitWords,
-      /*erase_page_before_write=*/false));
+  TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferNumber,
+                                 &test_data->wafer_number,
+                                 kNvmInfoFieldWaferNumberSizeIn32BitWords,
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/true));
 
   // Wafer X coord.
-  TRY(manuf_flash_info_field_write(
-      &flash_ctrl_state, kFlashInfoFieldWaferXCoord, &test_data->wafer_x_coord,
-      kFlashInfoFieldWaferXCoordSizeIn32BitWords,
-      /*erase_page_before_write=*/false));
+  TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferXCoord,
+                                 &test_data->wafer_x_coord,
+                                 kNvmInfoFieldWaferXCoordSizeIn32BitWords,
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/true));
 
   // Wafer Y coord.
-  TRY(manuf_flash_info_field_write(
-      &flash_ctrl_state, kFlashInfoFieldWaferYCoord, &test_data->wafer_y_coord,
-      kFlashInfoFieldWaferYCoordSizeIn32BitWords,
-      /*erase_page_before_write=*/false));
+  TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferYCoord,
+                                 &test_data->wafer_y_coord,
+                                 kNvmInfoFieldWaferYCoordSizeIn32BitWords,
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/true));
 
   return OK_STATUS();
 }
@@ -138,16 +130,14 @@ bool test_main(void) {
     base_printf("Flash info page 0 programmed.\n");
   } else if (lc_state == kDifLcCtrlStateTestUnlocked1) {
     // Read and validate CP device ID.
-    uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {0};
-    static_assert(kFlashInfoFieldCpDeviceIdSizeIn32BitWords == 4,
+    uint32_t cp_device_id[kNvmInfoFieldCpDeviceIdSizeIn32BitWords] = {0};
+    static_assert(kNvmInfoFieldCpDeviceIdSizeIn32BitWords == 4,
                   "CP device ID should fit in four 32bit words.");
-    CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
-        &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
-        kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
-        kFlashInfoPage0Permissions, /*offset=*/NULL));
-    CHECK_STATUS_OK(manuf_flash_info_field_read(
-        &flash_ctrl_state, kFlashInfoFieldCpDeviceId, cp_device_id,
-        kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
+    CHECK_STATUS_OK(nvm_testutils_info_page_setup(kNvmInfoFieldCpDeviceId.page,
+                                                  kPageReadOnly, kPageRawCfg));
+    CHECK_STATUS_OK(
+        manuf_nvm_info_field_read(kNvmInfoFieldCpDeviceId, cp_device_id,
+                                  kNvmInfoFieldCpDeviceIdSizeIn32BitWords));
     uint32_t year = (test_data.lot_name >> 24) & 0xf;
     uint32_t week = (test_data.lot_name >> 16) & 0xff;
     uint32_t lot_number = test_data.lot_name & 0xfff;
