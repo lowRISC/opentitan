@@ -139,7 +139,7 @@ function void rom_ctrl_base_vseq::set_kmac_digest(bit [DIGEST_SIZE-1:0] value);
   `DV_CHECK_STD_RANDOMIZE_FATAL(share0)
   rsp_digest_h.digest_share0 = share0;
   rsp_digest_h.digest_share1 = rsp_digest_h.digest_share0 ^ value;
-  cfg.m_kmac_agent_cfg.add_user_digest_share(rsp_digest_h);
+  cfg.m_kmac_agent_cfg.add_user_digest(rsp_digest_h);
 endfunction
 
 // Configure the KMAC agent to respond with the ROM's expected digest if correct is as_expected

@@ -219,8 +219,8 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
 
   // Clear kmac agent digest data
   virtual function void clear_kmac_user_digest_share();
-    while (cfg.m_kmac_app_agent_cfg.has_user_digest_share()) begin
-      void'(cfg.m_kmac_app_agent_cfg.get_user_digest_share());
+    while (cfg.m_kmac_app_agent_cfg.has_user_digest()) begin
+      void'(cfg.m_kmac_app_agent_cfg.pop_user_digest());
     end
   endfunction
 
