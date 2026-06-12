@@ -214,7 +214,7 @@ cc_library(
     srcs = ["test_wafer_auth_secret.h"],
     visibility = ["//visibility:private"],
     deps = [
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
     ],
 )
 
@@ -298,9 +298,9 @@ test_suite(
 )
 
 opentitan_binary(
-    name = "sram_device_info_flash_wr_functest",
+    name = "sram_device_info_nvm_wr_functest",
     testonly = True,
-    srcs = ["sram_device_info_flash_wr_functest.c"],
+    srcs = ["sram_device_info_nvm_wr_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
@@ -324,8 +324,8 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_console",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_sv00",
+        "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
@@ -347,7 +347,7 @@ opentitan_binary(
         },
         fpga = fpga_params(
             binaries = {
-                ":sram_device_info_flash_wr_functest": "sram_program",
+                ":sram_device_info_nvm_wr_functest": "sram_program",
             },
             changes_otp = True,
             needs_jtag = True,
@@ -373,7 +373,7 @@ opentitan_binary(
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+            "//sw/device/silicon_creator/manuf/lib:nvm_info_field",
         ],
     )
     for init_lc_state, _ in _TEST_UNLOCKED_LC_ITEMS
