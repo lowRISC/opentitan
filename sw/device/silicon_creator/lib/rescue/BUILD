@@ -21,11 +21,10 @@ package(default_visibility = ["//visibility:public"])
 
 RESCUE_DEPS = [
     "//hw/top/dt",
-    "//hw/top:flash_ctrl_c_regs",
     "//sw/device/lib/base:macros",
     "//sw/device/lib/base:memory",
     "//sw/device/silicon_creator/lib:manifest",
-    "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    "//sw/device/silicon_creator/lib:nvm_ctrl",
     "//sw/device/silicon_creator/lib/drivers:lifecycle",
     "//sw/device/silicon_creator/lib/drivers:pinmux",
     "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -71,11 +70,10 @@ cc_test(
     deps = [
         ":rescue",
         ":xmodem",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
