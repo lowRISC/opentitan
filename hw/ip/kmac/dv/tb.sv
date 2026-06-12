@@ -37,7 +37,7 @@ module tb;
     .sideload_key (kmac_sideload_key)
   );
 
-  kmac_app_intf kmac_app_if[NUM_APP_INTF](.clk(clk), .rst_n(rst_n));
+  kmac_app_if kmac_app_if[NUM_APP_INTF](.clk(clk), .rst_n(rst_n));
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -90,14 +90,14 @@ module tb;
     .entropy_i          ({edn_if[0].ack, edn_if[0].d_data} )
   );
 
-  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_kmac_app_intf
+  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_kmac_app_if
     assign app_req[i]                   = kmac_app_if[i].kmac_data_req;
     assign kmac_app_if[i].kmac_data_rsp = app_rsp[i];
     assign kmac_if.app_req[i] = app_req[i];
     assign kmac_if.app_rsp[i] = app_rsp[i];
 
     initial begin
-      uvm_config_db#(virtual kmac_app_intf)::set(null,
+      uvm_config_db#(virtual kmac_app_if)::set(null,
           $sformatf("*env.m_kmac_app_agent[%0d]*", i), "vif", kmac_app_if[i]);
     end
   end

@@ -91,7 +91,7 @@ module tb;
   assign kmac_app_if.kmac_data_req = kmac_data_out;
 
   // KMAC vip
-  kmac_app_intf kmac_app_if (
+  kmac_app_if kmac_app_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
@@ -269,7 +269,7 @@ module tb;
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(OTP_PROG_HDATA_WIDTH),
                                          .DeviceDataWidth(OTP_PROG_DDATA_WIDTH)))::
                    set(null, "*env.m_otp_prog_pull_agent*", "vif", otp_prog_if);
-    uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_app_agent", "vif", kmac_app_if);
+    uvm_config_db#(virtual kmac_app_if)::set(null, "*.env.m_kmac_app_agent", "vif", kmac_app_if);
 
     // Parameter config object
     parameters_cfg.alert_async_on = AlertAsyncOn;

@@ -23,9 +23,9 @@ class kmac_app_agent extends dv_reactive_agent #(
     // use for mon-seq connection
     cfg.has_req_fifo = 1;
 
-    // get kmac_app_intf handle
-    if (!uvm_config_db#(virtual kmac_app_intf)::get(this, "", "vif", cfg.vif)) begin
-      `uvm_fatal(`gfn, "failed to get kmac_app_intf handle from uvm_config_db")
+    // get kmac_app_if handle
+    if (!uvm_config_db#(virtual kmac_app_if)::get(this, "", "vif", cfg.vif)) begin
+      `uvm_fatal(`gfn, "failed to get kmac_app_if handle from uvm_config_db")
     end
 
     // create push_agent, agent_cfg
