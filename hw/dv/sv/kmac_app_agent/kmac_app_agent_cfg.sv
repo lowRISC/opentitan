@@ -41,19 +41,21 @@ class kmac_app_agent_cfg extends dv_reactive_agent_cfg;
                        1 := 2 };
   }
 
-  // Setter method for the user digest share queues - must be called externally to place specific user-digest_share0
-  // to be sent by the driver.
-  function void add_user_digest_share(kmac_pkg::rsp_digest_t rsp_digest_h);
+  // Setter method, which adds the given digest to the queue.
+  function void add_user_digest(kmac_pkg::rsp_digest_t rsp_digest_h);
     rsp_digest_hs.push_back(rsp_digest_h);
   endfunction
-  // Getter method for the user digest share - returns the first data entry.
-  function kmac_pkg::rsp_digest_t get_user_digest_share();
-    `DV_CHECK_NE_FATAL(has_user_digest_share(), 0, "rsp_digest_share0 is empty!")
+
+  // Getter method for the user digest. Returns the first digest, or an error if there is none.
+  function kmac_pkg::rsp_digest_t pop_user_digest();
+    if (!has_user_digest()) begin
+      `uvm_fatal(get_name(), "Cannot get a user digest: the queue is empty.")
+    end
     return rsp_digest_hs.pop_front();
   endfunction
-  // Getter method for the user digest share - must be called externally to check whether there is
-  // any user data in the queues.
-  function bit has_user_digest_share();
+
+  // Getter method that returns true if there is at least one digest in the queue.
+  function bit has_user_digest();
     return (rsp_digest_hs.size() > 0);
   endfunction
 

@@ -136,7 +136,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
     kmac_digest = token_to_kmac_digest(tokens_a[token_idx], token_scramble);
     clear_kmac_user_digest_share();
-    cfg.m_kmac_app_agent_cfg.add_user_digest_share(kmac_digest);
+    cfg.m_kmac_app_agent_cfg.add_user_digest(kmac_digest);
   endfunction
 
 endclass : lc_ctrl_smoke_vseq

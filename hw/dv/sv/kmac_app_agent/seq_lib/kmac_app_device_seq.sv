@@ -22,9 +22,9 @@ class kmac_app_device_seq extends kmac_app_base_seq;
     kmac_pkg::rsp_digest_t rsp_digest_h = '0;
     bit gen_error, set_share;
 
-    if (cfg.has_user_digest_share()) begin
+    if (cfg.has_user_digest()) begin
       set_share = 1;
-      rsp_digest_h = cfg.get_user_digest_share();
+      rsp_digest_h = cfg.pop_user_digest();
     end else begin
       set_share = 0;
     end
