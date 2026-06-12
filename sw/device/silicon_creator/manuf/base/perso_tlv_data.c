@@ -19,9 +19,10 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   }
   obj->obj_p = buf;
   memcpy(&objh, buf, sizeof(perso_tlv_object_header_t));
+
   // Extract LTV object size.
   PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
-  if (obj_size == 0)
+  if (obj_size <= sizeof(perso_tlv_object_header_t))
     return kErrorPersoTlvCertObjNotFound;  // Object is empty.
   if (obj_size > ltv_buf_size)
     return kErrorPersoTlvInternal;  // Object exceeds the size of host buffer.
@@ -35,7 +36,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
     return kErrorPersoTlvCertObjNotFound;
   }
   buf += sizeof(perso_tlv_object_header_t);
-  ltv_buf_size -= sizeof(perso_tlv_object_header_t);
+  ltv_buf_size = obj_size - sizeof(perso_tlv_object_header_t);
 
   // If we made it this far, we found a certificate LTV object, so we will parse
   // the object's header and metadata next.
