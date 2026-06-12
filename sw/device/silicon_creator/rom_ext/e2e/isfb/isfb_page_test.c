@@ -10,8 +10,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -33,7 +33,7 @@ status_t isfb_page_properties(dif_flash_ctrl_state_t *f) {
 }
 
 status_t isfb_page_erase(dif_flash_ctrl_state_t *f) {
-  uint32_t info0_page5 = 5 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  uint32_t info0_page5 = 5 * NVM_BYTES_PER_PAGE;
   TRY(flash_ctrl_testutils_erase_page(f, info0_page5,
                                       /*partition_id=*/0,
                                       kDifFlashCtrlPartitionTypeInfo));
