@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/flash_ctrl_regs.h"
@@ -745,7 +746,7 @@ TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
-  flash_ctrl_creator_info_pages_lockdown();
+  nvm_ctrl_creator_info_pages_lockdown();
 }
 
 TEST_F(FlashCtrlTest, BankErasePermsSet) {
@@ -776,8 +777,8 @@ TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9666666);
   }
 
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageDiceCerts);
 }
 
 TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
@@ -792,9 +793,8 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
   }
 
-  flash_ctrl_cert_info_page_owner_restrict(
-      &kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+  nvm_ctrl_cert_info_page_owner_restrict(kNvmInfoPageAttestationKeySeeds);
+  nvm_ctrl_cert_info_page_owner_restrict(kNvmInfoPageDiceCerts);
 }
 
 struct EraseVerifyCase {

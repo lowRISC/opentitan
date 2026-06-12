@@ -165,15 +165,13 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  * ```
  */
 enum {
-  kFlashCtrlSecMmioCertInfoPageCreatorCfg = 2,
-  kFlashCtrlSecMmioCertInfoPageOwnerRestrict = 2,
   kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 5,
-  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 14,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
   kFlashCtrlSecMmioInfoCfgSet = 1,
   kFlashCtrlSecMmioInfoCfgLock = 1,
+  kFlashCtrlSecMmioInfoPageLockdown = 2,
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
@@ -602,6 +600,20 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
 void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page);
 
 /**
+ * Disables all access to an info page and locks its configuration until reset.
+ *
+ * Zeroes both the cfg register (clearing all permissions and configuration
+ * bits) and the cfg_wen register (preventing further writes to cfg).
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoLockdown)` when sec_mmio is
+ * being used to check expectations.
+ *
+ * @param info_page An information page.
+ */
+void flash_ctrl_info_page_lockdown(const flash_ctrl_info_page_t *info_page);
+
+/**
  * Set bank erase permissions for both flash banks.
  *
  * The caller is responsible for calling
@@ -627,64 +639,6 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable);
  * disable execution.
  */
 void flash_ctrl_exec_set(uint32_t exec_val);
-
-/**
- * Disables all access to silicon creator info pages until next reset.
- *
- * This function must be called in ROM_EXT before handing over execution to the
- * first owner boot stage.
- *
- * The caller is responsible for calling
- * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown)` when
- * sec_mmio is being used to check expectations.
- */
-void flash_ctrl_creator_info_pages_lockdown(void);
-
-/**
- * Certificate info page configurations and permissions.
- *
- * Certificate info pages are fully accessable by the creator code (ROM +
- * ROM_EXT), but read-only for owner code.
- */
-extern const flash_ctrl_cfg_t kCertificateInfoPageCfg;
-extern const flash_ctrl_perms_t kCertificateInfoPageCreatorAccess;
-extern const flash_ctrl_perms_t kCertificateInfoPageOwnerAccess;
-
-/**
- * Configures certificate flash info pages for access by the silicon creator.
- *
- * Flash info pages that hold device certificates are fully accessable by the
- * silicon creator, but are restricted to read-only access by the ROM_EXT before
- * handing over execution to the owner boot stage.
- *
- * The caller is responsible for calling
- * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageCreatorCfg)`
- * when sec_mmio is being used to check expectations.
- */
-void flash_ctrl_cert_info_page_creator_cfg(
-    const flash_ctrl_info_page_t *info_page);
-
-/**
- * Restricts access of certificate flash info pages to read-only for the silicon
- * owner.
- *
- * The caller is responsible for calling
- * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesOwnerRestrict)`
- * when sec_mmio is being used to check expectations.
- */
-void flash_ctrl_cert_info_page_owner_restrict(
-    const flash_ctrl_info_page_t *info_page);
-
-/**
- * Builds a `flash_ctrl_info_page_t` struct for a given bank and page.
- *
- * @param bank Bank index.
- * @param page Page index.
- * @param[out] info_page Pointer to the `flash_ctrl_info_page_t` struct to fill.
- * @return Result of the operation.
- */
-rom_error_t flash_ctrl_info_type0_params_build(
-    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page);
 
 #ifdef __cplusplus
 }
