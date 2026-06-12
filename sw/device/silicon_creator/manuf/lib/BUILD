@@ -83,6 +83,21 @@ cc_library(
 )
 
 cc_library(
+    name = "nvm_info_field",
+    srcs = ["nvm_info_field.c"],
+    hdrs = ["nvm_info_field.h"],
+    deps = [
+        "//hw/top:ast_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing:nvm_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:attestation",
+    ],
+)
+
+cc_library(
     name = "otp_fields",
     srcs = ["otp_fields.c"],
     hdrs = ["otp_fields.h"],

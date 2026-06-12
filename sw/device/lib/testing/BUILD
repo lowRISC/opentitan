@@ -182,6 +182,25 @@ cc_library(
 )
 
 cc_library(
+    name = "nvm_testutils",
+    srcs = ["nvm_testutils.c"],
+    hdrs = ["nvm_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":flash_ctrl_testutils",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
     name = "nv_counter_testutils",
     srcs = ["nv_counter_testutils.c"],
     hdrs = ["nv_counter_testutils.h"],
