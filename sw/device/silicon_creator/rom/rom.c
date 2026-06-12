@@ -25,7 +25,6 @@
 #include "sw/device/silicon_creator/lib/cfi.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -40,6 +39,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
@@ -219,8 +219,8 @@ static rom_error_t rom_init(void) {
   // Initialize the shutdown policy.
   HARDENED_RETURN_IF_ERROR(shutdown_init(lc_state));
 
-  flash_ctrl_init();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
+  nvm_ctrl_init();
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInit);
   flash_ecc_exc_handler_en = otp_read32(
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
 
@@ -306,12 +306,11 @@ static rom_error_t rom_init(void) {
  * its `identifier` and `security_version` fields, and verifies its signature.
  *
  * @param Manifest of the ROM_EXT to be verified.
- * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
+ * @param[out] nvm_exec Value to write to the NVM EXEC register.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_verify(const manifest_t *manifest,
-                              uint32_t *flash_exec) {
+static rom_error_t rom_verify(const manifest_t *manifest, uint32_t *nvm_exec) {
   // Check security version and manifest constraints.
   //
   // The poisoning work (`anti_rollback`) invalidates signatures if the
@@ -325,7 +324,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     anti_rollback = &extra_word;
     anti_rollback_len = sizeof(extra_word);
   }
-  *flash_exec = 0;
+  *nvm_exec = 0;
   HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
 
   // Load OTBN boot services app.
@@ -402,25 +401,25 @@ static rom_error_t rom_verify(const manifest_t *manifest,
    *
    * We swap the order of signature verifications randomly.
    */
-  *flash_exec = 0;
+  *nvm_exec = 0;
   if (rnd_uint32() < 0x80000000) {
     HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
-        &manifest->ecdsa_signature, ecdsa_key, &rev_digest, flash_exec));
+        &manifest->ecdsa_signature, ecdsa_key, &rev_digest, nvm_exec));
 
     return sigverify_spx_verify(
         spx_signature, spx_key, spx_config, lc_state,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
         anti_rollback, anti_rollback_len, digest_region.start,
-        digest_region.length, &fwd_digest, flash_exec);
+        digest_region.length, &fwd_digest, nvm_exec);
   } else {
     HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
         spx_signature, spx_key, spx_config, lc_state,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw),
         anti_rollback, anti_rollback_len, digest_region.start,
-        digest_region.length, &fwd_digest, flash_exec));
+        digest_region.length, &fwd_digest, nvm_exec));
 
     return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature, ecdsa_key,
-                                       &rev_digest, flash_exec);
+                                       &rev_digest, nvm_exec);
   }
 }
 
@@ -547,13 +546,13 @@ static rom_error_t rom_measure_otp_partitions(
  * from this function must result in shutdown.
  *
  * @param manifest Manifest of the ROM_EXT to boot.
- * @param flash_exec Value to write to the flash_ctrl EXEC register.
+ * @param nvm_exec Value to write to the NVM EXEC register.
  * @return rom_error_t Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_boot(const manifest_t *manifest,
                             uintptr_t imm_section_entry_point,
-                            uint32_t flash_exec) {
+                            uint32_t nvm_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
 
@@ -624,8 +623,8 @@ static rom_error_t rom_boot(const manifest_t *manifest,
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
 
   // Enable execution of code from flash if signature is verified.
-  flash_ctrl_exec_set(flash_exec);
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet);
+  nvm_ctrl_exec_set(nvm_exec);
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioExecSet);
 
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/5);
@@ -763,11 +762,11 @@ static rom_error_t rom_try_boot(void) {
   HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
 
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
-  uint32_t flash_exec = 0;
+  uint32_t nvm_exec = 0;
   uintptr_t imm_section_entry_point = kHardenedBoolFalse;
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
-  rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
+  rom_error_t error = rom_verify(manifests.ordered[0], &nvm_exec);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 4, kCfiRomVerifyImm);
   error = rom_verify_immutable_section(error, manifests.ordered[0],
                                        &imm_section_entry_point);
@@ -780,12 +779,12 @@ static rom_error_t rom_try_boot(void) {
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
     HARDENED_RETURN_IF_ERROR(
-        rom_boot(manifests.ordered[0], imm_section_entry_point, flash_exec));
+        rom_boot(manifests.ordered[0], imm_section_entry_point, nvm_exec));
     return kErrorRomBootFailed;
   }
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 7, kCfiRomVerify);
-  error = rom_verify(manifests.ordered[1], &flash_exec);
+  error = rom_verify(manifests.ordered[1], &nvm_exec);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 9, kCfiRomVerifyImm);
   HARDENED_RETURN_IF_ERROR(rom_verify_immutable_section(
       error, manifests.ordered[1], &imm_section_entry_point));
@@ -794,7 +793,7 @@ static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerifyImm, 4);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 12, kCfiRomBoot);
   HARDENED_RETURN_IF_ERROR(
-      rom_boot(manifests.ordered[1], imm_section_entry_point, flash_exec));
+      rom_boot(manifests.ordered[1], imm_section_entry_point, nvm_exec));
   return kErrorRomBootFailed;
 }
 
