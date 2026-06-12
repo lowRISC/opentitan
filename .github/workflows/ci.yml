@@ -30,6 +30,27 @@ env:
   TOOLCHAIN_VERSION: 20220210-1
 
 jobs:
+  # Classify the changed files so that jobs which are irrelevant to the
+  # change can be skipped. On push and merge queue events every category is
+  # reported as changed, so all jobs run as before.
+  changes:
+    name: Classify changes
+    runs-on: ubuntu-22.04
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+      otbn: ${{ steps.classify.outputs.otbn }}
+      docker: ${{ steps.classify.outputs.docker }}
+      qemu: ${{ steps.classify.outputs.qemu }}
+      airgapped: ${{ steps.classify.outputs.airgapped }}
+      rtl: ${{ steps.classify.outputs.rtl }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Required to find the merge base.
+      - name: Classify changed files
+        id: classify
+        run: ./ci/scripts/classify-changes.sh "$GITHUB_BASE_REF"
+
   quick_lint:
     name: Lint (quick)
     runs-on: ubuntu-22.04
@@ -192,8 +213,10 @@ jobs:
   airgapped_build:
     name: Airgapped build
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.airgapped == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -221,8 +244,10 @@ jobs:
   verible_lint:
     name: Verible lint
     runs-on: ubuntu-24.04
-    needs: quick_lint
-    if: ${{ github.event_name == 'pull_request' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name == 'pull_request' && needs.changes.outputs.rtl == 'true' }}
     env:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
       verible_version: v0.0-3430-g060bde0f
@@ -252,9 +277,11 @@ jobs:
 
   otbn_standalone_tests:
     name: Run OTBN smoke Test
-    needs: quick_lint
+    needs:
+      - quick_lint
+      - changes
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.otbn == 'true' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -286,9 +313,11 @@ jobs:
 
   otbn_crypto_tests:
     name: Run OTBN crypto tests
-    needs: quick_lint
+    needs:
+      - quick_lint
+      - changes
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.otbn == 'true' }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
@@ -304,8 +333,10 @@ jobs:
   verilator_englishbreakfast:
     name: Verilated English Breakfast
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.docs_only != 'true' }}
     steps:
       - uses: actions/checkout@v6
       - name: Prepare environment
@@ -335,8 +366,10 @@ jobs:
   verilator_earlgrey:
     name: Verilated Earl Grey
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.docs_only != 'true' }}
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v6
@@ -470,8 +503,10 @@ jobs:
   build_docker_containers:
     name: Build Docker Containers
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.docker == 'true' }}
     steps:
       - uses: actions/checkout@v6
       - name: Build Developer Utility Container
@@ -487,8 +522,10 @@ jobs:
     name: Build and test software
     runs-on: ubuntu-22.04-vivado
     timeout-minutes: 120
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.docs_only != 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -559,8 +596,10 @@ jobs:
     name: Build and test Darjeeling software
     runs-on: ubuntu-22.04-vivado
     timeout-minutes: 120
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.docs_only != 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -586,8 +625,10 @@ jobs:
   qemu_smoketest:
     name: QEMU smoketest
     runs-on: ubuntu-22.04-vivado
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.docs_only != 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -603,8 +644,10 @@ jobs:
   qemu_local_dev_test:
     name: Test QEMU local development override
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs:
+      - quick_lint
+      - changes
+    if: ${{ github.event_name != 'merge_group' && needs.changes.outputs.qemu == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
