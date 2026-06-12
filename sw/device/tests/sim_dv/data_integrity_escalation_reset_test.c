@@ -83,6 +83,7 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -537,14 +538,11 @@ bool test_main(void) {
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
+  nvm_page_cfg_t default_cfg = {.scrambling = kMultiBitBool4False,
+                                .ecc = kMultiBitBool4False,
+                                .he = kMultiBitBool4False};
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_default_region_access(&flash_ctrl_state,
-                                                 /*rd_en*/ true,
-                                                 /*prog_en*/ true,
-                                                 /*erase_en*/ true,
-                                                 /*scramble_en*/ false,
-                                                 /*ecc_en*/ false,
-                                                 /*he_en*/ false));
+      nvm_testutils_default_region_setup(kPageReadWrite, default_cfg));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
