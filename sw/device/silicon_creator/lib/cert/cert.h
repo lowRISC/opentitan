@@ -6,9 +6,9 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_CERT_H_
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,9 +73,9 @@ typedef enum dice_cert_format {
 } dice_cert_format_t;
 
 /**
- * Defines a grouping of certificates onto a single flash info page.
+ * Defines a grouping of certificates onto a single NVM info page.
  */
-typedef struct cert_flash_info_layout {
+typedef struct cert_nvm_info_layout {
   /**
    * Boolean to indicate if this layout configuration is used by the
    * personalization firmware. This enables supporting personalization firmware
@@ -92,15 +92,15 @@ typedef struct cert_flash_info_layout {
    */
   char *group_name;
   /**
-   * The flash info page a set of certificates will be written too.
+   * The NVM info page a set of certificates will be written to.
    */
-  const flash_ctrl_info_page_t *info_page;
+  nvm_info_page_t info_page;
   /**
-   * The number of certificates that will be written to the flash info page.
+   * The number of certificates that will be written to the NVM info page.
    */
   size_t num_certs;
 
-} cert_flash_info_layout_t;
+} cert_nvm_info_layout_t;
 
 /**
  * A set of public key IDs required to generate an X.509 certificate.

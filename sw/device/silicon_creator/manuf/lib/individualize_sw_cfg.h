@@ -87,7 +87,7 @@ status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
  * @return OK_STATUS if the FLASH_DATA_DEFAULT_CFG field is provisioned.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_flash_data_default_cfg_check(
+status_t manuf_individualize_device_nvm_data_default_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
@@ -98,7 +98,7 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
  * @return OK_STATUS if the FLASH_INFO_BOOT_DATA_CFG field is provisioned.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_flash_info_boot_data_cfg_check(
+status_t manuf_individualize_device_nvm_info_boot_data_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**

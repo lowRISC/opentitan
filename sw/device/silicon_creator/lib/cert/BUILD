@@ -106,7 +106,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
     ],
 )

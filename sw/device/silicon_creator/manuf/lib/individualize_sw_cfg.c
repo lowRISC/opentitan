@@ -28,7 +28,7 @@ enum {
   kSha256DigestWords = 256 / 32,
 };
 
-static uint32_t flash_info_page_buf[NVM_BYTES_PER_PAGE / sizeof(uint32_t)];
+static uint32_t nvm_info_page_buf[NVM_BYTES_PER_PAGE / sizeof(uint32_t)];
 
 /**
  * Writes OTP values to target OTP `partition`.
@@ -48,7 +48,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
                               dif_otp_ctrl_partition_t partition,
                               const otp_kv_t *kv, size_t len) {
   for (size_t i = 0; i < len; ++i) {
-    // We purposely skip the provisioning of the flash data region default
+    // We purposely skip the provisioning of the NVM data region default
     // configuration as it must be enabled only after the OTP SECRET1
     // partition has been provisioned. Since OTP SECRET1 provisioning requires
     // the HW_CFG0 partition to be provisioned to use the CSRNG SW interface,
@@ -75,7 +75,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // operations in the personalization flow have been completed.
     //
     // Additionally, we skip the provisioning of the AST configuration data, as
-    // this should already be written to a flash info page. We will pull the
+    // this should already be written to a NVM info page. We will pull the
     // data directly from there.
     // clang-format off
     if (kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
@@ -180,15 +180,15 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 
 static status_t manuf_individualize_device_ast_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
-  // Clear flash info page buffer.
-  memset(flash_info_page_buf, UINT8_MAX, NVM_BYTES_PER_PAGE);
+  // Clear nvm info page buffer.
+  memset(nvm_info_page_buf, UINT8_MAX, NVM_BYTES_PER_PAGE);
 
-  // Copy all of flash info page 0 into RAM. This contains the AST configuration
+  // Copy all of NVM info page 0 into RAM. This contains the AST configuration
   // data, which we will extract and then delete.
   TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
                                     kPageReadOnly, kPageRawCfg));
   TRY(nvm_testutils_read_info_page(kNvmInfoFieldAstCalibrationData.page,
-                                   /*byte_offset=*/0, flash_info_page_buf,
+                                   /*byte_offset=*/0, nvm_info_page_buf,
                                    NVM_BYTES_PER_PAGE / sizeof(uint32_t)));
 
   // Write AST configuration data to OTP.
@@ -197,7 +197,7 @@ static status_t manuf_individualize_device_ast_cfg(
   for (size_t i = 0; i < kNvmInfoAstCalibrationDataSizeIn32BitWords; ++i) {
     uint32_t addr =
         OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + i * sizeof(uint32_t);
-    uint32_t data = flash_info_page_buf[ast_cfg_offset + i];
+    uint32_t data = nvm_info_page_buf[ast_cfg_offset + i];
     uint32_t relative_addr;
     // Check the range is valid.
     if (addr < kValidAstCfgOtpAddrLow || addr >= kInvalidAstCfgOtpAddrHigh) {
@@ -208,16 +208,16 @@ static status_t manuf_individualize_device_ast_cfg(
     TRY(otp_ctrl_testutils_dai_write32(
         otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data,
         /*len=*/1));
-    flash_info_page_buf[ast_cfg_offset + i] =
+    nvm_info_page_buf[ast_cfg_offset + i] =
         UINT32_MAX;  // Erase AST config data after use.
   }
 
-  // Erase AST data from flash by erasing the entire page and rewriting the
+  // Erase AST data from NVM by erasing the entire page and rewriting the
   // modified buffered contents back to the page.
   TRY(nvm_testutils_info_page_setup(kNvmInfoFieldAstCalibrationData.page,
                                     kPageReadWrite, kPageRawCfg));
   TRY(nvm_testutils_write_info_page(kNvmInfoFieldAstCalibrationData.page,
-                                    /*byte_offset=*/0, flash_info_page_buf,
+                                    /*byte_offset=*/0, nvm_info_page_buf,
                                     NVM_BYTES_PER_PAGE / sizeof(uint32_t),
                                     /*erase_before_write=*/true,
                                     /*readback=*/true));
@@ -270,7 +270,7 @@ status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_flash_data_default_cfg_check(
+status_t manuf_individualize_device_nvm_data_default_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   uint32_t offset;
   TRY(dif_otp_ctrl_relative_address(
@@ -283,7 +283,7 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
   return is_provisioned ? OK_STATUS() : INTERNAL();
 }
 
-status_t manuf_individualize_device_flash_info_boot_data_cfg_check(
+status_t manuf_individualize_device_nvm_info_boot_data_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   uint32_t offset;
   TRY(dif_otp_ctrl_relative_address(
