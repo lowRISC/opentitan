@@ -37,8 +37,8 @@ status_t ottf_alerts_enable_all(void) {
 
   for (dif_alert_handler_alert_t alert = 0, cfg_idx = 0;
        alert < ARRAYSIZE(alerts); alert++, cfg_idx++) {
-#ifdef OPENTITAN_IS_EARLGREY
-    // Temporarily skip alert 37 (`flash_ctrl_fatal_err`) on FPGAs and sims at
+#if OPENTITAN_HAS_FLASH_CTRL
+    // Temporarily skip the flash_ctrl fatal_err alert on FPGAs and sims at
     // the owner stage since flash will not be provisioned with expected data.
     // See #23038.
     dt_alert_id_t fatal_err = dt_flash_ctrl_alert_to_alert_id(
@@ -48,7 +48,7 @@ status_t ottf_alerts_enable_all(void) {
       alert_count--;
       continue;
     }
-#endif
+#endif  // OPENTITAN_HAS_FLASH_CTRL
 
     alerts[cfg_idx] = alert;
     alert_classes[cfg_idx] = kDifAlertHandlerClassD;
