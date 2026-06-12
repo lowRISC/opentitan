@@ -1267,7 +1267,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   virtual function void compare_boot_stage_0_data(
       bit exp_match,
-      const ref byte byte_data_q[$]
+      const ref byte unsigned byte_data_q[$]
   );
     adv_creator_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
@@ -1304,7 +1304,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   virtual function void compare_boot_stage_1_data(
       bit exp_match,
-      const ref byte byte_data_q[$]
+      const ref byte unsigned byte_data_q[$]
     );
     adv_owner_int_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
@@ -1332,7 +1332,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // being sent out to the kmac engine
   virtual function void compare_boot_stage_gte_2_data(
      bit exp_match,
-     const ref byte byte_data_q[$]
+     const ref byte unsigned byte_data_q[$]
    );
     adv_owner_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
@@ -1360,7 +1360,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // for invalid OP, should not output any meaningful data to KMAC. Check the outputs aren't
   // matching to any of existing meaningful data
-  virtual function void compare_invalid_data(const ref byte byte_data_q[$]);
+  virtual function void compare_invalid_data(const ref byte unsigned byte_data_q[$]);
     adv_owner_data_t act;
 
     act = {<<8{byte_data_q}};
@@ -1383,7 +1383,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  virtual function void compare_gen_out_data(const ref byte byte_data_q[$]);
+  virtual function void compare_gen_out_data(const ref byte unsigned byte_data_q[$]);
     gen_out_data_t exp, act;
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
