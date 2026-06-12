@@ -82,7 +82,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual keymgr_dpe_if)::set(null, "*.env", "keymgr_dpe_vif", keymgr_dpe_if);
     uvm_config_db#(virtual kmac_app_intf)::set(null,
-                   "*env.m_keymgr_dpe_kmac_agent*", "vif", keymgr_dpe_kmac_intf);
+                   "*env.m_kmac_agent*", "vif", keymgr_dpe_kmac_intf);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
