@@ -10,32 +10,27 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static_assert(kBootDataValidEntry ==
-                  ((uint64_t)kFlashCtrlErasedWord << 32 | kFlashCtrlErasedWord),
-              "kBootDataValidEntry words must be kFlashCtrlErasedWord");
+                  ((uint64_t)kNvmErasedWord << 32 | kNvmErasedWord),
+              "kBootDataValidEntry words must be kNvmErasedWord");
 static_assert(kBootDataEntriesPerPage ==
-                  FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(boot_data_t),
+                  NVM_BYTES_PER_PAGE / sizeof(boot_data_t),
               "Number of boot data entries per page is incorrect");
-static_assert(sizeof(boot_data_t) % FLASH_CTRL_PARAM_BYTES_PER_WORD == 0,
+static_assert(sizeof(boot_data_t) % NVM_BYTES_PER_WORD == 0,
               "Size of `boot_data_t` must be a multiple of flash word size.");
-static_assert(!(FLASH_CTRL_PARAM_BYTES_PER_PAGE &
-                (FLASH_CTRL_PARAM_BYTES_PER_PAGE - 1)),
+static_assert(!(NVM_BYTES_PER_PAGE & (NVM_BYTES_PER_PAGE - 1)),
               "Size of a flash page must be a power of two.");
 static_assert(!(sizeof(boot_data_t) & (sizeof(boot_data_t) - 1)),
               "Size of `boot_data_t` must be a power of two.");
-OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, FLASH_CTRL_PARAM_BYTES_PER_WORD);
-static_assert(offsetof(boot_data_t, is_valid) %
-                      FLASH_CTRL_PARAM_BYTES_PER_WORD ==
-                  0,
+OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, NVM_BYTES_PER_WORD);
+static_assert(offsetof(boot_data_t, is_valid) % NVM_BYTES_PER_WORD == 0,
               "`is_valid` must be flash word aligned.");
 
 enum {
@@ -45,11 +40,11 @@ enum {
   kPageCount = 2,
 };
 /**
- * Boot data flash info pages.
+ * Boot data NVM info pages.
  */
-static const flash_ctrl_info_page_t *kPages[kPageCount] = {
-    &kFlashCtrlInfoPageBootData0,
-    &kFlashCtrlInfoPageBootData1,
+static const nvm_info_page_t kPages[kPageCount] = {
+    kNvmInfoPageBootData0,
+    kNvmInfoPageBootData1,
 };
 
 /**
@@ -83,11 +78,11 @@ static void boot_data_digest_compute(const void *boot_data,
  */
 OT_WARN_UNUSED_RESULT
 static hardened_bool_t boot_data_is_empty(const void *boot_data) {
-  static_assert(kFlashCtrlErasedWord == UINT32_MAX,
-                "kFlashCtrlErasedWord must be UINT32_MAX");
+  static_assert(kNvmErasedWord == UINT32_MAX,
+                "kNvmErasedWord must be UINT32_MAX");
   size_t i = 0, r = kBootDataNumWords - 1;
   hardened_bool_t is_empty = kHardenedBoolTrue;
-  uint32_t res = kFlashCtrlErasedWord;
+  uint32_t res = kNvmErasedWord;
   for (; launder32(i) < kBootDataNumWords && launder32(r) < kBootDataNumWords;
        ++i, --r) {
     res &= read_32(boot_data);
@@ -96,8 +91,8 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
   }
   HARDENED_CHECK_EQ(i, kBootDataNumWords);
   HARDENED_CHECK_EQ(r, SIZE_MAX);
-  if (launder32(res) == kFlashCtrlErasedWord) {
-    HARDENED_CHECK_EQ(res, kFlashCtrlErasedWord);
+  if (launder32(res) == kNvmErasedWord) {
+    HARDENED_CHECK_EQ(res, kNvmErasedWord);
     return is_empty;
   }
   return kHardenedBoolFalse;
@@ -109,7 +104,7 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
  *
  * This function can be used to quickly determine if an entry can be empty or
  * valid. Due to the values chosen for valid and invalid entries,
- * `masked_identifier` will be `kFlashCtrlErasedWord` for entries that can be
+ * `masked_identifier` will be `kNvmErasedWord` for entries that can be
  * empty, `kBootDataIdentifier` for entries that are not invalidated, and `0`
  * for invalidated entries.
  *
@@ -119,8 +114,8 @@ static hardened_bool_t boot_data_is_empty(const void *boot_data) {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_sniff(const flash_ctrl_info_page_t *page,
-                                   size_t index, uint32_t *masked_identifier) {
+static rom_error_t boot_data_sniff(nvm_info_page_t page, size_t index,
+                                   uint32_t *masked_identifier) {
   static_assert(kBootDataValidEntry == UINT64_MAX,
                 "is_valid must be UINT64_MAX for valid entries.");
   static_assert(kBootDataInvalidEntry == 0,
@@ -137,7 +132,7 @@ static rom_error_t boot_data_sniff(const flash_ctrl_info_page_t *page,
   *masked_identifier = 0;
   uint32_t buf[3];
   const uint32_t offset = index * sizeof(boot_data_t) + kIsValidOffset;
-  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(page, offset, 3, buf));
+  HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(page, offset, 3, buf));
   *masked_identifier = buf[0] & buf[1] & buf[2];
   return kErrorOk;
 }
@@ -151,10 +146,10 @@ static rom_error_t boot_data_sniff(const flash_ctrl_info_page_t *page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_read(const flash_ctrl_info_page_t *page,
-                                        size_t index, boot_data_t *boot_data) {
+static rom_error_t boot_data_entry_read(nvm_info_page_t page, size_t index,
+                                        boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
-  return flash_ctrl_info_read(page, offset, kBootDataNumWords, boot_data);
+  return nvm_ctrl_info_read(page, offset, kBootDataNumWords, boot_data);
 }
 
 /**
@@ -175,36 +170,37 @@ static rom_error_t boot_data_entry_read(const flash_ctrl_info_page_t *page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_write_impl(
-    const flash_ctrl_info_page_t *page, size_t index,
-    const boot_data_t *boot_data, hardened_bool_t erase) {
+static rom_error_t boot_data_entry_write_impl(nvm_info_page_t page,
+                                              size_t index,
+                                              const boot_data_t *boot_data,
+                                              hardened_bool_t erase) {
   // This function assumes the following layout for the first three fields.
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
   OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
 
   if (erase == kHardenedBoolTrue) {
-    RETURN_IF_ERROR(flash_ctrl_info_erase(page, kFlashCtrlEraseTypePage));
+    RETURN_IF_ERROR(nvm_ctrl_info_erase(page));
   }
 
   // Write digest
   const uint32_t offset = index * sizeof(boot_data_t);
   RETURN_IF_ERROR(
-      flash_ctrl_info_write(page, offset, kHmacDigestNumWords, boot_data));
+      nvm_ctrl_info_write(page, offset, kHmacDigestNumWords, boot_data));
   // Write the rest of the entry, skipping over `is_valid`.
   enum {
     kSecondWriteOffsetBytes = offsetof(boot_data_t, identifier),
     kSecondWriteOffsetWords = kSecondWriteOffsetBytes / sizeof(uint32_t),
     kSecondWriteNumWords = kBootDataNumWords - kSecondWriteOffsetWords,
   };
-  RETURN_IF_ERROR(flash_ctrl_info_write(
+  RETURN_IF_ERROR(nvm_ctrl_info_write(
       page, offset + kSecondWriteOffsetBytes, kSecondWriteNumWords,
       (const char *)boot_data + kSecondWriteOffsetBytes));
 
   // Check.
   boot_data_t written;
   RETURN_IF_ERROR(
-      flash_ctrl_info_read(page, offset, kBootDataNumWords, &written));
+      nvm_ctrl_info_read(page, offset, kBootDataNumWords, &written));
   if (memcmp(&written, boot_data, sizeof(boot_data_t)) != 0) {
     return kErrorBootDataWriteCheck;
   }
@@ -226,24 +222,19 @@ static rom_error_t boot_data_entry_write_impl(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_write(const flash_ctrl_info_page_t *page,
-                                         size_t index,
+static rom_error_t boot_data_entry_write(nvm_info_page_t page, size_t index,
                                          const boot_data_t *boot_data,
                                          hardened_bool_t erase) {
-  flash_ctrl_info_perms_set(
-      page, (flash_ctrl_perms_t){
+  nvm_ctrl_info_perms_set(
+      page, (nvm_page_perms_t){
                 .read = kMultiBitBool4True,
                 .write = kMultiBitBool4True,
                 .erase = erase == kHardenedBoolTrue ? kMultiBitBool4True
                                                     : kMultiBitBool4False,
             });
   rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
-  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
-  SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
+  nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
+  SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
   return error;
 }
 
@@ -262,8 +253,8 @@ static rom_error_t boot_data_entry_write(const flash_ctrl_info_page_t *page,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_entry_invalidate(
-    const flash_ctrl_info_page_t *page, size_t index) {
+static rom_error_t boot_data_entry_invalidate(nvm_info_page_t page,
+                                              size_t index) {
   // Assertions for the assumptions below.
   OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, 8);
   static_assert(kBootDataInvalidEntry == 0,
@@ -272,18 +263,13 @@ static rom_error_t boot_data_entry_invalidate(
   const uint32_t offset =
       index * sizeof(boot_data_t) + offsetof(boot_data_t, is_valid);
   const uint32_t val[2] = {0, 0};
-  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4True,
-                                      .erase = kMultiBitBool4False,
-                                  });
-  rom_error_t error = flash_ctrl_info_write(page, offset, 2, val);
-  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
-  SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
+  nvm_ctrl_info_perms_set(page,
+                          (nvm_page_perms_t){.read = kMultiBitBool4False,
+                                             .write = kMultiBitBool4True,
+                                             .erase = kMultiBitBool4False});
+  rom_error_t error = nvm_ctrl_info_write(page, offset, 2, val);
+  nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
+  SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
   return error;
 }
 
@@ -295,7 +281,7 @@ typedef struct active_page_info {
   /**
    * Info page.
    */
-  const flash_ctrl_info_page_t *page;
+  nvm_info_page_t page;
   /**
    * Whether this page has an empty entry.
    */
@@ -333,7 +319,7 @@ typedef struct active_page_info {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_page_info_update_impl(
-    const flash_ctrl_info_page_t *page, active_page_info_t *page_info,
+    nvm_info_page_t page, active_page_info_t *page_info,
     boot_data_t *boot_data) {
   uint32_t sniff_results[kBootDataEntriesPerPage];
 
@@ -349,7 +335,7 @@ static rom_error_t boot_data_page_info_update_impl(
     // empty or valid.
     HARDENED_RETURN_IF_ERROR(boot_data_sniff(page, i, &sniff_results[i]));
     // Check all words of this entry only if it can be empty.
-    if (sniff_results[i] == kFlashCtrlErasedWord) {
+    if (sniff_results[i] == kNvmErasedWord) {
       HARDENED_RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
       has_empty_entry = boot_data_is_empty(&buf);
       if (launder32(has_empty_entry) == kHardenedBoolTrue) {
@@ -441,22 +427,14 @@ static rom_error_t boot_data_page_info_update_impl(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t boot_data_page_info_update(
-    const flash_ctrl_info_page_t *page, active_page_info_t *page_info,
-    boot_data_t *boot_data) {
-  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kMultiBitBool4True,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
+static rom_error_t boot_data_page_info_update(nvm_info_page_t page,
+                                              active_page_info_t *page_info,
+                                              boot_data_t *boot_data) {
+  nvm_ctrl_info_perms_set(page, kNvmPagePermsReadOnly);
   rom_error_t error =
       boot_data_page_info_update_impl(page, page_info, boot_data);
-  flash_ctrl_info_perms_set(page, (flash_ctrl_perms_t){
-                                      .read = kMultiBitBool4False,
-                                      .write = kMultiBitBool4False,
-                                      .erase = kMultiBitBool4False,
-                                  });
-  SEC_MMIO_WRITE_INCREMENT(2 * kFlashCtrlSecMmioInfoPermsSet);
+  nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
+  SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
   return error;
 }
 
@@ -475,7 +453,7 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t boot_data_active_page_find(active_page_info_t *page_info,
                                               boot_data_t *boot_data) {
   *page_info = (active_page_info_t){
-      .page = NULL,
+      .page = 0,
       .has_empty_entry = kHardenedBoolFalse,
       .first_empty_index = kBootDataEntriesPerPage,
       .has_valid_entry = kHardenedBoolFalse,
@@ -628,7 +606,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     } else {
       // Erase the other page and write the new entry there if the active page
       // is full.
-      const flash_ctrl_info_page_t *new_page =
+      nvm_info_page_t new_page =
           active_page.page == kPages[0] ? kPages[1] : kPages[0];
       RETURN_IF_ERROR(
           boot_data_entry_write(new_page, 0, &new_entry, kHardenedBoolTrue));

@@ -49,8 +49,6 @@ dual_cc_library(
         device = [
             "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
         ],
@@ -63,8 +61,8 @@ dual_cc_library(
             ":boot_data_header",
             ":error",
             ":nonce",
+            ":nvm_ctrl",
             "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -103,9 +101,8 @@ opentitan_test(
     ),
     deps = [
         ":boot_data",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ":nvm_ctrl",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
 )
 
