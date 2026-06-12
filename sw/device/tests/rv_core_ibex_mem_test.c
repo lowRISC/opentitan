@@ -26,6 +26,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/pmp.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
@@ -141,20 +142,11 @@ static void setup_flash(void) {
 
   CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
 
-  dif_flash_ctrl_region_properties_t region_properties = {
-      .rd_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .erase_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4False,
-      .ecc_en = kMultiBitBool4False,
-      .high_endurance_en = kMultiBitBool4False};
-  dif_flash_ctrl_data_region_properties_t data_region = {
-      .base = kBank1StartPageNum, .size = 0x1, .properties = region_properties};
-
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
-      &flash_ctrl, kFlashRegionNum, data_region));
-  CHECK_DIF_OK(dif_flash_ctrl_set_data_region_enablement(
-      &flash_ctrl, kFlashRegionNum, kDifToggleEnabled));
+  CHECK_STATUS_OK(nvm_testutils_data_region_setup(
+      kFlashRegionNum, kBank1StartPageNum, /*size=*/1, kPageReadWrite,
+      (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,
+                       .ecc = kMultiBitBool4False,
+                       .he = kMultiBitBool4False}));
 
   // Make flash executable
   CHECK_DIF_OK(
