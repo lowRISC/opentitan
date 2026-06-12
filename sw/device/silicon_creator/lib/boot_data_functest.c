@@ -8,21 +8,19 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
- * Boot data flash info pages.
+ * Boot data NVM info pages.
  */
-static const flash_ctrl_info_page_t *kPages[2] = {
-    &kFlashCtrlInfoPageBootData0,
-    &kFlashCtrlInfoPageBootData1,
+static const nvm_info_page_t kPages[2] = {
+    kNvmInfoPageBootData0,
+    kNvmInfoPageBootData1,
 };
 
 /**
@@ -61,11 +59,9 @@ static void boot_data_pages_mp_set(hardened_bool_t perm) {
   uint8_t mubi_perm =
       perm == kHardenedBoolTrue ? kMultiBitBool4True : kMultiBitBool4False;
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
-    flash_ctrl_info_perms_set(kPages[i], (flash_ctrl_perms_t){
-                                             .read = mubi_perm,
-                                             .write = mubi_perm,
-                                             .erase = mubi_perm,
-                                         });
+    nvm_ctrl_info_perms_set(kPages[i], (nvm_page_perms_t){.read = mubi_perm,
+                                                          .write = mubi_perm,
+                                                          .erase = mubi_perm});
   }
 }
 
@@ -75,8 +71,7 @@ static void boot_data_pages_mp_set(hardened_bool_t perm) {
 static void erase_boot_data_pages(void) {
   boot_data_pages_mp_set(kHardenedBoolTrue);
   for (size_t i = 0; i < ARRAYSIZE(kPages); ++i) {
-    CHECK(flash_ctrl_info_erase(kPages[i], kFlashCtrlEraseTypePage) == kErrorOk,
-          "Flash page erase failed.");
+    CHECK(nvm_ctrl_info_erase(kPages[i]) == kErrorOk, "NVM page erase failed.");
   }
   boot_data_pages_mp_set(kHardenedBoolFalse);
 }
@@ -91,19 +86,18 @@ static void erase_boot_data_pages(void) {
  * @param index Index of the entry to write in the given page.
  * @param boot_data A boot data entry.
  */
-static void write_boot_data(const flash_ctrl_info_page_t *page, size_t index,
+static void write_boot_data(nvm_info_page_t page, size_t index,
                             const boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
   uint32_t buf[kBootDataNumWords];
   memcpy(buf, boot_data, sizeof(boot_data_t));
   boot_data_pages_mp_set(kHardenedBoolTrue);
-  CHECK(flash_ctrl_info_write(page, offset, kBootDataNumWords, buf) == kErrorOk,
-        "Flash write failed.");
-  CHECK(flash_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
-        "Flash read failed.");
+  CHECK(nvm_ctrl_info_write(page, offset, kBootDataNumWords, buf) == kErrorOk,
+        "NVM write failed.");
+  CHECK(nvm_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
+        "NVM read failed.");
   boot_data_pages_mp_set(kHardenedBoolFalse);
-  CHECK(memcmp(buf, boot_data, sizeof(boot_data_t)) == 0,
-        "Flash write failed.");
+  CHECK(memcmp(buf, boot_data, sizeof(boot_data_t)) == 0, "NVM write failed.");
 }
 
 /**
@@ -113,13 +107,13 @@ static void write_boot_data(const flash_ctrl_info_page_t *page, size_t index,
  * @param index Index of the entry to read in the given page.
  * @param boot_data A boot data entry.
  */
-static void read_boot_data(const flash_ctrl_info_page_t *page, size_t index,
+static void read_boot_data(nvm_info_page_t page, size_t index,
                            boot_data_t *boot_data) {
   const uint32_t offset = index * sizeof(boot_data_t);
   uint32_t buf[kBootDataNumWords];
   boot_data_pages_mp_set(kHardenedBoolTrue);
-  CHECK(flash_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
-        "Flash read failed.");
+  CHECK(nvm_ctrl_info_read(page, offset, kBootDataNumWords, buf) == kErrorOk,
+        "NVM read failed.");
   boot_data_pages_mp_set(kHardenedBoolFalse);
   memcpy(boot_data, buf, sizeof(boot_data_t));
 }
@@ -135,7 +129,7 @@ static void read_boot_data(const flash_ctrl_info_page_t *page, size_t index,
  * @param num_entries Number of entries to write.
  * @param boot_data A boot data entry.
  */
-static void fill_with_invalidated_boot_data(const flash_ctrl_info_page_t *page,
+static void fill_with_invalidated_boot_data(nvm_info_page_t page,
                                             size_t num_entries,
                                             const boot_data_t *boot_data) {
   boot_data_t invalidated = *boot_data;
@@ -357,8 +351,8 @@ bool test_main(void) {
   // Initialize the sec_mmio table so that we can run this test with both rom
   // and test_rom.
   sec_mmio_init();
-  flash_ctrl_init();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
+  nvm_ctrl_init();
+  SEC_MMIO_WRITE_INCREMENT(kNvmCtrlSecMmioInit);
   sec_mmio_check_counters(/*expected_check_count=*/0);
 
   EXECUTE_TEST(result, check_test_data_test);
