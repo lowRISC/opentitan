@@ -45,8 +45,8 @@ class kmac_key_error_vseq extends kmac_app_vseq;
       fork begin : isolation_fork
         fork
           send_kmac_app_req(app_mode);
-          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.req_valid &&
-                cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.req_last);
+          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.req.req_valid &&
+                cfg.m_kmac_app_agent_cfg[app_mode].vif.req.req_last);
         join_any;
         disable fork;
       end join
@@ -76,18 +76,18 @@ class kmac_key_error_vseq extends kmac_app_vseq;
   virtual task check_keymgr_rsp_nonblocking();
     fork begin
       while (cfg.en_scb == 0) begin
-        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.req_ready == 1);
-        `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.digest_s0, '0)
-        `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.digest_s1, '0)
-        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.req_ready == 0);
+        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.req_ready == 1);
+        `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.digest_s0, '0)
+        `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.digest_s1, '0)
+        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.req_ready == 0);
       end
     end join_none
 
     fork begin
       while (cfg.en_scb == 0) begin
-        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.rsp_valid == 1);
-        `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.error, 1)
-        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_rsp.rsp_valid == 0);
+        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.rsp_valid == 1);
+        `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.error, 1)
+        wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.rsp.rsp_valid == 0);
       end
     end join_none
   endtask
