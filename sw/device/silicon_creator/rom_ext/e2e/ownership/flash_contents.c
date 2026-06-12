@@ -7,8 +7,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -17,9 +17,9 @@ status_t flash_contents_print(boot_log_t *boot_log) {
   TRY(boot_log_check(boot_log));
   uint32_t *data = (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
                                 boot_log->rom_ext_size);
-  uint32_t *end = (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                               FLASH_CTRL_PARAM_BYTES_PER_BANK);
-  uint32_t incr = FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t);
+  uint32_t *end =
+      (uint32_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + NVM_BYTES_PER_BANK);
+  uint32_t incr = NVM_BYTES_PER_PAGE / sizeof(uint32_t);
 
   for (; data < end; data += incr) {
     LOG_INFO("flash %p = %x", data, *data);

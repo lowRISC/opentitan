@@ -7,8 +7,8 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_spx.h"
@@ -296,10 +296,10 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   end = (uintptr_t)rescue + rescue->header.length;
 #endif
 #ifdef WITH_ISFB
-  owner_flash_info_config_t *info = (owner_flash_info_config_t *)end;
+  owner_nvm_info_config_t *info = (owner_nvm_info_config_t *)end;
   info->header = (tlv_header_t){
       .tag = kTlvTagInfoConfig,
-      .length = sizeof(owner_flash_info_config_t) + sizeof(owner_info_page_t),
+      .length = sizeof(owner_nvm_info_config_t) + sizeof(owner_info_page_t),
   };
   info->config[0] = (owner_info_page_t){
       .bank = 0,
@@ -344,14 +344,13 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 
   // Write the configuration to both owner page 0.  The next boot of the ROM_EXT
   // will make a redundant copyh in page 1.
-  OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
-                                   kFlashCtrlEraseTypePage));
-  OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,
-                                   sizeof(owner_page[0]) / sizeof(uint32_t),
-                                   &owner_page[0]));
+  OT_DISCARD(nvm_ctrl_info_erase(kNvmInfoPageOwnerSlot0));
+  OT_DISCARD(nvm_ctrl_info_write(kNvmInfoPageOwnerSlot0, 0,
+                                 sizeof(owner_page[0]) / sizeof(uint32_t),
+                                 &owner_page[0]));
   owner_page_valid[0] = kOwnerPageStatusSealed;
 
   OT_DISCARD(boot_data_write(bootdata));
-  dbg_printf("sku_creator_owner_init: saved to flash\r\n");
+  dbg_printf("sku_creator_owner_init: saved to NVM\r\n");
   return kErrorOk;
 }
