@@ -453,11 +453,11 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
+        ":nvm_ctrl",
         ":stack_utilization",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
     ],
@@ -476,7 +476,6 @@ cc_library(
     srcs = ["bootstrap_fuzzer_util.cc"],
     hdrs = ["bootstrap_fuzzer_util.h"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
