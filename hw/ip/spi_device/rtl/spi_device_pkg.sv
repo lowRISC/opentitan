@@ -408,7 +408,7 @@ package spi_device_pkg;
   } sram_type_e;
 
   // Sram parameters
-  parameter sram_type_e DefaultSramType = SramType2p;
+  parameter sram_type_e DefaultSramType = SramType1r1w;
   parameter int unsigned SramDw      = 32;
   parameter int unsigned SramStrbW   = SramDw/8;
   parameter int unsigned SramOffsetW = $clog2(SramStrbW);
