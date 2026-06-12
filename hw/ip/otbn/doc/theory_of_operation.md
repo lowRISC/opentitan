@@ -518,6 +518,7 @@ The following state is wiped:
 * The accumulator register (also accessible through the ACC WSR) and the intermediate result registers for the Montgomery computation (hidden registers).
 * Flags (accessible through the FG0, FG1, and FLAGS CSRs)
 * The modulus (accessible through the MOD0 to MOD7 CSRs and the MOD WSR)
+* The WSRs and CSRs for the KMAC interface.
 
 The wiping procedure is a two-step process:
 * Overwrite the state with randomness from URND and request a reseed of URND.
@@ -528,7 +529,240 @@ In order to prevent mismatches between ISS and RTL, software needs to initialise
 
 Loop and call stack pointers are reset.
 
+A secure wipe terminates any ongoing KMAC interface session.
+See the secure wipe section of the interface description.
+
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
+
+### KMAC interface
+The OTBN features an interface towards the KMAC HWIP which can be used to offload hashing operations.
+It consists of the following CSRs / WSRs:
+- `KMAC_STATUS`
+- `KMAC_CTRL`
+- `KMAC_CFG`
+- `KMAC_STRB`
+- `KMAC_DATA_S0` / `KMAC_DATA_S1`
+
+Behind these CSRs/WSRs, which are described in more detail [here](../README.md#Control-and-Status-Registers-(CSRs)), OTBN uses a [dynamic application interface](../../kmac/doc/theory_of_operation.md#application-interfaces) of the KMAC HWIP.
+
+Before OTBN can make use of this interface, system SW must setup the KMAC HWIP correctly.
+See the KMAC HWIP documentation what must be configured before OTBN can use the interface.
+
+OTBN software can control this interface by configuring it via `KMAC_CFG` and issuing commands via `KMAC_CTRL`.
+These commands are then translated to dynamic application interface requests.
+The responses from the interface are translated and exposed to OTBN SW via `KMAC_STATUS` and `KMAC_DATA_S0` / `KMAC_DATA_S1`.
+
+The interface supports multiple successive sessions where each session follows the following high-level steps:
+- Configure the desired hashing mode via `KMAC_CFG`.
+- Check if the interface is ready by checking for `KMAC_STATUS.READY = 1`.
+- Start a session by issuing the `KMAC_CTRL.START` command.
+- Send the message parts by issuing one or more `KMAC_CTRL.SEND` commands.
+- Issue the `KMAC_CTRL.PROCESS` command to process the full message.
+- Wait for the first response by polling until `KMAC_STATUS.RSP_VALID = 1`.
+- Check for errors by reading `KMAC_STATUS.RSP_ERROR`.
+  - If there is an error, the session must be terminated by issuing the `KMAC_CTRL.DONE` command.
+- Read the digest in 64-bit parts from `KMAC_DATA_S0` and `KMAC_DATA_S1`.
+- For more digest data, poll again until `KMAC_STATUS.RSP_VALID = 1` after reading both data WSRs.
+- Once the digest or the desired XOF output is read, end the digest reading phase by issuing a `KMAC_CTRL.DONE` command.
+- Wait until the `KMAC_CTRL.DONE` command has completed by polling until `KMAC_STATUS.RSP_VALID = 1`.
+- Check for errors by reading `KMAC_STATUS.RSP_ERROR`, `KMAC_STATUS.MSG_WRITE_ERROR`, and `KMAC_STATUS.CTRL_ERROR`.
+  - If there is an error, the digest data must be considered as invalid.
+- Issue the `KMAC_CTRL.CLOSE` command to end the session.
+
+Note that this high-level outline simplifies some steps, especially the error handling.
+If there is no error at the end, OTBN can start the next session with a new configuration and message.
+See the detailed explanations for the different steps in the next sections and the error handling section for more details.
+
+#### Session details
+This section elaborates on the previously presented high-level steps how to use the interface.
+The interface keeps track of the current session with the following state machine.
+Note, a command is issued by OTBN SW and a request/response refers to a KMAC HWIP application interface request/response which is generated/received by the OTBN-KMAC interface module.
+For simplicity, additional states to handle a secure wipe are not depicted.
+
+```mermaid
+stateDiagram-v2
+[*] --> Idle
+
+Idle --> Starting: START command
+
+Starting --> WaitForMsg: Start request sent
+
+WaitForMsg --> SendingMsg: SEND command
+WaitForMsg --> Processing: PROCESS command
+
+SendingMsg --> WaitForMsg: Message sent
+
+Processing --> Receiving: PROCESS request sent
+
+Receiving --> Terminating: DONE command
+
+Terminating --> WaitForFinish: Termination request sent
+
+WaitForFinish --> WaitForClose: Finish response received
+
+WaitForClose --> Idle: CLOSE command
+```
+
+##### Starting a session
+To start a session the OTBN SW has to:
+- Write the desired hashing configuration to `KMAC_CFG`.
+  - There is no validation when writing a configuration to `KMAC_CFG` but KMAC HWIP does check the configuration once the session is started.
+    See [error handling](#error-handling) section for more details.
+- Poll until `KMAC_STATUS.READY = 1`.
+  - This should be 1 in most cases when OTBN starts executing a program, however, the interface could still be terminating a previous session due to a secure wipe (see secure wipe behaviour).
+- Issue the `KMAC_CTRL.START` command by writing a 1 to it.
+- There may be no write to `KMAC_CFG` until `KMAC_STATUS.READY` is 1 again (polled for before sending message).
+  - Otherwise the configuration can be changed while the start request is being sent.
+    The behaviour of the interface in this case is undefined.
+  - Writing `KMAC_CFG` while `KMAC_STATUS.READY` is 0 sets `KMAC_STATUS.MSG_WRITE_ERROR`.
+
+There is no immediate response indicating whether the session was started successfully or not.
+This can be detected when sending the message or is reported along the first digest response: see [error handling](#error-handling).
+As such, after sending the `KMAC_CTRL.START` command OTBN SW must continue with sending the message.
+
+##### Sending the message
+Once the `KMAC_CTRL.START` command was issued, OTBN SW can send the message by following these steps:
+- Poll until `KMAC_STATUS.READY = 1`.
+  - This can time out in certain error cases, see [error handling](#error-handling).
+- Write a message into `KMAC_DATA_S0` and `KMAC_DATA_S1` (share 0 and 1, respectively) and set the corresponding strobe in `KMAC_STRB`.
+  - All messages, including the last one, must be contiguous and LSB aligned.
+  - Only the last message may be partial.
+  - For an unmasked message, write the plaintext into one of the input WSRs and write zeros into the other one.
+- Send the message by writing a 1 to `KMAC_CTRL.SEND`.
+- Repeat these steps until the full message has been sent.
+
+To end the message phase:
+  - Poll until `KMAC_STATUS.READY = 1`.
+  - Issue the `KMAC_CTRL.PROCESS` command by writing a 1 to it.
+
+##### Retrieving digest data
+Once the `PROCESS` command is issued, the KMAC HWIP starts hashing the message.
+As soon as the first digest part is ready, the app interface automatically pushes it towards OTBN without any additional requests from OTBN.
+After issuing the `PROCESS` command, OTBN software thus must do the following:
+- Wait for the first response by polling until `KMAC_STATUS.RSP_VALID = 1`.
+- Check `KMAC_STATUS.RSP_ERROR`.
+  - If 1, an error occurred and the app interface does not send any further responses.
+  - The session must be terminated as described in the error section.
+- If there is no error, OTBN can read the first digest data (64-bit) from `KMAC_DATA_S0` and `KMAC_DATA_S1`.
+  - The digest data always comes in a shared representation.
+    To recover the plaintext digest the values read from `KMAC_DATA_S0` and `KMAC_DATA_S1` must be XORed.
+- Once both WSRs, `KMAC_DATA_S0` and `KMAC_DATA_S1`, have been read the interface clears `KMAC_STATUS.RSP_VALID` and the interface will accept the next digest part from the app interface.
+  (i.e., the `KMAC_STATUS.RSP_VALID` bit serves as back-pressure.)
+- Repeat the steps until the full digest or the required XOF output is received.
+  - As the `KMAC_STATUS.RSP_ERROR` flag is sticky, subsequent checks can be postponed until the last element is read.
+  - The first check is however essential as in case of an error no more responses arrive and polling `KMAC_STATUS.RSP_VALID` would deadlock.
+
+The number of digest parts pushed by the app interface depends on the selected mode, strength and XOF setting.
+
+If `KMAC_CFG.EN_XOF = 0`, the KMAC HWIP pushes only the digest parts that make up the first rate (the actual digest only), i.e., it pushes `roundup(digest_width / 64)` responses.
+Once these are pushed, the interface waits for a `DONE` command as explained [below](#ending-a-session).
+
+If `KMAC_CFG.EN_XOF = 1`, the KMAC HWIP pushes infinite responses.
+For this it automatically squeezes more digest by issuing a KMAC HWIP internal `RUN` command each time it finishes pushing one full rate.
+As soon as the squeezing has finished, the app starts again to push the new rate towards OTBN.
+When the OTBN software has received enough XOF output, the session can be terminated as explained [below](#ending-a-session).
+
+###### Optimizing the digest retrieval
+The KMAC hashing operation is fully deterministic and thus the polling until `KMAC_STATUS.RSP_VALID = 1` can be optimized.
+The first polling after issuing the `PROCESS` command is required as it is unknown when exactly the first response arrives (error response arrives earlier than the first digest).
+However, once the first response has arrived, the arrival of the subsequent responses is fully deterministic.
+The KMAC HWIP pushes the full rate back to back and the squeezing is also a deterministic operation.
+On the OTBN interface side, each time both shares are read, the next digest is accepted by the interface in the same cycle (assuming the KMAC HWIP is currently pushing digest data).
+This allows OTBN SW to read the digest responses back to back, exploiting the full bandwidth the KMAC provides.
+
+##### Ending a session
+
+A session must always be ended with the `DONE` command followed by a `CLOSE` command, regardless of whether an error was detected during the message or digest phase.
+This is required to bring the KMAC HWIP back to idle so that the next session can begin or in case of an error to release the interface so that system SW then can handle the KMAC HWIP error (see KMAC HWIP documentation how errors must be handled).
+
+To end a session:
+- Issue the `KMAC_CTRL.DONE` command by writing a 1 it.
+  - `KMAC_STATUS.RSP_VALID` is cleared immediately upon issuing `DONE`, even if the current values in `KMAC_DATA_S0`/`KMAC_DATA_S1` have not been read yet.
+- Poll until `KMAC_STATUS.RSP_VALID = 1`.
+  - This final response acknowledges the end of the session.
+- Check the error flags (see [error handling](#error-handling) for more details):
+  - `KMAC_STATUS.RSP_ERROR`
+  - `KMAC_STATUS.MSG_WRITE_ERROR`
+  - `KMAC_STATUS.CTRL_ERROR`
+- Once the errors have been checked, issue the `KMAC_CTRL.CLOSE` command to end the session.
+
+If there has been no error detected, the digest from this session is valid and the interface is ready to start the next session.
+
+#### Error handling
+
+The possible errors during a session can be separated between KMAC related errors and OTBN SW errors.
+
+The OTBN SW related errors are:
+1. `KMAC_STATUS.MSG_WRITE_ERROR`
+    - OTBN SW wrote to `KMAC_DATA_S0` / `KMAC_DATA_S1`, `KMAC_STRB` or `KMAC_CFG` when the interface was not ready to accept new data or a new configuration, i.e, when `KMAC_STATUS.READY = 0`.
+    - OTBN SW wrote to `KMAC_DATA_S0` / `KMAC_DATA_S1` in the same cycle the interface wrote an incoming digest response into them during the receive phase (even though `KMAC_STATUS.READY = 1`).
+      The digest response has priority, so the SW write to the least significant word is ignored.
+    - In this case the configuration / message sent to KMAC HWIP could be corrupted and any digest must be considered invalid.
+1. `KMAC_STATUS.CTRL_ERROR`
+    - OTBN SW issued an unexpected command sometime during the session.
+    - As any unexpected commands are ignored the digest data is still valid.
+      However, it gives a hint for a programming error or that OTBN was attacked during the session.
+
+The KMAC related errors cases are:
+1. `KMAC_STATUS.READY` remains low after issuing the `KMAC_CTRL.START` or a `KMAC_CTRL.SEND` command:
+    - The KMAC HWIP does not accept the session request because:
+      - It is busy serving another request.
+        - Note, if the request channel is pipelined, the timeout can happen as soon as the pipeline is full, i.e., after sending the first few messages.
+      - It is in a terminal error state.
+1. A digest response has `KMAC_STATUS.RSP_ERROR = 1`.
+   This happens if either:
+    - The session request is rejected because:
+        - The requested hashing configuration is invalid.
+        - System SW did not set `CFG_SHADOWED.entropy_ready` of the KMAC HWIP before OTBN SW is started.
+      - This service rejected error is reported with the first response after the `KMAC_CTRL.PROCESS` command.
+    - A KMAC HWIP internal error occurred during the session.
+      - Can occur at any time when receiving digest data.
+      - See the KMAC HWIP documentation for error causes.
+
+In case the `KMAC_STATUS.READY` remains low, the KMAC must be assumed as locked up and OTBN SW must abort the execution.
+If OTBN aborts its execution, the system SW then must take the required steps to recover the KMAC HWIP.
+See also the section explaining the secure wipe behaviour.
+
+If a service rejected error or the KMAC HWIP internal error occurs, all digest data must be considered as invalid.
+OTBN SW then must end the session.
+For this OTBN SW should:
+- Clear the `KMAC_STATUS.RSP_ERROR` bit (W1C).
+- Issue the `KMAC_CTRL.DONE` command.
+- Poll until `KMAC_STATUS.RSP_VALID = 1`.
+- Check the `KMAC_STATUS.RSP_ERROR` bit
+  - If it is set again, this means the KMAC HWIP experienced an internal error and this cannot be handled from the OTBN side.
+  - If it is 0, a service rejected error occurred and OTBN can try again with a new session (e.g., with a valid configuration).
+- In any case, issue the `KMAC_CTRL.CLOSE` command to end the session.
+
+#### KMAC interface secure wipe behaviour
+
+When a secure wipe starts, the behaviour depends on whether a session is ongoing or not.
+
+If no session is ongoing, then:
+- `KMAC_DATA_S0` / `KMAC_DATA_S1` are overwritten with randomness twice like any other WSR (regular secure wipe behaviour).
+- `KMAC_CFG` and `KMAC_STRB` are reset to their default values.
+- All flags in `KMAC_STATUS` are cleared.
+
+If a session is ongoing, then:
+- `KMAC_DATA_S0` / `KMAC_DATA_S1` are overwritten with randomness twice like any other WSR (regular secure wipe behaviour).
+- The `KMAC_STATUS.READY` is immediately cleared to 0.
+- The interface starts immediately to end the session in a graceful way.
+  - A message beat that is already being sent is completed (its request `valid` stays asserted until the beat is accepted), but no further beats are sent.
+  - If the session is still in the message phase, a `PROCESS` request is sent.
+  - If required a termination request is sent, and any digest responses that still arrive are discarded until the finish response is received.
+- Once the session has been ended, `KMAC_CFG` and `KMAC_STRB` are reset to their default values and all flags in `KMAC_STATUS` are cleared.
+- Once no secure wipe is ongoing anymore, `KMAC_STATUS.READY` returns back to 1.
+
+Because the data WSRs are wiped immediately, a wipe that coincides with an in-flight message beat can change that beat's data while its request `valid` is asserted.
+This would violate the valid locked-in principle and leads to undefined digest data.
+However, this is a rare corner case and is deliberately accepted because in this case any produced digest data will get discarded.
+
+Terminating the session requires the KMAC HWIP to accept the requests.
+If the KMAC HWIP never does this, the termination could take arbitrarily long.
+A secure wipe can therefore finish before the session is terminated, after which OTBN returns to its idle state (or locks up in the error case).
+It would then be possible for system SW to start another OTBN program before the previous program's session has been terminated.
+Therefore, any OTBN program must check for `KMAC_STATUS.READY = 1` before starting a session.
+If a further secure wipe occurs before the termination completes, the `KMAC_DATA_S0` / `KMAC_DATA_S1` WSRs are wiped again while the termination process continues unaffected.
 
 ## References
 
