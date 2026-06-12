@@ -46,9 +46,6 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
   MOCK_METHOD(void, InfoCfgLock, (const flash_ctrl_info_page_t *));
   MOCK_METHOD(void, BankErasePermsSet, (hardened_bool_t));
   MOCK_METHOD(void, ExecSet, (uint32_t));
-  MOCK_METHOD(void, CreatorInfoPagesLockdown, ());
-  MOCK_METHOD(rom_error_t, InfoType0ParamsBuild,
-              (uint32_t, uint32_t, flash_ctrl_info_page_t *));
 };
 
 }  // namespace internal
