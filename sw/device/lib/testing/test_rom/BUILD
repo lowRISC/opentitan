@@ -95,7 +95,6 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:top_lib",
@@ -152,7 +151,6 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
@@ -242,10 +240,9 @@ cc_library(
     ) + opentitan_if_ip(
         "flash_ctrl",
         [
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top/dt:flash_ctrl",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing:nvm_testutils",
         ],
         [],
     ) + opentitan_if_ip(
