@@ -10,16 +10,15 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
-
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 enum {
-  kDicePageDataSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(hmac_digest_t),
+  kDicePageDataSize = NVM_BYTES_PER_PAGE - sizeof(hmac_digest_t),
 };
 
 /**
@@ -30,7 +29,7 @@ typedef struct dice_page {
   hmac_digest_t digest;
 } dice_page_t;
 
-static_assert(sizeof(dice_page_t) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+static_assert(sizeof(dice_page_t) == NVM_BYTES_PER_PAGE,
               "Invalid dice page size");
 
 /**
@@ -84,7 +83,7 @@ rom_error_t dice_chain_attestation_owner(
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_flush_flash(void);
+rom_error_t dice_chain_flush_nvm(void);
 
 /**
  * Checks that the factory-provisioned certificates in flash are valid and

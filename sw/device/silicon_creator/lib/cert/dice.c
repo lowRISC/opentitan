@@ -22,7 +22,7 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 

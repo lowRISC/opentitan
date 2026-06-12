@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
     .salt =
@@ -30,7 +30,7 @@ const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
 };
 const sc_keymgr_ecc_key_t kTpmKeyEk = {
     .type = kScKeymgrKeyTypeSealing,
-    .keygen_seed_idx = kFlashInfoFieldTpmEkKeySeedIdx,
+    .keygen_seed_idx = kNvmInfoFieldTpmEkKeySeedIdx,
     .keymgr_diversifier = &kTpmEkKeymgrDiversifier,
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
