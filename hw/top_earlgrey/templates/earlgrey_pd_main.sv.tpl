@@ -13,7 +13,7 @@ cio_info = {}
 <%include file="/toplevel_snippets/info_dicts.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info" />\
 `include "prim_assert.sv"
 
-module top_${top["name"]} #(
+module ${top["name"]}_pd_${domain.lower()} #(
 <%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=domain" />\
 ) (
 <%include file="/toplevel_snippets/port_intermodule_signals.tpl" args="top=top, domain=domain" />\

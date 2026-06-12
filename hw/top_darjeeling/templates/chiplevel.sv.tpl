@@ -900,15 +900,15 @@ module chip_${top["name"]}_${target["name"]} #(
   % endif
 % endfor
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-  top_${top["name"]} #(
+  ///////////////////////////
+  // Top-level Main Domain //
+  ///////////////////////////
+  ${top["name"]}_pd_main #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
-  ) top_${top["name"]} (
+  ) ${top["name"]}_pd_main (
 <%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=False, domain='Main'" />\
 
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=True, last_snippet=False" />\
@@ -917,10 +917,10 @@ module chip_${top["name"]}_${target["name"]} #(
   );
 
 
-  //////////////////////
-  // Always-on Domain //
-  //////////////////////
-  top_${top["name"]}_pd_aon top_${top["name"]}_pd_aon (
+  ////////////////////////////////
+  // Top-level Always-On domain //
+  ////////////////////////////////
+  ${top["name"]}_pd_aon ${top["name"]}_pd_aon (
 <%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=False, domain='Aon'" />\
 
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=True, last_snippet=False" />\

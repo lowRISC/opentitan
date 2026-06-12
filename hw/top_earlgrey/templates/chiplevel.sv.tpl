@@ -1259,10 +1259,10 @@ module chip_${top["name"]}_${target["name"]} #(
   % endif
 % endfor
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-  top_${top["name"]} #(
+  ///////////////////////////
+  // Top-level Main Domain //
+  ///////////////////////////
+  ${top["name"]}_pd_main #(
 % if target["name"] == "cw310":
     .EntropySrcStub(1'b1), // Stub ENTROPY_SRC to reduce resource usage on CW310. See #30062.
     .OtbnStub(1'b1), // Stub OTBN to reduce resource usage on CW310. See #30062.
@@ -1337,7 +1337,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % endif
-  ) top_${top["name"]} (
+  ) ${top["name"]}_pd_main (
 <%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader, domain='Main'" />\
 
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=True, last_snippet=False" />\
@@ -1346,15 +1346,15 @@ module chip_${top["name"]}_${target["name"]} #(
   );
 
 
-  //////////////////////
-  // Always-on Domain //
-  //////////////////////
+  ////////////////////////////////
+  // Top-level Always-On domain //
+  ////////////////////////////////
   % if target["name"] in ["cw310", "cw340"] or (target["name"] == "verilator" and top["name"] != "englishbreakfast"):
-  top_${top["name"]}_pd_aon #(
+  ${top["name"]}_pd_aon #(
     .SramCtrlRetAonInstrExec(0)
   ) top_${top["name"]}_pd_aon (
   % else:
-  top_${top["name"]}_pd_aon top_${top["name"]}_pd_aon (
+  ${top["name"]}_pd_aon ${top["name"]}_pd_aon (
   % endif
 <%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader, domain='Aon'" />\
 

@@ -1288,17 +1288,17 @@ module chip_earlgrey_asic #(
   logic [8:0] cio_sensor_ctrl_aon_ast_debug_out_d2p;
   logic [8:0] cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-  top_earlgrey #(
+  ///////////////////////////
+  // Top-level Main Domain //
+  ///////////////////////////
+  earlgrey_pd_main #(
     .I2c0InputDelayCycles(1),
     .I2c1InputDelayCycles(1),
     .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_earlgrey (
+  ) earlgrey_pd_main (
     // Clocks and clock gating control from clkmgr_aon
     .clkmgr_aon_clocks_i(clkmgr_aon_clocks),
     .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en),
@@ -1464,10 +1464,10 @@ module chip_earlgrey_asic #(
   );
 
 
-  //////////////////////
-  // Always-on Domain //
-  //////////////////////
-  top_earlgrey_pd_aon top_earlgrey_pd_aon (
+  ////////////////////////////////
+  // Top-level Always-On domain //
+  ////////////////////////////////
+  earlgrey_pd_aon earlgrey_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks.clk_sys),
     .clk_io_i  (ast_base_clks.clk_io ),

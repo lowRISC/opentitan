@@ -1706,15 +1706,15 @@ module chip_darjeeling_asic #(
   logic [15:0] cio_soc_proxy_soc_gpo_d2p;
   logic [15:0] cio_soc_proxy_soc_gpo_en_d2p;
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-  top_darjeeling #(
+  ///////////////////////////
+  // Top-level Main Domain //
+  ///////////////////////////
+  darjeeling_pd_main #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
-  ) top_darjeeling (
+  ) darjeeling_pd_main (
     // Clocks and clock gating control from clkmgr_aon
     .clkmgr_aon_clocks_i(clkmgr_aon_clocks),
     .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en),
@@ -1896,10 +1896,10 @@ module chip_darjeeling_asic #(
   );
 
 
-  //////////////////////
-  // Always-on Domain //
-  //////////////////////
-  top_darjeeling_pd_aon top_darjeeling_pd_aon (
+  ////////////////////////////////
+  // Top-level Always-On domain //
+  ////////////////////////////////
+  darjeeling_pd_aon darjeeling_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks.clk_sys),
     .clk_io_i  (ast_base_clks.clk_io ),

@@ -10,7 +10,7 @@
 
 `include "prim_assert.sv"
 
-module top_darjeeling_pd_aon #(
+module darjeeling_pd_aon #(
   // TODO Manual parameters for pwrmgr
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,
