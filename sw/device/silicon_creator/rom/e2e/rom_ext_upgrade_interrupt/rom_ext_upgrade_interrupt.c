@@ -7,13 +7,14 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/nv_counter_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -30,18 +31,15 @@ static void print_boot_data(const boot_data_t *boot_data) {
 }
 
 static void increment_flash_counter(void) {
-  dif_flash_ctrl_state_t flash_ctrl;
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash_ctrl,
-      /*rd_en*/ true,
-      /*prog_en*/ true, false, false, false, false));
-  CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_increment(&flash_ctrl, kFlashCounterId));
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash_ctrl, false, false, false, false, false, false));
+  CHECK_STATUS_OK(nv_counter_testutils_counter_increment(kFlashCounterId));
+  // Disable default region access after the counter operation.
+  CHECK_STATUS_OK(nvm_testutils_default_region_setup(
+      (nvm_page_perms_t){.read = kMultiBitBool4False,
+                         .write = kMultiBitBool4False,
+                         .erase = kMultiBitBool4False},
+      (nvm_page_cfg_t){.scrambling = kMultiBitBool4False,
+                       .ecc = kMultiBitBool4False,
+                       .he = kMultiBitBool4False}));
 }
 
 static rom_error_t first_boot_test(void) {
@@ -58,20 +56,20 @@ static rom_error_t first_boot_test(void) {
   CHECK(boot_data.min_security_version_rom_ext == kNewMinSecVer);
 
   uint32_t corrupted_words[4] = {0};
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
-                            (flash_ctrl_perms_t){
-                                .read = kMultiBitBool4False,
-                                .write = kMultiBitBool4True,
-                                .erase = kMultiBitBool4False,
-                            });
-  RETURN_IF_ERROR(flash_ctrl_info_write(&kFlashCtrlInfoPageBootData0, 0, 4,
-                                        &corrupted_words));
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0,
-                            (flash_ctrl_perms_t){
-                                .read = kMultiBitBool4False,
-                                .write = kMultiBitBool4False,
-                                .erase = kMultiBitBool4False,
-                            });
+  nvm_ctrl_info_perms_set(kNvmInfoPageBootData0,
+                          (nvm_page_perms_t){
+                              .read = kMultiBitBool4False,
+                              .write = kMultiBitBool4True,
+                              .erase = kMultiBitBool4False,
+                          });
+  RETURN_IF_ERROR(
+      nvm_ctrl_info_write(kNvmInfoPageBootData0, 0, 4, corrupted_words));
+  nvm_ctrl_info_perms_set(kNvmInfoPageBootData0,
+                          (nvm_page_perms_t){
+                              .read = kMultiBitBool4False,
+                              .write = kMultiBitBool4False,
+                              .erase = kMultiBitBool4False,
+                          });
   return kErrorOk;
 }
 
@@ -108,7 +106,7 @@ bool test_main(void) {
 
   size_t reboot_counter = 0;
   CHECK_STATUS_OK(
-      flash_ctrl_testutils_counter_get(kFlashCounterId, &reboot_counter));
+      nv_counter_testutils_counter_get(kFlashCounterId, &reboot_counter));
 
   switch (reboot_counter) {
     case 0: {
