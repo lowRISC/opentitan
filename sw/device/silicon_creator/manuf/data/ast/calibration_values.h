@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
-extern uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+extern uint32_t ast_cfg_data[kNvmInfoAstCalibrationDataSizeIn32BitWords];
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_DATA_AST_CALIBRATION_VALUES_H_
