@@ -6,10 +6,10 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 
 /**
  * Provision the HW_CFG0/1 OTP partition.
@@ -31,7 +31,6 @@
  * `manuf_individualize_device_hw_cfg_check()` afterwards to confirm that the
  * OTP partition was successfully locked.
  *
- * @param flash_state Flash controller handle and state.
  * @param otp_ctrl OTP controller instance.
  * @param flash_info_page_0_permissions Access permissions to set on flash info
  *                                      page 0 (which temporarily holds
@@ -40,10 +39,8 @@
  *                     portion before writing it into OTP.
  * @return OK_STATUS on success.
  */
-status_t manuf_individualize_device_hw_cfg(
-    dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
-    dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    const uint32_t *ft_device_id);
+status_t manuf_individualize_device_hw_cfg(const dif_otp_ctrl_t *otp_ctrl,
+                                           const uint32_t *ft_device_id);
 
 /**
  * Checks the HW_CFG0/1 OTP partition end state.

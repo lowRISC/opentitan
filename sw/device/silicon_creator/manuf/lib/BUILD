@@ -135,7 +135,7 @@ cc_library(
     srcs = ["individualize.c"],
     hdrs = ["individualize.h"],
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         ":otp_fields",
         ":util",
         "//sw/device/lib/base:bitfield",
@@ -167,8 +167,8 @@ opentitan_test(
         tags = ["manuf"],
     ),
     deps = [
-        ":flash_info_fields",
         ":individualize",
+        ":nvm_info_field",
         ":otp_fields",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
@@ -192,9 +192,10 @@ cc_library(
         "individualize_sw_cfg.h",
     ],
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         ":otp_img_types",
         ":util",
+        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -202,9 +203,8 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/include:datatypes",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
     ],
 )
@@ -238,7 +238,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/manuf/individualize_sw_cfg_functest",
     ),
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         # Testing sival SKU only should be sufficient.
         ":individualize_sw_cfg_em00",
         "//hw/top:otp_ctrl_c_regs",
@@ -263,17 +263,16 @@ cc_library(
     srcs = ["personalize.c"],
     hdrs = ["personalize.h"],
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         ":otp_fields",
         ":util",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
@@ -303,7 +302,7 @@ opentitan_test(
     ),
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "dev_key_0"},
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         ":personalize",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:lc_ctrl_c_regs",
@@ -328,7 +327,7 @@ cc_library(
     name = "ast_program",
     srcs = ["ast_program.c"],
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -355,7 +354,7 @@ opentitan_test(
         tags = ["manuf"],
     ),
     deps = [
-        ":flash_info_fields",
+        ":nvm_info_field",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:status",
