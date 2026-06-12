@@ -88,15 +88,15 @@ typedef struct RescueState {
   // Amount of data staged in the `data` buffer (for data to send to the host).
   uint16_t staged_len;
   // Current flash write offset.
-  uint32_t flash_offset;
+  uint32_t nvm_offset;
   // Current flash beginning offset.  This is the partition-relative offset
   // where we're allowed to start writing to flash.  Normally, this will be
-  // the same as `flash_start`, but if we're allowed to write the ROM_EXT
+  // the same as `nvm_start`, but if we're allowed to write the ROM_EXT
   // and we've detected a ROM_EXT, this may be adjusted to zero.
-  uint32_t flash_begin;
+  uint32_t nvm_begin;
   // Range to erase and write for firmware rescue (inclusive).
-  uint32_t flash_start;
-  uint32_t flash_limit;
+  uint32_t nvm_start;
+  uint32_t nvm_limit;
   // Pointer to the current bootdata record.
   boot_data_t *bootdata;
   // Pointer to the boot log.
@@ -134,7 +134,7 @@ rom_error_t rescue_recv_handler(rescue_state_t *state);
  * @param state Rescue state
  * @return kErrorOk if the new mode was accepted, kErrorBadMode otherwise.
  *
- * The rescue state is updated: mode, offset and flash_offset.
+ * The rescue state is updated: mode, offset and nvm_offset.
  */
 rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state);
 

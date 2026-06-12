@@ -14,7 +14,6 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_enter_rescue.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -22,10 +21,9 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
-
-#include "hw/top/flash_ctrl_regs.h"
 
 #if RESCUE_USES_UART == 1
 #define rescue_msg(fmt, ...)        \
@@ -46,9 +44,8 @@ typedef enum rescue_request {
 
 static rescue_request_t rescue_requested;
 
-const uint32_t kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
-const uint32_t kFlashBankSize =
-    kFlashPageSize * FLASH_CTRL_PARAM_REG_PAGES_PER_BANK;
+const uint32_t kNvmPageSize = NVM_BYTES_PER_PAGE;
+const uint32_t kNvmBankSize = NVM_PAGES_PER_BANK * NVM_BYTES_PER_PAGE;
 
 static inline bool is_rom_ext(const void *data) {
   const manifest_t *manifest = (const manifest_t *)data;
@@ -64,13 +61,13 @@ static inline bool is_rom_ext_update_allowed(rescue_state_t *state) {
           state->boot_log->rom_ext_slot == kBootSlotA);
 }
 
-rom_error_t flash_firmware_block(rescue_state_t *state) {
+rom_error_t nvm_firmware_block(rescue_state_t *state) {
   uint32_t bank_offset =
-      state->mode == kRescueModeFirmwareSlotB ? kFlashBankSize : 0;
-  if (state->flash_offset == 0) {
+      state->mode == kRescueModeFirmwareSlotB ? kNvmBankSize : 0;
+  if (state->nvm_offset == 0) {
     // TODO(#24428): Make sure we interact correctly with owner flash region
     // configuration.
-    flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
+    nvm_ctrl_data_default_perms_set((nvm_page_perms_t){
         .read = kMultiBitBool4True,
         .write = kMultiBitBool4True,
         .erase = kMultiBitBool4True,
@@ -78,51 +75,49 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
     // Detect if we're allowed to flash the ROM_EXT _and_ if the data stream
     // starts with a ROM_EXT.  If so, we start flashing at offset 0 in this
     // bank.
-    state->flash_begin =
+    state->nvm_begin =
         (is_rom_ext_update_allowed(state) && is_rom_ext(state->data))
             ? 0
-            : state->flash_start;
+            : state->nvm_start;
 
     // Erase the allowed range in the requested partition.
-    for (uint32_t addr = state->flash_begin; addr < state->flash_limit;
-         addr += kFlashPageSize) {
-      HARDENED_RETURN_IF_ERROR(
-          flash_ctrl_data_erase(bank_offset + addr, kFlashCtrlEraseTypePage));
+    for (uint32_t addr = state->nvm_begin; addr < state->nvm_limit;
+         addr += kNvmPageSize) {
+      HARDENED_RETURN_IF_ERROR(nvm_ctrl_data_erase(bank_offset + addr));
     }
     // Regardless of whether we're allowed to flash the ROM_EXT, set the flash
     // offset to zero if the data stream contains a ROM_EXT, otherwise, set to
-    // flash_start. This will allow rescue to silently consume the ROM_EXT if
+    // nvm_start. This will allow rescue to silently consume the ROM_EXT if
     // we're in the ROM_EXT active partition.
-    state->flash_offset = is_rom_ext(state->data) ? 0 : state->flash_start;
+    state->nvm_offset = is_rom_ext(state->data) ? 0 : state->nvm_start;
   }
 
-  if (state->flash_offset < state->flash_begin) {
+  if (state->nvm_offset < state->nvm_begin) {
     // Before allowed beginning; silently consume the data without flashing.
-    state->flash_offset += sizeof(state->data);
-  } else if (state->flash_offset >= state->flash_limit) {
+    state->nvm_offset += sizeof(state->data);
+  } else if (state->nvm_offset >= state->nvm_limit) {
     // Beyond the allowed limit; return an error.
     return kErrorRescueImageTooBig;
   } else {
     // In the allowed range; flash the data.
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_data_write(
-        bank_offset + state->flash_offset,
-        sizeof(state->data) / sizeof(uint32_t), state->data));
-    state->flash_offset += sizeof(state->data);
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_data_write(
+        bank_offset + state->nvm_offset, sizeof(state->data) / sizeof(uint32_t),
+        state->data));
+    state->nvm_offset += sizeof(state->data);
   }
   return kErrorOk;
 }
 
-rom_error_t flash_owner_block(rescue_state_t *state) {
+rom_error_t nvm_owner_block(rescue_state_t *state) {
   if (state->bootdata->ownership_state == kOwnershipStateUnlockedAny ||
       state->bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
       state->bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
       (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
        owner_block_newversion_mode() == kHardenedBoolTrue)) {
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-        &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageOwnerSlot1, 0,
-        sizeof(state->data) / sizeof(uint32_t), state->data));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_erase(kNvmInfoPageOwnerSlot1));
+    HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_write(
+        kNvmInfoPageOwnerSlot1, 0, sizeof(state->data) / sizeof(uint32_t),
+        state->data));
   } else {
     rescue_msg("error: cannot accept owner_block in current state\r\n");
   }
@@ -139,10 +134,8 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
 static void ownership_erase(void) {
   lifecycle_state_t lc_state = lifecycle_state_get();
   if (lc_state == kLcStateDev) {
-    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
-                                     kFlashCtrlEraseTypePage));
-    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
-                                     kFlashCtrlEraseTypePage));
+    OT_DISCARD(nvm_ctrl_info_erase(kNvmInfoPageOwnerSlot0));
+    OT_DISCARD(nvm_ctrl_info_erase(kNvmInfoPageOwnerSlot1));
     rescue_msg("ok: erased owner blocks\r\n");
   } else {
     rescue_msg("error: erase not allowed in state %x\r\n", lc_state);
@@ -223,7 +216,7 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
 exitproc:
   state->frame = 1;
   state->offset = 0;
-  state->flash_offset = 0;
+  state->nvm_offset = 0;
   return result;
 }
 
@@ -265,13 +258,15 @@ rom_error_t rescue_send_handler(rescue_state_t *state) {
       break;
     }
     case kRescueModeOwnerPage0:
-    case kRescueModeOwnerPage1:
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(
-          state->mode == kRescueModeOwnerPage0 ? &kFlashCtrlInfoPageOwnerSlot0
-                                               : &kFlashCtrlInfoPageOwnerSlot1,
-          0, sizeof(state->data) / sizeof(uint32_t), state->data));
+    case kRescueModeOwnerPage1: {
+      nvm_info_page_t page = state->mode == kRescueModeOwnerPage0
+                                 ? kNvmInfoPageOwnerSlot0
+                                 : kNvmInfoPageOwnerSlot1;
+      HARDENED_RETURN_IF_ERROR(nvm_ctrl_info_read(
+          page, 0, sizeof(state->data) / sizeof(uint32_t), state->data));
       state->staged_len = sizeof(state->data);
       break;
+    }
 
     case kRescueModeBootSvcReq:
     case kRescueModeOwnerBlock:
@@ -318,14 +313,14 @@ rom_error_t rescue_recv_handler(rescue_state_t *state) {
       break;
     case kRescueModeOwnerBlock:
       if (state->offset == sizeof(state->data)) {
-        HARDENED_RETURN_IF_ERROR(flash_owner_block(state));
+        HARDENED_RETURN_IF_ERROR(nvm_owner_block(state));
         state->offset = 0;
       }
       break;
     case kRescueModeFirmware:
     case kRescueModeFirmwareSlotB:
       if (state->offset == sizeof(state->data)) {
-        HARDENED_RETURN_IF_ERROR(flash_firmware_block(state));
+        HARDENED_RETURN_IF_ERROR(nvm_firmware_block(state));
         state->offset = 0;
       }
       break;
@@ -350,13 +345,12 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
     // If there is no rescue config, then the rescue region starts immediately
     // after the ROM_EXT and ends at the end of the flash bank.
-    state->flash_start = CHIP_ROM_EXT_SIZE_MAX;
-    state->flash_limit = kFlashBankSize;
+    state->nvm_start = CHIP_ROM_EXT_SIZE_MAX;
+    state->nvm_limit = kNvmBankSize;
     state->inactivity_deadline = 0;
   } else {
-    state->flash_start = (uint32_t)config->start * kFlashPageSize;
-    state->flash_limit =
-        (uint32_t)(config->start + config->size) * kFlashPageSize;
+    state->nvm_start = (uint32_t)config->start * kNvmPageSize;
+    state->nvm_limit = (uint32_t)(config->start + config->size) * kNvmPageSize;
     uint32_t timeout =
         bitfield_field32_read(config->timeout, RESCUE_TIMEOUT_SECONDS);
     state->inactivity_deadline =

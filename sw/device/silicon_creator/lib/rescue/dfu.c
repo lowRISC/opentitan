@@ -131,8 +131,7 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
           ((setup->request == kDfuReqDnLoad && ctx->allow & kDfuAllowDnLoad) ||
            (setup->request == kDfuReqUpLoad && ctx->allow & kDfuAllowUpLoad))) {
         if (setup->request == kDfuReqDnLoad) {
-          if (setup->length == 0 ||
-              ctx->state.offset < ctx->state.flash_limit) {
+          if (setup->length == 0 || ctx->state.offset < ctx->state.nvm_limit) {
             // If its a download (transfer to opentitan), perform the transfer
             // into the rescue state buffer. For a zero-length request, simply
             // ACK with a zero-length packet.
