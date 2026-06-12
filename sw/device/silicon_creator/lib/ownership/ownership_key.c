@@ -7,14 +7,11 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
-
-#include "hw/top/flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // RAM copy of the owner INFO pages from flash.
 extern owner_block_t owner_page[2];
@@ -44,7 +41,7 @@ const owner_detached_signature_t *ownership_signature_scan(
         nonce_equal(&sig->nonce, nonce)) {
       return sig;
     }
-    start += FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+    start += NVM_BYTES_PER_PAGE;
   }
   return NULL;
 }
@@ -53,7 +50,7 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
                                    uint32_t command, const nonce_t *nonce,
                                    const owner_signature_t *signature,
                                    const void *message, size_t len,
-                                   uint32_t *flash_exec) {
+                                   uint32_t *nvm_exec) {
   const ecdsa_p256_signature_t *ecdsa = NULL;
   const sigverify_spx_signature_t *spx = NULL;
   uint32_t key_alg = owner_page[page].ownership_key_alg;
@@ -64,8 +61,7 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
     ecdsa = &signature->ecdsa;
   } else {
     const owner_detached_signature_t *detached = ownership_signature_scan(
-        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES, command, nonce);
+        NVM_DATA_BASE_ADDR, NVM_DATA_SIZE_BYTES, command, nonce);
     if (detached == NULL) {
       return kErrorOwnershipSignatureNotFound;
     }
@@ -91,26 +87,25 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
 
   if ((key & kOwnershipKeyUnlock) == kOwnershipKeyUnlock) {
     if (owner_verify(key_alg, &owner_page[page].unlock_key, ecdsa, spx, NULL, 0,
-                     NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
+                     NULL, 0, message, len, &digest, nvm_exec) == kErrorOk) {
       return kErrorOk;
     }
   }
   if ((key & kOwnershipKeyActivate) == kOwnershipKeyActivate) {
     if (owner_verify(key_alg, &owner_page[page].activate_key, ecdsa, spx, NULL,
-                     0, NULL, 0, message, len, &digest,
-                     flash_exec) == kErrorOk) {
+                     0, NULL, 0, message, len, &digest, nvm_exec) == kErrorOk) {
       return kErrorOk;
     }
   }
   if (kNoOwnerRecoveryKey &&
       (key & kOwnershipKeyRecovery) == kOwnershipKeyRecovery) {
     if (owner_verify(key_alg, kNoOwnerRecoveryKey, ecdsa, spx, NULL, 0, NULL, 0,
-                     message, len, &digest, flash_exec) == kErrorOk) {
+                     message, len, &digest, nvm_exec) == kErrorOk) {
       return kErrorOk;
     }
   }
   if (owner_verify(key_alg, &owner_page[page].owner_key, ecdsa, spx, NULL, 0,
-                   NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
+                   NULL, 0, message, len, &digest, nvm_exec) == kErrorOk) {
     return kErrorOk;
   }
   return kErrorOwnershipInvalidSignature;
@@ -169,12 +164,9 @@ static void reverse(void *buf, size_t len) {
 }
 
 static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
-  flash_ctrl_perms_t perm = {
-      .read = (uint8_t)read,
-      .write = (uint8_t)write,
-      .erase = (uint8_t)write,
-  };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSecret, perm);
+  nvm_ctrl_info_perms_set(
+      kNvmInfoPageOwnerSecret,
+      (nvm_page_perms_t){.read = read, .write = write, .erase = write});
 }
 
 rom_error_t ownership_secret_new(uint32_t prior_key_alg,
@@ -182,9 +174,8 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
   owner_secret_page_t secret;
 
   secret_page_enable(/*read=*/kMultiBitBool4True, /*write=*/kMultiBitBool4True);
-  rom_error_t error =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret, 0,
-                           sizeof(secret) / sizeof(uint32_t), &secret);
+  rom_error_t error = nvm_ctrl_info_read(
+      kNvmInfoPageOwnerSecret, 0, sizeof(secret) / sizeof(uint32_t), &secret);
   if (error != kErrorOk) {
     if (kDeviceType == kDeviceSilicon) {
       // This should never happen on silicon because this page is initialized
@@ -195,8 +186,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
       // transfer.
       HARDENED_CHECK_NE(error, kErrorOk);
       HARDENED_CHECK_NE(kDeviceType, kDeviceSilicon);
-      error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
-                                    kFlashCtrlEraseTypePage);
+      error = nvm_ctrl_info_erase(kNvmInfoPageOwnerSecret);
       memset(&secret, 0xFF, sizeof(secret));
     }
   }
@@ -238,12 +228,11 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
   hmac_sha256_process();
   hmac_sha256_final(&secret.owner_secret);
 
-  error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
-                                kFlashCtrlEraseTypePage);
+  error = nvm_ctrl_info_erase(kNvmInfoPageOwnerSecret);
   if (error != kErrorOk)
     goto exitproc;
-  error = flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSecret, 0,
-                                sizeof(secret) / sizeof(uint32_t), &secret);
+  error = nvm_ctrl_info_write(kNvmInfoPageOwnerSecret, 0,
+                              sizeof(secret) / sizeof(uint32_t), &secret);
 
 exitproc:
   secret_page_enable(/*read=*/kMultiBitBool4False,
@@ -254,10 +243,9 @@ exitproc:
 rom_error_t ownership_history_get(hmac_digest_t *history) {
   secret_page_enable(/*read=*/kMultiBitBool4True,
                      /*write=*/kMultiBitBool4False);
-  rom_error_t error =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret,
-                           offsetof(owner_secret_page_t, owner_history),
-                           sizeof(*history) / sizeof(uint32_t), history);
+  rom_error_t error = nvm_ctrl_info_read(
+      kNvmInfoPageOwnerSecret, offsetof(owner_secret_page_t, owner_history),
+      sizeof(*history) / sizeof(uint32_t), history);
   if (error != kErrorOk) {
     // If there was an error reading the history, use all ones as a result.
     memset(history, 0xFF, sizeof(*history));
