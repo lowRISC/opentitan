@@ -7,23 +7,21 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
-#include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
+#include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
@@ -45,21 +43,17 @@ OTTF_DEFINE_TEST_CONFIG(
         .console_tx_indicator.spi_console_tx_ready_gpio =
             kGpioPinSpiConsoleTxReady);
 
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
 
-static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+static uint32_t ast_cfg_data[kNvmInfoAstCalibrationDataSizeIn32BitWords];
 
 /**
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
@@ -101,7 +95,7 @@ static status_t configure_ate_gpio_indicators(void) {
 }
 
 static void manually_init_ast(uint32_t *data) {
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+  for (size_t i = 0; i < kNvmInfoAstCalibrationDataSizeIn32BitWords; ++i) {
     abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t),
                      data[i]);
   }
@@ -109,47 +103,39 @@ static void manually_init_ast(uint32_t *data) {
 
 static status_t flash_info_page_0_read_and_validate(
     manuf_cp_provisioning_data_out_t *console_out) {
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
-      kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
-      kFlashInfoPage0Permissions, /*offset=*/NULL));
-
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldLotName.page, kPageReadOnly,
+                                    kPageRawCfg));
   // Read (wafer) lot name.
   uint32_t lot_name = 0;
-  static_assert(kFlashInfoFieldLotNameSizeIn32BitWords == 1,
+  static_assert(kNvmInfoFieldLotNameSizeIn32BitWords == 1,
                 "Lot name should fit in <32bits.");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldLotName,
-                                  &lot_name,
-                                  kFlashInfoFieldLotNameSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldLotName, &lot_name,
+                                kNvmInfoFieldLotNameSizeIn32BitWords));
 
   // Read wafer number.
   uint32_t wafer_number = 0;
-  static_assert(kFlashInfoFieldWaferNumberSizeIn32BitWords == 1,
+  static_assert(kNvmInfoFieldWaferNumberSizeIn32BitWords == 1,
                 "Wafer number should fit in <32bits.");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldWaferNumber,
-                                  &wafer_number,
-                                  kFlashInfoFieldWaferNumberSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferNumber, &wafer_number,
+                                kNvmInfoFieldWaferNumberSizeIn32BitWords));
 
   // Read wafer X coord.
   uint32_t wafer_x_coord = 0;
-  static_assert(kFlashInfoFieldWaferXCoordSizeIn32BitWords == 1,
+  static_assert(kNvmInfoFieldWaferXCoordSizeIn32BitWords == 1,
                 "Wafer X coordinate value should fit in <32bits.");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldWaferXCoord,
-                                  &wafer_x_coord,
-                                  kFlashInfoFieldWaferXCoordSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferXCoord, &wafer_x_coord,
+                                kNvmInfoFieldWaferXCoordSizeIn32BitWords));
 
   // Read wafer Y coord.
   uint32_t wafer_y_coord = 0;
-  static_assert(kFlashInfoFieldWaferYCoordSizeIn32BitWords == 1,
+  static_assert(kNvmInfoFieldWaferYCoordSizeIn32BitWords == 1,
                 "Wafer Y coordinate value should fit in <32bits.");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldWaferYCoord,
-                                  &wafer_y_coord,
-                                  kFlashInfoFieldWaferYCoordSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferYCoord, &wafer_y_coord,
+                                kNvmInfoFieldWaferYCoordSizeIn32BitWords));
 
   // Read AST calibration values into RAM.
-  TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
-      kFlashInfoAstCalibrationDataSizeIn32BitWords));
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldAstCalibrationData, ast_cfg_data,
+                                kNvmInfoAstCalibrationDataSizeIn32BitWords));
 
   // Encode CP device ID.
   // HW origin portion of CP device.
@@ -170,26 +156,25 @@ static status_t flash_info_page_0_read_and_validate(
   console_out->cp_device_id[3] = 0;
 
   // Write CP device ID.
-  TRY(manuf_flash_info_field_write(&flash_ctrl_state, kFlashInfoFieldCpDeviceId,
-                                   console_out->cp_device_id,
-                                   kFlashInfoFieldCpDeviceIdSizeIn32BitWords,
-                                   /*erase_page_before_write=*/false));
-
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldCpDeviceId.page,
+                                    kPageReadWrite, kPageRawCfg));
+  TRY(manuf_nvm_info_field_write(kNvmInfoFieldCpDeviceId,
+                                 console_out->cp_device_id,
+                                 kNvmInfoFieldCpDeviceIdSizeIn32BitWords,
+                                 /*erase_page_before_write=*/false,
+                                 /*readback=*/false));
   return OK_STATUS();
 }
 
 static status_t wafer_auth_secret_flash_info_page_write(
     manuf_cp_provisioning_data_t *console_in) {
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
-      kFlashInfoFieldWaferAuthSecret.bank,
-      kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3WritePermissions,
-      /*offset=*/NULL));
-  TRY(manuf_flash_info_field_write(
-      &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret,
-      console_in->wafer_auth_secret,
-      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords,
-      /*erase_page_before_write=*/true));
+  TRY(nvm_testutils_info_page_setup(kNvmInfoFieldWaferAuthSecret.page,
+                                    kPageReadWrite, kPageRawCfg));
+  TRY(manuf_nvm_info_field_write(kNvmInfoFieldWaferAuthSecret,
+                                 console_in->wafer_auth_secret,
+                                 kNvmInfoFieldWaferAuthSecretSizeIn32BitWords,
+                                 /*erase_page_before_write=*/true,
+                                 /*readback=*/false));
   return OK_STATUS();
 }
 
@@ -228,9 +213,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   ujson_t uj = ujson_ottf_console();
 
+  // Wait for flash controller to finish initialization before any flash access.
+  CHECK_STATUS_OK(nvm_testutils_wait_for_init());
+
   // Extract factory data from flash info page 0.
   manuf_cp_provisioning_data_out_t console_out;
-  CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl_state));
   CHECK_STATUS_OK(flash_info_page_0_read_and_validate(&console_out));
 
   // Initialize AST.
