@@ -1334,6 +1334,7 @@ ext_scmul_sca:
   bn.mov w3, w17
 
   /* [w5:w4] <= w4 + k * L = s1 + k' * L. */
+  bn.mov w20, w31 /* Clear the secret */
   bn.mov w20, w4
   jal x1, sc_blind
   bn.mov w4, w16
