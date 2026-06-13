@@ -80,6 +80,57 @@ start:
   unimp
 
 /**
+ * X25519 Wrapper for Arithmetic to Boolean Conversion.
+ * Assumes arithmetic shares are in w8 and w7.
+ */
+x25519_apply_a2b:
+  bn.add   w11, w8, w31
+  bn.xor   w31, w31, w31
+  bn.wsrr  w12, URND
+
+  bn.add   w18, w7, w31
+  bn.wsrr  w19, URND
+
+  addi     x5, x1, 0
+  jal      x1, arithmetic_to_boolean
+  addi     x1, x5, 0
+
+  bn.add   w8, w20, w31
+  bn.xor   w31, w31, w31
+  bn.add   w7, w18, w31
+
+  ret
+
+/**
+ * X25519 Wrapper for Boolean to Arithmetic Conversion.
+ * Assumes boolean shares are in w8 and w7.
+ * Returns the blinded recombined scalar in w2.
+ */
+x25519_apply_b2a:
+  bn.add   w20, w8, w31
+  bn.xor   w31, w31, w31
+  bn.wsrr  w21, URND
+
+  bn.add   w10, w7, w31
+  bn.wsrr  w11, URND
+
+  addi     x5, x1, 0
+  jal      x1, boolean_to_arithmetic
+  addi     x1, x5, 0
+
+  bn.wsrr  w4, URND
+  bn.rshi  w4, w31, w4 >> 1
+
+  bn.wsrw  MOD, w31
+  bn.addm  w5, w10, w4
+  bn.xor   w31, w31, w31
+
+  bn.addm  w2, w20, w5
+  bn.sub   w31, w31, w31, FG0
+
+  ret
+
+/**
  * Ed25519 key generation operation.
  * Generate the encoded public key A.
  *
@@ -202,53 +253,22 @@ run_x25519:
   la       x3, ed25519_s1
   bn.lid   x2, 0(x3)
 
-  /* A_lo = w8, A_hi = 0 */
-  bn.add   w11, w8, w31
-  bn.xor   w12, w31, w31
-
-  /* r_lo = w7, r_hi = 0 */
-  bn.add   w18, w7, w31
-  bn.xor   w19, w31, w31
-
-  /* Convert arithmetic shares to boolean shares */
-  jal      x1, arithmetic_to_boolean
-
-  /* x'_lo (w20) -> w8 (Share 0), r_lo (w18) -> w7 (Share 1) */
-  bn.add   w8, w20, w31
-  bn.add   w7, w18, w31
+  /* Execute full masked A2B sequence */
+  jal      x1, x25519_apply_a2b
 
   /* Clamp the boolean shares */
   jal      x1, x25519_clamp_shares
 
-  /* s0_lo = w8, s0_hi = 0 */
-  bn.add   w20, w8, w31
-  bn.xor   w21, w31, w31
-
-  /* s1_lo = w7, s1_hi = 0 */
-  bn.add   w10, w7, w31
-  bn.xor   w11, w31, w31
-
   /* Convert boolean shares back to arithmetic ones */
-  jal      x1, boolean_to_arithmetic
-
-  /* w4 = 254-bit random mask B */
-  bn.wsrr  w4, URND
-  bn.rshi  w4, w31, w4 >> 2
-
-  /* w5 = w10 + w4 (x1 + B) */
-  bn.add   w5, w10, w4
-  bn.xor   w31, w31, w31 /* clear flags */
-
-  /* w2 = w20 + w5 (x0 + x1 + B) */
-  bn.add   w2, w20, w5
-
-  /* Clear flags before jump */
-  bn.sub   w31, w31, w31, FG0
+  jal      x1, x25519_apply_b2a
 
   /* Load public key into w9 */
   li       x2, 9
   la       x3, x25519_public_key
   bn.lid   x2, 0(x3)
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
 
   /* Call Edwards-mapped x25519 */
   jal      x1, x25519
@@ -301,51 +321,20 @@ run_x25519_keygen:
   la       x3, ed25519_s1
   bn.lid   x2, 0(x3)
 
-  /* A_lo = w8, A_hi = 0 */
-  bn.add w11, w8, w31
-  bn.xor w12, w31, w31
-
-  /* r_lo = w7, r_hi = 0 */
-  bn.add w18, w7, w31
-  bn.xor w19, w31, w31
-
   /* Convert arithmetic shares to boolean shares */
-  jal  x1, arithmetic_to_boolean
-
-  /* x'_lo (w20) -> w8 (Share 0), r_lo (w18) -> w7 (Share 1) */
-  bn.add   w8, w20, w31
-  bn.add   w7, w18, w31
+  jal x1, x25519_apply_a2b
 
   /* Clamp the boolean shares */
-  jal      x1, x25519_clamp_shares
-
-  /* s0_lo = w8, s0_hi = 0 */
-  bn.add w20, w8, w31
-  bn.xor w21, w31, w31
-
-  /* s1_lo = w7, s1_hi = 0 */
-  bn.add w10, w7, w31
-  bn.xor w11, w31, w31
+  jal x1, x25519_clamp_shares
 
   /* Convert boolean shares back to arithmetic ones */
-  jal x1, boolean_to_arithmetic
-
-  /* w4 = 254-bit random mask B */
-  bn.wsrr w4, URND
-  bn.rshi w4, w31, w4 >> 2
-
-  /* w5 = w10 + w4 (x1 + B) */
-  bn.add w5, w10, w4
-  bn.xor w31, w31, w31 /* clear flags */
-
-  /* w2 = w20 + w5 (x0 + x1 + B) */
-  bn.add w2, w20, w5
-
-  /* Clear flags before jump */
-  bn.sub w31, w31, w31, FG0
+  jal x1, x25519_apply_b2a
 
   /* Set Curve25519 basepoint */
   bn.addi  w9, w31, 9
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
 
   jal      x1, x25519
 
@@ -385,35 +374,16 @@ run_x25519_sideload:
   /* Clamp the Boolean shares */
   jal x1, x25519_clamp_shares
 
-  /* s0_lo = w8, s0_hi = 0 */
-  bn.add w20, w8, w31
-  bn.xor w21, w31, w31
-
-  /* s1_lo = w7, s1_hi = 0 */
-  bn.add w10, w7, w31
-  bn.xor w11, w31, w31
-
   /* Convert boolean shares back to arithmetic ones */
-  jal x1, boolean_to_arithmetic
-
-  /* w4 = 254-bit random mask B */
-  bn.wsrr w4, URND
-  bn.rshi w4, w31, w4 >> 2
-
-  /* w5 = w10 + w4 (x1 + B) */
-  bn.add w5, w10, w4
-  bn.xor w31, w31, w31 /* clear flags */
-
-  /* w2 = w20 + w5 (x0 + x1 + B) */
-  bn.add w2, w20, w5
-
-  /* Clear flags before jump */
-  bn.sub w31, w31, w31, FG0
+  jal x1, x25519_apply_b2a
 
   /* Load public key into w9 */
   li x2, 9
   la x3, x25519_public_key
   bn.lid x2, 0(x3)
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
 
   jal x1, x25519
 
@@ -463,33 +433,14 @@ run_x25519_keygen_sideload:
   /* Clamp the Boolean shares */
   jal x1, x25519_clamp_shares
 
-  /* s0_lo = w8, s0_hi = 0 */
-  bn.add w20, w8, w31
-  bn.xor w21, w31, w31
-
-  /* s1_lo = w7, s1_hi = 0 */
-  bn.add w10, w7, w31
-  bn.xor w11, w31, w31
-
   /* Convert boolean shares back to arithmetic ones */
-  jal x1, boolean_to_arithmetic
-
-  /* w4 = 254-bit random mask B */
-  bn.wsrr w4, URND
-  bn.rshi w4, w31, w4 >> 2
-
-  /* w5 = w10 + w4 (x1 + B) */
-  bn.add w5, w10, w4
-  bn.xor w31, w31, w31 /* clear flags */
-
-  /* w2 = w20 + w5 (x0 + x1 + B) */
-  bn.add w2, w20, w5
-
-  /* Clear flags before jump */
-  bn.sub w31, w31, w31, FG0
+  jal x1, x25519_apply_b2a
 
   /* Set Curve25519 basepoint */
   bn.addi w9, w31, 9
+
+  /* Generate fresh 256-bit random mask for projective coordinates */
+  bn.wsrr  w19, URND
 
   jal x1, x25519
 

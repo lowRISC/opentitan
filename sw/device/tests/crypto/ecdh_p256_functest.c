@@ -81,6 +81,8 @@ status_t key_exchange_test(void) {
   // Generate a keypair.
   LOG_INFO("Generating keypair A...");
   TRY(otcrypto_ecdh_p256_keygen(&private_keyA, &public_keyA));
+  LOG_INFO("OTBN instruction count for keygen: 0x%08x",
+           otbn_instruction_count_get());
 
   // Generate a second keypair.
   LOG_INFO("Generating keypair B...");
@@ -107,6 +109,8 @@ status_t key_exchange_test(void) {
   // Compute the shared secret from A's side of the computation.
   LOG_INFO("Generating shared secret (A)...");
   TRY(otcrypto_ecdh_p256(&private_keyA, &public_keyB, &shared_keyA));
+  LOG_INFO("OTBN instruction count for ecdh: 0x%08x",
+           otbn_instruction_count_get());
 
   // Compute the shared secret from B's side of the computation.
   LOG_INFO("Generating shared secret (B)...");
