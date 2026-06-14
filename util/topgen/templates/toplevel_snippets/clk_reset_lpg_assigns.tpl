@@ -37,6 +37,8 @@ for rst in output_rsts:
 # Go over all modules of power domain at hand and remove all used resets and clocks from the
 # respective unused_ set.
 for m in lib.get_all_modules(top, domain=domain):
+  if not lib.is_inst(m):
+    continue
   for clock_sig in m.get("clock_connections").values():
     unused_clocks.discard(clock_sig)
   for port, reset in m.get("reset_connections").items():

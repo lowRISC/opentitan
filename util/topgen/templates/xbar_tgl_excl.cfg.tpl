@@ -22,7 +22,7 @@
 // [LOW_RISK] Exclude the full TL a_address signal on all pass-through hierarchies. We instead look
 // at the full coverage of this signal directly at the host or at the device.
 -node tb.dut.top_${top["name"]} *tl_*.a_address
--node tb.dut.top_${top["name"]}.u_xbar_* tl_*.a_address
+-node tb.dut.top_${top["name"]}.${top["name"]}_pd_${top["power"]["default"].lower()}.u_xbar_* tl_*.a_address
 
 <%
   import tlgen.lib as lib

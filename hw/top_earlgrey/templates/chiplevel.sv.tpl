@@ -16,6 +16,12 @@ pinout = top['pinout']
 feature_info = {}
 cio_info = {}
 
+# Bkdr loader targets
+bkdr_loader_targets = ["cw340"]
+gen_bkdr_loader = target["name"] in bkdr_loader_targets
+
+ast = lib.get_module_by_name(top, "ast")
+
 def get_dio_sig(pinmux: {}, pad: {}):
   '''Get DIO signal associated with this pad or return None'''
   for sig in pinmux["ios"]:
@@ -51,8 +57,13 @@ for pad in target["pinout"]["add_pads"]:
 # Bkdr loader targets
 bkdr_loader_targets = ["cw340"]
 gen_bkdr_loader = target["name"] in bkdr_loader_targets
-%>\
+
+removed_port_names = []
+%>
 <%include file="/toplevel_snippets/info_dicts.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info" />\
+% if gen_bkdr_loader:
+`include "bkdr_loader.svh"
+% endif
 
 % if target["name"] == "verilator":
 module chip_${top["name"]}_${target["name"]} (
@@ -60,16 +71,9 @@ module chip_${top["name"]}_${target["name"]} (
   input clk_i,
   input rst_ni
 );
-<%
-  removed_port_names = []
-%>\
 % else:
-%   if target["name"] != "asic":
-%     if gen_bkdr_loader:
-`include "bkdr_loader.svh"
-
-%     endif
 module chip_${top["name"]}_${target["name"]} #(
+%   if target["name"] != "asic":
 %     if top["name"] == "englishbreakfast":
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
@@ -87,13 +91,9 @@ module chip_${top["name"]}_${target["name"]} #(
 %     endif
 ) (
 %   else:
-module chip_${top["name"]}_${target["name"]} #(
   parameter bit SecRomCtrlDisableScrambling = 1'b0
 ) (
 %   endif
-<%
-  removed_port_names = []
-%>\
   // Dedicated Pads
 % for pad in dedicated_pads:
 <%
@@ -223,25 +223,20 @@ module chip_${top["name"]}_${target["name"]} #(
   wire ${port};
   % endfor
 
-  logic [3:0] mux_iob_sel;
-% if gen_bkdr_loader:
-
-  pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_attr;
-  logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_out;
-  logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_oe;
-  logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_in;
-% endif
-
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr;
   pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr;
+
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic [${len(dedicated_pads)}-1:0]                       dio_in_raw;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
+
+% if target["name"] != "verilator":
+  logic                          [3:0] mux_iob_sel;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
+  logic                         [${len(dedicated_pads)-1}:0] dio_in_raw;
 
   logic unused_mio_in_raw;
   logic unused_dio_in_raw;
@@ -249,7 +244,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign unused_dio_in_raw = ^dio_in_raw;
 
   // Manual pads
-% if target["name"] != "verilator":
 % for pad in dedicated_pads:
 <%
   pad_prefix = pad["name"].lower()
@@ -298,19 +292,15 @@ module chip_${top["name"]}_${target["name"]} #(
     % endif
   % endif
 % endfor
-%endif
+%endif\
 
   //////////////////////
   // Padring Instance //
   //////////////////////
 
-  ast_pkg::ast_clks_t ast_base_clks;
-
-% if target["name"] in ["asic", "verilator"]:
-  // AST signals needed in padring
-  logic scan_rst_n;
+  // AST signals needed in padring - must be decleared here
+  ast_pkg::ast_clks_t    ast_base_clks;
   prim_mubi_pkg::mubi4_t scanmode;
-% endif
 
 % if target["name"] == "verilator":
   // Padring substitute for the Verilator simulation top. The flat
@@ -327,14 +317,12 @@ module chip_${top["name"]}_${target["name"]} #(
   logic usb_tx_use_d_se0;
   logic usb_rx_enable;
 
-  logic unused_mux_iob_sel;
-  assign unused_mux_iob_sel = ^mux_iob_sel;
-
   padring_verilator u_padring (
     .mio_in_o  (mio_in ),
     .mio_out_i (mio_out),
     .mio_oe_i  (mio_oe ),
     .mio_attr_i(mio_attr),
+    .dio_attr_i(dio_attr),
 
     .dio_in_o (dio_in ),
     .dio_out_i(dio_out),
@@ -402,11 +390,7 @@ module chip_${top["name"]}_${target["name"]} #(
     })
   ) u_padring (
     // This is only used for scan and DFT purposes
-% if target["name"] == "asic":
     .clk_scan_i(ast_base_clks.clk_sys),
-% else:
-    .clk_scan_i(1'b0    ),
-% endif
     .scanmode_i(scanmode),
 
     .mux_iob_sel_i(mux_iob_sel),
@@ -465,8 +449,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .mio_${port} (${lib.make_bit_concatenation(sig_name, indices, 6)})${"" if loop.last else ","}
 % endfor
   );
-% endif
-
+% endif\
 
 ###################################################################
 ## USB for CW305                                                 ##
@@ -474,11 +457,6 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] == "cw305":
   logic usb_dp_pullup_en;
   logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_rx_enable;
 
   // Connect the DP pad
   assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
@@ -502,12 +480,9 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_oe_io_usb_dppullup0 = 1'b1;
   assign manual_attr_io_dppullup0 = '0;
 
-  // Tie-off unused signals
-  assign usb_rx_d = 1'b0;
-
 % endif
 ###################################################################
-## USB for CW310                                                 ##
+## USB for CW310 and CW340                                       ##
 ###################################################################
 % if target["name"] in ["cw310", "cw340"]:
   // TODO: generalize this USB mux code and align with other tops.
@@ -577,24 +552,25 @@ module chip_${top["name"]}_${target["name"]} #(
   pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
 
   // assorted ast status
-  ast_pkg::ast_pwst_t ast_pwst;
-  ast_pkg::ast_pwst_t ast_pwst_h;
+  ast_pkg::ast_pwst_t    ast_pwst;
+  prim_mubi_pkg::mubi4_t ast_init_done;
 
   // TLUL interface
   tlul_pkg::tl_h2d_t ast_tl_req;
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
-  // Generated clocks, resets, and enable signals
-  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
-  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_aon_cg_en;
-  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
-  rstmgr_pkg::rstmgr_rst_en_t rstmgr_aon_rst_en;
+  // Generated clocks and resets
+  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
 
   // external clock
   logic ext_clk;
 
   // monitored clock
   logic sck_monitor;
+
+  // POR signal for top
+  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
 
   // observe interface
   logic [7:0] flash_obs;
@@ -640,6 +616,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // DFT connections
   logic scan_en;
+  logic scan_rst_n;
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
@@ -703,29 +680,23 @@ module chip_${top["name"]}_${target["name"]} #(
 % endfor
 % endif
 
+  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
+  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
   //////////////////////////////////
   // AST - Custom for targets     //
   //////////////////////////////////
 
-<%
-  ast = [m for m in top["module"] if m["name"] == "ast"]
-  assert(len(ast) == 1)
-  ast = ast[0]
-%>\
-
-  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
-
-  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
-  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
-
 % if target["name"] == "asic":
 
+  ast_pkg::ast_pwst_t                ast_pwst_h;
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
+  logic                              usb_diff_rx_obs;
 
   // external clock comes in at a fixed position
   assign ext_clk = mio_in_raw[MioPadIoc6];
 
+  // Raw pad signals required by the ast
   assign pad2ast = `PAD2AST_WIRES ;
 
   // AST does not use all clocks / resets forwarded to it
@@ -735,71 +706,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
 
-  logic usb_diff_rx_obs;
-
-% elif target["name"] in ["cw305", "cw310"] and not gen_bkdr_loader:
-  // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
-  assign pad2ast = '0;
-
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
-  clkgen_xil7series # (
-    .AddClkBuf(0)
-  ) clkgen (
-    .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
-    .srst_ni(srst_n),
-    .clk_main_o(clk_main),
-    .clk_48MHz_o(clk_usb_48mhz),
-    .clk_aon_o(clk_aon),
-    .rst_no(rst_n)
-  );
-
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
-  ast_pkg::clks_osc_byp_t clks_osc_byp;
-  assign clks_osc_byp = '{
-    usb: clk_usb_48mhz,
-    sys: clk_main,
-    io:  clk_main,
-    aon: clk_aon
-  };
-
-% elif target["name"] in ["cw305", "cw310"] and gen_bkdr_loader:
-  // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
-  assign pad2ast = '0;
-
-  logic bkdr_rst_n;
-  logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
-  clkgen_xil7series # (
-    .AddClkBuf(0)
-  ) clkgen (
-    .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
-    .srst_ni(srst_n),
-    .clk_main_o(clk_main),
-    .clk_48MHz_o(clk_usb_48mhz),
-    .clk_aon_o(clk_aon),
-    .rst_no(bkdr_rst_n)
-  );
-
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
-  ast_pkg::clks_osc_byp_t clks_osc_byp;
-  assign clks_osc_byp = '{
-    usb: clk_usb_48mhz,
-    sys: clk_main,
-    io:  clk_main,
-    aon: clk_aon
-  };
-
 % elif target["name"] == "verilator":
   assign ext_clk = '0;
   assign pad2ast = '0;
@@ -808,6 +714,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // resets (and does not model 'x'); if the divider below were reset, clk_aon
   // would be silenced and the clk_aon logic inside top_${top["name"]} would not
   // get reset.
+
   logic clk_aon;
   prim_clock_div #(
     .Divisor(4)
@@ -852,23 +759,46 @@ module chip_${top["name"]}_${target["name"]} #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
 
-% else:
+% elif target["name"] in ["cw305", "cw310", "cw340"]:
+<%
+  # The CW340 is based on an UltraScale FPGA, whereas the CW305 and CW310 use
+  # 7-Series FPGAs. The clock generator and a few of its connections are the
+  # only places where the FPGA implementations actually differ.
+  is_ultrascale = target["name"] == "cw340"
+  clkgen_module = "clkgen_xil_ultrascale" if is_ultrascale else "clkgen_xil7series"
+  # Only the UltraScale clkgen exposes a dedicated IO clock; on 7-Series the
+  # main clock is reused as the IO clock.
+  has_separate_io_clk = is_ultrascale
+  # The 7-Series clkgen has an additional soft-reset input driven by the POR
+  # button, which the UltraScale clkgen does not have.
+  has_srst = not is_ultrascale
+  # The clkgen reset output feeds the backdoor loader (which then produces the
+  # final rst_n) when a loader is generated, otherwise it drives rst_n directly.
+  clkgen_rst_o = "bkdr_rst_n" if gen_bkdr_loader else "rst_n"
+%>\
   // TODO: Hook this up when FPGA pads are updated
   assign ext_clk = '0;
   assign pad2ast = '0;
 
+% if gen_bkdr_loader:
   logic bkdr_rst_n;
-  logic clk_main, clk_io, clk_usb_48mhz, clk_aon, rst_n;
-  clkgen_xil_ultrascale # (
+% endif
+  logic clk_main, ${"clk_io, " if has_separate_io_clk else ""}clk_usb_48mhz, clk_aon${"" if gen_bkdr_loader else ", rst_n"};
+  ${clkgen_module} # (
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
     .rst_ni(manual_in_por_n),
+% if has_srst:
+    .srst_ni(manual_in_por_button_n),
+% endif
     .clk_main_o(clk_main),
+% if has_separate_io_clk:
     .clk_io_o(clk_io),
+% endif
     .clk_48MHz_o(clk_usb_48mhz),
     .clk_aon_o(clk_aon),
-    .rst_no(bkdr_rst_n)
+    .rst_no(${clkgen_rst_o})
   );
 
   logic [31:0] fpga_info;
@@ -880,13 +810,11 @@ module chip_${top["name"]}_${target["name"]} #(
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
     sys: clk_main,
-    io:  clk_io,
+    io:  ${"clk_io" if has_separate_io_clk else "clk_main"},
     aon: clk_aon
   };
 
 % endif
-
-  prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast u_ast (
 % if target["name"] == "asic":
@@ -903,6 +831,7 @@ module chip_${top["name"]}_${target["name"]} #(
     // Direct short to PAD
     .ast2pad_t0_ao         ( IOA2 ),
     .ast2pad_t1_ao         ( IOA3 ),
+
 % else:
     // external POR
     .por_ni                ( rst_n ),
@@ -952,7 +881,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .viob_supp_i           ( 1'b1 ),
     // pok
     .ast_pwst_o            ( ast_pwst ),
+% if target["name"] == "asic":
     .ast_pwst_h_o          ( ast_pwst_h ),
+% else:
+    .ast_pwst_h_o          (  ),
+% endif
     // main regulator
     .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
     .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
@@ -1006,13 +939,17 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] == "asic":
     .usb_obs_i             ( usb_diff_rx_obs ),
 % else:
-    .usb_obs_i             ( 1'b0 ),
+    .usb_obs_i             ( '0 ),
 % endif
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
+% if target["name"] != "verilator":
     .mux_iob_sel_o         ( mux_iob_sel ),
+% else:
+    .mux_iob_sel_o         (  ),
+% endif
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
@@ -1032,8 +969,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .mem_cfg_rsp_i         ( '0 ),
 % endif
     // scan
-    .dft_scan_md_o         ( scanmode ),
-    .scan_shift_en_o       ( scan_en ),
+    .dft_scan_md_o         ( scanmode   ),
+    .scan_shift_en_o       ( scan_en    ),
     .scan_reset_no         ( scan_rst_n )
   );
 
@@ -1118,15 +1055,15 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
   ) u_prim_usb_diff_rx (
-    .input_pi          ( USB_P                 ),
-    .input_ni          ( USB_N                 ),
-    .input_en_i        ( usb_rx_enable         ),
-    .core_pok_h_i      ( ast_pwst_h.aon_pok    ),
-    .pullup_p_en_i     ( usb_dp_pullup_en      ),
-    .pullup_n_en_i     ( usb_dn_pullup_en      ),
-    .calibration_i     ( usb_io_pu_cal         ),
-    .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
-    .input_o           ( usb_rx_d              )
+    .input_pi         (USB_P             ),
+    .input_ni         (USB_N             ),
+    .input_en_i       (usb_rx_enable     ),
+    .core_pok_h_i     (ast_pwst_h.aon_pok),
+    .pullup_p_en_i    (usb_dp_pullup_en  ),
+    .pullup_n_en_i    (usb_dn_pullup_en  ),
+    .calibration_i    (usb_io_pu_cal     ),
+    .usb_diff_rx_obs_o(usb_diff_rx_obs   ),
+    .input_o          (usb_rx_d          )
   );
 
 ###################################################################
@@ -1137,6 +1074,12 @@ module chip_${top["name"]}_${target["name"]} #(
   /////////////////////
   // Memory Backdoor //
   /////////////////////
+
+  // Multiplexed I/O routed through the backdoor loader
+  pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_attr;
+  logic      [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_out;
+  logic      [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_oe;
+  logic      [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_in;
 
   if (BkdrLoaderEn) begin : gen_bkdr
 
@@ -1178,7 +1121,6 @@ module chip_${top["name"]}_${target["name"]} #(
     `BKDR_LOADER_CONNECT_RSPS
 
     always_comb begin : proc_conn_bkdr
-
       // Through-connection
       mio_attr    = mio_bkdr_attr;
       mio_out     = mio_bkdr_out;
@@ -1210,7 +1152,6 @@ module chip_${top["name"]}_${target["name"]} #(
     // Bkdr loader is activated if both tap_strap signals are set to 1'b1.
     assign bkdr_ena = tap_strap0 && tap_strap1;
 
-
   end else begin : gen_no_bkdr
     assign mio_attr    = mio_bkdr_attr;
     assign mio_out     = mio_bkdr_out;
@@ -1235,7 +1176,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_por_button_n = 1'b0;
   assign manual_oe_por_button_n = 1'b0;
 
-  assign srst_n = manual_in_por_button_n;
   % endif
 
   % if target["name"] == "cw305":
@@ -1250,19 +1190,10 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 % endif
 
-  // Inter-Power Domain signals
-% for sig in top["inter_pd"]["definitions"]:
-  % if isinstance(sig["width"], Parameter):
-  ${lib.im_defname(sig)} [${sig["width"].name_top}-1:0] ${sig["signame"]};
-  % else:
-  ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
-  % endif
-% endfor
-
-  ///////////////////////////
-  // Top-level Main Domain //
-  ///////////////////////////
-  ${top["name"]}_pd_main #(
+  /////////////////////////////////////////////
+  // top_${top["name"]}: power domains + AST //
+  /////////////////////////////////////////////
+  top_${top["name"]} #(
 % if target["name"] == "cw310":
     .EntropySrcStub(1'b1), // Stub ENTROPY_SRC to reduce resource usage on CW310. See #30062.
     .OtbnStub(1'b1), // Stub OTBN to reduce resource usage on CW310. See #30062.
@@ -1289,6 +1220,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .UsbdevRcvrWakeTimeUs(10000),
+    .SramCtrlRetAonInstrExec(0),
 % elif target["name"] == "cw305":
     .RvCoreIbexPipeLine(0),
     .SecAesMasking(1'b1),
@@ -1318,49 +1250,28 @@ module chip_${top["name"]}_${target["name"]} #(
     .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % elif target["name"] == "verilator":
-%   if top["name"] == "englishbreakfast":
+  % if top["name"] == "englishbreakfast":
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(320),
     .SecAesSkipPRNGReseeding(1'b1),
     .UsbdevStub(1'b1),
     .RvCoreIbexICache(0),
-%   endif
+  % else:
+    .SramCtrlRetAonInstrExec(0),
+  % endif
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % else:
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % endif
-  ) ${top["name"]}_pd_main (
-<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader, domain='Main'" />\
-
-<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=True, last_snippet=False" />\
-
-<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=False, last_snippet=True" />\
-  );
-
-
-  ////////////////////////////////
-  // Top-level Always-On domain //
-  ////////////////////////////////
-  % if target["name"] in ["cw310", "cw340"] or (target["name"] == "verilator" and top["name"] != "englishbreakfast"):
-  ${top["name"]}_pd_aon #(
-    .SramCtrlRetAonInstrExec(0)
-  ) top_${top["name"]}_pd_aon (
-  % else:
-  ${top["name"]}_pd_aon ${top["name"]}_pd_aon (
-  % endif
-<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader, domain='Aon'" />\
-
-<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=True, last_snippet=False" />\
-
-<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=False, last_snippet=True" />\
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+  ) top_${top["name"]} (
+<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader" />\
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='', inter_pd=False, feedthrough=False, last_snippet=True" />\
   );
 
 ###################################################################
@@ -1402,7 +1313,7 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   % if target["name"] == "cw305":
-  assign clk_trans_idle = top_${top["name"]}_pd_aon.u_clkmgr_aon.idle_i;
+  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr_aon.idle_i;
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
@@ -1414,7 +1325,7 @@ module chip_${top["name"]}_${target["name"]} #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_${top["name"]}_pd_aon.u_clkmgr_aon.idle_i[trigger_sel];
+  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr_aon.idle_i[trigger_sel];
   % endif
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
@@ -1451,6 +1362,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_io_trigger =
       manual_in_io_clk_trigger_sw_en | (manual_in_io_clk_trigger_hw_en &
           prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle));
-% endif
+% endif\
 
-endmodule : chip_${top["name"]}_${target["name"]}
+endmodule

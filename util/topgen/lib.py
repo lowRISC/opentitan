@@ -451,13 +451,13 @@ def get_intermodule_list(top: ConfigT, domain: str = None):
         return top["inter_signal"]["definitions"]
 
 
-def get_intermodule_ports(top: ConfigT, domain: str = None, inter_pd: bool = None):
+def get_intermodule_ports(top: ConfigT, domain: str = "", inter_pd: bool = None):
     if inter_pd is not None:
         inter_pd_list = [x for x in top["inter_signal"]["external"] if x["inter_pd"] == inter_pd]
     else:
         inter_pd_list = top["inter_signal"]["external"]
 
-    if domain is not None:
+    if domain != "":
         return [x for x in inter_pd_list if x["domain"] == domain]
     else:
         return inter_pd_list
@@ -564,10 +564,10 @@ def get_pad_list(padstr: str) -> List[Dict[str, Union[str, int]]]:
     return pads
 
 
-def idx_of_last_module_with_params(top: ConfigT, domain: str = None) -> int:
+def idx_of_last_module_with_params(top: ConfigT, domain: str = "") -> int:
     last = -1
 
-    if domain is not None:
+    if domain != "":
         default_domain = top["power"]["default"]
         modlist = [m for m in top["module"] if m.get("domain", default_domain) == domain]
     else:
@@ -580,8 +580,8 @@ def idx_of_last_module_with_params(top: ConfigT, domain: str = None) -> int:
     return last
 
 
-def get_all_modules(top: ConfigT, domain: str = None):
-    if domain is not None:
+def get_all_modules(top: ConfigT, domain: str = ""):
+    if domain != "":
         return [m for m in top["module"] if m.get("domain") == domain]
     else:
         return top["module"]

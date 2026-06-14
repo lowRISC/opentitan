@@ -12,8 +12,6 @@
   // Power information for the design
   power: {
     // Power domains supported by the design
-    // Aon represents domain aon
-    // 0 represents domain 0
     domains: ["Aon", "Main"],
 
     // Default power domain used for the design
@@ -1619,6 +1617,8 @@
         port_overrides: {
           'ast.lc_dft_en'                   : { signal: 'lc_dft_en'       },
           'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done'   },
+          'clkmgr_aon.cg_en'                : { unused: true              },
+          'rstmgr_aon.rst_en'               : { unused: true              },
           'flash_ctrl.flash_test_mode_a'    : { signal: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"},
           'flash_ctrl.flash_test_voltage_h' : { signal: 'FLASH_TEST_VOLT' },
           'otp_macro.ext_voltage_h'         : { signal: 'OTP_EXT_VOLT'    },
@@ -1633,6 +1633,8 @@
           'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
           'rv_core_ibex.fpga_info'          : { unused: true              },
           'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
+          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en'},
+          'pinmux_aon.usb_dnpullup_en'      : { signal: 'usb_dn_pullup_en'},
         }
       },
 
@@ -1706,24 +1708,28 @@
         port_overrides: {
           'ast.lc_dft_en'                   : { signal: 'lc_dft_en'       },
           'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done'   },
+          'clkmgr_aon.cg_en'                : { unused: true              },
+          'rstmgr_aon.rst_en'               : { unused: true              },
           // These are inout pads on the ASIC; the verilator target has no pads,
           // so leave them open (empty connection) rather than tying them off
           // ('0 on a multi-bit inout is rejected by Verilator).
           'flash_ctrl.flash_test_mode_a'    : { unused: true, tie_value: "" },
           'flash_ctrl.flash_test_voltage_h' : { unused: true, tie_value: "" },
           'otp_macro.ext_voltage_h'         : { unused: true, tie_value: "" },
-          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
-          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
-          'sensor_ctrl_aon.manual_pad_attr' : { unused: true              },
-          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
-          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'   },
-          'usbdev.usb_tx_d'                 : { signal: 'usb_tx_d'        },
-          'usbdev.usb_tx_se0'               : { signal: 'usb_tx_se0'      },
-          'usbdev.usb_tx_use_d_se0'         : { signal: 'usb_tx_use_d_se0'},
-          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'     },
-          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
-          'rv_core_ibex.fpga_info'          : { unused: true              },
-          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'         },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok'   },
+          'sensor_ctrl_aon.manual_pad_attr' : { unused: true                },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'          },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'     },
+          'usbdev.usb_tx_d'                 : { signal: 'usb_tx_d'          },
+          'usbdev.usb_tx_se0'               : { signal: 'usb_tx_se0'        },
+          'usbdev.usb_tx_use_d_se0'         : { signal: 'usb_tx_use_d_se0'  },
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'       },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'     },
+          'rv_core_ibex.fpga_info'          : { unused: true                },
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true                },
+          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en'  },
+          'pinmux_aon.usb_dnpullup_en'      : { signal: 'usb_dn_pullup_en'  },
         }
       },
 
@@ -1761,7 +1767,10 @@
         port_overrides: {
           'ast.lc_dft_en'                   : { unused: true },
           'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
+          'clkmgr_aon.cg_en'                : { unused: true },
+          'rstmgr_aon.rst_en'               : { unused: true },
           'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
+          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en' },
           'pinmux_aon.usb_dnpullup_en'      : { unused: true },
           'pinmux_aon.dft_strap_test'       : { unused: true },
           'usbdev.usb_tx_d'                 : { unused: true },
