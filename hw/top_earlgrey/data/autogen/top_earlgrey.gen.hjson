@@ -14733,6 +14733,14 @@
           {
             signal: ast_init_done
           }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
+          {
+            unused: true
+          }
           flash_ctrl.flash_test_mode_a:
           {
             signal: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"
@@ -14788,6 +14796,14 @@
           pinmux_aon.dft_hold_tap_sel:
           {
             unused: true
+          }
+          pinmux_aon.usb_dppullup_en:
+          {
+            signal: usb_dp_pullup_en
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            signal: usb_dn_pullup_en
           }
         }
       }
@@ -14872,6 +14888,14 @@
           {
             signal: ast_init_done
           }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
+          {
+            unused: true
+          }
           flash_ctrl.flash_test_mode_a:
           {
             unused: true
@@ -14934,6 +14958,14 @@
           pinmux_aon.dft_hold_tap_sel:
           {
             unused: true
+          }
+          pinmux_aon.usb_dppullup_en:
+          {
+            signal: usb_dp_pullup_en
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            signal: usb_dn_pullup_en
           }
         }
       }
@@ -15018,9 +15050,21 @@
           {
             signal: ast_init_done
           }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
+          {
+            unused: true
+          }
           pinmux_aon.dft_hold_tap_sel:
           {
             unused: true
+          }
+          pinmux_aon.usb_dppullup_en:
+          {
+            signal: usb_dp_pullup_en
           }
           pinmux_aon.usb_dnpullup_en:
           {
@@ -29134,9 +29178,9 @@
         signame: clkmgr_aon_cg_en_o
         signame_chip:
         {
-          asic: clkmgr_aon_cg_en
-          verilator: clkmgr_aon_cg_en
-          cw340: clkmgr_aon_cg_en
+          asic: ""
+          verilator: ""
+          cw340: ""
         }
         width: 1
         type: uni
@@ -29809,9 +29853,9 @@
         signame: rstmgr_aon_rst_en_o
         signame_chip:
         {
-          asic: rstmgr_aon_rst_en
-          verilator: rstmgr_aon_rst_en
-          cw340: rstmgr_aon_rst_en
+          asic: ""
+          verilator: ""
+          cw340: ""
         }
         width: 1
         type: uni

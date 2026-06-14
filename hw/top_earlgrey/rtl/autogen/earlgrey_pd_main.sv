@@ -12,10 +12,6 @@
 
 module earlgrey_pd_main #(
   // Auto-inferred parameters
-  // parameters for uart0
-  // parameters for uart1
-  // parameters for uart2
-  // parameters for uart3
   // parameters for gpio
   parameter bit GpioGpioAsyncOn = 1,
   parameter bit GpioGpioAsHwStrapsEn = 0,
@@ -27,8 +23,6 @@ module earlgrey_pd_main #(
   parameter int I2c1InputDelayCycles = 0,
   // parameters for i2c2
   parameter int I2c2InputDelayCycles = 0,
-  // parameters for rv_timer
-  // parameters for otp_ctrl
   // parameters for otp_macro
   parameter OtpMacroMemInitFile = "",
   // parameters for lc_ctrl
@@ -41,8 +35,6 @@ module earlgrey_pd_main #(
   // parameters for alert_handler
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,
-  // parameters for spi_host0
-  // parameters for spi_host1
   // parameters for usbdev
   parameter bit UsbdevStub = 0,
   parameter int UsbdevRcvrWakeTimeUs = 100,
@@ -58,7 +50,6 @@ module earlgrey_pd_main #(
   parameter bit RvDmUseDmiInterface = 0,
   parameter bit SecRvDmVolatileRawUnlockEn = 1'b0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
-  // parameters for rv_plic
   // parameters for aes
   parameter bit AesAESGCMEnable = 0,
   parameter bit SecAesMasking = 1,
@@ -66,7 +57,6 @@ module earlgrey_pd_main #(
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
-  // parameters for hmac
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
   parameter bit KmacSwKeyMasked = 0,
@@ -92,8 +82,6 @@ module earlgrey_pd_main #(
   parameter int EntropySrcRngBusBitSelWidth = 2,
   parameter int EntropySrcHealthTestWindowWidth = 18,
   parameter bit EntropySrcStub = 0,
-  // parameters for edn0
-  // parameters for edn1
   // parameters for sram_ctrl_main
   parameter int SramCtrlMainInstSize = 131072,
   parameter int SramCtrlMainNumRamInst = 1,

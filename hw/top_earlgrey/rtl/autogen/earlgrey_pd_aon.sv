@@ -15,15 +15,9 @@ module earlgrey_pd_aon #(
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,
   // Auto-inferred parameters
-  // parameters for pwrmgr_aon
   // parameters for rstmgr_aon
   parameter bit SecRstmgrAonCheck = 1'b1,
   parameter int SecRstmgrAonMaxSyncDelay = 2,
-  // parameters for clkmgr_aon
-  // parameters for sysrst_ctrl_aon
-  // parameters for adc_ctrl_aon
-  // parameters for aon_timer_aon
-  // parameters for sensor_ctrl_aon
   // parameters for sram_ctrl_ret_aon
   parameter int SramCtrlRetAonInstSize = 4096,
   parameter int SramCtrlRetAonNumRamInst = 1,
