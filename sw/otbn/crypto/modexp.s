@@ -7,59 +7,6 @@
 .globl modexp
 
 /**
- * Constant-time, conditional swap of two general-purpose registers
- *
- * This routine implements a conditional, constant-time, out-of-place swap of
- * two values in GPR registers such that
- *
- * Input:  GPR0(X), GPR1(Y)
- * Output: GPR2(Y), GPR3(X) if b == 0 else GPR2(X), GPR3(Y)
- *
- * It is a direct adaption of the masked conditional swap presented in
- *
- *   https://ieeexplore.ieee.org/document/9581247
- *
- * @param[in]  x23: GPR0 containing value X
- * @param[in]  x24: GPR1 containing value Y
- * @param[in]  x14: a conditional bit b
- * @param[out] x19: GPR2 containing either X or Y depending on b
- * @param[out] x20: GPR3 containing either X or Y depending on b
- *
- * Clobbered registers: x17, x18
- */
-cond_swap_gprs:
-  /*
-   * Calculate Boolean mask (0 - b) = 0 if b == 0 else 0xFFFF_FFFF
-   * Randomize the destination register to soften the impact of overwritting
-   * it with all 0s or all 1s:
-   *
-   *   d = (0 - b)
-   */
-  csrrs x17, URND, x0
-  sub   x17, x0, x14
-
-  /* z = (X ^ Y) & d. */
-  xor x18, x23, x24
-  and x18, x17, x18
-
-  /* Sample a random mask r and XOR it to the intermediate result: z = z ^ r. */
-  csrrs x17, URND, x0
-  xor x18, x17, x18
-
-  /*
-   * Calculate the value of the output registers:
-   *
-   *   GPR2 = (z ^ X) ^ r
-   *   GPR3 = (z ^ Y) ^ r
-   */
-  xor x19, x18, x23
-  xor x19, x17, x19
-  xor x20, x18, x24
-  xor x20, x17, x20
-
-  ret
-
-/**
  * Constant-time exponentiation by e-1 = F4-1 = 2^16 = 65536.
  *
  * Calculate C = A^(e-1) mod M in constant. A is assumed to be provided in the
@@ -296,21 +243,21 @@ _message_blinding_prologue_end:
   bn.sid  x20, 0(x5)
 
   # Store the converted input back into DMEM r[b' ^ 1] = A'.
-  la   x23, r0
-  la   x24, r1
-  xori x14, x4, 1
-  jal  x1, cond_swap_gprs
+  addi x14, x4, 0
+  la   x12, r2
+  jal  x1, set_flags_from_cond
 
-  addi x2, x8, 0
-  loop x30, 2
-    bn.sid x2, 0(x19++)
-    addi   x2, x2, 1
+  # Select and store loop
+  la    x15, r1     # R in DMEM
+  la    x16, r0     # destination r0
+  la    x17, r1     # destination r1
+  jal   x1, masked_wdr_select_store_loop
 
   # Compute bit length of current bigint size.
   slli  x21, x30, 8    /* SCA_TEST_REPLACE: addi x21, x0, 3 */
 
   # Main loop of the exponentiation, iterate over all exponent bits:
-  loop x21, 68
+  loop x21, 70
     bn.add w31, w31, w31
 
     # Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i].
@@ -327,24 +274,6 @@ _message_blinding_prologue_end:
     lw   x22, 0(x15)
     or   x22, x3, x22
     sw   x22, 0(x15)
-
-    # Step 4 in Algorithm 2 [1]:
-    #
-    # Depending on a[i] assign the input buffers to calculate
-    # [w[4+N-1]:w4] = r[a[i]] * r[a[i] ^ 1] and store the result in DMEM[r2].
-    la   x23, r0
-    la   x24, r1
-    addi x14, x3, 0
-    jal  x1, cond_swap_gprs
-
-    la x16, rsa_n
-    jal x1, montmul
-
-    addi x2, x8, 0
-    la   x15, r2
-    loop x30, 2
-      bn.sid  x2, 0(x15++)
-      addi x2, x2, 1
 
     # Shift secret indices and siphon the shifted out MSB into
     #   x4 = c = (b' ^ bi) ^ ai
@@ -364,47 +293,75 @@ _message_blinding_prologue_end:
     or    x22, x16, x22
     sw    x22, 0(x15)
 
-    # Step 5 in Algorithm 2 [1]:
-    #
-    # Calculate [w[4+N-1]:w4] = DMEM[r[c]] * DMEM[r[c]].
-    la   x23, r0
-    la   x24, r1
-    addi x14, x4, 0
-    jal x1, cond_swap_gprs
-
+    xori x14, x4, 1
+    la   x12, r2
+    jal  x1, set_flags_from_cond
+    la   x15, r0
+    la   x16, r1
+    la   x17, r2
+    jal  x1, masked_wdr_select_loop
     la   x16, rsa_n
-    addi x20, x19, 0
-    jal x1, montmul
+    la   x19, r2
+    la   x20, r2
+    jal  x1, montmul
 
-    # Step 6 in Algorithm 2 [1]:
-    #
-    # Store r2 and r[c] * r[c] into DMEM such that
-    #  DMEM[r[a[i]]]   = r[c] * r[c]
-    #  DMEM[r[a[i]^1]] = DMEM[r2]
-    la   x23, r0
-    la   x24, r1
+    # Store squaring result to r2
+    addi x2, x8, 0
+    la   x15, r2
+    loop x30, 2
+      bn.sid  x2, 0(x15++)
+      addi x2, x2, 1
+
+    # Product
+    la   x16, rsa_n
+    la   x19, r0
+    la   x20, r1
+    jal  x1, montmul
+
     addi x14, x3, 0
-    jal x1, cond_swap_gprs
-
-    addi x5, x8, 0
-    loop x30, 2
-      bn.sid x5, 0(x19++)
-      addi   x5, x5, 1
-
-    la   x16, r2
-    loop x30, 2
-      bn.lid x11, 0(x16++)
-      bn.sid x11, 0(x20++)
+    la   x12, r1
+    jal  x1, set_flags_from_cond
+    la    x15, r2     # Squaring in DMEM
+    la    x16, r0     # destination r0
+    la    x17, r1     # destination r1
+    jal   x1, masked_wdr_select_store_loop
 
     nop
 
   # Make sure the output (A*R^e)^(d-1) is in r0.
-  la   x23, r0
-  la   x24, r1
   la   x14, rsa_d1
   lw   x14, 0(x14)
   andi x14, x14, 1
-  jal  x1, cond_swap_gprs
+  la   x12, r2
+  jal  x1, set_flags_from_cond
+  la   x15, r0
+  la   x16, r1
+  addi x18, x15, 0
+  addi x19, x16, 0
+  # GPRs for WDR indices
+  li   x12, 0
+  li   x13, 2
+  li   x23, 26
+  li   x24, 29
+  loop x30, 16
+    bn.lid x12, 0(x18)
+    bn.lid x13, 0(x19)
+    bn.wsrr w24, URND
+    bn.wsrr w25, URND
+    bn.sel w24, w2, w0, FG0.C
+    bn.sel w25, w0, w2, FG0.C
+    bn.wsrr w26, URND
+    bn.sel w26, w25, w24, FG1.C
+    bn.wsrr w27, URND
+    bn.wsrr w28, URND
+    bn.sel w27, w0, w2, FG0.C
+    bn.sel w28, w2, w0, FG0.C
+    bn.wsrr w29, URND
+    bn.sel w29, w28, w27, FG1.C
+    bn.sid x23, 0(x18++)
+    bn.sid x24, 0(x19++)
+
+  la   x19, r0
 
   beq x0, x29, _message_blinding_epilogue_end
 
@@ -717,5 +674,110 @@ montmul_mul1:
   /* restore  dmem pointers for operand A and modulus */
   addi      x16, x6, 0
   addi      x19, x7, 0
+  bn.add    w31, w31, w31, FG0
+  bn.add    w31, w31, w31, FG1
+  ret
 
+/**
+ * Set FG0.C and FG1.C from GPR condition x14
+ *
+ * Inputs:
+ *   x14: condition bit (0 or 1)
+ *   x12: temporary DMEM buffer address (64 bytes, clobbered)
+ *
+ * Clobbered: x12, x13, x15, x16, w24, w25
+ */
+set_flags_from_cond:
+  # Split x14 into shares x15 and x16
+  csrrs x15, URND, x0
+  andi  x15, x15, 1
+  xor   x16, x14, x15
+
+  # Clear temporary DMEM buffer (64 bytes)
+  li    x13, 31
+  bn.sid x13, 0(x12)
+  bn.sid x13, 32(x12)
+
+  # Write to temp buffer
+  sw    x15, 0(x12)
+  sw    x16, 32(x12)
+
+  # Load to w24 and w25
+  li    x13, 24
+  bn.lid x13, 0(x12)
+  li    x13, 25
+  addi  x12, x12, 32
+  bn.lid x13, 0(x12)
+
+  # Set flags
+  bn.sub w28, w31, w24, FG0
+  bn.sub w28, w31, w25, FG1
+
+  ret
+
+/**
+ * Masked WDR Select Loop
+ *
+ * Inputs:
+ *   x15: source 0 address
+ *   x16: source 1 address
+ *   x17: destination address
+ *   x30: loop count (N)
+ *   FG0.C, FG1.C: select shares
+ *
+ * Clobbered: w0, w1, w2, w3, w4, w5
+ */
+masked_wdr_select_loop:
+  li    x12, 24     # load to w24
+  li    x13, 25     # load to w25
+  li    x14, 2      # WDR index for dest is 2 (w2)
+  loop x30, 9
+    bn.lid x12, 0(x15++)
+    bn.lid x13, 0(x16++)
+    bn.wsrr w26, URND
+    bn.wsrr w27, URND
+    bn.sel w26, w24, w25, FG0.C
+    bn.sel w27, w25, w24, FG0.C
+    bn.wsrr w2, URND
+    bn.sel w2, w27, w26, FG1.C
+    bn.sid x14, 0(x17++)
+  ret
+
+/**
+ * Masked WDR Select and Store Loop
+ *
+ * Inputs:
+ *   x8: source 0 WDR base pointer (w4)
+ *   x15: source 1 address in DMEM
+ *   x16: destination 0 address in DMEM
+ *   x17: destination 1 address in DMEM
+ *   x30: loop count (N)
+ *   FG0.C, FG1.C: select shares
+ *
+ * Clobbered: x12, x13, x22, x23, x24
+ *            w0, w2, w24 to w29
+ */
+masked_wdr_select_store_loop:
+  addi  x22, x8, 0  # pointer to w4
+  li    x12, 0      # pointer to w0
+  li    x13, 2      # pointer to w2
+  li    x23, 26     # w26
+  li    x24, 29     # w29
+  loop  x30, 16
+    bn.lid x13, 0(x15++)
+    bn.movr x12, x22++
+    bn.wsrr w24, URND
+    bn.wsrr w25, URND
+    bn.sel w24, w0, w2, FG0.C
+    bn.sel w25, w2, w0, FG0.C
+    bn.wsrr w26, URND
+    bn.sel w26, w25, w24, FG1.C
+    bn.wsrr w27, URND
+    bn.wsrr w28, URND
+    bn.sel w27, w2, w0, FG0.C
+    bn.sel w28, w0, w2, FG0.C
+    bn.wsrr w29, URND
+    bn.sel w29, w28, w27, FG1.C
+    bn.sid x23, 0(x16++)
+    bn.sid x24, 0(x17++)
   ret
