@@ -62,6 +62,7 @@ filesets:
       - "fileset_partner  ? (partner:ip:otp_macro)"
       - "!fileset_partner ? (lowrisc:ip:otp_macro)"
     files:
+      - rtl/autogen/top_earlgrey.sv
       - rtl/autogen/earlgrey_pd_main.sv
       - rtl/autogen/earlgrey_pd_aon.sv
     file_type: systemVerilogSource

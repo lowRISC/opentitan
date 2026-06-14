@@ -17,10 +17,7 @@
   module_name = alert["module_name"]
   index = 0
   module_pd = lib.find_module_by_name(top["module"], module_name).get("domain")
-  if module_pd != default_pd:
-    hier_str = f"`CHIP_HIER_{module_pd.upper()}"
-  else:
-    hier_str = "`CHIP_HIER"
+  hier_str = f"`PD_{module_pd.upper()}_HIER"
 %>\
   % endif
 assign alert_if[${loop.index}].alert_tx = ${hier_str}.u_${module_name}.alert_tx_o[${index}];

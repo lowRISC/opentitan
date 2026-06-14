@@ -5,7 +5,7 @@ For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../datasheet.
 
 # Theory of Operations
 
-The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board.
+The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board, analogous for the `cw340` board. Finally, `chip_earlgrey_verilator` is intended for elaboration and simulation with Verilator.
 The code for Ibex is developed in its own [lowRISC repo](https://github.com/lowrisc/ibex), and is [*vendored in*](../../../../doc/contributing/hw/vendor.md) to this repository.
 Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines](../../../../doc/contributing/hw/comportability/README.md) for lowRISC peripheral IP.
 Each of these IP has its own specification.
@@ -16,6 +16,10 @@ See the table produced in the [hardware documentation page](../../../README.md) 
 This section provides some details for the processor and the peripherals.
 See their representative specifications for more information.
 This section also contains a brief overview of some of the features of the final product.
+
+### Power Domains
+
+The design is distributed across two power domains: `Main` (default, turned off during deep sleep) and `Aon` (remains powered during deep sleep). The attribution of each instantiated IP to a power domain is done through the `domain` attribute of each instance specified in `top_earlgrey.hjson`. The tooling (`topgen`) automatically creates a wrapper for each power domain and the required connections between them (see [Power Domain Wrappers vs Top Level vs Chip Targets](#power-domain-wrappers-vs-top-level-vs-chip-targets) for details).
 
 ### Clocking and Reset
 
@@ -499,21 +503,23 @@ A full definition of this descriptor file, its features, and related scripting i
 This tooling generates the interconnecting crossbar (via `TLUL`) as well as the instantiations at the top level.
 It also feeds into this document generation to ensure that the chosen address locations are documented automatically using the data in the source files.
 
-## Top Level vs Chip Targets
+## Power Domain Wrappers vs Top Level vs Chip Targets
 
 It should first be **NOTED** that there is some subtlety on the notion of hierarchy within the top level.
-There is netlist automation to create the module `top_earlgrey` as indicated in sections of this specification that follow.
-**On top** of that module, hierarchically in the repo, are chip level instantiation targets directed towards a particular use case.
-This includes `chip_earlgrey_cw310` for use in FPGA, and `chip_earlgrey_asic` for use (eventually) in a silicon implementation.
-These chip level targets will include the actual pads as needed by the target platform.
-At the time of this writing the two are not in perfect synchronization, but the intention will be for them to be as identical as possible.
+There is automation to create the power domain wrapper modules `earlgrey_pd_main` and `earlgrey_pd_aon` as indicated in sections of this specification that follow. On top of those, there is the `top_earlgrey` wrapper which instantiates both wrappers, establishes the inter-power-domain connections, and exposes all signals that are required further up the hierarchy at its port.
+
+**On top** of `top_earlgrey`, highest up in the design hierarchy, are chip level instantiation targets directed towards a particular use case.
+This includes `chip_earlgrey_cw3x0` for use in FPGA, `chip_earlgrey_asic` for use in silicon implementations, and finally `chip_earlgrey_verilator`.
+
+These chip level targets will include the actual pads as needed by the target platform, and further target-specific circuitry (such as e.g., clock generators for the FPGA targets or a hard macro for the USB differential receiver on the ASIC target).
+Due to these target-specific requirements, the chip levels may substantially differ from each other.
 Where appropriate, including the block diagram below, notes will be provided where the hierarchy subtleties are explained.
 
 ## FPGA Platform
 
 **TODO: This section needs to be updated once pin updates are complete.**
 
-In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw310`.
+In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw3x0`.
 This is done for ease of programming by the external host.
 
 ## References

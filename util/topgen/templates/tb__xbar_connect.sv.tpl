@@ -39,17 +39,17 @@ def escape_if_name(qual_if_name):
 %>\
 
 ## Need to use a variable assignment for "\" to bypass the newline filter.
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, pd_hier = ) ${"\\"}
-     force ``tl_name``_tl_if.d2h = dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_i; ${"\\"}
-     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; ${"\\"}
-     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.clk_i = 0; ${"\\"}
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, power_domain) ${"\\"}
+     force ``tl_name``_tl_if.d2h = dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_i; ${"\\"}
+     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; ${"\\"}
+     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.clk_i = 0; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, pd_hier = ) ${"\\"}
-     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_i; ${"\\"}
-     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
-     force dut.top_${top["name"]}``pd_hier``.u_``inst_name``.clk_i = 0; ${"\\"}
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, power_domain) ${"\\"}
+     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_i; ${"\\"}
+     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
+     force dut.top_${top["name"]}.${top["name"]}_pd_``power_domain``.u_``inst_name``.clk_i = 0; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
@@ -78,7 +78,7 @@ initial begin
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
 % for xbar in top["xbar"]:
-    $asserton(0, tb.dut.top_${top["name"]}.u_xbar_${xbar["name"]});
+    $asserton(0, ${top_hier}${top["name"]}_pd_${xbar["domain"].lower()}.u_xbar_${xbar["name"]});
 % endfor
 
 
@@ -87,14 +87,14 @@ initial begin
     // bypass clkmgr, force clocks directly
 % for xbar in top["xbar"]:
   % for clk, src in xbar["clock_srcs"].items():
-    force ${top_hier}u_xbar_${xbar["name"]}.${clk} = clk_${src};
+    force ${top_hier}${top["name"]}_pd_${xbar["domain"].lower()}.u_xbar_${xbar["name"]}.${clk} = clk_${src};
   % endfor
 % endfor
 
     // bypass rstmgr, force resets directly
 % for xbar in top["xbar"]:
   % for rst in xbar["reset_connections"]:
-    force ${top_hier}u_xbar_${xbar["name"]}.${rst} = rst_n;
+    force ${top_hier}${top["name"]}_pd_${xbar["domain"].lower()}.u_xbar_${xbar["name"]}.${rst} = rst_n;
   % endfor
 % endfor
 
@@ -108,18 +108,14 @@ inst_sig_list = lib.find_otherside_modules(top, xbar["name"], 'tl_' + esc_name)
 inst_name = inst_sig_list[0][1]
 sig_name = inst_sig_list[0][2]
 
-inst_pd = lib.find_module_by_name(top["module"] + top["xbar"], inst_name).get("domain")
-if inst_pd != default_pd:
-  pd_str = f", _pd_{inst_pd.lower()}"
-else:
-  pd_str = ""
+power_domain = lib.find_module_by_name(top["module"] + top["xbar"], inst_name).get("domain").lower()
 %>\
     % if node["type"] == "host" and not node["xbar"]:
-    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name}${pd_str})
+    `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain})
     % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
-    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name}${pd_str})
+    `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name}, ${power_domain})
     % endif
   % endfor
 % endfor
