@@ -128,6 +128,7 @@ ed25519_gen_public_key:
   /* Clear w16 and w17 with randomness before loading the second share s1. */
   bn.wsrr w16, URND
   bn.wsrr w17, URND
+  bn.sub  w31, w31, w31 /* Clear flags */
 
   /* [w17:w16] <= s1. */
   li       x2, 16
@@ -725,6 +726,7 @@ ed25519_sign_stage2:
   /* Clear w16 and w17 with randomness before loading the second share s1. */
   bn.wsrr w16, URND
   bn.wsrr w17, URND
+  bn.sub  w31, w31, w31 /* Clear flags */
 
   /* [w17:w16] <= s1. */
   li       x2, 16
