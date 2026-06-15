@@ -28,6 +28,8 @@ if top["name"] == "earlgrey":
         {
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ]
