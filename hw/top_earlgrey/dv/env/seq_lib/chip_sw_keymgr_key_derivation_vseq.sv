@@ -109,7 +109,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
-    string path_internal_key = "tb.dut.top_earlgrey.u_keymgr.u_ctrl.key_o.key";
+    string path_internal_key = "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr.u_ctrl.key_o.key";
     key_shares_t new_key;
     bit [keymgr_pkg::KeyWidth-1:0] cur_unmasked_key;
     bit [keymgr_pkg::KeyWidth-1:0] new_unmasked_key;
@@ -146,7 +146,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task check_op_in_owner_int_state(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
-    string path_otbn_key = "tb.dut.top_earlgrey.u_keymgr.otbn_key_o";
+    string path_otbn_key = "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr.otbn_key_o";
     bit [keymgr_pkg::KeyWidth-1:0]     exp_digest;
     bit [keymgr_pkg::KeyWidth-1:0]     unused_key;
 
@@ -182,13 +182,13 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     end
 
     // The next operation is disable, and key will be wiped and changed every cycle.
-    $assertoff(0, "tb.dut.top_earlgrey.u_kmac.u_kmac_core.KeyDataStableWhenValid_M");
+    $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_kmac.u_kmac_core.KeyDataStableWhenValid_M");
   endtask
 
   virtual task check_kmac_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
                                    output bit [keymgr_pkg::KeyWidth-1:0] sideload_kmac_key);
     keymgr_pkg::hw_key_req_t hw_key;
-    string path_kmac_key = "tb.dut.top_earlgrey.u_keymgr.kmac_key_o";
+    string path_kmac_key = "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr.kmac_key_o";
     `DV_WAIT(cfg.sw_logger_vif.printed_log ==
           "Keymgr generated HW output for Kmac at OwnerIntKey State")
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_kmac_key))
@@ -201,7 +201,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   virtual task check_aes_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
                                   output bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key);
     keymgr_pkg::hw_key_req_t hw_key;
-    string path_aes_key = "tb.dut.top_earlgrey.u_keymgr.aes_key_o";
+    string path_aes_key = "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr.aes_key_o";
     `DV_WAIT(cfg.sw_logger_vif.printed_log ==
           "Keymgr generated HW output for Aes at OwnerIntKey State")
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_aes_key))

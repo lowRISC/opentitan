@@ -803,14 +803,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
         forever begin
           bit[1:0] tap_strap_value;
 `ifdef GATE_LEVEL
-          tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux_aon.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_1_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[1]))
-          tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux_aon.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_0_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[0]))
 `else
-          string tap_strap_path = {"tb.dut.top_earlgrey.u_pinmux_aon.",
+          string tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux_aon.",
                                    "u_pinmux_strap_sampling.tap_strap"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
 `endif
@@ -1249,7 +1249,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Before rma wipe for data partition started (256 pages),
   // this task force total page to 9 pages. So rma process is completed faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_earlgrey.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_flash_hw_if";
     string mypath;
     logic [2:0] rma_wipe_idx;
     logic [3:0] rma_ack;
@@ -1285,7 +1285,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     uint disable_assertion = 0;
     void'($value$plusargs("disable_assert_edn_output_diff_from_prev=%0d", disable_assertion));
     if (disable_assertion) begin
-      $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_edn_if.DataOutputDiffFromPrev_A");
+      $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_rv_core_ibex.u_edn_if.DataOutputDiffFromPrev_A");
     end
   endfunction
 

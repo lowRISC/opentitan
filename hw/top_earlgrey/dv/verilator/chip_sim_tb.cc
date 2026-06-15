@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
   simctrl.SetTop(&top, &top.clk_i, &top.rst_ni,
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
-  std::string top_scope("TOP.chip_sim_tb.u_dut.top_earlgrey");
+  // Suffix this (_pd_main) once paths to IPs in the Aon power domain are needed
+  std::string top_scope("TOP.chip_sim_tb.u_dut.top_earlgrey.earlgrey_pd_main");
   std::string ram1p_adv_scope("u_prim_ram_1p_adv.gen_ram_inst[0].u_mem");
 
   MemArea rom0(top_scope + (".u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom."
