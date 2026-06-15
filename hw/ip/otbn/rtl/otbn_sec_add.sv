@@ -52,10 +52,12 @@ module otbn_sec_add
 
   // g[l][s][i]: prefix generate for share s, bit i, after l prefix stages.
   // p[l][s][i]: prefix propagate for share s, bit i, after l prefix stages.
-  // pre_p[l][s][i]: initial propagate (inp1^inp2) delayed l pipeline cycles.
+  // pre_p[s][i]: initial propagate (inp1^inp2), combinational stage-0 value.
+  // pre_p_q[l][s][i]: pre_p delayed l+1 pipeline cycles.
   logic [Stages:0][NumShares-1:0][Width-1:0] g;
   logic [Stages:0][NumShares-1:0][Width-1:0] p;
-  logic [Stages+1:0][NumShares-1:0][Width-1:0] pre_p;
+  logic [NumShares-1:0][Width-1:0] pre_p;
+  logic [Stages:0][NumShares-1:0][Width-1:0] pre_p_q;
 
 `ifdef INC_ASSERT
   // Tracks which rand_i bits are consumed by the generate loops below.
@@ -90,19 +92,19 @@ module otbn_sec_add
   end
 
   // Pre-computation stage.
-  // pre_p[0] = inp1 ^ inp2
+  // pre_p = inp1 ^ inp2
   for (genvar s = 0; s < NumShares; s++) begin : gen_pre_p
     prim_xor2 #(
       .Width(Width)
     ) u_prim_xor2 (
       .in0_i(inp1_i[s]),
       .in1_i(inp2_i[s]),
-      .out_o(pre_p[0][s])
+      .out_o(pre_p[s])
     );
   end
 
   // Align p[0] with g[0], which is delayed by one cycle.
-  assign p[0] = pre_p[1];
+  assign p[0] = pre_p_q[0];
 
   // g[0] = inp1 & inp2
   for (genvar i = 0; i < Width; i++) begin : gen_pre_g
@@ -271,18 +273,31 @@ module otbn_sec_add
     end
   end
 
-  for (genvar level = 1; level <= Stages + 1; level++) begin : gen_feedthrough_stage
-    // Feed through pre_p from the pre processing stage for the final sum computation.
-    prim_flop_en #(
-      .Width(NumShares * Width),
-      .ResetValue('0)
-    ) u_prim_flop_en_pre_p (
-      .clk_i (clk_i),
-      .rst_ni(rst_ni),
-      .en_i  (update_en[level-1]),
-      .d_i   ({pre_p[level-1][1], pre_p[level-1][0]}),
-      .q_o   ({pre_p[level][1],   pre_p[level][0]})
-    );
+  for (genvar level = 0; level <= Stages; level++) begin : gen_feedthrough_stage
+    // Feed pre_p (stage-0 XOR) into pre_p_q[0], shift pre_p_q forward for subsequent stages.
+    if (level == 0) begin : gen_feedthrough_first
+      prim_flop_en #(
+        .Width(NumShares * Width),
+        .ResetValue('0)
+      ) u_prim_flop_en_pre_p (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
+        .en_i  (update_en[0]),
+        .d_i   ({pre_p[1], pre_p[0]}),
+        .q_o   ({pre_p_q[0][1], pre_p_q[0][0]})
+      );
+    end else begin : gen_feedthrough_rest
+      prim_flop_en #(
+        .Width(NumShares * Width),
+        .ResetValue('0)
+      ) u_prim_flop_en_pre_p (
+        .clk_i (clk_i),
+        .rst_ni(rst_ni),
+        .en_i  (update_en[level]),
+        .d_i   ({pre_p_q[level-1][1], pre_p_q[level-1][0]}),
+        .q_o   ({pre_p_q[level][1],   pre_p_q[level][0]})
+      );
+    end
 
     // Feed through the valid flag signal, which will be used for the stage enable signal.
     prim_flop_en #(
@@ -292,8 +307,8 @@ module otbn_sec_add
       .clk_i (clk_i),
       .rst_ni(rst_ni),
       .en_i  (~stall_i),
-      .d_i   (en[level-1]),
-      .q_o   (en[level])
+      .d_i   (en[level]),
+      .q_o   (en[level+1])
     );
   end
 
@@ -301,12 +316,12 @@ module otbn_sec_add
   // carry_in[i] = g[Stages][i-1] (prefix generate for bits [0..i-1])
   // carry_in[0] = 0
   for (genvar s = 0; s < NumShares; s++) begin : gen_sum_share
-    assign result_o[s][0] = pre_p[Stages+1][s][0];
+    assign result_o[s][0] = pre_p_q[Stages][s][0];
     for (genvar i = 1; i < Width; i++) begin : gen_sum_bit
       prim_xor2 #(
         .Width(1)
       ) u_prim_xor2 (
-        .in0_i(pre_p[Stages+1][s][i]),
+        .in0_i(pre_p_q[Stages][s][i]),
         .in1_i(g[Stages][s][i-1]),
         .out_o(result_o[s][i])
       );
