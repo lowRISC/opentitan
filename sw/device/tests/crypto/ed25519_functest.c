@@ -231,6 +231,8 @@ static status_t hasheddsa_test(void) {
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
       &public_key, &input_message, kOtcryptoEddsaSignModeHashEddsa,
       &signature_verif, &verification_result));
+  LOG_INFO("OTBN verify instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 

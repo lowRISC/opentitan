@@ -241,8 +241,10 @@ ed25519_verify_var:
        [w17:w16] <= k */
   li       x2, 16
   la       x3, ed25519_hash_k
-  bn.lid   x2, 0(x3++)
+  bn.lid   x2, 0(x3)
   addi     x2, x2, 1
+  la       x3, ed25519_hash_k /* load it again for redundancy */
+  addi     x3, x3, 32
   bn.lid   x2, 0(x3)
 
   /* Reduce k modulo L.
@@ -339,6 +341,7 @@ ed25519_verify_var:
   jal      x1, affine_to_ext
 
   /* w28 <= w3 = (8 * k) mod L */
+  bn.wsrr  w28, URND /* pre-randomize */
   bn.mov   w28, w3
 
   /* [w13:w10] <= w28 * [w9:w6] = [8][k]A */
@@ -349,6 +352,14 @@ ed25519_verify_var:
   bn.mov   w6, w4
   bn.mov   w7, w5
   jal      x1, affine_to_ext
+
+  /* Check if [8][k]A is the identity point.
+     If [8][k]A = O, its X-coordinate (w10) is 0 mod p. */
+  bn.cmp   w10, w31
+  csrrs    x2, FG0, x0
+  andi     x2, x2, 8
+  li       x3, 8
+  beq      x2, x3, verify_fail
 
   /* Store the intermediate result [8][k]A for later.
        [w5:w2] <= [w13:w10] = [8][k]A */
