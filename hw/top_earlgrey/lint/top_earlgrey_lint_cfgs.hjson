@@ -165,12 +165,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/rom_ctrl/lint/{tool}"
              },
-             #{    name: rram_ctrl
-             #     fusesoc_core: lowrisc:ip:rram_ctrl
-             #     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             #     additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-             #     rel_path: "hw/ip/rram_ctrl/lint/{tool}"
-             #},
+             {    name: rram_ctrl
+                  fusesoc_core: lowrisc:ip:rram_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  rel_path: "hw/ip/rram_ctrl/lint/{tool}"
+             },
              {    name: rram_macro
                   fusesoc_core: lowrisc:ip:rram_macro
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

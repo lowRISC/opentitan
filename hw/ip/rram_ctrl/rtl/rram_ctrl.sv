@@ -92,7 +92,6 @@ module rram_ctrl
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
-  import lc_ctrl_pkg::lc_tx_test_true_strict;
 
   ////////////////////////////
   // Localparam definitions //
@@ -296,6 +295,11 @@ module rram_ctrl
     .hw2reg    (hw2reg),
     .intg_err_o(intg_err)
   );
+  // Unused bits
+  logic [top_pkg::TL_DW-1:0] unused_scratch;
+
+  // Unused signals
+  assign unused_scratch = reg2hw.scratch.q;
 
   assign hw2reg.ctrl_regwen.d = (sw_sel | hw_loopback_sel) ? ~reg2hw.control.start.q : 1'b1;
 
