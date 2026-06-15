@@ -583,7 +583,7 @@ module rram_ctrl_otp
     wdata_inconsistent = '0;
 
     if (rsw_en) begin
-      for (int k = 0; k <= otp_size_q; k++) begin
+      for (int unsigned k = 0; k <= otp_size_q; k++) begin
         rram_word_d[(otp_off_q + k)*OtpWidth +: OtpWidth] = wdata_mod[k];
         if (mubi4_test_false_strict(zer_en_q)) begin
           // Inconsistent write data. Detect if operation tried to clear a bit to zero.
@@ -598,9 +598,9 @@ module rram_ctrl_otp
       rram_word_d = '1;
     end else if (rvalid_i && rready_o) begin
       if (data_err) begin
-        rram_word_d[bus_cnt_q*BusWidth +: BusWidth] = '1;
+        rram_word_d[bus_cnt_q[WordSelW-1:0] * BusWidth +: BusWidth] = '1;
       end else begin
-        rram_word_d[bus_cnt_q*BusWidth +: BusWidth] = rdata_i[BusWidth-1:0];
+        rram_word_d[bus_cnt_q[WordSelW-1:0] * BusWidth +: BusWidth] = rdata_i[BusWidth-1:0];
       end
     end
   end
@@ -614,11 +614,11 @@ module rram_ctrl_otp
     end
   end
 
-  assign wdata = rram_word_q[bus_cnt_q*BusWidth +: BusWidth];
+  assign wdata = rram_word_q[bus_cnt_q[WordSelW-1:0] * BusWidth +: BusWidth];
   always_comb begin
     rdata = '0;
 
-    for (int k = 0; k <= otp_size_q; k++) begin
+    for (int unsigned k = 0; k <= otp_size_q; k++) begin
       rdata[k] = rram_word_q[(otp_off_q+k)*OtpWidth +: OtpWidth];
     end
   end
