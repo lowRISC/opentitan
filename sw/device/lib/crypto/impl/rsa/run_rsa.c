@@ -196,7 +196,6 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
 
   // Read the mode from OTBN dmem and panic if it's not as expected.
   uint32_t act_mode = 0;
-  uint32_t mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_MODEXP);
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
