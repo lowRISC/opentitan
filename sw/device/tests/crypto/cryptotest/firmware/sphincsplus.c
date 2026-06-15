@@ -49,38 +49,19 @@ status_t handle_sphincsplus_verify(ujson_t *uj) {
   uint32_t exp_root[kSpxVerifyRootNumWords];
   spx_public_key_root((uint32_t *)uj_public_key.public, exp_root);
   uint32_t act_root[kSpxVerifyRootNumWords];
-  rom_error_t error =
-      spx_verify((uint32_t *)uj_signature.signature, NULL, 0, NULL, 0, NULL, 0,
-                 (uint8_t *)uj_message.message, uj_message.message_len,
-                 (uint32_t *)uj_public_key.public, act_root);
-  cryptotest_sphincsplus_verify_output_t uj_output;
-  switch (error) {
-    case kErrorOk:
-      uj_output = kCryptotestSphincsPlusVerifyOutputSuccess;
-      for (size_t i = 0; i < kSpxVerifyRootNumWords; i++) {
-        if (exp_root[i] != act_root[i]) {
-          uj_output = kCryptotestSphincsPlusVerifyOutputFailure;
-          break;
-        }
-      }
-      RESP_OK(ujson_serialize_cryptotest_sphincsplus_verify_output_t, uj,
-              &uj_output);
-      break;
-    case kErrorSigverifyBadSpxSignature:
-      OT_FALLTHROUGH_INTENDED;
-    case kErrorSigverifyBadSpxKey:
+  spx_verify((uint32_t *)uj_signature.signature, NULL, 0, NULL, 0, NULL, 0,
+             (uint8_t *)uj_message.message, uj_message.message_len,
+             (uint32_t *)uj_public_key.public, act_root);
+  cryptotest_sphincsplus_verify_output_t uj_output =
+      kCryptotestSphincsPlusVerifyOutputSuccess;
+  for (size_t i = 0; i < kSpxVerifyRootNumWords; i++) {
+    if (exp_root[i] != act_root[i]) {
       uj_output = kCryptotestSphincsPlusVerifyOutputFailure;
-      // Respond "failure" if the IUT reports an invalid argument
-      RESP_OK(ujson_serialize_cryptotest_sphincsplus_verify_output_t, uj,
-              &uj_output);
       break;
-    default:
-      LOG_ERROR(
-          "Unexpected error value returned from spx_verify: "
-          "0x%x",
-          error);
-      return INTERNAL();
+    }
   }
+  RESP_OK(ujson_serialize_cryptotest_sphincsplus_verify_output_t, uj,
+          &uj_output);
   return OK_STATUS(0);
 }
 

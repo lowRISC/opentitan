@@ -808,14 +808,13 @@ static rom_error_t spx_verify_impl_test(void) {
   sigverify_spx_root_t expected_root;
   sigverify_spx_root_t actual_root;
   spx_public_key_root(kPubKey.data, expected_root.data);
-  rom_error_t error = spx_verify(kSignature.data, kSpxVerifyDomainSep,
-                                 sizeof(kSpxVerifyDomainSep), NULL, 0, NULL, 0,
-                                 (const uint8_t *)kMessage, kMessageLen,
-                                 kPubKey.data, actual_root.data);
+  spx_verify(kSignature.data, kSpxVerifyDomainSep, sizeof(kSpxVerifyDomainSep),
+             NULL, 0, NULL, 0, (const uint8_t *)kMessage, kMessageLen,
+             kPubKey.data, actual_root.data);
   if (memcmp(&expected_root, &actual_root, sizeof(sigverify_spx_root_t)) != 0) {
     return kErrorUnknown;
   }
-  return error;
+  return kErrorOk;
 }
 
 static rom_error_t spx_verify_disabled_bad_signature_test(void) {

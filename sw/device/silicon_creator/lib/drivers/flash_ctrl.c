@@ -726,5 +726,5 @@ rom_error_t flash_ctrl_info_type0_params_build(
       .cfg_wen_addr = cfg_wen_addr + page * sizeof(uint32_t),
   };
 
-  return kErrorOk;
+  return launder32(kErrorOk);
 }

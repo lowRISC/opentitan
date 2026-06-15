@@ -28,8 +28,7 @@ extern "C" {
  * @param ctx Context object.
  * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
+void spx_hash_initialize(spx_ctx_t *ctx);
 
 /**
  * Hash the input message and derive the leaf index.
@@ -53,15 +52,13 @@ rom_error_t spx_hash_initialize(spx_ctx_t *ctx);
  * @param[out] digest Output buffer for message digest.
  * @param[out] tree Tree index.
  * @param[out] leaf_idx Leaf index.
- * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t spx_hash_message(
-    const uint32_t *R, const uint32_t *pk, const uint8_t *msg_prefix_1,
-    size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
-    size_t msg_prefix_2_len, const uint8_t *msg_prefix_3,
-    size_t msg_prefix_3_len, const uint8_t *msg, size_t msg_len,
-    uint8_t *digest, uint64_t *tree, uint32_t *leaf_idx);
+void spx_hash_message(const uint32_t *R, const uint32_t *pk,
+                      const uint8_t *msg_prefix_1, size_t msg_prefix_1_len,
+                      const uint8_t *msg_prefix_2, size_t msg_prefix_2_len,
+                      const uint8_t *msg_prefix_3, size_t msg_prefix_3_len,
+                      const uint8_t *msg, size_t msg_len, uint8_t *digest,
+                      uint64_t *tree, uint32_t *leaf_idx);
 
 #ifdef __cplusplus
 }

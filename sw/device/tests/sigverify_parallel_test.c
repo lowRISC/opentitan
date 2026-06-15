@@ -39,24 +39,22 @@ static rom_error_t do_spx_verify(const sigverify_spx_signature_t *signature,
   sigverify_spx_root_t actual_root;
   sigverify_spx_root_t expected_root;
   spx_public_key_root(key->data, expected_root.data);
-
   switch (key_alg) {
     case kOwnershipKeyAlgSpxPure:
-      HARDENED_RETURN_IF_ERROR(spx_verify(
-          signature->data, kSpxVerifyPureDomainSep, kSpxVerifyPureDomainSepSize,
-          msg_prefix_1, msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg,
-          msg_len, key->data, actual_root.data));
+      spx_verify(signature->data, kSpxVerifyPureDomainSep,
+                 kSpxVerifyPureDomainSepSize, msg_prefix_1, msg_prefix_1_len,
+                 msg_prefix_2, msg_prefix_2_len, msg, msg_len, key->data,
+                 actual_root.data);
       break;
 
     case kOwnershipKeyAlgSpxPrehash:
       util_reverse_bytes(digest.digest, sizeof(digest.digest));
-      HARDENED_RETURN_IF_ERROR(
-          spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
-                     kSpxVerifyPrehashDomainSepSize,
-                     /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
-                     /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
-                     (unsigned char *)digest.digest, sizeof(digest.digest),
-                     key->data, actual_root.data));
+      spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
+                 kSpxVerifyPrehashDomainSepSize,
+                 /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
+                 /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
+                 (unsigned char *)digest.digest, sizeof(digest.digest),
+                 key->data, actual_root.data);
       break;
     default:
       return kErrorSigverifyBadSpxConfig;

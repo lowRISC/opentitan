@@ -48,9 +48,8 @@ static rom_error_t imm_section_start(void) {
       &kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageAttestationKeySeeds);
 
-  // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
-  HARDENED_RETURN_IF_ERROR(dice_chain_init());
+  dice_chain_init();
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
 
   // Sideload sealing key to KMAC hw keyslot.

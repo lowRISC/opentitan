@@ -338,6 +338,7 @@ manifest(d = {
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
@@ -375,6 +376,7 @@ ROM_EXT_LABELS.extend([
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = ":ld_slot_virtual",
         manifest = ":manifest",
@@ -415,6 +417,7 @@ opentitan_binary(
     extra_bazel_features = [
         "minsize",
         "use_lld",
+        "lto",
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",

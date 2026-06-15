@@ -253,7 +253,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   }
 
   // Prepare dice chain builder for CDI_1.
-  HARDENED_RETURN_IF_ERROR(dice_chain_init());
+  dice_chain_init();
   HARDENED_RETURN_IF_ERROR(dice_chain_rom_ext_check());
 
   // Generate CDI_1 attestation keys and certificate.

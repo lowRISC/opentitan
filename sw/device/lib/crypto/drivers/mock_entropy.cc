@@ -19,7 +19,8 @@ const entropy_seed_material_t kEntropyEmptySeed = {
     .data = {0},
 };
 
-status_t entropy_complex_init(hardened_bool_t fips) { return OTCRYPTO_OK; }
+status_t entropy_complex_init(void) { return OTCRYPTO_OK; }
+status_t entropy_complex_fips_init(void) { return OTCRYPTO_OK; }
 
 status_t entropy_complex_check(hardened_bool_t fips) { return OTCRYPTO_OK; }
 

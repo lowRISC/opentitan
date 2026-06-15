@@ -24,7 +24,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static status_t entropy_complex_init_test(void) {
-  TRY(entropy_complex_init(kHardenedBoolFalse));
+  TRY(entropy_complex_init());
 
   // Check the configuration.
   TRY(entropy_complex_check(kHardenedBoolFalse));
@@ -92,7 +92,7 @@ static status_t upgrade_fips_test(void) {
   LOG_INFO("Running test to check it is possible to upgrade to fips.");
 
   // Test with FIPS set to True
-  TRY(entropy_complex_init(kHardenedBoolTrue));
+  TRY(entropy_complex_fips_init());
   TRY(entropy_complex_health_test_config_check(kHardenedBoolTrue));
   CHECK(entropy_complex_health_test_config_check(kHardenedBoolFalse).value ==
         OTCRYPTO_RECOV_ERR.value);

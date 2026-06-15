@@ -84,6 +84,7 @@ _TEST_ROM_EXTS = {
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_virtual",
         manifest = param["manifest"],

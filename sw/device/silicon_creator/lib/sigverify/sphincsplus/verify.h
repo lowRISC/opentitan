@@ -62,12 +62,11 @@ enum {
  *                  words long).
  * @return Error code indicating if the operation succeeded.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t spx_verify(const uint32_t *sig, const uint8_t *msg_prefix_1,
-                       size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
-                       size_t msg_prefix_2_len, const uint8_t *msg_prefix_3,
-                       size_t msg_prefix_3_len, const uint8_t *msg,
-                       size_t msg_len, const uint32_t *pk, uint32_t *root);
+void spx_verify(const uint32_t *sig, const uint8_t *msg_prefix_1,
+                size_t msg_prefix_1_len, const uint8_t *msg_prefix_2,
+                size_t msg_prefix_2_len, const uint8_t *msg_prefix_3,
+                size_t msg_prefix_3_len, const uint8_t *msg, size_t msg_len,
+                const uint32_t *pk, uint32_t *root);
 
 /**
  * Extract the public key root.

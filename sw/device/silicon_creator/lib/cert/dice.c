@@ -119,7 +119,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                          key_ids->endorsement->digest, kCertKeyIdSizeInBytes);
 
   size_t tbs_size = kCdi0MaxTbsSizeBytes;
-  HARDENED_RETURN_IF_ERROR(
+  RETURN_IF_ERROR(
       cdi_0_build_tbs(&cdi_0_tbs_params, cdi_0_tbs_buffer, &tbs_size));
 
   // Sign the TBS and generate the certificate.
@@ -143,7 +143,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   TEMPLATE_SET(cdi_0_params, Cdi0, CertSignatureR, curr_tbs_signature.r);
   TEMPLATE_SET(cdi_0_params, Cdi0, CertSignatureS, curr_tbs_signature.s);
 
-  HARDENED_RETURN_IF_ERROR(cdi_0_build_cert(&cdi_0_params, cert, cert_size));
+  RETURN_IF_ERROR(cdi_0_build_cert(&cdi_0_params, cert, cert_size));
 
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
@@ -188,7 +188,7 @@ rom_error_t dice_cdi_1_cert_build(
                          key_ids->endorsement->digest, kCertKeyIdSizeInBytes);
 
   size_t tbs_size = kCdi1MaxTbsSizeBytes;
-  HARDENED_RETURN_IF_ERROR(
+  RETURN_IF_ERROR(
       cdi_1_build_tbs(&cdi_1_tbs_params, cdi_1_tbs_buffer, &tbs_size));
 
   // Sign the TBS and generate the certificate.
@@ -212,7 +212,7 @@ rom_error_t dice_cdi_1_cert_build(
   TEMPLATE_SET(cdi_1_params, Cdi1, CertSignatureR, curr_tbs_signature.r);
   TEMPLATE_SET(cdi_1_params, Cdi1, CertSignatureS, curr_tbs_signature.s);
 
-  HARDENED_RETURN_IF_ERROR(cdi_1_build_cert(&cdi_1_params, cert, cert_size));
+  RETURN_IF_ERROR(cdi_1_build_cert(&cdi_1_params, cert, cert_size));
 
   // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(

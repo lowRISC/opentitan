@@ -50,6 +50,7 @@ manifest(d = {
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         # In order to prevent the linker from prematurely discarding symbols, we
@@ -86,6 +87,7 @@ manifest(d = {
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = [
@@ -130,6 +132,7 @@ ROM_EXT_CONFIGS = {
         extra_bazel_features = [
             "minsize",
             "use_lld",
+            "lto",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_virtual",
         linkopts = [

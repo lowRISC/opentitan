@@ -41,8 +41,7 @@ static_assert(sizeof(dice_page_t) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
  *
  * @return errors encountered during the operation.
  */
-OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_init(void);
+void dice_chain_init(void);
 
 /**
  * Prepare the UDS key and check the UDS certificate.

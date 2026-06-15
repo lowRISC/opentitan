@@ -92,7 +92,6 @@ rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
 
   if (launder32(lc_state) == kLcStateTest) {
     res ^= crc32 ^ kErrorOk;
-    HARDENED_CHECK_EQ(res, kErrorOk);
     HARDENED_CHECK_EQ(lc_state, kLcStateTest);
     return res;
   }

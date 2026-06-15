@@ -1022,23 +1022,23 @@ static status_t edn_check(const edn_config_t *config) {
   return OTCRYPTO_RECOV_ERR;
 }
 
-status_t entropy_complex_init(hardened_bool_t fips) {
+status_t entropy_complex_init(void) {
+  entropy_complex_stop_all();
+
+  const entropy_complex_config_t *config =
+      &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
+
+  HARDENED_TRY(entropy_src_configure(&config->entropy_src));
+  csrng_configure();
+  HARDENED_TRY(edn_configure(&config->edn0));
+  return edn_configure(&config->edn1);
+}
+
+status_t entropy_complex_fips_init(void) {
   entropy_complex_stop_all();
 
   const entropy_complex_config_t *config =
       &kEntropyComplexConfigs[kEntropyComplexConfigIdFipsContinuous];
-
-  if (launder32(fips) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(fips, kHardenedBoolFalse);
-    config = &kEntropyComplexConfigs[kEntropyComplexConfigIdContinuous];
-  }
-
-  if (launder32(config->id) != ((fips == kHardenedBoolFalse)
-                                    ? kEntropyComplexConfigIdContinuous
-                                    : kEntropyComplexConfigIdFipsContinuous)) {
-    // COVERAGE (SW ERR) We only support FIPS mode.
-    return OTCRYPTO_RECOV_ERR;
-  }
 
   HARDENED_TRY(entropy_src_configure(&config->entropy_src));
   csrng_configure();

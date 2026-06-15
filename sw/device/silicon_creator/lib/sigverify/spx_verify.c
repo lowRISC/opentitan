@@ -105,20 +105,18 @@ rom_error_t sigverify_spx_verify(
     sigverify_spx_root_t actual_root;
     if (launder32(config) == kSigverifySpxConfigIdSha2128sPrehash) {
       HARDENED_CHECK_EQ(config, kSigverifySpxConfigIdSha2128sPrehash);
-      HARDENED_RETURN_IF_ERROR(
-          spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
-                     sizeof(kSpxVerifyPrehashDomainSep),
-                     /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
-                     /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
-                     (unsigned char *)digest->digest, sizeof(digest->digest),
-                     key->data, actual_root.data));
+      spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
+                 sizeof(kSpxVerifyPrehashDomainSep),
+                 /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
+                 /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
+                 (unsigned char *)digest->digest, sizeof(digest->digest),
+                 key->data, actual_root.data);
     } else if (launder32(config) == kSigverifySpxConfigIdSha2128s) {
       HARDENED_CHECK_EQ(config, kSigverifySpxConfigIdSha2128s);
-      HARDENED_RETURN_IF_ERROR(
-          spx_verify(signature->data, kSpxVerifyPureDomainSep,
-                     sizeof(kSpxVerifyPureDomainSep), msg_prefix_1,
-                     msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg,
-                     msg_len, key->data, actual_root.data));
+      spx_verify(signature->data, kSpxVerifyPureDomainSep,
+                 sizeof(kSpxVerifyPureDomainSep), msg_prefix_1,
+                 msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg, msg_len,
+                 key->data, actual_root.data);
     } else {
       // Unsupported SPHINCS+ configuration.
       return kErrorSigverifyBadSpxConfig;

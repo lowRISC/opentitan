@@ -44,7 +44,7 @@ static uint32_t kExpectedLeaf[kSpxNWords] = {0x14199738, 0x8d0ae722, 0x27ba271f,
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t pk_from_sig_test(void) {
-  RETURN_IF_ERROR(spx_hash_initialize(&kTestCtx));
+  spx_hash_initialize(&kTestCtx);
 
   // Extract the public key from the signature.
   uint32_t wots_pk[kSpxWotsPkWords];
