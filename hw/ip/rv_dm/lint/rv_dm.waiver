@@ -91,6 +91,18 @@ waive -rules NOT_READ -location {dm_mem.sv} -regexp {Signal 'ac_ar.(regno.13.|ze
 waive -rules LOOP_VAR_OP -location {dm_mem.sv} \
       -msg {Loop variable 'dc' is in arithmetic expression 'dc < (dm::DataCount - 1)' with non-constant terms} \
       -comment "This is incorrect because all terms except the loop variable are constant in the arithmetic expression."
+waive -rules LHS_TOO_SHORT -location {dm_mem.sv} \
+      -msg {Bitlength mismatch between 'RomBaseAddr' length 12 and 'dm::HaltAddress' length 64} \
+      -comment "The DbgAddressBits parameter (12 bits) is defined as localparam in dm_mem.sv and the HaltAddress localparam is hardcoded to 'h800' in dm_pkg.sv. None of these localparams can be overwritten in OpenTitan."
+waive -rules VAR_INDEX_RANGE -location {dm_mem.sv} \
+      -regexp {'\$clog2\(dm::DataCount\)'\(\(\(addr_i\[DbgAddressBits - 1:3\] - DataBaseAddr\[DbgAddressBits - 1:3\]\).*' minimum value -.* is too small for 'data_i' range.*} \
+      -comment "The surrounding unique case statement ensures 'addr_i' is always in the range [DataBaseAddr:DataEndAddr], the resulting index is thus always positive"
+waive -rules VAR_INDEX_RANGE -location {dm_mem.sv} \
+      -regexp {'ProgBuf64AddrSize'\(addr_i\[DbgAddressBits - 1:3\] - ProgBufBaseAddr\[DbgAddressBits - 1:3\]\).*' minimum value -.* is too small for 'progbuf' range.*} \
+      -comment "The surrounding unique case statement ensures 'addr_i' is always in the range [ProgBufBaseAddr:ProgBufEndAddr], the resulting index is thus always positive"
+waive -rules VAR_INDEX_RANGE -location {dm_mem.sv} \
+      -regexp {'3'\(addr_i\[DbgAddressBits - 1:3\] - AbstractCmdBaseAddr\[DbgAddressBits - 1:3\]\).*' minimum value -.* is too small for 'abstract_cmd' range.*} \
+      -comment "The surrounding unique case statement ensures 'addr_i' is always in the range [AbstractCmdBaseAddr:AbstractCmdEndAddr], the resulting index is thus always positive"
 
 # dm_sba
 waive -rules HIER_BRANCH_NOT_READ  -location {dm_sba.sv}            -regexp {Net 'dmactive_i' is not read from in module 'dm_sba'} \
