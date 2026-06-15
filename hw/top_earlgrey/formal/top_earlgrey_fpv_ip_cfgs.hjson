@@ -31,6 +31,16 @@
                cov: true
              }
 
+             {
+               name: otbn_mai_fpv
+               dut: otbn_mai_tb
+               fusesoc_core: lowrisc:fpv:otbn_mai_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               defines: "FPV_ALERT_NO_SIGINT_ERR"
+               cov: true
+             }
+
              // Use chip_earlgrey_asic parameters to verify pinmux.
              {
                name: pinmux_chip_fpv
