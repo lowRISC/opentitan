@@ -31,9 +31,9 @@ interface ast_supply_if (
   localparam int CyclesBeforeReenablingAssert = 7;
 
   // index of key0 input pin in top_earlgrey
-  localparam int DioSysrstCtrlAonEcRstL = 10;
+  localparam int DioSysrstCtrlEcRstL = 10;
   // index of key input pin in top_earlgrey
-  localparam int MioInSysrstCtrlAonKey0In = 46;
+  localparam int MioInSysrstCtrlKey0In = 46;
 
   function static void force_vcaon_pok(bit value);
     force u_ast.u_ast_aon.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
@@ -55,7 +55,7 @@ interface ast_supply_if (
 `ifndef GATE_LEVEL
     repeat (CyclesBeforeReenablingAssert) @(posedge clk);
     `uvm_info("ast_supply_if", "re-enabling vcmain_supp_i related SVA", UVM_MEDIUM)
-    $asserton(1, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
+    $asserton(1, top_earlgrey.earlgrey_pd_aon.u_pwrmgr.u_slow_fsm.IntRstReq_A);
 `endif
   endtask
 
@@ -64,7 +64,7 @@ interface ast_supply_if (
     `uvm_info("ast_supply_if", $sformatf("forcing ast_pwst_o.vcmain_pok to %b", value), UVM_MEDIUM)
     if (!value) begin
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
-      $assertoff(1, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon.u_slow_fsm.IntRstReq_A);
+      $assertoff(1, top_earlgrey.earlgrey_pd_aon.u_pwrmgr.u_slow_fsm.IntRstReq_A);
     end
     force u_ast.ast_pwst_o.main_pok = value;
 `endif
@@ -111,7 +111,7 @@ interface ast_supply_if (
 
   task static force_key0_i(bit value);
     `uvm_info("ast_supply_if", $sformatf("forcing key0 input to %b", value), UVM_MEDIUM)
-    force top_earlgrey.mio_in_i[MioInSysrstCtrlAonKey0In] = value;
+    force top_earlgrey.mio_in_i[MioInSysrstCtrlKey0In] = value;
   endtask
 
 endinterface

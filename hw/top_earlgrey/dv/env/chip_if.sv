@@ -41,12 +41,12 @@ interface chip_if;
   `define PD_AON_HIER       top_earlgrey.earlgrey_pd_aon
   `define AST_HIER          u_ast
 `endif
-`define ADC_CTRL_HIER       `PD_AON_HIER.u_adc_ctrl_aon
+`define ADC_CTRL_HIER       `PD_AON_HIER.u_adc_ctrl
 `define AES_HIER            `PD_MAIN_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
-`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer_aon
-`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr_aon
+`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer
+`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr
 `define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
@@ -65,19 +65,19 @@ interface chip_if;
 `define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `PD_MAIN_HIER.u_otp_macro
 `define OTBN_HIER           `PD_MAIN_HIER.u_otbn
-`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux_aon
-`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr_aon
+`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux
+`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
 `define ROM_CTRL_HIER       `PD_MAIN_HIER.u_rom_ctrl
-`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr_aon
+`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr
 `define RV_CORE_IBEX_HIER   `PD_MAIN_HIER.u_rv_core_ibex
 `define RV_PLIC_HIER        `PD_MAIN_HIER.u_rv_plic
 `define RV_TIMER_HIER       `PD_MAIN_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `PD_AON_HIER.u_sensor_ctrl_aon
+`define SENSOR_CTRL_HIER    `PD_AON_HIER.u_sensor_ctrl
 `define SPI_DEVICE_HIER     `PD_MAIN_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `PD_MAIN_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `PD_MAIN_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret_aon
-`define SYSRST_CTRL_HIER    `PD_AON_HIER.u_sysrst_ctrl_aon
+`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret
+`define SYSRST_CTRL_HIER    `PD_AON_HIER.u_sysrst_ctrl
 `define UART_HIER(i)        `PD_MAIN_HIER.u_uart``i
 `define USBDEV_HIER         `PD_MAIN_HIER.u_usbdev
 
