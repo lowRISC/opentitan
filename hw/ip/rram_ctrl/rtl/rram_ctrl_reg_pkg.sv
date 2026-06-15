@@ -20,7 +20,7 @@ package rram_ctrl_reg_pkg;
   parameter int CoreAw = 9;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 66;
+  parameter int NumRegsCore = 65;
 
   // Alert indices
   typedef enum int {
@@ -324,15 +324,6 @@ package rram_ctrl_reg_pkg;
   } rram_ctrl_reg2hw_corr_err_cnt_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } alert_trig;
-    struct packed {
-      logic        q;
-    } alert_ack;
-  } rram_ctrl_reg2hw_phy_alert_cfg_reg_t;
-
-  typedef struct packed {
     logic [31:0] q;
   } rram_ctrl_reg2hw_scratch_reg_t;
 
@@ -608,24 +599,23 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [728:723]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [722:717]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [716:705]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [704:695]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [694:687]
-    rram_ctrl_reg2hw_exec_reg_t exec; // [686:655]
-    rram_ctrl_reg2hw_init_reg_t init; // [654:654]
-    rram_ctrl_reg2hw_control_reg_t control; // [653:640]
-    rram_ctrl_reg2hw_addr_reg_t addr; // [639:619]
-    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [618:459]
-    rram_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [458:267]
-    rram_ctrl_reg2hw_default_region_reg_t default_region; // [266:251]
-    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [250:91]
-    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [90:83]
-    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [82:70]
-    rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [69:56]
-    rram_ctrl_reg2hw_corr_err_cnt_reg_t corr_err_cnt; // [55:48]
-    rram_ctrl_reg2hw_phy_alert_cfg_reg_t phy_alert_cfg; // [47:46]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [726:721]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [720:715]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [714:703]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [702:693]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [692:685]
+    rram_ctrl_reg2hw_exec_reg_t exec; // [684:653]
+    rram_ctrl_reg2hw_init_reg_t init; // [652:652]
+    rram_ctrl_reg2hw_control_reg_t control; // [651:638]
+    rram_ctrl_reg2hw_addr_reg_t addr; // [637:617]
+    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [616:457]
+    rram_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [456:265]
+    rram_ctrl_reg2hw_default_region_reg_t default_region; // [264:249]
+    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [248:89]
+    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [88:81]
+    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [80:68]
+    rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [67:54]
+    rram_ctrl_reg2hw_corr_err_cnt_reg_t corr_err_cnt; // [53:46]
     rram_ctrl_reg2hw_scratch_reg_t scratch; // [45:14]
     rram_ctrl_reg2hw_fifo_lvl_reg_t fifo_lvl; // [13:4]
     rram_ctrl_reg2hw_fifo_clr_reg_t fifo_clr; // [3:0]
@@ -709,12 +699,11 @@ package rram_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_ADDR_OFFSET = 9'h e4;
   parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_CNT_OFFSET = 9'h e8;
   parameter logic [CoreAw-1:0] RRAM_CTRL_CORR_ERR_LOC_OFFSET = 9'h ec;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_ALERT_CFG_OFFSET = 9'h f0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 9'h f4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 9'h f8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 9'h fc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 9'h 100;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 104;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 9'h f0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 9'h f4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 9'h f8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 9'h fc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 100;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [5:0] RRAM_CTRL_INTR_TEST_RESVAL = 6'h 0;
@@ -740,10 +729,10 @@ package rram_ctrl_reg_pkg;
   parameter logic [4:0] RRAM_CTRL_CURR_FIFO_LVL_RD_RESVAL = 5'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 9'h 108;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 9'h 104;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_IDX    = 0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 9'h 10c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 9'h 108;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_IDX    = 1;
 
@@ -809,7 +798,6 @@ package rram_ctrl_reg_pkg;
     RRAM_CTRL_ERR_ADDR,
     RRAM_CTRL_CORR_ERR_CNT,
     RRAM_CTRL_CORR_ERR_LOC,
-    RRAM_CTRL_PHY_ALERT_CFG,
     RRAM_CTRL_PHY_STATUS,
     RRAM_CTRL_SCRATCH,
     RRAM_CTRL_FIFO_LVL,
@@ -818,7 +806,7 @@ package rram_ctrl_reg_pkg;
   } rram_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [66] = '{
+  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [65] = '{
     4'b 0001, // index[ 0] RRAM_CTRL_INTR_STATE
     4'b 0001, // index[ 1] RRAM_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] RRAM_CTRL_INTR_TEST
@@ -879,12 +867,11 @@ package rram_ctrl_reg_pkg;
     4'b 0111, // index[57] RRAM_CTRL_ERR_ADDR
     4'b 0001, // index[58] RRAM_CTRL_CORR_ERR_CNT
     4'b 1111, // index[59] RRAM_CTRL_CORR_ERR_LOC
-    4'b 0001, // index[60] RRAM_CTRL_PHY_ALERT_CFG
-    4'b 0001, // index[61] RRAM_CTRL_PHY_STATUS
-    4'b 1111, // index[62] RRAM_CTRL_SCRATCH
-    4'b 0011, // index[63] RRAM_CTRL_FIFO_LVL
-    4'b 0001, // index[64] RRAM_CTRL_FIFO_CLR
-    4'b 0011  // index[65] RRAM_CTRL_CURR_FIFO_LVL
+    4'b 0001, // index[60] RRAM_CTRL_PHY_STATUS
+    4'b 1111, // index[61] RRAM_CTRL_SCRATCH
+    4'b 0011, // index[62] RRAM_CTRL_FIFO_LVL
+    4'b 0001, // index[63] RRAM_CTRL_FIFO_CLR
+    4'b 0011  // index[64] RRAM_CTRL_CURR_FIFO_LVL
   };
 
 endpackage
