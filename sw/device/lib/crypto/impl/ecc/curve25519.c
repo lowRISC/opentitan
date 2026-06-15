@@ -67,6 +67,7 @@ enum {
   kModeX25519SideloadInsCnt = 362932,
   kModeX25519KeygenInsCnt = 359288,
   kModeX25519KeygenSideloadInsCnt = 355659,
+  kModeEd25519VerifyInsCnt = 332987,
 };
 
 /**
@@ -297,6 +298,7 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeEd25519VerifyInsCnt);
 
   // Read the computed LHS and RHS out of OTBN dmem.
   uint32_t lhs[kCurve25519PointWords];
@@ -307,6 +309,19 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   const otbn_addr_t kOtbnVarVerifyRhs =
       OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_rhs);
   HARDENED_TRY(otbn_dmem_read(kCurve25519PointWords, kOtbnVarVerifyRhs, rhs));
+
+  // The output rhs should not be zero
+  size_t i = 0;
+  uint32_t rhs_bits_or = 0;
+  for (; launder32(i) < kCurve25519PointWords; ++i) {
+    rhs_bits_or |= rhs[i];
+  }
+  HARDENED_CHECK_EQ(i, kCurve25519PointWords);
+  if (launder32(rhs_bits_or) == 0) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(rhs_bits_or, 0);
 
   *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
 
