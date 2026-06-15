@@ -548,21 +548,21 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             // check sideload keys are preserved from available to disable state
             if (cfg.keymgr_dpe_vif.aes_key_exp != cfg.keymgr_dpe_vif.aes_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable aes sideload key was not preseved",
+                  $sformatf({"After a disable aes sideload key was not preseved ",
                   "exp 'h%0h vs. act 'h%0h"},
                   cfg.keymgr_dpe_vif.aes_key_exp, cfg.keymgr_dpe_vif.aes_key))
             end
 
             if (cfg.keymgr_dpe_vif.otbn_key_exp != cfg.keymgr_dpe_vif.otbn_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable otbn sideload key was not preseved",
+                  $sformatf({"After a disable otbn sideload key was not preseved ",
                     "exp 'h%0h vs. act 'h%0h"},
                   cfg.keymgr_dpe_vif.otbn_key_exp, cfg.keymgr_dpe_vif.otbn_key))
             end
 
             if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
                 `uvm_error(`gfn,
-                  $sformatf({"After a disable kmac sideload key was not preseved",
+                  $sformatf({"After a disable kmac sideload key was not preseved ",
                   "exp 'h%0h vs. act 'h%0h"},
                   cfg.keymgr_dpe_vif.kmac_key_exp, cfg.keymgr_dpe_vif.kmac_key))
             end
@@ -1035,9 +1035,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     err_code[keymgr_pkg::ErrInvalidIn] = get_hw_invalid_input() | get_sw_invalid_input();
 
     `uvm_info(`gfn, $sformatf({"op_err = %0d, rsp_err = %0d, hw_invalid = %0d, sw_invalid = %0d, ",
-              "kmac_invalid_data = %0d"},
+              "kmac_invalid_data = %0d err_code %p"},
               get_invalid_op(), is_kmac_rsp_err, get_hw_invalid_input(), get_sw_invalid_input(),
-              is_kmac_invalid_data), UVM_MEDIUM)
+              is_kmac_invalid_data, err_code), UVM_MEDIUM)
     return err_code;
   endfunction
 
