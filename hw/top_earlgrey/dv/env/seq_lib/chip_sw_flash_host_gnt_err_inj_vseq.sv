@@ -9,7 +9,7 @@ class chip_sw_flash_host_gnt_err_inj_vseq extends chip_sw_fault_base_vseq;
   `uvm_object_new
 
   function void set_fault_parameters();
-    if_path = "tb.dut.top_earlgrey.u_flash_ctrl.u_eflash.gen_flash_cores[1].u_core";
+    if_path = "tb.dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.gen_flash_cores[1].u_core";
     alert_id = TopEarlgreyAlertIdFlashCtrlFatalErr;
   endfunction
 

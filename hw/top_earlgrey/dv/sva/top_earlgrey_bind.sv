@@ -4,7 +4,7 @@
 
 module top_earlgrey_bind;
 `ifndef GATE_LEVEL
-  bind top_earlgrey_pd_aon clk_ctrl_and_main_pd_sva_if clk_ctrl_and_main_pd_sva_if (
+  bind earlgrey_pd_aon clk_ctrl_and_main_pd_sva_if clk_ctrl_and_main_pd_sva_if (
     .clk_slow_i(u_pwrmgr_aon.clk_slow_i),
     .rst_slow_ni(u_pwrmgr_aon.rst_slow_ni),
     .por_d0_ni(por_n_i[1]),
@@ -21,7 +21,7 @@ module top_earlgrey_bind;
     .main_pok(u_pwrmgr_aon.pwr_ast_i.main_pok)
   );
 
-  bind top_earlgrey_pd_aon pwrmgr_rstreqs_sva_if pwrmgr_rstreqs_sva_if (
+  bind earlgrey_pd_aon pwrmgr_rstreqs_sva_if pwrmgr_rstreqs_sva_if (
     .clk_i(u_pwrmgr_aon.clk_i),
     .rst_ni(u_pwrmgr_aon.rst_ni),
     .clk_slow_i(u_pwrmgr_aon.clk_slow_i),

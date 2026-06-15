@@ -173,8 +173,8 @@ module chip_sim_tb (
     .tx_use_d_se0_d2p(cio_usbdev_tx_use_d_se0_d2p)
   );
 
-  `define RV_CORE_IBEX      u_dut.top_earlgrey.u_rv_core_ibex
-  `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
+  `define RV_CORE_IBEX u_dut.top_earlgrey.earlgrey_pd_main.u_rv_core_ibex
+  `define SIM_SRAM_IF  u_sim_sram.u_sim_sram_if
 
   // Detect SW test termination.
   sim_sram u_sim_sram (

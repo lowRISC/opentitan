@@ -19,12 +19,12 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     TestPhaseCheckWipe = 2
   } test_phases_e;
 
-  localparam string SILICON_CREATOR_ID_PATH = "tb.dut.top_earlgrey.LcCtrlSiliconCreatorId";
-  localparam string PRODUCT_ID_PATH = "tb.dut.top_earlgrey.LcCtrlProductId";
-  localparam string REVISION_ID_PATH = "tb.dut.top_earlgrey.LcCtrlRevisionId";
+  localparam string SILICON_CREATOR_ID_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.LcCtrlSiliconCreatorId";
+  localparam string PRODUCT_ID_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.LcCtrlProductId";
+  localparam string REVISION_ID_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.LcCtrlRevisionId";
 
   localparam string LC_CTRL_TRANS_SUCCESS_PATH =
-    "tb.dut.top_earlgrey.u_lc_ctrl.u_lc_ctrl_fsm.trans_success_o";
+    "tb.dut.top_earlgrey.earlgrey_pd_main.u_lc_ctrl.u_lc_ctrl_fsm.trans_success_o";
 
   bit [15:0] silicon_creator_id = 16'h 0000;
   bit [15:0] product_id = 16'h 0000;

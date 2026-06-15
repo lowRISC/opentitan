@@ -32,51 +32,54 @@ interface chip_if;
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
   `define TOP_HIER          tb.dut.top_earlgrey
-  `define TOP_HIER_AON      tb.dut.top_earlgrey_pd_aon
+  `define PD_MAIN_HIER      tb.dut.top_earlgrey.earlgrey_pd_main
+  `define PD_AON_HIER       tb.dut.top_earlgrey.earlgrey_pd_aon
+  `define AST_HIER          tb.dut.u_ast
 `else
   `define TOP_HIER          top_earlgrey
-  `define TOP_HIER_AON      top_earlgrey_pd_aon
+  `define PD_MAIN_HIER      top_earlgrey.earlgrey_pd_main
+  `define PD_AON_HIER       top_earlgrey.earlgrey_pd_aon
+  `define AST_HIER          u_ast
 `endif
-`define ADC_CTRL_HIER       `TOP_HIER_AON.u_adc_ctrl_aon
-`define AES_HIER            `TOP_HIER.u_aes
+`define ADC_CTRL_HIER       `PD_AON_HIER.u_adc_ctrl_aon
+`define AES_HIER            `PD_MAIN_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
-`define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
-`define AON_TIMER_HIER      `TOP_HIER_AON.u_aon_timer_aon
-`define AST_HIER            u_ast
-`define CLKMGR_HIER         `TOP_HIER_AON.u_clkmgr_aon
-`define CPU_HIER            `TOP_HIER.u_rv_core_ibex
+`define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
+`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer_aon
+`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr_aon
+`define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
-`define CSRNG_HIER          `TOP_HIER.u_csrng
-`define ENTROPY_SRC_HIER    `TOP_HIER.u_entropy_src
-`define EDN_HIER(i)         `TOP_HIER.u_edn``i
-`define FLASH_CTRL_HIER     `TOP_HIER.u_flash_ctrl
-`define GPIO_HIER           `TOP_HIER.u_gpio
-`define HMAC_HIER           `TOP_HIER.u_hmac
-`define I2C_HIER(i)         `TOP_HIER.u_i2c``i
+`define CSRNG_HIER          `PD_MAIN_HIER.u_csrng
+`define ENTROPY_SRC_HIER    `PD_MAIN_HIER.u_entropy_src
+`define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
+`define FLASH_CTRL_HIER     `PD_MAIN_HIER.u_flash_ctrl
+`define GPIO_HIER           `PD_MAIN_HIER.u_gpio
+`define HMAC_HIER           `PD_MAIN_HIER.u_hmac
+`define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
 `define IBEX_CSRS_HIER      `IBEX_HIER.cs_registers_i
-`define KMAC_HIER           `TOP_HIER.u_kmac
-`define KEYMGR_HIER         `TOP_HIER.u_keymgr
-`define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
-`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
-`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
-`define OTBN_HIER           `TOP_HIER.u_otbn
-`define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWRMGR_HIER         `TOP_HIER_AON.u_pwrmgr_aon
-`define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
-`define RSTMGR_HIER         `TOP_HIER_AON.u_rstmgr_aon
-`define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
-`define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
-`define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `TOP_HIER_AON.u_sensor_ctrl_aon
-`define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
-`define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
-`define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `TOP_HIER_AON.u_sram_ctrl_ret_aon
-`define SYSRST_CTRL_HIER    `TOP_HIER_AON.u_sysrst_ctrl_aon
-`define UART_HIER(i)        `TOP_HIER.u_uart``i
-`define USBDEV_HIER         `TOP_HIER.u_usbdev
+`define KMAC_HIER           `PD_MAIN_HIER.u_kmac
+`define KEYMGR_HIER         `PD_MAIN_HIER.u_keymgr
+`define LC_CTRL_HIER        `PD_MAIN_HIER.u_lc_ctrl
+`define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER      `PD_MAIN_HIER.u_otp_macro
+`define OTBN_HIER           `PD_MAIN_HIER.u_otbn
+`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux_aon
+`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr_aon
+`define ROM_CTRL_HIER       `PD_MAIN_HIER.u_rom_ctrl
+`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr_aon
+`define RV_CORE_IBEX_HIER   `PD_MAIN_HIER.u_rv_core_ibex
+`define RV_PLIC_HIER        `PD_MAIN_HIER.u_rv_plic
+`define RV_TIMER_HIER       `PD_MAIN_HIER.u_rv_timer
+`define SENSOR_CTRL_HIER    `PD_AON_HIER.u_sensor_ctrl_aon
+`define SPI_DEVICE_HIER     `PD_MAIN_HIER.u_spi_device
+`define SPI_HOST_HIER(i)    `PD_MAIN_HIER.u_spi_host``i
+`define SRAM_CTRL_MAIN_HIER `PD_MAIN_HIER.u_sram_ctrl_main
+`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret_aon
+`define SYSRST_CTRL_HIER    `PD_AON_HIER.u_sysrst_ctrl_aon
+`define UART_HIER(i)        `PD_MAIN_HIER.u_uart``i
+`define USBDEV_HIER         `PD_MAIN_HIER.u_usbdev
 
   // Identifier for logs.
   string MsgId = $sformatf("%m");
@@ -1186,9 +1189,9 @@ interface chip_if;
   // Signal probe function for `fsm.state_q` of SPI_HOST_1
   wire [2:0] spi_host_1_state;
 `ifdef GATE_LEVEL
-assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_2_.Q
-                          ,tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_1_.Q
-                          ,tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.state_q_reg_0_.Q
+assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_spi_core.u_fsm.state_q_reg_2_.Q
+                          ,tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_spi_core.u_fsm.state_q_reg_1_.Q
+                          ,tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_spi_core.u_fsm.state_q_reg_0_.Q
                           };
 `else
   assign spi_host_1_state = `SPI_HOST_HIER(1).u_spi_core.u_fsm.state_q;
@@ -1273,6 +1276,8 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
       entropy_src_fsm_state, 9)
 
 `undef TOP_HIER
+`undef PD_MAIN_HIER
+`undef PD_AON_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
 `undef AES_CONTROL_HIER
