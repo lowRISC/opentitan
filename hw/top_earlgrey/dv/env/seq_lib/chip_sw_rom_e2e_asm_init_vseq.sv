@@ -45,11 +45,11 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
 
     `uvm_info(`gfn, "Checking ROM AST configuration ...", UVM_LOW)
     if (otp_creator_sw_cfg_ast_init_en == prim_mubi_pkg::MuBi4True) begin
-      csr_rd_check(.ptr(ral.sensor_ctrl_aon.status.ast_init_done),
+      csr_rd_check(.ptr(ral.sensor_ctrl.status.ast_init_done),
                    .compare_value(1),
                    .backdoor(1));
     end else if (otp_creator_sw_cfg_ast_init_en == prim_mubi_pkg::MuBi4False) begin
-      csr_rd_check(.ptr(ral.sensor_ctrl_aon.status.ast_init_done),
+      csr_rd_check(.ptr(ral.sensor_ctrl.status.ast_init_done),
                    .compare_value(0),
                    .backdoor(1));
     end else begin
@@ -57,7 +57,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     end
 
     `uvm_info(`gfn, "Checking ROM clock jitter configuration ...", UVM_LOW)
-    csr_rd_check(.ptr(ral.clkmgr_aon.jitter_enable),
+    csr_rd_check(.ptr(ral.clkmgr.jitter_enable),
                  .compare_value(otp_creator_sw_cfg_jitter_en),
                  .backdoor(1));
 

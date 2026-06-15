@@ -261,11 +261,11 @@ module tb;
   // The gpiodpi module allows the host to directly control gpio when enabled.
   gpiodpi u_gpiodpi(
 `ifdef GATE_LEVEL
-    .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
-    .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
+    .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr.clocks_o_clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr.resets_o_rst_lc_io_div4_n_1_),
 `else
-    .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-    .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr.clocks_o.clk_io_div4_peri),
+    .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 `endif
     .active(u_tb_dpi_if.enable_gpiodpi),
     .gpio_p2d(gpiodpi_p2d),
@@ -353,11 +353,11 @@ module tb;
     .FREQ('d24_000_000)
   ) u_uartdpi0(
 `ifdef GATE_LEVEL
-   .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon.clocks_o_clk_io_div4_peri),
-   .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon.resets_o_rst_lc_io_div4_n_1_),
+   .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr.clocks_o_clk_io_div4_peri),
+   .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr.resets_o_rst_lc_io_div4_n_1_),
 `else
-   .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon.clocks_o.clk_io_div4_peri),
-   .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+   .clk_i(dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr.clocks_o.clk_io_div4_peri),
+   .rst_ni(dut.top_earlgrey.earlgrey_pd_aon.u_rstmgr.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 `endif
     .active(u_tb_dpi_if.enable_uartdpi),
     .tx_o(uartdpi_tx),
@@ -581,7 +581,7 @@ module tb;
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR));
+          .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR));
       m_mem_bkdr_util[RamRet0] = ram_ret0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
@@ -676,11 +676,11 @@ module tb;
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_pinmux_aon);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_pinmux);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_device);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host1);
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_aon.u_sysrst_ctrl_aon);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_aon.u_sysrst_ctrl);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_uart0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_uart1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_uart2);
@@ -692,11 +692,11 @@ module tb;
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_pinmux_aon);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_pinmux);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_device);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host1);
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_aon.u_sysrst_ctrl_aon);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_aon.u_sysrst_ctrl);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_uart0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_uart1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_uart2);

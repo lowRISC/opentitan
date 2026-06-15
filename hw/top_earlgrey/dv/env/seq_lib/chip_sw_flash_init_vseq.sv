@@ -18,7 +18,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     "tb.dut.top_earlgrey.earlgrey_pd_main.u_flash_ctrl.lc_seed_hw_rd_en_i";
 
   localparam string SRAM_CTRL_RET_HDL_PATH =
-    "tb.dut.top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr";
+    "tb.dut.top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret.u_prim_ram_1p_scr";
   localparam string SRAM_CTRL_RET_NONCE_PATH = {SRAM_CTRL_RET_HDL_PATH, ".nonce_i"};
   localparam string SRAM_CTRL_RET_KEY_PATH = {SRAM_CTRL_RET_HDL_PATH, ".key_i"};
 
