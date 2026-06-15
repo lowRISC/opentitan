@@ -273,6 +273,11 @@ sc_reduce_768:
   bn.mov w17, w22
   jal x1, sc_reduce
 
+  /* Clear w16 and w17 with randomness before loading the second share s1. */
+  bn.wsrr w16, URND
+  bn.wsrr w17, URND
+  bn.sub w31, w31, w31 /* Clear flags */
+
   bn.mov w16, w20
   bn.mov w17, w18
   jal x1, sc_reduce
