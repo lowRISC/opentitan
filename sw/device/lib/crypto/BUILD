@@ -8,7 +8,6 @@ load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary_blob")
 load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("//rules:linker.bzl", "ld_library")
 
 cc_library(
     name = "otcrypto_api",

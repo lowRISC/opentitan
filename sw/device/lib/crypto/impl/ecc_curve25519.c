@@ -777,6 +777,7 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 
 otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  (void)private_key;
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);

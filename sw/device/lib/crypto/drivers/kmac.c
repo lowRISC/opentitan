@@ -156,6 +156,7 @@ OT_ASSERT_ENUM_VALUE(32, KMAC_PREFIX_PREFIX_FIELD_WIDTH);
  * Hardware wipe guard.
  */
 static void kmac_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
   uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_DONE);
@@ -630,6 +631,7 @@ static status_t kmac_process_msg_blocks(
     uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
   // This variable guarantees kmac_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
