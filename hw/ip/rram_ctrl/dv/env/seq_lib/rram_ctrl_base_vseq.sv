@@ -723,7 +723,7 @@ task rram_ctrl_base_vseq::otp_bkdr_read(
     rram_intg_addr     = (OtpStartPage << WordW) + otp_rram_intg_addr;
 
     // fetch rram data word
-    rram_word = cfg.rram_bkdr_word_read(rram_addr, RramPartData, 1'b0);
+    rram_word = cfg.rram_bkdr_word_read(rram_addr, RramPartData, 1'b0, 1'b0);
     word_ind  = otp_addr[$clog2(OtpIntgDataWidth / RramOtpWidth) +:
                          $clog2(RramDataWidth / OtpIntgDataWidth)];
     // compute intgerity
@@ -731,7 +731,7 @@ task rram_ctrl_base_vseq::otp_bkdr_read(
                                       rram_word[OtpIntgDataWidth * word_ind +: OtpIntgDataWidth]);
 
     // fetch rram intg word
-    rram_intg_word = cfg.rram_bkdr_word_read(rram_intg_addr, RramPartData, 1'b0);
+    rram_intg_word = cfg.rram_bkdr_word_read(rram_intg_addr, RramPartData, 1'b0, 1'b0);
     intg_ind = otp_addr[$clog2(OtpIntgDataWidth / 8) -
                otp_ctrl_macro_pkg::OtpAddrShift +: $clog2(RramDataWidth / OtpIntgWidth)];
     intg_mem = rram_intg_word[intg_ind*OtpIntgWidth +: OtpIntgWidth];

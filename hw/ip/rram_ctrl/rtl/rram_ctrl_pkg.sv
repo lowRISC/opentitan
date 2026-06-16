@@ -222,6 +222,7 @@ package rram_ctrl_pkg;
     mubi4_t wr_en;
     mubi4_t scramble_en;
     mubi4_t ecc_en;
+    mubi4_t addr_xor_en;
   } page_cfg_t;
 
   typedef struct packed {
@@ -256,7 +257,8 @@ package rram_ctrl_pkg;
     rd_en:       MuBi4True,
     wr_en:       MuBi4False,
     scramble_en: MuBi4True,
-    ecc_en:      MuBi4True
+    ecc_en:      MuBi4True,
+    addr_xor_en: MuBi4True
   };
 
   parameter page_cfg_t CfgAllowRdWr = '{
@@ -264,7 +266,8 @@ package rram_ctrl_pkg;
     rd_en:       MuBi4True,
     wr_en:       MuBi4True,
     scramble_en: MuBi4True,
-    ecc_en:      MuBi4True
+    ecc_en:      MuBi4True,
+    addr_xor_en: MuBi4True
   };
 
   parameter page_cfg_t CfgAllowRdWrOtp = '{
@@ -272,7 +275,8 @@ package rram_ctrl_pkg;
     rd_en:       MuBi4True,
     wr_en:       MuBi4True,
     scramble_en: MuBi4False,
-    ecc_en:      MuBi4True
+    ecc_en:      MuBi4True,
+    addr_xor_en: MuBi4False
   };
 
   parameter page_cfg_t CfgDisable = '{
@@ -280,7 +284,8 @@ package rram_ctrl_pkg;
     rd_en:       MuBi4False,
     wr_en:       MuBi4False,
     scramble_en: MuBi4False,
-    ecc_en:      MuBi4False
+    ecc_en:      MuBi4False,
+    addr_xor_en: MuBi4False
   };
 
   parameter page_cfg_t CfgNoAccess = '{
@@ -288,7 +293,8 @@ package rram_ctrl_pkg;
     rd_en:       MuBi4False,
     wr_en:       MuBi4False,
     scramble_en: MuBi4False,
-    ecc_en:      MuBi4False
+    ecc_en:      MuBi4False,
+    addr_xor_en: MuBi4False
   };
 
   parameter page_cfg_t CfgRw = '{
@@ -296,7 +302,8 @@ package rram_ctrl_pkg;
     rd_en:       MuBi4True,
     wr_en:       MuBi4True,
     scramble_en: MuBi4False,
-    ecc_en:      MuBi4True
+    ecc_en:      MuBi4True,
+    addr_xor_en: MuBi4True
   };
 
   parameter mp_info_cfg_t HwLcMgrInfoPageCfg[HwLcMgrInfoRules] = '{
@@ -417,6 +424,7 @@ package rram_ctrl_pkg;
     logic [AddrW-1:0]                           addr;
     logic                                       descramble_en;
     logic                                       ecc_en;
+    logic                                       addr_xor_en;
     rram_part_e                                 part;
     rd_buf_attr_e                               attr;
     logic                                       err;
@@ -433,7 +441,7 @@ package rram_ctrl_pkg;
     logic                update;
     logic                verify;
     logic [WordSelW-1:0] word_sel;
-    logic [5:0]          cmd_intg;
+    logic [6:0]          cmd_intg;
   } meta_entry_t;
   parameter int unsigned MetaFifoWidth = $bits(meta_entry_t);
 

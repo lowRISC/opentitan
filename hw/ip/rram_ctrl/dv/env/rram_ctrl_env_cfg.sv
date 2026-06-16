@@ -58,6 +58,7 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   extern function logic [RramDataWidth-1:0] rram_bkdr_word_read(logic [AddrW-1:0] addr,
                                                                 rram_part_e part,
                                                                 logic descramble,
+                                                                logic addr_xor = 1'b1,
                                                                 logic check_cfg = 1'b0);
 
   extern function data_q_t rram_bkdr_mem_read(rram_ctrl_op_t rram_ctrl_op,
@@ -109,6 +110,7 @@ function automatic logic [rram_ctrl_env_cfg::RramDataWidth-1:0]
     rram_ctrl_env_cfg::rram_bkdr_word_read(logic [AddrW-1:0] addr,
                                            rram_part_e part,
                                            logic descramble,
+                                           logic addr_xor = 1'b1,
                                            logic check_cfg = 1'b0);
 
   logic [RramBusAddrByteW-1:0] byte_addr;
@@ -131,9 +133,9 @@ function automatic logic [rram_ctrl_env_cfg::RramDataWidth-1:0]
   end else begin
     data_descrambled = data_mem;
   end
-  // remove addr xor
+  // remove addr xor (not applied for OTP pages)
   for (int k = 0; k < RramDataByteWidth; k++) begin
-    word_addr = (addr<<2) + k;
+    word_addr = addr_xor ? (addr<<2) + k : '0;
     data[k*RramBusWidth +: RramBusWidth] = word_addr ^
         data_descrambled[k*RramBusWidth +: RramBusWidth];
   end
@@ -158,7 +160,7 @@ function automatic data_q_t rram_ctrl_env_cfg::rram_bkdr_mem_read(rram_ctrl_op_t
   // addr must be aligend to RRAM word boundaries
   for (int i = 0; i <= rram_ctrl_op.num_words; i++) begin
     if (i%4 == 0) begin
-      rd_data = rram_bkdr_word_read(addr, rram_ctrl_op.partition, descramble, check_cfg);
+      rd_data = rram_bkdr_word_read(addr, rram_ctrl_op.partition, descramble, 1'b1, check_cfg);
       addr = addr + 1;
     end
     data[i] = rd_data[(i%4)*RramBusWidth +: RramBusWidth];
