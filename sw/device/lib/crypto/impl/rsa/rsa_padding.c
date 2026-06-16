@@ -736,7 +736,6 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, ARRAYSIZE(seed),
                                       /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
 
   // Generate dbMask = MGF(seed, k - hLen - 1) (step 2e).
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);

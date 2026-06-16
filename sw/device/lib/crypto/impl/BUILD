@@ -399,7 +399,6 @@ dual_cc_library(
             "//hw/ip/entropy_src/data:entropy_src_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
-            "//sw/device/lib/crypto/drivers:entropy",
         ],
         host = [
             "//sw/device/lib/base:hardened",

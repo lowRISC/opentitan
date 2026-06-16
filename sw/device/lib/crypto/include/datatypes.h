@@ -535,7 +535,7 @@ typedef struct otcrypto_hash_digest {
  * State structure for the crypto library.
  */
 typedef struct otcrypto_state {
-  uint32_t data[5];
+  uint32_t data[24];
 } otcrypto_state_t;
 
 #ifdef __cplusplus
