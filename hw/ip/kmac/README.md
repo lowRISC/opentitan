@@ -25,9 +25,9 @@ See that document for integration overview within the broader OpenTitan top leve
 - 64b x 10 depth Message FIFO
 - First-order masking of the Keccak core using domain-oriented masking (DOM) to deter side-channel analysis (SCA), can optionally be disabled using compile-time Verilog parameters (for more details see [Keccak Round below](doc/theory_of_operation.md#keccak-round))
 - 1600b of internal state (internally represented in two shares if masking is enabled)
-- Performance (at 100 MHz):
-  - SHA3-224: 2.93 B/cycle, 2.34 Gbit/s (masking disabled) - 1.19 B/cycle, 952 Mbit/s (DOM)
-  - SHA3-512: 1.47 B/cycle, 1.18 Gbit/s (masking disabled) - 0.59 B/cycle, 472 Mbit/s (DOM)
+- Peak performance of the Keccak core (at 100 MHz):
+  - SHA3-224: 3.43 B/cycle, 2.74 Gbit/s (masking disabled) - 1.26 B/cycle, 1.01 Gbit/s (DOM)
+  - SHA3-512: 2.18 B/cycle, 1.75 Gbit/s (masking disabled) - 0.69 B/cycle, 549 Mbit/s (DOM)
 
 ## Description
 
