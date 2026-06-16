@@ -54,6 +54,7 @@ module rram_ctrl_mp
   output logic                    ctrl_wr_o,
   output logic                    ctrl_scramble_en_o,
   output logic                    ctrl_ecc_en_o,
+  output logic                    ctrl_addr_xor_en_o,
   input  logic                    ctrl_rd_done_i,
   input  logic                    ctrl_wr_done_i,
   output logic                    host_req_o,
@@ -157,7 +158,7 @@ module rram_ctrl_mp
 
   logic data_en;
   logic data_rd_en, data_wr_en;
-  logic data_scr_en, data_ecc_en;
+  logic data_scr_en, data_ecc_en, data_xor_en;
   logic invalid_data_txn;
 
   assign data_en     = data_part_sel &
@@ -167,6 +168,7 @@ module rram_ctrl_mp
   assign data_wr_en  = data_en & ctrl_wr_req_i & mubi4_test_true_strict(data_region_cfg.wr_en);
   assign data_scr_en = data_en & ctrl_req & mubi4_test_true_strict(data_region_cfg.scramble_en);
   assign data_ecc_en = data_en & ctrl_req & mubi4_test_true_strict(data_region_cfg.ecc_en);
+  assign data_xor_en = data_en & ctrl_req & mubi4_test_true_strict(data_region_cfg.addr_xor_en);
 
   // Check for invalid transactions
   assign invalid_data_txn = ctrl_req & data_part_sel & ~(data_rd_en | data_wr_en);
@@ -226,7 +228,7 @@ module rram_ctrl_mp
 
   logic info_en;
   logic info_rd_en, info_wr_en;
-  logic info_scr_en, info_ecc_en;
+  logic info_scr_en, info_ecc_en, info_xor_en;
   logic invalid_info_txn;
 
   assign info_en     = info_part_sel &
@@ -236,6 +238,7 @@ module rram_ctrl_mp
   assign info_wr_en  = info_en & ctrl_wr_req_i & mubi4_test_true_strict(info_page_cfg.wr_en);
   assign info_scr_en = info_en & ctrl_req & mubi4_test_true_strict(info_page_cfg.scramble_en);
   assign info_ecc_en = info_en & ctrl_req & mubi4_test_true_strict(info_page_cfg.ecc_en);
+  assign info_xor_en = info_en & ctrl_req & mubi4_test_true_strict(info_page_cfg.addr_xor_en);
 
   // Check for invalid transactions
   assign invalid_info_txn = ctrl_req & info_part_sel & ~(info_rd_en | info_wr_en);
@@ -248,6 +251,7 @@ module rram_ctrl_mp
   assign ctrl_wr_o          = ctrl_req & (data_wr_en | info_wr_en);
   assign ctrl_scramble_en_o = ctrl_req & (data_scr_en | info_scr_en);
   assign ctrl_ecc_en_o      = ctrl_req & (data_ecc_en | info_ecc_en);
+  assign ctrl_addr_xor_en_o = ctrl_req & (data_xor_en | info_xor_en);
   assign ctrl_req_o         = ctrl_rd_o | ctrl_wr_o;
 
   logic txn_rd_err_d, txn_rd_err_q;
@@ -309,9 +313,9 @@ module rram_ctrl_mp
     .page_cfg_o  (host_sel_cfg)
   );
 
-  // host is a read-only interface (wr_en not used). word-offset bits not needed in MP
+  // host is a read-only interface (wr_en not used). word-offset bits not needed in MP.
   logic unused_host_mp;
-  assign unused_host_mp = ^{host_sel_cfg.wr_en, host_addr_i[PageW-1:0]};
+  assign unused_host_mp = ^{host_sel_cfg.wr_en, host_sel_cfg.addr_xor_en, host_addr_i[PageW-1:0]};
 
   assign host_data_en     = mubi4_test_true_strict(host_sel_cfg.en);
   assign host_data_rd_en  = host_data_en & mubi4_test_true_strict(host_sel_cfg.rd_en);

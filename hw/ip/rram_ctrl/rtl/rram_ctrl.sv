@@ -233,6 +233,7 @@ module rram_ctrl
   logic                    phy_ctrl_wr;
   logic                    phy_ctrl_ecc_en;
   logic                    phy_ctrl_scramble_en;
+  logic                    phy_ctrl_addr_xor_en;
   logic                    phy_ctrl_wr_done;
   logic                    phy_ctrl_rd_err;
   logic                    phy_ctrl_rd_done;
@@ -647,6 +648,8 @@ module rram_ctrl
   ///////////////////
   // OTP_HW_ACCESS //
   ///////////////////
+  // OTP reads raw data without address infection
+  assign hw_otp_rdata = phy_ctrl_rd_data;
 
   rram_ctrl_otp u_rram_ctrl_otp (
     .clk_i,
@@ -726,7 +729,6 @@ module rram_ctrl
     // hw-otp read interface
     .hw_otp_rready_i  (hw_otp_rready),
     .hw_otp_rvalid_o  (hw_otp_rvalid),
-    .hw_otp_rdata_o   (hw_otp_rdata),
     // Arbiter interface to wr/rd handler
     .ctrl_part_o      (ctrl_part),
     .ctrl_num_words_o (ctrl_num_words),
@@ -968,6 +970,7 @@ module rram_ctrl
     .ctrl_wr_o          (phy_ctrl_wr),
     .ctrl_scramble_en_o (phy_ctrl_scramble_en),
     .ctrl_ecc_en_o      (phy_ctrl_ecc_en),
+    .ctrl_addr_xor_en_o (phy_ctrl_addr_xor_en),
     .ctrl_rd_done_i     (phy_ctrl_rd_done),
     .ctrl_wr_done_i     (phy_ctrl_wr_done),
     // Interface signals to/from rram_phy (host)
@@ -1001,6 +1004,7 @@ module rram_ctrl
     .ctrl_req_i        (phy_ctrl_req),
     .ctrl_scramble_en_i(phy_ctrl_scramble_en),
     .ctrl_ecc_en_i     (phy_ctrl_ecc_en),
+    .ctrl_addr_xor_en_i(phy_ctrl_addr_xor_en),
     .ctrl_rd_i         (phy_ctrl_rd),
     .ctrl_wr_i         (phy_ctrl_wr),
     .ctrl_part_i       (ctrl_part),
