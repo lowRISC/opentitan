@@ -7896,6 +7896,117 @@
         ]
       }
     }
+    {
+      name: verilator
+      chiplevel:
+      {
+        port_overrides:
+        {
+          usbdev.usb_rx_d:
+          {
+            signal: usb_rx_d
+          }
+          usbdev.usb_rx_enable:
+          {
+            signal: usb_rx_enable
+          }
+          usbdev.usb_tx_d:
+          {
+            signal: usb_tx_d
+          }
+          usbdev.usb_tx_se0:
+          {
+            signal: usb_tx_se0
+          }
+          usbdev.usb_tx_use_d_se0:
+          {
+            signal: usb_tx_use_d_se0
+          }
+          usbdev.usb_ref_val:
+          {
+            signal: usb_ref_val
+          }
+          usbdev.usb_ref_pulse:
+          {
+            signal: usb_ref_pulse
+          }
+          rv_core_ibex.fpga_info:
+          {
+            unused: true
+          }
+          pinmux_aon.dft_hold_tap_sel:
+          {
+            unused: true
+          }
+        }
+      }
+      pinout:
+      {
+        remove_ports: []
+        remove_pads: []
+        add_pads: []
+      }
+      pinmux:
+      {
+        special_signals:
+        [
+          {
+            name: tap0
+            pad: IOC8
+            desc: TAP strap signal.
+            idx: 30
+          }
+          {
+            name: tap1
+            pad: IOC5
+            desc: TAP strap signal.
+            idx: 27
+          }
+          {
+            name: dft0
+            pad: IOR5
+            desc: DFT strap signal.
+            idx: 40
+          }
+          {
+            name: dft1
+            pad: IOR7
+            desc: DFT strap signal.
+            idx: 42
+          }
+          {
+            name: tck
+            pad: SPI_DEV_CLK
+            desc: JTAG tck signal, overlaid on SPI_DEV.
+            idx: 57
+          }
+          {
+            name: tms
+            pad: SPI_DEV_CS_L
+            desc: JTAG tms signal, overlaid on SPI_DEV.
+            idx: 58
+          }
+          {
+            name: trst_n
+            pad: IOR4
+            desc: JTAG trst_n signal.
+            idx: 39
+          }
+          {
+            name: tdi
+            pad: SPI_DEV_D0
+            desc: JTAG tdi signal, overlaid on SPI_DEV.
+            idx: 51
+          }
+          {
+            name: tdo
+            pad: SPI_DEV_D1
+            desc: JTAG tdo signal, overlaid on SPI_DEV.
+            idx: 52
+          }
+        ]
+      }
+    }
   ]
   incoming_alert: {}
   incoming_interrupt: {}
@@ -12887,6 +12998,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_pwr_nvm
+          verilator: pwrmgr_aon_pwr_nvm
         }
         width: 1
         type: uni
@@ -12905,6 +13017,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_pwr_nvm
+          verilator: pwrmgr_aon_pwr_nvm
         }
         width: 1
         type: uni
@@ -12923,6 +13036,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_strap
+          verilator: pwrmgr_aon_strap
         }
         width: 1
         type: uni
@@ -12941,6 +13055,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_strap
+          verilator: pwrmgr_aon_strap
         }
         width: 1
         type: uni
@@ -12959,6 +13074,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_low_power
+          verilator: pwrmgr_aon_low_power
         }
         width: 1
         type: uni
@@ -12977,6 +13093,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_low_power
+          verilator: pwrmgr_aon_low_power
         }
         width: 1
         type: uni
@@ -12995,6 +13112,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_fetch_en
+          verilator: pwrmgr_aon_fetch_en
         }
         width: 1
         type: uni
@@ -13013,6 +13131,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_fetch_en
+          verilator: pwrmgr_aon_fetch_en
         }
         width: 1
         type: uni
@@ -13031,6 +13150,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_idle
+          verilator: clkmgr_aon_idle
         }
         width: 1
         type: uni
@@ -13049,6 +13169,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_idle
+          verilator: clkmgr_aon_idle
         }
         width: 1
         type: uni
@@ -13067,6 +13188,7 @@
         signame_chip:
         {
           cw305: rv_core_ibex_crash_dump
+          verilator: rv_core_ibex_crash_dump
         }
         width: 1
         type: uni
@@ -13085,6 +13207,7 @@
         signame_chip:
         {
           cw305: rv_core_ibex_crash_dump
+          verilator: rv_core_ibex_crash_dump
         }
         width: 1
         type: uni
@@ -13103,6 +13226,7 @@
         signame_chip:
         {
           cw305: rv_core_ibex_pwrmgr
+          verilator: rv_core_ibex_pwrmgr
         }
         width: 1
         type: uni
@@ -13121,6 +13245,7 @@
         signame_chip:
         {
           cw305: rv_core_ibex_pwrmgr
+          verilator: rv_core_ibex_pwrmgr
         }
         width: 1
         type: uni
@@ -13139,6 +13264,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_wakeups
+          verilator: pwrmgr_aon_wakeups
         }
         width: 2
         type: uni
@@ -13161,6 +13287,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_wakeups
+          verilator: pwrmgr_aon_wakeups
         }
         width: 2
         type: uni
@@ -13183,6 +13310,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_tl_req
+          verilator: pwrmgr_aon_tl_req
         }
         width: 1
         type: req_rsp
@@ -13201,6 +13329,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_tl_rsp
+          verilator: pwrmgr_aon_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13219,6 +13348,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_tl_req
+          verilator: pwrmgr_aon_tl_req
         }
         width: 1
         type: req_rsp
@@ -13237,6 +13367,7 @@
         signame_chip:
         {
           cw305: pwrmgr_aon_tl_rsp
+          verilator: pwrmgr_aon_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13255,6 +13386,7 @@
         signame_chip:
         {
           cw305: rstmgr_aon_tl_req
+          verilator: rstmgr_aon_tl_req
         }
         width: 1
         type: req_rsp
@@ -13273,6 +13405,7 @@
         signame_chip:
         {
           cw305: rstmgr_aon_tl_rsp
+          verilator: rstmgr_aon_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13291,6 +13424,7 @@
         signame_chip:
         {
           cw305: rstmgr_aon_tl_req
+          verilator: rstmgr_aon_tl_req
         }
         width: 1
         type: req_rsp
@@ -13309,6 +13443,7 @@
         signame_chip:
         {
           cw305: rstmgr_aon_tl_rsp
+          verilator: rstmgr_aon_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13327,6 +13462,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_tl_req
+          verilator: clkmgr_aon_tl_req
         }
         width: 1
         type: req_rsp
@@ -13345,6 +13481,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_tl_rsp
+          verilator: clkmgr_aon_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13363,6 +13500,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_tl_req
+          verilator: clkmgr_aon_tl_req
         }
         width: 1
         type: req_rsp
@@ -13381,6 +13519,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_tl_rsp
+          verilator: clkmgr_aon_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13399,6 +13538,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_clocks
+          verilator: clkmgr_aon_clocks
         }
         width: 1
         type: uni
@@ -13417,6 +13557,7 @@
         signame_chip:
         {
           cw305: clkmgr_aon_cg_en
+          verilator: clkmgr_aon_cg_en
         }
         width: 1
         type: uni
@@ -13435,6 +13576,7 @@
         signame_chip:
         {
           cw305: clk_main_jitter_en
+          verilator: clk_main_jitter_en
         }
         width: 1
         type: uni
@@ -13453,6 +13595,7 @@
         signame_chip:
         {
           cw305: hi_speed_sel
+          verilator: hi_speed_sel
         }
         width: 1
         type: uni
@@ -13471,6 +13614,7 @@
         signame_chip:
         {
           cw305: div_step_down_req
+          verilator: div_step_down_req
         }
         width: 1
         type: uni
@@ -13489,6 +13633,7 @@
         signame_chip:
         {
           cw305: all_clk_byp_req
+          verilator: all_clk_byp_req
         }
         width: 1
         type: uni
@@ -13507,6 +13652,7 @@
         signame_chip:
         {
           cw305: all_clk_byp_ack
+          verilator: all_clk_byp_ack
         }
         width: 1
         type: uni
@@ -13525,6 +13671,7 @@
         signame_chip:
         {
           cw305: io_clk_byp_req
+          verilator: io_clk_byp_req
         }
         width: 1
         type: uni
@@ -13543,6 +13690,7 @@
         signame_chip:
         {
           cw305: io_clk_byp_ack
+          verilator: io_clk_byp_ack
         }
         width: 1
         type: uni
@@ -13561,6 +13709,7 @@
         signame_chip:
         {
           cw305: flash_bist_enable
+          verilator: flash_bist_enable
         }
         width: 1
         type: uni
@@ -13579,6 +13728,7 @@
         signame_chip:
         {
           cw305: 1'b0
+          verilator: flash_power_down_h
         }
         width: 1
         type: uni
@@ -13597,6 +13747,7 @@
         signame_chip:
         {
           cw305: 1'b1
+          verilator: flash_power_ready_h
         }
         width: 1
         type: uni
@@ -13615,6 +13766,7 @@
         signame_chip:
         {
           cw305: obs_ctrl
+          verilator: obs_ctrl
         }
         width: 1
         type: uni
@@ -13633,6 +13785,7 @@
         signame_chip:
         {
           cw305: flash_obs
+          verilator: flash_obs
         }
         width: 8
         type: uni
@@ -13651,6 +13804,7 @@
         signame_chip:
         {
           cw305: ast_tl_req
+          verilator: ast_tl_req
         }
         width: 1
         type: req_rsp
@@ -13669,6 +13823,7 @@
         signame_chip:
         {
           cw305: ast_tl_rsp
+          verilator: ast_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -13687,6 +13842,7 @@
         signame_chip:
         {
           cw305: ""
+          verilator: dft_strap_test
         }
         width: 1
         type: uni
@@ -13705,6 +13861,7 @@
         signame_chip:
         {
           cw305: "'0"
+          verilator: "'0"
         }
         width: 1
         type: uni
@@ -13723,6 +13880,7 @@
         signame_chip:
         {
           cw305: usb_dp_pullup_en
+          verilator: usb_dp_pullup_en
         }
         width: 1
         type: uni
@@ -13741,6 +13899,7 @@
         signame_chip:
         {
           cw305: ""
+          verilator: usb_dn_pullup_en
         }
         width: 1
         type: uni
@@ -13759,6 +13918,7 @@
         signame_chip:
         {
           cw305: pwrmgr_ast_req
+          verilator: pwrmgr_ast_req
         }
         width: 1
         type: req_rsp
@@ -13777,6 +13937,7 @@
         signame_chip:
         {
           cw305: pwrmgr_ast_rsp
+          verilator: pwrmgr_ast_rsp
         }
         width: 1
         type: req_rsp
@@ -13795,6 +13956,7 @@
         signame_chip:
         {
           cw305: por_n
+          verilator: por_n
         }
         width: 2
         type: uni
@@ -13813,6 +13975,7 @@
         signame_chip:
         {
           cw305: rstmgr_aon_resets
+          verilator: rstmgr_aon_resets
         }
         width: 1
         type: uni
@@ -13831,6 +13994,7 @@
         signame_chip:
         {
           cw305: rstmgr_aon_rst_en
+          verilator: rstmgr_aon_rst_en
         }
         width: 1
         type: uni
@@ -13849,6 +14013,7 @@
         signame_chip:
         {
           cw305: fpga_info
+          verilator: "'0"
         }
         width: 32
         type: uni
@@ -13867,6 +14032,7 @@
         signame_chip:
         {
           cw305: usb_rx_d
+          verilator: usb_rx_d
         }
         width: 1
         type: uni
@@ -13885,6 +14051,7 @@
         signame_chip:
         {
           cw305: ""
+          verilator: usb_tx_d
         }
         width: 1
         type: uni
@@ -13903,6 +14070,7 @@
         signame_chip:
         {
           cw305: ""
+          verilator: usb_tx_se0
         }
         width: 1
         type: uni
@@ -13921,6 +14089,7 @@
         signame_chip:
         {
           cw305: ""
+          verilator: usb_tx_use_d_se0
         }
         width: 1
         type: uni
@@ -13939,6 +14108,7 @@
         signame_chip:
         {
           cw305: usb_rx_enable
+          verilator: usb_rx_enable
         }
         width: 1
         type: uni
@@ -13957,6 +14127,7 @@
         signame_chip:
         {
           cw305: usb_ref_val
+          verilator: usb_ref_val
         }
         width: 1
         type: uni
@@ -13975,6 +14146,7 @@
         signame_chip:
         {
           cw305: usb_ref_pulse
+          verilator: usb_ref_pulse
         }
         width: 1
         type: uni
@@ -13993,6 +14165,7 @@
         signame_chip:
         {
           cw305: sck_monitor
+          verilator: sck_monitor
         }
         width: 1
         type: uni

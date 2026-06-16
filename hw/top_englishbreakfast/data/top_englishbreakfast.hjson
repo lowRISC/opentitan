@@ -1108,6 +1108,54 @@
           { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
         ],
       }
+    },
+    { name: 'verilator',
+
+      // The verilator chip-level has no physical pads: The flat per-peripheral
+      // signals are connected to the testbench DPI models through the
+      // padring_verilator module. As in the earlgrey verilator target, only the
+      // USB signals observed/driven by the usbdpi model are overridden; all
+      // other signals (incl. the USB Dn pull-up, the DFT strap test bus and the
+      // AST-driven flash power controls) flow through the common ASIC path so
+      // they are driven/consumed identically to the earlgrey verilator top.
+      chiplevel: {
+        port_overrides: {
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'   },
+          'usbdev.usb_tx_d'                 : { signal: 'usb_tx_d'        },
+          'usbdev.usb_tx_se0'               : { signal: 'usb_tx_se0'      },
+          'usbdev.usb_tx_use_d_se0'         : { signal: 'usb_tx_use_d_se0'},
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'     },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
+          'rv_core_ibex.fpga_info'          : { unused: true              },
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
+        }
+      }
+
+      // The verilator target has no physical pads, so there is nothing to
+      // remove or add here.
+      pinout: {
+        remove_ports: [],
+        remove_pads: [],
+        add_pads: [],
+      }
+
+      pinmux: {
+        // Same special signal (JTAG / strap) positions as the cw305 target.
+        special_signals: [
+          // Straps
+          { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
+          { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
+          { name: 'dft0',   pad: 'IOR5',         desc: 'DFT strap signal.'                       },
+          { name: 'dft1',   pad: 'IOR7',         desc: 'DFT strap signal.'                       },
+          // JTAG
+          { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
+          { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
+          { name: 'trst_n', pad: 'IOR4',         desc: 'JTAG trst_n signal.'                     },
+          { name: 'tdi',    pad: 'SPI_DEV_D0'  , desc: 'JTAG tdi signal, overlaid on SPI_DEV.'   },
+          { name: 'tdo',    pad: 'SPI_DEV_D1'  , desc: 'JTAG tdo signal, overlaid on SPI_DEV.'   },
+        ],
+      }
     }
   ]
 }

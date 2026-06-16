@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:systems:top_englishbreakfast:0.1
+      - lowrisc:systems:chip_englishbreakfast_verilator
       - lowrisc:dv_dpi_c:uartdpi
       - lowrisc:dv_dpi_sv:uartdpi
       - lowrisc:dv_dpi_c:gpiodpi
