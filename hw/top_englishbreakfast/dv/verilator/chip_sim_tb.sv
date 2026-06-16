@@ -8,8 +8,6 @@ module chip_sim_tb (
   input rst_ni
 );
 
-  import top_englishbreakfast_pkg::*;
-
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
@@ -27,304 +25,50 @@ module chip_sim_tb (
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
-  logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
-
-  // Generated clocks, resets, and enable signals
-  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
-  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_aon_cg_en;
-  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
-  rstmgr_pkg::rstmgr_rst_en_t rstmgr_aon_rst_en;
-
-  // TODO: instantiate padring and route these signals through that module
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
-  logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
-
-  always_comb begin : assign_dio_in
-    dio_in = '0;
-    dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d;
-    dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d;
-    dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d;
-    dio_in[DioUsbdevUsbDp] = cio_usbdev_dp_p2d;
-    dio_in[DioUsbdevUsbDn] = cio_usbdev_dn_p2d;
-  end
-
-  logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_tx_use_d_se0;
-  logic usb_rx_enable;
-
-  assign usb_rx_d = cio_usbdev_d_p2d;
-  assign cio_usbdev_dn_d2p = dio_out[DioUsbdevUsbDn];
-  assign cio_usbdev_dp_d2p = dio_out[DioUsbdevUsbDp];
-  assign cio_usbdev_d_d2p  = usb_tx_d;
-  assign cio_usbdev_rx_enable_d2p = usb_rx_enable;
-  assign cio_usbdev_tx_use_d_se0_d2p = usb_tx_use_d_se0;
-  assign cio_usbdev_dn_pullup_d2p = usb_dn_pullup_en;
-  assign cio_usbdev_dp_pullup_d2p = usb_dp_pullup_en;
-  assign cio_usbdev_se0_d2p = usb_tx_se0;
-  assign cio_spi_device_sdo_d2p = dio_out[DioSpiDeviceSd1];
-
-  assign cio_usbdev_dn_en_d2p = dio_oe[DioUsbdevUsbDn];
-  assign cio_usbdev_dp_en_d2p = dio_oe[DioUsbdevUsbDp];
-  assign cio_usbdev_d_en_d2p  = dio_oe[DioUsbdevUsbDp];
-  assign cio_spi_device_sdo_en_d2p = dio_oe[DioSpiDeviceSd1];
-
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
-
-  always_comb begin : assign_mio_in
-    mio_in = '0;
-    mio_in[31:0] = cio_gpio_p2d;
-    mio_in[25] = cio_uart_rx_p2d;
-    mio_in[35] = cio_usbdev_sense_p2d;
-    mio_in[36] = cio_usbdev_sense_p2d;
-  end
-
-  assign cio_gpio_d2p[25:0]       = mio_out[25:0];
-  assign cio_gpio_en_d2p[25:0]    = mio_oe[25:0];
-  assign cio_gpio_d2p[31:27]      = mio_out[31:27];
-  assign cio_gpio_en_d2p[31:27]   = mio_oe[31:27];
-  assign cio_uart_tx_d2p    = mio_out[26];
-  assign cio_uart_tx_en_d2p = mio_oe[26];
-
-  // dummy ast connections
-  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
-  ast_pkg::ast_alert_req_t ast_base_alerts;
-  ast_pkg::ast_status_t ast_base_status;
-
-  assign pwrmgr_ast_rsp.slow_clk_val = 1'b1;
-  assign pwrmgr_ast_rsp.core_clk_val = 1'b1;
-  assign pwrmgr_ast_rsp.io_clk_val   = 1'b1;
-  assign pwrmgr_ast_rsp.usb_clk_val  = 1'b1;
-  assign pwrmgr_ast_rsp.main_pok     = 1'b1;
-
-  ast_pkg::ast_dif_t silent_alert = '{
-                                       p: 1'b0,
-                                       n: 1'b1
-                                     };
-
-  assign ast_base_alerts.alerts = {ast_pkg::NumAlerts{silent_alert}};
-  assign ast_base_status.io_pok = {ast_pkg::NumIoRails{1'b1}};
-
-  // the rst_ni pin only goes to AST
-  // the rest of the logic generates reset based on the 'pok' signal.
-  // for verilator purposes, make these two the same.
-
-  logic clk_aon;
-  // reset is not used below because verilator uses only sync resets
-  // and also does not under 'x'.
-  // if we allow the divider below to reset, clk_aon will be silenced,
-  // and as a result all the clk_aon logic inside top_englishbreakfast does not
-  // get reset
-  prim_clock_div #(
-    .Divisor(4)
-  ) u_aon_div (
+  chip_englishbreakfast_verilator u_dut (
     .clk_i,
-    .rst_ni(1'b1),
-    .step_down_req_i('0),
-    .step_down_ack_o(),
-    .test_en_i('0),
-    .clk_o(clk_aon)
+    .rst_ni
   );
 
-  // TODO: generate these indices from the target-specific
-  // pinout configuration. But first, this verilator top needs
-  // to be split into a Verilator TB and a Verilator chiplevel.
-  // DFT and Debug signal positions in the pinout.
-  localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceSck,
-    tms_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceCsb,
-    trst_idx:       18, // MIO 18
-    tdi_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceSd0,
-    tdo_idx:        pinmux_reg_pkg::NMioPads +
-                    top_englishbreakfast_pkg::DioSpiDeviceSd1,
-    tap_strap0_idx: 26, // MIO 26
-    tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
-    dft_strap0_idx: 21, // MIO 21
-    dft_strap1_idx: 22, // MIO 22
-    // TODO: check whether there is a better way to pass these USB-specific params
-    usb_dp_idx:        DioUsbdevUsbDp,
-    usb_dn_idx:        DioUsbdevUsbDn,
-    usb_sense_idx:     MioInUsbdevSense,
-    // TODO: connect these once the verilator chip-level has been merged with the chiplevel.sv.tpl
-    dio_pad_type: {pinmux_reg_pkg::NDioPads{prim_pad_wrapper_pkg::BidirStd}},
-    mio_pad_type: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::BidirStd}},
-    dio_scan_role: {pinmux_reg_pkg::NDioPads{prim_pad_wrapper_pkg::NoScan}},
-    mio_scan_role: {pinmux_reg_pkg::NMioPads{prim_pad_wrapper_pkg::NoScan}}
-  };
+  // ---------------------------------------------------------------------------
+  // Connect the DPI models to the pad-level signals inside the Verilator
+  // padring via hierarchical references. The *_p2d pad nets are undriven
+  // inside padring_verilator, so the testbench is their sole driver; the
+  // *_d2p, *_en_d2p and pull nets are driven in the padring and read out here.
+  // ---------------------------------------------------------------------------
 
+  // GPIO
+  assign u_dut.u_padring.cio_gpio_p2d = cio_gpio_p2d;
+  assign cio_gpio_d2p    = u_dut.u_padring.cio_gpio_d2p;
+  assign cio_gpio_en_d2p = u_dut.u_padring.cio_gpio_en_d2p;
 
-  prim_mubi_pkg::mubi4_t all_clk_bypass;
-  prim_mubi_pkg::mubi4_t io_clk_bypass;
+  // UART
+  assign u_dut.u_padring.cio_uart_rx_p2d = cio_uart_rx_p2d;
+  assign cio_uart_tx_d2p = u_dut.u_padring.cio_uart_tx_d2p;
 
-  // Inter-Power Domain signals
-  logic [2:0] intr_vector_pd_aon;
-  pwrmgr_pkg::pwr_nvm_t       pwrmgr_aon_pwr_nvm;
-  logic       pwrmgr_aon_strap;
-  logic       pwrmgr_aon_low_power;
-  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  prim_mubi_pkg::mubi4_t       clkmgr_aon_idle;
-  rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
-  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
-  logic [1:0] pwrmgr_aon_wakeups;
-  tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       rstmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       clkmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
+  // SPI device
+  assign u_dut.u_padring.cio_spi_device_sck_p2d = cio_spi_device_sck_p2d;
+  assign u_dut.u_padring.cio_spi_device_csb_p2d = cio_spi_device_csb_p2d;
+  assign u_dut.u_padring.cio_spi_device_sdi_p2d = cio_spi_device_sdi_p2d;
+  assign cio_spi_device_sdo_d2p    = u_dut.u_padring.cio_spi_device_sdo_d2p;
+  assign cio_spi_device_sdo_en_d2p = u_dut.u_padring.cio_spi_device_sdo_en_d2p;
 
-  //////////////////////
-  // Top-level design //
-  //////////////////////
-  top_englishbreakfast #(
-    .SecAesMasking(1'b1),
-    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
-    .SecAesStartTriggerDelay(320),
-    .SecAesAllowForcingMasks(1'b1),
-    .SecAesSkipPRNGReseeding(1'b1),
-    .UsbdevStub(1'b1),
-    .RvCoreIbexICache(0),
-    .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
-  ) top_englishbreakfast (
-    // Clocks and clock gating control from clkmgr_aon
-    .clkmgr_aon_clocks_i(clkmgr_aon_clocks),
-    .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en),
-
-    // Resets and reset assert info from rstmgr_aon
-    .rstmgr_aon_resets_i(rstmgr_aon_resets),
-    .rstmgr_aon_rst_en_i(rstmgr_aon_rst_en),
-
-    // Manual DFT signals
-    .scan_rst_ni(1'b1            ),
-    .scan_en_i  (1'b0            ),
-    .scanmode_i (lc_ctrl_pkg::Off),
-
-    // Multiplexed I/O
-    .mio_in_i (mio_in ),
-    .mio_out_o(mio_out),
-    .mio_oe_o (mio_oe ),
-
-    // Dedicated I/O
-    .dio_in_i (dio_in ),
-    .dio_out_o(dio_out),
-    .dio_oe_o (dio_oe ),
-
-    // Pad attributes
-    .mio_attr_o(),
-    .dio_attr_o(),
-
-    // Special inter-power domain signals (interrupts, alerts)
-    .intr_vector_pd_aon_i(intr_vector_pd_aon),
-
-    .outgoing_alert_englishbreakfast_tx_o(),
-    .outgoing_alert_englishbreakfast_rx_i(),
-
-    // Ports to and from other power domains
-    .pwrmgr_aon_pwr_nvm_o     (pwrmgr_aon_pwr_nvm     ),
-    .pwrmgr_aon_strap_i       (pwrmgr_aon_strap       ),
-    .pwrmgr_aon_low_power_i   (pwrmgr_aon_low_power   ),
-    .pwrmgr_aon_fetch_en_i    (pwrmgr_aon_fetch_en    ),
-    .clkmgr_aon_idle_o        (clkmgr_aon_idle        ),
-    .rv_core_ibex_crash_dump_o(rv_core_ibex_crash_dump),
-    .rv_core_ibex_pwrmgr_o    (rv_core_ibex_pwrmgr    ),
-    .pwrmgr_aon_wakeups_o     (pwrmgr_aon_wakeups     ),
-    .pwrmgr_aon_tl_req_o      (pwrmgr_aon_tl_req      ),
-    .pwrmgr_aon_tl_rsp_i      (pwrmgr_aon_tl_rsp      ),
-    .rstmgr_aon_tl_req_o      (rstmgr_aon_tl_req      ),
-    .rstmgr_aon_tl_rsp_i      (rstmgr_aon_tl_rsp      ),
-    .clkmgr_aon_tl_req_o      (clkmgr_aon_tl_req      ),
-    .clkmgr_aon_tl_rsp_i      (clkmgr_aon_tl_rsp      ),
-
-    // Regular ports
-    .flash_bist_enable_i      (lc_ctrl_pkg::Off),
-    .flash_power_down_h_i     (1'b0            ),
-    .flash_power_ready_h_i    (1'b1            ),
-    .obs_ctrl_i               ('0        ),
-    .flash_obs_o              (       ),
-    .ast_tl_req_o             (),
-    .ast_tl_rsp_i             (tlul_pkg::TL_D2H_DEFAULT),
-    .dft_strap_test_o         (                 ),
-    .dft_hold_tap_sel_i       ('0               ),
-    .usb_dp_pullup_en_o       (usb_dp_pullup_en ),
-    .usb_dn_pullup_en_o       (usb_dn_pullup_en ),
-    .fpga_info_i              (       ),
-    .usbdev_usb_rx_d_i        (usb_rx_d        ),
-    .usbdev_usb_tx_d_o        (usb_tx_d        ),
-    .usbdev_usb_tx_se0_o      (usb_tx_se0      ),
-    .usbdev_usb_tx_use_d_se0_o(usb_tx_use_d_se0),
-    .usbdev_usb_rx_enable_o   (usb_rx_enable   ),
-    .usbdev_usb_ref_val_o     (     ),
-    .usbdev_usb_ref_pulse_o   (   ),
-    .sck_monitor_o            (     )
-  );
-
-
-  //////////////////////
-  // Always-on Domain //
-  //////////////////////
-  top_englishbreakfast_pd_aon top_englishbreakfast_pd_aon (
-    // All externally supplied clocks
-    .clk_main_i(clk_i  ),
-    .clk_io_i  (clk_i  ),
-    .clk_usb_i (clk_i  ),
-    .clk_aon_i (clk_aon),
-
-    // Manual DFT signals
-    .scan_rst_ni(1'b1            ),
-    .scanmode_i (lc_ctrl_pkg::Off),
-
-    // Special inter-power domain signals (interrupts, alerts)
-    .intr_vector_o(intr_vector_pd_aon),
-
-    .outgoing_alert_englishbreakfast_tx_o(),
-    .outgoing_alert_englishbreakfast_rx_i(),
-
-    .outgoing_lpg_cg_en_englishbreakfast_o(),
-    .outgoing_lpg_rst_en_englishbreakfast_o(),
-
-    // Ports to and from other power domains
-    .pwrmgr_aon_pwr_nvm_i     (pwrmgr_aon_pwr_nvm     ),
-    .pwrmgr_aon_strap_o       (pwrmgr_aon_strap       ),
-    .pwrmgr_aon_low_power_o   (pwrmgr_aon_low_power   ),
-    .pwrmgr_aon_fetch_en_o    (pwrmgr_aon_fetch_en    ),
-    .clkmgr_aon_idle_i        (clkmgr_aon_idle        ),
-    .rv_core_ibex_crash_dump_i(rv_core_ibex_crash_dump),
-    .rv_core_ibex_pwrmgr_i    (rv_core_ibex_pwrmgr    ),
-    .pwrmgr_aon_wakeups_i     (pwrmgr_aon_wakeups     ),
-    .pwrmgr_aon_tl_req_i      (pwrmgr_aon_tl_req      ),
-    .pwrmgr_aon_tl_rsp_o      (pwrmgr_aon_tl_rsp      ),
-    .rstmgr_aon_tl_req_i      (rstmgr_aon_tl_req      ),
-    .rstmgr_aon_tl_rsp_o      (rstmgr_aon_tl_rsp      ),
-    .clkmgr_aon_tl_req_i      (clkmgr_aon_tl_req      ),
-    .clkmgr_aon_tl_rsp_o      (clkmgr_aon_tl_rsp      ),
-
-    // Regular ports
-    .clkmgr_aon_clocks_o (clkmgr_aon_clocks),
-    .clkmgr_aon_cg_en_o  (clkmgr_aon_cg_en ),
-    .clk_main_jitter_en_o(                 ),
-    .hi_speed_sel_o      (                 ),
-    .div_step_down_req_i (1'b0             ),
-    .all_clk_byp_req_o   (all_clk_bypass   ),
-    .all_clk_byp_ack_i   (all_clk_bypass   ),
-    .io_clk_byp_req_o    (io_clk_bypass    ),
-    .io_clk_byp_ack_i    (io_clk_bypass    ),
-    .pwrmgr_ast_req_o    (                 ),
-    .pwrmgr_ast_rsp_i    (pwrmgr_ast_rsp   ),
-    .por_n_i             ({rst_ni, rst_ni} ),
-    .rstmgr_aon_resets_o (rstmgr_aon_resets),
-    .rstmgr_aon_rst_en_o (rstmgr_aon_rst_en)
-  );
-
+  // USB
+  assign u_dut.u_padring.cio_usbdev_sense_p2d = cio_usbdev_sense_p2d;
+  assign u_dut.u_padring.cio_usbdev_dp_p2d    = cio_usbdev_dp_p2d;
+  assign u_dut.u_padring.cio_usbdev_dn_p2d    = cio_usbdev_dn_p2d;
+  assign u_dut.u_padring.cio_usbdev_d_p2d     = cio_usbdev_d_p2d;
+  assign cio_usbdev_dp_pullup_d2p    = u_dut.u_padring.cio_usbdev_dp_pullup_d2p;
+  assign cio_usbdev_dn_pullup_d2p    = u_dut.u_padring.cio_usbdev_dn_pullup_d2p;
+  assign cio_usbdev_dp_d2p           = u_dut.u_padring.cio_usbdev_dp_d2p;
+  assign cio_usbdev_dp_en_d2p        = u_dut.u_padring.cio_usbdev_dp_en_d2p;
+  assign cio_usbdev_dn_d2p           = u_dut.u_padring.cio_usbdev_dn_d2p;
+  assign cio_usbdev_dn_en_d2p        = u_dut.u_padring.cio_usbdev_dn_en_d2p;
+  assign cio_usbdev_d_d2p            = u_dut.u_padring.cio_usbdev_d_d2p;
+  assign cio_usbdev_d_en_d2p         = u_dut.u_padring.cio_usbdev_d_en_d2p;
+  assign cio_usbdev_se0_d2p          = u_dut.u_padring.cio_usbdev_se0_d2p;
+  assign cio_usbdev_rx_enable_d2p    = u_dut.u_padring.cio_usbdev_rx_enable_d2p;
+  assign cio_usbdev_tx_use_d_se0_d2p = u_dut.u_padring.cio_usbdev_tx_use_d_se0_d2p;
 
   // GPIO DPI
   gpiodpi #(.N_GPIO(32)) u_gpiodpi (
@@ -333,7 +77,9 @@ module chip_sim_tb (
     .active     (1'b1),
     .gpio_p2d   (cio_gpio_p2d),
     .gpio_d2p   (cio_gpio_d2p),
-    .gpio_en_d2p(cio_gpio_en_d2p)
+    .gpio_en_d2p(cio_gpio_en_d2p),
+    .gpio_pull_en('0),
+    .gpio_pull_sel('0)
   );
 
   // UART DPI
@@ -410,9 +156,11 @@ module chip_sim_tb (
     .dp_p2d          (cio_usbdev_dp_p2d),
     .dp_d2p          (cio_usbdev_dp_d2p),
     .dp_en_d2p       (cio_usbdev_dp_en_d2p),
+    .dp_en_p2d       (),
     .dn_p2d          (cio_usbdev_dn_p2d),
     .dn_d2p          (cio_usbdev_dn_d2p),
     .dn_en_d2p       (cio_usbdev_dn_en_d2p),
+    .dn_en_p2d       (),
     .d_p2d           (cio_usbdev_d_p2d),
     .d_d2p           (cio_usbdev_d_d2p),
     .d_en_d2p        (cio_usbdev_d_en_d2p),
@@ -421,8 +169,8 @@ module chip_sim_tb (
     .tx_use_d_se0_d2p(cio_usbdev_tx_use_d_se0_d2p)
   );
 
-  `define RV_CORE_IBEX      top_englishbreakfast.u_rv_core_ibex
-  `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
+  `define RV_CORE_IBEX u_dut.top_englishbreakfast.u_rv_core_ibex
+  `define SIM_SRAM_IF  u_sim_sram.u_sim_sram_if
 
   // Detect SW test termination.
   sim_sram u_sim_sram (
@@ -442,6 +190,8 @@ module chip_sim_tb (
   // when trace is enabled (#3951).
   sw_test_status_if u_sw_test_status_if (
     .clk_i    (`SIM_SRAM_IF.clk_i),
+    .rst_ni   (`SIM_SRAM_IF.rst_ni),
+    .fetch_en (1'b0),
     .wr_valid (`SIM_SRAM_IF.wr_valid),
     .addr     (`SIM_SRAM_IF.tl_h2d.a_address),
     .data     (`SIM_SRAM_IF.tl_h2d.a_data[15:0])

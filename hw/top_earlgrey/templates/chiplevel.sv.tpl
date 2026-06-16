@@ -1325,6 +1325,14 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % elif target["name"] == "verilator":
+%   if top["name"] == "englishbreakfast":
+    .SecAesMasking(1'b1),
+    .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
+    .SecAesStartTriggerDelay(320),
+    .SecAesSkipPRNGReseeding(1'b1),
+    .UsbdevStub(1'b1),
+    .RvCoreIbexICache(0),
+%   endif
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
@@ -1346,7 +1354,7 @@ module chip_${top["name"]}_${target["name"]} #(
   //////////////////////
   // Always-on Domain //
   //////////////////////
-  % if target["name"] in ["cw310", "cw340", "verilator"]:
+  % if target["name"] in ["cw310", "cw340"] or (target["name"] == "verilator" and top["name"] != "englishbreakfast"):
   top_${top["name"]}_pd_aon #(
     .SramCtrlRetAonInstrExec(0)
   ) top_${top["name"]}_pd_aon (
