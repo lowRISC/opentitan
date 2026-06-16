@@ -654,13 +654,23 @@ After issuing the `PROCESS` command, OTBN software thus must do the following:
 
 The number of digest parts pushed by the app interface depends on the selected mode, strength and XOF setting.
 
-If `KMAC_CFG.EN_XOF = 0`, the KMAC HWIP pushes only the digest parts that make up the first rate (the actual digest only), i.e., it pushes `roundup(digest_width / 64)` responses.
+For SHA3 and KMAC, `KMAC_CFG.EN_XOF` must 0 and the interface pushes only the SHA3 digest or the requested output length for KMAC.
+The requested output length of KMAC is fixed by the KMAC HWIP to 384 bits.
+For SHA3 it pushes `roundup(digest_width / 64)` responses.
+For KMAC it pushes `384 / 64 = 9` responses.
+Once these are pushed, the interface waits for a `DONE` command as explained [below](#ending-a-session).
+
+If the mode is SHAKE or cSHAKE, `KMAC_CFG.EN_XOF` controls whether the KMAC HWIP automatically issues RUN commands.
+If `KMAC_CFG.EN_XOF = 0`, the KMAC HWIP pushes only the digest parts that make up the first rate.
 Once these are pushed, the interface waits for a `DONE` command as explained [below](#ending-a-session).
 
 If `KMAC_CFG.EN_XOF = 1`, the KMAC HWIP pushes infinite responses.
 For this it automatically squeezes more digest by issuing a KMAC HWIP internal `RUN` command each time it finishes pushing one full rate.
 As soon as the squeezing has finished, the app starts again to push the new rate towards OTBN.
 When the OTBN software has received enough XOF output, the session can be terminated as explained [below](#ending-a-session).
+
+For SHAKE and cSHAKE the number of responses per rate depends on the strength and can be computed with (The `StateWidth` is defined by NIST FIPS-202 to be 1600):
+`#Responses = (StateWidth - 2 * Strength) / 64 = (1600 - 2 * Strength) / 64`.
 
 ###### Optimizing the digest retrieval
 The KMAC hashing operation is fully deterministic and thus the polling until `KMAC_STATUS.RSP_VALID = 1` can be optimized.

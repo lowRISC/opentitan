@@ -381,6 +381,7 @@ module kmac_app
   logic valid_app_kmac_cfg;
   logic valid_app_mode_strength_raw;
   logic valid_app_mode_strength;
+  logic valid_en_xof_cfg;
   logic valid_app_cfg;
 
   assign valid_app_sha3_strength = app_cfg.session_cfg.kstrength inside {sha3_pkg::L224,
@@ -399,15 +400,20 @@ module kmac_app
   // Ignore the mode and strength check if app allows unsupported combinations.
   assign valid_app_mode_strength = valid_app_mode_strength_raw || app_cfg.en_unsup_comb;
 
-  assign valid_app_kmac_cfg = prim_mubi_pkg::mubi4_test_true_strict(entropy_ready_i);
+  assign valid_app_kmac_cfg = app_cfg.session_cfg.mode == AppKMAC ?
+                              prim_mubi_pkg::mubi4_test_true_strict(entropy_ready_i) : 1'b1;
 
-  assign valid_app_cfg = valid_app_mode_strength &&
-                         (app_cfg.session_cfg.mode == AppKMAC ? valid_app_kmac_cfg : 1'b1);
+  // XOF operation is not supported for SHA3 or KMAC.
+  assign valid_en_xof_cfg = app_cfg.session_cfg.mode inside {AppSHA3, AppKMAC} ?
+                            app_cfg.session_cfg.en_xof == 1'b0 : 1'b1;
 
-  // A compile-time defined configuration must always result in a valid mode-strength
+  assign valid_app_cfg = valid_app_mode_strength && valid_en_xof_cfg && valid_app_kmac_cfg;
+
+  // A compile-time defined configuration must always result in a valid mode-strength and en_xof
   // configuration.
   `ASSERT(ConfigAlwaysValidIfStatic_A,
-          app_active_o && app_cfg.if_type == AppStatic |-> valid_app_mode_strength)
+          app_active_o && app_cfg.if_type == AppStatic
+          |-> valid_app_mode_strength && valid_en_xof_cfg)
 
   /////////////////////////////
   // Application Mux / Demux //
@@ -1151,16 +1157,19 @@ module kmac_app
       end
       sha3_pkg::Shake,
       sha3_pkg::CShake: begin
-        // Expose the full rate for SHAKE, cSHAKE and KMAC. It is save to expose the full rate of
-        // KMAC even if it exceeds the encoded output length.
-        unique case (keccak_strength_q)
-          sha3_pkg::L128: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 128) / DynAppDigestW);
-          sha3_pkg::L224: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 224) / DynAppDigestW);
-          sha3_pkg::L256: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 256) / DynAppDigestW);
-          sha3_pkg::L384: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 384) / DynAppDigestW);
-          sha3_pkg::L512: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 512) / DynAppDigestW);
-          default:        digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 512) / DynAppDigestW);
-        endcase
+        // Expose the requested output length for KMAC. Expose the full rate for SHAKE and cSHAKE.
+        if (kmac_en_q) begin
+          digest_top = AppDigestW / DynAppDigestW;
+        end else begin
+          unique case (keccak_strength_q)
+            sha3_pkg::L128: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 128) / DynAppDigestW);
+            sha3_pkg::L224: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 224) / DynAppDigestW);
+            sha3_pkg::L256: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 256) / DynAppDigestW);
+            sha3_pkg::L384: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 384) / DynAppDigestW);
+            sha3_pkg::L512: digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 512) / DynAppDigestW);
+            default:        digest_top = DigestCntW'((sha3_pkg::StateW - 2 * 512) / DynAppDigestW);
+          endcase
+        end
       end
       default: digest_top = DigestCntW'(128 / DynAppDigestW);
     endcase
@@ -1195,7 +1204,9 @@ module kmac_app
 
   // Only allow a squeeze if the app allows it.
   logic squeeze_again_allowed;
-  assign squeeze_again_allowed = app_cfg.if_type == AppDynamic && app_cfg.session_cfg.en_xof;
+  assign squeeze_again_allowed = app_cfg.if_type == AppDynamic && app_cfg.session_cfg.en_xof &&
+                                 app_cfg.session_cfg.mode != AppSHA3                         &&
+                                 app_cfg.session_cfg.mode != AppKMAC;
 
   // Request a squeeze once we are out of digest parts.
   assign squeeze_again = squeeze_again_allowed && !digest_parts_available;

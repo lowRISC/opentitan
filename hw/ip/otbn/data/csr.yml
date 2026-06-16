@@ -150,10 +150,11 @@
     For a configuration to be valid, the upper fields must contain the bitwise inverted value of the lower fields.
   bits:
     0: |
-      EN_XOF enables the eXtendable Output Function (XOF) operation.
+      EN_XOF enables the eXtendable Output Function (XOF) operation for SHAKE and cSHAKE modes.
       If 1, XOF operation is enabled and the KMAC HWIP will automatically trigger a RUN command once the full rate has been pushed.
       If 0, KMAC HWIP will only push the first rate, and no other digest will be produced.
-      Usually enabled for SHAKE and cSHAKE and disabled for SHA3 and KMAC modes.
+      Must be 0 if MODE is SHA3 or KMAC.
+      The SHA3 and KMAC modes only return the digest / the requested output length (fixed by KMAC HWIP).
     3-1: |
       STRENGTH defines the security strength of the operation.
       Valid values are L128, L224, L256, L384, and L512.

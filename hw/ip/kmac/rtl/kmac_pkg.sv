@@ -232,8 +232,9 @@ package kmac_pkg;
 
     // If 1, the app interface will automatically trigger a RUN command once it has pushed the
     // full rate on the response channel. If 0, no squeeze can be performed at all and only the
-    // first rate is pushed. Usually enabled for SHAKE and cSHAKE and disabled for SHA3 and KMAC.
-    // Has no effect on static interfaces.
+    // first rate is pushed. Only applicable to SHAKE and cSHAKE. Must be 0 for a dynamic interface
+    // if mode is SHA3 or KMAC. Must always be 0 if the interface is static. Results in a service
+    // rejected error if set wrongly.
     logic en_xof;
   } app_ses_config_t;
 
