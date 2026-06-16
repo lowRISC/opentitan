@@ -15,12 +15,14 @@ static crypto_state_t stored_state = {
     .security_level = kOtcryptoKeySecurityLevelLow,
     .self_check_state = kHardenedBoolFalse,
     .locked_state = kHardenedBoolFalse,
+    .csrng_instantiated = kHardenedBoolFalse,
 };
 
 otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
   memset(&stored_state, 0, sizeof(stored_state));
   stored_state.locked_state = kHardenedBoolFalse;
   stored_state.self_check_state = kHardenedBoolFalse;
+  stored_state.csrng_instantiated = kHardenedBoolFalse;
   stored_state.security_level = security_level;
   return OTCRYPTO_OK;
 }

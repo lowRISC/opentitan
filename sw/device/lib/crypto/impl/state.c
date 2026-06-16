@@ -56,6 +56,7 @@ otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
       .security_level = security_level,
       .self_check_state = kHardenedBoolFalse,
       .locked_state = kHardenedBoolFalse,
+      .csrng_instantiated = kHardenedBoolFalse,
   };
   return store_state(&internal_state);
 }
