@@ -13,6 +13,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top/otbn_regs.h"  // Generated.
@@ -291,6 +292,14 @@ status_t otbn_imem_sec_wipe(void) {
   HARDENED_TRY(otbn_assert_idle());
   abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeImem);
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  crypto_state_t state;
+  // Check whether the state is present and use it if so
+  if (status_ok(read_state(&state))) {
+    state.imem_cache = 0;
+    HARDENED_TRY(store_state(&state));
+  }
+
   return OTCRYPTO_OK;
 }
 
@@ -426,10 +435,25 @@ status_t otbn_load_app(const otbn_app_t app) {
   // Ensure OTBN is idle.
   HARDENED_TRY(otbn_assert_idle());
 
+  crypto_state_t state;
+  bool has_state = status_ok(read_state(&state));
+  hardened_bool_t skip_imem = kHardenedBoolFalse;
+  // Check whether the state is present and use it if so
+  if (has_state) {
+    if (launder32(state.imem_cache) ==
+        (uint32_t)(uintptr_t)app.imem_compressed_start) {
+      HARDENED_CHECK_EQ(state.imem_cache,
+                        (uint32_t)(uintptr_t)app.imem_compressed_start);
+      skip_imem = kHardenedBoolTrue;
+    }
+  }
+
   const size_t imem_num_words = app.imem_uncompressed_words;
   const size_t data_num_words = app.dmem_uncompressed_words;
 
-  HARDENED_TRY(otbn_imem_sec_wipe());
+  if (launder32(skip_imem) != kHardenedBoolTrue) {
+    HARDENED_TRY(otbn_imem_sec_wipe());
+  }
   HARDENED_TRY(otbn_dmem_sec_wipe());
 
   // Reset the LOAD_CHECKSUM register.
@@ -440,14 +464,18 @@ status_t otbn_load_app(const otbn_app_t app) {
   HARDENED_TRY(check_offset_len(app.dmem_data_start_addr, data_num_words,
                                 kOtbnDMemSizeBytes));
 
-  // Write to IMEM. Always starts at zero on the OTBN side.
-  otbn_addr_t imem_offset = 0;
-  HARDENED_TRY(
-      check_offset_len(imem_offset, imem_num_words, kOtbnIMemSizeBytes));
-  uint32_t imem_start_addr = otbn_base() + OTBN_IMEM_REG_OFFSET + imem_offset;
-  HARDENED_TRY(decompress_load(app.imem_compressed_start,
-                               app.imem_compressed_end, imem_start_addr,
-                               imem_num_words));
+  if (launder32(skip_imem) != kHardenedBoolTrue) {
+    // Write to IMEM. Always starts at zero on the OTBN side.
+    otbn_addr_t imem_offset = 0;
+    HARDENED_TRY(
+        check_offset_len(imem_offset, imem_num_words, kOtbnIMemSizeBytes));
+    uint32_t imem_start_addr = otbn_base() + OTBN_IMEM_REG_OFFSET + imem_offset;
+    HARDENED_TRY(decompress_load(app.imem_compressed_start,
+                                 app.imem_compressed_end, imem_start_addr,
+                                 imem_num_words));
+  } else {
+    HARDENED_CHECK_EQ(skip_imem, kHardenedBoolTrue);
+  }
 
   // Write the data portion to DMEM.
   otbn_addr_t data_offset = app.dmem_data_start_addr;
@@ -458,13 +486,28 @@ status_t otbn_load_app(const otbn_app_t app) {
                                app.dmem_compressed_end, data_start_addr,
                                data_num_words));
 
-  // Ensure that the checksum matches expectations.
-  uint32_t checksum =
-      abs_mmio_read32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET);
-  if (launder32(checksum) != app.checksum) {
-    return OTCRYPTO_FATAL_ERR;
+  if (launder32(skip_imem) != kHardenedBoolTrue) {
+    // Ensure that the checksum matches expectations.
+    uint32_t checksum =
+        abs_mmio_read32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+    if (launder32(checksum) != app.checksum) {
+      if (has_state) {
+        HARDENED_TRY(read_state(&state));
+        state.imem_cache = 0;
+        HARDENED_TRY(store_state(&state));
+      }
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(checksum, app.checksum);
+
+    if (has_state) {
+      HARDENED_TRY(read_state(&state));
+      state.imem_cache = (uint32_t)(uintptr_t)app.imem_compressed_start;
+      HARDENED_TRY(store_state(&state));
+    }
+  } else {
+    HARDENED_CHECK_EQ(skip_imem, kHardenedBoolTrue);
   }
-  HARDENED_CHECK_EQ(checksum, app.checksum);
 
   return OTCRYPTO_OK;
 }

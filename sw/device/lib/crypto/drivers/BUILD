@@ -400,6 +400,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:lz4",
         "//sw/device/lib/base:random_order",
+        "//sw/device/lib/crypto/impl:state",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
@@ -419,10 +420,13 @@ opentitan_test(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:state",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:otbn_randomness_impl",
     ],
 )
 
