@@ -54,33 +54,43 @@ gen_bkdr_loader = target["name"] in bkdr_loader_targets
 %>\
 <%include file="/toplevel_snippets/info_dicts.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info" />\
 
-% if target["name"] != "asic":
-%   if gen_bkdr_loader:
+% if target["name"] == "verilator":
+module chip_${top["name"]}_${target["name"]} (
+  // Clock and Reset
+  input clk_i,
+  input rst_ni
+);
+<%
+  removed_port_names = []
+%>\
+% else:
+%   if target["name"] != "asic":
+%     if gen_bkdr_loader:
 `include "bkdr_loader.svh"
 
-%   endif
+%     endif
 module chip_${top["name"]}_${target["name"]} #(
-%   if top["name"] == "englishbreakfast":
+%     if top["name"] == "englishbreakfast":
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = ""
-%   else:
-%     if gen_bkdr_loader:
+%     else:
+%       if gen_bkdr_loader:
   parameter bit BkdrLoaderEn = 1'b1,
-%     endif
+%       endif
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
   parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
-%   endif
+%     endif
 ) (
-% else:
+%   else:
 module chip_${top["name"]}_${target["name"]} #(
   parameter bit SecRomCtrlDisableScrambling = 1'b0
 ) (
-% endif
+%   endif
 <%
   removed_port_names = []
 %>\
@@ -113,6 +123,7 @@ module chip_${top["name"]}_${target["name"]} #(
   ${port_comment}${pad["port_type"]} ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
 % endfor
 );
+% endif
 
   import top_${top["name"]}_pkg::*;
   import prim_pad_wrapper_pkg::*;
@@ -238,6 +249,7 @@ module chip_${top["name"]}_${target["name"]} #(
   assign unused_dio_in_raw = ^dio_in_raw;
 
   // Manual pads
+% if target["name"] != "verilator":
 % for pad in dedicated_pads:
 <%
   pad_prefix = pad["name"].lower()
@@ -255,6 +267,7 @@ module chip_${top["name"]}_${target["name"]} #(
   pad_attr_t manual_attr_${pad_prefix};
 % endif
 % endfor
+% endif
 
 % if target["pinout"]["remove_pads"]:
   /////////////////////////
@@ -293,12 +306,49 @@ module chip_${top["name"]}_${target["name"]} #(
 
   ast_pkg::ast_clks_t ast_base_clks;
 
-% if target["name"] == "asic":
+% if target["name"] in ["asic", "verilator"]:
   // AST signals needed in padring
   logic scan_rst_n;
   prim_mubi_pkg::mubi4_t scanmode;
 % endif
 
+% if target["name"] == "verilator":
+  // Padring substitute for the Verilator simulation top. The flat
+  // per-peripheral cio_* signals live inside padring_verilator and
+  // are driven and observed by the testbench DPI models through
+  // hierarchical references (XMR).
+
+  // USB signals routed directly to/from top_${top["name"]} (not via mio/dio)
+  logic usb_dp_pullup_en;
+  logic usb_dn_pullup_en;
+  logic usb_rx_d;
+  logic usb_tx_d;
+  logic usb_tx_se0;
+  logic usb_tx_use_d_se0;
+  logic usb_rx_enable;
+
+  logic unused_mux_iob_sel;
+  assign unused_mux_iob_sel = ^mux_iob_sel;
+
+  padring_verilator u_padring (
+    .mio_in_o  (mio_in ),
+    .mio_out_i (mio_out),
+    .mio_oe_i  (mio_oe ),
+    .mio_attr_i(mio_attr),
+
+    .dio_in_o (dio_in ),
+    .dio_out_i(dio_out),
+    .dio_oe_i (dio_oe ),
+
+    .usb_rx_d_o        (usb_rx_d        ),
+    .usb_tx_d_i        (usb_tx_d        ),
+    .usb_tx_se0_i      (usb_tx_se0      ),
+    .usb_tx_use_d_se0_i(usb_tx_use_d_se0),
+    .usb_rx_enable_i   (usb_rx_enable   ),
+    .usb_dp_pullup_en_i(usb_dp_pullup_en),
+    .usb_dn_pullup_en_i(usb_dn_pullup_en)
+  );
+% else:
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
@@ -415,6 +465,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .mio_${port} (${lib.make_bit_concatenation(sig_name, indices, 6)})${"" if loop.last else ","}
 % endfor
   );
+% endif
 
 
 ###################################################################
@@ -760,6 +811,58 @@ module chip_${top["name"]}_${target["name"]} #(
     aon: clk_aon
   };
 
+% elif target["name"] == "verilator":
+  assign ext_clk = '0;
+  assign pad2ast = '0;
+
+  // AON clock divider. Reset is not used because verilator uses only sync
+  // resets (and does not model 'x'); if the divider below were reset, clk_aon
+  // would be silenced and the clk_aon logic inside top_${top["name"]} would not
+  // get reset.
+  logic clk_aon;
+  prim_clock_div #(
+    .Divisor(4)
+  ) u_aon_div (
+    .clk_i,
+    .rst_ni(1'b1),
+    .step_down_req_i('0),
+    .step_down_ack_o(),
+    .test_en_i('0),
+    .clk_o(clk_aon)
+  );
+
+  // POR for the AST comes directly from the reset input.
+  logic rst_n;
+  assign rst_n = rst_ni;
+
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
+  assign clks_osc_byp = '{
+    usb: clk_i,
+    sys: clk_i,
+    io:  clk_i,
+    aon: clk_aon
+  };
+
+  // Target (Verilator) specific supply manipulation to create a synthetic POR condition.
+  logic [3:0] cnt;
+  logic vcc_supp;
+  // keep incrementing until saturation
+  always_ff @(posedge clk_aon) begin
+    if (cnt < 4'hf) begin
+      cnt <= cnt + 1'b1;
+    end
+  end
+  assign vcc_supp = cnt < 4'h4 ? 1'b0 :
+                    cnt < 4'h8 ? 1'b1 :
+                    cnt < 4'hc ? 1'b0 : 1'b1;
+
+  // AST does not use all clocks / resets forwarded to it
+  logic unused_slow_clk_en;
+  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
+
+  logic unused_pwr_clamp;
+  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
+
 % else:
   // TODO: Hook this up when FPGA pads are updated
   assign ext_clk = '0;
@@ -849,7 +952,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
+% if target["name"] == "verilator":
+    .vcc_supp_i            ( vcc_supp ),
+% else:
     .vcc_supp_i            ( 1'b1 ),
+% endif
     .vcaon_supp_i          ( 1'b1 ),
     .vcmain_supp_i         ( 1'b1 ),
     .vioa_supp_i           ( 1'b1 ),
@@ -907,7 +1014,11 @@ module chip_${top["name"]}_${target["name"]} #(
     .fla_obs_i             ( flash_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
+% if target["name"] == "asic":
     .usb_obs_i             ( usb_diff_rx_obs ),
+% else:
+    .usb_obs_i             ( 1'b0 ),
+% endif
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
@@ -1026,7 +1137,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## FPGA shared                                                   ##
 ###################################################################
-% else:
+% elif target["name"] != "verilator":
 % if gen_bkdr_loader:
   /////////////////////
   // Memory Backdoor //
@@ -1213,6 +1324,10 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
+% elif target["name"] == "verilator":
+    .SecAesAllowForcingMasks(1'b1),
+    .SramCtrlMainInstrExec(1),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % else:
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
@@ -1231,7 +1346,7 @@ module chip_${top["name"]}_${target["name"]} #(
   //////////////////////
   // Always-on Domain //
   //////////////////////
-  % if target["name"] in ["cw310", "cw340"]:
+  % if target["name"] in ["cw310", "cw340", "verilator"]:
   top_${top["name"]}_pd_aon #(
     .SramCtrlRetAonInstrExec(0)
   ) top_${top["name"]}_pd_aon (
