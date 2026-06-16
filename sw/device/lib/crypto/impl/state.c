@@ -6,7 +6,6 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 
 #include "entropy_src_regs.h"  // Generated
@@ -21,6 +20,7 @@ otcrypto_status_t init_state(otcrypto_state_t *state,
   internal_state->kat_state = 0;
   internal_state->locked_state = kHardenedBoolFalse;
   internal_state->self_check_state = kHardenedBoolFalse;
+  internal_state->csrng_instantiated = kHardenedBoolFalse;
   internal_state->security_level = security_level;
   return OTCRYPTO_OK;
 }
