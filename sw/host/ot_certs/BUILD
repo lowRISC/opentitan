@@ -56,6 +56,7 @@ rust_library(
         "src/template/mod.rs",
         "src/template/subst.rs",
         "src/template/testgen.rs",
+        "src/template/vars.rs",
         "src/x509.rs",
         "src/x509/extension.rs",
     ],
