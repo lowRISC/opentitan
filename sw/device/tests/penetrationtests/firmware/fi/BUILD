@@ -351,7 +351,6 @@ cc_library(
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_core_ibex",

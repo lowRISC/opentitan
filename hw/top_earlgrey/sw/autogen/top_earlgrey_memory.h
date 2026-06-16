@@ -220,23 +220,6 @@
  */
 #define TOP_EARLGREY_I2C2_SIZE_BYTES 0x80
 /**
- * Peripheral base address for pattgen in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_PATTGEN_BASE_ADDR 0x400E0000
-
-/**
- * Peripheral size for pattgen in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_PATTGEN_BASE_ADDR and
- * `TOP_EARLGREY_PATTGEN_BASE_ADDR + TOP_EARLGREY_PATTGEN_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_PATTGEN_SIZE_BYTES 0x40
-/**
  * Peripheral base address for rv_timer in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

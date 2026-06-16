@@ -32,7 +32,6 @@
 #include "hw/top/dt/entropy_src.h"  // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
 #include "hw/top/dt/keymgr.h"       // Generated
-#include "hw/top/dt/pattgen.h"      // Generated
 #include "hw/top/dt/pwm.h"          // Generated
 #include "hw/top/dt/sensor_ctrl.h"  // Generated
 #include "hw/top/dt/sysrst_ctrl.h"  // Generated
@@ -283,7 +282,6 @@ static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *i2c1_inst_name = "i2c1";
 static const char *i2c2_inst_name = "i2c2";
 static const char *keymgr_inst_name = "keymgr";
-static const char *pattgen_inst_name = "pattgen";
 static const char *pwm_inst_name = "pwm";
 static const char *rom_ctrl_inst_name = "rom_ctrl";
 static const char *sensor_ctrl_inst_name = "sensor_ctrl";
@@ -918,11 +916,6 @@ static void init_fault_checkers(fault_checker_t *checkers) {
                                        kDtKeymgrAlertFatalFaultErr)] =
       (fault_checker_t){keymgr_fault_checker, keymgr_inst_name, we_check};
   static_assert(kDtKeymgrCount >= 1, "This test needs a keymgr");
-
-  checkers[dt_pattgen_alert_to_alert_id((dt_pattgen_t)0,
-                                        kDtPattgenAlertFatalFault)] =
-      (fault_checker_t){trivial_fault_checker, pattgen_inst_name, we_check};
-  static_assert(kDtPattgenCount >= 1, "This test needs a pattgen instance");
 
   checkers[dt_pwm_alert_to_alert_id(kDtPwmAon, kDtPwmAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, pwm_inst_name, we_check};

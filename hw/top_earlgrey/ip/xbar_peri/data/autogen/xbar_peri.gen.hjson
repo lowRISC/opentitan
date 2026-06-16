@@ -38,7 +38,6 @@
       i2c0
       i2c1
       i2c2
-      pattgen
       gpio
       spi_device
       rv_timer
@@ -216,27 +215,6 @@
             hart: 0x400a0000
           }
           size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: pattgen
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: pattgen
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x400e0000
-          }
-          size_byte: 0x40
         }
       ]
       xbar: false
@@ -753,19 +731,6 @@
       default: ""
       domain: Main
       top_signame: i2c2_tl
-      index: -1
-    }
-    {
-      name: tl_pattgen
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: peri
-      width: 1
-      default: ""
-      domain: Main
-      top_signame: pattgen_tl
       index: -1
     }
     {

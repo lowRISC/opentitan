@@ -71,7 +71,6 @@ DIFS = {
     "otp_ctrl": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },
-    "pattgen": {},
     "pinmux": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },

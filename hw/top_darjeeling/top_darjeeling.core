@@ -20,7 +20,6 @@ filesets:
       - lowrisc:ip:spi_device
       - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
-      - lowrisc:ip:pattgen
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
