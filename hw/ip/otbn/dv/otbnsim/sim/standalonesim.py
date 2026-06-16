@@ -38,9 +38,6 @@ class StandaloneSim(OTBNSim):
             if self.state.ext_regs.read('RND_REQ', True):
                 self.state.wsrs.RND.set_unsigned(next(_TEST_RND_DATA), False,
                                                  False)
-            # If there's a URND request, respond immediately.
-            if not self.state.wsrs.URND.running:
-                self.state.wsrs.URND.set_seed(_TEST_URND_DATA)
 
             # Similarly, if URND is not running, provide it with some arbitrary
             # seed.
