@@ -61,6 +61,11 @@ status_t read_state_pointer(crypto_state_t **state) {
   uint32_t val_lo = bitfield_field32_read(
       reg_lo, ENTROPY_SRC_EXTHT_LO_THRESHOLDS_FIPS_THRESH_FIELD);
 
+  if (val_hi == 0xFFFF) {
+    *state = NULL;
+    return OTCRYPTO_RECOV_ERR;
+  }
+
   uint32_t state_addr = (val_hi << 16) | val_lo;
   *state = (crypto_state_t *)state_addr;
 
