@@ -8,13 +8,17 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/otbn_regs.h"  // Generated.
+
+OTBN_DECLARE_APP_SYMBOLS(randomness);
 
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
@@ -100,12 +104,29 @@ static status_t run_negative_test(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t run_cache_test(void) {
+  LOG_INFO("Running cache tests.");
+
+  const otbn_app_t app = OTBN_APP_T_INIT(randomness);
+  crypto_state_t state;
+  CHECK(otbn_load_app(app).value == OTCRYPTO_OK.value);
+  CHECK_STATUS_OK(read_state(&state));
+  CHECK(state.imem_cache == (uint32_t)(uintptr_t)app.imem_compressed_start);
+
+  CHECK(otbn_load_app(app).value == OTCRYPTO_OK.value);
+  CHECK_STATUS_OK(read_state(&state));
+  CHECK(state.imem_cache == (uint32_t)(uintptr_t)app.imem_compressed_start);
+
+  return OTCRYPTO_OK;
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
 
-  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   EXECUTE_TEST(result, run_negative_test);
+  EXECUTE_TEST(result, run_cache_test);
 
   return status_ok(result);
 }

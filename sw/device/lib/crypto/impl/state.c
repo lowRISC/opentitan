@@ -43,6 +43,9 @@ status_t read_state(crypto_state_t *state) {
     words[i] = abs_mmio_read32(base + i * sizeof(uint32_t));
   }
   memcpy(state, words, sizeof(words));
+  if (state->security_level == 0) {
+    return OTCRYPTO_RECOV_ERR;
+  }
   return OTCRYPTO_OK;
 }
 
