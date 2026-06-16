@@ -1728,6 +1728,68 @@
         ],
       }
     },
+    { name: 'verilator',
+
+      // The verilator chip-level has no physical pads: the flat per-peripheral
+      // signals are connected to the testbench DPI models through the
+      // padring_verilator module. Most signals therefore flow through the
+      // common (shared with ASIC) path, except:
+      //  - the USB tx signals, which are observed by the usbdpi model
+      //  - the flash/OTP IO (bidir) test pads
+      chiplevel: {
+        port_overrides: {
+          'ast.lc_dft_en'                   : { signal: 'lc_dft_en'       },
+          'sram_ctrl_main.cfg'              : { signal: "'{ram_1p_cfg}"   },
+          'sram_ctrl_ret_aon.cfg'           : { signal: "'{ram_1p_cfg}"   },
+          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done'   },
+          // These are inout pads on the ASIC; the verilator target has no pads,
+          // so leave them open (empty connection) rather than tying them off
+          // ('0 on a multi-bit inout is rejected by Verilator).
+          'flash_ctrl.flash_test_mode_a'    : { unused: true, tie_value: "" },
+          'flash_ctrl.flash_test_voltage_h' : { unused: true, tie_value: "" },
+          'otp_macro.ext_voltage_h'         : { unused: true, tie_value: "" },
+          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
+          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
+          'sensor_ctrl_aon.manual_pad_attr' : { unused: true              },
+          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
+          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'   },
+          'usbdev.usb_tx_d'                 : { signal: 'usb_tx_d'        },
+          'usbdev.usb_tx_se0'               : { signal: 'usb_tx_se0'      },
+          'usbdev.usb_tx_use_d_se0'         : { signal: 'usb_tx_use_d_se0'},
+          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'     },
+          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
+          'rv_core_ibex.fpga_info'          : { unused: true              },
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
+        }
+      },
+
+      // Pinout Changes.
+      // The verilator target has no physical pads, so there is nothing to
+      // remove or add here.
+      pinout: {
+        remove_ports: [],
+        remove_pads: [],
+        add_pads: [],
+      },
+
+      pinmux: {
+        // Same special signal (JTAG / strap) positions as the ASIC target to
+        // keep PinmuxTargetCfg in chiplevel identical; not actually relevant.
+        special_signals: [
+          // Straps
+          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
+          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
+          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
+          // JTAG
+          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
+          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
+          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
+          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
+          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
+        ],
+      }
+    },
     { name: 'cw340',
 
       // Chip level changes

@@ -892,7 +892,7 @@ module chip_englishbreakfast_cw305 #(
     .fla_obs_i             ( flash_obs ),
     .otp_obs_i             ( otp_obs ),
     .otm_obs_i             ( '0 ),
-    .usb_obs_i             ( usb_diff_rx_obs ),
+    .usb_obs_i             ( 1'b0 ),
     .obs_ctrl_o            ( obs_ctrl ),
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
