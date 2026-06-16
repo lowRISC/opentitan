@@ -10,7 +10,7 @@ use anyhow::{Result, ensure};
 use num_bigint_dig::BigUint;
 
 use crate::asn1::{Oid, Tag};
-use crate::template::{RawOr, Value};
+use crate::template::{RawOr, SelectableChoice, Value};
 
 /// Helper function to add a suffix to a name hint.
 pub fn concat_suffix(name_hint: &Option<String>, suffix: &str) -> Option<String> {
@@ -143,4 +143,9 @@ pub trait Builder {
             RawOr::Raw(raw) => self.push_byte_array(name_hint, raw),
         }
     }
+
+    /// Push a dynamic choice between multiple branches.
+    fn push_choices<T, F>(&mut self, choice: &SelectableChoice<T>, cb: F) -> Result<()>
+    where
+        F: FnMut(&mut Self, &T) -> Result<()>;
 }

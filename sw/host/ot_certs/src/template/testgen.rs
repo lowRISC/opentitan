@@ -6,6 +6,7 @@
 //! to test corner cases of the certificate generator.
 
 use anyhow::{Result, ensure};
+use rand::Rng;
 use rand::distributions::{DistString, Distribution, Uniform};
 
 use openssl::bn::{BigNum, BigNumContext};
@@ -15,7 +16,8 @@ use openssl::pkey::Private;
 
 use crate::template::subst::{SubstData, SubstValue};
 use crate::template::{
-    EcCurve, EcPublicKeyInfo, MldsaPublicKeyInfo, SubjectPublicKeyInfo, Template, Value, Variable,
+    EcCurve, EcPublicKeyInfo, MldsaPublicKeyInfo, Selectable, SubjectPublicKeyInfo, Template,
+    Value, Variable,
 };
 
 // Convert a template curve name to an openssl one.
@@ -54,6 +56,10 @@ impl Template {
                     }
                 }
                 super::VariableType::Boolean => SubstValue::Boolean(rand::random::<bool>()),
+                super::VariableType::Selector { num_choices } => {
+                    let value = rand::thread_rng().gen_range(0..num_choices) as u32;
+                    SubstValue::Uint32(value)
+                }
             };
             data.values.insert(var.to_string(), val);
         }
@@ -115,7 +121,25 @@ impl Template {
     }
 
     fn random_public_key(&self) -> Result<SubstData> {
-        match &self.certificate.subject_public_key_info {
+        Self::random_public_key_info(&self.certificate.subject_public_key_info)
+    }
+
+    fn random_public_key_info(info: &Selectable<SubjectPublicKeyInfo>) -> Result<SubstData> {
+        match info {
+            Selectable::Choice(choice) => {
+                let mut data = SubstData::default();
+                for c in &choice.choices {
+                    data.values
+                        .extend(Self::random_public_key_info_value(c)?.values);
+                }
+                Ok(data)
+            }
+            Selectable::Value(val) => Self::random_public_key_info_value(val),
+        }
+    }
+
+    fn random_public_key_info_value(val: &SubjectPublicKeyInfo) -> Result<SubstData> {
+        match val {
             SubjectPublicKeyInfo::EcPublicKey(ec) => Self::random_ec_public_key(ec),
             SubjectPublicKeyInfo::Mldsa44(mldsa) => Self::random_mldsa_public_key(mldsa, 1312),
             SubjectPublicKeyInfo::Mldsa65(mldsa) => Self::random_mldsa_public_key(mldsa, 1952),

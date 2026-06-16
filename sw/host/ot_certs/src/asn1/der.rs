@@ -11,7 +11,7 @@ use num_bigint_dig::BigUint;
 
 use crate::asn1::builder::Builder;
 use crate::asn1::{Oid, Tag};
-use crate::template::{Value, Variable};
+use crate::template::{SelectableChoice, Value, Variable};
 
 impl Tag {
     // Return the DER representation of the identifier octet(s) of a tag.
@@ -221,6 +221,13 @@ impl Builder for Der {
         }
         // Push content
         self.push_bytes(&content.output)
+    }
+
+    fn push_choices<T, F>(&mut self, _choice: &SelectableChoice<T>, _cb: F) -> Result<()>
+    where
+        F: FnMut(&mut Self, &T) -> Result<()>,
+    {
+        bail!("Der generation does not support unresolved dynamic choices")
     }
 }
 

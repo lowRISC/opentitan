@@ -15,8 +15,8 @@ use serde::{Deserialize, Serialize};
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
     DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
-    MldsaPublicKeyInfo, RawOr, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value,
-    Variable, VariableType,
+    MldsaPublicKeyInfo, RawOr, Selectable, SelectableChoice, Signature, SizeRange,
+    SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -75,6 +75,7 @@ impl SubstValue {
             VariableType::Integer { .. } => self.parse_as_integer(var_type.size()),
             VariableType::String { .. } => self.parse_as_string(var_type.size()),
             VariableType::Boolean => self.parse_as_boolean(),
+            VariableType::Selector { num_choices } => self.parse_as_selector(num_choices),
         }
     }
 
@@ -170,6 +171,20 @@ impl SubstValue {
             },
             _ => bail!("cannot parse value {self:?} as a boolean"),
         })
+    }
+
+    fn parse_as_selector(&self, num_choices: usize) -> Result<SubstValue> {
+        let val = match self {
+            SubstValue::Uint32(x) => *x,
+            _ => bail!("cannot parse value {self:?} as a selector (must be a u32)"),
+        };
+        ensure!(
+            (val as usize) < num_choices,
+            "selector value {} out of range (max {})",
+            val,
+            num_choices - 1
+        );
+        Ok(SubstValue::Uint32(val))
     }
 }
 
@@ -593,6 +608,34 @@ where
 {
     fn subst(&self, data: &SubstData) -> Result<Option<T>> {
         self.as_ref().map(|x| x.subst(data)).transpose()
+    }
+}
+
+impl<T: Subst> Subst for Selectable<T> {
+    fn subst(&self, data: &SubstData) -> Result<Selectable<T>> {
+        match self {
+            Selectable::Value(val) => Ok(Selectable::Value(val.subst(data)?)),
+            Selectable::Choice(choice) => match data.values.get(&choice.selector) {
+                Some(val) => {
+                    let val = val.parse_as_selector(choice.choices.len())?;
+                    let index = match val {
+                        SubstValue::Uint32(x) => x as usize,
+                        _ => unreachable!(),
+                    };
+                    Ok(Selectable::Value(choice.choices[index].subst(data)?))
+                }
+                None => {
+                    let mut new_choices = Vec::new();
+                    for c in &choice.choices {
+                        new_choices.push(c.subst(data)?);
+                    }
+                    Ok(Selectable::Choice(SelectableChoice {
+                        selector: choice.selector.clone(),
+                        choices: new_choices,
+                    }))
+                }
+            },
+        }
     }
 }
 

@@ -119,6 +119,7 @@ rust_test_suite(
         ":example_data",
         ":mldsa_certs",
         ":fw_ids_raw_test_files",
+        "tests/variants.hjson",
     ],
     edition = "2024",
     deps = [
@@ -148,4 +149,9 @@ certificate_template(
 certificate_template(
     name = "mldsa_87_test_template",
     template = "tests/mldsa_87.hjson",
+)
+
+certificate_template(
+    name = "variants_test_template",
+    template = "tests/variants.hjson",
 )

@@ -54,6 +54,20 @@ pub struct Template {
     pub certificate: Certificate,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(untagged)]
+pub enum Selectable<T> {
+    Choice(SelectableChoice<T>),
+    Value(T),
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct SelectableChoice<T> {
+    pub selector: String,
+    pub choices: Vec<T>,
+}
+
 /// Certificate specification.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -69,7 +83,7 @@ pub struct Certificate {
     /// X509 certificate's subject.
     pub subject: Name,
     /// X509 certificate's public key.
-    pub subject_public_key_info: SubjectPublicKeyInfo,
+    pub subject_public_key_info: Selectable<SubjectPublicKeyInfo>,
     /// X509 certificate's authority key identifier.
     pub authority_key_identifier: Option<Value<Vec<u8>>>,
     /// X509 certificate's public key identifier.
@@ -84,7 +98,7 @@ pub struct Certificate {
     #[serde(default)]
     pub private_extensions: Vec<CertificateExtension>,
     /// X509 certificate's signature.
-    pub signature: Signature,
+    pub signature: Selectable<Signature>,
 }
 
 /// An X501 Name (or DistinguishedName, aka DN): a DN consists of a sequence of
@@ -457,6 +471,8 @@ pub enum VariableType {
     },
     /// Boolean variable.
     Boolean,
+    /// Selector variable for choices.
+    Selector { num_choices: usize },
 }
 
 impl VariableType {
@@ -494,7 +510,7 @@ impl VariableType {
             ByteArray { size, .. } | String { size, .. } => size.range(),
             // The array buffer for integer should always have the maximum size.
             Integer { size, .. } => (size.range().1, size.range().1),
-            Boolean => panic!("Boolean variable has no array size"),
+            Boolean | Selector { .. } => panic!("Boolean or Selector variable has no array size"),
         }
     }
 
@@ -521,8 +537,9 @@ impl VariableType {
                 "Encoding ByteArray variable without tweak-msb as an integer is not supported"
             ),
             Integer { size, .. } => (size.range().0, size.range().1 + extra_bytes),
-            String { .. } => panic!("String variable has no integer size"),
-            Boolean => panic!("Boolean variable has no integer size"),
+            String { .. } | Boolean | Selector { .. } => {
+                panic!("String, Boolean or Selector variable has no integer size")
+            }
         }
     }
 }
@@ -576,140 +593,182 @@ impl Template {
     }
 
     fn validate_public_key(&self) -> Result<()> {
-        match &self.certificate.subject_public_key_info {
-            SubjectPublicKeyInfo::EcPublicKey(ec) => {
-                let expected_size = match ec.curve {
-                    EcCurve::Prime256v1 => 32,
-                };
-                if let Value::Variable(var) = &ec.public_key.x {
-                    self.validate_variable_size(
-                        &var.name,
-                        expected_size,
-                        "public key X coordinate",
-                    )?;
+        self.validate_selectable(&self.certificate.subject_public_key_info, |val| {
+            match val {
+                SubjectPublicKeyInfo::EcPublicKey(ec) => {
+                    let expected_size = match ec.curve {
+                        EcCurve::Prime256v1 => 32,
+                    };
+                    if let Value::Variable(var) = &ec.public_key.x {
+                        self.validate_variable_size(
+                            &var.name,
+                            expected_size,
+                            "public key X coordinate",
+                        )?;
+                    }
+                    if let Value::Variable(var) = &ec.public_key.y {
+                        self.validate_variable_size(
+                            &var.name,
+                            expected_size,
+                            "public key Y coordinate",
+                        )?;
+                    }
                 }
-                if let Value::Variable(var) = &ec.public_key.y {
-                    self.validate_variable_size(
-                        &var.name,
-                        expected_size,
-                        "public key Y coordinate",
-                    )?;
+                SubjectPublicKeyInfo::Mldsa44(mldsa) => {
+                    if let Value::Variable(var) = &mldsa.public_key {
+                        self.validate_variable_size(&var.name, 1312, "ML-DSA-44 public key")?;
+                    } else if let Value::Literal(bytes) = &mldsa.public_key {
+                        ensure!(
+                            bytes.len() == 1312,
+                            "ML-DSA-44 literal public key must be 1312 bytes, got {}",
+                            bytes.len()
+                        );
+                    }
+                }
+                SubjectPublicKeyInfo::Mldsa65(mldsa) => {
+                    if let Value::Variable(var) = &mldsa.public_key {
+                        self.validate_variable_size(&var.name, 1952, "ML-DSA-65 public key")?;
+                    } else if let Value::Literal(bytes) = &mldsa.public_key {
+                        ensure!(
+                            bytes.len() == 1952,
+                            "ML-DSA-65 literal public key must be 1952 bytes, got {}",
+                            bytes.len()
+                        );
+                    }
+                }
+                SubjectPublicKeyInfo::Mldsa87(mldsa) => {
+                    if let Value::Variable(var) = &mldsa.public_key {
+                        self.validate_variable_size(&var.name, 2592, "ML-DSA-87 public key")?;
+                    } else if let Value::Literal(bytes) = &mldsa.public_key {
+                        ensure!(
+                            bytes.len() == 2592,
+                            "ML-DSA-87 literal public key must be 2592 bytes, got {}",
+                            bytes.len()
+                        );
+                    }
                 }
             }
-            SubjectPublicKeyInfo::Mldsa44(mldsa) => {
-                if let Value::Variable(var) = &mldsa.public_key {
-                    self.validate_variable_size(&var.name, 1312, "ML-DSA-44 public key")?;
-                } else if let Value::Literal(bytes) = &mldsa.public_key {
-                    ensure!(
-                        bytes.len() == 1312,
-                        "ML-DSA-44 literal public key must be 1312 bytes, got {}",
-                        bytes.len()
-                    );
+            Ok(())
+        })
+    }
+
+    fn validate_selectable_choice<T>(&self, choice: &SelectableChoice<T>) -> Result<()> {
+        let selector = &choice.selector;
+        let var_type = self
+            .variables
+            .get(selector)
+            .with_context(|| format!("selector variable '{selector}' is not declared"))?;
+        let expected_choices = match var_type {
+            VariableType::Selector { num_choices } => *num_choices,
+            _ => bail!("selector variable '{selector}' must be a Selector"),
+        };
+        ensure!(
+            choice.choices.len() == expected_choices,
+            "selector variable '{selector}' expects {expected_choices} choices, but template has {}",
+            choice.choices.len()
+        );
+        Ok(())
+    }
+
+    fn validate_selectable<T, F>(
+        &self,
+        selectable: &Selectable<T>,
+        mut validate_value: F,
+    ) -> Result<()>
+    where
+        F: FnMut(&T) -> Result<()>,
+    {
+        match selectable {
+            Selectable::Choice(choice) => {
+                self.validate_selectable_choice(choice)?;
+                for branch in &choice.choices {
+                    validate_value(branch)?;
                 }
             }
-            SubjectPublicKeyInfo::Mldsa65(mldsa) => {
-                if let Value::Variable(var) = &mldsa.public_key {
-                    self.validate_variable_size(&var.name, 1952, "ML-DSA-65 public key")?;
-                } else if let Value::Literal(bytes) = &mldsa.public_key {
-                    ensure!(
-                        bytes.len() == 1952,
-                        "ML-DSA-65 literal public key must be 1952 bytes, got {}",
-                        bytes.len()
-                    );
-                }
-            }
-            SubjectPublicKeyInfo::Mldsa87(mldsa) => {
-                if let Value::Variable(var) = &mldsa.public_key {
-                    self.validate_variable_size(&var.name, 2592, "ML-DSA-87 public key")?;
-                } else if let Value::Literal(bytes) = &mldsa.public_key {
-                    ensure!(
-                        bytes.len() == 2592,
-                        "ML-DSA-87 literal public key must be 2592 bytes, got {}",
-                        bytes.len()
-                    );
-                }
-            }
+            Selectable::Value(val) => validate_value(val)?,
         }
         Ok(())
     }
 
     fn validate_signature(&self) -> Result<()> {
-        match &self.certificate.signature {
-            Signature::EcdsaWithSha256 { value } => {
-                if let Some(sig) = value {
-                    if let Value::Variable(var) = &sig.r {
-                        let var_type = self.variables.get(&var.name).with_context(|| {
-                            format!(
-                                "variable '{}' used in signature R is not declared",
-                                var.name
-                            )
-                        })?;
-                        let (_, max_size) = var_type.array_size();
-                        ensure!(
-                            max_size <= 32,
-                            "variable '{}' used in signature R must have max size <= 32, got {}",
-                            var.name,
-                            max_size
-                        );
+        self.validate_selectable(&self.certificate.signature, |val| {
+            match val {
+                Signature::EcdsaWithSha256 { value } => {
+                    if let Some(sig) = value {
+                        if let Value::Variable(var) = &sig.r {
+                            let var_type = self.variables.get(&var.name).with_context(|| {
+                                format!(
+                                    "variable '{}' used in signature R is not declared",
+                                    var.name
+                                )
+                            })?;
+                            let (_, max_size) = var_type.array_size();
+                            ensure!(
+                                max_size <= 32,
+                                "variable '{}' used in signature R must have max size <= 32, got {}",
+                                var.name,
+                                max_size
+                            );
+                        }
+                        if let Value::Variable(var) = &sig.s {
+                            let var_type = self.variables.get(&var.name).with_context(|| {
+                                format!(
+                                    "variable '{}' used in signature S is not declared",
+                                    var.name
+                                )
+                            })?;
+                            let (_, max_size) = var_type.array_size();
+                            ensure!(
+                                max_size <= 32,
+                                "variable '{}' used in signature S must have max size <= 32, got {}",
+                                var.name,
+                                max_size
+                            );
+                        }
                     }
-                    if let Value::Variable(var) = &sig.s {
-                        let var_type = self.variables.get(&var.name).with_context(|| {
-                            format!(
-                                "variable '{}' used in signature S is not declared",
-                                var.name
-                            )
-                        })?;
-                        let (_, max_size) = var_type.array_size();
-                        ensure!(
-                            max_size <= 32,
-                            "variable '{}' used in signature S must have max size <= 32, got {}",
-                            var.name,
-                            max_size
-                        );
+                }
+                Signature::Mldsa44 { value } => {
+                    if let Some(val) = value {
+                        if let Value::Variable(var) = val {
+                            self.validate_variable_size(&var.name, 2420, "ML-DSA-44 signature")?;
+                        } else if let Value::Literal(bytes) = val {
+                            ensure!(
+                                bytes.len() == 2420,
+                                "ML-DSA-44 literal signature must be 2420 bytes, got {}",
+                                bytes.len()
+                            );
+                        }
+                    }
+                }
+                Signature::Mldsa65 { value } => {
+                    if let Some(val) = value {
+                        if let Value::Variable(var) = val {
+                            self.validate_variable_size(&var.name, 3300, "ML-DSA-65 signature")?;
+                        } else if let Value::Literal(bytes) = val {
+                            ensure!(
+                                bytes.len() == 3300,
+                                "ML-DSA-65 literal signature must be 3300 bytes, got {}",
+                                bytes.len()
+                            );
+                        }
+                    }
+                }
+                Signature::Mldsa87 { value } => {
+                    if let Some(val) = value {
+                        if let Value::Variable(var) = val {
+                            self.validate_variable_size(&var.name, 4627, "ML-DSA-87 signature")?;
+                        } else if let Value::Literal(bytes) = val {
+                            ensure!(
+                                bytes.len() == 4627,
+                                "ML-DSA-87 literal signature must be 4627 bytes, got {}",
+                                bytes.len()
+                            );
+                        }
                     }
                 }
             }
-            Signature::Mldsa44 { value } => {
-                if let Some(val) = value {
-                    if let Value::Variable(var) = val {
-                        self.validate_variable_size(&var.name, 2420, "ML-DSA-44 signature")?;
-                    } else if let Value::Literal(bytes) = val {
-                        ensure!(
-                            bytes.len() == 2420,
-                            "ML-DSA-44 literal signature must be 2420 bytes, got {}",
-                            bytes.len()
-                        );
-                    }
-                }
-            }
-            Signature::Mldsa65 { value } => {
-                if let Some(val) = value {
-                    if let Value::Variable(var) = val {
-                        self.validate_variable_size(&var.name, 3300, "ML-DSA-65 signature")?;
-                    } else if let Value::Literal(bytes) = val {
-                        ensure!(
-                            bytes.len() == 3300,
-                            "ML-DSA-65 literal signature must be 3300 bytes, got {}",
-                            bytes.len()
-                        );
-                    }
-                }
-            }
-            Signature::Mldsa87 { value } => {
-                if let Some(val) = value {
-                    if let Value::Variable(var) = val {
-                        self.validate_variable_size(&var.name, 4627, "ML-DSA-87 signature")?;
-                    } else if let Value::Literal(bytes) = val {
-                        ensure!(
-                            bytes.len() == 4627,
-                            "ML-DSA-87 literal signature must be 4627 bytes, got {}",
-                            bytes.len()
-                        );
-                    }
-                }
-            }
-        }
-        Ok(())
+            Ok(())
+        })
     }
 }
 
@@ -909,13 +968,15 @@ mod tests {
                 AttributeType::SerialNumber,
                 Value::convert("owner_pub_key_id", Conversion::LowercaseHex),
             )])],
-            subject_public_key_info: SubjectPublicKeyInfo::EcPublicKey(EcPublicKeyInfo {
-                curve: EcCurve::Prime256v1,
-                public_key: EcPublicKey {
-                    x: Value::variable("owner_pub_key_ec_x"),
-                    y: Value::variable("owner_pub_key_ec_y"),
+            subject_public_key_info: Selectable::Value(SubjectPublicKeyInfo::EcPublicKey(
+                EcPublicKeyInfo {
+                    curve: EcCurve::Prime256v1,
+                    public_key: EcPublicKey {
+                        x: Value::variable("owner_pub_key_ec_x"),
+                        y: Value::variable("owner_pub_key_ec_y"),
+                    },
                 },
-            }),
+            )),
             authority_key_identifier: Some(Value::variable("signing_pub_key_id")),
             subject_key_identifier: Some(Value::variable("owner_pub_key_id")),
             basic_constraints: None,
@@ -951,12 +1012,12 @@ mod tests {
                     debug: Value::Literal(false),
                 }),
             })],
-            signature: Signature::EcdsaWithSha256 {
+            signature: Selectable::Value(Signature::EcdsaWithSha256 {
                 value: Some(EcdsaSignature {
                     r: Value::variable("cert_signature_r"),
                     s: Value::variable("cert_signature_s"),
                 }),
-            },
+            }),
         };
 
         // Compare expected and actual parsed structs.

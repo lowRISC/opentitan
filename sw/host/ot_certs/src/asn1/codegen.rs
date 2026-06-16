@@ -10,7 +10,7 @@ use std::cmp::max;
 use crate::asn1::builder::Builder;
 use crate::asn1::der::Der;
 use crate::asn1::{Oid, Tag};
-use crate::template::{Conversion, Value, Variable, VariableType};
+use crate::template::{Conversion, SelectableChoice, Value, Variable, VariableType};
 
 /// Information about how to refer to a variable in the code.
 #[derive(Debug, Clone)]
@@ -865,6 +865,111 @@ impl Builder for Codegen<'_> {
             );
         }
         self.unindent();
+        Ok(())
+    }
+
+    fn push_choices<T, F>(&mut self, choice: &SelectableChoice<T>, mut cb: F) -> Result<()>
+    where
+        F: FnMut(&mut Self, &T) -> Result<()>,
+    {
+        let VariableInfo { codegen, .. } = (self.variable_info)(&choice.selector)?;
+        let VariableCodegenInfo::Uint32 { value_expr } = codegen else {
+            bail!(
+                "selector variable '{}' must be a u32 integer",
+                choice.selector
+            );
+        };
+
+        ensure!(!choice.choices.is_empty(), "choices must not be empty");
+
+        // We need to run all branches to get their size and constants.
+        let mut branch_builders = Vec::new();
+        for c in &choice.choices {
+            let mut branch_builder = Codegen {
+                output: CodeOutput::new(),
+                variable_info: self.variable_info,
+                min_out_size: 0,
+                max_out_size: 0,
+            };
+            cb(&mut branch_builder, c)?;
+            branch_builders.push(branch_builder);
+        }
+
+        // Calculate constants for each branch.
+        let branch_consts: Vec<usize> = branch_builders
+            .iter()
+            .map(|b| {
+                b.output
+                    .iter()
+                    .filter(|x| x.code.is_constant())
+                    .map(|x| x.code.len())
+                    .sum()
+            })
+            .collect();
+
+        let min_branch_size = branch_builders
+            .iter()
+            .map(|b| b.min_out_size)
+            .min()
+            .unwrap_or(0);
+        let max_branch_size = branch_builders
+            .iter()
+            .map(|b| b.max_out_size)
+            .max()
+            .unwrap_or(0);
+
+        for (i, branch_builder) in branch_builders.into_iter().enumerate() {
+            let cond = if i == 0 {
+                format!("if ({value_expr} == {i}) {{\n")
+            } else if i == branch_consts.len() - 1 {
+                "} else {\n".to_string()
+            } else {
+                format!("}} else if ({value_expr} == {i}) {{\n")
+            };
+
+            self.push_chunk(
+                CodeChunk::Code(cond),
+                Some(format!("Choice {} on {}", i, choice.selector)),
+            );
+
+            // Skip constants before this branch
+            let skip_before: usize = branch_consts[0..i].iter().sum();
+            if skip_before > 0 {
+                self.push_chunk(
+                    CodeChunk::Code(format!("template_skip_const(&state, {skip_before});\n")),
+                    Some(format!(
+                        "Skip branches 0..{} constants ({} B)",
+                        i - 1,
+                        skip_before
+                    )),
+                );
+            }
+
+            // Execute branch
+            self.output.extend(branch_builder.output);
+
+            // Skip constants after this branch
+            let skip_after: usize = branch_consts[i + 1..].iter().sum();
+            if skip_after > 0 {
+                self.push_chunk(
+                    CodeChunk::Code(format!("template_skip_const(&state, {skip_after});\n")),
+                    Some(format!(
+                        "Skip branches {}..{} constants ({} B)",
+                        i + 1,
+                        branch_consts.len() - 1,
+                        skip_after
+                    )),
+                );
+            }
+        }
+        self.push_chunk(
+            CodeChunk::Code("}\n".to_string()),
+            Some(format!("End choice on {}", choice.selector)),
+        );
+
+        self.min_out_size += min_branch_size;
+        self.max_out_size += max_branch_size;
+
         Ok(())
     }
 }

@@ -1,0 +1,132 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "variants",
+
+    variables: {
+        pub_key_type: {
+            type: "selector",
+            num_choices: 3,
+        },
+        sig_type: {
+            type: "selector",
+            num_choices: 3,
+        },
+        serial_number: {
+            type: "integer",
+            range-size: [0, 32],
+        },
+        not_before: {
+            type: "string",
+            exact-size: 15,
+        }
+        not_after: {
+            type: "string",
+            exact-size: 15,
+        }
+        pub_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        auth_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        pub_key_ec_x: {
+            type: "integer",
+            exact-size: 32,
+        },
+        pub_key_ec_y: {
+            type: "integer",
+            exact-size: 32,
+        },
+        pub_key_mldsa_44: {
+            type: "byte-array",
+            exact-size: 1312,
+        },
+        pub_key_mldsa_87: {
+            type: "byte-array",
+            exact-size: 2592,
+        },
+        sig_ec_r: {
+            type: "integer",
+            range-size: [24, 32],
+        },
+        sig_ec_s: {
+            type: "integer",
+            range-size: [24, 32],
+        },
+        sig_mldsa_44: {
+            type: "byte-array",
+            exact-size: 2420,
+        },
+        sig_mldsa_87: {
+            type: "byte-array",
+            exact-size: 4627,
+        }
+    },
+
+    certificate: {
+        serial_number: { var: "serial_number" },
+        issuer: [
+            { common_name: "Test Issuer" },
+        ],
+        subject: [
+            { common_name: "Test Subject" },
+        ],
+        not_before: { var: "not_before" },
+        not_after: { var: "not_after" },
+        subject_public_key_info: {
+            selector: "pub_key_type",
+            choices: [
+                // 0: ECDSA
+                {
+                    algorithm: "ec-public-key",
+                    curve: "prime256v1",
+                    public_key: {
+                        x: { var: "pub_key_ec_x" },
+                        y: { var: "pub_key_ec_y" },
+                    }
+                },
+                // 1: MLDSA-44
+                {
+                    algorithm: "mldsa-44",
+                    public_key: { var: "pub_key_mldsa_44" },
+                },
+                // 2: MLDSA-87
+                {
+                    algorithm: "mldsa-87",
+                    public_key: { var: "pub_key_mldsa_87" },
+                }
+            ]
+        },
+        authority_key_identifier: { var: "auth_key_id" },
+        subject_key_identifier: { var: "pub_key_id" },
+        signature: {
+            selector: "sig_type",
+            choices: [
+                // 0: ECDSA
+                {
+                    algorithm: "ecdsa-with-sha256",
+                    value: {
+                        r: { var: "sig_ec_r" },
+                        s: { var: "sig_ec_s" }
+                    }
+                },
+                // 1: MLDSA-44
+                {
+                    algorithm: "mldsa-44",
+                    value: { var: "sig_mldsa_44" }
+                },
+                // 2: MLDSA-87
+                {
+                    algorithm: "mldsa-87",
+                    value: { var: "sig_mldsa_87" }
+                }
+            ]
+        }
+    }
+}
