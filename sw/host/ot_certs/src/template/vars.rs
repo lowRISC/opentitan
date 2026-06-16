@@ -7,11 +7,25 @@ use indexmap::IndexSet;
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, DiceTcbInfoExtension, DiceTcbInfoFlags,
     EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage, MldsaPublicKeyInfo, Name,
-    RawOr, Signature, SubjectPublicKeyInfo, Value, Variable,
+    RawOr, Selectable, Signature, SubjectPublicKeyInfo, Value, Variable,
 };
 
 pub trait ListVariables {
     fn list_variables(&self, names: &mut IndexSet<String>);
+}
+
+impl<T: ListVariables> ListVariables for Selectable<T> {
+    fn list_variables(&self, names: &mut IndexSet<String>) {
+        match self {
+            Selectable::Value(val) => val.list_variables(names),
+            Selectable::Choice(choice) => {
+                names.insert(choice.selector.clone());
+                for c in &choice.choices {
+                    c.list_variables(names);
+                }
+            }
+        }
+    }
 }
 
 impl<T> ListVariables for Value<T> {
@@ -199,6 +213,9 @@ impl Certificate {
         self.subject_alt_name.list_variables(names);
         for ext in &self.private_extensions {
             ext.list_variables(names);
+        }
+        if let Selectable::Choice(choice) = &self.signature {
+            names.insert(choice.selector.clone());
         }
     }
 }

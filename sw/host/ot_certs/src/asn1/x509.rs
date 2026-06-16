@@ -10,7 +10,8 @@ use crate::asn1::builder::{Builder, concat_suffix};
 use crate::asn1::{Oid, Tag};
 use crate::template::{
     AttributeType, BasicConstraints, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo,
-    EcdsaSignature, HashAlgorithm, KeyUsage, Name, Signature, SubjectPublicKeyInfo, Value,
+    EcdsaSignature, HashAlgorithm, KeyUsage, Name, Selectable, Signature, SubjectPublicKeyInfo,
+    Value,
 };
 
 impl HashAlgorithm {
@@ -64,6 +65,17 @@ impl AttributeType {
     }
 }
 
+fn push_selectable<B: Builder, T>(
+    builder: &mut B,
+    selectable: &Selectable<T>,
+    push_value: &mut dyn FnMut(&mut B, &T) -> Result<()>,
+) -> Result<()> {
+    match selectable {
+        Selectable::Choice(choice) => builder.push_choices(choice, push_value),
+        Selectable::Value(val) => push_value(builder, val),
+    }
+}
+
 pub struct X509;
 
 impl X509 {
@@ -72,7 +84,7 @@ impl X509 {
     pub fn push_certificate<B: Builder>(
         builder: &mut B,
         tbs_cert_var: &Value<Vec<u8>>,
-        sig: &Signature,
+        sig: &Selectable<Signature>,
     ) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1:
         // Certificate  ::=  SEQUENCE  {
@@ -81,9 +93,12 @@ impl X509 {
         //   signatureValue       BIT STRING }
         builder.push_seq(Some("cert".into()), |builder| {
             builder.push_byte_array(Some("tbs".into()), tbs_cert_var)?;
-            Self::push_sig_alg_id(builder, sig)?;
-            builder.push_as_bit_string(Some("cert_sig".into()), &Tag::BitString, 0, |builder| {
-                Self::push_signature(builder, sig)
+            push_selectable(builder, sig, &mut |builder, val| {
+                let sig_val = Selectable::Value(val.clone());
+                Self::push_sig_alg_id(builder, &sig_val)?;
+                builder.push_as_bit_string(Some("cert_sig".into()), &Tag::BitString, 0, |builder| {
+                    Self::push_signature(builder, &sig_val)
+                })
             })
         })
     }
@@ -380,34 +395,36 @@ impl X509 {
 
     pub fn push_public_key_info<B: Builder>(
         builder: &mut B,
-        pubkey_info: &SubjectPublicKeyInfo,
+        pubkey_info: &Selectable<SubjectPublicKeyInfo>,
     ) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1:
         // SubjectPublicKeyInfo  ::=  SEQUENCE  {
         // algorithm            AlgorithmIdentifier,
         // subjectPublicKey     BIT STRING  }
-        builder.push_seq(Some("subject_public_key_info".into()), |builder| {
-            Self::push_pubkey_alg_id(builder, pubkey_info)?;
-            builder.push_as_bit_string(
-                Some("subject_public_key".into()),
-                &Tag::BitString,
-                0,
-                |builder| Self::push_public_key(builder, pubkey_info),
-            )
+        push_selectable(builder, pubkey_info, &mut |builder, val| {
+            builder.push_seq(Some("subject_public_key_info".into()), |builder| {
+                let val_selectable = Selectable::Value(val.clone());
+                Self::push_pubkey_alg_id(builder, &val_selectable)?;
+                builder.push_as_bit_string(
+                    Some("subject_public_key".into()),
+                    &Tag::BitString,
+                    0,
+                    |builder| Self::push_public_key(builder, &val_selectable),
+                )
+            })
         })
     }
 
     pub fn push_pubkey_alg_id<B: Builder>(
         builder: &mut B,
-        pubkey_info: &SubjectPublicKeyInfo,
+        pubkey_info: &Selectable<SubjectPublicKeyInfo>,
     ) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.1.2
         // AlgorithmIdentifier  ::=  SEQUENCE  {
         // algorithm               OBJECT IDENTIFIER,
         // parameters              ANY DEFINED BY algorithm OPTIONAL  }
-        builder.push_seq(
-            Some("subject_public_key_alg".into()),
-            |builder| match pubkey_info {
+        push_selectable(builder, pubkey_info, &mut |builder, val| {
+            builder.push_seq(Some("subject_public_key_alg".into()), |builder| match val {
                 SubjectPublicKeyInfo::EcPublicKey(ec_pubkey) => {
                     builder.push_oid(&Oid::EcPublicKey)?;
                     Self::push_ec_public_key_params(builder, ec_pubkey)
@@ -415,15 +432,15 @@ impl X509 {
                 SubjectPublicKeyInfo::Mldsa44(_) => builder.push_oid(&Oid::Mldsa44),
                 SubjectPublicKeyInfo::Mldsa65(_) => builder.push_oid(&Oid::Mldsa65),
                 SubjectPublicKeyInfo::Mldsa87(_) => builder.push_oid(&Oid::Mldsa87),
-            },
-        )
+            })
+        })
     }
 
     pub fn push_public_key<B: Builder>(
         builder: &mut B,
-        pubkey_info: &SubjectPublicKeyInfo,
+        pubkey_info: &Selectable<SubjectPublicKeyInfo>,
     ) -> Result<()> {
-        match pubkey_info {
+        push_selectable(builder, pubkey_info, &mut |builder, val| match val {
             SubjectPublicKeyInfo::EcPublicKey(ec_pubkey) => {
                 Self::push_ec_public_key(builder, ec_pubkey)
             }
@@ -432,7 +449,7 @@ impl X509 {
             | SubjectPublicKeyInfo::Mldsa87(mldsa_pubkey) => {
                 builder.push_byte_array(Some("pubkey_mldsa".into()), &mldsa_pubkey.public_key)
             }
-        }
+        })
     }
 
     pub fn push_ec_public_key_params<B: Builder>(
@@ -509,23 +526,25 @@ impl X509 {
         })
     }
 
-    pub fn push_sig_alg_id<B: Builder>(builder: &mut B, sig: &Signature) -> Result<()> {
+    pub fn push_sig_alg_id<B: Builder>(builder: &mut B, sig: &Selectable<Signature>) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.1.2
         // AlgorithmIdentifier  ::=  SEQUENCE  {
         // algorithm               OBJECT IDENTIFIER,
         // parameters              ANY DEFINED BY algorithm OPTIONAL  }
         //
         // Per the X509 specification, the signature parameters must not contain any parameters
-        builder.push_seq(Some("algorithm_identifier".into()), |builder| match sig {
-            Signature::EcdsaWithSha256 { .. } => builder.push_oid(&Oid::EcdsaWithSha256),
-            Signature::Mldsa44 { .. } => builder.push_oid(&Oid::Mldsa44),
-            Signature::Mldsa65 { .. } => builder.push_oid(&Oid::Mldsa65),
-            Signature::Mldsa87 { .. } => builder.push_oid(&Oid::Mldsa87),
+        push_selectable(builder, sig, &mut |builder, val| {
+            builder.push_seq(Some("algorithm_identifier".into()), |builder| match val {
+                Signature::EcdsaWithSha256 { .. } => builder.push_oid(&Oid::EcdsaWithSha256),
+                Signature::Mldsa44 { .. } => builder.push_oid(&Oid::Mldsa44),
+                Signature::Mldsa65 { .. } => builder.push_oid(&Oid::Mldsa65),
+                Signature::Mldsa87 { .. } => builder.push_oid(&Oid::Mldsa87),
+            })
         })
     }
 
-    pub fn push_signature<B: Builder>(builder: &mut B, sig: &Signature) -> Result<()> {
-        match sig {
+    pub fn push_signature<B: Builder>(builder: &mut B, sig: &Selectable<Signature>) -> Result<()> {
+        push_selectable(builder, sig, &mut |builder, val| match val {
             Signature::EcdsaWithSha256 { value } => {
                 let zero = BigUint::from_u32(0).expect("cannot build BigUint from u32");
                 let empty_ecdsa = EcdsaSignature {
@@ -543,7 +562,7 @@ impl X509 {
                     value.as_ref().unwrap_or(&empty_sig),
                 )
             }
-        }
+        })
     }
 
     pub fn push_ecdsa_sig<B: Builder>(builder: &mut B, sig: &EcdsaSignature) -> Result<()> {

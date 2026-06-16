@@ -622,5 +622,11 @@ fn c_variable_info(
             },
             format!("bool {name};\n"),
         ),
+        VariableType::Selector { .. } => (
+            VariableCodegenInfo::Uint32 {
+                value_expr: format!("{struct_expr}{name}"),
+            },
+            format!("    uint32_t {name};\n"),
+        ),
     }
 }

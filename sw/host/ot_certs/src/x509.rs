@@ -20,8 +20,8 @@ use crate::asn1::der;
 use crate::asn1::x509;
 
 use crate::template::{
-    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, Signature,
-    SubjectPublicKeyInfo, Value,
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, Selectable,
+    Signature, SubjectPublicKeyInfo, Value,
 };
 
 pub mod extension;
@@ -169,8 +169,9 @@ fn extract_signature(x509: &X509) -> Result<Signature> {
 pub fn generate_certificate_from_tbs(tbs: Vec<u8>, signature: &Signature) -> Result<Vec<u8>> {
     // Generate certificate.
     let tbs = Value::Literal(tbs);
-    let cert =
-        der::Der::generate(|builder| x509::X509::push_certificate(builder, &tbs, signature))?;
+    let cert = der::Der::generate(|builder| {
+        x509::X509::push_certificate(builder, &tbs, &Selectable::Value(signature.clone()))
+    })?;
     Ok(cert)
 }
 
@@ -271,13 +272,13 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
         not_before: asn1time_to_string(x509.not_before())
             .context("cannot parse not_before time")?,
         not_after: asn1time_to_string(x509.not_after()).context("cannot parse not_after time")?,
-        subject_public_key_info,
+        subject_public_key_info: Selectable::Value(subject_public_key_info),
         authority_key_identifier: auth_key_id,
         subject_key_identifier: subj_key_id,
         basic_constraints,
         key_usage,
         subject_alt_name: get_subject_alt_name(&x509)?,
         private_extensions,
-        signature: extract_signature(&x509)?,
+        signature: Selectable::Value(extract_signature(&x509)?),
     })
 }

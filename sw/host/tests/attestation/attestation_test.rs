@@ -18,7 +18,9 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::file::FromReader;
 
-use ot_certs::template::{AttributeType, CertificateExtension, Name, SubjectPublicKeyInfo, Value};
+use ot_certs::template::{
+    AttributeType, CertificateExtension, Name, Selectable, SubjectPublicKeyInfo, Value,
+};
 use ot_certs::x509;
 
 #[derive(Debug, Parser)]
@@ -68,7 +70,17 @@ fn get_base64_blob(haystack: &str, rx: &str) -> Result<Vec<u8>> {
     Ok(bin)
 }
 
-fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Result<bool> {
+fn check_public_key(
+    key: &Selectable<SubjectPublicKeyInfo>,
+    id: &[u8],
+    subject: &Name,
+) -> Result<bool> {
+    let key = match key {
+        Selectable::Value(val) => val,
+        Selectable::Choice(_) => {
+            unreachable!("Selector cannot appear in parsed DER certificates")
+        }
+    };
     let material = match key {
         SubjectPublicKeyInfo::EcPublicKey(info) => {
             let mut material = Vec::new();

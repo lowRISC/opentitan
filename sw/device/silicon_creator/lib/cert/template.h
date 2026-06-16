@@ -149,6 +149,16 @@ static inline void template_push_const(template_state_t *state, size_t size) {
 }
 
 /**
+ * Skip `size` bytes from the pre-generated template.
+ *
+ * @param state Pointer to the template engine state.
+ * @param size Number of the bytes to skip.
+ */
+static inline void template_skip_const(template_state_t *state, size_t size) {
+  state->const_end += size;
+}
+
+/**
  * Private implementation of `template_asn1_integer`.
  *
  * @param out Pointer to the output buffer.
