@@ -49,7 +49,6 @@ hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
 hw/ip/otp_ctrl/rtl/*
 hw/ip/otp_macro/rtl/*
-hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
 hw/ip/prim_xilinx/rtl/*
@@ -74,7 +73,6 @@ hw/ip/rv_timer/data/rv_timer.hjson
 hw/ip/spi_host/data/spi_host.hjson
 hw/ip/spi_device/data/spi_device.hjson
 hw/ip/adc_ctrl/data/adc_ctrl.hjson
-hw/ip/pattgen/data/pattgen.hjson
 hw/ip/keymgr/data/keymgr.hjson
 hw/ip/edn/data/edn.hjson
 hw/ip/csrng/data/csrng.hjson

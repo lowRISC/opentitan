@@ -58,7 +58,7 @@
   testpoints: [
     ///////////////////////////////////////////////////////////////////////////
     // IO Peripherals                                                        //
-    // I2C, SPIDEV, USB, PINMUX & PADCTRL, PATTGEN, PWM                      //
+    // I2C, SPIDEV, USB, PINMUX & PADCTRL, PWM                               //
     ///////////////////////////////////////////////////////////////////////////
 
 
@@ -231,41 +231,6 @@
               "//sw/device/tests:rv_dm_jtag_tap_sel_dev",
               "//sw/device/tests:rv_dm_jtag_tap_sel_prod",
               "//sw/device/tests:rv_dm_jtag_tap_sel_rma"],
-    }
-
-    // PATTGEN (pre-verified IP) integration tests:
-    {
-      name: chip_sw_pattgen_ios
-      desc: '''Verify pattern generation to chip output pads.
-
-            - Program the pattgen to generate a known pattern in each lane.
-            - Program the pinmux to route the chosen output to the chip IOs.
-            - Verify that the correct pattern is seen on the IOs by hooking up the pattgen monitor.
-            - Validate the reception of the done interrupt.
-            - Verify both pattgen channels independently.
-
-            Notes for silicon targets:
-            - Repeat the above test for different patterns and lengths.
-            - Repeat the above test for different clock divider.
-            - Repeat the above test for different repeat values.
-            - Repeat the above test with the clock inverted.
-            - Repeat the above test while using both channels at the same time.
-            - Monitor the clock and data pins on the silicon test setup.
-            '''
-      features: [
-        "PATTGEN.CHANNEL.ONE",
-        "PATTGEN.CHANNEL.TWO",
-        "PATTGEN.CONFIG.PATTERN",
-        "PATTGEN.CONFIG.DIVIDER",
-        "PATTGEN.CONFIG.REPEAT",
-        "PATTGEN.CONFIG.POLARITY",
-        "PATTGEN.COMPLETE"
-      ]
-      stage: V2
-      si_stage: SV2
-      lc_states: ["PROD"]
-      tests: ["chip_sw_pattgen_ios"]
-      bazel: ["//sw/device/tests:pattgen_ios_test"]
     }
 
     // PWM (pre-verified IP) integration tests:

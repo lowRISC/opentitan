@@ -23,7 +23,6 @@ The main address space, shared between the CPU and DM
 | i2c0              | default     | `0x40080000`   | `0x80`         | `0x20`         | i2c0                             |
 | i2c1              | default     | `0x40090000`   | `0x80`         | `0x20`         | i2c1                             |
 | i2c2              | default     | `0x400A0000`   | `0x80`         | `0x20`         | i2c2                             |
-| pattgen           | default     | `0x400E0000`   | `0x40`         | `0x10`         | pattgen                          |
 | rv_timer          | default     | `0x40100000`   | `0x200`        | `0x80`         | rv_timer                         |
 | otp_ctrl          | core        | `0x40130000`   | `0x1000`       | `0x400`        | core device on otp_ctrl          |
 | otp_macro         | prim        | `0x40138000`   | `0x20`         | `0x8`          | prim device on otp_macro         |

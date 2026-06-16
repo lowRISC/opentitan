@@ -45,7 +45,6 @@ test_suite(
         "//sw/device/tests:kmac_smoketest",
         "//sw/device/tests:otbn_smoketest",
         "//sw/device/tests:otp_ctrl_smoketest",
-        "//sw/device/tests:pattgen_ios_test",
         "//sw/device/tests:pmp_smoketest_napot",
         "//sw/device/tests:pmp_smoketest_tor",
         "//sw/device/tests:power_virus_systemtest",

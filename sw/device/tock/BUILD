@@ -23,7 +23,6 @@ filegroup(
         "//hw/top/tock:lc_ctrl_regs",
         "//hw/top/tock:otbn_regs",
         "//hw/top/tock:otp_ctrl_regs",
-        "//hw/top/tock:pattgen_regs",
         "//hw/top/tock:pwm_regs",
         "//hw/top/tock:rom_ctrl_regs",
         "//hw/top/tock:rv_core_ibex_regs",

@@ -28,9 +28,6 @@ tl_device_t xbar_devices[$] = '{
     '{"i2c2", '{
         '{32'h400a0000, 32'h400a007f}
     }},
-    '{"pattgen", '{
-        '{32'h400e0000, 32'h400e003f}
-    }},
     '{"pwm_aon", '{
         '{32'h40450000, 32'h4045007f}
     }},
@@ -99,7 +96,6 @@ tl_host_t xbar_hosts[$] = '{
         "i2c0",
         "i2c1",
         "i2c2",
-        "pattgen",
         "gpio",
         "spi_device",
         "rv_timer",

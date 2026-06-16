@@ -63,12 +63,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_pattgen"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_pwm_aon"
       act:    "req"
       package: "tlul_pkg"

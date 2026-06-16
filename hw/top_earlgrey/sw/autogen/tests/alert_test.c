@@ -27,7 +27,6 @@
 #include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_pattgen_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwm_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
@@ -73,7 +72,6 @@ static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
 static dif_pwm_t pwm_aon;
 static dif_pwrmgr_t pwrmgr_aon;
@@ -159,9 +157,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_otp_ctrl_init(base_addr, &otp_ctrl));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR);
-  CHECK_DIF_OK(dif_pattgen_init(base_addr, &pattgen));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux_aon));
@@ -567,21 +562,6 @@ static void trigger_alert_test(void) {
       CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
           &alert_handler, exp_alert));
     }
-  }
-
-  // Write pattgen's alert_test reg and check alert_cause.
-  for (dif_pattgen_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pattgen_alert_force(&pattgen, kDifPattgenAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdPattgenFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
   }
 
   // Write pinmux's alert_test reg and check alert_cause.

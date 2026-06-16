@@ -62,7 +62,6 @@ interface chip_if;
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define OTBN_HIER           `TOP_HIER.u_otbn
-`define PATTGEN_HIER        `TOP_HIER.u_pattgen
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
 `define PWM_HIER            `TOP_HIER_AON.u_pwm_aon
 `define PWRMGR_HIER         `TOP_HIER_AON.u_pwrmgr_aon
@@ -595,28 +594,6 @@ interface chip_if;
                                           pwm_if);
     end
   end : gen_pwm_if_conn
-
-  // Functional (muxed) interface: PATTGEN
-  // each channel has pda, pcl
-
-  bit __enable_pattgen = 0;
-
-  pattgen_if #(NUM_PATTGEN_CH) pattgen_if();
-  assign pattgen_if.rst_ni = `PATTGEN_HIER.rst_ni;
-  assign pattgen_if.clk_i  = `PATTGEN_HIER.clk_i;
-  assign pattgen_if.pda_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} :
-                                                 {mios[top_earlgrey_pkg::MioPadIob11],
-                                                  mios[top_earlgrey_pkg::MioPadIob9]};
-  assign pattgen_if.pcl_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} :
-                                                 {mios[top_earlgrey_pkg::MioPadIob12],
-                                                  mios[top_earlgrey_pkg::MioPadIob10]};
-
-  initial begin
-    uvm_config_db#(virtual pattgen_if)::set(null, "*.env.m_pattgen_agent*", "vif", pattgen_if);
-  end
-  function automatic void enable_pattgen(bit enable);
-    __enable_pattgen = enable;
-  endfunction
 
   // Functional (muxed) interface: external clock source.
   //
@@ -1320,18 +1297,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
       entropy_src_fsm_state, 9)
 
-  // Signal probe function for `chan0.enable` and `chan1.enable`of PATTGEN
-  wire [1:0] pattgen_chan_1_0_enable;
-`ifdef GATE_LEVEL
-  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.ctrl_i_enable
-                                   ,`PATTGEN_HIER.u_pattgen_core.chan0.ctrl_i_enable};
-`else
-  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.enable,
-                                    `PATTGEN_HIER.u_pattgen_core.chan0.enable};
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pattgen_chan_1_0_enable,
-      pattgen_chan_1_0_enable, 2)
-
   // tb.dut.top_earlgrey_pd_aon.u_pwm_aon.u_pwm_core.cntr_en
   wire pwm_core_cntr_en;
 `ifdef GATE_LEVEL
@@ -1366,7 +1331,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef OTP_CTRL_HIER
 `undef OTP_MACRO_HIER
 `undef OTBN_HIER
-`undef PATTGEN_HIER
 `undef PINMUX_HIER
 `undef PWM_HIER
 `undef PWRMGR_HIER

@@ -26,7 +26,6 @@ load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/otbn:defs.bzl", "OTBN")
 load("//hw/top_earlgrey/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
-load("//hw/ip/pattgen:defs.bzl", "PATTGEN")
 load("//hw/top_earlgrey/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_earlgrey/ip_autogen/pwm:defs.bzl", "PWM")
 load("//hw/top_earlgrey/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
@@ -64,7 +63,6 @@ EARLGREY_IPS = [
     OTBN,
     OTP_CTRL,
     OTP_MACRO,
-    PATTGEN,
     PINMUX,
     PWM,
     PWRMGR,
@@ -93,7 +91,6 @@ EARLGREY_ALERTS = [
     "i2c0_fatal_fault",
     "i2c1_fatal_fault",
     "i2c2_fatal_fault",
-    "pattgen_fatal_fault",
     "rv_timer_fatal_fault",
     "otp_ctrl_fatal_macro_error",
     "otp_ctrl_fatal_check_error",
