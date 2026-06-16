@@ -14,6 +14,7 @@ do not take too long, splitting them into several jobs if necessary.
 
 import argparse
 from collections import defaultdict
+from copy import copy
 import json
 from pathlib import Path
 import subprocess
@@ -237,8 +238,20 @@ def main():
     # Schedule all jobs.
     jobs = []
 
-    def sched(human_name, fpga, id, tags, label_prefix = None):
-        jobs.append(schedule_by_tag(test_db, human_name, fpga, id, tags, label_prefix))
+    def splitlist(tests, chunks):
+        """Split the list of tests into chunks of roughly the same size, returns a list of lists"""
+        k, m = divmod(len(tests), chunks)
+        return [tests[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(chunks)]
+
+    def sched(human_name, fpga, id, tags, label_prefix = None, split = 1):
+        job = schedule_by_tag(test_db, human_name, fpga, id, tags, label_prefix)
+        for (idx, sublist) in enumerate(splitlist(job["tests"], split), start=1):
+            new_job = copy(job)
+            new_job["tests"] = sublist
+            new_job["name"] += "" if split == 1 else " (part {}/{})".format(idx, split)
+            new_job["id"] += "" if split == 1 else "_{}".format(idx)
+            jobs.append(new_job)
+
     sched("Manufacturing", "cw340", "cw340_manuf", ["manuf", "cw340"])
     sched("Manufacturing", "cw310", "cw310_manuf", ["manuf", "cw310"])
     sched("SiVal ROM_EXT", "cw340", "cw340_sival_rom_ext", ["cw340_sival_rom_ext"])
@@ -254,8 +267,8 @@ def main():
     sched("ROM_EXT (remaining)", "cw340", "cw340_rom_ext", ["cw340_rom_ext"])
     sched("ROM_EXT", "cw310", "cw310_rom_ext", ["cw310_rom_ext"])
 
-    sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"])
-    sched("ROM", "cw310", "cw310_rom", ["cw310_rom_with_fake_keys"])
+    sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"], split=2)
+    sched("ROM", "cw310", "cw310_rom", ["cw310_rom_with_fake_keys"], split=2)
     sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
     sched("TestROM", "cw310", "cw310_test_rom", ["cw310_test_rom"])
 
