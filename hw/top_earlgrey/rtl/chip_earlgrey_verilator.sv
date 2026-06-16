@@ -5,43 +5,7 @@
 module chip_earlgrey_verilator (
   // Clock and Reset
   input clk_i,
-  input rst_ni,
-
-  // communication with GPIO
-  input [31:0] cio_gpio_p2d_i,
-  output logic [31:0] cio_gpio_d2p_o,
-  output logic [31:0] cio_gpio_en_d2p_o,
-  output logic [31:0] cio_gpio_pull_en_o,
-  output logic [31:0] cio_gpio_pull_select_o,
-
-  // communication with UART
-  input cio_uart_rx_p2d_i,
-  output logic cio_uart_tx_d2p_o,
-  output logic cio_uart_tx_en_d2p_o,
-
-  // communication with SPI
-  input cio_spi_device_sck_p2d_i,
-  input cio_spi_device_csb_p2d_i,
-  input cio_spi_device_sdi_p2d_i,
-  output logic cio_spi_device_sdo_d2p_o,
-  output logic cio_spi_device_sdo_en_d2p_o,
-
-  // communication with USB
-  input cio_usbdev_sense_p2d_i,
-  output logic cio_usbdev_dp_pullup_d2p_o,
-  output logic cio_usbdev_dn_pullup_d2p_o,
-  input cio_usbdev_dp_p2d_i,
-  output logic cio_usbdev_dp_d2p_o,
-  output logic cio_usbdev_dp_en_d2p_o,
-  input cio_usbdev_dn_p2d_i,
-  output logic cio_usbdev_dn_d2p_o,
-  output logic cio_usbdev_dn_en_d2p_o,
-  input cio_usbdev_d_p2d_i,
-  output logic cio_usbdev_d_d2p_o,
-  output logic cio_usbdev_d_en_d2p_o,
-  output logic cio_usbdev_se0_d2p_o,
-  output logic cio_usbdev_rx_enable_d2p_o,
-  output logic cio_usbdev_tx_use_d_se0_d2p_o
+  input rst_ni
 );
 
   import top_earlgrey_pkg::*;
@@ -49,21 +13,16 @@ module chip_earlgrey_verilator (
 
   logic IO_JTCK, IO_JTMS, IO_JTRST_N, IO_JTDI, IO_JTDO;
 
-  // TODO: instantiate padring and route these signals through that module
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_out;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
 
-  always_comb begin : assign_dio_in
-    dio_in = '0;
-    dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d_i;
-    dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d_i;
-    dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d_i;
-    dio_in[DioUsbdevUsbDp] = cio_usbdev_dp_p2d_i;
-    dio_in[DioUsbdevUsbDn] = cio_usbdev_dn_p2d_i;
-  end
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
+  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
+  prim_pad_wrapper_pkg::pad_attr_t[pinmux_reg_pkg::NMioPads-1:0] mio_attr;
 
-  // USB
+  // USB related signals
   logic usb_dp_pullup_en;
   logic usb_dn_pullup_en;
   logic usb_rx_d;
@@ -72,133 +31,26 @@ module chip_earlgrey_verilator (
   logic usb_tx_use_d_se0;
   logic usb_rx_enable;
 
-  assign usb_rx_d = cio_usbdev_d_p2d_i;
-  assign cio_usbdev_d_d2p_o  = usb_tx_d;
-  assign cio_usbdev_d_en_d2p_o = dio_oe[DioUsbdevUsbDp];
-  assign cio_usbdev_dn_pullup_d2p_o = usb_dn_pullup_en;
-  assign cio_usbdev_dp_pullup_d2p_o = usb_dp_pullup_en;
-  assign cio_usbdev_se0_d2p_o = usb_tx_se0;
-  assign cio_usbdev_rx_enable_d2p_o = usb_rx_enable;
-  assign cio_usbdev_tx_use_d_se0_d2p_o = usb_tx_use_d_se0;
+  // Padring substitute that maps the mio/dio interface from pinmux to flat
+  // cio_* signals that the testbench DPI models connect to.
+  padring_verilator u_padring (
+    .mio_in_o  (mio_in ),
+    .mio_out_i (mio_out),
+    .mio_oe_i  (mio_oe ),
+    .mio_attr_i(mio_attr),
 
-  assign cio_usbdev_dp_d2p_o = dio_out[DioUsbdevUsbDp];
-  assign cio_usbdev_dp_en_d2p_o = dio_oe[DioUsbdevUsbDp];
-  assign cio_usbdev_dn_d2p_o = dio_out[DioUsbdevUsbDn];
-  assign cio_usbdev_dn_en_d2p_o = dio_oe[DioUsbdevUsbDn];
+    .dio_in_o (dio_in ),
+    .dio_out_i(dio_out),
+    .dio_oe_i (dio_oe ),
 
-  assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
-  assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
-
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
-  logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
-  prim_pad_wrapper_pkg::pad_attr_t[pinmux_reg_pkg::NMioPads-1:0] mio_attr;
-
-  always_comb begin : assign_mio_in
-    mio_in = '0;
-    // 14 generic GPIOs
-    mio_in[MioPadIob12:MioPadIob6] = cio_gpio_p2d_i[6:0];
-    mio_in[MioPadIor13:MioPadIor5] = cio_gpio_p2d_i[13:7];
-    // SW straps
-    mio_in[MioPadIoc2:MioPadIoc0] = cio_gpio_p2d_i[24:22];
-    // TAP straps
-    mio_in[MioPadIoc5] = cio_gpio_p2d_i[27];
-    mio_in[MioPadIoc8] = cio_gpio_p2d_i[30];
-    // UART RX
-    mio_in[MioPadIoc3] = cio_uart_rx_p2d_i;
-    // USB VBUS sense
-    mio_in[MioPadIoc7] = cio_usbdev_sense_p2d_i;
-  end
-
-
-  // 14 generic GPIOs
-  assign cio_gpio_d2p_o[6:0]        = mio_out[MioPadIob12:MioPadIob6];
-  assign cio_gpio_en_d2p_o[6:0]     = mio_oe[MioPadIob12:MioPadIob6];
-  assign cio_gpio_d2p_o[13:7]       = mio_out[MioPadIor13:MioPadIor5];
-  assign cio_gpio_en_d2p_o[13:7]    = mio_oe[MioPadIor13:MioPadIor5];
-  assign cio_gpio_d2p_o[21:14]      = '0;
-  assign cio_gpio_en_d2p_o[21:14]   = '0;
-  // SW straps
-  assign cio_gpio_d2p_o[24:22]      = mio_out[MioPadIoc2:MioPadIoc0];
-  assign cio_gpio_en_d2p_o[24:22]   = mio_oe[MioPadIoc2:MioPadIoc0];
-  assign cio_gpio_d2p_o[26:25]      = '0;
-  assign cio_gpio_en_d2p_o[26:25]   = '0;
-  // TAP straps
-  assign cio_gpio_d2p_o[27]         = mio_out[MioPadIoc5];
-  assign cio_gpio_en_d2p_o[27]      = mio_oe[MioPadIoc5];
-  assign cio_gpio_d2p_o[29:28]      = '0;
-  assign cio_gpio_en_d2p_o[29:28]   = '0;
-  assign cio_gpio_d2p_o[30]         = mio_out[MioPadIoc8];
-  assign cio_gpio_en_d2p_o[30]      = mio_oe[MioPadIoc8];
-  assign cio_gpio_d2p_o[31]         = '0;
-  assign cio_gpio_en_d2p_o[31]      = '0;
-
-  assign cio_uart_tx_d2p_o    = mio_out[MioPadIoc4];
-  assign cio_uart_tx_en_d2p_o = mio_oe[MioPadIoc4];
-
-  // Note: we're collecting the `pull_en` and `pull_select` signals together
-  // so that the GPIO DPI functions can simulate weak and strong GPIO
-  // inputs.  The `cio_gpio_pull_en_o` and `cio_gpio_pull_select_o` bit
-  // vectors should have the same ordering as the `cio_gpio_d2p_o` vector.
-  // See gpiodpi.c to see how weak/strong inputs work.
-  //
-  // Pull enable for 14 generic GPIOs
-  assign cio_gpio_pull_en_o[0] = mio_attr[MioPadIob6].pull_en;
-  assign cio_gpio_pull_en_o[1] = mio_attr[MioPadIob7].pull_en;
-  assign cio_gpio_pull_en_o[2] = mio_attr[MioPadIob8].pull_en;
-  assign cio_gpio_pull_en_o[3] = mio_attr[MioPadIob9].pull_en;
-  assign cio_gpio_pull_en_o[4] = mio_attr[MioPadIob10].pull_en;
-  assign cio_gpio_pull_en_o[5] = mio_attr[MioPadIob11].pull_en;
-  assign cio_gpio_pull_en_o[6] = mio_attr[MioPadIob12].pull_en;
-  assign cio_gpio_pull_en_o[7] = mio_attr[MioPadIor5].pull_en;
-  assign cio_gpio_pull_en_o[8] = mio_attr[MioPadIor6].pull_en;
-  assign cio_gpio_pull_en_o[9] = mio_attr[MioPadIor7].pull_en;
-  assign cio_gpio_pull_en_o[10] = mio_attr[MioPadIor10].pull_en;
-  assign cio_gpio_pull_en_o[11] = mio_attr[MioPadIor11].pull_en;
-  assign cio_gpio_pull_en_o[12] = mio_attr[MioPadIor12].pull_en;
-  assign cio_gpio_pull_en_o[13] = mio_attr[MioPadIor13].pull_en;
-  assign cio_gpio_pull_en_o[21:14] = '0;
-
-  // Pull enable for SW STRAPs
-  assign cio_gpio_pull_en_o[22] = mio_attr[MioPadIoc0].pull_en;
-  assign cio_gpio_pull_en_o[23] = mio_attr[MioPadIoc1].pull_en;
-  assign cio_gpio_pull_en_o[24] = mio_attr[MioPadIoc2].pull_en;
-
-  // Pull enable for TAP STRAPs
-  assign cio_gpio_pull_en_o[26:25] = '0;
-  assign cio_gpio_pull_en_o[27] = mio_attr[MioPadIoc5].pull_en;
-  assign cio_gpio_pull_en_o[29:28] = '0;
-  assign cio_gpio_pull_en_o[30] = mio_attr[MioPadIoc8].pull_en;
-  assign cio_gpio_pull_en_o[31] = '0;
-
-  // Pull select for 14 generic GPIOs
-  assign cio_gpio_pull_select_o[0] = mio_attr[MioPadIob6].pull_select;
-  assign cio_gpio_pull_select_o[1] = mio_attr[MioPadIob7].pull_select;
-  assign cio_gpio_pull_select_o[2] = mio_attr[MioPadIob8].pull_select;
-  assign cio_gpio_pull_select_o[3] = mio_attr[MioPadIob9].pull_select;
-  assign cio_gpio_pull_select_o[4] = mio_attr[MioPadIob10].pull_select;
-  assign cio_gpio_pull_select_o[5] = mio_attr[MioPadIob11].pull_select;
-  assign cio_gpio_pull_select_o[6] = mio_attr[MioPadIob12].pull_select;
-  assign cio_gpio_pull_select_o[7] = mio_attr[MioPadIor5].pull_select;
-  assign cio_gpio_pull_select_o[8] = mio_attr[MioPadIor6].pull_select;
-  assign cio_gpio_pull_select_o[9] = mio_attr[MioPadIor7].pull_select;
-  assign cio_gpio_pull_select_o[10] = mio_attr[MioPadIor10].pull_select;
-  assign cio_gpio_pull_select_o[11] = mio_attr[MioPadIor11].pull_select;
-  assign cio_gpio_pull_select_o[12] = mio_attr[MioPadIor12].pull_select;
-  assign cio_gpio_pull_select_o[13] = mio_attr[MioPadIor13].pull_select;
-  assign cio_gpio_pull_select_o[21:14] = '0;
-
-  // Pull select for SW STRAPs
-  assign cio_gpio_pull_select_o[22] = mio_attr[MioPadIoc0].pull_select;
-  assign cio_gpio_pull_select_o[23] = mio_attr[MioPadIoc1].pull_select;
-  assign cio_gpio_pull_select_o[24] = mio_attr[MioPadIoc2].pull_select;
-
-  // Pull select for TAP STRAPs
-  assign cio_gpio_pull_select_o[26:25] = '0;
-  assign cio_gpio_pull_select_o[27] = mio_attr[MioPadIoc5].pull_select;
-  assign cio_gpio_pull_select_o[29:28] = '0;
-  assign cio_gpio_pull_select_o[30] = mio_attr[MioPadIoc8].pull_select;
-  assign cio_gpio_pull_select_o[31] = '0;
+    .usb_rx_d_o        (usb_rx_d        ),
+    .usb_tx_d_i        (usb_tx_d        ),
+    .usb_tx_se0_i      (usb_tx_se0      ),
+    .usb_tx_use_d_se0_i(usb_tx_use_d_se0),
+    .usb_rx_enable_i   (usb_rx_enable   ),
+    .usb_dp_pullup_en_i(usb_dp_pullup_en),
+    .usb_dn_pullup_en_i(usb_dn_pullup_en)
+  );
 
   ////////////////////////////////
   // AST - Custom for Verilator //
