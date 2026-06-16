@@ -82,6 +82,7 @@ status_t read_state_pointer(crypto_state_t **state);
 
 // Standard build: Stateful KAT evaluation is disabled (non FIPS).
 static inline otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
+  (void)kat_bit;
   return OTCRYPTO_OK;
 }
 
