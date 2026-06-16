@@ -38,6 +38,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 pub mod subst;
 pub mod testgen;
+pub mod vars;
 
 use crate::template::subst::{ConvertValue, SubstValue};
 

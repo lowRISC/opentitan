@@ -5,18 +5,17 @@
 //! This module is capable of generating C code for generating a binary X.509
 //! certificate according to a [`Template`].
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, ensure};
 use heck::ToUpperCamelCase;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use itertools::Itertools;
 use std::fmt::Write;
 
 use crate::asn1::codegen::{self, CodegenOutput, VariableCodegenInfo, VariableInfo};
 use crate::asn1::x509::X509;
 use crate::template::subst::{Subst, SubstValue};
-use crate::template::{
-    EcdsaSignature, Signature, SizeRange, Template, Value, Variable, VariableType,
-};
+use crate::template::vars::ListVariables;
+use crate::template::{SizeRange, Template, Value, Variable, VariableType};
 use crate::x509;
 
 /// The amount of test cases to generate for covering more corner cases.
@@ -89,13 +88,31 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_h.push_str("#include \"sw/device/lib/base/status.h\"\n\n");
 
     // Partition variables between TBS and signature.
+    let mut tbs_var_names = IndexSet::new();
+    tmpl.certificate.list_tbs_variables(&mut tbs_var_names);
+
+    let mut sig_var_names = IndexSet::new();
+    tmpl.certificate
+        .signature
+        .list_variables(&mut sig_var_names);
+
     let mut tbs_vars = IndexMap::<String, VariableType>::new();
     let mut sig_vars = IndexMap::<String, VariableType>::new();
-    for (var_name, var) in tmpl.variables.clone() {
-        if var_appears_in_sig(&var_name, &tmpl.certificate.signature) {
-            sig_vars.insert(var_name, var);
-        } else {
-            tbs_vars.insert(var_name, var);
+
+    for (name, var_type) in tmpl.variables.clone() {
+        let in_tbs = tbs_var_names.contains(&name);
+        let in_sig = sig_var_names.contains(&name);
+
+        ensure!(
+            in_tbs || in_sig,
+            "variable '{name}' is declared in variables but never used in the certificate"
+        );
+
+        if in_tbs {
+            tbs_vars.insert(name.clone(), var_type);
+        }
+        if in_sig {
+            sig_vars.insert(name, var_type);
         }
     }
 
@@ -154,7 +171,11 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
 
     // Create constants for the variable size range.
     source_h.push_str("enum {\n");
-    for (var_name, var_type) in tbs_vars.iter().chain(sig_vars.iter()) {
+    for (var_name, var_type) in tbs_vars
+        .iter()
+        .chain(sig_vars.iter())
+        .unique_by(|(name, _)| *name)
+    {
         let (codegen, _) = c_variable_info(var_name, "", var_type);
         let const_name = var_name.to_upper_camel_case();
         let (min_size, max_size) = if let VariableCodegenInfo::Pointer { .. } = codegen {
@@ -392,26 +413,6 @@ fn generate_value_struct_assignment(variables: &IndexMap<String, VariableType>) 
         }
     }
     Ok(source)
-}
-
-// Decide if a variable appears in a signature field (if not, it is in the TBS).
-fn var_appears_in_sig(var_name: &str, sig: &Signature) -> bool {
-    match sig {
-        Signature::EcdsaWithSha256 { value } => {
-            let Some(EcdsaSignature { r, s }) = value else {
-                return false;
-            };
-            r.refers_to(var_name) || s.refers_to(var_name)
-        }
-        Signature::Mldsa44 { value }
-        | Signature::Mldsa65 { value }
-        | Signature::Mldsa87 { value } => {
-            let Some(val) = value else {
-                return false;
-            };
-            val.refers_to(var_name)
-        }
-    }
 }
 
 #[derive(Debug, PartialEq)]
