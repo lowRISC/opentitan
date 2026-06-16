@@ -27,6 +27,7 @@ module rram_phy_wr import rram_ctrl_pkg::*; (
   input  prim_mubi_pkg::mubi4_t   disable_i,
   input  logic                    scramble_en_i,
   input  logic                    ecc_en_i,
+  input  logic                    addr_xor_en_i,
   input  logic                    rd_idle_i,
   input  logic                    req_i,
   output logic                    ack_o,
@@ -161,7 +162,7 @@ module rram_phy_wr import rram_ctrl_pkg::*; (
   assign word_sel = addr_i[WordSelW-1:0];
 
   // address infection. It will be removed during read in u_tl_adapter_host or u_rram_ctrl_rd
-  assign addr_xor = {{(BusWidth-BusAddrW){1'b0}}, addr_i[BusAddrW-1:0]};
+  assign addr_xor = addr_xor_en_i ? {{(BusWidth-BusAddrW){1'b0}}, addr_i[BusAddrW-1:0]} : '0;
   // in case of data integrity issues, simply fill with 0
   assign data_xor = (data_intg_err_d ? '0 : data_i[BusWidth-1:0]) ^ addr_xor;
 

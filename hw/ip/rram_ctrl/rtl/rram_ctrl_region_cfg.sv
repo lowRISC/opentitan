@@ -108,6 +108,7 @@ module rram_ctrl_region_cfg
     assign region_cfgs_o[i].cfg.wr_en       = mubi4_t'(region_cfg_i[i-1].wr_en.q);
     assign region_cfgs_o[i].cfg.scramble_en = mubi4_t'(region_cfg_i[i-1].scramble_en.q);
     assign region_cfgs_o[i].cfg.ecc_en      = mubi4_t'(region_cfg_i[i-1].ecc_en.q);
+    assign region_cfgs_o[i].cfg.addr_xor_en = prim_mubi_pkg::MuBi4True;
     assign region_cfgs_o[i].phase           = PhaseInvalid;
   end
 
@@ -119,6 +120,7 @@ module rram_ctrl_region_cfg
   assign region_cfgs_o[MpRegions+1].cfg.wr_en       = mubi4_t'(default_cfg_i.wr_en.q);
   assign region_cfgs_o[MpRegions+1].cfg.scramble_en = mubi4_t'(default_cfg_i.scramble_en.q);
   assign region_cfgs_o[MpRegions+1].cfg.ecc_en      = mubi4_t'(default_cfg_i.ecc_en.q);
+  assign region_cfgs_o[MpRegions+1].cfg.addr_xor_en = prim_mubi_pkg::MuBi4True;
   assign region_cfgs_o[MpRegions+1].phase           = PhaseInvalid;
 
   /////////////////////////////////////////////
@@ -141,6 +143,7 @@ module rram_ctrl_region_cfg
     assign info_page_cfgs_o[i].phase           = PhaseInvalid;
     assign info_page_cfgs_o[i].cfg.scramble_en = reg_scramble_en;
     assign info_page_cfgs_o[i].cfg.ecc_en      = reg_ecc_en;
+    assign info_page_cfgs_o[i].cfg.addr_xor_en = prim_mubi_pkg::MuBi4True;
     assign info_page_cfgs_o[i].cfg.en          = reg_en;
 
     // Creator, owner, and isolated info page configuration can be overruled by the life-cycle
