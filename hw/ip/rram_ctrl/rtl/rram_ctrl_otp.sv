@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// rram_ctrl_otp: A FSM that performs the read-set-write algorithm and supports all commands issued by otp_ctrl.
+// rram_ctrl_otp: A FSM that performs the read-set-write algorithm and supports all commands issued
+// by otp_ctrl.
 //
 // It bridges two clock domains - OTP requests arrive on clk_otp_i and are transferred via an
 // asynchronous FIFO to the RRAM domain (clk_i). The following commands are supported:
@@ -297,7 +298,9 @@ module rram_ctrl_otp
 
   logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] wdata_mod;
 
-  // Only issue 128b aligned transfers
+  // Only issue 128b aligned transfers; lower DataByteWidth bits are always zero
+  logic unused_addr_lsb;
+  assign unused_addr_lsb    = ^addr[DataByteWidth-1:0];
   assign addr_o             = {addr[BusAddrByteW-1 : DataByteWidth], {DataByteWidth{1'b0}}};
   assign ctrl_o.start.q     = start;
   assign ctrl_o.op.q        = op;
