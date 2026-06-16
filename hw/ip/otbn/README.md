@@ -496,7 +496,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>0</td>
               <td>
-                EN_XOF enables the eXtendable Output Function (XOF) operation. If 1, XOF operation is enabled and the KMAC HWIP will automatically trigger a RUN command once the full rate has been pushed. If 0, KMAC HWIP will only push the first rate, and no other digest will be produced. Usually enabled for SHAKE and cSHAKE and disabled for SHA3 and KMAC modes.
+                EN_XOF enables the eXtendable Output Function (XOF) operation for SHAKE and cSHAKE modes. If 1, XOF operation is enabled and the KMAC HWIP will automatically trigger a RUN command once the full rate has been pushed. If 0, KMAC HWIP will only push the first rate, and no other digest will be produced. Must be 0 if MODE is SHA3 or KMAC. The SHA3 and KMAC modes only return the digest / the requested output length (fixed by KMAC HWIP).
               </td>
             </tr>
             <tr>
