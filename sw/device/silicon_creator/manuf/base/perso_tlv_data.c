@@ -289,6 +289,9 @@ rom_error_t perso_tlv_get_blob_version(const uint8_t *data, size_t size,
 
   perso_tlv_object_header_t header;
   memcpy(&header, data, sizeof(perso_tlv_object_header_t));
+  if (header == 0xFFFF) {
+    return kErrorOk;
+  }
   perso_tlv_object_type_t type;
   uint16_t obj_size;
   PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
