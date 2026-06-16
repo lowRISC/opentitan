@@ -83,6 +83,13 @@ modexp_65536:
  * primitive. The squared Montgomery modulus RR and the Montgomery constant m0'
  * have to be precomputed and provided at the appropriate locations in DMEM.
  *
+ * The algorithm implementation might reveal the number of leading zeros of d
+ * through side-channel analysis. The reason is that the constant 1 in the Montgomery
+ * ladder is not masked. Depending on the secret MSB of d we either square
+ * 1 or a blinded message which might leak. However, this does not degrade RSA's
+ * security. For the TVLA simulation, we randomize the constant 1 to remove the
+ * false positive.
+ *
  * This routine operates on the pre-defined memory locations set in
  * `run_rsa_modexp_mem`.
  *
@@ -251,13 +258,16 @@ _message_blinding_prologue_end:
   la    x15, r1     # R in DMEM
   la    x16, r0     # destination r0
   la    x17, r1     # destination r1
+  li    x23, 26     # w26
+  /* Randomize the constant 1 in the TVLA */
+  li    x24, 29     /* SCA_TEST_REPLACE: li x24, 26 */
   jal   x1, masked_wdr_select_store_loop
 
   # Compute bit length of current bigint size.
   slli  x21, x30, 8    /* SCA_TEST_REPLACE: addi x21, x0, 3 */
 
   # Main loop of the exponentiation, iterate over all exponent bits:
-  loop x21, 70
+  loop x21, 72
     bn.add w31, w31, w31
 
     # Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i].
@@ -324,6 +334,8 @@ _message_blinding_prologue_end:
     la    x15, r2     # Squaring in DMEM
     la    x16, r0     # destination r0
     la    x17, r1     # destination r1
+    li    x23, 26     # w26 (r0_new)
+    li    x24, 29     # w29 (r1_new)
     jal   x1, masked_wdr_select_store_loop
 
     nop
@@ -761,8 +773,6 @@ masked_wdr_select_store_loop:
   addi  x22, x8, 0  # pointer to w4
   li    x12, 0      # pointer to w0
   li    x13, 2      # pointer to w2
-  li    x23, 26     # w26
-  li    x24, 29     # w29
   loop  x30, 16
     bn.lid x13, 0(x15++)
     bn.movr x12, x22++
