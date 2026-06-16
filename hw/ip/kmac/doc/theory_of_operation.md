@@ -289,10 +289,10 @@ These configuration values are left to the SW as setting these requires system s
 The image below depicts the message data path and its related control signals.
 ![](../doc/kmac-data-path.svg)
 
-The compile-time parameter `EnMasking` and the static parameter `masked` control whether the message FIFO is used or bypassed.
-The FIFO is used unless `EnMasking` and `masked` are both set in which case the FIFO is bypassed.
+The static parameter `masked` controls whether the message FIFO is used or bypassed.
+The FIFO is used unless `masked` is set in which case the FIFO is bypassed.
 
-For both types of interface, messages other than the last are sent using the full width of the `data_s0` / `data_s1` width.
+If the FIFO is bypassed, messages other than the last must be sent using the full width of the `data_s0` / `data_s1` width.
 See the operation principle section for more details about the last message.
 
 Although the message requests make full use of the `data_s0` / `data_s1` signal width (`MsgWidth`), the returned digest size depends on the interface's `if_type`.
@@ -335,11 +335,11 @@ If the configuration is valid, the message requests are forwarded to the hashing
 This engine then starts absorbing, depending on the hashing mode, the key and the prefix data.
 Afterwards it starts absorbing messages from the app interface.
 
-An app must send the full message split up into message requests which make use of the full width.
+If `masked` is set (FIFO bypassed), an app must send the full message split up into message requests which make use of the full width.
 This means `strb` must be all ones.
 An exception is the last message part, which can be less than the full width of the interface.
 Sending this last message part is closely related to how the message phase is ended.
-There are two ways for an app to terminate the message phase.
+Independent of `masked`, there are two ways for an app to terminate the message phase.
 In both cases there must be at most one request which has `req_last` asserted.
 
 - Termination on the last data beat
