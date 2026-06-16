@@ -26,45 +26,53 @@ module chip_sim_tb (
   logic cio_usbdev_dp_p2d, cio_usbdev_dp_d2p, cio_usbdev_dp_en_d2p;
   logic cio_usbdev_dn_p2d, cio_usbdev_dn_d2p, cio_usbdev_dn_en_d2p;
 
+  // DUT: Only clock and reset in port list, I/O driven via XMR
   chip_earlgrey_verilator u_dut (
     .clk_i,
-    .rst_ni,
-
-    // communication with GPIO
-    .cio_gpio_p2d_i(cio_gpio_p2d),
-    .cio_gpio_d2p_o(cio_gpio_d2p),
-    .cio_gpio_en_d2p_o(cio_gpio_en_d2p),
-    .cio_gpio_pull_en_o(cio_gpio_pull_en),
-    .cio_gpio_pull_select_o(cio_gpio_pull_select),
-
-    // communication with UART
-    .cio_uart_rx_p2d_i(cio_uart_rx_p2d),
-    .cio_uart_tx_d2p_o(cio_uart_tx_d2p),
-
-    // communication with SPI
-    .cio_spi_device_sck_p2d_i(cio_spi_device_sck_p2d),
-    .cio_spi_device_csb_p2d_i(cio_spi_device_csb_p2d),
-    .cio_spi_device_sdi_p2d_i(cio_spi_device_sdi_p2d),
-    .cio_spi_device_sdo_d2p_o(cio_spi_device_sdo_d2p),
-    .cio_spi_device_sdo_en_d2p_o(cio_spi_device_sdo_en_d2p),
-
-    // communication with USB
-    .cio_usbdev_sense_p2d_i(cio_usbdev_sense_p2d),
-    .cio_usbdev_dp_pullup_d2p_o(cio_usbdev_dp_pullup_d2p),
-    .cio_usbdev_dn_pullup_d2p_o(cio_usbdev_dn_pullup_d2p),
-    .cio_usbdev_dp_p2d_i(cio_usbdev_dp_p2d),
-    .cio_usbdev_dp_d2p_o(cio_usbdev_dp_d2p),
-    .cio_usbdev_dp_en_d2p_o(cio_usbdev_dp_en_d2p),
-    .cio_usbdev_dn_p2d_i(cio_usbdev_dn_p2d),
-    .cio_usbdev_dn_d2p_o(cio_usbdev_dn_d2p),
-    .cio_usbdev_dn_en_d2p_o(cio_usbdev_dn_en_d2p),
-    .cio_usbdev_d_p2d_i(cio_usbdev_d_p2d),
-    .cio_usbdev_d_d2p_o(cio_usbdev_d_d2p),
-    .cio_usbdev_d_en_d2p_o(cio_usbdev_d_en_d2p),
-    .cio_usbdev_se0_d2p_o(cio_usbdev_se0_d2p),
-    .cio_usbdev_rx_enable_d2p_o(cio_usbdev_rx_enable_d2p),
-    .cio_usbdev_tx_use_d_se0_d2p_o(cio_usbdev_tx_use_d_se0_d2p)
+    .rst_ni
   );
+
+  // ---------------------------------------------------------------------------
+  // Connect the DPI models to the pad-level signals inside the Verilator
+  // padring via hierarchical references. The *_p2d pad nets are undriven
+  // inside padring_verilator, so the testbench is their sole driver; the
+  // *_d2p, *_en_d2p and pull nets are driven in the padring and read out here.
+  // ---------------------------------------------------------------------------
+
+  // GPIO
+  assign u_dut.u_padring.cio_gpio_p2d = cio_gpio_p2d;
+  assign cio_gpio_d2p         = u_dut.u_padring.cio_gpio_d2p;
+  assign cio_gpio_en_d2p      = u_dut.u_padring.cio_gpio_en_d2p;
+  assign cio_gpio_pull_en     = u_dut.u_padring.cio_gpio_pull_en;
+  assign cio_gpio_pull_select = u_dut.u_padring.cio_gpio_pull_select;
+
+  // UART
+  assign u_dut.u_padring.cio_uart_rx_p2d = cio_uart_rx_p2d;
+  assign cio_uart_tx_d2p = u_dut.u_padring.cio_uart_tx_d2p;
+
+  // SPI device
+  assign u_dut.u_padring.cio_spi_device_sck_p2d = cio_spi_device_sck_p2d;
+  assign u_dut.u_padring.cio_spi_device_csb_p2d = cio_spi_device_csb_p2d;
+  assign u_dut.u_padring.cio_spi_device_sdi_p2d = cio_spi_device_sdi_p2d;
+  assign cio_spi_device_sdo_d2p    = u_dut.u_padring.cio_spi_device_sdo_d2p;
+  assign cio_spi_device_sdo_en_d2p = u_dut.u_padring.cio_spi_device_sdo_en_d2p;
+
+  // USB
+  assign u_dut.u_padring.cio_usbdev_sense_p2d = cio_usbdev_sense_p2d;
+  assign u_dut.u_padring.cio_usbdev_dp_p2d    = cio_usbdev_dp_p2d;
+  assign u_dut.u_padring.cio_usbdev_dn_p2d    = cio_usbdev_dn_p2d;
+  assign u_dut.u_padring.cio_usbdev_d_p2d     = cio_usbdev_d_p2d;
+  assign cio_usbdev_dp_pullup_d2p    = u_dut.u_padring.cio_usbdev_dp_pullup_d2p;
+  assign cio_usbdev_dn_pullup_d2p    = u_dut.u_padring.cio_usbdev_dn_pullup_d2p;
+  assign cio_usbdev_dp_d2p           = u_dut.u_padring.cio_usbdev_dp_d2p;
+  assign cio_usbdev_dp_en_d2p        = u_dut.u_padring.cio_usbdev_dp_en_d2p;
+  assign cio_usbdev_dn_d2p           = u_dut.u_padring.cio_usbdev_dn_d2p;
+  assign cio_usbdev_dn_en_d2p        = u_dut.u_padring.cio_usbdev_dn_en_d2p;
+  assign cio_usbdev_d_d2p            = u_dut.u_padring.cio_usbdev_d_d2p;
+  assign cio_usbdev_d_en_d2p         = u_dut.u_padring.cio_usbdev_d_en_d2p;
+  assign cio_usbdev_se0_d2p          = u_dut.u_padring.cio_usbdev_se0_d2p;
+  assign cio_usbdev_rx_enable_d2p    = u_dut.u_padring.cio_usbdev_rx_enable_d2p;
+  assign cio_usbdev_tx_use_d_se0_d2p = u_dut.u_padring.cio_usbdev_tx_use_d_se0_d2p;
 
   // GPIO DPI
   gpiodpi #(.N_GPIO(32)) u_gpiodpi (
@@ -152,9 +160,11 @@ module chip_sim_tb (
     .dp_p2d          (cio_usbdev_dp_p2d),
     .dp_d2p          (cio_usbdev_dp_d2p),
     .dp_en_d2p       (cio_usbdev_dp_en_d2p),
+    .dp_en_p2d       (),
     .dn_p2d          (cio_usbdev_dn_p2d),
     .dn_d2p          (cio_usbdev_dn_d2p),
     .dn_en_d2p       (cio_usbdev_dn_en_d2p),
+    .dn_en_p2d       (),
     .d_p2d           (cio_usbdev_d_p2d),
     .d_d2p           (cio_usbdev_d_d2p),
     .d_en_d2p        (cio_usbdev_d_en_d2p),
