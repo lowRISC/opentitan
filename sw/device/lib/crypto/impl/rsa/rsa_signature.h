@@ -58,7 +58,7 @@ typedef enum rsa_signature_padding {
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_start(
     rsa_size_t size, const uint32_t *d0, const uint32_t *d1, const uint32_t *n,
-    const otcrypto_hash_digest_t message_digest,
+    uint32_t checksum, const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode);
 
 /**
