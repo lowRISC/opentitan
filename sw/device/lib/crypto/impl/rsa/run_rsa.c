@@ -63,9 +63,9 @@ enum {
   /**
    * Expected instruction counts for constant-time modexp operations.
    */
-  kModeRsa2048ModexpInsCnt = 16271720,
-  kModeRsa3072ModexpInsCnt = 52037564,
-  kModeRsa4096ModexpInsCnt = 120118352,
+  kModeRsa2048ModexpInsCnt = 16302881,
+  kModeRsa3072ModexpInsCnt = 52084280,
+  kModeRsa4096ModexpInsCnt = 120180621,
 };
 
 OT_NOINLINE

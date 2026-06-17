@@ -305,10 +305,6 @@ do_keygen:
  * @param[out] dmem[inout]: result, a^d mod n
  */
 do_modexp:
-  # Save mode indicator in register.
-  la x16, mode
-  lw x28, 0(x16)
-
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, rsa_n
   la    x17, RR
@@ -320,9 +316,20 @@ do_modexp:
        dmem[inout] = dmem[inout]^dmem[d] mod dmem[n] */
   jal      x1, modexp
 
-  # Restore mode indicator in DMEM.
-  la x16, mode
-  sw x28, 0(x16)
+  # Restore mode indicator based on limb count x30.
+  li   x16, 8
+  addi x17, x0, MODE_RSA_2048_MODEXP
+  beq  x30, x16, _restore_mode
+
+  li   x16, 12
+  addi x17, x0, MODE_RSA_3072_MODEXP
+  beq  x30, x16, _restore_mode
+
+  addi x17, x0, MODE_RSA_4096_MODEXP
+
+_restore_mode:
+  la   x16, mode
+  sw   x17, 0(x16)
 
   /* Write success. */
   la       x2, ok
