@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -354,6 +355,8 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
       kHardenedBoolFalse;
   (void)is_sideloaded;
 
+  HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
+
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
   HARDENED_TRY(check_key(key));
 
@@ -439,6 +442,8 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
 
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   (void)hw_cleanup_guard;
+
+  HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
 
   HARDENED_TRY(check_key(key));
 

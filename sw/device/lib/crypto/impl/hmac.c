@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -201,6 +202,12 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
 
+  if (key->config.key_mode == kOtcryptoKeyModeHmacSha256) {
+    HARDENED_TRY(stateful_health_check(kTestHmacSha256Bit));
+  } else {
+    HARDENED_TRY(stateful_health_check(kTestHmacSha512Bit));
+  }
+
   // Call the appropriate function from the HMAC driver.
   status_t (*cl_fn)(const hmac_key_t *, const otcrypto_const_byte_buf_t *,
                     otcrypto_word32_buf_t *) = NULL;
@@ -301,6 +308,12 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
 
   // Check the key for null pointers or invalid configurations.
   HARDENED_TRY(check_key(key));
+
+  if (key->config.key_mode == kOtcryptoKeyModeHmacSha256) {
+    HARDENED_TRY(stateful_health_check(kTestHmacSha256Bit));
+  } else {
+    HARDENED_TRY(stateful_health_check(kTestHmacSha512Bit));
+  }
 
   hmac_ctx_t primary_ctx;
   hmac_ctx_t redundant_ctx;

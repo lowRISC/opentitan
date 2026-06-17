@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -116,6 +117,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 #endif
 
   entropy_seed_material_t seed_material;
+  HARDENED_TRY(stateful_health_check(kTestDrgbBit));
   HARDENED_TRY(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
   HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
@@ -159,6 +161,8 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
   if (entropy->len != kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  HARDENED_TRY(stateful_health_check(kTestDrgbBit));
 
   entropy_seed_material_t seed_material;
   HARDENED_TRY(seed_material_construct(entropy, &seed_material));

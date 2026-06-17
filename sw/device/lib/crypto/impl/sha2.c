@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -34,6 +35,7 @@ otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
   if (launder32(digest->len) != kHmacSha256DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_TRY(stateful_health_check(kTestHashSha256Bit));
   HARDENED_CHECK_EQ(digest->len, kHmacSha256DigestWords);
   digest->mode = kOtcryptoHashModeSha256;
 
@@ -54,6 +56,7 @@ otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
   if (launder32(digest->len) != kHmacSha384DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
   HARDENED_CHECK_EQ(digest->len, kHmacSha384DigestWords);
   digest->mode = kOtcryptoHashModeSha384;
 
@@ -74,6 +77,7 @@ otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
   if (launder32(digest->len) != kHmacSha512DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
   HARDENED_CHECK_EQ(digest->len, kHmacSha512DigestWords);
   digest->mode = kOtcryptoHashModeSha512;
 
@@ -87,6 +91,12 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  if (hash_mode == kOtcryptoHashModeSha256) {
+    HARDENED_TRY(stateful_health_check(kTestHashSha256Bit));
+  } else {
+    HARDENED_TRY(stateful_health_check(kTestHashSha512Bit));
+  }
 
   hmac_ctx_t hmac_ctx;
   otcrypto_hash_mode_t hash_mode_used = launder32(0);
