@@ -231,7 +231,7 @@ otbn_fi_sim_test(
     col_threshold = "0.75",
     collision_size = 64,
     collision_symbol = "inout",
-    fixed_instruction_count = False,
+    fixed_instruction_count = True,
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -251,6 +251,37 @@ otbn_fi_sim_test(
         "rsa_d0": "unmasked:64:0x354d9c10865d447ebaac7fe326a9d65724726953c74d2e9098051a5b9148bcfed742487a13f0350dbb897a967fb872e83acd05430c8ba533fe8b2e91e902ef79",
         "rsa_d1": "unmasked:64:0x07618e6fa119246ed63e813a12581081b1adacc6e532f9369fc5289555113fcbca4943b2e02fc6bb722402a4a2a0a685b86b12799e910ab9242e9d8e49d29004",
         "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216b",
+    },
+)
+
+# Look for collisions in RSA 512 decryption between two different exponents
+otbn_fi_sim_test(
+    name = "rsa_512_fi_exp_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_size = 64,
+    collision_symbol = "inout",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "ok",
+    ok_value = "0x739",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto:run_rsa",
+    target_a_secrets = {
+        "mode": "unmasked:4:0x3ad",  # MODE_RSA_512_MODEXP
+        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
+        "rsa_d0": "unmasked:64:0x354d9c10865d447ebaac7fe326a9d65724726953c74d2e9098051a5b9148bcfed742487a13f0350dbb897a967fb872e83acd05430c8ba533fe8b2e91e902ef79",
+        "rsa_d1": "unmasked:64:0x07618e6fa119246ed63e813a12581081b1adacc6e532f9369fc5289555113fcbca4943b2e02fc6bb722402a4a2a0a685b86b12799e910ab9242e9d8e49d29004",
+        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
+    },
+    # Same ciphertext, different exponent share (d0 modified)
+    target_b_secrets = {
+        "mode": "unmasked:4:0x3ad",
+        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
+        "rsa_d0": "unmasked:64:0x354d9c10865d447ebaac7fe326a9d65724726953c74d2e9098051a5b9148bcfed742487a13f0350dbb897a967fb872e83acd05430c8ba533fe8b2e91e902ef78",
+        "rsa_d1": "unmasked:64:0x07618e6fa119246ed63e813a12581081b1adacc6e532f9369fc5289555113fcbca4943b2e02fc6bb722402a4a2a0a685b86b12799e910ab9242e9d8e49d29004",
+        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
     },
 )
 
