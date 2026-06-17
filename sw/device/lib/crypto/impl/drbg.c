@@ -117,7 +117,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 #endif
 
   entropy_seed_material_t seed_material;
-  HARDENED_TRY(stateful_health_check(kTestDrgbBit));
+  HARDENED_TRY(stateful_health_check(kTestRngBit));
   HARDENED_TRY(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
   HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
@@ -162,7 +162,7 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY(stateful_health_check(kTestDrgbBit));
+  HARDENED_TRY(stateful_health_check(kTestRngBit));
 
   entropy_seed_material_t seed_material;
   HARDENED_TRY(seed_material_construct(entropy, &seed_material));

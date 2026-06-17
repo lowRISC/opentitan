@@ -50,6 +50,17 @@ extern "C" {
  */
 status_t entropy_csrng_kat(void);
 
+/**
+ * Run Known-Answer-Test (KAT) on the entropy_src SHA-3 conditioning.
+ *
+ * Configures entropy_src into firmware override mode, pushes 12 words of
+ * known message input into the WR_DATA FIFO, reads the resulting digest,
+ * and verifies it matches the expected SHA-3 conditioning digest.
+ *
+ * @return Operation status in `status_t` format.
+ */
+status_t entropy_src_sha3_conditioning_kat(void);
+
 #ifdef __cplusplus
 }
 #endif
