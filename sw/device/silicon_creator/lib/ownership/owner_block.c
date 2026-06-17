@@ -637,13 +637,16 @@ hardened_bool_t owner_rescue_command_allowed(
     const owner_rescue_config_t *rescue, uint32_t command) {
   // If no rescue configuration is supplied in the owner config, then all rescue
   // commands are allowed.
-  if ((hardened_bool_t)rescue == kHardenedBoolFalse)
+  if (launder32((hardened_bool_t)rescue) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ((hardened_bool_t)rescue, kHardenedBoolFalse);
     return kHardenedBoolTrue;
+  }
 
   hardened_bool_t allowed = kHardenedBoolFalse;
   size_t length = (rescue->header.length - sizeof(*rescue)) / sizeof(uint32_t);
   for (size_t i = 0; i < length; ++i) {
-    if (command == rescue->command_allow[i]) {
+    if (launder32(command) == rescue->command_allow[i]) {
+      HARDENED_CHECK_EQ(command, rescue->command_allow[i]);
       allowed = kHardenedBoolTrue;
     }
   }
