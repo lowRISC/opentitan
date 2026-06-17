@@ -217,7 +217,6 @@ KEY_VALIDITY_TESTS = [
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         ecdsa_key = {key.ecdsa.label: key.ecdsa.name},
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(

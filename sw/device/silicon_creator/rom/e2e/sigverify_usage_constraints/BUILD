@@ -270,7 +270,6 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
             t["lc_state_val"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(

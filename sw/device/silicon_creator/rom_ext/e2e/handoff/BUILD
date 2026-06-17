@@ -67,7 +67,6 @@ _FAULT_TEST_CASES = {
         ],
         defines = test_data["defines"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -101,7 +100,6 @@ opentitan_test(
     name = "epmp_test",
     srcs = ["epmp_print.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -162,7 +160,6 @@ SRAM_EXEC_TESTCASES = [
         name = "sram_exec_{}_test".format(test["name"]),
         srcs = ["sram_exec_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -194,7 +191,6 @@ opentitan_test(
     name = "rom_ext_device_status_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(

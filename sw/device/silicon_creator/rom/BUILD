@@ -646,15 +646,13 @@ STACK_UTILIZATION_FPGA_PARAMS = {
             no-op
         """,
     )
-    for fpga in ("cw310", "cw340")
+    for fpga in ["cw340"]
 }
 
 opentitan_test(
     name = "stack_utilization_test",
-    cw310 = STACK_UTILIZATION_FPGA_PARAMS["cw310"],
     cw340 = STACK_UTILIZATION_FPGA_PARAMS["cw340"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": "cw310",
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "cw340",
     },
 )
