@@ -102,7 +102,7 @@ However, only Verilator simulation and FPGA device software tests can be run wit
 
 * Query for all ROM functional and E2E tests for FPGA:
   ```sh
-  bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/silicon_creator/...))'
+  bazel query 'filter(".*_fpga_cw340", kind(".*test rule", //sw/device/silicon_creator/...))'
   ```
   and for Verilator:
   ```sh
@@ -110,7 +110,7 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```
 * Run all ROM functional and E2E tests on FPGA:
   ```sh
-  bazel test --test_tag_filters=cw310 //sw/device/silicon_creator/...
+  bazel test --test_tag_filters=cw340 //sw/device/silicon_creator/...
   ```
   and for Verilator:
   ```sh
@@ -120,13 +120,13 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```sh
   bazel test \
     --define DISABLE_VERILATOR_BUILD=true \
-    --test_tag_filters=cw310 \
+    --test_tag_filters=cw340 \
     --test_output=streamed \
     //sw/device/silicon_creator/lib:boot_data_functest
   ```
   or, remove the define/filtering flags and just append the `<device>` name like:
   ```sh
-  bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw310
+  bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw340
   ```
   and similarly for Verilator:
   ```sh
@@ -137,7 +137,7 @@ However, only Verilator simulation and FPGA device software tests can be run wit
 
 * Query for all chip-level tests for FPGA:
   ```sh
-  bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/tests/...))'
+  bazel query 'filter(".*_fpga_cw340", kind(".*test rule", //sw/device/tests/...))'
   ```
   and for Verilator:
   ```sh
@@ -145,7 +145,7 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```
 * Run all chip-level tests on FPGA:
   ```sh
-  bazel test --define DISABLE_VERILATOR_BUILD=true --test_tag_filters=cw310 //sw/device/tests/...
+  bazel test --define DISABLE_VERILATOR_BUILD=true --test_tag_filters=cw340 //sw/device/tests/...
   ```
   and for Verilator:
   ```sh
@@ -155,13 +155,13 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```sh
   bazel test \
     --define DISABLE_VERILATOR_BUILD=true
-    --test_tag_filters=cw310 \
+    --test_tag_filters=cw340 \
     --test_output=streamed \
     //sw/device/tests:uart_smoketest
   ```
   or, remove the define/filtering flags and just append the `<device>` name like:
   ```sh
-  bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+  bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340
   ```
   and similarly for Verilator:
   ```sh
@@ -273,15 +273,15 @@ The latter sledgehammer is only intended to be used as a last resort when the ex
 Create a `.bazelrc` file in your home directory to simplify executing bazel commands.
 For example, you can use a `.bazelrc` to:
 * set up a [disk cache](#disk-cache), or
-* skip running tests on the CW310 FPGA if you don not have one.
+* skip running tests on the CW340 FPGA if you don not have one.
 
 A `.bazelrc` file that would accomplish this would look like:
 ```
 # Make Bazel use a local directory as a remote cache.
 build --disk_cache=~/bazel_cache
 
-# Skip CW310 FPGA tests, since I do not have said FPGA.
-test --test_tag_filters=-cw310
+# Skip CW340 FPGA tests, since I do not have said FPGA.
+test --test_tag_filters=-cw340
 ```
 
 See the [`.bazelrc`](https://github.com/lowRISC/opentitan/blob/master/.bazelrc) file in the OpenTitan repository for more examples.
@@ -346,7 +346,7 @@ bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smokete
 By default, Bazel does not write test outputs to STDOUT.
 To see a test's output in real time, use the `--test_output=streamed` flag, like:
 ```sh
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340
 ```
 
 ## Filtering Broken Tests
@@ -355,7 +355,7 @@ Some tests are marked known to be broken (and are in the process of being triage
 To prevent running these tests when running a block of tests, use the `test_tag_filters=-broken` flag.
 For example, to run all chip-level tests except the broken ones on FPGA:
 ```sh
-bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
+bazel test --test_tag_filters=cw340,-broken //sw/device/tests/...
 ```
 
 ## Using Bazel with Git Worktrees

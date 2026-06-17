@@ -160,13 +160,13 @@ PROD, PROD\_END | N              | Y               | Y
 
 ### FPGA example
 
-The following command runs the `SV1` test suite on `fpga_cw310_sival` and
-`fpga_cw310_sival_rom_ext` execution environments.
+The following command runs the `SV1` test suite on `fpga_cw340_sival` and
+`fpga_cw340_sival_rom_ext` execution environments.
 
 ```console
 bazel test   --define DISABLE_VERILATOR_BUILD=true      \
-    --build_tag_filters=cw310_sival,cw310_sival_rom_ext \
-    --test_tag_filters=cw310_sival,cw310_sival_rom_ext  \
+    --build_tag_filters=cw340_sival,cw340_sival_rom_ext \
+    --test_tag_filters=cw340_sival,cw340_sival_rom_ext  \
     --test_output=streamed          \
     --define bitstream=gcp_splice   \
     --cache_test_results=no         \

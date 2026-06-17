@@ -85,7 +85,7 @@
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             This can be an important diagnostic tool, so setting it to SV1.
-            This test already runs in CW310.
+            This test already runs in FPGA.
             '''
       stage: V2
       si_stage: SV1
@@ -108,7 +108,7 @@
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             For early SiV we could rely on the external reset, so this seems SV3.
-            This test already runs in CW310.
+            This test already runs in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -158,7 +158,7 @@
             Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This test already runs in CW310.
+            This test already runs in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -215,7 +215,7 @@
             escalation is not triggered.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This test already runs in CW310.
+            This test already runs in FPGA.
             '''
       stage: V2
       si_stage: SV3

@@ -109,7 +109,7 @@ def exec_env_common_attrs(**kwargs):
         ),
         "exec_env": attr.string(
             default = kwargs.get("exec_env", "{name}"),
-            doc = "Name of the execution environment (e.g. `fpga_cw310`)",
+            doc = "Name of the execution environment (e.g. `fpga_cw340`)",
         ),
         "libs": attr.label_list(
             default = kwargs.get("libs", []),

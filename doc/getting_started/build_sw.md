@@ -109,7 +109,7 @@ bazel query 'tests(//sw/device/tests/...)'
 ```
 ### Tags and wildcards
 
-TLDR: `bazel test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...`
+TLDR: `bazel test --test_tag_filters=-cw340,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...`
 *Should* be able to run all the tests and build steps in OpenTitan that don't require optional setup steps, and
 
 You may find it useful to use wildcards to build/test all targets in the OpenTitan repository instead of individual targets.
@@ -117,9 +117,9 @@ You may find it useful to use wildcards to build/test all targets in the OpenTit
 If a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
 We maintain or use the following tags to support this:
 * `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
-* `cw310`, `cw310_test_rom`, and `cw310_rom_with_fake_keys` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
-  The `cw310` tag may be used in `--test_tag_filters` to enable concise filtering to select tests that run on this board and include or exclude them.
-  Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests tagged `cw310_test_rom`.
+* `cw340`, `cw340_test_rom`, and `cw340_rom_with_fake_keys` are used to tag tests that depend on a correctly setup cw340 "Luna Board" to emulate OpenTitan.
+  The `cw340` tag may be used in `--test_tag_filters` to enable concise filtering to select tests that run on this board and include or exclude them.
+  Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests tagged `cw340_test_rom`.
 * `verilator` is used to tag tests that depend on a verilated model of OpenTitan that can take a significant time to build.
   Verilated tests can still be built with `--define DISABLE_VERILATOR_BUILD`, but they will skip the invocation of Verilator and cannot be run.
 * `vivado` is used to tag tests that critically depend on Vivado.
@@ -129,12 +129,12 @@ We maintain or use the following tags to support this:
   Intermediate build artifacts may also be tagged with manual to prevent them from being unintentionally built if they cause other problems.
 * `skip_in_ci` is used to tag ROM end-to-end tests that we currently skip in CI.
   ROM end-to-end tests are typically written for five life cycle states: TEST\_UNLOCKED0, DEV, PROD, PROD\_END, and RMA.
-  This tag allows us to limit the tests run in CI to a single life cycle state, allowing CW310 tests to finish in a reasonable timeframe.
+  This tag allows us to limit the tests run in CI to a single life cycle state, allowing CW340 tests to finish in a reasonable timeframe.
   We run tests for the remaining lifecycle states outside the CI in a less frequent manner.
 
 `ci/scripts/check-bazel-tags.sh` performs some useful queries to ensure these tags are applied.
-These tags can then be used to filter tests using `--build_tests_only --test_tag_filters=-cw310,-verilator,-vivado`.
-These tags can also be used to filter builds using `--build_tag_filters=-cw310,-verilator,-vivado`.
+These tags can then be used to filter tests using `--build_tests_only --test_tag_filters=-cw340,-verilator,-vivado`.
+These tags can also be used to filter builds using `--build_tag_filters=-cw340,-verilator,-vivado`.
 
 `--build_tests_only` is important when matching wildcards if you aren't using
 `--build_tag_filters` to prevent `bazel test //...` from building targets that are filtered out by `--test_tag_filters`.
@@ -145,8 +145,8 @@ There is no way to filter out dependencies of a test\_suite such as `//sw/device
 
 On-device tests such as `//sw/device/tests:uart_smoketest` include multiple targets for different device simulation/emulation tools.
 Typically, you will only want to run one of these test targets at a time (for instance, only Verilator or only FPGA).
-Add `_sim_verilator` to the test name to run the test on Verilator only, and `_fpga_cw310_rom_with_fake_keys` or `_fpga_cw310_test_rom` to run the test on FPGA only.
-Not all tests are available on all of these targets; in particular, tests do not always expose both `_fpga_cw310_rom_with_fake_keys` and `fpga_cw310_test_rom` options, so if one does not work then it's good to try the other.
+Add `_sim_verilator` to the test name to run the test on Verilator only, and `_fpga_cw340_rom_with_fake_keys` or `_fpga_cw340_test_rom` to run the test on FPGA only.
+Not all tests are available on all of these targets; in particular, tests do not always expose both `_fpga_cw340_rom_with_fake_keys` and `fpga_cw340_test_rom` options, so if one does not work then it's good to try the other.
 
 You can check which Verilator tests are available under a given directory using:
 ```console
@@ -155,7 +155,7 @@ bazel query 'attr(tags, verilator, tests(//sw/device/tests/...))'
 
 For FPGA tests, just change the tag:
 ```console
-bazel query 'attr(tags, cw310, tests(//sw/device/tests/...))'
+bazel query 'attr(tags, cw340, tests(//sw/device/tests/...))'
 ```
 
 For more information, please refer to the [Verilator](./setup_verilator.md) and/or [FPGA](./setup_fpga.md) setup instructions.
@@ -194,7 +194,7 @@ bazel query 'kind(cc_.*, tests(//sw/device/silicon_creator/lib/...))'
 
 #### Building and running **all** (on-host) tests
 ```console
-bazel test --test_tag_filters=-cw310,-dv,-verilator //sw/device/silicon_creator/lib/...
+bazel test --test_tag_filters=-cw340,-dv,-verilator //sw/device/silicon_creator/lib/...
 ```
 
 #### Building and running a **single** (on-host) test
@@ -220,7 +220,7 @@ Device software is built and run on OpenTitan hardware.
 There are three OpenTitan "devices" for simulating/emulating OpenTitan hardware:
 1. "sim\_dv": DV simulation (i.e., RTL simulation with commercial simulators),
 1. "sim\_verilator": Verilator simulation (i.e., RTL simulation with the open source Verilator simulator),
-1. "fpga\_cw310": FPGA.
+1. "fpga\_cw340": FPGA.
 
 Additionally, for each device, there are two types of software images that can be built, depending on the memory type the software is destined for, i.e.:
 1. ROM,
@@ -239,7 +239,7 @@ Specifically, building either an `opentitan_rom_binary` or `opentitan_flash_bina
 * `<target>_<device>.logs.txt`: a textual database of addresses where `LOG_*` macros are invoked (for DV backdoor logging interface).
 * `<target>_<device>.rodata.txt`: same as above, but contains the strings that are logged.
 * `<target>_<device>.*.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
-Note, `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
+Note, `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw340`}.
 
 Additionally, if the `opentitan_flash_binary` is signed, then these files will also be under `bazel-out/`:
 * `<target>_<device>.<signing key name>.signed.bin`: the same `.bin` file above, but with a valid signature field in the manifest.

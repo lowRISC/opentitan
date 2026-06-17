@@ -41,13 +41,13 @@ For example, see the `//hw/bitstream:rom` target defined in [hw/bitstream/BUILD]
     ```console
     $ cd $REPO_TOP
     $ ./util/fpga/splice_rom.sh
-    $ bazel run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+    $ bazel run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_earlgrey_cw340_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit
     ```
 
-    The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup](../../getting_started/setup_fpga.md)).
+    The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_earlgrey_cw340_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit` (this is created after following the steps in [FPGA Setup](../../getting_started/setup_fpga.md)).
 
     The script assumes that there is an existing boot ROM image under `build-bin/sw/device/lib/testing/test_rom` and then creates a new bitfile of the same name at the same location.
-    The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
+    The original input bitfile is moved to `build/lowrisc_systems_chip_earlgrey_cw340_0.1/synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit.orig`.
 
     `opentitantool` can then be used to directly flash the updated bitstream to the FPGA.
 
@@ -64,8 +64,8 @@ The example below builds the `hello_world` image and loads it onto the FPGA.
 ```console
 $ cd ${REPO_TOP}
 $ bazel run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
-$ bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
-$ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
+$ bazel build //sw/device/examples/hello_world:hello_world_fpga_cw340_bin
+$ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw340_bin)
 ```
 
 Uart output:
@@ -107,8 +107,8 @@ The following command could easily save hours compared to a naive `git bisect`:
 ./bazelisk.sh run //util/fpga:bitstream_bisect -- \
     --good HEAD~30 \
     --bad HEAD \
-    --fast-command "./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw310_rom" \
-    --slow-command "./bazelisk.sh test --define bitstream=vivado //sw/device/tests:uart_smoketest_fpga_cw310_rom"
+    --fast-command "./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw340_rom" \
+    --slow-command "./bazelisk.sh test --define bitstream=vivado //sw/device/tests:uart_smoketest_fpga_cw340_rom"
 ```
 
 One caveat is that neither `git bisect` nor `:bitstream_bisect` will help if the FPGA somehow retains state between tests.
@@ -136,13 +136,13 @@ These cached bitstreams can be downloaded and used as-is, or we can splice in fr
 
 ### Building bitstreams on CI and uploading artifacts to GCS
 
-The `chip_earlgrey_cw310` CI job builds the `//hw/bitstream/vivado:standard` target which will build a bitstream with the test ROM and RMA OTP image.
+The `chip_earlgrey_cw340` CI job builds the `//hw/bitstream/vivado:standard` target which will build a bitstream with the test ROM and RMA OTP image.
 This target will also produce bitstreams with the ROM spliced in and the DEV OTP image spliced in.
 The following files are produced as a result:
 
-* `fpga_cw310_rom.bit` (ROM, RMA OTP image)
-* `fpga_cw310_rom_otp_dev.bit` (ROM, DEV OTP image)
-* `lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (test ROM, RMA OTP image)
+* `fpga_cw340_rom.bit` (ROM, RMA OTP image)
+* `fpga_cw340_rom_otp_dev.bit` (ROM, DEV OTP image)
+* `lowrisc_systems_chip_earlgrey_cw340_0.1.bit` (test ROM, RMA OTP image)
 * `memories.mmi`
 
 If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz

@@ -14,7 +14,7 @@
             Verify that turning off this clock does not affect the other derived clocks.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This tests already run in CW310.
+            This tests already run in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -48,7 +48,7 @@
             and the execution pc is close enough to the address that performs the hung access.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This tests already run in CW310.
+            This tests already run in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -82,7 +82,7 @@
            and the execution pc is close enough to the address that performs the hung access.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This tests already run in CW310.
+            This tests already run in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -317,7 +317,7 @@
             keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
             recoverable fault status should show no errors for the disabled clocks.
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This tests already run in CW310.
+            This tests already run in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -342,7 +342,7 @@
             After reset the clock measurements should be off and the recoverable fault status
             should be cleared.
             SiVal: CPU must be enabled and clocks must be calibrated, but no other OTP or
-            lifecycle dependencies. This tests already run in CW310.
+            lifecycle dependencies. This tests already run in FPGA.
             '''
       stage: V2
       si_stage: SV3
@@ -381,7 +381,7 @@
             peripheral and transactional clocks being disabled among others. The check is
             that spurious escalation is not triggered.
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This tests already run in CW310.
+            This tests already run in FPGA.
             '''
       stage: V2
       si_stage: SV3

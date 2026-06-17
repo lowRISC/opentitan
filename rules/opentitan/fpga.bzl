@@ -117,7 +117,7 @@ def _test_dispatch(ctx, exec_env, firmware):
       (File, List[File]) The test script and needed runfiles.
     """
     if ctx.attr.kind == "rom":
-        fail("CW310 is not capable of executing ROM tests")
+        fail("FPGA is not capable of executing ROM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 

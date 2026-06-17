@@ -27,7 +27,7 @@ export BOARD=cw340
 
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz) from our public bitstream cache GCS bucket.
+If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz) from our public bitstream cache GCS bucket.
 
 For example, to download and unpack the bitstream, run the following:
 
@@ -67,11 +67,11 @@ Specifically, you can build the [`//hw/bitstream/universal:splice`](https://gith
 1. OTP image (using the `--//hw/bitstream/universal:otp=<OTP image Bazel target>` label flag), and/or
 1. `exec_env` (using the `--//hw/bitstream/universal:env=<exec_env Bazel target>` label flag; `exec_env`s define a collection of ROM, OTP, and base bitstream targets to use).
 
-For example, to splice a CW310 bitstream with the mask ROM image and a specific OTP image, you can run
+For example, to splice a CW340 bitstream with the mask ROM image and a specific OTP image, you can run
 ```sh
 bazel build \
     --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp:img_dev \
-    --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys \
+    --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
     //hw/bitstream/universal:splice
 ```
 
@@ -163,7 +163,7 @@ To do so, create a file named `/etc/udev/rules.d/90-lowrisc.rules` and add the f
 # - The USB devices itself (used e.g. by Vivado to program the FPGA)
 # - Virtual UART at /dev/tty/XXX
 
-# NewAE Technology Inc. ChipWhisperer boards e.g. CW310, CW305, CW-Lite, CW-Husky
+# NewAE Technology Inc. ChipWhisperer boards e.g. CW340, CW305, CW-Lite, CW-Husky
 ACTION=="add|change", SUBSYSTEM=="usb|tty", ATTRS{idVendor}=="2b3e", ATTRS{idProduct}=="ace[0-9]|c[3-6][0-9][0-9]", MODE="0666"
 
 # Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
@@ -183,18 +183,6 @@ You then need to reload the udev rules:
 ```console
 sudo udevadm control --reload-rules && sudo service udev restart && sudo udevadm trigger
 ```
-
-### CW310 Board
-
-The CW310 board supports different power options.
-It is recommended to power the board via the included DC power adapter.
-To this end:
-1. Set the *SW2* switch (to the right of the barrel connector) up to the *5V Regulator* option.
-2. Set the switch below the barrel connector to the right, towards the *Barrel* option.
-3. Set the *Control Power* switch (bottom left corner, *SW7*) to the right.
-4. Ensure the *Tgt Power* switch (above the fan, *S1*) is set to the right, towards the *Auto* option.
-5. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
-6. Use a USB-C cable to connect your PC with the *USB-C Data* connector (*J8*) in the lower left corner on the board.
 
 ### CW340 Board
 
@@ -264,11 +252,10 @@ sudo dmesg -Hw
 ```
 This should show which serial ports have been assigned, or if the boards are having trouble connecting to USB.
 If `dmesg` reports a problem you can:
-1. trigger a reset of your CW310 with *USB_RST* on *SW5*,
 2. trigger a reset of your CW340 with *Control Power* on *SW7*, and/or
 3. trigger a reset of your HyperDebug with the black *RESET* button on *B2*.
 When properly connected, `dmesg` should identify each board, not show any errors.
-The serial ports identified should be named `'/dev/ttyACM*'` for CW310 and `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
+The serial ports identified should be named `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
  >e.g. `/dev/ttyACM1`.
 
 To ensure that you have sufficient access permissions, set up the udev rules as explained above.
@@ -353,11 +340,6 @@ For the CW340, its contents would look like:
 ```sh
 --interface=cw340
 ```
-Or:
-```sh
---interface=cw310
-```
-For CW310.
 
 To flash the bitstream onto the FPGA using `opentitantool`, use the following command:
 
@@ -440,17 +422,6 @@ No external JTAG adapter is needed.
 After bootstrapping the firmware, the TAP straps may need to be set.
 The FTDI Chip has IOs that correctly set the TAP straps, but for that to work the jumpers JP11 (IOC5) and JP12 (IOC8) should be configured as described [above](#Before-Connecting-HyperDebug-to-the-CW340-Base-Board).
 
-### CW310 Board
-
-The CW310 supports JTAG-based debugging with OpenOCD and GDB via the standard ARM JTAG headers on the board (labeled USR Debug Headers).
-To use it, program the bitstream and bootstrap the desired firmware, then connect a JTAG adapter to one of the headers.
-For this guide, the `Olimex ARM-USB-TINY-H` JTAG adapter was used.
-
-Connect a JTAG adapter to one of the headers.
-For the `Olimex ARM-USB-TINY-H`, use the classic ARM JTAG header (J13) and make sure switch S2 is set to 3.3 V.
-Depending on the adapter's default state, OpenTitan may be held in reset when the adapter is initially connected.
-This reset will come under software control once OpenOCD initializes the driver.
-
 #### Device permissions: udev rules
 
 The JTAG adapter's device node in `/dev` must have read-write permissions.
@@ -505,44 +476,6 @@ bazel run //third_party/openocd -- \
     -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
-#### CW310 - Olimex adapter
-
-```sh
-cd $REPO_TOP
-bazel run //third_party/openocd -- \
-    -f "bazel-opentitan/$(bazel outquery //third_party/openocd:jtag_olimex_cfg)" \
-    -c "adapter speed 500; transport select jtag; reset_config trst_only" \
-    -f util/openocd/target/lowrisc-earlgrey.cfg
-```
-
-Example OpenOCD output:
-```console
-Open On-Chip Debugger 0.11.0
-Licensed under GNU GPL v2
-For bug reports, read
-	http://openocd.org/doc/doxygen/bugs.html
-trst_only separate trst_push_pull
-
-Info : Hardware thread awareness created
-force hard breakpoints
-Info : Listening on port 6666 for tcl connections
-Info : Listening on port 4444 for telnet connections
-Info : clock speed 1000 kHz
-Info : JTAG tap: riscv.tap tap/device found: 0x04f5484d (mfg: 0x426 (Google Inc), part: 0x4f54, ver: 0x0)
-Info : datacount=2 progbufsize=8
-Info : Examined RISC-V core; found 1 harts
-Info :  hart 0: XLEN=32, misa=0x40101106
-Info : starting gdb server for riscv.tap.0 on 3333
-Info : Listening on port 3333 for gdb connections
-```
-
-Note that the `reset_config` command may need to be adjusted for the particular JTAG adapter in use.
-TRSTn is available on the 20-pin ARM JTAG header only.
-
-For more guidance on using OpenOCD, see [Using OpenOCD](./using_openocd.md).
-
-To actually debug through OpenOCD, it must either be connected through telnet or GDB.
-
 ### Debug with OpenOCD
 
 The following is an example for using telnet
@@ -568,7 +501,7 @@ bazel build --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw340.el
 
 bazel run @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb -- \
   -ex "target extended-remote :3333" -ex "info reg" \
-  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
+  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw340.elf)"
 ```
 
 The above will print out the contents of the registers upon success.

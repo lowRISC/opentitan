@@ -178,11 +178,11 @@ The following OTP partitions are configured:
 the EarlGrey design. The following sections describe the targets in more
 detail.
 
-### `:fpga_cw310_sival`
+### `:fpga_cw340_sival`
 
 FPGA configuration used to emulate silicon targets. This rule can be used by
 targets that require execution at the `rom_ext` stage level in flash, as well
-as SRAM programs. Use the `fpga_cw310_sival_rom_ext` execution environment to
+as SRAM programs. Use the `fpga_cw340_sival_rom_ext` execution environment to
 emulate silicon targets containing a `rom_ext` stage.
 
 Configuration:
@@ -194,7 +194,7 @@ Configuration:
 }
 ```
 
-### `:fpga_cw310_sival_rom_ext`
+### `:fpga_cw340_sival_rom_ext`
 
 FPGA configuration used to emulate silicon targets containing a `rom_ext`
 stage. This is the recommended option for test cases that implemented to run in
