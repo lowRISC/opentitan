@@ -1,6 +1,13 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+//
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+//                -o hw/top_darjeeling/
+
 
 module chip_darjeeling_verilator #(
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
@@ -8,30 +15,12 @@ module chip_darjeeling_verilator #(
 ) (
   // Clock and Reset
   input clk_i,
-  input rst_ni,
-
-  // communication with GPIO
-  input [31:0] cio_gpio_p2d_i,
-  output logic [31:0] cio_gpio_d2p_o,
-  output logic [31:0] cio_gpio_en_d2p_o,
-  output logic [31:0] cio_gpio_pull_en_o,
-  output logic [31:0] cio_gpio_pull_select_o,
-
-  // communication with UART
-  input cio_uart_rx_p2d_i,
-  output logic cio_uart_tx_d2p_o,
-  output logic cio_uart_tx_en_d2p_o,
-
-  // communication with SPI
-  input cio_spi_device_sck_p2d_i,
-  input cio_spi_device_csb_p2d_i,
-  input cio_spi_device_sdi_p2d_i,
-  output logic cio_spi_device_sdo_d2p_o,
-  output logic cio_spi_device_sdo_en_d2p_o
+  input rst_ni
 );
 
   import top_darjeeling_pkg::*;
   import prim_pad_wrapper_pkg::*;
+
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
@@ -239,7 +228,7 @@ module chip_darjeeling_verilator #(
   assign unused_dio_in_raw = ^dio_in_raw;
 
   // Manual pads
-  logic manual_out_por_n, manual_oe_por_n;
+  logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
   logic manual_in_jtag_tck, manual_out_jtag_tck, manual_oe_jtag_tck;
   logic manual_in_jtag_tms, manual_out_jtag_tms, manual_oe_jtag_tms;
   logic manual_in_jtag_tdi, manual_out_jtag_tdi, manual_oe_jtag_tdi;
@@ -255,6 +244,7 @@ module chip_darjeeling_verilator #(
   pad_attr_t manual_attr_jtag_trst_n;
   pad_attr_t manual_attr_otp_ext_volt;
 
+
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -265,24 +255,21 @@ module chip_darjeeling_verilator #(
   logic scan_rst_n;
    prim_mubi_pkg::mubi4_t scanmode;
 
-  // TODO: instantiate padring and route these signals through that module
+  // Padring substitute for the Verilator simulation top. The flat
+  // per-peripheral `cio_*` pad signals live inside `u_padring` (see
+  // padring_verilator.sv) and are driven and observed by the testbench DPI
+  // models through hierarchical references.
+  padring_verilator u_padring (
+    .mio_in_o  (mio_in ),
+    .mio_out_i (mio_out),
+    .mio_oe_i  (mio_oe ),
+    .mio_attr_i(mio_attr),
 
-  always_comb begin : assign_dio_in
-    dio_in = '0;
-    dio_in[DioSpiDeviceSck] = cio_spi_device_sck_p2d_i;
-    dio_in[DioSpiDeviceCsb] = cio_spi_device_csb_p2d_i;
-    dio_in[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d_i;
-    dio_in[DioUart0Rx] = cio_uart_rx_p2d_i;
-  end
+    .dio_in_o (dio_in ),
+    .dio_out_i(dio_out),
+    .dio_oe_i (dio_oe )
+  );
 
-  assign cio_spi_device_sdo_d2p_o = dio_out[DioSpiDeviceSd1];
-  assign cio_spi_device_sdo_en_d2p_o = dio_oe[DioSpiDeviceSd1];
-  assign cio_uart_tx_d2p_o    = dio_out[DioUart0Tx];
-  assign cio_uart_tx_en_d2p_o = dio_oe[DioUart0Tx];
-
-  always_comb begin : assign_mio_in
-    mio_in = '0;
-  end
 
   //////////////////////////////////
   // AST - Common for all targets //
@@ -327,7 +314,6 @@ module chip_darjeeling_verilator #(
   // entropy source interface
   logic es_rng_enable, es_rng_valid;
   logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
-  logic es_rng_fips;
 
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
@@ -341,16 +327,90 @@ module chip_darjeeling_verilator #(
   // Jitter enable
   prim_mubi_pkg::mubi4_t clk_main_jitter_en;
 
-  ////////////////////////////////
-  // AST - Custom for Verilator //
-  ////////////////////////////////
+  // reset domain connections
+  import rstmgr_pkg::PowerDomains;
+  import rstmgr_pkg::DomainAonSel;
+  import rstmgr_pkg::DomainMainSel;
 
+  // Memory configuration connections
+  ast_pkg::spm_rm_t ast_ram_1p_cfg;
+  ast_pkg::spm_rm_t ast_rf_cfg;
+  ast_pkg::spm_rm_t ast_rom_cfg;
+  ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
+  ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
+
+  // conversion from ast structure to memory centric structures
+  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
+  assign ram_1p_cfg = '{
+    ram_cfg: '{
+                test:   ast_ram_1p_cfg.test,
+                cfg_en: ast_ram_1p_cfg.marg_en,
+                cfg:    ast_ram_1p_cfg.marg
+              },
+    rf_cfg:  '{
+                test:   ast_rf_cfg.test,
+                cfg_en: ast_rf_cfg.marg_en,
+                cfg:    ast_rf_cfg.marg
+              }
+  };
+
+  // this maps as follows:
+  // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
+  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
+  assign spi_ram_2p_cfg = '{
+    a_ram_lcfg: '{
+                   test:   ast_ram_2p_lcfg.test_a,
+                   cfg_en: ast_ram_2p_lcfg.marg_en_a,
+                   cfg:    ast_ram_2p_lcfg.marg_a
+                 },
+    b_ram_lcfg: '{
+                   test:   ast_ram_2p_lcfg.test_b,
+                   cfg_en: ast_ram_2p_lcfg.marg_en_b,
+                   cfg:    ast_ram_2p_lcfg.marg_b
+                 },
+    default: '0
+  };
+
+  prim_rom_pkg::rom_cfg_t rom_ctrl0_cfg;
+  prim_rom_pkg::rom_cfg_t rom_ctrl1_cfg;
+
+  assign rom_ctrl0_cfg = '{
+    test: ast_rom_cfg.test,
+    cfg_en: ast_rom_cfg.marg_en,
+    cfg: ast_rom_cfg.marg
+  };
+  assign rom_ctrl1_cfg = '{
+    test: ast_rom_cfg.test,
+    cfg_en: ast_rom_cfg.marg_en,
+    cfg: ast_rom_cfg.marg
+  };
+
+  //////////////////////////////////
+  // AST - Custom for targets     //
+  //////////////////////////////////
+
+
+  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
+
+  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
+  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
+
+  wire unused_t0, unused_t1;
+  assign unused_t0 = 1'b0;
+  assign unused_t1 = 1'b0;
+
+  // AST does not use all clocks / resets forwarded to it
+  logic unused_slow_clk_en;
+  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
+
+  logic unused_pwr_clamp;
+  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
+
+  // Clock and power-on-reset generation specific to the Verilator top.
+  // AON clock divider. Reset is not used because verilator uses only sync
+  // resets (and does not model 'x'); resetting the divider would silence
+  // clk_aon and the clk_aon logic inside top_darjeeling would not reset.
   logic clk_aon;
-  // reset is not used below because verilator uses only sync resets
-  // and also does not under 'x'.
-  // if we allow the divider below to reset, clk_aon will be silenced,
-  // and as a result all the clk_aon logic inside top_darjeeling does not
-  // get reset
   prim_clock_div #(
     .Divisor(4)
   ) u_aon_div (
@@ -369,46 +429,17 @@ module chip_darjeeling_verilator #(
     aon: clk_aon
   };
 
-  // platform specific supply manipulation to create POR
+  // Target (Verilator) specific supply manipulation to create a synthetic POR condition.
   logic [3:0] cnt;
   logic vcc_supp;
-
-  // keep incrementing until saturation
   always_ff @(posedge clk_aon) begin
     if (cnt < 4'hf) begin
       cnt <= cnt + 1'b1;
     end
   end
-
-  // create fake por condition
   assign vcc_supp = cnt < 4'h4 ? 1'b0 :
                     cnt < 4'h8 ? 1'b1 :
                     cnt < 4'hc ? 1'b0 : 1'b1;
-
-  //////////////////////////////////
-  // AST - Custom for targets     //
-  //////////////////////////////////
-
-
-  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
-
-  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
-  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
-
-
-  wire unused_t0, unused_t1;
-  assign unused_t0 = 1'b0;
-  assign unused_t1 = 1'b0;
-
-  // AST does not use all clocks / resets forwarded to it
-  logic unused_slow_clk_en;
-  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
-
-  logic unused_pwr_clamp;
-  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
-
-
-  prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
@@ -420,17 +451,18 @@ module chip_darjeeling_verilator #(
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
     .ast2pad_t1_ao         ( unused_t1 ),
+
     // clocks and resets supplied for detection
     .sns_clks_i            ( clkmgr_aon_clocks    ),
     .sns_rsts_i            ( rstmgr_aon_resets    ),
     .sns_spi_ext_clk_i     ( sck_monitor          ),
-    // clocks' oscillator bypass for FPGA
+    // clocks' oscillator bypass for verilator
     .clk_osc_byp_i         ( clks_osc_byp ),
     // tlul
     .tl_i                  ( ast_tl_req ),
     .tl_o                  ( ast_tl_rsp ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       ( ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_infra),
     .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_secure),
@@ -484,11 +516,11 @@ module chip_darjeeling_verilator #(
     .padmux2ast_i          ( '0         ),
     .ast2padmux_o          (            ),
     // Memory configuration connections
-    .dpram_rmf_o           ( ),
-    .dpram_rml_o           ( ),
-    .spram_rm_o            ( ),
-    .sprgf_rm_o            ( ),
-    .sprom_rm_o            ( ),
+    .dpram_rmf_o           ( ast_ram_2p_fcfg ),
+    .dpram_rml_o           ( ast_ram_2p_lcfg ),
+    .spram_rm_o            ( ast_ram_1p_cfg  ),
+    .sprgf_rm_o            ( ast_rf_cfg      ),
+    .sprom_rm_o            ( ast_rom_cfg     ),
     // scan
     .dft_scan_md_o         ( scanmode ),
     .scan_shift_en_o       ( scan_en ),
@@ -648,7 +680,7 @@ module chip_darjeeling_verilator #(
     .ByteAccess(1),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1),
+    .EnableDataIntgGen(0),
     .EnableDataIntgPt(1),
     .SecFifoPtr      (0)
   ) u_tlul_adapter_sram_ctn (
@@ -699,12 +731,10 @@ module chip_darjeeling_verilator #(
     // No error detection is enabled inside SRAM.
     // Bus ECC is checked at the consumer side.
     .rerror_o (),
-    .cfg_i    ('0),
+    .cfg_i    (ram_1p_cfg),
     .cfg_rsp_o(),
     .alert_o()
   );
-
-
 
   //////////////////////////////////
   // Manual Pad / Signal Tie-offs //
@@ -887,26 +917,26 @@ module chip_darjeeling_verilator #(
     .ast_lc_dft_en_o                          (lc_dft_en               ),
     .ast_lc_hw_debug_en_o                     (                        ),
     .obs_ctrl_i                               (obs_ctrl                ),
-    .rom_ctrl0_cfg_i                          ('0                      ),
-    .rom_ctrl1_cfg_i                          ('0                      ),
-    .i2c_ram_1p_cfg_i                         ('0                      ),
+    .rom_ctrl0_cfg_i                          (rom_ctrl0_cfg           ),
+    .rom_ctrl1_cfg_i                          (rom_ctrl1_cfg           ),
+    .i2c_ram_1p_cfg_i                         (ram_1p_cfg              ),
     .i2c_ram_1p_cfg_rsp_o                     (                        ),
-    .sram_ctrl_main_ram_1p_cfg_i              ('0                      ),
+    .sram_ctrl_main_ram_1p_cfg_i              (ram_1p_cfg              ),
     .sram_ctrl_main_ram_1p_cfg_rsp_o          (                        ),
-    .sram_ctrl_mbox_ram_1p_cfg_i              ('0                      ),
+    .sram_ctrl_mbox_ram_1p_cfg_i              (ram_1p_cfg              ),
     .sram_ctrl_mbox_ram_1p_cfg_rsp_o          (                        ),
-    .otbn_imem_ram_1p_cfg_i                   ('0                      ),
+    .otbn_imem_ram_1p_cfg_i                   (ram_1p_cfg              ),
     .otbn_imem_ram_1p_cfg_rsp_o               (                        ),
-    .otbn_dmem_ram_1p_cfg_i                   ('0                      ),
+    .otbn_dmem_ram_1p_cfg_i                   (ram_1p_cfg              ),
     .otbn_dmem_ram_1p_cfg_rsp_o               (                        ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_i     ('0                      ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_i     (ram_1p_cfg              ),
     .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o (                        ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_i    ('0                      ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_i    (ram_1p_cfg              ),
     .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o(                        ),
-    .spi_device_ram_2p_cfg_sys2spi_i          ('0                      ),
+    .spi_device_ram_2p_cfg_sys2spi_i          (spi_ram_2p_cfg          ),
     .spi_device_ram_2p_cfg_rsp_sys2spi_o      (                        ),
     .spi_device_ram_2p_cfg_rsp_spi2sys_o      (                        ),
-    .spi_device_ram_2p_cfg_spi2sys_i          ('0                      ),
+    .spi_device_ram_2p_cfg_spi2sys_i          (spi_ram_2p_cfg          ),
     .dma_sys_req_o                            (                        ),
     .dma_sys_rsp_i                            (dma_pkg::SYS_RSP_DEFAULT),
     .es_rng_enable_o                          (es_rng_enable           ),
@@ -1049,7 +1079,7 @@ module chip_darjeeling_verilator #(
     .cio_soc_proxy_soc_gpo_en_d2p_o     (cio_soc_proxy_soc_gpo_en_d2p),
 
     // Regular ports (auto-generated)
-    .sram_ctrl_ret_aon_ram_1p_cfg_i    ('0                ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_i    (ram_1p_cfg        ),
     .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o(                  ),
     .pwrmgr_boot_status_o              (pwrmgr_boot_status),
     .pwrmgr_ext_rst_ack_i              (1'b0              ),
@@ -1071,12 +1101,12 @@ module chip_darjeeling_verilator #(
     .integrator_id_i                   ('0                )
   );
 
-logic unused_signals;
-assign unused_signals = ^{pwrmgr_boot_status.clk_status,
-                          pwrmgr_boot_status.cpu_fetch_en,
-                          pwrmgr_boot_status.lc_done,
-                          pwrmgr_boot_status.otp_done,
-                          pwrmgr_boot_status.rom_ctrl_status,
-                          pwrmgr_boot_status.strap_sampled};
+  logic unused_signals;
+  assign unused_signals = ^{pwrmgr_boot_status.clk_status,
+                            pwrmgr_boot_status.cpu_fetch_en,
+                            pwrmgr_boot_status.lc_done,
+                            pwrmgr_boot_status.otp_done,
+                            pwrmgr_boot_status.rom_ctrl_status,
+                            pwrmgr_boot_status.strap_sampled};
 
 endmodule : chip_darjeeling_verilator

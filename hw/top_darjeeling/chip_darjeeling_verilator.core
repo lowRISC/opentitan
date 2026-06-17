@@ -16,7 +16,8 @@ filesets:
       - lowrisc:darjeeling_systems:scan_role_pkg
       - lowrisc:prim_generic:all
     files:
-      - rtl/chip_darjeeling_verilator.sv: { file_type: systemVerilogSource }
+      - rtl/padring_verilator.sv: { file_type: systemVerilogSource }
+      - rtl/autogen/chip_darjeeling_verilator.sv: { file_type: systemVerilogSource }
 
 parameters:
   AST_BYPASS_CLK:
