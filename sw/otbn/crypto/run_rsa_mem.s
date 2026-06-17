@@ -114,10 +114,17 @@ work_buf:
 .zero 448
 nlimbs_tmp:
 .zero 4
-mode_tmp:
-.zero 4
 mr_iter_p_tmp:
 .zero 4
 mr_iter_q_tmp:
 .zero 4
-.zero 48
+.globl fi_save_x26, fi_save_x27, fi_save_x28
+fi_save_x26:
+.zero 4
+fi_save_x27:
+.zero 4
+fi_save_x28:
+.zero 4
+.zero 36
+mode_tmp:
+.zero 4
