@@ -285,6 +285,60 @@ otbn_fi_sim_test(
     },
 )
 
+# Look for collisions in RSA 512 verification (different signatures)
+otbn_fi_sim_test(
+    name = "rsa_512_verify_fi_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_size = 64,
+    collision_symbol = "inout",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "ok",
+    ok_value = "0x739",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto:run_rsa",
+    target_a_secrets = {
+        "mode": "unmasked:4:0x37f",  # MODE_RSA_512_MODEXP_F4
+        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
+        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
+    },
+    # Different signature
+    target_b_secrets = {
+        "mode": "unmasked:4:0x37f",
+        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
+        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216b",
+    },
+)
+
+# Look for collisions in RSA 512 verification between two different public keys
+otbn_fi_sim_test(
+    name = "rsa_512_verify_fi_pubkey_test",
+    timeout = "eternal",
+    attack_mode = "collision",
+    col_threshold = "0.75",
+    collision_size = 64,
+    collision_symbol = "inout",
+    fixed_instruction_count = True,
+    ok_size = 4,
+    ok_symbol = "ok",
+    ok_value = "0x739",
+    tags = ["manual"],
+    target = "//sw/otbn/crypto:run_rsa",
+    target_a_secrets = {
+        "mode": "unmasked:4:0x37f",  # MODE_RSA_512_MODEXP_F4
+        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
+        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
+    },
+    # Same signature, different public modulus (rsa_n modified)
+    target_b_secrets = {
+        "mode": "unmasked:4:0x37f",
+        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec22",
+        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
+    },
+)
+
 # Look for collisions in 'R' with different nonces for Ed25519
 otbn_fi_sim_test(
     name = "ed25519_sign_fi_nonce_test",
