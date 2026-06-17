@@ -595,10 +595,11 @@ static status_t kat_sha512_hmac(void) {
   return OTCRYPTO_OK;
 }
 
-static status_t kat_drbg(void) {
-  status_t status = entropy_csrng_kat();
+static status_t kat_rng(void) {
+  HARDENED_TRY(entropy_src_sha3_conditioning_kat());
+  HARDENED_TRY(entropy_csrng_kat());
   HARDENED_TRY(otcrypto_entropy_init());
-  return status;
+  return OTCRYPTO_OK;
 }
 
 static status_t kat_p256_sign(void) {
@@ -1180,8 +1181,8 @@ otcrypto_status_t run_kats(kat_id_t tests) {
   if ((tests.flags & OTCRYPTO_KAT_HMAC_SHA512) != 0) {
     HARDENED_TRY(kat_sha512_hmac());
   }
-  if ((tests.flags & OTCRYPTO_KAT_DRBG) != 0) {
-    HARDENED_TRY(kat_drbg());
+  if ((tests.flags & OTCRYPTO_KAT_RNG) != 0) {
+    HARDENED_TRY(kat_rng());
   }
   if ((tests.flags & OTCRYPTO_KAT_P256_SIGN) != 0) {
     HARDENED_TRY(kat_p256_sign());

@@ -17,7 +17,7 @@ typedef enum {
   kTestHmacSha256Bit,
   kTestHashSha512Bit,
   kTestHmacSha512Bit,
-  kTestDrgbBit,
+  kTestRngBit,
   kTestP256BasePointMulBit,
   kTestP256PointOnCurveBit,
   kTestP256SignBit,
@@ -48,7 +48,7 @@ typedef enum {
 #define OTCRYPTO_KAT_HMAC_SHA256 _FLAG(HmacSha256)
 #define OTCRYPTO_KAT_HASH_SHA512 _FLAG(HashSha512)
 #define OTCRYPTO_KAT_HMAC_SHA512 _FLAG(HmacSha512)
-#define OTCRYPTO_KAT_DRBG _FLAG(Drgb)
+#define OTCRYPTO_KAT_RNG _FLAG(Rng)
 #define OTCRYPTO_KAT_P256_BASE_POINT_MUL _FLAG(P256BasePointMul)
 #define OTCRYPTO_KAT_P256_POINT_ON_CURVE _FLAG(P256PointOnCurve)
 #define OTCRYPTO_KAT_P256_SIGN _FLAG(P256Sign)
