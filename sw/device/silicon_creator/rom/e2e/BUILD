@@ -69,7 +69,6 @@ opentitan_test(
     name = "rom_e2e_default_otp_bootup",
     srcs = [":empty_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -90,7 +89,6 @@ opentitan_test(
         testonly = True,
         srcs = [":empty_test"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:sim_dv",
             "//hw/top_earlgrey:sim_verilator",
@@ -130,7 +128,6 @@ opentitan_test(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:sim_dv",
             "//hw/top_earlgrey:sim_verilator",
@@ -156,7 +153,6 @@ opentitan_test(
         srcs = [":empty_test"],
         ecdsa_key = ecdsa_key_by_name(ECDSA_ONLY_KEY_STRUCTS, key),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
@@ -281,7 +277,6 @@ opentitan_test(
     name = "rom_e2e_flash_ctrl_init",
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
@@ -302,7 +297,6 @@ opentitan_test(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
     },
@@ -333,7 +327,6 @@ opentitan_test(
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:sim_dv": None,
@@ -360,7 +353,6 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
@@ -380,7 +372,6 @@ opentitan_test(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -409,7 +400,6 @@ opentitan_test(
     name = "e2e_bootup_success_otp_dev",
     srcs = [":empty_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -436,7 +426,6 @@ opentitan_test(
         "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:ecdsa_keyset": "unauthorized_key_0",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -458,7 +447,6 @@ opentitan_test(
     name = "rom_ext_upgrade",
     srcs = ["rom_ext_upgrade_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -492,8 +480,6 @@ opentitan_test(
     name = "rom_e2e_chip_info",
     srcs = ["chip_info_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_test_rom": None,
     },

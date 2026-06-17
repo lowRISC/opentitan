@@ -82,7 +82,6 @@ REDACT.update({"INVALID": 0x0})
             redact.lower(),
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(

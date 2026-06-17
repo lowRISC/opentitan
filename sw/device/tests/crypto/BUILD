@@ -65,7 +65,6 @@ opentitan_binary(
     # Disable link-time optimization to preserve unused cryptolib functions.
     copts = ["-fno-lto"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
     ],
     linker_script = "//sw/device/silicon_owner/bare_metal:ld_slot_a",

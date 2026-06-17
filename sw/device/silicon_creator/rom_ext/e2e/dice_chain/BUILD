@@ -31,7 +31,6 @@ package(default_visibility = ["//visibility:public"])
         name = "no_refresh_{}_test".format(variation),
         srcs = ["no_refresh_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -62,7 +61,6 @@ opentitan_binary(
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/attestation:print_certs.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
@@ -86,7 +84,6 @@ opentitan_binary(
             ":print_certs_for_assemble": OWNER_SLOTS["a"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
         ],
     )
@@ -108,7 +105,6 @@ _VARIATION_INTEROP_TEST_CASES = [
     opentitan_test(
         name = "variation_interop_{}_first_test".format(tc["first"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
@@ -217,7 +213,6 @@ DEBUG_MODE_TESTCASES = [
         defines = testcase["defines"],
         ecdsa_key = testcase["key"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(

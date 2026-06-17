@@ -87,7 +87,6 @@ _CONFIGS = {
             "WITH_MANIFEST=1",
         ],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
             "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = position["linker_script"],
@@ -112,7 +111,6 @@ _CONFIGS = {
     opentitan_test(
         name = "rescue_firmware_{}_{}".format(name, protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -171,7 +169,6 @@ genrule(
     opentitan_test(
         name = "rescue_rom_ext_{}_update_{}".format(rxslot, name),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -211,7 +208,6 @@ genrule(
     opentitan_test(
         name = "next_slot_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -251,7 +247,6 @@ genrule(
     opentitan_test(
         name = "primary_slot_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -294,7 +289,6 @@ genrule(
     opentitan_test(
         name = "rescue_rate_{}_test".format(rate),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -329,7 +323,6 @@ genrule(
     opentitan_test(
         name = "rescue_unsupported_rate_{}_test".format(rate),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -368,7 +361,6 @@ opentitan_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -410,7 +402,6 @@ opentitan_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -449,7 +440,6 @@ opentitan_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -487,7 +477,6 @@ opentitan_test(
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -518,7 +507,6 @@ opentitan_test(
     opentitan_test(
         name = "rescue_enter_on_fail_{}".format(name),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -553,7 +541,6 @@ opentitan_test(
     opentitan_test(
         name = "rescue_get_boot_log_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -576,7 +563,6 @@ opentitan_test(
     opentitan_test(
         name = "rescue_get_device_id_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -601,7 +587,6 @@ opentitan_test(
     opentitan_test(
         name = "rescue_get_owner_page_{}".format(protocol),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -628,7 +613,6 @@ opentitan_test(
 opentitan_test(
     name = "rescue_disability_xmodem",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -651,7 +635,6 @@ opentitan_test(
 opentitan_test(
     name = "rescue_disability_spidfu",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -676,7 +659,6 @@ opentitan_test(
 opentitan_test(
     name = "rescue_user_error",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -701,7 +683,6 @@ opentitan_test(
 opentitan_test(
     name = "rescue_config_module_mismatch",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -729,7 +710,6 @@ opentitan_test(
 opentitan_test(
     name = "spidfu_rescue_boot_svc_req_disability",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -751,7 +731,6 @@ opentitan_test(
 opentitan_test(
     name = "xmodem_rescue_error_handling_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -772,7 +751,6 @@ opentitan_test(
 opentitan_test(
     name = "spidfu_dfu_state_transitions",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -794,7 +772,6 @@ opentitan_test(
 opentitan_test(
     name = "spidfu_invalid_dfu_requests",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -816,7 +793,6 @@ opentitan_test(
 opentitan_test(
     name = "spidfu_invalid_flash_transaction",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -838,7 +814,6 @@ opentitan_test(
 opentitan_test(
     name = "usbdfu_out_chunk_too_big",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -865,7 +840,6 @@ opentitan_test(
         "watchdog_test.c",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -898,7 +872,6 @@ opentitan_test(
         "watchdog_test.c",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(

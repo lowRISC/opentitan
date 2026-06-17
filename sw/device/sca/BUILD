@@ -21,7 +21,6 @@ opentitan_binary(
     srcs = ["aes_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
@@ -46,7 +45,6 @@ opentitan_binary(
     srcs = ["kmac_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
@@ -68,7 +66,6 @@ opentitan_binary(
     srcs = ["sha3_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
@@ -90,7 +87,6 @@ opentitan_binary(
     srcs = ["ecc384_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
@@ -115,7 +111,6 @@ opentitan_binary(
     srcs = ["ecc256_sign_serial.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [

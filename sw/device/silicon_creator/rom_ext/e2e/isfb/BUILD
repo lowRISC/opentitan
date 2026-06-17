@@ -53,7 +53,6 @@ opentitan_binary(
     testonly = True,
     srcs = ["isfb_page_test.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
     ],
     manifest = ":manifest_allow_isfb_erase",
@@ -72,7 +71,6 @@ opentitan_test(
     name = "isfb_page_test",
     srcs = ["isfb_page_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -97,7 +95,6 @@ opentitan_test(
     name = "isfb_page_bad_erase_constraint_test",
     srcs = ["isfb_page_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -216,7 +213,6 @@ _ISFB_CONTRAINT_TESTS = {
         name = "isfb_{}_test".format(name),
         srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(

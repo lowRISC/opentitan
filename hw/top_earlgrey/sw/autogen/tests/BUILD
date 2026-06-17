@@ -42,8 +42,6 @@ NR_IRQ_PERIPH_TESTS = 3
             EARLGREY_TEST_ENVS,
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
             {
-                "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
                 "//hw/top_earlgrey:fpga_cw340_test_rom": None,
                 "//hw/top_earlgrey:fpga_cw340_sival": None,
                 "//hw/top_earlgrey:silicon_creator": None,
@@ -110,8 +108,6 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_test_rom": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
