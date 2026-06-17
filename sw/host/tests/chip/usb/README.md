@@ -33,7 +33,7 @@ way to set the hub permission is to set it manually. Doing so is a two step proc
 
 You need to identify the bus and addres of the hub.
 The simplest option is to run a test, let it fail and use the error message to get the path.
-For example, running `//sw/device/tests:usbdev_deep_disconnect_test_fpga_cw310_sival_rom_ext` with
+For example, running `//sw/device/tests:usbdev_deep_disconnect_test_fpga_cw340_sival_rom_ext` with
 the wrong permissions will lead the following error:
 ```
 [2025-07-10T11:59:59.430Z INFO  usbdev_suspend] waiting for device...

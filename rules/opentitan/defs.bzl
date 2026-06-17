@@ -182,7 +182,7 @@ def _hacky_tags(env):
     if suffix.startswith("fpga"):
         tags.append("fpga")
 
-        # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
+        # We have tags like "cw340_rom_with_real_keys" or "cw340_test_rom"
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the
         # label name.
@@ -214,7 +214,7 @@ def exec_env_to_top_map(exec_env):
       //hw/top_earlgrey:<name_of_exec_env>. This directory is determined from the path
       of the top's hjson created by topgen.
     - or the target name must start with "top_<topname>", e.g.
-      top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper
+      top_earlgrey_fpga_cw340_sival_rom_ext_no_hyper
     """
     top_map = {}
     for top in ALL_TOPS:

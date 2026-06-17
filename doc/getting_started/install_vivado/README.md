@@ -2,8 +2,8 @@
 
 Generating a bitstream for Xilinx devices requires a
 [Vivado](https://www.xilinx.com/products/design-tools/vivado.html) installation.
-Please note that the "WebPACK" edition __does not__ support the Xilinx Kintex 7
-XC7K410T used on the CW310 board.
+Please note that the "WebPACK" edition __does not__ support the Xilinx Kintex
+UltraScale XCKU095 used on the CW341 board.
 
 For software development, Vivado is still necessary for most workflows.
 However, the (free) Lab Edition is sufficient, and it has a significantly smaller installation footprint.

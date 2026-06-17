@@ -177,7 +177,7 @@ fpga_cw310(
 
 # FPGA configuration used to emulate silicon targets. This rule can be used by
 # targets that require executing at the `rom_ext` stage level in flash, as well
-# as SRAM programs. Use the `fpga_cw310_sival_rom_ext` execution environment to
+# as SRAM programs. Use the `fpga_cw340_sival_rom_ext` execution environment to
 # emulate silicon targets containing a `rom_ext` stage.
 # See sw/device/tests/doc/sival/devguide.md for more details.
 fpga_cw310(
@@ -197,7 +197,7 @@ fpga_cw310(
 
 # FPGA configuration used to emulate silicon targets containing a `rom_ext`
 # stage.
-# See `fpga_cw310_sival` for more details.
+# See `fpga_cw340_sival` for more details.
 # Also, see sw/device/tests/doc/sival/devguide.md.
 fpga_cw310(
     name = "fpga_cw310_sival_rom_ext",
@@ -218,7 +218,7 @@ fpga_cw310(
 ###########################################################################
 # FPGA CW305 Environments
 #
-# TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure
+# TODO(opentitan#19493): Determine whether the `fpga_cw340` infrastructure
 # should become a more generic `fpga_chipwhisperer` infrastruture able to
 # handle multiple CW-type boards.
 ###########################################################################
@@ -238,7 +238,7 @@ fpga_cw305(
 ###########################################################################
 # FPGA CW340 Environments
 #
-# TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure
+# TODO(opentitan#19493): Determine whether the `fpga_cw340` infrastructure
 # should become a more generic `fpga_chipwhisperer` infrastruture able to
 # handle multiple CW-type boards.
 ###########################################################################
