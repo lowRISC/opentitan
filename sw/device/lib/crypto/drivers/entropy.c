@@ -734,6 +734,8 @@ static void entropy_src_stop(void) {
                    ENTROPY_SRC_ENTROPY_CONTROL_REG_RESVAL);
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_CONF_REG_OFFSET,
                    ENTROPY_SRC_CONF_REG_RESVAL);
+  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                   ENTROPY_SRC_FW_OV_CONTROL_REG_RESVAL);
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
                    ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL);
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,

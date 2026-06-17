@@ -536,6 +536,7 @@ cc_library(
     srcs = ["entropy_src.c"],
     hdrs = ["//sw/device/lib/crypto/include:entropy_src.h"],
     deps = [
+        ":state",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/include:datatypes",
