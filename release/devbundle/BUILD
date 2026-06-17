@@ -9,17 +9,6 @@ load("//rules/opentitan:splice.bzl", "bitstream_splice")
 package(default_visibility = ["//visibility:public"])
 
 bitstream_splice(
-    name = "bitstream_fpga_hyper310",
-    testonly = True,
-    # When the src bitstream and mmi fields are empty, the rule will use values
-    # from the exec_env.
-    exec_env = "//hw/top_earlgrey:fpga_cw310_rom_ext",
-    otp = "//hw/bitstream/universal:none",
-    rom = "//hw/bitstream/universal:none",
-    tags = ["manual"],
-)
-
-bitstream_splice(
     name = "bitstream_fpga_hyper340",
     testonly = True,
     # When the src bitstream and mmi fields are empty, the rule will use values
@@ -34,7 +23,6 @@ pkg_files(
     name = "bitstreams",
     testonly = True,
     srcs = [
-        ":bitstream_fpga_hyper310",
         ":bitstream_fpga_hyper340",
     ],
     tags = ["manual"],
