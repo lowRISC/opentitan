@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
@@ -277,7 +278,8 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
 
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
-                                    const uint32_t *modulus) {
+                                    const uint32_t *modulus,
+                                    uint32_t checksum) {
   // Load the OTBN app. Fails if OTBN is not idle.
   const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
   HARDENED_TRY(otbn_load_app(kOtbnAppRsa));
@@ -311,6 +313,12 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
       HARDENED_TRAP();
       return OTCRYPTO_FATAL_ERR;
   }
+
+  // Verify the checksum over share 0 (exp0).
+  if (checksum != launder32(crc32(exp0, num_words * sizeof(uint32_t)))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(checksum, crc32(exp0, num_words * sizeof(uint32_t)));
 
   // Set mode.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);

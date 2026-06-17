@@ -47,7 +47,7 @@ status_t rsa_modexp_wait(size_t *num_words);
  */
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
-                                    const uint32_t *modulus);
+                                    const uint32_t *modulus, uint32_t checksum);
 
 /**
  * Start a variable-time RSA modular exponentiation.
