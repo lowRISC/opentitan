@@ -70,7 +70,7 @@ status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext);
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
                            const uint32_t *d1, const uint32_t *n,
-                           const uint32_t *ciphertext);
+                           const uint32_t *ciphertext, uint32_t checksum);
 
 /**
  * Waits for an RSA decryption to complete.
