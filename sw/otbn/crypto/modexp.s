@@ -585,7 +585,7 @@ cond_sub_to_dmem:
     bn.subb   w3, w2, w3
 
     /* conditionally select subtraction result or unmodified limb */
-    bn.sel    w2, w3, w2, FG1.C
+    bn.sel    w2, w2, w3, FG1.C
 
     /* store selection result in dmem */
     bn.sid    x11, 0(x21++)
@@ -669,7 +669,7 @@ montmul_mul1:
     bn.movr   x11, x8++
 
     /* compare limb of flag with limb of Modulus */
-    bn.cmpb   w3, w2, FG1
+    bn.cmpb   w2, w3, FG1
 
   /* restore pointers to bigint buffer in regfile */
   li         x8, 4
@@ -681,6 +681,7 @@ montmul_mul1:
 
   /* conditionally subtract Modulus from buffer and store result in
      dmem[x21] to dmem[x21+N] */
+  bn.add    w31, w31, w31, FG0
   jal       x1, cond_sub_to_dmem
 
   /* restore  dmem pointers for operand A and modulus */
