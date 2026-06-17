@@ -115,7 +115,7 @@ The RRAM controller sits between the software interface, other hardware IPs, and
 
 ### RRAM Controller - Macro Interface
 
-`rram_ctrl` is connected to `rram_macro` with the following generic interface, which maps to both the vendor ASIC implementation and the open-source emulation model:
+`rram_ctrl` is connected to `rram_macro` via the `rram_macro_o`/`rram_macro_i` ports, using the following generic interface, which maps to both the vendor ASIC implementation and the open-source emulation model:
 
 ```systemverilog
 typedef struct packed {
@@ -142,16 +142,39 @@ typedef struct packed {
 
 ### System Interactions
 
-In addition to the TileLink interfaces, `rram_ctrl` directly interacts with several other OpenTitan modules:
+In addition to the TileLink interfaces, `rram_ctrl` directly interacts with several other OpenTitan modules.
+The [block diagram](doc/theory_of_operation.md#block-diagram) labels the various life cycle signals collectively as `lc_cfg`, and the OTP interface as `otp_req`/`otp_rsp`.
+See below for the individual signal and interface names.
 
 **`lc_ctrl`**
 - Enables NVM backdoor access in specific test life cycle states to allow RRAM initialisation after manufacturing.
 - Controls access to the owner, creator, and isolated info pages via life cycle signals (`lc_creator_seed_sw_rw_en`, `lc_owner_seed_sw_rw_en`, `lc_iso_part_sw_{rd,wr}_en`).
-- Issues RMA requests that trigger a secure wipe of the RRAM.
+- Issues RMA requests (`rma_req`/`rma_ack`) that trigger a secure wipe of the RRAM.
 
 **`otp_ctrl`**
 - Issues `OtpInit`, `OtpRead`, `OtpWrite`, and `OtpZeroize` commands to `rram_ctrl_otp` instead of a dedicated OTP macro, using the OTP region of the RRAM as NVM backing storage.
 - Provides the scrambling keys for `rram_ctrl` derived from seeds stored in the OTP region.
+- Commands are issued via the `otp_ctrl_macro_req_t`/`otp_ctrl_macro_rsp_t` interface (`otp_macro_i`/`otp_macro_o`), defined in [`otp_ctrl_macro_pkg`](../../top_earlgrey/ip_autogen/otp_ctrl/rtl/otp_ctrl_macro_pkg.sv), the same interface a standalone `otp_macro` would implement:
+
+```systemverilog
+typedef struct packed {
+  logic            valid;
+  cmd_e            cmd;
+  otp_macro_size_t size;
+  otp_macro_addr_t addr;
+  otp_macro_data_t wdata;
+} otp_ctrl_macro_req_t;
+
+typedef struct packed {
+  logic            ready;
+  logic            rvalid;
+  otp_macro_data_t rdata;
+  err_e            err;
+  logic            fatal_lc_fsm_err;
+  logic            fatal_alert;
+  logic            recov_alert;
+} otp_ctrl_macro_rsp_t;
+```
 
 **`pwrmgr`**
 - `rram_ctrl` asserts an idle signal to the power manager when it is safe to power down, i.e. when no write operation is in progress.
