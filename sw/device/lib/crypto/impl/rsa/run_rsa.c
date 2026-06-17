@@ -58,7 +58,13 @@ enum {
    * This value is a runtime constant in the OTBN app and is in accordance
    * with Table B.1 of FIPS 186-5.
    */
-  kMrIters = 4
+  kMrIters = 4,
+  /**
+   * Expected instruction counts for constant-time modexp operations.
+   */
+  kModeRsa2048ModexpInsCnt = 16271720,
+  kModeRsa3072ModexpInsCnt = 52037564,
+  kModeRsa4096ModexpInsCnt = 120118352,
 };
 
 OT_NOINLINE
@@ -104,10 +110,19 @@ status_t rsa_modexp_wait(size_t *num_words) {
       OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_MODEXP_F4);
   if (mode == kMode2048Modexp || mode == kMode2048ModexpF4) {
     *num_words = kRsa2048NumWords;
+    if (mode == kMode2048Modexp) {
+      HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa2048ModexpInsCnt);
+    }
   } else if (mode == kMode3072Modexp || mode == kMode3072ModexpF4) {
     *num_words = kRsa3072NumWords;
+    if (mode == kMode3072Modexp) {
+      HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa3072ModexpInsCnt);
+    }
   } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4) {
     *num_words = kRsa4096NumWords;
+    if (mode == kMode4096Modexp) {
+      HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa4096ModexpInsCnt);
+    }
   } else {
     // Unrecognized mode.
     return OTCRYPTO_FATAL_ERR;
@@ -142,6 +157,19 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   // Read the result.
   const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(run_rsa, inout);
   HARDENED_TRY(otbn_dmem_read(num_words, kOtbnVarRsaInOut, result));
+
+  // The output result should not be zero
+  size_t i = 0;
+  uint32_t result_bits_or = 0;
+  for (; launder32(i) < num_words; ++i) {
+    result_bits_or |= result[i];
+  }
+  HARDENED_CHECK_EQ(i, num_words);
+  if (launder32(result_bits_or) == 0) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(result_bits_or, 0);
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
