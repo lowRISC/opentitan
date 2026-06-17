@@ -15,7 +15,6 @@ PER_DEVICE_DEPS = {
     "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
     "sim_dv": ["//sw/device/lib/arch:sim_dv"],
     "fpga_cw305": ["//sw/device/lib/arch:fpga_cw305"],
-    "fpga_cw310": ["//sw/device/lib/arch:fpga_cw310"],
 }
 
 def _opentitan_transition_impl(settings, attr):
