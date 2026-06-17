@@ -198,7 +198,10 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
         /*owner_lockdown=*/kHardenedBoolFalse, &mp_index));
   }
 
-  if (owner_block_page1_valid_for_transfer(bootdata) == kHardenedBoolTrue) {
+  if (launder32(owner_block_page1_valid_for_transfer(bootdata)) ==
+      kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(owner_block_page1_valid_for_transfer(bootdata),
+                      kHardenedBoolTrue);
     // If we passed the validity test for Owner Page 1, test parse the config.
     rom_error_t result = owner_block_parse(
         &owner_page[1], /*check_only=*/kHardenedBoolTrue, NULL, NULL);

@@ -537,12 +537,14 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
 
   // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
   // to the value stored in boot_data.
-  EXPECT_CALL(mock_hmac_, sha256_init());
-  EXPECT_CALL(mock_hmac_, sha256_update(_, _));
-  EXPECT_CALL(mock_hmac_, sha256_update(_, _));
-  EXPECT_CALL(mock_hmac_, sha256_process());
-  EXPECT_CALL(mock_hmac_, sha256_final(_))
-      .WillOnce(SetArgPointee<0>((hmac_digest_t){{boot_data.next_owner[0]}}));
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_CALL(mock_hmac_, sha256_init());
+    EXPECT_CALL(mock_hmac_, sha256_update(_, _));
+    EXPECT_CALL(mock_hmac_, sha256_update(_, _));
+    EXPECT_CALL(mock_hmac_, sha256_process());
+    EXPECT_CALL(mock_hmac_, sha256_final(_))
+        .WillOnce(SetArgPointee<0>((hmac_digest_t){{boot_data.next_owner[0]}}));
+  }
 
   EXPECT_CALL(mock_ownership_key_,
               validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _, _))
