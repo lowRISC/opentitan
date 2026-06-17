@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 
@@ -29,6 +30,7 @@ otcrypto_status_t otcrypto_sha3_224(const otcrypto_const_byte_buf_t *message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3224DigestWords);
   digest->mode = kOtcryptoHashModeSha3_224;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(kmac_sha3_224(message, digest->data));
 }
 
@@ -47,6 +49,7 @@ otcrypto_status_t otcrypto_sha3_256(const otcrypto_const_byte_buf_t *message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3256DigestWords);
   digest->mode = kOtcryptoHashModeSha3_256;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(kmac_sha3_256(message, digest->data));
 }
 
@@ -65,6 +68,7 @@ otcrypto_status_t otcrypto_sha3_384(const otcrypto_const_byte_buf_t *message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3384DigestWords);
   digest->mode = kOtcryptoHashModeSha3_384;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(kmac_sha3_384(message, digest->data));
 }
 
@@ -83,6 +87,7 @@ otcrypto_status_t otcrypto_sha3_512(const otcrypto_const_byte_buf_t *message,
   }
   HARDENED_CHECK_EQ(digest->len, kKmacSha3512DigestWords);
   digest->mode = kOtcryptoHashModeSha3_512;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(kmac_sha3_512(message, digest->data));
 }
 
@@ -97,6 +102,7 @@ otcrypto_status_t otcrypto_shake128(const otcrypto_const_byte_buf_t *message,
   }
 #endif
   digest->mode = kOtcryptoHashXofModeShake128;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(kmac_shake_128(message, digest->data, digest->len));
 }
 
@@ -111,6 +117,7 @@ otcrypto_status_t otcrypto_shake256(const otcrypto_const_byte_buf_t *message,
   }
 #endif
   digest->mode = kOtcryptoHashXofModeShake256;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(kmac_shake_256(message, digest->data, digest->len));
 }
 
@@ -136,6 +143,7 @@ otcrypto_status_t otcrypto_cshake128(
   }
 #endif
   digest->mode = kOtcryptoHashXofModeCshake128;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(
       kmac_cshake_128(message, function_name_string->data,
                       function_name_string->len, customization_string->data,
@@ -164,6 +172,7 @@ otcrypto_status_t otcrypto_cshake256(
   }
 #endif
   digest->mode = kOtcryptoHashXofModeCshake256;
+  HARDENED_TRY(stateful_health_check(kTestShake256Bit));
   return otcrypto_eval_exit(
       kmac_cshake_256(message, function_name_string->data,
                       function_name_string->len, customization_string->data,

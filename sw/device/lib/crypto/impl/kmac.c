@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -50,6 +51,8 @@ otcrypto_status_t otcrypto_kmac(
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
+
+  HARDENED_TRY(stateful_health_check(kTestKmac256Bit));
 
   // Ensure that tag buffer length and `required_output_len` match each other.
   if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {

@@ -14,6 +14,7 @@
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -298,6 +299,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
+  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
+
   // Ensure the plaintext and ciphertext lengths match.
   if (launder32(ciphertext->len) != plaintext->len) {
     return OTCRYPTO_BAD_ARGS;
@@ -354,6 +357,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
+  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
+
   // Construct the AES key.
   aes_key_t aes_key;
   HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
@@ -393,6 +398,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
+  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
+
   // Construct the AES key.
   aes_key_t aes_key;
   HARDENED_TRY(aes_gcm_key_construct(key, &aes_key));
@@ -426,6 +433,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
+
+  HARDENED_TRY(stateful_health_check(kTestAesGcm256EncryptBit));
 
   // Construct the AES key.
   aes_key_t aes_key;
