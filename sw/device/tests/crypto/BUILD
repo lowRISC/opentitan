@@ -1140,8 +1140,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "kats_functest",
-    srcs = ["kats_functest.c"],
+    name = "stateful_kats_functest",
+    srcs = ["stateful_kats_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
     local_defines = select({
         "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
@@ -1162,7 +1162,35 @@ opentitan_test(
 )
 
 # Call the kats test with --config=crypto_fips_all
-# Call for example kats_functest_fips_fpga_cw340_sival_rom_ext, i.e., append fips behind the name and before the exec_env
+# Call for example stateful_kats_functest_fips_fpga_cw340_sival_rom_ext, i.e., append fips behind the name and before the exec_env
+fips_wrap_opentitan_test(
+    name = "stateful_kats_functest",
+    exec_env = CRYPTOTEST_FIPS_EXEC_ENVS,
+)
+
+opentitan_test(
+    name = "kats_functest",
+    srcs = ["kats_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
+        "//conditions:default": [],
+    }),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ] + select({
+        "//sw/device/lib/crypto/configs:hashed": ["//sw/device/lib/crypto/impl:kats"],
+        "//conditions:default": ["//sw/device/lib/crypto/impl:kats_hdrs"],
+    }),
+)
+
 fips_wrap_opentitan_test(
     name = "kats_functest",
     exec_env = CRYPTOTEST_FIPS_EXEC_ENVS,
