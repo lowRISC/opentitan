@@ -162,7 +162,7 @@ static status_t encoded_message_verify(
 
 status_t rsa_signature_generate_start(
     rsa_size_t size, const uint32_t *d0, const uint32_t *d1, const uint32_t *n,
-    const otcrypto_hash_digest_t message_digest,
+    uint32_t checksum, const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode) {
   size_t num_words = 0;
   switch (launder32(size)) {
@@ -194,7 +194,7 @@ status_t rsa_signature_generate_start(
       message_encode(message_digest, padding_mode, num_words, encoded_message));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_start(size, encoded_message, d0, d1, n);
+  return rsa_modexp_consttime_start(size, encoded_message, d0, d1, n, checksum);
 }
 
 status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature) {

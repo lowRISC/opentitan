@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/rsa.h"
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
@@ -367,6 +368,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       HARDENED_TRY(hardened_memcpy(sk->n.data, modulus->data, modulus->len));
       HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0->data, d_share0->len));
       HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1->data, d_share1->len));
+      sk->checksum = crc32(d_share0->data, modulus->len * sizeof(uint32_t));
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -380,6 +382,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       HARDENED_TRY(hardened_memcpy(sk->n.data, modulus->data, modulus->len));
       HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0->data, d_share0->len));
       HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1->data, d_share1->len));
+      sk->checksum = crc32(d_share0->data, modulus->len * sizeof(uint32_t));
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -393,6 +396,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
       HARDENED_TRY(hardened_memcpy(sk->n.data, modulus->data, modulus->len));
       HARDENED_TRY(hardened_memcpy(sk->d0.data, d_share0->data, d_share0->len));
       HARDENED_TRY(hardened_memcpy(sk->d1.data, d_share1->data, d_share1->len));
+      sk->checksum = crc32(d_share0->data, modulus->len * sizeof(uint32_t));
       break;
     }
     default:
@@ -508,6 +512,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
           kRsaSize2048, sk->n.data, sk->d0.data, sk->d1.data, NULL, NULL));
       HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa2048NumWords));
+      sk->checksum = crc32(sk->d0.data, kRsa2048NumWords * sizeof(uint32_t));
       size_used = launder32(size_used) | kOtcryptoRsaSize2048;
       break;
     }
@@ -519,6 +524,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
           kRsaSize3072, sk->n.data, sk->d0.data, sk->d1.data, NULL, NULL));
       HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa3072NumWords));
+      sk->checksum = crc32(sk->d0.data, kRsa3072NumWords * sizeof(uint32_t));
       size_used = launder32(size_used) | kOtcryptoRsaSize3072;
       break;
     }
@@ -530,6 +536,7 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_finalize_size(
           kRsaSize4096, sk->n.data, sk->d0.data, sk->d1.data, NULL, NULL));
       HARDENED_TRY(hardened_memcpy(pk->n.data, sk->n.data, kRsa4096NumWords));
+      sk->checksum = crc32(sk->d0.data, kRsa4096NumWords * sizeof(uint32_t));
       size_used = launder32(size_used) | kOtcryptoRsaSize4096;
       break;
     }
@@ -655,6 +662,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
           (rsa_2048_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_finalize(
           kRsaSize2048, pk->n.data, sk->n.data, sk->d0.data, sk->d1.data));
+      sk->checksum = crc32(sk->d0.data, kRsa2048NumWords * sizeof(uint32_t));
       break;
     }
     case kOtcryptoRsaSize3072: {
@@ -664,6 +672,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
           (rsa_3072_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_finalize(
           kRsaSize3072, pk->n.data, sk->n.data, sk->d0.data, sk->d1.data));
+      sk->checksum = crc32(sk->d0.data, kRsa3072NumWords * sizeof(uint32_t));
       break;
     }
     case kOtcryptoRsaSize4096: {
@@ -673,6 +682,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
           (rsa_4096_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_finalize(
           kRsaSize4096, pk->n.data, sk->n.data, sk->d0.data, sk->d1.data));
+      sk->checksum = crc32(sk->d0.data, kRsa4096NumWords * sizeof(uint32_t));
       break;
     }
     default:
@@ -760,8 +770,8 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
-          kRsaSize2048, sk->d0.data, sk->d1.data, sk->n.data, message_digest,
-          (rsa_signature_padding_t)padding_mode));
+          kRsaSize2048, sk->d0.data, sk->d1.data, sk->n.data, sk->checksum,
+          message_digest, (rsa_signature_padding_t)padding_mode));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
@@ -769,8 +779,8 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
-          kRsaSize3072, sk->d0.data, sk->d1.data, sk->n.data, message_digest,
-          (rsa_signature_padding_t)padding_mode));
+          kRsaSize3072, sk->d0.data, sk->d1.data, sk->n.data, sk->checksum,
+          message_digest, (rsa_signature_padding_t)padding_mode));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
@@ -778,8 +788,8 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
       HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
-          kRsaSize4096, sk->d0.data, sk->d1.data, sk->n.data, message_digest,
-          (rsa_signature_padding_t)padding_mode));
+          kRsaSize4096, sk->d0.data, sk->d1.data, sk->n.data, sk->checksum,
+          message_digest, (rsa_signature_padding_t)padding_mode));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
@@ -1111,7 +1121,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
       HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(kRsaSize2048, sk->d0.data,
                                                sk->d1.data, sk->n.data,
-                                               ciphertext->data));
+                                               ciphertext->data, sk->checksum));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
@@ -1133,7 +1143,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
       HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(kRsaSize3072, sk->d0.data,
                                                sk->d1.data, sk->n.data,
-                                               ciphertext->data));
+                                               ciphertext->data, sk->checksum));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
@@ -1155,7 +1165,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
       HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(kRsaSize4096, sk->d0.data,
                                                sk->d1.data, sk->n.data,
-                                               ciphertext->data));
+                                               ciphertext->data, sk->checksum));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
