@@ -83,7 +83,8 @@ modinv_f4:
   bn.addi w21, w21, 1
 
   addi x16, x25, 0
-  addi x31, x27, 1
+  addi x30, x27, 1
   jal x1, div_word
+  addi x30, x27, 0
 
   ret

@@ -127,6 +127,13 @@ modexp:
     bn.sid  x2, 0(x3++)
     addi    x2, x2, 1
 
+  la   x14, fi_save_x26
+  sw   x26, 0(x14)
+  la   x14, fi_save_x27
+  sw   x27, 0(x14)
+  la   x14, fi_save_x28
+  sw   x28, 0(x14)
+
   # When message blinding is disabled use the work_buf as the location for the
   # pre-computed random indices.
   la x25, work_buf
@@ -261,14 +268,29 @@ _message_blinding_prologue_end:
   li    x23, 26     # w26
   /* Randomize the constant 1 in the TVLA */
   li    x24, 29     /* SCA_TEST_REPLACE: li x24, 26 */
+  li    x26, 0
   jal   x1, masked_wdr_select_store_loop
 
   # Compute bit length of current bigint size.
   slli  x21, x30, 8    /* SCA_TEST_REPLACE: addi x21, x0, 3 */
 
+  # Precompute Hamming weight of rsa_d0 into x27.
+  slli  x14, x30, 3
+  la    x15, rsa_d0
+  jal   x1, hamming_weight_buf
+  addi  x27, x12, 0
+
+  # Precompute Hamming weight of RR into x28.
+  slli  x14, x30, 3
+  addi  x15, x25, 0
+  jal   x1, hamming_weight_buf
+  addi  x28, x12, 0
+
+  li    x18, 0
+  li    x26, 0
   # Main loop of the exponentiation, iterate over all exponent bits:
-  loop x21, 72
-    bn.add w31, w31, w31
+  loop x21, 73
+    bn.add w31, w31, w31, FG0
 
     # Shift d0 and siphon the shifted out MSB into FG0, x3 = a[i] = d0[i].
     la   x15, rsa_d0
@@ -285,6 +307,7 @@ _message_blinding_prologue_end:
     or   x22, x3, x22
     sw   x22, 0(x15)
 
+    bn.add w31, w31, w31, FG0
     # Shift secret indices and siphon the shifted out MSB into
     #   x4 = c = (b' ^ bi) ^ ai
     addi   x15, x25, 0
@@ -339,6 +362,18 @@ _message_blinding_prologue_end:
     jal   x1, masked_wdr_select_store_loop
 
     nop
+
+  /* Without message blinding, do not check accumulators */
+  beq x0, x29, _check_ok
+
+  /* Check the accumulators against expected values */
+  beq   x28, x18, _check_ok2
+  unimp
+_check_ok2:
+
+  beq   x27, x26, _check_ok
+  unimp
+_check_ok:
 
   # Make sure the output (A*R^e)^(d-1) is in r0.
   la   x14, rsa_d1
@@ -405,6 +440,12 @@ _message_blinding_epilogue_end:
   la  x21, r0
   jal x1, montmul_mul1
 
+  la   x14, fi_save_x26
+  lw   x26, 0(x14)
+  la   x14, fi_save_x27
+  lw   x27, 0(x14)
+  la   x14, fi_save_x28
+  lw   x28, 0(x14)
   ret
 
 /**
@@ -754,6 +795,14 @@ masked_wdr_select_loop:
     bn.wsrr w2, URND
     bn.sel w2, w27, w26, FG1.C
     bn.sid x14, 0(x17++)
+  /* As fault protection accumulate the FG0, FG1 select bit */
+  csrrs x12, FG0, x0
+  andi  x12, x12, 1
+  csrrs x13, FG1, x0
+  andi  x13, x13, 1
+  xor   x12, x12, x13
+  xori  x12, x12, 1
+  add   x18, x18, x12
   ret
 
 /**
@@ -791,4 +840,54 @@ masked_wdr_select_store_loop:
     bn.sel w29, w28, w27, FG1.C
     bn.sid x23, 0(x16++)
     bn.sid x24, 0(x17++)
+  /* As fault protection accumulate the FG0, FG1 select bit */
+  csrrs x12, FG0, x0
+  andi  x12, x12, 1
+  csrrs x13, FG1, x0
+  andi  x13, x13, 1
+  xor   x12, x12, x13
+  add   x26, x26, x12
+  ret
+
+/**
+ * Computes the Hamming weight of a buffer in DMEM.
+ *
+ * @param[in] x15: DMEM pointer to the buffer
+ * @param[in] x14: number of 32-bit words
+ * @param[out] x12: computed Hamming weight
+ *
+ * Clobbers: x13, x14, x15, x16, x22, x23, x24
+ */
+hamming_weight_buf:
+  # Load masks
+  lui   x22, 0x55555
+  addi  x22, x22, 1365 # 0x555
+  lui   x23, 0x33333
+  addi  x23, x23, 819  # 0x333
+  lui   x24, 0x0f0f1
+  addi  x24, x24, -241 # 0xf0f
+
+  li    x12, 0
+
+  loop  x14, 19
+    lw    x13, 0(x15)
+    addi  x15, x15, 4
+    srli  x16, x13, 1
+    and   x16, x16, x22
+    and   x13, x13, x22
+    add   x13, x13, x16
+    srli  x16, x13, 2
+    and   x16, x16, x23
+    and   x13, x13, x23
+    add   x13, x13, x16
+    srli  x16, x13, 4
+    add   x13, x13, x16
+    and   x13, x13, x24
+    srli  x16, x13, 8
+    add   x13, x13, x16
+    srli  x16, x13, 16
+    add   x13, x13, x16
+    andi  x13, x13, 0x7f
+    add   x12, x12, x13
+
   ret
