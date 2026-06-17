@@ -54,6 +54,15 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
   parameter bit SecRomCtrl1DisableScrambling = 1'b0
 ) (
+% if target["name"] == "verilator":
+  // Clock and Reset
+  input clk_i,
+  input rst_ni
+);
+<%
+  removed_port_names = []
+%>\
+% else:
 <%
   removed_port_names = []
 %>\
@@ -86,6 +95,7 @@ module chip_${top["name"]}_${target["name"]} #(
   ${port_comment}${pad["port_type"]} ${pad["name"]}${" " if loop.last else ","} // MIO Pad ${pad["idx"]}
 % endfor
 );
+% endif
 
   import top_${top["name"]}_pkg::*;
   import prim_pad_wrapper_pkg::*;
@@ -245,6 +255,22 @@ module chip_${top["name"]}_${target["name"]} #(
   logic scan_rst_n;
    prim_mubi_pkg::mubi4_t scanmode;
 
+% if target["name"] == "verilator":
+  // Padring substitute for the Verilator simulation top. The flat
+  // per-peripheral `cio_*` pad signals live inside `u_padring` (see
+  // padring_verilator.sv) and are driven and observed by the testbench DPI
+  // models through hierarchical references.
+  padring_verilator u_padring (
+    .mio_in_o  (mio_in ),
+    .mio_out_i (mio_out),
+    .mio_oe_i  (mio_oe ),
+    .mio_attr_i(mio_attr),
+
+    .dio_in_o (dio_in ),
+    .dio_out_i(dio_out),
+    .dio_oe_i (dio_oe )
+  );
+% else:
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
@@ -352,6 +378,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .mio_${port} (${lib.make_bit_concatenation(sig_name, indices, 6)})${"" if loop.last else ","}
 % endfor
   );
+% endif
 
 ###################################################################
 ## AST For all targets                                           ##
@@ -496,13 +523,54 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
+% if target["name"] == "verilator":
+
+  // Clock and power-on-reset generation specific to the Verilator top.
+  // AON clock divider. Reset is not used because verilator uses only sync
+  // resets (and does not model 'x'); resetting the divider would silence
+  // clk_aon and the clk_aon logic inside top_${top["name"]} would not reset.
+  logic clk_aon;
+  prim_clock_div #(
+    .Divisor(4)
+  ) u_aon_div (
+    .clk_i,
+    .rst_ni(1'b1),
+    .step_down_req_i('0),
+    .step_down_ack_o(),
+    .test_en_i('0),
+    .clk_o(clk_aon)
+  );
+
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
+  assign clks_osc_byp = '{
+    sys: clk_i,
+    io:  clk_i,
+    aon: clk_aon
+  };
+
+  // Target (Verilator) specific supply manipulation to create a synthetic POR condition.
+  logic [3:0] cnt;
+  logic vcc_supp;
+  always_ff @(posedge clk_aon) begin
+    if (cnt < 4'hf) begin
+      cnt <= cnt + 1'b1;
+    end
+  end
+  assign vcc_supp = cnt < 4'h4 ? 1'b0 :
+                    cnt < 4'h8 ? 1'b1 :
+                    cnt < 4'hc ? 1'b0 : 1'b1;
+% endif
 
   ast #(
     .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
     .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
   ) u_ast (
     // external POR
+% if target["name"] == "verilator":
+    .por_ni                ( rst_ni ),
+% else:
     .por_ni                ( manual_in_por_n ),
+% endif
 
     // Direct short to PAD
     .ast2pad_t0_ao         ( unused_t0 ),
@@ -512,6 +580,10 @@ module chip_${top["name"]}_${target["name"]} #(
     .sns_clks_i            ( clkmgr_aon_clocks    ),
     .sns_rsts_i            ( rstmgr_aon_resets    ),
     .sns_spi_ext_clk_i     ( sck_monitor          ),
+% if target["name"] == "verilator":
+    // clocks' oscillator bypass for verilator
+    .clk_osc_byp_i         ( clks_osc_byp ),
+% endif
     // tlul
     .tl_i                  ( ast_tl_req ),
     .tl_o                  ( ast_tl_rsp ),
@@ -526,7 +598,11 @@ module chip_${top["name"]}_${target["name"]} #(
     % endfor
 
     // pok test for FPGA
+% if target["name"] == "verilator":
+    .vcc_supp_i            ( vcc_supp ),
+% else:
     .vcc_supp_i            ( 1'b1 ),
+% endif
     .vcaon_supp_i          ( 1'b1 ),
     .vcmain_supp_i         ( 1'b1 ),
     .vioa_supp_i           ( 1'b1 ),
