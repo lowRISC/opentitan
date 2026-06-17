@@ -97,6 +97,11 @@ OT_WARN_UNUSED_RESULT
 status_t entropy_complex_init(hardened_bool_t fips);
 
 /**
+ * Disables the entropy complex.
+ */
+void entropy_complex_stop_all(void);
+
+/**
  * Ensures that the entropy complex is ready for use.
  *
  * Ensures that the entropy complex is running and that `entropy_src` is in

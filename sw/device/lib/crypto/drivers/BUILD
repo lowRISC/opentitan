@@ -258,7 +258,11 @@ cc_library(
     deps = [
         ":entropy",
         "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//hw/top/dt:csrng",
+        "//hw/top/dt:edn",
+        "//hw/top/dt:entropy_src",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",

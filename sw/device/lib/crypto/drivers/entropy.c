@@ -755,6 +755,8 @@ static void entropy_src_stop(void) {
                    ENTROPY_SRC_ENTROPY_CONTROL_REG_RESVAL);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET,
                    ENTROPY_SRC_CONF_REG_RESVAL);
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
+                   ENTROPY_SRC_FW_OV_CONTROL_REG_RESVAL);
   abs_mmio_write32(
       entropy_src_base() + ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_OFFSET,
       ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL);
@@ -777,7 +779,7 @@ static void entropy_src_stop(void) {
  *
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
-static void entropy_complex_stop_all(void) {
+void entropy_complex_stop_all(void) {
   edn_stop(edn0_base());
   edn_stop(edn1_base());
   abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
