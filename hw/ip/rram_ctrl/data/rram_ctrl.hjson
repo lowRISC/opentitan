@@ -8,11 +8,11 @@
   one_paragraph_desc: '''
                       RRAM Controller interfaces the integrated, non-volatile RRAM memory with software and other hardware components in the system, such as Life Cycle Controller, Key Manager, and OTP Controller.
                       It consists of the open-source RRAM controller that interfaces with a third party RRAM macro.
-                      The protocol controller handles direct memory mapped read requests, software controlled read and write requests, as well as life cycle RMA entry.
+                      The RRAM controller handles direct memory mapped read requests, software controlled read and write requests, as well as life cycle RMA entry.
                       The controller supports a differentiation between info and data partitions, RRAM memory protection at page boundaries, and the handling of key manager secrets inaccessible to software.
                       The data partition of the RRAM is further divided into a data region and an OTP region.
                       The controller handles OTP read and write requests that are emulated with a read-set-write algorithm on the OTP region.
-                      The actual physical controller is highly parameterized (number of pages, number of words and word size for each page, and number of read buffers) and supports XEX scrambling configurable by software, as well as ECC support configurable on a page boundary.
+                      The RRAM phy is highly parameterized (number of pages, number of words and word size for each page, and number of read buffers) and supports XEX scrambling configurable by software, as well as ECC support configurable on a page boundary.
                       '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "45",
@@ -49,14 +49,21 @@
 
   alert_list: [
     { name: "recov_err",
-      desc: "RRAM recoverable errors",
+      desc: '''
+            RRAM recoverable errors.
+            Fired whenever a software initiated controller operation completes with any bit set in !!ERR_CODE.
+            ''',
     },
     { name: "fatal_std_err",
-      desc: "RRAM standard fatal errors"
+      desc: '''
+            RRAM standard fatal errors.
+            Fired whenever any bit in !!STD_FAULT_STATUS is set.
+            '''
     },
     { name: "fatal_err",
       desc: '''
-            RRAM fatal errors including uncorrectable ECC errors.
+            RRAM fatal errors.
+            Fired whenever any bit in !!FAULT_STATUS is set, including uncorrectable ECC errors.
 
             Note that this alert is not always fatal.
             The underlying error bits in the !!FAULT_STATUS register remain set until reset, meaning the alert keeps firing.
@@ -180,8 +187,8 @@
     { name: "MEM.BUS.INTEGRITY",
       desc: '''
             End-to-end bus integrity scheme.
-            Integrity is added in rram_phy_rd  and stored alongside the data in the read-buffer.
-            Integrity is checked in rram_phy_wr.
+            Integrity is added in rram_phy_rd and stored alongside the data in the read-buffer; for reads, the TL-UL requester is expected to check this integrity.
+            For writes, integrity is checked in rram_phy_wr; software should perform a readback to fully verify a write completed correctly.
             '''
     }
     { name: "MEM.ADDR_INFECTION",
@@ -197,19 +204,19 @@
     }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
-            Life cycle control signals are used control information partition access
-            and RRAM debug access. See secret information partition, isolated information partitions
-            and jtag connection in documentation for more details.
+            Life cycle control signals are used to control information partition access
+            and RRAM debug access. See the documentation on the secret information partition,
+            isolated information partitions, and JTAG connection for more details.
             '''
     }
     { name: "CTRL.CONFIG.REGWEN",
       desc: "Configurations cannot be changed when an operation is ongoing."
     }
     { name: "DATA_REGIONS.CONFIG.REGWEN",
-      desc: "Each data region has a configurable regwen."
+      desc: "Each data region has a configurable REGWEN."
     }
     { name: "INFO_PAGE.CONFIG.REGWEN",
-      desc: "Each info page has a configurable regwen."
+      desc: "Each info page has a configurable REGWEN."
     }
     { name: "MEM.CTRL.GLOBAL_ESC",
       desc: "Global escalation causes memory to no longer be accessible."
@@ -240,11 +247,11 @@
             '''
     }
     { name: "RMA_ENTRY.MEM.SEC_WIPE",
-      desc: "RMA entry entry wipes RRAM memory and overwrites it with random data."
+      desc: "RMA entry wipes RRAM memory and overwrites it with random data."
     }
     { name: "CTRL.FSM.SPARSE",
       desc: '''
-             The following controller FSMs are sparesly encoded:
+            The following controller FSMs are sparesly encoded:
             - rram_ctrl_lcmgr (RMA + seed FSM)
             - rram_ctrl_otp
             - rram_ctrl_arb
@@ -373,7 +380,7 @@
     { name:      "WrFifoDepth",
       desc:      "Depth of write fifo",
       type:      "int"
-      default:   "4",
+      default:   "16",
       local:     "false",
       expose:    "true"
     },
@@ -432,16 +439,16 @@
   features: [
     {
      name: "RRAM_CTRL.ESCALATION"
-     desc: '''rram controller has two sources of escalation.
-           1. Global escalation : This is initiated by the Lifecycle Controller through lc_escalate_en.
-           2. Local escalation : This is activated in response to standard faults detected within the RRAM.
+     desc: '''The RRAM controller has two sources of escalation.
+           1. Global escalation: This is initiated by the life cycle controller through lc_escalate_en.
+           2. Local escalation: This is activated in response to standard faults detected within the RRAM.
                                  These faults are monitored through RRAM_CTRL.STD_FAULT_STATUS.
            '''
     }
     {
       name: "RRAM_CTRL.FETCH_CODE"
       desc: '''If SW programs RRAM_CTRL.EXEC to 0xA26A38F7, code fetch from RRAM device is allowed.
-            All top-level tests that make use of the tests uses this features. No dedicated test is required.
+            All top-level tests make use of this feature. No dedicated test is required.
             '''
     }
     {
@@ -490,9 +497,9 @@
     }
     {
       name: "RRAM_CTRL.OP.PROTOCOL_CTRL"
-      desc: '''As opposed to the host, the protocol controller can read, write both data and info partitions.
+      desc: '''As opposed to the host, the RRAM controller can read and write both data and info partitions.
             It has lower priority than host requests.
-            While an operation is in progress, other hw initiated request i.e. RMA, will be held until the operation is finished.
+            While an operation is in progress, other HW-initiated requests, i.e. RMA, are held until the operation is finished.
             '''
     }
     {
@@ -531,10 +538,10 @@
             name: "RELBL_ERR_FATAL",
             mubi: true,
             desc: '''
-                  Configuration bit for reliablity error.
+                  Configuration bit for reliability error.
                   Once this config bit is set to MuBi4True, every fault in !!FAULT_STATUS will disable the RRAM immediately.
-                  Otherwise !!FAULT_STATUS.PHY_RELBL_ERR is excluded for the local escalation to deal with firmware selection during the boot process.
-                  Since this register is rw1s instead of rw this configuration cannot be reverted.
+                  Otherwise !!FAULT_STATUS.PHY_RELBL_ERR is excluded from the local escalation, to deal with firmware selection during the boot process.
+                  Since this register is rw1s instead of rw, this configuration cannot be reverted.
                   '''
             resval: false,
           },
@@ -643,7 +650,7 @@
               { value: "2",
                 name: "Rewrite",
                 desc: '''
-                      This operation reads a specific location and writes it back to the RRAM with the intention to fix errors that occured in the RRAM over time.
+                      This operation reads a specific location and writes it back to the RRAM with the intention to fix errors that occurred in the RRAM over time.
                       '''
               },
             ]
@@ -708,7 +715,7 @@
               { bits: "0",
                 name: "REGION",
                 resval: "1"
-                desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+                desc: "Region register write enable. Once set to 0, it can no longer be configured to 1.",
                 enum: [
                   { value: "0",
                     name: "Region locked",
@@ -803,9 +810,9 @@
             { bits: "23:12",
               name: "SIZE",
               desc: '''
-                    Region size in number of pages.
-                    For example, if base is 0 and size is 1, then the region is defined by page 0.
-                    If base is 0 and size is 2, then the region is defined by pages 0 and 1.
+                    Region size, encoded as (number of pages - 1).
+                    For example, if base is 0 and size is 0, then the region is defined by page 0.
+                    If base is 0 and size is 1, then the region is defined by pages 0 and 1.
                     ''',
               resval: "0"
             },
@@ -869,7 +876,7 @@
                 resval: "1"
                 desc: '''
                       Info page write enable.
-                      Once set to 0, it can longer be configured to 1.
+                      Once set to 0, it can no longer be configured to 1.
                       '''
                 enum: [
                   { value: "0",
@@ -1102,7 +1109,7 @@
           { bits: "5",
             name: "phy_wr_intg_err",
             desc: '''
-                  The RRAM phy controller encountered a write data transmission integrity error.
+                  The RRAM phy encountered a write data transmission integrity error.
                   '''
           },
           { bits: "6",
@@ -1244,14 +1251,14 @@
             name: "phy_rd_intg_err",
             swaccess: "ro",
             desc: '''
-                  The RRAM phy controller encountered an integrity error. The shadow response was not identical to the original response.
+                  The RRAM phy encountered an integrity error. The shadow response was not identical to the original response.
                   '''
           },
           { bits: "11",
             name: "phy_rd_ctrl_err",
             swaccess: "ro",
             desc: '''
-                  The RRAM phy controller detected one of the following errors:
+                  The RRAM phy detected one of the following errors:
                   - a mismatch of command request integrity and command response integrity.
                   - a spurious valid.
                   - a spurious rram read request.
@@ -1327,7 +1334,7 @@
           },
           { bits: "1",
             name: "init_done",
-            desc: "RRAM phy controller is initialized (including RRAM)"
+            desc: "RRAM phy is initialized (including RRAM)"
             tags: [ // Bit changes after start from reset value to 1b1 due to initialization
             "excl:CsrAllTests:CsrExclAll"]
           },
