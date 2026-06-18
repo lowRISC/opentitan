@@ -142,11 +142,6 @@ FPGAS = {
         # Time it takes to load a bitstream, in seconds.
         "load_time": 20,
     },
-    "cw310": {
-        "human_name": "CW310",
-        "ci_board": "cw310",
-        "load_time": 10,
-    }
 }
 
 
@@ -253,11 +248,8 @@ def main():
             jobs.append(new_job)
 
     sched("Manufacturing", "cw340", "cw340_manuf", ["manuf", "cw340"])
-    sched("Manufacturing", "cw310", "cw310_manuf", ["manuf", "cw310"])
     sched("SiVal ROM_EXT", "cw340", "cw340_sival_rom_ext", ["cw340_sival_rom_ext"])
-    sched("SiVal ROM_EXT", "cw310", "cw310_sival_rom_ext", ["cw310_sival_rom_ext"])
     sched("SiVal", "cw340", "cw340_sival", ["cw340_sival"])
-    sched("SiVal", "cw310", "cw310_sival", ["cw310_sival"])
     # There are too many ROM_EXT tests to fit in one job so we split out the ownership and rescue
     # tests, and schedule the rest together.
     sched("ROM_EXT (ownership)", "cw340", "cw340_ownership", ["cw340_rom_ext"],
@@ -265,12 +257,9 @@ def main():
     sched("ROM_EXT (rescue)", "cw340", "cw340_rescue", ["cw340_rom_ext"],
           label_prefix = "@@//sw/device/silicon_creator/rom_ext/e2e/rescue:")
     sched("ROM_EXT (remaining)", "cw340", "cw340_rom_ext", ["cw340_rom_ext"])
-    sched("ROM_EXT", "cw310", "cw310_rom_ext", ["cw310_rom_ext"])
 
     sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"], split=2)
-    sched("ROM", "cw310", "cw310_rom", ["cw310_rom_with_fake_keys"], split=2)
     sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
-    sched("TestROM", "cw310", "cw310_test_rom", ["cw310_test_rom"])
 
     # Check for ID collisions in the scheduled jobs.
     jobs_by_id = defaultdict(list)

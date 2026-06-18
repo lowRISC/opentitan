@@ -20,11 +20,7 @@ shift 2
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
 readonly BIT_CACHE_DIR="${HOME}/.cache/opentitan-bitstreams/cache/ci_bitstreams"
-if [ "${fpga}" = "hyper310" ]; then
-    readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug"
-else
-    readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_${fpga}"
-fi
+readonly BIT_SRC_DIR="${BIN_DIR}/hw/top_earlgrey/chip_earlgrey_${fpga}"
 mkdir -p "${BIT_CACHE_DIR}"
 cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
