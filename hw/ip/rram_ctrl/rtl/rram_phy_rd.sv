@@ -174,7 +174,7 @@ module rram_phy_rd
     assign buf_invalid_alloc[i] = buf_invalid[i] & ~|buf_invalid[i-1:0];
   end
 
-  // A prim arbiter is used to select among the valid buffers
+  // A round-robin prim arbiter is used to select among the valid buffers
   logic [1:0] dummy_data [NumRdBuf];
   assign dummy_data = '{default: '0};
 

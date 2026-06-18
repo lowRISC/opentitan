@@ -128,6 +128,7 @@ module rram_ctrl
   logic [BusFullWidth-1:0] wr_fifo_rdata;
   logic [WrDepthW-1:0]     wr_fifo_depth;
   logic                    wr_fifo_clr;
+  logic                    wr_fifo_err;
 
   // software interface to wr fifo
   logic                    sw_wvalid;
@@ -389,6 +390,8 @@ module rram_ctrl
   assign hw2reg.std_fault_status.ctrl_fsm_err.de    = rd_fsm_err | wr_fsm_err | arb_fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.d     = 1'b1;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de    = rd_cnt_err | wr_cnt_err;
+  assign hw2reg.std_fault_status.ctrl_fifo_err.d    = 1'b1;
+  assign hw2reg.std_fault_status.ctrl_fifo_err.de   = wr_fifo_err;
 
   // Location of the last correctable error
   assign hw2reg.corr_err_loc.addr.d = {phy_ecc_corr_addr, {(BusAddrByteW - AddrW){1'b0}}};
@@ -464,7 +467,8 @@ module rram_ctrl
 
   prim_fifo_sync #(
     .Width(BusFullWidth),
-    .Depth(WrFifoDepth)
+    .Depth(WrFifoDepth),
+    .Secure(1'b1) // SEC_CM: FIFO.CTR.REDUN
   ) u_wr_fifo (
     .clk_i,
     .rst_ni,
@@ -477,7 +481,7 @@ module rram_ctrl
     .rvalid_o(wr_fifo_rvalid),
     .rready_i(wr_fifo_rready),
     .rdata_o (wr_fifo_rdata),
-    .err_o   ()
+    .err_o   (wr_fifo_err)
   );
   assign hw2reg.curr_fifo_lvl.wr.d = MaxFifoWidth'(wr_fifo_depth);
 
@@ -1254,6 +1258,9 @@ module rram_ctrl
                                               u_tl_adapter_host.u_reqfifo,
                                               alert_tx_o[1])
 
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(CtrlWrFifo,
+                                              u_wr_fifo, alert_tx_o[1])
+
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WrCnt_A, u_rram_ctrl_wr.u_cnt,
@@ -1280,12 +1287,12 @@ module rram_ctrl
     u_rram_phy.u_rram_phy_wr.u_word_cnt, alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyMaskFifo,
-    u_rram_phy.u_rram_phy_rd.u_mask_fifo, alert_tx_o[1])
+                                              u_rram_phy.u_rram_phy_rd.u_mask_fifo, alert_tx_o[1])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdFifo,
-    u_rram_phy.u_rram_phy_rd.u_rd_fifo, alert_tx_o[1])
+                                              u_rram_phy.u_rram_phy_rd.u_rd_fifo, alert_tx_o[1])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdMetaFifo,
-    u_rram_phy.u_rram_phy_rd.u_meta_fifo, alert_tx_o[1])
+                                              u_rram_phy.u_rram_phy_rd.u_meta_fifo, alert_tx_o[1])
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyMetaFifo,
-    u_rram_phy.u_meta_fifo, alert_tx_o[1])
+                                              u_rram_phy.u_meta_fifo, alert_tx_o[1])
 
 endmodule

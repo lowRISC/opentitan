@@ -1115,7 +1115,13 @@
           { bits: "11",
             name: "ctrl_cnt_err",
             desc: '''
-                  RRAM ctrl read/write has encountered a count error.
+                  RRAM controller read/write has encountered a count error.
+                  '''
+          },
+          { bits: "12",
+            name: "ctrl_fifo_err",
+            desc: '''
+                  RRAM controller write fifo has encountered an error.
                   '''
           },
         ]
@@ -1327,7 +1333,7 @@
         desc: "RRAM Controller Scratch",
         swaccess: "rw",
         fields: [
-          { bits: "31:0", name: "data",  desc: "RRAM ctrl scratch register" },
+          { bits: "31:0", name: "data",  desc: "RRAM controller scratch register" },
         ]
       },
 
