@@ -154,7 +154,7 @@ module bkdr_loader
   );
 
   // Throw error if we address a non-existing target
-  assign tgt_idx_err = !(reg2hw.control.target_idx.q inside {BkdrValidTgts});
+  assign tgt_idx_err = !(bkdr_idx_e'(reg2hw.control.target_idx.q) inside {BkdrValidTgts});
 
   assign hw2reg.usr_access_timestamp.d = fpga_info_i;
   assign hw2reg.status.d               = tgt_idx_err;
