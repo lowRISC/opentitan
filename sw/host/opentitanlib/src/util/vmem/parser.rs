@@ -320,9 +320,10 @@ mod test {
         // No value:
         assert_eq!(VmemParser::parse_value("/* X */").unwrap(), None);
 
+        let token = Token::Value(vec![0x01, 0x23, 0xab, 0xcd]);
         let expected = Some(Span {
             len: 8,
-            token: Token::Value(vec![0x01, 0x23, 0xab, 0xcd]),
+            token: token.clone(),
         });
         // Partially a value:
         assert_eq!(VmemParser::parse_value("0123ABCD FF").unwrap(), expected);
@@ -330,6 +331,17 @@ mod test {
         assert_eq!(VmemParser::parse_value("0123ABCD").unwrap(), expected);
         // Lower-case hex characters:
         assert_eq!(VmemParser::parse_value("0123abcd").unwrap(), expected);
+
+        // Odd number of nibbles:
+        let expected = Some(Span { len: 7, token });
+        assert_eq!(VmemParser::parse_value("123ABCD").unwrap(), expected);
+
+        // Word sizes larger than u32:
+        let expected = Some(Span {
+            len: 10,
+            token: Token::Value(vec![0x01, 0x23, 0xab, 0xcd, 0xef]),
+        });
+        assert_eq!(VmemParser::parse_value("0123abcdef").unwrap(), expected);
     }
 
     #[test]
@@ -371,5 +383,48 @@ mod test {
         assert_eq!(VmemParser::parse_whitespace(" 	FF").unwrap(), expected);
         // Entirely whitespace:
         assert_eq!(VmemParser::parse_whitespace(" 	").unwrap(), expected);
+    }
+
+    #[test]
+    fn addr_stride() {
+        let input = r#"
+            @000 000000
+            @010 012345 6789AB CDEFFE
+            @200 DCBA98 765432
+        "#;
+        let mut expected = Vmem {
+            sections: vec![
+                Section {
+                    addr: 0x0,
+                    data: vec![Word::new(vec![0x00, 0x00, 0x00])],
+                },
+                Section {
+                    addr: 0x10,
+                    data: vec![
+                        Word::new(vec![0x01, 0x23, 0x45]),
+                        Word::new(vec![0x67, 0x89, 0xab]),
+                        Word::new(vec![0xcd, 0xef, 0xfe]),
+                    ],
+                },
+                Section {
+                    addr: 0x200,
+                    data: vec![
+                        Word::new(vec![0xdc, 0xba, 0x98]),
+                        Word::new(vec![0x76, 0x54, 0x32]),
+                    ],
+                },
+            ],
+        };
+
+        // Using a stride of 1 word per address/index
+        assert_eq!(VmemParser::parse(input, None).unwrap(), expected);
+        // Using a stride of 1 byte per address/index, where each word is 3 bytes
+        expected.sections[1].addr = 0x10 * 3;
+        expected.sections[2].addr = 0x200 * 3;
+        assert_eq!(VmemParser::parse(input, Some(3)).unwrap(), expected);
+        // Using a stride of 1 byte per address/index, where each word is 10 bytes
+        expected.sections[1].addr = 0x10 * 10;
+        expected.sections[2].addr = 0x200 * 10;
+        assert_eq!(VmemParser::parse(input, Some(10)).unwrap(), expected);
     }
 }
