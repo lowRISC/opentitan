@@ -155,6 +155,59 @@ mod test {
     }
 
     #[test]
+    fn merge_contiguous_sections() {
+        // Use a VMEM with word address stride, but convert to byte addresses when parsing & merging.
+        let mut vmem = Vmem::from_str("1234 @20 0123 4567 89ab @23 cdef 1f1f", Some(2)).unwrap();
+        let expected = vec![
+            Section {
+                addr: 0x0,
+                data: vec![Word::new(vec![0x12, 0x34])],
+            },
+            Section {
+                addr: 0x40,
+                data: [
+                    [0x01, 0x23],
+                    [0x45, 0x67],
+                    [0x89, 0xab],
+                    [0xcd, 0xef],
+                    [0x1f, 0x1f],
+                ]
+                .iter()
+                .map(|&bytes| Word::new(Vec::from(bytes)))
+                .collect(),
+            },
+        ];
+
+        vmem.merge_sections(Some(2));
+        assert_eq!(vmem.sections, expected);
+
+        // Use a VMEM with byte address stride directly - no bytes per word is given when parsing.
+        let mut vmem = Vmem::from_str("1234 @20 0123 4567 89ab @26 cdef 1f1f", None).unwrap();
+        let expected = vec![
+            Section {
+                addr: 0x0,
+                data: vec![Word::new(vec![0x12, 0x34])],
+            },
+            Section {
+                addr: 0x20,
+                data: [
+                    [0x01, 0x23],
+                    [0x45, 0x67],
+                    [0x89, 0xab],
+                    [0xcd, 0xef],
+                    [0x1f, 0x1f],
+                ]
+                .iter()
+                .map(|&bytes| Word::new(Vec::from(bytes)))
+                .collect(),
+            },
+        ];
+
+        vmem.merge_sections(Some(2));
+        assert_eq!(vmem.sections, expected);
+    }
+
+    #[test]
     fn section_data() {
         let section = Section {
             addr: 0x42,
@@ -170,6 +223,33 @@ mod test {
             });
 
         let data: Vec<_> = section.data_addrs(4).collect();
+        assert_eq!(data, expected);
+    }
+
+    #[test]
+    fn section_stride() {
+        let section = Section {
+            addr: 0x15,
+            data: [0x12, 0x45, 0x78, 0xab]
+                .iter()
+                .map(|&b| Word::new(vec![b]))
+                .collect(),
+        };
+
+        let expected =
+            [(0x15, 0x12), (0x16, 0x45), (0x17, 0x78), (0x18, 0xab)].map(|(addr, value)| Data {
+                addr,
+                value: Word::new(vec![value]),
+            });
+        let data: Vec<_> = section.data_addrs(1).collect();
+        assert_eq!(data, expected);
+
+        let expected =
+            [(0x15, 0x12), (0x1a, 0x45), (0x1f, 0x78), (0x24, 0xab)].map(|(addr, value)| Data {
+                addr,
+                value: Word::new(vec![value]),
+            });
+        let data: Vec<_> = section.data_addrs(5).collect();
         assert_eq!(data, expected);
     }
 }
