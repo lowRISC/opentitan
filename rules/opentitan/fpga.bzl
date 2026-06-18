@@ -173,21 +173,6 @@ def _test_dispatch(ctx, exec_env, firmware):
     )
     return script, data_files
 
-def _fpga_cw310(ctx):
-    fields = exec_env_as_dict(ctx)
-    return ExecEnvInfo(
-        provider = Cw310BinaryInfo,
-        test_dispatch = _test_dispatch,
-        transform = _transform,
-        **fields
-    )
-
-fpga_cw310 = rule(
-    implementation = _fpga_cw310,
-    attrs = exec_env_common_attrs(),
-    toolchains = [LOCALTOOLS_TOOLCHAIN],
-)
-
 def _fpga_cw305(ctx):
     fields = exec_env_as_dict(ctx)
     return ExecEnvInfo(

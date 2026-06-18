@@ -38,7 +38,6 @@
     - [Design](./hw/top_earlgrey/doc/design/README.md)
     - [Pinout / Pinmux Tables](./hw/top_earlgrey/ip_autogen/pinmux/doc/targets.md)
       - [ASIC](./hw/top_earlgrey/ip_autogen/pinmux/doc/pinout_asic.md)
-      - [CW310](./hw/top_earlgrey/ip_autogen/pinmux/doc/pinout_cw310.md)
       - [CW340](./hw/top_earlgrey/ip_autogen/pinmux/doc/pinout_cw340.md)
     - [Design Verification](./hw/top_earlgrey/dv/README.md)
       - [Chip Testplan](./hw/top_earlgrey/data/chip_testplan.hjson)

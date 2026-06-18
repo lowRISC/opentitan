@@ -20,7 +20,6 @@ load(
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
-    _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
     _fpga_params = "fpga_params",
 )
@@ -84,12 +83,8 @@ opentitan_transition = _opentitan_transition
 
 opentitan_binary_blob = _opentitan_binary_blob
 fpga_cw305 = _fpga_cw305
-fpga_cw310 = _fpga_cw310
 fpga_cw340 = _fpga_cw340
 fpga_params = _fpga_params
-
-# Temporary export of the old name to prevent merge skew breakage.
-cw310_params = _fpga_params
 
 silicon = _silicon
 silicon_params = _silicon_params
@@ -340,7 +335,6 @@ def opentitan_test(
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
-        "cw310": fpga,
         "fpga": fpga,
         "dv": dv,
         "silicon": silicon,

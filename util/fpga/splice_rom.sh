@@ -38,7 +38,7 @@ USAGE
 }
 
 # Change these variables when using the script for a different top level and/or FPGA board.
-FLAGS_TARGET_BOARD="cw310"
+FLAGS_TARGET_BOARD="cw340"
 FLAGS_TARGET_TOP="earlgrey"
 FLAGS_BIN="DV"
 
