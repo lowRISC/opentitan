@@ -279,6 +279,9 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
   size_t padded_nblocks;
   HARDENED_TRY(
       num_padded_blocks_get(plaintext_len, aes_padding, &padded_nblocks));
+  if (padded_nblocks > SIZE_MAX / kAesBlockNumBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   *padded_len = padded_nblocks * kAesBlockNumBytes;
   return OTCRYPTO_OK;
 }
