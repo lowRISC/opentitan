@@ -6,6 +6,7 @@
 //!
 //! This includes the [`Vmem'] representation which can be parsed from a string.
 
+use std::fmt;
 use std::iter;
 
 use thiserror::Error;
@@ -60,6 +61,69 @@ impl Vmem {
         self.sections
             .iter()
             .filter(|section| !section.data.is_empty())
+    }
+
+    /// Serialize the VMEM, dumping it to a string.
+    ///
+    /// The `bytes_per_word` parameter can be used to control the zero-extension of words.
+    ///
+    /// If `addr_per_word` is true, then each word will be given its own address on a
+    /// separate line, with a stride of `bytes_per_word` between words (default: 1). If it
+    /// is instead false, an address will only be emitted per each section.
+    pub fn dump(&self, bytes_per_word: Option<usize>, addr_per_word: bool) -> String {
+        let addr_stride = bytes_per_word.unwrap_or(1);
+        let word_width_nibbles = bytes_per_word.map(|b| b * 2);
+        let max_addr = self
+            .sections
+            .iter()
+            .map(|s| s.addr + ((s.data.len() - 1) * addr_stride) as u32)
+            .max();
+        let addr_width = format!("{:x}", max_addr.unwrap_or(0)).len();
+
+        let mut sections: Vec<String> = Vec::new();
+
+        for section in &self.sections {
+            let mut section_str = String::new();
+
+            if !addr_per_word {
+                section_str.push_str(&format!("@{:0addr_width$X} ", section.addr));
+            }
+
+            let word_separator = if addr_per_word { "\n" } else { " " };
+            section_str.push_str(
+                &section
+                    .data
+                    .iter()
+                    .enumerate()
+                    .map(|(index, word)| {
+                        let addr = if addr_per_word {
+                            let addr = section.addr + (index * addr_stride) as u32;
+                            format!("@{:0addr_width$X} ", addr)
+                        } else {
+                            String::new()
+                        };
+
+                        let word = if let Some(width) = word_width_nibbles {
+                            format!("{:0>width$}", hex::encode_upper(word.bytes.clone()))
+                        } else {
+                            hex::encode_upper(word.bytes.clone())
+                        };
+
+                        format!("{}{}", addr, word)
+                    })
+                    .collect::<Vec<_>>()
+                    .join(word_separator),
+            );
+            sections.push(section_str);
+        }
+
+        sections.join("\n")
+    }
+}
+
+impl fmt::Display for Vmem {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.dump(None, false))
     }
 }
 
@@ -251,5 +315,34 @@ mod test {
             });
         let data: Vec<_> = section.data_addrs(5).collect();
         assert_eq!(data, expected);
+    }
+
+    #[test]
+    fn serialize() {
+        let input = r#"
+@000 DEADBEEF FACECAFE 01234567
+@010 00000000 11111111 22222222
+@234 A5A5A5A5 5A5A5A5A
+@ABC 01234567 89ABCDEF DEADBEEF
+        "#;
+        let vmem = Vmem::from_str(input, None).unwrap();
+        let dumped = vmem.to_string();
+        assert_eq!(dumped, input.trim());
+
+        let dumped = vmem.dump(Some(4), true);
+        let expected = r#"
+@000 DEADBEEF
+@004 FACECAFE
+@008 01234567
+@010 00000000
+@014 11111111
+@018 22222222
+@234 A5A5A5A5
+@238 5A5A5A5A
+@ABC 01234567
+@AC0 89ABCDEF
+@AC4 DEADBEEF
+        "#;
+        assert_eq!(dumped, expected.trim());
     }
 }
