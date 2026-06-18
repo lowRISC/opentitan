@@ -67,6 +67,9 @@ module top_${top["name"]} #(
   assign rram_ctrl_otp_key_rsp.key = '0;
   assign rram_ctrl_otp_key_rsp.rand_key = '0;
   assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
+
+  // TODO: remove once keymgr has been updated
+  assign keymgr_flash.seeds = rram_ctrl_keymgr.seeds;
   % endif
 % endfor
 
