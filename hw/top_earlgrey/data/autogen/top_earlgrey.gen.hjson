@@ -6341,10 +6341,6 @@
           act: req
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_keymgr
           index: -1
         }
         {
@@ -6677,6 +6673,8 @@
           act: req
           width: 1
           inst_name: rram_ctrl
+          default: ""
+          top_signame: rram_ctrl_keymgr
           index: -1
         }
         {
@@ -8368,8 +8366,7 @@
           width: 1
           inst_name: keymgr
           default: ""
-          domain: Main
-          top_signame: flash_ctrl_keymgr
+          top_signame: keymgr_flash
           index: -1
         }
         {
@@ -10652,10 +10649,6 @@
       [
         entropy_src.entropy_src_hw_if
       ]
-      flash_ctrl.keymgr:
-      [
-        keymgr.flash
-      ]
       flash_ctrl.otp:
       [
         otp_ctrl.nvm_otp_key
@@ -11224,6 +11217,9 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       rram_ctrl.otp_key
+      flash_ctrl.otp
+      rram_ctrl.keymgr
+      keymgr.flash
       pinmux.dft_jtag
       otp_ctrl.otp_broadcast
       csrng.otp_en_csrng_sw_app_read
@@ -25189,10 +25185,6 @@
         act: req
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_keymgr
         index: -1
       }
       {
@@ -25434,6 +25426,8 @@
         act: req
         width: 1
         inst_name: rram_ctrl
+        default: ""
+        top_signame: rram_ctrl_keymgr
         index: -1
       }
       {
@@ -26407,8 +26401,7 @@
         width: 1
         inst_name: keymgr
         default: ""
-        domain: Main
-        top_signame: flash_ctrl_keymgr
+        top_signame: keymgr_flash
         index: -1
       }
       {
@@ -33061,18 +33054,6 @@
         default: entropy_src_pkg::ENTROPY_SRC_HW_IF_RSP_DEFAULT
       }
       {
-        package: flash_ctrl_pkg
-        struct: keymgr_flash
-        domain: Main
-        signame: flash_ctrl_keymgr
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT
-      }
-      {
         package: otp_ctrl_pkg
         struct: nvm_otp_key_req
         domain: Main
@@ -35211,6 +35192,46 @@
         signame: rram_ctrl_otp_key_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: nvm_otp_key_req
+        domain: Main
+        signame: flash_ctrl_otp_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: nvm_otp_key_rsp
+        domain: Main
+        signame: flash_ctrl_otp_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: rram_ctrl_pkg
+        struct: keymgr_rram
+        signame: rram_ctrl_keymgr
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: flash_ctrl_pkg
+        struct: keymgr_flash
+        signame: keymgr_flash
+        domain: Main
+        width: 1
+        type: uni
         end_idx: -1
         default: ""
       }
