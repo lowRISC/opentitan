@@ -1215,7 +1215,7 @@
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog'],
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
-      'flash_ctrl.otp'          : ['otp_ctrl.nvm_otp_key'],
+      'rram_ctrl.otp_key'       : ['otp_ctrl.nvm_otp_key'],
       'lc_ctrl.lc_nvm_rma_seed' : ['flash_ctrl.rma_seed', 'rram_ctrl.rma_seed'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key',
@@ -1400,7 +1400,7 @@
         // Xbars
 
         // Temporary RRAM helpers
-        'rram_ctrl.otp_key',
+        'flash_ctrl.otp',
         'flash_ctrl.keymgr',
         'rram_ctrl.keymgr',
         'keymgr.flash',
