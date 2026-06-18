@@ -69,6 +69,11 @@ size_t keyblob_num_words(const otcrypto_key_config_t config) {
  * @returns OK if the keyblob length is correct, BAD_ARGS otherwise.
  */
 static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
+  if (launder32(key->config.key_length) >
+      kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   size_t num_words = keyblob_num_words(key->config);
   if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
     HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
@@ -178,6 +183,11 @@ status_t keyblob_to_keymgr_attestation_diversification(
 }
 
 status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
+  if (launder32(config.key_length) >
+      kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Reject hardware-backed keys, since the keyblob is not the actual key
   // material in this case but the version/salt.
   if (launder32(config.hw_backed) != kHardenedBoolFalse) {
@@ -236,7 +246,10 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
 
   // share0 = key ^ mask, share1 = mask
   size_t key_words = keyblob_share_num_words(config);
-  uint32_t share0[key_words];
+  if (key_words > kOtcryptoWrappedKeyMaxWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t share0[kOtcryptoWrappedKeyMaxWords];
   HARDENED_TRY(hardened_xor(key, mask, key_words, share0));
 
   return keyblob_from_shares(share0, mask, config, keyblob);
@@ -252,7 +265,10 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
 
   // Generate a fresh mask the size of one share.
   size_t key_share_words = keyblob_share_num_words(key->config);
-  uint32_t mask[key_share_words];
+  if (key_share_words > kOtcryptoWrappedKeyMaxWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t mask[kOtcryptoWrappedKeyMaxWords];
   HARDENED_TRY(hardened_memshred(mask, key_share_words));
 
   // XOR each share with the mask.
