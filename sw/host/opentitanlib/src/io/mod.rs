@@ -5,6 +5,7 @@
 pub mod console;
 pub mod eeprom;
 pub mod emu;
+pub mod fpga_backdoor;
 pub mod gpio;
 pub mod i2c;
 pub mod ioexpander;

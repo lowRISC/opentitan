@@ -10,6 +10,7 @@ pub mod console;
 pub mod ecdsa;
 pub mod emulator;
 pub mod fpga;
+pub mod fpga_backdoor;
 pub mod gpio;
 pub mod hello;
 pub mod i2c;
