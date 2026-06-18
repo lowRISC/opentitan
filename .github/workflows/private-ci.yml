@@ -24,17 +24,69 @@ jobs:
     name: Trigger Private CI
     runs-on: ubuntu-latest
     steps:
+      # For pull requests, classify the changed files so that pipelines
+      # which are irrelevant to the change can be skipped and the rest can
+      # be narrowed down to the affected designs.
+      #
+      # SECURITY NOTE: this is a pull_request_target workflow, so only code
+      # from the base branch may ever be executed. The checkout below is
+      # the base branch (the default for pull_request_target); the pull
+      # request head is fetched as data and only used in git diffs.
+      - uses: actions/checkout@v6
+        if: ${{ github.event_name == 'pull_request_target' }}
+        with:
+          fetch-depth: 0 # Required to find the merge base.
+      - name: Classify changed files
+        id: classify
+        if: ${{ github.event_name == 'pull_request_target' }}
+        run: |
+          git fetch --no-tags origin "pull/${{ github.event.number }}/head"
+          ./ci/scripts/classify-changes.sh \
+            "${{ github.event.pull_request.base.ref }}" FETCH_HEAD
+
+      - name: Compute design filter
+        id: filter
+        if: ${{ github.event_name == 'pull_request_target' }}
+        run: |
+          designs=()
+          if [ "${{ steps.classify.outputs.top_earlgrey }}" = "true" ]; then
+            designs+=('"earlgrey"')
+          fi
+          if [ "${{ steps.classify.outputs.top_darjeeling }}" = "true" ]; then
+            designs+=('"darjeeling"')
+          fi
+          echo "designs=[$(IFS=,; echo "${designs[*]}")]" >> "$GITHUB_OUTPUT"
+
       - name: Trigger Private CI
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
+        env:
+          DOCS_ONLY: ${{ steps.classify.outputs.docs_only }}
+          HW: ${{ steps.classify.outputs.hw }}
+          DESIGNS: ${{ steps.filter.outputs.designs }}
         with:
           script: |
+            const isPullRequest = context.eventName === 'pull_request_target';
+            // Push events run everything; an empty design filter means
+            // "all designs" downstream.
+            const docsOnly = isPullRequest && process.env.DOCS_ONLY === 'true';
+            const hwChanged = !isPullRequest || process.env.HW === 'true';
+            const designs = isPullRequest ? process.env.DESIGNS : '';
+
+            if (docsOnly || designs === '[]') {
+              await core.summary
+                .addRaw('Private CI skipped: the change does not affect any private pipeline.')
+                .write();
+              return;
+            }
+
             const payload = {
-              sha: context.eventName === 'pull_request_target' ? context.payload.pull_request.head.sha : context.sha,
+              sha: isPullRequest ? context.payload.pull_request.head.sha : context.sha,
               pull_request: context.issue.number,
               inputs: {
                 // For push events, also send branch name (for batching)
-                branch: context.eventName === 'pull_request_target' ? undefined : context.ref,
-                run_name: context.eventName === 'pull_request_target' ? context.payload.pull_request.title : context.payload.head_commit.message.split('\n')[0],
+                branch: isPullRequest ? undefined : context.ref,
+                run_name: isPullRequest ? context.payload.pull_request.title : context.payload.head_commit.message.split('\n')[0],
+                designs,
               },
             };
             await github.rest.repos.createDispatchEvent({
@@ -46,12 +98,18 @@ jobs:
                 target: `${context.repo.owner}/opentitan-private-ci/master/private-ci.yml`,
               }
             });
-            await github.rest.repos.createDispatchEvent({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              event_type: 'cross-repo-ci',
-              client_payload: {
-                ...payload,
-                target: `${context.repo.owner}/opentitan-realintent-ci/main/ascentlint-ci.yml`,
-              }
-            });
+            if (hwChanged) {
+              await github.rest.repos.createDispatchEvent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event_type: 'cross-repo-ci',
+                client_payload: {
+                  ...payload,
+                  target: `${context.repo.owner}/opentitan-realintent-ci/main/ascentlint-ci.yml`,
+                }
+              });
+            } else {
+              await core.summary
+                .addRaw('AscentLint skipped: no hardware or tooling changes.')
+                .write();
+            }
