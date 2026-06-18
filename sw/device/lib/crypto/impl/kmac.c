@@ -52,6 +52,9 @@ otcrypto_status_t otcrypto_kmac(
       kHardenedBoolFalse;
 
   // Ensure that tag buffer length and `required_output_len` match each other.
+  if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   size_t required_output_words =
       (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
