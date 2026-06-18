@@ -9,6 +9,7 @@ use std::convert::From;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
@@ -33,6 +34,8 @@ pub enum InternalBackdoorCommand {
     Write(BackdoorWrite),
     /// Verify that the contents of some target memory matches some given data.
     Verify(BackdoorVerify),
+    /// A command that combines entering, writing several files to different targets, and starting.
+    Batch(BackdoorBatch),
 }
 
 #[derive(Debug, Args)]
@@ -486,6 +489,86 @@ impl CommandDispatch for BackdoorVerify {
                 target.info.width as usize,
                 section.addr,
             )?;
+        }
+
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TargetWrite {
+    pub target: String,
+    pub path: PathBuf,
+    pub offset: Option<u32>,
+}
+
+impl FromStr for TargetWrite {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (target_path, offset) = s
+            .split_once('@')
+            .map(|(x, y)| (x, y.parse::<u32>().ok()))
+            .unwrap_or((s, None));
+
+        let (target, path) = target_path
+            .split_once('=')
+            .context("expected input like TARGET=FILE[@OFFSET], but no '=' was seen")?;
+        if target.is_empty() {
+            bail!("target name cannot be empty");
+        }
+        if path.is_empty() {
+            bail!("file path cannot be empty");
+        }
+
+        Ok(TargetWrite {
+            target: target.to_string(),
+            path: PathBuf::from(path),
+            offset,
+        })
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct BackdoorBatch {
+    /// Write operations to be batched, mapping VMEM files to FPGA targets.
+    #[arg(long = "write", required = true, value_name = "TARGET=FILE[@OFFSET]")]
+    pub targets: Vec<TargetWrite>,
+
+    /// After completing all writes, enter "mission mode" & start the chip.
+    #[arg(long)]
+    pub start: bool,
+
+    /// Read back and verify the written data (may take noticeably longer).
+    #[arg(long)]
+    pub verify: bool,
+}
+
+impl CommandDispatch for BackdoorBatch {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let context = context.downcast_ref::<BackdoorCommand>().unwrap();
+        let backdoor = context.params.create(transport)?;
+        let mut backdoor = backdoor.connect(true)?;
+
+        for write_op in &self.targets {
+            let input = WriteInput::Vmem(VmemInput {
+                path: write_op.path.clone(),
+            });
+            write_to_target(
+                &mut backdoor,
+                &write_op.target,
+                &input,
+                write_op.offset,
+                self.verify,
+            )?;
+        }
+
+        if self.start {
+            backdoor.set_done()?;
         }
 
         Ok(None)
