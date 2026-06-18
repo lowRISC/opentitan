@@ -61,12 +61,12 @@ module top_${top["name"]} #(
   };
   % endif
   % if m.get("name") == "rram_ctrl":
-  // TODO: remove once RRAM is connected to OTP
-  assign rram_ctrl_otp_key_rsp.data_ack = rram_ctrl_otp_key_req.data_req;
-  assign rram_ctrl_otp_key_rsp.addr_ack = rram_ctrl_otp_key_req.addr_req;
-  assign rram_ctrl_otp_key_rsp.key = '0;
-  assign rram_ctrl_otp_key_rsp.rand_key = '0;
-  assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
+  // TODO: remove once flash_ctrl is removed
+  assign flash_ctrl_otp_rsp.data_ack = flash_ctrl_otp_req.data_req;
+  assign flash_ctrl_otp_rsp.addr_ack = flash_ctrl_otp_req.addr_req;
+  assign flash_ctrl_otp_rsp.key = '0;
+  assign flash_ctrl_otp_rsp.rand_key = '0;
+  assign flash_ctrl_otp_rsp.seed_valid = 1'b0;
 
   // TODO: remove once keymgr has been updated
   assign keymgr_flash.seeds = rram_ctrl_keymgr.seeds;
