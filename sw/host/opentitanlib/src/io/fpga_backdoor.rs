@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, ensure};
 use clap::Args;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 use std::time::Duration;
@@ -11,6 +11,7 @@ use crate::app::TransportWrapper;
 use crate::debug::dmi::{Dmi, OpenOcdDmi};
 use crate::io::jtag::{JtagChain, JtagParams, JtagTap};
 use crate::transport::Capability;
+use crate::util::vmem::Word;
 
 /// FPGA Backdoor loader register offsets (byte-addressed) and field definitions.
 /// See hw/ip/bkdr_loader/doc/registers.md
@@ -163,10 +164,49 @@ impl std::fmt::Display for BackdoorTargetInfo {
     }
 }
 
+impl Word {
+    /// Convert the 32-bit chunks read from data registers into a word (MSB-first byte stream).
+    fn from_u32_chunks(chunks: &[u32; DATA_REGS_PER_WORD], bytes_per_word: usize) -> Self {
+        let num_chunks = bytes_per_word.div_ceil(size_of::<u32>());
+        let padding_bytes = (num_chunks * size_of::<u32>()) - bytes_per_word;
+
+        Self {
+            bytes: chunks
+                .iter()
+                .take(num_chunks)
+                .rev()
+                .flat_map(|chunk| chunk.to_be_bytes())
+                .skip(padding_bytes)
+                .collect(),
+        }
+    }
+}
+
 /// Handle for interacting with a given target via the backdoor loader.
-pub struct BackdoorTarget {
+pub struct BackdoorTarget<'a> {
+    backdoor: &'a mut Backdoor,
+    index: u8,
     /// Information about the target.
     pub info: BackdoorTargetInfo,
+}
+
+impl<'a> BackdoorTarget<'a> {
+    /// Read a sequence of words at a given offset (word index) from the target's memory.
+    ///
+    /// The `check_status` parameter is used to control whether the status bit is polled
+    /// after each word read, to check for any errors.
+    pub fn read(&mut self, start: u32, count: u32, check_status: bool) -> Result<Vec<Word>> {
+        ensure!(
+            start + count <= self.info.depth,
+            "fpga bkdr_loader read of len {:#x} to word {:#x} of {} is out of bounds (depth: {:#x})",
+            count,
+            start,
+            self.info.id_str(),
+            self.info.depth,
+        );
+        self.backdoor
+            .read_target(self.index, start, count, check_status)
+    }
 }
 
 /// A struct which represents an active backdoor loader connection.
@@ -278,18 +318,89 @@ impl Backdoor {
         &self.targets
     }
 
-    /// Borrow a target by its integer identifier.
-    pub fn target_by_id(&self, id: u32) -> Option<BackdoorTarget> {
-        let info = self.targets.iter().find(|&t| t.id == id)?;
+    /// Borrow a target by its integer identifier. Only one BackdoorTarget can exist at a time.
+    pub fn target_by_id(&mut self, id: u32) -> Option<BackdoorTarget<'_>> {
+        let (index, info) = self.targets.iter().enumerate().find(|&(_, t)| t.id == id)?;
+        let (index, info) = (index as u8, *info);
 
-        Some(BackdoorTarget { info: *info })
+        Some(BackdoorTarget {
+            backdoor: self,
+            index,
+            info,
+        })
     }
 
-    /// Borrow a target by its string identifier.
-    pub fn target_by_id_str(&self, id: &str) -> Result<Option<BackdoorTarget>> {
+    /// Borrow a target by its string identifier. Only one BackdoorTarget can exist at a time.
+    pub fn target_by_id_str(&mut self, id: &str) -> Result<Option<BackdoorTarget<'_>>> {
         let encoded_id = BackdoorTargetInfo::id_from_str(id)?;
 
         Ok(self.target_by_id(encoded_id))
+    }
+
+    /// Read a sequence of words at a given offset (word index) from a specified target's memory.
+    ///
+    /// The `check_status` parameter is used to control whether the status bit is polled
+    /// after each word read, to check for any errors.
+    pub fn read_target(
+        &mut self,
+        target_index: u8,
+        start: u32,
+        count: u32,
+        check_status: bool,
+    ) -> Result<Vec<Word>> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        let info = self.targets[target_index as usize];
+        let width = info.width as usize;
+        let bytes_per_word = width.div_ceil(u8::BITS as usize);
+        let regs_used = width.div_ceil(u32::BITS as usize);
+        ensure!(
+            regs_used <= DATA_REGS_PER_WORD,
+            "Advertised target width {:#x} is too wide for the data registers (needs: {:#x}, has: {:#x})",
+            width,
+            regs_used,
+            DATA_REGS_PER_WORD
+        );
+
+        let mut control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
+        control &= !(0b1 << regs::CONTROL_WRITE_ENA_BIT);
+        self.dmi_write(regs::CONTROL_REG_OFFSET, control)
+            .context("cannot write to control register")?;
+
+        let mut words = Vec::new();
+
+        for word_idx in start..(start + count) {
+            self.dmi_write(regs::INDEX_REG_OFFSET, word_idx)
+                .context("cannot write word index")?;
+
+            if check_status {
+                let status = self
+                    .dmi_read(regs::STATUS_REG_OFFSET)
+                    .context("cannot read status")?;
+                ensure!(
+                    status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
+                    "fpga bkdr_loader reported an error reading from word idx {} of target {}",
+                    word_idx,
+                    info.id_str()
+                );
+            }
+
+            let mut regs = [0u32; DATA_REGS_PER_WORD];
+            for (idx, reg) in regs.iter_mut().enumerate().take(regs_used) {
+                let addr_offset = idx * 4;
+                *reg = self
+                    .dmi_read(regs::READ_DATA_0_REG_OFFSET + addr_offset)
+                    .context("cannot read from read_data register")?;
+            }
+
+            words.push(Word::from_u32_chunks(&regs, bytes_per_word));
+        }
+
+        Ok(words)
     }
 }
 
