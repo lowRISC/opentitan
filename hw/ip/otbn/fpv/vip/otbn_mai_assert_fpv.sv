@@ -12,52 +12,68 @@ module otbn_mai_assert_fpv
 #(
   parameter bit SecFixMaiOpSeq = 1'b0
 ) (
-  input logic clk_i,
-  input logic rst_ni,
-  input logic sec_wipe_mai_i,
-  input logic sec_wipe_running_i,
-  input logic ispr_mai_ctrl_wr_i,
-  input logic[31:0] ispr_mai_ctrl_wdata_i,
-  input logic[31:0] ispr_mai_ctrl_rdata_o,
-  input logic[31:0] ispr_mai_status_rdata_o,
-  input logic ispr_mai_in0_s0_wr_i,
-  input logic sec_wipe_ispr_mai_in0_s0_i,
-  input logic[ExtWLEN-1:0] ispr_mai_in0_s0_wdata_i,
-  input logic ispr_mai_in0_s1_wr_i,
-  input logic sec_wipe_ispr_mai_in0_s1_i,
-  input logic[ExtWLEN-1:0] ispr_mai_in0_s1_wdata_i,
-  input logic ispr_mai_in1_s0_wr_i,
-  input logic sec_wipe_ispr_mai_in1_s0_i,
-  input logic[ExtWLEN-1:0] ispr_mai_in1_s0_wdata_i,
-  input logic ispr_mai_in1_s1_wr_i,
-  input logic sec_wipe_ispr_mai_in1_s1_i,
-  input logic[ExtWLEN-1:0] ispr_mai_in1_s1_wdata_i,
-  input logic ispr_mai_res_s0_wr_i,
-  input logic sec_wipe_ispr_mai_res_s0_i,
-  input logic[ExtWLEN-1:0] ispr_mai_res_s0_wdata_i,
-  input logic ispr_mai_res_s1_wr_i,
-  input logic sec_wipe_ispr_mai_res_s1_i,
-  input logic[ExtWLEN-1:0] ispr_mai_res_s1_wdata_i,
-  input logic[ExtWLEN-1:0] ispr_mai_in0_s0_rdata_o,
-  input logic[ExtWLEN-1:0] ispr_mai_in0_s1_rdata_o,
-  input logic[ExtWLEN-1:0] ispr_mai_in1_s0_rdata_o,
-  input logic[ExtWLEN-1:0] ispr_mai_in1_s1_rdata_o,
-  input logic[ExtWLEN-1:0] ispr_mai_res_s0_rdata_o,
-  input logic[ExtWLEN-1:0] ispr_mai_res_s1_rdata_o,
-  input logic[ExtWLEN-1:0] ispr_mod_intg_i,
-  input logic mai_software_error_o,
-  input logic mai_reg_intg_violation_err_o,
-  input logic mai_state_err_o,
-  input logic[UrndLen-1:0] urnd_data_i
+  input logic               clk_i,
+  input logic               rst_ni,
+  input logic               sec_wipe_mai_i,
+  input logic               sec_wipe_running_i,
+  input logic               ispr_mai_ctrl_wr_i,
+  input logic [31:0]        ispr_mai_ctrl_wdata_i,
+  input logic [31:0]        ispr_mai_ctrl_rdata_o,
+  input logic [31:0]        ispr_mai_status_rdata_o,
+  input logic               ispr_mai_in0_s0_wr_i,
+  input logic               sec_wipe_ispr_mai_in0_s0_i,
+  input logic [ExtWLEN-1:0] ispr_mai_in0_s0_wdata_i,
+  input logic               ispr_mai_in0_s1_wr_i,
+  input logic               sec_wipe_ispr_mai_in0_s1_i,
+  input logic [ExtWLEN-1:0] ispr_mai_in0_s1_wdata_i,
+  input logic               ispr_mai_in1_s0_wr_i,
+  input logic               sec_wipe_ispr_mai_in1_s0_i,
+  input logic [ExtWLEN-1:0] ispr_mai_in1_s0_wdata_i,
+  input logic               ispr_mai_in1_s1_wr_i,
+  input logic               sec_wipe_ispr_mai_in1_s1_i,
+  input logic [ExtWLEN-1:0] ispr_mai_in1_s1_wdata_i,
+  input logic               ispr_mai_res_s0_wr_i,
+  input logic               sec_wipe_ispr_mai_res_s0_i,
+  input logic [ExtWLEN-1:0] ispr_mai_res_s0_wdata_i,
+  input logic               ispr_mai_res_s1_wr_i,
+  input logic               sec_wipe_ispr_mai_res_s1_i,
+  input logic [ExtWLEN-1:0] ispr_mai_res_s1_wdata_i,
+  input logic [ExtWLEN-1:0] ispr_mai_in0_s0_rdata_o,
+  input logic [ExtWLEN-1:0] ispr_mai_in0_s1_rdata_o,
+  input logic [ExtWLEN-1:0] ispr_mai_in1_s0_rdata_o,
+  input logic [ExtWLEN-1:0] ispr_mai_in1_s1_rdata_o,
+  input logic [ExtWLEN-1:0] ispr_mai_res_s0_rdata_o,
+  input logic [ExtWLEN-1:0] ispr_mai_res_s1_rdata_o,
+  input logic [ExtWLEN-1:0] ispr_mod_intg_i,
+  input logic               mai_software_error_o,
+  input logic               mai_reg_intg_violation_err_o,
+  input logic               mai_state_err_o,
+  input logic [UrndLen-1:0] urnd_data_i
 );
 
   ///////////////////////////////
   // Declarations & Parameters //
   ///////////////////////////////
 
-  logic mai_busy = ispr_mai_status_rdata_o[0];
-  logic mai_ready = ispr_mai_status_rdata_o[1];
-  logic[4:0] mai_operation = ispr_mai_ctrl_wdata_i[5:1];
+  // Latency constants from the MAI spec (time from START until last result word written).
+  // secAdd: 14 cycles, secAddMod: 22 cycles, A2B: 22 cycles, B2A: 23 cycles (no rejection).
+  // Must be updated if any accelerator latency changes.
+  localparam int unsigned MaiMaxDispatchCycles  = 8;  // 8-word sequential dispatch
+  localparam int unsigned MaiMaxWritebackCycles = 8;  // 8-word sequential writeback
+  localparam int unsigned MaiMinLatency         = 14; // secAdd — lower bound on busy duration
+  localparam int unsigned MaiMaxLatency         = 23; // B2A without rejection — upper bound
+
+  logic         mai_busy;
+  logic         mai_ready;
+  logic [4:0]   mai_operation;
+  logic         mai_operation_valid;
+
+  assign mai_busy          = ispr_mai_status_rdata_o[0];
+  assign mai_ready         = ispr_mai_status_rdata_o[1];
+  assign mai_operation     = ispr_mai_ctrl_wdata_i[5:1];
+  assign mai_operation_valid = (mai_operation == ArithToBool) || (mai_operation == BoolToArith) ||
+                               (mai_operation == SecAdd)      || (mai_operation == SecAddMod);
+
   /////////////////
   // Assumptions //
   /////////////////
@@ -70,64 +86,137 @@ module otbn_mai_assert_fpv
 
   // `ASSERT(MyFwdAssertion_A, ...)
 
-  // Assert that the reserved bits of the MAI status register are always zero
-  `ASSERT(MaiStatusRsvdBitsZero_A, ispr_mai_status_rdata_o[31:2] == 0)
+  // CSR / WSR structure
+  `ASSERT(MaiStatusRsvdBitsZero_A,   ispr_mai_status_rdata_o[31:2] == '0)
+  `ASSERT(MaiCtrlRsvdBitsZero_A,     ispr_mai_ctrl_rdata_o[31:6] == '0)
+  `ASSERT(MaiCtrlStartBitReadZero_A, ispr_mai_ctrl_rdata_o[0] == 1'b0)
 
-  // Error Handling Assertions //
-  // 
-  // TODO: For the following assertions, should we be checking for $rose(mai_software_error_o) instead?
-  // Assert that an OTBN software error is raised when a MAI operation is started while the MAI is busy
-  `ASSERT(SwErrorFromStartWhileBusy, ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] == 1'b1 && mai_busy |=> mai_software_error_o == 1'b1)
+  // Error handling
+  `ASSERT(SwErrorInvldOpVals_A,
+    ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_operation_valid
+    |=> $rose(mai_software_error_o))
 
-  // Assert that an OTBN software error is raised when a MAI operation is started with an invalid operation value
-  `ASSERT(SwErrorInvldOpVals_A, ispr_mai_ctrl_wr_i && mai_operation != 5'd11 && mai_operation != 5'd16 && mai_operation != 5'd23 && mai_operation != 5'd12 |=> mai_software_error_o == 1'b1)
+  // Spec: "MAI_CTRL.START bit is set or MAI_CTRL.OPERATION is written to whilst BUSY = 1."
+  `ASSERT(SwErrorFromCtrlWrWhileBusy_A,
+    ispr_mai_ctrl_wr_i && mai_busy
+    |=> $rose(mai_software_error_o))
 
-  // Assert that an OTBN software error is raised when a MAI operation is set while the MAI is busy - TODO: Is this assertion checking the right thing? For when operation field is written to while MAI is busy?
-  `ASSERT(SwErrorFromOpWrWhileBusy, ispr_mai_ctrl_wr_i && mai_operation != 5'd0 && mai_busy == 1'b1 |=> mai_software_error_o == 1'b1)
+  // Spec: "A write to the reserved section of MAI_CTRL is detected."
+  `ASSERT(SwErrorFromRsvdCtrlWr_A,
+    ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[31:6] != '0
+    |=> $rose(mai_software_error_o))
 
-  // Assert that an OTBN software error is raised when a MAI operation is raised
-  // when a write to MAI_INx_Sy is detected when the MAI is not ready
+  `ASSERT(SwErrorFromInsWrWhileNotReady_A,
+    (ispr_mai_in0_s0_wr_i || ispr_mai_in0_s1_wr_i ||
+     ispr_mai_in1_s0_wr_i || ispr_mai_in1_s1_wr_i) && !mai_ready
+    |=> $rose(mai_software_error_o))
 
-  `ASSERT(SwErrorFromInWeWhileNotReady, (ispr_mai_in0_s0_wr_i || ispr_mai_in0_s1_wr_i || ispr_mai_in1_s0_wr_i || ispr_mai_in1_s1_wr_i) && !mai_ready |=> mai_software_error_o == 1'b1)
-  
-  // TODO: Include error handling assertions for the other error signals (mai_reg_intg_violation_err_o and mai_state_err_o) when they are raised
+  // TODO: Add assertions for mai_reg_intg_violation_err_o and mai_state_err_o:
+  // can multiple error outputs be simultaneously asserted? Does a register integrity
+  // violation / state error result in a software error being raised?
 
+  // MAI status register behaviour
+  `ASSERT(AccelMustFinish_A, mai_busy |-> ##[1:MaiMaxLatency] !mai_busy)
 
-  // Backward Assertions //
-  /////////////////////////
+  `ASSERT(StartBitSetsBusy_A,
+    ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation_valid
+    |=> mai_busy)
 
-  // `ASSERT(MyBkwdAssertion_A, ...)
+  // MaiMinLatency (secAdd, 14 cycles) is the safe lower bound across all operation types;
+  // using MaiMaxLatency here would incorrectly require secAdd to hold busy for 22 cycles.
+  `ASSERT(BusyStaysHighDurOp_A,
+    $rose(mai_busy) |-> mai_busy[*(MaiMinLatency - 1)])
 
-  // Cover Properties go here
+  // MAI stops accepting new input once dispatch starts.
+  `ASSERT(StartBitClearsReady_A,
+    ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation_valid
+    |=> !mai_ready)
 
-  // `COVER(name, prop, clk, rst)
+  // Dispatch consumes all eight 32-bit input words sequentially (one per cycle);
+  // input WSRs are safe to overwrite only once all words are consumed.
+  `ASSERT(ReadyReassertAfterDispatch_A,
+    ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation_valid
+    |-> ##MaiMaxDispatchCycles mai_ready)
 
-  // Cover that the MAI status register indicates busy
-  `COVER(mai_status_is_busy, mai_busy, clk_i, !rst_ni)
+  // Secure wipe behaviour
+  // SecWipeMaiStatusReset_A covers both BUSY=0 and READY=1 (bits [31:2] also zero).
+  `ASSERT(SecWipeMaiStatusReset_A,
+    sec_wipe_mai_i |=> ispr_mai_status_rdata_o == 32'h2)
 
-  // Cover that the MAI status register indicates not busy
-  `COVER(mai_status_is_not_busy, !mai_busy, clk_i, !rst_ni)
+  // Any in-progress operation is allowed to finish; rejection sampling for B2A is
+  // disabled during wipe so 23 cycles remains the deterministic upper bound.
+  `ASSERT(SecWipeAllowsExecToFinish_A,
+    sec_wipe_running_i && mai_busy |-> ##[1:MaiMaxLatency] !mai_busy)
 
-  // Cover that the MAI status register indicates ready
-  `COVER(mai_status_is_ready, mai_ready, clk_i, !rst_ni)
+  // WSR stability: registers retain their value when neither written nor wiped.
+  `ASSERT(In0S0Stable_A, !ispr_mai_in0_s0_wr_i && !sec_wipe_ispr_mai_in0_s0_i
+    |=> $stable(ispr_mai_in0_s0_rdata_o))
+  `ASSERT(In0S1Stable_A, !ispr_mai_in0_s1_wr_i && !sec_wipe_ispr_mai_in0_s1_i
+    |=> $stable(ispr_mai_in0_s1_rdata_o))
+  `ASSERT(In1S0Stable_A, !ispr_mai_in1_s0_wr_i && !sec_wipe_ispr_mai_in1_s0_i
+    |=> $stable(ispr_mai_in1_s0_rdata_o))
+  `ASSERT(In1S1Stable_A, !ispr_mai_in1_s1_wr_i && !sec_wipe_ispr_mai_in1_s1_i
+    |=> $stable(ispr_mai_in1_s1_rdata_o))
+  `ASSERT(ResS0Stable_A, !ispr_mai_res_s0_wr_i && !sec_wipe_ispr_mai_res_s0_i
+    |=> $stable(ispr_mai_res_s0_rdata_o))
+  `ASSERT(ResS1Stable_A, !ispr_mai_res_s1_wr_i && !sec_wipe_ispr_mai_res_s1_i
+    |=> $stable(ispr_mai_res_s1_rdata_o))
 
-  // Cover that the MAI status register indicates not ready
-  `COVER(mai_status_is_not_ready, !mai_ready, clk_i, !rst_ni)
+  // WSR write-readback: written value must appear on readback the next cycle (FI detection).
+  `ASSERT(In0S0WriteReadback_A,
+    ispr_mai_in0_s0_wr_i && !sec_wipe_ispr_mai_in0_s0_i
+    |=> ispr_mai_in0_s0_rdata_o == $past(ispr_mai_in0_s0_wdata_i))
+  `ASSERT(In0S1WriteReadback_A,
+    ispr_mai_in0_s1_wr_i && !sec_wipe_ispr_mai_in0_s1_i
+    |=> ispr_mai_in0_s1_rdata_o == $past(ispr_mai_in0_s1_wdata_i))
+  `ASSERT(In1S0WriteReadback_A,
+    ispr_mai_in1_s0_wr_i && !sec_wipe_ispr_mai_in1_s0_i
+    |=> ispr_mai_in1_s0_rdata_o == $past(ispr_mai_in1_s0_wdata_i))
+  `ASSERT(In1S1WriteReadback_A,
+    ispr_mai_in1_s1_wr_i && !sec_wipe_ispr_mai_in1_s1_i
+    |=> ispr_mai_in1_s1_rdata_o == $past(ispr_mai_in1_s1_wdata_i))
+  `ASSERT(ResS0WriteReadback_A,
+    ispr_mai_res_s0_wr_i && !sec_wipe_ispr_mai_res_s0_i
+    |=> ispr_mai_res_s0_rdata_o == $past(ispr_mai_res_s0_wdata_i))
+  `ASSERT(ResS1WriteReadback_A,
+    ispr_mai_res_s1_wr_i && !sec_wipe_ispr_mai_res_s1_i
+    |=> ispr_mai_res_s1_rdata_o == $past(ispr_mai_res_s1_wdata_i))
 
-  // Cover that the MAI status register indicates busy and ready at the same time
-  `COVER(mai_status_is_busy_and_ready, mai_busy && mai_ready, clk_i, !rst_ni)
+  // Result WSRs must be written by the accelerator within MaiMaxLatency cycles of starting.
+  `ASSERT(ResS0WrittenDuringOp_A,
+    $rose(mai_busy) |-> ##[1:MaiMaxLatency] ispr_mai_res_s0_wr_i)
+  `ASSERT(ResS1WrittenDuringOp_A,
+    $rose(mai_busy) |-> ##[1:MaiMaxLatency] ispr_mai_res_s1_wr_i)
 
-  // Cover that a MAI software error is raised
-  // TODO: Should this be $rose(mai_software_error_o) instead?
-  `COVER(mai_sw_err_seen, mai_software_error_o, clk_i, !rst_ni)
-  
-  // Cover that a MAI register integrity violation error is raised
-  // TODO: Should this be $rose(mai_reg_intg_violation_err_o) instead?
-  `COVER(mai_reg_intg_violation_seen, mai_reg_intg_violation_err_o, clk_i, !rst_ni)
+  /////////////
+  // Covers  //
+  /////////////
 
-  // Cover that a MAI state error is raised
-  // TODO: Should this be $rose(mai_state_err_o) instead?
-  `COVER(mai_state_err_seen, mai_state_err_o, clk_i, !rst_ni)
+  // Busy / ready state reachability
+  `COVER(mai_status_is_busy_C, mai_busy)
+  `COVER(mai_status_is_not_busy_C, !mai_busy)
+  `COVER(accel_finished_C, $fell(mai_busy))
+  `COVER(mai_status_is_ready_C, mai_ready)
+  `COVER(mai_status_is_not_ready_C, !mai_ready)
+  `COVER(mai_status_is_busy_and_ready_C, mai_busy && mai_ready)
 
+  // Error signal reachability
+  `COVER(mai_sw_err_seen_C, $rose(mai_software_error_o))
+  `COVER(mai_reg_intg_violation_seen_C, $rose(mai_reg_intg_violation_err_o))
+  `COVER(mai_state_err_seen_C, $rose(mai_state_err_o))
+
+  // One cover per operation type for basic functional reachability
+  `COVER(SecAddStarted_C, ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation == SecAdd)
+  `COVER(SecAddModStarted_C, ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation == SecAddMod)
+  `COVER(ArithToBoolStarted_C, ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation == ArithToBool)
+  `COVER(BoolToArithStarted_C, ispr_mai_ctrl_wr_i && ispr_mai_ctrl_wdata_i[0] && !mai_busy && mai_operation == BoolToArith)
+
+  // Secure wipe reachability for all WSRs (input and result)
+  `COVER(SecWipeIn0S0Reached_C, sec_wipe_ispr_mai_in0_s0_i)
+  `COVER(SecWipeIn0S1Reached_C, sec_wipe_ispr_mai_in0_s1_i)
+  `COVER(SecWipeIn1S0Reached_C, sec_wipe_ispr_mai_in1_s0_i)
+  `COVER(SecWipeIn1S1Reached_C, sec_wipe_ispr_mai_in1_s1_i)
+  `COVER(SecWipeResS0Reached_C, sec_wipe_ispr_mai_res_s0_i)
+  `COVER(SecWipeResS1Reached_C, sec_wipe_ispr_mai_res_s1_i)
 
 endmodule : otbn_mai_assert_fpv
