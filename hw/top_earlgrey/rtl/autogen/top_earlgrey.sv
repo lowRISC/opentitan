@@ -646,8 +646,8 @@ module top_earlgrey #(
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
-  otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
-  otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
+  otp_ctrl_pkg::nvm_otp_key_req_t       rram_ctrl_otp_key_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       rram_ctrl_otp_key_rsp;
   lc_ctrl_pkg::lc_nvm_rma_seed_t       lc_ctrl_lc_nvm_rma_seed;
   otp_ctrl_pkg::sram_otp_key_req_t [3:0] otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t [3:0] otp_ctrl_sram_otp_key_rsp;
@@ -806,8 +806,8 @@ module top_earlgrey #(
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
-  otp_ctrl_pkg::nvm_otp_key_req_t       rram_ctrl_otp_key_req;
-  otp_ctrl_pkg::nvm_otp_key_rsp_t       rram_ctrl_otp_key_rsp;
+  otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
   flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   rram_ctrl_pkg::keymgr_rram_t       rram_ctrl_keymgr;
   flash_ctrl_pkg::keymgr_flash_t       keymgr_flash;
@@ -873,12 +873,12 @@ module top_earlgrey #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
-  // TODO: remove once RRAM is connected to OTP
-  assign rram_ctrl_otp_key_rsp.data_ack = rram_ctrl_otp_key_req.data_req;
-  assign rram_ctrl_otp_key_rsp.addr_ack = rram_ctrl_otp_key_req.addr_req;
-  assign rram_ctrl_otp_key_rsp.key = '0;
-  assign rram_ctrl_otp_key_rsp.rand_key = '0;
-  assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
+  // TODO: remove once flash_ctrl is removed
+  assign flash_ctrl_otp_rsp.data_ack = flash_ctrl_otp_req.data_req;
+  assign flash_ctrl_otp_rsp.addr_ack = flash_ctrl_otp_req.addr_req;
+  assign flash_ctrl_otp_rsp.key = '0;
+  assign flash_ctrl_otp_rsp.rand_key = '0;
+  assign flash_ctrl_otp_rsp.seed_valid = 1'b0;
 
   // TODO: remove once keymgr has been updated
   assign keymgr_flash.seeds = rram_ctrl_keymgr.seeds;
@@ -1580,8 +1580,8 @@ module top_earlgrey #(
     .lc_rma_state_i(lc_ctrl_lc_rma_state),
     .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
     .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
-    .nvm_otp_key_i(flash_ctrl_otp_req),
-    .nvm_otp_key_o(flash_ctrl_otp_rsp),
+    .nvm_otp_key_i(rram_ctrl_otp_key_req),
+    .nvm_otp_key_o(rram_ctrl_otp_key_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
     .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
     .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
