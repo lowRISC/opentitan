@@ -165,6 +165,29 @@ impl std::fmt::Display for BackdoorTargetInfo {
 }
 
 impl Word {
+    /// Convert the word to a series of 32-bit chunks to be written to the data registers.
+    fn to_u32_chunks(&self) -> Result<[u32; DATA_REGS_PER_WORD]> {
+        ensure!(
+            self.bytes.len() <= DATA_REGS_PER_WORD * 4,
+            "Word '{}' with {} bytes will not fit into {} 32-bit registers.",
+            hex::encode(self.bytes.clone()),
+            self.bytes.len(),
+            DATA_REGS_PER_WORD
+        );
+        let mut chunks = [0u32; DATA_REGS_PER_WORD];
+
+        // Bytes are stored in Big Endian; when written to registers, the u32
+        // chunks are provided in LSB-first order (Little Endian).
+        for (i, &b) in self.bytes.iter().rev().enumerate() {
+            // Within u32 chunks, bytes are still given in MSB-first order (Big Endian).
+            let chunk_idx = i / 4;
+            let byte_pos = i % 4;
+            chunks[chunk_idx] |= (b as u32) << (byte_pos * 8);
+        }
+
+        Ok(chunks)
+    }
+
     /// Convert the 32-bit chunks read from data registers into a word (MSB-first byte stream).
     fn from_u32_chunks(chunks: &[u32; DATA_REGS_PER_WORD], bytes_per_word: usize) -> Self {
         let num_chunks = bytes_per_word.div_ceil(size_of::<u32>());
@@ -191,6 +214,31 @@ pub struct BackdoorTarget<'a> {
 }
 
 impl<'a> BackdoorTarget<'a> {
+    /// Write a sequence of words at a given offset (word index) in the target's memory.
+    ///
+    /// The `write_all` parameter is used to control whether writes can be optimized by
+    /// maintaining shadow CSRs to determine when register contents have genuinely changed.
+    /// The `check_status` parameter is used to control whether the status bit is polled
+    /// after all words are written, to check for any errors.
+    pub fn write(
+        &mut self,
+        start: u32,
+        words: &[Word],
+        write_all: bool,
+        check_status: bool,
+    ) -> Result<()> {
+        ensure!(
+            start + words.len() as u32 <= self.info.depth,
+            "fpga bkdr_loader write of len {:#x} to word {:#x} of {} is out of bounds (depth: {:#x})",
+            words.len(),
+            start,
+            self.info.id_str(),
+            self.info.depth,
+        );
+        self.backdoor
+            .write_target(self.index, start, words, write_all, check_status)
+    }
+
     /// Read a sequence of words at a given offset (word index) from the target's memory.
     ///
     /// The `check_status` parameter is used to control whether the status bit is polled
@@ -337,6 +385,89 @@ impl Backdoor {
         Ok(self.target_by_id(encoded_id))
     }
 
+    /// Write a sequence of words at a given offset (word index) to a specified target's memory.
+    ///
+    /// The `write_all` parameter is used to control whether writes can be optimized by
+    /// maintaining shadow CSRs to determine when register contents have actually changed.
+    /// The `check_status` parameter is used to control whether the status bit is polled
+    /// after all words are written, to check for any errors.
+    pub fn write_target(
+        &mut self,
+        target_index: u8,
+        start: u32,
+        words: &[Word],
+        write_all: bool,
+        check_status: bool,
+    ) -> Result<()> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        let info = self.targets[target_index as usize];
+        let width = info.width as usize;
+        let regs_used = width.div_ceil(u32::BITS as usize);
+        ensure!(
+            regs_used <= DATA_REGS_PER_WORD,
+            "Advertised target width {:#x} is too wide for the data registers (needs: {:#x}, has: {:#x})",
+            width,
+            regs_used,
+            DATA_REGS_PER_WORD
+        );
+
+        // Cache previous written values in Shadow CSRs
+        let mut prev_regs = [0u32; DATA_REGS_PER_WORD];
+        let mut word_idx = start;
+        let mut first = true;
+
+        let mut control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
+        control |= 0b1 << regs::CONTROL_WRITE_ENA_BIT;
+        self.dmi_write(regs::CONTROL_REG_OFFSET, control)
+            .context("cannot write to control register")?;
+
+        // We batch together all the necessary writes so that we can perform a single
+        // batched write operation at the end, which is optimized for throughput.
+        let mut writes = Vec::new();
+
+        for word in words {
+            let regs = word.to_u32_chunks()?;
+            for idx in 0..regs_used {
+                // Optimization - maintain shadow CSRs in software, and only write the
+                // data if there is a diff in that CSR from the previous contents. Vastly
+                // minimizes required operations for repetitive payloads.
+                if write_all || first || regs[idx] != prev_regs[idx] {
+                    let addr_offset = idx * 4;
+                    writes.push((
+                        ((regs::WRITE_DATA_0_REG_OFFSET + addr_offset) >> 2) as u32,
+                        regs[idx],
+                    ));
+                    prev_regs[idx] = regs[idx];
+                }
+            }
+            writes.push(((regs::INDEX_REG_OFFSET >> 2) as u32, word_idx));
+            first = false;
+            word_idx += 1;
+        }
+
+        self.dmi
+            .batched_dmi_writes(&writes)
+            .context("failed to perform DMI writes")?;
+
+        if check_status {
+            let status = self
+                .dmi_read(regs::STATUS_REG_OFFSET)
+                .context("cannot read status")?;
+            ensure!(
+                status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
+                "fpga bkdr_loader reported an error writing to target {}",
+                info.id_str()
+            );
+        }
+
+        Ok(())
+    }
+
     /// Read a sequence of words at a given offset (word index) from a specified target's memory.
     ///
     /// The `check_status` parameter is used to control whether the status bit is polled
@@ -419,5 +550,24 @@ mod tests {
             assert_eq!(BackdoorTargetInfo { id, width, depth }.id_str(), id_str);
             assert_eq!(BackdoorTargetInfo::id_from_str(id_str).unwrap(), id);
         }
+    }
+
+    #[test]
+    fn byte_u32_conversion() {
+        // Bytes stored in words are Big Endian (MSB first).
+        let word = Word::new(vec![
+            0x5a, 0xa5, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0xbe, 0xef, 0xca, 0xfe,
+        ]);
+        // Register chunks are Little Endian, but bytes in each u32 are Big Endian.
+        // The 4th register should be half-used, the 4 remaining regs should be unused.
+        let mut expected = [0x0; DATA_REGS_PER_WORD];
+        expected[0] = 0xbeefcafe;
+        expected[1] = 0x89abcdef;
+        expected[2] = 0x01234567;
+        expected[3] = 0x00005aa5;
+
+        let chunks = word.to_u32_chunks().unwrap();
+        assert_eq!(chunks, expected);
+        assert_eq!(Word::from_u32_chunks(&chunks, word.bytes.len()), word);
     }
 }
