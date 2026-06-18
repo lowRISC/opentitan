@@ -18,6 +18,7 @@ rust_binary(
         "src/command/ecdsa.rs",
         "src/command/emulator.rs",
         "src/command/fpga.rs",
+        "src/command/fpga_backdoor.rs",
         "src/command/gpio.rs",
         "src/command/hello.rs",
         "src/command/i2c.rs",

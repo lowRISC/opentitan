@@ -100,6 +100,7 @@ rust_library(
         "src/io/console/logged.rs",
         "src/io/eeprom.rs",
         "src/io/emu.rs",
+        "src/io/fpga_backdoor.rs",
         "src/io/gpio.rs",
         "src/io/i2c.rs",
         "src/io/ioexpander.rs",

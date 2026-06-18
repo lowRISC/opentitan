@@ -15,4 +15,5 @@ pub enum FpgaCommand {
     ResetSam3x(crate::command::sam3x::Reset),
     SetPll(crate::command::set_pll::SetPll),
     UpdateUsrAccess(crate::command::update_usr_access::UpdateUsrAccess),
+    Backdoor(crate::command::fpga_backdoor::BackdoorCommand),
 }
