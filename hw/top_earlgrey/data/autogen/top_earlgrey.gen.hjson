@@ -1930,7 +1930,7 @@
           default: "'0"
           inst_name: otp_ctrl
           domain: Main
-          top_signame: flash_ctrl_otp
+          top_signame: rram_ctrl_otp_key
           index: -1
         }
         {
@@ -6088,8 +6088,6 @@
           width: 1
           inst_name: flash_ctrl
           default: ""
-          end_idx: -1
-          top_type: one-to-one
           top_signame: flash_ctrl_otp
           index: -1
         }
@@ -6503,6 +6501,8 @@
           width: 1
           inst_name: rram_ctrl
           default: ""
+          end_idx: -1
+          top_type: one-to-one
           top_signame: rram_ctrl_otp_key
           index: -1
         }
@@ -10347,7 +10347,7 @@
       [
         entropy_src.entropy_src_hw_if
       ]
-      flash_ctrl.otp:
+      rram_ctrl.otp_key:
       [
         otp_ctrl.nvm_otp_key
       ]
@@ -10907,7 +10907,7 @@
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
-      rram_ctrl.otp_key
+      flash_ctrl.otp
       flash_ctrl.keymgr
       rram_ctrl.keymgr
       keymgr.flash
@@ -21649,7 +21649,7 @@
         default: "'0"
         inst_name: otp_ctrl
         domain: Main
-        top_signame: flash_ctrl_otp
+        top_signame: rram_ctrl_otp_key
         index: -1
       }
       {
@@ -24454,8 +24454,6 @@
         width: 1
         inst_name: flash_ctrl
         default: ""
-        end_idx: -1
-        top_type: one-to-one
         top_signame: flash_ctrl_otp
         index: -1
       }
@@ -24778,6 +24776,8 @@
         width: 1
         inst_name: rram_ctrl
         default: ""
+        end_idx: -1
+        top_type: one-to-one
         top_signame: rram_ctrl_otp_key
         index: -1
       }
@@ -32297,7 +32297,7 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_req
         domain: Main
-        signame: flash_ctrl_otp_req
+        signame: rram_ctrl_otp_key_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -32309,7 +32309,7 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_rsp
         domain: Main
-        signame: flash_ctrl_otp_rsp
+        signame: rram_ctrl_otp_key_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34383,7 +34383,7 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_req
         domain: Main
-        signame: rram_ctrl_otp_key_req
+        signame: flash_ctrl_otp_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34393,7 +34393,7 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_rsp
         domain: Main
-        signame: rram_ctrl_otp_key_rsp
+        signame: flash_ctrl_otp_rsp
         width: 1
         type: req_rsp
         end_idx: -1
