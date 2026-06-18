@@ -8,10 +8,15 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+
+#include "aes_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "keymgr_regs.h"
 
 namespace key_transport_unittest {
 namespace {
@@ -295,6 +300,12 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
 }
 
 TEST(KeyTransport, KeyWrapUnwrapNegative) {
+  rom_test::NiceMockAbsMmio mmio;
+  ON_CALL(mmio, Read32(TOP_EARLGREY_AES_BASE_ADDR + AES_STATUS_REG_OFFSET))
+      .WillByDefault(testing::Return(1 << AES_STATUS_IDLE_BIT));
+  ON_CALL(mmio, Read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                       KEYMGR_SIDELOAD_CLEAR_REG_OFFSET))
+      .WillByDefault(testing::Return(KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES));
   uint32_t target_keyblob[8] = {0};
   otcrypto_blinded_key_t target_key = {
       .config = kConfigNonExportableAesCtr128,
