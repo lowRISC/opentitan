@@ -64,8 +64,11 @@ enum {
    * Expected instruction counts for constant-time modexp operations.
    */
   kModeRsa2048ModexpInsCnt = 16302881,
+  kModeRsa2048ModexpF4InsCnt = 108416,
   kModeRsa3072ModexpInsCnt = 52084280,
+  kModeRsa3072ModexpF4InsCnt = 230700,
   kModeRsa4096ModexpInsCnt = 120180621,
+  kModeRsa4096ModexpF4InsCnt = 399640,
 };
 
 OT_NOINLINE
@@ -113,16 +116,25 @@ status_t rsa_modexp_wait(size_t *num_words) {
     *num_words = kRsa2048NumWords;
     if (mode == kMode2048Modexp) {
       HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa2048ModexpInsCnt);
+    } else {
+      HARDENED_CHECK_EQ(otbn_instruction_count_get(),
+                        kModeRsa2048ModexpF4InsCnt);
     }
   } else if (mode == kMode3072Modexp || mode == kMode3072ModexpF4) {
     *num_words = kRsa3072NumWords;
     if (mode == kMode3072Modexp) {
       HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa3072ModexpInsCnt);
+    } else {
+      HARDENED_CHECK_EQ(otbn_instruction_count_get(),
+                        kModeRsa3072ModexpF4InsCnt);
     }
   } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4) {
     *num_words = kRsa4096NumWords;
     if (mode == kMode4096Modexp) {
       HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeRsa4096ModexpInsCnt);
+    } else {
+      HARDENED_CHECK_EQ(otbn_instruction_count_get(),
+                        kModeRsa4096ModexpF4InsCnt);
     }
   } else {
     // Unrecognized mode.
