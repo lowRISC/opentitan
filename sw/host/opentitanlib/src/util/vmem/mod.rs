@@ -2,19 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//! This module contains code for working with Verilog `vmem` files.
+//! This module contains code for working with Verilog `VMEM` files.
 //!
 //! This includes the [`Vmem'] representation which can be parsed from a string.
 
 use std::iter;
-use std::str::FromStr;
+
+use thiserror::Error;
 
 mod parser;
 
 use parser::VmemParser;
 pub use parser::{ParseError, ParseResult};
 
-/// Representation of a vmem file.
+/// Representation of a VMEM file.
 ///
 /// These files consist of sections which are runs of memory starting at some address.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -26,20 +27,34 @@ pub struct Vmem {
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Section {
     pub addr: u32,
-    pub data: Vec<u32>,
+    pub data: Vec<Word>,
 }
 
-impl FromStr for Vmem {
-    type Err = ParseError;
+/// A singular word in a VMEM file, with bytes stored in Big Endian (MSB-first).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Word {
+    pub bytes: Vec<u8>,
+}
 
-    /// Parse the vmem file from a complete string.
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        VmemParser::parse(s)
+impl Word {
+    pub fn new(bytes: Vec<u8>) -> Self {
+        Self { bytes }
     }
 }
 
 impl Vmem {
-    /// Returns an iterator over sections of the vmem file.
+    pub fn new(sections: Vec<Section>) -> Self {
+        Self { sections }
+    }
+
+    /// Parse a complete VMEM file from the contents of a given string.
+    pub fn from_str(s: &str, addr_stride: Option<usize>) -> Result<Self, ParseError> {
+        VmemParser::parse(s, addr_stride)
+    }
+}
+
+impl Vmem {
+    /// Returns an iterator over sections of the VMEM file.
     pub fn sections(&self) -> impl Iterator<Item = &Section> {
         // Filter out empty sections.
         self.sections
@@ -48,44 +63,77 @@ impl Vmem {
     }
 }
 
-/// Represents some value at some address as specified in the vmem file.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Represents some value at some address as specified in the VMEM file.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Data {
     pub addr: u32,
-    pub value: u32,
+    pub value: Word,
 }
 
 impl Vmem {
-    /// Returns an iterator over all data of the vmem file.
-    pub fn data_addrs(&self) -> impl Iterator<Item = Data> + '_ {
-        self.sections().flat_map(|section| section.data_addrs())
+    /// Returns an iterator over all data of the VMEM file.
+    ///
+    /// The stride should either be 1 (one address per word) or the number of bytes
+    /// in each word.
+    pub fn data_addrs(&self, stride: usize) -> impl Iterator<Item = Data> + '_ {
+        self.sections()
+            .flat_map(move |section| section.data_addrs(stride))
     }
 
-    /// Merge all continguous sections together in one section
-    pub fn merge_sections(&mut self) {
-        let mut res: Vec<Section> = Vec::new();
-        // we modify in place as much as possible to avoid copying data uselessly
-        for mut sec in std::mem::take(&mut self.sections) {
-            match res.last_mut() {
-                Some(ref mut last) if { last.addr + last.data.len() as u32 * 4 == sec.addr } => {
-                    last.data.append(&mut sec.data)
-                }
-                _ => res.push(sec),
+    /// Merge any contiguous sections in the VMEM together.
+    pub fn merge_sections(&mut self, addr_stride: Option<usize>) {
+        self.sections.dedup_by(|sec, last| {
+            let nwords = last.data.len() as u32;
+            let size = nwords * addr_stride.unwrap_or(1) as u32;
+            let merge: bool = last.addr + size == sec.addr;
+            if merge {
+                last.data.append(&mut sec.data);
             }
-        }
-        self.sections = res
+            merge
+        })
     }
 }
 
 impl Section {
-    /// Returns an iterator over all data of this section of the vmem file.
-    pub fn data_addrs(&self) -> impl Iterator<Item = Data> + '_ {
-        let addrs = (self.addr..).step_by(4);
+    /// Returns an iterator over all data of this section of the VMEM file.
+    ///
+    /// The stride should either be 1 (one address per word) or the number of bytes
+    /// in each word.
+    pub fn data_addrs(&self, stride: usize) -> impl Iterator<Item = Data> + '_ {
+        let addrs = (self.addr..).step_by(stride);
         let values = self.data.iter();
         iter::zip(addrs, values).map(|(addr, value)| Data {
             addr,
-            value: *value,
+            value: value.clone(),
         })
+    }
+}
+
+/// Errors that occur when converting VMEM sections
+#[derive(Clone, Debug, Error, PartialEq, Eq)]
+pub enum ConversionError {
+    /// Cannot fit the words into the integer format being converted to.
+    #[error("word size {0} too large to fit after conversion")]
+    InvalidWordSize(usize),
+}
+
+impl TryFrom<Section> for Vec<u32> {
+    type Error = ConversionError;
+
+    fn try_from(section: Section) -> Result<Self, Self::Error> {
+        section
+            .data
+            .into_iter()
+            .map(|mut word| {
+                if word.bytes.len() <= 4 {
+                    return Err(ConversionError::InvalidWordSize(word.bytes.len()));
+                }
+
+                word.bytes.resize(4, 0);
+                let bytes: [u8; 4] = word.bytes.try_into().unwrap();
+                Ok(u32::from_le_bytes(bytes))
+            })
+            .collect()
     }
 }
 
@@ -95,11 +143,14 @@ mod test {
 
     #[test]
     fn vmem_data() {
-        let vmem = Vmem::from_str("@10 12 23 34 @20 @26 45").unwrap();
-        let expected = [(0x40, 0x12), (0x44, 0x23), (0x48, 0x34), (0x98, 0x45)]
-            .map(|(addr, value)| Data { addr, value });
+        let vmem = Vmem::from_str("@10 12 23 34 @20 @26 45", Some(4)).unwrap();
+        let expected =
+            [(0x40, 0x12), (0x44, 0x23), (0x48, 0x34), (0x98, 0x45)].map(|(addr, value)| Data {
+                addr,
+                value: Word::new(vec![value]),
+            });
 
-        let data: Vec<_> = vmem.data_addrs().collect();
+        let data: Vec<_> = vmem.data_addrs(4).collect();
         assert_eq!(data, expected);
     }
 
@@ -107,12 +158,18 @@ mod test {
     fn section_data() {
         let section = Section {
             addr: 0x42,
-            data: vec![0x12, 0x23, 0x34, 0x45],
+            data: [0x12, 0x23, 0x34, 0x45]
+                .iter()
+                .map(|&b| Word::new(vec![b]))
+                .collect(),
         };
-        let expected = [(0x42, 0x12), (0x46, 0x23), (0x4a, 0x34), (0x4e, 0x45)]
-            .map(|(addr, value)| Data { addr, value });
+        let expected =
+            [(0x42, 0x12), (0x46, 0x23), (0x4a, 0x34), (0x4e, 0x45)].map(|(addr, value)| Data {
+                addr,
+                value: Word::new(vec![value]),
+            });
 
-        let data: Vec<_> = section.data_addrs().collect();
+        let data: Vec<_> = section.data_addrs(4).collect();
         assert_eq!(data, expected);
     }
 }
