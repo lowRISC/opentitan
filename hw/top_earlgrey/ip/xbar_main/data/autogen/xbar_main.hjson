@@ -99,6 +99,24 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_rram_ctrl__core"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_rram_macro__prim"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_rram_ctrl__host"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_hmac"
       act:    "req"
       package: "tlul_pkg"
