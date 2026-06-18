@@ -106,6 +106,9 @@ otcrypto_status_t otcrypto_aes_padding_strip(
  * The input data in the `cipher_input` is first padded using the
  * `aes_padding` scheme and the output is copied to `cipher_output`.
  *
+ * When the key security level is configured higher than `Low`, this function
+ * performs an internal fault-injection hardening check.
+ *
  * The caller should allocate space for the `cipher_output` buffer, which is
  * given in bytes by `otcrypto_aes_padded_plaintext_length`, and set the number
  * of bytes allocated in the `len` field of the output.  If the user-set length
