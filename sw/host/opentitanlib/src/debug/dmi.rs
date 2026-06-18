@@ -76,6 +76,14 @@ pub trait Dmi {
 
     /// Write a DMI register.
     fn dmi_write(&mut self, addr: u32, data: u32) -> Result<()>;
+
+    /// Perform a batch of sequential writes to DMI registers.
+    /// May or may not be more optimized depending on the underlying implementation.
+    fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
+        writes
+            .iter()
+            .try_for_each(|&(addr, data)| self.dmi_write(addr, data))
+    }
 }
 
 impl<T: Dmi> Dmi for &mut T {
@@ -85,6 +93,10 @@ impl<T: Dmi> Dmi for &mut T {
 
     fn dmi_write(&mut self, addr: u32, data: u32) -> Result<()> {
         T::dmi_write(self, addr, data)
+    }
+
+    fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
+        T::batched_dmi_writes(self, writes)
     }
 }
 
@@ -126,10 +138,12 @@ impl OpenOcdDmi {
         })
     }
 
+    fn drscan_bits(&self) -> u32 {
+        self.abits + DMI_ADDRESS_SHIFT
+    }
+
     fn dmi_op(&mut self, op: u64) -> Result<u64> {
-        let res = self
-            .openocd
-            .drscan(&self.tap, self.abits + DMI_ADDRESS_SHIFT, op)?;
+        let res = self.openocd.drscan(&self.tap, self.drscan_bits(), op)?;
 
         // We just scanned into the DMI register, so the scanned result should be empty.
         ensure!(res == 0, "Unexpected DMI initial response {res:#x}");
@@ -142,9 +156,7 @@ impl OpenOcdDmi {
         self.openocd.execute("runtest 10")?;
 
         // Read the result.
-        let res = self
-            .openocd
-            .drscan(&self.tap, self.abits + DMI_ADDRESS_SHIFT, 0)?;
+        let res = self.openocd.drscan(&self.tap, self.drscan_bits(), 0)?;
         ensure!(res & 3 == 0, "DMI operation failed with {res:#x}");
 
         // Double check the address matches.
@@ -170,6 +182,47 @@ impl Dmi for OpenOcdDmi {
             (addr as u64) << DMI_ADDRESS_SHIFT | (value as u64) << DMI_DATA_SHIFT | DMI_OP_WRITE,
         )?;
         log::debug!("DMI write {:#x} <- {:#x}", addr, value);
+        Ok(())
+    }
+
+    fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
+        if writes.is_empty() {
+            return Ok(());
+        }
+
+        log::debug!(
+            "DMI {} batched writes: {}",
+            writes.len(),
+            writes
+                .iter()
+                .map(|&(addr, value)| format!("{:#x} <- {:#x}", addr, value))
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+
+        // For optimized writes via drscan, we perform direct drscan write operations without
+        // worrying about the returned scanned values. We only wait in the RunTest state for a
+        // number of cycles at the very end, to allow the final few writes to run and complete,
+        // and we then perform a final write to check the scan status (as errors are sticky).
+        let mut cmd = writes
+            .iter()
+            .map(|&(addr, value)| {
+                let data = (addr as u64) << DMI_ADDRESS_SHIFT
+                    | (value as u64) << DMI_DATA_SHIFT
+                    | DMI_OP_WRITE;
+                self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), data)
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        cmd.push_str(
+            // Wait 10 cycles for last write(s) to complete (arbitrary).
+            format!(
+                "\nruntest 10\n{}",
+                self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), 0)
+            )
+            .as_str(),
+        );
+        self.openocd.execute(&cmd)?;
         Ok(())
     }
 }

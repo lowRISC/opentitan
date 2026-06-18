@@ -228,6 +228,11 @@ impl OpenOcd {
         Ok(())
     }
 
+    /// Command for scanning a data register.
+    pub fn drscan_cmd<T: ParseInt + LowerHex>(&self, tap: &str, numbits: u32, data: T) -> String {
+        format!("drscan {} {} {:#x}", tap, numbits, data)
+    }
+
     /// Load data register of a given tap and return the scan.
     pub fn drscan<T: ParseInt + LowerHex>(
         &mut self,
@@ -235,7 +240,7 @@ impl OpenOcd {
         numbits: u32,
         data: T,
     ) -> Result<T> {
-        let cmd = format!("drscan {} {} {:#x}", tap, numbits, data);
+        let cmd = self.drscan_cmd(tap, numbits, data);
         let result = self.execute(&cmd)?;
         Ok(T::from_str_radix(&result, 16).map_err(|x| x.into())?)
     }
