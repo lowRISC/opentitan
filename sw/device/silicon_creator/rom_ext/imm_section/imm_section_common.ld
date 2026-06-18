@@ -32,14 +32,14 @@ SECTIONS {
     _text_start = .;
     _rom_ext_immutable_start = .;
     KEEP(*(.vectors))
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Standard text section, containing program code.
@@ -50,7 +50,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Shutdown text section, containing shutdown function(s).
@@ -64,7 +64,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -77,7 +77,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom_ext_flash
+  } > rom_ext_nvm
 
   INCLUDE sw/device/lib/coverage/rodata.ld
 
@@ -136,7 +136,7 @@ SECTIONS {
      *
      * Using `AT>` means we don't have to keep track of the next free part of
      * flash, as we do in our other linker scripts. */
-  } > ram_main AT> rom_ext_flash
+  } > ram_main AT> rom_ext_nvm
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -173,5 +173,5 @@ SECTIONS {
     ASSERT(
       SIZEOF(.imm_section_version) == 32,
       "Error: immutable section version string should be exactly 32 bytes");
-  } > rom_ext_flash
+  } > rom_ext_nvm
 }

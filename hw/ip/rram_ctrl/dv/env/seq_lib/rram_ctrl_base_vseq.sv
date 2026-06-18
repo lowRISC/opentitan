@@ -1,0 +1,959 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+class rram_ctrl_base_vseq extends cip_base_vseq #(
+    .RAL_T               (rram_ctrl_core_reg_block),
+    .CFG_T               (rram_ctrl_env_cfg),
+    .COV_T               (rram_ctrl_env_cov),
+    .VIRTUAL_SEQUENCER_T (rram_ctrl_virtual_sequencer)
+  );
+  `uvm_object_utils(rram_ctrl_base_vseq)
+
+  rram_macro_prim_reg_block prim_ral;
+
+  uint write_timeout_ns = 1_000_000;  // 1ms
+
+  logic [KeyWidth-1:0] otp_addr_key;
+  logic [KeyWidth-1:0] otp_addr_rand_key;
+  logic [KeyWidth-1:0] otp_data_key;
+  logic [KeyWidth-1:0] otp_data_rand_key;
+
+  // Standard SV/UVM methods
+  extern function new(string name="");
+
+  // Class specific methods
+  extern function void set_handles();
+
+  // helper functions
+  extern function automatic void update_data_regions();
+  extern function automatic page_cfg_t get_current_page_cfg(addr_t addr,
+                                                            int word_offset,
+                                                            rram_part_e partition);
+
+  extern virtual task apply_reset(string kind = "HARD");
+  extern task pre_start();
+  extern task dut_init(string reset_kind = "HARD");
+  extern task update_default_region_cfg(input prim_mubi_pkg::mubi4_t wr_en,
+                                        input prim_mubi_pkg::mubi4_t rd_en,
+                                        input prim_mubi_pkg::mubi4_t scramble_en,
+                                        input prim_mubi_pkg::mubi4_t ecc_en);
+
+  extern task update_info_page_cfg(input uint info_page,
+                                   input prim_mubi_pkg::mubi4_t en,
+                                   input prim_mubi_pkg::mubi4_t wr_en,
+                                   input prim_mubi_pkg::mubi4_t rd_en,
+                                   input prim_mubi_pkg::mubi4_t scramble_en,
+                                   input prim_mubi_pkg::mubi4_t ecc_en);
+
+  extern task update_mp_region(input uint region,
+                               input uint page_base,
+                               input uint page_size,
+                               input prim_mubi_pkg::mubi4_t en,
+                               input prim_mubi_pkg::mubi4_t wr_en,
+                               input prim_mubi_pkg::mubi4_t rd_en,
+                               input prim_mubi_pkg::mubi4_t scramble_en,
+                               input prim_mubi_pkg::mubi4_t ecc_en);
+  extern task rram_ctrl_init();
+  extern task rram_ctrl_write(input rram_ctrl_op_t ctrl_op,
+                              input data_q_t data,
+                              input logic wr_check = 1'b1);
+  extern task rram_ctrl_read(input rram_ctrl_op_t ctrl_op,
+                             ref data_q_t data,
+                             input logic rd_check = 1'b1);
+  extern task rram_ctrl_rewrite(input addr_t addr,
+                                input rram_part_e partition);
+  extern task rram_ctrl_wait_op_done();
+  extern task rram_ctrl_wait_wr_done();
+  extern task rram_host_read(input  addr_t addr,
+                             input  bit blocking = 0,
+                             input  bit check_rdata = 0,
+                             input  data_t exp_rdata = '0,
+                             input  prim_mubi_pkg::mubi4_t instr_type = prim_mubi_pkg::MuBi4False,
+                             output data_t rdata,
+                             output bit completed,
+                             input  bit exp_err_rsp = 0
+                            );
+
+  extern task otp_init();
+
+  extern task otp_bkdr_read(input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                            input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                            output otp_ctrl_macro_pkg::otp_macro_data_t         otp_data,
+                            output logic                                        intg_err);
+
+  extern task otp_zeroize(input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                          input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                          input  logic                                        rd_check,
+                          output otp_ctrl_macro_pkg::otp_macro_data_t         rdata
+                         );
+
+  extern task otp_read(input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                       input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                       input  logic                                        raw,
+                       input  logic                                        rd_check,
+                       output otp_ctrl_macro_pkg::otp_macro_data_t         rdata
+                      );
+
+  extern task otp_write(input logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+                        input logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+                        input logic                                        raw,
+                        input logic                                        wr_check,
+                        input otp_ctrl_macro_pkg::otp_macro_data_t         otp_wdata
+                       );
+
+  // semaphore to prevent multiple concurrent accesses to the control port
+  semaphore ctrl_port_task_guard;
+
+  // Simple model for the OTP key seeds
+  virtual task otp_model();
+
+    `uvm_info(`gfn, "Starting OTP Model ...", UVM_LOW)
+
+    // Initial Values
+    cfg.misc_vif.otp_key_rsp.addr_ack   = 1'b0;
+    cfg.misc_vif.otp_key_rsp.data_ack   = 1'b0;
+    cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
+    cfg.misc_vif.otp_key_rsp.key        = '0;
+    cfg.misc_vif.otp_key_rsp.rand_key   = '0;
+    // Note 'some values' appear in both branches of this fork, this is OK because the
+    // branches never run together by design.
+    // The order is always 'addr' followed by 'data'.
+    fork
+      forever begin // addr
+        @(posedge cfg.otp_clk_rst_vif.rst_n);
+        @(posedge cfg.misc_vif.otp_key_req.addr_req);
+        `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
+          otp_addr_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Addr Rand Key Applied to DUT : otp_addr_rand_key : %0x",
+          otp_addr_rand_key), UVM_MEDIUM)
+        cfg.misc_vif.otp_key_rsp.key = otp_addr_key;
+        cfg.misc_vif.otp_key_rsp.rand_key = otp_addr_rand_key;
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b1;
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.addr_ack = 1'b1;
+        @(negedge cfg.misc_vif.otp_key_req.addr_req);
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.addr_ack = 1'b0;
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
+      end
+      forever begin // data
+        @(posedge cfg.otp_clk_rst_vif.rst_n);
+        @(posedge cfg.misc_vif.otp_key_req.data_req);
+        cfg.misc_vif.otp_key_rsp.key = otp_data_key;
+        cfg.misc_vif.otp_key_rsp.rand_key = otp_data_rand_key;
+        `uvm_info(`gfn, $sformatf("OTP Data Key Applied to DUT : otp_data_key : %0x",
+          otp_data_key), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("OTP Data Rand Key Applied to DUT : otp_data_rand_key : %0x",
+          otp_data_rand_key), UVM_MEDIUM)
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b1;
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.data_ack = 1'b1;
+        @(negedge cfg.misc_vif.otp_key_req.data_req);
+        #1ns; // Positive Hold
+        cfg.misc_vif.otp_key_rsp.data_ack = 1'b0;
+        cfg.misc_vif.otp_key_rsp.seed_valid = 1'b0;
+      end
+    join_none
+  endtask : otp_model
+
+  // Task to send an RMA Request (with a given seed) to the RRAM Controller
+  virtual task rma_req();
+    // Local Variables
+    bit done;
+    int freq = cfg.otp_clk_rst_vif.clk_freq_mhz;
+    // RMA request takes approx. 100ms@100MHz. Setting timeout to 200ms@100MHz
+    time timeout = (20000 / freq) * 1ms;
+
+    // Set Seed and Send Req
+    cfg.misc_vif.rma_seed <= $urandom();
+    cfg.misc_vif.rma_req <= lc_ctrl_pkg::On;
+
+    // Wait for RMA Ack to Rise (NOTE LONG DURATION)
+    `uvm_info(`gfn, "Waiting for RMA to complete ... ", UVM_LOW)
+
+    done = 0;
+    fork
+      begin  // Poll RMA ACK
+        do begin
+          `uvm_info(`gfn, "Polling RMA ACK ...", UVM_LOW)
+          #10ms; // Jump Ahead (Not Sampling Clocks)
+          @(posedge cfg.otp_clk_rst_vif.clk); // Align to Clock
+          if (cfg.misc_vif.rma_ack == lc_ctrl_pkg::On) begin
+            done = 1;
+          end
+        end while (done == 0);
+      end
+      begin  // Timeout - Unexpected
+        `uvm_info(`gfn, "Starting RMA Timeout Check ...", UVM_LOW)
+        #(timeout);
+        `uvm_error(`gfn, {
+                   "RMA ACK NOT seen within the expected time frame, Timeout - FAIL",
+                   $sformatf(" (%0t)", timeout)})
+      end
+    join_any
+    disable fork;
+
+    // Note: After a valid RMA Ack is sent, the RMA State Machine remains in its last state
+    // until reset
+    `uvm_info(`gfn, "RMA complete", UVM_LOW)
+  endtask : rma_req
+
+endclass : rram_ctrl_base_vseq
+
+function rram_ctrl_base_vseq::new(string name="");
+  super.new(name);
+  ctrl_port_task_guard = new(1);
+endfunction : new
+
+function void rram_ctrl_base_vseq::set_handles();
+  super.set_handles();
+  `downcast(prim_ral, cfg.ral_models[cfg.prim_ral_name]);
+endfunction : set_handles
+
+// Apply reset to both the primary and OTP clock domains in parallel so that both clock
+// generators (which each block on @(negedge rst_n) before starting) get their reset.
+task rram_ctrl_base_vseq::apply_reset(string kind = "HARD");
+  fork
+    super.apply_reset(kind);
+    cfg.otp_clk_rst_vif.apply_reset();
+  join
+endtask : apply_reset
+
+// setup inputs for DUT
+task rram_ctrl_base_vseq::pre_start();
+
+    // Create key before mem init
+    otp_addr_key      = {$urandom, $urandom, $urandom, $urandom};
+    otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_key      = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+
+    cfg.otp_addr_key = otp_addr_key;
+    cfg.otp_data_key = otp_data_key;
+
+    cfg.misc_vif.rma_req  <= lc_ctrl_pkg::Off;
+    cfg.misc_vif.rma_seed <= lc_ctrl_pkg::LC_NVM_RMA_SEED_DEFAULT;
+
+    cfg.misc_vif.otp_macro_req.valid = '0;
+    cfg.misc_vif.otp_macro_req.cmd   = otp_ctrl_macro_pkg::Init;
+    cfg.misc_vif.otp_macro_req.addr  = '0;
+    cfg.misc_vif.otp_macro_req.size  = '0;
+    cfg.misc_vif.otp_macro_req.wdata = '0;
+
+    otp_model();  // Start OTP Model
+
+    super.pre_start();
+
+endtask : pre_start
+
+// initializes the DUT
+task rram_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
+
+  super.dut_init();
+
+  rram_ctrl_base_vseq::otp_init();
+
+  rram_ctrl_init();
+endtask : dut_init
+
+// Initializes the RRAM controller
+// - polls phy_init_done
+// - initializes RRAM data+info array to 0 (unless skipped)
+task rram_ctrl_base_vseq::rram_ctrl_init();
+  uvm_reg_data_t reg_data;
+  bit init_done;
+
+  rram_ctrl_op_t ctrl_op_init;
+  data_q_t init_data;
+
+  // poll phy_init_done
+  do begin
+    csr_rd(.ptr(ral.phy_status), .value(reg_data));
+    init_done = get_field_val(ral.phy_status.init_done, reg_data);
+    #1us;
+  end while (init_done == 1'b0);
+
+  if (cfg.skip_lc_init == 1'b0) begin
+    // initialize controller
+    csr_wr(.ptr(ral.init), .value('b1));
+
+    // poll init_done
+    do begin
+      csr_rd(.ptr(ral.status), .value(reg_data));
+      init_done = get_field_val(ral.status.init_done, reg_data);
+      #1us;
+    end while (init_done == 1'b0);
+  end
+
+  init_data = '{(BusWordsPerPage){0}};
+  if (cfg.skip_init_data_array == 1'b0) begin
+    // Initialize full RRAM data array to all zero
+    ctrl_op_init.num_words = BusWordsPerPage - 1;
+    ctrl_op_init.op = RramOpWrite;
+    for (int i = 0; i < DataPages; i++) begin
+      ctrl_op_init.partition = RramPartData;
+      ctrl_op_init.addr = i << (BusAddrByteW - PageW);
+      cfg.rram_bkdr_mem_write(ctrl_op_init, init_data, 1'b0);
+    end
+  end
+  if (cfg.skip_init_info_array == 1'b0) begin
+    // Initialize full RRAM info array to all zero
+    for (int i = 0; i < TotalInfoPages; i++) begin
+      ctrl_op_init.partition = RramPartInfo;
+      ctrl_op_init.addr = i << (BusAddrByteW - PageW);
+      cfg.rram_bkdr_mem_write(ctrl_op_init, init_data, 1'b0);
+    end
+  end
+endtask : rram_ctrl_init
+
+// update data regions with access permission and scrambling, ecc configurations
+function automatic void rram_ctrl_base_vseq::update_data_regions();
+  for (int i = 0; i < TotalPages; i++) begin
+    // No access to OTP pages
+    if (i >= OtpStartPage) begin
+      cfg.data_pages_cfg[i].scramble_en = MuBi4False;
+      cfg.data_pages_cfg[i].ecc_en      = MuBi4True;
+      cfg.data_pages_cfg[i].rd_en       = MuBi4False;
+      cfg.data_pages_cfg[i].wr_en       = MuBi4False;
+    end else begin
+      cfg.data_pages_cfg[i].scramble_en = cfg.default_cfg.scramble_en;
+      cfg.data_pages_cfg[i].ecc_en      = cfg.default_cfg.ecc_en;
+      cfg.data_pages_cfg[i].rd_en       = cfg.default_cfg.rd_en;
+      cfg.data_pages_cfg[i].wr_en       = cfg.default_cfg.wr_en;
+      for (int k = 0; k < MpRegions; k++) begin
+        if (cfg.mp_regions[k].cfg.en == prim_mubi_pkg::MuBi4True) begin
+          if ((i >= cfg.mp_regions[k].base) &&
+              (i <= cfg.mp_regions[k].base + cfg.mp_regions[k].size)) begin
+            cfg.data_pages_cfg[i].scramble_en = cfg.mp_regions[k].cfg.scramble_en;
+            cfg.data_pages_cfg[i].ecc_en      = cfg.mp_regions[k].cfg.ecc_en;
+            cfg.data_pages_cfg[i].rd_en       = cfg.mp_regions[k].cfg.rd_en;
+            cfg.data_pages_cfg[i].wr_en       = cfg.mp_regions[k].cfg.wr_en;
+            break;
+          end
+        end
+      end
+    end
+  end
+endfunction : update_data_regions
+
+// get current page configuration at addr + word_offset
+function automatic page_cfg_t rram_ctrl_base_vseq::get_current_page_cfg(addr_t addr,
+                                                                        int word_offset,
+                                                                        rram_part_e partition);
+  addr_t     current_addr;
+  int        current_page;
+  page_cfg_t current_cfg;
+
+  current_addr = addr + word_offset*4;
+  current_page = current_addr[BusAddrByteW-1 -: PageW];
+  current_cfg  = partition == RramPartData ? cfg.data_pages_cfg[current_page] :
+                                             cfg.info_pages_cfg[current_page];
+  return current_cfg;
+endfunction : get_current_page_cfg
+
+// Configure the default region
+task rram_ctrl_base_vseq::update_default_region_cfg(input prim_mubi_pkg::mubi4_t wr_en,
+                                                    input prim_mubi_pkg::mubi4_t rd_en,
+                                                    input prim_mubi_pkg::mubi4_t scramble_en,
+                                                    input prim_mubi_pkg::mubi4_t ecc_en);
+  uvm_reg_data_t data;
+  data = 0;
+  data = get_csr_val_with_updated_field(ral.default_region.wr_en, data, wr_en);
+  data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, rd_en);
+  data = get_csr_val_with_updated_field(ral.default_region.scramble_en, data, scramble_en);
+  data = get_csr_val_with_updated_field(ral.default_region.ecc_en, data, ecc_en);
+  csr_wr(.ptr(ral.default_region), .value(data));
+
+  // write default scrambling information to cfg and update all regions
+  cfg.default_cfg.scramble_en = scramble_en;
+  cfg.default_cfg.ecc_en = ecc_en;
+  cfg.default_cfg.wr_en = wr_en;
+  cfg.default_cfg.rd_en = rd_en;
+  update_data_regions();
+endtask : update_default_region_cfg
+
+// update an info page configuration
+task rram_ctrl_base_vseq::update_info_page_cfg(input uint info_page,
+                                               input prim_mubi_pkg::mubi4_t en,
+                                               input prim_mubi_pkg::mubi4_t wr_en,
+                                               input prim_mubi_pkg::mubi4_t rd_en,
+                                               input prim_mubi_pkg::mubi4_t scramble_en,
+                                               input prim_mubi_pkg::mubi4_t ecc_en);
+  uvm_reg_data_t data;
+  if (info_page >= TotalInfoPages) begin
+    `uvm_error("info-page-cfg-error:", $sformatf("Cannot configure info page=%d",
+                info_page));
+  end
+  // Update info page access config
+  data = 0;
+  data = get_csr_val_with_updated_field(ral.info_page_cfg[0].en, data, en);
+  data = get_csr_val_with_updated_field(ral.info_page_cfg[0].wr_en, data, wr_en);
+  data = get_csr_val_with_updated_field(ral.info_page_cfg[0].rd_en, data, rd_en);
+  data = get_csr_val_with_updated_field(ral.info_page_cfg[0].scramble_en, data, scramble_en);
+  data = get_csr_val_with_updated_field(ral.info_page_cfg[0].ecc_en, data, ecc_en);
+  csr_wr(.ptr(ral.info_page_cfg[info_page]), .value(data));
+
+  // Update local struct
+  cfg.info_pages_cfg[info_page].scramble_en = prim_mubi_pkg::mubi4_and_hi(en, scramble_en);
+  cfg.info_pages_cfg[info_page].ecc_en      = prim_mubi_pkg::mubi4_and_hi(en, ecc_en);
+  cfg.info_pages_cfg[info_page].rd_en       = prim_mubi_pkg::mubi4_and_hi(en, rd_en);
+  cfg.info_pages_cfg[info_page].wr_en       = prim_mubi_pkg::mubi4_and_hi(en, wr_en);
+endtask : update_info_page_cfg
+
+task rram_ctrl_base_vseq::update_mp_region(input uint region,
+                                           input uint page_base,
+                                           input uint page_size,
+                                           input prim_mubi_pkg::mubi4_t en,
+                                           input prim_mubi_pkg::mubi4_t wr_en,
+                                           input prim_mubi_pkg::mubi4_t rd_en,
+                                           input prim_mubi_pkg::mubi4_t scramble_en,
+                                           input prim_mubi_pkg::mubi4_t ecc_en);
+  uvm_reg_data_t data;
+
+  if ((page_base >= TotalPages) || ((page_base + page_size) >= TotalPages)) begin
+    `uvm_error("mp-cfg-error:", $sformatf("Cannot configure page_base=%0d with page_size=%d",
+               page_base, page_size));
+  end
+
+  // Update mp region with access config
+  data = 0;
+  data = get_csr_val_with_updated_field(ral.mp_region_cfg[0].en, data, en);
+  data = get_csr_val_with_updated_field(ral.mp_region_cfg[0].wr_en, data, wr_en);
+  data = get_csr_val_with_updated_field(ral.mp_region_cfg[0].rd_en, data, rd_en);
+  data = get_csr_val_with_updated_field(ral.mp_region_cfg[0].scramble_en, data, scramble_en);
+  data = get_csr_val_with_updated_field(ral.mp_region_cfg[0].ecc_en, data, ecc_en);
+  csr_wr(.ptr(ral.mp_region_cfg[region]), .value(data));
+
+  // Update mp region with page and size
+  data = 0;
+  data = get_csr_val_with_updated_field(ral.mp_region[0].base, data, page_base);
+  data = get_csr_val_with_updated_field(ral.mp_region[0].size, data, page_size);
+  csr_wr(.ptr(ral.mp_region[region]), .value(data));
+
+  cfg.mp_regions[region].base            = page_base;
+  cfg.mp_regions[region].size            = page_size;
+  cfg.mp_regions[region].cfg.en          = en;
+  cfg.mp_regions[region].cfg.rd_en       = rd_en;
+  cfg.mp_regions[region].cfg.wr_en       = wr_en;
+  cfg.mp_regions[region].cfg.scramble_en = scramble_en;
+  cfg.mp_regions[region].cfg.ecc_en      = ecc_en;
+
+  update_data_regions();
+endtask : update_mp_region
+
+// Helper task to wait for an operation to have completed (polls op_done)
+task rram_ctrl_base_vseq::rram_ctrl_wait_op_done();
+  uvm_reg_data_t reg_data;
+  bit op_done;
+
+  do begin // poll op_done
+    csr_rd(.ptr(ral.op_status), .value(reg_data));
+    op_done = get_field_val(ral.op_status.done, reg_data);
+  end while (op_done == 1'b0);
+  reg_data = get_csr_val_with_updated_field(ral.op_status.done, reg_data, 1'b0);
+  csr_wr(.ptr(ral.op_status), .value(reg_data));
+  ctrl_port_task_guard.put(1);
+  @(posedge cfg.clk_rst_vif.clk);
+endtask : rram_ctrl_wait_op_done
+
+// Helper task to wait for a write operation to have completed (polls wr_busy)
+task rram_ctrl_base_vseq::rram_ctrl_wait_wr_done();
+  uvm_reg_data_t reg_data;
+  bit wr_busy;
+
+  do begin // poll phy_status.wr_busy
+    csr_rd(.ptr(ral.phy_status), .value(reg_data));
+    wr_busy = get_field_val(ral.phy_status.wr_busy, reg_data);
+  end while (wr_busy == 1'b1);
+endtask : rram_ctrl_wait_wr_done
+
+// Software controlled write operation to the RRAM.
+// - writes address to register
+// - writes command field to register
+// - fills wr_fifo
+// - performs bkdr read to check if dat has been written to RRAM if wr_check is set to 1
+// - waits for operation to complete
+task rram_ctrl_base_vseq::rram_ctrl_write(input rram_ctrl_op_t ctrl_op, input data_q_t data,
+                                          input logic wr_check = 1'b1);
+  uvm_reg_data_t reg_data;
+  int            wr_fifo_level;
+  page_cfg_t     current_cfg;
+
+  data_q_t init_data;
+  logic exp_err = 1'b0;
+
+  // prevent multiple function entries
+  ctrl_port_task_guard.get(1);
+  // write start address
+  csr_wr(.ptr(ral.addr), .value(ctrl_op.addr));
+
+  // write command register
+  reg_data = '0;
+  reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1);
+  reg_data = get_csr_val_with_updated_field(ral.control.op, reg_data, ctrl_op.op);
+  reg_data = get_csr_val_with_updated_field(ral.control.partition, reg_data, ctrl_op.partition);
+  reg_data = get_csr_val_with_updated_field(ral.control.num, reg_data, ctrl_op.num_words);
+  csr_wr(.ptr(ral.control), .value(reg_data));
+
+  // fill wr-fifo
+  wr_fifo_level = 0;
+  for (int i = 0; i <= ctrl_op.num_words; i++) begin
+    current_cfg = get_current_page_cfg(ctrl_op.addr, i, ctrl_op.partition);
+    if (wr_fifo_level == WrFifoDepth - 1) begin
+      do begin // poll fifo until there is space available
+        csr_rd(.ptr(ral.curr_fifo_lvl), .value(reg_data));
+        wr_fifo_level = get_field_val(ral.curr_fifo_lvl.wr, reg_data);
+      end while (wr_fifo_level == WrFifoDepth - 1);
+    end
+    mem_wr(.ptr(ral.wr_fifo), .offset(0), .data(data[i]));
+    wr_fifo_level++;
+    if ((current_cfg.wr_en != prim_mubi_pkg::MuBi4True) | exp_err) begin
+      if (exp_err == 1'b0) init_data = cfg.rram_bkdr_mem_read(ctrl_op, 1'b0, 1'b1);
+      data[i] = init_data[i];
+      exp_err = 1'b1;
+    end
+  end
+  if (wr_check) begin
+    // start background check as soon as the current command has finished (ready is high)
+    fork begin
+      automatic rram_ctrl_op_t bkdr_ctrl_op = ctrl_op;
+      automatic data_q_t wr_data = data;
+      data_q_t bkdr_data;
+      if (exp_err == '0) begin
+        wait(cfg.misc_vif.pwr_nvm.nvm_idle === 1'b0);
+      end
+      wait(cfg.misc_vif.pwr_nvm.nvm_idle === 1'b1);
+      repeat(2) @(posedge cfg.clk_rst_vif.clk);
+      bkdr_data = cfg.rram_bkdr_mem_read(bkdr_ctrl_op, 1'b0, 1'b1);
+      // check if read data matches with data in RRAM
+      for (int i = 0; i <= bkdr_ctrl_op.num_words; i++) begin
+        if (wr_data[i] !== bkdr_data[i]) begin
+          `uvm_error("Write-error:", $sformatf("data[%0d] exp: %08x is: %08x", i, wr_data[i],
+                     bkdr_data[i]))
+        end
+      end
+    end
+    join_none
+  end
+  // wait for command to complete
+  rram_ctrl_wait_op_done();
+endtask : rram_ctrl_write
+
+// Software controlled rewrite operation to the RRAM.
+// - writes address to register
+// - writes command field to register
+// - waits for operation to complete
+task rram_ctrl_base_vseq::rram_ctrl_rewrite(input addr_t addr, input rram_part_e partition);
+
+  uvm_reg_data_t reg_data;
+
+  // prevent multiple function entries
+  ctrl_port_task_guard.get(1);
+
+  // write start address
+  csr_wr(.ptr(ral.addr), .value(addr));
+
+  // write command register
+  reg_data = '0;
+  reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1);
+  reg_data = get_csr_val_with_updated_field(ral.control.op, reg_data, RramOpRewrite);
+  reg_data = get_csr_val_with_updated_field(ral.control.partition, reg_data, partition);
+  reg_data = get_csr_val_with_updated_field(ral.control.num, reg_data, 3);
+  csr_wr(.ptr(ral.control), .value(reg_data));
+
+  // wait for command to complete
+  rram_ctrl_wait_op_done();
+endtask : rram_ctrl_rewrite
+
+// Software controlled read operation from the RRAM.
+// - writes address to register
+// - perfoms bkdr read to get initial data in RRAM if rd_check is set to 1
+// - writes command field to register
+// - reads rd_fifo (and compares data to expected values from bkdr read)
+// - waits for operation to complete
+task rram_ctrl_base_vseq::rram_ctrl_read(input rram_ctrl_op_t ctrl_op, ref data_q_t data,
+                                         input logic rd_check = 1'b1);
+
+  uvm_reg_data_t reg_data;
+  int            rd_fifo_level;
+  data_q_t       bkdr_data;
+  logic          bkdr_read_done = 1'b0;
+  page_cfg_t     current_cfg;
+  logic          exp_err = '0;
+
+  // prevent multiple function entries
+  ctrl_port_task_guard.get(1);
+
+  // write start address
+  csr_wr(.ptr(ral.addr), .value(ctrl_op.addr));
+
+  // write command register
+  reg_data = '0;
+  reg_data = get_csr_val_with_updated_field(ral.control.start, reg_data, 1'b1);
+  reg_data = get_csr_val_with_updated_field(ral.control.op, reg_data, ctrl_op.op);
+  reg_data = get_csr_val_with_updated_field(ral.control.partition, reg_data, ctrl_op.partition);
+  reg_data = get_csr_val_with_updated_field(ral.control.num, reg_data, ctrl_op.num_words);
+  csr_wr(.ptr(ral.control), .value(reg_data));
+
+  // wait for fifo to be filled and read out
+  rd_fifo_level = 0;
+  for (int i = 0; i <= ctrl_op.num_words; i++) begin
+    current_cfg = get_current_page_cfg(ctrl_op.addr, i, ctrl_op.partition);
+    if (rd_fifo_level == 0) begin
+      do begin
+        csr_rd(.ptr(ral.curr_fifo_lvl), .value(reg_data));
+        rd_fifo_level = get_field_val(ral.curr_fifo_lvl.rd, reg_data);
+      end while (rd_fifo_level == 0);
+    end
+    mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[i]));
+    // backdoor read to RRAM for automatic read check
+    if (rd_check & ~bkdr_read_done) begin
+      bkdr_data = cfg.rram_bkdr_mem_read(ctrl_op, 1'b0, 1'b1);
+      bkdr_read_done = '1;
+    end
+    if ((current_cfg.rd_en != prim_mubi_pkg::MuBi4True) | exp_err) begin
+      bkdr_data[i] = '1;
+      exp_err = 1'b1;
+    end
+    if (rd_check) begin
+      // check if read data matches with data in RRAM
+      if (data[i] !== bkdr_data[i]) begin
+        `uvm_error("Read-error:", $sformatf("data[%0d] exp: %08x is: %08x", i, bkdr_data[i],
+                   data[i]))
+      end
+    end
+    rd_fifo_level--;
+  end
+  // wait for command to complete
+  rram_ctrl_wait_op_done();
+endtask : rram_ctrl_read
+
+// Task to perform a direct RRAM read at the specified location:
+// Timeout is used to match the longest waiting timeout possible for the host, which will happen
+// when the host is waiting for the controller to finish a write operation
+task rram_ctrl_base_vseq::rram_host_read(
+    input  addr_t addr,
+    input  bit blocking = 0,
+    input  bit check_rdata = 0,
+    input  data_t exp_rdata = '0,
+    input  prim_mubi_pkg::mubi4_t instr_type = prim_mubi_pkg::MuBi4False,
+    output data_t rdata,
+    output bit completed,
+    input  bit exp_err_rsp = 0);
+  bit saw_err;
+  tl_access_w_abort(.addr(addr), .write(1'b0), .completed(completed), .saw_err(saw_err),
+                    .tl_access_timeout_ns(write_timeout_ns), .mask('1),
+                    .data(rdata), .exp_err_rsp(exp_err_rsp),
+                    .check_exp_data(check_rdata), .exp_data(exp_rdata),
+                    .compare_mask('1), .blocking(blocking), .instr_type(instr_type),
+                    .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.host_ral_name]));
+endtask : rram_host_read
+
+// Task to set all otp pages to 0 and send the init command
+task rram_ctrl_base_vseq::otp_init();
+
+  // initialize all OtpPages to 0
+  rram_ctrl_op_t rram_ctrl_op;
+  data_q_t otp_init_data;
+
+  rram_ctrl_op.num_words = TotalOtpBytes / BusBytes - 1;
+  rram_ctrl_op.partition = RramPartData;
+  rram_ctrl_op.addr = OtpStartPage << (BusAddrByteW - PageW);
+  rram_ctrl_op.op = RramOpWrite;
+  otp_init_data = '{(TotalOtpBytes / BusBytes){0}};
+
+  cfg.rram_bkdr_mem_write(rram_ctrl_op, otp_init_data, 1'b0);
+
+  // Pre-stage data one cycle before asserting valid.  prim_sync_reqack_data's chk_flag_q latches
+  // permanently after the first transaction; any data change while src_req_i=1 without a
+  // simultaneous src_ack_o will fire SyncReqAckDataHoldSrc2Dst.
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.cmd   = otp_ctrl_macro_pkg::Init;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  @(posedge cfg.otp_clk_rst_vif.clk);
+endtask : otp_init
+
+// Task to perform a backdoor read to the OTP section
+task rram_ctrl_base_vseq::otp_bkdr_read(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    output otp_ctrl_macro_pkg::otp_macro_data_t         otp_data,
+    output logic                                        intg_err);
+
+    localparam int unsigned RramDataWidth    = rram_ctrl_pkg::DataWidth;
+    localparam int unsigned RramOtpWidth     = otp_ctrl_macro_pkg::OtpWidth;
+    localparam int unsigned RramOtpSizeWidth = prim_util_pkg::vbits(RramDataWidth / RramOtpWidth);
+
+    logic [RramDataWidth-1:0]    rram_word, rram_intg_word;
+    logic [AddrW-1:0]            otp_rram_addr, otp_rram_intg_addr;
+    logic [AddrW-1:0]            rram_addr, rram_intg_addr;
+    logic [RramOtpSizeWidth-1:0] offset;
+    logic [OtpIntgWidth-1:0]     intg_mem, intg;
+    logic [OtpIntgDataWidth-1:0] unused_data;
+
+    int intg_ind, word_ind;
+
+    offset = otp_addr[$clog2(RramDataWidth/RramOtpWidth)-1:0];
+
+    // need to shift 1 left for byte address and then 4 right for rram addr
+    otp_rram_addr = (otp_addr << otp_ctrl_macro_pkg::OtpAddrShift) >> (BusAddrByteW - AddrW);
+    rram_addr     = ((OtpStartPage+1) << WordW) + otp_rram_addr;
+
+    // 8 integrity values per 64b
+    otp_rram_intg_addr = otp_rram_addr >> $clog2(OtpIntgDataWidth / OtpIntgWidth);
+    rram_intg_addr     = (OtpStartPage << WordW) + otp_rram_intg_addr;
+
+    // fetch rram data word
+    rram_word = cfg.rram_bkdr_word_read(rram_addr, RramPartData, 1'b0, 1'b0);
+    word_ind  = otp_addr[$clog2(OtpIntgDataWidth / RramOtpWidth) +:
+                         $clog2(RramDataWidth / OtpIntgDataWidth)];
+    // compute intgerity
+    {intg, unused_data} = prim_secded_pkg::prim_secded_hamming_72_64_enc(
+                                      rram_word[OtpIntgDataWidth * word_ind +: OtpIntgDataWidth]);
+
+    // fetch rram intg word
+    rram_intg_word = cfg.rram_bkdr_word_read(rram_intg_addr, RramPartData, 1'b0, 1'b0);
+    intg_ind = otp_addr[$clog2(OtpIntgDataWidth / 8) -
+               otp_ctrl_macro_pkg::OtpAddrShift +: $clog2(RramDataWidth / OtpIntgWidth)];
+    intg_mem = rram_intg_word[intg_ind*OtpIntgWidth +: OtpIntgWidth];
+
+    `uvm_info(`gfn, $sformatf(
+      "OTP bkdr read: otp_addr=0x%x rram_addr=0x%x rram_intg_addr=0x%x word_ind=%0d intg_ind=%0d",
+      otp_addr, otp_rram_addr, otp_rram_intg_addr, word_ind, intg_ind), UVM_MEDIUM)
+
+    // prepare output data
+    otp_data = '0;
+    for (int k = 0; k <= otp_size; k++) begin
+      otp_data[k * RramOtpWidth +: RramOtpWidth] =
+        rram_word[(offset + k) * RramOtpWidth +: RramOtpWidth];
+    end
+    intg_err = (intg_mem !== intg);
+endtask : otp_bkdr_read
+
+// Task to perform an OTP zeroization
+task rram_ctrl_base_vseq::otp_zeroize(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    input  logic                                        rd_check,
+    output otp_ctrl_macro_pkg::otp_macro_data_t         rdata
+    );
+
+  logic intg_err;
+  otp_ctrl_macro_pkg::err_e err;
+  cfg.misc_vif.otp_macro_req.addr  = otp_addr;
+  cfg.misc_vif.otp_macro_req.cmd   = otp_ctrl_macro_pkg::Zeroize;
+  cfg.misc_vif.otp_macro_req.size  = otp_size;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  rdata = cfg.misc_vif.otp_macro_rsp.rdata;
+  err   = cfg.misc_vif.otp_macro_rsp.err;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+
+  if (rd_check) begin
+    otp_ctrl_macro_pkg::otp_macro_data_t rdata_exp, rdata_rram;
+    otp_ctrl_macro_pkg::err_e err_exp = otp_ctrl_macro_pkg::NoError;
+    rdata_exp = '0;
+    for (int k = 0; k <= otp_size; k++) begin
+      rdata_exp[k*otp_ctrl_macro_pkg::OtpWidth +: otp_ctrl_macro_pkg::OtpWidth] = '1;
+    end
+    rram_ctrl_base_vseq::otp_bkdr_read(otp_addr, otp_size, rdata_rram, intg_err);
+
+    if (err !== err_exp) begin
+      `uvm_error("OTP zeroization unexpected error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                 otp_addr, otp_size, err_exp, err));
+    end
+
+    if (rdata !== rdata_exp) begin
+      `uvm_error("OTP zeroization read-back error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                 otp_addr, otp_size, rdata_exp, rdata));
+    end
+    if (rdata_rram !== rdata_exp) begin
+      `uvm_error("OTP zeroization error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                 otp_addr, otp_size, rdata_exp, rdata));
+    end
+  end
+endtask : otp_zeroize
+
+// Task to perform an OTP read to the RRAM
+task rram_ctrl_base_vseq::otp_read(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    input  logic                                        raw,
+    input  logic                                        rd_check,
+    output otp_ctrl_macro_pkg::otp_macro_data_t         rdata);
+
+  logic intg_err;
+  otp_ctrl_macro_pkg::err_e err, err_exp;
+  cfg.misc_vif.otp_macro_req.addr  = otp_addr;
+  cfg.misc_vif.otp_macro_req.cmd   = raw ? otp_ctrl_macro_pkg::ReadRaw : otp_ctrl_macro_pkg::Read;
+  cfg.misc_vif.otp_macro_req.size  = otp_size;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  `uvm_info(`gfn, $sformatf("OTP Read: otp_addr=0x%x otp_size=0x%x",
+            otp_addr, otp_size), UVM_MEDIUM)
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  rdata = cfg.misc_vif.otp_macro_rsp.rdata;
+  err   = cfg.misc_vif.otp_macro_rsp.err;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+
+  if (rd_check) begin
+    otp_ctrl_macro_pkg::otp_macro_data_t rdata_exp;
+    rram_ctrl_base_vseq::otp_bkdr_read(otp_addr, otp_size, rdata_exp, intg_err);
+    if (intg_err & ~raw) begin
+      err_exp = otp_ctrl_macro_pkg::MacroEccUncorrError;
+      if (err !== err_exp) begin
+        `uvm_error("OTP read no intg-error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                   otp_addr, otp_size, err_exp, err));
+      end
+    end else begin
+      err_exp = otp_ctrl_macro_pkg::NoError;
+      if (err !== err_exp) begin
+        `uvm_error("OTP read unexpected error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                   otp_addr, otp_size, err_exp, err));
+      end
+    end
+
+    if (rdata !== rdata_exp) begin
+      `uvm_error("OTP read rd-back error", $sformatf("addr=0x%x size=%0d exp: %x is: %x", otp_addr,
+                  otp_size, rdata_exp, rdata));
+    end
+  end
+endtask : otp_read
+
+// Task to perform an OTP write to the RRAM
+task rram_ctrl_base_vseq::otp_write(
+    input  logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] otp_addr,
+    input  logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] otp_size,
+    input  logic                                        raw,
+    input  logic                                        wr_check,
+    input  otp_ctrl_macro_pkg::otp_macro_data_t         otp_wdata);
+
+  logic intg_err;
+  otp_ctrl_macro_pkg::err_e otp_err;
+  otp_ctrl_macro_pkg::otp_macro_data_t rdata;
+  cfg.misc_vif.otp_macro_req.addr  = otp_addr;
+  cfg.misc_vif.otp_macro_req.cmd   = raw ? otp_ctrl_macro_pkg::WriteRaw : otp_ctrl_macro_pkg::Write;
+  cfg.misc_vif.otp_macro_req.size  = otp_size;
+  cfg.misc_vif.otp_macro_req.wdata = otp_wdata;
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  cfg.misc_vif.otp_macro_req.valid = 1'b1;
+  #1ns;  // wait for signals to settle
+  while (cfg.misc_vif.otp_macro_rsp.ready == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  rram_ctrl_base_vseq::otp_bkdr_read(otp_addr, otp_size, rdata, intg_err);
+  `uvm_info(`gfn, $sformatf("OTP Write: otp_addr=0x%x otp_size=0x%x otp_wdata=0x%x",
+            otp_addr, otp_size, otp_wdata), UVM_MEDIUM)
+  @(posedge cfg.otp_clk_rst_vif.clk);
+  #1ns;
+  cfg.misc_vif.otp_macro_req.valid = 1'b0;
+  cfg.misc_vif.otp_macro_req.addr  = '0;
+  cfg.misc_vif.otp_macro_req.size  = '0;
+  cfg.misc_vif.otp_macro_req.wdata = '0;
+  while (cfg.misc_vif.otp_macro_rsp.rvalid == 1'b0) begin
+    @(posedge cfg.otp_clk_rst_vif.clk);
+    #1ns;
+  end
+  otp_err = cfg.misc_vif.otp_macro_rsp.err;
+  if (wr_check) begin
+    // start background check as soon as current command has finished (ready is high)
+    fork begin
+      automatic logic [otp_ctrl_macro_pkg::OtpAddrWidth-1:0] addr      = otp_addr;
+      automatic logic [otp_ctrl_macro_pkg::OtpSizeWidth-1:0] size      = otp_size;
+      automatic otp_ctrl_macro_pkg::otp_macro_data_t         data_init = rdata;
+      automatic otp_ctrl_macro_pkg::otp_macro_data_t         wdata     = otp_wdata;
+      automatic otp_ctrl_macro_pkg::err_e                    err       = otp_err;
+
+      otp_ctrl_macro_pkg::otp_macro_data_t rdata_post, data_exp;
+      otp_ctrl_macro_pkg::otp_macro_data_t err_exp;
+
+      logic blank_err;
+      blank_err = ((data_init & wdata) != data_init);
+
+      wait(cfg.misc_vif.otp_macro_rsp.ready === 1'b1);
+      repeat(2) @(posedge cfg.otp_clk_rst_vif.clk);
+      rram_ctrl_base_vseq::otp_bkdr_read(addr, size, rdata_post, intg_err);
+
+      if (~raw) begin
+        if (intg_err != '0) begin
+          `uvm_error("OTP write integrity error", $sformatf("addr=0x%x size=%0d intg_err=%x",
+                     otp_addr, otp_size, intg_err));
+        end
+      end
+      if (blank_err) begin
+        err_exp = otp_ctrl_macro_pkg::MacroWriteBlankError;
+        if (err !== err_exp) begin
+          `uvm_error("OTP write no-wr-blank error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                     otp_addr, otp_size, err_exp, err));
+        end
+      end else begin
+        err_exp = otp_ctrl_macro_pkg::NoError;
+        if (err !== err_exp) begin
+          `uvm_error("OTP write unexpected error", $sformatf("addr=0x%x size=%0d exp: %x is: %x",
+                     otp_addr, otp_size, err_exp, err));
+        end
+      end
+      data_exp = data_init | wdata;
+      `uvm_info(`gfn, $sformatf("OTP Write Check: otp_addr=0x%x otp_size=0x%x otp_wdata=0x%x",
+                addr, size, wdata), UVM_MEDIUM)
+      if (rdata_post !== data_exp) begin
+        `uvm_error("OTP write check error", $sformatf("addr=0x%x data=0x%x size=%0d exp: %x is: %x",
+                   addr, wdata, size, data_exp, rdata_post));
+      end
+    end
+    join_none
+    @(posedge cfg.otp_clk_rst_vif.clk);
+  end
+
+endtask : otp_write

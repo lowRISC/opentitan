@@ -35,11 +35,17 @@ int main(int argc, char **argv) {
                      ".u_flash_ctrl.u_eflash.u_flash."
                      "gen_prim_flash_banks[1].u_prim_flash_bank.u_mem",
                  0x80000 / 8, 8);
+  MemArea rram(top_scope + ".u_rram_macro.u_data_array", 0x100000 / 16, 16);
+
   // Start with the flash region erased. Future loads can overwrite.
   std::vector<uint8_t> all_ones(flash0.GetSizeBytes());
   std::fill(all_ones.begin(), all_ones.end(), 0xffu);
   flash0.Write(/*word_offset=*/0, all_ones);
   flash1.Write(/*word_offset=*/0, all_ones);
+
+  std::vector<uint8_t> all_zeros(rram.GetSizeBytes());
+  std::fill(all_zeros.begin(), all_zeros.end(), 0x00u);
+  rram.Write(/*word_offset=*/0, all_zeros);
 
   MemArea otp(top_scope + ".u_otp_macro." + ram1p_adv_scope, 0x4000 / 4, 4);
 
@@ -47,6 +53,7 @@ int main(int argc, char **argv) {
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
   memutil.RegisterMemoryArea("flash0", 0x20000000u, &flash0);
   memutil.RegisterMemoryArea("flash1", 0x20080000u, &flash1);
+  memutil.RegisterMemoryArea("rram", 0x30000000u, &rram);
   memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */, &otp);
   simctrl.RegisterExtension(&memutil);
 

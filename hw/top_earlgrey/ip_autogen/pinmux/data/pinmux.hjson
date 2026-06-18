@@ -349,13 +349,13 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "57",
+      default: "60",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "75",
+      default: "76",
       local: "true"
     },
     { name: "NMioPads",

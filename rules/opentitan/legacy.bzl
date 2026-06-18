@@ -6,6 +6,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_vmem",
     "scramble_flash",
+    "scramble_rram",
     _obj_transform = "obj_transform",
 )
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
@@ -99,7 +100,7 @@ vmem_file = rv_rule(
             default = 64,
             doc = "Word size of VMEM file",
             mandatory = True,
-            values = [32, 64],
+            values = [32, 64, 128],
         ),
     },
 )
@@ -134,6 +135,37 @@ scramble_flash_vmem = rv_rule(
         ),
         "_tool": attr.label(
             default = "@//util/design:gen-flash-img",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+def _scramble_rram_vmem_impl(ctx):
+    outputs = [scramble_rram(ctx, suffix = "src.vmem")]
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs),
+        ),
+    ]
+
+scramble_rram_vmem = rv_rule(
+    implementation = _scramble_rram_vmem_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True),
+        "otp": attr.label(allow_single_file = True),
+        "top_secret_cfg": attr.label(
+            allow_single_file = True,
+            default = "//hw/top:secrets",
+            doc = "Generated top configuration file including secrets.",
+        ),
+        "otp_data_perm": attr.label(
+            default = "//util/design/data:data_perm",
+            doc = "Option to indicate OTP VMEM file bit layout.",
+        ),
+        "_tool": attr.label(
+            default = "@//util/design:gen-rram-img",
             executable = True,
             cfg = "exec",
         ),

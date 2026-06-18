@@ -18,6 +18,10 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _rom_ext_size = LENGTH(eflash) / 2;
 _rom_ext_start_address = ORIGIN(eflash);
 
+<<<<<<< HEAD
 REGION_ALIAS("rom_ext_flash", eflash);
+=======
+REGION_ALIAS("rom_ext_nvm", rram);
+>>>>>>> cb897020ae ([rom_ext,sw] rename section rom_ext_flash to rom_ext_nvm)
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld

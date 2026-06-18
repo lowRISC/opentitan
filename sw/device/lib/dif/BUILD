@@ -55,6 +55,7 @@ DIFS = {
     },
     "entropy_src": {},
     "flash_ctrl": {},
+    "rram_ctrl": {},
     "gpio": {},
     "hmac": {},
     "i2c": {},

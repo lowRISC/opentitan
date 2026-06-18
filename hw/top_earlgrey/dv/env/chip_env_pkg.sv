@@ -87,6 +87,8 @@ package chip_env_pkg;
     FlashBank1Data,
     FlashBank0Info,
     FlashBank1Info,
+    RramData,
+    RramInfo,
     ICacheWay0Tag,
     ICacheWay1Tag,
     ICacheWay0Data,

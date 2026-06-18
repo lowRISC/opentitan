@@ -63,6 +63,7 @@
       rv_dm.mem
       sram_ctrl_main.ram
       flash_ctrl.mem
+      rram_ctrl.host
     ]
     rv_core_ibex.cored:
     [
@@ -76,8 +77,11 @@
       spi_host1
       usbdev
       flash_ctrl.core
-      flash_ctrl.prim
       flash_ctrl.mem
+      flash_ctrl.prim
+      rram_ctrl.core
+      rram_ctrl.host
+      rram_macro.prim
       aes
       entropy_src
       csrng
@@ -103,8 +107,11 @@
       spi_host1
       usbdev
       flash_ctrl.core
-      flash_ctrl.prim
       flash_ctrl.mem
+      flash_ctrl.prim
+      rram_ctrl.core
+      rram_ctrl.host
+      rram_macro.prim
       aes
       entropy_src
       csrng
@@ -403,6 +410,72 @@
             hart: 0x20000000
           }
           size_byte: 0x100000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rram_ctrl.core
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x41010000
+          }
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rram_macro.prim
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rram_macro
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x41018000
+          }
+          size_byte: 0x10
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rram_ctrl.host
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x30000000
+          }
+          size_byte: 0x200000
         }
       ]
       xbar: false
@@ -887,6 +960,45 @@
       default: ""
       domain: Main
       top_signame: flash_ctrl_mem_tl
+      index: -1
+    }
+    {
+      name: tl_rram_ctrl__core
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: rram_ctrl_core_tl
+      index: -1
+    }
+    {
+      name: tl_rram_macro__prim
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: rram_macro_prim_tl
+      index: -1
+    }
+    {
+      name: tl_rram_ctrl__host
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: rram_ctrl_host_tl
       index: -1
     }
     {

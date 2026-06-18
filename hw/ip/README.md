@@ -24,6 +24,8 @@
 | [`otp_macro`]    | OTP macro simulation model and CSR block                                                                                          |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
+| [`rram_ctrl`]    | Interfaces and manages integrated non-volatile RRAM memory; supports scrambling, integrity, secure wipe and emulated OTP access.  |
+| [`rram_macro`]   | Open-source emulation model of the RRAM macro                                                                                     |
 | [`rv_dm`]        | Enables debug support for Ibex, access protected by life cycle                                                                    |
 | [`rv_timer`]     | Memory-mapped timer unit implementing RISC-V mtime and mtimecmp registers                                                         |
 | [`soc_dbg_ctrl`] | Control module to enable or disable debug access                                                                                  |
@@ -57,6 +59,8 @@
 [`otp_macro`]: ./otp_macro/README.md
 [`pattgen`]: ./pattgen/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md
+[`rram_ctrl`]: ./rram_ctrl/README.md
+[`rram_macro`]: ./rram_macro/README.md
 [`rv_dm`]: ./rv_dm/README.md
 [`rv_timer`]: ./rv_timer/README.md
 [`soc_dbg_ctrl`]: ./soc_dbg_ctrl/README.md

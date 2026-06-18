@@ -46,6 +46,16 @@
 #define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x100000
 
 /**
+ * Memory base for host memory on rram_ctrl in top earlgrey.
+ */
+#define TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR 0x30000000
+
+/**
+ * Memory size for host memory on rram_ctrl in top earlgrey.
+ */
+#define TOP_EARLGREY_RRAM_CTRL_HOST_SIZE_BYTES 0x200000
+
+/**
  * Memory base for ram memory on sram_ctrl_main in top earlgrey.
  */
 #define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR 0x10000000
@@ -593,6 +603,40 @@
  * `TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x80
+/**
+ * Peripheral base address for core device on rram_ctrl in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR 0x41010000
+
+/**
+ * Peripheral size for core device on rram_ctrl in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR and
+ * `TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RRAM_CTRL_CORE_SIZE_BYTES 0x200
+/**
+ * Peripheral base address for prim device on rram_macro in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_RRAM_MACRO_PRIM_BASE_ADDR 0x41018000
+
+/**
+ * Peripheral size for prim device on rram_macro in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_RRAM_MACRO_PRIM_BASE_ADDR and
+ * `TOP_EARLGREY_RRAM_MACRO_PRIM_BASE_ADDR + TOP_EARLGREY_RRAM_MACRO_PRIM_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_RRAM_MACRO_PRIM_SIZE_BYTES 0x10
 /**
  * Peripheral base address for regs device on rv_dm in top earlgrey.
  *

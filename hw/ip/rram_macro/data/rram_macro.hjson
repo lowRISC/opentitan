@@ -1,0 +1,267 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+
+{
+  name:               "rram_macro",
+  human_name:         "RRAM macro",
+  one_line_desc:      "Open-source emulation model of the RRAM macro",
+  one_paragraph_desc: '''
+  Open-source emulation model of the RRAM macro.
+  It supports a large data array and a small info array that are both emulated with prim_ram_1p.
+  It supports read and write commands.
+  Each read command returns 128b of data stored at a specific address in the RRAM.
+  The write command writes 128b of data to a store buffer which is emulated with a FIFO and writes
+  the content of the FIFO to the RRAM data or info array once the wr_last signal is set.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "46",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv"
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_rram_macro",
+  revisions: [
+      {
+          version:            "0.1.0",
+          life_stage:         "L1",
+          design_stage:       "D1",
+          verification_stage: "V1",
+          commit_id:          "7049fd0d5d48e20772f8ebf32b240faa0dad5528",
+      },
+  ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+  ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", name: "prim"}
+  ],
+  available_input_list: [
+    { name: "tck", desc: "jtag clock" },
+    { name: "tms", desc: "jtag tms" },
+    { name: "tdi", desc: "jtag input" },
+  ],
+  available_output_list: [
+    { name: "tdo", desc: "jtag output" },
+  ],
+
+  scan: "true",       // Enable `scanmode_i` port
+  scan_en: "true",    // Enable `scan_en_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
+
+  param_list: [
+    // written by topgen
+    { name:    "TotalPages",
+      desc:    "Total number of data pages",
+      type:    "int"
+      default: "4096",
+      expose:  "true"
+    },
+    { name:    "DataWidth",
+      desc:    "RRAM word data width",
+      type:    "int"
+      default: "128",
+      expose:  "true"
+    },
+    { name:    "WordsPerPage",
+      desc:    "Number of words per page",
+      type:    "int"
+      default: "32",
+      expose:  "true"
+    },
+    { name:    "TotalInfoPages",
+      desc:    "Total number of info pages",
+      type:    "int"
+      default: "8",
+      expose:  "true"
+    },
+    { name:    "MaxWrWords",
+      desc:    "Maximum number of words per write",
+      type:    "int"
+      default: "32",
+      expose:  "true"
+    },
+  ],
+
+  inter_signal_list: [
+    { struct:  "rram_macro",
+      package: "rram_ctrl_pkg",
+      type:    "req_rsp"
+      act:     "rsp"
+      name:    "rram_macro"
+    },
+    { struct:  "lc_tx",
+      package: "lc_ctrl_pkg",
+      type:    "uni"
+      act:     "rcv"
+      name:    "lc_nvm_debug_en"
+    },
+    // AST observability control
+    { struct:  "ast_obs_ctrl",
+      type:    "uni",
+      name:    "obs_ctrl",
+      act:     "rcv",
+      package: "ast_pkg"
+      desc:    "AST observability control signals."
+    },
+    // rram macro observe bus
+    { struct:  "logic",
+      type:    "uni",
+      name:    "rram_obs",
+      act:     "req",
+      width:   "8",
+      package: ""
+      desc:    "AST observability bus."
+    }
+  ]
+
+  regwidth: "32",
+  registers: {
+    prim: [
+      {
+        name: "CSR0_REGWEN",
+        desc: "",
+        fields: [
+          {
+            bits: "0",
+            name: "field0",
+            swaccess: "rw0c",
+            hwaccess: "none",
+            resval: "1",
+            tags: [],
+            desc: "",
+            enum: []
+          }
+        ],
+        hwext: "False",
+        hwqe: "False",
+        hwre: "False",
+        tags: [],
+        shadowed: "False"
+      },
+      {
+        name: "CSR1",
+        desc: "",
+        fields: [
+          {
+            bits: "7:0",
+            name: "field0",
+            swaccess: "rw",
+            hwaccess: "hro",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "12:8",
+            name: "field1",
+            swaccess: "rw",
+            hwaccess: "hro",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          }
+        ],
+        hwext: "False",
+        hwqe: "False",
+        hwre: "False",
+        tags: [],
+        shadowed: "False",
+        regwen: "CSR0_REGWEN"
+      },
+      {
+        name: "CSR2",
+        desc: "",
+        fields: [
+          {
+            bits: "0",
+            name: "field0",
+            swaccess: "rw1c",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "1",
+            name: "field1",
+            swaccess: "rw1c",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "2",
+            name: "field2",
+            swaccess: "rw1c",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "3",
+            name: "field3",
+            swaccess: "rw",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "4",
+            name: "field4",
+            swaccess: "rw1c",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "5",
+            name: "field5",
+            swaccess: "rw1c",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "6",
+            name: "field6",
+            swaccess: "rw1c",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          },
+          {
+            bits: "7",
+            name: "field7",
+            swaccess: "rw",
+            hwaccess: "hrw",
+            resval: "0",
+            tags: [],
+            desc: "",
+            enum: []
+          }
+        ],
+        hwext: "False",
+        hwqe: "False",
+        hwre: "False",
+        tags: [],
+        shadowed: "False"
+      },
+    ],
+  }
+}

@@ -91,6 +91,10 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         default = signed_bin if signed_bin else binary
         rom = None
         rom32 = None
+    elif ctx.attr.kind == "rram":
+        default = signed_bin if signed_bin else binary
+        rom = None
+        rom32 = None
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 

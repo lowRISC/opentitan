@@ -23,6 +23,6 @@ _rom_ext_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
 
-REGION_ALIAS("rom_ext_flash", rom_ext_virtual);
+REGION_ALIAS("rom_ext_nvm", rom_ext_virtual);
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld
