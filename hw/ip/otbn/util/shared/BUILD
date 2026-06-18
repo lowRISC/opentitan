@@ -116,6 +116,14 @@ py_library(
 py_library(
     name = "insn_yaml",
     srcs = ["insn_yaml.py"],
+    data = [
+        "//hw/ip/otbn/data:base-insns.yml",
+        "//hw/ip/otbn/data:bignum-insns.yml",
+        "//hw/ip/otbn/data:csr.yml",
+        "//hw/ip/otbn/data:enc-schemes.yml",
+        "//hw/ip/otbn/data:insns.yml",
+        "//hw/ip/otbn/data:wsr.yml",
+    ],
     deps = [
         ":encoding",
         ":encoding_scheme",
