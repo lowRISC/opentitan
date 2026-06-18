@@ -40,11 +40,6 @@ module prim_rom import prim_rom_pkg::*; #(
     end
   end
 
-// Temporarily deactivate the ROM endpoint to allow bit stream splicing to work at the cost
-// of making this endpoint unavailable through the bkdr loader. TODO: remove this once the
-// SW/infrastructure is adapted.
-`ifdef BKDR_LOADER_ENDPOINT_ENA
-
   // Backdoor loading
   bkdr_loader_pkg::bkdr_req_t bkdr_req;
   bkdr_loader_pkg::bkdr_rsp_t bkdr_rsp;
@@ -72,12 +67,6 @@ module prim_rom import prim_rom_pkg::*; #(
   end
 
   assign unused_bkdr = ^{bkdr_req, bkdr_rsp};
-
-`else
-
-  bkdr_loader_pkg::bkdr_req_t bkdr_req;
-  bkdr_loader_pkg::bkdr_rsp_t bkdr_rsp;
-`endif
 
   `include "prim_util_memload.svh"
 
