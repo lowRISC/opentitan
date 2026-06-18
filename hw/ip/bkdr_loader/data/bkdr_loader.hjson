@@ -68,7 +68,7 @@
             swaccess: "ro",
             hwaccess: "hwo",
             desc: '''
-                  Whether an error happened on the last access. Clear on read.
+                  Target index is currently misconfigured.
                   ''',
           }
         ]
@@ -84,7 +84,8 @@
             swaccess: "wo",
             hwaccess: "hro",
             desc: '''
-                  Write 1'b1 switches bkdr loader to mission mode.
+                  Write 1 to trigger the bkdr_loader to switch to mission mode.
+                  After this, the bkdr_loader cannot be used until the next reset.
                   ''',
           },
           { bits: "1"

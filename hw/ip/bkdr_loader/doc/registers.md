@@ -75,10 +75,10 @@ Status register
 {"reg": [{"name": "ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                  |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                     |
-|   0    |   ro   |    x    | ERROR  | Whether an error happened on the last access. Clear on read. |
+|  Bits  |  Type  |  Reset  | Name   | Description                              |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------|
+|  31:1  |        |         |        | Reserved                                 |
+|   0    |   ro   |    x    | ERROR  | Target index is currently misconfigured. |
 
 ## CONTROL
 Control register
@@ -92,13 +92,13 @@ Control register
 {"reg": [{"name": "DONE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 6}, {"name": "TARGET_IDX", "bits": 8, "attr": ["wo"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                          |
-|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------|
-| 31:16  |        |         |            | Reserved                                                             |
-|  15:8  |   wo   |   0x0   | TARGET_IDX | The bkdr memory index to write to.                                   |
-|  7:2   |        |         |            | Reserved                                                             |
-|   1    |   wo   |   0x0   | WRITE_ENA  | If set, a bkdr write is launched when writing to the index register. |
-|   0    |   wo   |   0x0   | DONE       | Write 1'b1 switches bkdr loader to mission mode.                     |
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                    |
+|:------:|:------:|:-------:|:-----------|:-------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |        |         |            | Reserved                                                                                                                       |
+|  15:8  |   wo   |   0x0   | TARGET_IDX | The bkdr memory index to write to.                                                                                             |
+|  7:2   |        |         |            | Reserved                                                                                                                       |
+|   1    |   wo   |   0x0   | WRITE_ENA  | If set, a bkdr write is launched when writing to the index register.                                                           |
+|   0    |   wo   |   0x0   | DONE       | Write 1 to trigger the bkdr_loader to switch to mission mode. After this, the bkdr_loader cannot be used until the next reset. |
 
 ## NUM_BKDR_TARGETS
 Number of bkdr targets available.
