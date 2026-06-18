@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -147,33 +148,37 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
     }
   }
 
+  uintptr_t is_bad = 0;
+
   // Check that the first 32 bits of A match the AES-KWP fixed prefix.
-  if (block.data[0] != 0xa65959a6) {
-    *success = kHardenedBoolFalse;
-    return aes_end(NULL);
-  }
+  is_bad |= (block.data[0] ^ 0xa65959a6);
 
   // Decode the next 32 bits of A as the plaintext length.
   size_t plaintext_len = __builtin_bswap32(block.data[1]);
-  size_t pad_len =
-      kSemiblockBytes * (ciphertext_semiblocks - 1) - plaintext_len;
+  size_t total_len = kSemiblockBytes * (ciphertext_semiblocks - 1);
+  size_t pad_len = total_len - plaintext_len;
 
   // Check that the padding length is valid.
-  if (pad_len >= kSemiblockBytes) {
-    *success = kHardenedBoolFalse;
-    return aes_end(NULL);
-  }
+  // If invalid, mark bad and clamp pad_len to 0.
+  ct_boolw_t valid_pad = ct_sltuw(pad_len, kSemiblockBytes);
+  is_bad |= ~valid_pad;
+  pad_len = ct_cmovw(valid_pad, pad_len, 0);
+  plaintext_len = ct_cmovw(valid_pad, plaintext_len, total_len);
 
   // Check that the padding bytes are zero.
-  if (pad_len != 0) {
-    uint8_t exp_pad[kSemiblockBytes];
-    memset(exp_pad, 0, kSemiblockBytes);
-    unsigned char *pad_start = ((unsigned char *)r) + plaintext_len;
-    if (consttime_memeq_byte(pad_start, exp_pad, pad_len) !=
-        kHardenedBoolTrue) {
-      *success = kHardenedBoolFalse;
-      return aes_end(NULL);
-    }
+  unsigned char *tail = ((unsigned char *)r) + total_len - kSemiblockBytes;
+  uint8_t bad_padding = 0;
+  for (size_t i = 0; i < kSemiblockBytes; i++) {
+    size_t threshold = kSemiblockBytes - pad_len;
+    ct_boolw_t not_padding = ct_sltuw(i, threshold);
+    uint8_t is_padding = (uint8_t)(~not_padding);
+    bad_padding |= tail[i] & is_padding;
+  }
+  is_bad |= bad_padding;
+
+  if (launderw(is_bad) != 0) {
+    *success = kHardenedBoolFalse;
+    return aes_end(NULL);
   }
 
   // Copy the plaintext into the destination buffer.
