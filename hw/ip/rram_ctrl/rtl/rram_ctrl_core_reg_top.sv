@@ -543,6 +543,7 @@ module rram_ctrl_core_reg_top (
   logic std_fault_status_phy_arb_err_qs;
   logic std_fault_status_ctrl_fsm_err_qs;
   logic std_fault_status_ctrl_cnt_err_qs;
+  logic std_fault_status_ctrl_fifo_err_qs;
   logic fault_status_we;
   logic fault_status_lcmgr_op_err_qs;
   logic fault_status_lcmgr_mp_err_qs;
@@ -5395,6 +5396,33 @@ module rram_ctrl_core_reg_top (
     .qs     (std_fault_status_ctrl_cnt_err_qs)
   );
 
+  //   F[ctrl_fifo_err]: 12:12
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_std_fault_status_ctrl_fifo_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.std_fault_status.ctrl_fifo_err.de),
+    .d      (hw2reg.std_fault_status.ctrl_fifo_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.std_fault_status.ctrl_fifo_err.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (std_fault_status_ctrl_fifo_err_qs)
+  );
+
 
   // R[fault_status]: V(False)
   //   F[lcmgr_op_err]: 0:0
@@ -7097,6 +7125,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[9] = std_fault_status_phy_arb_err_qs;
         reg_rdata_next[10] = std_fault_status_ctrl_fsm_err_qs;
         reg_rdata_next[11] = std_fault_status_ctrl_cnt_err_qs;
+        reg_rdata_next[12] = std_fault_status_ctrl_fifo_err_qs;
       end
 
       addr_hit[56]: begin
