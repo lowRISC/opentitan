@@ -1955,7 +1955,7 @@
           default: "'0"
           inst_name: otp_ctrl
           domain: Main
-          top_signame: flash_ctrl_otp
+          top_signame: rram_ctrl_otp_key
           index: -1
         }
         {
@@ -6113,8 +6113,6 @@
           width: 1
           inst_name: flash_ctrl
           default: ""
-          end_idx: -1
-          top_type: one-to-one
           top_signame: flash_ctrl_otp
           index: -1
         }
@@ -6300,10 +6298,7 @@
           act: req
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: lc_ctrl_lc_nvm_rma_ack
-          index: 0
+          index: -1
         }
         {
           name: rma_seed
@@ -6326,12 +6321,7 @@
           act: req
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          domain: Main
-          top_signame: pwrmgr_pwr_nvm
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: keymgr
@@ -6341,10 +6331,6 @@
           act: req
           width: 1
           inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: flash_ctrl_keymgr
           index: -1
         }
         {
@@ -6530,6 +6516,8 @@
           width: 1
           inst_name: rram_ctrl
           default: ""
+          end_idx: -1
+          top_type: one-to-one
           top_signame: rram_ctrl_otp_key
           index: -1
         }
@@ -6644,7 +6632,10 @@
           act: req
           width: 1
           inst_name: rram_ctrl
-          index: -1
+          default: ""
+          domain: Main
+          top_signame: lc_ctrl_lc_nvm_rma_ack
+          index: 0
         }
         {
           name: rma_seed
@@ -6667,7 +6658,12 @@
           act: req
           width: 1
           inst_name: rram_ctrl
+          default: ""
+          domain: Main
+          top_signame: pwrmgr_pwr_nvm
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: keymgr
@@ -6677,6 +6673,8 @@
           act: req
           width: 1
           inst_name: rram_ctrl
+          default: ""
+          top_signame: rram_ctrl_keymgr
           index: -1
         }
         {
@@ -8382,8 +8380,7 @@
           width: 1
           inst_name: keymgr
           default: ""
-          domain: Main
-          top_signame: flash_ctrl_keymgr
+          top_signame: keymgr_flash
           index: -1
         }
         {
@@ -10666,11 +10663,7 @@
       [
         entropy_src.entropy_src_hw_if
       ]
-      flash_ctrl.keymgr:
-      [
-        keymgr.flash
-      ]
-      flash_ctrl.otp:
+      rram_ctrl.otp_key:
       [
         otp_ctrl.nvm_otp_key
       ]
@@ -10688,7 +10681,7 @@
       ]
       pwrmgr.pwr_nvm:
       [
-        flash_ctrl.pwrmgr
+        rram_ctrl.pwrmgr
       ]
       pwrmgr.pwr_rst:
       [
@@ -10735,7 +10728,7 @@
       ]
       lc_ctrl.lc_nvm_rma_ack:
       [
-        flash_ctrl.rma_ack
+        rram_ctrl.rma_ack
         otbn.lc_rma_ack
       ]
       usbdev.usb_dp_pullup:
@@ -11237,7 +11230,9 @@
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
-      rram_ctrl.otp_key
+      flash_ctrl.otp
+      rram_ctrl.keymgr
+      keymgr.flash
       pinmux.dft_jtag
       otp_ctrl.otp_broadcast
       csrng.otp_en_csrng_sw_app_read
@@ -22170,7 +22165,7 @@
         default: "'0"
         inst_name: otp_ctrl
         domain: Main
-        top_signame: flash_ctrl_otp
+        top_signame: rram_ctrl_otp_key
         index: -1
       }
       {
@@ -24975,8 +24970,6 @@
         width: 1
         inst_name: flash_ctrl
         default: ""
-        end_idx: -1
-        top_type: one-to-one
         top_signame: flash_ctrl_otp
         index: -1
       }
@@ -25162,10 +25155,7 @@
         act: req
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: lc_ctrl_lc_nvm_rma_ack
-        index: 0
+        index: -1
       }
       {
         name: rma_seed
@@ -25188,12 +25178,7 @@
         act: req
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        domain: Main
-        top_signame: pwrmgr_pwr_nvm
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: keymgr
@@ -25203,10 +25188,6 @@
         act: req
         width: 1
         inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: flash_ctrl_keymgr
         index: -1
       }
       {
@@ -25301,6 +25282,8 @@
         width: 1
         inst_name: rram_ctrl
         default: ""
+        end_idx: -1
+        top_type: one-to-one
         top_signame: rram_ctrl_otp_key
         index: -1
       }
@@ -25415,7 +25398,10 @@
         act: req
         width: 1
         inst_name: rram_ctrl
-        index: -1
+        default: ""
+        domain: Main
+        top_signame: lc_ctrl_lc_nvm_rma_ack
+        index: 0
       }
       {
         name: rma_seed
@@ -25438,7 +25424,12 @@
         act: req
         width: 1
         inst_name: rram_ctrl
+        default: ""
+        domain: Main
+        top_signame: pwrmgr_pwr_nvm
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: keymgr
@@ -25448,6 +25439,8 @@
         act: req
         width: 1
         inst_name: rram_ctrl
+        default: ""
+        top_signame: rram_ctrl_keymgr
         index: -1
       }
       {
@@ -26421,8 +26414,7 @@
         width: 1
         inst_name: keymgr
         default: ""
-        domain: Main
-        top_signame: flash_ctrl_keymgr
+        top_signame: keymgr_flash
         index: -1
       }
       {
@@ -33075,22 +33067,10 @@
         default: entropy_src_pkg::ENTROPY_SRC_HW_IF_RSP_DEFAULT
       }
       {
-        package: flash_ctrl_pkg
-        struct: keymgr_flash
-        domain: Main
-        signame: flash_ctrl_keymgr
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT
-      }
-      {
         package: otp_ctrl_pkg
         struct: nvm_otp_key_req
         domain: Main
-        signame: flash_ctrl_otp_req
+        signame: rram_ctrl_otp_key_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -33102,7 +33082,7 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_rsp
         domain: Main
-        signame: flash_ctrl_otp_rsp
+        signame: rram_ctrl_otp_key_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -35212,7 +35192,7 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_req
         domain: Main
-        signame: rram_ctrl_otp_key_req
+        signame: flash_ctrl_otp_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -35222,9 +35202,29 @@
         package: otp_ctrl_pkg
         struct: nvm_otp_key_rsp
         domain: Main
-        signame: rram_ctrl_otp_key_rsp
+        signame: flash_ctrl_otp_rsp
         width: 1
         type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: rram_ctrl_pkg
+        struct: keymgr_rram
+        signame: rram_ctrl_keymgr
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: flash_ctrl_pkg
+        struct: keymgr_flash
+        signame: keymgr_flash
+        domain: Main
+        width: 1
+        type: uni
         end_idx: -1
         default: ""
       }
