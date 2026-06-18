@@ -277,6 +277,7 @@ impl JtagChain for OpenOcdJtagChain {
         let target = match tap {
             JtagTap::RiscvTap => include_str!(env!("openocd_riscv_target_cfg")),
             JtagTap::LcTap => include_str!(env!("openocd_lc_target_cfg")),
+            JtagTap::BackdoorTap => include_str!(env!("openocd_fpga_backdoor_target_cfg")),
         };
         self.openocd.execute(target)?;
 

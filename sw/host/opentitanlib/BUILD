@@ -216,6 +216,7 @@ rust_library(
         ":ottf",
         "//util/openocd/target:lowrisc-earlgrey.cfg",
         "//util/openocd/target:lowrisc-earlgrey-lc.cfg",
+        "//util/openocd/target:lowrisc-earlgrey-fpga-backdoor.cfg",
         "//sw/host/opentitanlib/bindgen:rom_error_enum",
     ],
     crate_features = select({
@@ -237,6 +238,7 @@ rust_library(
         "ottf": "$(location :ottf)",
         "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey.cfg)",
         "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-lc.cfg)",
+        "openocd_fpga_backdoor_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-fpga-backdoor.cfg)",
     },
     deps = [
         "//sw/host/opentitanlib/bindgen",
