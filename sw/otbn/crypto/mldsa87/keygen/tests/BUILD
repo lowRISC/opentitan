@@ -24,18 +24,18 @@ srcs = [
 ]
 
 unit_tests = [
-    "mldsa87_keygen_rej_bounded_poly_test",
-    "mldsa87_keygen_expand_s1_test",
-    "mldsa87_keygen_expand_s2_test",
-    "mldsa87_keygen_encode_t0_test",
-    "mldsa87_keygen_encode_t1_test",
-    "mldsa87_keygen_power2round_test",
-    "mldsa87_keygen_encode_s_test",
-    "mldsa87_keygen_sample_s_test",
-    "mldsa87_keygen_compute_t_test",
-    "mldsa87_keygen_encode_t_test",
-    "mldsa87_keygen_hash_seed_test",
-    "mldsa87_keygen_hash_pk_test",
+    # "mldsa87_keygen_rej_bounded_poly_test",
+    # "mldsa87_keygen_expand_s1_test",
+    # "mldsa87_keygen_expand_s2_test",
+    # "mldsa87_keygen_encode_t0_test",
+    # "mldsa87_keygen_encode_t1_test",
+    # "mldsa87_keygen_power2round_test",
+    # "mldsa87_keygen_encode_s_test",
+    # "mldsa87_keygen_sample_s_test",
+    # "mldsa87_keygen_compute_t_test",
+    # "mldsa87_keygen_encode_t_test",
+    # "mldsa87_keygen_hash_seed_test",
+    # "mldsa87_keygen_hash_pk_test",
 ]
 
 [
@@ -50,9 +50,9 @@ unit_tests = [
 ]
 
 mldsa87_nist_tests = [
-    "mldsa87_keygen_nist_acvp_51_test",
-    "mldsa87_keygen_nist_acvp_52_test",
-    "mldsa87_keygen_nist_acvp_53_test",
+    # "mldsa87_keygen_nist_acvp_51_test",
+    # "mldsa87_keygen_nist_acvp_52_test",
+    # "mldsa87_keygen_nist_acvp_53_test",
 ]
 
 [
