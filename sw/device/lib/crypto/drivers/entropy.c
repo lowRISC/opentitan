@@ -478,6 +478,8 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     if (timeout == 0) {
       return OTCRYPTO_RECOV_ERR;
     }
+    reg = abs_mmio_read32(sts_reg_addr);
+    HARDENED_CHECK_EQ(bitfield_bit32_read(reg, rdy_bit_offset), true);
   }
 
 #define ENTROPY_CMD(m, i) ((bitfield_field32_t){.mask = m, .index = i})
@@ -532,6 +534,8 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
       if (timeout == 0) {
         return OTCRYPTO_RECOV_ERR;
       }
+      reg = abs_mmio_read32(sts_reg_addr);
+      HARDENED_CHECK_EQ(bitfield_bit32_read(reg, reg_rdy_bit_offset), true);
     }
     abs_mmio_write32(cmd_reg_addr, cmd.seed_material->data[i]);
   }
@@ -666,6 +670,8 @@ static status_t edn_ready_block(uint32_t edn_address) {
   if (timeout == 0) {
     return OTCRYPTO_RECOV_ERR;
   }
+  reg = abs_mmio_read32(edn_address + EDN_SW_CMD_STS_REG_OFFSET);
+  HARDENED_CHECK_EQ(bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT), true);
 
   if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
     return OTCRYPTO_RECOV_ERR;
