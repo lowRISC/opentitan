@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, bail};
 use clap::{Args, Subcommand};
 use std::any::Any;
 use std::convert::From;
@@ -12,7 +12,9 @@ use std::path::PathBuf;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::io::fpga_backdoor::{BackdoorParams, BackdoorTargetInfo, enter_backdoor_loader};
+use opentitanlib::io::fpga_backdoor::{
+    Backdoor, BackdoorParams, BackdoorTargetInfo, enter_backdoor_loader,
+};
 use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::vmem::{Section, Vmem, Word};
 
@@ -27,6 +29,10 @@ pub enum InternalBackdoorCommand {
     Info(BackdoorInfo),
     /// Read words from a target memory via the backdoor.
     Read(BackdoorRead),
+    /// Write words to a target memory via the backdoor.
+    Write(BackdoorWrite),
+    /// Verify that the contents of some target memory matches some given data.
+    Verify(BackdoorVerify),
 }
 
 #[derive(Debug, Args)]
@@ -208,6 +214,279 @@ impl CommandDispatch for BackdoorRead {
             self.format,
             self.group_vmem_words,
         )?;
+
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct BackdoorWrite {
+    /// Target to write to.
+    pub target: String,
+
+    /// First word address / index to write to.
+    #[arg(long, value_parser = <u32 as ParseInt>::from_str)]
+    pub offset: Option<u32>,
+
+    /// Read back and verify the written data (may take noticeably longer).
+    #[arg(long)]
+    pub verify: bool,
+
+    /// The input source to write
+    #[command(subcommand)]
+    pub input: WriteInput,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum WriteInput {
+    /// Write/verify words given as a whitespace-separated hex string
+    Hex(HexInput),
+    /// Write/verify words that are some repeated clear pattern (e.g. all 0s, 0xA5 repeated)
+    Clear(ClearInput),
+    /// Write/verify words loaded from a Verilog VMEM file
+    Vmem(VmemInput),
+}
+
+#[derive(Args, Debug)]
+pub struct HexInput {
+    /// Input hexadecimal words, with whitespace separating each word
+    #[arg(required = true, num_args = 1..)]
+    pub data: Vec<String>,
+}
+
+#[derive(Args, Debug)]
+pub struct ClearInput {
+    /// The number of cleared words. If unspecified, the remainder of the target is cleared.
+    #[arg(value_parser = <u32 as ParseInt>::from_str)]
+    pub words: Option<u32>,
+
+    /// The pattern (byte) that is repeated.
+    #[arg(long, value_parser = <u8 as ParseInt>::from_str, default_value = "0x00")]
+    pub pattern: u8,
+}
+
+#[derive(Args, Debug)]
+pub struct VmemInput {
+    /// Path to the Verilog VMEM file
+    pub path: PathBuf,
+}
+
+impl WriteInput {
+    fn load_hex_words(hex: &HexInput) -> Result<Vec<Section>> {
+        let words = hex
+            .data
+            .join(" ")
+            .split_whitespace()
+            .map(|word| {
+                let normalized = word
+                    .strip_prefix("0x")
+                    .or_else(|| word.strip_prefix("0X"))
+                    .unwrap_or(word);
+                let normalized = if normalized.len() % 2 != 0 {
+                    format!("0{}", normalized)
+                } else {
+                    String::from(normalized)
+                };
+
+                Ok(Word::new(hex::decode(normalized)?))
+            })
+            .collect::<Result<Vec<_>>>()?;
+
+        Ok(vec![Section {
+            addr: 0,
+            data: words,
+        }])
+    }
+
+    fn load_input(
+        input: &WriteInput,
+        target_info: &BackdoorTargetInfo,
+        offset: Option<u32>,
+    ) -> Result<Vec<Section>> {
+        let mut sections: Vec<Section> = match input {
+            WriteInput::Hex(hex) => WriteInput::load_hex_words(hex)?,
+            WriteInput::Clear(clear) => {
+                let num_bytes = target_info.width.div_ceil(8) as usize;
+                let remaining_words = target_info.depth - offset.unwrap_or(0);
+                let num_words = clear.words.unwrap_or(remaining_words);
+                let data = vec![Word::new(vec![clear.pattern; num_bytes]); num_words as usize];
+                vec![Section { addr: 0, data }]
+            }
+            WriteInput::Vmem(vmem) => {
+                log::info!("Loading VMEM file: {}", vmem.path.display());
+                let vmem_content = fs::read_to_string(&vmem.path)?;
+                let mut vmem = Vmem::from_str(&vmem_content, None)?;
+                vmem.merge_sections(None);
+                vmem.sections().cloned().collect()
+            }
+        };
+
+        // If an offset is given, all sections must be offset by that amount.
+        if let Some(offset) = offset {
+            for section in &mut sections {
+                section.addr += offset;
+            }
+        }
+
+        Ok(sections)
+    }
+}
+
+// Normalize a word to a given number of bits.
+fn normalize_word(word: &mut Word, bits_per_word: usize) {
+    let bytes_per_word = bits_per_word.div_ceil(8);
+    if word.bytes.len() > bytes_per_word {
+        let start = word.bytes.len() - bytes_per_word;
+        word.bytes.drain(..start);
+    } else if word.bytes.len() < bytes_per_word {
+        let mut padded = vec![0u8; bytes_per_word - word.bytes.len()];
+        padded.append(&mut word.bytes);
+        word.bytes = padded;
+    }
+
+    let extra_bits = bits_per_word % 8;
+    if extra_bits > 0 {
+        word.bytes[0] &= 0xFF >> (8 - extra_bits);
+    }
+}
+
+// Check that words read from target memory match input words.
+fn verify_readback(
+    input: &mut [Word],
+    readback: &mut [Word],
+    bits_per_word: usize,
+    mut offset: u32,
+) -> Result<()> {
+    for (write_word, read_word) in readback.iter_mut().zip(input) {
+        normalize_word(write_word, bits_per_word);
+        normalize_word(read_word, bits_per_word);
+        if write_word != read_word {
+            bail!(
+                "Read verification at word {} failed. Expected: {}, Got: {}",
+                offset,
+                hex::encode(write_word.bytes.clone()),
+                hex::encode(read_word.bytes.clone()),
+            );
+        }
+
+        offset += 1;
+    }
+
+    Ok(())
+}
+
+fn write_to_target(
+    backdoor: &mut Backdoor,
+    target_id: &str,
+    input: &WriteInput,
+    offset: Option<u32>,
+    verify: bool,
+) -> Result<()> {
+    // Try and find the requested target.
+    let mut target = backdoor
+        .target_by_id_str(target_id)?
+        .context(format!("FPGA target '{}' not found", target_id))?;
+
+    // Parse the input, which will depend on the given input type.
+    let sections: Vec<Section> = WriteInput::load_input(input, &target.info, offset)?;
+
+    // Perform the write(s)
+    log::info!("Writing to the {}...", target_id);
+    for mut section in sections {
+        log::debug!(
+            "Writing section of size {} to word {} of target {}",
+            section.data.len(),
+            section.addr,
+            target_id
+        );
+        target.write(section.addr, &section.data, false, verify)?;
+
+        // If requested, read back the data and verify against written contents
+        if verify {
+            let mut readback = target.read(section.addr, section.data.len() as u32, false)?;
+            verify_readback(
+                &mut section.data,
+                &mut readback,
+                target.info.width as usize,
+                section.addr,
+            )?;
+        }
+    }
+
+    Ok(())
+}
+
+impl CommandDispatch for BackdoorWrite {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let context = context.downcast_ref::<BackdoorCommand>().unwrap();
+        let backdoor = context.params.create(transport)?;
+        let mut backdoor = backdoor.connect(true)?;
+        write_to_target(
+            &mut backdoor,
+            &self.target,
+            &self.input,
+            self.offset,
+            self.verify,
+        )?;
+
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct BackdoorVerify {
+    /// Target to verify the contents of.
+    pub target: String,
+
+    /// First word address / index to read from.
+    #[arg(long, value_parser = <u32 as ParseInt>::from_str)]
+    pub offset: Option<u32>,
+
+    /// The input source to verify against.
+    #[command(subcommand)]
+    pub input: WriteInput,
+}
+
+impl CommandDispatch for BackdoorVerify {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let context = context.downcast_ref::<BackdoorCommand>().unwrap();
+
+        // Connect to the backdoor and try and find the requested target.
+        let backdoor = context.params.create(transport)?;
+        let mut backdoor = backdoor.connect(true)?;
+        let mut target = backdoor
+            .target_by_id_str(&self.target)?
+            .context(format!("FPGA target '{}' not found", self.target))?;
+
+        // Parse the input, which will depend on the given input type.
+        let sections: Vec<Section> =
+            WriteInput::load_input(&self.input, &target.info, self.offset)?;
+
+        // Read the data and check it matches our input.
+        log::info!("Verifying the {}...", self.target);
+        for mut section in sections {
+            log::debug!(
+                "Verifying section of size {} at word {} of target {}",
+                section.data.len(),
+                section.addr,
+                self.target
+            );
+            let mut readback = target.read(section.addr, section.data.len() as u32, false)?;
+            verify_readback(
+                &mut section.data,
+                &mut readback,
+                target.info.width as usize,
+                section.addr,
+            )?;
+        }
 
         Ok(None)
     }
