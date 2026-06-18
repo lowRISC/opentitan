@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -249,6 +250,15 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   return OTCRYPTO_OK;
 }
 
+/**
+ * Hardware cleanup guard.
+ */
+static void hw_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
+  (void)aes_clear();
+  (void)keymgr_sideload_clear_aes();
+}
+
 otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     const otcrypto_blinded_key_t *key_kek,
                                     otcrypto_word32_buf_t *wrapped_key) {
@@ -257,6 +267,10 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
       wrapped_key->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Guarantees hw_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   // Check the integrity of the key material we are wrapping.
   if (launder32(otcrypto_integrity_blinded_key_check(key_to_wrap)) !=
@@ -316,6 +330,10 @@ otcrypto_status_t otcrypto_key_unwrap(
       unwrapped_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Guarantees hw_wipe_guard() is called on exit.
+  uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
+  (void)hw_cleanup_guard;
 
   *success = kHardenedBoolFalse;
 
