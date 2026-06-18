@@ -9,7 +9,7 @@ Typical usage:
 
 Example:
     python3 -m util.py.scripts.object_size --configs riscv32 \
-        //sw/device/silicon_creator/rom:mask_rom_fpga_cw310.elf
+        //sw/device/silicon_creator/rom:mask_rom_fpga_cw340.elf
 """
 
 import itertools

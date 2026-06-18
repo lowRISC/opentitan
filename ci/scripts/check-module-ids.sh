@@ -13,7 +13,7 @@ set -e
 # save time.
 query_elfs='
     filter(
-        ".*fpga_cw310.*",
+        ".*fpga_cw340.*",
         kind(
             cc_binary,
             rdeps(
