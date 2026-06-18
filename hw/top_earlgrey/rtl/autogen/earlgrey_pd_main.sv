@@ -45,6 +45,10 @@ module earlgrey_pd_main #(
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
+  // parameters for rram_ctrl
+  parameter bit SecRramCtrlScrambleEn = 1,
+  parameter int RramCtrlWrFifoDepth = 4,
+  parameter int RramCtrlRdFifoDepth = 16,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -300,6 +304,12 @@ module earlgrey_pd_main #(
   localparam int SpiHost0NumCS = 1;
   // local parameters for spi_host1
   localparam int SpiHost1NumCS = 1;
+  // local parameters for rram_macro
+  localparam int RramMacroTotalPages = rram_ctrl_pkg::TotalPages;
+  localparam int RramMacroDataWidth = rram_ctrl_pkg::DataWidth;
+  localparam int RramMacroWordsPerPage = rram_ctrl_pkg::WordsPerPage;
+  localparam int RramMacroTotalInfoPages = rram_ctrl_pkg::TotalInfoPages;
+  localparam int RramMacroMaxWrWords = rram_ctrl_pkg::MaxWrWords;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 3;
@@ -315,9 +325,9 @@ module earlgrey_pd_main #(
   localparam bit RvCoreIbexInstructionPipeline = 1'b0;
 
   // Signals
-  logic [56:0] mio_p2d;
-  logic [64:0] mio_d2p;
-  logic [64:0] mio_en_d2p;
+  logic [59:0] mio_p2d;
+  logic [65:0] mio_d2p;
+  logic [65:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -407,6 +417,13 @@ module earlgrey_pd_main #(
   logic        cio_flash_ctrl_tdi_p2d;
   logic        cio_flash_ctrl_tdo_d2p;
   logic        cio_flash_ctrl_tdo_en_d2p;
+  // rram_ctrl
+  // rram_macro
+  logic        cio_rram_macro_tck_p2d;
+  logic        cio_rram_macro_tms_p2d;
+  logic        cio_rram_macro_tdi_p2d;
+  logic        cio_rram_macro_tdo_d2p;
+  logic        cio_rram_macro_tdo_en_d2p;
   // rv_dm
   // rv_plic
   // aes
@@ -423,7 +440,7 @@ module earlgrey_pd_main #(
   // rv_core_ibex
 
 
-  logic [183:0] intr_vector;
+  logic [189:0] intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -550,6 +567,12 @@ module earlgrey_pd_main #(
   logic intr_flash_ctrl_rd_lvl;
   logic intr_flash_ctrl_op_done;
   logic intr_flash_ctrl_corr_err;
+  logic intr_rram_ctrl_wr_empty;
+  logic intr_rram_ctrl_wr_lvl;
+  logic intr_rram_ctrl_rd_full;
+  logic intr_rram_ctrl_rd_lvl;
+  logic intr_rram_ctrl_op_done;
+  logic intr_rram_ctrl_corr_err;
   logic intr_hmac_hmac_done;
   logic intr_hmac_fifo_empty;
   logic intr_hmac_hmac_err;
@@ -670,6 +693,8 @@ module earlgrey_pd_main #(
   logic       rv_dm_debug_req;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
+  rram_ctrl_pkg::rram_macro_req_t       rram_ctrl_rram_macro_req;
+  rram_ctrl_pkg::rram_macro_rsp_t       rram_ctrl_rram_macro_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__cored_req;
@@ -698,6 +723,12 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       flash_ctrl_prim_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_mem_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_mem_tl_rsp;
+  tlul_pkg::tl_h2d_t       rram_ctrl_core_tl_req;
+  tlul_pkg::tl_d2h_t       rram_ctrl_core_tl_rsp;
+  tlul_pkg::tl_h2d_t       rram_macro_prim_tl_req;
+  tlul_pkg::tl_d2h_t       rram_macro_prim_tl_rsp;
+  tlul_pkg::tl_h2d_t       rram_ctrl_host_tl_req;
+  tlul_pkg::tl_d2h_t       rram_ctrl_host_tl_rsp;
   tlul_pkg::tl_h2d_t       hmac_tl_req;
   tlul_pkg::tl_d2h_t       hmac_tl_rsp;
   tlul_pkg::tl_h2d_t       kmac_tl_req;
@@ -757,6 +788,8 @@ module earlgrey_pd_main #(
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
+  otp_ctrl_pkg::nvm_otp_key_req_t       rram_ctrl_otp_key_req;
+  otp_ctrl_pkg::nvm_otp_key_rsp_t       rram_ctrl_otp_key_rsp;
   jtag_pkg::jtag_req_t       pinmux_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
@@ -825,6 +858,12 @@ module earlgrey_pd_main #(
     otp_ctrl_keymgr_owner_seed
   };
 
+  // TODO: remove once RRAM is connected to OTP
+  assign rram_ctrl_otp_key_rsp.data_ack = rram_ctrl_otp_key_req.data_req;
+  assign rram_ctrl_otp_key_rsp.addr_ack = rram_ctrl_otp_key_req.addr_req;
+  assign rram_ctrl_otp_key_rsp.key = '0;
+  assign rram_ctrl_otp_key_rsp.rand_key = '0;
+  assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
 
   // Ibex-specific assignments
   // TODO: This should be further automated in the future.
@@ -1966,8 +2005,102 @@ module earlgrey_pd_main #(
     .mem_tl_o(flash_ctrl_mem_tl_rsp)
   );
 
+  rram_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[42:38]),
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .RndCnstAddrKey(RndCnstRramCtrlAddrKey),
+    .RndCnstDataKey(RndCnstRramCtrlDataKey),
+    .RndCnstAllSeeds(RndCnstRramCtrlAllSeeds),
+    .RndCnstLfsrSeed(RndCnstRramCtrlLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstRramCtrlLfsrPerm),
+    .SecScrambleEn(SecRramCtrlScrambleEn),
+    .WrFifoDepth(RramCtrlWrFifoDepth),
+    .RdFifoDepth(RramCtrlRdFifoDepth)
+  ) u_rram_ctrl (
+    // Clock and reset connections
+    .clk_i(clkmgr_clocks_i.clk_main_infra),
+    .clk_otp_i(clkmgr_clocks_i.clk_io_div4_infra),
+    .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_otp_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+
+    // Interrupts
+    .intr_wr_empty_o(intr_rram_ctrl_wr_empty),
+    .intr_wr_lvl_o  (intr_rram_ctrl_wr_lvl),
+    .intr_rd_full_o (intr_rram_ctrl_rd_full),
+    .intr_rd_lvl_o  (intr_rram_ctrl_rd_lvl),
+    .intr_op_done_o (intr_rram_ctrl_op_done),
+    .intr_corr_err_o(intr_rram_ctrl_corr_err),
+
+    // alert_handler[38]: recov_err
+    // alert_handler[39]: fatal_std_err
+    // alert_handler[40]: fatal_err
+    // alert_handler[41]: fatal_macro_err
+    // alert_handler[42]: recov_macro_err
+    .alert_tx_o(alert_tx[42:38]),
+    .alert_rx_i(alert_rx[42:38]),
+
+    // Inter-module signals
+    .rram_macro_o(rram_ctrl_rram_macro_req),
+    .rram_macro_i(rram_ctrl_rram_macro_rsp),
+    .otp_key_o(rram_ctrl_otp_key_req),
+    .otp_key_i(rram_ctrl_otp_key_rsp),
+    .otp_macro_i('0),
+    .otp_macro_o(),
+    .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
+    .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
+    .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
+    .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
+    .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
+    .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+    .rma_req_i(lc_ctrl_lc_nvm_rma_req),
+    .rma_ack_o(),
+    .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
+    .pwrmgr_o(),
+    .keymgr_o(),
+    .core_tl_i(rram_ctrl_core_tl_req),
+    .core_tl_o(rram_ctrl_core_tl_rsp),
+    .host_tl_i(rram_ctrl_host_tl_req),
+    .host_tl_o(rram_ctrl_host_tl_rsp)
+  );
+
+  rram_macro #(
+    .TotalPages(RramMacroTotalPages),
+    .DataWidth(RramMacroDataWidth),
+    .WordsPerPage(RramMacroWordsPerPage),
+    .TotalInfoPages(RramMacroTotalInfoPages),
+    .MaxWrWords(RramMacroMaxWrWords)
+  ) u_rram_macro (
+    // Clock and reset connections
+    .clk_i(clkmgr_clocks_i.clk_main_infra),
+    .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+
+    // DFT/scan connections
+    .scanmode_i,
+    .scan_rst_ni,
+    .scan_en_i,
+
+
+    // CIO inputs
+    .cio_tck_i   (cio_rram_macro_tck_p2d),
+    .cio_tms_i   (cio_rram_macro_tms_p2d),
+    .cio_tdi_i   (cio_rram_macro_tdi_p2d),
+
+    // CIO outputs
+    .cio_tdo_o   (cio_rram_macro_tdo_d2p),
+    .cio_tdo_en_o(cio_rram_macro_tdo_en_d2p),
+
+    // Inter-module signals
+    .rram_macro_i(rram_ctrl_rram_macro_req),
+    .rram_macro_o(rram_ctrl_rram_macro_rsp),
+    .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
+    .obs_ctrl_i(ast_obs_ctrl),
+    .rram_obs_o(),
+    .prim_tl_i(rram_macro_prim_tl_req),
+    .prim_tl_o(rram_macro_prim_tl_rsp)
+  );
+
   rv_dm #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[38]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[43]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .IdcodeValue(RvDmIdcodeValue),
     .UseDmiInterface(RvDmUseDmiInterface),
@@ -1984,9 +2117,9 @@ module earlgrey_pd_main #(
     .scanmode_i,
     .scan_rst_ni,
 
-    // alert_handler[38]: fatal_fault
-    .alert_tx_o(alert_tx[38]),
-    .alert_rx_i(alert_rx[38]),
+    // alert_handler[43]: fatal_fault
+    .alert_tx_o(alert_tx[43]),
+    .alert_rx_i(alert_rx[43]),
 
     // Inter-module signals
     .next_dm_addr_i('0),
@@ -2019,16 +2152,16 @@ module earlgrey_pd_main #(
   );
 
   rv_plic #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[39]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[44]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_rv_plic (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_secure),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[39]: fatal_fault
-    .alert_tx_o(alert_tx[39]),
-    .alert_rx_i(alert_rx[39]),
+    // alert_handler[44]: fatal_fault
+    .alert_tx_o(alert_tx[44]),
+    .alert_rx_i(alert_rx[44]),
 
     // Inter-module signals
     .irq_o(rv_plic_irq),
@@ -2043,7 +2176,7 @@ module earlgrey_pd_main #(
   );
 
   aes #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[41:40]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[46:45]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
     .AESGCMEnable(AesAESGCMEnable),
@@ -2065,10 +2198,10 @@ module earlgrey_pd_main #(
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .rst_edn_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[40]: recov_ctrl_update_err
-    // alert_handler[41]: fatal_fault
-    .alert_tx_o(alert_tx[41:40]),
-    .alert_rx_i(alert_rx[41:40]),
+    // alert_handler[45]: recov_ctrl_update_err
+    // alert_handler[46]: fatal_fault
+    .alert_tx_o(alert_tx[46:45]),
+    .alert_rx_i(alert_rx[46:45]),
 
     // Inter-module signals
     .idle_o(clkmgr_idle_o[0]),
@@ -2083,7 +2216,7 @@ module earlgrey_pd_main #(
   );
 
   hmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[42]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[47]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_hmac (
     // Clock and reset connections
@@ -2095,9 +2228,9 @@ module earlgrey_pd_main #(
     .intr_fifo_empty_o(intr_hmac_fifo_empty),
     .intr_hmac_err_o  (intr_hmac_hmac_err),
 
-    // alert_handler[42]: fatal_fault
-    .alert_tx_o(alert_tx[42]),
-    .alert_rx_i(alert_rx[42]),
+    // alert_handler[47]: fatal_fault
+    .alert_tx_o(alert_tx[47]),
+    .alert_rx_i(alert_rx[47]),
 
     // Inter-module signals
     .idle_o(clkmgr_idle_o[1]),
@@ -2106,7 +2239,7 @@ module earlgrey_pd_main #(
   );
 
   kmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[44:43]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[49:48]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .EnMasking(KmacEnMasking),
     .SwKeyMasked(KmacSwKeyMasked),
@@ -2131,10 +2264,10 @@ module earlgrey_pd_main #(
     .intr_fifo_empty_o(intr_kmac_fifo_empty),
     .intr_kmac_err_o  (intr_kmac_kmac_err),
 
-    // alert_handler[43]: recov_operation_err
-    // alert_handler[44]: fatal_fault_err
-    .alert_tx_o(alert_tx[44:43]),
-    .alert_rx_i(alert_rx[44:43]),
+    // alert_handler[48]: recov_operation_err
+    // alert_handler[49]: fatal_fault_err
+    .alert_tx_o(alert_tx[49:48]),
+    .alert_rx_i(alert_rx[49:48]),
 
     // Inter-module signals
     .keymgr_key_i(keymgr_kmac_key),
@@ -2150,7 +2283,7 @@ module earlgrey_pd_main #(
   );
 
   otbn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[46:45]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[51:50]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .Stub(OtbnStub),
     .RegFile(OtbnRegFile),
@@ -2174,10 +2307,10 @@ module earlgrey_pd_main #(
     // Interrupts
     .intr_done_o(intr_otbn_done),
 
-    // alert_handler[45]: fatal
-    // alert_handler[46]: recov
-    .alert_tx_o(alert_tx[46:45]),
-    .alert_rx_i(alert_rx[46:45]),
+    // alert_handler[50]: fatal
+    // alert_handler[51]: recov
+    .alert_tx_o(alert_tx[51:50]),
+    .alert_rx_i(alert_rx[51:50]),
 
     // Inter-module signals
     .otbn_otp_key_o(otp_ctrl_otbn_otp_key_req),
@@ -2202,7 +2335,7 @@ module earlgrey_pd_main #(
   );
 
   keymgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:47]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:52]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .UseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
     .KmacEnMasking(KeymgrKmacEnMasking),
@@ -2231,10 +2364,10 @@ module earlgrey_pd_main #(
     // Interrupts
     .intr_op_done_o(intr_keymgr_op_done),
 
-    // alert_handler[47]: recov_operation_err
-    // alert_handler[48]: fatal_fault_err
-    .alert_tx_o(alert_tx[48:47]),
-    .alert_rx_i(alert_rx[48:47]),
+    // alert_handler[52]: recov_operation_err
+    // alert_handler[53]: fatal_fault_err
+    .alert_tx_o(alert_tx[53:52]),
+    .alert_rx_i(alert_rx[53:52]),
 
     // Inter-module signals
     .edn_o(edn0_edn_req[0]),
@@ -2256,7 +2389,7 @@ module earlgrey_pd_main #(
   );
 
   csrng #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[50:49]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[55:54]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstCsKeymgrDivNonProduction(RndCnstCsrngCsKeymgrDivNonProduction),
     .RndCnstCsKeymgrDivProduction(RndCnstCsrngCsKeymgrDivProduction),
@@ -2272,10 +2405,10 @@ module earlgrey_pd_main #(
     .intr_cs_hw_inst_exc_o (intr_csrng_cs_hw_inst_exc),
     .intr_cs_fatal_err_o   (intr_csrng_cs_fatal_err),
 
-    // alert_handler[49]: recov_alert
-    // alert_handler[50]: fatal_alert
-    .alert_tx_o(alert_tx[50:49]),
-    .alert_rx_i(alert_rx[50:49]),
+    // alert_handler[54]: recov_alert
+    // alert_handler[55]: fatal_alert
+    .alert_tx_o(alert_tx[55:54]),
+    .alert_rx_i(alert_rx[55:54]),
 
     // Inter-module signals
     .csrng_cmd_i(csrng_csrng_cmd_req),
@@ -2289,7 +2422,7 @@ module earlgrey_pd_main #(
   );
 
   entropy_src #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[52:51]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[57:56]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RngBusWidth(EntropySrcRngBusWidth),
     .RngBusBitSelWidth(EntropySrcRngBusBitSelWidth),
@@ -2308,10 +2441,10 @@ module earlgrey_pd_main #(
     .intr_es_observe_fifo_ready_o(intr_entropy_src_es_observe_fifo_ready),
     .intr_es_fatal_err_o         (intr_entropy_src_es_fatal_err),
 
-    // alert_handler[51]: recov_alert
-    // alert_handler[52]: fatal_alert
-    .alert_tx_o(alert_tx[52:51]),
-    .alert_rx_i(alert_rx[52:51]),
+    // alert_handler[56]: recov_alert
+    // alert_handler[57]: fatal_alert
+    .alert_tx_o(alert_tx[57:56]),
+    .alert_rx_i(alert_rx[57:56]),
 
     // Inter-module signals
     .entropy_src_hw_if_i(csrng_entropy_src_hw_if_req),
@@ -2333,7 +2466,7 @@ module earlgrey_pd_main #(
   );
 
   edn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[54:53]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[59:58]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .NumEndPoints(Edn0NumEndPoints)
   ) u_edn0 (
@@ -2345,10 +2478,10 @@ module earlgrey_pd_main #(
     .intr_edn_cmd_req_done_o(intr_edn0_edn_cmd_req_done),
     .intr_edn_fatal_err_o   (intr_edn0_edn_fatal_err),
 
-    // alert_handler[53]: recov_alert
-    // alert_handler[54]: fatal_alert
-    .alert_tx_o(alert_tx[54:53]),
-    .alert_rx_i(alert_rx[54:53]),
+    // alert_handler[58]: recov_alert
+    // alert_handler[59]: fatal_alert
+    .alert_tx_o(alert_tx[59:58]),
+    .alert_rx_i(alert_rx[59:58]),
 
     // Inter-module signals
     .csrng_cmd_o(csrng_csrng_cmd_req[0]),
@@ -2360,7 +2493,7 @@ module earlgrey_pd_main #(
   );
 
   edn #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[56:55]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:60]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .NumEndPoints(Edn1NumEndPoints)
   ) u_edn1 (
@@ -2372,10 +2505,10 @@ module earlgrey_pd_main #(
     .intr_edn_cmd_req_done_o(intr_edn1_edn_cmd_req_done),
     .intr_edn_fatal_err_o   (intr_edn1_edn_fatal_err),
 
-    // alert_handler[55]: recov_alert
-    // alert_handler[56]: fatal_alert
-    .alert_tx_o(alert_tx[56:55]),
-    .alert_rx_i(alert_rx[56:55]),
+    // alert_handler[60]: recov_alert
+    // alert_handler[61]: fatal_alert
+    .alert_tx_o(alert_tx[61:60]),
+    .alert_rx_i(alert_rx[61:60]),
 
     // Inter-module signals
     .csrng_cmd_o(csrng_csrng_cmd_req[1]),
@@ -2387,7 +2520,7 @@ module earlgrey_pd_main #(
   );
 
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[57]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstSramKey(RndCnstSramCtrlMainSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMainSramNonce),
@@ -2407,9 +2540,9 @@ module earlgrey_pd_main #(
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .rst_otp_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[57]: fatal_error
-    .alert_tx_o(alert_tx[57]),
-    .alert_rx_i(alert_rx[57]),
+    // alert_handler[62]: fatal_error
+    .alert_tx_o(alert_tx[62]),
+    .alert_rx_i(alert_rx[62]),
 
     // RACL policies
     .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -2432,7 +2565,7 @@ module earlgrey_pd_main #(
   );
 
   rom_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[63]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .FlopToKmac(RomCtrlFlopToKmac),
@@ -2445,9 +2578,9 @@ module earlgrey_pd_main #(
     .clk_i(clkmgr_clocks_i.clk_main_infra),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[58]: fatal
-    .alert_tx_o(alert_tx[58]),
-    .alert_rx_i(alert_rx[58]),
+    // alert_handler[63]: fatal
+    .alert_tx_o(alert_tx[63]),
+    .alert_rx_i(alert_rx[63]),
 
     // Inter-module signals
     .rom_cfg_i(rom_ctrl_rom_cfg_req_i),
@@ -2463,7 +2596,7 @@ module earlgrey_pd_main #(
   );
 
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:59]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[67:64]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
@@ -2518,12 +2651,12 @@ module earlgrey_pd_main #(
     .scanmode_i,
     .scan_rst_ni,
 
-    // alert_handler[59]: fatal_sw_err
-    // alert_handler[60]: recov_sw_err
-    // alert_handler[61]: fatal_hw_err
-    // alert_handler[62]: recov_hw_err
-    .alert_tx_o(alert_tx[62:59]),
-    .alert_rx_i(alert_rx[62:59]),
+    // alert_handler[64]: fatal_sw_err
+    // alert_handler[65]: recov_sw_err
+    // alert_handler[66]: fatal_hw_err
+    // alert_handler[67]: recov_hw_err
+    .alert_tx_o(alert_tx[67:64]),
+    .alert_rx_i(alert_rx[67:64]),
 
     // Inter-module signals
     .rst_cpu_n_o(),
@@ -2560,26 +2693,32 @@ module earlgrey_pd_main #(
 
   // Interrupt assignments
   assign intr_vector = {
-    intr_edn1_edn_fatal_err,                  // ID 183
-    intr_edn1_edn_cmd_req_done,               // ID 182
-    intr_edn0_edn_fatal_err,                  // ID 181
-    intr_edn0_edn_cmd_req_done,               // ID 180
-    intr_entropy_src_es_fatal_err,            // ID 179
-    intr_entropy_src_es_observe_fifo_ready,   // ID 178
-    intr_entropy_src_es_health_test_failed,   // ID 177
-    intr_entropy_src_es_entropy_valid,        // ID 176
-    intr_csrng_cs_fatal_err,                  // ID 175
-    intr_csrng_cs_hw_inst_exc,                // ID 174
-    intr_csrng_cs_entropy_req,                // ID 173
-    intr_csrng_cs_cmd_req_done,               // ID 172
-    intr_keymgr_op_done,                      // ID 171
-    intr_otbn_done,                           // ID 170
-    intr_kmac_kmac_err,                       // ID 169
-    intr_kmac_fifo_empty,                     // ID 168
-    intr_kmac_kmac_done,                      // ID 167
-    intr_hmac_hmac_err,                       // ID 166
-    intr_hmac_fifo_empty,                     // ID 165
-    intr_hmac_hmac_done,                      // ID 164
+    intr_edn1_edn_fatal_err,                  // ID 189
+    intr_edn1_edn_cmd_req_done,               // ID 188
+    intr_edn0_edn_fatal_err,                  // ID 187
+    intr_edn0_edn_cmd_req_done,               // ID 186
+    intr_entropy_src_es_fatal_err,            // ID 185
+    intr_entropy_src_es_observe_fifo_ready,   // ID 184
+    intr_entropy_src_es_health_test_failed,   // ID 183
+    intr_entropy_src_es_entropy_valid,        // ID 182
+    intr_csrng_cs_fatal_err,                  // ID 181
+    intr_csrng_cs_hw_inst_exc,                // ID 180
+    intr_csrng_cs_entropy_req,                // ID 179
+    intr_csrng_cs_cmd_req_done,               // ID 178
+    intr_keymgr_op_done,                      // ID 177
+    intr_otbn_done,                           // ID 176
+    intr_kmac_kmac_err,                       // ID 175
+    intr_kmac_fifo_empty,                     // ID 174
+    intr_kmac_kmac_done,                      // ID 173
+    intr_hmac_hmac_err,                       // ID 172
+    intr_hmac_fifo_empty,                     // ID 171
+    intr_hmac_hmac_done,                      // ID 170
+    intr_rram_ctrl_corr_err,                  // ID 169
+    intr_rram_ctrl_op_done,                   // ID 168
+    intr_rram_ctrl_rd_lvl,                    // ID 167
+    intr_rram_ctrl_rd_full,                   // ID 166
+    intr_rram_ctrl_wr_lvl,                    // ID 165
+    intr_rram_ctrl_wr_empty,                  // ID 164
     intr_flash_ctrl_corr_err,                 // ID 163
     intr_flash_ctrl_op_done,                  // ID 162
     intr_flash_ctrl_rd_lvl,                   // ID 161
@@ -2783,6 +2922,18 @@ module earlgrey_pd_main #(
     // port: tl_flash_ctrl__mem
     .tl_flash_ctrl__mem_o(flash_ctrl_mem_tl_req),
     .tl_flash_ctrl__mem_i(flash_ctrl_mem_tl_rsp),
+
+    // port: tl_rram_ctrl__core
+    .tl_rram_ctrl__core_o(rram_ctrl_core_tl_req),
+    .tl_rram_ctrl__core_i(rram_ctrl_core_tl_rsp),
+
+    // port: tl_rram_macro__prim
+    .tl_rram_macro__prim_o(rram_macro_prim_tl_req),
+    .tl_rram_macro__prim_i(rram_macro_prim_tl_rsp),
+
+    // port: tl_rram_ctrl__host
+    .tl_rram_ctrl__host_o(rram_ctrl_host_tl_req),
+    .tl_rram_ctrl__host_i(rram_ctrl_host_tl_rsp),
 
     // port: tl_hmac
     .tl_hmac_o(hmac_tl_req),
@@ -3003,6 +3154,9 @@ module earlgrey_pd_main #(
   assign cio_flash_ctrl_tck_p2d = mio_p2d[MioInFlashCtrlTck];
   assign cio_flash_ctrl_tms_p2d = mio_p2d[MioInFlashCtrlTms];
   assign cio_flash_ctrl_tdi_p2d = mio_p2d[MioInFlashCtrlTdi];
+  assign cio_rram_macro_tck_p2d = mio_p2d[MioInRramMacroTck];
+  assign cio_rram_macro_tms_p2d = mio_p2d[MioInRramMacroTms];
+  assign cio_rram_macro_tdi_p2d = mio_p2d[MioInRramMacroTdi];
   assign cio_sysrst_ctrl_ac_present_p2d_o = mio_p2d[MioInSysrstCtrlAcPresent];
   assign cio_sysrst_ctrl_key0_in_p2d_o = mio_p2d[MioInSysrstCtrlKey0In];
   assign cio_sysrst_ctrl_key1_in_p2d_o = mio_p2d[MioInSysrstCtrlKey1In];
@@ -3061,6 +3215,7 @@ module earlgrey_pd_main #(
   assign mio_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_d2p;
   assign mio_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_d2p;
   assign mio_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_d2p;
+  assign mio_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_d2p;
   assign mio_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_d2p_i[0];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_d2p_i[1];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_d2p_i[2];
@@ -3128,6 +3283,7 @@ module earlgrey_pd_main #(
   assign mio_en_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_en_d2p;
   assign mio_en_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_en_d2p;
   assign mio_en_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_en_d2p;
+  assign mio_en_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_en_d2p;
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_en_d2p_i[0];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_en_d2p_i[1];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_en_d2p_i[2];

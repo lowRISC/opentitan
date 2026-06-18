@@ -29,6 +29,8 @@ load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/top_earlgrey/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_earlgrey/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
 load("//hw/ip/rom_ctrl:defs.bzl", "ROM_CTRL")
+load("//hw/ip/rram_ctrl:defs.bzl", "RRAM_CTRL")
+load("//hw/ip/rram_macro:defs.bzl", "RRAM_MACRO")
 load("//hw/top_earlgrey/ip_autogen/rstmgr:defs.bzl", "RSTMGR")
 load("//hw/top_earlgrey/ip_autogen/rv_core_ibex:defs.bzl", "RV_CORE_IBEX")
 load("//hw/ip/rv_dm:defs.bzl", "RV_DM")
@@ -65,6 +67,8 @@ EARLGREY_IPS = [
     PINMUX,
     PWRMGR,
     ROM_CTRL,
+    RRAM_CTRL,
+    RRAM_MACRO,
     RSTMGR,
     RV_CORE_IBEX,
     RV_DM,
@@ -118,6 +122,11 @@ EARLGREY_ALERTS = [
     "flash_ctrl_fatal_err",
     "flash_ctrl_fatal_prim_flash_alert",
     "flash_ctrl_recov_prim_flash_alert",
+    "rram_ctrl_recov_err",
+    "rram_ctrl_fatal_std_err",
+    "rram_ctrl_fatal_err",
+    "rram_ctrl_fatal_macro_err",
+    "rram_ctrl_recov_macro_err",
     "rv_dm_fatal_fault",
     "rv_plic_fatal_fault",
     "aes_recov_ctrl_update_err",
