@@ -643,7 +643,6 @@ module top_earlgrey #(
   csrng_pkg::csrng_rsp_t [1:0] csrng_csrng_cmd_rsp;
   entropy_src_pkg::entropy_src_hw_if_req_t       csrng_entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
-  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::nvm_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::nvm_otp_key_rsp_t       flash_ctrl_otp_rsp;
   lc_ctrl_pkg::lc_nvm_rma_seed_t       lc_ctrl_lc_nvm_rma_seed;
@@ -804,6 +803,9 @@ module top_earlgrey #(
   logic [31:0] rv_core_ibex_boot_addr;
   otp_ctrl_pkg::nvm_otp_key_req_t       rram_ctrl_otp_key_req;
   otp_ctrl_pkg::nvm_otp_key_rsp_t       rram_ctrl_otp_key_rsp;
+  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
+  rram_ctrl_pkg::keymgr_rram_t       rram_ctrl_keymgr;
+  flash_ctrl_pkg::keymgr_flash_t       keymgr_flash;
   jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
@@ -865,6 +867,9 @@ module top_earlgrey #(
   assign rram_ctrl_otp_key_rsp.key = '0;
   assign rram_ctrl_otp_key_rsp.rand_key = '0;
   assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
+
+  // TODO: remove once keymgr has been updated
+  assign keymgr_flash.seeds = rram_ctrl_keymgr.seeds;
 
   // Ibex-specific assignments
   // TODO: This should be further automated in the future.
@@ -2055,7 +2060,7 @@ module top_earlgrey #(
     .rma_ack_o(),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
     .pwrmgr_o(),
-    .keymgr_o(),
+    .keymgr_o(rram_ctrl_keymgr),
     .core_tl_i(rram_ctrl_core_tl_req),
     .core_tl_o(rram_ctrl_core_tl_rsp),
     .host_tl_i(rram_ctrl_host_tl_req),
@@ -2378,7 +2383,7 @@ module top_earlgrey #(
     .kmac_data_i(kmac_app_rsp[0]),
     .otp_key_i(otp_ctrl_otp_keymgr_key),
     .otp_device_id_i(keymgr_otp_device_id),
-    .flash_i(flash_ctrl_keymgr),
+    .flash_i(keymgr_flash),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
     .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
     .rom_digest_i(rom_ctrl_keymgr_data),
