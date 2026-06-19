@@ -312,7 +312,7 @@ static otcrypto_status_t otcrypto_aes_impl(
     otcrypto_aes_padding_t aes_padding, otcrypto_byte_buf_t *cipher_output) {
   // Guarantees hw_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Run the AES ECB 256 KAT exactly once before utilizing the block
   HARDENED_TRY(stateful_health_check(kTestAesEcb256DecryptBit));
