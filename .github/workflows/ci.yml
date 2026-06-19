@@ -299,7 +299,7 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Execute tests
-        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
+        run: ./bazelisk.sh test --test_tag_filters=-broken,-skip_in_ci,-nightly //sw/otbn/crypto/...
 
   verilator_englishbreakfast:
     name: Verilated English Breakfast
