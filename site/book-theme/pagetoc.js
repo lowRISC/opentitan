@@ -49,7 +49,10 @@ var updateDynamicHighlight = function() {
         }
     });
 };
-window.addEventListener("load", updateDynamicHighlight);
+/* Run the first highlight pass once fonts have settled -- heading offsetTop values
+ * shift when the Recursive @font-face swaps in, and `load` does not await fonts.
+ * `scroll` continues to drive subsequent updates as the user navigates. */
+document.fonts.ready.then(updateDynamicHighlight);
 window.addEventListener("scroll", updateDynamicHighlight);
 
 /* Style the heading that matches the URL fragment (i.e. when you click a hyperlink).
@@ -80,7 +83,10 @@ var set_target_highlight = function(event) {
     });
 };
 window.addEventListener("hashchange", set_target_highlight);
-window.addEventListener("load", set_target_highlight);
+/* As with the pagetoc height: measure the targeted heading's bounding rect only
+ * after fonts have loaded, so --target-height matches the final rendered height
+ * (and the initial scrollIntoView lands on the right spot). */
+document.fonts.ready.then(set_target_highlight);
 
 /* Set the "height" style of pagetoc conditionally.
  * - auto    -> for short lists that don't overflow, limit the height of the pagetoc, disables scrollbar.
@@ -248,16 +254,17 @@ var create_pagetoc_structure = function(el_pagetoc) {
 
 
 
-/* Populate the pagetoc sidebar on load
- * - Create a tree structure of elements within the pagetoc nav item
- * - Update the overflow height behaviour when the rendered size is known. */
-window.addEventListener('load', function() {
+/* Populate the pagetoc sidebar.
+ * - Build the tree structure as soon as the HTML is parsed (no need to wait for
+ *   sub-resources like images), so the pagetoc appears as early as possible.
+ * - Defer the height measurement until `document.fonts.ready` resolves. The
+ *   pagetoc text uses the Recursive @font-face, which loads asynchronously and
+ *   is NOT awaited by the `load` event -- when it eventually swaps in, every text
+ *   dimension changes. Measuring before that swap (the previous behaviour, even
+ *   inside a 1s setTimeout, was racing the font load) gives the wrong height and
+ *   triggers the "limited / scrollbar" branch incorrectly. */
+window.addEventListener('DOMContentLoaded', function() {
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
     create_pagetoc_structure(pagetoc);
-
-    setTimeout(function(){
-        // Allow the pagetoc to complete drawing, so we can measure it's final height.
-        // TODO find a better way to do this.
-        set_pagetoc_height.call();
-    }, 1000);
+    document.fonts.ready.then(set_pagetoc_height);
 });
