@@ -116,4 +116,33 @@
     .pagetoc .leaf-H6 {
         font-size: 80%;
     }
+
+    /* Indicators shown when the active pagetoc entry has scrolled out of the
+       pagetoc's visible band. Hidden by default; JS toggles ".visible".
+       They are absolutely positioned inside a wrapper that surrounds — but is
+       not — the scrollable .pagetoc, so toggling their display does not change
+       the pagetoc's scrollHeight. That matters because Firefox remaps the
+       scrollbar thumb position mid-drag when scrollHeight changes, which used
+       to produce a feedback loop that oscillated the pagetoc near the edges. */
+    .pagetoc-wrapper { position: relative; }
+    .pagetoc-indicator {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+        padding: 7px 0;
+        color: #555;
+        background: rgb(230, 230, 230);
+        z-index: 1;
+    }
+    .pagetoc-indicator.visible { display: block; }
+    .pagetoc-indicator-top    { top: 0;    border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .pagetoc-indicator-bottom { bottom: 0; border-top:    1px solid rgba(0,0,0,0.1); }
+    .pagetoc-indicator:hover {
+        color: #222;
+        background: rgb(215, 215, 215);
+    }
 }

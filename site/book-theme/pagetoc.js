@@ -42,12 +42,39 @@ var updateDynamicHighlight = function() {
             // Set the matched <a> element as 'active'
             el.classList.add("active");
 
-            // Scroll "active" element into view (the middle of the scrollable pagetoc hopefully)
-            document.getElementsByClassName("pagetoc")[0]
-                .scrollTo({ top: el.offsetTop - (pagetoc.getBoundingClientRect().height / 2 ) ,
-                            behavior: 'smooth' });
+            // Intentionally do NOT auto-scroll the pagetoc to keep the active entry
+            // in view: on long pages this causes the pagetoc to lurch around as the
+            // user scrolls the main viewport, overriding wherever they had manually
+            // scrolled the pagetoc. Instead, show top/bottom indicators when the
+            // active entry has drifted out of the pagetoc's visible band.
+            updatePagetocIndicators(pagetoc, el);
         }
     });
+};
+
+/* If the active pagetoc entry is scrolled outside the pagetoc's visible band, show
+ * a small chevron indicator at the corresponding edge (top or bottom). Clicking it
+ * recenters the active entry. Indicators are hidden when the active entry is in
+ * view, or when the pagetoc isn't scrollable at all. */
+var updatePagetocIndicators = function(pagetoc, activeEl) {
+    // Indicators are siblings of .pagetoc inside .pagetoc-wrapper (see the
+    // comment above the wrapper creation in create_pagetoc_structure).
+    let wrapper = pagetoc.parentElement;
+    let topInd = wrapper && wrapper.querySelector('.pagetoc-indicator-top');
+    let botInd = wrapper && wrapper.querySelector('.pagetoc-indicator-bottom');
+    if (!topInd || !botInd || !activeEl) return;
+    let scrollable = pagetoc.scrollHeight > pagetoc.clientHeight + 1;
+    if (!scrollable) {
+        topInd.classList.remove('visible');
+        botInd.classList.remove('visible');
+        return;
+    }
+    let activeTop = activeEl.offsetTop;
+    let activeBottom = activeTop + activeEl.offsetHeight;
+    let viewTop = pagetoc.scrollTop;
+    let viewBottom = viewTop + pagetoc.clientHeight;
+    topInd.classList.toggle('visible', activeBottom < viewTop);
+    botInd.classList.toggle('visible', activeTop > viewBottom);
 };
 /* Run the first highlight pass once fonts have settled -- heading offsetTop values
  * shift when the Recursive @font-face swaps in, and `load` does not await fonts.
@@ -250,6 +277,42 @@ var create_pagetoc_structure = function(el_pagetoc) {
     // Invoke the above helper-functions to create the tree
     let tree = wrapAllDescendingElems(0, 0, headerElements.length - 1);
     el_pagetoc.appendChild(tree);
+
+    // Add top/bottom indicators. These show when the active entry has scrolled
+    // outside the pagetoc's visible band; clicking either recenters it.
+    // The indicators live in a wrapper that surrounds the scrollable .pagetoc,
+    // and are absolutely positioned at its top/bottom edges
+    // (see .pagetoc-wrapper / .pagetoc-indicator in pagetoc.css).
+    let wrapper = document.createElement('div');
+    wrapper.className = 'pagetoc-wrapper';
+    el_pagetoc.parentElement.insertBefore(wrapper, el_pagetoc);
+    wrapper.appendChild(el_pagetoc);
+
+    function makeIndicator(side, glyph) {
+        let el = document.createElement('div');
+        el.className = 'pagetoc-indicator pagetoc-indicator-' + side;
+        el.textContent = glyph;
+        el.setAttribute('title', 'Scroll to current section');
+        el.addEventListener('click', function() {
+            let active = el_pagetoc.querySelector('a.active');
+            if (!active) return;
+            el_pagetoc.scrollTo({
+                top: active.offsetTop - el_pagetoc.clientHeight / 2,
+                behavior: 'smooth'
+            });
+        });
+        return el;
+    }
+    wrapper.appendChild(makeIndicator('top', '\u25B2'));
+    wrapper.appendChild(makeIndicator('bottom', '\u25BC'));
+
+    // Re-evaluate indicator visibility when the user scrolls the pagetoc itself
+    // (e.g. they drag the scrollbar; the indicator should disappear once the
+    // active entry is back in view).
+    el_pagetoc.addEventListener('scroll', function() {
+        let active = el_pagetoc.querySelector('a.active');
+        updatePagetocIndicators(el_pagetoc, active);
+    });
 };
 
 
