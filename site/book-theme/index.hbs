@@ -114,7 +114,11 @@
             var sidebar = null;
             var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
-            sidebar = sidebar || 'visible';
+            // No stored preference: open the sidebar by default on wide viewports,
+            // keep it hidden on narrow/mobile where it would otherwise cover most
+            // of the screen on first visit and give a bad initial impression.
+            // Matches upstream mdbook's behaviour.
+            sidebar = sidebar || (document.body.clientWidth >= 1080 ? 'visible' : 'hidden');
             sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
