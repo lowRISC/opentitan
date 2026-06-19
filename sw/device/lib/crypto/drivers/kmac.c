@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
@@ -619,7 +620,7 @@ static status_t kmac_process_msg_blocks(
     uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
   // This variable guarantees kmac_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
