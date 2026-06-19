@@ -161,7 +161,7 @@ impl Dmi for OpenOcdDmi {
     fn dmi_read(&mut self, addr: u32) -> Result<u32> {
         let output = (self.dmi_op((addr as u64) << DMI_ADDRESS_SHIFT | DMI_OP_READ)?
             >> DMI_DATA_SHIFT) as u32;
-        log::info!("DMI read {:#x} -> {:#x}", addr, output);
+        log::debug!("DMI read {:#x} -> {:#x}", addr, output);
         Ok(output)
     }
 
@@ -169,7 +169,7 @@ impl Dmi for OpenOcdDmi {
         self.dmi_op(
             (addr as u64) << DMI_ADDRESS_SHIFT | (value as u64) << DMI_DATA_SHIFT | DMI_OP_WRITE,
         )?;
-        log::info!("DMI write {:#x} <- {:#x}", addr, value);
+        log::debug!("DMI write {:#x} <- {:#x}", addr, value);
         Ok(())
     }
 }
