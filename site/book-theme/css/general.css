@@ -66,6 +66,20 @@ h4, h5 { margin-block-start: 2em; }
     margin-block-start: 1em;
 }
 
+/* Confine the heading highlight bar (h*:target::before) to .page-wrapper's stacking
+   context. Without this, on viewports >=620px where mdbook switched from transform
+   to margin-inline-start for the sidebar offset, .page-wrapper no longer creates a
+   stacking context — so the bar's z-index: -10 escapes to the root context and gets
+   painted before .page-wrapper's background, leaving only a sliver visible in the
+   gap between the sidebar and the content. */
+.page-wrapper { isolation: isolate; }
+
+/* Lift the fixed LHS sidebar above .page-wrapper's stacking context so it paints
+   over the left portion of the full-viewport-width highlight bar. (The RHS pagetoc
+   sits inside .page-wrapper but has its own opaque background, so it also covers
+   the bar on the right.) */
+.sidebar { z-index: 1; }
+
 h1:target::before,
 h2:target::before,
 h3:target::before,
@@ -77,9 +91,23 @@ h6:target::before {
     left: 0%;
     margin-top: -10px;
     height: var(--target-height);
-    background-color: #d0966f4a;
+    /* Rainbow-tinted wash: low-opacity version of the teal->purple->orange
+       gradient used by the site's menu bar, tying the heading highlight visually
+       into the global theme. */
+    background: linear-gradient(90deg,
+        #4BC0C838 0%,
+        #C779D038 50%,
+        #FEAC5E5c 100%);
     z-index: -10;
     position: absolute;
+    pointer-events: none;
+    /* Fade-in: make navigation feel intentional rather than instantaneous. */
+    animation: target-highlight-fade-in 0.4s ease-out;
+}
+
+@keyframes target-highlight-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 /* This is broken on Safari as of version 14, but is fixed
