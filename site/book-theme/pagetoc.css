@@ -14,22 +14,23 @@
 @media only screen and (min-width:1440px) {
     .sidetoc {
         position: sticky;
-        margin: 0 calc(var(--page-padding) + 15px) 0 0;
+        margin: 0 calc(var(--page-padding) + 15px) 0 30px;
         width: calc(40% - 15vw + 100px);
         max-width: 400px;
-        top: calc(var(--menu-bar-height) + 8rem);
+        top: calc(var(--menu-bar-height) + 1rem);
         scroll-behavior: smooth;
+        background: white;
+        box-shadow: 0px 0px 20px 30px white;
+        border-radius: 15px;
     }
     .pagetoc {
+        position: relative;
         font-family: 'Recursive', sans-serif;
         font-size: 95%;
         font-weight: 380;
         padding-left: 15px;
         padding-right: 10px;
         overflow-x: hidden;
-        background: white;
-        box-shadow: 0px 0px 20px 15px white;
-        border-radius: 15px;
     }
     .pagetoc::-webkit-scrollbar {
         width: 0.8rem;
@@ -44,8 +45,7 @@
         background-image: linear-gradient(180deg, #4BC0C8A0 0%, #C779D0A0 50%, #FEAC5EA0 100%);
         border-radius: 5px;
     }
-    .pagetoc a,
-    .pagetoc #pagetoc-title {
+    .pagetoc a {
         color: var(--pagetoc-fg) !important;
         display: block;
         padding-bottom: 5px;
@@ -55,13 +55,20 @@
         text-decoration: none;
         pointer-events: auto;
     }
-    .pagetoc #pagetoc-title {
+    .sidetoc #pagetoc-title {
         color: var(--fg) !important;
+        display: block;
+        font-family: 'Recursive', sans-serif;
         font-weight: bold;
         font-size: 200%;
+        /* Match the default h1's `margin-block-start: 0.67em` so the
+           sidetoc heading vertically aligns with the H1 in .content.
+           Both elements have font-size 2em, so 0.67em resolves to the
+           same pixel value in both places. */
+        margin-top: 0.67em;
         border-bottom: 7px solid var(--pagetoc-bg);
         margin-bottom: 10px;
-        padding-left: unset;
+        text-align: left;
     }
     .pagetoc a:hover,
     .pagetoc a.active {

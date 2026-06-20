@@ -52,8 +52,7 @@ a > .hljs {
 }
 #menu-bar.sticky,
 #menu-bar-hover-placeholder:hover + #menu-bar,
-#menu-bar:hover,
-html.sidebar-visible #menu-bar {
+#menu-bar:hover {
     position: -webkit-sticky;
     position: sticky;
     top: 0 !important;
@@ -118,14 +117,16 @@ html:not(.js) .left-buttons button {
 }
 
 .menu-title .logo {
-    width: 10em;
-    height: 100%;
-    margin: 1em auto;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
     fill: var(--icons);
 }
 
 .menu-title .logo svg {
     display: block;
+    height: calc(var(--menu-bar-height) * 0.6);
+    width: auto;
 }
 
 .menu-bar,

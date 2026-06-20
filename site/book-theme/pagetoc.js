@@ -128,7 +128,20 @@ var set_pagetoc_height = function() {
     if (pagetoc_height < window_height) {
         el.style.height = "auto";
     } else {
-        el.style.height = "calc(90vh - var(--menu-bar-height))"; // limited_height
+        // limited_height. Compute available space precisely so the pagetoc never
+        // crosses the viewport's bottom edge. Subtract:
+        //   - menu bar height
+        //   - .sidetoc sticky top offset (matches pagetoc.css: 3rem above menu bar)
+        //   - #pagetoc-title rendered height (sibling above the pagetoc)
+        //   - desired bottom margin
+        const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        const menuBar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--menu-bar-height')) || 50;
+        const topOffset = 3 * rem;
+        const bottomMargin = 8 * rem;
+        const titleEl = document.getElementById('pagetoc-title');
+        const titleH = titleEl ? titleEl.getBoundingClientRect().height : 0;
+        const h = window.innerHeight - menuBar - topOffset - titleH - bottomMargin;
+        el.style.height = Math.max(h, 0) + 'px';
     }
 };
 window.addEventListener("resize", set_pagetoc_height);
@@ -195,11 +208,13 @@ var create_pagetoc_structure = function(el_pagetoc) {
         (id_keywords.filter(i => h.parentElement.id.includes(i))).length === 0
     );
 
-    // Add title div to ToC
+    // Add title div as a sibling of the pagetoc (under .sidetoc) so it stays
+    // visible above the scrollable pagetoc and doesn't interfere with the
+    // sticky top/bottom indicators inside the pagetoc.
     let title = document.createElement("div");
     title.appendChild(document.createTextNode("Table of Contents"));
     title.setAttribute("id", "pagetoc-title");
-    el_pagetoc.appendChild(title);
+    el_pagetoc.parentElement.insertBefore(title, el_pagetoc);
 
     //////////////////////////////////
     // Define some helper functions //
