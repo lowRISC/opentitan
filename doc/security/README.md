@@ -30,7 +30,7 @@ designs against myriad attacks. To that end, the team established
 [Secure Hardware Design Guidelines][implementation_guidelines] which are
 followed when developing OpenTitan security IP.
 
-## [Penetrationtesting Framework][pentest_framework]
+## [Penetration Testing Framework][pentest_framework]
 
 To validate these physical security measures and logical guarantees, OpenTitan
 includes a dedicated [Penetration Testing Framework][pentest_framework]. This
@@ -134,7 +134,7 @@ implementation will be hardware accelerated using [OTBN][otbn].
 [aes]: ../../hw/ip/aes/README.md
 [alert_handler]: ../../hw/top_earlgrey/ip_autogen/alert_handler/README.md
 [comportable_ip]: ../contributing/hw/comportability/README.md
-[cryptolib]: https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto
+[cryptolib]: ./cryptolib/README.md
 [csrng]: ../../hw/ip/csrng/README.md
 [entropy_source]: ../../hw/ip/entropy_src/README.md
 [hmac]: ../../hw/ip/hmac/README.md
@@ -142,10 +142,7 @@ implementation will be hardware accelerated using [OTBN][otbn].
 [keymgr]: ../../hw/ip/keymgr/README.md
 [logical_security_model]: ./logical_security_model/README.md
 [otbn]: ../../hw/ip/otbn/README.md
+[pentest_framework]: ./pentest_framework/README.md
 [security_model]: ./specs/README.md
 [threat_model]: ./threat_model/README.md
-<<<<<<< HEAD
-[cryptolib]: ./cryptolib/README.md
-=======
 [use_cases]: ../use_cases/README.md
->>>>>>> 3c996f7042 ([doc] Format)
