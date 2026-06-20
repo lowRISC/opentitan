@@ -1,7 +1,7 @@
 From d7544597def65a4fcd7a853ed64604bdc24ae9df Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Wed, 13 Mar 2024 12:15:24 -0700
-Subject: [PATCH 6/7] [dm_csrs] Correct behavior of hartsel
+Subject: [dm_csrs] Correct behavior of hartsel
 
 The hartsel register is supposed to have WARL behavior depending on how
 many harts are supported.
