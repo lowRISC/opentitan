@@ -78,9 +78,57 @@ var updatePagetocIndicators = function(pagetoc, activeEl) {
 };
 /* Run the first highlight pass once fonts have settled -- heading offsetTop values
  * shift when the Recursive @font-face swaps in, and `load` does not await fonts.
- * `scroll` continues to drive subsequent updates as the user navigates. */
+ * Subsequent updates are driven from controlMenuBarAndHighlight() below. */
 document.fonts.ready.then(updateDynamicHighlight);
-window.addEventListener("scroll", updateDynamicHighlight);
+
+/* Take over menu-bar visibility on scroll, pre-empting mdbook's controllPosition
+ * handler in book.js. Reason: mdbook's algorithm writes an inline `style.top`
+ * on #menu-bar that is computed from `prevScrollTop + minMenuY` on the scrollUp
+ * branch. With a large single-event scroll delta (e.g. the user scrolls a few
+ * hundred pixels in one wheel tick, or -- more reliably -- scrolls up shortly
+ * after an anchor-link jump), that computation lands the menu bar at an
+ * intermediate document position, so it renders mid-viewport until the next
+ * scroll tick snaps it back. We replace that with a simple direction toggle of
+ * the `.sticky` class: `position: sticky; top: 0` from chrome.css handles all
+ * positioning, so no intermediate state is possible.
+ *
+ * Suppression window: when the scroll is the result of a same-page hash-link
+ * click, leave the `.sticky` state alone so the menu doesn't flicker on jump. */
+(function controlMenuBarAndHighlight() {
+    let menu = document.getElementById('menu-bar');
+    if (menu) {
+        // Drop any inline top mdbook's IIFE set at init -- `.sticky` + CSS is
+        // sufficient and avoids divergence between DOM style and our logic.
+        menu.style.top = '';
+    }
+    let prevScrollTop = Math.max(document.scrollingElement.scrollTop, 0);
+    let suppressUntil = 0;
+
+    window.addEventListener('scroll', function(e) {
+        let scrollTop = Math.max(document.scrollingElement.scrollTop, 0);
+        if (menu && performance.now() >= suppressUntil) {
+            let scrollDown = scrollTop > prevScrollTop;
+            menu.classList.toggle('sticky', !scrollDown);
+        }
+        if (menu) menu.style.top = '';
+        prevScrollTop = scrollTop;
+        // updateDynamicHighlight runs inline because stopImmediatePropagation
+        // below halts every other scroll listener (including mdbook's, which
+        // is the point), so we can't rely on a separately-registered handler.
+        updateDynamicHighlight();
+        e.stopImmediatePropagation();
+    }, true);
+
+    document.addEventListener('click', function(e) {
+        let a = e.target.closest && e.target.closest('a[href]');
+        if (!a) return;
+        let url;
+        try { url = new URL(a.href, window.location.href); } catch (_) { return; }
+        // Only same-page hash navigation -- leave cross-page nav alone.
+        if (url.pathname !== window.location.pathname || !url.hash) return;
+        suppressUntil = performance.now() + 500;
+    }, true);
+})();
 
 /* Style the heading that matches the URL fragment (i.e. when you click a hyperlink).
  * - Find the element with the ":target" pseudo-class applied
