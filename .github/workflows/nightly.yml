@@ -62,7 +62,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw310_test_rom"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw310_rom_tests:
     name: CW310 ROM Tests
@@ -80,7 +80,7 @@ jobs:
       timeout: 240
       upload_to_bucket: true
       bucket_job_folder_name: "cw310_rom"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw310_rom_ext_tests:
     name: CW310 ROM_EXT Tests
@@ -97,7 +97,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw310_rom_ext"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw310_sival_tests:
     name: CW310 SiVal Tests
@@ -114,7 +114,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw310_sival"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw310_sival_rom_ext_tests:
     name: CW310 SiVal ROM_EXT Tests
@@ -131,7 +131,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw310_sival_rom_ext"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw310_bob_tests:
     name: CW310 BoB (SPI and I2C) Tests
@@ -149,7 +149,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw310_bob"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw340_test_rom_tests:
     name: CW340 Test ROM Tests
@@ -166,7 +166,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw340_test_rom"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw340_rom_tests:
     name: CW340 ROM Tests
@@ -183,7 +183,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw340_rom"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw340_rom_ext_tests:
     name: CW340 ROM_EXT Tests
@@ -200,7 +200,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw340_rom_ext"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw340_sival_tests:
     name: CW340 SiVal Tests
@@ -217,7 +217,7 @@ jobs:
       cache_test_results: false
       upload_to_bucket: true
       bucket_job_folder_name: "cw340_sival"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   execute_fpga_cw340_sival_rom_ext_tests:
     name: CW340 SiVal ROM_EXT Tests
@@ -235,7 +235,7 @@ jobs:
       timeout: 90
       upload_to_bucket: true
       bucket_job_folder_name: "cw340_sival_rom_ext"
-      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
+      branch: "${{ inputs.branch || 'master' }}"
 
   slow_otbn_crypto_tests:
     name: Slow OTBN Crypto Tests
