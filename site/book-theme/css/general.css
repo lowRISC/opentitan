@@ -143,6 +143,11 @@ h6:target::before {
     align-items: flex-start;
     justify-content: flex-end;
     flex-wrap: nowrap;
+    /* Small breathing space between the menu bar and the top of both
+       flex siblings (content and sidetoc). Keeping this on the shared
+       parent guarantees the sidetoc and .content start at the same y;
+       the sidetoc's sticky `top:` mirrors it below. */
+    padding-top: 1rem;
 }
 @media only screen and (max-width:1439px) {
     .content-wrapper {
