@@ -30,6 +30,14 @@ var updateDynamicHighlight = function() {
         }
     });
     if (!id) return;
+    // Special case: when scrolled to the very top of the page, always highlight
+    // the first heading. Otherwise the decision-point offset (which sits a few
+    // hundred px down the viewport) can land past the first heading and pick
+    // the second one, which contradicts the user's expectation that "at the top
+    // of the page" means "the first heading is current".
+    if (window.pageYOffset <= 1 && elements.length > 0) {
+        id = elements[0];
+    }
     // Add the matching <a> pagetoc element to the "active" class (i.e. highlighted).
     // Also scroll the ToC so this element is in-view.
     let pagetoc = document.getElementsByClassName("pagetoc")[0];
