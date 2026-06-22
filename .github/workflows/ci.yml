@@ -693,7 +693,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: lowRISC/qemu
-          ref: v9.2.0-2025-02-11
+          ref: v10.2.0-2026-01-15
           path: qemu
       - name: Check that overrides works
         run: |
