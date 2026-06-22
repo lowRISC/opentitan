@@ -1040,6 +1040,32 @@ def create_alert_lpgs(top: ConfigT, name_to_block: IpBlocksT):
                     alert['lpg_idx'] = outgoing_lpg_dict[
                         module['outgoing_alert']][lpg_name]
 
+    # Create chiplevel signal definitions for outgoing LPG indication signals
+    sigdefs = []
+    for alert_group, lpgs in top['outgoing_alert_lpgs'].items():
+        if not lpgs:
+            continue
+        for prefix in ("outgoing_lpg_cg_en", "outgoing_lpg_rst_en"):
+            sigdefs.append(
+                OrderedDict([('package', 'prim_mubi_pkg'),
+                             ('struct', 'mubi4'),
+                             ('domain', 'chip'),
+                             ('signame', f"{prefix}_{alert_group}"),
+                             ('width', len(lpgs)),
+                             ('type', 'uni'),
+                             ('special', 'alert'),
+                             ('end_idx', -1),
+                             ('act', 'req'),
+                             ('suffix', ''),
+                             ('default', 'prim_mubi_pkg::MuBi4True')]))
+
+    # Add to inter-pd definitions, avoid duplicates
+    topdefs = top.setdefault("inter_pd",
+                             defaultdict()).setdefault("definitions", [])
+    for sd in sigdefs:
+        if sd["signame"] not in [td["signame"] for td in topdefs]:
+            topdefs.append(sd)
+
 
 def get_interrupt_modules(top: ConfigT,
                           name_to_block: IpBlocksT,

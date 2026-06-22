@@ -8,6 +8,12 @@
 <%
 domain_has_clkmgr = lib.find_module(top["module"], "clkmgr", domain=domain) is not None
 domain_has_rstmgr = lib.find_module(top["module"], "rstmgr", domain=domain) is not None
+domain_has_alert_handler = lib.find_module(top["module"], "alert_handler", domain=domain) is not None
+# Without an alert handler in this domain, nothing consumes the clock gating and reset
+# enable indication signals. Tie them off if they enter this domain as inputs (in the
+# clkmgr / rstmgr domains they are consumed by the output ports).
+tie_off_cg_en = domain_has_alert_handler or not domain_has_clkmgr
+tie_off_rst_en = domain_has_alert_handler or not domain_has_rstmgr
 # get all known typed clocks and add them to a dict
 # this is used to generate the tie-off assignments further below
 clocks = top['clocks']
@@ -46,7 +52,7 @@ for m in lib.get_all_modules(top, domain=domain):
     if lib.is_shadowed_port(name_to_block[m['type']], port):
       unused_resets.discard(lib.get_reset_path(top, {'name': reset['name'], 'domain': reset['domain']}, domain, True))
 %>\
-% if lib.find_module(top["module"], "alert_handler", domain=domain):
+% if domain_has_alert_handler:
   // Alert handler low power groups (LPGs)
   prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_cg_en;
   prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_rst_en;
@@ -72,21 +78,31 @@ for m in lib.get_all_modules(top, domain=domain):
   % endfor
 % endfor
 
+% endif
+% if tie_off_cg_en or tie_off_rst_en:
 // Tie off unused clock- and reset enables
 //VCS coverage off
 // pragma coverage off
+% if tie_off_cg_en:
   prim_mubi_pkg::mubi4_t [${len(unused_cg_en)-1}:0] unused_cg_en;
+% endif
+% if tie_off_rst_en:
   prim_mubi_pkg::mubi4_t [${len(unused_rst_en)-1}:0] unused_rst_en;
+% endif
 
+% if tie_off_cg_en:
 % for i, clk in enumerate(sorted(unused_cg_en)):
   assign unused_cg_en[${i}] = ${clk};
 % endfor
 
+% endif
+% if tie_off_rst_en:
 % for i, rst in enumerate(sorted(unused_rst_en)):
   assign unused_rst_en[${i}] = ${rst};
 % endfor
 // pragma coverage on
 //VCS coverage on
+% endif
 
 % endif\
 

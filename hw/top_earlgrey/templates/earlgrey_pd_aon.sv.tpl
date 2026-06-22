@@ -14,9 +14,11 @@ cio_info = {}
 `include "prim_assert.sv"
 
 module ${top["name"]}_pd_${domain.lower()} #(
+% if top["name"] != "englishbreakfast":
   // TODO Manual parameters for pwrmgr
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,
+% endif
 <%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=domain, feedthrough=False" />\
 ) (
 <%include file="/toplevel_snippets/port_intermodule_signals.tpl" args="top=top, domain=domain, last_snippet=False" />\
