@@ -164,9 +164,6 @@ opentitan_test(
             ":modify_digest": "modify_digest",
         },
         test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
             --exec="no-op --info='##### Prepare CDI cert page'"
             --exec="bootstrap --clear-uart=true {firmware}"
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
@@ -180,6 +177,8 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
             no-op
         """,
+        testopt_bootstrap = "False",
+        testopt_clear_before_test = "True",
     ),
     deps = [
         "//sw/device/lib/base:status",

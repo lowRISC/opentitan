@@ -591,8 +591,6 @@ STACK_UTILIZATION_FPGA_PARAMS = {
             # This is a manual test.  Run it with:
             #     --test_output=streamed --copt=-DSTACK_UTILIZATION_CHECK
             ###########################################################################'"
-            --exec="transport init"
-            --exec="fpga load-bitstream {bitstream}"
 
             --exec="no-op --info '### Measuring stack utilization for bootstrap slot A'"
             --exec="bootstrap --clear-uart=true --leave-in-bootstrap {good_a}"
@@ -635,6 +633,7 @@ STACK_UTILIZATION_FPGA_PARAMS = {
             --exec="console --non-interactive --exit-success='{stack_usage}' --exit-failure='PASS|FAIL'"
             no-op
         """,
+        testopt_bootstrap = "False",
     )
     for fpga in ["cw340"]
 }
