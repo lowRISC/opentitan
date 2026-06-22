@@ -161,6 +161,10 @@ typedef struct entropy_src_config {
    */
   multi_bit_bool_t single_bit_mode;
   /**
+   * Scope of the health checks.
+   */
+  multi_bit_bool_t threshold_scope;
+  /**
    * The size of the window used for health tests.
    */
   uint16_t fips_test_window_size;
@@ -248,6 +252,7 @@ static const entropy_complex_config_t
                         .route_to_firmware = kMultiBitBool4False,
                         .bypass_conditioner = kMultiBitBool4False,
                         .single_bit_mode = kMultiBitBool4False,
+                        .threshold_scope = kMultiBitBool4False,
                         .fips_test_window_size = 0x200,
                         .alert_threshold = 2,
                         // TODO(#19392): Figure out appropriate thresholds.
@@ -329,7 +334,8 @@ static const entropy_complex_config_t
                     .route_to_firmware = kMultiBitBool4False,
                     .bypass_conditioner = kMultiBitBool4False,
                     .single_bit_mode = kMultiBitBool4False,
-                    .fips_test_window_size = 2048,
+                    .threshold_scope = kMultiBitBool4True,
+                    .fips_test_window_size = 512,
                     .alert_threshold = 4,
                     .repcnt_threshold = 81,
                     .repcnts_threshold = 21,
@@ -816,7 +822,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
                                 ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
                                 config->route_to_firmware);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
-                                kMultiBitBool4False);
+                                config->threshold_scope);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
                                 config->single_bit_mode);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, 0);
