@@ -47,6 +47,7 @@ filesets:
       - lowrisc:systems:top_englishbreakfast_pkg
       - lowrisc:englishbreakfast_constants:top_pkg
     files:
+      - rtl/autogen/top_englishbreakfast.sv
       - rtl/autogen/englishbreakfast_pd_main.sv
       - rtl/autogen/englishbreakfast_pd_aon.sv
     file_type: systemVerilogSource

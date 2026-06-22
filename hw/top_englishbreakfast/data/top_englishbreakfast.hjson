@@ -12,8 +12,6 @@
   // Power information for the design
   power: {
     // Power domains supported by the design
-    // Aon represents domain aon
-    // 0 represents domain 0
     domains: ["Aon", "Main"],
 
     // Default power domain used for the design
@@ -772,12 +770,7 @@
         // Xbars
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
-        'pinmux_aon.dft_jtag',
-
-        // OTP HW_CFG Broadcast signals.
-        // TODO(#6713): The actual struct breakout and mapping currently needs to
-        // be performed by hand in the toplevel template.
-        'sram_ctrl_main.otp_en_sram_ifetch'
+        'pinmux_aon.dft_jtag'
     ],
 
     // ext is to create port in the top.
@@ -1005,8 +998,8 @@
       { instance: 'spi_device',      port: 'sd[2]', connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
       { instance: 'spi_device',      port: 'sd[3]', connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
       // USBDEV
-      { instance: 'usbdev',          port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dp', connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dn', connection: 'manual', pad: ''             , desc: ''},
       // MIOs
       { instance: "gpio",            port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
@@ -1042,13 +1035,16 @@
       chiplevel: {
         port_overrides: {
           'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
-          'pinmux_aon.usb_dnpullup_en'      : { unused: true },
           'pinmux_aon.dft_strap_test'       : { unused: true },
+          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en' },
+          'pinmux_aon.usb_dnpullup_en'      : { signal: 'usb_dn_pullup_en' },
+          'clkmgr_aon.cg_en'                : { unused: true },
+          'rstmgr_aon.rst_en'               : { unused: true },
           'usbdev.usb_tx_d'                 : { unused: true },
           'usbdev.usb_tx_se0'               : { unused: true },
           'usbdev.usb_tx_use_d_se0'         : { unused: true },
-          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
-          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
+          'usbdev.usb_rx_d'                 : { unused: true },
+          'usbdev.usb_rx_enable'            : { unused: true },
           'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
           'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
           'flash_ctrl.flash_power_down_h'   : { unused: true },
@@ -1111,6 +1107,11 @@
       // they are driven/consumed identically to the earlgrey verilator top.
       chiplevel: {
         port_overrides: {
+          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
+          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en'},
+          'pinmux_aon.usb_dnpullup_en'      : { signal: 'usb_dn_pullup_en'},
+          'clkmgr_aon.cg_en'                : { unused: true              },
+          'rstmgr_aon.rst_en'               : { unused: true              },
           'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
           'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'   },
           'usbdev.usb_tx_d'                 : { signal: 'usb_tx_d'        },
@@ -1119,7 +1120,6 @@
           'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'     },
           'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
           'rv_core_ibex.fpga_info'          : { unused: true              },
-          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
         }
       }
 

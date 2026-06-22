@@ -1,0 +1,1 @@
+../../top_earlgrey/templates/top_earlgrey.sv.tpl

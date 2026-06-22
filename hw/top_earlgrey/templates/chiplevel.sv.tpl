@@ -814,6 +814,32 @@ module chip_${top["name"]}_${target["name"]} #(
     aon: clk_aon
   };
 
+% endif\
+
+% if top["name"] == "englishbreakfast":
+
+  // Englishbreakfast doesn't use many AST signals
+  assign otp_macro_pwr_seq = '0;
+  assign adc_req           = '0;
+  assign es_rng_enable     = '0;
+  assign es_rng_fips       = '0;
+  assign ast_edn_rsp       = '0;
+  assign ast_alert_rsp     = '0;
+  assign lc_dft_en         = '0;
+  assign otp_obs           = '0;
+
+  logic unused_ast;
+
+  assign unused_ast = ^{
+    ast_init_done,
+    otp_macro_pwr_seq_h,
+    adc_rsp,
+    es_rng_valid,
+    es_rng_bit,
+    ast_edn_req,
+    ast_alert_req,
+    ast2pinmux
+  };
 % endif
 
   ast u_ast (
