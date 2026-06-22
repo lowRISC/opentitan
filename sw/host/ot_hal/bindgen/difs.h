@@ -39,7 +39,6 @@
 #include "hw/top/otbn_regs.h"           // Generated.
 #include "hw/top/otp_ctrl_regs.h"       // Generated.
 #include "hw/top/pinmux_regs.h"         // Generated.
-#include "hw/top/pwm_regs.h"            // Generated.
 #include "hw/top/pwrmgr_regs.h"         // Generated.
 #include "hw/top/rstmgr_regs.h"         // Generated.
 #include "hw/top/rv_timer_regs.h"       // Generated.

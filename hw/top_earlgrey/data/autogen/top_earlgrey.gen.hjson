@@ -586,7 +586,6 @@
             clkmgr_aon
             sysrst_ctrl_aon
             adc_ctrl_aon
-            pwm_aon
             pinmux_aon
             aon_timer_aon
             ast
@@ -4857,93 +4856,6 @@
         null:
         {
           hart: 0x40440000
-        }
-      }
-      generate_dif: true
-    }
-    {
-      name: pwm_aon
-      type: pwm
-      template_type: pwm
-      clock_srcs:
-      {
-        clk_i: io_div4
-        clk_core_i: aon
-      }
-      clock_group: peri
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: Aon
-        }
-        rst_core_ni:
-        {
-          name: lc_aon
-          domain: Aon
-        }
-      }
-      domain: Aon
-      attr: ipgen
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        clk_core_i: clkmgr_aon_clocks.clk_aon_peri
-      }
-      param_decl: {}
-      memory: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: racl_policies
-          desc:
-            '''
-            Incoming RACL policy vector from a racl_ctrl instance.
-            The policy selection vector (parameter) selects the policy for each register.
-            '''
-          struct: racl_policy_vec
-          package: top_racl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: pwm_aon
-          index: -1
-        }
-        {
-          name: racl_error
-          desc: RACL error log information of this module.
-          struct: racl_error_log
-          package: top_racl_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: pwm_aon
-          index: -1
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: pwm_aon
-          default: ""
-          end_idx: -1
-          top_type: one-to-one
-          top_signame: pwm_aon_tl
-          index: -1
-          external: true
-          conn_type: false
-        }
-      ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x40450000
         }
       }
       generate_dif: true
@@ -10649,10 +10561,6 @@
       [
         peri.tl_i2c2
       ]
-      pwm_aon.tl:
-      [
-        peri.tl_pwm_aon
-      ]
       gpio.tl:
       [
         peri.tl_gpio
@@ -11907,7 +11815,6 @@
           aon_timer_aon
           adc_ctrl_aon
           sysrst_ctrl_aon
-          pwm_aon
         ]
       }
       nodes:
@@ -12064,27 +11971,6 @@
               base_addrs:
               {
                 hart: 0x400a0000
-              }
-              size_byte: 0x80
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: pwm_aon
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: pwm
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x40450000
               }
               size_byte: 0x80
             }
@@ -12583,21 +12469,6 @@
           domain: Main
           top_signame: i2c2_tl
           index: -1
-        }
-        {
-          name: tl_pwm_aon
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: peri
-          width: 1
-          default: ""
-          domain: Main
-          top_signame: pwm_aon_tl
-          index: -1
-          external: true
-          conn_type: false
         }
         {
           name: tl_gpio
@@ -13704,14 +13575,6 @@
       }
       {
         instance: sensor_ctrl_aon
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: pwm_aon
         port: ""
         connection: muxed
         pad: ""
@@ -14922,78 +14785,6 @@
         glob_idx: 57
       }
       {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 0
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Aon
-        glob_idx: 58
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Aon
-        glob_idx: 59
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 2
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Aon
-        glob_idx: 60
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 3
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Aon
-        glob_idx: 61
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 4
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Aon
-        glob_idx: 62
-      }
-      {
-        name: pwm_aon_pwm
-        width: 6
-        type: output
-        idx: 5
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Aon
-        glob_idx: 63
-      }
-      {
         name: otp_macro_test
         width: 8
         type: output
@@ -15003,7 +14794,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 64
+        glob_idx: 58
       }
       {
         name: sysrst_ctrl_aon_bat_disable
@@ -15015,7 +14806,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 65
+        glob_idx: 59
       }
       {
         name: sysrst_ctrl_aon_key0_out
@@ -15027,7 +14818,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 66
+        glob_idx: 60
       }
       {
         name: sysrst_ctrl_aon_key1_out
@@ -15039,7 +14830,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 67
+        glob_idx: 61
       }
       {
         name: sysrst_ctrl_aon_key2_out
@@ -15051,7 +14842,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 68
+        glob_idx: 62
       }
       {
         name: sysrst_ctrl_aon_pwrb_out
@@ -15063,7 +14854,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 69
+        glob_idx: 63
       }
       {
         name: sysrst_ctrl_aon_z3_wakeup
@@ -15075,7 +14866,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 70
+        glob_idx: 64
       }
     ]
     io_counts:
@@ -15091,7 +14882,7 @@
       {
         inouts: 42
         inputs: 15
-        outputs: 29
+        outputs: 23
         pads: 47
       }
     }
@@ -16183,17 +15974,6 @@
       handler: alert_handler
       module_name: adc_ctrl_aon
       desc: adc_ctrl_aon fatal_fault alert
-      lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 13
-    }
-    {
-      name: pwm_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      handler: alert_handler
-      module_name: pwm_aon
-      desc: pwm_aon fatal_fault alert
       lpg_name: peri_lc_io_div4_Aon
       lpg_idx: 13
     }
@@ -18599,7 +18379,7 @@
         struct: alert_tx
         domain: chip
         signame: alert_tx_pd_aon
-        width: 12
+        width: 11
         type: uni
         special: alert
         end_idx: -1
@@ -18612,7 +18392,7 @@
         struct: alert_rx
         domain: chip
         signame: alert_rx_pd_aon
-        width: 12
+        width: 11
         type: uni
         special: alert
         end_idx: -1
@@ -18919,30 +18699,6 @@
         act: rcv
         suffix: ""
         default: "'0"
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: chip
-        signame: pwm_aon_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: chip
-        signame: pwm_aon_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: tlul_pkg::TL_D2H_DEFAULT
       }
       {
         package: tlul_pkg
@@ -19452,30 +19208,6 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_pwm_aon_pwm_d2p
-        width: 6
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: cio_pwm_aon_pwm_en_d2p
-        width: 6
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
         signame: cio_sensor_ctrl_aon_ast_debug_out_d2p
         width: 9
         type: uni
@@ -19520,7 +19252,6 @@
     clkmgr_aon
     sysrst_ctrl_aon
     adc_ctrl_aon
-    pwm_aon
     pinmux_aon
     aon_timer_aon
     sensor_ctrl_aon
@@ -19751,72 +19482,72 @@
         alert_handler[27]: fatal_fault
       ]
     }
-    module_pwm_aon:
+    module_pinmux_aon:
     {
-      tx_expr: alert_tx_o[7]
-      rx_expr: alert_rx_i[7]
+      tx_expr: alert_tx[28]
+      rx_expr: alert_rx[28]
       async_expr: alert_handler_reg_pkg::AsyncOn[28]
       comments:
       [
         alert_handler[28]: fatal_fault
       ]
     }
-    module_pinmux_aon:
+    module_aon_timer_aon:
     {
-      tx_expr: alert_tx[29]
-      rx_expr: alert_rx[29]
+      tx_expr: alert_tx_o[7]
+      rx_expr: alert_rx_i[7]
       async_expr: alert_handler_reg_pkg::AsyncOn[29]
       comments:
       [
         alert_handler[29]: fatal_fault
       ]
     }
-    module_aon_timer_aon:
-    {
-      tx_expr: alert_tx_o[8]
-      rx_expr: alert_rx_i[8]
-      async_expr: alert_handler_reg_pkg::AsyncOn[30]
-      comments:
-      [
-        alert_handler[30]: fatal_fault
-      ]
-    }
     module_sensor_ctrl_aon:
     {
-      tx_expr: alert_tx_o[10:9]
-      rx_expr: alert_rx_i[10:9]
-      async_expr: alert_handler_reg_pkg::AsyncOn[32:31]
+      tx_expr: alert_tx_o[9:8]
+      rx_expr: alert_rx_i[9:8]
+      async_expr: alert_handler_reg_pkg::AsyncOn[31:30]
       comments:
       [
-        alert_handler[31]: recov_alert
-        alert_handler[32]: fatal_alert
+        alert_handler[30]: recov_alert
+        alert_handler[31]: fatal_alert
       ]
     }
     module_sram_ctrl_ret_aon:
     {
-      tx_expr: alert_tx_o[11]
-      rx_expr: alert_rx_i[11]
-      async_expr: alert_handler_reg_pkg::AsyncOn[33]
+      tx_expr: alert_tx_o[10]
+      rx_expr: alert_rx_i[10]
+      async_expr: alert_handler_reg_pkg::AsyncOn[32]
       comments:
       [
-        alert_handler[33]: fatal_error
+        alert_handler[32]: fatal_error
       ]
     }
     module_flash_ctrl:
     {
-      tx_expr: alert_tx[38:34]
-      rx_expr: alert_rx[38:34]
-      async_expr: alert_handler_reg_pkg::AsyncOn[38:34]
+      tx_expr: alert_tx[37:33]
+      rx_expr: alert_rx[37:33]
+      async_expr: alert_handler_reg_pkg::AsyncOn[37:33]
       comments:
       [
-        alert_handler[34]: recov_err
-        alert_handler[35]: fatal_std_err
-        alert_handler[36]: fatal_err
-        alert_handler[37]: fatal_prim_flash_alert
-        alert_handler[38]: recov_prim_flash_alert
+        alert_handler[33]: recov_err
+        alert_handler[34]: fatal_std_err
+        alert_handler[35]: fatal_err
+        alert_handler[36]: fatal_prim_flash_alert
+        alert_handler[37]: recov_prim_flash_alert
       ]
     }
     module_rv_dm:
+    {
+      tx_expr: alert_tx[38]
+      rx_expr: alert_rx[38]
+      async_expr: alert_handler_reg_pkg::AsyncOn[38]
+      comments:
+      [
+        alert_handler[38]: fatal_fault
+      ]
+    }
+    module_rv_plic:
     {
       tx_expr: alert_tx[39]
       rx_expr: alert_rx[39]
@@ -19826,145 +19557,135 @@
         alert_handler[39]: fatal_fault
       ]
     }
-    module_rv_plic:
-    {
-      tx_expr: alert_tx[40]
-      rx_expr: alert_rx[40]
-      async_expr: alert_handler_reg_pkg::AsyncOn[40]
-      comments:
-      [
-        alert_handler[40]: fatal_fault
-      ]
-    }
     module_aes:
     {
-      tx_expr: alert_tx[42:41]
-      rx_expr: alert_rx[42:41]
-      async_expr: alert_handler_reg_pkg::AsyncOn[42:41]
+      tx_expr: alert_tx[41:40]
+      rx_expr: alert_rx[41:40]
+      async_expr: alert_handler_reg_pkg::AsyncOn[41:40]
       comments:
       [
-        alert_handler[41]: recov_ctrl_update_err
-        alert_handler[42]: fatal_fault
+        alert_handler[40]: recov_ctrl_update_err
+        alert_handler[41]: fatal_fault
       ]
     }
     module_hmac:
     {
-      tx_expr: alert_tx[43]
-      rx_expr: alert_rx[43]
-      async_expr: alert_handler_reg_pkg::AsyncOn[43]
+      tx_expr: alert_tx[42]
+      rx_expr: alert_rx[42]
+      async_expr: alert_handler_reg_pkg::AsyncOn[42]
       comments:
       [
-        alert_handler[43]: fatal_fault
+        alert_handler[42]: fatal_fault
       ]
     }
     module_kmac:
     {
-      tx_expr: alert_tx[45:44]
-      rx_expr: alert_rx[45:44]
-      async_expr: alert_handler_reg_pkg::AsyncOn[45:44]
+      tx_expr: alert_tx[44:43]
+      rx_expr: alert_rx[44:43]
+      async_expr: alert_handler_reg_pkg::AsyncOn[44:43]
       comments:
       [
-        alert_handler[44]: recov_operation_err
-        alert_handler[45]: fatal_fault_err
+        alert_handler[43]: recov_operation_err
+        alert_handler[44]: fatal_fault_err
       ]
     }
     module_otbn:
     {
-      tx_expr: alert_tx[47:46]
-      rx_expr: alert_rx[47:46]
-      async_expr: alert_handler_reg_pkg::AsyncOn[47:46]
+      tx_expr: alert_tx[46:45]
+      rx_expr: alert_rx[46:45]
+      async_expr: alert_handler_reg_pkg::AsyncOn[46:45]
       comments:
       [
-        alert_handler[46]: fatal
-        alert_handler[47]: recov
+        alert_handler[45]: fatal
+        alert_handler[46]: recov
       ]
     }
     module_keymgr:
     {
-      tx_expr: alert_tx[49:48]
-      rx_expr: alert_rx[49:48]
-      async_expr: alert_handler_reg_pkg::AsyncOn[49:48]
+      tx_expr: alert_tx[48:47]
+      rx_expr: alert_rx[48:47]
+      async_expr: alert_handler_reg_pkg::AsyncOn[48:47]
       comments:
       [
-        alert_handler[48]: recov_operation_err
-        alert_handler[49]: fatal_fault_err
+        alert_handler[47]: recov_operation_err
+        alert_handler[48]: fatal_fault_err
       ]
     }
     module_csrng:
     {
-      tx_expr: alert_tx[51:50]
-      rx_expr: alert_rx[51:50]
-      async_expr: alert_handler_reg_pkg::AsyncOn[51:50]
+      tx_expr: alert_tx[50:49]
+      rx_expr: alert_rx[50:49]
+      async_expr: alert_handler_reg_pkg::AsyncOn[50:49]
       comments:
       [
-        alert_handler[50]: recov_alert
-        alert_handler[51]: fatal_alert
+        alert_handler[49]: recov_alert
+        alert_handler[50]: fatal_alert
       ]
     }
     module_entropy_src:
     {
-      tx_expr: alert_tx[53:52]
-      rx_expr: alert_rx[53:52]
-      async_expr: alert_handler_reg_pkg::AsyncOn[53:52]
+      tx_expr: alert_tx[52:51]
+      rx_expr: alert_rx[52:51]
+      async_expr: alert_handler_reg_pkg::AsyncOn[52:51]
       comments:
       [
-        alert_handler[52]: recov_alert
-        alert_handler[53]: fatal_alert
+        alert_handler[51]: recov_alert
+        alert_handler[52]: fatal_alert
       ]
     }
     module_edn0:
     {
-      tx_expr: alert_tx[55:54]
-      rx_expr: alert_rx[55:54]
-      async_expr: alert_handler_reg_pkg::AsyncOn[55:54]
+      tx_expr: alert_tx[54:53]
+      rx_expr: alert_rx[54:53]
+      async_expr: alert_handler_reg_pkg::AsyncOn[54:53]
       comments:
       [
-        alert_handler[54]: recov_alert
-        alert_handler[55]: fatal_alert
+        alert_handler[53]: recov_alert
+        alert_handler[54]: fatal_alert
       ]
     }
     module_edn1:
     {
-      tx_expr: alert_tx[57:56]
-      rx_expr: alert_rx[57:56]
-      async_expr: alert_handler_reg_pkg::AsyncOn[57:56]
+      tx_expr: alert_tx[56:55]
+      rx_expr: alert_rx[56:55]
+      async_expr: alert_handler_reg_pkg::AsyncOn[56:55]
       comments:
       [
-        alert_handler[56]: recov_alert
-        alert_handler[57]: fatal_alert
+        alert_handler[55]: recov_alert
+        alert_handler[56]: fatal_alert
       ]
     }
     module_sram_ctrl_main:
+    {
+      tx_expr: alert_tx[57]
+      rx_expr: alert_rx[57]
+      async_expr: alert_handler_reg_pkg::AsyncOn[57]
+      comments:
+      [
+        alert_handler[57]: fatal_error
+      ]
+    }
+    module_rom_ctrl:
     {
       tx_expr: alert_tx[58]
       rx_expr: alert_rx[58]
       async_expr: alert_handler_reg_pkg::AsyncOn[58]
       comments:
       [
-        alert_handler[58]: fatal_error
-      ]
-    }
-    module_rom_ctrl:
-    {
-      tx_expr: alert_tx[59]
-      rx_expr: alert_rx[59]
-      async_expr: alert_handler_reg_pkg::AsyncOn[59]
-      comments:
-      [
-        alert_handler[59]: fatal
+        alert_handler[58]: fatal
       ]
     }
     module_rv_core_ibex:
     {
-      tx_expr: alert_tx[63:60]
-      rx_expr: alert_rx[63:60]
-      async_expr: alert_handler_reg_pkg::AsyncOn[63:60]
+      tx_expr: alert_tx[62:59]
+      rx_expr: alert_rx[62:59]
+      async_expr: alert_handler_reg_pkg::AsyncOn[62:59]
       comments:
       [
-        alert_handler[60]: fatal_sw_err
-        alert_handler[61]: recov_sw_err
-        alert_handler[62]: fatal_hw_err
-        alert_handler[63]: recov_hw_err
+        alert_handler[59]: fatal_sw_err
+        alert_handler[60]: recov_sw_err
+        alert_handler[61]: fatal_hw_err
+        alert_handler[62]: recov_hw_err
       ]
     }
   }
@@ -19973,10 +19694,10 @@
     alert_handler:
     {
       domain: Main
-      count_tot: 64
+      count_tot: 63
       count_pd:
       {
-        Aon: 12
+        Aon: 11
         Main: 52
       }
       connect_pd:
@@ -20016,7 +19737,7 @@
           src_pd: Aon
           idx: 6
         }
-        28:
+        29:
         {
           src_pd: Aon
           idx: 7
@@ -20035,11 +19756,6 @@
         {
           src_pd: Aon
           idx: 10
-        }
-        33:
-        {
-          src_pd: Aon
-          idx: 11
         }
       }
     }
@@ -23594,48 +23310,6 @@
         conn_type: false
       }
       {
-        name: racl_policies
-        desc:
-          '''
-          Incoming RACL policy vector from a racl_ctrl instance.
-          The policy selection vector (parameter) selects the policy for each register.
-          '''
-        struct: racl_policy_vec
-        package: top_racl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: pwm_aon
-        index: -1
-      }
-      {
-        name: racl_error
-        desc: RACL error log information of this module.
-        struct: racl_error_log
-        package: top_racl_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: pwm_aon
-        index: -1
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: pwm_aon
-        default: ""
-        end_idx: -1
-        top_type: one-to-one
-        top_signame: pwm_aon_tl
-        index: -1
-        external: true
-        conn_type: false
-      }
-      {
         name: lc_hw_debug_clr
         desc: Debug clear signal coming from life cycle controller, used for HW strap qualification.
         struct: lc_tx
@@ -27129,21 +26803,6 @@
         index: -1
       }
       {
-        name: tl_pwm_aon
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: peri
-        width: 1
-        default: ""
-        domain: Main
-        top_signame: pwm_aon_tl
-        index: -1
-        external: true
-        conn_type: false
-      }
-      {
         name: tl_gpio
         struct: tl
         package: tlul_pkg
@@ -28516,86 +28175,6 @@
           3
         ]
         netname: pwrmgr_aon_wakeups
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Aon
-        inter_pd: true
-        signame: pwm_aon_tl_req_i
-        signame_chip:
-        {
-          asic: pwm_aon_tl_req
-          cw310: pwm_aon_tl_req
-          cw340: pwm_aon_tl_req
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: pwm_aon_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Aon
-        inter_pd: true
-        signame: pwm_aon_tl_rsp_o
-        signame_chip:
-        {
-          asic: pwm_aon_tl_rsp
-          cw310: pwm_aon_tl_rsp
-          cw340: pwm_aon_tl_rsp
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: pwm_aon_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
-        inter_pd: true
-        signame: pwm_aon_tl_req_o
-        signame_chip:
-        {
-          asic: pwm_aon_tl_req
-          cw310: pwm_aon_tl_req
-          cw340: pwm_aon_tl_req
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: pwm_aon_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        inter_pd: true
-        signame: pwm_aon_tl_rsp_i
-        signame_chip:
-        {
-          asic: pwm_aon_tl_rsp
-          cw310: pwm_aon_tl_rsp
-          cw340: pwm_aon_tl_rsp
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: pwm_aon_tl_d2h
       }
       {
         package: tlul_pkg
@@ -31551,86 +31130,6 @@
         conn_type: false
         index: -1
         netname: cio_sysrst_ctrl_aon_z3_wakeup_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_pwm_aon_pwm_d2p_o
-        signame_chip:
-        {
-          asic: cio_pwm_aon_pwm_d2p
-          cw310: cio_pwm_aon_pwm_d2p
-          cw340: cio_pwm_aon_pwm_d2p
-        }
-        width: 6
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_pwm_aon_pwm_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_pwm_aon_pwm_d2p_i
-        signame_chip:
-        {
-          asic: cio_pwm_aon_pwm_d2p
-          cw310: cio_pwm_aon_pwm_d2p
-          cw340: cio_pwm_aon_pwm_d2p
-        }
-        width: 6
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_pwm_aon_pwm_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_pwm_aon_pwm_en_d2p_o
-        signame_chip:
-        {
-          asic: cio_pwm_aon_pwm_en_d2p
-          cw310: cio_pwm_aon_pwm_en_d2p
-          cw340: cio_pwm_aon_pwm_en_d2p
-        }
-        width: 6
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_pwm_aon_pwm_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_pwm_aon_pwm_en_d2p_i
-        signame_chip:
-        {
-          asic: cio_pwm_aon_pwm_en_d2p
-          cw310: cio_pwm_aon_pwm_en_d2p
-          cw340: cio_pwm_aon_pwm_en_d2p
-        }
-        width: 6
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_pwm_aon_pwm_en_d2p
       }
       {
         package: ""

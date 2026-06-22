@@ -33,8 +33,8 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
+#include "hw/top/aon_timer_regs.h"
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top/pwm_regs.h"
 #include "hw/top/rv_timer_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -75,7 +75,8 @@ volatile uint32_t *kMMIOTestLoc1 =
 const uint32_t kMMIOTestLoc1Content = 0x126d8c15;  // a random value
 
 volatile uint32_t *kMMIOTestLoc2 =
-    (uint32_t *)(TOP_EARLGREY_PWM_AON_BASE_ADDR + PWM_DUTY_CYCLE_0_REG_OFFSET);
+    (uint32_t *)(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR +
+                 AON_TIMER_WKUP_THOLD_HI_REG_OFFSET);
 const uint32_t kMMIOTestLoc2Content = 0xe4210e64;  // a random value
 
 /**

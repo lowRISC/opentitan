@@ -170,11 +170,6 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::PINMUX_MIO_PAD_ATTR_0_REG_OFFSET,
         ),
         (
-            "pwm",
-            top_earlgrey::PWM_AON_BASE_ADDR,
-            dif::PWM_INVERT_REG_OFFSET,
-        ),
-        (
             "pwrmgr",
             top_earlgrey::PWRMGR_AON_BASE_ADDR,
             dif::PWRMGR_INTR_ENABLE_REG_OFFSET,

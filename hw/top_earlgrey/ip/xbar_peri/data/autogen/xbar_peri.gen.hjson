@@ -56,7 +56,6 @@
       aon_timer_aon
       adc_ctrl_aon
       sysrst_ctrl_aon
-      pwm_aon
     ]
   }
   nodes:
@@ -213,27 +212,6 @@
           base_addrs:
           {
             hart: 0x400a0000
-          }
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      req_fifo_pass: true
-    }
-    {
-      name: pwm_aon
-      type: device
-      clock: clk_peri_i
-      reset: rst_peri_ni
-      pipeline: false
-      inst_type: pwm
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x40450000
           }
           size_byte: 0x80
         }
@@ -732,21 +710,6 @@
       domain: Main
       top_signame: i2c2_tl
       index: -1
-    }
-    {
-      name: tl_pwm_aon
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: peri
-      width: 1
-      default: ""
-      domain: Main
-      top_signame: pwm_aon_tl
-      index: -1
-      external: true
-      conn_type: false
     }
     {
       name: tl_gpio

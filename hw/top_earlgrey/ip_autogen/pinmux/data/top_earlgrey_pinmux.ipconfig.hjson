@@ -9,7 +9,7 @@
     wkup_cnt_width: 8
     n_mio_pads: 47
     n_mio_periph_in: 57
-    n_mio_periph_out: 71
+    n_mio_periph_out: 65
     n_dio_pads: 16
     n_dio_periph_in: 14
     n_dio_periph_out: 14

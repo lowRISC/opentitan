@@ -136,7 +136,6 @@ opentitan_test(
         "//sw/device/lib/dif/autogen:otbn",
         "//sw/device/lib/dif/autogen:otp_ctrl",
         "//sw/device/lib/dif/autogen:pinmux",
-        "//sw/device/lib/dif/autogen:pwm",
         "//sw/device/lib/dif/autogen:pwrmgr",
         "//sw/device/lib/dif/autogen:rom_ctrl",
         "//sw/device/lib/dif/autogen:rstmgr",

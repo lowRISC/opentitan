@@ -19,7 +19,6 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
@@ -46,7 +45,6 @@
 #include "hw/top/hmac_regs.h"         // Generated.
 #include "hw/top/i2c_regs.h"          // Generated.
 #include "hw/top/kmac_regs.h"         // Generated.
-#include "hw/top/pwm_regs.h"          // Generated.
 #include "hw/top/spi_host_regs.h"     // Generated.
 #include "hw/top/uart_regs.h"         // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -73,7 +71,6 @@ static dif_i2c_t i2c_2;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
 static dif_pinmux_t pinmux;
-static dif_pwm_t pwm;
 static dif_rstmgr_t rstmgr;
 static dif_rv_plic_t rv_plic;
 static dif_spi_device_handle_t spi_device;
@@ -145,13 +142,6 @@ enum {
    * UART parameters.
    */
   kUartFifoDepth = 32,
-  /**
-   * PWM parameters.
-   */
-  kPwmClockDivisor = 1,
-  kPwmBeatsPerCycle = 2,
-  kPwmOnBeats = 1,
-  kPwmPhaseDelayBeats = 0,
   /**
    * SPI Host parameters.
    */
@@ -380,8 +370,6 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host_1));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-  CHECK_DIF_OK(dif_pwm_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
@@ -478,30 +466,6 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselI2c2Scl));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
                                         kTopEarlgreyPinmuxOutselI2c2Sda));
-
-  // PWM:
-  //    Channel 0 on IOB1
-  //    Channel 1 on IOB2
-  //    Channel 2 on IOR5
-  //    Channel 3 on IOR6
-  //    Channel 4 on IOR7
-  //    Channel 5 on IOR10
-  // Apply this channel 0 configuration only for the FPGA.
-  // For the simulation, apply the config in configure_pinmux_sim().
-  if (kDeviceType == kDeviceFpgaCw305 || kDeviceType == kDeviceFpgaCw310) {
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
-                                          kTopEarlgreyPinmuxOutselPwmAonPwm0));
-  }
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm1));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor5,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm2));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor6,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm3));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor7,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm4));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor10,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm5));
 
   // Apply this configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
@@ -647,14 +611,6 @@ static void configure_pinmux_sim(void) {
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor13,
                                         kTopEarlgreyPinmuxOutselUart2Tx));
-
-  // PWM (Simulation):
-  // On FPGA, PWM channel 0 uses IOB1.
-  // In chip_if.sv, IOB1 is connected to the spi_device_agent1.
-  // To prevent contamination in DVSIM, switch PWM 0 to another available MIO.
-  //    Channel 0 on IOR11
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor11,
-                                        kTopEarlgreyPinmuxOutselPwmAonPwm0));
 
   // Configure fast slew rate, strong drive strength, and weak pull-ups for SPI
   // Host 0 pads.
@@ -982,35 +938,6 @@ static void configure_spi_host(const dif_spi_host_t *spi_host, bool enable) {
       bitfield_bit32_write(0, SPI_HOST_CONTROL_SPIEN_BIT, enable));
 }
 
-void configure_pwm(void) {
-  CHECK_DIF_OK(
-      dif_pwm_configure(&pwm, (dif_pwm_config_t){
-                                  .clock_divisor = kPwmClockDivisor,
-                                  .beats_per_pulse_cycle = kPwmBeatsPerCycle,
-                              }));
-  CHECK_DIF_OK(dif_pwm_channels_set_enabled(
-      &pwm, (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleDisabled));
-  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_configure_channel(&pwm, i,
-                                  (dif_pwm_channel_config_t){
-                                      .duty_cycle_a = kPwmOnBeats,
-                                      .duty_cycle_b = 0,  // unused
-                                      .phase_delay = kPwmPhaseDelayBeats,
-                                      .mode = kDifPwmModeFirmware,
-                                      .polarity = kDifPwmPolarityActiveHigh,
-                                      .blink_parameter_x = 0,  // unused
-                                      .blink_parameter_y = 0,  // unused
-                                  }));
-  }
-
-  // Enable all the PWM channels. The outputs will start toggling
-  // after the phase counter is enabled (i.e, PWM_CFG_REG.CNTR_EN = 1).
-  CHECK_DIF_OK(dif_pwm_channels_set_enabled(
-      &pwm,
-      /*channels*/ (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleEnabled));
-}
-
 static void configure_otbn(void) {
   CHECK_STATUS_OK(otbn_testutils_rsa_load(&otbn));
 }
@@ -1226,11 +1153,6 @@ static void max_power(void) {
   adc_ctrl_reg = bitfield_bit32_write(adc_ctrl_reg,
                                       ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true);
 
-  // Prepare PWM channels for the enablement. The outputs will start toggling
-  // after the phase counter is enabled (i.e, PWM_CFG_REG.CNTR_EN = 1).
-  uint32_t pwm_cfg_reg = mmio_region_read32(pwm.base_addr, PWM_CFG_REG_OFFSET);
-  pwm_cfg_reg = bitfield_bit32_write(pwm_cfg_reg, PWM_CFG_CNTR_EN_BIT, true);
-
   // Prepare GPIO register values (for max power indicator).
   const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
   const uint32_t gpio_off_reg_val = 1u << 16;
@@ -1242,9 +1164,6 @@ static void max_power(void) {
   // Enable adc_ctrl
   mmio_region_write32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
                       adc_ctrl_reg);
-
-  // Enable toggling at all PWM channels by enabling the phase counter.
-  mmio_region_write32(pwm.base_addr, PWM_CFG_REG_OFFSET, pwm_cfg_reg);
 
   // Enable all UARTs and I2Cs.
   mmio_region_write32(uart_1.base_addr, UART_CTRL_REG_OFFSET, uart_ctrl_reg);
@@ -1471,7 +1390,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spi_device, /*filters=*/0,
       /*upload_write_commands=*/false));
-  configure_pwm();
   LOG_INFO("All IPs configured.");
 
   // ***************************************************************************

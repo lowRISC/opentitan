@@ -1142,8 +1142,8 @@ module chip_earlgrey_asic #(
 
   // Inter-Power Domain signals
   logic [6:0] intr_vector_pd_aon;
-  prim_alert_pkg::alert_tx_t [11:0] alert_tx_pd_aon;
-  prim_alert_pkg::alert_rx_t [11:0] alert_rx_pd_aon;
+  prim_alert_pkg::alert_tx_t [10:0] alert_tx_pd_aon;
+  prim_alert_pkg::alert_rx_t [10:0] alert_rx_pd_aon;
   alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t       alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t       alert_handler_esc_tx;
@@ -1169,8 +1169,6 @@ module chip_earlgrey_asic #(
   rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
   logic       rv_dm_ndmreset_req;
   logic [1:0] pwrmgr_aon_wakeups;
-  tlul_pkg::tl_h2d_t       pwm_aon_tl_req;
-  tlul_pkg::tl_d2h_t       pwm_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
   tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
@@ -1213,8 +1211,6 @@ module chip_earlgrey_asic #(
   logic       cio_sysrst_ctrl_aon_pwrb_out_en_d2p;
   logic       cio_sysrst_ctrl_aon_z3_wakeup_d2p;
   logic       cio_sysrst_ctrl_aon_z3_wakeup_en_d2p;
-  logic [5:0] cio_pwm_aon_pwm_d2p;
-  logic [5:0] cio_pwm_aon_pwm_en_d2p;
   logic [8:0] cio_sensor_ctrl_aon_ast_debug_out_d2p;
   logic [8:0] cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
 
@@ -1288,8 +1284,6 @@ module chip_earlgrey_asic #(
     .rv_core_ibex_pwrmgr_o                     (rv_core_ibex_pwrmgr      ),
     .rv_dm_ndmreset_req_o                      (rv_dm_ndmreset_req       ),
     .pwrmgr_aon_wakeups_o                      (pwrmgr_aon_wakeups       ),
-    .pwm_aon_tl_req_o                          (pwm_aon_tl_req           ),
-    .pwm_aon_tl_rsp_i                          (pwm_aon_tl_rsp           ),
     .pwrmgr_aon_tl_req_o                       (pwrmgr_aon_tl_req        ),
     .pwrmgr_aon_tl_rsp_i                       (pwrmgr_aon_tl_rsp        ),
     .rstmgr_aon_tl_req_o                       (rstmgr_aon_tl_req        ),
@@ -1332,8 +1326,6 @@ module chip_earlgrey_asic #(
     .cio_sysrst_ctrl_aon_pwrb_out_en_d2p_i     (cio_sysrst_ctrl_aon_pwrb_out_en_d2p),
     .cio_sysrst_ctrl_aon_z3_wakeup_d2p_i       (cio_sysrst_ctrl_aon_z3_wakeup_d2p),
     .cio_sysrst_ctrl_aon_z3_wakeup_en_d2p_i    (cio_sysrst_ctrl_aon_z3_wakeup_en_d2p),
-    .cio_pwm_aon_pwm_d2p_i                     (cio_pwm_aon_pwm_d2p      ),
-    .cio_pwm_aon_pwm_en_d2p_i                  (cio_pwm_aon_pwm_en_d2p   ),
     .cio_sensor_ctrl_aon_ast_debug_out_d2p_i   (cio_sensor_ctrl_aon_ast_debug_out_d2p),
     .cio_sensor_ctrl_aon_ast_debug_out_en_d2p_i(cio_sensor_ctrl_aon_ast_debug_out_en_d2p),
 
@@ -1425,8 +1417,6 @@ module chip_earlgrey_asic #(
     .rv_core_ibex_pwrmgr_i                     (rv_core_ibex_pwrmgr      ),
     .rv_dm_ndmreset_req_i                      (rv_dm_ndmreset_req       ),
     .pwrmgr_aon_wakeups_i                      (pwrmgr_aon_wakeups       ),
-    .pwm_aon_tl_req_i                          (pwm_aon_tl_req           ),
-    .pwm_aon_tl_rsp_o                          (pwm_aon_tl_rsp           ),
     .pwrmgr_aon_tl_req_i                       (pwrmgr_aon_tl_req        ),
     .pwrmgr_aon_tl_rsp_o                       (pwrmgr_aon_tl_rsp        ),
     .rstmgr_aon_tl_req_i                       (rstmgr_aon_tl_req        ),
@@ -1469,8 +1459,6 @@ module chip_earlgrey_asic #(
     .cio_sysrst_ctrl_aon_pwrb_out_en_d2p_o     (cio_sysrst_ctrl_aon_pwrb_out_en_d2p),
     .cio_sysrst_ctrl_aon_z3_wakeup_d2p_o       (cio_sysrst_ctrl_aon_z3_wakeup_d2p),
     .cio_sysrst_ctrl_aon_z3_wakeup_en_d2p_o    (cio_sysrst_ctrl_aon_z3_wakeup_en_d2p),
-    .cio_pwm_aon_pwm_d2p_o                     (cio_pwm_aon_pwm_d2p      ),
-    .cio_pwm_aon_pwm_en_d2p_o                  (cio_pwm_aon_pwm_en_d2p   ),
     .cio_sensor_ctrl_aon_ast_debug_out_d2p_o   (cio_sensor_ctrl_aon_ast_debug_out_d2p),
     .cio_sensor_ctrl_aon_ast_debug_out_en_d2p_o(cio_sensor_ctrl_aon_ast_debug_out_en_d2p),
 

@@ -531,12 +531,6 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_sleep_pwm_pulses
-      uvm_test_seq: chip_sw_pwm_pulses_vseq
-      sw_images: ["//sw/device/tests:sleep_pwm_pulses_test:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-    }
-    {
       name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["//sw/device/tests:uart_tx_rx_test:1:new_rules"]
