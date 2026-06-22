@@ -15,5 +15,8 @@ py_library(
     name = "autogen_testutils",
     srcs = ["gen.py"],
     data = [":tpl_files"],
-    deps = ["//util/topgen:lib"],
+    deps = [
+        "//util:autogen_banner",
+        "//util/topgen:lib",
+    ],
 )

@@ -8,6 +8,16 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 
 def _ujson_rust(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_configuration = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    compiler_path = cc_common.get_tool_for_action(
+        feature_configuration = feature_configuration,
+        action_name = "c-compile",
+    )
     module = ctx.actions.declare_file("{}.rs".format(ctx.label.name))
     ujson_lib = ctx.attr.ujson_lib[CcInfo].compilation_context.headers.to_list()
 
@@ -32,12 +42,12 @@ def _ujson_rust(ctx):
     # 3. Substitute all `rust_attr` for `#`, thus creating rust attributes.
     # 4. Format it with `rustfmt` so it looks nice and can be inspected.
     command = """
-        {preprocessor} -nostdinc -I{ujson_lib_root_includes} \
+        {compiler} -E -nostdinc -I{ujson_lib_root_includes} \
         -DRUST_PREPROCESSOR_EMIT=1 -DNOSTDINC=1 {defines} $@ \
         | grep -v '#' \
         | sed -e "s/rust_attr/#/g" \
         | {rustfmt} > {module}""".format(
-        preprocessor = cc_toolchain.preprocessor_executable,
+        compiler = compiler_path,
         defines = " ".join(defines),
         module = module.path,
         rustfmt = rustfmt.path,
@@ -76,5 +86,6 @@ ujson_rust = rule(
             cfg = "exec",
         ),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )

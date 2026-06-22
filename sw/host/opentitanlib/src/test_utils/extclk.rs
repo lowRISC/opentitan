@@ -13,7 +13,7 @@ use ot_hal::top::earlgrey as top_earlgrey;
 use ot_hal::util::multibits::MultiBitBool4;
 
 use crate::io::jtag::Jtag;
-use crate::test_utils::poll;
+use crate::util::poll;
 
 /// Available speeds for the external clock.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

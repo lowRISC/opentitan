@@ -56,13 +56,16 @@ py_binary(
 py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
+    imports = ["."],
     deps = [
         "//util/reggen:countermeasure",
+        "//util/reggen:gen_cfg_md",
         "//util/reggen:gen_cheader",
         "//util/reggen:gen_dv",
         "//util/reggen:gen_fpv",
         "//util/reggen:gen_html",
         "//util/reggen:gen_json",
+        "//util/reggen:gen_md",
         "//util/reggen:gen_rtl",
         "//util/reggen:gen_rust",
         "//util/reggen:gen_sec_cm_testplan",
@@ -70,9 +73,15 @@ py_binary(
         "//util/reggen:gen_tock",
         "//util/reggen:ip_block",
         "//util/reggen:systemrdl_exporter",
+        "//util/reggen:vendor_specific",
         "//util/reggen:version",
         requirement("tabulate"),
     ],
+)
+
+py_library(
+    name = "autogen_banner",
+    srcs = ["autogen_banner.py"],
 )
 
 py_binary(
@@ -81,7 +90,9 @@ py_binary(
     data = [
         "//util/make_new_dif:tpl_files",
     ],
+    imports = ["."],
     deps = [
+        ":autogen_banner",
         ":repo_top",
         "//util/make_new_dif:ip",
         requirement("hjson"),
@@ -95,6 +106,7 @@ py_binary(
     data = [
         "//util/dtgen:tpl_files",
     ],
+    imports = ["."],
     deps = [
         "//util/dtgen:helper",
         "//util/dtgen:ipgen_ext",
@@ -109,6 +121,7 @@ py_binary(
 py_binary(
     name = "gen_testutils",
     srcs = ["gen_testutils.py"],
+    imports = ["."],
     deps = [
         "//util/autogen_testutils",
         "//util/topgen",
@@ -144,14 +157,6 @@ py_library(
 py_library(
     name = "repo_top",
     srcs = ["repo_top.py"],
-)
-
-cc_library(
-    name = "bfv_decoder",
-    srcs = ["bfv_decoder.c"],
-    deps = [
-        "//sw/device/silicon_creator/lib:error",
-    ],
 )
 
 [

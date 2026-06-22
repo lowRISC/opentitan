@@ -75,7 +75,9 @@ pub fn unlock_raw(transport: &TransportWrapper, jtag_params: &JtagParams) -> Res
     )
     .context("failed to transition to TEST_UNLOCKED0.")?;
 
-    jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_UNLOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
@@ -102,7 +104,9 @@ pub fn run_sram_cp_provision(
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::RiscvTap)?;
 
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
@@ -153,8 +157,8 @@ pub fn reset_and_lock(transport: &TransportWrapper, jtag_params: &JtagParams) ->
     transport.reset(UartRx::Clear).context("failed to reset")?;
 
     // Connect to the LC TAP via JTAG.
-    let mut jtag = jtag_params
-        .create(transport)?
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
         .connect(JtagTap::LcTap)
         .context("failed to connect to LC TAP over JTAG")?;
 
@@ -171,7 +175,9 @@ pub fn reset_and_lock(transport: &TransportWrapper, jtag_params: &JtagParams) ->
     )
     .context("failed to transition to TEST_LOCKED0.")?;
 
-    jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::LcTap)?;
 
     // Check that LC state is `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;

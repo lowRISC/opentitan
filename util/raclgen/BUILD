@@ -8,34 +8,18 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "ipgen",
+    name = "raclgen",
     srcs = [
         "__init__.py",
-        "clkmgr_gen.py",
         "lib.py",
-        "renderer.py",
     ],
     deps = [
-        "//util/basegen",
-        "//util/reggen:gen_rtl",
-        "//util/reggen:lib",
-        "//util/reggen:params",
-        "//util/topgen",
+        "//util/reggen:ip_block",
+        "//util/reggen:md_helpers",
+        "//util/reggen:multi_register",
+        "//util/reggen:register",
+        "//util/reggen:validate",
+        "//util/reggen:window",
         requirement("hjson"),
-        requirement("mako"),
     ],
-)
-
-py_test(
-    name = "test_render",
-    srcs = ["tests/test_render.py"],
-    deps = [
-        ":ipgen",
-        requirement("pytest"),
-    ],
-)
-
-filegroup(
-    name = "doc_files",
-    srcs = [":README.md"],
 )

@@ -66,6 +66,7 @@ def dual_cc_library(
     hdrs_d, hdrs_h = _merge_and_split_inputs(hdrs)
     srcs_d, srcs_h = _merge_and_split_inputs(srcs)
     copts_d, copts_h = _merge_and_split_inputs(copts)
+    copts_h = copts_h + ["-frtti", "-fexceptions"]
     deps_d, deps_h = _merge_and_split_inputs(deps)
     tgts_d, tgts_h = _merge_and_split_inputs(target_compatible_with)
 

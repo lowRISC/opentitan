@@ -141,7 +141,7 @@ impl InitializeTest {
         transport.apply_default_configuration(None)?;
 
         // Create the UART first to initialize the desired parameters.
-        let _uart = self.bootstrap.options.uart_params.create(&transport)?;
+        let _uart = transport.create_uart(&self.bootstrap.options.uart_params)?;
 
         // Load a bitstream.
         Self::print_result(

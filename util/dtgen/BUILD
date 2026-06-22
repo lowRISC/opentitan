@@ -10,7 +10,10 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "helper",
     srcs = ["helper.py"],
-    deps = ["//util/topgen:lib"],
+    deps = [
+        "//util/basegen",
+        "//util/topgen:lib",
+    ],
 )
 
 py_library(

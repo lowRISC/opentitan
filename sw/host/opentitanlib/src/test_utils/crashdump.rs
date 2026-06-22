@@ -20,7 +20,9 @@ pub fn read_cpu_crashdump_data(
     jtag_params: &JtagParams,
 ) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::RiscvTap)?;
 
     // Read out CPU crashdump info.
     let mut buf = [0u32];
@@ -75,7 +77,9 @@ pub fn read_alert_crashdump_data(
     jtag_params: &JtagParams,
 ) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::RiscvTap)?;
 
     let mut buf = [0u32];
     jtag.read_memory32(
@@ -107,7 +111,9 @@ pub fn read_alert_crashdump_data(
 /// Assumes we are already in a TEST_UNLOCKED* state, and TAP straps are cleared.
 pub fn read_reset_reason(transport: &TransportWrapper, jtag_params: &JtagParams) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::RiscvTap)?;
+    let mut jtag = transport
+        .create_jtag(jtag_params)?
+        .connect(JtagTap::RiscvTap)?;
 
     let mut buf = [0u32];
     jtag.read_memory32(

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::any::Any;
 use std::fmt::LowerHex;
 use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
@@ -292,8 +293,8 @@ impl JtagChain for OpenOcdJtagChain {
         }))
     }
 
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd> {
-        Ok(self.openocd)
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn Any>> {
+        Ok(Box::new(self.openocd))
     }
 }
 
@@ -388,11 +389,11 @@ impl OpenOcdJtagTap {
 }
 
 impl Jtag for OpenOcdJtagTap {
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd> {
-        Ok(self.openocd)
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn Any>> {
+        Ok(Box::new(self.openocd))
     }
 
-    fn as_raw(&mut self) -> Result<&mut OpenOcd> {
+    fn as_raw(&mut self) -> Result<&mut dyn Any> {
         Ok(&mut self.openocd)
     }
 

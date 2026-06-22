@@ -135,6 +135,10 @@ use_repo(rust, "rust_toolchains")
 
 register_toolchains("@rust_toolchains//:all")
 
+host_libs = use_repo_rule("//rules:host_libs.bzl", "host_libs")
+
+host_libs(name = "host_libs")
+
 # Rust crates:
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
 crate.from_cargo(
@@ -148,10 +152,16 @@ crate.from_cargo(
     ],
 )
 crate.annotation(
+    build_script_data = ["@@lowrisc_opentitan+//third_party/host_libs:pc_files"],
+    build_script_env = {
+        "PKG_CONFIG_PATH": "$${pwd}/external/lowrisc_opentitan++_repo_rules+host_libs",
+        "DUMMY_VAR": "force_rebuild_udev1",
+    },
     crate = "libudev-sys",
     patch_args = ["-p1"],
     patches = ["@lowrisc_opentitan//third_party/rust/patches:libudev-sys-0.1.4.patch"],
     repositories = ["crate_index"],
+    deps = ["@@lowrisc_opentitan+//third_party/host_libs:udev"],
 )
 crate.annotation(
     crate = "cryptoki",
@@ -181,6 +191,26 @@ crate.annotation(
     build_script_toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
     crate = "openssl-sys",
     repositories = ["crate_index"],
+)
+crate.annotation(
+    build_script_data = ["@@lowrisc_opentitan+//third_party/host_libs:pc_files"],
+    build_script_env = {
+        "PKG_CONFIG_PATH": "$${pwd}/external/lowrisc_opentitan++_repo_rules+host_libs",
+        "DUMMY_VAR": "force_rebuild_usb4",
+    },
+    crate = "libusb1-sys",
+    repositories = ["crate_index"],
+    deps = ["@@lowrisc_opentitan+//third_party/host_libs:usb"],
+)
+crate.annotation(
+    build_script_data = ["@@lowrisc_opentitan+//third_party/host_libs:pc_files"],
+    build_script_env = {
+        "PKG_CONFIG_PATH": "$${pwd}/external/lowrisc_opentitan++_repo_rules+host_libs",
+        "DUMMY_VAR": "force_rebuild_ftdi4",
+    },
+    crate = "libftdi1-sys",
+    repositories = ["crate_index"],
+    deps = ["@@lowrisc_opentitan+//third_party/host_libs:ftdi"],
 )
 use_repo(crate, "crate_index")
 
@@ -226,7 +256,7 @@ python.toolchain(
     # See <https://github.com/bazelbuild/rules_python/pull/713>.
     ignore_root_user_error = True,
     is_default = True,
-    python_version = "3.10",
+    python_version = "3.11",
 )
 use_repo(python, "pythons_hub")
 
@@ -239,7 +269,7 @@ use_repo(python, python3 = "python_3_10", python3_host = "python_3_10_host")
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
     hub_name = "ot_python_deps",
-    python_version = "3.10",
+    python_version = "3.11",
     requirements_lock = "//:python-requirements.txt",
 )
 use_repo(pip, "ot_python_deps")
@@ -253,6 +283,7 @@ crate.from_cargo(
     manifests = ["//third_party/tock:Cargo.toml"],
     supported_platform_triples = [
         "riscv32imc-unknown-none-elf",
+        "x86_64-unknown-linux-gnu",
     ],
 )
 use_repo(crate, "tock_index")

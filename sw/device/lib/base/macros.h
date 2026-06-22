@@ -419,7 +419,7 @@ extern "C++" {
 /**
  * A macro representing the OpenTitan execution platform.
  */
-#if __riscv_xlen == 32
+#if defined(__riscv_xlen) && __riscv_xlen == 32
 #define OT_PLATFORM_RV32 1
 #endif
 

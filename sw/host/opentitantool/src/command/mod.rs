@@ -4,6 +4,7 @@
 
 pub mod bfv;
 pub mod bootstrap;
+#[cfg(feature = "ot_certs")]
 pub mod certificate;
 pub mod clear_bitstream;
 pub mod console;

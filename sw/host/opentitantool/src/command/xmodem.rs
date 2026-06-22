@@ -27,7 +27,7 @@ impl CommandDispatch for XmodemSend {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let payload = std::fs::read(&self.filename)?;
         let xmodem = Xmodem::new();
-        let uart = self.params.create(transport)?;
+        let uart = transport.create_uart(&self.params)?;
         uart.clear_rx_buffer()?;
         xmodem.send(&*uart, payload.as_slice())?;
         Ok(None)
@@ -48,7 +48,7 @@ impl CommandDispatch for XmodemRecv {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let uart = self.params.create(transport)?;
+        let uart = transport.create_uart(&self.params)?;
         uart.clear_rx_buffer()?;
         let xmodem = Xmodem::new();
         let mut data = Vec::new();

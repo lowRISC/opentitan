@@ -4,7 +4,6 @@
 
 use std::io::{self, Read};
 use std::os::fd::BorrowedFd;
-use std::rc::Rc;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -13,7 +12,6 @@ use serde::{Deserialize, Serialize};
 pub use serialport::Parity;
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::io::console::{ConsoleDevice, ConsoleExt};
 use crate::transport::TransportError;
@@ -25,27 +23,15 @@ pub mod serial;
 pub struct UartParams {
     /// UART instance.
     #[arg(long, default_value = "CONSOLE")]
-    uart: String,
+    pub uart: String,
 
     /// UART baudrate.
     #[arg(long)]
-    baudrate: Option<u32>,
+    pub baudrate: Option<u32>,
 
     /// Enable software flow control.
     #[arg(long)]
-    flow_control: bool,
-}
-
-impl UartParams {
-    pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Uart>> {
-        let uart = transport.uart(&self.uart)?;
-        if let Some(baudrate) = self.baudrate {
-            uart.set_baudrate(baudrate)?;
-        }
-        log::info!("set_flow_control to {}", self.flow_control);
-        uart.set_flow_control(self.flow_control)?;
-        Ok(uart)
-    }
+    pub flow_control: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

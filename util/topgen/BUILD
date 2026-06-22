@@ -87,6 +87,7 @@ py_library(
     ],
     deps = [
         ":lib",
+        "//util/raclgen",
         "//util/reggen:params",
     ],
 )
