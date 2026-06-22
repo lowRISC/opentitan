@@ -31,7 +31,7 @@ filegroup(
     name = "signed_spx_binaries",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a"],
-    output_group = "fpga_cw310_signed_bin",
+    output_group = "fpga_cw340_signed_bin",
 )
 
 signature_test(
@@ -335,7 +335,6 @@ ROM_EXT_FEATURES = [
         # TODO(#22780): Integrate real keys for A1 flows.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:sim_dv_base",
             "//hw/top_earlgrey:sim_verilator_base",
@@ -379,7 +378,6 @@ ROM_EXT_FEATURES = [
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = ":ld_slot_a",
@@ -408,7 +406,6 @@ opentitan_binary(
     testonly = True,
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "test_key_0"},
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
@@ -431,7 +428,6 @@ output_groups(
     testonly = True,
     srcs = [":rom_ext_dice_x509_slot_virtual"],
     groups = [
-        "fpga_cw310_signed_bin",
         "fpga_cw340_signed_bin",
     ],
 )

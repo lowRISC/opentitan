@@ -20,7 +20,7 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
     // The steps in this test closely follow the gdb steps, which is embedded directly into the
     // bazel BUILD file located at sw/device/silicon_creator/rom/e2e/BUILD as the variable
     // `SRAM_JTAG_INJECTION_GDB_SCRIPT`. It is passed as argument to the
-    // `opentitan_gdb_fpga_cw310_test` target `sram_program_fpga_cw310_test_otp_<lc_state>`.
+    // `opentitan_gdb_fpga_cw340_test` target `sram_program_fpga_cw340_test_otp_<lc_state>`.
 
     // Let the chip power up and allow the ROM to execute upto an arbitrary point.
     `DV_WAIT(cfg.chip_vif.pwrmgr_fast_pwr_state_active)
