@@ -381,7 +381,8 @@ def get_signame_chip(topcfg: Dict, sig: OrderedDict, port: str, reqrsp: str = "r
                                 "effect".format(p_ovrd["unused"], port_name, tgt["name"]))
             elif "signal" in p_ovrd:
                 sig_name_chip[tgt["name"]] = p_ovrd["signal"] + sig_reqrsp_suffix
-            elif "feedthrough" in p_ovrd:
+
+            if "feedthrough" in p_ovrd:
                 # Simply add the direction suffix for feedthrough
                 sig_name_chip[tgt["name"]] += dir_suffix
 
@@ -1230,9 +1231,11 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
                 assert (list(p.keys())[0] in ["signal", "unused", "feedthrough"]), \
                     'Allowed override instructions are "signal", "unused", "feedthrough"'
             else:
-                assert "unused" in p and "tie_value" in p and len(p.keys()) == 2, \
+                assert ("unused" in p and "tie_value" in p and len(p.keys()) == 2) or \
+                       ("signal" in p and "feedthrough" in p and len(p.keys()) == 2), \
                        'port_overrides only support one instruction out of "signal", ' \
-                       '"unused", "feedthrough", or "unused" plus an "tie_value".'
+                       '"unused", "feedthrough", or "unused" plus an "tie_value", or ' \
+                       '"signal" plus "feedthrough".'
 
     return total_error
 
