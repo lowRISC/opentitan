@@ -11,15 +11,15 @@ from bitstreams_workspace import BitstreamCache
 MOCK_MANIFEST = """{
    "schema_version": 3,
    "designs": {
-       "chip_earlgrey_cw310": {
+       "chip_earlgrey_cw340": {
            "build_id": "abcd",
            "bitstream": {
-               "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit",
-               "build_target": "//hw/bitstream/vivado:fpga_cw310"
+               "file": "lowrisc_systems_chip_earlgrey_cw340_0.1.bit",
+               "build_target": "//hw/bitstream/vivado:fpga_cw340"
            },
            "memory_map_info": {
                "file": "memories.mmi",
-               "build_target": "//hw/bitstream/vivado:fpga_cw310",
+               "build_target": "//hw/bitstream/vivado:fpga_cw340",
                "memories": ["otp", "rom"]
            }
        }
@@ -35,7 +35,7 @@ class TestBitstreamCache(unittest.TestCase):
         BitstreamCache.MakeWithDefaults()
 
     def test_get_from_cache(self):
-        MOCK_BITSTREAM = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit'
+        MOCK_BITSTREAM = 'lowrisc_systems_chip_earlgrey_cw340_0.1.bit'
 
         MOCKED_OS_WALK_RETURN = [
             # os.walk() yields tuples of the form (root, dir, files).
@@ -65,15 +65,15 @@ class TestBitstreamCache(unittest.TestCase):
             manifest, {
                 "schema_version": 3,
                 "designs": {
-                    "chip_earlgrey_cw310": {
+                    "chip_earlgrey_cw340": {
                         "build_id": "abcd",
                         "bitstream": {
                             "file": MOCK_BITSTREAM,
-                            "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            "build_target": "//hw/bitstream/vivado:fpga_cw340",
                         },
                         "memory_map_info": {
                             "file": "memories.mmi",
-                            "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            "build_target": "//hw/bitstream/vivado:fpga_cw340",
                             "memories": ["otp", "rom"],
                         },
                     },
@@ -83,8 +83,8 @@ class TestBitstreamCache(unittest.TestCase):
         os.walk.assert_called_once_with('cache/abcd')
 
     def test_write_build_file(self):
-        BITSTREAM_ORIG = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig'
-        BITSTREAM_SPLICE = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice'
+        BITSTREAM_ORIG = 'lowrisc_systems_chip_earlgrey_cw340_0.1.bit.orig'
+        BITSTREAM_SPLICE = 'lowrisc_systems_chip_earlgrey_cw340_0.1.bit.splice'
 
         MOCKED_OS_WALK_RETURN = [
             # os.walk() yields tuples of the form (root, dir, files).
@@ -105,15 +105,15 @@ class TestBitstreamCache(unittest.TestCase):
         manifest = {
             "schema_version": 3,
             "designs": {
-                "chip_earlgrey_cw310": {
+                "chip_earlgrey_cw340": {
                     "build_id": "abcd",
                     "bitstream": {
-                        "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                        "file": "lowrisc_systems_chip_earlgrey_cw340_0.1.bit.orig",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw340",
                     },
                     "memory_map_info": {
                         "file": "memories.mmi",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw340",
                         "memories": ["otp", "rom"],
                     },
                 },
@@ -132,38 +132,18 @@ package(default_visibility = ["//visibility:public"])
 exports_files(glob(["cache/**"]))
 
 filegroup(
-    name = "chip_earlgrey_cw310_bitstream",
-    srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"],
+    name = "chip_earlgrey_cw340_bitstream",
+    srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw340_0.1.bit.orig"],
 )
 
 filegroup(
-    name = "chip_earlgrey_cw310_mmi",
+    name = "chip_earlgrey_cw340_mmi",
     srcs = ["cache/abcd/memories.mmi"],
 )
 
 filegroup(
     name = "manifest",
     srcs = ["cache/abcd/substitute_manifest.json"],
-)
-
-alias(
-    name = "chip_earlgrey_cw310_hyperdebug_bitstream",
-    actual = "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
-)
-
-alias(
-    name = "chip_earlgrey_cw310_hyperdebug_mmi",
-    actual = "@//hw/bitstream/vivado:cw310_hyperdebug_mmi",
-)
-
-alias(
-    name = "chip_earlgrey_cw340_bitstream",
-    actual = "@//hw/bitstream/vivado:fpga_cw340_test_rom",
-)
-
-alias(
-    name = "chip_earlgrey_cw340_mmi",
-    actual = "@//hw/bitstream/vivado:cw340_mmi",
 )
 ''')
 

@@ -36,14 +36,6 @@ XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.argv[0])
 # Required designs
 KNOWN_DESIGNS = {
-    "chip_earlgrey_cw310": {
-        "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom",
-        "mmi": "@//hw/bitstream/vivado:cw310_mmi",
-    },
-    "chip_earlgrey_cw310_hyperdebug": {
-        "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
-        "mmi": "@//hw/bitstream/vivado:cw310_hyperdebug_mmi",
-    },
     "chip_earlgrey_cw340": {
         "bitstream": "@//hw/bitstream/vivado:fpga_cw340_test_rom",
         "mmi": "@//hw/bitstream/vivado:cw340_mmi",
