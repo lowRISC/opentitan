@@ -10,20 +10,21 @@ Ownership Transfer allows the owner of the chip to securely root an OpenTitan ch
 
 ### Definitions
 
+- Key: a data structure including one or two public/private key pairs. The idividual keys could be either ECDSA or SPX of either Pure or PrehashedSha256 domains. When referenced below, unless spelled out explicitly, `key` refers to any of the above options.
 - Owner Configuration: a data structure encoding the ownership information for a given owner.
-  The owner configuration includes an owner key, one or more application keys and various owner configuration data.
-- Owner Key: an ECDSA P-256 public/private key-pair used to authenticate the ownership block.
-- Activate Key: an ECDSA P-256 public/private key-pair used to authenticate an Activate Owner command.
+  The owner configuration includes owner, unlock and activate keys, one or more application keys, and various owner configuration data.
+- Owner Key: a key used to authenticate the ownership block.
+- Activate Key: a key used to authenticate an Activate Owner command.
   This key is endorsed by the Owner key by virtue of being present in the owner configuration.
-- Unlock Key: an ECDSA P-256 public/private key-pair used to authenticate an Unlock Owner command.
+- Unlock Key: a key used to authenticate an Unlock Owner command.
   This key is endorsed by the Owner key by virtue of being present in the owner configuration.
 - Ownership State: The state of a chip with respect to ownership transfer.
   A chip may be in one of the following states: `LockedOwner`, `UnlockedSelf`, `UnlockedAny`, `UnlockedEndorsed`, `Recovery`.
-- Ownership Nonce: A 64-bit random integer used as a validation challenge for all ownership-related boot services requests.
+- Ownership Nonce: A 64-bit random integer used as a validation challenge for all ownership-related boot services requests. The Nonce changes after every successful Unlock or Activate operation.
 - Owner Page 0 & 1: The Owner Configuration is stored by the chip in a pair of flash INFO pages.
   Normally the two pages are identical and serve as redundant backups.
   During an update or transfer, page 0 is the current configuration and page 1 is the next configuration.
-- Application Key: an ECDSA public/private key-pair used to authenticate the owner’s application firmware payload.
+- Application Key: a key used to authenticate the owner’s application firmware payload.
 - Tag/Length/Value (TLV): A structure encoding scheme for encoding heterogenious and variable-length data structures.
 
 ## Ownership Transfer
@@ -36,7 +37,7 @@ Ownership Transfer gives each owner of a chip the ability to specify their own a
 
 The ownership state is a non-volatile chip state that controls the ownership transfer mechanism.
 A chip may be in one of the following states:
-- `LockedOwner`: The chip is currently owned and will not accept new owner configurations.
+- `LockedOwner`: The chip is currently owned and will not accept new owner configurations, same owner configuration changes are possible.
 - `UnlockedSelf`: The chip is currently owned and is expecting an ownership block update for the same owner (ie: config change or key rotation).
 - `UnlockedAny`: The chip is currently owned but will accept an ownership block for any new owner.
 - `UnlockedEndorsed`: The chip is currently owned but will accept an ownership block only from a new owner endorsed by the current owner.
@@ -62,6 +63,9 @@ subgraph container["<font size=6>Ownership State Transitions</font>"]
     style container fill:none,stroke:black
 end
 ```
+
+Onwership Transfer happens when a new configuration with a different Owner Key is activated.
+
 
 ### Owner Configuration
 
@@ -145,7 +149,7 @@ Each of the flows assumes the owner currently has `primary_bl0` set to SideA (th
 
 #### Next Owner Key
 
-The next owner key is the public ECDSA key of the next owner when performing an endorsed ownership transfer operation.
+The next owner key is the public key/public key tuple of the next owner when performing an endorsed ownership transfer operation.
 The next owner’s public key fingerprint (ie: sha256 of the public key material) is stored in the `boot_data` record.
 
 ### Self Update of Owner Configuration
@@ -155,8 +159,8 @@ A self update allows an owner to update their Owner Configuration without transf
 1. The owner prepares for the update by staging a signed boot services `OwnershipUnlock` command with the current ownership nonce and the mode set to `UnlockedSelf`.
    - After staging the command, the chip is rebooted.
    - Upon booting, the ROM\_EXT will move the chip into the `UnlockedSelf` state and will unlock Owner Page 1 to accept an Owner Configuration update.
-2. The owner updates the Owner Configuration in Owner Page 1 to the new preferred settings (e.g. key rotation or configuration change).  The owner configuration must be signed with the owner key.
-   - After updating the page, the chip is rebooted.
+2. The owner updates the Owner Configuration in Owner Page 1 to the new preferred settings (e.g. application key rotation or configuration change).  The owner configuration must be signed with the owner key. If the Onwer key is a single ECDSA key pair, the signature is concatentaed with the owner block and fits into the page. In case the owner key includes a PQ component, a detached signature is required. The detached signature is downloaded into the data flash, placed anywhere at a 2K boundary, before Owner Page 1 is updated with the new Owner block.
+   - After Owner Page 1 is updated, the chip is rebooted.
    - Upon booting, the ROM\_EXT will inspect the new configuration block.  If and only if the new owner configuration is valid, the ROM\_EXT will configure the non-primary half of the flash (i.e. Side B) as requested in the new owner configuration.
 3. The owner will stage a firmware update on the non-primary half of the flash. This firmware must be signed with a valid owner application key.  The owner will stage a Boot Services `next_boot_bl0` message requesting a boot to the non-primary partition (i.e. Side B).
    - After staging the firmware and boot services request, the chip will be rebooted.
@@ -165,7 +169,7 @@ A self update allows an owner to update their Owner Configuration without transf
       - If there is no valid firmware in the non-primary half, the primary half will be booted according to the settings of the current (non-updated) Owner Configuration.
 4. If the boot -
    - Succeeds:
-      - The owner will stage a signed boot services `activate_owner` command with the current ownership nonce to finalize the update.  The activate owner command must be signed with the Activate key.
+      - The owner will stage a signed boot services `activate_owner` command with the current ownership nonce to finalize the update.  The activate owner command must be signed with the Activate key. If Owner key includes a PQ component, both Activate and Owner block detached signatures must be present if the flash before the activation command is sent.
       - After staging the command the chip is rebooted.
       - Upon booting, the ROM\_EXT will move the chip into the `LockedOwner` state and update Owner Page 0 with the new Owner Configuration located in page 1.
    - Fails:
@@ -227,12 +231,12 @@ end
 
 An unlocked ownership transfer allows the current owner to unlock the chip so that it will accept any new owner.
 
-1. The current owner prepares for the transfer by staging a signed boot services `OwnershipUnlock` command with the current ownership nonce and the mode set to `UnlockedAny`.
-   After staging the command, the chip is rebooted.
+1. The current owner prepares for the transfer by staging a signed boot services `OwnershipUnlock` command with the current ownership nonce and the mode set to `UnlockedAny`. Note that this mode transition to `UnlockedAny` will be accepted only if the current owner update mode is set to `Open`. An Owner configruation update step might be required to set the current update mode to `Open` before Ownership Transfer can start. As in other cases, the unlock request must be signed with the current Owner's unlock key, with detached signature placed in flash if a PQ component is present in the Unlock key. ECDSA only signature is uploaded along with the unlock request.
+   After staging the unlock command, the chip is rebooted.
    - Upon booting, the ROM\_EXT will move the chip into the `UnlockedAny` state and will unlock Owner Page 1 to accept an Owner Configuration update.
 2. The current owner will deliver the chip (device) to the next owner.
-3. The next owner updates the Owner Configuration in Owner Page 1 giving the chip the next owner’s public key material and preferred configuration settings.
-   - After updating the page, the chip is rebooted.
+3. The next owner updates the Owner Configuration in Owner Page 1 giving the chip the next owner’s public key material and preferred configuration settings. The new Owner Configuration in Owner Page 1 must be endorsed by the new Owner key, with detached signature uploaded into data flash if necessary.
+   - After Owner Page 1 is updated, the chip is rebooted.
    - Upon booting, the ROM\_EXT will inspect the next owner configuration.
      If and only if the next Owner Configuration is valid, the ROM\_EXT will configure the non-primary half of the flash (i.e. Side B) as requested in the new owner configuration.
 4. The next owner will stage a firmware update on the non-primary half of the flash.
@@ -245,7 +249,7 @@ An unlocked ownership transfer allows the current owner to unlock the chip so th
 5. If the boot -
    - Succeeds:
       - The next owner will stage a signed boot services `OwnershipActivate` command with the current ownership nonce to finalize the update.
-The activate owner command must be signed with the Activate key.
+The activate owner command must be signed with the new Owner's Activate key. In case hybrid or PQ only keys are used, both Owner and Activate detached signatures must be present in flash, each aligned at 2K boundary.
       - After staging the command the chip is rebooted.
       - Upon booting, the ROM\_EXT will move the chip into the `LockedOwner` state and update Owner Page 0 with the new Owner Configuration located in page 1.
    - Fails:
@@ -402,7 +406,7 @@ The following boot services commands are supported.
 ### Ownership Unlock
 
 The ownership unlock command prepares the chip for an ownership transfer or a non-transferring owner configuration update.
-The ownership unlock command must include the current ROM\_EXT nonce and a signature with the current owner's unlock key.
+The ownership unlock command must include the current ROM\_EXT nonce and a signature with the current owner's unlock key in case the key is ECDSA only. 
 
 ```c
 typedef struct boot_svc_ownership_unlock_req {
@@ -426,6 +430,8 @@ typedef struct boot_svc_ownership_unlock_req {
 ```
 See the definition in [boot_svc_ownership_unlock.h](../../lib/boot_svc/boot_svc_ownership_unlock.h).
 
+If the Unlock key includes a PQ component, the `signature` field in the structure above can be left uninitialized, but the detached signature needs to be uploaded into flash before Unlock is requested. See detached signature structure in [datatypes.h](../../lib/ownership/datatypes.h)
+
 A valid ownership unlock command will prepare the chip for an ownership transfer.
 
 When the mode is `UnlockedAny`, `UnlockedEndorsed` or `UnlockedSelf`, the ROM\_EXT will:
@@ -441,7 +447,7 @@ When the mode is `Abort`, the ROM\_EXT will:
 ### Ownership Activate
 
 The ownership activate command completes an ownership transfer or update and moves the chip into the `LockedOwner` state.
-The ownership activate command must include the current ROM\_EXT nonce and a signature with the next owner's activate key (or the current owner's activate key in the case of a non-transferring update).
+The ownership activate command must include the current ROM\_EXT nonce and a signature with the next owner's activate key (or the current owner's activate key in the case of a non-transferring update). In case the activate key includes the PQ component, both Owner and Acivate detached signatures must be present in flash aligned at 2K boundaries.
 
 ```c
 typedef struct boot_svc_ownership_activate_req {
@@ -587,7 +593,7 @@ See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 ### Application Keys
 
 The Application Keys verify owner firmware payloads during the secure boot process.
-- The `key_algorithm` refers to the key algorithm to be used with this key (ECDSA, SPX or SPXq20).
+- The `key_algorithm` refers to the key algorithm to be used with this key (ECDSA, SPX, SPXq20, or Hybrid).
 - The `key_domain` refers to the application-level key domain: `prod`, `dev` or `test`.
   These values have no relationship with the chip's lifecycle state.
   This value is used to diversify the key manager's key derivations.
@@ -808,7 +814,6 @@ typedef struct owner_rescue_config {
   /** The size of the rescue region in flash (in pages). */
   uint16_t size;
   /**
-   * An allowlist of rescue and boot_svc commands that may be invoked by the
    * rescue protocol.  The commands are identified by their 4-byte tags (tag
    * identifiers between rescue commands and boot_svc commands are unique).
    */
