@@ -36,7 +36,6 @@ The main address space, shared between the CPU and DM
 | clkmgr_aon        | default     | `0x40420000`   | `0x80`         | `0x20`         | clkmgr_aon                       |
 | sysrst_ctrl_aon   | default     | `0x40430000`   | `0x100`        | `0x40`         | sysrst_ctrl_aon                  |
 | adc_ctrl_aon      | default     | `0x40440000`   | `0x80`         | `0x20`         | adc_ctrl_aon                     |
-| pwm_aon           | default     | `0x40450000`   | `0x80`         | `0x20`         | pwm_aon                          |
 | pinmux_aon        | default     | `0x40460000`   | `0x1000`       | `0x400`        | pinmux_aon                       |
 | aon_timer_aon     | default     | `0x40470000`   | `0x40`         | `0x10`         | aon_timer_aon                    |
 | ast               | default     | `0x40480000`   | `0x400`        | `0x100`        | ast                              |

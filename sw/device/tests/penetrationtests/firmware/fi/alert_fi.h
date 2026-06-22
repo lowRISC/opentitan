@@ -74,45 +74,43 @@
  *  - RecovPrimOtpAlert [Case 35]
  * PINMUX: a fatal fault alert.
  *  - FatalFault [Case 36]
- * PWM: a fatal fault alert.
- *  - FatalFault [Case 37]
  * PWRMGR: a fatal fault alert.
- *  - FatalFault [Case 38]
+ *  - FatalFault [Case 37]
  * ROM_CTRL: a fatal alert.
- *  - Fatal [Case 39]
+ *  - Fatal [Case 38]
  * RSTMGR: fatal faults and consistency faults for the reset manager.
- *  - FatalFault [Case 40]
- *  - FatalCnstyFault [Case 41]
+ *  - FatalFault [Case 39]
+ *  - FatalCnstyFault [Case 40]
  * RV_CORE_IBEX: recoverable and fatal software and hardware errors for the Ibex
  * core.
- *  - FatalSwErr [Case 42]
- *  - RecovSwErr [Case 43]
- *  - FatalHwErr [Case 44]
- *  - RecovHwErr [Case 45]
+ *  - FatalSwErr [Case 41]
+ *  - RecovSwErr [Case 42]
+ *  - FatalHwErr [Case 43]
+ *  - RecovHwErr [Case 44]
  * RV_PLIC: a fatal fault for the Platform-Level Interrupt Controller.
- *  - FatalFault [Case 46]
+ *  - FatalFault [Case 45]
  * RV_TIMER: a fatal fault.
- *  - FatalFault [Case 47]
+ *  - FatalFault [Case 46]
  * SENSOR_CTRL: recoverable and fatal sensor controller alerts.
- *  - RecovAlert [Case 48]
- *  - FatalAlert [Case 49]
+ *  - RecovAlert [Case 47]
+ *  - FatalAlert [Case 48]
  * SPI_DEVICE: a fatal fault for the SPI device.
- *  - FatalFault [Case 50]
+ *  - FatalFault [Case 49]
  * SPI_HOST: a fatal fault for the SPI host (SPI_HOST0 and SPI_HOST1).
- *  - SPI_HOST0 FatalFault [Case 51]
- *  - SPI_HOST1 FatalFault [Case 52]
+ *  - SPI_HOST0 FatalFault [Case 50]
+ *  - SPI_HOST1 FatalFault [Case 51]
  * SRAM_CTRL: a fatal error for both main and retention SRAM controllers.
- *  - Main SRAM FatalError [Case 53]
- *  - Retention SRAM FatalError [Case 54]
+ *  - Main SRAM FatalError [Case 52]
+ *  - Retention SRAM FatalError [Case 53]
  * SYSRST_CTRL: a fatal fault for the system reset controller.
- *  - FatalFault [Case 55]
+ *  - FatalFault [Case 54]
  * UART: a fatal fault (UART0, UART1, UART2, and UART3).
- *  - UART0 FatalFault [Case 56]
- *  - UART1 FatalFault [Case 57]
- *  - UART2 FatalFault [Case 58]
- *  - UART3 FatalFault [Case 59]
+ *  - UART0 FatalFault [Case 55]
+ *  - UART1 FatalFault [Case 56]
+ *  - UART2 FatalFault [Case 57]
+ *  - UART3 FatalFault [Case 58]
  * USBDEV: a fatal fault for the USB device controller.
- *  - FatalFault [Case 60]
+ *  - FatalFault [Case 59]
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.

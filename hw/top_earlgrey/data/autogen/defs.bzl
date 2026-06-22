@@ -27,7 +27,6 @@ load("//hw/ip/otbn:defs.bzl", "OTBN")
 load("//hw/top_earlgrey/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/top_earlgrey/ip_autogen/pinmux:defs.bzl", "PINMUX")
-load("//hw/top_earlgrey/ip_autogen/pwm:defs.bzl", "PWM")
 load("//hw/top_earlgrey/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
 load("//hw/ip/rom_ctrl:defs.bzl", "ROM_CTRL")
 load("//hw/top_earlgrey/ip_autogen/rstmgr:defs.bzl", "RSTMGR")
@@ -64,7 +63,6 @@ EARLGREY_IPS = [
     OTP_CTRL,
     OTP_MACRO,
     PINMUX,
-    PWM,
     PWRMGR,
     ROM_CTRL,
     RSTMGR,
@@ -110,7 +108,6 @@ EARLGREY_ALERTS = [
     "clkmgr_aon_fatal_fault",
     "sysrst_ctrl_aon_fatal_fault",
     "adc_ctrl_aon_fatal_fault",
-    "pwm_aon_fatal_fault",
     "pinmux_aon_fatal_fault",
     "aon_timer_aon_fatal_fault",
     "sensor_ctrl_aon_recov_alert",

@@ -246,12 +246,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, SensorCtrlAstDebugOut6, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut6) \
     value(_, SensorCtrlAstDebugOut7, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut7) \
     value(_, SensorCtrlAstDebugOut8, kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut8) \
-    value(_, PwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm0) \
-    value(_, PwmAonPwm1, kTopEarlgreyPinmuxOutselPwmAonPwm1) \
-    value(_, PwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm2) \
-    value(_, PwmAonPwm3, kTopEarlgreyPinmuxOutselPwmAonPwm3) \
-    value(_, PwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm4) \
-    value(_, PwmAonPwm5, kTopEarlgreyPinmuxOutselPwmAonPwm5) \
     value(_, OtpMacroTest0, kTopEarlgreyPinmuxOutselOtpMacroTest0) \
     value(_, SysrstCtrlAonBatDisable, kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable) \
     value(_, SysrstCtrlAonKey0Out, kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out) \

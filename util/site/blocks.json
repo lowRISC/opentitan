@@ -139,11 +139,6 @@
         "data_file": "hw/ip/pattgen/data/pattgen.hjson",
         "report": "/hw/ip/pattgen/dv"
     },
-    "pwm": {
-        "name": "PWM",
-        "data_file": "hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson",
-        "report": "/hw/top_earlgrey/ip_autogen/pwm/dv"
-    },
     "retention-sram": {
         "name": "Retention SRAM",
         "data_file": "hw/ip/sram_ctrl/data/sram_ctrl.hjson",

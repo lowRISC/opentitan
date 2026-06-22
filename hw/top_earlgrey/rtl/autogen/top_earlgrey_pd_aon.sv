@@ -22,7 +22,6 @@ module top_earlgrey_pd_aon #(
   // parameters for clkmgr_aon
   // parameters for sysrst_ctrl_aon
   // parameters for adc_ctrl_aon
-  // parameters for pwm_aon
   // parameters for aon_timer_aon
   // parameters for sensor_ctrl_aon
   // parameters for sram_ctrl_ret_aon
@@ -58,8 +57,6 @@ module top_earlgrey_pd_aon #(
   input  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr_i,
   input  logic       rv_dm_ndmreset_req_i,
   input  logic [1:0] pwrmgr_aon_wakeups_i,
-  input  tlul_pkg::tl_h2d_t       pwm_aon_tl_req_i,
-  output tlul_pkg::tl_d2h_t       pwm_aon_tl_rsp_o,
   input  tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req_i,
   output tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp_o,
   input  tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req_i,
@@ -126,8 +123,6 @@ module top_earlgrey_pd_aon #(
   output logic       cio_sysrst_ctrl_aon_pwrb_out_en_d2p_o,
   output logic       cio_sysrst_ctrl_aon_z3_wakeup_d2p_o,
   output logic       cio_sysrst_ctrl_aon_z3_wakeup_en_d2p_o,
-  output logic [5:0] cio_pwm_aon_pwm_d2p_o,
-  output logic [5:0] cio_pwm_aon_pwm_en_d2p_o,
   output logic [8:0] cio_sensor_ctrl_aon_ast_debug_out_d2p_o,
   output logic [8:0] cio_sensor_ctrl_aon_ast_debug_out_en_d2p_o,
 
@@ -135,8 +130,8 @@ module top_earlgrey_pd_aon #(
   output logic [6:0] intr_vector_o,
 
   // Alerts to power domain Main
-  input  prim_alert_pkg::alert_rx_t [11:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [11:0] alert_tx_o,
+  input  prim_alert_pkg::alert_rx_t [10:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [10:0] alert_tx_o,
 
   // Externally supplied clocks
   input clk_main_i,
@@ -424,33 +419,8 @@ module top_earlgrey_pd_aon #(
     .tl_o(adc_ctrl_aon_tl_rsp_o)
   );
 
-  pwm #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
-  ) u_pwm_aon (
-    // Clock and reset connections
-    .clk_i(clkmgr_aon_clocks.clk_io_div4_peri),
-    .clk_core_i(clkmgr_aon_clocks.clk_aon_peri),
-    .rst_ni(rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_core_ni(rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-
-    // alert_handler[28]: fatal_fault
-    .alert_tx_o(alert_tx_o[7]),
-    .alert_rx_i(alert_rx_i[7]),
-
-    // CIO outputs
-    .cio_pwm_o   (cio_pwm_aon_pwm_d2p_o),
-    .cio_pwm_en_o(cio_pwm_aon_pwm_en_d2p_o),
-
-    // Inter-module signals
-    .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
-    .racl_error_o(),
-    .tl_i(pwm_aon_tl_req_i),
-    .tl_o(pwm_aon_tl_rsp_o)
-  );
-
   aon_timer #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[30]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_aon_timer_aon (
     // Clock and reset connections
@@ -463,9 +433,9 @@ module top_earlgrey_pd_aon #(
     .intr_wkup_timer_expired_o(intr_aon_timer_aon_wkup_timer_expired),
     .intr_wdog_timer_bark_o   (intr_aon_timer_aon_wdog_timer_bark),
 
-    // alert_handler[30]: fatal_fault
-    .alert_tx_o(alert_tx_o[8]),
-    .alert_rx_i(alert_rx_i[8]),
+    // alert_handler[29]: fatal_fault
+    .alert_tx_o(alert_tx_o[7]),
+    .alert_rx_i(alert_rx_i[7]),
 
     // Inter-module signals
     .nmi_wdog_timer_bark_o(aon_timer_aon_nmi_wdog_timer_bark_o),
@@ -480,7 +450,7 @@ module top_earlgrey_pd_aon #(
   );
 
   sensor_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[32:31]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[31:30]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_sensor_ctrl_aon (
     // Clock and reset connections
@@ -493,10 +463,10 @@ module top_earlgrey_pd_aon #(
     .intr_io_status_change_o  (intr_sensor_ctrl_aon_io_status_change),
     .intr_init_status_change_o(intr_sensor_ctrl_aon_init_status_change),
 
-    // alert_handler[31]: recov_alert
-    // alert_handler[32]: fatal_alert
-    .alert_tx_o(alert_tx_o[10:9]),
-    .alert_rx_i(alert_rx_i[10:9]),
+    // alert_handler[30]: recov_alert
+    // alert_handler[31]: fatal_alert
+    .alert_tx_o(alert_tx_o[9:8]),
+    .alert_rx_i(alert_rx_i[9:8]),
 
     // CIO outputs
     .cio_ast_debug_out_o   (cio_sensor_ctrl_aon_ast_debug_out_d2p_o),
@@ -515,7 +485,7 @@ module top_earlgrey_pd_aon #(
   );
 
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[33]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[32]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstSramKey(RndCnstSramCtrlRetAonSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlRetAonSramNonce),
@@ -535,9 +505,9 @@ module top_earlgrey_pd_aon #(
     .rst_ni(rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
     .rst_otp_ni(rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
-    // alert_handler[33]: fatal_error
-    .alert_tx_o(alert_tx_o[11]),
-    .alert_rx_i(alert_rx_i[11]),
+    // alert_handler[32]: fatal_error
+    .alert_tx_o(alert_tx_o[10]),
+    .alert_rx_i(alert_rx_i[10]),
 
     // RACL policies
     .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),

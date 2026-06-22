@@ -777,7 +777,6 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    # TODO(#16374): test doesn't make progress after enabling PWM
     verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
@@ -786,7 +785,6 @@ opentitan_test(
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
@@ -814,7 +812,6 @@ opentitan_test(
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
@@ -3320,45 +3317,6 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "pwm_smoketest",
-    srcs = ["pwm_smoketest.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-        },
-    ),
-    fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
-        test_harness = "//sw/host/tests/chip/pwm_smoketest",
-    ),
-    silicon = silicon_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
-        test_harness = "//sw/host/tests/chip/pwm_smoketest",
-    ),
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ottf_utils",
-    ],
-)
-
 cc_library(
     name = "pwrmgr_sleep_resets_lib",
     srcs = ["pwrmgr_sleep_resets_lib.c"],
@@ -4496,37 +4454,6 @@ opentitan_test(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
-    name = "sleep_pwm_pulses_test",
-    srcs = ["sleep_pwm_pulses_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    verilator = verilator_params(
-        timeout = "eternal",
-        tags = ["broken"],
-    ),
-    deps = [
-        "//hw/top:pwm_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -5924,7 +5851,6 @@ opentitan_test(
         "//hw/top:hmac_c_regs",
         "//hw/top:i2c_c_regs",
         "//hw/top:kmac_c_regs",
-        "//hw/top:pwm_c_regs",
         "//hw/top:spi_host_c_regs",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
@@ -5944,7 +5870,6 @@ opentitan_test(
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
@@ -7409,7 +7334,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/top:pwm_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top:rv_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -7439,7 +7364,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top:pwm_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top:rv_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

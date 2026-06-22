@@ -28,7 +28,6 @@
 #include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_pwm_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rstmgr_autogen.h"
@@ -73,7 +72,6 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux_aon;
-static dif_pwm_t pwm_aon;
 static dif_pwrmgr_t pwrmgr_aon;
 static dif_rom_ctrl_t rom_ctrl;
 static dif_rstmgr_t rstmgr_aon;
@@ -160,9 +158,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux_aon));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwm_init(base_addr, &pwm_aon));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
@@ -570,21 +565,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = (int)kTopEarlgreyAlertIdPinmuxAonFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write pwm's alert_test reg and check alert_cause.
-  for (dif_pwm_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_pwm_alert_force(&pwm_aon, kDifPwmAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdPwmAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

@@ -39,7 +39,6 @@
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_otbn_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_otp_ctrl_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_pwm_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rom_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
@@ -58,7 +57,7 @@
   testpoints: [
     ///////////////////////////////////////////////////////////////////////////
     // IO Peripherals                                                        //
-    // I2C, SPIDEV, USB, PINMUX & PADCTRL, PWM                               //
+    // I2C, SPIDEV, USB, PINMUX & PADCTRL                                    //
     ///////////////////////////////////////////////////////////////////////////
 
 
@@ -153,8 +152,7 @@
             verifies the correctness of the reflected values once the chip goes into deep sleep.
             This is replicated for DIO pins as well.
 
-            In this test, passthrough feature is not tested. The feature is
-            covered in other tests such as chip_sw_sleep_pwm_pulses.
+            In this test, passthrough feature is not tested.
             '''
       stage: V2
       si_stage: SV3
@@ -231,45 +229,6 @@
               "//sw/device/tests:rv_dm_jtag_tap_sel_dev",
               "//sw/device/tests:rv_dm_jtag_tap_sel_prod",
               "//sw/device/tests:rv_dm_jtag_tap_sel_rma"],
-    }
-
-    // PWM (pre-verified IP) integration tests:
-    {
-      name: chip_sw_sleep_pwm_pulses
-      desc: '''Verify PWM signaling to chip output pads during deep sleep.
-
-            - Program each PWM output to pulse in a known pattern.
-            - Program the pinmux to route the chosen PWM output to the chip IOs.
-            - Program the pwrmgr to go to deep sleep state, with AON timer wakeup.
-            - Initiate the sleep state by issuing a WFI.
-            - Verify that in the sleep state, the PWM signals are active and pulsing correctly, by
-              hooking up the PWM monitor.
-            - Repeat the steps for all 6 PWM signals.
-
-            Notes for silicon targets:
-            - Instead of using the PWM monitor, the PWM signals should be tested by measuring the actual output pins.
-            - The sampling frequency should be high enough to measure the duty cycle accurately.
-            - Repeat this test with:
-              - At least two different values of the duty cycle.
-              - All channels set to blinking.
-              - All channels set to heartbeat.
-              - All channels set to reverse polarity.
-              - At least two different values of the clock divider.
-              - Each odd PWM channel set to be 180 degrees out of phase of the even ones.
-            '''
-      features: [
-        "PWM.DUTYCYCLE",
-        "PWM.BLINK",
-        "PWM.HEARTBEAT",
-        "PWM.POLARITY",
-        "PWM.CLOCKDIVIDER",
-        "PWM.PHASEDELAY"
-      ]
-      stage: V2
-      si_stage: SV2
-      lc_states: ["PROD"]
-      tests: ["chip_sw_sleep_pwm_pulses"]
-      bazel: ["//sw/device/tests:sleep_pwm_pulses_test"]
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -681,7 +640,6 @@
           - OTP background checks
         - Timers (regular and AON) are active
         - Check whether transactional clocks should be enabled or disabled
-        - Check whether PWM should be active
       '''
       stage: V2
       si_stage: SV3
@@ -707,7 +665,6 @@
           - aon_timer active
           - adc_ctrl active in low power mode
           - TBD: check whether sysrst_ctrl and pinmux wakeup detectors should be active
-          - TBD: check whether PWM should be active
 
       This test should leverage the OTTF test framework for supporting
       concurrency in a FreeRTOS environment. See also the design docs linked

@@ -63,7 +63,6 @@ interface chip_if;
 `define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define OTBN_HIER           `TOP_HIER.u_otbn
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWM_HIER            `TOP_HIER_AON.u_pwm_aon
 `define PWRMGR_HIER         `TOP_HIER_AON.u_pwrmgr_aon
 `define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
 `define RSTMGR_HIER         `TOP_HIER_AON.u_rstmgr_aon
@@ -570,30 +569,6 @@ interface chip_if;
     mios_if.pins_pd[AssignedI2cSdaIos[inst_num]] = 0;
     __enable_i2c[inst_num] = enable;
   endfunction
-
-  // Functional (muxed) interface: PWM.
-  localparam int AssignedPwmIos[NUM_PWM_CHANNELS] = {
-      top_earlgrey_pkg::MioPadIob10, top_earlgrey_pkg::MioPadIob11, top_earlgrey_pkg::MioPadIob12,
-      top_earlgrey_pkg::MioPadIoc10, top_earlgrey_pkg::MioPadIoc11, top_earlgrey_pkg::MioPadIoc12
-  };
-
-  for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
-    pwm_if pwm_if(
-`ifdef GATE_LEVEL
-                  .clk (0),
-                  .rst_n (1),
-`else
-                  .clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                  .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
-`endif
-                  .start_cntr (`PWM_HIER.u_pwm_core.clr_phase_cntr),
-                  .pwm        (mios[AssignedPwmIos[i]]));
-
-    initial begin
-      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i), "vif",
-                                          pwm_if);
-    end
-  end : gen_pwm_if_conn
 
   // Functional (muxed) interface: external clock source.
   //
@@ -1297,16 +1272,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
       entropy_src_fsm_state, 9)
 
-  // tb.dut.top_earlgrey_pd_aon.u_pwm_aon.u_pwm_core.cntr_en
-  wire pwm_core_cntr_en;
-`ifdef GATE_LEVEL
-  assign pwm_core_cntr_en = `PWM_HIER.u_reg.u_cfg_cntr_en.q;
-`else
-  assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwm_core_cntr_en,
-      pwm_core_cntr_en, 1)
-
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
@@ -1332,7 +1297,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef OTP_MACRO_HIER
 `undef OTBN_HIER
 `undef PINMUX_HIER
-`undef PWM_HIER
 `undef PWRMGR_HIER
 `undef ROM_CTRL_HIER
 `undef RSTMGR_HIER

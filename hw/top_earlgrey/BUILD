@@ -49,7 +49,6 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/gpio:doc_files",
         "//hw/top_earlgrey/ip_autogen/otp_ctrl:doc_files",
         "//hw/top_earlgrey/ip_autogen/pinmux:doc_files",
-        "//hw/top_earlgrey/ip_autogen/pwm:doc_files",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:doc_files",
         "//hw/top_earlgrey/ip_autogen/rstmgr:doc_files",
         "//hw/top_earlgrey/ip_autogen/rv_core_ibex:doc_files",

@@ -74,7 +74,6 @@ DIFS = {
     "pinmux": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },
-    "pwm": {},
     "pwrmgr": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },

@@ -169,7 +169,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
     logic [8:0] entropy_src_fsm_state;
-    logic pwm_core_cntr_en;
 
     // Wait for max-power indicator GPIO pin (IOB8) to go up.
     wait (cfg.chip_vif.mios[top_earlgrey_pkg::MioPadIob8]);
@@ -187,7 +186,6 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
-    `_DV_PROBE_AND_CHECK_IDLE(pwm_core_cntr_en, 1'b0)
 
     csrng_acmd_q = cfg.chip_vif.signal_probe_csrng_acmd_q(SignalProbeSample);
     `uvm_info(`gfn, $sformatf("%s = 0x%0x", "csrng_acmd_q",csrng_acmd_q), UVM_LOW);

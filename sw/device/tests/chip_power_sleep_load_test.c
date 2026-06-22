@@ -13,7 +13,6 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -29,7 +28,6 @@
 
 #include "hw/top/alert_handler_regs.h"
 #include "hw/top/aon_timer_regs.h"
-#include "hw/top/pwm_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 typedef void (*isr_handler)(void);
@@ -50,7 +48,6 @@ static dif_rv_plic_t rv_plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_timer_t rv_timer;
 static dif_alert_handler_t alert_handler;
-static dif_pwm_t pwm;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
@@ -105,8 +102,6 @@ static void wdog_irq_handler(void) {
 }
 
 static void prepare_to_exit(void) {
-  CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleDisabled));
-
   CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
 
   LOG_INFO("Prepare to exit");
@@ -132,8 +127,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_alert_handler_init(
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
-  CHECK_DIF_OK(dif_pwm_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_otp_ctrl_init(
@@ -274,62 +267,6 @@ bool test_main(void) {
   CHECK(is_locked, "Expected alerts to be locked");
 
   LOG_INFO("Alert ping is active");
-
-  // PWM
-  // Configuration struct for PWM general.
-  const dif_pwm_config_t kConfig_ = {
-      .clock_divisor = 0,
-      .beats_per_pulse_cycle = 32,
-  };
-
-  // Configuration struct for a specific PWM channel.
-  const dif_pwm_channel_config_t kDefaultChCfg_ = {
-      .duty_cycle_a = 0,
-      .duty_cycle_b = 0,
-      .phase_delay = 0,
-      .mode = kDifPwmModeFirmware,
-      .polarity = kDifPwmPolarityActiveHigh,
-      .blink_parameter_x = 0,
-      .blink_parameter_y = 0,
-  };
-  // Duty cycle (arbitrary) values (in the beats).
-  const uint16_t kPwmDutycycle[PWM_PARAM_N_OUTPUTS] = {
-      6, 11, 27, 8, 17, 7,
-  };
-
-  const dif_pinmux_index_t kPinmuxMioOut[PWM_PARAM_N_OUTPUTS] = {
-      kTopEarlgreyPinmuxMioOutIob10, kTopEarlgreyPinmuxMioOutIob11,
-      kTopEarlgreyPinmuxMioOutIob12, kTopEarlgreyPinmuxMioOutIoc10,
-      kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
-  };
-  const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
-      kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
-      kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,
-      kTopEarlgreyPinmuxOutselPwmAonPwm4, kTopEarlgreyPinmuxOutselPwmAonPwm5,
-  };
-
-  CHECK_DIF_OK(dif_pwm_configure(&pwm, kConfig_));
-
-  // Configure each of the PWM channels:
-  dif_pwm_channel_config_t channel_config_ = kDefaultChCfg_;
-  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleDisabled));
-    channel_config_.duty_cycle_a = kPwmDutycycle[i];
-    CHECK_DIF_OK(dif_pwm_configure_channel(&pwm, i, channel_config_));
-    CHECK_DIF_OK(dif_pwm_channels_set_enabled(&pwm, 1 << i, kDifToggleEnabled));
-  }
-
-  // Enable all PWM channels.
-  CHECK_DIF_OK(dif_pwm_phase_cntr_set_enabled(&pwm, kDifToggleEnabled));
-
-  // PINMUX.
-  for (size_t i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
-    CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, kPinmuxMioOut[i], kPinmuxOutsel[i]));
-  }
-
-  LOG_INFO("PWM active");
 
   // OTP.
   if (kBootStage != kBootStageOwner) {
