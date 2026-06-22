@@ -31,7 +31,6 @@ opentitan_binary(
     name = "test_rom",
     collect_code_coverage = 0,
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
@@ -64,7 +63,6 @@ opentitan_binary(
 # can find the test_rom VMEM files.
 legacy_rom_targets(
     suffixes = {
-        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
         "fpga_cw305": ["//hw/top_earlgrey:fpga_cw305"],
         "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
     },
@@ -81,7 +79,6 @@ legacy_rom_targets(
         "sim_dv",
         "sim_verilator",
         "fpga_cw305",
-        "fpga_cw310",
         "fpga_cw340",
     ]
 ]
@@ -288,10 +285,6 @@ output_groups(
         "fpga_cw305_elf",
         "fpga_cw305_rom32",
         "fpga_cw305_mapfile",
-        "fpga_cw310_binary",
-        "fpga_cw310_elf",
-        "fpga_cw310_rom",
-        "fpga_cw310_mapfile",
         "fpga_cw340_binary",
         "fpga_cw340_elf",
         "fpga_cw340_rom",

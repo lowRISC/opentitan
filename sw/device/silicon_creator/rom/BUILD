@@ -217,7 +217,6 @@ opentitan_binary(
     name = "mask_rom",
     collect_code_coverage = 0,
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
@@ -254,7 +253,6 @@ check_elf_symbols_test(
 # the rom VMEM files.
 legacy_rom_targets(
     suffixes = {
-        "fpga_cw310": ["//hw/top_earlgrey:fpga_cw310"],
         "fpga_cw340": ["//hw/top_earlgrey:fpga_cw340"],
     },
     target = "mask_rom",
@@ -268,7 +266,6 @@ legacy_rom_targets(
         output_group = "{}_hashfile".format(dev),
     )
     for dev in [
-        "fpga_cw310",
         "fpga_cw340",
         "silicon_creator",
     ]
@@ -318,7 +315,7 @@ opentitan_test(
     # Setting `kind = "rom"` makes the `opentitan_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
-    # Verilator or CW310 params).
+    # Verilator or FPGA params).
     exec_env = {
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -486,10 +483,6 @@ output_groups(
     testonly = True,
     srcs = [":mask_rom"],
     groups = [
-        "fpga_cw310_binary",
-        "fpga_cw310_elf",
-        "fpga_cw310_rom",
-        "fpga_cw310_mapfile",
         "fpga_cw340_binary",
         "fpga_cw340_elf",
         "fpga_cw340_rom",
@@ -528,7 +521,6 @@ output_groups(
     name = "mask_rom_binaries",
     srcs = [":mask_rom"],
     groups = [
-        "fpga_cw310_binary",
         "fpga_cw340_binary",
         "sim_dv_binary",
         "sim_verilator_binary",
@@ -540,7 +532,6 @@ output_groups(
     name = "mask_rom_disassembly",
     srcs = [":mask_rom"],
     groups = [
-        "fpga_cw310_disassembly",
         "fpga_cw340_disassembly",
         "sim_dv_disassembly",
         "sim_verilator_disassembly",

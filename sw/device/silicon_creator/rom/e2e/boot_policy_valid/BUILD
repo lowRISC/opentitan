@@ -5,7 +5,6 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )

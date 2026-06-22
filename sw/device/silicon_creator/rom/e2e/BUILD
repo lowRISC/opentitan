@@ -24,7 +24,6 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "cw310_params",
     "dv_params",
     "ecdsa_key_by_name",
     "fpga_params",
@@ -200,7 +199,6 @@ opentitan_test(
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
     for group in [
-        "fpga_cw310_rom_with_fake_keys",
         "fpga_cw340_rom_with_fake_keys",
         "sim_dv",
     ]
@@ -222,7 +220,6 @@ opentitan_test(
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
     for group in [
-        "fpga_cw310_rom_with_fake_keys",
         "fpga_cw340_rom_with_fake_keys",
         "sim_dv",
     ]
@@ -395,7 +392,7 @@ opentitan_test(
 )
 
 # Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
-# bitstream before it's sent to the CW310 FPGA.
+# bitstream before it's sent to the FPGA.
 opentitan_test(
     name = "e2e_bootup_success_otp_dev",
     srcs = [":empty_test"],
