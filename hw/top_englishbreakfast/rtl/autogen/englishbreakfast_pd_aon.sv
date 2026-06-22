@@ -11,16 +11,10 @@
 `include "prim_assert.sv"
 
 module englishbreakfast_pd_aon #(
-  // TODO Manual parameters for pwrmgr
-  parameter int AlertHandlerEscNumSeverities = 4,
-  parameter int AlertHandlerEscPingCountWidth = 16,
   // Auto-inferred parameters
-  // parameters for pwrmgr_aon
   // parameters for rstmgr_aon
   parameter bit SecRstmgrAonCheck = 0,
   parameter int SecRstmgrAonMaxSyncDelay = 2
-  // parameters for clkmgr_aon
-  // parameters for aon_timer_aon
 ) (
   // Inter-module Signal External type
   input  pwrmgr_pkg::pwr_nvm_t       pwrmgr_aon_pwr_nvm_i,

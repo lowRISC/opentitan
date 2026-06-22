@@ -6,17 +6,17 @@
 
 // This file must be `included in `hw/top_<toplevel>/dv/tb/tb.sv.
 
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, pd_hier = ) \
-     force ``tl_name``_tl_if.d2h = dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_i; \
-     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, power_domain) \
+     force ``tl_name``_tl_if.d2h = dut.top_englishbreakfast.englishbreakfast_pd_``power_domain``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_englishbreakfast.englishbreakfast_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
+     force dut.top_englishbreakfast.englishbreakfast_pd_``power_domain``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, pd_hier = ) \
-     force ``tl_name``_tl_if.h2d = dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_i; \
-     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, power_domain) \
+     force ``tl_name``_tl_if.h2d = dut.top_englishbreakfast.englishbreakfast_pd_``power_domain``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_englishbreakfast.englishbreakfast_pd_``power_domain``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     force dut.top_englishbreakfast.englishbreakfast_pd_``power_domain``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -66,50 +66,50 @@ initial begin
   if (xbar_mode) begin
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
-    $asserton(0, tb.dut.top_englishbreakfast.u_xbar_main);
-    $asserton(0, tb.dut.top_englishbreakfast.u_xbar_peri);
+    $asserton(0, tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_main);
+    $asserton(0, tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri);
 
 
     // These are all zero-time: anything that consumes time go at the end.
 
     // bypass clkmgr, force clocks directly
-    force tb.dut.top_englishbreakfast.u_xbar_main.clk_main_i = clk_main;
-    force tb.dut.top_englishbreakfast.u_xbar_main.clk_fixed_i = clk_io_div4;
-    force tb.dut.top_englishbreakfast.u_xbar_peri.clk_peri_i = clk_io_div4;
-    force tb.dut.top_englishbreakfast.u_xbar_peri.clk_spi_host0_i = clk_io;
-    force tb.dut.top_englishbreakfast.u_xbar_peri.clk_usb_i = clk_usb;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_main.clk_main_i = clk_main;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_main.clk_fixed_i = clk_io_div4;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri.clk_peri_i = clk_io_div4;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri.clk_spi_host0_i = clk_io;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri.clk_usb_i = clk_usb;
 
     // bypass rstmgr, force resets directly
-    force tb.dut.top_englishbreakfast.u_xbar_main.rst_main_ni = rst_n;
-    force tb.dut.top_englishbreakfast.u_xbar_main.rst_fixed_ni = rst_n;
-    force tb.dut.top_englishbreakfast.u_xbar_peri.rst_peri_ni = rst_n;
-    force tb.dut.top_englishbreakfast.u_xbar_peri.rst_spi_host0_ni = rst_n;
-    force tb.dut.top_englishbreakfast.u_xbar_peri.rst_usb_ni = rst_n;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_main.rst_main_ni = rst_n;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_main.rst_fixed_ni = rst_n;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri.rst_peri_ni = rst_n;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri.rst_spi_host0_ni = rst_n;
+    force tb.dut.top_englishbreakfast.englishbreakfast_pd_main.u_xbar_peri.rst_usb_ni = rst_n;
 
 `ifndef GATE_LEVEL
-    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h)
-    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__cored, rv_core_ibex, cored_tl_h)
-    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__mem, flash_ctrl, mem_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex__cfg, rv_core_ibex, cfg_tl_d)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__regs, sram_ctrl_main, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, _pd_aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, _pd_aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, _pd_aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
+    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h, main)
+    `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__cored, rv_core_ibex, cored_tl_h, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__rom, rom_ctrl, rom_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__mem, flash_ctrl, mem_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_plic, rv_plic, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_core_ibex__cfg, rv_core_ibex, cfg_tl_d, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__regs, sram_ctrl_main, regs_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl, main)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
 `endif
 

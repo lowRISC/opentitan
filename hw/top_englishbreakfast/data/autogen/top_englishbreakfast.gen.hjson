@@ -3894,7 +3894,6 @@
           width: 1
           default: prim_mubi_pkg::MuBi8False
           inst_name: sram_ctrl_main
-          top_signame: sram_ctrl_main_otp_en_sram_ifetch
           index: -1
         }
         {
@@ -5079,7 +5078,6 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       pinmux_aon.dft_jtag
-      sram_ctrl_main.otp_en_sram_ifetch
     ]
     external:
     {
@@ -7606,11 +7604,23 @@
           {
             unused: true
           }
-          pinmux_aon.usb_dnpullup_en:
+          pinmux_aon.dft_strap_test:
           {
             unused: true
           }
-          pinmux_aon.dft_strap_test:
+          pinmux_aon.usb_dppullup_en:
+          {
+            signal: usb_dp_pullup_en
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            signal: usb_dn_pullup_en
+          }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
           {
             unused: true
           }
@@ -7628,11 +7638,11 @@
           }
           usbdev.usb_rx_d:
           {
-            signal: usb_rx_d
+            unused: true
           }
           usbdev.usb_rx_enable:
           {
-            signal: usb_rx_enable
+            unused: true
           }
           usbdev.usb_ref_val:
           {
@@ -7822,6 +7832,26 @@
       {
         port_overrides:
         {
+          pinmux_aon.dft_hold_tap_sel:
+          {
+            unused: true
+          }
+          pinmux_aon.usb_dppullup_en:
+          {
+            signal: usb_dp_pullup_en
+          }
+          pinmux_aon.usb_dnpullup_en:
+          {
+            signal: usb_dn_pullup_en
+          }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
+          {
+            unused: true
+          }
           usbdev.usb_rx_d:
           {
             signal: usb_rx_d
@@ -7851,10 +7881,6 @@
             signal: usb_ref_pulse
           }
           rv_core_ibex.fpga_info:
-          {
-            unused: true
-          }
-          pinmux_aon.dft_hold_tap_sel:
           {
             unused: true
           }
@@ -9078,6 +9104,32 @@
         act: req
         suffix: ""
         default: "'0"
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: chip
+        signame: outgoing_lpg_cg_en_englishbreakfast
+        width: 13
+        type: uni
+        special: alert
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4True
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: chip
+        signame: outgoing_lpg_rst_en_englishbreakfast
+        width: 13
+        type: uni
+        special: alert
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4True
       }
       {
         package: pwrmgr_pkg
@@ -12016,7 +12068,6 @@
         width: 1
         default: prim_mubi_pkg::MuBi8False
         inst_name: sram_ctrl_main
-        top_signame: sram_ctrl_main_otp_en_sram_ifetch
         index: -1
       }
       {
@@ -13396,8 +13447,8 @@
         signame: clkmgr_aon_cg_en_o
         signame_chip:
         {
-          cw305: clkmgr_aon_cg_en
-          verilator: clkmgr_aon_cg_en
+          cw305: ""
+          verilator: ""
         }
         width: 1
         type: uni
@@ -13738,7 +13789,7 @@
         signame: usb_dn_pullup_en_o
         signame_chip:
         {
-          cw305: ""
+          cw305: usb_dn_pullup_en
           verilator: usb_dn_pullup_en
         }
         width: 1
@@ -13833,8 +13884,8 @@
         signame: rstmgr_aon_rst_en_o
         signame_chip:
         {
-          cw305: rstmgr_aon_rst_en
-          verilator: rstmgr_aon_rst_en
+          cw305: ""
+          verilator: ""
         }
         width: 1
         type: uni
@@ -13871,7 +13922,7 @@
         signame: usbdev_usb_rx_d_i
         signame_chip:
         {
-          cw305: usb_rx_d
+          cw305: 1'b0
           verilator: usb_rx_d
         }
         width: 1
@@ -13947,7 +13998,7 @@
         signame: usbdev_usb_rx_enable_o
         signame_chip:
         {
-          cw305: usb_rx_enable
+          cw305: ""
           verilator: usb_rx_enable
         }
         width: 1
@@ -14839,16 +14890,6 @@
         type: req_rsp
         end_idx: -1
         default: ""
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi8
-        signame: sram_ctrl_main_otp_en_sram_ifetch
-        domain: Main
-        width: 1
-        type: uni
-        end_idx: -1
-        default: prim_mubi_pkg::MuBi8False
       }
     ]
   }
