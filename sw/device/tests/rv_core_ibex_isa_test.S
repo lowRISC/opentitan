@@ -44,7 +44,6 @@ test_main:
   jal smoke_alu_zbc
   jal smoke_alu_zbp
   jal smoke_alu_zbs
-  jal smoke_alu_b_misc
   jal smoke_alu_b_imm
   jal smoke_csr
   jal smoke_fence
@@ -308,37 +307,15 @@ smoke_alu_zbs:
   ret
 
 /**
- * Checks the `slo` and `sro` instructions
- */
-smoke_alu_b_misc:
-  li t0, 0x9bfae1bb
-  li t1, 8
-  li t2, 4
-  //slo t0, t0, t1
-  .insn r OP, 0b001, 0b0010000, t0, t0, t1
-  //sro t0, t0, t2
-  .insn r OP, 0b101, 0b0010000, t0, t0, t2
-
-  li t1, 0xffae1bbf
-  check t0, t1
-  ret
-
-/**
  * Checks the immediate bitmanip instructions.
- *
- * This is a superset of RV32B's immediate instructions.
  */
 smoke_alu_b_imm:
   li    t0, 0xfcec24cf
-  //sloi  t0, t0, 7
-  .insn i OP_IMM, 0b001, t0, t0, 0x207
   // zbs
   bclri t0, t0, 3
   bseti t0, t0, 31
   binvi t0, t0, 19
   bexti t1, t0, 8
-  //sroi  t0, t0, 5
-  .insn i OP_IMM, 0b101, t0, t0, 0x205
   // zbb
   rori  t0, t0, 16
   // zbp
@@ -350,7 +327,7 @@ smoke_alu_b_imm:
   unshfli t0, t0, 4
   .option pop
 
-  li t1, 0xffffff0f
+  li t1, 0x5affff5f
   check t0, t1
   ret
 

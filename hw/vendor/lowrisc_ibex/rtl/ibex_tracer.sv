@@ -455,7 +455,7 @@ module ibex_tracer (
   endfunction
 
   function automatic void decode_i_shift_insn(input string mnemonic);
-    // SLLI, SRLI, SRAI, SROI, SLOI, RORI
+    // SLLI, SRLI, SRAI, RORI
     logic [4:0] shamt;
     shamt = {rvfi_insn[24:20]};
     data_accessed = RS1 | RD;
@@ -1152,11 +1152,6 @@ module ibex_tracer (
         INSN_XPERM_N:    decode_r_insn("xperm_n");
         INSN_XPERM_B:    decode_r_insn("xperm_b");
         INSN_XPERM_H:    decode_r_insn("xperm_h");
-        INSN_SLO:        decode_r_insn("slo");
-        INSN_SRO:        decode_r_insn("sro");
-        INSN_SLOI:       decode_i_shift_insn("sloi");
-        INSN_SROI:       decode_i_shift_insn("sroi");
-
 
         // RV32B - ZBC
         INSN_CLMUL:      decode_r_insn("clmul");

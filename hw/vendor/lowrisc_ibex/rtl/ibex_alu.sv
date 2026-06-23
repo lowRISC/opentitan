@@ -214,7 +214,6 @@ module ibex_alu #(
   // shifting operand_a_i to the right by the required amount and returning bit [0] of the result.
 
   logic       shift_left;
-  logic       shift_ones;
   logic       shift_arith;
   logic       shift_sbmode;
   logic [4:0] shift_amt;
@@ -238,14 +237,13 @@ module ibex_alu #(
       (operator_i == ALU_BSET) | (operator_i == ALU_BCLR) | (operator_i == ALU_BINV) : 1'b0;
 
   // left shift if this is:
-  // * a standard left shift (slo, sll)
+  // * a standard left shift (sll)
   // * a rol in the first cycle
   // * a ror in the second cycle
   // * a single-bit instruction: bclr, bset, binv (excluding bext)
   always_comb begin
     unique case (operator_i)
       ALU_SLL: shift_left = 1'b1;
-      ALU_SLO: shift_left = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b1 : 1'b0;
       ALU_ROL: shift_left = (RV32B != RV32BNone) ? instr_first_cycle_i : 0;
       ALU_ROR: shift_left = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 0;
       default: shift_left = 1'b0;
@@ -256,8 +254,6 @@ module ibex_alu #(
   end
 
   assign shift_arith  = (operator_i == ALU_SRA);
-  assign shift_ones   = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ?
-      (operator_i == ALU_SLO) | (operator_i == ALU_SRO) : 1'b0;
 
   // shifter structure.
   always_comb begin
@@ -273,7 +269,7 @@ module ibex_alu #(
     end
 
     shift_result_ext_signed =
-        $signed({shift_ones | (shift_arith & shift_operand[31]), shift_operand}) >>> shift_amt[4:0];
+        $signed({shift_arith & shift_operand[31], shift_operand}) >>> shift_amt[4:0];
     shift_result_ext = $unsigned(shift_result_ext_signed);
 
     shift_result            = shift_result_ext[31:0];
@@ -907,9 +903,7 @@ module ibex_alu #(
 
       // Shift Operations
       ALU_SLL,  ALU_SRL,
-      ALU_SRA,
-      // RV32B
-      ALU_SLO,  ALU_SRO: result_o = shift_result;
+      ALU_SRA: result_o = shift_result;
 
       // Shuffle Operations (RV32B)
       ALU_SHFL, ALU_UNSHFL: result_o = shuffle_result;

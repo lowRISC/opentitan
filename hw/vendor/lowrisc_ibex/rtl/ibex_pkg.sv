@@ -101,8 +101,6 @@ package ibex_pkg;
     ALU_SRL,
     ALU_SLL,
     // RV32B
-    ALU_SRO,
-    ALU_SLO,
     ALU_ROR,
     ALU_ROL,
     ALU_GREV,

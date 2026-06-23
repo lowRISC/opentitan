@@ -78,8 +78,8 @@ package ibex_tracer_pkg;
 
   // ZBB
   // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
-  // instr[24:20] are effectively used. Whenever instr[26] is set, sroi/rori is instead decoded as
-  // fsri.
+  // instr[24:20] are effectively used. instr[26] is constrained to 0 ([26]=1 encodings are
+  // illegal).
   parameter logic [31:0] INSN_RORI = { 5'b01100  , 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
   parameter logic [31:0] INSN_CLZ  = { 12'b011000000000, 5'h?,  3'b001, 5'h?, {OPCODE_OP_IMM} };
   parameter logic [31:0] INSN_CTZ  = { 12'b011000000001, 5'h?,  3'b001, 5'h?, {OPCODE_OP_IMM} };
@@ -249,14 +249,6 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_XPERM_N = { 7'b0010100, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_XPERM_B = { 7'b0010100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_XPERM_H = { 7'b0010100, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
-
-  parameter logic [31:0] INSN_SLO    = { 7'b0010000, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
-  parameter logic [31:0] INSN_SRO    = { 7'b0010000, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
-  parameter logic [31:0] INSN_SLOI   = { 5'b00100        , 12'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
-  // instr[24:20] are effectively used. Whenever instr[26] is set, sroi/rori is instead decoded as
-  // fsri.
-  parameter logic [31:0] INSN_SROI   = { 5'b00100  , 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
 
   // ZBC
   parameter logic [31:0] INSN_CLMUL  = {7'b0000101, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
