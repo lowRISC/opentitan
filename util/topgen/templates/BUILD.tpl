@@ -38,7 +38,6 @@ else:
 
 defs_imports = sorted(
     [env for env in exec_envs if isinstance(env, str)] + [
-        "cw310_params",
         "fpga_params",
         "opentitan_test",
         "silicon_params",
