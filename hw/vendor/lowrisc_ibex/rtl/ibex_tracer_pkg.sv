@@ -266,9 +266,6 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_FSL  = {5'h?, 2'b10, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_FSR  = {5'h?, 2'b10, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
 
-  // ZBF
-  parameter logic [31:0] INSN_BFP  = {7'b0100100, 10'h?, 3'b111, 5'h?, {OPCODE_OP} };
-
   // ZBC
   parameter logic [31:0] INSN_CLMUL  = {7'b0000101, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_CLMULR = {7'b0000101, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };

@@ -234,10 +234,6 @@ module ibex_alu #(
   //
   // For bext, the bit defined by operand_b_i[4:0] is to be returned. This is done by simply
   // shifting operand_a_i to the right by the required amount and returning bit [0] of the result.
-  //
-  // Bit-Field Place
-  // ===============
-  // The shifter structure is shared to compute bfp_mask << bfp_off.
 
   logic       shift_left;
   logic       shift_ones;
@@ -254,39 +250,15 @@ module ibex_alu #(
   logic        [31:0] shift_result;
   logic        [31:0] shift_result_rev;
 
-  // zbf
-  logic bfp_op;
-  logic [4:0]  bfp_len;
-  logic [4:0]  bfp_off;
-  logic [31:0] bfp_mask;
-  logic [31:0] bfp_mask_rev;
-  logic [31:0] bfp_result;
-
-  // bfp: shares the shifter structure to compute bfp_mask << bfp_off
-  assign bfp_op = (RV32B != RV32BNone) ? (operator_i == ALU_BFP) : 1'b0;
-  assign bfp_len = {~(|operand_b_i[27:24]), operand_b_i[27:24]}; // len = 0 encodes for len = 16
-  assign bfp_off = operand_b_i[20:16];
-  assign bfp_mask = (RV32B != RV32BNone) ? ~(32'hffff_ffff << bfp_len) : '0;
-  for (genvar i = 0; i < 32; i++) begin : gen_rev_bfp_mask
-    assign bfp_mask_rev[i] = bfp_mask[31-i];
-  end
-
-  assign bfp_result =(RV32B != RV32BNone) ?
-      (~shift_result & operand_a_i) | ((operand_b_i & bfp_mask) << bfp_off) : '0;
-
   // bit shift_amt[5]: word swap bit: only considered for FSL/FSR.
   // if set, reverse operations in first and second cycle.
   assign shift_amt[5] = operand_b_i[5] & shift_funnel;
   assign shift_amt_compl = 32 - operand_b_i[4:0];
 
   always_comb begin
-    if (bfp_op) begin
-      shift_amt[4:0] = bfp_off;  // length field of bfp control word
-    end else begin
-      shift_amt[4:0] = instr_first_cycle_i ?
-          (operand_b_i[5] && shift_funnel ? shift_amt_compl[4:0] : operand_b_i[4:0]) :
-          (operand_b_i[5] && shift_funnel ? operand_b_i[4:0] : shift_amt_compl[4:0]);
-    end
+    shift_amt[4:0] = instr_first_cycle_i ?
+        (operand_b_i[5] && shift_funnel ? shift_amt_compl[4:0] : operand_b_i[4:0]) :
+        (operand_b_i[5] && shift_funnel ? operand_b_i[4:0] : shift_amt_compl[4:0]);
   end
 
   // single-bit mode: shift
@@ -300,12 +272,10 @@ module ibex_alu #(
   // * fsl: without word-swap bit: first cycle, else: second cycle
   // * fsr: without word-swap bit: second cycle, else: first cycle
   // * a single-bit instruction: bclr, bset, binv (excluding bext)
-  // * bfp: bfp_mask << bfp_off
   always_comb begin
     unique case (operator_i)
       ALU_SLL: shift_left = 1'b1;
       ALU_SLO: shift_left = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b1 : 1'b0;
-      ALU_BFP: shift_left = (RV32B != RV32BNone) ? 1'b1 : 1'b0;
       ALU_ROL: shift_left = (RV32B != RV32BNone) ? instr_first_cycle_i : 0;
       ALU_ROR: shift_left = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 0;
       ALU_FSL: shift_left = (RV32B != RV32BNone) ?
@@ -328,12 +298,11 @@ module ibex_alu #(
   // shifter structure.
   always_comb begin
     // select shifter input
-    // for bfp, sbmode and shift_left the corresponding bit-reversed input is chosen.
+    // for sbmode and shift_left the corresponding bit-reversed input is chosen.
     if (RV32B == RV32BNone) begin
       shift_operand = shift_left ? operand_a_rev : operand_a_i;
     end else begin
       unique case (1'b1)
-        bfp_op:       shift_operand = bfp_mask_rev;
         shift_sbmode: shift_operand = 32'h8000_0000;
         default:      shift_operand = shift_left ? operand_a_rev : operand_a_i;
       endcase
@@ -1145,9 +1114,6 @@ module ibex_alu #(
 
       // General Reverse / Or-combine (RV32B)
       ALU_GREV, ALU_GORC: result_o = rev_result;
-
-      // Bit Field Place (RV32B)
-      ALU_BFP: result_o = bfp_result;
 
       // Carry-less Multiply Operations (RV32B)
       ALU_CLMUL, ALU_CLMULR,

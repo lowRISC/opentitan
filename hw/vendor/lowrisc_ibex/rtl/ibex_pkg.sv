@@ -167,10 +167,6 @@ package ibex_pkg;
     ALU_BINV,
     ALU_BEXT,
 
-    // Bit Field Place
-    // RV32B
-    ALU_BFP,
-
     // Carry-less Multiply
     // RV32B
     ALU_CLMUL,

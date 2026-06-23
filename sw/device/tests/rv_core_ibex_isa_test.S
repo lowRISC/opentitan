@@ -42,7 +42,6 @@ test_main:
   jal smoke_alu_zba
   jal smoke_alu_zbb
   jal smoke_alu_zbc
-  jal smoke_alu_zbf
   jal smoke_alu_zbp
   jal smoke_alu_zbr
   jal smoke_alu_zbs
@@ -255,22 +254,6 @@ smoke_alu_zbc:
   clmulh  t0, t0, t1
 
   li t1, 0x08810f55
-  check t0, t1
-  ret
-
-/**
- * Checks the instructions from the zbf extension
- *
- * Note: pack and packh are not checked here
- * but in covered in `smoke_alu_zbp`.
- */
-smoke_alu_zbf:
-  li t0, 0x0e0a47f3
-  li t1, 0x0e1fcff3
-  .option push
-  .option arch, +zbf0p93
-  bfp t0, t0, t0
-  .option pop
   check t0, t1
   ret
 

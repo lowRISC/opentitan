@@ -1185,9 +1185,6 @@ module ibex_tracer (
         INSN_FSL:        decode_r_funnelshift_insn("fsl");
         INSN_FSRI:       decode_i_funnelshift_insn("fsri");
 
-        // RV32B - ZBF
-        INSN_BFP:        decode_r_insn("bfp");
-
         // RV32B - ZBC
         INSN_CLMUL:      decode_r_insn("clmul");
         INSN_CLMULR:     decode_r_insn("clmulr");

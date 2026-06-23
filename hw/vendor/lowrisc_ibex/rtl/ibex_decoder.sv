@@ -489,9 +489,7 @@ module ibex_decoder #(
             {7'b010_0100, 3'b001}, // bclr
             {7'b001_0100, 3'b001}, // bset
             {7'b011_0100, 3'b001}, // binv
-            {7'b010_0100, 3'b101}, // bext
-            // RV32B zbf
-            {7'b010_0100, 3'b111}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bfp
+            {7'b010_0100, 3'b101}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bext
             // RV32B zbp
             {7'b011_0100, 3'b101}, // grev
             {7'b001_0100, 3'b101}, // gorc
@@ -1039,9 +1037,6 @@ module ibex_decoder #(
             {7'b001_0100, 3'b001}: if (RV32B != RV32BNone) alu_operator_o = ALU_BSET;
             {7'b011_0100, 3'b001}: if (RV32B != RV32BNone) alu_operator_o = ALU_BINV;
             {7'b010_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_BEXT;
-
-            // RV32B zbf
-            {7'b010_0100, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_BFP;
 
             // RV32B zbp
             {7'b011_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_GREV;
