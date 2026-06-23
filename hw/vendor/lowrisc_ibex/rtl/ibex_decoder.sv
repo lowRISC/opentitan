@@ -385,14 +385,6 @@ module ibex_decoder #(
                   7'b000_0010,                                                         // cpop
                   7'b000_0100,                                                         // sext.b
                   7'b000_0101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;      // sext.h
-                  7'b001_0000,                                                         // crc32.b
-                  7'b001_0001,                                                         // crc32.h
-                  7'b001_0010,                                                         // crc32.w
-                  7'b001_1000,                                                         // crc32c.b
-                  7'b001_1001,                                                         // crc32c.h
-                  7'b001_1010: begin                                                   // crc32c.w
-                    illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
-                  end
                   default: illegal_insn = 1'b1;
                 endcase
               end
@@ -845,42 +837,6 @@ module ibex_decoder #(
                     7'b000_0010: alu_operator_o = ALU_CPOP;  // cpop
                     7'b000_0100: alu_operator_o = ALU_SEXTB; // sext.b
                     7'b000_0101: alu_operator_o = ALU_SEXTH; // sext.h
-                    7'b001_0000: begin
-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-                        alu_operator_o = ALU_CRC32_B;  // crc32.b
-                        alu_multicycle_o = 1'b1;
-                      end
-                    end
-                    7'b001_0001: begin
-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-                        alu_operator_o = ALU_CRC32_H;  // crc32.h
-                        alu_multicycle_o = 1'b1;
-                      end
-                    end
-                    7'b001_0010: begin
-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-                        alu_operator_o = ALU_CRC32_W;  // crc32.w
-                        alu_multicycle_o = 1'b1;
-                      end
-                    end
-                    7'b001_1000: begin
-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-                        alu_operator_o = ALU_CRC32C_B; // crc32c.b
-                        alu_multicycle_o = 1'b1;
-                      end
-                    end
-                    7'b001_1001: begin
-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-                        alu_operator_o = ALU_CRC32C_H; // crc32c.h
-                        alu_multicycle_o = 1'b1;
-                      end
-                    end
-                    7'b001_1010: begin
-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-                        alu_operator_o = ALU_CRC32C_W; // crc32c.w
-                        alu_multicycle_o = 1'b1;
-                      end
-                    end
                     default: ;
                   endcase
                 end

@@ -600,8 +600,6 @@ module ibex_alu #(
       end
     end
 
-    logic crc_hmode;
-    logic crc_bmode;
     logic [31:0] clmul_result_rev;
 
     if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin : gen_alu_rvb_otearlgrey_full
@@ -778,9 +776,9 @@ module ibex_alu #(
       end
       assign xperm_result = xperm_n;
 
-      ///////////////////////////////////////////////////
-      // Carry-less Multiply + Cyclic Redundancy Check //
-      ///////////////////////////////////////////////////
+      /////////////////////////
+      // Carry-less Multiply //
+      /////////////////////////
 
       // Carry-less multiplication can be understood as multiplication based on
       // the addition interpreted as the bit-wise xor operation.
@@ -805,39 +803,6 @@ module ibex_alu #(
       //         [ operand_b[i] ? (operand_a << i) : '0 for i in 0 ... 31 ]
       //         is generated. The entries of the array are pairwise 'xor-ed'
       //         together in a 5-stage binary tree.
-      //
-      //
-      // Cyclic Redundancy Check:
-      //
-      // CRC-32 (CRC-32/ISO-HDLC) and CRC-32C (CRC-32/ISCSI) are directly implemented. For
-      // documentation of the crc configuration (crc-polynomials, initialization, reflection, etc.)
-      // see http://reveng.sourceforge.net/crc-catalogue/all.htm
-      // A useful guide to crc arithmetic and algorithms is given here:
-      // http://www.piclist.com/techref/method/math/crcguide.html.
-      //
-      // The CRC operation solves the following equation using binary polynomial arithmetic:
-      //
-      // rev(rd)(x) = rev(rs1)(x) * x**n mod {1, P}(x)
-      //
-      // where P denotes lower 32 bits of the corresponding CRC polynomial, rev(a) the bit reversal
-      // of a, n = 8,16, or 32 for .b, .h, .w -variants. {a, b} denotes bit concatenation.
-      //
-      // Using Barrett reduction, one can show that
-      //
-      // M(x) mod P(x) = R(x) =
-      //          (M(x) * x**n) & {deg(P(x)'{1'b1}}) ^ (M(x) x**-(deg(P(x) - n)) cx mu(x) cx P(x),
-      //
-      // Where mu(x) = polydiv(x**64, {1,P}) & 0xffffffff. Here, 'cx' refers to carry-less
-      // multiplication. Substituting rev(rd)(x) for R(x) and rev(rs1)(x) for M(x) and solving for
-      // rd(x) with P(x) a crc32 polynomial (deg(P(x)) = 32), we get
-      //
-      // rd = rev( (rev(rs1) << n)  ^ ((rev(rs1) >> (32-n)) cx mu cx P)
-      //    = (rs1 >> n) ^ rev(rev( (rs1 << (32-n)) cx rev(mu)) cx P)
-      //                       ^-- cycle 0--------------------^
-      //      ^- cycle 1 -------------------------------------------^
-      //
-      // In the last step we used the fact that carry-less multiplication is bit-order agnostic:
-      // rev(a cx b) = rev(a) cx rev(b).
 
       logic clmul_rmode;
       logic clmul_hmode;
@@ -859,52 +824,10 @@ module ibex_alu #(
       assign clmul_rmode = operator_i == ALU_CLMULR;
       assign clmul_hmode = operator_i == ALU_CLMULH;
 
-      // CRC
-      localparam logic [31:0] CRC32_POLYNOMIAL = 32'h04c1_1db7;
-      localparam logic [31:0] CRC32_MU_REV = 32'hf701_1641;
-
-      localparam logic [31:0] CRC32C_POLYNOMIAL = 32'h1edc_6f41;
-      localparam logic [31:0] CRC32C_MU_REV = 32'hdea7_13f1;
-
-      logic crc_op;
-
-      logic crc_cpoly;
-
-      logic [31:0] crc_operand;
-      logic [31:0] crc_poly;
-      logic [31:0] crc_mu_rev;
-
-      assign crc_op = (operator_i == ALU_CRC32C_W) | (operator_i == ALU_CRC32_W) |
-                      (operator_i == ALU_CRC32C_H) | (operator_i == ALU_CRC32_H) |
-                      (operator_i == ALU_CRC32C_B) | (operator_i == ALU_CRC32_B);
-
-      assign crc_cpoly = (operator_i == ALU_CRC32C_W) |
-                         (operator_i == ALU_CRC32C_H) |
-                         (operator_i == ALU_CRC32C_B);
-
-      assign crc_hmode = (operator_i == ALU_CRC32_H) | (operator_i == ALU_CRC32C_H);
-      assign crc_bmode = (operator_i == ALU_CRC32_B) | (operator_i == ALU_CRC32C_B);
-
-      assign crc_poly   = crc_cpoly ? CRC32C_POLYNOMIAL : CRC32_POLYNOMIAL;
-      assign crc_mu_rev = crc_cpoly ? CRC32C_MU_REV : CRC32_MU_REV;
-
-      always_comb begin
-        unique case (1'b1)
-          crc_bmode: crc_operand = {operand_a_i[7:0], 24'h0};
-          crc_hmode: crc_operand = {operand_a_i[15:0], 16'h0};
-          default:   crc_operand = operand_a_i;
-        endcase
-      end
-
       // Select clmul input
       always_comb begin
-        if (crc_op) begin
-          clmul_op_a = instr_first_cycle_i ? crc_operand : imd_val_q_i;
-          clmul_op_b = instr_first_cycle_i ? crc_mu_rev : crc_poly;
-        end else begin
-          clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
-          clmul_op_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
-        end
+        clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
+        clmul_op_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
       end
 
       for (genvar i = 0; i < 32; i++) begin : gen_clmul_and_op
@@ -948,14 +871,12 @@ module ibex_alu #(
       assign clmul_result         = '0;
       // support signals
       assign clmul_result_rev     = '0;
-      assign crc_bmode            = '0;
-      assign crc_hmode            = '0;
     end
 
     //////////////////////////////////////
     // Multicycle Bitmanip Instructions //
     //////////////////////////////////////
-    // Ternary instructions + Shift Rotations + Bit Compress/Decompress + CRC
+    // Ternary instructions + Shift Rotations
     // For ternary instructions (zbt), operand_a_i is tied to rs1 in the first cycle and rs3 in the
     // second cycle. operand_b_i is always tied to rs2.
 
@@ -993,28 +914,6 @@ module ibex_alu #(
             imd_val_we_o = 1'b1;
           end else begin
             imd_val_we_o = 1'b0;
-          end
-        end
-
-        ALU_CRC32_W, ALU_CRC32C_W,
-        ALU_CRC32_H, ALU_CRC32C_H,
-        ALU_CRC32_B, ALU_CRC32C_B: begin
-          if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
-            unique case (1'b1)
-              crc_bmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 8);
-              crc_hmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 16);
-              default:   multicycle_result = clmul_result_rev;
-            endcase
-            imd_val_d_o = clmul_result_rev;
-            if (instr_first_cycle_i) begin
-              imd_val_we_o = 1'b1;
-            end else begin
-              imd_val_we_o = 1'b0;
-            end
-          end else begin
-            imd_val_d_o = operand_a_i;
-            imd_val_we_o = 1'b0;
-            multicycle_result = '0;
           end
         end
 
@@ -1102,11 +1001,7 @@ module ibex_alu #(
       ALU_CMIX, ALU_CMOV,
       ALU_FSL,  ALU_FSR,
       // Rotate Shift (RV32B)
-      ALU_ROL, ALU_ROR,
-      // Cyclic Redundancy Checks (RV32B)
-      ALU_CRC32_W, ALU_CRC32C_W,
-      ALU_CRC32_H, ALU_CRC32C_H,
-      ALU_CRC32_B, ALU_CRC32C_B: result_o = multicycle_result;
+      ALU_ROL, ALU_ROR: result_o = multicycle_result;
 
       // Single-Bit Bitmanip Operations (RV32B)
       ALU_BSET, ALU_BCLR,

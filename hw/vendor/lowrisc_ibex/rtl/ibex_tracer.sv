@@ -1190,14 +1190,6 @@ module ibex_tracer (
         INSN_CLMULR:     decode_r_insn("clmulr");
         INSN_CLMULH:     decode_r_insn("clmulh");
 
-        // RV32B - ZBR
-        INSN_CRC32_B:    decode_r1_insn("crc32.b");
-        INSN_CRC32_H:    decode_r1_insn("crc32.h");
-        INSN_CRC32_W:    decode_r1_insn("crc32.w");
-        INSN_CRC32C_B:   decode_r1_insn("crc32c.b");
-        INSN_CRC32C_H:   decode_r1_insn("crc32c.h");
-        INSN_CRC32C_W:   decode_r1_insn("crc32c.w");
-
         default:         decode_mnemonic("INVALID");
       endcase
     end

@@ -43,7 +43,6 @@ test_main:
   jal smoke_alu_zbb
   jal smoke_alu_zbc
   jal smoke_alu_zbp
-  jal smoke_alu_zbr
   jal smoke_alu_zbs
   jal smoke_alu_b_misc
   jal smoke_alu_zbt
@@ -291,24 +290,6 @@ smoke_alu_zbp:
 
   li t0, 0xffff3131
   check t0, t1
-  ret
-
-/**
- * Checks the instructions from the zbr extension
- */
-smoke_alu_zbr:
-  li t0, 0xabdca651
-  li t1, 0xac605e47
-  .option push
-  .option arch, +zbr0p93
-  crc32.b  t0, t0
-  crc32.h  t0, t0
-  crc32.w  t0, t0
-  crc32c.b t0, t0
-  crc32c.h t0, t0
-  crc32c.w t0, t0
-  .option pop
-  check t1, t0
   ret
 
 /**
