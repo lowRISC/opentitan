@@ -248,7 +248,7 @@ def fpga_params(
     return struct(
         # We do not yet know what FPGA platform the test will target (as this is
         # defined in the execution environment), so we do not know that tag
-        # (out of: "cw305", "cw310", ...") to apply. Therefore, we apply the tag
+        # (out of: "cw305", "cw340", ...") to apply. Therefore, we apply the tag
         # via the "_hacky_tags" macro in "rules/opentitan/defs.bzl".
         tags = ["exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
         timeout = timeout,

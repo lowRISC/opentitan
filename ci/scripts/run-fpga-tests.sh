@@ -10,7 +10,7 @@ set -e
 
 if [ $# == 0 ]; then
     echo >&2 "Usage: run-fpga-tests.sh <fpga> <target_pattern_file> [bazel options...]"
-    echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt --cache_test_results=no"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw340 list_of_test.txt --cache_test_results=no"
     exit 1
 fi
 fpga="$1"
@@ -27,7 +27,7 @@ cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 export BITSTREAM="--offline --list ci_bitstreams"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
-# in case we've crashed the UART handler on the CW310's SAM3U
+# in case we've crashed the UART handler on the CW340's SAM3U
 # Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
 trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
 
