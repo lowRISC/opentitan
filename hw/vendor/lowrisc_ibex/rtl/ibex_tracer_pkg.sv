@@ -107,7 +107,6 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_ORN   = { 7'b0100000, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_ANDN  = { 7'b0100000, 10'h?, 3'b111, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_PACK  = { 7'b0000100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
-  parameter logic [31:0] INSN_PACKU = { 7'b0100100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_PACKH = { 7'b0000100, 10'h?, 3'b111, 5'h?, {OPCODE_OP} };
 
   // ZBS

@@ -1059,7 +1059,6 @@ module ibex_tracer (
           // endcase
         // end
         INSN_PACKH:      decode_r_insn("packh");
-        INSN_PACKU:      decode_r_insn("packu");
         INSN_CLZ:        decode_r1_insn("clz");
         INSN_CTZ:        decode_r1_insn("ctz");
         INSN_CPOP:       decode_r1_insn("cpop");

@@ -265,8 +265,8 @@ smoke_alu_zbp:
   .option arch, +zbp0p93
   li t0, 0xcc9fd6b6
   li t1, 0x7ce71003
+  li t3, 0x7ce7cc9f
   pack    t2, t0, t1
-  packu   t3, t0, t1
   packh   t2, t2, t3
 
   li t0, 0x00009fb6

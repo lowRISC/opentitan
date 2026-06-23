@@ -473,16 +473,13 @@ module ibex_alu #(
     // Pack //
     //////////
 
-    logic packu;
     logic packh;
-    assign packu = operator_i == ALU_PACKU;
     assign packh = operator_i == ALU_PACKH;
 
     always_comb begin
       unique case (1'b1)
-        packu:   pack_result = {operand_b_i[31:16], operand_a_i[31:16]};
         packh:   pack_result = {16'h0, operand_b_i[7:0], operand_a_i[7:0]};
-        default: pack_result = {operand_b_i[15:0], operand_a_i[15:0]};
+        default: pack_result = {operand_b_i[15:0], operand_a_i[15:0]}; // pack
       endcase
     end
 
@@ -926,8 +923,7 @@ module ibex_alu #(
       ALU_CPOP: result_o = {26'h0, bitcnt_result};
 
       // Pack Operations (RV32B)
-      ALU_PACK, ALU_PACKH,
-      ALU_PACKU: result_o = pack_result;
+      ALU_PACK, ALU_PACKH: result_o = pack_result;
 
       // Sign-Extend (RV32B)
       ALU_SEXTB, ALU_SEXTH: result_o = sext_result;

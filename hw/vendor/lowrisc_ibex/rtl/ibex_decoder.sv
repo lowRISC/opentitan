@@ -469,7 +469,6 @@ module ibex_decoder #(
             {7'b000_0101, 3'b101}, // minu
             {7'b000_0101, 3'b111}, // maxu
             {7'b000_0100, 3'b100}, // pack
-            {7'b010_0100, 3'b100}, // packu
             {7'b000_0100, 3'b111}, // packh
             // RV32B zbs
             {7'b010_0100, 3'b001}, // bclr
@@ -914,7 +913,6 @@ module ibex_decoder #(
             {7'b000_0101, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_MAXU;
 
             {7'b000_0100, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACK;
-            {7'b010_0100, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACKU;
             {7'b000_0100, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACKH;
 
             {7'b010_0000, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_XNOR;

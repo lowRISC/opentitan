@@ -133,7 +133,6 @@ package ibex_pkg;
     // Pack
     // RV32B
     ALU_PACK,
-    ALU_PACKU,
     ALU_PACKH,
 
     // Sign-Extend
