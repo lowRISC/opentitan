@@ -14,7 +14,7 @@ use std::time::Duration;
 
 use super::ExtraEventHandler;
 use super::socket_server::{Connection, get_next_token};
-use crate::io::uart::Uart;
+use opentitanlib_core::io::uart::Uart;
 
 pub struct NonblockingUartRegistry {
     pub token_map: HashMap<Token, UartKey>,
@@ -33,7 +33,7 @@ impl NonblockingUartRegistry {
 
     pub fn nonblocking_uart_init(
         &mut self,
-        uart: &std::rc::Rc<dyn crate::io::uart::Uart>,
+        uart: &std::rc::Rc<dyn opentitanlib_core::io::uart::Uart>,
         conn_token: Token,
         registry: &Registry,
     ) -> Result<u32> {
@@ -81,12 +81,12 @@ impl ExtraEventHandler for NonblockingUartRegistry {
 
 pub struct NonblockingUart {
     conn_tokens: HashSet<Token>,
-    uart: std::rc::Rc<dyn crate::io::uart::Uart>,
+    uart: std::rc::Rc<dyn opentitanlib_core::io::uart::Uart>,
     channel: u32,
 }
 
 impl NonblockingUart {
-    pub fn new(uart: &std::rc::Rc<dyn crate::io::uart::Uart>, channel: u32) -> Self {
+    pub fn new(uart: &std::rc::Rc<dyn opentitanlib_core::io::uart::Uart>, channel: u32) -> Self {
         Self {
             conn_tokens: HashSet::new(),
             uart: uart.clone(),

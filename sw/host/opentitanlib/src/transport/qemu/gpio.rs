@@ -12,7 +12,7 @@ use std::time::Duration;
 
 use anyhow::{Context, bail};
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use opentitanlib_core::io::gpio::{GpioPin, PinMode, PullMode};
 
 const QEMU_GPIO_CLEAR: char = 'C';
 const QEMU_GPIO_DIRECTION: char = 'D';

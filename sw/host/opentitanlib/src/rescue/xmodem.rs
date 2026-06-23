@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::uart::Uart;
+use opentitanlib_core::io::uart::Uart;
 use anyhow::Result;
 use std::io::{Read, Write};
 use thiserror::Error;
@@ -245,8 +245,8 @@ impl Xmodem {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::util::testing::{ChildUart, TransferState};
-    use crate::util::tmpfilename;
+    use opentitanlib_core::util::testing::{ChildUart, TransferState};
+    use opentitanlib_core::util::tmpfilename;
 
     #[rustfmt::skip]
     const GETTYSBURG: &str =

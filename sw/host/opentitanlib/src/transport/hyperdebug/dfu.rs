@@ -10,9 +10,9 @@ use regex::Regex;
 use std::any::Any;
 use std::cmp::Ordering;
 
-use crate::io::usb::{UsbContext, UsbDevice};
-use crate::transport::common::usb::RusbContext;
-use crate::transport::{
+use opentitanlib_core::io::usb::{UsbContext, UsbDevice};
+use crate::common::usb::RusbContext;
+use opentitanlib_core::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
 };
 

@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+//! Error types for I/O and transport operations.
+
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use super::Capability;
+use crate::io::Capability;
 use crate::impl_serializable_error;
 
 /// Contains all the errors that any method on the `Transport` trait could generate.  This
@@ -77,7 +79,7 @@ pub enum TransportError {
 impl_serializable_error!(TransportError);
 
 /// Enum value used by `TransportError::InvalidInstance`.
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq, Eq, Clone, Copy)]
 pub enum TransportInterfaceType {
     Gpio,
     Uart,

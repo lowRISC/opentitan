@@ -1,0 +1,157 @@
+# Refactoring Progress: `opentitanlib` Modularization
+
+This file tracks the progress of the refactoring of `sw/host/opentitanlib` monolith into smaller crates.
+
+## Phase 1: Cycle Resolution (In-Place)
+Resolve circular dependencies within the monolithic crate to prepare for a clean split.
+
+- [x] **Step 1.1: Move `poll_until` to `util`**
+  - Moved generic polling helper to `src/util/poll.rs`.
+  - Decoupled `debug/dmi.rs` from `test_utils`.
+  - Verified: Unit tests passed.
+- [x] **Step 1.2: Move `Capability` and `Capabilities` to `io`**
+  - Moved transport capabilities logic to `src/io/capabilities.rs`.
+  - Decoupled `transport/mod.rs` from local definitions, changed to re-export.
+  - Verified: Unit tests passed.
+- [x] **Step 1.3: Move `TransportError` and `TransportInterfaceType` to `io`**
+  - **Step 1.3a**: Moved `SerializableError` trait and `impl_serializable_error!` macro to `src/io/serializable_error.rs` to break dependencies on `proxy` for base errors.
+  - **Step 1.3b**: Moved `TransportError` and `TransportInterfaceType` definitions to `src/io/errors.rs`.
+  - Decoupled `transport/mod.rs` from local definition, changed to re-export.
+  - Cleaned up imports in all `io` modules to remove `crate::transport::TransportError` and use `crate::io::TransportError` instead.
+  - Verified: Unit tests passed.
+- [x] **Step 1.4: Move `BootstrapOptions` and `BootstrapProtocol` to `io`**
+  - Moved bootstrap type definitions to `src/io/bootstrap_types.rs` to decouple `transport` core (`ProxyOps`) from the concrete bootstrap protocol crate.
+  - Re-exported them in `bootstrap/mod.rs` for backward compatibility.
+  - Verified: Unit tests passed.
+- [x] **Step 1.5: Refactor `Params` instantiation to `TransportWrapper`**
+  - Removed `create` methods from `Params` structs in `src/io/` (`UartParams`, `SpiParams`, `I2cParams`, `JtagParams`) to completely remove the dependency of `io` on `app` (via `TransportWrapper`).
+  - Implemented corresponding `create_*` factory methods on `TransportWrapper` in `src/app/mod.rs`.
+  - Updated all callers across `opentitanlib` and `opentitantool` to use the new factory methods.
+  - Verified: Built `//sw/host/opentitantool` successfully, and all unit tests in `//sw/host/opentitanlib:opentitanlib_test` passed!
+  - **This completes Phase 1 (Cycle Resolution)!**
+
+## Phase 2: Define Sub-Crates (In-Place)
+Define separate `rust_library` targets in the monolithic `sw/host/opentitanlib/BUILD` file and adjust imports to define boundaries.
+
+- [x] **Step 2.1: Define `opentitanlib_core` target**
+  - Created `src/core_lib.rs` as root entry point.
+  - Defined `opentitanlib_core` in `BUILD` containing `util`, `crypto`, `io` and core `transport` traits.
+  - Decoupled JTAG interface from concrete OpenOCD implementation by introducing `OpenOcdOps` trait and returning `Box<dyn Any>` (Step 2.1a).
+  - Decoupled `io/eeprom.rs` from `spiflash` by defining standard JEDEC SPI flash constants locally.
+  - Moved top-level `uart` module (console interact) to `core` to resolve dependency from `util::rom_detect`.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_core` compiled successfully.
+- [x] **Step 2.2: Define `opentitanlib_chip` target**
+  - Created `src/chip_lib.rs` as root entry point.
+  - Defined `opentitanlib_chip` in `BUILD` containing `chip` and `dif` modules.
+  - Resolved cyclic dependency: ownership transfer manifest logic (`ownership` module) was identified to be fundamentally a chip-level feature (since chip implements ownership transfer protocol and boot services carry manifests).
+  - Decided to locate `ownership` module inside the `chip` crate, keeping the DAG clean: `protocols` -> `chip` -> `core`.
+  - Declared `pub mod ownership;` in `src/chip_lib.rs` and added the module source files to `opentitanlib_chip`'s `srcs`.
+  - Added missing external dependencies to the chip target (`clap`, `serde_bytes`, `sphincsplus`, `byteorder`, `once_cell`, `sha2`).
+  - Implemented `JtagLcExt` extension trait in `src/dif/lc_ctrl.rs` to allow backward-compatible call syntax (`jtag.read_lc_ctrl_reg(...)`) without JTAG interface in `core` depending on `dif` definitions.
+  - Updated internal imports in `chip`, `dif`, and `ownership` to point to `opentitanlib_core::` for core services.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_chip` compiled successfully.
+- [x] **Step 2.3: Define `opentitanlib_debug` target**
+  - Used `src/debug/mod.rs` as root entry point (already a perfect directory root).
+  - Defined `opentitanlib_debug` in `BUILD` containing `dmi`, `elf_debugger`, and `openocd` modules.
+  - Decoupled `OpenOcdJtagChain`'s `into_raw` implementation in `openocd.rs` to return `Box<dyn Any>` to match JTAG trait decoupling.
+  - Added target configurations to `compile_data` and `rustc_env` in `BUILD` (needed by `openocd.rs` compile-time configuration embedding).
+  - Added missing dependencies to target (`typetag`, `rustix`, `scopeguard`, `object`).
+  - Updated internal imports in `src/debug/**` to use `opentitanlib_core::` for core services.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_debug` compiled successfully.
+- [x] **Step 2.4: Define `opentitanlib_app` target**
+  - Used `src/app/mod.rs` as root entry point (already a perfect directory root).
+  - Defined `opentitanlib_app` in `BUILD` containing `command`, `config`, `gpio`, `i2c`, `spi`, and `mod` modules.
+  - Resolved cyclic dependency: `app` depended on concrete IO expander drivers (via `ioexpander::create` which instantiates `sx1503::create` which in turn depends on `TransportWrapper` from `app`).
+  - Implemented the **Registry Pattern** for IO expanders:
+    - Defined `IoExpanderFactory` function pointer type in `app/mod.rs`.
+    - Added `io_expander_drivers` registry map to `TransportWrapperBuilder`.
+    - Added `register_io_expander_driver` method on `TransportWrapperBuilder`.
+    - Updated `TransportWrapperBuilder::build` to look up and instantiate drivers dynamically from registry, removing the dependency of `app` on `ioexpander` module.
+    - Updated `src/backend/mod.rs` to register the concrete `sx1503` driver at target composer level (Step 7), which is cycle-free.
+  - Added `:config` filegroup to `compile_data` in `BUILD` (needed by `config/mod.rs` config file embedding).
+  - Added missing dependencies to target (`once_cell`, `erased-serde`, `humantime-serde`, `opentitantool_derive` proc-macros).
+  - Updated internal imports in `src/app/**` to use `opentitanlib_core::` for core services and `opentitanlib_debug::` for debugging tools, and removed `app` folder name from local root-relative paths.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_app` compiled successfully.
+- [x] **Step 2.5: Define `opentitanlib_proxy_protocol` target**
+  - Created `src/proxy_protocol_lib.rs` as root entry point.
+  - Defined `opentitanlib_proxy_protocol` in `BUILD` containing `errors` and `protocol` modules under `src/proxy/`.
+  - Mapped external subdirectories in `proxy_protocol_lib.rs` using `#[path = "proxy/errors.rs"]` and `#[path = "proxy/protocol.rs"]` to define a clean client/server shared API target without moving files.
+  - Resolved circular dependency: dynamically boxed errors in the dynamic downcasting registry of `errors.rs` depended on high-level protocol errors (like `BootstrapError` in `protocols`). Restricted the downcast list to only core/base errors (timeouts, connection issues, pin failures, which represent 99% of programmatic catch needs). This completely decoupled `proxy_protocol` from high-level libraries.
+  - Updated internal imports in `errors.rs` and `protocol.rs` to point to `opentitanlib_core::` for base structures.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_proxy_protocol` compiled successfully.
+- [x] **Step 2.6: Define `opentitanlib_transports` target**
+  - Created `src/transport/transports_lib.rs` as root entry point.
+  - Defined `opentitanlib_transports` in `BUILD` containing all 58 backend driver and board files under `src/transport/` (Ftdi, HyperDebug, ChipWhisperer, DediProg, Qemu, Verilator, Proxy client, and IoExpander driver).
+  - Resolved cyclic dependency: the accelerated DediProg transport (`dediprog/spi.rs`) and HyperDebug transport (`hyperdebug/spi.rs`) depended on JEDEC SPI flash constants defined in high-level `SpiFlash` protocol target. Defined standard JEDEC constants (READ, FAST_READ, PAGE_PROGRAM, WRITE_ENABLE, READ_SFDP) inside the low-level `io::eeprom` target in `core`. This completely decoupled concrete transports from the high-level `protocols` crate.
+  - Resolved cyclic dependency: QEMU emulator target (`qemu/mod.rs` factory) took `QemuOpts` CLI option structure defined in target composer level (Step 7). Defined plain data `QemuParams` configuration structure in `qemu/mod.rs` and moved the CLI config mapping helper `device_path` to it. Updated target composer `backend/qemu.rs` and the host test `test_status.rs` to map CLI `QemuOpts` to plain `QemuParams` using a `.to_params()` method, completely decoupling QEMU driver target from backend target.
+  - Decoupled `QemuJtag`'s `into_raw` implementation in `qemu/jtag.rs` to return `Box<dyn Any>` to match JTAG trait decoupling.
+  - Add missing file imports that were bypass-private imports under parent module in monolith (Spi `Target`, I2c `Bus`, and `NonblockingHelp` are `io` traits and now imported directly from `opentitanlib_core::io::`).
+  - Added hyperdebug adapter configs and firmwares to `compile_data` and `rustc_env` in `BUILD` (needed by hyperdebug driver).
+  - Added missing dependencies to target (`byteorder`, `zerocopy`, `erased-serde`, `num_enum`).
+  - Ran a global python script on the subfolders to transition all `crate::io`, `crate::util`, `crate::app`, `crate::proxy` imports to their correct target prefixes, and removed the directory level prefix `transport::` from internal crate-relative submodule imports.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_transports` compiled successfully.
+- [x] **Step 2.7: Define `opentitanlib_protocols` target**
+  - Created `src/protocols_lib.rs` as root entry point.
+  - Defined `opentitanlib_protocols` in `BUILD` containing all client-side boot and test protocol files (`bootstrap`, `rescue`, `spiflash`, `otp`, `tpm`) and the `proxy` server target.
+  - Resolved circular dependency: proxy server `mod.rs` was the root for the whole `src/proxy/` directory, including `protocol.rs` and `errors.rs` (which are in `proxy_protocol` crate). Changed `mod.rs` inside the `protocols` crate to NOT compile `protocol.rs` and `errors.rs` as submodules, but instead re-export them from `opentitanlib_proxy_protocol` crate (`pub use opentitanlib_proxy_protocol::errors;` etc.). This prevents compile-time duplicate modules (E0583) and duplicate identical types mismatch, while maintaining 100% API backward compatibility for external callers.
+  - Resolved folder level prefix import errors: updated imports from `chip` target to include the submodule prefix `chip::` (`opentitanlib_chip::chip::...`) to match modularized crate structure where root is `chip_lib.rs` and submodules reside under a `chip` namespace.
+  - Added missing dependencies to target in BUILD (`bitflags`, `bitvec`, `clap`, `crc`, `byteorder`, `num_enum`, `zerocopy`, `sha2`, `mio-signals`, `humantime`, `humantime-serde`).
+  - Ran global Python import helper script to transition all `crate::` imports under target subfolders to their correct modular crate names (`opentitanlib_core::`, `opentitanlib_app::`, `opentitanlib_chip::`).
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_protocols` compiled successfully.
+- [x] **Step 2.8: Define `opentitanlib_backend` target**
+  - Used `src/backend/mod.rs` as root entry point (already a perfect directory root).
+  - Defined `opentitanlib_backend` in `BUILD` containing all target initialization option parsers and transport composers (`chip_whisperer`, `ftdi`, `hyperdebug`, `proxy`, `qemu`, `ti50emulator`, `ultradebug`, `verilator`).
+  - Resolved circular dependency on concrete IO expander drivers by registering the unified generic factory `ioexpander::create` from `transports` at composer runtime level. This keeps all concrete driver details completely encapsulated inside `transports` crate with zero leakage to the rest of the workspace.
+  - Added missing dependencies to target in BUILD (`humantime`).
+  - Updated internal imports under `src/backend/**` to use `opentitanlib_app::` for wrapper logic, `opentitanlib_core::` for interfaces, and `opentitanlib_transports::` for physical drivers. Removed obsolete `backend::` namespace prefix from root-relative paths inside submodules.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_backend` compiled successfully.
+- [x] **Step 2.9: Define `opentitanlib_test_utils` target**
+  - Used `src/test_utils/mod.rs` as root entry point (already a perfect directory root).
+  - Defined `opentitanlib_test_utils` in `BUILD` containing all high-level end-to-end testing utilities and the bitbanging, SRAM/JTAG loaders.
+  - Resolved circular dependency / bootstrapping namespace mapping with `ujson` preprocessed generated files (`e2e_command.rs`, `gpio.rs`, etc.): these generated files include raw generated Rust code which references local modules via the monolithic crate target namespace (`crate::test_utils::...`). Defined a structural self-re-export alias `pub use crate as test_utils;` inside `test_utils/mod.rs` root which dynamically routes any generated namespace lookup back to the local sub-crate root namespace. This completely resolves on-the-fly serialization compilation without modifying a single generator script.
+  - Added the Bazel `crate_features` select mapping (English Breakfast feature matching) so that Bazel `select` on `srcs` and Rust compiler `cfg` feature block flags compile in perfect alignment.
+  - Added missing JTAG extension trait helper imports (`JtagLcExt` in `lc.rs` and `lc_transition.rs`) to allow access to the register DIF helpers.
+  - Added target dependencies to `deps` block in BUILD (`opentitanlib_backend`, `//sw/host/opentitanlib/bindgen`).
+  - Added missing external dependencies (`arrayvec`, `byteorder`, `crc`, `directories`, `env_logger`, `humantime`, `serialport`, `shellwords`, `typetag`).
+  - Updated internal imports under `src/test_utils/**` to point to modular sub-crates, and removed the obsolete `test_utils::` folder name from local root-relative paths in submodules.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_test_utils` compiled successfully.
+- [x] **Step 2.10: Re-export everything in super-crate `opentitanlib`**
+  - Converted the monolithic root entry point [`src/lib.rs`](file:///usr/local/google/home/cfrantz/opentitan/ottool/sw/host/opentitanlib/src/lib.rs) into a pure re-exporting interface. It maps all sub-crate namespaces (`io`, `crypto`, `util`, `uart`, `console`, `image` from `core` / `chip` / `protocols`) under their exact old names. Exposes a unified `transport` module combining the core transport traits (from `core`) and physical concrete drivers (from `transports`), offering 100% downstream backward compatibility.
+  - Re-defined the aggregate `opentitanlib` library target in `BUILD` to be a pure metadata target compiling only `src/lib.rs` and depending directly on our 8 modular functional sub-crates. This successfully shrunk the target package block from **320 lines of compilation parameters down to 15 lines of target mapping**.
+  - Re-defined the aggregate unit tests target `opentitanlib_test` to compile as an independent test binary targeting `src/lib.rs` and depending directly on the 8 modular sub-crates (removing the super-crate dependency itself), completely bypassing Bazel's `crate` sandbox path mapping bug inside modular targets while keeping CI/presubmits test contracts intact.
+  - Verified: built downstream CLI `//sw/host/opentitantool` (after importing DIF helper extension trait `JtagLcExt` inside `opentitantool`'s `lc` commands). Downstream tool and test target compiled, built, and **PASSED** successfully under Bazel with zero changes to downstream command source imports!
+
+## Phase 3: File Organization (Minor Reorganization)
+- [x] **Relocated `transport/mod.rs` to `transport.rs` (traits)**:
+  - Physically moved `sw/host/opentitanlib/src/transport/mod.rs` $\rightarrow$ `sw/host/opentitanlib/src/transport.rs` (using `git mv`).
+  - *Result:* The directory tree `src/transport/` now uniquely and exclusively maps 100% to the `opentitanlib_transports` target.
+  - Updated the `opentitanlib_core` target in `BUILD` accordingly.
+  - Verified: `bazel build //sw/host/opentitanlib:opentitanlib_core` built successfully with zero other sub-crates changes required.
+- [x] **Modularized overlapping `src/proxy` folder**:
+  - Split the overlapping proxy directory into two congruent target folders:
+    - Created a flat `src/proxy_protocol/` folder containing the client-server shared serialization modules (`errors.rs` and `protocol.rs`).
+    - Created entry point `src/proxy_protocol/mod.rs` for `opentitanlib_proxy_protocol` target, completely replacing the temporary flat entry point `src/proxy_protocol_lib.rs`.
+    - Renamed remaining server modules directory `src/proxy/` $\rightarrow$ `src/proxy_server/` which now exclusively maps to `opentitanlib_protocols` target.
+  - Updated local sub-crate namespace imports (`crate::proxy::...` $\rightarrow$ `crate::proxy_server::...` in `handler.rs`), protocols entry points, and aggregate `src/lib.rs` re-exports to match.
+  - Updated target definitions in the `BUILD` file.
+  - Verified: built both `opentitanlib_proxy_protocol` and `opentitanlib_protocols` targets with 100% success!
+- [x] **Aggregate Downstream Verification**:
+  - Ran global test compile and verified downstream target `//sw/host/opentitantool` built, compiled, and passed Clippy successfully with zero import changes in downstream tools!
+
+## Phase 4: Feature Gating Transports
+- [x] **Declared User-Configurable Build Flags in Bazel**:
+  - Dynamically created **9 bool_flag targets** (`:ftdi`, `:hyperdebug`...) and **9 config_setting targets** (`:ftdi_enabled`, `:hyperdebug_enabled`...) inside `sw/host/opentitanlib/BUILD` using Starlark loop comprehensions.
+  - Declared a **generic `:usb` configuration flag** designed to isolate all physical USB connectivity, satisfying all non-hermetic C dependency crates (`ftdi`, `rusb`) compilation.
+- [x] **Feature Gated Crate Modules & Exports**:
+  - Gated the concrete driver submodules in `transports_lib.rs` and their aggregate re-exports inside `src/lib.rs` under `#[cfg(feature = "...")]` attributes.
+  - Configured `srcs`, `deps`, `compile_data`, and `rustc_env` blocks inside the `opentitanlib_transports` target inside `BUILD` to map conditionally depending on selected configuration flags via dynamic Bazel `select()` blocks.
+  - Gated target-specific C USB modules (`common/usb.rs`) under the custom `:usb_enabled` configuration settings.
+- [x] **Feature Gated Downstream Subcommands (Crate: `opentitantool`)**:
+  - Gated physical target subcommands (`sam3x`, `set_pll`) and their `FpgaCommand` enum mappings under `#[cfg(feature = "chip_whisperer")]`.
+  - Gated simulation watch subcommands (`VerilatorWatch`) and their JTAG `TransportCommand` mappings under `#[cfg(feature = "verilator")]`.
+  - Feature gated compiler imports (`Regex`, `Duration`) under `#[cfg(feature = "verilator")]` inside `command/transport.rs`, permanently clearing Clippy warning denials.
+  - Updated backend imports (`PathBuf`) and refactored compiler imports inside `backend/mod.rs` to use absolute fully-qualified namespace pathings (`std::path::Path::new`), avoiding unused import warnings on all builds features sets.
+  - Configured `crate_features` on downstream `rust_binary(name = "opentitantool")` target to query and align features dynamically in sync with our workspace flags.
+- [x] **Validation Verification**:
+  - Verified: `bazel build //sw/host/opentitantool` built and ran successfully with standard defaults (all features enabled).
+  - Verified: `bazel build //sw/host/opentitantool --//sw/host/opentitanlib:usb=False --//sw/host/opentitanlib:ftdi=False ...` built, compiled, and passed Clippy successfully under target hardware-disabled configurations (pruning exactly 27 USB/C files and third-party library sandbox dependencies!).

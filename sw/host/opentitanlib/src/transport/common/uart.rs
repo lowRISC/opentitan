@@ -11,10 +11,10 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use serialport::{ClearBuffer, Parity, SerialPort, TTYPort};
 
-//use crate::io::uart::{Uart, UartError};
-use crate::io::uart::{FlowControl, Uart, UartError};
-use crate::transport::TransportError;
-use crate::util;
+//use opentitanlib_core::io::uart::{Uart, UartError};
+use opentitanlib_core::io::uart::{FlowControl, Uart, UartError};
+use opentitanlib_core::transport::TransportError;
+use opentitanlib_core::util;
 
 /// Implementation of the `Uart` trait on top of a serial device, such as `/dev/ttyUSB0`.
 pub struct SerialPortUart {

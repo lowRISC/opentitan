@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::spi::Transfer;
+use opentitanlib_core::io::spi::Transfer;
 use anyhow::Result;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -12,13 +12,13 @@ use embedded_hal::spi::SpiBus;
 
 use ftdi_embedded_hal as ftdi_hal;
 
-use crate::io::gpio;
-use crate::io::spi::AssertChipSelect;
-use crate::io::spi::MaxSizes;
-use crate::io::spi::SpiError;
-use crate::io::spi::TransferMode;
-use crate::transport::Target;
-use crate::transport::TransportError;
+use opentitanlib_core::io::gpio;
+use opentitanlib_core::io::spi::AssertChipSelect;
+use opentitanlib_core::io::spi::MaxSizes;
+use opentitanlib_core::io::spi::SpiError;
+use opentitanlib_core::io::spi::TransferMode;
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::transport::TransportError;
 
 pub struct Spi<T> {
     spi: Rc<RefCell<ftdi_hal::Spi<ftdi::Device>>>,

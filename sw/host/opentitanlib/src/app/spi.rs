@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::eeprom;
-use crate::io::gpio::GpioPin;
-use crate::io::spi;
-use crate::io::spi::Target;
-use crate::transport::Transport;
+use opentitanlib_core::io::eeprom;
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::spi;
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::transport::Transport;
 
 use anyhow::Result;
 use std::cell::{Cell, RefCell};
@@ -201,7 +201,7 @@ impl Target for LogicalSpiWrapper {
             .get_max_transfer_sizes()
     }
 
-    fn set_voltage(&self, voltage: crate::util::voltage::Voltage) -> Result<()> {
+    fn set_voltage(&self, voltage: opentitanlib_core::util::voltage::Voltage) -> Result<()> {
         self.physical_wrapper.underlying_target.set_voltage(voltage)
     }
 

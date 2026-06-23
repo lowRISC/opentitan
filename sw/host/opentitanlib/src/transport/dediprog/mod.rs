@@ -7,7 +7,6 @@
 use anyhow::{Result, bail, ensure};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde_annotate::Annotate;
 use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
@@ -15,17 +14,17 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::io::spi::Target;
-use crate::io::uart::{Uart, UartError};
-use crate::io::usb::{UsbContext, UsbDevice, desc};
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::common::usb::RusbContext;
-use crate::transport::{
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::{Uart, UartError};
+use opentitanlib_core::io::usb::{UsbContext, UsbDevice, desc};
+use crate::common::fpga::{ClearBitstream, FpgaProgram};
+use crate::common::uart::SerialPortUart;
+use crate::common::usb::RusbContext;
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 pub mod gpio;
 pub mod spi;

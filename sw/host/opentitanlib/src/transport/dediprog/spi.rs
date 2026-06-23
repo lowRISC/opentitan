@@ -6,15 +6,15 @@ use anyhow::{Context, Result, bail, ensure};
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::eeprom;
-use crate::io::eeprom::Transaction::{Read, WaitForBusyClear, Write};
-use crate::io::spi::{
+use opentitanlib_core::io::eeprom;
+use opentitanlib_core::io::eeprom::Transaction::{Read, WaitForBusyClear, Write};
+use opentitanlib_core::io::spi::{
     AssertChipSelect, ClockPolarity, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer,
     TransferMode,
 };
-use crate::spiflash::flash::SpiFlash;
-use crate::transport::dediprog::{ClockSpeed, Command, Inner};
-use crate::util::voltage::Voltage;
+
+use crate::dediprog::{ClockSpeed, Command, Inner};
+use opentitanlib_core::util::voltage::Voltage;
 
 pub struct DediprogSpi {
     inner: Rc<RefCell<Inner>>,
@@ -82,7 +82,7 @@ impl DediprogSpi {
             let chunk_size = std::cmp::min(rbuf.len(), Self::MAX_GENERIC_DATA_LEN);
             let addr_bytes = address.to_be_bytes();
             let sub_cmd: [u8; 5] = [
-                SpiFlash::READ_SFDP,
+                eeprom::READ_SFDP,
                 addr_bytes[1],
                 addr_bytes[2],
                 addr_bytes[3],
@@ -134,19 +134,19 @@ impl DediprogSpi {
             cmd.get_address_len(),
             cmd.get_dummy_cycles(),
         ) {
-            ([SpiFlash::READ_SFDP], 3, 8) => {
+            ([eeprom::READ_SFDP], 3, 8) => {
                 return self.read_sfdp(cmd.get_address(), rbuf);
             }
-            ([SpiFlash::READ], 3, 0) => {
+            ([eeprom::READ], 3, 0) => {
                 // Standard read, 3-byte address
                 usbcmd[3] = ReadMode::ReadStandard as u8;
-                usbcmd[4] = SpiFlash::READ;
+                usbcmd[4] = eeprom::READ;
             }
-            ([SpiFlash::READ], 4, 0) => {
+            ([eeprom::READ], 4, 0) => {
                 // Standard read, 4-byte address.  Dediprog may not support 4 byte address on
                 // standard read, do 4b fast read instead.
                 usbcmd[3] = ReadMode::Read4bAddrFast as u8;
-                usbcmd[4] = SpiFlash::FAST_READ;
+                usbcmd[4] = eeprom::FAST_READ;
             }
             _ => bail!(SpiError::InvalidTransferMode(
                 "Command not supported".to_string()
@@ -211,13 +211,13 @@ impl DediprogSpi {
             cmd.get_address_len(),
             cmd.get_dummy_cycles(),
         ) {
-            ([SpiFlash::PAGE_PROGRAM], 3, 0) => {
+            ([eeprom::PAGE_PROGRAM], 3, 0) => {
                 usbcmd[3] = WriteMode::WritePageProgram as u8;
-                usbcmd[4] = SpiFlash::PAGE_PROGRAM;
+                usbcmd[4] = eeprom::PAGE_PROGRAM;
             }
-            ([SpiFlash::PAGE_PROGRAM], 4, 0) => {
+            ([eeprom::PAGE_PROGRAM], 4, 0) => {
                 usbcmd[3] = WriteMode::Write4bAddr256bPagePgm as u8;
-                usbcmd[4] = SpiFlash::PAGE_PROGRAM;
+                usbcmd[4] = eeprom::PAGE_PROGRAM;
             }
             _ => bail!(SpiError::InvalidTransferMode(
                 "Command not supported".to_string()
@@ -259,7 +259,7 @@ impl DediprogSpi {
                     rest @ ..,
                 ] => {
                     transactions = rest;
-                    if pre_cmd.get_opcode() == [SpiFlash::WRITE_ENABLE] {
+                    if pre_cmd.get_opcode() == [eeprom::WRITE_ENABLE] {
                         // Write enable is done by eeprom_write_transaction()
                     } else {
                         self.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?)])?
@@ -284,10 +284,10 @@ impl DediprogSpi {
                 }
                 [WaitForBusyClear, rest @ ..] => {
                     transactions = rest;
-                    let mut status = SpiFlash::STATUS_WIP;
-                    while status & SpiFlash::STATUS_WIP != 0 {
+                    let mut status = eeprom::STATUS_WIP;
+                    while status & eeprom::STATUS_WIP != 0 {
                         self.run_transaction(&mut [
-                            Transfer::Write(&[SpiFlash::READ_STATUS]),
+                            Transfer::Write(&[eeprom::READ_STATUS]),
                             Transfer::Read(std::slice::from_mut(&mut status)),
                         ])?;
                     }

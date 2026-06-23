@@ -8,11 +8,11 @@ use std::time::{Duration, Instant};
 use thiserror::Error;
 use zerocopy::{Immutable, IntoBytes};
 
-use crate::app::{TransportWrapper, UartRx};
+use opentitanlib_app::{TransportWrapper, UartRx};
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
-use crate::impl_serializable_error;
-use crate::io::uart::Uart;
-use crate::transport::{Capability, ProgressIndicator};
+use opentitanlib_core::impl_serializable_error;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::transport::{Capability, ProgressIndicator};
 
 #[derive(Immutable, IntoBytes, Debug, Default)]
 #[repr(C)]
@@ -314,7 +314,7 @@ impl UpdateProtocol for LegacyRescue {
         progress: &dyn ProgressIndicator,
     ) -> Result<()> {
         let frames = Frame::from_payload(payload)?;
-        let uart = container.uart_params.create(transport)?;
+        let uart = transport.create_uart(container.uart_params)?;
 
         self.enter_rescue_mode(transport, &*uart)?;
 

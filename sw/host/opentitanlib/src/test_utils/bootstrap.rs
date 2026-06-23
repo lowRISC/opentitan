@@ -6,8 +6,9 @@ use anyhow::Result;
 use clap::Args;
 use std::path::{Path, PathBuf};
 
-use crate::app::{StagedProgressBar, TransportWrapper};
-use crate::bootstrap::{self, BootstrapOptions};
+use opentitanlib_app::{StagedProgressBar, TransportWrapper};
+use opentitanlib_core::io::BootstrapOptions;
+use opentitanlib_protocols::bootstrap;
 
 /// Load a program into the chip.
 #[derive(Debug, Args)]

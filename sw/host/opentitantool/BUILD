@@ -42,6 +42,13 @@ rust_binary(
         "src/command/xmodem.rs",
         "src/main.rs",
     ],
+    crate_features = select({
+        "//sw/host/opentitanlib:chip_whisperer_enabled": ["chip_whisperer"],
+        "//conditions:default": [],
+    }) + select({
+        "//sw/host/opentitanlib:verilator_enabled": ["verilator"],
+        "//conditions:default": [],
+    }),
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],

@@ -7,10 +7,10 @@ use std::time::Duration;
 use anyhow::Result;
 use arrayvec::ArrayVec;
 
-use crate::app::{TransportWrapper, UartRx};
-use crate::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
-use crate::io::jtag::{JtagParams, JtagTap};
-use crate::test_utils::lc_transition::wait_for_status;
+use opentitanlib_app::{TransportWrapper, UartRx};
+use opentitanlib_chip::dif::lc_ctrl::{DifLcCtrlState, JtagLcExt, LcCtrlReg, LcCtrlStatus};
+use opentitanlib_core::io::jtag::{JtagParams, JtagTap};
+use crate::lc_transition::wait_for_status;
 
 pub fn read_lc_state(
     transport: &TransportWrapper,
@@ -22,7 +22,7 @@ pub fn read_lc_state(
     // enabled.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    let mut jtag = transport.create_jtag(jtag_params)?.connect(JtagTap::LcTap)?;
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
         &mut *jtag,
@@ -46,7 +46,7 @@ pub fn read_device_id(
     // enabled.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
     transport.reset(UartRx::Clear)?;
-    let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
+    let mut jtag = transport.create_jtag(jtag_params)?.connect(JtagTap::LcTap)?;
     // We must wait for the lc_ctrl to initialize before the LC state is exposed.
     wait_for_status(
         &mut *jtag,

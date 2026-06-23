@@ -6,9 +6,9 @@ use anyhow::{Result, bail, ensure};
 use std::borrow::Borrow;
 use std::rc::Rc;
 
-use crate::app::TransportWrapper;
-use crate::io::gpio::{ClockNature, GpioMonitoring, MonitoringEvent};
-use crate::util::vcd::{dump_vcd, vcd_from_edges};
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_core::io::gpio::{ClockNature, GpioMonitoring, MonitoringEvent};
+use opentitanlib_core::util::vcd::{dump_vcd, vcd_from_edges};
 
 // This structure makes it easier to monitor GPIOs and supports dumping a trace
 // in the VCD format for further examination. In addition, for easier debugging

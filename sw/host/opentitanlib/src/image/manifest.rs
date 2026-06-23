@@ -11,7 +11,7 @@
 #![deny(unused)]
 #![deny(unsafe_code)]
 
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 use anyhow::Result;
 use byteorder::{LittleEndian, WriteBytesExt};
 use serde::{Deserialize, Serialize};

@@ -5,9 +5,9 @@
 use anyhow::{Result, bail};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
-use crate::transport::{TransportError, TransportInterfaceType};
+use opentitanlib_core::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
+use opentitanlib_core::transport::{TransportError, TransportInterfaceType};
 
 /// The C2D2 (Case Closed Debugging Debugger) is used to bring up OT and EC chips sitting
 /// inside a computing device, such that those OT chips can provide Case Closed Debugging

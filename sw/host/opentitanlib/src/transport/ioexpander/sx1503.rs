@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::app::config;
-use crate::app::{PinStrapping, TransportWrapper};
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::io::i2c::{self, Bus};
-use crate::io::ioexpander::IoExpander;
-use crate::transport::TransportError;
+use opentitanlib_app::config;
+use opentitanlib_app::{PinStrapping, TransportWrapper};
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use opentitanlib_core::io::i2c::{self, Bus};
+use opentitanlib_core::io::ioexpander::IoExpander;
+use opentitanlib_core::transport::TransportError;
 
 use anyhow::{Result, bail};
 use std::rc::Rc;

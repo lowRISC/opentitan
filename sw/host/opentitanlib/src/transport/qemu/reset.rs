@@ -5,8 +5,8 @@
 use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::qemu::monitor::{Monitor, QomPropertyValue};
+use opentitanlib_core::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::qemu::monitor::{Monitor, QomPropertyValue};
 
 /// Pin-like interface for resetting QEMU.
 ///

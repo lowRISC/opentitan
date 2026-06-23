@@ -5,11 +5,11 @@
 use anyhow::Result;
 use std::time::Duration;
 
-use crate::app::TransportWrapper;
-use crate::io::gpio::GpioPin;
-use crate::io::uart::Uart;
-use crate::transport::ProgressIndicator;
-use crate::util::rom_detect::RomDetect;
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::transport::ProgressIndicator;
+use opentitanlib_core::util::rom_detect::RomDetect;
 
 /// Command for Transport::dispatch().
 pub struct FpgaProgram<'a> {

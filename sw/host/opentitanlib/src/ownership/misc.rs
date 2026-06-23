@@ -9,12 +9,12 @@ use serde_annotate::Annotate;
 use std::cmp::Ordering;
 use std::io::{Read, Write};
 
-use crate::crypto::Error;
-use crate::crypto::ecdsa::EcdsaRawPublicKey;
-use crate::crypto::rsa::RsaRawPublicKey;
-use crate::crypto::spx::SpxRawPublicKey;
-use crate::util::serde::string_or_struct;
-use crate::with_unknown;
+use opentitanlib_core::crypto::Error;
+use opentitanlib_core::crypto::ecdsa::EcdsaRawPublicKey;
+use opentitanlib_core::crypto::rsa::RsaRawPublicKey;
+use opentitanlib_core::crypto::spx::SpxRawPublicKey;
+use opentitanlib_core::util::serde::string_or_struct;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum TlvTag: u32 [default = Self::Unknown] {

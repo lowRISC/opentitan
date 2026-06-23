@@ -12,9 +12,9 @@ use std::convert::TryFrom;
 use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
-use crate::io::emu::EmuState;
-use crate::io::gpio::{self, GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::ti50emulator::Inner;
+use opentitanlib_core::io::emu::EmuState;
+use opentitanlib_core::io::gpio::{self, GpioError, GpioPin, PinMode, PullMode};
+use crate::ti50emulator::Inner;
 
 const GPIO_BUF_SIZE: usize = 16;
 

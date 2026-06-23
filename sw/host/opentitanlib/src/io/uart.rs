@@ -14,10 +14,10 @@ pub use serialport::Parity;
 use thiserror::Error;
 
 use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
-use crate::app::TransportWrapper;
+
 use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
-use crate::transport::TransportError;
+use crate::io::TransportError;
 
 #[derive(Clone, Debug, Default, Args, Serialize, Deserialize)]
 pub struct UartParams {
@@ -34,17 +34,7 @@ pub struct UartParams {
     pub flow_control: bool,
 }
 
-impl UartParams {
-    pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Uart>> {
-        let uart = transport.uart(&self.uart)?;
-        if let Some(baudrate) = self.baudrate {
-            uart.set_baudrate(baudrate)?;
-        }
-        log::info!("set_flow_control to {}", self.flow_control);
-        uart.set_flow_control(self.flow_control)?;
-        Ok(uart)
-    }
-}
+
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]

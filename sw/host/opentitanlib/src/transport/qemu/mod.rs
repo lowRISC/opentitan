@@ -21,23 +21,23 @@ use std::time::Duration;
 
 use anyhow::{Context, bail};
 
-use crate::backend::qemu::QemuOpts;
-use crate::io::gpio::{GpioError, GpioPin};
-use crate::io::jtag::{JtagChain, JtagParams};
-use crate::io::uart::Uart;
-use crate::io::usb::UsbContext;
-use crate::transport::Bus;
-use crate::transport::Target;
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::qemu::gpio::{QemuGpio, QemuGpioPin};
-use crate::transport::qemu::i2c::QemuI2c;
-use crate::transport::qemu::jtag::QemuJtag;
-use crate::transport::qemu::monitor::{Chardev, ChardevKind, Monitor};
-use crate::transport::qemu::reset::QemuReset;
-use crate::transport::qemu::spi::QemuSpi;
-use crate::transport::qemu::uart::QemuUart;
-use crate::transport::qemu::usbdev::{QemuUsbHost, QemuVbusSense};
-use crate::transport::{
+
+use opentitanlib_core::io::gpio::{GpioError, GpioPin};
+use opentitanlib_core::io::jtag::{JtagChain, JtagParams};
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::io::usb::UsbContext;
+use opentitanlib_core::io::i2c::Bus;
+use opentitanlib_core::io::spi::Target;
+use crate::common::uart::SerialPortUart;
+use crate::qemu::gpio::{QemuGpio, QemuGpioPin};
+use crate::qemu::i2c::QemuI2c;
+use crate::qemu::jtag::QemuJtag;
+use crate::qemu::monitor::{Chardev, ChardevKind, Monitor};
+use crate::qemu::reset::QemuReset;
+use crate::qemu::spi::QemuSpi;
+use crate::qemu::uart::QemuUart;
+use crate::qemu::usbdev::{QemuUsbHost, QemuVbusSense};
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 
@@ -51,6 +51,32 @@ const QEMU_VBUS_SENSE_PIN_IDX: u8 = u8::MAX - 1;
 /// but we must use a non-zero value because the pacing calculations divide by
 /// this number.
 const CONSOLE_BAUDRATE: u32 = 115200;
+
+#[derive(Clone, Debug)]
+pub struct QemuParams {
+    pub qemu_monitor_socket: Option<PathBuf>,
+    pub qemu_device_paths: Vec<String>,
+    pub qemu_quit: bool,
+}
+
+impl QemuParams {
+    /// Check for any path override in the options for a given QEMU device
+    pub fn device_path(&self, device_id: &str) -> Option<PathBuf> {
+        // We expect < 10 paths, so just do a linear search
+        for entry in &self.qemu_device_paths {
+            if let Some((device, path)) = entry.split_once('=') {
+                let device = device.to_string();
+                if device.trim() == device_id {
+                    return Some(PathBuf::from(path.to_string().trim()));
+                }
+            } else {
+                log::warn!("Ignoring invalid --device-path argument: {entry}");
+            }
+        }
+
+        None
+    }
+}
 
 /// Represents a connection to a running QEMU emulation.
 pub struct Qemu {
@@ -106,7 +132,7 @@ impl Qemu {
     /// You can create a chardev with `-chardev <kind>,id=<id>` and connect it
     /// to a device using one of the flags in the list above. The kind must
     /// match what OpenTitanLib expects to be accepted.
-    pub fn from_options(options: QemuOpts) -> anyhow::Result<Self> {
+    pub fn from_options(options: QemuParams) -> anyhow::Result<Self> {
         let monitor = Rc::new(RefCell::new(Monitor::new(
             options.qemu_monitor_socket.clone().unwrap(),
             options.qemu_quit,

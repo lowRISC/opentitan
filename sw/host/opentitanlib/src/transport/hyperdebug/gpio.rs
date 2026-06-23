@@ -12,13 +12,13 @@ use std::rc::Rc;
 use std::time::Duration;
 use zerocopy::FromBytes;
 
-use crate::io::gpio::{
+use opentitanlib_core::io::gpio::{
     BitbangEntry, ClockNature, DacBangEntry, Edge, GpioBitbangOperation, GpioBitbanging,
     GpioDacBangOperation, GpioError, GpioMonitoring, GpioPin, MonitoringEvent,
     MonitoringReadResponse, MonitoringStartResponse, PinMode, PullMode,
 };
-use crate::transport::TransportError;
-use crate::transport::hyperdebug::{BulkInterface, Inner};
+use opentitanlib_core::transport::TransportError;
+use crate::hyperdebug::{BulkInterface, Inner};
 
 pub struct HyperdebugGpioPin {
     inner: Rc<Inner>,

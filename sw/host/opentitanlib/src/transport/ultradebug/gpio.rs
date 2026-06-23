@@ -8,11 +8,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::collection;
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::ultradebug::Ultradebug;
-use crate::transport::ultradebug::mpsse;
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::collection;
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::ultradebug::Ultradebug;
+use crate::ultradebug::mpsse;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 /// Represents the Ultradebug GPIO pins.
 pub struct UltradebugGpio {

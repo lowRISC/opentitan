@@ -11,9 +11,9 @@ use std::thread;
 use std::time::{Duration, Instant};
 use thiserror::Error;
 
-use crate::io::gpio;
-use crate::io::i2c;
-use crate::io::spi;
+use opentitanlib_core::io::gpio;
+use opentitanlib_core::io::i2c;
+use opentitanlib_core::io::spi;
 use crate::tpm::access::TpmAccess;
 use crate::tpm::status::TpmStatus;
 

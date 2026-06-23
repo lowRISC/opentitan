@@ -4,8 +4,8 @@
 
 use std::path::PathBuf;
 
-use crate::debug::openocd::{OpenOcd, OpenOcdJtagChain};
-use crate::io::jtag::{Jtag, JtagChain, JtagParams, JtagTap};
+use opentitanlib_debug::openocd::OpenOcdJtagChain;
+use opentitanlib_core::io::jtag::{Jtag, JtagChain, JtagParams, JtagTap};
 
 /// Proxy between the two available JTAG TAPs in QEMU.
 ///
@@ -51,7 +51,7 @@ impl JtagChain for QemuJtag {
         Box::new(openocd).connect(tap)
     }
 
-    fn into_raw(self: Box<Self>) -> anyhow::Result<OpenOcd> {
+    fn into_raw(self: Box<Self>) -> anyhow::Result<Box<dyn std::any::Any>> {
         // We can't spawn OpenOCD until we know which TAP/socket to connect to, so we can't implement
         // this yet. Eventually QEMU should mux the TAPs through one socket to resolve this.
         todo!("QEMU JTAG does not currently support direct OpenOCD access before connection");

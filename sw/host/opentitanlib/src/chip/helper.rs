@@ -12,9 +12,9 @@ use std::path::PathBuf;
 use crate::chip::boot_svc::{
     BootSlot, OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode,
 };
-use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
+use opentitanlib_core::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 #[derive(Debug, Default, Args)]
 pub struct OwnershipUnlockParams {

@@ -21,7 +21,7 @@ use std::str::FromStr;
 
 use super::Error;
 use crate::crypto::sha256::Sha256Digest;
-use crate::util::bigint::fixed_size_bigint;
+use crate::fixed_size_bigint;
 
 const MODULUS_BIT_LEN: usize = 3072;
 const EXPONENT_BIT_LEN: usize = 17;

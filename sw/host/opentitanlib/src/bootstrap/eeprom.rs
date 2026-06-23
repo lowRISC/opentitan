@@ -4,10 +4,10 @@
 
 use anyhow::Result;
 
-use crate::app::TransportWrapper;
+use opentitanlib_app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, UpdateProtocol};
 use crate::spiflash::SpiFlash;
-use crate::transport::{Capability, ProgressIndicator};
+use opentitanlib_core::transport::{Capability, ProgressIndicator};
 
 /// Implements the SPI EEPROM bootstrap protocol.
 pub struct Eeprom;
@@ -44,7 +44,7 @@ impl UpdateProtocol for Eeprom {
         payload: &[u8],
         progress: &dyn ProgressIndicator,
     ) -> Result<()> {
-        let spi = container.spi_params.create(transport, "BOOTSTRAP")?;
+        let spi = transport.create_spi(container.spi_params, "BOOTSTRAP")?;
         let flash = SpiFlash::from_spi(&*spi)?;
         flash.chip_erase(&*spi)?;
         flash.program_with_progress(&*spi, 0, payload, progress)?;

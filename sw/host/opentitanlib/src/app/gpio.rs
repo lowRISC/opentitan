@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use opentitanlib_core::io::gpio::{GpioPin, PinMode, PullMode};
 use anyhow::Result;
 use std::rc::Rc;
 

@@ -7,8 +7,8 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::Args;
 
-use crate::transport::Transport;
-use crate::transport::qemu::Qemu;
+use opentitanlib_core::transport::Transport;
+use opentitanlib_transports::qemu::{Qemu, QemuParams};
 
 #[derive(Clone, Debug, Args)]
 pub struct QemuOpts {
@@ -52,8 +52,16 @@ impl QemuOpts {
 
         None
     }
+
+    pub fn to_params(&self) -> QemuParams {
+        QemuParams {
+            qemu_monitor_socket: self.qemu_monitor_socket.clone(),
+            qemu_device_paths: self.qemu_device_paths.clone(),
+            qemu_quit: self.qemu_quit,
+        }
+    }
 }
 
 pub fn create(args: &QemuOpts) -> Result<Box<dyn Transport>> {
-    Ok(Box::new(Qemu::from_options(args.clone())?))
+    Ok(Box::new(Qemu::from_options(args.to_params())?))
 }

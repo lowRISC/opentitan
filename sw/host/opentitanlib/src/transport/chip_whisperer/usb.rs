@@ -12,13 +12,13 @@ use std::marker::PhantomData;
 use std::time::Duration;
 
 use super::board::Board;
-use crate::collection;
-use crate::io::gpio::GpioError;
-use crate::io::spi::SpiError;
-use crate::io::usb::{UsbContext, UsbDevice};
-use crate::transport::common::usb::RusbContext;
-use crate::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::collection;
+use opentitanlib_core::io::gpio::GpioError;
+use opentitanlib_core::io::spi::SpiError;
+use opentitanlib_core::io::usb::{UsbContext, UsbDevice};
+use crate::common::usb::RusbContext;
+use opentitanlib_core::transport::{ProgressIndicator, TransportError, TransportInterfaceType};
+use opentitanlib_core::util::parse_int::ParseInt;
 
 /// The `Backend` struct provides high-level access to the Chip Whisperer board.
 pub struct Backend<B: Board> {

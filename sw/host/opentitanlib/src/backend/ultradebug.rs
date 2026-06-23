@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::transport::Transport;
-use crate::transport::ultradebug::Ultradebug;
+use opentitanlib_core::transport::Transport;
+use opentitanlib_transports::ultradebug::Ultradebug;
 use anyhow::Result;
 
-use crate::backend::BackendOpts;
+use crate::BackendOpts;
 
 pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
     Ok(Box::new(Ultradebug::new(

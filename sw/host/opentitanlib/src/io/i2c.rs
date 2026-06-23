@@ -5,13 +5,12 @@
 use anyhow::Result;
 use clap::Args;
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
+
 use crate::impl_serializable_error;
-use crate::transport::TransportError;
+use crate::io::TransportError;
 use crate::util::parse_int::ParseInt;
 
 #[derive(Debug, Args)]
@@ -33,22 +32,7 @@ pub struct I2cParams {
     pub addr: Option<u8>,
 }
 
-impl I2cParams {
-    pub fn create(
-        &self,
-        transport: &TransportWrapper,
-        default_instance: &str,
-    ) -> Result<Rc<dyn Bus>> {
-        let i2c = transport.i2c(self.bus.as_deref().unwrap_or(default_instance))?;
-        if let Some(speed) = self.speed {
-            i2c.set_max_speed(speed)?;
-        }
-        if let Some(addr) = self.addr {
-            i2c.set_default_address(addr)?;
-        }
-        Ok(i2c)
-    }
-}
+
 
 /// Errors related to the I2C interface and I2C transactions.
 #[derive(Error, Debug, Deserialize, Serialize)]

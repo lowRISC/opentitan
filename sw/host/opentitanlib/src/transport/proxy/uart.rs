@@ -9,10 +9,10 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use super::ProxyError;
-use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::uart::{Parity, Uart};
-use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
-use crate::transport::proxy::{Inner, Proxy};
+use opentitanlib_core::io::nonblocking_help::NonblockingHelp;
+use opentitanlib_core::io::uart::{Parity, Uart};
+use opentitanlib_proxy_protocol::protocol::{Request, Response, UartRequest, UartResponse};
+use crate::proxy::{Inner, Proxy};
 
 pub struct ProxyUart {
     inner: Rc<Inner>,

@@ -4,11 +4,13 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand};
+#[cfg(feature = "verilator")]
 use regex::Regex;
 use std::any::Any;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+#[cfg(feature = "verilator")]
 use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -17,6 +19,7 @@ use opentitanlib::io::jtag::JtagParams;
 use opentitanlib::transport::Capability;
 use opentitanlib::transport::SetJtagPins;
 use opentitanlib::transport::UpdateFirmware;
+#[cfg(feature = "verilator")]
 use opentitanlib::transport::verilator::transport::Watch;
 
 /// Initialize state of a transport debugger device to fit the device under test.  This
@@ -111,6 +114,7 @@ impl CommandDispatch for TransportUpdateFirmware {
     }
 }
 
+#[cfg(feature = "verilator")]
 /// Watch verilator's stdout for a regex or until a timeout is reached.
 #[derive(Debug, Args)]
 pub struct VerilatorWatch {
@@ -121,6 +125,7 @@ pub struct VerilatorWatch {
     timeout: Option<Duration>,
 }
 
+#[cfg(feature = "verilator")]
 impl CommandDispatch for VerilatorWatch {
     fn run(
         &self,
@@ -180,6 +185,7 @@ impl CommandDispatch for TransportQueryAll {
 pub enum TransportCommand {
     Init(TransportInit),
     SetJtagPins(TransportSetJtagPins),
+    #[cfg(feature = "verilator")]
     VerilatorWatch(VerilatorWatch),
     UpdateFirmware(TransportUpdateFirmware),
     Query(TransportQuery),

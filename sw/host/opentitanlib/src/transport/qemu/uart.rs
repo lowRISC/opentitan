@@ -10,10 +10,10 @@ use std::time::Duration;
 use anyhow::Result;
 use serialport::Parity;
 
-use crate::io::uart::Uart;
-use crate::transport::NonblockingHelp;
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::qemu::monitor::Monitor;
+use opentitanlib_core::io::uart::Uart;
+use opentitanlib_core::io::nonblocking_help::NonblockingHelp;
+use crate::common::uart::SerialPortUart;
+use crate::qemu::monitor::Monitor;
 
 pub struct QemuUart {
     /// Connection to the QEMU monitor which can control the emulator.

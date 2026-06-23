@@ -10,8 +10,8 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::app::TransportWrapperBuilder;
-use crate::collection;
+use crate::TransportWrapperBuilder;
+use opentitanlib_core::collection;
 
 mod structs;
 pub use structs::*;

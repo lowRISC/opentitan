@@ -10,8 +10,8 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result};
 
-use crate::io::uart::Uart;
-use crate::transport::ultradebug::Ultradebug;
+use opentitanlib_core::io::uart::Uart;
+use crate::ultradebug::Ultradebug;
 
 pub struct Inner {
     device: ftdi::Device,

@@ -6,7 +6,13 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::spi::{SpiError, Target, Transfer};
-use crate::spiflash::SpiFlash;
+pub const READ_STATUS: u8 = 0x05;
+pub const STATUS_WIP: u8 = 0x01;
+pub const READ: u8 = 0x03;
+pub const FAST_READ: u8 = 0x0b;
+pub const PAGE_PROGRAM: u8 = 0x02;
+pub const WRITE_ENABLE: u8 = 0x06;
+pub const READ_SFDP: u8 = 0x5a;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 /// Declarations of if and when to switch from single-lane SPI to a faster mode.
@@ -262,10 +268,10 @@ pub fn default_run_eeprom_transactions<T: Target + ?Sized>(
                 spi.run_transaction(&mut [Transfer::Write(cmd.to_bytes()?), Transfer::Write(wbuf)])?
             }
             Transaction::WaitForBusyClear => {
-                let mut status = SpiFlash::STATUS_WIP;
-                while status & SpiFlash::STATUS_WIP != 0 {
+                let mut status = STATUS_WIP;
+                while status & STATUS_WIP != 0 {
                     spi.run_transaction(&mut [
-                        Transfer::Write(&[SpiFlash::READ_STATUS]),
+                        Transfer::Write(&[READ_STATUS]),
                         Transfer::Read(std::slice::from_mut(&mut status)),
                     ])?;
                 }

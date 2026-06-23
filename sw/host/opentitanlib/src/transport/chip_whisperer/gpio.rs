@@ -7,8 +7,8 @@ use anyhow::Result;
 use std::cell::RefCell;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::chip_whisperer::usb::Backend;
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::chip_whisperer::usb::Backend;
 
 pub struct Pin<B: Board> {
     device: Rc<RefCell<Backend<B>>>,

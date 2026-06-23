@@ -7,9 +7,9 @@ use std::collections::HashMap;
 use std::rc::Rc;
 
 use super::ProxyError;
-use crate::io::emu::{EmuState, EmuValue, Emulator};
-use crate::proxy::protocol::{EmuRequest, EmuResponse, Request, Response};
-use crate::transport::proxy::{Inner, Proxy};
+use opentitanlib_core::io::emu::{EmuState, EmuValue, Emulator};
+use opentitanlib_proxy_protocol::protocol::{EmuRequest, EmuResponse, Request, Response};
+use crate::proxy::{Inner, Proxy};
 
 pub struct ProxyEmu {
     inner: Rc<Inner>,

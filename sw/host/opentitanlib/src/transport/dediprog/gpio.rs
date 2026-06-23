@@ -8,10 +8,10 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::collection;
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::dediprog::Inner;
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::collection;
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::dediprog::Inner;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 pub struct DediprogPin {
     inner: Rc<RefCell<Inner>>,

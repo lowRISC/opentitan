@@ -14,9 +14,9 @@ use std::io::{Read, Write};
 use super::ChipDataError;
 use crate::chip::boolean::HardenedBool;
 use crate::chip::rom_error::RomError;
-use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
+use opentitanlib_core::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum BootSlot: u32 [default = Self::Unknown] {

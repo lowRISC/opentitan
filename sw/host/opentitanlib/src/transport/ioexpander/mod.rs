@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::app::TransportWrapper;
-use crate::app::config;
-use crate::io::ioexpander::IoExpander;
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_app::config;
+use opentitanlib_core::io::ioexpander::IoExpander;
 
 use anyhow::Result;
 

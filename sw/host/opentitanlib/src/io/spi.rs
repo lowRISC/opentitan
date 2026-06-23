@@ -10,9 +10,9 @@ use std::str::FromStr;
 use thiserror::Error;
 
 use super::{eeprom, gpio};
-use crate::app::TransportWrapper;
+
 use crate::impl_serializable_error;
-use crate::transport::TransportError;
+use crate::io::TransportError;
 use crate::util::voltage::Voltage;
 
 #[derive(Clone, Default, Debug, Args, Serialize, Deserialize)]
@@ -38,28 +38,7 @@ pub struct SpiParams {
     pub mode: Option<TransferMode>,
 }
 
-impl SpiParams {
-    pub fn create(
-        &self,
-        transport: &TransportWrapper,
-        default_instance: &str,
-    ) -> Result<Rc<dyn Target>> {
-        let spi = transport.spi(self.bus.as_deref().unwrap_or(default_instance))?;
-        if let Some(ref cs) = self.chip_select {
-            spi.set_pins(None, None, None, Some(&transport.gpio_pin(cs.as_str())?))?;
-        }
-        if let Some(speed) = self.speed {
-            spi.set_max_speed(speed)?;
-        }
-        if let Some(voltage) = self.voltage {
-            spi.set_voltage(voltage)?;
-        }
-        if let Some(mode) = self.mode {
-            spi.set_transfer_mode(mode)?;
-        }
-        Ok(spi)
-    }
-}
+
 
 /// Errors related to the SPI interface and SPI transactions.
 #[derive(Error, Debug, Serialize, Deserialize)]

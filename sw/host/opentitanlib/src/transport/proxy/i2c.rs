@@ -8,11 +8,11 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use super::ProxyError;
-use crate::io::i2c::{Bus, DeviceStatus, Mode, Transfer};
-use crate::proxy::protocol::{
+use opentitanlib_core::io::i2c::{Bus, DeviceStatus, Mode, Transfer};
+use opentitanlib_proxy_protocol::protocol::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
-use crate::transport::proxy::{Inner, Proxy};
+use crate::proxy::{Inner, Proxy};
 
 pub struct ProxyI2c {
     inner: Rc<Inner>,

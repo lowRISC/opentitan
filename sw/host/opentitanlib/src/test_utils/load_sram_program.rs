@@ -18,11 +18,11 @@ use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::chip::boolean::MultiBitBool4;
-use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
-use crate::util::parse_int::ParseInt;
-use crate::util::vmem::Vmem;
+use opentitanlib_chip::chip::boolean::MultiBitBool4;
+use opentitanlib_core::impl_serializable_error;
+use opentitanlib_core::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
+use opentitanlib_core::util::parse_int::ParseInt;
+use opentitanlib_core::util::vmem::Vmem;
 
 use top_earlgrey::top_earlgrey;
 

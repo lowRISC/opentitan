@@ -12,11 +12,11 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use crate::io::emu::EmuState;
-use crate::io::i2c::{Bus, I2cError, Transfer};
-use crate::transport::TransportError;
-use crate::transport::ti50emulator::Inner;
-use crate::transport::ti50emulator::emu::EMULATOR_INVALID_ID;
+use opentitanlib_core::io::emu::EmuState;
+use opentitanlib_core::io::i2c::{Bus, I2cError, Transfer};
+use opentitanlib_core::transport::TransportError;
+use crate::ti50emulator::Inner;
+use crate::ti50emulator::emu::EMULATOR_INVALID_ID;
 
 const MAX_READ_TIMEOUT: Duration = Duration::from_millis(35);
 const MAX_WRITE_TIMEOUT: Duration = Duration::from_millis(35);

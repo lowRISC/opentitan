@@ -5,8 +5,8 @@
 use anyhow::Result;
 use clap::Args;
 
-use crate::transport::Transport;
-use crate::transport::proxy::Proxy;
+use opentitanlib_core::transport::Transport;
+use opentitanlib_transports::proxy::Proxy;
 
 #[derive(Debug, Args)]
 pub struct ProxyOpts {

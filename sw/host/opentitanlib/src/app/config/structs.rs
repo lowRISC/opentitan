@@ -7,8 +7,8 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::io::gpio::{PinMode, PullMode};
-use crate::io::spi::TransferMode;
+use opentitanlib_core::io::gpio::{PinMode, PullMode};
+use opentitanlib_core::io::spi::TransferMode;
 
 use serde::Deserialize;
 
@@ -61,7 +61,7 @@ pub struct IoExpander {
 }
 
 /// Identifier of the driver/protocol uses by an IO expander.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum IoExpanderDriver {
     Sx1503,
 }

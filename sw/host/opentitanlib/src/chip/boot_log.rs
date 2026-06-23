@@ -13,7 +13,7 @@ use super::ChipDataError;
 use super::boot_svc::BootSlot;
 use super::rom_error::RomError;
 use crate::chip::boolean::HardenedBool;
-use crate::with_unknown;
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum OwnershipState: u32 [default = Self::Recovery] {

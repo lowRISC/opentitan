@@ -6,7 +6,7 @@ use bitflags::bitflags;
 
 use bindgen::dif;
 
-use crate::util::bitfield::BitField;
+use opentitanlib_core::util::bitfield::BitField;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u32)]

@@ -40,7 +40,7 @@ pub enum ParseBigIntError {
 /// This struct is not meant to be used directly, please see the `fixed_size_bigint` macro which
 /// also generates the required boilerplate code for new types.
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub(crate) struct FixedSizeBigInt<const BIT_LEN: usize, const EXACT_LEN: bool>(BigUint);
+pub struct FixedSizeBigInt<const BIT_LEN: usize, const EXACT_LEN: bool>(BigUint);
 
 impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT_LEN> {
     const BYTE_LEN: usize = BIT_LEN.saturating_add(u8::BITS as usize - 1) / u8::BITS as usize;
@@ -59,12 +59,12 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
     }
 
     /// Creates a `FixedSizeBigInt` from little-endian bytes.
-    pub(crate) fn from_le_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, ParseBigIntError> {
+    pub fn from_le_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, ParseBigIntError> {
         Self::new_from_biguint(BigUint::from_bytes_le(bytes.as_ref()))
     }
 
     /// Creates a `FixedSizeBigInt` from big-endian bytes.
-    pub(crate) fn from_be_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, ParseBigIntError> {
+    pub fn from_be_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, ParseBigIntError> {
         Self::new_from_biguint(BigUint::from_bytes_be(bytes.as_ref()))
     }
 
@@ -72,12 +72,12 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
     ///
     /// Bit length of `FixedSizeBigInt` is the minimum number of bits required to represent its
     /// value. The underlying storage may be larger.
-    pub(crate) fn bit_len(&self) -> usize {
+    pub fn bit_len(&self) -> usize {
         self.0.bits()
     }
 
     /// Returns the byte representation in little-endian order.
-    pub(crate) fn to_le_bytes(&self) -> Vec<u8> {
+    pub fn to_le_bytes(&self) -> Vec<u8> {
         let mut v = self.0.to_bytes_le();
         assert!(Self::BYTE_LEN >= v.len());
         // Append since `v` is little-endian.
@@ -86,7 +86,7 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
     }
 
     /// Returns the byte representation in big-endian order.
-    pub(crate) fn to_be_bytes(&self) -> Vec<u8> {
+    pub fn to_be_bytes(&self) -> Vec<u8> {
         let mut v = self.0.to_bytes_be();
         assert!(Self::BYTE_LEN >= v.len());
         // Prepend since `v` is big-endian.
@@ -95,7 +95,7 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
     }
 
     /// Returns the underlying `BigUint`.
-    pub(crate) fn as_biguint(&self) -> &BigUint {
+    pub fn as_biguint(&self) -> &BigUint {
         &self.0
     }
 }
@@ -122,6 +122,7 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> fmt::Display
 }
 
 /// Helper macro for the `fixed_size_bigint` macro.
+#[macro_export]
 macro_rules! fixed_size_bigint_impl {
     ($struct_name:ident, $bit_len:expr, $exact_len:expr) => {
         #[derive(serde::Serialize, Debug, Clone, Eq, PartialEq)]
@@ -191,7 +192,7 @@ macro_rules! fixed_size_bigint_impl {
     };
 }
 
-pub(crate) use fixed_size_bigint_impl;
+
 
 /// Macro for defining a new fixed-size unsigned big integer type.
 ///
@@ -207,16 +208,15 @@ pub(crate) use fixed_size_bigint_impl;
 /// // Define a type for SHA-256 digests (at most 256 bits long):
 /// fixed_size_bigint!(Sha256Digest, at_most 256);
 /// ```
+#[macro_export]
 macro_rules! fixed_size_bigint {
     ($struct_name:ident, $bit_len:expr) => {
-        $crate::util::bigint::fixed_size_bigint_impl!($struct_name, $bit_len, true);
+        $crate::fixed_size_bigint_impl!($struct_name, $bit_len, true);
     };
     ($struct_name:ident, at_most $bit_len:expr) => {
-        $crate::util::bigint::fixed_size_bigint_impl!($struct_name, $bit_len, false);
+        $crate::fixed_size_bigint_impl!($struct_name, $bit_len, false);
     };
 }
-
-pub(crate) use fixed_size_bigint;
 
 #[cfg(test)]
 mod tests {

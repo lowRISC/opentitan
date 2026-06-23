@@ -9,7 +9,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use crate::util::printer;
+use opentitanlib_core::util::printer;
 
 /// Verilator startup options.
 pub struct Options {

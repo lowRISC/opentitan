@@ -8,7 +8,7 @@ use bindgen::dif;
 use bitflags::bitflags;
 use once_cell::sync::Lazy;
 
-use crate::collection;
+use opentitanlib_core::collection;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(u32)]

@@ -15,9 +15,9 @@ use std::str::FromStr;
 
 use super::bootstrap::Bootstrap;
 use super::load_bitstream::LoadBitstream;
-use crate::app::TransportWrapper;
-use crate::backend;
-use crate::io::jtag::JtagParams;
+use opentitanlib_app::TransportWrapper;
+use opentitanlib_backend as backend;
+use opentitanlib_core::io::jtag::JtagParams;
 // use opentitanlib::io::uart::UartParams;
 
 #[derive(Debug, Args)]
@@ -149,7 +149,7 @@ impl InitializeTest {
         }
 
         // Create the UART first to initialize the desired parameters.
-        let _uart = self.bootstrap.options.uart_params.create(&transport)?;
+        let _uart = transport.create_uart(&self.bootstrap.options.uart_params)?;
 
         // Load a bitstream.
         Self::print_result("load_bitstream", self.load_bitstream.init(&transport))?;

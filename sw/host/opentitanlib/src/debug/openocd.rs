@@ -17,11 +17,11 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::dif::lc_ctrl::LcCtrlReg;
-use crate::impl_serializable_error;
-use crate::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
-use crate::util::parse_int::ParseInt;
-use crate::util::printer;
+
+use opentitanlib_core::impl_serializable_error;
+use opentitanlib_core::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
+use opentitanlib_core::util::parse_int::ParseInt;
+use opentitanlib_core::util::printer;
 
 /// Represents an OpenOCD server that we can interact with.
 pub struct OpenOcd {
@@ -294,8 +294,8 @@ impl JtagChain for OpenOcdJtagChain {
         }))
     }
 
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd> {
-        Ok(self.openocd)
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(self.openocd))
     }
 }
 
@@ -389,12 +389,18 @@ impl OpenOcdJtagTap {
     }
 }
 
+impl opentitanlib_core::io::jtag::OpenOcdOps for OpenOcd {
+    fn execute(&mut self, cmd: &str) -> Result<String> {
+        self.execute(cmd)
+    }
+}
+
 impl Jtag for OpenOcdJtagTap {
-    fn into_raw(self: Box<Self>) -> Result<OpenOcd> {
-        Ok(self.openocd)
+    fn into_raw(self: Box<Self>) -> Result<Box<dyn std::any::Any>> {
+        Ok(Box::new(self.openocd))
     }
 
-    fn as_raw(&mut self) -> Result<&mut OpenOcd> {
+    fn as_raw(&mut self) -> Result<&mut dyn opentitanlib_core::io::jtag::OpenOcdOps> {
         Ok(&mut self.openocd)
     }
 
@@ -406,12 +412,11 @@ impl Jtag for OpenOcdJtagTap {
         self.jtag_tap
     }
 
-    fn read_lc_ctrl_reg(&mut self, reg: &LcCtrlReg) -> Result<u32> {
+    fn read_lc_reg(&mut self, reg_offset: u32) -> Result<u32> {
         ensure!(
             matches!(self.jtag_tap, JtagTap::LcTap),
             JtagError::Tap(self.jtag_tap)
         );
-        let reg_offset = reg.word_offset();
         let cmd = format!("riscv dmi_read 0x{reg_offset:x}");
         let response = self.send_tcl_cmd(cmd.as_str())?;
 
@@ -422,12 +427,11 @@ impl Jtag for OpenOcdJtagTap {
         Ok(value)
     }
 
-    fn write_lc_ctrl_reg(&mut self, reg: &LcCtrlReg, value: u32) -> Result<()> {
+    fn write_lc_reg(&mut self, reg_offset: u32, value: u32) -> Result<()> {
         ensure!(
             matches!(self.jtag_tap, JtagTap::LcTap),
             JtagError::Tap(self.jtag_tap)
         );
-        let reg_offset = reg.word_offset();
         let cmd = format!("riscv dmi_write 0x{reg_offset:x} 0x{value:x}");
         let response = self.send_tcl_cmd(cmd.as_str())?;
 

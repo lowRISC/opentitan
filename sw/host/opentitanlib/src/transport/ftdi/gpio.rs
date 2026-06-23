@@ -10,8 +10,8 @@ use std::rc::Rc;
 use embedded_hal::digital::{InputPin, OutputPin};
 use ftdi_embedded_hal as ftdi_hal;
 
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
-use crate::transport::ftdi::Chip;
+use opentitanlib_core::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::ftdi::Chip;
 
 #[derive(Default)]
 enum PinType {

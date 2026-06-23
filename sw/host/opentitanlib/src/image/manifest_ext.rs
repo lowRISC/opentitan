@@ -11,8 +11,8 @@ use zerocopy::IntoBytes;
 use crate::chip::boolean::HardenedBool;
 use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
-use crate::util::num_de::HexEncoded;
-use crate::with_unknown;
+use opentitanlib_core::util::num_de::HexEncoded;
+use opentitanlib_core::with_unknown;
 use sphincsplus::{DecodeKey, SpxPublicKey};
 
 #[derive(Debug, Error)]
@@ -311,9 +311,9 @@ impl ManifestExtEntry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::util::hexdump::hexdump_string;
-    use crate::util::num_de::HexEncoded;
-    use crate::util::testdata;
+    use opentitanlib_core::util::hexdump::hexdump_string;
+    use opentitanlib_core::util::num_de::HexEncoded;
+    use opentitanlib_core::util::testdata;
 
     #[test]
     fn test_manifest_ext_from_hjson() {

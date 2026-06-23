@@ -17,9 +17,9 @@ use super::{
     OwnerIsfbConfig, OwnerRescueConfig,
 };
 use crate::chip::boolean::HardenedBool;
-use crate::crypto::Error as CryptoError;
-use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
-use crate::with_unknown;
+use opentitanlib_core::crypto::Error as CryptoError;
+use opentitanlib_core::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
+use opentitanlib_core::with_unknown;
 
 with_unknown! {
     pub enum SramExecMode: u32 [default = Self::DisabledLocked] {
@@ -337,12 +337,12 @@ impl OwnerConfigItem {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::crypto::ecdsa::EcdsaRawPublicKey;
+    use opentitanlib_core::crypto::ecdsa::EcdsaRawPublicKey;
     use crate::ownership::{
         ApplicationKeyDomain, FlashFlags, OwnerFlashInfoConfig, OwnerFlashRegion, OwnerInfoPage,
         OwnerRescueConfig,
     };
-    use crate::util::hexdump::{hexdump_parse, hexdump_string};
+    use opentitanlib_core::util::hexdump::{hexdump_parse, hexdump_string};
 
     #[rustfmt::skip]
     const OWNER_BIN: &str =

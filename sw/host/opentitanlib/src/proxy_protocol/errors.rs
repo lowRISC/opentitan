@@ -2,31 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use erased_serde::Serialize;
-
-/// `SerializableError` is a trait which represents an error type that can
-/// be sent over the wire by the proxy protocol.
-#[typetag::serde(tag = "error_type")]
-pub trait SerializableError: Serialize + std::error::Error + std::fmt::Debug + Send + Sync {
-    fn as_anyhow_error(self: Box<Self>) -> anyhow::Error;
-}
-
-/// `impl_serializable_error` needs to be invoked for every error type
-/// that can be sent over the wire.
-#[macro_export]
-macro_rules! impl_serializable_error {
-    ($t:ty) => {
-        const _: () = {
-            use $crate::proxy::errors::SerializableError;
-            #[typetag::serde]
-            impl SerializableError for $t {
-                fn as_anyhow_error(self: Box<$t>) -> anyhow::Error {
-                    self.into()
-                }
-            }
-        };
-    };
-}
+use opentitanlib_core::io::SerializableError;
 
 /// `SerializedError` is the wire form of errors that can be sent through the proxy.
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
@@ -109,18 +85,14 @@ impl From<anyhow::Error> for SerializedError {
             msg,
             bt,
             Box::new,
-            crate::bootstrap::BootstrapError,
-            crate::bootstrap::LegacyBootstrapError,
-            crate::bootstrap::LegacyRescueError,
-            crate::io::console::ConsoleError,
-            crate::io::emu::EmuError,
-            crate::io::gpio::GpioError,
-            crate::io::i2c::I2cError,
-            crate::io::jtag::JtagError,
-            crate::io::spi::SpiError,
-            crate::io::uart::UartError,
-            crate::transport::TransportError,
-            crate::transport::proxy::ProxyError,
+            opentitanlib_core::io::console::ConsoleError,
+            opentitanlib_core::io::emu::EmuError,
+            opentitanlib_core::io::gpio::GpioError,
+            opentitanlib_core::io::i2c::I2cError,
+            opentitanlib_core::io::jtag::JtagError,
+            opentitanlib_core::io::spi::SpiError,
+            opentitanlib_core::io::uart::UartError,
+            opentitanlib_core::transport::TransportError,
         );
     }
 }

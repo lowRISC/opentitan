@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::parse_int::ParseInt;
 
 use std::fmt;
 use std::path::Path;

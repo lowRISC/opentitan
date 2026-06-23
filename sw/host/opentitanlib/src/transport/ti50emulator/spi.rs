@@ -5,9 +5,9 @@
 use anyhow::Result;
 use std::rc::Rc;
 
-use crate::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
-use crate::transport::TransportError;
-use crate::util::voltage::Voltage;
+use opentitanlib_core::io::spi::{AssertChipSelect, MaxSizes, SpiError, Target, Transfer, TransferMode};
+use opentitanlib_core::transport::TransportError;
+use opentitanlib_core::util::voltage::Voltage;
 
 pub struct Ti50Spi {}
 

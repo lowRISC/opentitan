@@ -5,9 +5,9 @@
 use anyhow::{Result, bail};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
-use crate::transport::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
-use crate::transport::{TransportError, TransportInterfaceType};
+use opentitanlib_core::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::hyperdebug::{Flavor, Inner, StandardFlavor, VID_GOOGLE};
+use opentitanlib_core::transport::{TransportError, TransportInterfaceType};
 
 /// The Servo Micro is used to bring up GSC and EC chips sitting inside a computing device, such
 /// that those GSC chips can provide Case Closed Debugging support to allow bringup of the rest of

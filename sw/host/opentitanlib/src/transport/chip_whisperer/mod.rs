@@ -10,17 +10,17 @@ use std::collections::HashMap;
 use std::collections::hash_map::Entry;
 use std::rc::Rc;
 
-use crate::io::gpio::GpioPin;
-use crate::io::spi::Target;
-use crate::io::uart::{Uart, UartError};
-use crate::io::usb::UsbContext;
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::SerialPortUart;
-use crate::transport::common::usb::RusbContext;
-use crate::transport::{
+use opentitanlib_core::io::gpio::GpioPin;
+use opentitanlib_core::io::spi::Target;
+use opentitanlib_core::io::uart::{Uart, UartError};
+use opentitanlib_core::io::usb::UsbContext;
+use crate::common::fpga::{ClearBitstream, FpgaProgram};
+use crate::common::uart::SerialPortUart;
+use crate::common::usb::RusbContext;
+use opentitanlib_core::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
+use opentitanlib_core::util::parse_int::ParseInt;
 use board::Board;
 
 pub mod board;

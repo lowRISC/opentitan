@@ -6,15 +6,15 @@ use anyhow::{Result, bail, ensure};
 use std::rc::Rc;
 
 use super::ProxyError;
-use crate::io::gpio;
-use crate::io::spi::{
+use opentitanlib_core::io::gpio;
+use opentitanlib_core::io::spi::{
     AssertChipSelect, MaxSizes, SpiError, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::proxy::protocol::{
+use opentitanlib_proxy_protocol::protocol::{
     Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
 };
-use crate::transport::proxy::{Inner, Proxy};
-use crate::util::voltage::Voltage;
+use crate::proxy::{Inner, Proxy};
+use opentitanlib_core::util::voltage::Voltage;
 
 pub struct ProxySpi {
     inner: Rc<Inner>,

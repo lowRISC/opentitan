@@ -10,12 +10,12 @@ use std::rc::Rc;
 use anyhow::{Context, ensure};
 use serialport::TTYPort;
 
-use crate::io::gpio;
-use crate::io::spi::{
+use opentitanlib_core::io::gpio;
+use opentitanlib_core::io::spi::{
     AssertChipSelect, MaxSizes, Target, TargetChipDeassert, Transfer, TransferMode,
 };
-use crate::transport::TransportError;
-use crate::util::voltage::Voltage;
+use opentitanlib_core::transport::TransportError;
+use opentitanlib_core::util::voltage::Voltage;
 
 /// SPI clock polarity - unset = idle at low voltage, set = idle at high voltage.
 const HEADER_CPOL_BIT: u8 = 0b01;

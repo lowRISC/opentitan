@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::app::TransportWrapper;
+use crate::TransportWrapper;
 use anyhow::Result;
 pub use opentitantool_derive::*;
 use std::any::Any;
