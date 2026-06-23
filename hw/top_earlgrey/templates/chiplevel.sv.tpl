@@ -1148,9 +1148,17 @@ module chip_${top["name"]}_${target["name"]} #(
   //////////////////////
   top_${top["name"]} #(
 % if target["name"] == "cw310":
+    .EntropySrcStub(1'b1), // Stub ENTROPY_SRC to reduce resource usage on CW310. See #30062.
+    .OtbnStub(1'b1), // Stub OTBN to reduce resource usage on CW310. See #30062.
+    .UsbdevStub(1'b1), // Stub USBDEV to reduce resource usage on CW310. See #30062.
     .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
-    .OtbnFeatStubMai(1'b1), // Stub MAI to reduce resource usage on CW310. See #30062.
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
+    .RvCoreIbexPMPEnable(1'b0),
+    .RvCoreIbexRV32B(ibex_pkg::RV32BNone),
+    .RvCoreIbexRV32ZC(ibex_pkg::RV32Zca),
+    .RvCoreIbexBranchTargetALU(1'b0),
+    .RvCoreIbexWritebackStage(1'b0),
+    .RvCoreIbexICache(1'b0),
 % elif target["name"]  == "cw340":
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
