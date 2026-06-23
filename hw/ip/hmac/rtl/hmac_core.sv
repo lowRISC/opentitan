@@ -10,9 +10,9 @@ module hmac_core import prim_sha2_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  input [1023:0]      secret_key_i, // {word0, word1, ..., word7}
-  input               hmac_en_i,
-  input digest_mode_e digest_size_i,
+  input [1023:0]               secret_key_i, // {word0, word1, ..., word7}
+  input prim_mubi_pkg::mubi4_t hmac_en_i,
+  input digest_mode_e          digest_size_i,
   input key_length_e  key_length_i,
 
   input        reg_hash_start_i,
@@ -174,11 +174,19 @@ typedef enum logic [StateWidth-1:0] {
 
   logic reg_hash_process_flag;
 
-  assign sha_hash_start_o    = (hmac_en_i) ? hash_start    : reg_hash_start_i;
-  assign sha_hash_continue_o = (hmac_en_i) ? hash_continue : reg_hash_continue_i;
+  logic hmac_en_err;
+  assign hmac_en_err = prim_mubi_pkg::mubi4_test_invalid(hmac_en_i);
 
-  assign sha_hash_process_o  = (hmac_en_i) ? reg_hash_process_i | hash_process : reg_hash_process_i;
-  assign hash_done_o         = (hmac_en_i) ? hmac_hash_done                    : sha_hash_done_i;
+  assign sha_hash_start_o    =
+      prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) ? hash_start    : reg_hash_start_i;
+  assign sha_hash_continue_o =
+      prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) ? hash_continue : reg_hash_continue_i;
+
+  assign sha_hash_process_o  =
+      prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) ? reg_hash_process_i | hash_process
+                                                       : reg_hash_process_i;
+  assign hash_done_o         =
+      prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) ? hmac_hash_done : sha_hash_done_i;
 
   assign pad_index_512 = txcount[BlockSizeBitsSHA512-1:HashWordBitsSHA256];
   assign pad_index_256 = txcount[BlockSizeBitsSHA256-1:HashWordBitsSHA256];
@@ -243,11 +251,14 @@ typedef enum logic [StateWidth-1:0] {
     endcase
   end
 
-  assign fifo_rready_o = (hmac_en_i) ? (st_q == StMsg) & sha_rready_i : sha_rready_i ;
+  assign fifo_rready_o = prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i)
+                       ? (st_q == StMsg) & sha_rready_i : sha_rready_i ;
   // sha_rvalid is controlled by State Machine below.
-  assign sha_rvalid_o  = (!hmac_en_i) ? fifo_rvalid_i : hmac_sha_rvalid ;
+  assign sha_rvalid_o  = prim_mubi_pkg::mubi4_test_false_strict(hmac_en_i)
+                       ? fifo_rvalid_i : hmac_sha_rvalid ;
   assign sha_rdata_o =
-    (!hmac_en_i)    ? fifo_rdata_i                                                             :
+    prim_mubi_pkg::mubi4_test_false_strict(hmac_en_i)
+                  ? fifo_rdata_i                                                             :
     (sel_rdata == SelIPad && digest_size_i == SHA2_256)
                   ? '{data: i_pad_256[(BlockSizeSHA256-1)-32*pad_index_256-:32], mask: '1} :
     (sel_rdata == SelIPad && ((digest_size_i == SHA2_384) || (digest_size_i == SHA2_512)))
@@ -263,7 +274,7 @@ typedef enum logic [StateWidth-1:0] {
 
   always_comb begin: assign_sha_message_length
     sha_msg_len = '0;
-    if (!hmac_en_i) begin
+    if (prim_mubi_pkg::mubi4_test_false_strict(hmac_en_i)) begin
       sha_msg_len = message_length_i;
     // HASH = (o_pad || HASH_INTERMEDIATE (i_pad || msg))
     // message length for HASH_INTERMEDIATE = block size (i_pad) + message length
@@ -390,7 +401,9 @@ typedef enum logic [StateWidth-1:0] {
     hash_start         = 1'b0;
     hash_continue      = 1'b0;
     hash_process       = 1'b0;
-    err_o              = 1'b0;
+    // Raise `err_o` if `hmac_en_i` carries an invalid MuBi4 encoding (fault on the encoded signal).
+    // The FSM error states below override this to 1'b1 as well.
+    err_o              = hmac_en_err;
     st_d               = st_q;
 
     unique case (st_q)
@@ -401,12 +414,12 @@ typedef enum logic [StateWidth-1:0] {
         update_round = 1'b1;
         round_d      = Inner;
         rnd_ctr_d    = RndIdle;
-        if (hmac_en_i && reg_hash_start_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) && reg_hash_start_i) begin
           st_d = StIPad; // start at StIPad if told to start
 
           clr_txcount  = 1'b1;
           hash_start   = 1'b1;
-        end else if (hmac_en_i && reg_hash_continue_i) begin
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) && reg_hash_continue_i) begin
           st_d = StMsg; // skip StIPad if told to continue - assumed it finished StIPad
 
           load_txcount  = 1'b1;
@@ -592,8 +605,10 @@ typedef enum logic [StateWidth-1:0] {
   // Assertions //
   ////////////////
 
-  `ASSERT(ValidSelRdata_A, hmac_en_i |-> sel_rdata inside {SelIPad, SelOPad, SelFifo})
-  `ASSERT(ValidDigestSize_A, (hmac_en_i && (sel_msglen == SelOPadMsg)) |->
+  `ASSERT(ValidSelRdata_A, prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) |->
+      sel_rdata inside {SelIPad, SelOPad, SelFifo})
+  `ASSERT(ValidDigestSize_A,
+      (prim_mubi_pkg::mubi4_test_true_strict(hmac_en_i) && (sel_msglen == SelOPadMsg)) |->
       digest_size_i inside {SHA2_256, SHA2_384, SHA2_512})
   // The process trigger never coincides with an abort, which the clearing of
   // reg_hash_process_flag on abort relies on.

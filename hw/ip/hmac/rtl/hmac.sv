@@ -113,12 +113,12 @@ module hmac
   sha_fifo32_t  shaf_rdata;
   logic         shaf_rready;
 
-  logic        sha_en;
-  logic        sha_en_engine;
-  logic        hmac_en;
-  logic        endian_swap;
-  logic        digest_swap;
-  logic        key_swap;
+  prim_mubi_pkg::mubi4_t sha_en;
+  logic                  sha_en_engine;
+  prim_mubi_pkg::mubi4_t hmac_en;
+  logic                  endian_swap;
+  logic                  digest_swap;
+  logic                  key_swap;
 
   logic        reg_hash_start;
   logic        sha_hash_start;
@@ -297,7 +297,7 @@ module hmac
   end
 
   // Only use the sideload key for keyed HMAC operations.
-  assign sideload_en = cfg_reg.sideload.q & hmac_en;
+  assign sideload_en = cfg_reg.sideload.q & prim_mubi_pkg::mubi4_test_true_strict(hmac_en);
 
   // Check if the keymgr key is valid. Always high when sideload is requested but the keymgr key
   // is invalid.
@@ -373,11 +373,10 @@ module hmac
                            cfg_reg.key_swap.qe,    cfg_reg.digest_size.qe,
                            cfg_reg.key_length.qe,  cfg_reg.sideload.qe };
 
-  assign sha_en               = cfg_reg.sha_en.q;
-  assign hmac_en              = cfg_reg.hmac_en.q;
 
   // Abort the operation when the keymgr key gets invalid.
-  assign sha_en_engine        = sha_en & ~sideload_key_invalid;
+  assign sha_en_engine        = prim_mubi_pkg::mubi4_test_true_strict(sha_en) &
+                                ~sideload_key_invalid;
 
   assign digest_size_supplied = digest_mode_e'(cfg_reg.digest_size.q);
   always_comb begin : cast_digest_size
@@ -451,11 +450,13 @@ module hmac
   // the inner hash.
   assign invalid_sideload_ctx   = sideload_en & (reg_hash_stop | reg_hash_continue);
 
-  assign hash_start             = reg_hash_start    & sha_en & ~cfg_block & ~invalid_config;
-  assign hash_continue          = reg_hash_continue & sha_en & ~cfg_block & ~invalid_config
-                                & ~sideload_en;
+  assign hash_start             = reg_hash_start    & prim_mubi_pkg::mubi4_test_true_strict(sha_en)
+                                                     & ~cfg_block & ~invalid_config;
+  assign hash_continue          = reg_hash_continue & prim_mubi_pkg::mubi4_test_true_strict(sha_en)
+                                                     & ~cfg_block & ~invalid_config & ~sideload_en;
   assign hash_stop              = reg_hash_stop     & ~sideload_en;
-  assign hash_process           = reg_hash_process  & sha_en & cfg_block &  ~invalid_config;
+  assign hash_process           = reg_hash_process  & prim_mubi_pkg::mubi4_test_true_strict(sha_en)
+                                                     & cfg_block &  ~invalid_config;
   assign hash_start_or_continue = hash_start | hash_continue;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -468,6 +469,9 @@ module hmac
     end
   end
   // Hold the configuration during the process
+  logic cfg_update;
+  assign cfg_update = !cfg_block && reg2hw.cfg.hmac_en.qe;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cfg_reg <= '{
@@ -505,10 +509,33 @@ module hmac
         },
         default:'0
       };
-    end else if (!cfg_block && reg2hw.cfg.hmac_en.qe) begin
+    end else if (cfg_update) begin
       cfg_reg <= reg2hw.cfg ;
     end
   end
+
+  // Prevent synthesis optimizations.
+  prim_flop_en #(
+    .Width(prim_mubi_pkg::MuBi4Width),
+    .ResetValue(prim_mubi_pkg::MuBi4Width'(prim_mubi_pkg::MuBi4False))
+  ) u_hmac_en_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(cfg_update),
+    .d_i(prim_mubi_pkg::MuBi4Width'(prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.cfg.hmac_en.q))),
+    .q_o({hmac_en})
+  );
+
+  prim_flop_en #(
+    .Width(prim_mubi_pkg::MuBi4Width),
+    .ResetValue(prim_mubi_pkg::MuBi4Width'(prim_mubi_pkg::MuBi4False))
+  ) u_sha_en_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(cfg_update),
+    .d_i(prim_mubi_pkg::MuBi4Width'(prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.cfg.sha_en.q))),
+    .q_o({sha_en})
+  );
 
   // Open up the MSG_FIFO from the TL-UL port when it is ready
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -901,8 +928,14 @@ module hmac
     reg2hw.alert_test.qe
   };
 
+  // Raise a fatal alert if the MuBi4-encoded `sha_en` carries an invalid codeword, i.e. a fault on
+  // the config flop or its distribution path. (`hmac_en` is checked the same way inside `hmac_core`
+  // and surfaces via `hmac_core_err`.)
+  logic sha_en_err;
+  assign sha_en_err = prim_mubi_pkg::mubi4_test_invalid(sha_en);
+
   logic alert_req;
-  assign alert_req = alerts[0] | hmac_core_err | fsm_err;
+  assign alert_req = alerts[0] | hmac_core_err | fsm_err | sha_en_err;
 
   localparam logic [NumAlerts-1:0] AlertIsFatal = {1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
@@ -929,7 +962,8 @@ module hmac
   logic hash_start_active;  // `reg_hash_start` or `reg_hash_continue` set when hash already active
   logic msg_push_not_allowed; // Message is received when `hash_start_or_continue` isn't set
 
-  assign hash_start_sha_disabled = (reg_hash_start | reg_hash_continue) & ~sha_en;
+  assign hash_start_sha_disabled = (reg_hash_start | reg_hash_continue) &
+                                   ~prim_mubi_pkg::mubi4_test_true_strict(sha_en);
   assign hash_start_active = (reg_hash_start | reg_hash_continue) & cfg_block;
   assign msg_push_not_allowed = msg_fifo_req & ~msg_allowed;
 
@@ -937,10 +971,12 @@ module hmac
   // not configured/invalid key length for HMAC mode or
   // key_length = 1024-bit for digest_size = SHA2_256 (max 512-bit is supported for SHA-2 256) or
   // the key is sideloaded but the key manager does not provide a valid key
-  assign invalid_config = ((digest_size == SHA2_None)            |
-                           ((key_length == Key_None) && hmac_en) |
-                           ((key_length == Key_1024) && (digest_size == SHA2_256) && hmac_en) |
-                           sideload_key_invalid);
+  assign invalid_config =
+      ((digest_size == SHA2_None)                                                            |
+       ((key_length == Key_None) && prim_mubi_pkg::mubi4_test_true_strict(hmac_en))          |
+       ((key_length == Key_1024) && (digest_size == SHA2_256) &&
+        prim_mubi_pkg::mubi4_test_true_strict(hmac_en))                                      |
+       sideload_key_invalid);
 
   // invalid_config at reg_hash_start or reg_hash_continue will signal an error to the SW
   assign invalid_config_atstart = (reg_hash_start || reg_hash_continue) & invalid_config;
