@@ -1094,7 +1094,6 @@ module ibex_tracer (
             default:     decode_i_insn("grevi");
           endcase
         end
-        INSN_GORC:       decode_r_insn("gorc");
         INSN_GORCI: begin
           unique casez (rvfi_insn)
             INSN_ORC_P:  decode_r1_insn("orc.p");

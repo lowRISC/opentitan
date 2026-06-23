@@ -476,7 +476,6 @@ module ibex_decoder #(
             {7'b011_0100, 3'b001}, // binv
             {7'b010_0100, 3'b101}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bext
             // RV32B zbp
-            {7'b001_0100, 3'b101}, // gorc
             {7'b000_0100, 3'b001}, // shfl
             {7'b000_0100, 3'b101}, // unshfl
             {7'b001_0100, 3'b010}, // xperm.n
@@ -929,7 +928,6 @@ module ibex_decoder #(
             {7'b010_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_BEXT;
 
             // RV32B zbp
-            {7'b001_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_GORC;
             {7'b000_0100, 3'b001}: begin
               if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SHFL;
             end

@@ -281,7 +281,7 @@ smoke_alu_zbp:
   li t0, 4
   li t1, 0xc77e0130
   shfl    t1, t1, t0
-  gorc    t1, t1, t0
+  li t1, 0xffff3311
   unshfl  t1, t1, t0
   .option pop
 
