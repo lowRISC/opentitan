@@ -6,7 +6,6 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )

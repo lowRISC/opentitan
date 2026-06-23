@@ -8,7 +8,6 @@ load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
