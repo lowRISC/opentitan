@@ -135,11 +135,12 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, ral_id, window)}
           if_suffix = '' if if_name is None else '_' + if_name
           esc_if_name = block_name.lower() + if_suffix
           if_inst = inst_name + if_suffix
+          inst_domain = top.inst_domains.get(inst_name).lower()
 
           if top.attrs.get(inst_name) == 'reggen_only':
-            hdl_path = 'tb.dut.u_' + inst_name
+            hdl_path = f"tb.dut.u_{inst_name}"
           else:
-            hdl_path = 'tb.dut.top_' + top.name + '.u_' + inst_name
+            hdl_path = f"tb.dut.top_{top.name}.{top.name}_pd_{inst_domain}.u_{inst_name}"
           qual_if_name = (inst_name, if_name)
           if addr_space not in top.if_addrs[qual_if_name]:
             continue
