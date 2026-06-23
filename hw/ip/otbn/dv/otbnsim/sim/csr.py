@@ -5,15 +5,7 @@
 from typing import Any, Callable, Dict, List, Optional
 from .constants import CsrAddrs
 from .flags import FlagGroups
-from .ispr import DumbISPR
-from .kmac_ispr import (
-    KmacCfgCSR,
-    KmacCommandCSR,
-    KmacStatusCSR,
-    KmacErrorCSR,
-    KmacIfStatusCSR,
-    KmacIntrCSR,
-)
+from .kmac_ispr import KmacStatusCSR, KmacCtrlCSR, KmacCfgCSR, KmacStrbCSR
 from .mai_ispr import MaiCtrlCSR, MaiStatusCSR
 from .trace import Trace
 from .wsr import WSRFile
@@ -55,15 +47,11 @@ class CSRFile:
             write_func=lambda val: wsrs.RND.request_value()
         )
         self.KMAC_STATUS = KmacStatusCSR('KMAC_STATUS')
-        self.KMAC_IF_STATUS = KmacIfStatusCSR('KMAC_IF_STATUS')
-        self.KMAC_INTR = KmacIntrCSR('KMAC_INTR')
-        self.KMAC_ERROR = KmacErrorCSR('KMAC_ERROR')
+        self.KMAC_CTRL = KmacCtrlCSR('KMAC_CTRL')
         self.KMAC_CFG = KmacCfgCSR('KMAC_CFG')
-        self.KMAC_MSG_SEND = KmacCommandCSR('KMAC_MSG_SEND', write_mask=0x1)
+        self.KMAC_STRB = KmacStrbCSR('KMAC_STRB')
         self.RND = WrapperCSR(read_func=wsrs.RND.read_u32)
         self.URND = WrapperCSR(read_func=wsrs.URND.read_u32)
-        self.KMAC_CMD = KmacCommandCSR('KMAC_CMD', write_mask=0x3f)
-        self.KMAC_BYTE_STROBE = DumbISPR('KMAC_BYTE_STROBE', width=32)
         self.MAI_CTRL = MaiCtrlCSR()
         self.MAI_STATUS = MaiStatusCSR()
 
@@ -73,17 +61,13 @@ class CSRFile:
         self._by_addr: Dict[CsrAddrs, Any] = {
             CsrAddrs.FLAGS: self.flags,
             CsrAddrs.RND_PREFETCH: self.RND_PREFETCH,
-            CsrAddrs.KMAC_IF_STATUS: self.KMAC_IF_STATUS,
-            CsrAddrs.KMAC_INTR: self.KMAC_INTR,
+            CsrAddrs.KMAC_STATUS: self.KMAC_STATUS,
+            CsrAddrs.KMAC_CTRL: self.KMAC_CTRL,
             CsrAddrs.KMAC_CFG: self.KMAC_CFG,
-            CsrAddrs.KMAC_MSG_SEND: self.KMAC_MSG_SEND,
-            CsrAddrs.KMAC_CMD: self.KMAC_CMD,
-            CsrAddrs.KMAC_BYTE_STROBE: self.KMAC_BYTE_STROBE,
+            CsrAddrs.KMAC_STRB: self.KMAC_STRB,
             CsrAddrs.MAI_CTRL: self.MAI_CTRL,
             CsrAddrs.RND: self.RND,
             CsrAddrs.URND: self.URND,
-            CsrAddrs.KMAC_STATUS: self.KMAC_STATUS,
-            CsrAddrs.KMAC_ERROR: self.KMAC_ERROR,
             CsrAddrs.MAI_STATUS: self.MAI_STATUS,
         }
 
@@ -154,41 +138,29 @@ class CSRFile:
     def commit(self) -> None:
         self.flags.commit()
         self.KMAC_STATUS.commit()
-        self.KMAC_IF_STATUS.commit()
-        self.KMAC_INTR.commit()
-        self.KMAC_ERROR.commit()
+        self.KMAC_CTRL.commit()
         self.KMAC_CFG.commit()
-        self.KMAC_MSG_SEND.commit()
-        self.KMAC_CMD.commit()
-        self.KMAC_BYTE_STROBE.commit()
+        self.KMAC_STRB.commit()
         self.MAI_CTRL.commit()
         self.MAI_STATUS.commit()
 
     def abort(self) -> None:
         self.flags.abort()
         self.KMAC_STATUS.abort()
-        self.KMAC_IF_STATUS.abort()
-        self.KMAC_INTR.abort()
-        self.KMAC_ERROR.abort()
+        self.KMAC_CTRL.abort()
         self.KMAC_CFG.abort()
-        self.KMAC_MSG_SEND.abort()
-        self.KMAC_CMD.abort()
-        self.KMAC_BYTE_STROBE.abort()
+        self.KMAC_STRB.abort()
         self.MAI_CTRL.abort()
-        # The MAI_STATUS is always committed because only the MAI updates it.
+        # MAI_STATUS is always committed because only the MAI updates it.
         self.MAI_STATUS.commit()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
         ret += self.flags.changes()
         ret += self.KMAC_STATUS.changes()
-        ret += self.KMAC_IF_STATUS.changes()
-        ret += self.KMAC_INTR.changes()
-        ret += self.KMAC_ERROR.changes()
+        ret += self.KMAC_CTRL.changes()
         ret += self.KMAC_CFG.changes()
-        ret += self.KMAC_MSG_SEND.changes()
-        ret += self.KMAC_CMD.changes()
-        ret += self.KMAC_BYTE_STROBE.changes()
+        ret += self.KMAC_STRB.changes()
         ret += self.MAI_CTRL.changes()
         ret += self.MAI_STATUS.changes()
         return ret
