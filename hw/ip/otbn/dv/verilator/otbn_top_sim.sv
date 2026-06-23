@@ -125,7 +125,10 @@ module otbn_top_sim (
     .software_errs_fatal_i       ( 1'b0                       ),
 
     .sideload_key_shares_i       ( sideload_key_shares        ),
-    .sideload_key_shares_valid_i ( 2'b11                      )
+    .sideload_key_shares_valid_i ( 2'b11                      ),
+
+    .kmac_app_req_o(    ),
+    .kmac_app_rsp_i( '0 )
   );
 
   // The values returned by the mock EDN must match those set in `standalonesim.py`.

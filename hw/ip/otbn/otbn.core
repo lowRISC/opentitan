@@ -22,6 +22,8 @@ filesets:
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:otbn_pkg
       - lowrisc:prim:onehot_check
+      - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:sha3
     files:
       - rtl/otbn_controller.sv
       - rtl/otbn_decoder.sv
@@ -40,6 +42,7 @@ filesets:
       - rtl/otbn_mac_bignum.sv
       - rtl/otbn_mai.sv
       - rtl/otbn_mask_accelerator.sv
+      - rtl/otbn_kmac_if.sv
       - rtl/otbn_mod_result_selector.sv
       - rtl/otbn_loop_controller.sv
       - rtl/otbn_stack.sv
