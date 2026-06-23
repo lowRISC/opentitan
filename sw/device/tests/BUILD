@@ -3183,6 +3183,32 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "otbn_kmac_test",
+    srcs = ["otbn_kmac_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        DARJEELING_TEST_ENVS,
+        {
+            # KMAC app interface on OTBN is not available on FPGA or silicon yet.
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:kmac_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/kmac:kmac_tlt_test",
+    ],
+)
+
+opentitan_test(
     name = "otbn_isa_test",
     srcs = ["otbn_isa_test.c"],
     exec_env = dicts.add(
