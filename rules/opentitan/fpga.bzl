@@ -5,7 +5,6 @@
 load(
     "@lowrisc_opentitan//rules/opentitan:providers.bzl",
     "Cw305BinaryInfo",
-    "Cw310BinaryInfo",
     "Cw340BinaryInfo",
 )
 load(
