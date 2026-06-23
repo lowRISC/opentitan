@@ -26,6 +26,7 @@ class Top:
 
     def __init__(self, name: str, regwidth: int, addr_spaces: Set[str],
                  blocks: Dict[str, IpBlock], instances: Dict[str, str],
+                 inst_domains: Dict[str, str],
                  if_addrs: Dict[Tuple[str, Optional[str]], Dict[str, int]],
                  windows: List[Window], attrs: Dict[str, str]):
         '''Class initializer.
@@ -38,6 +39,10 @@ class Top:
         instances is a map from instance name to the name of the block it
         instantiates. Every block name that appears in instances must be a key
         of blocks.
+
+        inst_domains is a map from instance name to its power domain. This info
+        is required in ralgen to generate the correct path to each instance for
+        the chip/top-level RAL.
 
         if_addrs is a dictionary that maps the name of a device interface on
         some instance of some block to its base address. A key of the form (n,
@@ -56,6 +61,7 @@ class Top:
         self.addr_spaces = addr_spaces
         self.blocks = blocks
         self.instances = instances
+        self.inst_domains = inst_domains
         self.if_addrs = if_addrs
         self.attrs = attrs
 

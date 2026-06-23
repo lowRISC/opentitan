@@ -846,17 +846,20 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
     # Generate a map from instance name to the block that it instantiates,
     # together with a map of interface addresses.
     inst_to_block: Dict[str, str] = {}
+    inst_to_domain: Dict[str, str] = {}
     if_addrs: Dict[Tuple[str, Optional[str]], int] = {}
     attrs: Dict[str, str] = {}
 
     for module in top["module"]:
         inst_name = module["name"]
         block_name = module["type"]
+        block_domain = module["domain"]
         block = name_to_block[block_name]
         if "attr" in module:
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
+        inst_to_domain[inst_name] = block_domain
         for if_name in block.reg_blocks.keys():
             base_addrs = module["base_addrs"].get(if_name)
             if base_addrs is None:
@@ -961,7 +964,7 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
             del name_to_block[t]
 
     addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
-    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
+    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block, inst_to_domain,
                if_addrs, [], attrs)
 
     # generate the top ral model with template
