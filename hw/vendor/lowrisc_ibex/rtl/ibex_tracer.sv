@@ -1074,7 +1074,6 @@ module ibex_tracer (
         INSN_BINV:      decode_r_insn("binv");
         INSN_BEXT:      decode_r_insn("bext");
         // RV32B - ZBP
-        INSN_GREV:       decode_r_insn("grev");
         INSN_GREVI: begin
           unique casez (rvfi_insn)
             INSN_REV_P:  decode_r1_insn("rev.p");

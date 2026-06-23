@@ -240,7 +240,6 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_UNZIP =
       { 6'b000010, 2'h?, 4'b1111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
 
-  parameter logic [31:0] INSN_GREV   = { 7'b0110100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_GORC   = { 7'b0010100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_SHFL   = { 7'b0000100, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_UNSHFL = { 7'b0000100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };

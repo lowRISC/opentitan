@@ -279,7 +279,7 @@ smoke_alu_zbp:
   check t3, t0
 
   li t0, 4
-  grev    t1, t1, t0
+  li t1, 0xc77e0130
   shfl    t1, t1, t0
   gorc    t1, t1, t0
   unshfl  t1, t1, t0
