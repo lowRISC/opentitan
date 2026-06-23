@@ -167,11 +167,6 @@ package ibex_pkg;
     ALU_BINV,
     ALU_BEXT,
 
-    // Bit Compress / Decompress
-    // RV32B
-    ALU_BCOMPRESS,
-    ALU_BDECOMPRESS,
-
     // Bit Field Place
     // RV32B
     ALU_BFP,

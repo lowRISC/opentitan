@@ -258,10 +258,6 @@ package ibex_tracer_pkg;
   // fsri.
   parameter logic [31:0] INSN_SROI   = { 5'b00100  , 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
 
-  // ZBE
-  parameter logic [31:0] INSN_BDECOMPRESS = {7'b0100100, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
-  parameter logic [31:0] INSN_BCOMPRESS   = {7'b0000100, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
-
   // ZBT
   parameter logic [31:0] INSN_FSRI = { 5'h?, 1'b1, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
 

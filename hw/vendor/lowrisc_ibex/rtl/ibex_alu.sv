@@ -20,9 +20,9 @@ module ibex_alu #(
 
   input  logic              multdiv_sel_i,
 
-  input  logic [31:0]       imd_val_q_i[2],
-  output logic [31:0]       imd_val_d_o[2],
-  output logic [1:0]        imd_val_we_o,
+  input  logic [31:0]       imd_val_q_i,
+  output logic [31:0]       imd_val_d_o,
+  output logic              imd_val_we_o,
 
   output logic [31:0]       adder_result_o,
   output logic [33:0]       adder_result_ext_o,
@@ -404,8 +404,6 @@ module ibex_alu #(
   logic [31:0] rev_result;
   logic [31:0] shuffle_result;
   logic [31:0] xperm_result;
-  logic [31:0] butterfly_result;
-  logic [31:0] invbutterfly_result;
   logic [31:0] clmul_result;
   logic [31:0] multicycle_result;
 
@@ -415,12 +413,9 @@ module ibex_alu #(
     // Bitcounting //
     /////////////////
 
-    // The bit-counter structure computes the number of set bits in its operand. Partial results
-    // (from left to right) are needed to compute the control masks for computation of
-    // bcompress/bdecompress by the butterfly network, if implemented.
+    // The bit-counter structure computes the number of set bits in its operand.
     // For cpop, clz and ctz, only the end result is used.
 
-    logic        zbe_op;
     logic        bitcnt_ctz;
     logic        bitcnt_clz;
     logic        bitcnt_cz;
@@ -428,8 +423,6 @@ module ibex_alu #(
     logic [31:0] bitcnt_mask_op;
     logic [31:0] bitcnt_bit_mask;
     logic [ 5:0] bitcnt_partial [32];
-    logic [31:0] bitcnt_partial_lsb_d;
-    logic [31:0] bitcnt_partial_msb_d;
 
 
     assign bitcnt_ctz    = operator_i == ALU_CTZ;
@@ -453,11 +446,8 @@ module ibex_alu #(
       bitcnt_bit_mask = ~bitcnt_bit_mask;
     end
 
-    assign zbe_op = (operator_i == ALU_BCOMPRESS) | (operator_i == ALU_BDECOMPRESS);
-
     always_comb begin
       unique case (1'b1)
-        zbe_op:      bitcnt_bits = operand_b_i;
         bitcnt_cz:   bitcnt_bits = bitcnt_bit_mask & ~bitcnt_mask_op; // clz / ctz
         default:     bitcnt_bits = operand_a_i; // cpop
       endcase
@@ -940,7 +930,7 @@ module ibex_alu #(
       // Select clmul input
       always_comb begin
         if (crc_op) begin
-          clmul_op_a = instr_first_cycle_i ? crc_operand : imd_val_q_i[0];
+          clmul_op_a = instr_first_cycle_i ? crc_operand : imd_val_q_i;
           clmul_op_b = instr_first_cycle_i ? crc_mu_rev : crc_poly;
         end else begin
           clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
@@ -993,208 +983,6 @@ module ibex_alu #(
       assign crc_hmode            = '0;
     end
 
-    if (RV32B == RV32BFull) begin : gen_alu_rvb_full
-
-      ///////////////
-      // Butterfly //
-      ///////////////
-
-      // The butterfly / inverse butterfly network executing bcompress/bdecompress (zbe)
-      // instructions. For bdecompress, the control bits mask of a local left region is generated
-      // by the inverse of a n-bit left rotate and complement upon wrap (LROTC) operation by the
-      // number of ones in the deposit bitmask to the right of the segment. n hereby denotes the
-      // width of the according segment. The bitmask for a pertaining local right region is equal
-      // to the corresponding local left region. Bcompress uses an analogue inverse process.
-      // Consider the following 8-bit example.  For details, see Hilewitz et al. "Fast Bit Gather,
-      // Bit Scatter and Bit Permuation Instructions for Commodity Microprocessors", (2008).
-      //
-      // The bcompress/bdecompress instructions are completed in 2 cycles. In the first cycle, the
-      // control bitmask is prepared by executing the parallel prefix bit count. In the second
-      // cycle, the bit swapping is executed according to the control masks.
-
-      // 8-bit example:  (Hilewitz et al.)
-      // Consider the instruction bdecompress operand_a_i deposit_mask
-      // Let operand_a_i = 8'babcd_efgh
-      //    deposit_mask = 8'b1010_1101
-      //
-      // control bitmask for stage 1:
-      //  - number of ones in the right half of the deposit bitmask: 3
-      //  - width of the segment: 4
-      //  - control bitmask = ~LROTC(4'b0, 3)[3:0] = 4'b1000
-      //
-      // control bitmask:   c3 c2  c1 c0  c3 c2  c1 c0
-      //                    1  0   0  0   1  0   0  0
-      //                    <- L ----->   <- R ----->
-      // operand_a_i        a  b   c  d   e  f   g  h
-      //                    :\ |   |  |  /:  |   |  |
-      //                    : +|---|--|-+ :  |   |  |
-      //                    :/ |   |  |  \:  |   |  |
-      // stage 1            e  b   c  d   a  f   g  h
-      //                    <L->   <R->   <L->   <R->
-      // control bitmask:   c3 c2  c3 c2  c1 c0  c1 c0
-      //                    1  1   1  1   1  0   1  0
-      //                    :\ :\ /: /:   :\ |  /:  |
-      //                    : +:-+-:+ :   : +|-+ :  |
-      //                    :/ :/ \: \:   :/ |  \:  |
-      // stage 2            c  d   e  b   g  f   a  h
-      //                    L  R   L  R   L  R   L  R
-      // control bitmask:   c3 c3  c2 c2  c1 c1  c0 c0
-      //                    1  1   0  0   1  1   0  0
-      //                    :\/:   |  |   :\/:   |  |
-      //                    :  :   |  |   :  :   |  |
-      //                    :/\:   |  |   :/\:   |  |
-      // stage 3            d  c   e  b   f  g   a  h
-      // & deposit bitmask: 1  0   1  0   1  1   0  1
-      // result:            d  0   e  0   f  g   0  h
-
-      logic [ 5:0] bitcnt_partial_q [32];
-
-      // first cycle
-      // Store partial bitcnts
-      for (genvar i = 0; i < 32; i++) begin : gen_bitcnt_reg_in_lsb
-        assign bitcnt_partial_lsb_d[i] = bitcnt_partial[i][0];
-      end
-
-      for (genvar i = 0; i < 16; i++) begin : gen_bitcnt_reg_in_b1
-        assign bitcnt_partial_msb_d[i] = bitcnt_partial[2*i+1][1];
-      end
-
-      for (genvar i = 0; i < 8; i++) begin : gen_bitcnt_reg_in_b2
-        assign bitcnt_partial_msb_d[16+i] = bitcnt_partial[4*i+3][2];
-      end
-
-      for (genvar i = 0; i < 4; i++) begin : gen_bitcnt_reg_in_b3
-        assign bitcnt_partial_msb_d[24+i] = bitcnt_partial[8*i+7][3];
-      end
-
-      for (genvar i = 0; i < 2; i++) begin : gen_bitcnt_reg_in_b4
-        assign bitcnt_partial_msb_d[28+i] = bitcnt_partial[16*i+15][4];
-      end
-
-      assign bitcnt_partial_msb_d[30] = bitcnt_partial[31][5];
-      assign bitcnt_partial_msb_d[31] = 1'b0; // unused
-
-      // Second cycle
-      // Load partial bitcnts
-      always_comb begin
-        bitcnt_partial_q = '{default: '0};
-
-        for (int unsigned i = 0; i < 32; i++) begin : gen_bitcnt_reg_out_lsb
-          bitcnt_partial_q[i][0] = imd_val_q_i[0][i];
-        end
-
-        for (int unsigned i = 0; i < 16; i++) begin : gen_bitcnt_reg_out_b1
-          bitcnt_partial_q[2*i+1][1] = imd_val_q_i[1][i];
-        end
-
-        for (int unsigned i = 0; i < 8; i++) begin : gen_bitcnt_reg_out_b2
-          bitcnt_partial_q[4*i+3][2] = imd_val_q_i[1][16+i];
-        end
-
-        for (int unsigned i = 0; i < 4; i++) begin : gen_bitcnt_reg_out_b3
-          bitcnt_partial_q[8*i+7][3] = imd_val_q_i[1][24+i];
-        end
-
-        for (int unsigned i = 0; i < 2; i++) begin : gen_bitcnt_reg_out_b4
-          bitcnt_partial_q[16*i+15][4] = imd_val_q_i[1][28+i];
-        end
-
-        bitcnt_partial_q[31][5] = imd_val_q_i[1][30];
-      end
-
-      logic [31:0] butterfly_mask_l[5];
-      logic [31:0] butterfly_mask_r[5];
-      logic [31:0] butterfly_mask_not[5];
-      logic [31:0] lrotc_stage [5]; // left rotate and complement upon wrap
-
-      // number of bits in local r = 32 / 2**(stage + 1) = 16/2**stage
-      `define _N(stg) (16 >> stg)
-
-      // bcompress / bdecompress control bit generation
-      for (genvar stg = 0; stg < 5; stg++) begin : gen_butterfly_ctrl_stage
-        // number of segs: 2** stg
-        for (genvar seg=0; seg<2**stg; seg++) begin : gen_butterfly_ctrl
-
-          assign lrotc_stage[stg][2*`_N(stg)*(seg+1)-1 : 2*`_N(stg)*seg] =
-              {{`_N(stg){1'b0}},{`_N(stg){1'b1}}} <<
-                bitcnt_partial_q[`_N(stg)*(2*seg+1)-1][$clog2(`_N(stg)):0];
-
-          assign butterfly_mask_l[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)]
-                   = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
-
-          assign butterfly_mask_r[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]
-                   = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
-
-          assign butterfly_mask_l[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]   = '0;
-          assign butterfly_mask_r[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)] = '0;
-        end
-      end
-      `undef _N
-
-      for (genvar stg = 0; stg < 5; stg++) begin : gen_butterfly_not
-        assign butterfly_mask_not[stg] =
-            ~(butterfly_mask_l[stg] | butterfly_mask_r[stg]);
-      end
-
-      always_comb begin
-        butterfly_result = operand_a_i;
-
-        butterfly_result = butterfly_result & butterfly_mask_not[0] |
-            ((butterfly_result & butterfly_mask_l[0]) >> 16)|
-            ((butterfly_result & butterfly_mask_r[0]) << 16);
-
-        butterfly_result = butterfly_result & butterfly_mask_not[1] |
-            ((butterfly_result & butterfly_mask_l[1]) >> 8)|
-            ((butterfly_result & butterfly_mask_r[1]) << 8);
-
-        butterfly_result = butterfly_result & butterfly_mask_not[2] |
-            ((butterfly_result & butterfly_mask_l[2]) >> 4)|
-            ((butterfly_result & butterfly_mask_r[2]) << 4);
-
-        butterfly_result = butterfly_result & butterfly_mask_not[3] |
-            ((butterfly_result & butterfly_mask_l[3]) >> 2)|
-            ((butterfly_result & butterfly_mask_r[3]) << 2);
-
-        butterfly_result = butterfly_result & butterfly_mask_not[4] |
-            ((butterfly_result & butterfly_mask_l[4]) >> 1)|
-            ((butterfly_result & butterfly_mask_r[4]) << 1);
-
-        butterfly_result = butterfly_result & operand_b_i;
-      end
-
-      always_comb begin
-        invbutterfly_result = operand_a_i & operand_b_i;
-
-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[4] |
-            ((invbutterfly_result & butterfly_mask_l[4]) >> 1)|
-            ((invbutterfly_result & butterfly_mask_r[4]) << 1);
-
-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[3] |
-            ((invbutterfly_result & butterfly_mask_l[3]) >> 2)|
-            ((invbutterfly_result & butterfly_mask_r[3]) << 2);
-
-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[2] |
-            ((invbutterfly_result & butterfly_mask_l[2]) >> 4)|
-            ((invbutterfly_result & butterfly_mask_r[2]) << 4);
-
-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[1] |
-            ((invbutterfly_result & butterfly_mask_l[1]) >> 8)|
-            ((invbutterfly_result & butterfly_mask_r[1]) << 8);
-
-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[0] |
-            ((invbutterfly_result & butterfly_mask_l[0]) >> 16)|
-            ((invbutterfly_result & butterfly_mask_r[0]) << 16);
-      end
-    end else begin : gen_alu_rvb_not_full
-      logic [31:0] unused_imd_val_q_1;
-      assign unused_imd_val_q_1   = imd_val_q_i[1];
-      assign butterfly_result     = '0;
-      assign invbutterfly_result  = '0;
-      // support signals
-      assign bitcnt_partial_lsb_d = '0;
-      assign bitcnt_partial_msb_d = '0;
-    end
-
     //////////////////////////////////////
     // Multicycle Bitmanip Instructions //
     //////////////////////////////////////
@@ -1205,37 +993,37 @@ module ibex_alu #(
     always_comb begin
       unique case (operator_i)
         ALU_CMOV: begin
-          multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i[0];
-          imd_val_d_o = '{operand_a_i, 32'h0};
+          multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i;
+          imd_val_d_o = operand_a_i;
           if (instr_first_cycle_i) begin
-            imd_val_we_o = 2'b01;
+            imd_val_we_o = 1'b1;
           end else begin
-            imd_val_we_o = 2'b00;
+            imd_val_we_o = 1'b0;
           end
         end
 
         ALU_CMIX: begin
-          multicycle_result = imd_val_q_i[0] | bwlogic_and_result;
-          imd_val_d_o = '{bwlogic_and_result, 32'h0};
+          multicycle_result = imd_val_q_i | bwlogic_and_result;
+          imd_val_d_o = bwlogic_and_result;
           if (instr_first_cycle_i) begin
-            imd_val_we_o = 2'b01;
+            imd_val_we_o = 1'b1;
           end else begin
-            imd_val_we_o = 2'b00;
+            imd_val_we_o = 1'b0;
           end
         end
 
         ALU_FSR, ALU_FSL,
         ALU_ROL, ALU_ROR: begin
           if (shift_amt[4:0] == 5'h0) begin
-            multicycle_result = shift_amt[5] ? operand_a_i : imd_val_q_i[0];
+            multicycle_result = shift_amt[5] ? operand_a_i : imd_val_q_i;
           end else begin
-            multicycle_result = imd_val_q_i[0] | shift_result;
+            multicycle_result = imd_val_q_i | shift_result;
           end
-          imd_val_d_o = '{shift_result, 32'h0};
+          imd_val_d_o = shift_result;
           if (instr_first_cycle_i) begin
-            imd_val_we_o = 2'b01;
+            imd_val_we_o = 1'b1;
           end else begin
-            imd_val_we_o = 2'b00;
+            imd_val_we_o = 1'b0;
           end
         end
 
@@ -1248,39 +1036,22 @@ module ibex_alu #(
               crc_hmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 16);
               default:   multicycle_result = clmul_result_rev;
             endcase
-            imd_val_d_o = '{clmul_result_rev, 32'h0};
+            imd_val_d_o = clmul_result_rev;
             if (instr_first_cycle_i) begin
-              imd_val_we_o = 2'b01;
+              imd_val_we_o = 1'b1;
             end else begin
-              imd_val_we_o = 2'b00;
+              imd_val_we_o = 1'b0;
             end
           end else begin
-            imd_val_d_o = '{operand_a_i, 32'h0};
-            imd_val_we_o = 2'b00;
-            multicycle_result = '0;
-          end
-        end
-
-        ALU_BCOMPRESS, ALU_BDECOMPRESS: begin
-          if (RV32B == RV32BFull) begin
-            multicycle_result = (operator_i == ALU_BDECOMPRESS) ? butterfly_result :
-                                                                  invbutterfly_result;
-            imd_val_d_o = '{bitcnt_partial_lsb_d, bitcnt_partial_msb_d};
-            if (instr_first_cycle_i) begin
-              imd_val_we_o = 2'b11;
-            end else begin
-              imd_val_we_o = 2'b00;
-            end
-          end else begin
-            imd_val_d_o = '{operand_a_i, 32'h0};
-            imd_val_we_o = 2'b00;
+            imd_val_d_o = operand_a_i;
+            imd_val_we_o = 1'b0;
             multicycle_result = '0;
           end
         end
 
         default: begin
-          imd_val_d_o = '{operand_a_i, 32'h0};
-          imd_val_we_o = 2'b00;
+          imd_val_d_o = operand_a_i;
+          imd_val_we_o = 1'b0;
           multicycle_result = '0;
         end
       endcase
@@ -1288,12 +1059,8 @@ module ibex_alu #(
 
 
   end else begin : g_no_alu_rvb
-    logic [31:0] unused_imd_val_q[2];
-    assign unused_imd_val_q           = imd_val_q_i;
-    logic [31:0] unused_butterfly_result;
-    assign unused_butterfly_result    = butterfly_result;
-    logic [31:0] unused_invbutterfly_result;
-    assign unused_invbutterfly_result = invbutterfly_result;
+    logic [31:0] unused_imd_val_q;
+    assign unused_imd_val_q    = imd_val_q_i;
     // RV32B result signals
     assign bitcnt_result       = '0;
     assign minmax_result       = '0;
@@ -1303,13 +1070,11 @@ module ibex_alu #(
     assign rev_result          = '0;
     assign shuffle_result      = '0;
     assign xperm_result        = '0;
-    assign butterfly_result    = '0;
-    assign invbutterfly_result = '0;
     assign clmul_result        = '0;
     assign multicycle_result   = '0;
     // RV32B support signals
-    assign imd_val_d_o         = '{default: '0};
-    assign imd_val_we_o        = '{default: '0};
+    assign imd_val_d_o         = '0;
+    assign imd_val_we_o        = '0;
   end
 
   ////////////////
@@ -1372,9 +1137,7 @@ module ibex_alu #(
       // Cyclic Redundancy Checks (RV32B)
       ALU_CRC32_W, ALU_CRC32C_W,
       ALU_CRC32_H, ALU_CRC32C_H,
-      ALU_CRC32_B, ALU_CRC32C_B,
-      // Bit Compress / Decompress (RV32B)
-      ALU_BCOMPRESS, ALU_BDECOMPRESS: result_o = multicycle_result;
+      ALU_CRC32_B, ALU_CRC32C_B: result_o = multicycle_result;
 
       // Single-Bit Bitmanip Operations (RV32B)
       ALU_BSET, ALU_BCLR,

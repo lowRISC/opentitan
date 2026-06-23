@@ -62,9 +62,9 @@ module ibex_ex_block #(
   logic        alu_cmp_result, alu_is_equal_result;
   logic        multdiv_valid;
   logic        multdiv_sel;
-  logic [31:0] alu_imd_val_q[2];
-  logic [31:0] alu_imd_val_d[2];
-  logic [ 1:0] alu_imd_val_we;
+  logic [31:0] alu_imd_val_q;
+  logic [31:0] alu_imd_val_d;
+  logic        alu_imd_val_we;
   logic [33:0] multdiv_imd_val_d[2];
   logic [ 1:0] multdiv_imd_val_we;
 
@@ -80,11 +80,11 @@ module ibex_ex_block #(
   end
 
   // Intermediate Value Register Mux
-  assign imd_val_d_o[0] = multdiv_sel ? multdiv_imd_val_d[0] : {2'b0, alu_imd_val_d[0]};
-  assign imd_val_d_o[1] = multdiv_sel ? multdiv_imd_val_d[1] : {2'b0, alu_imd_val_d[1]};
-  assign imd_val_we_o   = multdiv_sel ? multdiv_imd_val_we : alu_imd_val_we;
+  assign imd_val_d_o[0] = multdiv_sel ? multdiv_imd_val_d[0] : {2'b0, alu_imd_val_d};
+  assign imd_val_d_o[1] = multdiv_sel ? multdiv_imd_val_d[1] : 34'd0;
+  assign imd_val_we_o   = multdiv_sel ? multdiv_imd_val_we   : {1'b0, alu_imd_val_we};
 
-  assign alu_imd_val_q = '{imd_val_q_i[0][31:0], imd_val_q_i[1][31:0]};
+  assign alu_imd_val_q = imd_val_q_i[0][31:0];
 
   assign result_ex_o  = multdiv_sel ? multdiv_result : alu_result;
 
