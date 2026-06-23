@@ -15,7 +15,7 @@ An exec\_env defines everything about building and dispatching testing binaries 
 In addition to the resources needed to build and dispatch binaries (e.g. the test\_rom, linker scripts, signing keys, etc), the exec\_env also supplies some starlark functions to help the various environments perform the build and test actions.
 
 - Building
-  - An exec\_env-specific provider, such as `Cw310BinaryInfo` or `SimVerilatorBinaryInfo`.
+  - An exec\_env-specific provider, such as `Cw340BinaryInfo` or `SimVerilatorBinaryInfo`.
   - An exec\_env-specific `transform` function that converts binaries into the environment's required form (e.g. `vmem` files for DV or Verilator).
 - Testing
   - An exec\_env-specific `test_dispatch` function that configures the test environment and dispatches the binary to that environment.
@@ -47,7 +47,7 @@ opentitan_binary(
 The `opentitan_binary` rule builds and links the binary for each provided exec\_env.
 The rule emits several providers which are meant to be consumed by downstream rules.
 These include:
-- A per-exec\_env provider (ie: `Cw310BinaryInfo`).
+- A per-exec\_env provider (ie: `Cw340BinaryInfo`).
 - A `DefaultInfo` provider with the default binary form as specified by each exec\_env.
 - An `OutputGroupInfo` containing a field for every file produced in the build.
   These fields are of the form `{exec_env_name}_{artifact_type}`.

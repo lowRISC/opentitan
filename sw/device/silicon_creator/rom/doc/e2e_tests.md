@@ -33,9 +33,6 @@ The E2E ROM tests run on the CW310 FPGA board with the following configuration:
 ### JTAG adapter
 Some tests will use the JTAG interface to interact with OpenTitan, as the CW310 doesn't have a embedded JTAG adapter, we can use an external adapter (Olimex ARM-USB-TINY-H JTAG) connected to the J13 header in the CW310.
 
-### Full hardware setup
-![Full hardware setup](CW310_setup.png)
-
 ## Software setup
 The software dependencies are covered by other guides in this book and are linked below.
 - Clone the OpenTitan repository and install the software dependencies: [Get started](../../../../../doc/getting_started/README.md).
