@@ -2,49 +2,56 @@
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
 
+## Commonly used instances. Adapt only here if their location changes.
+set clkgen       clkgen/pll
+set u_ast        u_ast
+set u_clkmgr     top_*/*_pd_aon/u_clkmgr_aon
+set u_pinmux     top_*/*_pd_main/u_pinmux_aon
+set u_spi_device top_*/*_pd_main/u_spi_device
+
 ## Clock Signal
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports IO_CLK]
 
 ## Rename MMCM outputs for less bug-prone parsing.
 ## Some auto-derived clocks can have names that include brackets.
-create_generated_clock -name clk_main [get_pin clkgen/pll/CLKOUT0]
-create_generated_clock -name clk_io_pre [get_pin clkgen/pll/CLKOUT2]
-create_generated_clock -name clk_usb_48 [get_pin clkgen/pll/CLKOUT1]
-create_generated_clock -name clk_aon [get_pin clkgen/pll/CLKOUT4]
+create_generated_clock -name clk_main [get_pin ${clkgen}/CLKOUT0]
+create_generated_clock -name clk_io_pre [get_pin ${clkgen}/CLKOUT2]
+create_generated_clock -name clk_usb_48 [get_pin ${clkgen}/CLKOUT1]
+create_generated_clock -name clk_aon [get_pin ${clkgen}/CLKOUT4]
 
 # Create separate sets of clocks for the 48 MHz ext clock tree and the 96 MHz
 # I/O clock tree. Then make them physically exclusive, so they don't produce
 # invalid combinations.
 # The 48 MHz ext clocks all have a _lc suffix.
 create_generated_clock -name clk_io -divide_by 1 \
-    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/I] \
-    [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/O]
+    -source [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/I] \
+    [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/O]
 
-set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
+set u_div2 ${u_clkmgr}/u_no_scan_io_div2_div
 create_generated_clock -name clk_io_div2 -divide_by 2 \
     -add -master_clock clk_io \
-    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div2}/gen_div_bufg.u_bufg_div_full/O]
 set_clock_sense -stop_propagation -clocks clk_io \
     [get_pins ${u_div2}/gen_div_bufg.u_bufg_div_stepdown/I]
 
 
-set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
+set u_div4 ${u_clkmgr}/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -divide_by 4 \
     -add -master_clock clk_io \
-    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div4}/gen_div_bufg.u_bufg_div_full/O]
 set_clock_sense -stop_propagation -clocks clk_io \
     [get_pins ${u_div4}/gen_div_bufg.u_bufg_div_stepdown/I]
 
 
 create_generated_clock -name clk_io_ext_lc -divide_by 2 \
-    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/I] \
-    [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/O]
+    -source [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/I] \
+    [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/O]
 
 create_generated_clock -name clk_io_div2_ext_lc -divide_by 1 \
     -add -master_clock clk_io_ext_lc \
-    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div2}/gen_div_bufg.u_bufg_div_stepdown/O]
 
 set_clock_sense -stop_propagation -clocks clk_io_ext_lc \
@@ -52,7 +59,7 @@ set_clock_sense -stop_propagation -clocks clk_io_ext_lc \
 
 create_generated_clock -name clk_io_div4_ext_lc -divide_by 2 \
     -add -master_clock clk_io_ext_lc \
-    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins ${u_ast}/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div4}/gen_div_bufg.u_bufg_div_stepdown/O]
 
 set_clock_sense -stop_propagation -clocks clk_io_ext_lc \
@@ -76,7 +83,7 @@ set_input_delay -clock clk_usb_48 -add_delay -max 17 [get_ports {IO_USB_DP_RX IO
 # USB output max skew constraint
 # Use the output-enable as a "clock" and time the P/N relative to it. Keep the skew within T_FST.
 create_generated_clock -name usb_embed_out_clk -multiply_by 1 \
-    -source [get_pin clkgen/pll/CLKOUT1] \
+    -source [get_pin ${clkgen}/CLKOUT1] \
     [get_ports IO_USB_OE_N]
 set_output_delay -min -clock usb_embed_out_clk 7 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}]
 set_output_delay -max -clock usb_embed_out_clk 14 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}] -add_delay
@@ -92,9 +99,9 @@ set all_muxed_ports "${ioa_muxed_ports} ${iob_muxed_ports} ${ioc_muxed_ports} ${
 # Create clocks for the various TAPs.
 create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOR3]
 create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 \
-    [get_pins top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
+    [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
 create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 \
-    [get_pins top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
+    [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
 
 # Assign input and output delays.
 # Note that incidental combinatorial paths through the pinmux do not get removed
@@ -136,11 +143,11 @@ create_clock -add -name clk_spi  -period ${spi_dev_period} \
 create_generated_clock -name clk_spi_in  -divide_by 1 -add \
     -source [get_ports SPI_DEV_CLK] \
     -master_clock [get_clocks clk_spi] \
-    [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.bufg_i/O]
+    [get_pins ${u_spi_device}/u_clk_spi_in_buf/gen_fpga_buf.bufg_i/O]
 create_generated_clock -name clk_spi_out -divide_by 1 -invert -add \
     -source [get_ports SPI_DEV_CLK] \
     -master_clock [get_clocks clk_spi] \
-    [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.bufg_i/O]
+    [get_pins ${u_spi_device}/u_clk_spi_out_buf/gen_fpga_buf.bufg_i/O]
 
 set spi_dev_data [get_ports {SPI_DEV_D0 SPI_DEV_D1 SPI_DEV_D2 SPI_DEV_D3}]
 set_input_delay -clock clk_spi -clock_fall -min ${spi_dev_in_delay_min} ${spi_dev_data} -add_delay
@@ -181,7 +188,7 @@ set_multicycle_path -hold -end -from [get_clocks clk_spid_csb] \
 # filter result reached the gate before even the 7th clock edge got out.
 set_multicycle_path -hold -end 1 -from [get_clocks clk_spi] \
     -to [get_pins -filter "DIRECTION == IN && IS_LEAF" -of_objects \
-        [get_nets -segments top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+        [get_nets -segments ${u_spi_device}/u_passthrough/sck_gate_en]]
 # Since this section is for full-cycle sampling, move the capture edge out for
 # data driven clk_spi_in. These cases would actually wait for the clk_spi_out
 # edge to change the data on the port and get sampled by the host on the next
@@ -199,10 +206,10 @@ create_clock -add -name clk_spi_tpm -period ${spi_tpm_period} [get_ports SPI_DEV
 
 create_generated_clock -name clk_spi_tpm_in -divide_by 1 -add -master_clock clk_spi_tpm \
     -source [get_ports SPI_DEV_CLK] \
-    [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.bufg_i/O]
+    [get_pins ${u_spi_device}/u_clk_spi_in_buf/gen_fpga_buf.bufg_i/O]
 create_generated_clock -name clk_spi_tpm_out -divide_by 1 -add -master_clock clk_spi_tpm \
     -source [get_ports SPI_DEV_CLK] \
-    [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.bufg_i/O] -invert
+    [get_pins ${u_spi_device}/u_clk_spi_out_buf/gen_fpga_buf.bufg_i/O] -invert
 
 set_input_delay -clock clk_spi_tpm -clock_fall -min ${spi_dev_in_delay_min} \
     ${spi_dev_data} -add_delay
@@ -225,7 +232,7 @@ set_output_delay -clock clk_spi_tpm -max ${spi_dev_out_setup} ${spi_dev_data} -a
 # filter result reached the gate before even the 7th clock edge got out.
 set_multicycle_path -hold -end 1 -from [get_clocks clk_spi_tpm] \
     -to [get_pins -filter "DIRECTION == IN && IS_LEAF" -of_objects \
-        [get_nets -segments top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+        [get_nets -segments ${u_spi_device}/u_passthrough/sck_gate_en]]
 
 
 ## SPI Passthrough constraints
@@ -258,7 +265,7 @@ set_multicycle_path -hold 1 -end \
 
 ## SPI Host constraints
 # SPI Host clock origin buffer
-set spi_host_0_peri [get_pins top_*/u_clkmgr_aon/u_clk_io_peri_cg/gen_gate.u_bufgce/O]
+set spi_host_0_peri [get_pins ${u_clkmgr}/u_clk_io_peri_cg/gen_gate.u_bufgce/O]
 
 # Even though it's 2x the max possible frequency, keep the peripheral clock
 # frequency for the output. This will enable shifting the latch edge for hold
@@ -350,4 +357,4 @@ set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
-set_false_path -from [get_clocks clk_usb_48] -to [get_pins u_ast/u_ast_main/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/q_o_reg[0]/D]
+set_false_path -from [get_clocks clk_usb_48] -to [get_pins ${u_ast}/u_ast_main/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/q_o_reg[0]/D]
