@@ -272,11 +272,10 @@ smoke_alu_zbp:
   li t0, 0x00009fb6
   check t0, t2
 
+  li t0, 0x00f7f9ff
   li t2, 0x04030001
   xperm.n t3, t3, t2
   xperm.b t3, t3, t2
-  xperm.h t3, t3, t2
-  li t0, 0x000000f7
   check t3, t0
 
   li t0, 4

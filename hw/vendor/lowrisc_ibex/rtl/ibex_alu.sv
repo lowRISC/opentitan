@@ -656,8 +656,6 @@ module ibex_alu #(
       logic  [7:0]      vld_n; // nibbles
       logic  [3:0][1:0] sel_b; // bytes
       logic  [3:0]      vld_b; // bytes
-      logic  [1:0][0:0] sel_h; // half words
-      logic  [1:0]      vld_h; // half words
 
       // Per nibble, 3 bits are needed for the selection. Other bits must be zero.
       // sel_n bit mask: 32'b0111_0111_0111_0111_0111_0111_0111_0111
@@ -673,14 +671,6 @@ module ibex_alu #(
       for (genvar i = 0; i < 4; i++) begin : gen_sel_vld_b
         assign sel_b[i] =   operand_b_i[i*8     +: 2];
         assign vld_b[i] = ~|operand_b_i[i*8 + 2 +: 6];
-      end
-
-      // Per half word, 1 bit is needed for the selection only. All other bits must be zero.
-      // sel_h bit mask: 32'b0000_0000_0000_0001_0000_0000_0000_0001
-      // vld_h bit mask: 32'b1111_1111_1111_1110_1111_1111_1111_1110
-      for (genvar i = 0; i < 2; i++) begin : gen_sel_vld_h
-        assign sel_h[i] =   operand_b_i[i*16     +: 1];
-        assign vld_h[i] = ~|operand_b_i[i*16 + 1 +: 15];
       end
 
       // Convert selector indices and valid signals to control the nibble-based
@@ -701,17 +691,6 @@ module ibex_alu #(
               sel[b*2 +  0] =   {sel_b[b], 1'b0};
               sel[b*2 +  1] =   {sel_b[b], 1'b1};
               vld[b*2 +: 2] = {2{vld_b[b]}};
-            end
-          end
-
-          ALU_XPERM_H: begin
-            // Convert half-word to nibble indices.
-            for (int h = 0; h < 2; h++) begin
-              sel[h*4 +  0] =   {sel_h[h], 2'b00};
-              sel[h*4 +  1] =   {sel_h[h], 2'b01};
-              sel[h*4 +  2] =   {sel_h[h], 2'b10};
-              sel[h*4 +  3] =   {sel_h[h], 2'b11};
-              vld[h*4 +: 4] = {4{vld_h[h]}};
             end
           end
 
@@ -906,7 +885,7 @@ module ibex_alu #(
       ALU_SHFL, ALU_UNSHFL: result_o = shuffle_result;
 
       // Crossbar Permutation Operations (RV32B)
-      ALU_XPERM_N, ALU_XPERM_B, ALU_XPERM_H: result_o = xperm_result;
+      ALU_XPERM_N, ALU_XPERM_B: result_o = xperm_result;
 
       // Comparison Operations
       ALU_EQ,   ALU_NE,

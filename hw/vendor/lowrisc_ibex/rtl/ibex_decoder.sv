@@ -482,7 +482,6 @@ module ibex_decoder #(
             {7'b000_0100, 3'b101}, // unshfl
             {7'b001_0100, 3'b010}, // xperm.n
             {7'b001_0100, 3'b100}, // xperm.b
-            {7'b001_0100, 3'b110}, // xperm.h
             // RV32B zbc
             {7'b000_0101, 3'b001}, // clmul
             {7'b000_0101, 3'b010}, // clmulr
@@ -944,9 +943,6 @@ module ibex_decoder #(
             end
             {7'b001_0100, 3'b100}: begin
               if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_B;
-            end
-            {7'b001_0100, 3'b110}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_H;
             end
 
             // RV32B zbc

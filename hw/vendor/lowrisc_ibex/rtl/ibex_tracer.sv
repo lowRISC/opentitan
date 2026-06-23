@@ -1150,7 +1150,6 @@ module ibex_tracer (
         end
         INSN_XPERM_N:    decode_r_insn("xperm_n");
         INSN_XPERM_B:    decode_r_insn("xperm_b");
-        INSN_XPERM_H:    decode_r_insn("xperm_h");
 
         // RV32B - ZBC
         INSN_CLMUL:      decode_r_insn("clmul");
