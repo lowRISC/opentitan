@@ -45,7 +45,6 @@ test_main:
   jal smoke_alu_zbp
   jal smoke_alu_zbs
   jal smoke_alu_b_misc
-  jal smoke_alu_zbt
   jal smoke_alu_b_imm
   jal smoke_csr
   jal smoke_fence
@@ -309,29 +308,6 @@ smoke_alu_zbs:
   ret
 
 /**
- * Checks the instructions from the zbt extension
- */
-smoke_alu_zbt:
-  .option push
-  .option arch, +zbt0p93
-  li t0, 7
-  li t1, 4
-  li t2, 0x5d76fb6b
-  li t3, 0xe5693902
-  fsl t2, t2, t3, t0
-  fsr t2, t2, t3, t1
-  cmix t2, t0, t2, t3
-
-  li   t1, 0xe5693907
-  check  t1, t2
-
-  cmov t2, t0, t3, t2
-  check  t2, t3
-  .option pop
-
-  ret
-
-/**
  * Checks the `slo` and `sro` instructions
  */
 smoke_alu_b_misc:
@@ -361,11 +337,6 @@ smoke_alu_b_imm:
   bseti t0, t0, 31
   binvi t0, t0, 19
   bexti t1, t0, 8
-  // zbt
-  .option push
-  .option arch, +zbt0p93
-  fsri  t0, t0, t1, 4
-  .option pop
   //sroi  t0, t0, 5
   .insn i OP_IMM, 0b101, t0, t0, 0x205
   // zbb
@@ -379,7 +350,7 @@ smoke_alu_b_imm:
   unshfli t0, t0, 4
   .option pop
 
-  li t1, 0xf0ffafff
+  li t1, 0xffffff0f
   check t0, t1
   ret
 

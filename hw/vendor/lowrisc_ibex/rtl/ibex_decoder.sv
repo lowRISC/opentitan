@@ -394,7 +394,7 @@ module ibex_decoder #(
 
           3'b101: begin
             if (instr[26]) begin
-              illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;                       // fsri
+              illegal_insn = 1'b1;                                                     // fsri removed
             end else begin
               unique case (instr[31:27])
                 5'b0_0000,                                                             // srli
@@ -445,7 +445,7 @@ module ibex_decoder #(
         rf_ren_b_o      = 1'b1;
         rf_we           = 1'b1;
         if ({instr[26], instr[13:12]} == {1'b1, 2'b01}) begin
-          illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // cmix / cmov / fsl / fsr
+          illegal_insn = 1'b1; // cmix / cmov / fsl / fsr removed
         end else begin
           unique case ({instr[31:25], instr[14:12]})
             // RV32I ALU operations
@@ -851,13 +851,7 @@ module ibex_decoder #(
           3'b101: begin
             if (RV32B != RV32BNone) begin
               if (instr_alu[26] == 1'b1) begin
-                alu_operator_o = ALU_FSR;
-                alu_multicycle_o = 1'b1;
-                if (instr_first_cycle_i) begin
-                  use_rs3_d = 1'b1;
-                end else begin
-                  use_rs3_d = 1'b0;
-                end
+                // fsri removed; illegal encoding.
               end else begin
                 unique case (instr_alu[31:27])
                   5'b0_0000: alu_operator_o = ALU_SRL;   // Shift Right Logical by Immediate
@@ -901,47 +895,7 @@ module ibex_decoder #(
         alu_op_b_mux_sel_o = OP_B_REG_B;
 
         if (instr_alu[26]) begin
-          if (RV32B != RV32BNone) begin
-            unique case ({instr_alu[26:25], instr_alu[14:12]})
-              {2'b11, 3'b001}: begin
-                alu_operator_o   = ALU_CMIX; // cmix
-                alu_multicycle_o = 1'b1;
-                if (instr_first_cycle_i) begin
-                  use_rs3_d = 1'b1;
-                end else begin
-                  use_rs3_d = 1'b0;
-                end
-              end
-              {2'b11, 3'b101}: begin
-                alu_operator_o   = ALU_CMOV; // cmov
-                alu_multicycle_o = 1'b1;
-                if (instr_first_cycle_i) begin
-                  use_rs3_d = 1'b1;
-                end else begin
-                  use_rs3_d = 1'b0;
-                end
-              end
-              {2'b10, 3'b001}: begin
-                alu_operator_o   = ALU_FSL;  // fsl
-                alu_multicycle_o = 1'b1;
-                if (instr_first_cycle_i) begin
-                  use_rs3_d = 1'b1;
-                end else begin
-                  use_rs3_d = 1'b0;
-                end
-              end
-              {2'b10, 3'b101}: begin
-                alu_operator_o   = ALU_FSR;  // fsr
-                alu_multicycle_o = 1'b1;
-                if (instr_first_cycle_i) begin
-                  use_rs3_d = 1'b1;
-                end else begin
-                  use_rs3_d = 1'b0;
-                end
-              end
-              default: ;
-            endcase
-          end
+          // Ternary bitmanip ops (cmix/cmov/fsl/fsr) removed; these encodings are illegal.
         end else begin
           unique case ({instr_alu[31:25], instr_alu[14:12]})
             // RV32I ALU operations

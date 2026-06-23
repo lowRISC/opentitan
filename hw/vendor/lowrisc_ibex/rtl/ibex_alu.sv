@@ -178,8 +178,8 @@ module ibex_alu #(
 
   // The shifter structure consists of a 33-bit shifter: 32-bit operand + 1 bit extension for
   // arithmetic shifts and one-shift support.
-  // Rotations and funnel shifts are implemented as multi-cycle instructions.
-  // The shifter is also used for single-bit instructions and bit-field place as detailed below.
+  // Rotations are implemented as multi-cycle instructions.
+  // The shifter is also used for single-bit instructions as detailed below.
   //
   // Standard Shifts
   // ===============
@@ -201,28 +201,6 @@ module ibex_alu #(
   //   multicycle_result = (rs1 >> shift_amt) | (rs1 << (32 - shift_amt));
   //                       ^-- cycle 0 -----^ ^-- cycle 1 --------------^
   //
-  // Funnel Shifts
-  // -------------
-  // For funnel shifts, operand_a_i is tied to rs1 in the first cycle and rs3 in the
-  // second cycle. operand_b_i is always tied to rs2. The order of applying the shift amount or
-  // its complement is determined by bit [5] of shift_amt.
-  //
-  // Funnel shift Pseudocode: (fsl)
-  //  shift_amt = rs2 & 63;
-  //  shift_amt_compl = 32 - shift_amt[4:0]
-  //  if (shift_amt >=33):
-  //     multicycle_result = (rs1 >> shift_amt_compl[4:0]) | (rs3 << shift_amt[4:0]);
-  //                         ^-- cycle 0 ----------------^ ^-- cycle 1 ------------^
-  //  else if (shift_amt <= 31 && shift_amt > 0):
-  //     multicycle_result = (rs1 << shift_amt[4:0]) | (rs3 >> shift_amt_compl[4:0]);
-  //                         ^-- cycle 0 ----------^ ^-- cycle 1 -------------------^
-  //  For shift_amt == 0, 32, both shift_amt[4:0] and shift_amt_compl[4:0] == '0.
-  //  these cases need to be handled separately outside the shifting structure:
-  //  else if (shift_amt == 32):
-  //     multicycle_result = rs3
-  //  else if (shift_amt == 0):
-  //     multicycle_result = rs1.
-  //
   // Single-Bit Instructions
   // =======================
   // Single bit instructions operate on bit operand_b_i[4:0] of operand_a_i.
@@ -238,10 +216,9 @@ module ibex_alu #(
   logic       shift_left;
   logic       shift_ones;
   logic       shift_arith;
-  logic       shift_funnel;
   logic       shift_sbmode;
-  logic [5:0] shift_amt;
-  logic [5:0] shift_amt_compl; // complementary shift amount (32 - shift_amt)
+  logic [4:0] shift_amt;
+  logic [4:0] shift_amt_compl; // complementary shift amount (32 - shift_amt)
 
   logic        [31:0] shift_operand;
   logic signed [32:0] shift_result_ext_signed;
@@ -250,15 +227,10 @@ module ibex_alu #(
   logic        [31:0] shift_result;
   logic        [31:0] shift_result_rev;
 
-  // bit shift_amt[5]: word swap bit: only considered for FSL/FSR.
-  // if set, reverse operations in first and second cycle.
-  assign shift_amt[5] = operand_b_i[5] & shift_funnel;
   assign shift_amt_compl = 32 - operand_b_i[4:0];
 
   always_comb begin
-    shift_amt[4:0] = instr_first_cycle_i ?
-        (operand_b_i[5] && shift_funnel ? shift_amt_compl[4:0] : operand_b_i[4:0]) :
-        (operand_b_i[5] && shift_funnel ? operand_b_i[4:0] : shift_amt_compl[4:0]);
+    shift_amt[4:0] = instr_first_cycle_i ? operand_b_i[4:0] : shift_amt_compl[4:0];
   end
 
   // single-bit mode: shift
@@ -269,8 +241,6 @@ module ibex_alu #(
   // * a standard left shift (slo, sll)
   // * a rol in the first cycle
   // * a ror in the second cycle
-  // * fsl: without word-swap bit: first cycle, else: second cycle
-  // * fsr: without word-swap bit: second cycle, else: first cycle
   // * a single-bit instruction: bclr, bset, binv (excluding bext)
   always_comb begin
     unique case (operator_i)
@@ -278,10 +248,6 @@ module ibex_alu #(
       ALU_SLO: shift_left = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b1 : 1'b0;
       ALU_ROL: shift_left = (RV32B != RV32BNone) ? instr_first_cycle_i : 0;
       ALU_ROR: shift_left = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 0;
-      ALU_FSL: shift_left = (RV32B != RV32BNone) ?
-        (shift_amt[5] ? ~instr_first_cycle_i : instr_first_cycle_i) : 1'b0;
-      ALU_FSR: shift_left = (RV32B != RV32BNone) ?
-          (shift_amt[5] ? instr_first_cycle_i : ~instr_first_cycle_i) : 1'b0;
       default: shift_left = 1'b0;
     endcase
     if (shift_sbmode) begin
@@ -292,8 +258,6 @@ module ibex_alu #(
   assign shift_arith  = (operator_i == ALU_SRA);
   assign shift_ones   = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ?
       (operator_i == ALU_SLO) | (operator_i == ALU_SRO) : 1'b0;
-  assign shift_funnel = (RV32B != RV32BNone) ?
-      (operator_i == ALU_FSL) | (operator_i == ALU_FSR) : 1'b0;
 
   // shifter structure.
   always_comb begin
@@ -343,7 +307,6 @@ module ibex_alu #(
       ALU_XNOR,
       ALU_ORN,
       ALU_ANDN: bwlogic_op_b_negate = (RV32B != RV32BNone) ? 1'b1 : 1'b0;
-      ALU_CMIX: bwlogic_op_b_negate = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 1'b0;
       default:  bwlogic_op_b_negate = 1'b0;
     endcase
   end
@@ -876,36 +839,14 @@ module ibex_alu #(
     //////////////////////////////////////
     // Multicycle Bitmanip Instructions //
     //////////////////////////////////////
-    // Ternary instructions + Shift Rotations
-    // For ternary instructions (zbt), operand_a_i is tied to rs1 in the first cycle and rs3 in the
-    // second cycle. operand_b_i is always tied to rs2.
+    // Shift Rotations
+    // operand_a_i is tied to rs1, operand_b_i is tied to rs2.
 
     always_comb begin
       unique case (operator_i)
-        ALU_CMOV: begin
-          multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i;
-          imd_val_d_o = operand_a_i;
-          if (instr_first_cycle_i) begin
-            imd_val_we_o = 1'b1;
-          end else begin
-            imd_val_we_o = 1'b0;
-          end
-        end
-
-        ALU_CMIX: begin
-          multicycle_result = imd_val_q_i | bwlogic_and_result;
-          imd_val_d_o = bwlogic_and_result;
-          if (instr_first_cycle_i) begin
-            imd_val_we_o = 1'b1;
-          end else begin
-            imd_val_we_o = 1'b0;
-          end
-        end
-
-        ALU_FSR, ALU_FSL,
         ALU_ROL, ALU_ROR: begin
           if (shift_amt[4:0] == 5'h0) begin
-            multicycle_result = shift_amt[5] ? operand_a_i : imd_val_q_i;
+            multicycle_result = imd_val_q_i;
           end else begin
             multicycle_result = imd_val_q_i | shift_result;
           end
@@ -997,9 +938,6 @@ module ibex_alu #(
       // Sign-Extend (RV32B)
       ALU_SEXTB, ALU_SEXTH: result_o = sext_result;
 
-      // Ternary Bitmanip Operations (RV32B)
-      ALU_CMIX, ALU_CMOV,
-      ALU_FSL,  ALU_FSR,
       // Rotate Shift (RV32B)
       ALU_ROL, ALU_ROR: result_o = multicycle_result;
 

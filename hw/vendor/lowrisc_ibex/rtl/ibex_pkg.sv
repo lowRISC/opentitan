@@ -153,13 +153,6 @@ package ibex_pkg;
     ALU_SLT,
     ALU_SLTU,
 
-    // Ternary Bitmanip Operations
-    // RV32B
-    ALU_CMOV,
-    ALU_CMIX,
-    ALU_FSL,
-    ALU_FSR,
-
     // Single-Bit Operations
     // RV32B
     ALU_BSET,

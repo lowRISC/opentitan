@@ -448,18 +448,6 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr);
   endfunction
 
-  function automatic void decode_r_cmixcmov_insn(input string mnemonic);
-    data_accessed = RS1 | RS2 | RS3 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs2_addr,
-        rvfi_rs1_addr, rvfi_rs3_addr);
-  endfunction
-
-  function automatic void decode_r_funnelshift_insn(input string mnemonic);
-    data_accessed = RS1 | RS2 | RS3 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
-        rvfi_rs3_addr, rvfi_rs2_addr);
-  endfunction
-
   function automatic void decode_i_insn(input string mnemonic);
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
@@ -472,15 +460,6 @@ module ibex_tracer (
     shamt = {rvfi_insn[24:20]};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, shamt);
-  endfunction
-
-  function automatic void decode_i_funnelshift_insn( input string mnemonic);
-    // fsri
-    logic [5:0] shamt;
-    shamt = {rvfi_insn[25:20]};
-    data_accessed = RS1 | RS3 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
-        rvfi_rs3_addr, shamt);
   endfunction
 
   function automatic void decode_i_jalr_insn(input string mnemonic);
@@ -1178,12 +1157,6 @@ module ibex_tracer (
         INSN_SLOI:       decode_i_shift_insn("sloi");
         INSN_SROI:       decode_i_shift_insn("sroi");
 
-        // RV32B - ZBT
-        INSN_CMIX:       decode_r_cmixcmov_insn("cmix");
-        INSN_CMOV:       decode_r_cmixcmov_insn("cmov");
-        INSN_FSR:        decode_r_funnelshift_insn("fsr");
-        INSN_FSL:        decode_r_funnelshift_insn("fsl");
-        INSN_FSRI:       decode_i_funnelshift_insn("fsri");
 
         // RV32B - ZBC
         INSN_CLMUL:      decode_r_insn("clmul");
