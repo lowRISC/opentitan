@@ -512,9 +512,9 @@ module ibex_alu #(
     // (shift_amt = 5'b00111) are supported in the base extension.
 
     logic [4:0] zbp_shift_amt;
-    logic gorc_op;
+    logic orcb_op;
 
-    assign gorc_op = (operator_i == ALU_GORC);
+    assign orcb_op = (operator_i == ALU_ORCB);
     assign zbp_shift_amt[2:0] =
         (RV32B == RV32BFull) ? shift_amt[2:0] : {3{shift_amt[0]}};
     assign zbp_shift_amt[4:3] =
@@ -524,33 +524,33 @@ module ibex_alu #(
       rev_result = operand_a_i;
 
       if (zbp_shift_amt[0]) begin
-        rev_result = (gorc_op ? rev_result : 32'h0)       |
+        rev_result = (orcb_op ? rev_result : 32'h0)       |
                      ((rev_result & 32'h5555_5555) <<  1) |
                      ((rev_result & 32'haaaa_aaaa) >>  1);
       end
 
       if (zbp_shift_amt[1]) begin
-        rev_result = (gorc_op ? rev_result : 32'h0)       |
+        rev_result = (orcb_op ? rev_result : 32'h0)       |
                      ((rev_result & 32'h3333_3333) <<  2) |
                      ((rev_result & 32'hcccc_cccc) >>  2);
       end
 
       if (zbp_shift_amt[2]) begin
-        rev_result = (gorc_op ? rev_result : 32'h0)       |
+        rev_result = (orcb_op ? rev_result : 32'h0)       |
                      ((rev_result & 32'h0f0f_0f0f) <<  4) |
                      ((rev_result & 32'hf0f0_f0f0) >>  4);
       end
 
       if (zbp_shift_amt[3]) begin
         rev_result = ((RV32B == RV32BFull) &&
-                      gorc_op ? rev_result : 32'h0) |
+                      orcb_op ? rev_result : 32'h0) |
                      ((rev_result & 32'h00ff_00ff) <<  8) |
                      ((rev_result & 32'hff00_ff00) >>  8);
       end
 
       if (zbp_shift_amt[4]) begin
         rev_result = ((RV32B == RV32BFull) &&
-                      gorc_op ? rev_result : 32'h0) |
+                      orcb_op ? rev_result : 32'h0) |
                      ((rev_result & 32'h0000_ffff) << 16) |
                      ((rev_result & 32'hffff_0000) >> 16);
       end
@@ -917,7 +917,7 @@ module ibex_alu #(
       ALU_BINV, ALU_BEXT: result_o = singlebit_result;
 
       // General Reverse / Or-combine (RV32B)
-      ALU_GREV, ALU_GORC: result_o = rev_result;
+      ALU_GREV, ALU_ORCB: result_o = rev_result;
 
       // Carry-less Multiply Operations (RV32B)
       ALU_CLMUL, ALU_CLMULR,

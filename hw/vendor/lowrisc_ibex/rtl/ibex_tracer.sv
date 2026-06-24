@@ -1094,26 +1094,7 @@ module ibex_tracer (
             default:     decode_i_insn("grevi");
           endcase
         end
-        INSN_GORCI: begin
-          unique casez (rvfi_insn)
-            INSN_ORC_P:  decode_r1_insn("orc.p");
-            INSN_ORC2_N: decode_r1_insn("orc2.n");
-            INSN_ORC_N:  decode_r1_insn("orc.n");
-            INSN_ORC4_B: decode_r1_insn("orc4.b");
-            INSN_ORC2_B: decode_r1_insn("orc2.b");
-            INSN_ORC_B:  decode_r1_insn("orc.b");
-            INSN_ORC8_H: decode_r1_insn("orc8.h");
-            INSN_ORC4_H: decode_r1_insn("orc4.h");
-            INSN_ORC2_H: decode_r1_insn("orc2.h");
-            INSN_ORC_H:  decode_r1_insn("orc.h");
-            INSN_ORC16:  decode_r1_insn("orc16");
-            INSN_ORC8:   decode_r1_insn("orc8");
-            INSN_ORC4:   decode_r1_insn("orc4");
-            INSN_ORC2:   decode_r1_insn("orc2");
-            INSN_ORC:    decode_r1_insn("orc");
-            default:     decode_i_insn("gorci");
-          endcase
-        end
+        INSN_ORC_B:      decode_r1_insn("orc.b");
         INSN_ZIP:        decode_r1_insn("zip");
         INSN_UNZIP:      decode_r1_insn("unzip");
         INSN_XPERM4:     decode_r_insn("xperm4");

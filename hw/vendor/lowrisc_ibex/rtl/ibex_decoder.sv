@@ -411,13 +411,9 @@ module ibex_decoder #(
                   end
                 end
                 5'b0_0101: begin
-                  if (RV32B == RV32BFull) begin
-                    illegal_insn = 1'b0;                                              // gorci
-                  end else if (instr[24:20] == 5'b00111) begin
-                    illegal_insn = (RV32B == RV32BBalanced) ? 1'b0 : 1'b1;            // orc.b
-                  end else begin
-                    illegal_insn = 1'b1;
-                  end
+                  // orc.b (Zbb): gorci restricted to shamt 0x07
+                  illegal_insn = (instr[24:20] == 5'b00111 && RV32B != RV32BNone) ?
+                                 1'b0 : 1'b1;                                         // orc.b
                 end
                 5'b0_0001: begin
                   // unzip (Zbkb): unshfli with shamt fixed to 0x0F
@@ -844,7 +840,8 @@ module ibex_decoder #(
                     alu_multicycle_o = 1'b1;
                   end
                   5'b0_1101: alu_operator_o = ALU_GREV;  // General Reverse with Imm Control Val
-                  5'b0_0101: alu_operator_o = ALU_GORC;  // General Or-combine with Imm Control Val
+                  // orc.b (Zbb): gorci with shamt fixed to 0x07
+                  5'b0_0101: if (instr_alu[24:20] == 5'b00111) alu_operator_o = ALU_ORCB;
                   // unzip (Zbkb): unshfli with shamt fixed to 0x0F
                   5'b0_0001: begin
                     if (RV32B == RV32BFull) begin

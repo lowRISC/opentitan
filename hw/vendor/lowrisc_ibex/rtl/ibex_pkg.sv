@@ -103,7 +103,7 @@ package ibex_pkg;
     ALU_ROR,
     ALU_ROL,
     ALU_GREV,
-    ALU_GORC,
+    ALU_ORCB,
     ALU_ZIP,
     ALU_UNZIP,
     ALU_XPERM4,

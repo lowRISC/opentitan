@@ -158,41 +158,9 @@ package ibex_tracer_pkg;
       { 5'b01101, 1'b0, 1'b?, 5'b11110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
   parameter logic [31:0] INSN_REV =
       { 5'b01101, 1'b0, 1'b?, 5'b11111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  // gorci
-  // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
-  // instr[24:20] are effectively used. Whenever instr[26] is set, gorci is instead decoded as fsri.
-  parameter logic [31:0] INSN_GORCI = { 5'b00101, 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  // gorci -- pseudo-instructions
-  parameter logic [31:0] INSN_ORC_P =
-      { 5'b00101, 1'b0, 1'b?, 5'b00001, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC2_N =
-      { 5'b00101, 1'b0, 1'b?, 5'b00010, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC_N =
-      { 5'b00101, 1'b0, 1'b?, 5'b00011, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC4_B =
-      { 5'b00101, 1'b0, 1'b?, 5'b00100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC2_B =
-      { 5'b00101, 1'b0, 1'b?, 5'b00110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+  // orc.b (Zbb): gorci restricted to shamt 0x07 (bitwise OR-combine within each byte).
   parameter logic [31:0] INSN_ORC_B =
-      { 5'b00101, 1'b0, 1'b?, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC8_H =
-      { 5'b00101, 1'b0, 1'b?, 5'b01000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC4_H =
-      { 5'b00101, 1'b0, 1'b?, 5'b01100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC2_H =
-      { 5'b00101, 1'b0, 1'b?, 5'b01110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC_H =
-      { 5'b00101, 1'b0, 1'b?, 5'b01111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC16 =
-      { 5'b00101, 1'b0, 1'b?, 5'b10000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC8 =
-      { 5'b00101, 1'b0, 1'b?, 5'b11000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC4 =
-      { 5'b00101, 1'b0, 1'b?, 5'b11100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC2 =
-      { 5'b00101, 1'b0, 1'b?, 5'b11110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ORC =
-      { 5'b00101, 1'b0, 1'b?, 5'b11111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+      { 5'b00101, 1'b0, 1'b0, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
   // zip / unzip (Zbkb, rv32): the shfli/unshfli shuffle restricted to the
   // shamt=0x0F (full zip) control value. No other control and no reg-reg form.
   parameter logic [31:0] INSN_ZIP =
