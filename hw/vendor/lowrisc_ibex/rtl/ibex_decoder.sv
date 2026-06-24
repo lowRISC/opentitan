@@ -370,7 +370,7 @@ module ibex_decoder #(
               5'b0_1101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;           // binvi
               5'b0_0001: begin
                 if (instr[26] == 1'b0) begin                                          // shfl
-                  illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
+                  illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
                 end else begin
                   illegal_insn = 1'b1;
                 end
@@ -401,7 +401,7 @@ module ibex_decoder #(
                 5'b0_1001: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;          // bexti
 
                 5'b0_1101: begin
-                  if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+                  if (RV32B == RV32BFull) begin
                     illegal_insn = 1'b0;                                               // grevi
                   end else if (RV32B == RV32BBalanced) begin
                     illegal_insn = (instr[24:20] == 5'b11000) ? 1'b0 : 1'b1;           // rev8
@@ -410,7 +410,7 @@ module ibex_decoder #(
                   end
                 end
                 5'b0_0101: begin
-                  if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+                  if (RV32B == RV32BFull) begin
                     illegal_insn = 1'b0;                                              // gorci
                   end else if (instr[24:20] == 5'b00111) begin
                     illegal_insn = (RV32B == RV32BBalanced) ? 1'b0 : 1'b1;            // orc.b
@@ -421,8 +421,8 @@ module ibex_decoder #(
                 5'b0_0001: begin
                   // Since instr[26] is known to be 0, this must be the "unshfl" instruction, which
                   // is part of the RISC-V bitmanip extension. This is supported for the
-                  // RV32BOTEarlGrey and RV32BFull bitmanip configurations.
-                  illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
+                  // RV32BFull bitmanip configuration.
+                  illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
                 end
 
                 default: illegal_insn = 1'b1;
@@ -484,7 +484,7 @@ module ibex_decoder #(
             {7'b000_0101, 3'b001}, // clmul
             {7'b000_0101, 3'b010}, // clmulr
             {7'b000_0101, 3'b011}: begin // clmulh
-              illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
+              illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
             end
 
             // RV32M instructions
@@ -849,7 +849,7 @@ module ibex_decoder #(
                   5'b0_0101: alu_operator_o = ALU_GORC;  // General Or-combine with Imm Control Val
                   // Unshuffle with Immediate Control Value
                   5'b0_0001: begin
-                    if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+                    if (RV32B == RV32BFull) begin
                       if (instr_alu[26] == 1'b0) alu_operator_o = ALU_UNSHFL;
                     end
                   end
@@ -929,27 +929,27 @@ module ibex_decoder #(
 
             // RV32B zbp
             {7'b000_0100, 3'b001}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SHFL;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_SHFL;
             end
             {7'b000_0100, 3'b101}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_UNSHFL;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_UNSHFL;
             end
             {7'b001_0100, 3'b010}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_N;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM_N;
             end
             {7'b001_0100, 3'b100}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_B;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM_B;
             end
 
             // RV32B zbc
             {7'b000_0101, 3'b001}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_CLMUL;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_CLMUL;
             end
             {7'b000_0101, 3'b010}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_CLMULR;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_CLMULR;
             end
             {7'b000_0101, 3'b011}: begin
-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_CLMULH;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_CLMULH;
             end
 
             // RV32M instructions, all use the same ALU operation

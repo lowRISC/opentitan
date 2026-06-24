@@ -516,9 +516,9 @@ module ibex_alu #(
 
     assign gorc_op = (operator_i == ALU_GORC);
     assign zbp_shift_amt[2:0] =
-        (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? shift_amt[2:0] : {3{shift_amt[0]}};
+        (RV32B == RV32BFull) ? shift_amt[2:0] : {3{shift_amt[0]}};
     assign zbp_shift_amt[4:3] =
-        (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? shift_amt[4:3] : {2{shift_amt[3]}};
+        (RV32B == RV32BFull) ? shift_amt[4:3] : {2{shift_amt[3]}};
 
     always_comb begin
       rev_result = operand_a_i;
@@ -542,14 +542,14 @@ module ibex_alu #(
       end
 
       if (zbp_shift_amt[3]) begin
-        rev_result = ((RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) &&
+        rev_result = ((RV32B == RV32BFull) &&
                       gorc_op ? rev_result : 32'h0) |
                      ((rev_result & 32'h00ff_00ff) <<  8) |
                      ((rev_result & 32'hff00_ff00) >>  8);
       end
 
       if (zbp_shift_amt[4]) begin
-        rev_result = ((RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) &&
+        rev_result = ((RV32B == RV32BFull) &&
                       gorc_op ? rev_result : 32'h0) |
                      ((rev_result & 32'h0000_ffff) << 16) |
                      ((rev_result & 32'hffff_0000) >> 16);
@@ -558,7 +558,7 @@ module ibex_alu #(
 
     logic [31:0] clmul_result_rev;
 
-    if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin : gen_alu_rvb_otearlgrey_full
+    if (RV32B == RV32BFull) begin : gen_alu_rvb_full
 
       /////////////////////////
       // Shuffle / Unshuffle //
