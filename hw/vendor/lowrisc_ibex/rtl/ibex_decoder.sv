@@ -392,7 +392,7 @@ module ibex_decoder #(
 
           3'b101: begin
             if (instr[26]) begin
-              illegal_insn = 1'b1;                                                     // fsri removed
+              illegal_insn = 1'b1;
             end else begin
               unique case (instr[31:27])
                 5'b0_0000,                                                             // srli
