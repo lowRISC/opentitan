@@ -203,27 +203,27 @@ class flash_ctrl_scoreboard #(
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg        csr;
     string         csr_wr_name = "";
     bit            do_read_check = 1'b1;
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    uvm_reg        csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
+    bit            mem_addr;
 
     bit            addr_phase_read = (!write && channel == AddrChannel);
     bit            addr_phase_write = (write && channel == AddrChannel);
     bit            data_phase_read = (!write && channel == DataChannel);
     bit            data_phase_write = (write && channel == DataChannel);
     bit            erase_req;
-    if (skip_read_check) do_read_check = 0;
-    // if access was to a valid csr, get the csr handle
-    if ((is_mem_addr(
-            item.a_addr, cfg.ral_models[ral_name]
-        ) || (csr_addr inside {cfg.ral_models[ral_name].csr_addrs})) &&
-            !cfg.dir_rd_in_progress) begin
 
+    if (skip_read_check) do_read_check = 0;
+
+    mem_addr = is_mem_addr(item.a_addr, cfg.ral_models[ral_name]);
+
+    if (mem_addr || (csr != null && !cfg.dir_rd_in_progress)) begin
       // if incoming access is a write to a valid csr, then make updates right away.
       if (addr_phase_write) begin
-        if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) && cfg.scb_check) begin  // prog fifo
+        if (mem_addr && cfg.scb_check) begin  // prog fifo
           if (idx_wr == 0) begin
             csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));
             wr_addr = word_align_addr(get_field_val(ral.addr.start, data));
@@ -247,9 +247,7 @@ class flash_ctrl_scoreboard #(
           end else begin
             idx_wr += 1;
           end
-        end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-          csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-          `DV_CHECK_NE_FATAL(csr, null)
+        end else if (csr != null) begin
           csr_wr_name = csr.get_name();
           void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           `uvm_info(`gfn, $sformatf("SCB EXP FLASH REG: 0x%0h", csr_addr), UVM_HIGH)
@@ -332,9 +330,7 @@ class flash_ctrl_scoreboard #(
       end
 
       if (data_phase_read) begin
-        if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-          csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-          `DV_CHECK_NE_FATAL(csr, null)
+        if (csr != null) begin
           // process the csr req
           // for write, update local variable and fifo at address phase
           // for read, update prediction at address phase and compare at data phase
@@ -382,7 +378,7 @@ class flash_ctrl_scoreboard #(
                          "reg name: %0s", csr.get_full_name()))
           end
           void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-        end else if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name]) && cfg.scb_check) begin
+        end else if (mem_addr && cfg.scb_check) begin
           // rd fifo
           if (idx_rd == 0) begin
             csr_rd(.ptr(ral.addr), .value(data), .backdoor(1'b1));

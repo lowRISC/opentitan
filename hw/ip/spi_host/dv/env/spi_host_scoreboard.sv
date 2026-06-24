@@ -568,17 +568,24 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     // Process the csr req
     // For writes, update local variables and fifo at address phase
     // For reads, update prediction at address phase and compare at data phase
-    end else if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      // If access was to a valid csr, get the csr handle
+    end else begin
       csr = ral.default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
+      if (csr == null) begin
+        `uvm_fatal(get_full_name(),
+                   $sformatf({"Access to unexpected address 0x%0h (neither a CSR nor in the ",
+                              "RX FIFO (range 0x%0h..0x%0h) or the TX FIFO (range 0x%0h..0x%0h)"},
+                             csr_addr,
+                             SPI_HOST_RX_FIFO_START, SPI_HOST_RX_FIFO_END,
+                             SPI_HOST_TX_FIFO_START, SPI_HOST_TX_FIFO_END))
+      end
+
+      csr_name = csr.get_name();
+
       // If incoming access is a write to a valid csr, then make updates right away
       if (cmd_phase_write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
-      csr_name = csr.get_name();
-
-    end else `uvm_fatal(`gfn, $sformatf("\n  scb: access unexpected addr 0x%0h", csr_addr))
+    end
 
     `uvm_info(`gfn, $sformatf("%m - csr_name = %s, write = %0d, channel = %s",
                               csr_name, write, channel.name), UVM_DEBUG)
