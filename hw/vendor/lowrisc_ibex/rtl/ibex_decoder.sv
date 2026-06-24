@@ -844,8 +844,9 @@ module ibex_decoder #(
                   5'b0_0000: alu_operator_o = ALU_SRL;   // Shift Right Logical by Immediate
                   5'b0_1000: alu_operator_o = ALU_SRA;   // Shift Right Arithmetically by Immediate
                   5'b0_1001: alu_operator_o = ALU_BEXT;  // Extract bit specified by immediate.
+                  // rori (Zbb, also imported by Zbkb): rotate right by immediate
                   5'b0_1100: begin
-                    alu_operator_o = ALU_ROR;            // Rotate Right by Immediate
+                    alu_operator_o = ALU_ROR;
                     alu_multicycle_o = 1'b1;
                   end
                   // rev8 (Zbb, shamt 0x18) and brev8 (Zbkb, shamt 0x07)
@@ -902,6 +903,7 @@ module ibex_decoder #(
             {7'b010_0000, 3'b101}: alu_operator_o = ALU_SRA;   // Shift Right Arithmetic
 
             // RV32B ALU Operations
+            // rol / ror (Zbb, also imported by Zbkb): rotate by register amount
             {7'b011_0000, 3'b001}: begin
               if (RV32B != RV32BNone) begin
                 alu_operator_o = ALU_ROL;
