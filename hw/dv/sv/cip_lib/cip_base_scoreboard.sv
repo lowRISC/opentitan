@@ -83,7 +83,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     foreach (cfg.ral_models[ral_name]) begin
       bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
-      bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
+      bit has_csr       = cfg.ral_models[ral_name].has_csrs();
       bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
       bit has_mem_byte_access_err;
       bit has_wo_mem;
@@ -437,14 +437,39 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
-  // Return true if item is a fetch from a mapped address in the given register block
-  protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
-    cip_tl_seq_item cip_item;
+  // Return true if item is a fetch from a register in the given block and the register's parent
+  // (which may be a sub-block of the block argument) doesn't allow CSR fetches.
+  protected function bit bad_csr_fetch(tl_seq_item item, dv_base_reg_block block);
+    cip_tl_seq_item   cip_item;
+    uvm_reg           tgt_reg;
+    uvm_reg_block     base_parent_block;
+    dv_base_reg_block parent_block;
+    uvm_reg_addr_t    aligned_addr;
+
     `downcast(cip_item, item)
-    return (item.a_opcode == tlul_pkg::Get &&
-            cip_item.get_instr_type() == MuBi4True &&
-            is_tl_access_mapped_addr(item.a_addr, block) &&
-            !is_mem_addr(item.a_addr, block));
+
+    // If this isn't a fetch, return false.
+    if (!(item.a_opcode == tlul_pkg::Get && cip_item.get_instr_type() == MuBi4True)) begin
+      return 1'b0;
+    end
+
+    // Does this adddress a register? If not, return false.
+    aligned_addr = block.get_word_aligned_addr(item.a_addr);
+    tgt_reg = block.get_default_map().get_reg_by_offset(aligned_addr, 1);
+    if (tgt_reg == null) begin
+      return 1'b0;
+    end
+
+    // If this *does* address a register, get the register's immediate parent block and try to cast
+    // it down to a dv_base_reg_block. If the cast fails, return true: this is a fetch from a CSR
+    // and the register's block isn't even able to be configured to allow fetches.
+    base_parent_block = tgt_reg.get_parent();
+    if (!$cast(parent_block, base_parent_block)) begin
+      return 1'b1;
+    end
+
+    // Finally, return true unless the parent block is declared to ignore the instr_type argument.
+    return !parent_block.get_ignores_instr_type();
   endfunction
 
   // Return whether an A-channel access was invalid and check any D-channel response.
@@ -477,12 +502,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                 string        ral_name);
     dv_base_reg_block block = cfg.ral_models[ral_name];
 
-    bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
-    bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
-    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
-    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
-    bit tl_item_err    = item.get_exp_d_error();
-    bit csr_read_err   = is_csr_fetch(item, block);
+    bit unmapped_err  = !is_tl_access_mapped_addr(item.a_addr, block);
+    bit bus_intg_err  = !item.is_a_chan_intg_ok(.throw_error(0));
+    bit byte_wr_err   = is_tl_access_unsupported_byte_wr(item, block);
+    bit csr_size_err  = !is_tl_csr_write_size_gte_csr_width(item, block);
+    bit tl_item_err   = item.get_exp_d_error();
+    bit csr_fetch_err = bad_csr_fetch(item, block);
 
     bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
 
@@ -524,7 +549,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
                      write_w_instr_type_err | instr_type_err |
-                     ecc_err | csr_read_err;
+                     ecc_err | csr_fetch_err;
 
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
@@ -569,7 +594,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           if (write_w_instr_type_err) reasons.push_back("Write when instr-type is set");
           if (instr_type_err) reasons.push_back("MuBi error in instr-type");
           if (ecc_err) reasons.push_back("Access to address with known-bad ECC");
-          if (csr_read_err) reasons.push_back("Fetch from CSR");
+          if (csr_fetch_err) reasons.push_back("Fetch from CSR");
         end
 
         `uvm_error(get_full_name(),
@@ -607,7 +632,25 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
 
     return (unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
+            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_fetch_err);
+  endfunction
+
+  // Return true if accessing size_bytes bytes starting at addr will address at least one register
+  // in block when using the default map.
+  local function bit touches_register(uvm_reg_addr_t    addr,
+                                      int unsigned      size_bytes,
+                                      dv_base_reg_block block);
+    uvm_reg_addr_t hi_addr = addr + size_bytes - 1;
+    uvm_reg_addr_t aligned_lo = block.get_word_aligned_addr(addr);
+    uvm_reg_addr_t aligned_hi = block.get_word_aligned_addr(hi_addr);
+
+    for (uvm_reg_addr_t a = aligned_lo; a <= aligned_hi; a++) begin
+      // We pass read=0 here because the implementation of uvm_reg_map means that this will also
+      // find write-only registers.
+      if (block.get_default_map().get_reg_by_offset(a, 1'b0) != null) return 1'b1;
+    end
+
+    return 1'b0;
   endfunction
 
   protected function void check_tl_read_value_after_error(tl_seq_item item,
@@ -620,8 +663,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     // When the access target was the memory, tlul_adapter_sram either returns
     // DataWhenInstrError ('1) or DataWhenError ('0) depending whether it was a
     // instruction type access or not.
-    uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
-    if (csr_addr inside {block.csr_addrs}) begin
+    if (touches_register(item.a_addr, 1 << item.a_size, block)) begin
       exp_data = '1;
     end else begin
       // if error occurs when it's an instruction, return all 0 since it's an illegal instruction
@@ -632,11 +674,15 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
   endfunction
 
-  // Return true if the given address is mapped in the register block
+  // Return true if addr points at a register or inside a memory with the default reg_map for this
+  // block.
   local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_map map = block.get_default_map();
     uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
-    // check if it's mem addr or reg addr
-    return is_mem_addr(addr, block) || norm_addr inside {block.csr_addrs};
+
+    // Check if it's a memory or register adddress. Passning read=0 to get_reg_by_offset means that
+    // the code in uvm_reg_map will report write-only registers too.
+    return is_mem_addr(norm_addr, block) || (map.get_reg_by_offset(norm_addr, 1'b0) != null);
   endfunction
 
   // check if tl mem access will trigger error or not

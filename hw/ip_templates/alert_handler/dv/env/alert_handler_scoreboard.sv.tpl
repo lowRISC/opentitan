@@ -348,23 +348,19 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg        csr;
     dv_base_reg    dv_base_csr;
     bit            do_read_check   = 1'b1;
     bit            write           = item.is_write();
     uvm_reg_addr_t csr_addr = {item.a_addr[TL_AW-1:2], 2'b00};
+    uvm_reg        csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
 
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = ral.default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-      `downcast(dv_base_csr, csr)
-    end
     if (csr == null) begin
       // we hit an oob addr - expect error response and return
       `DV_CHECK_EQ(item.d_error, 1'b1)
       return;
     end
+
+    `downcast(dv_base_csr, csr)
 
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
