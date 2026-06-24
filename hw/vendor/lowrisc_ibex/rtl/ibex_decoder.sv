@@ -478,8 +478,8 @@ module ibex_decoder #(
             // RV32B zbp
             {7'b000_0100, 3'b001}, // shfl
             {7'b000_0100, 3'b101}, // unshfl
-            {7'b001_0100, 3'b010}, // xperm.n
-            {7'b001_0100, 3'b100}, // xperm.b
+            {7'b001_0100, 3'b010}, // xperm4
+            {7'b001_0100, 3'b100}, // xperm8
             // RV32B zbc
             {7'b000_0101, 3'b001}, // clmul
             {7'b000_0101, 3'b010}, // clmulr
@@ -935,10 +935,10 @@ module ibex_decoder #(
               if (RV32B == RV32BFull) alu_operator_o = ALU_UNSHFL;
             end
             {7'b001_0100, 3'b010}: begin
-              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM_N;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM4;
             end
             {7'b001_0100, 3'b100}: begin
-              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM_B;
+              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM8;
             end
 
             // RV32B zbc

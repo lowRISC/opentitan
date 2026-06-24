@@ -106,8 +106,8 @@ package ibex_pkg;
     ALU_GORC,
     ALU_SHFL,
     ALU_UNSHFL,
-    ALU_XPERM_N,
-    ALU_XPERM_B,
+    ALU_XPERM4,
+    ALU_XPERM8,
 
     // Address Calculations
     // RV32B

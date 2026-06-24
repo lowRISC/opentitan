@@ -243,8 +243,8 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_SHFL   = { 7'b0000100, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_UNSHFL = { 7'b0000100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
 
-  parameter logic [31:0] INSN_XPERM_N = { 7'b0010100, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
-  parameter logic [31:0] INSN_XPERM_B = { 7'b0010100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
+  parameter logic [31:0] INSN_XPERM4 = { 7'b0010100, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
+  parameter logic [31:0] INSN_XPERM8 = { 7'b0010100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
 
   // ZBC
   parameter logic [31:0] INSN_CLMUL  = {7'b0000101, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };

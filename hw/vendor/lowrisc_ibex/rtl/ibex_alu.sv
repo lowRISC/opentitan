@@ -645,7 +645,7 @@ module ibex_alu #(
       //////////////
       // Crossbar //
       //////////////
-      // The crossbar permutation instructions xperm.[nbh] (Zbp) can be implemented using 8
+      // The crossbar permutation instructions xperm4/xperm8 (Zbkx) can be implemented using 8
       // parallel 4-bit-wide, 8-input crossbars. Basically, we permute the 8 nibbles of operand_a_i
       // based on operand_b_i.
 
@@ -679,13 +679,13 @@ module ibex_alu #(
       logic [7:0]      vld;
       always_comb begin
         unique case (operator_i)
-          ALU_XPERM_N: begin
+          ALU_XPERM4: begin
             // No conversion needed.
             sel = sel_n;
             vld = vld_n;
           end
 
-          ALU_XPERM_B: begin
+          ALU_XPERM8: begin
             // Convert byte to nibble indices.
             for (int b = 0; b < 4; b++) begin
               sel[b*2 +  0] =   {sel_b[b], 1'b0};
@@ -885,7 +885,7 @@ module ibex_alu #(
       ALU_SHFL, ALU_UNSHFL: result_o = shuffle_result;
 
       // Crossbar Permutation Operations (RV32B)
-      ALU_XPERM_N, ALU_XPERM_B: result_o = xperm_result;
+      ALU_XPERM4, ALU_XPERM8: result_o = xperm_result;
 
       // Comparison Operations
       ALU_EQ,   ALU_NE,

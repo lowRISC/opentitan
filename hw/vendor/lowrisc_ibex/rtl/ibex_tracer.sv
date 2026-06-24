@@ -1146,8 +1146,8 @@ module ibex_tracer (
             default:       decode_i_insn("unshfli");
           endcase
         end
-        INSN_XPERM_N:    decode_r_insn("xperm_n");
-        INSN_XPERM_B:    decode_r_insn("xperm_b");
+        INSN_XPERM4:     decode_r_insn("xperm4");
+        INSN_XPERM8:     decode_r_insn("xperm8");
 
         // RV32B - ZBC
         INSN_CLMUL:      decode_r_insn("clmul");
