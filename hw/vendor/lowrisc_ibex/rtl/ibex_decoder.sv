@@ -402,10 +402,11 @@ module ibex_decoder #(
                 5'b0_1001: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;          // bexti
 
                 5'b0_1101: begin
-                  if (RV32B == RV32BFull) begin
-                    illegal_insn = 1'b0;                                               // grevi
-                  end else if (RV32B == RV32BBalanced) begin
-                    illegal_insn = (instr[24:20] == 5'b11000) ? 1'b0 : 1'b1;           // rev8
+                  // rev8 (Zbb, shamt 0x18) and brev8 (Zbkb, shamt 0x07)
+                  if (instr[24:20] == 5'b11000) begin
+                    illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;                // rev8
+                  end else if (instr[24:20] == 5'b00111) begin
+                    illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;                // brev8
                   end else begin
                     illegal_insn = 1'b1;
                   end
@@ -839,7 +840,14 @@ module ibex_decoder #(
                     alu_operator_o = ALU_ROR;            // Rotate Right by Immediate
                     alu_multicycle_o = 1'b1;
                   end
-                  5'b0_1101: alu_operator_o = ALU_GREV;  // General Reverse with Imm Control Val
+                  // rev8 (Zbb, shamt 0x18) and brev8 (Zbkb, shamt 0x07)
+                  5'b0_1101: begin
+                    if (instr_alu[24:20] == 5'b11000) begin
+                      alu_operator_o = ALU_REV8;
+                    end else if (instr_alu[24:20] == 5'b00111 && RV32B == RV32BFull) begin
+                      alu_operator_o = ALU_BREV8;
+                    end
+                  end
                   // orc.b (Zbb): gorci with shamt fixed to 0x07
                   5'b0_0101: if (instr_alu[24:20] == 5'b00111) alu_operator_o = ALU_ORCB;
                   // unzip (Zbkb): unshfli with shamt fixed to 0x0F

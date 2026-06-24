@@ -123,41 +123,12 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_BEXT = { 7'b0100100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
 
   // ZBP
-  // grevi
-  // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
-  // instr[24:20] are effectively used. Whenever instr[26] is set, grevi is instead decoded as fsri.
-  parameter logic [31:0] INSN_GREVI = { 5'b01101, 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  // grevi -- pseudo-instructions
-  parameter logic [31:0] INSN_REV_P =
-      { 5'b01101, 1'b0, 1'b?, 5'b00001, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV2_N =
-      { 5'b01101, 1'b0, 1'b?, 5'b00010, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV_N =
-      { 5'b01101, 1'b0, 1'b?, 5'b00011, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV4_B =
-      { 5'b01101, 1'b0, 1'b?, 5'b00100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV2_B =
-      { 5'b01101, 1'b0, 1'b?, 5'b00110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV_B =
-      { 5'b01101, 1'b0, 1'b?, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV8_H =
-      { 5'b01101, 1'b0, 1'b?, 5'b01000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV4_H =
-      { 5'b01101, 1'b0, 1'b?, 5'b01100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV2_H =
-      { 5'b01101, 1'b0, 1'b?, 5'b01110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV_H =
-      { 5'b01101, 1'b0, 1'b?, 5'b01111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV16 =
-      { 5'b01101, 1'b0, 1'b?, 5'b10000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+  // rev8 (Zbb, shamt 0x18: reverse byte order) and brev8 (Zbkb, shamt 0x07:
+  // reverse bits within each byte). grevi restricted to these two control values.
   parameter logic [31:0] INSN_REV8 =
-      { 5'b01101, 1'b0, 1'b?, 5'b11000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV4 =
-      { 5'b01101, 1'b0, 1'b?, 5'b11100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV2 =
-      { 5'b01101, 1'b0, 1'b?, 5'b11110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_REV =
-      { 5'b01101, 1'b0, 1'b?, 5'b11111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+      { 5'b01101, 1'b0, 1'b0, 5'b11000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+  parameter logic [31:0] INSN_BREV8 =
+      { 5'b01101, 1'b0, 1'b0, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
   // orc.b (Zbb): gorci restricted to shamt 0x07 (bitwise OR-combine within each byte).
   parameter logic [31:0] INSN_ORC_B =
       { 5'b00101, 1'b0, 1'b0, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };

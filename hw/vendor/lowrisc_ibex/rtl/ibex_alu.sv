@@ -503,13 +503,12 @@ module ibex_alu #(
       endcase
     end
 
-    ////////////////////////////////////
-    // General Reverse and Or-combine //
-    ////////////////////////////////////
+    ////////////////////////////////
+    // rev8 / brev8 / orc.b        //
+    ////////////////////////////////
 
-    // Only a subset of the general reverse and or-combine instructions are implemented in the
-    // balanced version of the B extension. Currently rev8 (shift_amt = 5'b11000) and orc.b
-    // (shift_amt = 5'b00111) are supported in the base extension.
+    // The generalized-reverse / or-combine butterfly below implements the ratified
+    // subset only: rev8  and orc.b.
 
     logic [4:0] zbp_shift_amt;
     logic orcb_op;
@@ -916,8 +915,8 @@ module ibex_alu #(
       ALU_BSET, ALU_BCLR,
       ALU_BINV, ALU_BEXT: result_o = singlebit_result;
 
-      // General Reverse / Or-combine (RV32B)
-      ALU_GREV, ALU_ORCB: result_o = rev_result;
+      // rev8 / brev8 / orc.b use shared reverse/or-combine datapath (RV32B)
+      ALU_REV8, ALU_BREV8, ALU_ORCB: result_o = rev_result;
 
       // Carry-less Multiply Operations (RV32B)
       ALU_CLMUL, ALU_CLMULR,

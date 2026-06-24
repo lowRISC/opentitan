@@ -1073,27 +1073,9 @@ module ibex_tracer (
         INSN_BSET:      decode_r_insn("bset");
         INSN_BINV:      decode_r_insn("binv");
         INSN_BEXT:      decode_r_insn("bext");
-        // RV32B - ZBP
-        INSN_GREVI: begin
-          unique casez (rvfi_insn)
-            INSN_REV_P:  decode_r1_insn("rev.p");
-            INSN_REV2_N: decode_r1_insn("rev2.n");
-            INSN_REV_N:  decode_r1_insn("rev.n");
-            INSN_REV4_B: decode_r1_insn("rev4.b");
-            INSN_REV2_B: decode_r1_insn("rev2.b");
-            INSN_REV_B:  decode_r1_insn("rev.b");
-            INSN_REV8_H: decode_r1_insn("rev8.h");
-            INSN_REV4_H: decode_r1_insn("rev4.h");
-            INSN_REV2_H: decode_r1_insn("rev2.h");
-            INSN_REV_H:  decode_r1_insn("rev.h");
-            INSN_REV16:  decode_r1_insn("rev16");
-            INSN_REV8:   decode_r1_insn("rev8");
-            INSN_REV4:   decode_r1_insn("rev4");
-            INSN_REV2:   decode_r1_insn("rev2");
-            INSN_REV:    decode_r1_insn("rev");
-            default:     decode_i_insn("grevi");
-          endcase
-        end
+        // RV32B - Zbb / Zbkb
+        INSN_BREV8:      decode_r1_insn("brev8");
+        INSN_REV8:       decode_r1_insn("rev8");
         INSN_ORC_B:      decode_r1_insn("orc.b");
         INSN_ZIP:        decode_r1_insn("zip");
         INSN_UNZIP:      decode_r1_insn("unzip");

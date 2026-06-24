@@ -102,7 +102,8 @@ package ibex_pkg;
     // RV32B
     ALU_ROR,
     ALU_ROL,
-    ALU_GREV,
+    ALU_REV8,
+    ALU_BREV8,
     ALU_ORCB,
     ALU_ZIP,
     ALU_UNZIP,
