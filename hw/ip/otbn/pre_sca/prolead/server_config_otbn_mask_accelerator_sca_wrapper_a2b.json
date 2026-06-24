@@ -1,0 +1,184 @@
+{
+  "_comment": "Copyright lowRISC contributors (OpenTitan project). Licensed under the Apache License, Version 2.0, see LICENSE for details. SPDX-License-Identifier: Apache-2.0",
+  "performance": {
+    "max_number_of_threads": "all",
+    "minimize_probing_sets": "aggressive"
+  },
+  "simulation": {
+    "groups": [
+      "256'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$",
+      "256'h0000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "number_of_clock_cycles": 27,
+    "always_random_inputs": [
+      "rand_i[321:0]",
+      "remask_rand_i[63:0]"
+    ],
+    "input_sequence": [
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b0"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[63:0]",        "value": "64'h0000000000000000" },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b0"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[63:0]",        "value": "64'h0000000000000000" },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b0"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[63:0]",        "value": "64'h0000000000000000" },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[31:0]"      },
+          { "name": "in0_i[63:32]",       "value": "group_in1[31:0]"      },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[63:32]"     },
+          { "name": "in0_i[63:32]",       "value": "group_in1[63:32]"     },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[95:64]"     },
+          { "name": "in0_i[63:32]",       "value": "group_in1[95:64]"     },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[127:96]"    },
+          { "name": "in0_i[63:32]",       "value": "group_in1[127:96]"    },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[159:128]"   },
+          { "name": "in0_i[63:32]",       "value": "group_in1[159:128]"   },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[191:160]"   },
+          { "name": "in0_i[63:32]",       "value": "group_in1[191:160]"   },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[223:192]"   },
+          { "name": "in0_i[63:32]",       "value": "group_in1[223:192]"   },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b1"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[31:0]",        "value": "group_in0[255:224]"   },
+          { "name": "in0_i[63:32]",       "value": "group_in1[255:224]"   },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      },
+      {
+        "signals": [
+          { "name": "rst_ni",             "value": "1'b1"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "rready_i",           "value": "1'b1"                 },
+          { "name": "wvalid_i",           "value": "1'b0"                 },
+          { "name": "mask_op_i[4:0]",     "value": "5'h0B"                },
+          { "name": "mod_i[31:0]",        "value": "32'h007FE001"         },
+          { "name": "in0_i[63:0]",        "value": "64'h0000000000000000" },
+          { "name": "in1_i[63:0]",        "value": "64'h0000000000000000" }
+        ]
+      }
+    ],
+    "number_of_simulations": 1600000,
+    "number_of_simulations_per_step": 8000
+  },
+  "hardware": {
+    "clock_signal_name": "clk_i"
+  },
+  "side_channel_analysis": {
+    "order": 1,
+    "transitional_leakage": true,
+    "clock_cycles": [
+      "4-27"
+    ]
+  }
+}
