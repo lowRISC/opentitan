@@ -7849,6 +7849,16 @@
           index: -1
         }
         {
+          name: kmac_data
+          struct: app
+          package: kmac_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: otbn
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -25469,6 +25479,16 @@
         default: ""
         domain: Main
         top_signame: keymgr_otbn_key
+        index: -1
+      }
+      {
+        name: kmac_data
+        struct: app
+        package: kmac_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: otbn
         index: -1
       }
       {

@@ -158,6 +158,26 @@ module otbn_alu_bignum
   input  logic [ExtWLEN-1:0]          ispr_mai_res_s0_rdata_i,
   input  logic [ExtWLEN-1:0]          ispr_mai_res_s1_rdata_i,
 
+  output logic                        ispr_kmac_status_wr_o,
+  output logic [31:0]                 ispr_kmac_status_wdata_o,
+  output logic                        ispr_kmac_ctrl_wr_o,
+  output logic [31:0]                 ispr_kmac_ctrl_wdata_o,
+  output logic                        ispr_kmac_cfg_wr_o,
+  output logic [31:0]                 ispr_kmac_cfg_wdata_o,
+  output logic                        ispr_kmac_strb_wr_o,
+  output logic [31:0]                 ispr_kmac_strb_wdata_o,
+  output logic                        ispr_kmac_data_s0_wr_o,
+  output logic [ExtWLEN-1:0]          ispr_kmac_data_s0_wdata_o,
+  output logic                        ispr_kmac_data_s1_wr_o,
+  output logic [ExtWLEN-1:0]          ispr_kmac_data_s1_wdata_o,
+  input  logic [31:0]                 ispr_kmac_status_rdata_i,
+  input  logic [31:0]                 ispr_kmac_cfg_rdata_i,
+  input  logic [31:0]                 ispr_kmac_strb_rdata_i,
+  input  logic [ExtWLEN-1:0]          ispr_kmac_data_s0_rdata_i,
+  input  logic [ExtWLEN-1:0]          ispr_kmac_data_s1_rdata_i,
+  output logic                        ispr_kmac_data_s0_rd_o,
+  output logic                        ispr_kmac_data_s1_rd_o,
+
   output logic                        reg_intg_violation_err_o,
 
   input  logic                        sec_wipe_mod_urnd_i,
@@ -575,6 +595,61 @@ module otbn_alu_bignum
     .out_o(ispr_mai_ctrl_wdata_o)
   );
 
+  ////////////////
+  // KMAC Write //
+  ////////////////
+
+  assign ispr_kmac_status_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprKmacStatus];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(32'd32)) u_ispr_kmac_status_wdata_blanker (
+    .in_i (ispr_base_wdata_i),
+    .en_i (ispr_kmac_status_wr_o),
+    .out_o(ispr_kmac_status_wdata_o)
+  );
+
+  assign ispr_kmac_ctrl_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprKmacCtrl];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(32'd32)) u_ispr_kmac_ctrl_wdata_blanker (
+    .in_i (ispr_base_wdata_i),
+    .en_i (ispr_kmac_ctrl_wr_o),
+    .out_o(ispr_kmac_ctrl_wdata_o)
+  );
+
+  assign ispr_kmac_cfg_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprKmacCfg];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(32'd32)) u_ispr_kmac_cfg_wdata_blanker (
+    .in_i (ispr_base_wdata_i),
+    .en_i (ispr_kmac_cfg_wr_o),
+    .out_o(ispr_kmac_cfg_wdata_o)
+  );
+
+  assign ispr_kmac_strb_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprKmacStrb];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(32'd32)) u_ispr_kmac_strb_wdata_blanker (
+    .in_i (ispr_base_wdata_i),
+    .en_i (ispr_kmac_strb_wr_o),
+    .out_o(ispr_kmac_strb_wdata_o)
+  );
+
+  assign ispr_kmac_data_s0_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprKmacDataS0];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_data_s0_wdata_blanker (
+    .in_i (ispr_bignum_wdata_intg_i),
+    .en_i (ispr_kmac_data_s0_wr_o),
+    .out_o(ispr_kmac_data_s0_wdata_o)
+  );
+
+  assign ispr_kmac_data_s1_wr_o = ispr_bignum_predec_i.ispr_wr_en[IsprKmacDataS1];
+  // SEC_CM: DATA_REG_SW.SCA
+  prim_blanker #(.Width(ExtWLEN)) u_ispr_kmac_data_s1_wdata_blanker (
+    .in_i (ispr_bignum_wdata_intg_i),
+    .en_i (ispr_kmac_data_s1_wr_o),
+    .out_o(ispr_kmac_data_s1_wdata_o)
+  );
+
+  assign ispr_kmac_data_s0_rd_o = ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS0];
+  assign ispr_kmac_data_s1_rd_o = ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS1];
+
   ///////////////
   // ISPR Read //
   ///////////////
@@ -585,8 +660,8 @@ module otbn_alu_bignum
   // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
   // Number of ISPRs that have no integrity protection
-  localparam int NNoIntgIspr = 9;
-  // IDs for ISPRs with integrity
+  localparam int NNoIntgIspr = 12;
+  // IDs for ISPRs without integrity
   localparam int IsprRndNoIntg = 0;
   localparam int IsprUrndNoIntg = 1;
   localparam int IsprMaiCtrlNoIntg = 2;
@@ -596,11 +671,14 @@ module otbn_alu_bignum
   localparam int IsprKeyS0HNoIntg = 6;
   localparam int IsprKeyS1LNoIntg = 7;
   localparam int IsprKeyS1HNoIntg = 8;
+  localparam int IsprKmacStatusNoIntg = 9;
+  localparam int IsprKmacCfgNoIntg = 10;
+  localparam int IsprKmacStrbNoIntg = 11;
 
   logic [NNoIntgIspr-1:0] ispr_rdata_no_intg_mux_sel;
 
   // Number of ISPRs that have integrity protection
-  localparam int NIntgIspr = 8;
+  localparam int NIntgIspr = 10;
   // IDs for ISPRs with integrity
   localparam int IsprModIntg = 0;
   localparam int IsprAccIntg = 1;
@@ -610,8 +688,10 @@ module otbn_alu_bignum
   localparam int IsprMaiIn0S1Intg = 5;
   localparam int IsprMaiIn1S0Intg = 6;
   localparam int IsprMaiIn1S1Intg = 7;
+  localparam int IsprKmacDataS0Intg = 8;
+  localparam int IsprKmacDataS1Intg = 9;
   // ID representing all ISPRs with no integrity
-  localparam int IsprNoIntg = 8;
+  localparam int IsprNoIntg = 10;
 
   logic [NIntgIspr:0] ispr_rdata_intg_mux_sel;
   logic [ExtWLEN-1:0] ispr_rdata_intg_mux_in    [NIntgIspr+1];
@@ -635,24 +715,39 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1HNoIntg] =
       {{(WLEN - (SideloadKeyWidth - 256)){1'b0}}, sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
 
-  assign ispr_rdata_no_intg_mux_sel[IsprRndNoIntg]       =
+  assign ispr_rdata_no_intg_mux_in[IsprKmacStatusNoIntg] =
+      {{(WLEN - 32){1'b0}}, ispr_kmac_status_rdata_i};
+  assign ispr_rdata_no_intg_mux_in[IsprKmacCfgNoIntg]    =
+      {{(WLEN - 32){1'b0}}, ispr_kmac_cfg_rdata_i};
+  assign ispr_rdata_no_intg_mux_in[IsprKmacStrbNoIntg]   =
+      {{(WLEN - 32){1'b0}}, ispr_kmac_strb_rdata_i};
+
+  assign ispr_rdata_no_intg_mux_sel[IsprRndNoIntg]        =
       ispr_bignum_predec_i.ispr_rd_en[IsprRnd];
-  assign ispr_rdata_no_intg_mux_sel[IsprUrndNoIntg]      =
+  assign ispr_rdata_no_intg_mux_sel[IsprUrndNoIntg]       =
       ispr_bignum_predec_i.ispr_rd_en[IsprUrnd];
-  assign ispr_rdata_no_intg_mux_sel[IsprMaiCtrlNoIntg]   =
+  assign ispr_rdata_no_intg_mux_sel[IsprMaiCtrlNoIntg]    =
       ispr_bignum_predec_i.ispr_rd_en[IsprMaiCtrl];
-  assign ispr_rdata_no_intg_mux_sel[IsprMaiStatusNoIntg] =
+  assign ispr_rdata_no_intg_mux_sel[IsprMaiStatusNoIntg]  =
       ispr_bignum_predec_i.ispr_rd_en[IsprMaiStatus];
-  assign ispr_rdata_no_intg_mux_sel[IsprFlagsNoIntg]     =
+  assign ispr_rdata_no_intg_mux_sel[IsprFlagsNoIntg]      =
       ispr_bignum_predec_i.ispr_rd_en[IsprFlags];
-  assign ispr_rdata_no_intg_mux_sel[IsprKeyS0LNoIntg]    =
+  assign ispr_rdata_no_intg_mux_sel[IsprKeyS0LNoIntg]     =
       ispr_bignum_predec_i.ispr_rd_en[IsprKeyS0L];
-  assign ispr_rdata_no_intg_mux_sel[IsprKeyS0HNoIntg]    =
+  assign ispr_rdata_no_intg_mux_sel[IsprKeyS0HNoIntg]     =
       ispr_bignum_predec_i.ispr_rd_en[IsprKeyS0H];
-  assign ispr_rdata_no_intg_mux_sel[IsprKeyS1LNoIntg]    =
+  assign ispr_rdata_no_intg_mux_sel[IsprKeyS1LNoIntg]     =
       ispr_bignum_predec_i.ispr_rd_en[IsprKeyS1L];
-  assign ispr_rdata_no_intg_mux_sel[IsprKeyS1HNoIntg]    =
+  assign ispr_rdata_no_intg_mux_sel[IsprKeyS1HNoIntg]     =
       ispr_bignum_predec_i.ispr_rd_en[IsprKeyS1H];
+  assign ispr_rdata_no_intg_mux_sel[IsprKmacStatusNoIntg] =
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacStatus];
+  assign ispr_rdata_no_intg_mux_sel[IsprKmacCfgNoIntg]    =
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacCfg];
+  assign ispr_rdata_no_intg_mux_sel[IsprKmacStrbNoIntg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb];
+  // KMAC_CTRL always reads as '0. We use the onehot MUX to output '0 by not factoring in the
+  // KMAC_CTRL read enable signal into its select signal.
 
   logic [WLEN-1:0]    ispr_rdata_no_intg;
   logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
@@ -677,27 +772,45 @@ module otbn_alu_bignum
   end
 
   // Second stage
-  assign ispr_rdata_intg_mux_in[IsprModIntg]      = mod_intg_q;
-  assign ispr_rdata_intg_mux_in[IsprAccIntg]      = ispr_acc_intg_i;
-  assign ispr_rdata_intg_mux_in[IsprMaiResS0Intg] = ispr_mai_res_s0_rdata_i;
-  assign ispr_rdata_intg_mux_in[IsprMaiResS1Intg] = ispr_mai_res_s1_rdata_i;
-  assign ispr_rdata_intg_mux_in[IsprMaiIn0S0Intg] = ispr_mai_in0_s0_rdata_i;
-  assign ispr_rdata_intg_mux_in[IsprMaiIn0S1Intg] = ispr_mai_in0_s1_rdata_i;
-  assign ispr_rdata_intg_mux_in[IsprMaiIn1S0Intg] = ispr_mai_in1_s0_rdata_i;
-  assign ispr_rdata_intg_mux_in[IsprMaiIn1S1Intg] = ispr_mai_in1_s1_rdata_i;
-  assign ispr_rdata_intg_mux_in[IsprNoIntg]       = ispr_rdata_intg_calc;
+  assign ispr_rdata_intg_mux_in[IsprModIntg]        = mod_intg_q;
+  assign ispr_rdata_intg_mux_in[IsprAccIntg]        = ispr_acc_intg_i;
+  assign ispr_rdata_intg_mux_in[IsprMaiResS0Intg]   = ispr_mai_res_s0_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprMaiResS1Intg]   = ispr_mai_res_s1_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprMaiIn0S0Intg]   = ispr_mai_in0_s0_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprMaiIn0S1Intg]   = ispr_mai_in0_s1_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprMaiIn1S0Intg]   = ispr_mai_in1_s0_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprMaiIn1S1Intg]   = ispr_mai_in1_s1_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprKmacDataS0Intg] = ispr_kmac_data_s0_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprKmacDataS1Intg] = ispr_kmac_data_s1_rdata_i;
+  assign ispr_rdata_intg_mux_in[IsprNoIntg]         = ispr_rdata_intg_calc;
 
-  assign ispr_rdata_intg_mux_sel[IsprModIntg]      = ispr_bignum_predec_i.ispr_rd_en[IsprMod];
-  assign ispr_rdata_intg_mux_sel[IsprAccIntg]      = ispr_bignum_predec_i.ispr_rd_en[IsprAcc];
-  assign ispr_rdata_intg_mux_sel[IsprMaiResS0Intg] = ispr_bignum_predec_i.ispr_rd_en[IsprMaiResS0];
-  assign ispr_rdata_intg_mux_sel[IsprMaiResS1Intg] = ispr_bignum_predec_i.ispr_rd_en[IsprMaiResS1];
-  assign ispr_rdata_intg_mux_sel[IsprMaiIn0S0Intg] = ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn0S0];
-  assign ispr_rdata_intg_mux_sel[IsprMaiIn0S1Intg] = ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn0S1];
-  assign ispr_rdata_intg_mux_sel[IsprMaiIn1S0Intg] = ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn1S0];
-  assign ispr_rdata_intg_mux_sel[IsprMaiIn1S1Intg] = ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn1S1];
+  assign ispr_rdata_intg_mux_sel[IsprModIntg]        =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMod];
+  assign ispr_rdata_intg_mux_sel[IsprAccIntg]        =
+      ispr_bignum_predec_i.ispr_rd_en[IsprAcc];
+  assign ispr_rdata_intg_mux_sel[IsprMaiResS0Intg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiResS0];
+  assign ispr_rdata_intg_mux_sel[IsprMaiResS1Intg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiResS1];
+  assign ispr_rdata_intg_mux_sel[IsprMaiIn0S0Intg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn0S0];
+  assign ispr_rdata_intg_mux_sel[IsprMaiIn0S1Intg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn0S1];
+  assign ispr_rdata_intg_mux_sel[IsprMaiIn1S0Intg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn1S0];
+  assign ispr_rdata_intg_mux_sel[IsprMaiIn1S1Intg]   =
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiIn1S1];
+  assign ispr_rdata_intg_mux_sel[IsprKmacDataS0Intg] =
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS0];
+  assign ispr_rdata_intg_mux_sel[IsprKmacDataS1Intg] =
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS1];
 
   assign ispr_rdata_intg_mux_sel[IsprNoIntg] =
-    |{ispr_bignum_predec_i.ispr_rd_en[IsprMaiCtrl],
+    |{ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb],
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacCfg],
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacCtrl],
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacStatus],
+      ispr_bignum_predec_i.ispr_rd_en[IsprMaiCtrl],
       ispr_bignum_predec_i.ispr_rd_en[IsprMaiStatus],
       ispr_bignum_predec_i.ispr_rd_en[IsprKeyS1H:IsprKeyS0L],
       ispr_bignum_predec_i.ispr_rd_en[IsprUrnd],

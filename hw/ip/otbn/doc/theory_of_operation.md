@@ -553,14 +553,14 @@ These commands are then translated to dynamic application interface requests.
 The responses from the interface are translated and exposed to OTBN SW via `KMAC_STATUS` and `KMAC_DATA_S0` / `KMAC_DATA_S1`.
 
 The interface supports multiple successive sessions where each session follows the following high-level steps:
-- Configure the desired hashing mode via `KMAC_CFG`.
 - Check if the interface is ready by checking for `KMAC_STATUS.READY = 1`.
+- Configure the desired hashing mode via `KMAC_CFG`.
 - Start a session by issuing the `KMAC_CTRL.START` command.
 - Send the message parts by issuing one or more `KMAC_CTRL.SEND` commands.
 - Issue the `KMAC_CTRL.PROCESS` command to process the full message.
 - Wait for the first response by polling until `KMAC_STATUS.RSP_VALID = 1`.
 - Check for errors by reading `KMAC_STATUS.RSP_ERROR`.
-  - If there is an error, the session must be terminated by issuing the `KMAC_CTRL.DONE` command.
+  - If there is an error, the session must be terminated, see error handling.
 - Read the digest in 64-bit parts from `KMAC_DATA_S0` and `KMAC_DATA_S1`.
 - For more digest data, poll again until `KMAC_STATUS.RSP_VALID = 1` after reading both data WSRs.
 - Once the digest or the desired XOF output is read, end the digest reading phase by issuing a `KMAC_CTRL.DONE` command.
@@ -605,11 +605,11 @@ WaitForClose --> Idle: CLOSE command
 
 ##### Starting a session
 To start a session the OTBN SW has to:
+- Poll until `KMAC_STATUS.READY = 1`.
+  - This should be 1 in most cases when OTBN starts executing a program, however, the interface could still be terminating a previous session due to a secure wipe (see secure wipe behaviour).
 - Write the desired hashing configuration to `KMAC_CFG`.
   - There is no validation when writing a configuration to `KMAC_CFG` but KMAC HWIP does check the configuration once the session is started.
     See [error handling](#error-handling) section for more details.
-- Poll until `KMAC_STATUS.READY = 1`.
-  - This should be 1 in most cases when OTBN starts executing a program, however, the interface could still be terminating a previous session due to a secure wipe (see secure wipe behaviour).
 - Issue the `KMAC_CTRL.START` command by writing a 1 to it.
 - There may be no write to `KMAC_CFG` until `KMAC_STATUS.READY` is 1 again (polled for before sending message).
   - Otherwise the configuration can be changed while the start request is being sent.
@@ -654,10 +654,10 @@ After issuing the `PROCESS` command, OTBN software thus must do the following:
 
 The number of digest parts pushed by the app interface depends on the selected mode, strength and XOF setting.
 
-For SHA3 and KMAC, `KMAC_CFG.EN_XOF` must 0 and the interface pushes only the SHA3 digest or the requested output length for KMAC.
+For SHA3 and KMAC, `KMAC_CFG.EN_XOF` must be `0` and the interface pushes only the SHA3 digest or the requested output length for KMAC.
 The requested output length of KMAC is fixed by the KMAC HWIP to 384 bits.
 For SHA3 it pushes `roundup(digest_width / 64)` responses.
-For KMAC it pushes `384 / 64 = 9` responses.
+For KMAC it pushes `384 / 64 = 6` responses.
 Once these are pushed, the interface waits for a `DONE` command as explained [below](#ending-a-session).
 
 If the mode is SHAKE or cSHAKE, `KMAC_CFG.EN_XOF` controls whether the KMAC HWIP automatically issues RUN commands.
@@ -665,7 +665,7 @@ If `KMAC_CFG.EN_XOF = 0`, the KMAC HWIP pushes only the digest parts that make u
 Once these are pushed, the interface waits for a `DONE` command as explained [below](#ending-a-session).
 
 If `KMAC_CFG.EN_XOF = 1`, the KMAC HWIP pushes infinite responses.
-For this it automatically squeezes more digest by issuing a KMAC HWIP internal `RUN` command each time it finishes pushing one full rate.
+For this it automatically squeezes more digest by issuing a KMAC HWIP internal squeeze command each time it finishes pushing one full rate.
 As soon as the squeezing has finished, the app starts again to push the new rate towards OTBN.
 When the OTBN software has received enough XOF output, the session can be terminated as explained [below](#ending-a-session).
 

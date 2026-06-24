@@ -24,6 +24,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | lc_rma_req       | lc_ctrl_pkg::lc_tx              | uni     | rcv   |       1 |               |
 | lc_rma_ack       | lc_ctrl_pkg::lc_tx              | uni     | req   |       1 |               |
 | keymgr_key       | keymgr_pkg::otbn_key_req        | uni     | rcv   |       1 |               |
+| kmac_data        | kmac_pkg::app                   | req_rsp | req   |       1 |               |
 | tl               | tlul_pkg::tl                    | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
