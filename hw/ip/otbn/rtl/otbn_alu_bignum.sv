@@ -189,6 +189,7 @@ module otbn_alu_bignum
 
   input  logic [WLEN-1:0]             rnd_data_i,
   input  logic [WLEN-1:0]             urnd_data_i,
+  input  logic [31:0]                 insn_cnt_i,
 
   input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i,
 
@@ -660,7 +661,7 @@ module otbn_alu_bignum
   // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
   // Number of ISPRs that have no integrity protection
-  localparam int NNoIntgIspr = 12;
+  localparam int NNoIntgIspr = 13;
   // IDs for ISPRs without integrity
   localparam int IsprRndNoIntg = 0;
   localparam int IsprUrndNoIntg = 1;
@@ -674,6 +675,7 @@ module otbn_alu_bignum
   localparam int IsprKmacStatusNoIntg = 9;
   localparam int IsprKmacCfgNoIntg = 10;
   localparam int IsprKmacStrbNoIntg = 11;
+  localparam int IsprInsnCntNoIntg = 12;
 
   logic [NNoIntgIspr-1:0] ispr_rdata_no_intg_mux_sel;
 
@@ -714,6 +716,7 @@ module otbn_alu_bignum
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1LNoIntg] = sideload_key_shares_i[1][255:0];
   assign ispr_rdata_no_intg_mux_in[IsprKeyS1HNoIntg] =
       {{(WLEN - (SideloadKeyWidth - 256)){1'b0}}, sideload_key_shares_i[1][SideloadKeyWidth-1:256]};
+  assign ispr_rdata_no_intg_mux_in[IsprInsnCntNoIntg] = {{(WLEN - 32){1'b0}}, insn_cnt_i};
 
   assign ispr_rdata_no_intg_mux_in[IsprKmacStatusNoIntg] =
       {{(WLEN - 32){1'b0}}, ispr_kmac_status_rdata_i};
@@ -748,6 +751,9 @@ module otbn_alu_bignum
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb];
   // KMAC_CTRL always reads as '0. We use the onehot MUX to output '0 by not factoring in the
   // KMAC_CTRL read enable signal into its select signal.
+
+  assign ispr_rdata_no_intg_mux_sel[IsprInsnCntNoIntg]  =
+      ispr_bignum_predec_i.ispr_rd_en[IsprInsnCnt];
 
   logic [WLEN-1:0]    ispr_rdata_no_intg;
   logic [ExtWLEN-1:0] ispr_rdata_intg_calc;
@@ -806,7 +812,8 @@ module otbn_alu_bignum
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacDataS1];
 
   assign ispr_rdata_intg_mux_sel[IsprNoIntg] =
-    |{ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb],
+    |{ispr_bignum_predec_i.ispr_rd_en[IsprInsnCnt],
+      ispr_bignum_predec_i.ispr_rd_en[IsprKmacStrb],
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacCfg],
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacCtrl],
       ispr_bignum_predec_i.ispr_rd_en[IsprKmacStatus],

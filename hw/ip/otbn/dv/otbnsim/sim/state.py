@@ -84,7 +84,7 @@ class OTBNState:
 
         self.ext_regs = OTBNExtRegs()
         self.wsrs = WSRFile(self.ext_regs)
-        self.csrs = CSRFile(self.wsrs)
+        self.csrs = CSRFile(self.wsrs, self.ext_regs)
         self.kmac = Kmac(self.csrs, self.wsrs)
 
         self.pc = 0
@@ -382,7 +382,7 @@ class OTBNState:
         # treatment because some of them have values that persist across
         # operations.
         self.wsrs.on_start()
-        self.csrs = CSRFile(self.wsrs)
+        self.csrs = CSRFile(self.wsrs, self.ext_regs)
         # TODO: Figure out how to model the secure wipe persistent behaviour of the KMAC interface.
         self.kmac.on_start(self.csrs, self.wsrs)
         self.mai.on_start(self.csrs, self.wsrs)

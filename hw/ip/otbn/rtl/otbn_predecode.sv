@@ -767,6 +767,7 @@ module otbn_predecode
         CsrKmacStrb:                        ispr_addr = IsprKmacStrb;
         CsrMaiCtrl:                         ispr_addr = IsprMaiCtrl;
         CsrMaiStatus:                       ispr_addr = IsprMaiStatus;
+        CsrInsnCnt:                         ispr_addr = IsprInsnCnt;
         default: ;
       endcase
     end else begin

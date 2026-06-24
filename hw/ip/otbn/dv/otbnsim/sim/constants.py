@@ -83,6 +83,7 @@ class CsrAddrs(IntEnum):
     MAI_CTRL = 0x7e0
     RND = 0xfc0
     URND = 0xfc1
+    INSN_CNT = 0xfc2
     MAI_STATUS = 0xfca
 
 

@@ -1054,6 +1054,7 @@ module otbn_core
 
     .rnd_data_i (rnd_data),
     .urnd_data_i(urnd_data[WLEN-1:0]),
+    .insn_cnt_i (insn_cnt),
 
     .sideload_key_shares_i,
 

@@ -1337,6 +1337,10 @@ module otbn_controller
         ispr_addr_base      = IsprMaiStatus;
         ispr_word_addr_base = '0;
       end
+      CsrInsnCnt: begin
+        ispr_addr_base      = IsprInsnCnt;
+        ispr_word_addr_base = '0;
+      end
       default: csr_illegal_addr = 1'b1;
     endcase
   end
