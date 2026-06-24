@@ -205,6 +205,7 @@ module otbn_kmac_if
 
   logic accept_data_rsp;
   logic clear_rsp_valid;
+  logic clear_error_flags;
   logic discard_rsp_ready;
   logic finish_rsp_hs;
 
@@ -230,6 +231,7 @@ module otbn_kmac_if
     // Control signals for the response handling.
     accept_data_rsp   = 1'b0;
     clear_rsp_valid   = 1'b0;
+    clear_error_flags = 1'b0;
     discard_rsp_ready = 1'b0;
 
     // Secure wipe recovery
@@ -360,8 +362,9 @@ module otbn_kmac_if
           state_d = OtbnKmacSecWipeClearing;
         end else if (current_cmd.close) begin
           // Clean up any state
-          state_d         = OtbnKmacIdle;
-          clear_rsp_valid = 1'b1;
+          state_d           = OtbnKmacIdle;
+          clear_rsp_valid   = 1'b1;
+          clear_error_flags = 1'b1;
         end
         unexpected_cmd_detected = |{current_cmd.start, current_cmd.send, current_cmd.proc,
                                     current_cmd.done};
@@ -645,10 +648,10 @@ module otbn_kmac_if
 
   // The RSP_ERROR is sticky and W1C where any response has priority over the SW clearing.
   // Discard any updates during the secure wipe except when FSM resets the flag.
-  assign rsp_error_d = wipe_configuration              ? 1'b0                          :
-                       sec_wipe_detected               ? rsp_error_q                   :
-                       data_rsp_hs || discarded_rsp_hs ? app_rsp_i.error | rsp_error_q :
-                       clear_rsp_error                 ? 1'b0                          :
+  assign rsp_error_d = wipe_configuration              ? 1'b0                           :
+                       sec_wipe_detected               ? rsp_error_q                    :
+                       data_rsp_hs || discarded_rsp_hs ? app_rsp_i.error || rsp_error_q :
+                       clear_rsp_error                 ? 1'b0                           :
                                                          rsp_error_q;
 
   // The MSG_WRITE_ERROR is sticky and W1C.
@@ -791,11 +794,14 @@ module otbn_kmac_if
 
   assign ispr_kmac_status_rdata_o = ispr_kmac_status_r;
 
-  assign clear_rsp_error = ispr_kmac_status_w.status.rsp_error & ispr_kmac_status_wr_i;
+  assign clear_rsp_error = (ispr_kmac_status_w.status.rsp_error && ispr_kmac_status_wr_i) ||
+                           clear_error_flags;
 
-  assign clear_msg_write_error = ispr_kmac_status_w.status.msg_write_error & ispr_kmac_status_wr_i;
+  assign clear_msg_write_error =
+      (ispr_kmac_status_w.status.msg_write_error && ispr_kmac_status_wr_i) || clear_error_flags;
 
-  assign clear_ctrl_error = ispr_kmac_status_w.status.ctrl_error & ispr_kmac_status_wr_i;
+  assign clear_ctrl_error = (ispr_kmac_status_w.status.ctrl_error && ispr_kmac_status_wr_i) ||
+                            clear_error_flags;
 
   ///////////////////////////
   // Secure wipe detection //
@@ -906,12 +912,12 @@ module otbn_kmac_if
   // Interface connection //
   //////////////////////////
   assign app_req_o = '{
-    req_valid: send_start_req | send_msg_beat | send_process_req | send_termination_req,
+    req_valid: send_start_req || send_msg_beat || send_process_req || send_termination_req,
     data_s0:   req_data_s0,
     data_s1:   req_data_s1,
     strb:      req_strb,
-    req_last:  send_process_req | send_termination_req,
-    rsp_ready: data_rsp_ready | discard_rsp_ready
+    req_last:  send_process_req || send_termination_req,
+    rsp_ready: data_rsp_ready || discard_rsp_ready
   };
 
   // Assert that only one request source  is active at the same time as otherwise requests are
