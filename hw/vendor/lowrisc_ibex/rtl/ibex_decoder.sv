@@ -465,13 +465,21 @@ module ibex_decoder #(
             {7'b000_0101, 3'b110}, // max
             {7'b000_0101, 3'b101}, // minu
             {7'b000_0101, 3'b111}, // maxu
-            {7'b000_0100, 3'b100}, // pack
-            {7'b000_0100, 3'b111}, // packh
             // RV32B zbs
             {7'b010_0100, 3'b001}, // bclr
             {7'b001_0100, 3'b001}, // bset
             {7'b011_0100, 3'b001}, // binv
             {7'b010_0100, 3'b101}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bext
+            // RV32B zbb / zbkb
+            {7'b000_0100, 3'b100}: begin // pack / zext.h
+              // zext.h (Zbb) = pack rd, rs1, x0; general pack is Zbkb (RV32BFull only).
+              if (instr[24:20] == 5'b00000) begin
+                illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;                    // zext.h
+              end else begin
+                illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;                    // pack
+              end
+            end
+            {7'b000_0100, 3'b111}: illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1; // packh
             // RV32B zbkx
             {7'b001_0100, 3'b010}, // xperm4
             {7'b001_0100, 3'b100}, // xperm8
@@ -912,8 +920,15 @@ module ibex_decoder #(
             {7'b000_0101, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_MINU;
             {7'b000_0101, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_MAXU;
 
-            {7'b000_0100, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACK;
-            {7'b000_0100, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACKH;
+            {7'b000_0100, 3'b100}: begin
+              // zext.h (Zbb, rs2=x0) reuses the pack datapath; general pack is Zbkb.
+              if (instr_alu[24:20] == 5'b00000) begin
+                if (RV32B != RV32BNone) alu_operator_o = ALU_PACK; // zext.h
+              end else begin
+                if (RV32B == RV32BFull) alu_operator_o = ALU_PACK; // pack
+              end
+            end
+            {7'b000_0100, 3'b111}: if (RV32B == RV32BFull) alu_operator_o = ALU_PACKH;
 
             {7'b010_0000, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_XNOR;
             {7'b010_0000, 3'b110}: if (RV32B != RV32BNone) alu_operator_o = ALU_ORN;

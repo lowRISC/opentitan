@@ -272,6 +272,11 @@ smoke_alu_zbp:
   li t0, 0x00009fb6
   check t0, t2
 
+  // zext.h (Zbb): pack rd, rs, x0 -> zero-extend the low halfword.
+  zext.h t2, t3
+  li t0, 0x0000cc9f
+  check t0, t2
+
   li t0, 0x00f7f9ff
   li t2, 0x04030001
   xperm4  t3, t3, t2

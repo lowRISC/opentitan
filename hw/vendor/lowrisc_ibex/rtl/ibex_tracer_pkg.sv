@@ -87,15 +87,8 @@ package ibex_tracer_pkg;
   parameter logic [31:0] INSN_SEXTB = { 12'b011000000100, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
   parameter logic [31:0] INSN_SEXTH = { 12'b011000000101, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
 
-  // The zext.h and zext.b pseudo-instructions are defined in the ratified v.1.0.0 and draft v.0.94
-  // specifications of the bitmanip extension, respectively. They are currently not emitted by the
-  // tracer due to a lack of support in the LLVM and GCC toolchains. Enabling this functionality
-  // when the time is right is tracked in https://github.com/lowRISC/ibex/issues/1228
-  // zext.b -- pseudo-instruction: andi rd, rs 255
-  // parameter logic [31:0] INSN_ZEXTB =
-  //     { 4'b0000, 8'b11111111, 5'h?, 3'b111, 5'h?, {OPCODE_OP_IMM} };
-  // zext.h -- pseudo-instruction: pack rd, rs zero
-  // parameter logic [31:0] INSN_ZEXTH = { 7'b0000100, 5'b00000, 5'h?, 3'b100, 5'h?, {OPCODE_OP} };
+  // zext.h (Zbb) is the pseudo-instruction `pack rd, rs, x0`.
+  parameter logic [31:0] INSN_ZEXTH = { 7'b0000100, 5'b00000, 5'h?, 3'b100, 5'h?, {OPCODE_OP} };
 
   parameter logic [31:0] INSN_ROL   = { 7'b0110000, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_ROR   = { 7'b0110000, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };

@@ -1046,18 +1046,13 @@ module ibex_tracer (
         INSN_XNOR:       decode_r_insn("xnor");
         INSN_ORN:        decode_r_insn("orn");
         INSN_ANDN:       decode_r_insn("andn");
-        // The ratified v.1.0.0 bitmanip extension defines the pseudo-instruction
-        //   zext.h rd rs = pack rd, rs, zero.
-        // However, for now the tracer doesn't emit this due to a lack of support in the LLVM and
-        // GCC toolchains. Enabling this functionality when the time is right is tracked in
-        // https://github.com/lowRISC/ibex/issues/1228
-        INSN_PACK:       decode_r_insn("pack");
-        // INSN_PACK: begin
-          // casez (rvfi_insn)
-            // INSN_ZEXTH:  decode_r1_insn("zext.h");
-            // default:     decode_r_insn("pack");
-          // endcase
-        // end
+        // zext.h (Zbb) is the pseudo-instruction `pack rd, rs, x0`
+        INSN_PACK: begin
+          unique casez (rvfi_insn)
+            INSN_ZEXTH:  decode_r1_insn("zext.h");
+            default:     decode_r_insn("pack");
+          endcase
+        end
         INSN_PACKH:      decode_r_insn("packh");
         INSN_CLZ:        decode_r1_insn("clz");
         INSN_CTZ:        decode_r1_insn("ctz");
