@@ -117,6 +117,7 @@ module otbn_tracer (
       IsprKmacCtrl: return "KMAC_CTRL";
       IsprKmacCfg: return "KMAC_CFG";
       IsprKmacStrb: return "KMAC_STRB";
+      IsprInsnCnt: return "INSN_CNT";
       default: return $sformatf("UNKNOWN_ISPR: (%d)", ispr);
     endcase
   endfunction
@@ -144,7 +145,8 @@ module otbn_tracer (
       IsprMaiStatus,
       IsprKmacStatus,
       IsprKmacCtrl,
-      IsprKmacStrb: return 32;
+      IsprKmacStrb,
+      IsprInsnCnt: return 32;
       default: return -1;
     endcase
   endfunction

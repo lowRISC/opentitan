@@ -629,6 +629,16 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0xFC2</td>
+      <td>RO</td>
+      <td>INSN_CNT</td>
+      <td>
+        This CSR exposes the top level `INSN_CNT` register such that it can be used by OTBN software for security related checks.
+        A read returns the number of instructions retired before the current CSR read instruction (i.e, the read instruction in not included).
+        See the `INSN_CNT` register description for more details regarding how it is cleared.
+      </td>
+    </tr>
+    <tr>
       <td>0xFCA</td>
       <td>RO</td>
       <td>MAI_STATUS</td>
@@ -972,6 +982,9 @@ In order to detect and mitigate fault injection attacks on the OTBN, the host CP
 The host CPU can clear the instruction counter when OTBN is not running.
 Writing any value to [`INSN_CNT`](doc/registers.md#insn_cnt) clears this register to zero.
 Write attempts while OTBN is running are ignored.
+
+This instruction count is also exposed to the OTBN SW directly via the read-only `INSN_CNT` CSR.
+This allows to do more fine grained instruction count based countermeasures.
 
 ## Key Sideloading
 

@@ -232,6 +232,14 @@
     The number is sourced from an local PRNG.
     Reads never stall.
 
+- name: insn_cnt
+  address: 0xfc2
+  read-only: true
+  doc: |
+    This CSR exposes the top level `INSN_CNT` register such that it can be used by OTBN software for security related checks.
+    A read returns the number of instructions retired before the current CSR read instruction (i.e, the read instruction in not included).
+    See the `INSN_CNT` register description for more details regarding how it is cleared.
+
 - name: mai_status
   address: 0xfca
   read-only: true

@@ -14,6 +14,13 @@ add x2, x2, 0x513
 lui x3, 0xa0be9
 add x3, x3, 0x11a
 
+# Test the INSN_CNT register read
+csrrs x4, INSN_CNT, x0
+addi x5, x0, 4
+beq x4, x5, _insn_cnt_ok
+unimp
+_insn_cnt_ok:
+
 # x4 = x2 + x3 = 0x717d462d
 add x4, x2, x3
 

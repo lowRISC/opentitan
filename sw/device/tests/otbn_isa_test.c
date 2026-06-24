@@ -31,7 +31,7 @@ static const otbn_addr_t kWdrState = OTBN_ADDR_T_INIT(smoke_test, wdr_state);
 enum {
   kNumExpectedGprs = 30,
   kNumExpectedWdrs = 32,
-  kExpectedInstrCount = 296,
+  kExpectedInstrCount = 299,
 };
 
 // The expected values of the GPRs and WDRs are taken from

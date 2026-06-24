@@ -4,6 +4,7 @@
 
 from typing import Any, Callable, Dict, List, Optional
 from .constants import CsrAddrs
+from .ext_regs import OTBNExtRegs
 from .flags import FlagGroups
 from .kmac_ispr import KmacStatusCSR, KmacCtrlCSR, KmacCfgCSR, KmacStrbCSR
 from .mai_ispr import MaiCtrlCSR, MaiStatusCSR
@@ -41,7 +42,7 @@ class WrapperCSR:
 
 class CSRFile:
     '''A model of the CSR file'''
-    def __init__(self, wsrs: WSRFile) -> None:
+    def __init__(self, wsrs: WSRFile, ext_regs: OTBNExtRegs) -> None:
         self.flags = FlagGroups()
         self.RND_PREFETCH = WrapperCSR(
             write_func=lambda val: wsrs.RND.request_value()
@@ -54,6 +55,7 @@ class CSRFile:
         self.URND = WrapperCSR(read_func=wsrs.URND.read_u32)
         self.MAI_CTRL = MaiCtrlCSR()
         self.MAI_STATUS = MaiStatusCSR()
+        self.INSN_CNT = WrapperCSR(read_func=ext_regs.read_insn_cnt)
 
         # This does not include all CSR addresses because:
         # - FG0 and FG1 map to the same underlying register.
@@ -69,6 +71,7 @@ class CSRFile:
             CsrAddrs.RND: self.RND,
             CsrAddrs.URND: self.URND,
             CsrAddrs.MAI_STATUS: self.MAI_STATUS,
+            CsrAddrs.INSN_CNT: self.INSN_CNT,
         }
 
     @staticmethod
