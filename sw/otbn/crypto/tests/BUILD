@@ -227,10 +227,6 @@ otbn_sim_test(
     srcs = [
         "kmac_test.s",
     ],
-    # FIXME: Temporarily broken after 058efa9ca0 as the test assembly directly
-    # refers to CSR `KMAC_INTR` which no longer exists. This should be fixed and
-    # then this tag removed.
-    tags = ["broken"],
     testcase = "kmac_test.hjson",
 )
 
