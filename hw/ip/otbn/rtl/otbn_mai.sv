@@ -179,7 +179,7 @@ module otbn_mai
   ispr_mai_ctrl_t   ispr_mai_ctrl_w;
   ispr_mai_status_t ispr_mai_status;
   logic             ma_start;
-  mask_op_e         ma_mask_op_q;
+  mask_op_e         ma_mask_op_q, ma_mask_op_d;
   ispr_mai_sw_err_t ispr_mai_sw_err;
 
   // WSRs
@@ -430,11 +430,16 @@ module otbn_mai
 
   // Erroneous control accesses
   assign ispr_mai_sw_err.busy_start     = ma_start & ma_busy_q;
+  // There may not be a write to the input WSRs nor the configuration whilst an execution is
+  // ongoing. This is required to keep data and configuration stable and valid for the whole
+  // execution.
   assign ispr_mai_sw_err.busy_write     = ma_in_valid_q &
-                                          |{ ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
-                                             ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i };
+                                          |{ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
+                                            ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i,
+                                            ispr_mai_ctrl_wr_i};
   assign ispr_mai_sw_err.rsvd_csr_write = ispr_mai_ctrl_wr_i & (|ispr_mai_ctrl_w.rsvd);
-  assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_q inside
+  // The configuration latched when an execution starts must be valid.
+  assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_d inside
                                           {SecAdd, SecAddMod, ArithToBool, BoolToArith}) & ma_start;
 
   // Valid control
@@ -463,15 +468,17 @@ module otbn_mai
     end
   end
 
-  // Store the operation of the mask accelerator
+  // Store the operation of the mask accelerator.
+  assign ma_mask_op_d = ispr_mai_ctrl_wr_i ? ispr_mai_ctrl_w.op : ma_mask_op_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_ma_op_store
     if (!rst_ni) begin
       ma_mask_op_q <= SecAdd;
     end else begin
       if (sec_wipe_mai_i) begin
         ma_mask_op_q <= SecAdd;
-      end else if (ispr_mai_ctrl_wr_i) begin
-        ma_mask_op_q <= ispr_mai_ctrl_w.op;
+      end else begin
+        ma_mask_op_q <= ma_mask_op_d;
       end
     end
   end
