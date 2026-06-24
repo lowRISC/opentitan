@@ -104,8 +104,8 @@ package ibex_pkg;
     ALU_ROL,
     ALU_GREV,
     ALU_GORC,
-    ALU_SHFL,
-    ALU_UNSHFL,
+    ALU_ZIP,
+    ALU_UNZIP,
     ALU_XPERM4,
     ALU_XPERM8,
 

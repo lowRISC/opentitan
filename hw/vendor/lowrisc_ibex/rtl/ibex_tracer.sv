@@ -1114,38 +1114,8 @@ module ibex_tracer (
             default:     decode_i_insn("gorci");
           endcase
         end
-        INSN_SHFL:       decode_r_insn("shfl");
-        INSN_SHFLI: begin
-          unique casez (rvfi_insn)
-            INSN_ZIP_N:  decode_r1_insn("zip.n");
-            INSN_ZIP2_B: decode_r1_insn("zip2.b");
-            INSN_ZIP_B:  decode_r1_insn("zip.b");
-            INSN_ZIP4_H: decode_r1_insn("zip4.h");
-            INSN_ZIP2_H: decode_r1_insn("zip2.h");
-            INSN_ZIP_H:  decode_r1_insn("zip.h");
-            INSN_ZIP8:   decode_r1_insn("zip8");
-            INSN_ZIP4:   decode_r1_insn("zip4");
-            INSN_ZIP2:   decode_r1_insn("zip2");
-            INSN_ZIP:    decode_r1_insn("zip");
-            default:     decode_i_insn("shfli");
-          endcase
-        end
-        INSN_UNSHFL:       decode_r_insn("unshfl");
-        INSN_UNSHFLI: begin
-          unique casez (rvfi_insn)
-            INSN_UNZIP_N:  decode_r1_insn("unzip.n");
-            INSN_UNZIP2_B: decode_r1_insn("unzip2.b");
-            INSN_UNZIP_B:  decode_r1_insn("unzip.b");
-            INSN_UNZIP4_H: decode_r1_insn("unzip4.h");
-            INSN_UNZIP2_H: decode_r1_insn("unzip2.h");
-            INSN_UNZIP_H:  decode_r1_insn("unzip.h");
-            INSN_UNZIP8:   decode_r1_insn("unzip8");
-            INSN_UNZIP4:   decode_r1_insn("unzip4");
-            INSN_UNZIP2:   decode_r1_insn("unzip2");
-            INSN_UNZIP:    decode_r1_insn("unzip");
-            default:       decode_i_insn("unshfli");
-          endcase
-        end
+        INSN_ZIP:        decode_r1_insn("zip");
+        INSN_UNZIP:      decode_r1_insn("unzip");
         INSN_XPERM4:     decode_r_insn("xperm4");
         INSN_XPERM8:     decode_r_insn("xperm8");
 

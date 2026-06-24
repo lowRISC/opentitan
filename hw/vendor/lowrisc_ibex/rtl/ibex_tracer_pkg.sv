@@ -193,55 +193,12 @@ package ibex_tracer_pkg;
       { 5'b00101, 1'b0, 1'b?, 5'b11110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
   parameter logic [31:0] INSN_ORC =
       { 5'b00101, 1'b0, 1'b?, 5'b11111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  // shfli
-  parameter logic [31:0] INSN_SHFLI = { 6'b000010, 11'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  // shfli -- pseudo-instructions
-  parameter logic [31:0] INSN_ZIP_N =
-      { 6'b000010, 2'h?, 4'b0001, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP2_B =
-      { 6'b000010, 2'h?, 4'b0010, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP_B =
-      { 6'b000010, 2'h?, 4'b0011, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP4_H =
-      { 6'b000010, 2'h?, 4'b0100, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP2_H =
-      { 6'b000010, 2'h?, 4'b0110, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP_H =
-      { 6'b000010, 2'h?, 4'b0111, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP8 =
-      { 6'b000010, 2'h?, 4'b1000, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP4 =
-      { 6'b000010, 2'h?, 4'b1100, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_ZIP2 =
-      { 6'b000010, 2'h?, 4'b1110, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+  // zip / unzip (Zbkb, rv32): the shfli/unshfli shuffle restricted to the
+  // shamt=0x0F (full zip) control value. No other control and no reg-reg form.
   parameter logic [31:0] INSN_ZIP =
-      { 6'b000010, 2'h?, 4'b1111, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
-  // unshfli
-  parameter logic [31:0] INSN_UNSHFLI = { 6'b000010, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  // unshfli -- pseudo-instructions
-  parameter logic [31:0] INSN_UNZIP_N =
-      { 6'b000010, 2'h?, 4'b0001, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP2_B =
-      { 6'b000010, 2'h?, 4'b0010, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP_B =
-      { 6'b000010, 2'h?, 4'b0011, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP4_H =
-      { 6'b000010, 2'h?, 4'b0100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP2_H =
-      { 6'b000010, 2'h?, 4'b0110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP_H =
-      { 6'b000010, 2'h?, 4'b0111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP8 =
-      { 6'b000010, 2'h?, 4'b1000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP4 =
-      { 6'b000010, 2'h?, 4'b1100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-  parameter logic [31:0] INSN_UNZIP2 =
-      { 6'b000010, 2'h?, 4'b1110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+      { 7'b0000100, 5'b01111, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
   parameter logic [31:0] INSN_UNZIP =
-      { 6'b000010, 2'h?, 4'b1111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
-
-  parameter logic [31:0] INSN_SHFL   = { 7'b0000100, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
-  parameter logic [31:0] INSN_UNSHFL = { 7'b0000100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+      { 7'b0000100, 5'b01111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
 
   parameter logic [31:0] INSN_XPERM4 = { 7'b0010100, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
   parameter logic [31:0] INSN_XPERM8 = { 7'b0010100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };

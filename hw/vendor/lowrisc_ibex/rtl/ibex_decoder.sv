@@ -369,7 +369,8 @@ module ibex_decoder #(
               5'b0_0101,                                                              // bseti
               5'b0_1101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;           // binvi
               5'b0_0001: begin
-                if (instr[26] == 1'b0) begin                                          // shfl
+                // zip (Zbkb): shfli with shamt fixed to 0x0F
+                if (instr[26:20] == 7'b000_1111) begin                                // zip
                   illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
                 end else begin
                   illegal_insn = 1'b1;
@@ -419,10 +420,9 @@ module ibex_decoder #(
                   end
                 end
                 5'b0_0001: begin
-                  // Since instr[26] is known to be 0, this must be the "unshfl" instruction, which
-                  // is part of the RISC-V bitmanip extension. This is supported for the
-                  // RV32BFull bitmanip configuration.
-                  illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
+                  // unzip (Zbkb): unshfli with shamt fixed to 0x0F
+                  illegal_insn = (instr[26:20] == 7'b000_1111 && RV32B == RV32BFull) ?
+                                 1'b0 : 1'b1;
                 end
 
                 default: illegal_insn = 1'b1;
@@ -475,9 +475,7 @@ module ibex_decoder #(
             {7'b001_0100, 3'b001}, // bset
             {7'b011_0100, 3'b001}, // binv
             {7'b010_0100, 3'b101}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bext
-            // RV32B zbp
-            {7'b000_0100, 3'b001}, // shfl
-            {7'b000_0100, 3'b101}, // unshfl
+            // RV32B zbkx
             {7'b001_0100, 3'b010}, // xperm4
             {7'b001_0100, 3'b100}, // xperm8
             // RV32B zbc
@@ -812,8 +810,8 @@ module ibex_decoder #(
                 5'b0_1001: alu_operator_o = ALU_BCLR; // Clear bit specified by immediate
                 5'b0_0101: alu_operator_o = ALU_BSET; // Set bit specified by immediate
                 5'b0_1101: alu_operator_o = ALU_BINV; // Invert bit specified by immediate.
-                // Shuffle with Immediate Control Value
-                5'b0_0001: if (instr_alu[26] == 0) alu_operator_o = ALU_SHFL;
+                // zip (Zbkb): shfli with shamt fixed to 0x0F
+                5'b0_0001: if (instr_alu[26:20] == 7'b000_1111) alu_operator_o = ALU_ZIP;
                 5'b0_1100: begin
                   unique case (instr_alu[26:20])
                     7'b000_0000: alu_operator_o = ALU_CLZ;   // clz
@@ -847,10 +845,10 @@ module ibex_decoder #(
                   end
                   5'b0_1101: alu_operator_o = ALU_GREV;  // General Reverse with Imm Control Val
                   5'b0_0101: alu_operator_o = ALU_GORC;  // General Or-combine with Imm Control Val
-                  // Unshuffle with Immediate Control Value
+                  // unzip (Zbkb): unshfli with shamt fixed to 0x0F
                   5'b0_0001: begin
                     if (RV32B == RV32BFull) begin
-                      if (instr_alu[26] == 1'b0) alu_operator_o = ALU_UNSHFL;
+                      if (instr_alu[26:20] == 7'b000_1111) alu_operator_o = ALU_UNZIP;
                     end
                   end
                   default: ;
@@ -927,13 +925,7 @@ module ibex_decoder #(
             {7'b011_0100, 3'b001}: if (RV32B != RV32BNone) alu_operator_o = ALU_BINV;
             {7'b010_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_BEXT;
 
-            // RV32B zbp
-            {7'b000_0100, 3'b001}: begin
-              if (RV32B == RV32BFull) alu_operator_o = ALU_SHFL;
-            end
-            {7'b000_0100, 3'b101}: begin
-              if (RV32B == RV32BFull) alu_operator_o = ALU_UNSHFL;
-            end
+            // RV32B zbkx
             {7'b001_0100, 3'b010}: begin
               if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM4;
             end

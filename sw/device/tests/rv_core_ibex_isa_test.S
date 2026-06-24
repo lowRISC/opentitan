@@ -262,7 +262,7 @@ smoke_alu_zbc:
  */
 smoke_alu_zbp:
   .option push
-  .option arch, +zbp0p93
+  .option arch, +zbkb, +zbkx
   li t0, 0xcc9fd6b6
   li t1, 0x7ce71003
   li t3, 0x7ce7cc9f
@@ -274,19 +274,19 @@ smoke_alu_zbp:
 
   li t0, 0x00f7f9ff
   li t2, 0x04030001
-  xperm.n t3, t3, t2
-  xperm.b t3, t3, t2
+  xperm4  t3, t3, t2
+  xperm8  t3, t3, t2
   check t3, t0
 
-  li t0, 4
-  li t1, 0xc77e0130
-  shfl    t1, t1, t0
-  li t1, 0xffff3311
-  unshfl  t1, t1, t0
-  .option pop
-
-  li t0, 0xffff3131
+  // zip/unzip (Zbkb): zip interleaves the low/high halfwords bit-by-bit; unzip
+  // is its inverse. zip(0x0000ffff) = 0x55555555, unzip(0x55555555) = 0x0000ffff.
+  li t0, 0x0000ffff
+  zip   t1, t0
+  li t2, 0x55555555
+  check t2, t1
+  unzip t1, t1
   check t0, t1
+  .option pop
   ret
 
 /**
@@ -317,17 +317,24 @@ smoke_alu_b_imm:
   bexti t1, t0, 8
   // zbb
   rori  t0, t0, 16
-  // zbp
-  .option push
-  .option arch, +zbp0p93
-  grevi   t0, t0, 4
-  shfli   t0, t0, 4
-  gorci   t0, t0, 2
-  unshfli t0, t0, 4
-  .option pop
-
-  li t1, 0x5affff5f
+  li    t1, 0x24c7fce4
   check t0, t1
+
+  // zbb/zbkb immediate permutations
+  .option push
+  .option arch, +zbb, +zbkb
+  li    t0, 0x12345678
+  brev8 t0, t0
+  li    t1, 0x482c6a1e
+  check t0, t1
+  rev8  t0, t0
+  li    t1, 0x1e6a2c48
+  check t0, t1
+  li    t0, 0x12000034
+  orc.b t0, t0
+  li    t1, 0xff0000ff
+  check t0, t1
+  .option pop
   ret
 
 /**

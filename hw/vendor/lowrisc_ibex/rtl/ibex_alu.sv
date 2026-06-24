@@ -560,9 +560,11 @@ module ibex_alu #(
 
     if (RV32B == RV32BFull) begin : gen_alu_rvb_full
 
-      /////////////////////////
-      // Shuffle / Unshuffle //
-      /////////////////////////
+      /////////////////
+      // Zip / Unzip //
+      /////////////////
+      // zip/unzip (Zbkb) are the shfli/unshfli shuffle network restricted to the
+      // shamt=0x0F (full) control value.
 
       localparam logic [31:0] SHUFFLE_MASK_L [4] =
           '{32'h00ff_0000, 32'h0f00_0f00, 32'h3030_3030, 32'h4444_4444};
@@ -580,7 +582,7 @@ module ibex_alu #(
       end
 
       logic shuffle_flip;
-      assign shuffle_flip = operator_i == ALU_UNSHFL;
+      assign shuffle_flip = operator_i == ALU_UNZIP;
 
       logic [3:0] shuffle_mode;
 
@@ -882,7 +884,7 @@ module ibex_alu #(
       ALU_SRA: result_o = shift_result;
 
       // Shuffle Operations (RV32B)
-      ALU_SHFL, ALU_UNSHFL: result_o = shuffle_result;
+      ALU_ZIP, ALU_UNZIP: result_o = shuffle_result;
 
       // Crossbar Permutation Operations (RV32B)
       ALU_XPERM4, ALU_XPERM8: result_o = xperm_result;
