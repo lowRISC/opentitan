@@ -203,9 +203,8 @@ smoke_alu_zba:
 /**
  * Checks the instructions from the zbb extension
  *
- * Note: rev8, orc.b, and zext.h are pseudo instructions
- * for grevi, gorci, and pack respectively,
- * which are tested in `smoke_alu_b_imm` and `smoke_alu_zbp`.
+ * Note: the immediate Zbb permutation ops rev8 and orc.b (and brev8) are checked
+ * in `smoke_alu_b_imm`; zext.h is checked in `smoke_alu_zbp`.
  */
 smoke_alu_zbb:
   li   t0, 3
@@ -255,7 +254,8 @@ smoke_alu_zbc:
   ret
 
 /**
- * Checks the instructions from the zbp extension
+ * Checks the ratified Zbkb / Zbkx instructions: pack, packh, zext.h (Zbb pseudo),
+ * xperm4, xperm8, zip, unzip.
  *
  * Note: andn, orn, xnor, rol, and ror are not checked here
  * but in `smoke_alu_zbb`.
