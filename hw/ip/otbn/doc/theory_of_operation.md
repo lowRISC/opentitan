@@ -243,6 +243,14 @@ This way, no alert is generated without setting an error code somewhere.
       </td>
     </tr>
     <tr>
+      <td><code>MAI_SOFTWARE_ERROR</code></td>
+      <td>software</td>
+      <td>
+        An illegal SW interaction towards the MAI occurred.
+        See the MAI error handling section.
+      </td>
+    </tr>
+    <tr>
       <td><code>RND_REP_CHK_FAIL</code></td>
       <td>recoverable</td>
       <td>
@@ -518,7 +526,8 @@ The following state is wiped:
 * The accumulator register (also accessible through the ACC WSR) and the intermediate result registers for the Montgomery computation (hidden registers).
 * Flags (accessible through the FG0, FG1, and FLAGS CSRs)
 * The modulus (accessible through the MOD0 to MOD7 CSRs and the MOD WSR)
-* The WSRs and CSRs for the KMAC interface.
+* The WSRs and CSRs for the [KMAC interface](#kmac-interface).
+* The WSRs and CSRs for the [Masking Accelerator Interface](#masking-accelerator-interface).
 
 The wiping procedure is a two-step process:
 * Overwrite the state with randomness from URND and request a reseed of URND.
@@ -530,7 +539,9 @@ In order to prevent mismatches between ISS and RTL, software needs to initialise
 Loop and call stack pointers are reset.
 
 A secure wipe terminates any ongoing KMAC interface session.
-See the secure wipe section of the interface description.
+See the [secure wipe section](#kmac-interface-secure-wipe-behaviour) of the interface description.
+Any ongoing masking accelerator (MAI) operation ends regularly but all results are voided.
+See the [secure wipe section](#mai-secure-wipe-behaviour) of the MAI.
 
 Host software cannot explicitly trigger an internal secure wipe; it is performed automatically after reset and at the end of an `EXECUTE` operation.
 
@@ -609,7 +620,7 @@ To start a session the OTBN SW has to:
   - This should be 1 in most cases when OTBN starts executing a program, however, the interface could still be terminating a previous session due to a secure wipe (see secure wipe behaviour).
 - Write the desired hashing configuration to `KMAC_CFG`.
   - There is no validation when writing a configuration to `KMAC_CFG` but KMAC HWIP does check the configuration once the session is started.
-    See [error handling](#error-handling) section for more details.
+    See [error handling](#kmac-interface-error-handling) section for more details.
 - Issue the `KMAC_CTRL.START` command by writing a 1 to it.
 - There may be no write to `KMAC_CFG` until `KMAC_STATUS.READY` is 1 again (polled for before sending message).
   - Otherwise the configuration can be changed while the start request is being sent.
@@ -617,13 +628,13 @@ To start a session the OTBN SW has to:
   - Writing `KMAC_CFG` while `KMAC_STATUS.READY` is 0 sets `KMAC_STATUS.MSG_WRITE_ERROR`.
 
 There is no immediate response indicating whether the session was started successfully or not.
-This can be detected when sending the message or is reported along the first digest response: see [error handling](#error-handling).
+This can be detected when sending the message or is reported along the first digest response: see [error handling](#kmac-interface-error-handling).
 As such, after sending the `KMAC_CTRL.START` command OTBN SW must continue with sending the message.
 
 ##### Sending the message
 Once the `KMAC_CTRL.START` command was issued, OTBN SW can send the message by following these steps:
 - Poll until `KMAC_STATUS.READY = 1`.
-  - This can time out in certain error cases, see [error handling](#error-handling).
+  - This can time out in certain error cases, see [error handling](#kmac-interface-error-handling).
 - Write a message into `KMAC_DATA_S0` and `KMAC_DATA_S1` (share 0 and 1, respectively) and set the corresponding strobe in `KMAC_STRB`.
   - All messages, including the last one, must be contiguous and LSB aligned.
   - Only the last message may be partial.
@@ -690,7 +701,7 @@ To end a session:
   - `KMAC_STATUS.RSP_VALID` is cleared immediately upon issuing `DONE`, even if the current values in `KMAC_DATA_S0`/`KMAC_DATA_S1` have not been read yet.
 - Poll until `KMAC_STATUS.RSP_VALID = 1`.
   - This final response acknowledges the end of the session.
-- Check the error flags (see [error handling](#error-handling) for more details):
+- Check the error flags (see [error handling](#kmac-interface-error-handling) for more details):
   - `KMAC_STATUS.RSP_ERROR`
   - `KMAC_STATUS.MSG_WRITE_ERROR`
   - `KMAC_STATUS.CTRL_ERROR`
@@ -699,7 +710,7 @@ To end a session:
 
 If there has been no error detected, the digest from this session is valid and the interface is ready to start the next session.
 
-#### Error handling
+#### KMAC interface error handling
 
 The possible errors during a session can be separated between KMAC related errors and OTBN SW errors.
 
@@ -774,6 +785,143 @@ A secure wipe can therefore finish before the session is terminated, after which
 It would then be possible for system SW to start another OTBN program before the previous program's session has been terminated.
 Therefore, any OTBN program must check for `KMAC_STATUS.READY = 1` before starting a session.
 If a further secure wipe occurs before the termination completes, the `KMAC_DATA_S0` / `KMAC_DATA_S1` WSRs are wiped again while the termination process continues unaffected.
+
+### Masking accelerator interface
+
+OTBN features a masking accelerator interface (MAI) which is based on CSRs/WSRs and connects to the masking accelerator (MA).
+This MA implements a collection of core functions in hardware which are particularly useful when implementing masking countermeasures for hardening OTBN applications against SCA, and which themselves are challenging to harden against SCA.
+Internally, the MA uses a heavily pipelined first-order masking countermeasure combined with shuffling to deter SCA.
+The masking countermeasure is formally verified under the transition- and glitch-extended probing model.
+For details, refer to our [CocoAlma](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otbn/pre_sca/alma/README.md#formally-verifying-the-mask-accelerator-interface-modules) and [PROLEAD](https://github.com/lowRISC/opentitan/tree/master/hw/ip/otbn/pre_sca/prolead#otbn-masking-leakage-analysis-using-prolead) verification setups.
+
+The OTBN SW can control this accelerator through the following CSRs / WSRs (see [here](../README.md#Control-and-Status-Registers-(CSRs)) for more details):
+- `MAI_CTRL`
+- `MAI_STATUS`
+- `MAI_RES_S0`
+- `MAI_RES_S1`
+- `MAI_IN0_S0`
+- `MAI_IN0_S1`
+- `MAI_IN1_S0`
+- `MAI_IN1_S1`
+
+The `MAI_CTRL` and `MAI_STATUS` CSRs allow OTBN software to configure and start operations.
+All other WSRs are used either to load data into or retrieve results from the accelerator.
+These WSRs are 256-bit wide and are interpreted by the MAI as 8 first-order shared 32-bit elements the same way as the vectorized instructions operate on WDRs.
+The `_Sx` suffix identifies the share index.
+
+The accelerator supports the following vectorized operations:
+- secAdd
+  - Securely computes arithmetic additions of two Boolean shared operands and presents the results again as Boolean sharings.
+  - `MAI_IN0_S0`/`MAI_IN0_S1` carry Boolean sharings `(a0, a1)` of `a`, where `a = a0 XOR a1`.
+  - `MAI_IN1_S0`/`MAI_IN1_S1` carry Boolean sharings `(b0, b1)` of `b`, where `b = b0 XOR b1`.
+  - `MAI_RES_S0`/`MAI_RES_S1` will hold Boolean sharings `(c0, c1)` of `c`, where `c = c0 XOR c1 = (a + b) mod 2^32`.
+  - Processing the full vector takes 14 cycles.
+    The first result is written to the output WSRs after 7 cycles.
+- secAddMod
+  - Similar to the secAdd operation but the addition is performed modulo a configurable modulus.
+    The modulus is taken from bits 31:0 of the MOD WSR hereinafter referred to as `MOD`.
+  - Let `inp1` and `inp2` be the true unmasked operands with `inp1 + inp2 < MOD`.
+  - `MAI_IN0_S0`/`MAI_IN0_S1` and `MAI_IN1_S0`/`MAI_IN1_S1` carry Boolean sharings `(a0, a1)`, `(b0, b1)` of `inp1`/`inp2` such that `a + b = inp1 + inp2 + (2^32 - MOD)`.
+  - This means that the two's-complement negation of `MOD` must be absorbed into the XOR-sums.
+  - `MAI_RES_S0`/`MAI_RES_S1` will hold Boolean sharings of `(inp1 + inp2) mod MOD`.
+  - Processing the full vector takes 22 cycles.
+    The first result is written to the output WSRs after 15 cycles.
+- A2B
+  - Convert values represented with an Arithmetic sharing to a Boolean shared representation.
+  - `MAI_IN0_S0`/`MAI_IN0_S1` carry Arithmetic sharings `(a0, a1)` of `a`, where `a = a0 + a1 mod MOD`.
+  - `MAI_IN1_S0`/`MAI_IN1_S1` are unused.
+  - `MAI_RES_S0`/`MAI_RES_S1` will hold Boolean sharings `(b0, b1)` of `a`, where `b0 XOR b1 = a`.
+  - Processing the full vector takes 22 cycles.
+    The first result is written to the output WSRs after 15 cycles.
+- B2A
+  - Convert values represented with a Boolean sharing to an Arithmetic shared representation.
+  - `MAI_IN0_S0`/`MAI_IN0_S1` carry Boolean sharings `(a0, a1)` of `a`, where `a = a0 XOR a1`.
+  - `MAI_IN1_S0`/`MAI_IN1_S1` are unused.
+  - `MAI_RES_S0`/`MAI_RES_S1` will hold arithmetic sharings `(b0, b1)` of `a`, where `b0 + b1 mod MOD = a`.
+  - Internally, there is a rejection-sampling step for each element.
+    This sampling makes the execution nondeterministic.
+    If no samples must be rejected, processing the full vector would take 23 cycles.
+    The first result would be written to the output WSRs after 16 cycles.
+
+For all operations except the secAdd, the MOD WSR must stay constant as long as an execution is ongoing.
+Otherwise the results are invalid.
+
+#### MAI usage
+
+OTBN SW can perform a masking operation by following these steps (see also illustration below):
+- Poll until `MAI_STATUS.BUSY = 0`.
+- Write the input data to the input WSRs `MAI_INx_Sy`(where `x` represents the input, `y` the share index).
+- Write the desired operation type to `MAI_CTRL.OPERATION`.
+  - This step can also come before the data is transferred or be combined with the `START` command.
+- Issue the `MAI_CTRL.START` command by writing a 1 to it.
+  - The MAI will then start to push all 8 elements of the input WSRs sequentially into the masking accelerator.
+  - As soon as the first result is available, the MAI will begin to overwrite the `MAI_RES_S0` / `MAI_RES_S1` WSRs with the new data.
+  - `MAI_CTRL.OPERATION` and any input data may not be changed as long as `MAI_STATUS.BUSY = 1`.
+    Otherwise a SW error occurs, see below.
+- Poll until `MAI_STATUS.BUSY = 0`.
+- Read back the results from `MAI_RES_S0` / `MAI_RES_S1`.
+- Repeat this sequence for the next data.
+
+This sequence can be optimized, because:
+- The input WSRs can be overwritten with the next data as soon as the MAI pushed all elements into the accelerator.
+  - This is the case as soon as `MAI_STATUS.READY = 1`.
+  - Note that `MAI_STATUS.READY = 1` does not signal that the MAI is ready to start the next execution.
+    It just indicates that it is ready to receive new data.
+- The START command of the next execution can be issued before the results are read back.
+  - This is possible because the accelerator latency delays the update to the result WSRs.
+    See operation details for exact latency numbers.
+  - The START command can be issued as soon as `MAI_STATUS.BUSY = 0`.
+
+This allows overlapping data transfers with the accelerator latency.
+The overlapping execution software flow is:
+- Setup the MAI as described above.
+- Start the first execution by issuing the `MAI_CTRL.START` command.
+- Poll until `MAI_STATUS.READY = 1`.
+- Update the `MAI_INx_Sy` with the next data.
+- Poll until `MAI_STATUS.BUSY = 0`.
+- Issue the `MAI_CTRL.START` command for the next execution.
+- Read back the result of the first execution.
+- Repeat the steps starting with "Poll until `MAI_STATUS.READY = 1`".
+
+This procedure can be even further optimized for secAdd, secAddMod, and A2B because their latency is deterministic and thus the polling can be replaced with the correct number of other instructions.
+
+The following image depicts the flow for multiple secAdd executions without any memory operations (to load data from/to WDRs / DMEM).
+A result with “1p” means that this WSR contains partial results (vector elements) / is being overwritten with results from the current conversion (2p for results of the second conversion, etc).
+The dummy instruction between the two `bn.wsrr` instructions is to avoid leakage when reading the two shares of the results.
+
+In the example, the latency of the secAdd accelerator is assumed to be 5 cycles.
+The unused cycles can be used by OTBN to do other tasks like loading the next inputs.
+
+![OTBN MAI execution](./mai_execution.svg)
+
+#### MAI error handling
+An erroneous use of the MAI will result in a `MAI_SOFTWARE_ERROR`.
+This will trigger an abortion of the OTBN execution with a secure wipe.
+
+The `MAI_SOFTWARE_ERROR` is triggered when:
+- `MAI_CTRL.OPERATION` contains an invalid selection when the `MAI_CTRL.START` bit is set.
+- The `MAI_CTRL.START` bit is set or `MAI_CTRL.OPERATION` is changed whilst `MAI_STATUS.BUSY = 1`.
+- A write to input WSRs is detected whilst `MAI_STATUS.READY = 0`.
+  - The `MAI_INx_Sy` registers are used as input buffers.
+    Modifying the register content can lead to unexpected results.
+- A write to the reserved section of `MAI_CTRL` is detected.
+
+A write to the output WSRs whilst an operation is ongoing is on purpose not handled as an error.
+This allows clearing the output WSRs between two overlapping operations if this would be required for security reasons.
+It is the SW's responsibility to make sure not to overwrite results.
+
+#### MAI secure wipe behaviour
+
+When a secure wipe starts, any ongoing execution is allowed finishing.
+This means that the MAI still dispatches the input values into the accelerator but any result is discarded.
+To make the duration deterministic, the rejection sampling for B2A is disabled during a secure wipe.
+
+There is no special handling for the WSRs or CSRs.
+The WSRs are cleared with randomness and the CSRs are reset to their default values.
+
+Letting the MAI end the execution is fine because the highest execution latency is 23 cycles.
+The secure wipe however only clears the WSRs and CSRs after at least 32 cycles (after URND reseeding and clearing GPRs / WDRs).
+Therefore it is ensured that any ongoing execution has a constant configuration and input data.
 
 ## References
 

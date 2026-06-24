@@ -502,6 +502,10 @@ Some notes to help explain the code above:
 To see all current OTBN programs from the OpenTitan codebase, see the [sw/otbn](https://github.com/lowRISC/opentitan/tree/master/sw/otbn) directory.
 The `crypto/` subdirectory contains code we use in production, while the `code-snippets` subdirectory contains small example programs.
 
+### Masking accelerator interface and KMAC interface example
+See `sw/otbn/mai/mai_test.s` for an example how to use the [MAI](./theory_of_operation.md#masking-accelerator-interface).
+See `sw/otbn/kmac/kmac_tlt_test.s` for an example how to use the [KMAC interface](./theory_of_operation.md#kmac-interface).
+
 ## Developing OTBN
 OTBN applications as well as RTL changes can be tested by using a python simulator or a RTL co-simulation.
 
