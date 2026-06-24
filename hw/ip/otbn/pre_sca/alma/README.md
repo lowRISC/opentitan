@@ -217,17 +217,28 @@ Run the following command to see the circuit diagramm if there is a leakage:
 ## Formally verifying the mask accelerator interface modules
 
 After completing the prerequisites above, source the build constants, activate the Alma virtual
-environment and run `verify_sec_add.sh` with the desired gadget:
+environment and run `verify_mai.sh` with the desired target:
 
 ```sh
 cd ${REPO_TOP}
 source util/build_consts.sh
 cd ~/alma
 source dev/bin/activate
-${REPO_TOP}/hw/ip/otbn/pre_sca/alma/verify_sec_add.sh <gadget>
+${REPO_TOP}/hw/ip/otbn/pre_sca/alma/verify_mai.sh <target>
 ```
 
-where `<gadget>` is one of `hpc2`, `hpc2o`, `hpc3`, `hpc3o`, or `sec_add`.
+where `<target>` is one of:
+
+| Target                    | Top module verified                 |
+|---------------------------|-------------------------------------|
+| `hpc2`                    | `prim_hpc2_sca_wrapper`             |
+| `hpc2o`                   | `prim_hpc2o_sca_wrapper`            |
+| `hpc3`                    | `prim_hpc3_sca_wrapper`             |
+| `hpc3o`                   | `prim_hpc3o_sca_wrapper`            |
+| `sec_add`                 | `otbn_mask_accelerator_sca_wrapper` |
+| `sec_add_mod` *(default)* | `otbn_mask_accelerator_sca_wrapper` |
+| `a2b`                     | `otbn_mask_accelerator_sca_wrapper` |
+| `b2a`                     | `otbn_mask_accelerator_sca_wrapper` |
 The script runs all steps (parse, label, trace, verify) automatically, using the synthesized
 netlist from `syn_out/latest/generated/`.
 
