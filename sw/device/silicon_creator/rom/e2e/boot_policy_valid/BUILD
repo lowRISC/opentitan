@@ -40,7 +40,7 @@ BOOT_POLICY_VALID_CASES = [
     },
     {
         "desc": "bad",
-        "suffix": "_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin",
+        "suffix": "_corrupted_fpga_cw340_rom_with_fake_keys_signed_bin",
     },
 ]
 
