@@ -695,6 +695,7 @@ To end a session:
   - `KMAC_STATUS.MSG_WRITE_ERROR`
   - `KMAC_STATUS.CTRL_ERROR`
 - Once the errors have been checked, issue the `KMAC_CTRL.CLOSE` command to end the session.
+  - This will clear all error flags.
 
 If there has been no error detected, the digest from this session is valid and the interface is ready to start the next session.
 
