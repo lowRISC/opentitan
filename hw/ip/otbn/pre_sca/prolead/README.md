@@ -33,9 +33,9 @@ This directory contains support files to perform leakage analysis on OTBN gadget
    ```
    Set up the synthesis flow as described in the README in the pre_syn folder, then run
    ```sh
-   ./syn_yosys_sec_add.sh <gadget>
+   ./syn_yosys_mai.sh <target>
    ```
-   Supported gadgets are: `hpc2`, `hpc2o`, `hpc3`, `hpc3o`, `sec_add`.
+   Supported targets are listed in `README_MAI.md` in that directory.
 
 
 ## Running the leakage analysis
@@ -56,7 +56,23 @@ After building PROLEAD and synthesizing the target gadget:
    ```sh
    ./evaluate.sh <gadget>
    ```
-   The default (no argument) runs the `sec_add` wrapper.
+   The default (no argument) runs `mask_acc_b2a`.
+
+   Supported gadgets:
+
+   | Argument                   | Synthesised module         | Notes                                                                                |
+   |----------------------------|----------------------------|--------------------------------------------------------------------------------------|
+   | `hpc2`                     | `prim_hpc2_sca_wrapper`    |                                                                                      |
+   | `hpc2o`                    | `prim_hpc2o_sca_wrapper`   |                                                                                      |
+   | `hpc3`                     | `prim_hpc3_sca_wrapper`    |                                                                                      |
+   | `hpc3o`                    | `prim_hpc3o_sca_wrapper`   |                                                                                      |
+   | `sec_add`                  | `otbn_sec_add_sca_wrapper` |                                                                                      |
+   | `mask_acc_sec_add`         | `otbn_mask_accelerator`    | SEC_ADD mode, uses `otbn_mask_accelerator_sca_wrapper_prolead` config                |
+   | `mask_acc_sec_add_mod`     | `otbn_mask_accelerator`    | SEC_ADD_MOD mode, uses `otbn_mask_accelerator_sca_wrapper_prolead` config            |
+   | `mask_acc_a2b`             | `otbn_mask_accelerator`    | Arith-to-Boolean conversion, uses `otbn_mask_accelerator_sca_wrapper_prolead` config |
+   | `mask_acc_b2a` *(default)* | `otbn_mask_accelerator`    | Boolean-to-Arith conversion, uses `otbn_mask_accelerator_sca_wrapper_prolead` config |
+
+   The four `mask_acc_*` targets synthesize the DUT directly (no SCA wrapper in the netlist); the SCA wrapper is referenced only by the ProLEAD config file.
 
    Results are written to `out/<gadget>_<timestamp>/` and a symlink `out/latest` points to the most recent run.
 
