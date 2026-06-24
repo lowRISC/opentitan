@@ -102,7 +102,11 @@ module otbn_core
   input logic software_errs_fatal_i,
 
   input logic [1:0]                       sideload_key_shares_valid_i,
-  input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i
+  input logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i,
+
+  // KMAC application interface
+  output kmac_pkg::app_req_t kmac_app_req_o,
+  input  kmac_pkg::app_rsp_t kmac_app_rsp_i
 );
   import prim_mubi_pkg::*;
 
@@ -261,6 +265,26 @@ module otbn_core
   logic [ExtWLEN-1:0] ispr_mai_res_s0_rdata;
   logic [ExtWLEN-1:0] ispr_mai_res_s1_rdata;
 
+  logic               ispr_kmac_status_wr;
+  logic [31:0]        ispr_kmac_status_wdata;
+  logic [31:0]        ispr_kmac_status_rdata;
+  logic               ispr_kmac_ctrl_wr;
+  logic [31:0]        ispr_kmac_ctrl_wdata;
+  logic               ispr_kmac_cfg_wr;
+  logic [31:0]        ispr_kmac_cfg_wdata;
+  logic [31:0]        ispr_kmac_cfg_rdata;
+  logic               ispr_kmac_strb_wr;
+  logic [31:0]        ispr_kmac_strb_wdata;
+  logic [31:0]        ispr_kmac_strb_rdata;
+  logic               ispr_kmac_data_s0_wr;
+  logic [ExtWLEN-1:0] ispr_kmac_data_s0_wdata;
+  logic               ispr_kmac_data_s1_wr;
+  logic [ExtWLEN-1:0] ispr_kmac_data_s1_wdata;
+  logic [ExtWLEN-1:0] ispr_kmac_data_s0_rdata;
+  logic               ispr_kmac_data_s0_rd;
+  logic [ExtWLEN-1:0] ispr_kmac_data_s1_rdata;
+  logic               ispr_kmac_data_s1_rd;
+
   logic            rnd_req;
   logic            rnd_prefetch_req;
   logic            rnd_valid;
@@ -302,6 +326,9 @@ module otbn_core
   logic sec_wipe_mai_res_s0_urnd;
   logic sec_wipe_mai_res_s1_urnd;
 
+  logic sec_wipe_kmac_data_s0_urnd;
+  logic sec_wipe_kmac_data_s1_urnd;
+
   logic zero_flags;
 
   logic                     prefetch_en;
@@ -327,6 +354,10 @@ module otbn_core
   logic mai_software_error;
   logic mai_reg_intg_violation_err;
   logic mai_state_err;
+
+  logic kmac_sec_wipe_err;
+  logic kmac_reg_intg_violation_err;
+  logic kmac_state_err_d, kmac_state_err;
 
   logic req_sec_wipe_urnd_keys_q;
 
@@ -372,6 +403,9 @@ module otbn_core
     .sec_wipe_mai_in1_s1_urnd_o(sec_wipe_mai_in1_s1_urnd),
     .sec_wipe_mai_res_s0_urnd_o(sec_wipe_mai_res_s0_urnd),
     .sec_wipe_mai_res_s1_urnd_o(sec_wipe_mai_res_s1_urnd),
+
+    .sec_wipe_kmac_data_s0_urnd_o(sec_wipe_kmac_data_s0_urnd),
+    .sec_wipe_kmac_data_s1_urnd_o(sec_wipe_kmac_data_s1_urnd),
 
     .ispr_init_o         (ispr_init),
     .state_reset_o       (state_reset),
@@ -479,7 +513,8 @@ module otbn_core
                           rf_base_sec_wipe_err,
                           rf_bignum_wr_sec_wipe_err,
                           alu_bignum_sec_wipe_err,
-                          mac_bignum_sec_wipe_err};
+                          mac_bignum_sec_wipe_err,
+                          kmac_sec_wipe_err};
 
   // Controller: coordinate between functional units, prepare their inputs (e.g. by muxing between
   // operand sources), and post-process their outputs as needed.
@@ -649,7 +684,7 @@ module otbn_core
   logic non_controller_reg_intg_violation_d, non_controller_reg_intg_violation;
   assign non_controller_reg_intg_violation_d =
       |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_intg_err_d,
-        mai_reg_intg_violation_err};
+        mai_reg_intg_violation_err, kmac_reg_intg_violation_err};
 
   ////////////////////////////////////////////////////////////////
   // Register local escalation signals for timinig optimization //
@@ -688,6 +723,7 @@ module otbn_core
       non_controller_reg_intg_violation <= '0;
       insn_addr_err                     <= '0;
       mac_bignum_state_error            <= '0;
+      kmac_state_err                    <= '0;
     end else begin
       urnd_all_zero                     <= urnd_all_zero_d;
       predec_error                      <= predec_error_d;
@@ -696,6 +732,7 @@ module otbn_core
       non_controller_reg_intg_violation <= non_controller_reg_intg_violation_d;
       insn_addr_err                     <= insn_addr_err_d;
       mac_bignum_state_error            <= mac_bignum_state_error_d;
+      kmac_state_err                    <= kmac_state_err_d;
     end
   end
 
@@ -710,7 +747,8 @@ module otbn_core
                            rf_base_spurious_we_err,
                            mac_bignum_state_error,
                            mubi_err,
-                           mai_state_err},
+                           mai_state_err,
+                           kmac_state_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            non_controller_reg_intg_violation},
     dmem_intg_violation: lsu_rdata_err,
@@ -748,7 +786,8 @@ module otbn_core
                   mubi4_bool_to_mubi(|{start_stop_fatal_error, urnd_all_zero, predec_error,
                                        rf_base_spurious_we_err, lsu_rdata_err,
                                        insn_fetch_err, non_controller_reg_intg_violation,
-                                       insn_addr_err, mac_bignum_state_error, mai_state_err}));
+                                       insn_addr_err, mac_bignum_state_error, mai_state_err,
+                                       kmac_state_err}));
 
   assign controller_recov_escalate_en =
       mubi4_bool_to_mubi(|{rnd_rep_err, rnd_fips_err});
@@ -759,7 +798,8 @@ module otbn_core
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_intg_err, rf_base_spurious_we_err,
                                        predec_error, lsu_rdata_err, insn_fetch_err,
                                        mac_bignum_state_error,
-                                       controller_fatal_err, insn_addr_err, mai_state_err}));
+                                       controller_fatal_err, insn_addr_err, mai_state_err,
+                                       kmac_state_err}));
 
   // Signal error if MuBi input signals take on invalid values as this means something bad is
   // happening. The explicit error detection is required as the mubi4_or_hi operations above
@@ -983,6 +1023,26 @@ module otbn_core
     .ispr_mai_res_s0_rdata_i(ispr_mai_res_s0_rdata),
     .ispr_mai_res_s1_rdata_i(ispr_mai_res_s1_rdata),
 
+    .ispr_kmac_status_wr_o    (ispr_kmac_status_wr),
+    .ispr_kmac_status_wdata_o (ispr_kmac_status_wdata),
+    .ispr_kmac_ctrl_wr_o      (ispr_kmac_ctrl_wr),
+    .ispr_kmac_ctrl_wdata_o   (ispr_kmac_ctrl_wdata),
+    .ispr_kmac_cfg_wr_o       (ispr_kmac_cfg_wr),
+    .ispr_kmac_cfg_wdata_o    (ispr_kmac_cfg_wdata),
+    .ispr_kmac_strb_wr_o      (ispr_kmac_strb_wr),
+    .ispr_kmac_strb_wdata_o   (ispr_kmac_strb_wdata),
+    .ispr_kmac_data_s0_wr_o   (ispr_kmac_data_s0_wr),
+    .ispr_kmac_data_s0_wdata_o(ispr_kmac_data_s0_wdata),
+    .ispr_kmac_data_s1_wr_o   (ispr_kmac_data_s1_wr),
+    .ispr_kmac_data_s1_wdata_o(ispr_kmac_data_s1_wdata),
+    .ispr_kmac_status_rdata_i (ispr_kmac_status_rdata),
+    .ispr_kmac_cfg_rdata_i    (ispr_kmac_cfg_rdata),
+    .ispr_kmac_strb_rdata_i   (ispr_kmac_strb_rdata),
+    .ispr_kmac_data_s0_rdata_i(ispr_kmac_data_s0_rdata),
+    .ispr_kmac_data_s1_rdata_i(ispr_kmac_data_s1_rdata),
+    .ispr_kmac_data_s0_rd_o   (ispr_kmac_data_s0_rd),
+    .ispr_kmac_data_s1_rd_o   (ispr_kmac_data_s1_rd),
+
     .reg_intg_violation_err_o(alu_bignum_reg_intg_violation_err),
 
     .sec_wipe_mod_urnd_i(sec_wipe_mod_urnd),
@@ -1109,6 +1169,46 @@ module otbn_core
       .urnd_data_i                 (urnd_data)
     );
   end
+
+  otbn_kmac_if u_otbn_kmac_if (
+    .clk_i,
+    .rst_ni,
+
+    .app_req_o(kmac_app_req_o),
+    .app_rsp_i(kmac_app_rsp_i),
+
+    .ispr_kmac_status_wr_i   (ispr_kmac_status_wr),
+    .ispr_kmac_status_wdata_i(ispr_kmac_status_wdata),
+    .ispr_kmac_ctrl_wr_i     (ispr_kmac_ctrl_wr),
+    .ispr_kmac_ctrl_wdata_i  (ispr_kmac_ctrl_wdata),
+    .ispr_kmac_cfg_wr_i      (ispr_kmac_cfg_wr),
+    .ispr_kmac_cfg_wdata_i   (ispr_kmac_cfg_wdata),
+    .ispr_kmac_strb_wr_i     (ispr_kmac_strb_wr),
+    .ispr_kmac_strb_wdata_i  (ispr_kmac_strb_wdata),
+
+    .ispr_kmac_status_rdata_o(ispr_kmac_status_rdata),
+    .ispr_kmac_cfg_rdata_o   (ispr_kmac_cfg_rdata),
+    .ispr_kmac_strb_rdata_o  (ispr_kmac_strb_rdata),
+
+    .ispr_kmac_data_s0_wr_i   (ispr_kmac_data_s0_wr),
+    .ispr_kmac_data_s0_wdata_i(ispr_kmac_data_s0_wdata),
+    .ispr_kmac_data_s1_wr_i   (ispr_kmac_data_s1_wr),
+    .ispr_kmac_data_s1_wdata_i(ispr_kmac_data_s1_wdata),
+
+    .ispr_kmac_data_s0_rd_i   (ispr_kmac_data_s0_rd),
+    .ispr_kmac_data_s0_rdata_o(ispr_kmac_data_s0_rdata),
+    .ispr_kmac_data_s1_rd_i   (ispr_kmac_data_s1_rd),
+    .ispr_kmac_data_s1_rdata_o(ispr_kmac_data_s1_rdata),
+
+    .sec_wipe_running_i          (secure_wipe_running_o),
+    .sec_wipe_ispr_kmac_data_s0_i(sec_wipe_kmac_data_s0_urnd),
+    .sec_wipe_ispr_kmac_data_s1_i(sec_wipe_kmac_data_s1_urnd),
+    .urnd_data_i                 (urnd_data),
+
+    .sec_wipe_err_o          (kmac_sec_wipe_err),
+    .reg_intg_violation_err_o(kmac_reg_intg_violation_err),
+    .state_err_o             (kmac_state_err_d)
+  );
 
   otbn_rnd #(
     .RndCnstUrndPrngSeed(RndCnstUrndPrngSeed)

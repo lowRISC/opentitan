@@ -400,31 +400,27 @@ package otbn_pkg;
   typedef enum logic [CsrNumWidth-1:0] {
     // Address ranges follow the RISC-V Privileged Specification v1.11
     // 0x7C0-0x7FF Custom read/write
-    CsrFg0            = 12'h7C0,
-    CsrFg1            = 12'h7C1,
-    CsrFlags          = 12'h7C8,
-    CsrMod0           = 12'h7D0,
-    CsrMod1           = 12'h7D1,
-    CsrMod2           = 12'h7D2,
-    CsrMod3           = 12'h7D3,
-    CsrMod4           = 12'h7D4,
-    CsrMod5           = 12'h7D5,
-    CsrMod6           = 12'h7D6,
-    CsrMod7           = 12'h7D7,
-    CsrRndPrefetch    = 12'h7D8,
-    // CsrKmacIfStatus   = 12'h7d9,
-    // CsrKmacIntr       = 12'h7da,
-    // CsrKmacCfg        = 12'h7db,
-    // CsrKmacMsgSend    = 12'h7dc,
-    // CsrKmacCmd        = 12'h7dd,
-    // CsrKmacByteStrobe = 12'h7de,
-    CsrMaiCtrl        = 12'h7e0,
+    CsrFg0         = 12'h7C0,
+    CsrFg1         = 12'h7C1,
+    CsrFlags       = 12'h7C8,
+    CsrMod0        = 12'h7D0,
+    CsrMod1        = 12'h7D1,
+    CsrMod2        = 12'h7D2,
+    CsrMod3        = 12'h7D3,
+    CsrMod4        = 12'h7D4,
+    CsrMod5        = 12'h7D5,
+    CsrMod6        = 12'h7D6,
+    CsrMod7        = 12'h7D7,
+    CsrRndPrefetch = 12'h7D8,
+    CsrKmacStatus  = 12'h7d9,
+    CsrKmacCtrl    = 12'h7da,
+    CsrKmacCfg     = 12'h7db,
+    CsrKmacStrb    = 12'h7dc,
+    CsrMaiCtrl     = 12'h7e0,
 
     // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
     CsrUrnd        = 12'hFC1,
-    // CsrKmacStatus  = 12'hfc2,
-    // CsrKmacError   = 12'hfc3,
     CsrMaiStatus   = 12'hfca
   } csr_e;
 
@@ -440,8 +436,8 @@ package otbn_pkg;
     WsrKeyS0H     = 'd5,
     WsrKeyS1L     = 'd6,
     WsrKeyS1H     = 'd7,
-    // WsrKmacDataS0 = 'd8,
-    // WsrKmacDataS1 = 'd9,
+    WsrKmacDataS0 = 'd8,
+    WsrKmacDataS1 = 'd9,
     WsrMaiResS0   = 'd10,
     WsrMaiResS1   = 'd11,
     WsrMaiIn0S0   = 'd12,
@@ -453,26 +449,32 @@ package otbn_pkg;
   // Internal Special Purpose Registers (ISPRs)
   // CSRs and WSRs have some overlap into what they map into. ISPRs are the actual registers in the
   // design which CSRs and WSRs are mapped on to.
-  parameter int NIspr = 17;
+  parameter int NIspr = 23;
   parameter int IsprNumWidth = $clog2(NIspr);
   typedef enum logic [IsprNumWidth-1:0] {
-    IsprMod       = 'd0,
-    IsprRnd       = 'd1,
-    IsprAcc       = 'd2,
-    IsprFlags     = 'd3,
-    IsprUrnd      = 'd4,
-    IsprKeyS0L    = 'd5,
-    IsprKeyS0H    = 'd6,
-    IsprKeyS1L    = 'd7,
-    IsprKeyS1H    = 'd8,
-    IsprMaiResS0  = 'd9,
-    IsprMaiResS1  = 'd10,
-    IsprMaiIn0S0  = 'd11,
-    IsprMaiIn0S1  = 'd12,
-    IsprMaiIn1S0  = 'd13,
-    IsprMaiIn1S1  = 'd14,
-    IsprMaiCtrl   = 'd15,
-    IsprMaiStatus = 'd16
+    IsprMod        = 'd0,
+    IsprRnd        = 'd1,
+    IsprAcc        = 'd2,
+    IsprFlags      = 'd3,
+    IsprUrnd       = 'd4,
+    IsprKeyS0L     = 'd5,
+    IsprKeyS0H     = 'd6,
+    IsprKeyS1L     = 'd7,
+    IsprKeyS1H     = 'd8,
+    IsprMaiResS0   = 'd9,
+    IsprMaiResS1   = 'd10,
+    IsprMaiIn0S0   = 'd11,
+    IsprMaiIn0S1   = 'd12,
+    IsprMaiIn1S0   = 'd13,
+    IsprMaiIn1S1   = 'd14,
+    IsprMaiCtrl    = 'd15,
+    IsprMaiStatus  = 'd16,
+    IsprKmacDataS0 = 'd17,
+    IsprKmacDataS1 = 'd18,
+    IsprKmacStatus = 'd19,
+    IsprKmacCtrl   = 'd20,
+    IsprKmacCfg    = 'd21,
+    IsprKmacStrb   = 'd22
   } ispr_e;
 
   typedef logic [$clog2(NFlagGroups)-1:0] flag_group_t;

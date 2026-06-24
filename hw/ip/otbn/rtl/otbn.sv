@@ -82,7 +82,11 @@ module otbn
   output otp_ctrl_pkg::otbn_otp_key_req_t otbn_otp_key_o,
   input  otp_ctrl_pkg::otbn_otp_key_rsp_t otbn_otp_key_i,
 
-  input keymgr_pkg::otbn_key_req_t keymgr_key_i
+  input keymgr_pkg::otbn_key_req_t keymgr_key_i,
+
+  // KMAC application interface.
+  output kmac_pkg::app_req_t kmac_data_o,
+  input  kmac_pkg::app_rsp_t kmac_data_i
 );
 
   import prim_mubi_pkg::*;
@@ -1176,7 +1180,12 @@ module otbn
     .software_errs_fatal_i       (software_errs_fatal_q),
 
     .sideload_key_shares_i       (keymgr_key_i.key),
-    .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}})
+    .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
+
+    // The naming kmac_data is just to be consistent with other IPs connecting to KMAC. From here
+    // on use more sensible name.
+    .kmac_app_req_o(kmac_data_o),
+    .kmac_app_rsp_i(kmac_data_i)
   );
 
   always_ff @(posedge clk_i or negedge rst_n) begin
@@ -1450,6 +1459,12 @@ module otbn
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+    OtbnKmacFsmCheck_A,
+    u_otbn_core.u_otbn_kmac_if.u_state_regs,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnCallStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr,
@@ -1458,7 +1473,13 @@ module otbn
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnLoopInfoStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
-    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i)
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    OtbnKmacMsgSelectorCntAlertCheck_A,
+    u_otbn_core.u_otbn_kmac_if.u_msg_selector_count,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
 
   `ASSERT_ERROR_TRIGGER_ALERT_IN(
     OtbnBnMacCycleCountAlertCheck_A,
