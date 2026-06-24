@@ -195,14 +195,14 @@
 - name: mai_ctrl
   address: 0x7e0
   doc: |
-    The MAI control register. This is used to start MAI operations as well as configuring the accelerators.
+    The MAI control register. This is used to start MAI operations as well as setting the operation.
   bits:
     0: |
-      MAI_START: Writing 1 to this bit starts the MAI operation.
+      START: Writing 1 to this bit starts the MAI operation.
       Writing it when MAI is busy will cause a MAI_ERROR software error.
     5-1:
       doc: |
-        The MAI_OPERATION field defines which accelerator is used for the next operation.
+        OPERATION: This field defines which type of operation is to be performed.
         Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
       values:
         11: A2B
@@ -239,8 +239,8 @@
     The MAI status register.
   bits:
     0: |
-      MAI_BUSY: This bit is set to 1 when an MAI operation is in progress.
-      If reset, the MAI accepts new configuration values and a new execution can be started by writing to the MAI_START bit in the MAI_CTRL CSR.
+      BUSY: This bit is set to 1 when an MAI operation is in progress.
+      If reset, the MAI accepts new configuration values and a new execution can be started by writing to the START bit in MAI_CTRL.
     1: |
-      MAI_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+      READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
     31-2: Reserved. Always reads as 0.

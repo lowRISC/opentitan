@@ -30,6 +30,7 @@ See that document for integration overview within the broader top level system.
 * Reduced, security-focused instruction set architecture for easier verification and the prevention of data leaks.
 * Built-in access to random numbers.
 * CSR / WSR based interface to KMAC HWIP to offload hashing operations.
+* A CSR / WSR based Masking Accelerator Interface (MAI) for efficient and first-order SCA hardened masking operations.
 
 ## Description
 
@@ -568,7 +569,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       <td>RW</td>
       <td>MAI_CTRL</td>
       <td>
-        The MAI control register. This is used to start MAI operations as well as configuring the accelerators.
+        The MAI control register. This is used to start MAI operations as well as setting the operation.
         <table>
           <thead>
             <tr><th>Bit</th><th>Description</th></tr>
@@ -577,13 +578,13 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>0</td>
               <td>
-                MAI_START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
+                START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
               </td>
             </tr>
             <tr>
               <td>5:1</td>
               <td>
-                The MAI_OPERATION field defines which accelerator is used for the next operation. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+                OPERATION: This field defines which type of operation is to be performed. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
                 <p>Values:</p><ul>
                   <li>11: A2B</li>
                   <li>16: B2A</li>
@@ -641,13 +642,13 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>0</td>
               <td>
-                MAI_BUSY: This bit is set to 1 when an MAI operation is in progress. If reset, the MAI accepts new configuration values and a new execution can be started by writing to the MAI_START bit in the MAI_CTRL CSR.
+                BUSY: This bit is set to 1 when an MAI operation is in progress. If reset, the MAI accepts new configuration values and a new execution can be started by writing to the START bit in MAI_CTRL.
               </td>
             </tr>
             <tr>
               <td>1</td>
               <td>
-                MAI_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+                READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
               </td>
             </tr>
             <tr>
