@@ -7484,8 +7484,8 @@
           }
           default: kmac_pkg::APP_REQ_DEFAULT
           inst_name: kmac
-          end_idx: 3
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: kmac_app
           index: -1
         }
@@ -7856,7 +7856,10 @@
           act: req
           width: 1
           inst_name: otbn
-          index: -1
+          default: ""
+          domain: Main
+          top_signame: kmac_app
+          index: 3
         }
         {
           name: tl
@@ -10326,6 +10329,7 @@
         keymgr.kmac_data
         lc_ctrl.kmac_data
         rom_ctrl.kmac_data
+        otbn.kmac_data
       ]
       kmac.en_masking:
       [
@@ -25255,8 +25259,8 @@
         }
         default: kmac_pkg::APP_REQ_DEFAULT
         inst_name: kmac
-        end_idx: 3
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: kmac_app
         index: -1
       }
@@ -25489,7 +25493,10 @@
         act: req
         width: 1
         inst_name: otbn
-        index: -1
+        default: ""
+        domain: Main
+        top_signame: kmac_app
+        index: 3
       }
       {
         name: tl
@@ -32281,7 +32288,7 @@
           name_top: KmacNumAppIntf
         }
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: req
         default: kmac_pkg::APP_REQ_DEFAULT
@@ -32303,7 +32310,7 @@
           name_top: KmacNumAppIntf
         }
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: rsp
         default: ""
