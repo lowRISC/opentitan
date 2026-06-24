@@ -790,15 +790,12 @@ module top_earlgrey #(
 
   // Dummy signal definitions for unused partial inter-module signals
   otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
-  kmac_pkg::app_rsp_t unused_kmac_app_rsp3;
 
   // Assign unused partial inter-module signals
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
-  assign unused_kmac_app_rsp3 = kmac_app_rsp[3];
 
   // Assign undriven partial inter-module signals
   assign otp_ctrl_sram_otp_key_req[3] = '0;
-  assign kmac_app_req[3] = kmac_pkg::APP_REQ_DEFAULT;
 
   // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
@@ -2189,8 +2186,8 @@ module top_earlgrey #(
     .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .lc_rma_ack_o(lc_ctrl_lc_nvm_rma_ack[1]),
     .keymgr_key_i(keymgr_otbn_key),
-    .kmac_data_o(),
-    .kmac_data_i(kmac_pkg::APP_RSP_DEFAULT),
+    .kmac_data_o(kmac_app_req[3]),
+    .kmac_data_i(kmac_app_rsp[3]),
     .tl_i(otbn_tl_req),
     .tl_o(otbn_tl_rsp)
   );
