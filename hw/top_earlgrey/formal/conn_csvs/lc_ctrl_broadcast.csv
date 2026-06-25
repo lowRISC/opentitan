@@ -9,9 +9,9 @@
 
 # Verify that lc_ctrl's lc_escalate_en_o signal is correctly connected to IPs.
 CONNECTION, LC_ESCALATE_EN_OTP,       top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_main.u_otp_ctrl,          lc_escalate_en_i
-CONNECTION, LC_ESCALATE_EN_AON_TIMER, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_aon.u_aon_timer_aon,     lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_AON_TIMER, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_aon.u_aon_timer,     lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_SRAM_MAIN, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main,    lc_escalate_en_i
-CONNECTION, LC_ESCALATE_EN_SRAM_RET,  top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret_aon, lc_escalate_en_i
+CONNECTION, LC_ESCALATE_EN_SRAM_RET,  top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret, lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_FLASH,     top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_main.u_flash_ctrl,        lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_AES,       top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_main.u_aes,               lc_escalate_en_i
 CONNECTION, LC_ESCALATE_EN_KMAC,      top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_escalate_en_o, top_earlgrey.earlgrey_pd_main.u_kmac,              lc_escalate_en_i
@@ -28,17 +28,17 @@ CONNECTION, LC_NVM_DEBUG_EN_FLASH_CTRL, top_earlgrey.earlgrey_pd_main.u_lc_ctrl,
 CONNECTION, LC_CPU_EN_RV_CORE_IBEX, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_cpu_en_o, top_earlgrey.earlgrey_pd_main.u_rv_core_ibex, lc_cpu_en_i
 
 # Verify that lc_ctrl's lc_hw_debug_en_o signal is correctly connected to IPs.
-CONNECTION, LC_HW_DEBUG_EN_PWRMGR,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon,        lc_hw_debug_en_i
-CONNECTION, LC_HW_DEBUG_EN_CLKMGR,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon,        lc_hw_debug_en_i
-CONNECTION, LC_HW_DEBUG_EN_PINMUX,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_pinmux_aon,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_PWRMGR,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_pwrmgr,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_CLKMGR,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_PINMUX,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_pinmux,        lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_SRAM_CTRL_MAIN, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main,    lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_RV_DM,          top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_rv_dm,             lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_CSRNG,          top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_csrng,             lc_hw_debug_en_i
 
 # Verify that lc_ctrl's lc_dft_en_o signal is correctly connected to IPs.
 CONNECTION, LC_DFT_EN_OTP,    top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_main.u_otp_macro,  lc_dft_en_i
-CONNECTION, LC_DFT_EN_PWRMGR, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon, lc_dft_en_i
-CONNECTION, LC_DFT_EN_PINMUX, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_main.u_pinmux_aon, lc_dft_en_i
+CONNECTION, LC_DFT_EN_PWRMGR, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_aon.u_pwrmgr, lc_dft_en_i
+CONNECTION, LC_DFT_EN_PINMUX, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_main.u_pinmux, lc_dft_en_i
 CONNECTION, LC_DFT_EN_AST,    top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, u_ast,                     lc_dft_en_i
 
 # Verify lc_ctrl's RMA request connections.
@@ -49,8 +49,8 @@ CONNECTION, LC_RMA_REQ_OTBN,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl,   
 CONNECTION, OTBN_RMA_ACK_LC,         top_earlgrey.earlgrey_pd_main.u_otbn,       lc_rma_ack_o,        top_earlgrey.earlgrey_pd_main.u_lc_ctrl,    lc_nvm_rma_ack_i[1]
 
 # Verify lc_ctrl's clock bypass request connections.
-CONNECTION, LC_CLK_BYP_REQ_CLKMGR,  top_earlgrey.earlgrey_pd_main.u_lc_ctrl,     lc_clk_byp_req_o,    top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, lc_clk_byp_req_i
-CONNECTION, CLKMGR_CLK_BYP_ACK_LC,  top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon,  lc_clk_byp_ack_o,    top_earlgrey.earlgrey_pd_main.u_lc_ctrl,    lc_clk_byp_ack_i
+CONNECTION, LC_CLK_BYP_REQ_CLKMGR,  top_earlgrey.earlgrey_pd_main.u_lc_ctrl,     lc_clk_byp_req_o,    top_earlgrey.earlgrey_pd_aon.u_clkmgr, lc_clk_byp_req_i
+CONNECTION, CLKMGR_CLK_BYP_ACK_LC,  top_earlgrey.earlgrey_pd_aon.u_clkmgr,  lc_clk_byp_ack_o,    top_earlgrey.earlgrey_pd_main.u_lc_ctrl,    lc_clk_byp_ack_i
 
 # Verify lc_ctrl's check bypass signal is correctly connected to OTP (used when programming a life cycle transition).
 CONNECTION, LC_CHECK_BYP_EN_OTP,  top_earlgrey.earlgrey_pd_main.u_lc_ctrl,  lc_check_byp_en_o,    top_earlgrey.earlgrey_pd_main.u_otp_ctrl, lc_check_byp_en_i
