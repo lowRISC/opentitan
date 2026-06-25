@@ -1317,7 +1317,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (data_phase_read) begin
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+        // DV_CHECK_EQ takes (ACT_, EXP_); item.d_data is the value observed
+        // on the bus and csr.get_mirrored_value() is the predicted value.
+        `DV_CHECK_EQ(item.d_data, csr.get_mirrored_value(),
                      $sformatf("reg name: %0s", csr.get_full_name()))
         if (cfg.en_cov && cfg.otp_ctrl_vif.alert_reqs) begin
           cov.csr_rd_after_alert_cg_wrap.sample(csr.get_offset());
