@@ -8,5 +8,5 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # Verify the vendor_test connectivities.
-CONNECTION, LC_OTP_VENDOR_TEST_CTRL,   top_darjeeling.u_lc_ctrl,  lc_otp_vendor_test_o, top_darjeeling.u_otp_ctrl, lc_otp_vendor_test_i
-CONNECTION, LC_OTP_VENDOR_TEST_STATUS, top_darjeeling.u_otp_ctrl, lc_otp_vendor_test_o, top_darjeeling.u_lc_ctrl,  lc_otp_vendor_test_i
+CONNECTION, LC_OTP_VENDOR_TEST_CTRL,   top_darjeeling.darjeeling_pd_main.u_lc_ctrl,  lc_otp_vendor_test_o, top_darjeeling.darjeeling_pd_main.u_otp_ctrl, lc_otp_vendor_test_i
+CONNECTION, LC_OTP_VENDOR_TEST_STATUS, top_darjeeling.darjeeling_pd_main.u_otp_ctrl, lc_otp_vendor_test_o, top_darjeeling.darjeeling_pd_main.u_lc_ctrl,  lc_otp_vendor_test_i

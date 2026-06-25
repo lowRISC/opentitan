@@ -8,4 +8,4 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # flash_ctrl prim flash recov_alert connectivity
-CONNECTION, RECOV_PRIM_FLASH_ALERT, top_earlgrey.u_flash_ctrl.u_eflash.u_flash, recov_alert_o, top_earlgrey.u_flash_ctrl, alert_srcs[4]
+CONNECTION, RECOV_PRIM_FLASH_ALERT, top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash, recov_alert_o, top_earlgrey.earlgrey_pd_main.u_flash_ctrl, alert_srcs[4]

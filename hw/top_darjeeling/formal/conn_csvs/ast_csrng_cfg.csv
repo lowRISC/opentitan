@@ -8,7 +8,7 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # ast -> csrng connectivity
-CONNECTION, AST_CSRNG_ES_REQ, top_darjeeling.u_csrng, entropy_src_hw_if_o.es_req, u_ast, es_req_i.es_req
-CONNECTION, AST_CSRNG_ES_RSP_ES_ACK,  u_ast, es_rsp_o.es_ack,  top_darjeeling.u_csrng, entropy_src_hw_if_i.es_ack
-CONNECTION, AST_CSRNG_ES_RSP_ES_BITS, u_ast, es_rsp_o.es_bits, top_darjeeling.u_csrng, entropy_src_hw_if_i.es_bits
-CONNECTION, AST_CSRNG_ES_RSP_ES_FIPS, u_ast, es_rsp_o.es_fips, top_darjeeling.u_csrng, entropy_src_hw_if_i.es_fips
+CONNECTION, AST_CSRNG_ES_REQ, top_darjeeling.darjeeling_pd_main.u_csrng, entropy_src_hw_if_o.es_req, u_ast, es_req_i.es_req
+CONNECTION, AST_CSRNG_ES_RSP_ES_ACK,  u_ast, es_rsp_o.es_ack,  top_darjeeling.darjeeling_pd_main.u_csrng, entropy_src_hw_if_i.es_ack
+CONNECTION, AST_CSRNG_ES_RSP_ES_BITS, u_ast, es_rsp_o.es_bits, top_darjeeling.darjeeling_pd_main.u_csrng, entropy_src_hw_if_i.es_bits
+CONNECTION, AST_CSRNG_ES_RSP_ES_FIPS, u_ast, es_rsp_o.es_fips, top_darjeeling.darjeeling_pd_main.u_csrng, entropy_src_hw_if_i.es_fips

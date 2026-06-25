@@ -7,7 +7,7 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-CONNECTION, OTP_AST_OBS_CTRL,  top_earlgrey.u_otp_macro, otp_obs_o,         u_ast,                    otp_obs_i
-CONNECTION, AST_OTP_OBS_CTRL,  u_ast,                    obs_ctrl_o,        top_earlgrey.u_otp_macro, obs_ctrl_i
-CONNECTION, AST_OTP_PWR_SEQ_H, u_ast ,                   otp_power_seq_h_o, top_earlgrey.u_otp_macro, pwr_seq_h_i
-CONNECTION, OTP_AST_PWR_SEQ,   top_earlgrey.u_otp_macro, pwr_seq_o,         u_ast,                    otp_power_seq_i
+CONNECTION, OTP_AST_OBS_CTRL,  top_earlgrey.earlgrey_pd_main.u_otp_macro, otp_obs_o,         u_ast,                    otp_obs_i
+CONNECTION, AST_OTP_OBS_CTRL,  u_ast,                    obs_ctrl_o,        top_earlgrey.earlgrey_pd_main.u_otp_macro, obs_ctrl_i
+CONNECTION, AST_OTP_PWR_SEQ_H, u_ast ,                   otp_power_seq_h_o, top_earlgrey.earlgrey_pd_main.u_otp_macro, pwr_seq_h_i
+CONNECTION, OTP_AST_PWR_SEQ,   top_earlgrey.earlgrey_pd_main.u_otp_macro, pwr_seq_o,         u_ast,                    otp_power_seq_i

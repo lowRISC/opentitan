@@ -7,9 +7,9 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-CONNECTION, OTP_EXT_VOLT,     , OTP_EXT_VOLT,     top_earlgrey.u_otp_macro                  , ext_voltage_h_io,
-CONNECTION, FLASH_TEST_MODE0, , FLASH_TEST_MODE0, top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_mode_a_io[0],
-CONNECTION, FLASH_TEST_MODE1, , FLASH_TEST_MODE1, top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_mode_a_io[1],
-CONNECTION, FLASH_TEST_VOLT,  , FLASH_TEST_VOLT,  top_earlgrey.u_flash_ctrl.u_eflash.u_flash, flash_test_voltage_h_io,
+CONNECTION, OTP_EXT_VOLT,     , OTP_EXT_VOLT,     top_earlgrey.earlgrey_pd_main.u_otp_macro                  , ext_voltage_h_io,
+CONNECTION, FLASH_TEST_MODE0, , FLASH_TEST_MODE0, top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash, flash_test_mode_a_io[0],
+CONNECTION, FLASH_TEST_MODE1, , FLASH_TEST_MODE1, top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash, flash_test_mode_a_io[1],
+CONNECTION, FLASH_TEST_VOLT,  , FLASH_TEST_VOLT,  top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash, flash_test_voltage_h_io,
 CONNECTION, AST_CC1,          , CC1,              u_ast,                                      adc_a0_ai,
 CONNECTION, AST_CC2,          , CC2,              u_ast,                                      adc_a1_ai,
