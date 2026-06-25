@@ -51,7 +51,10 @@ function rom_ctrl_env_cfg::new (string name="");
 
   list_of_alerts = rom_ctrl_env_pkg::LIST_OF_ALERTS;
   tl_intg_alert_name = "fatal";
-  ral_model_names.push_back("rom_ctrl_prim_reg_block");
+
+  // Add rom_ctrl_prim_reg_block to the set of known model names. The associated value has no
+  // meaning.
+  ral_model_names["rom_ctrl_prim_reg_block"] = 1'b0;
 
   num_interrupts = 0;
 
