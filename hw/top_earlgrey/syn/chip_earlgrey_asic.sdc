@@ -143,11 +143,11 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 set CLK_DST_NAME $CLK_DST_PIN
 
 # generated clocks (div2/div4)
-set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr_aon/u_no_scan_io_div2_div
+set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div2_div
 create_generated_clock -name IO_DIV2_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
-set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr_aon/u_no_scan_io_div4_div
+set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
@@ -187,7 +187,7 @@ set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 
 # MIO paths that go into sysrst_ctrl and fan out into MIOs or dedicated sysrst_ctrl outputs are async in nature, hence we constrain them using a max delay.
 set SYSRST_MAXDELAY 70.0
-set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY}
+set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*] ${SYSRST_MAXDELAY}
 
 #####################
 # AON clk           #
@@ -215,9 +215,9 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 set_propagated_clock JTAG_TCK
 
 create_generated_clock -name LC_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
-    [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
+    [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 create_generated_clock -name RV_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
-    [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
+    [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 
 set LC_JTAG_TCK_INV_PIN \
   [get_pins -leaf -filter {@pin_direction == out} -of_objects \
@@ -247,14 +247,14 @@ if { $synopsys_program_name eq "pt_shell" || $synopsys_program_name eq "icc2_she
 set_clock_sense -stop_propagation -clock JTAG_TCK \
   [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
+      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
     ] \
   ]
 } else {
 set_clock_sense -logical_stop_propagation -clock JTAG_TCK \
   [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
+      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_dft/prim_clock_buf_tck/clk_o] \
     ] \
   ]
 }
@@ -262,7 +262,7 @@ set_clock_sense -logical_stop_propagation -clock JTAG_TCK \
 set_clock_sense -stop_propagation -clock JTAG_TCK \
   [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/in_core_o[38]] \
+      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/in_core_o[38]] \
     ] \
   ]
 set_false_path -hold -from [get_clocks JTAG_TCK] \
@@ -270,7 +270,7 @@ set_false_path -hold -from [get_clocks JTAG_TCK] \
   -through [get_ports "IOR0 IOR2 IOR3"]  \
   -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/in_core_o*] \
+      [get_pins top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/in_core_o*] \
     ] \
   ]
 
@@ -1207,10 +1207,10 @@ set_multicycle_path -setup 2 -from [get_ports ${TPM_CSB_PORT}]     -to [get_cloc
 set_multicycle_path -hold -end 1 -from [get_ports ${TPM_CSB_PORT}] -to [get_clocks SPI_TPM_CLK]
 
 
-set_false_path -from [get_clocks SPI_DEV_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl_aon/*]
-set_false_path -from [get_clocks SPI_DEV_HC_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl_aon/*]
-set_false_path -from [get_clocks SPI_HOST_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl_aon/*]
-set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl_aon/*] ; #leonids updated based on interaction with Alex
+set_false_path -from [get_clocks SPI_DEV_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
+set_false_path -from [get_clocks SPI_DEV_HC_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
+set_false_path -from [get_clocks SPI_HOST_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
+set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*] ; #leonids updated based on interaction with Alex
 
 set_false_path -from SPI_HOST_D* -to SPI_HOST_D*
 set_false_path -from SPI_DEV_D* -to SPI_DEV_D*
@@ -1392,42 +1392,42 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -
 # Note that these set_case_analysis and set_false_path constraints have not been used for synthesis but as PrimeTime waivers only.
 if { $synopsys_program_name eq "pt_shell"  } {
 # SPI_HOST1 CSB (MioOut 51 -> mux sel 54) drives IOB0 (MIO pad 9):
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[0]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[2]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[3]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_9/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[0]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[4]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[5]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[6]
 
 # SPI_HOST1 SD0 (MioOut 38 -> mux sel 41) drives IOB1 (MIO pad 10):
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[0]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[1]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[2]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[3]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_10/q[6]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[1]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[4]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[5]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[6]
 
 # IOB2 (MIO pad 11 -> mux sel 13) drives SPI_HOST1 SD1 (MioIn 39):
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_periph_insel_39/q[0]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_periph_insel_39/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_periph_insel_39/q[2]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_periph_insel_39/q[3]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_periph_insel_39/q[4]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_periph_insel_39/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[5]
 
 # SPI_HOST1 does not drive IOB2.
 set_false_path -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB2
 
 # SPI_HOST1 SCK (MioOut 50 -> mux 53) drives IOB3 (MIO pad 12):
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[0]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[2]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[3]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_mio_outsel_12/q[6]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[4]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[5]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[6]
 
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_DIV2_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_DIV2_CLK
@@ -1671,27 +1671,27 @@ set_case_analysis 0 [get_pins u_padring/*_pad/attr_i?od_en*]
 
 #SPI propagation through flop
 set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_spi_device/u_reg/u_control_mode/q_reg*/Q
-set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_pinmux_aon/dio_pad_attr_q_reg_*__invert/Q
-set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_pinmux_aon/dio_out_retreg_q_reg*/Q
-set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_reg/u_dio_pad_sleep_status_en*/q_reg*/Q
+set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_pinmux/dio_pad_attr_q_reg_*__invert/Q
+set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_pinmux/dio_out_retreg_q_reg*/Q
+set_sense -stop_propagation top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_dio_pad_sleep_status_en*/q_reg*/Q
 
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sync_lc_dft_en/gen_flops_u_prim_flop_2sync/gen_generic_u_impl_generic/u_sync_2/gen_techlib_u_impl_techlib/gen_flops*_u_size_only_reg/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sender_pinmux_hw_debug_en/gen_flops_u_prim_flop/u_secure_anchor_flop/gen_techlib_u_impl_techlib/gen_flops*_u_size_only_reg/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/mio_pad_attr_q_reg_*input_disable/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/tap_strap_q_reg*/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/mio_pad_attr_q_reg*invert/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/mio_pad_attr_q_reg*input_disable/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sender_pinmux_hw_debug_en/gen_flops_u_prim_flop/u_secure_anchor_flop/gen_techlib_u_impl_techlib/gen_flops_*u_size_only_reg/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/u_prim_lc_sync_lc_dft_en/gen_flops_u_prim_flop_2sync/gen_generic_u_impl_generic/u_sync_2/gen_techlib_u_impl_techlib/gen_flops_*u_size_only_reg/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/u_pinmux_strap_sampling/tap_strap_q_reg*/CK -to [get_ports IO*]
-set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux_aon/dio_pad_attr_q_reg*input_disable/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_prim_lc_sync_lc_dft_en/gen_flops_u_prim_flop_2sync/gen_generic_u_impl_generic/u_sync_2/gen_techlib_u_impl_techlib/gen_flops*_u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_prim_lc_sender_pinmux_hw_debug_en/gen_flops_u_prim_flop/u_secure_anchor_flop/gen_techlib_u_impl_techlib/gen_flops*_u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/mio_pad_attr_q_reg_*input_disable/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/tap_strap_q_reg*/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/mio_pad_attr_q_reg*invert/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/mio_pad_attr_q_reg*input_disable/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_prim_lc_sender_pinmux_hw_debug_en/gen_flops_u_prim_flop/u_secure_anchor_flop/gen_techlib_u_impl_techlib/gen_flops_*u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/u_prim_lc_sync_lc_dft_en/gen_flops_u_prim_flop_2sync/gen_generic_u_impl_generic/u_sync_2/gen_techlib_u_impl_techlib/gen_flops_*u_size_only_reg/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/u_pinmux_strap_sampling/tap_strap_q_reg*/CK -to [get_ports IO*]
+set_false_path -from top_earlgrey/earlgrey_pd_main/u_pinmux/dio_pad_attr_q_reg*input_disable/CK -to [get_ports IO*]
 
 if { $synopsys_program_name  == "pt_shell" } {
   set_max_delay 5 -from [get_pins top_earlgrey/earlgrey_pd_main/u_usbdev/usbdev_impl/u_usb_fs_nb_pe/u_usb_fs_tx/u_*_flop/${FLOP_PATH}/Q] \
                   -to   [get_ports USB_*] -probe
   set_max_delay 5 -from [get_ports USB_*] \
                   -to   [get_pins top_earlgrey/earlgrey_pd_main/u_usbdev/i_usbdev_iomux/cdc_io_to_usb/gen_generic_u_impl_generic/u_sync_1/gen_techlib_u_impl_techlib/gen_flops_0__gen_reset_to_0_u_size_only_reg/D] -probe
-  set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl_aon/*] ${SYSRST_MAXDELAY} -probe
+  set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*] ${SYSRST_MAXDELAY} -probe
 }
 
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV2_CLK]
