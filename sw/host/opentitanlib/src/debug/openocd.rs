@@ -197,7 +197,9 @@ impl OpenOcd {
         let mut buf = Vec::new();
         self.reader.read_until(0x1A, &mut buf)?;
         if !buf.ends_with(b"\x1A") {
-            bail!(OpenOcdError::PrematureExit);
+            bail!(OpenOcdError::PrematureExit(
+                String::from_utf8_lossy(&buf).to_string()
+            ));
         }
         buf.pop();
         String::from_utf8(buf).context("failed to parse OpenOCD response as UTF-8")
@@ -250,8 +252,8 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD initialization failed: {0}")]
     InitializeFailure(String),
-    #[error("OpenOCD server exited prematurely")]
-    PrematureExit,
+    #[error("OpenOCD server exited prematurely: {0}")]
+    PrematureExit(String),
     #[error("Generic error {0}")]
     Generic(String),
 }
