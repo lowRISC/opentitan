@@ -17714,11 +17714,23 @@
           {
             signal: ext_racl_error
           }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
+          {
+            unused: true
+          }
           pwrmgr_aon.ext_rst_ack:
           {
             unused: true
           }
           soc_dbg_ctrl.halt_cpu_boot:
+          {
+            unused: true
+          }
+          soc_dbg_ctrl.soc_dbg_policy_bus:
           {
             unused: true
           }
@@ -17981,11 +17993,23 @@
           {
             signal: ext_racl_error
           }
+          clkmgr_aon.cg_en:
+          {
+            unused: true
+          }
+          rstmgr_aon.rst_en:
+          {
+            unused: true
+          }
           pwrmgr_aon.ext_rst_ack:
           {
             unused: true
           }
           soc_dbg_ctrl.halt_cpu_boot:
+          {
+            unused: true
+          }
+          soc_dbg_ctrl.soc_dbg_policy_bus:
           {
             unused: true
           }
@@ -32437,8 +32461,8 @@
         signame: clkmgr_aon_cg_en_o
         signame_chip:
         {
-          asic: clkmgr_aon_cg_en
-          verilator: clkmgr_aon_cg_en
+          asic: ""
+          verilator: ""
         }
         width: 1
         type: uni
@@ -33668,8 +33692,8 @@
         signame: rstmgr_aon_rst_en_o
         signame_chip:
         {
-          asic: rstmgr_aon_rst_en
-          verilator: rstmgr_aon_rst_en
+          asic: ""
+          verilator: ""
         }
         width: 1
         type: uni
@@ -33877,8 +33901,8 @@
         signame: soc_dbg_policy_bus_o
         signame_chip:
         {
-          asic: soc_dbg_policy_bus
-          verilator: soc_dbg_policy_bus
+          asic: ""
+          verilator: ""
         }
         width: 1
         type: uni

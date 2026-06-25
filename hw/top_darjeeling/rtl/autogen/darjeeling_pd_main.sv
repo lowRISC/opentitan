@@ -12,7 +12,6 @@
 
 module darjeeling_pd_main #(
   // Auto-inferred parameters
-  // parameters for uart0
   // parameters for gpio
   parameter bit GpioGpioAsyncOn = 1,
   parameter bit GpioGpioAsHwStrapsEn = 1,
@@ -20,8 +19,6 @@ module darjeeling_pd_main #(
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::SramType1r1w,
   // parameters for i2c0
   parameter int I2c0InputDelayCycles = 0,
-  // parameters for rv_timer
-  // parameters for otp_ctrl
   // parameters for otp_macro
   parameter OtpMacroMemInitFile = "",
   // parameters for lc_ctrl
@@ -34,7 +31,6 @@ module darjeeling_pd_main #(
   // parameters for alert_handler
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,
-  // parameters for spi_host0
   // parameters for pinmux_aon
   parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for rv_dm
@@ -42,7 +38,6 @@ module darjeeling_pd_main #(
   parameter bit RvDmUseDmiInterface = 1,
   parameter bit SecRvDmVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
-  // parameters for rv_plic
   // parameters for aes
   parameter bit AesAESGCMEnable = 1,
   parameter bit SecAesMasking = 1,
@@ -50,7 +45,6 @@ module darjeeling_pd_main #(
   parameter int unsigned SecAesStartTriggerDelay = 0,
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
-  // parameters for hmac
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
   parameter bit KmacSwKeyMasked = 0,
@@ -78,8 +72,6 @@ module darjeeling_pd_main #(
   parameter int EntropySrcRngBusBitSelWidth = 4,
   parameter int EntropySrcHealthTestWindowWidth = 20,
   parameter bit EntropySrcStub = 0,
-  // parameters for edn0
-  // parameters for edn1
   // parameters for sram_ctrl_main
   parameter int SramCtrlMainInstSize = 65536,
   parameter int SramCtrlMainNumRamInst = 1,
@@ -104,17 +96,6 @@ module darjeeling_pd_main #(
   parameter logic [tlul_pkg::RsvdWidth-1:0] DmaTlUserRsvd = '0,
   parameter top_racl_pkg::racl_role_t DmaSysRaclRole = '0,
   parameter int unsigned DmaOtAgentId = 0,
-  // parameters for mbx0
-  // parameters for mbx1
-  // parameters for mbx2
-  // parameters for mbx3
-  // parameters for mbx4
-  // parameters for mbx5
-  // parameters for mbx6
-  // parameters for mbx_jtag
-  // parameters for mbx_pcie0
-  // parameters for mbx_pcie1
-  // parameters for soc_dbg_ctrl
   // parameters for racl_ctrl
   parameter int RaclCtrlNumExternalSubscribingIps = 1,
   // parameters for ac_range_check
