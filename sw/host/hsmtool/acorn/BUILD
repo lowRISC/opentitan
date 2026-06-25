@@ -15,6 +15,7 @@ rust_library(
         "spx.rs",
     ],
     crate_root = "lib.rs",
+    edition = "2024",
     deps = [
         "//sw/host/hsmtool/acorn/vendor:acorn_bindgen",
         "//sw/host/sphincsplus",

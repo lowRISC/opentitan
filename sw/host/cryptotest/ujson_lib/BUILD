@@ -112,6 +112,7 @@ rust_library(
         ":sphincsplus_commands_rust",
         ":x25519_commands_rust",
     ],
+    edition = "2024",
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
         "aes_commands_loc": "$(execpath :aes_commands_rust)",

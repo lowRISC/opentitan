@@ -14,6 +14,7 @@ package(default_visibility = ["//visibility:public"])
             "src/lib.rs",
         ],
         crate_name = "ft_lib",
+        edition = "2024",
         deps = [
             "//sw/host/opentitanlib",
             "//sw/host/opentitanlib/bindgen",

@@ -297,6 +297,7 @@ rust_library(
         "//sw/device:is_english_breakfast": ["english_breakfast"],
         "//conditions:default": [],
     }),
+    edition = "2024",
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
@@ -386,6 +387,7 @@ rust_test(
         ":gpio",
         ":pinmux_config",
     ],
+    edition = "2024",
     env = {
         "RUST_MIN_STACK": "4194304",
         "TESTDATA": "$(rootpath testdata/otp/lc_ctrl_state.hjson)",

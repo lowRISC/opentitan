@@ -10,6 +10,7 @@ rust_library(
     name = "cert_lib",
     srcs = ["src/lib.rs"],
     data = ["//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
@@ -31,4 +32,5 @@ rust_test(
     name = "openssl_verify",
     timeout = "short",
     crate = ":cert_lib",
+    edition = "2024",
 )

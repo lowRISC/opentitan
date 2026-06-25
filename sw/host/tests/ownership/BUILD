@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "transfer_lib",
     srcs = ["transfer_lib.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/sphincsplus",
@@ -22,6 +23,7 @@ rust_library(
 rust_binary(
     name = "transfer_test",
     srcs = ["transfer_test.rs"],
+    edition = "2024",
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",
@@ -36,6 +38,7 @@ rust_binary(
 rust_binary(
     name = "rescue_limit_test",
     srcs = ["rescue_limit_test.rs"],
+    edition = "2024",
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",
@@ -50,6 +53,7 @@ rust_binary(
 rust_binary(
     name = "rescue_permission_test",
     srcs = ["rescue_permission_test.rs"],
+    edition = "2024",
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",
@@ -64,6 +68,7 @@ rust_binary(
 rust_binary(
     name = "flash_permission_test",
     srcs = ["flash_permission_test.rs"],
+    edition = "2024",
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",
@@ -78,6 +83,7 @@ rust_binary(
 rust_binary(
     name = "newversion_test",
     srcs = ["newversion_test.rs"],
+    edition = "2024",
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",
@@ -92,6 +98,7 @@ rust_binary(
 rust_binary(
     name = "bl0_secver_persistence_test",
     srcs = ["bl0_secver_persistence_test.rs"],
+    edition = "2024",
     deps = [
         ":transfer_lib",
         "//sw/host/opentitanlib",

@@ -12,6 +12,7 @@ rust_library(
     data = [
         "//toolchain:opentitan_toolchain",
     ],
+    edition = "2024",
     deps = [
         "@crate_index//:anyhow",
         "@crate_index//:byteorder",
@@ -26,6 +27,7 @@ rust_library(
 rust_binary(
     name = "collect_cc_coverage",
     srcs = ["collect_cc_coverage.rs"],
+    edition = "2024",
     deps = [
         ":coverage_lib",
         "@crate_index//:anyhow",
@@ -36,6 +38,7 @@ rust_binary(
 rust_binary(
     name = "generate_coverage_view",
     srcs = ["generate_coverage_view.rs"],
+    edition = "2024",
     deps = [
         ":coverage_lib",
         "@crate_index//:addr2line",

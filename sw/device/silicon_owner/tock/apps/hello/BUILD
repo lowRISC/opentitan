@@ -13,6 +13,7 @@ rust_binary(
     srcs = [
         "src/hello.rs",
     ],
+    edition = "2021",
     # We specifically restrict our build target to the OpenTitan
     # CPU because libtock does not support an x86_64 target.
     target_compatible_with = [OPENTITAN_CPU],

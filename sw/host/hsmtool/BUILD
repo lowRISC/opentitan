@@ -78,6 +78,7 @@ rust_library(
         "src/util/wrap.rs",
     ],
     crate_name = "hsmtool",
+    edition = "2024",
     deps = [
         "//sw/host/hsmtool/acorn",
         "//sw/host/sphincsplus",
@@ -117,6 +118,7 @@ rust_library(
 rust_binary(
     name = "hsmtool",
     srcs = ["src/hsmtool.rs"],
+    edition = "2024",
     rustc_flags = select({
         "//rules:static_link_host_tools_enabled": ["--codegen=target-feature=+crt-static"],
         "//conditions:default": [],
@@ -138,6 +140,7 @@ rust_test(
     data = glob([
         "testdata/**",
     ]),
+    edition = "2024",
     env = {
         "TESTDATA": "$(rootpath testdata/key/test1_pkcs1.der)",
     },

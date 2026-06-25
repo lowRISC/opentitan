@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/openocd_test.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -29,6 +30,7 @@ rust_binary(
     srcs = [
         "src/sram_load.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",

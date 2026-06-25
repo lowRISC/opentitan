@@ -9,6 +9,7 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 rust_library(
     name = "cryptotest_parser",
     srcs = ["cryptotest_parser.rs"],
+    edition = "2024",
     deps = [
         "@crate_index//:once_cell",
         "@crate_index//:regex",
@@ -19,4 +20,5 @@ rust_library(
 rust_test(
     name = "cryptotest_parser_test",
     crate = ":cryptotest_parser",
+    edition = "2024",
 )

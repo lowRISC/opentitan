@@ -12,6 +12,7 @@ rust_library(
         "mod.rs",
         "usb.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -27,6 +28,7 @@ rust_binary(
     srcs = [
         "usbdev_aon_wake.rs",
     ],
+    edition = "2024",
     deps = [
         ":usb",
         "//sw/host/opentitanlib",
@@ -43,6 +45,7 @@ rust_binary(
     srcs = [
         "usbdev_suspend.rs",
     ],
+    edition = "2024",
     deps = [
         ":usb",
         "//sw/host/opentitanlib",
@@ -60,6 +63,7 @@ rust_binary(
     srcs = [
         "usb_harness.rs",
     ],
+    edition = "2024",
     deps = [
         ":usb",
         "//sw/host/opentitanlib",
@@ -75,6 +79,7 @@ rust_binary(
     srcs = [
         "usbdev_smoketest.rs",
     ],
+    edition = "2024",
     deps = [
         ":usb",
         "//sw/host/opentitanlib",
@@ -92,6 +97,7 @@ rust_binary(
     srcs = [
         "silicon_creator_harness.rs",
     ],
+    edition = "2024",
     deps = [
         ":usb",
         "//sw/host/opentitanlib",

@@ -24,6 +24,7 @@ rust_test(
         ":example",
         "//sw/device/lib/ujson:example_roundtrip",
     ],
+    edition = "2024",
     env = {
         "ROUNDTRIP_CLIENT": "$(rootpath //sw/device/lib/ujson:example_roundtrip)",
         "RUST_BACKTRACE": "1",

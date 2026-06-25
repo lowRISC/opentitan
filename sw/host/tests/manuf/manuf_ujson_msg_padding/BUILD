@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "manuf_ujson_msg_padding",
     srcs = ["src/main.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/ujson_lib",

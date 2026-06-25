@@ -13,6 +13,7 @@ cc_library(
 
 rust_bindgen_library(
     name = "acorn_bindgen",
+    edition = "2024",
     bindgen_flags = [
         "--with-derive-default",
         "--impl-debug",

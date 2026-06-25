@@ -42,6 +42,7 @@ rust_binary(
         "src/command/xmodem.rs",
         "src/main.rs",
     ],
+    edition = "2024",
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
@@ -99,6 +100,7 @@ pkg_filegroup(
 rust_test(
     name = "opentitantool_test",
     crate = ":opentitantool",
+    edition = "2024",
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
 )

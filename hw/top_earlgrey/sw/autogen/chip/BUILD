@@ -15,4 +15,5 @@ rust_library(
     name = "top_earlgrey",
     srcs = [":all_files"],
     crate_root = "mod.rs",
+    edition = "2024",
 )

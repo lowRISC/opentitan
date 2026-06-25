@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "pattgen_ios.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

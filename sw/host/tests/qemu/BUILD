@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/test_status.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -23,6 +24,7 @@ rust_binary(
     srcs = [
         "src/i2c_target.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

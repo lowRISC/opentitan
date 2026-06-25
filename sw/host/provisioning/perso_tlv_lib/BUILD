@@ -18,6 +18,7 @@ rust_bindgen_library(
         "--allowlist-type=perso_tlv_cert_header_fields_t",
     ],
     cc_lib = "//sw/device/silicon_creator/manuf/base:perso_tlv_headers",
+    edition = "2024",
     header = "//sw/device/silicon_creator/manuf/base:perso_tlv_data.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -29,6 +30,7 @@ rust_bindgen_library(
 rust_library(
     name = "perso_tlv_lib",
     srcs = ["src/lib.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/provisioning/perso_tlv_lib:perso_tlv_objects",
         "@crate_index//:anyhow",

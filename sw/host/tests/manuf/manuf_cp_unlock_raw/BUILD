@@ -17,6 +17,7 @@ rust_binary(
         "src/main.rs",
         ":lc_raw_unlock_token",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

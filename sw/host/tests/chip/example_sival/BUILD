@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "main.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

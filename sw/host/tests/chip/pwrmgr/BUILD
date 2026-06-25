@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/sleep_all_resets.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -25,6 +26,7 @@ rust_binary(
     srcs = [
         "src/sleep_all_wakeups.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -39,6 +41,7 @@ rust_binary(
     srcs = [
         "src/sleep_por.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
