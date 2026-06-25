@@ -102,12 +102,10 @@ module ast
   output wire ast2pad_t1_ao,                  // AST_2_PAD Analog T1 Output Signal
 `endif
 
-  // memories read-write margins
-  output ast_pkg::dpm_rm_t dpram_rmf_o,       // Dual Port RAM Read-write Margin Fast
-  output ast_pkg::dpm_rm_t dpram_rml_o,       // Dual Port RAM Read-write Margin sLow
-  output ast_pkg::spm_rm_t spram_rm_o,        // Single Port RAM Read-write Margin
-  output ast_pkg::spm_rm_t sprgf_rm_o,        // Single Port Reg-File Read-write Margin
-  output ast_pkg::spm_rm_t sprom_rm_o,        // Single Port ROM Read-write Margin
+  // Aggregated memory configuration request/response interface.
+  output ast_pkg::ast_mem_cfg_req_t mem_cfg_req_o,
+  input  ast_pkg::ast_mem_cfg_rsp_t mem_cfg_rsp_i,
+
 
   // Scan interface
   output prim_mubi_pkg::mubi4_t dft_scan_md_o,  // Scan Mode output
@@ -736,15 +734,42 @@ assign ot0_alert_src = '{p: intg_err, n: !intg_err};
 ///////////////////////////////////////
 // DFT (Main | Always ON)
 ///////////////////////////////////////
+ast_pkg::tpm_rm_t tpram_rm;
+ast_pkg::spm_rm_t spram_rm;
+ast_pkg::rom_rm_t sprom_rm;
+
 ast_dft u_ast_dft (
   .obs_ctrl_o ( obs_ctrl_o ),
   .ast2padmux_o ( ast2padmux_o[Ast2PadOutWidth-1:0] ),
-  .dpram_rmf_o ( dpram_rmf_o ),
-  .dpram_rml_o ( dpram_rml_o ),
-  .spram_rm_o ( spram_rm_o ),
-  .sprgf_rm_o ( sprgf_rm_o ),
-  .sprom_rm_o ( sprom_rm_o )
+  .tpram_rm_o ( tpram_rm ),
+  .spram_rm_o ( spram_rm ),
+  .sprom_rm_o ( sprom_rm )
 );
+
+///////////////////////////////////////
+// Memory configuration distribution
+///////////////////////////////////////
+assign mem_cfg_req_o.otbn_imem                = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.otbn_dmem                = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.i2c0                     = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.ctn_sram                 = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.rv_core_ibex_icache_tag  =
+    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.rv_core_ibex_icache_data =
+    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_main           =
+    {ast_pkg::SramCtrlMainNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_ret_aon        =
+    {ast_pkg::SramCtrlRetAonNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_mbox           =
+    {ast_pkg::SramCtrlMboxNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.spi_device_sys2spi       = '{req: tpram_rm.cfg};
+assign mem_cfg_req_o.spi_device_spi2sys       = '{req: tpram_rm.cfg};
+assign mem_cfg_req_o.rom_ctrl0                = '{req: sprom_rm.cfg};
+assign mem_cfg_req_o.rom_ctrl1                = '{req: sprom_rm.cfg};
+
+logic unused_mem_cfg;
+assign unused_mem_cfg = ^mem_cfg_rsp_i;
 
 
 ////////////////////////////////////////
@@ -792,12 +817,8 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
-// DPRAM/SPRAM
-`ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(DpramRmlKnownO_A, dpram_rml_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(SpramRmKnownO_A, spram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(SprgfRmKnownO_A, sprgf_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(SpromRmKnownO_A, sprom_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+// Memory configuration requests
+`ASSERT_KNOWN(MemCfgKnownO_A, mem_cfg_req_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // DFT
 `ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // SCAN

@@ -53,8 +53,8 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   output logic [1:0]                  rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input  ram_1p_cfg_t     [NumRamInst-1:0] cfg_i,
-  output ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_rsp_o,
+  input  ram_1p_cfg_req_t [NumRamInst-1:0] cfg_i,
+  output ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_o,
 
   // When detecting multi-bit encoding errors, raise alert.
   output logic                             alert_o
@@ -158,14 +158,14 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
       .clk_i,
       .rst_ni,
 
-      .req_i     (inst_req_d[i]),
-      .write_i   (write_q_b),
-      .addr_i    (inst_addr),
-      .wdata_i   (wdata_q),
-      .wmask_i   (wmask_q),
-      .rdata_o   (inst_rdata[i]),
-      .cfg_i     (cfg_i[i]),
-      .cfg_rsp_o (cfg_rsp_o[i])
+      .req_i   (inst_req_d[i]),
+      .write_i (write_q_b),
+      .addr_i  (inst_addr),
+      .wdata_i (wdata_q),
+      .wmask_i (wmask_q),
+      .rdata_o (inst_rdata[i]),
+      .cfg_i   (cfg_i[i]),
+      .cfg_o   (cfg_o[i])
     );
   end
 

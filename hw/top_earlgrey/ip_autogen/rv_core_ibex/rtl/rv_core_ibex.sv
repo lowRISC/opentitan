@@ -71,10 +71,10 @@ module rv_core_ibex
   // Reset feedback to rstmgr
   output logic        rst_cpu_n_o,
 
-  input  prim_ram_1p_pkg::ram_1p_cfg_t                       ram_cfg_icache_tag_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_rsp_icache_tag_o,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t                       ram_cfg_icache_data_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_rsp_icache_data_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ICacheNWays-1:0] ram_cfg_icache_tag_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_icache_tag_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ICacheNWays-1:0] ram_cfg_icache_data_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_icache_data_o,
 
   input  logic [31:0] hart_id_i,
   input  logic [31:0] boot_addr_i,
@@ -486,9 +486,9 @@ module rv_core_ibex
     .scan_rst_ni,
 
     .ram_cfg_icache_tag_i,
-    .ram_cfg_rsp_icache_tag_o,
+    .ram_cfg_icache_tag_o,
     .ram_cfg_icache_data_i,
-    .ram_cfg_rsp_icache_data_o,
+    .ram_cfg_icache_data_o,
 
     .hart_id_i,
     .boot_addr_i,

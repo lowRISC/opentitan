@@ -551,10 +551,10 @@ module top_englishbreakfast #(
     .cio_sd_en_o     (cio_spi_device_sd_en_d2p),
 
     // Inter-module signals
-    .ram_cfg_sys2spi_i(prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT),
-    .ram_cfg_rsp_sys2spi_o(),
-    .ram_cfg_spi2sys_i(prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT),
-    .ram_cfg_rsp_spi2sys_o(),
+    .ram_cfg_sys2spi_i(prim_ram_1r1w_pkg::RAM_1R1W_CFG_REQ_DEFAULT),
+    .ram_cfg_sys2spi_o(),
+    .ram_cfg_spi2sys_i(prim_ram_1r1w_pkg::RAM_1R1W_CFG_REQ_DEFAULT),
+    .ram_cfg_spi2sys_o(),
     .passthrough_o(spi_device_passthrough_req),
     .passthrough_i(spi_device_passthrough_rsp),
     .mbist_en_i('0),
@@ -688,8 +688,8 @@ module top_englishbreakfast #(
     .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
     .usb_aon_bus_not_idle_i('0),
     .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
-    .ram_cfg_i(prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
-    .ram_cfg_rsp_o(),
+    .ram_cfg_i(prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+    .ram_cfg_o(),
     .tl_i(usbdev_tl_req),
     .tl_o(usbdev_tl_rsp)
   );
@@ -940,8 +940,8 @@ module top_englishbreakfast #(
     // Inter-module signals
     .sram_otp_key_o(),
     .sram_otp_key_i(otp_ctrl_pkg::SRAM_OTP_KEY_RSP_DEFAULT),
-    .cfg_i({SramCtrlMainNumRamInst{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}}),
-    .cfg_rsp_o(),
+    .ram_cfg_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_o(),
     .lc_escalate_en_i(lc_ctrl_pkg::Off),
     .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
     .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),
@@ -973,7 +973,8 @@ module top_englishbreakfast #(
     .alert_rx_i(outgoing_alert_englishbreakfast_rx_i[17]),
 
     // Inter-module signals
-    .rom_cfg_i(prim_rom_pkg::ROM_CFG_DEFAULT),
+    .rom_cfg_i(prim_rom_pkg::ROM_CFG_REQ_DEFAULT),
+    .rom_cfg_o(),
     .pwrmgr_data_o(),
     .keymgr_data_o(),
     .kmac_data_o(),
@@ -1049,10 +1050,10 @@ module top_englishbreakfast #(
 
     // Inter-module signals
     .rst_cpu_n_o(),
-    .ram_cfg_icache_tag_i(prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
-    .ram_cfg_rsp_icache_tag_o(),
-    .ram_cfg_icache_data_i(prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
-    .ram_cfg_rsp_icache_data_o(),
+    .ram_cfg_icache_tag_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_tag_o(),
+    .ram_cfg_icache_data_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_data_o(),
     .hart_id_i(rv_core_ibex_hart_id),
     .boot_addr_i(rv_core_ibex_boot_addr),
     .irq_software_i(rv_plic_msip),

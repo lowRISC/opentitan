@@ -650,70 +650,59 @@ module chip_${top["name"]}_${target["name"]} #(
   // Jitter enable for main clock
   prim_mubi_pkg::mubi4_t clk_main_jitter_en;
 
+## englishbreakfast does not use the AST SRAM configuration; its memory cfg is
+## tied off directly at the u_ast instance below
+% if top["name"] != "englishbreakfast":
+<%
+  # cfg type kind -> (req struct type, rsp struct type)
+  mem_cfg_types = {
+    '1p':   ('prim_ram_1p_pkg::ram_1p_cfg_req_t',     'prim_ram_1p_pkg::ram_1p_cfg_rsp_t'),
+    '1r1w': ('prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t', 'prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t'),
+    'rom':  ('prim_rom_pkg::rom_cfg_req_t',           'prim_rom_pkg::rom_cfg_rsp_t'),
+  }
+  # (struct field, flat inter-signal base name, cfg type kind, array width expr or None)
+  # for every memory-cfg consumer.
+  mem_cfg_consumers = [
+    ('otbn_imem',                'otbn_imem_ram_cfg',                '1p',   None),
+    ('otbn_dmem',                'otbn_dmem_ram_cfg',                '1p',   None),
+    ('i2c0',                     'i2c0_ram_cfg',                     '1p',   None),
+    ('i2c1',                     'i2c1_ram_cfg',                     '1p',   None),
+    ('i2c2',                     'i2c2_ram_cfg',                     '1p',   None),
+    ('usbdev_ram',               'usbdev_ram_cfg',                   '1p',   None),
+    ('rv_core_ibex_icache_tag',  'rv_core_ibex_icache_tag_ram_cfg',  '1p',   'ibex_pkg::IC_NUM_WAYS'),
+    ('rv_core_ibex_icache_data', 'rv_core_ibex_icache_data_ram_cfg', '1p',   'ibex_pkg::IC_NUM_WAYS'),
+    ('sram_ctrl_main',           'sram_ctrl_main_ram_cfg',           '1p',   'ast_pkg::SramCtrlMainNumRamInst'),
+    ('sram_ctrl_ret_aon',        'sram_ctrl_ret_aon_ram_cfg',        '1p',   'ast_pkg::SramCtrlRetAonNumRamInst'),
+    ('spi_device_sys2spi',       'spi_device_sys2spi_ram_cfg',       '1r1w', None),
+    ('spi_device_spi2sys',       'spi_device_spi2sys_ram_cfg',       '1r1w', None),
+    ('rom_ctrl_rom',             'rom_ctrl_rom_cfg',                 'rom',  None),
+  ]
+  # Width of the widest left-hand side, so the '=' align across both directions.
+  mem_cfg_lhs_pad = max(max(len(w) + len('_req') for f, w, k, a in mem_cfg_consumers),
+                        max(len('chip_mem_cfg_rsp.') + len(f) for f, w, k, a in mem_cfg_consumers))
+%>\
   // Memory configuration connections
-  ast_pkg::spm_rm_t ast_ram_1p_cfg;
-  ast_pkg::spm_rm_t ast_rf_cfg;
-  ast_pkg::spm_rm_t ast_rom_cfg;
-  ast_pkg::dpm_rm_t ast_ram_2p_fcfg;
-  ast_pkg::dpm_rm_t ast_ram_2p_lcfg;
+% for field, wire, kind, width in mem_cfg_consumers:
+<% req_type, rsp_type = mem_cfg_types[kind] %>\
+% if width is None:
+  ${req_type} ${wire}_req;
+  ${rsp_type} ${wire}_rsp;
+% else:
+  ${req_type} [${width}-1:0]
+      ${wire}_req;
+  ${rsp_type} [${width}-1:0]
+      ${wire}_rsp;
+% endif
+% endfor
 
-  prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
-  prim_ram_1p_pkg::ram_1p_cfg_t usb_ram_1p_cfg;
-  prim_rom_pkg::rom_cfg_t rom_cfg;
+  ast_pkg::ast_mem_cfg_req_t chip_mem_cfg_req;
+  ast_pkg::ast_mem_cfg_rsp_t chip_mem_cfg_rsp;
+% for field, wire, kind, width in mem_cfg_consumers:
+  assign ${(wire + '_req').ljust(mem_cfg_lhs_pad)} = chip_mem_cfg_req.${field};
+  assign ${('chip_mem_cfg_rsp.' + field).ljust(mem_cfg_lhs_pad)} = ${wire}_rsp;
+% endfor
+% endif
 
-  // conversion from ast structure to memory centric structures
-  assign ram_1p_cfg = '{
-    ram_cfg: '{
-                test:   ast_ram_1p_cfg.test,
-                cfg_en: ast_ram_1p_cfg.marg_en,
-                cfg:    ast_ram_1p_cfg.marg
-              },
-    rf_cfg:  '{
-                test:   ast_rf_cfg.test,
-                cfg_en: ast_rf_cfg.marg_en,
-                cfg:    ast_rf_cfg.marg
-              }
-  };
-
-  assign usb_ram_1p_cfg = '{
-    ram_cfg: '{
-                test:   ast_ram_1p_cfg.test,
-                cfg_en: ast_ram_1p_cfg.marg_en,
-                cfg:    ast_ram_1p_cfg.marg
-              },
-    rf_cfg:  '{
-                test:   ast_rf_cfg.test,
-                cfg_en: ast_rf_cfg.marg_en,
-                cfg:    ast_rf_cfg.marg
-              }
-  };
-
-  // this maps as follows:
-  // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
-  assign spi_ram_2p_cfg = '{
-    a_ram_lcfg: '{
-                   test:   ast_ram_2p_lcfg.test_a,
-                   cfg_en: ast_ram_2p_lcfg.marg_en_a,
-                   cfg:    ast_ram_2p_lcfg.marg_a
-                 },
-    b_ram_lcfg: '{
-                   test:   ast_ram_2p_lcfg.test_b,
-                   cfg_en: ast_ram_2p_lcfg.marg_en_b,
-                   cfg:    ast_ram_2p_lcfg.marg_b
-                 },
-    default: '0
-  };
-
-  assign rom_cfg = '{
-    test:   ast_rom_cfg.test,
-    cfg_en: ast_rom_cfg.marg_en,
-    cfg:    ast_rom_cfg.marg
-  };
-
-  // unused cfg bits
-  logic unused_ram_cfg;
-  assign unused_ram_cfg = ^ast_ram_2p_fcfg;
 
   //////////////////////////////////
   // AST - Custom for targets     //
@@ -1031,11 +1020,17 @@ module chip_${top["name"]}_${target["name"]} #(
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
     // Memory configuration connections
-    .dpram_rmf_o           ( ast_ram_2p_fcfg ),
-    .dpram_rml_o           ( ast_ram_2p_lcfg ),
-    .spram_rm_o            ( ast_ram_1p_cfg  ),
-    .sprgf_rm_o            ( ast_rf_cfg      ),
-    .sprom_rm_o            ( ast_rom_cfg     ),
+% if top["name"] != "englishbreakfast":
+    // Single aggregated request/response struct, driven from the AST's internal
+    // SRAM configuration and fanned out to the individual cut signals above.
+    .mem_cfg_req_o         ( chip_mem_cfg_req ),
+    .mem_cfg_rsp_i         ( chip_mem_cfg_rsp ),
+% else:
+    // englishbreakfast does not use the AST SRAM configuration: leave the cfg
+    // request output open and tie the response input off (all consumers default).
+    .mem_cfg_req_o         ( ),
+    .mem_cfg_rsp_i         ( '0 ),
+% endif
     // scan
     .dft_scan_md_o         ( scanmode ),
     .scan_shift_en_o       ( scan_en ),

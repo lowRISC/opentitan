@@ -45,7 +45,8 @@ module tb;
     .clk_i                (clk),
     .rst_ni               (rst_n),
 
-    .rom_cfg_i            (prim_rom_pkg::rom_cfg_t'('0)),
+    .rom_cfg_i            (prim_rom_pkg::ROM_CFG_REQ_DEFAULT),
+    .rom_cfg_o            (),
 
     .rom_tl_i             (tl_rom_if.h2d),
     .rom_tl_o             (tl_rom_if.d2h),

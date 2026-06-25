@@ -149,7 +149,7 @@
             - spi_device
             '''
       stage: V2
-      tests: ["ast_dft_spi_device_ram_2p_cfg"]
+      tests: ["ast_spi_device_ram_2p_cfg"]
       tags: ["conn"]
     }
     {
@@ -164,18 +164,20 @@
             - rv_core_ibex_data1
             - sram_main
             - sram_retention
-            - rom
+            - rom_ctrl0
+            - rom_ctrl1
             '''
       stage: V2
-      tests: ["ast_dft_otbn_imem_ram_1p_cfg",
-              "ast_dft_otbn_dmem_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_tag0_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_tag1_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_data0_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_data1_ram_1p_cfg",
-              "ast_dft_sram_main_ram_1p_cfg",
-              "ast_dft_sram_ret_ram_1p_cfg",
-              "ast_dft_rom_cfg"]
+      tests: ["ast_otbn_imem_ram_1p_cfg",
+              "ast_otbn_dmem_ram_1p_cfg",
+              "ast_rv_core_ibex_tag0_ram_1p_cfg",
+              "ast_rv_core_ibex_tag1_ram_1p_cfg",
+              "ast_rv_core_ibex_data0_ram_1p_cfg",
+              "ast_rv_core_ibex_data1_ram_1p_cfg",
+              "ast_sram_main_ram_1p_cfg",
+              "ast_sram_ret_ram_1p_cfg",
+              "ast_rom_ctrl0_cfg",
+              "ast_rom_ctrl1_cfg"]
       tags: ["conn"]
     }
 

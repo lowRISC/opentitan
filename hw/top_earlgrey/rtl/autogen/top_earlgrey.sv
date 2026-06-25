@@ -186,11 +186,30 @@ module top_earlgrey #(
   output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_cfg_i,
-  input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t       usb_ram_1p_cfg_i,
-  input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t       otbn_imem_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_imem_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t       otbn_dmem_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_dmem_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t       i2c0_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c0_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t       i2c1_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c1_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t       i2c2_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c2_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t       usbdev_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       usbdev_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_tag_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_tag_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_data_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_data_ram_cfg_rsp_o,
+  input  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t       spi_device_sys2spi_ram_cfg_req_i,
+  output prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t       spi_device_sys2spi_ram_cfg_rsp_o,
+  input  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t       spi_device_spi2sys_ram_cfg_req_i,
+  output prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t       spi_device_spi2sys_ram_cfg_rsp_o,
+  input  prim_rom_pkg::rom_cfg_req_t       rom_ctrl_rom_cfg_req_i,
+  output prim_rom_pkg::rom_cfg_rsp_t       rom_ctrl_rom_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_cfg_rsp_o,
   input  prim_mubi_pkg::mubi4_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
@@ -594,10 +613,6 @@ module top_earlgrey #(
 
   // Define inter-module signals
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
-  prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t       ast_spi_ram_2p_cfg;
-  prim_ram_1p_pkg::ram_1p_cfg_t       ast_usb_ram_1p_cfg;
-  prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
@@ -777,10 +792,6 @@ module top_earlgrey #(
   assign ast_edn_rsp_o = edn0_edn_rsp[2];
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign ast_obs_ctrl = obs_ctrl_i;
-  assign ast_ram_1p_cfg = ram_1p_cfg_i;
-  assign ast_spi_ram_2p_cfg = spi_ram_2p_cfg_i;
-  assign ast_usb_ram_1p_cfg = usb_ram_1p_cfg_i;
-  assign ast_rom_cfg = rom_cfg_i;
 
   // Dummy signal definitions for unused partial inter-module signals
   otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
@@ -1243,10 +1254,10 @@ module top_earlgrey #(
     .cio_sd_en_o     (cio_spi_device_sd_en_d2p),
 
     // Inter-module signals
-    .ram_cfg_sys2spi_i(ast_spi_ram_2p_cfg),
-    .ram_cfg_rsp_sys2spi_o(),
-    .ram_cfg_spi2sys_i(ast_spi_ram_2p_cfg),
-    .ram_cfg_rsp_spi2sys_o(),
+    .ram_cfg_sys2spi_i(spi_device_sys2spi_ram_cfg_req_i),
+    .ram_cfg_sys2spi_o(spi_device_sys2spi_ram_cfg_rsp_o),
+    .ram_cfg_spi2sys_i(spi_device_spi2sys_ram_cfg_req_i),
+    .ram_cfg_spi2sys_o(spi_device_spi2sys_ram_cfg_rsp_o),
     .passthrough_o(spi_device_passthrough_req),
     .passthrough_i(spi_device_passthrough_rsp),
     .mbist_en_i('0),
@@ -1298,8 +1309,8 @@ module top_earlgrey #(
     .cio_scl_en_o(cio_i2c0_scl_en_d2p),
 
     // Inter-module signals
-    .ram_cfg_i(ast_ram_1p_cfg),
-    .ram_cfg_rsp_o(),
+    .ram_cfg_i(i2c0_ram_cfg_req_i),
+    .ram_cfg_o(i2c0_ram_cfg_rsp_o),
     .lsio_trigger_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
@@ -1348,8 +1359,8 @@ module top_earlgrey #(
     .cio_scl_en_o(cio_i2c1_scl_en_d2p),
 
     // Inter-module signals
-    .ram_cfg_i(ast_ram_1p_cfg),
-    .ram_cfg_rsp_o(),
+    .ram_cfg_i(i2c1_ram_cfg_req_i),
+    .ram_cfg_o(i2c1_ram_cfg_rsp_o),
     .lsio_trigger_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
@@ -1398,8 +1409,8 @@ module top_earlgrey #(
     .cio_scl_en_o(cio_i2c2_scl_en_d2p),
 
     // Inter-module signals
-    .ram_cfg_i(ast_ram_1p_cfg),
-    .ram_cfg_rsp_o(),
+    .ram_cfg_i(i2c2_ram_cfg_req_i),
+    .ram_cfg_o(i2c2_ram_cfg_rsp_o),
     .lsio_trigger_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
@@ -1796,8 +1807,8 @@ module top_earlgrey #(
     .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
     .usb_aon_bus_not_idle_i(usbdev_usb_aon_bus_not_idle),
     .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
-    .ram_cfg_i(ast_usb_ram_1p_cfg),
-    .ram_cfg_rsp_o(),
+    .ram_cfg_i(usbdev_ram_cfg_req_i),
+    .ram_cfg_o(usbdev_ram_cfg_rsp_o),
     .tl_i(usbdev_tl_req),
     .tl_o(usbdev_tl_rsp)
   );
@@ -2174,10 +2185,10 @@ module top_earlgrey #(
     .edn_urnd_o(edn0_edn_req[6]),
     .edn_urnd_i(edn0_edn_rsp[6]),
     .idle_o(clkmgr_aon_idle_o[3]),
-    .ram_cfg_imem_i(ast_ram_1p_cfg),
-    .ram_cfg_dmem_i(ast_ram_1p_cfg),
-    .ram_cfg_rsp_imem_o(),
-    .ram_cfg_rsp_dmem_o(),
+    .ram_cfg_imem_i(otbn_imem_ram_cfg_req_i),
+    .ram_cfg_imem_o(otbn_imem_ram_cfg_rsp_o),
+    .ram_cfg_dmem_i(otbn_dmem_ram_cfg_req_i),
+    .ram_cfg_dmem_o(otbn_dmem_ram_cfg_rsp_o),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
     .lc_rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .lc_rma_ack_o(lc_ctrl_lc_nvm_rma_ack[1]),
@@ -2404,8 +2415,8 @@ module top_earlgrey #(
     // Inter-module signals
     .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
-    .cfg_i(sram_ctrl_main_cfg_i),
-    .cfg_rsp_o(),
+    .ram_cfg_i(sram_ctrl_main_ram_cfg_req_i),
+    .ram_cfg_o(sram_ctrl_main_ram_cfg_rsp_o),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
     .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),
@@ -2437,7 +2448,8 @@ module top_earlgrey #(
     .alert_rx_i(alert_rx[58]),
 
     // Inter-module signals
-    .rom_cfg_i(ast_rom_cfg),
+    .rom_cfg_i(rom_ctrl_rom_cfg_req_i),
+    .rom_cfg_o(rom_ctrl_rom_cfg_rsp_o),
     .pwrmgr_data_o(rom_ctrl_pwrmgr_data_o),
     .keymgr_data_o(rom_ctrl_keymgr_data),
     .kmac_data_o(kmac_app_req[2]),
@@ -2513,10 +2525,10 @@ module top_earlgrey #(
 
     // Inter-module signals
     .rst_cpu_n_o(),
-    .ram_cfg_icache_tag_i(ast_ram_1p_cfg),
-    .ram_cfg_rsp_icache_tag_o(),
-    .ram_cfg_icache_data_i(ast_ram_1p_cfg),
-    .ram_cfg_rsp_icache_data_o(),
+    .ram_cfg_icache_tag_i(rv_core_ibex_icache_tag_ram_cfg_req_i),
+    .ram_cfg_icache_tag_o(rv_core_ibex_icache_tag_ram_cfg_rsp_o),
+    .ram_cfg_icache_data_i(rv_core_ibex_icache_data_ram_cfg_req_i),
+    .ram_cfg_icache_data_o(rv_core_ibex_icache_data_ram_cfg_rsp_o),
     .hart_id_i(rv_core_ibex_hart_id),
     .boot_addr_i(rv_core_ibex_boot_addr),
     .irq_software_i(rv_plic_msip),

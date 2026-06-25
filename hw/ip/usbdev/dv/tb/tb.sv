@@ -157,8 +157,8 @@ module tb;
     .usb_ref_pulse_o        (usb_ref_pulse),
 
     // memory configuration
-    .ram_cfg_i              ('0),
-    .ram_cfg_rsp_o          (  ),
+    .ram_cfg_i              (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+    .ram_cfg_o              (                                       ),
 
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),

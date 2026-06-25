@@ -58,6 +58,10 @@ mapping:
   "lowrisc:prim:ram_1r1w"     : lowrisc:prim_generic:ram_1r1w
   "lowrisc:prim:ram_2p"       : lowrisc:prim_generic:ram_2p
   "lowrisc:prim:rom"          : lowrisc:prim_xilinx:rom
+  "lowrisc:prim:ram_1p_pkg"   : lowrisc:prim_generic:ram_1p_pkg
+  "lowrisc:prim:ram_1r1w_pkg" : lowrisc:prim_generic:ram_1r1w_pkg
+  "lowrisc:prim:ram_2p_pkg"   : lowrisc:prim_generic:ram_2p_pkg
+  "lowrisc:prim:rom_pkg"      : lowrisc:prim_generic:rom_pkg
   "lowrisc:prim:usb_diff_rx"  : lowrisc:prim_generic:usb_diff_rx
   "lowrisc:prim:xnor2"        : lowrisc:prim_xilinx:xnor2
   "lowrisc:prim:xor2"         : lowrisc:prim_xilinx:xor2

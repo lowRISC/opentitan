@@ -18,18 +18,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name           | Package::Struct                 | Type    | Act   |   Width | Description                                                                                                                          |
-|:--------------------|:--------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
-| ram_cfg_sys2spi     | prim_ram_2p_pkg::ram_2p_cfg     | uni     | rcv   |       1 |                                                                                                                                      |
-| ram_cfg_rsp_sys2spi | prim_ram_2p_pkg::ram_2p_cfg_rsp | uni     | req   |       1 |                                                                                                                                      |
-| ram_cfg_spi2sys     | prim_ram_2p_pkg::ram_2p_cfg     | uni     | rcv   |       1 |                                                                                                                                      |
-| ram_cfg_rsp_spi2sys | prim_ram_2p_pkg::ram_2p_cfg_rsp | uni     | req   |       1 |                                                                                                                                      |
-| passthrough         | spi_device_pkg::passthrough     | req_rsp | req   |       1 |                                                                                                                                      |
-| mbist_en            | logic                           | uni     | rcv   |       1 |                                                                                                                                      |
-| sck_monitor         | logic                           | uni     | req   |       1 |                                                                                                                                      |
-| racl_policies       | top_racl_pkg::racl_policy_vec   | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error          | top_racl_pkg::racl_error_log    | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
-| tl                  | tlul_pkg::tl                    | req_rsp | rsp   |       1 |                                                                                                                                      |
+| Port Name       | Package::Struct                 | Type    | Act   |   Width | Description                                                                                                                          |
+|:----------------|:--------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
+| ram_cfg_sys2spi | prim_ram_1r1w_pkg::ram_1r1w_cfg | req_rsp | rsp   |       1 |                                                                                                                                      |
+| ram_cfg_spi2sys | prim_ram_1r1w_pkg::ram_1r1w_cfg | req_rsp | rsp   |       1 |                                                                                                                                      |
+| passthrough     | spi_device_pkg::passthrough     | req_rsp | req   |       1 |                                                                                                                                      |
+| mbist_en        | logic                           | uni     | rcv   |       1 |                                                                                                                                      |
+| sck_monitor     | logic                           | uni     | req   |       1 |                                                                                                                                      |
+| racl_policies   | top_racl_pkg::racl_policy_vec   | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
+| racl_error      | top_racl_pkg::racl_error_log    | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
+| tl              | tlul_pkg::tl                    | req_rsp | rsp   |       1 |                                                                                                                                      |
 
 ## Interrupts
 

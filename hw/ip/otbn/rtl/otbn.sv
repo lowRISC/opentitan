@@ -62,10 +62,10 @@ module otbn
   output lc_ctrl_pkg::lc_tx_t lc_rma_ack_o,
 
   // Memory configuration
-  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_imem_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_dmem_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_imem_o,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_dmem_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t ram_cfg_imem_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t ram_cfg_dmem_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_imem_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_dmem_o,
 
   // EDN clock and interface
   input                     clk_edn_i,
@@ -377,7 +377,7 @@ module otbn
     .raddr_o  (),
     .rerror_o (),
     .cfg_i    (ram_cfg_imem_i),
-    .cfg_rsp_o(ram_cfg_rsp_imem_o),
+    .cfg_o    (ram_cfg_imem_o),
 
     .wr_collision_o   (imem_wr_collision),
     .write_pending_o  (imem_wpending),
@@ -594,7 +594,7 @@ module otbn
     .raddr_o  (),
     .rerror_o (),
     .cfg_i    (ram_cfg_dmem_i),
-    .cfg_rsp_o(ram_cfg_rsp_dmem_o),
+    .cfg_o    (ram_cfg_dmem_o),
 
     .wr_collision_o   (dmem_wr_collision),
     .write_pending_o  (dmem_wpending),

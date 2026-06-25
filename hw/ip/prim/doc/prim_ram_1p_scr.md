@@ -36,7 +36,6 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 `Width`                     | 32                    | 32           | Effective SRAM width without redundancy.
 `DataBitsPerMask`           | 8                     | 8            | Number of data bits per write mask.
 `EnableParity`              | 1                     | 1            | This parameter enables byte parity.
-`CfgWidth`                  | 8                     | 8            | Width of SRAM attributes field.
 `NumPrinceRoundsHalf`       | 3 (5)                 | 3            | Number of PRINCE half-rounds.
 `NumDiffRounds`             | 0                     | 0            | Number of additional diffusion rounds, set to 0 to disable.
 `DiffWidth`                 | 8                     | 8            | Width of additional diffusion rounds, set to 8 for intra-byte diffusion.
@@ -61,7 +60,8 @@ Signal                     | Direction        | Type                            
 `rvalid_o`                 | `output`         | `logic`                            | Read data valid indication (to TL-UL SRAM adapter).
 `rerror_o`                 | `output`         | `logic [1:0]`                      | Error indication (to TL-UL SRAM adapter). Bit 0 indicates a correctable and bit 1 an uncorrectable error. Note that at this time, only uncorrectable errors are reported, since the scrambling device only supports byte parity.
 `raddr_o`                  | `output`         | `logic [31:0]`                     | Address of the faulty read operation.
-`cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
+`cfg_i`                    | `input`          | `ram_1p_cfg_req_t [NumRamInst-1:0]` | Attributes for physical memory macro.
+`cfg_o`                    | `output`         | `ram_1p_cfg_rsp_t [NumRamInst-1:0]` | Response from physical memory macro.
 
 ## Custom Substitution Permutation Network
 

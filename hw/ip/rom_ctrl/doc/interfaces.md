@@ -13,7 +13,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Port Name   | Package::Struct           | Type    | Act   |   Width | Description   |
 |:------------|:--------------------------|:--------|:------|--------:|:--------------|
-| rom_cfg     | prim_rom_pkg::rom_cfg     | uni     | rcv   |       1 |               |
+| rom_cfg     | prim_rom_pkg::rom_cfg     | req_rsp | rsp   |       1 |               |
 | pwrmgr_data | rom_ctrl_pkg::pwrmgr_data | uni     | req   |       1 |               |
 | keymgr_data | rom_ctrl_pkg::keymgr_data | uni     | req   |       1 |               |
 | kmac_data   | kmac_pkg::app             | req_rsp | req   |       1 |               |

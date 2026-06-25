@@ -103,8 +103,8 @@ module tb;
     .lc_hw_debug_en_i             (exec_if.lc_hw_debug_en     ),
     .otp_en_sram_ifetch_i         (exec_if.otp_en_sram_ifetch ),
     // config
-    .cfg_i                        ('0                         ),
-    .cfg_rsp_o                    (                           ),
+    .ram_cfg_i                    ('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_o                    (                                                   ),
     // Error record
     .sram_rerror_o                (                           )
   );

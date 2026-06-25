@@ -29,6 +29,11 @@ filesets:
       - lowrisc:darjeeling_ip:rstmgr_pkg
       - lowrisc:systems:top_darjeeling_ast_pkg
       - lowrisc:prim:prim_pkg
+      - lowrisc:prim:ram_1p_pkg
+      - lowrisc:prim:ram_2p_pkg
+      - lowrisc:prim:ram_1r1w_pkg
+      - lowrisc:prim:rom_pkg
+      - lowrisc:ibex:ibex_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_bhv_pkg.sv

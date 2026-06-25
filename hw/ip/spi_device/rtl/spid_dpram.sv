@@ -12,7 +12,7 @@
 // SPI ports don't check addresses, as the behavior is fixed in hardware.
 
 module spid_dpram
-  import prim_ram_2p_pkg::*;
+  import prim_ram_1r1w_pkg::*;
   import spi_device_pkg::*;
 #(
   parameter  sram_type_e SramType     = DefaultSramType,
@@ -46,11 +46,11 @@ module spid_dpram
   output logic [1:0]         spi_rerror_o,
 
   // When using a dual port RAM primitive only this RAM config port is used
-  input  ram_2p_cfg_t        cfg_sys2spi_i,
-  output ram_2p_cfg_rsp_t    cfg_rsp_sys2spi_o,
+  input  ram_1r1w_cfg_req_t  cfg_sys2spi_i,
+  output ram_1r1w_cfg_rsp_t  cfg_sys2spi_o,
   // When using a 1R1W RAM primitive, both RAM config ports are used
-  input  ram_2p_cfg_t        cfg_spi2sys_i,
-  output ram_2p_cfg_rsp_t    cfg_rsp_spi2sys_o
+  input  ram_1r1w_cfg_req_t  cfg_spi2sys_i,
+  output ram_1r1w_cfg_rsp_t  cfg_spi2sys_o
 );
 
   // SYS Wr, SPI Rd is for eFlash, Mailbox, and SFDP
@@ -164,7 +164,7 @@ module spid_dpram
       .b_rerror_o (spi_rerror_o),
 
       .cfg_i      (cfg_sys2spi_i),
-      .cfg_rsp_o  (cfg_rsp_sys2spi_o)
+      .cfg_o      (cfg_sys2spi_o)
     );
 
     logic sys2spi_unused;
@@ -183,7 +183,7 @@ module spid_dpram
       spi2sys_rd_addr,
       cfg_spi2sys_i
     };
-    assign cfg_rsp_spi2sys_o = '0;
+    assign cfg_spi2sys_o = '0;
   end else if (SramType == SramType1r1w) begin : gen_ram1r1w
     prim_ram_1r1w_async_adv #(
       .Depth                     (Sys2SpiDepth),
@@ -211,7 +211,7 @@ module spid_dpram
       .b_rerror_o                (spi_rerror_o),
 
       .cfg_i                     (cfg_sys2spi_i),
-      .cfg_rsp_o                 (cfg_rsp_sys2spi_o)
+      .cfg_o                     (cfg_sys2spi_o)
     );
 
     prim_ram_1r1w_async_adv #(
@@ -241,7 +241,7 @@ module spid_dpram
       .b_rerror_o                (sys_rerror_o),
 
       .cfg_i                     (cfg_spi2sys_i),
-      .cfg_rsp_o                 (cfg_rsp_spi2sys_o)
+      .cfg_o                     (cfg_spi2sys_o)
     );
   end
 
