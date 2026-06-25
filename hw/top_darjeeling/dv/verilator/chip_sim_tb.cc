@@ -19,7 +19,9 @@ int main(int argc, char **argv) {
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
   std::string dut_scope("TOP.chip_sim_tb.u_dut");
-  std::string top_scope(dut_scope + ".top_darjeeling");
+  // Suffix this (.darjeeling_pd_main) once paths to IPs in the Aon power domain
+  // are needed.
+  std::string top_scope(dut_scope + ".top_darjeeling.darjeeling_pd_main");
   std::string ram_name("gen_ram_inst[0].u_mem");
   std::string ram1p_adv_scope("u_prim_ram_1p_adv." + ram_name);
 

@@ -121,8 +121,8 @@ module chip_sim_tb (
     .spi_device_sdo_en_i  (cio_spi_device_sdo_en_d2p)
   );
 
-  `define RV_CORE_IBEX      u_dut.top_darjeeling.u_rv_core_ibex
-  `define SIM_SRAM_IF       u_sim_sram.u_sim_sram_if
+  `define RV_CORE_IBEX u_dut.top_darjeeling.darjeeling_pd_main.u_rv_core_ibex
+  `define SIM_SRAM_IF  u_sim_sram.u_sim_sram_if
 
   // Detect SW test termination.
   sim_sram u_sim_sram (

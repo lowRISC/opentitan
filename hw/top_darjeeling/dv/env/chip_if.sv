@@ -32,50 +32,53 @@ interface chip_if;
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
   `define TOP_HIER          tb.dut.top_darjeeling
-  `define TOP_HIER_AON      tb.dut.top_darjeeling_pd_aon
+  `define PD_MAIN_HIER      tb.dut.top_darjeeling.darjeeling_pd_main
+  `define PD_AON_HIER       tb.dut.top_darjeeling.darjeeling_pd_aon
+  `define AST_HIER          tb.dut.u_ast
 `else
   `define TOP_HIER          top_darjeeling
-  `define TOP_HIER_AON      top_darjeeling_pd_aon
+  `define PD_MAIN_HIER      top_darjeeling.darjeeling_pd_main
+  `define PD_AON_HIER       top_darjeeling.darjeeling_pd_aon
+  `define AST_HIER          u_ast
 `endif
-`define AES_HIER            `TOP_HIER.u_aes
+`define AES_HIER            `PD_MAIN_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
-`define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
-`define AON_TIMER_HIER      `TOP_HIER_AON.u_aon_timer_aon
-`define AST_HIER            u_ast
-`define CLKMGR_HIER         `TOP_HIER_AON.u_clkmgr_aon
-`define CPU_HIER            `TOP_HIER.u_rv_core_ibex
+`define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
+`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer_aon
+`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr_aon
+`define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
-`define CSRNG_HIER          `TOP_HIER.u_csrng
-`define EDN_HIER(i)         `TOP_HIER.u_edn``i
-`define GPIO_HIER           `TOP_HIER.u_gpio
-`define HMAC_HIER           `TOP_HIER.u_hmac
-`define I2C_HIER(i)         `TOP_HIER.u_i2c``i
+`define CSRNG_HIER          `PD_MAIN_HIER.u_csrng
+`define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
+`define GPIO_HIER           `PD_MAIN_HIER.u_gpio
+`define HMAC_HIER           `PD_MAIN_HIER.u_hmac
+`define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
 `define IBEX_CSRS_HIER      `IBEX_HIER.cs_registers_i
-`define KMAC_HIER           `TOP_HIER.u_kmac
-`define KEYMGR_DPE_HIER     `TOP_HIER.u_keymgr_dpe
-`define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
-`define OTBN_HIER           `TOP_HIER.u_otbn
-`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
-`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
-`define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWRMGR_HIER         `TOP_HIER_AON.u_pwrmgr_aon
-`define ROM_CTRL0_HIER      `TOP_HIER.u_rom_ctrl0
-`define ROM_CTRL1_HIER      `TOP_HIER.u_rom_ctrl1
-`define RSTMGR_HIER         `TOP_HIER_AON.u_rstmgr_aon
-`define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
-`define RV_DM_HIER          `TOP_HIER.u_rv_dm
-`define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
-`define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl
-`define SOC_PROXY_HIER      `TOP_HIER_AON.u_soc_proxy
-`define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
-`define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
-`define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `TOP_HIER_AON.u_sram_ctrl_ret_aon
-`define SRAM_CTRL_MBOX      `TOP_HIER.u_sram_ctrl_mbox
-`define UART_HIER(i)        `TOP_HIER.u_uart``i
+`define KMAC_HIER           `PD_MAIN_HIER.u_kmac
+`define KEYMGR_DPE_HIER     `PD_MAIN_HIER.u_keymgr_dpe
+`define LC_CTRL_HIER        `PD_MAIN_HIER.u_lc_ctrl
+`define OTBN_HIER           `PD_MAIN_HIER.u_otbn
+`define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER      `PD_MAIN_HIER.u_otp_macro
+`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux_aon
+`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr_aon
+`define ROM_CTRL0_HIER      `PD_MAIN_HIER.u_rom_ctrl0
+`define ROM_CTRL1_HIER      `PD_MAIN_HIER.u_rom_ctrl1
+`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr_aon
+`define RV_CORE_IBEX_HIER   `PD_MAIN_HIER.u_rv_core_ibex
+`define RV_DM_HIER          `PD_MAIN_HIER.u_rv_dm
+`define RV_PLIC_HIER        `PD_MAIN_HIER.u_rv_plic
+`define RV_TIMER_HIER       `PD_MAIN_HIER.u_rv_timer
+`define SENSOR_CTRL_HIER    `PD_MAIN_HIER.u_sensor_ctrl
+`define SOC_PROXY_HIER      `PD_AON_HIER.u_soc_proxy
+`define SPI_DEVICE_HIER     `PD_MAIN_HIER.u_spi_device
+`define SPI_HOST_HIER(i)    `PD_MAIN_HIER.u_spi_host``i
+`define SRAM_CTRL_MAIN_HIER `PD_MAIN_HIER.u_sram_ctrl_main
+`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret_aon
+`define SRAM_CTRL_MBOX      `PD_MAIN_HIER.u_sram_ctrl_mbox
+`define UART_HIER(i)        `PD_MAIN_HIER.u_uart``i
 
   // Identifier for logs.
   string MsgId = $sformatf("%m");
@@ -274,11 +277,11 @@ interface chip_if;
   function automatic void configure_jtag_dmi(bit use_jtag_dmi);
 `ifndef GATE_LEVEL
     if (use_jtag_dmi) begin
-      force dmi_tl_if.h2d = `TOP_HIER.dbg_tl_req_i;
-      force dmi_tl_if.d2h = `TOP_HIER.dbg_tl_rsp_o;
+      force dmi_tl_if.h2d = `PD_MAIN_HIER.dbg_tl_req_i;
+      force dmi_tl_if.d2h = `PD_MAIN_HIER.dbg_tl_rsp_o;
     end else begin
-      force `TOP_HIER.dbg_tl_req_i = dmi_tl_if.h2d;
-      force dmi_tl_if.d2h = `TOP_HIER.dbg_tl_rsp_o;
+      force `PD_MAIN_HIER.dbg_tl_req_i = dmi_tl_if.h2d;
+      force dmi_tl_if.d2h = `PD_MAIN_HIER.dbg_tl_rsp_o;
     end
 `endif
   endfunction
@@ -390,74 +393,74 @@ interface chip_if;
   // patch-through the mailbox interfaces. For now, use hierarchical references to
   // connect to these signals.
 
-  wire mbx_if_clk = `TOP_HIER_AON.clkmgr_aon_clocks.clk_main_infra;
-  wire mbx_if_rst_n = `TOP_HIER_AON.rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel];
+  wire mbx_if_clk = `PD_AON_HIER.clkmgr_aon_clocks.clk_main_infra;
+  wire mbx_if_rst_n = `PD_AON_HIER.rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel];
   wire mbx_intr_signals_t[NUM_MBXS-1:0] mbx_interrupts;
   mbx_if darjeeling_mbx_if(.clk(mbx_if_clk), .rst_n(mbx_if_rst_n));
   function automatic void connect_mbx_if();
     force darjeeling_mbx_if.interrupts    = mbx_interrupts;
-    force darjeeling_mbx_if.mbx_tl_if.d2h = `TOP_HIER.mbx_tl_rsp_o;
-    force `TOP_HIER.mbx_tl_req_i          = darjeeling_mbx_if.mbx_tl_if.h2d;
+    force darjeeling_mbx_if.mbx_tl_if.d2h = `PD_MAIN_HIER.mbx_tl_rsp_o;
+    force `PD_MAIN_HIER.mbx_tl_req_i          = darjeeling_mbx_if.mbx_tl_if.h2d;
   endfunction
   function automatic void disconnect_mbx_if();
     release darjeeling_mbx_if.interrupts;
     release darjeeling_mbx_if.mbx_tl_if.d2h;
-    release `TOP_HIER.mbx_tl_req_i;
+    release `PD_MAIN_HIER.mbx_tl_req_i;
   endfunction
 
   // All of the mailbox signals egressing the design have unique names, which makes the
   // process of assigning them to interfaces not ergonomic.
   // TODO: Macroize / autogen alias array which can be iterated over
   assign mbx_interrupts = '{
-    '{`TOP_HIER.mbx_pcie1_doe_intr_o,
-      `TOP_HIER.mbx_pcie1_doe_intr_en_o,
-      `TOP_HIER.mbx_pcie1_doe_intr_support_o,
-      `TOP_HIER.mbx_pcie1_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx_pcie1_doe_intr_o,
+      `PD_MAIN_HIER.mbx_pcie1_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx_pcie1_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx_pcie1_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx_pcie0_doe_intr_o,
-      `TOP_HIER.mbx_pcie0_doe_intr_en_o,
-      `TOP_HIER.mbx_pcie0_doe_intr_support_o,
-      `TOP_HIER.mbx_pcie0_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx_pcie0_doe_intr_o,
+      `PD_MAIN_HIER.mbx_pcie0_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx_pcie0_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx_pcie0_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx_jtag_doe_intr_o,
-      `TOP_HIER.mbx_jtag_doe_intr_en_o,
-      `TOP_HIER.mbx_jtag_doe_intr_support_o,
-      `TOP_HIER.mbx_jtag_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx_jtag_doe_intr_o,
+      `PD_MAIN_HIER.mbx_jtag_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx_jtag_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx_jtag_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx6_doe_intr_o,
-      `TOP_HIER.mbx6_doe_intr_en_o,
-      `TOP_HIER.mbx6_doe_intr_support_o,
-      `TOP_HIER.mbx6_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx6_doe_intr_o,
+      `PD_MAIN_HIER.mbx6_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx6_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx6_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx5_doe_intr_o,
-      `TOP_HIER.mbx5_doe_intr_en_o,
-      `TOP_HIER.mbx5_doe_intr_support_o,
-      `TOP_HIER.mbx5_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx5_doe_intr_o,
+      `PD_MAIN_HIER.mbx5_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx5_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx5_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx4_doe_intr_o,
-      `TOP_HIER.mbx4_doe_intr_en_o,
-      `TOP_HIER.mbx4_doe_intr_support_o,
-      `TOP_HIER.mbx4_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx4_doe_intr_o,
+      `PD_MAIN_HIER.mbx4_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx4_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx4_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx3_doe_intr_o,
-      `TOP_HIER.mbx3_doe_intr_en_o,
-      `TOP_HIER.mbx3_doe_intr_support_o,
-      `TOP_HIER.mbx3_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx3_doe_intr_o,
+      `PD_MAIN_HIER.mbx3_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx3_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx3_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx2_doe_intr_o,
-      `TOP_HIER.mbx2_doe_intr_en_o,
-      `TOP_HIER.mbx2_doe_intr_support_o,
-      `TOP_HIER.mbx2_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx2_doe_intr_o,
+      `PD_MAIN_HIER.mbx2_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx2_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx2_doe_async_msg_support_o
       },
-    '{`TOP_HIER.mbx1_doe_intr_o,
-      `TOP_HIER.mbx1_doe_intr_en_o,
-      `TOP_HIER.mbx1_doe_intr_support_o,
-      `TOP_HIER.mbx1_doe_async_msg_support_o
+    '{`PD_MAIN_HIER.mbx1_doe_intr_o,
+      `PD_MAIN_HIER.mbx1_doe_intr_en_o,
+      `PD_MAIN_HIER.mbx1_doe_intr_support_o,
+      `PD_MAIN_HIER.mbx1_doe_async_msg_support_o
       }, // [1]
-    '{`TOP_HIER.mbx0_doe_intr_o,               // [3]
-      `TOP_HIER.mbx0_doe_intr_en_o,            // [2]
-      `TOP_HIER.mbx0_doe_intr_support_o,       // [1]
-      `TOP_HIER.mbx0_doe_async_msg_support_o   // [0]
+    '{`PD_MAIN_HIER.mbx0_doe_intr_o,               // [3]
+      `PD_MAIN_HIER.mbx0_doe_intr_en_o,            // [2]
+      `PD_MAIN_HIER.mbx0_doe_intr_support_o,       // [1]
+      `PD_MAIN_HIER.mbx0_doe_async_msg_support_o   // [0]
       }  // [0]
     };
 
@@ -942,36 +945,38 @@ interface chip_if;
 
   // Signal probe function for `soc_gpi_async_o` of TOP_HIER_AON.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpi_async,
-                                   `TOP_HIER_AON.soc_gpi_async_o,
+                                   `PD_AON_HIER.soc_gpi_async_o,
                                    soc_proxy_pkg::NumSocGpio)
 
   // Signal probe function for `soc_gpo_async_i` of TOP_HIER_AON.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpo_async,
-                                   `TOP_HIER_AON.soc_gpo_async_i,
+                                   `PD_AON_HIER.soc_gpo_async_i,
                                    soc_proxy_pkg::NumSocGpio)
 
   // Signal probe function for `boot_status.light_reset_req` of TOP_HIER_AON.
   // This shall only be used as a probe, not a driver.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwrmgr_light_reset_req,
-                                   `TOP_HIER_AON.pwrmgr_boot_status_o.light_reset_req,
+                                   `PD_AON_HIER.pwrmgr_boot_status_o.light_reset_req,
                                    1)
 
   // Signal probe function for `soc_rst_req_async_i` of TOP_HIER_AON.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_rst_req_async,
-                                   `TOP_HIER_AON.soc_rst_req_async_i,
+                                   `PD_AON_HIER.soc_rst_req_async_i,
                                    1)
 
   // Signal probe function for `ext_rst_ack_i` of TOP_HIER_AON.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_ext_rst_ack,
-                                   `TOP_HIER_AON.pwrmgr_ext_rst_ack_i,
+                                   `PD_AON_HIER.pwrmgr_ext_rst_ack_i,
                                    1)
 
   // Signal probe function for `soc_wkup_async_i` of TOP_HIER_AON.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_wkup_async,
-                                   `TOP_HIER_AON.soc_wkup_async_i,
+                                   `PD_AON_HIER.soc_wkup_async_i,
                                    1)
 
 `undef TOP_HIER
+`undef PD_MAIN_HIER
+`undef PD_AON_HIER
 `undef AES_HIER
 `undef AES_CONTROL_HIER
 `undef ALERT_HANDLER_HIER

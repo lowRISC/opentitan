@@ -309,7 +309,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   // Backdoor-read a given keymgr-internal key slot.
   virtual function keymgr_dpe_pkg::keymgr_dpe_slot_t get_key_slot(int unsigned slot_idx);
-    string path = $sformatf("tb.dut.top_darjeeling.u_keymgr_dpe.u_ctrl.key_slots_q[%0d]", slot_idx);
+    string path = $sformatf("tb.dut.top_darjeeling.darjeeling_pd_main.u_keymgr_dpe.u_ctrl.key_slots_q[%0d]", slot_idx);
     keymgr_dpe_pkg::keymgr_dpe_slot_t result;
     `DV_CHECK_FATAL(uvm_hdl_read(path, result))
     return result;
@@ -554,8 +554,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   virtual function key_shares_t get_output(keymgr_pkg::keymgr_key_dest_e dest);
     unique case (dest)
       keymgr_pkg::None: return get_sw_output();
-      keymgr_pkg::Aes:  return get_hw_output("tb.dut.top_darjeeling.u_keymgr_dpe.aes_key_o");
-      keymgr_pkg::Kmac: return get_hw_output("tb.dut.top_darjeeling.u_keymgr_dpe.kmac_key_o");
+      keymgr_pkg::Aes:  return get_hw_output("tb.dut.top_darjeeling.darjeeling_pd_main.u_keymgr_dpe.aes_key_o");
+      keymgr_pkg::Kmac: return get_hw_output("tb.dut.top_darjeeling.darjeeling_pd_main.u_keymgr_dpe.kmac_key_o");
       keymgr_pkg::Otbn: `dv_fatal("Illegal use of this function; use `get_output_otbn` instead!")
       default: `dv_fatal("Illegal destination (DV bug)!")
     endcase
@@ -584,7 +584,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual function otbn_key_shares_t get_output_otbn();
-    string path = "tb.dut.top_darjeeling.u_keymgr_dpe.otbn_key_o";
+    string path = "tb.dut.top_darjeeling.darjeeling_pd_main.u_keymgr_dpe.otbn_key_o";
     keymgr_pkg::otbn_key_req_t otbn_key;
     `DV_CHECK_FATAL(uvm_hdl_read(path, otbn_key))
     `DV_CHECK_EQ(otbn_key.valid, 1, "Expected OTBN output key to be valid")
