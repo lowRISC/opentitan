@@ -36,7 +36,7 @@ CONNECTION, AST_RV_CORE_IBEX_DATA1_RAM_1P_CFG, u_ast, rv_core_ibex_icache_data_r
 CONNECTION, AST_SRAM_MAIN_RAM_1P_CFG, u_ast, sram_ctrl_main_ram_cfg_req_o[0], top_darjeeling.darjeeling_pd_main.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem, cfg_i
 
 # To sram_ctrl (ret).
-CONNECTION, AST_SRAM_RET_RAM_1P_CFG, u_ast, sram_ctrl_ret_aon_ram_cfg_req_o[0], top_darjeeling.darjeeling_pd_aon.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem, cfg_i
+CONNECTION, AST_SRAM_RET_RAM_1P_CFG, u_ast, sram_ctrl_ret_ram_cfg_req_o[0], top_darjeeling.darjeeling_pd_aon.u_sram_ctrl_ret.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem, cfg_i
 
 # To rom.
 CONNECTION, AST_ROM_CTRL0_CFG, u_ast, rom_ctrl0_rom_cfg_req_o, top_darjeeling.darjeeling_pd_main.u_rom_ctrl0.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom, cfg_i

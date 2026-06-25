@@ -30,6 +30,6 @@ CONNECTION, AST_RST_POR_IN,           ,                      POR_N,             
 #################################
 
 CONNECTION, AST_OTP_PWR_SEQ_IN,  top_darjeeling.darjeeling_pd_main.u_otp_ctrl,    otp_ast_pwr_seq_o,         u_ast,                   otp_power_seq_i
-CONNECTION, AST_MAIN_PD_IN,      top_darjeeling.darjeeling_pd_aon.u_pwrmgr_aon,  pwr_ast_o.main_pd_n,       u_ast,                   main_pd_ni
-CONNECTION, AST_MAIN_ISO_EN_IN,  top_darjeeling.darjeeling_pd_aon.u_pwrmgr_aon,  pwr_ast_o.pwr_clamp_env,   u_ast,                   main_env_iso_en_i
+CONNECTION, AST_MAIN_PD_IN,      top_darjeeling.darjeeling_pd_aon.u_pwrmgr,  pwr_ast_o.main_pd_n,       u_ast,                   main_pd_ni
+CONNECTION, AST_MAIN_ISO_EN_IN,  top_darjeeling.darjeeling_pd_aon.u_pwrmgr,  pwr_ast_o.pwr_clamp_env,   u_ast,                   main_env_iso_en_i
 CONNECTION, AST_OTP_PWR_SEQ_OUT, u_ast,                      otp_power_seq_h_o,         top_darjeeling.darjeeling_pd_main.u_otp_ctrl, otp_ast_pwr_seq_h_i

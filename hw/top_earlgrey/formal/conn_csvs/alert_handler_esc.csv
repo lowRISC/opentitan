@@ -8,9 +8,9 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # escalation sender and receivers
-CONNECTION, ALERT_HANDLER_PWRMGR_ESC_CLK, top_earlgrey.earlgrey_pd_main.u_alert_handler, clk_i, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon.u_esc_rx, clk_i
+CONNECTION, ALERT_HANDLER_PWRMGR_ESC_CLK, top_earlgrey.earlgrey_pd_main.u_alert_handler, clk_i, top_earlgrey.earlgrey_pd_aon.u_pwrmgr.u_esc_rx, clk_i
 # TODO(lowrisc/opentitan#23888) Enable this check once this issue is fixed.
-# CONNECTION, ALERT_HANDLER_PWRMGR_ESC_RST, top_earlgrey.earlgrey_pd_main.u_alert_handler, rst_ni, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon.u_esc_rx, rst_ni
+# CONNECTION, ALERT_HANDLER_PWRMGR_ESC_RST, top_earlgrey.earlgrey_pd_main.u_alert_handler, rst_ni, top_earlgrey.earlgrey_pd_aon.u_pwrmgr.u_esc_rx, rst_ni
 CONNECTION, ALERT_HANDLER_LC_CTRL_ESC0_CLK, top_earlgrey.earlgrey_pd_main.u_alert_handler, clk_i, top_earlgrey.earlgrey_pd_main.u_lc_ctrl.u_prim_esc_receiver0, clk_i
 CONNECTION, ALERT_HANDLER_LC_CTRL_ESC0_RST, top_earlgrey.earlgrey_pd_main.u_alert_handler, rst_ni, top_earlgrey.earlgrey_pd_main.u_lc_ctrl.u_prim_esc_receiver0, rst_ni
 CONNECTION, ALERT_HANDLER_LC_CTRL_ESC1_CLK, top_earlgrey.earlgrey_pd_main.u_alert_handler, clk_i, top_earlgrey.earlgrey_pd_main.u_lc_ctrl.u_prim_esc_receiver1, clk_i

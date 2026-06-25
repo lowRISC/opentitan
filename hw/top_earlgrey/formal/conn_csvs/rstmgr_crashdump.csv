@@ -8,5 +8,5 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # rstmgr crashdump connectivity
-CONNECTION, ALERT_HANDLER_RSTMGR_CRASHDUMP, top_earlgrey.earlgrey_pd_main.u_alert_handler,  crashdump_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, alert_dump_i
-CONNECTION, RV_CORE_IBEX_RSTMGR_CRASHDUMP, top_earlgrey.earlgrey_pd_main.u_rv_core_ibex, crash_dump_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, cpu_dump_i
+CONNECTION, ALERT_HANDLER_RSTMGR_CRASHDUMP, top_earlgrey.earlgrey_pd_main.u_alert_handler,  crashdump_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr, alert_dump_i
+CONNECTION, RV_CORE_IBEX_RSTMGR_CRASHDUMP, top_earlgrey.earlgrey_pd_main.u_rv_core_ibex, crash_dump_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr, cpu_dump_i

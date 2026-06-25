@@ -8,19 +8,19 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # clkmgr powerup clock connectivity
-CONNECTION, CLKMGR_POWERUP_CLK_CLKMGR_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clk_i
+CONNECTION, CLKMGR_POWERUP_CLK_CLKMGR_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clk_i
 
-CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_CLK,     top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_main.u_pinmux_aon, clk_i
-CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.earlgrey_pd_main.u_pinmux_aon, clk_aon_i
+CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_CLK,     top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_main.u_pinmux, clk_i
+CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_powerup,     top_earlgrey.earlgrey_pd_main.u_pinmux, clk_aon_i
 
-CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon, clk_i
-CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_LC_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon, clk_lc_i
-CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_SLOW_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.earlgrey_pd_aon.u_pwrmgr_aon, clk_slow_i
+CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_pwrmgr, clk_i
+CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_LC_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_pwrmgr, clk_lc_i
+CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_SLOW_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_powerup,     top_earlgrey.earlgrey_pd_aon.u_pwrmgr, clk_slow_i
 
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_POR_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_por_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_AON_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_aon_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_MAIN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_main_powerup,    top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_main_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO_CLK,   top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_powerup,      top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_io_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_USB_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_usb_powerup,     top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_usb_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO2_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon, clocks_o.clk_io_div2_powerup, top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_io_div2_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO4_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon,clocks_o.clk_io_div4_powerup,  top_earlgrey.earlgrey_pd_aon.u_rstmgr_aon, clk_io_div4_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_POR_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_powerup, top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_por_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_powerup,     top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_aon_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_MAIN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_main_powerup,    top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_main_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO_CLK,   top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_powerup,      top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_io_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_USB_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_usb_powerup,     top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_usb_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO2_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_powerup, top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_io_div2_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO4_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr,clocks_o.clk_io_div4_powerup,  top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_io_div4_i
