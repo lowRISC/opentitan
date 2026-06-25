@@ -17,7 +17,7 @@ Toggle obs_ctrl_o.obgsl "logic obs_ctrl_o.obgsl[3:0]"
 ANNOTATION: "[LOW_RISK] Covered via connectivity. Cannot be covered in open source DV due to behavioral models of AST and flash. Must be covered in vendor closed source DV."
 Toggle obs_ctrl_o.obmsl "logic obs_ctrl_o.obmsl[3:0]"
 CHECKSUM: "4211070719 3495537513"
-INSTANCE: tb.dut.top_darjeeling.u_flash_ctrl
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_flash_ctrl
 ANNOTATION: "[LOW_RISK] Covered via connectivity. Cannot be covered in open source DV due to behavioral models of AST and flash. Must be covered in vendor closed source DV."
 Toggle flash_test_mode_a_io "net flash_test_mode_a_io[1:0]"
 ANNOTATION: "[LOW_RISK] Covered via connectivity. Cannot be covered in open source DV due to behavioral models of AST and flash. Must be covered in vendor closed source DV."
