@@ -281,6 +281,37 @@ py_library(
 )
 
 py_library(
+    name = "md_helpers",
+    srcs = ["md_helpers.py"],
+    deps = [
+        ":signal",
+        requirement("tabulate"),
+    ],
+)
+
+py_library(
+    name = "gen_cfg_md",
+    srcs = ["gen_cfg_md.py"],
+    deps = [
+        ":ip_block",
+        ":md_helpers",
+    ],
+)
+
+py_library(
+    name = "gen_md",
+    srcs = ["gen_md.py"],
+    deps = [
+        ":ip_block",
+        ":md_helpers",
+        ":multi_register",
+        ":reg_block",
+        ":register",
+        ":window",
+    ],
+)
+
+py_library(
     name = "gen_tock",
     srcs = ["gen_tock.py"],
     deps = [
@@ -291,6 +322,7 @@ py_library(
         ":register",
         ":signal",
         ":window",
+        "//util:version_file",
     ],
 )
 

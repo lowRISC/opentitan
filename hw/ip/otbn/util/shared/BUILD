@@ -212,5 +212,8 @@ py_library(
 
 py_library(
     name = "toolchain",
-    srcs = ["toolchain.py"],
+    srcs = [
+        "__init__.py",
+        "toolchain.py",
+    ],
 )
