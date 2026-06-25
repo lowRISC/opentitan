@@ -1929,7 +1929,7 @@ Toggle dio_attr_i[10].drive_strength [2] "logic dio_attr_i[10].drive_strength[3:
 ANNOTATION: "[UNR] Tie offs."
 Toggle dio_attr_i[10].drive_strength [1] "logic dio_attr_i[10].drive_strength[3:0]"
 CHECKSUM: "1538068739 3741435232"
-INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_pinmux_aon
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_pinmux
 ANNOTATION: "[UNR] Tie offs."
 Toggle mio_attr_o[9].slew_rate "logic mio_attr_o[9].slew_rate[1:0]"
 ANNOTATION: "[UNR] Tie offs."
@@ -2817,7 +2817,7 @@ MODULE: prim_generic_pad_wrapper ( parameter PadType=0,ScanRole=0 )
 ANNOTATION: "[UNR] Input ie_i is tied off to 1. This branch cannot be taken."
 Branch 0 "2282619788" "ie_i" (1) "ie_i 0"
 CHECKSUM: "1538068739 3449335269"
-INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_pinmux_aon
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_pinmux
 ANNOTATION: "vcs_gen_start:k=0:vcs_gen_end:[UNR] Cannot be exercised due to warl_mask value."
 Block 76 "0" "assign hw2reg.dio_pad_attr[0].slew_rate.d = dio_attr[0].slew_rate;"
 ANNOTATION: "vcs_gen_start:k=46:vcs_gen_end:[UNR] Cannot be exercised due to warl_mask value."
