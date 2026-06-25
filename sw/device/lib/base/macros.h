@@ -625,6 +625,20 @@ extern "C++" {
 #define OT_USED __attribute__((used))
 
 /**
+ * Annotation for character arrays that are intentionally not NUL-terminated.
+ *
+ * This suppresses `-Wunterminated-string-initialization` warnings and allows
+ * the compiler to help detect accidental usage in functions that expect
+ * NUL-terminated strings.
+ */
+#if __has_attribute(nonstring)
+#define OT_NONSTRING __attribute__((nonstring))
+#endif
+#ifndef OT_NONSTRING
+#define OT_NONSTRING
+#endif
+
+/**
  * OT_BUILD_FOR_STATIC_ANALYZER indicates whether we are compiling for the
  * purpose of static analysis. Currently, this macro only detects
  * Clang-Analyzer, which is used as a backend by Clang-Tidy.
