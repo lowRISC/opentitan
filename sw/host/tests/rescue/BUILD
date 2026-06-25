@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "xmodem_protocol",
     srcs = ["xmodem_protocol.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -23,6 +24,7 @@ rust_binary(
 rust_binary(
     name = "usbdfu_protocol",
     srcs = ["usbdfu_protocol.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -35,6 +37,7 @@ rust_binary(
 rust_binary(
     name = "rescue_test",
     srcs = ["rescue_test.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -51,6 +54,7 @@ rust_binary(
 rust_binary(
     name = "xmodem_rescue_error_handling",
     srcs = ["xmodem_rescue_error_handling.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -67,6 +71,7 @@ rust_binary(
 rust_binary(
     name = "dfu_rescue_error_handling",
     srcs = ["dfu_rescue_error_handling.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

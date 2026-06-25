@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "harness",
     srcs = ["src/main.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/cryptotest/ujson_lib:cryptotest_commands",
         "//sw/host/opentitanlib",

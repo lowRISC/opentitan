@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/asm_interrupt_handler.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -27,6 +28,7 @@ rust_binary(
     srcs = [
         "src/shutdown_execution_asm.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -43,6 +45,7 @@ rust_binary(
     srcs = [
         "src/asm_watchdog_bark.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -59,6 +62,7 @@ rust_binary(
     srcs = [
         "src/asm_watchdog_bite.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -75,6 +79,7 @@ rust_binary(
     srcs = [
         "src/debug_test.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",

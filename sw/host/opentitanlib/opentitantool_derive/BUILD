@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_proc_macro(
     name = "opentitantool_derive",
     srcs = ["src/lib.rs"],
+    edition = "2024",
     deps = [
         "@crate_index//:proc-macro2",
         "@crate_index//:quote",

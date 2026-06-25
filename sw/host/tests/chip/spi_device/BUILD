@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/spi_device_flash_smoketest.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -27,6 +28,7 @@ rust_binary(
     srcs = [
         "src/spi_device_tpm_test.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -44,6 +46,7 @@ rust_binary(
     srcs = [
         "src/spi_passthru.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -60,6 +63,7 @@ rust_binary(
     srcs = [
         "src/spi_device_sleep_test.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -77,6 +81,7 @@ rust_binary(
     srcs = [
         "src/spi_host_config_test.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

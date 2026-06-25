@@ -28,6 +28,7 @@ rust_bindgen_library(
         "-DPARAMS=sphincs-shake-128s",
         "-DNAMESPACE=SPX_shake_128s_simple_",
     ],
+    edition = "2024",
     header = "@sphincsplus_fips205_ipd//:api.h",
 )
 
@@ -43,6 +44,7 @@ rust_bindgen_library(
         "-DPARAMS=sphincs-sha2-128s",
         "-DNAMESPACE=SPX_sha2_128s_simple_",
     ],
+    edition = "2024",
     header = "@sphincsplus_fips205_ipd//:api.h",
 )
 
@@ -55,6 +57,7 @@ rust_library(
         "signature.rs",
         "variants.rs",
     ],
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:paste",
     ],
@@ -74,4 +77,5 @@ rust_library(
 rust_test(
     name = "sphincsplus_test",
     crate = ":sphincsplus",
+    edition = "2024",
 )

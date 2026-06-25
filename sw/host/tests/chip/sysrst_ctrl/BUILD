@@ -12,6 +12,7 @@ rust_library(
         "mod.rs",
         "sysrst_ctrl.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -24,6 +25,7 @@ rust_binary(
     srcs = [
         "sysrst_ctrl_inputs.rs",
     ],
+    edition = "2024",
     deps = [
         ":sysrst_ctrl",
         "//sw/host/opentitanlib",
@@ -42,6 +44,7 @@ rust_binary(
     srcs = [
         "sysrst_ctrl_outputs.rs",
     ],
+    edition = "2024",
     deps = [
         ":sysrst_ctrl",
         "//sw/host/opentitanlib",
@@ -60,6 +63,7 @@ rust_binary(
     srcs = [
         "sysrst_ctrl_in_irq.rs",
     ],
+    edition = "2024",
     deps = [
         ":sysrst_ctrl",
         "//sw/host/opentitanlib",
@@ -78,6 +82,7 @@ rust_binary(
     srcs = [
         "sysrst_ctrl_ulp_z3_wakeup.rs",
     ],
+    edition = "2024",
     deps = [
         ":sysrst_ctrl",
         "//sw/host/opentitanlib",
@@ -96,6 +101,7 @@ rust_binary(
     srcs = [
         "sysrst_ctrl_ec_rst_l.rs",
     ],
+    edition = "2024",
     deps = [
         ":sysrst_ctrl",
         "//sw/host/opentitanlib",
@@ -114,6 +120,7 @@ rust_binary(
     srcs = [
         "sysrst_ctrl_reset.rs",
     ],
+    edition = "2024",
     deps = [
         ":sysrst_ctrl",
         "//sw/host/opentitanlib",

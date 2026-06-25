@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "individualize_sw_cfg_functest",
     srcs = ["src/main.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

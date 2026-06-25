@@ -29,6 +29,7 @@ rust_binary(
         "src/main.rs",
         "src/otbn.rs",
     ],
+    edition = "2021",
     rustc_flags = [
         "-g",
         # TODO(opentitan#19491): determine the appropriate set of linker flags.

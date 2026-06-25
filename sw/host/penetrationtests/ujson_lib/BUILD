@@ -154,6 +154,7 @@ rust_library(
         ":sca_otbn_commands_rust",
         ":sca_sha3_commands_rust",
     ],
+    edition = "2024",
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
         "fi_crypto_commands_loc": "$(execpath :fi_crypto_commands_rust)",

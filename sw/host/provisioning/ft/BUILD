@@ -14,6 +14,7 @@ package(default_visibility = ["//visibility:public"])
     rust_binary(
         name = "ft_{}".format(sku),
         srcs = ["src/main.rs"],
+        edition = "2024",
         deps = [
             "//sw/host/opentitanlib",
             "//sw/host/provisioning/ft_lib:ft_lib_{}".format(sku),

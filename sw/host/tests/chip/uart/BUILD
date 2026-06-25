@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/uart_tx_rx.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -27,6 +28,7 @@ rust_binary(
     srcs = [
         "src/uart_baud_rate.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -42,6 +44,7 @@ rust_binary(
     srcs = [
         "src/uart_loopback.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -57,6 +60,7 @@ rust_binary(
     srcs = [
         "src/uart_parity_break.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

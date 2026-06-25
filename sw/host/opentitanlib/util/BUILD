@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "util",
     srcs = ["src/lib.rs"],
+    edition = "2024",
     deps = [
         "@crate_index//:anyhow",
         "@crate_index//:pem-rfc7468",

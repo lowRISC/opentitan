@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/main.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",

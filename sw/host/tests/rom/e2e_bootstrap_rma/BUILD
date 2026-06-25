@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/main.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -27,6 +28,7 @@ rust_test(
     srcs = [
         "src/main.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

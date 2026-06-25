@@ -19,6 +19,7 @@ rust_library(
         ":src/provisioning_data.rs",
     ],
     compile_data = [":provisioning_data"],
+    edition = "2024",
     rustc_env = {
         "provisioning_data": "$(location :provisioning_data)",
     },

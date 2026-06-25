@@ -12,6 +12,7 @@ rust_library(
         "src/lib.rs",
         "src/response.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cert_lib",

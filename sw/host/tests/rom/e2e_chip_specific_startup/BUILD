@@ -19,6 +19,7 @@ rust_binary(
         "src/main.rs",
     ],
     compile_data = [":chip_specific_startup"],
+    edition = "2024",
     rustc_env = {
         "chip_specific_startup": "$(location :chip_specific_startup)",
     },

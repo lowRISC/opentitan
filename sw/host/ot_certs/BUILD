@@ -40,6 +40,7 @@ rust_library(
         "src/x509.rs",
         "src/x509/extension.rs",
     ],
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:indoc",
     ],
@@ -72,6 +73,7 @@ rust_library(
 rust_test(
     name = "ot_certs_test",
     crate = ":ot_certs",
+    edition = "2024",
     proc_macro_deps = [
         "@crate_index//:indoc",
     ],
@@ -88,6 +90,7 @@ rust_test_suite(
         ":example_cert",
         ":example_data",
     ],
+    edition = "2024",
     deps = [
         ":ot_certs",
         "@crate_index//:anyhow",

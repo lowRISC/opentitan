@@ -17,6 +17,7 @@ rust_binary(
         "src/main.rs",
         ":lc_raw_unlock_token",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",

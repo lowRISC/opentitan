@@ -17,6 +17,7 @@ rust_library(
         "src/lib.rs",
         ":lc_raw_unlock_token",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/ujson_lib",

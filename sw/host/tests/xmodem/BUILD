@@ -13,6 +13,7 @@ rust_bindgen_library(
         "--allowlist-function=xmodem_.*",
     ],
     cc_lib = "//sw/device/silicon_creator/lib/rescue:xmodem_testlib",
+    edition = "2024",
     header = "//sw/device/silicon_creator/lib/rescue:xmodem_testlib.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -26,6 +27,7 @@ rust_library(
     srcs = [
         "xmodem.rs",
     ],
+    edition = "2024",
     deps = [
         ":xmodem_testlib",
         "//sw/host/opentitanlib",
@@ -41,6 +43,7 @@ rust_test(
     srcs = [
         "lrzsz_test.rs",
     ],
+    edition = "2024",
     deps = [
         ":xmodem",
         "//sw/host/opentitanlib",

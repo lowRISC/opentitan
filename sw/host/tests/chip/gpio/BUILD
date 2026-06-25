@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/gpio_pinmux.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -27,6 +28,7 @@ rust_binary(
     srcs = [
         "src/gpio_intr.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -43,6 +45,7 @@ rust_binary(
     srcs = [
         "src/sleep_pin_mio_dio_val.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -59,6 +62,7 @@ rust_binary(
     srcs = [
         "src/sleep_pin_retention.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -75,6 +79,7 @@ rust_binary(
     srcs = [
         "src/sleep_pin_wake.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

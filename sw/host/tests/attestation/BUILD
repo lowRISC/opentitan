@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "attestation_test",
     srcs = ["attestation_test.rs"],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",

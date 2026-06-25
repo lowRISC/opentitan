@@ -69,6 +69,7 @@ rust_bindgen_library(
         "--allowlist-type=AlertEscalate",
     ],
     cc_lib = "//sw/device/silicon_creator/lib/drivers:alert",
+    edition = "2024",
     header = "//sw/device/silicon_creator/lib/drivers:alert.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -126,6 +127,7 @@ rust_bindgen_library(
         "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_",
     ] if _TOPLEVEL == "englishbreakfast" else [
     ],
+    edition = "2024",
     header = "difs.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -152,6 +154,7 @@ rust_bindgen_library(
         "--allowlist-type=top_earlgrey_hintable_clocks",
     ],
     cc_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    edition = "2024",
     header = "//hw/top_earlgrey/sw/autogen:top_earlgrey.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -167,6 +170,7 @@ rust_bindgen_library(
         "--allowlist-type=hardened_byte_bool",
     ],
     cc_lib = "//sw/device/lib/base:hardened",
+    edition = "2024",
     header = "//sw/device/lib/base:hardened.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -181,6 +185,7 @@ rust_bindgen_library(
         "--allowlist-type=multi_bit_bool",
     ],
     cc_lib = "//sw/device/lib/base:multibits",
+    edition = "2024",
     header = "//sw/device/lib/base:multibits.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -232,6 +237,7 @@ rust_bindgen_library(
         "--allowlist-var=SRAM_MAGIC_SP_.*",
     ],
     cc_lib = "//sw/device/silicon_creator/manuf/lib:sram_start_headers",
+    edition = "2024",
     header = "//sw/device/silicon_creator/manuf/lib:sram_start.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -259,6 +265,7 @@ rust_bindgen_library(
         "--with-derive-custom=ot_status_create_record=zerocopy::FromBytes",
     ],
     cc_lib = "//sw/device/lib/base:status",
+    edition = "2024",
     header = "//sw/device/lib/base:status.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -276,6 +283,7 @@ rust_bindgen_library(
         "--allowlist-type=test_status_t",
     ],
     cc_lib = "//sw/device/lib/testing/test_framework:status_headers",
+    edition = "2024",
     header = "//sw/device/lib/testing/test_framework:status.h",
     rustc_flags = [
         "--allow=non_snake_case",
@@ -290,6 +298,7 @@ rust_library(
         "lib.rs",
         ":rom_error",
     ],
+    edition = "2024",
     deps = [
         ":alert",
         ":dif",

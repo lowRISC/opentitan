@@ -11,6 +11,7 @@ rust_binary(
     srcs = [
         "src/csr_rw.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -29,6 +30,7 @@ rust_binary(
     srcs = [
         "src/mem_access.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -47,6 +49,7 @@ rust_binary(
     srcs = [
         "src/jtag.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -60,6 +63,7 @@ rust_binary(
     srcs = [
         "src/jtag_tap_sel.rs",
     ],
+    edition = "2024",
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib",
@@ -76,6 +80,7 @@ rust_binary(
     srcs = [
         "src/lc_disabled.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -90,6 +95,7 @@ rust_binary(
     srcs = [
         "src/ndm_reset_req.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -104,6 +110,7 @@ rust_binary(
     srcs = [
         "src/ndm_reset_req_when_cpu_halted.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -118,6 +125,7 @@ rust_binary(
     srcs = [
         "src/dtm.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -133,6 +141,7 @@ rust_binary(
     srcs = [
         "src/control_status.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -147,6 +156,7 @@ rust_binary(
     srcs = [
         "src/access_after_wakeup.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
@@ -163,6 +173,7 @@ rust_binary(
     srcs = [
         "src/access_after_hw_reset.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

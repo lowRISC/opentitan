@@ -21,6 +21,7 @@ rust_binary(
         "src/sha.rs",
         "src/x25519.rs",
     ],
+    edition = "2024",
     deps = [
         "//sw/host/cryptotest/ujson_lib:cryptotest_commands",
         "//sw/host/opentitanlib",

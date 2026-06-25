@@ -13,6 +13,7 @@ rust_binary(
         "src/interface.rs",
         "src/main.rs",
     ],
+    edition = "2024",
     stamp = 1,
     deps = [
         "//sw/host/opentitanlib",
