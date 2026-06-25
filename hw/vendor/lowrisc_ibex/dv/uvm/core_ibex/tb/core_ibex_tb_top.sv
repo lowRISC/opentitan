@@ -125,10 +125,10 @@ module core_ibex_tb_top;
 
     .test_en_i                 (1'b0                       ),
     .scan_rst_ni               (1'b1                       ),
-    .ram_cfg_icache_tag_i      ('b0                        ),
-    .ram_cfg_rsp_icache_tag_o  (                           ),
-    .ram_cfg_icache_data_i     ('b0                        ),
-    .ram_cfg_rsp_icache_data_o (                           ),
+    .ram_cfg_icache_tag_i      ('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_tag_o      (                           ),
+    .ram_cfg_icache_data_i     ('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_data_o     (                           ),
 
     .hart_id_i                 (32'b0                      ),
     .boot_addr_i               (BootAddr                   ),

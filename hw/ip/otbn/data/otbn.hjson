@@ -201,27 +201,15 @@
     // ram configuration
     { struct:  "ram_1p_cfg",
       package: "prim_ram_1p_pkg",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "ram_cfg_imem",
-      act:     "rcv"
+      act:     "rsp"
     },
     { struct:  "ram_1p_cfg",
       package: "prim_ram_1p_pkg",
-      type:    "uni",
+      type:    "req_rsp",
       name:    "ram_cfg_dmem",
-      act:     "rcv"
-    },
-    { struct:  "ram_1p_cfg_rsp",
-      package: "prim_ram_1p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_rsp_imem",
-      act:     "req"
-    },
-    { struct:  "ram_1p_cfg_rsp",
-      package: "prim_ram_1p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_rsp_dmem",
-      act:     "req"
+      act:     "rsp"
     },
 
     // Lifecycle escalation

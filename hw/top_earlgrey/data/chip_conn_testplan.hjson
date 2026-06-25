@@ -167,10 +167,9 @@
       desc: '''Verify ast model's dual port configuration bits are connected to the dual port RAMs
             in the following blocks:
             - spi_device
-            - usbdev
             '''
       stage: V2
-      tests: ["ast_dft_spi_device_ram_2p_cfg", "ast_dft_usbdev_ram_2p_cfg"]
+      tests: ["ast_spi_device_ram_2p_cfg"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -187,17 +186,19 @@
             - sram_main
             - sram_retention
             - rom
+            - usbdev
             '''
       stage: V2
-      tests: ["ast_dft_otbn_imem_ram_1p_cfg",
-              "ast_dft_otbn_dmem_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_tag0_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_tag1_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_data0_ram_1p_cfg",
-              "ast_dft_rv_core_ibex_data1_ram_1p_cfg",
-              "ast_dft_sram_main_ram_1p_cfg",
-              "ast_dft_sram_ret_ram_1p_cfg",
-              "ast_dft_rom_cfg"]
+      tests: ["ast_otbn_imem_ram_1p_cfg",
+              "ast_otbn_dmem_ram_1p_cfg",
+              "ast_rv_core_ibex_tag0_ram_1p_cfg",
+              "ast_rv_core_ibex_tag1_ram_1p_cfg",
+              "ast_rv_core_ibex_data0_ram_1p_cfg",
+              "ast_rv_core_ibex_data1_ram_1p_cfg",
+              "ast_sram_main_ram_1p_cfg",
+              "ast_sram_ret_ram_1p_cfg",
+              "ast_rom_cfg",
+              "ast_usbdev_ram_1p_cfg"]
       si_stage: NA
       tags: ["conn"]
     }

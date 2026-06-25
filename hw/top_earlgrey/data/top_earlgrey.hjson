@@ -1068,42 +1068,6 @@
           package: "lc_ctrl_pkg",
         },
 
-        { struct:  "ram_1p_cfg",
-          package: "prim_ram_1p_pkg",
-          type:    "uni",
-          name:    "ram_1p_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        },
-
-        { struct:  "ram_2p_cfg",
-          package: "prim_ram_2p_pkg",
-          type:    "uni",
-          name:    "spi_ram_2p_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        },
-
-        { struct:  "ram_1p_cfg",
-          package: "prim_ram_1p_pkg",
-          type:    "uni",
-          name:    "usb_ram_1p_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        },
-
-        { struct:  "rom_cfg",
-          package: "prim_rom_pkg",
-          type:    "uni",
-          name:    "rom_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        },
-
         { struct: "ast_obs_ctrl",
           type: "uni",
           name: "obs_ctrl",
@@ -1126,17 +1090,6 @@
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
                                    'otp_macro.obs_ctrl'],
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg_imem',
-                                   'otbn.ram_cfg_dmem',
-                                   'i2c0.ram_cfg',
-                                   'i2c1.ram_cfg',
-                                   'i2c2.ram_cfg',
-                                   'rv_core_ibex.ram_cfg_icache_tag',
-                                   'rv_core_ibex.ram_cfg_icache_data'],
-      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg_sys2spi',
-                                   'spi_device.ram_cfg_spi2sys']
-      'ast.usb_ram_1p_cfg'      : ['usbdev.ram_cfg'],
-      'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
@@ -1347,12 +1300,19 @@
         'ast.edn'                            : '',
         'ast.lc_dft_en'                      : '',
         'ast.obs_ctrl'                       : 'obs_ctrl',
-        'ast.ram_1p_cfg'                     : 'ram_1p_cfg',
-        'sram_ctrl_main.cfg'                 : '',
-        'sram_ctrl_ret_aon.cfg'              : '',
-        'ast.spi_ram_2p_cfg'                 : 'spi_ram_2p_cfg',
-        'ast.usb_ram_1p_cfg'                 : 'usb_ram_1p_cfg',
-        'ast.rom_cfg'                        : 'rom_cfg',
+        'otbn.ram_cfg_imem'                  : 'otbn_imem_ram_cfg',
+        'otbn.ram_cfg_dmem'                  : 'otbn_dmem_ram_cfg',
+        'i2c0.ram_cfg'                       : 'i2c0_ram_cfg',
+        'i2c1.ram_cfg'                       : 'i2c1_ram_cfg',
+        'i2c2.ram_cfg'                       : 'i2c2_ram_cfg',
+        'usbdev.ram_cfg'                     : 'usbdev_ram_cfg',
+        'rv_core_ibex.ram_cfg_icache_tag'    : 'rv_core_ibex_icache_tag_ram_cfg',
+        'rv_core_ibex.ram_cfg_icache_data'   : 'rv_core_ibex_icache_data_ram_cfg',
+        'spi_device.ram_cfg_sys2spi'         : 'spi_device_sys2spi_ram_cfg',
+        'spi_device.ram_cfg_spi2sys'         : 'spi_device_spi2sys_ram_cfg',
+        'rom_ctrl.rom_cfg'                   : 'rom_ctrl_rom_cfg',
+        'sram_ctrl_main.ram_cfg'             : 'sram_ctrl_main_ram_cfg',
+        'sram_ctrl_ret_aon.ram_cfg'          : 'sram_ctrl_ret_aon_ram_cfg',
         'clkmgr_aon.clocks'                  : '',
         'clkmgr_aon.cg_en'                   : '',
         'clkmgr_aon.jitter_en'               : 'clk_main_jitter_en',
@@ -1650,8 +1610,6 @@
       chiplevel: {
         port_overrides: {
           'ast.lc_dft_en'                   : { signal: 'lc_dft_en'       },
-          'sram_ctrl_main.cfg'              : { signal: "'{ram_1p_cfg}"   },
-          'sram_ctrl_ret_aon.cfg'           : { signal: "'{ram_1p_cfg}"   },
           'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done'   },
           'flash_ctrl.flash_test_mode_a'    : { signal: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"},
           'flash_ctrl.flash_test_voltage_h' : { signal: 'FLASH_TEST_VOLT' },
@@ -1739,8 +1697,6 @@
       chiplevel: {
         port_overrides: {
           'ast.lc_dft_en'                   : { signal: 'lc_dft_en'       },
-          'sram_ctrl_main.cfg'              : { signal: "'{ram_1p_cfg}"   },
-          'sram_ctrl_ret_aon.cfg'           : { signal: "'{ram_1p_cfg}"   },
           'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done'   },
           // These are inout pads on the ASIC; the verilator target has no pads,
           // so leave them open (empty connection) rather than tying them off
@@ -1796,13 +1752,7 @@
       chiplevel: {
         port_overrides: {
           'ast.lc_dft_en'                   : { unused: true },
-          'ast.usb_ram_1p_cfg'              : { unused: true },
-          'ast.ram_1p_cfg'                  : { unused: true },
-          'ast.spi_ram_2p_cfg'              : { unused: true },
-          'ast.rom_cfg'                     : { unused: true },
           'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
-          'sram_ctrl_main.cfg'              : { unused: true },
-          'sram_ctrl_ret_aon.cfg'           : { unused: true },
           'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
           'pinmux_aon.usb_dnpullup_en'      : { unused: true },
           'pinmux_aon.dft_strap_test'       : { unused: true },

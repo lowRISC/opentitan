@@ -15,7 +15,7 @@
 
 `include "prim_assert.sv"
 
-module prim_ram_1r1w_async_adv import prim_ram_2p_pkg::*; #(
+module prim_ram_1r1w_async_adv import prim_ram_1r1w_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
@@ -53,8 +53,8 @@ module prim_ram_1r1w_async_adv import prim_ram_2p_pkg::*; #(
   output logic [1:0]       b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input  ram_2p_cfg_t      cfg_i,
-  output ram_2p_cfg_rsp_t  cfg_rsp_o
+  input  ram_1r1w_cfg_req_t cfg_i,
+  output ram_1r1w_cfg_rsp_t cfg_o
 );
 
 
@@ -115,7 +115,7 @@ module prim_ram_1r1w_async_adv import prim_ram_2p_pkg::*; #(
     .b_rdata_o  (b_rdata_sram),
 
     .cfg_i,
-    .cfg_rsp_o
+    .cfg_o
   );
 
   always_ff @(posedge clk_b_i or negedge rst_b_ni) begin

@@ -178,20 +178,12 @@
       act:     "req"
       package: "otp_ctrl_pkg"
     },
-    // SRAM attribute input
+    // SRAM attributes
     { struct:  "ram_1p_cfg"
-      type:    "uni"
-      name:    "cfg"
-      act:     "rcv"
+      type:    "req_rsp"
+      name:    "ram_cfg"
+      act:     "rsp"
       width:   "NumRamInst",
-      package: "prim_ram_1p_pkg"
-    },
-    { struct:  "ram_1p_cfg_rsp"
-      type:    "uni"
-      name:    "cfg_rsp"
-      act:     "req"
-      width:   "NumRamInst",
-      default: "'0"
       package: "prim_ram_1p_pkg"
     },
     // Broadcast from LC

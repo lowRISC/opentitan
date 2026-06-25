@@ -141,12 +141,9 @@ module ast (
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clockn
   output prim_mubi_pkg::mubi4_t flash_bist_en_o,    // Flush BIST (TAP) Enable
 
-  // memories read-write margins
-  output ast_pkg::dpm_rm_t dpram_rmf_o,       // Dual Port RAM Read-write Margin Fast
-  output ast_pkg::dpm_rm_t dpram_rml_o,       // Dual Port RAM Read-write Margin sLow
-  output ast_pkg::spm_rm_t spram_rm_o,        // Single Port RAM Read-write Margin
-  output ast_pkg::spm_rm_t sprgf_rm_o,        // Single Port Reg-File Read-write Margin
-  output ast_pkg::spm_rm_t sprom_rm_o,        // Single Port ROM Read-write Margin
+  // Memory configuration request/response interfaces
+  output ast_pkg::ast_mem_cfg_req_t mem_cfg_req_o,
+  input  ast_pkg::ast_mem_cfg_rsp_t mem_cfg_rsp_i,
 
   // Scan interface
   output prim_mubi_pkg::mubi4_t dft_scan_md_o,  // Scan Mode output
@@ -159,6 +156,11 @@ import ast_aon_main_pkg::*;
 // Inter-domain communication signals
 ast_aon_main_pkg::aon_to_main_t aon_to_main;
 ast_aon_main_pkg::main_to_aon_t main_to_aon;
+
+// Read-write margins generated in the AON domain (ast_dft, inside ast_aon)
+ast_pkg::tpm_rm_t tpram_rm;
+ast_pkg::spm_rm_t spram_rm;
+ast_pkg::rom_rm_t sprom_rm;
 
 
 // AON Domain instantiation
@@ -226,11 +228,9 @@ ast_aon u_ast_aon (
   .clk_osc_byp_i           ( clk_osc_byp_i ),
 `endif
   .flash_bist_en_o         ( flash_bist_en_o ),
-  .dpram_rmf_o             ( dpram_rmf_o ),
-  .dpram_rml_o             ( dpram_rml_o ),
-  .spram_rm_o              ( spram_rm_o ),
-  .sprgf_rm_o              ( sprgf_rm_o ),
-  .sprom_rm_o              ( sprom_rm_o ),
+  .tpram_rm_o              ( tpram_rm ),
+  .spram_rm_o              ( spram_rm ),
+  .sprom_rm_o              ( sprom_rm ),
   .dft_scan_md_o           ( dft_scan_md_o ),
   .scan_shift_en_o         ( scan_shift_en_o ),
   .scan_reset_no           ( scan_reset_no ),
@@ -279,5 +279,35 @@ ast_main u_ast_main (
   .io_clk_byp_ack_o        ( io_clk_byp_ack_o ),
   .all_clk_byp_ack_o       ( all_clk_byp_ack_o )
 );
+
+///////////////////////////////////////
+// Memory configuration distribution
+///////////////////////////////////////
+assign mem_cfg_req_o.otbn_imem                = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.otbn_dmem                = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.i2c0                     = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.i2c1                     = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.i2c2                     = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.usbdev_ram               = '{req: spram_rm.cfg};
+assign mem_cfg_req_o.rv_core_ibex_icache_tag  =
+    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.rv_core_ibex_icache_data =
+    {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_main           =
+    {ast_pkg::SramCtrlMainNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_ret_aon        =
+    {ast_pkg::SramCtrlRetAonNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.spi_device_sys2spi       = '{req: tpram_rm.cfg};
+assign mem_cfg_req_o.spi_device_spi2sys       = '{req: tpram_rm.cfg};
+assign mem_cfg_req_o.rom_ctrl_rom             = '{req: sprom_rm.cfg};
+
+logic unused_mem_cfg;
+assign unused_mem_cfg = ^mem_cfg_rsp_i;
+
+///////////////////////////////////////
+// Assertions
+///////////////////////////////////////
+// Memory configuration requests
+`ASSERT_KNOWN(MemCfgKnownO_A, mem_cfg_req_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
 endmodule : ast

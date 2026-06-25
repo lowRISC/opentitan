@@ -606,15 +606,40 @@ used for their analog debug function, the functional I/O must be in
 tri-state.</td>
 </tr>
 <tr class="odd">
-<td><p>dpram_rmf_o,</p>
-<p>dpram_rml_o,</p>
-<p>spram_rm_o,</p>
-<p>sprgf_rm_o,</p>
-<p>sprom_rm_o</p></td>
-<td>O</td>
-<td>dpm_rm</td>
+<td><p>otbn_imem_ram_cfg_req_o,</p>
+<p>otbn_dmem_ram_cfg_req_o,</p>
+<p>i2c0_ram_cfg_req_o,</p>
+<p>ctn_sram_ram_cfg_req_o,</p>
+<p>rv_core_ibex_icache_tag_ram_cfg_req_o,</p>
+<p>rv_core_ibex_icache_data_ram_cfg_req_o,</p>
+<p>sram_ctrl_main_ram_cfg_req_o,</p>
+<p>sram_ctrl_ret_aon_ram_cfg_req_o,</p>
+<p>sram_ctrl_mbox_ram_cfg_req_o,</p>
+<p>spi_device_sys2spi_ram_cfg_req_o,</p>
+<p>spi_device_spi2sys_ram_cfg_req_o,</p>
+<p>rom_ctrl0_rom_cfg_req_o,</p>
+<p>rom_ctrl1_rom_cfg_req_o,</p>
+<p>otbn_imem_ram_cfg_rsp_i,</p>
+<p>otbn_dmem_ram_cfg_rsp_i,</p>
+<p>i2c0_ram_cfg_rsp_i,</p>
+<p>ctn_sram_ram_cfg_rsp_i,</p>
+<p>rv_core_ibex_icache_tag_ram_cfg_rsp_i,</p>
+<p>rv_core_ibex_icache_data_ram_cfg_rsp_i,</p>
+<p>sram_ctrl_main_ram_cfg_rsp_i,</p>
+<p>sram_ctrl_ret_aon_ram_cfg_rsp_i,</p>
+<p>sram_ctrl_mbox_ram_cfg_rsp_i,</p>
+<p>spi_device_sys2spi_ram_cfg_rsp_i,</p>
+<p>spi_device_spi2sys_ram_cfg_rsp_i,</p>
+<p>rom_ctrl0_rom_cfg_rsp_i,</p>
+<p>rom_ctrl1_rom_cfg_rsp_i</p></td>
+<td>O/I</td>
+<td><p>ram_1p_cfg_req_t/rsp_t,</p>
+<p>ram_1r1w_cfg_req_t/rsp_t,</p>
+<p>rom_cfg_req_t/rsp_t</p></td>
 <td>async</td>
-<td>RAM/ROM Read-write Margin Trimming</td>
+<td>Per-consumer memory configuration request (output, <code>*_req_o</code>) and
+response (input, <code>*_rsp_i</code>) interfaces, carrying the RAM/ROM read-write
+margin trimming and related attributes.</td>
 </tr>
 <tr class="even">
 <td>padmux2ast_i</td>

@@ -826,40 +826,20 @@
       [
         {
           name: ram_cfg_sys2spi
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: spi_device
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp_sys2spi
-          struct: ram_2p_cfg_rsp
-          package: prim_ram_2p_pkg
-          type: uni
-          act: req
+          struct: ram_1r1w_cfg
+          package: prim_ram_1r1w_pkg
+          type: req_rsp
+          act: rsp
           width: 1
           inst_name: spi_device
           index: -1
         }
         {
           name: ram_cfg_spi2sys
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: spi_device
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp_spi2sys
-          struct: ram_2p_cfg_rsp
-          package: prim_ram_2p_pkg
-          type: uni
-          act: req
+          struct: ram_1r1w_cfg
+          package: prim_ram_1r1w_pkg
+          type: req_rsp
+          act: rsp
           width: 1
           inst_name: spi_device
           index: -1
@@ -1420,18 +1400,8 @@
           name: ram_cfg
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: usbdev
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp
-          struct: ram_1p_cfg_rsp
-          package: prim_ram_1p_pkg
-          type: uni
-          act: req
+          type: req_rsp
+          act: rsp
           width: 1
           inst_name: usbdev
           index: -1
@@ -3874,11 +3844,11 @@
           index: -1
         }
         {
-          name: cfg
+          name: ram_cfg
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
+          type: req_rsp
+          act: rsp
           width:
           {
             name: NumRamInst
@@ -3890,27 +3860,6 @@
             expose: true
             name_top: SramCtrlMainNumRamInst
           }
-          inst_name: sram_ctrl_main
-          index: -1
-        }
-        {
-          name: cfg_rsp
-          struct: ram_1p_cfg_rsp
-          package: prim_ram_1p_pkg
-          type: uni
-          act: req
-          width:
-          {
-            name: NumRamInst
-            desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
-            name_top: SramCtrlMainNumRamInst
-          }
-          default: "'0"
           inst_name: sram_ctrl_main
           index: -1
         }
@@ -4118,8 +4067,8 @@
           name: rom_cfg
           struct: rom_cfg
           package: prim_rom_pkg
-          type: uni
-          act: rcv
+          type: req_rsp
+          act: rsp
           width: 1
           inst_name: rom_ctrl
           index: -1
@@ -4594,18 +4543,8 @@
           name: ram_cfg_icache_tag
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rv_core_ibex
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp_icache_tag
-          struct: ram_1p_cfg_rsp
-          package: prim_ram_1p_pkg
-          type: uni
-          act: req
+          type: req_rsp
+          act: rsp
           width:
           {
             name: ICacheNWays
@@ -4624,18 +4563,8 @@
           name: ram_cfg_icache_data
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rv_core_ibex
-          index: -1
-        }
-        {
-          name: ram_cfg_rsp_icache_data
-          struct: ram_1p_cfg_rsp
-          package: prim_ram_1p_pkg
-          type: uni
-          act: req
+          type: req_rsp
+          act: rsp
           width:
           {
             name: ICacheNWays
@@ -4919,7 +4848,7 @@
           index: -1
         }
         {
-          struct: ram_1p_cfg
+          struct: ram_1p_cfg_req
           package: prim_ram_1p_pkg
           type: uni
           name: ram_1p_cfg
@@ -4928,25 +4857,16 @@
           index: -1
         }
         {
-          struct: ram_2p_cfg
-          package: prim_ram_2p_pkg
+          struct: ram_1r1w_cfg_req
+          package: prim_ram_1r1w_pkg
           type: uni
-          name: spi_ram_2p_cfg
+          name: ram_1r1w_cfg
           act: rcv
           inst_name: ast
           index: -1
         }
         {
-          struct: ram_1p_cfg
-          package: prim_ram_1p_pkg
-          type: uni
-          name: usb_ram_1p_cfg
-          act: rcv
-          inst_name: ast
-          index: -1
-        }
-        {
-          struct: rom_cfg
+          struct: rom_cfg_req
           package: prim_rom_pkg
           type: uni
           name: rom_cfg
@@ -10101,40 +10021,20 @@
       }
       {
         name: ram_cfg_sys2spi
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: spi_device
-        index: -1
-      }
-      {
-        name: ram_cfg_rsp_sys2spi
-        struct: ram_2p_cfg_rsp
-        package: prim_ram_2p_pkg
-        type: uni
-        act: req
+        struct: ram_1r1w_cfg
+        package: prim_ram_1r1w_pkg
+        type: req_rsp
+        act: rsp
         width: 1
         inst_name: spi_device
         index: -1
       }
       {
         name: ram_cfg_spi2sys
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: spi_device
-        index: -1
-      }
-      {
-        name: ram_cfg_rsp_spi2sys
-        struct: ram_2p_cfg_rsp
-        package: prim_ram_2p_pkg
-        type: uni
-        act: req
+        struct: ram_1r1w_cfg
+        package: prim_ram_1r1w_pkg
+        type: req_rsp
+        act: rsp
         width: 1
         inst_name: spi_device
         index: -1
@@ -10546,18 +10446,8 @@
         name: ram_cfg
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: usbdev
-        index: -1
-      }
-      {
-        name: ram_cfg_rsp
-        struct: ram_1p_cfg_rsp
-        package: prim_ram_1p_pkg
-        type: uni
-        act: req
+        type: req_rsp
+        act: rsp
         width: 1
         inst_name: usbdev
         index: -1
@@ -12076,11 +11966,11 @@
         index: -1
       }
       {
-        name: cfg
+        name: ram_cfg
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
-        type: uni
-        act: rcv
+        type: req_rsp
+        act: rsp
         width:
         {
           name: NumRamInst
@@ -12092,27 +11982,6 @@
           expose: true
           name_top: SramCtrlMainNumRamInst
         }
-        inst_name: sram_ctrl_main
-        index: -1
-      }
-      {
-        name: cfg_rsp
-        struct: ram_1p_cfg_rsp
-        package: prim_ram_1p_pkg
-        type: uni
-        act: req
-        width:
-        {
-          name: NumRamInst
-          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
-          name_top: SramCtrlMainNumRamInst
-        }
-        default: "'0"
         inst_name: sram_ctrl_main
         index: -1
       }
@@ -12219,8 +12088,8 @@
         name: rom_cfg
         struct: rom_cfg
         package: prim_rom_pkg
-        type: uni
-        act: rcv
+        type: req_rsp
+        act: rsp
         width: 1
         inst_name: rom_ctrl
         index: -1
@@ -12296,18 +12165,8 @@
         name: ram_cfg_icache_tag
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rv_core_ibex
-        index: -1
-      }
-      {
-        name: ram_cfg_rsp_icache_tag
-        struct: ram_1p_cfg_rsp
-        package: prim_ram_1p_pkg
-        type: uni
-        act: req
+        type: req_rsp
+        act: rsp
         width:
         {
           name: ICacheNWays
@@ -12326,18 +12185,8 @@
         name: ram_cfg_icache_data
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rv_core_ibex
-        index: -1
-      }
-      {
-        name: ram_cfg_rsp_icache_data
-        struct: ram_1p_cfg_rsp
-        package: prim_ram_1p_pkg
-        type: uni
-        act: req
+        type: req_rsp
+        act: rsp
         width:
         {
           name: ICacheNWays
@@ -12951,7 +12800,7 @@
         index: -1
       }
       {
-        struct: ram_1p_cfg
+        struct: ram_1p_cfg_req
         package: prim_ram_1p_pkg
         type: uni
         name: ram_1p_cfg
@@ -12960,25 +12809,16 @@
         index: -1
       }
       {
-        struct: ram_2p_cfg
-        package: prim_ram_2p_pkg
+        struct: ram_1r1w_cfg_req
+        package: prim_ram_1r1w_pkg
         type: uni
-        name: spi_ram_2p_cfg
+        name: ram_1r1w_cfg
         act: rcv
         inst_name: ast
         index: -1
       }
       {
-        struct: ram_1p_cfg
-        package: prim_ram_1p_pkg
-        type: uni
-        name: usb_ram_1p_cfg
-        act: rcv
-        inst_name: ast
-        index: -1
-      }
-      {
-        struct: rom_cfg
+        struct: rom_cfg_req
         package: prim_rom_pkg
         type: uni
         name: rom_cfg

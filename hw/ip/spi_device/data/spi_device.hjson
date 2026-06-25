@@ -277,29 +277,17 @@
     } // p: TpmRdFifoWidth
   ],
   inter_signal_list: [
-    { struct:  "ram_2p_cfg",
-      package: "prim_ram_2p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_sys2spi",
-      act:     "rcv"
+    { name:    "ram_cfg_sys2spi",
+      package: "prim_ram_1r1w_pkg",
+      struct:  "ram_1r1w_cfg",
+      act:     "rsp",
+      type:    "req_rsp"
     }
-    { struct:  "ram_2p_cfg_rsp",
-      package: "prim_ram_2p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_rsp_sys2spi",
-      act:     "req"
-    }
-    { struct:  "ram_2p_cfg",
-      package: "prim_ram_2p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_spi2sys",
-      act:     "rcv"
-    }
-    { struct:  "ram_2p_cfg_rsp",
-      package: "prim_ram_2p_pkg",
-      type:    "uni",
-      name:    "ram_cfg_rsp_spi2sys",
-      act:     "req"
+    { name:    "ram_cfg_spi2sys",
+      package: "prim_ram_1r1w_pkg",
+      struct:  "ram_1r1w_cfg",
+      act:     "rsp",
+      type:    "req_rsp"
     }
     { struct:  "passthrough",
       package: "spi_device_pkg"

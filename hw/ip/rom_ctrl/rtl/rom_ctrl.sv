@@ -6,7 +6,8 @@
 
 module rom_ctrl
   import rom_ctrl_reg_pkg::NumAlerts;
-  import prim_rom_pkg::rom_cfg_t;
+  import prim_rom_pkg::rom_cfg_req_t;
+  import prim_rom_pkg::rom_cfg_rsp_t;
 #(
   parameter                       BootRomInitFile = "",
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
@@ -35,7 +36,8 @@ module rom_ctrl
   input  rst_ni,
 
   // ROM configuration parameters
-  input  rom_cfg_t rom_cfg_i,
+  input  rom_cfg_req_t rom_cfg_i,
+  output rom_cfg_rsp_t rom_cfg_o,
 
   input  tlul_pkg::tl_h2d_t rom_tl_i,
   output tlul_pkg::tl_d2h_t rom_tl_o,
@@ -296,7 +298,8 @@ module rom_ctrl
       .rvalid_o      (rom_rvalid),
       .scr_rdata_o   (rom_scr_rdata),
       .clr_rdata_o   (rom_clr_rdata),
-      .cfg_i         (rom_cfg_i)
+      .cfg_i         (rom_cfg_i),
+      .cfg_o         (rom_cfg_o)
     );
 
   end : gen_rom_scramble_enabled
@@ -316,7 +319,8 @@ module rom_ctrl
       .addr_i   (rom_rom_index),
       .rvalid_o (rom_rvalid),
       .rdata_o  (rom_scr_rdata),
-      .cfg_i    (rom_cfg_i)
+      .cfg_i    (rom_cfg_i),
+      .cfg_o    (rom_cfg_o)
     );
 
     // There's no scrambling, so "scrambled" and "clear" rdata are equal.

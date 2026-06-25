@@ -98,8 +98,8 @@ module sim_sram #(
     ) u_sram (
       .clk_i,
       .rst_ni,
-      .cfg_i     ('0),
-      .cfg_rsp_o (),
+      .cfg_i (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+      .cfg_o (),
       .req_i     (sram_req),
       .write_i   (sram_we),
       .addr_i    (sram_addr),

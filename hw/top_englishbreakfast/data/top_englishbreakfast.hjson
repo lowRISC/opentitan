@@ -668,7 +668,7 @@
           package: "lc_ctrl_pkg",
         },
 
-        { struct:  "ram_1p_cfg",
+        { struct:  "ram_1p_cfg_req",
           package: "prim_ram_1p_pkg",
           type:    "uni",
           name:    "ram_1p_cfg",
@@ -677,26 +677,17 @@
           act:     "rcv"
         },
 
-        { struct:  "ram_2p_cfg",
-          package: "prim_ram_2p_pkg",
+        { struct:  "ram_1r1w_cfg_req",
+          package: "prim_ram_1r1w_pkg",
           type:    "uni",
-          name:    "spi_ram_2p_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        },
-
-        { struct:  "ram_1p_cfg",
-          package: "prim_ram_1p_pkg",
-          type:    "uni",
-          name:    "usb_ram_1p_cfg",
+          name:    "ram_1r1w_cfg",
           // The activity direction for a port inter-signal is "opposite" of
           // what the external module actually needs.
           act:     "rcv"
         },
 
 
-        { struct:  "rom_cfg",
+        { struct:  "rom_cfg_req",
           package: "prim_rom_pkg",
           type:    "uni",
           name:    "rom_cfg",

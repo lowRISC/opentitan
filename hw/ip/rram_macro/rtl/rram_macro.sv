@@ -441,8 +441,8 @@ module rram_macro #(
     .wdata_i  (data_mem_wdata),
     .wmask_i  ({DataWidth{1'b1}}),
     .rdata_o  (data_mem_rdata),
-    .cfg_i    ('0),
-    .cfg_rsp_o()
+    .cfg_i    (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+    .cfg_o    ()
   );
 
   // Info array (emulated with prim_ram_1p)
@@ -464,8 +464,8 @@ module rram_macro #(
     .wdata_i  (info_mem_wdata),
     .wmask_i  ({DataWidth{1'b1}}),
     .rdata_o  (info_mem_rdata),
-    .cfg_i    ('0),
-    .cfg_rsp_o()
+    .cfg_i    (prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT),
+    .cfg_o    ()
   );
 
   // output multiplexer

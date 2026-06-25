@@ -26,6 +26,11 @@ filesets:
       - lowrisc:earlgrey_ip:clkmgr_pkg
       - lowrisc:earlgrey_ip:rstmgr_pkg
       - lowrisc:systems:top_earlgrey_ast_pkg
+      - lowrisc:prim:ram_1p_pkg
+      - lowrisc:prim:ram_2p_pkg
+      - lowrisc:prim:ram_1r1w_pkg
+      - lowrisc:prim:rom_pkg
+      - lowrisc:ibex:ibex_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv

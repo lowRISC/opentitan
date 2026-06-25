@@ -127,8 +127,8 @@
     { name:    "rom_cfg",
       package: "prim_rom_pkg",
       struct:  "rom_cfg",
-      act:     "rcv"
-      type:    "uni",
+      act:     "rsp"
+      type:    "req_rsp",
     },
 
     // Power manager interface

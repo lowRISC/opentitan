@@ -112,11 +112,9 @@ module ast_aon (
   output prim_mubi_pkg::mubi4_t flash_bist_en_o,    // Flush BIST (TAP) Enable
 
   // memories read-write margins
-  output ast_pkg::dpm_rm_t dpram_rmf_o,       // Dual Port RAM Read-write Margin Fast
-  output ast_pkg::dpm_rm_t dpram_rml_o,       // Dual Port RAM Read-write Margin sLow
+  output ast_pkg::tpm_rm_t tpram_rm_o,        // Two Port RAM Read-write Margin
   output ast_pkg::spm_rm_t spram_rm_o,        // Single Port RAM Read-write Margin
-  output ast_pkg::spm_rm_t sprgf_rm_o,        // Single Port Reg-File Read-write Margin
-  output ast_pkg::spm_rm_t sprom_rm_o,        // Single Port ROM Read-write Margin
+  output ast_pkg::rom_rm_t sprom_rm_o,        // Single Port ROM Read-write Margin
 
   // Scan interface
   output prim_mubi_pkg::mubi4_t dft_scan_md_o,  // Scan Mode output
@@ -602,10 +600,8 @@ assign usb_io_pu_cal_o = ast_pkg::UsbCalibWidth'(1 << (ast_pkg::UsbCalibWidth[5-
 ast_dft u_ast_dft (
   .obs_ctrl_o ( obs_ctrl_o ),
   .ast2padmux_o ( ast2padmux_o[ast_pkg::Ast2PadOutWidth-1:0] ),
-  .dpram_rmf_o ( dpram_rmf_o ),
-  .dpram_rml_o ( dpram_rml_o ),
+  .tpram_rm_o ( tpram_rm_o ),
   .spram_rm_o ( spram_rm_o ),
-  .sprgf_rm_o ( sprgf_rm_o ),
   .sprom_rm_o ( sprom_rm_o )
 );
 
@@ -689,11 +685,9 @@ assign aon_to_main_o.usb_osc_cal = usb_osc_cal;
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
-// DPRAM/SPRAM
-`ASSERT_KNOWN(DpramRmfKnownO_A, dpram_rmf_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(DpramRmlKnownO_A, dpram_rml_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+// Read-write margins
+`ASSERT_KNOWN(TpramRmKnownO_A, tpram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(SpramRmKnownO_A, spram_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
-`ASSERT_KNOWN(SprgfRmKnownO_A, sprgf_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(SpromRmKnownO_A, sprom_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // DFT
 `ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)

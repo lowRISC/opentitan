@@ -22,7 +22,8 @@
 // garbage.
 
 module rom_ctrl_scrambled_rom
-  import prim_rom_pkg::rom_cfg_t;
+  import prim_rom_pkg::rom_cfg_req_t;
+  import prim_rom_pkg::rom_cfg_rsp_t;
 #(
   // The initial contents of the ROM. This is used for synthesis. For simulation, this is not used;
   // instead, the simulator loads the contents of ROM over DPI.
@@ -55,7 +56,8 @@ module rom_ctrl_scrambled_rom
   output logic [Width-1:0] scr_rdata_o,
   output logic [Width-1:0] clr_rdata_o,
 
-  input rom_cfg_t          cfg_i
+  input  rom_cfg_req_t     cfg_i,
+  output rom_cfg_rsp_t     cfg_o
 );
 
   /////////////////////////////////////
@@ -206,7 +208,8 @@ module rom_ctrl_scrambled_rom
     .addr_i   (addr_scr),
     .rvalid_o (rvalid_o),
     .rdata_o  (rdata_scr),
-    .cfg_i    (cfg_i)
+    .cfg_i    (cfg_i),
+    .cfg_o    (cfg_o)
   );
 
   assign scr_rdata_o = rdata_scr;

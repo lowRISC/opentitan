@@ -17,11 +17,13 @@ module prim_rom import prim_rom_pkg::*; #(
   input  logic [Aw-1:0]    addr_i,
   output logic             rvalid_o,
   output logic [Width-1:0] rdata_o,
-  input rom_cfg_t          cfg_i
+  input  rom_cfg_req_t     cfg_i,
+  output rom_cfg_rsp_t     cfg_o
 );
 
   logic unused_signals;
   assign unused_signals = ^{cfg_i};
+  assign cfg_o          = ROM_CFG_RSP_DEFAULT;
 
   logic [Width-1:0] mem [Depth];
 

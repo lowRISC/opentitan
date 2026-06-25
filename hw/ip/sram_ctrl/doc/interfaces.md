@@ -27,19 +27,18 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name          | Package::Struct                 | Type    | Act   | Width      | Description                                                                                                                          |
-|:-------------------|:--------------------------------|:--------|:------|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| sram_otp_key       | otp_ctrl_pkg::sram_otp_key      | req_rsp | req   | 1          |                                                                                                                                      |
-| cfg                | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   | NumRamInst |                                                                                                                                      |
-| cfg_rsp            | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   | NumRamInst |                                                                                                                                      |
-| lc_escalate_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1          |                                                                                                                                      |
-| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1          |                                                                                                                                      |
-| otp_en_sram_ifetch | prim_mubi_pkg::mubi8            | uni     | rcv   | 1          |                                                                                                                                      |
-| racl_policies      | top_racl_pkg::racl_policy_vec   | uni     | rcv   | 1          | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error         | top_racl_pkg::racl_error_log    | uni     | req   | 1          | RACL error log information of this module.                                                                                           |
-| sram_rerror        | sram_ctrl_pkg::sram_error_t     | uni     | req   | 1          | SRAM read error indicating correctable and uncorrectable ECC errors.                                                                 |
-| regs_tl            | tlul_pkg::tl                    | req_rsp | rsp   | 1          |                                                                                                                                      |
-| ram_tl             | tlul_pkg::tl                    | req_rsp | rsp   | 1          |                                                                                                                                      |
+| Port Name          | Package::Struct               | Type    | Act   | Width      | Description                                                                                                                          |
+|:-------------------|:------------------------------|:--------|:------|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| sram_otp_key       | otp_ctrl_pkg::sram_otp_key    | req_rsp | req   | 1          |                                                                                                                                      |
+| ram_cfg            | prim_ram_1p_pkg::ram_1p_cfg   | req_rsp | rsp   | NumRamInst |                                                                                                                                      |
+| lc_escalate_en     | lc_ctrl_pkg::lc_tx            | uni     | rcv   | 1          |                                                                                                                                      |
+| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx            | uni     | rcv   | 1          |                                                                                                                                      |
+| otp_en_sram_ifetch | prim_mubi_pkg::mubi8          | uni     | rcv   | 1          |                                                                                                                                      |
+| racl_policies      | top_racl_pkg::racl_policy_vec | uni     | rcv   | 1          | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
+| racl_error         | top_racl_pkg::racl_error_log  | uni     | req   | 1          | RACL error log information of this module.                                                                                           |
+| sram_rerror        | sram_ctrl_pkg::sram_error_t   | uni     | req   | 1          | SRAM read error indicating correctable and uncorrectable ECC errors.                                                                 |
+| regs_tl            | tlul_pkg::tl                  | req_rsp | rsp   | 1          |                                                                                                                                      |
+| ram_tl             | tlul_pkg::tl                  | req_rsp | rsp   | 1          |                                                                                                                                      |
 
 ## Security Alerts
 
@@ -77,14 +76,15 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 The table below lists other SRAM controller signals.
 
-Signal                     | Direction        | Type                               | Description
----------------------------|------------------|------------------------------------|---------------
-`lc_hw_debug_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
-`lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
-`sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t` | Key derivation request going to the key derivation interface of the OTP controller.
-`sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t` | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
-`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`            | Multibit value coming from the OTP HW_CFG partition EN_SRAM_IFETCH, set to kMuBi8True in order to enable the [`EXEC`](../data/sram_ctrl.hjson#exec) CSR. For example, see earlgrey's [OTP Field Descriptions](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/programmers_guide.md#otp-field-descriptions))
-`cfg_i`                    | `input`          | `logic [CfgWidth-1:0]`             | Attributes for physical memory macro.
+Signal                     | Direction        | Type                                                 | Description
+---------------------------|------------------|------------------------------------------------------|---------------
+`lc_hw_debug_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`                               | Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
+`lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`                               | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
+`sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t`                   | Key derivation request going to the key derivation interface of the OTP controller.
+`sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t`                   | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
+`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`                              | Multibit value coming from the OTP HW_CFG partition EN_SRAM_IFETCH, set to kMuBi8True in order to enable the [`EXEC`](../data/sram_ctrl.hjson#exec) CSR. For example, see earlgrey's [OTP Field Descriptions](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/programmers_guide.md#otp-field-descriptions))
+`ram_cfg_i`                | `input`          | `prim_ram_1p_pkg::ram_1p_cfg_req_t [NumRamInst-1:0]` | Attributes for physical memory macro.
+`ram_cfg_o`                | `output`         | `prim_ram_1p_pkg::ram_1p_cfg_rsp_t [NumRamInst-1:0]` | Response from physical memory macro.
 
 ### Interfaces to OTP and the SRAM Scrambling Primitive
 

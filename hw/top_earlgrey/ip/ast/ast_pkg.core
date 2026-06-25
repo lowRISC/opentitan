@@ -12,6 +12,10 @@ filesets:
     depend:
       - lowrisc:earlgrey_constants:top_pkg
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:ram_1p_pkg
+      - lowrisc:prim:ram_1r1w_pkg
+      - lowrisc:prim:rom_pkg
+      - lowrisc:ibex:ibex_pkg
     files:
       - rtl/ast_pkg.sv
     file_type: systemVerilogSource

@@ -87,8 +87,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   output logic [AddrWidth-1:0]             raddr_o,  // Read address for error reporting.
 
   // config
-  input  ram_1p_cfg_t     [NumRamInst-1:0] cfg_i,
-  output ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_rsp_o,
+  input  ram_1p_cfg_req_t [NumRamInst-1:0] cfg_i,
+  output ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_o,
 
 
   // Write currently pending inside this module.
@@ -575,7 +575,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .rvalid_o ( ),
     .rerror_o,
     .cfg_i,
-    .cfg_rsp_o,
+    .cfg_o,
     .alert_o  ( ram_alert   )
   );
 

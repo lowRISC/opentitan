@@ -65,10 +65,10 @@ module ibex_top import ibex_pkg::*; #(
 
   // enable all clock gates for testing
   input  logic                                                         test_en_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t                                 ram_cfg_icache_tag_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_rsp_icache_tag_o,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t                                 ram_cfg_icache_data_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_rsp_icache_data_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_tag_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_tag_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_data_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_data_o,
 
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
@@ -633,8 +633,8 @@ module ibex_top import ibex_pkg::*; #(
           .rvalid_o         (),
           .raddr_o          (),
           .rerror_o         (),
-          .cfg_i            (ram_cfg_icache_tag_i),
-          .cfg_rsp_o        (ram_cfg_rsp_icache_tag_o[way]),
+          .cfg_i            (ram_cfg_icache_tag_i[way]),
+          .cfg_o            (ram_cfg_icache_tag_o[way]),
           .wr_collision_o   (),
           .write_pending_o  (),
 
@@ -671,8 +671,8 @@ module ibex_top import ibex_pkg::*; #(
           .rvalid_o         (),
           .raddr_o          (),
           .rerror_o         (),
-          .cfg_i            (ram_cfg_icache_data_i),
-          .cfg_rsp_o        (ram_cfg_rsp_icache_data_o[way]),
+          .cfg_i            (ram_cfg_icache_data_i[way]),
+          .cfg_o            (ram_cfg_icache_data_o[way]),
           .wr_collision_o   (),
           .write_pending_o  (),
 
@@ -728,8 +728,8 @@ module ibex_top import ibex_pkg::*; #(
           .wmask_i     ({TagSizeECC{1'b1}}),
 
           .rdata_o     (ic_tag_rdata[way]),
-          .cfg_i       (ram_cfg_icache_tag_i),
-          .cfg_rsp_o   (ram_cfg_rsp_icache_tag_o[way])
+          .cfg_i       (ram_cfg_icache_tag_i[way]),
+          .cfg_o       (ram_cfg_icache_tag_o[way])
         );
 
         // Data RAM instantiation
@@ -749,8 +749,8 @@ module ibex_top import ibex_pkg::*; #(
           .wmask_i     ({LineSizeECC{1'b1}}),
 
           .rdata_o     (ic_data_rdata[way]),
-          .cfg_i       (ram_cfg_icache_data_i),
-          .cfg_rsp_o   (ram_cfg_rsp_icache_data_o[way])
+          .cfg_i       (ram_cfg_icache_data_i[way]),
+          .cfg_o       (ram_cfg_icache_data_o[way])
         );
 
         assign icache_tag_alert  = '{default:'b0};
@@ -763,12 +763,12 @@ module ibex_top import ibex_pkg::*; #(
     logic unused_ram_cfg;
     logic unused_ram_inputs;
 
-    assign unused_ram_cfg    = |{ram_cfg_icache_tag_i, ram_cfg_icache_data_i};
-    assign ram_cfg_rsp_icache_tag_o  = '0;
-    assign ram_cfg_rsp_icache_data_o = '0;
-    assign unused_ram_inputs = (|ic_tag_req) & ic_tag_write & (|ic_tag_addr) & (|ic_tag_wdata) &
-                               (|ic_data_req) & ic_data_write & (|ic_data_addr) & (|ic_data_wdata) &
-                               (|NumAddrScrRounds);
+    assign unused_ram_cfg        = |{ram_cfg_icache_tag_i, ram_cfg_icache_data_i};
+    assign ram_cfg_icache_tag_o  = '{default: prim_ram_1p_pkg::RAM_1P_CFG_RSP_DEFAULT};
+    assign ram_cfg_icache_data_o = '{default: prim_ram_1p_pkg::RAM_1P_CFG_RSP_DEFAULT};
+    assign unused_ram_inputs     = (|ic_tag_req) & ic_tag_write & (|ic_tag_addr) &
+                                   (|ic_tag_wdata) & (|ic_data_req) & ic_data_write &
+                                   (|ic_data_addr) & (|ic_data_wdata) & (|NumAddrScrRounds);
 
     assign ic_tag_rdata      = '{default:'b0};
     assign ic_data_rdata     = '{default:'b0};
