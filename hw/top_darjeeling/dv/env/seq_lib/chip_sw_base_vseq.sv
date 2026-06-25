@@ -1286,7 +1286,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Before rma wipe for data partition started (256 pages),
   // this task force total page to 9 pages. So rma process is completed faster.
   virtual task enable_small_rma();
-    string path = "tb.dut.top_darjeeling.u_flash_ctrl.u_flash_hw_if";
+    string path = "tb.dut.top_darjeeling.darjeeling_pd_main.u_flash_ctrl.u_flash_hw_if";
     string mypath;
     logic [2:0] rma_wipe_idx;
     logic [3:0] rma_ack;

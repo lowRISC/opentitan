@@ -5,29 +5,29 @@
 `ifndef DUT_HIER
   `define DUT_HIER            tb.dut
 `endif
-`define CHIP_HIER             `DUT_HIER.top_darjeeling
-`define CHIP_HIER_AON         `DUT_HIER.top_darjeeling_pd_aon
+`define PD_MAIN_HIER          `DUT_HIER.top_darjeeling.darjeeling_pd_main
+`define PD_AON_HIER           `DUT_HIER.top_darjeeling.darjeeling_pd_aon
 
-`define ALERT_HANDLER_HIER    `CHIP_HIER.u_alert_handler
-`define CLKMGR_HIER           `CHIP_HIER_AON.u_clkmgr_aon
-`define CPU_HIER              `CHIP_HIER.u_rv_core_ibex
+`define ALERT_HANDLER_HIER    `PD_MAIN_HIER.u_alert_handler
+`define CLKMGR_HIER           `PD_AON_HIER.u_clkmgr_aon
+`define CPU_HIER              `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER         `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
-`define GPIO_HIER             `CHIP_HIER.u_gpio
-`define KEYMGR_DPE_HIER       `CHIP_HIER.u_keymgr_dpe
-`define LC_CTRL_HIER          `CHIP_HIER.u_lc_ctrl
-`define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
-`define OTP_MACRO_HIER        `CHIP_HIER.u_otp_macro
-`define RAM_MAIN_HIER         `CHIP_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
-`define RAM_RET_HIER          `CHIP_HIER_AON.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr
-`define RAM_MBOX_HIER         `CHIP_HIER.u_sram_ctrl_mbox.u_prim_ram_1p_scr
-`define ROM_CTRL0_HIER        `CHIP_HIER.u_rom_ctrl0
-`define ROM_CTRL1_HIER        `CHIP_HIER.u_rom_ctrl1
-`define RSTMGR_HIER           `CHIP_HIER_AON.u_rstmgr_aon
-`define SPI_DEVICE_HIER       `CHIP_HIER.u_spi_device
-`define UART_HIER             `CHIP_HIER.u_uart
-`define PWRMGR_HIER           `CHIP_HIER_AON.u_pwrmgr_aon
-`define OTBN_HIER             `CHIP_HIER.u_otbn
+`define GPIO_HIER             `PD_MAIN_HIER.u_gpio
+`define KEYMGR_DPE_HIER       `PD_MAIN_HIER.u_keymgr_dpe
+`define LC_CTRL_HIER          `PD_MAIN_HIER.u_lc_ctrl
+`define OTP_CTRL_HIER         `PD_MAIN_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER        `PD_MAIN_HIER.u_otp_macro
+`define RAM_MAIN_HIER         `PD_MAIN_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
+`define RAM_RET_HIER          `PD_AON_HIER.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr
+`define RAM_MBOX_HIER         `PD_MAIN_HIER.u_sram_ctrl_mbox.u_prim_ram_1p_scr
+`define ROM_CTRL0_HIER        `PD_MAIN_HIER.u_rom_ctrl0
+`define ROM_CTRL1_HIER        `PD_MAIN_HIER.u_rom_ctrl1
+`define RSTMGR_HIER           `PD_AON_HIER.u_rstmgr_aon
+`define SPI_DEVICE_HIER       `PD_MAIN_HIER.u_spi_device
+`define UART_HIER             `PD_MAIN_HIER.u_uart
+`define PWRMGR_HIER           `PD_AON_HIER.u_pwrmgr_aon
+`define OTBN_HIER             `PD_MAIN_HIER.u_otbn
 
 // The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
 // without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call
