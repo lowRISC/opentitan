@@ -24,6 +24,7 @@ py_binary(
 py_binary(
     name = "build_info",
     srcs = ["build_info.py"],
+    deps = [":version_file"],
 )
 
 py_test(
@@ -32,23 +33,33 @@ py_test(
         "build_info.py",
         "build_info_test.py",
     ],
+    deps = [":version_file"],
 )
 
 py_binary(
     name = "cryptolib_build_info",
     srcs = ["cryptolib_build_info.py"],
+    deps = [":version_file"],
+)
+
+py_library(
+    name = "version_file",
+    srcs = ["version_file.py"],
 )
 
 py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
     deps = [
+        ":version_file",
         "//util/reggen:countermeasure",
+        "//util/reggen:gen_cfg_md",
         "//util/reggen:gen_cheader",
         "//util/reggen:gen_dv",
         "//util/reggen:gen_fpv",
         "//util/reggen:gen_html",
         "//util/reggen:gen_json",
+        "//util/reggen:gen_md",
         "//util/reggen:gen_rtl",
         "//util/reggen:gen_rust",
         "//util/reggen:gen_sec_cm_testplan",
