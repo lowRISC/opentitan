@@ -9,7 +9,7 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "1723488990 3787458315"
-INSTANCE: tb.dut.top_darjeeling.u_otbn
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_otbn
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.ram_cfg.cfg_en "logic ram_cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
@@ -49,7 +49,7 @@ Toggle sprom_rm_o.marg "logic sprom_rm_o.marg[3:0]"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle sprgf_rm_o.marg_en "logic sprgf_rm_o.marg_en"
 CHECKSUM: "1073499243 944375913"
-INSTANCE: tb.dut.top_darjeeling.u_spi_device
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_spi_device
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.a_ram_fcfg.cfg_en "logic ram_cfg_i.a_ram_fcfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
@@ -67,7 +67,7 @@ Toggle ram_cfg_i.b_ram_lcfg.cfg_en "logic ram_cfg_i.b_ram_lcfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.a_ram_fcfg.cfg "logic ram_cfg_i.a_ram_fcfg.cfg[3:0]"
 CHECKSUM: "2901544182 2216765521"
-INSTANCE: tb.dut.top_darjeeling.u_rv_core_ibex.u_core
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_rv_core_ibex.u_core
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.ram_cfg.cfg_en "logic ram_cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
@@ -107,7 +107,7 @@ Toggle rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_1p_cfg_i.ram_cfg.cfg "logic ram_1p_cfg_i.ram_cfg.cfg[3:0]"
 CHECKSUM: "2518565141 1739668335"
-INSTANCE: tb.dut.top_darjeeling_pd_aon.u_sram_ctrl_ret_aon
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_aon.u_sram_ctrl_ret_aon
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle cfg_i.ram_cfg.cfg_en "logic cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
@@ -117,7 +117,7 @@ Toggle cfg_i.rf_cfg.cfg_en "logic cfg_i.rf_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle cfg_i.ram_cfg.cfg "logic cfg_i.ram_cfg.cfg[3:0]"
 CHECKSUM: "2518565141 1739668335"
-INSTANCE: tb.dut.top_darjeeling.u_sram_ctrl_main
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_sram_ctrl_main
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle cfg_i.ram_cfg.cfg_en "logic cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
@@ -127,7 +127,7 @@ Toggle cfg_i.rf_cfg.cfg_en "logic cfg_i.rf_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle cfg_i.ram_cfg.cfg "logic cfg_i.ram_cfg.cfg[3:0]"
 CHECKSUM: "2984655879 4250263796"
-INSTANCE: tb.dut.top_darjeeling.u_rv_core_ibex
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_rv_core_ibex
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.ram_cfg.cfg_en "logic ram_cfg_i.ram_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
@@ -137,13 +137,13 @@ Toggle ram_cfg_i.rf_cfg.cfg_en "logic ram_cfg_i.rf_cfg.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle ram_cfg_i.ram_cfg.cfg "logic ram_cfg_i.ram_cfg.cfg[3:0]"
 CHECKSUM: "180068024 3922028773"
-INSTANCE: tb.dut.top_darjeeling.u_rom_ctrl0
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_rom_ctrl0
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle rom_cfg_i.cfg "logic rom_cfg_i.cfg[3:0]"
 CHECKSUM: "180068024 3922028773"
-INSTANCE: tb.dut.top_darjeeling.u_rom_ctrl1
+INSTANCE: tb.dut.top_darjeeling.darjeeling_pd_main.u_rom_ctrl1
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
 Toggle rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
 ANNOTATION: "[LOW_RISK] Covered in formal conn: hw/top_darjeeling/formal/conn_csvs/ast_mem_cfg.csv"
