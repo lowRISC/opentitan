@@ -67,6 +67,8 @@ module prim_alert_sender
   output alert_tx_t alert_tx_o
 );
 
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
 
   /////////////////////////////////
   // decode differential signals //
@@ -303,38 +305,53 @@ module prim_alert_sender
 
   if (AsyncOn) begin : gen_async_assert
     sequence PingSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
+      alert_rx_i.ping_p == alert_rx_i.ping_n [*(SkewCycles + 1)];
     endsequence
     sequence AckSigInt_S;
-      alert_rx_i.ping_p == alert_rx_i.ping_n [*2];
+      alert_rx_i.ping_p == alert_rx_i.ping_n [*(SkewCycles + 1)];
     endsequence
 
-  `ifndef FPV_ALERT_NO_SIGINT_ERR
-    // check propagation of sigint issues to output within three cycles, or four due to CDC
-    // shift sequence to the right to avoid reset effects.
-    `ASSERT(SigIntPing_A, ##1 PingSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n)
-    `ASSERT(SigIntAck_A, ##1 AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n)
-  `endif
+`ifndef FPV_ALERT_NO_SIGINT_ERR
+    // Check that any sigint issue is propagated to the output within at most four cycles (this
+    // allows three cycles for the logic plus one for CDC uncertainty).
+    SigIntPing_A:
+      assert property (##1 PingSigInt_S |-> ##[3:4] alert_tx_o.alert_p == alert_tx_o.alert_n)
+        else `ASSERT_ERROR(SigIntPing_A)
+
+    SigIntAck_A:
+      assert property (##1 AckSigInt_S |-> ##[3:4] alert_tx_o.alert_p == alert_tx_o.alert_n)
+        else `ASSERT_ERROR(SigIntAck_A)
+`endif
 
     // Test in-band FSM reset request (via signal integrity error)
-    `ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] state_q == Idle)
-    `ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |->
-        ##[SkewCycles+2:SkewCycles+3] !ping_set_q)
-    // output must be driven diff unless sigint issue detected
-    `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
-        ##[SkewCycles+2:SkewCycles+4] alert_tx_o.alert_p ^ alert_tx_o.alert_n)
+    InBandInitFsm_A:
+      assert property (PingSigInt_S or AckSigInt_S |-> ##[3:4] state_q == Idle)
+        else `ASSERT_ERROR(InBandInitFsm_A)
+
+    InBandInitPing_A:
+      assert property (PingSigInt_S or AckSigInt_S |-> ##[3:4] !ping_set_q)
+        else `ASSERT_ERROR(InBandInitPing_A)
+
+    // Output must be driven diff unless sigint issue detected
+    DiffEncoding_A:
+      assert property ((alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
+                       (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
+                       ##[3:5] alert_tx_o.alert_p ^ alert_tx_o.alert_n)
+        else `ASSERT_ERROR(DiffEncoding_A)
 
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the
     // handshake is correctly initiated and defer the full handshake checking to the testbench.
-    `ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) ##2 state_q == Idle |=>
-        ##[0:1] $rose(alert_tx_o.alert_p), clk_i,
-        !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+    PingHs_A:
+      assert property (disable iff (!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+                       ##1
+                       ($changed(alert_rx_i.ping_p) &&
+                        (alert_rx_i.ping_p ^ alert_rx_i.ping_n))
+                       ##2
+                       state_q == Idle |=>
+                       ##[0:1] $rose(alert_tx_o.alert_p))
+        else `ASSERT_ERROR(PingHs_A)
+
   end else begin : gen_sync_assert
     sequence PingSigInt_S;
       alert_rx_i.ping_p == alert_rx_i.ping_n;
@@ -344,48 +361,79 @@ module prim_alert_sender
     endsequence
 
   `ifndef FPV_ALERT_NO_SIGINT_ERR
-    // check propagation of sigint issues to output within one cycle
-    `ASSERT(SigIntPing_A, PingSigInt_S |=>
-        alert_tx_o.alert_p == alert_tx_o.alert_n)
-    `ASSERT(SigIntAck_A,  AckSigInt_S |=>
-        alert_tx_o.alert_p == alert_tx_o.alert_n)
+    // A signal integrity issue on the ping input should propagate to the output in one cycle
+    SigIntPing_A:
+      assert property (PingSigInt_S |=> alert_tx_o.alert_p == alert_tx_o.alert_n)
+        else `ASSERT_ERROR(SigIntPing_A)
+
+    // A signal integrity issue on the ack input should propagate to the output in one cycle
+    SigIntAck_A:
+      assert property (AckSigInt_S |=> alert_tx_o.alert_p == alert_tx_o.alert_n)
+        else `ASSERT_ERROR(SigIntAck_A)
   `endif
 
-    // Test in-band FSM reset request (via signal integrity error)
-    `ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |=> state_q == Idle)
-    `ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |=> !ping_set_q)
-    // output must be driven diff unless sigint issue detected
-    `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
-        (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |=> alert_tx_o.alert_p ^ alert_tx_o.alert_n)
+    // Test in-band FSM reset request (via signal integrity error). After either type of signal
+    // integrity error, the FSM will revert to the Idle state and ping_set_q (which tracks if there
+    // is a ping in flight) will be cleared.
+    InBandInitFsm_A:
+      assert property (PingSigInt_S or AckSigInt_S |=> state_q == Idle)
+        else `ASSERT_ERROR(InBandInitFsm_A)
+
+    InBandInitPing_A:
+      assert property (PingSigInt_S or AckSigInt_S |=> !ping_set_q)
+        else `ASSERT_ERROR(InBandInitPing_A)
+
+    // The alert output is always differential unless an input has a signal integrity error.
+    DiffEncoding_A:
+      assert property ((alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
+                       (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |=>
+                       alert_tx_o.alert_p ^ alert_tx_o.alert_n)
+        else `ASSERT_ERROR(DiffEncoding_A)
+
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the handshake
     // is correctly initiated and defer the full handshake checking to the testbench.
-    `ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) && state_q == Idle |=>
-        $rose(alert_tx_o.alert_p), clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+    PingHs_A:
+      assert property (disable iff (!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+                       ##1
+                       $changed(alert_rx_i.ping_p) && state_q == Idle |=>
+                       $rose(alert_tx_o.alert_p))
+        else `ASSERT_ERROR(PingHs_A)
   end
 
-  // Test the alert state output.
-  `ASSERT(AlertState0_A, alert_set_q === alert_state_o)
+  // If an alert is requested, the sender's internal alert state (exposed as alert_state_o) will
+  // normally be set. The only time this isn't true is when the IsFatal parameter is false and the
+  // sender is seeing the end of a previous handshake.
+  AlertStateSet_A:
+    assert property (alert_req_i && (IsFatal || (state_q != AlertHsPhase2)) |=> alert_state_o)
+      else `ASSERT_ERROR(AlertStateSet_A)
 
-  if (IsFatal) begin : gen_fatal_assert
-    `ASSERT(AlertState1_A, alert_req_i |=> alert_state_o)
-    `ASSERT(AlertState2_A, alert_state_o |=> $stable(alert_state_o))
-    `ASSERT(AlertState3_A, alert_ack_o |=> alert_state_o)
-  end else begin : gen_recov_assert
-    `ASSERT(AlertState1_A, alert_req_i && !alert_clr |=> alert_state_o)
-    `ASSERT(AlertState2_A, alert_req_i && alert_ack_o |=> !alert_state_o)
-  end
+  // The alert_ack_o signal is asserted when an alert has been acknowledged by the receiver. If the
+  // alert is not fatal, the internal alert state is then cleared.
+  AlertStateClear_A:
+    assert property (alert_ack_o |=> alert_state_o == IsFatal)
+      else `ASSERT_ERROR(AlertStateClear_A)
 
-  // The alert test input should not set the alert state register.
-  `ASSERT(AlertTest1_A, alert_test_i && !alert_req_i && !alert_state_o |=> $stable(alert_state_o))
+  // The alert state register can be set by alert_req_i, but there is no other way to set it. In
+  // particular, alert_test_i does not do so.
+  AlertStateNeedsReq_A:
+    assert property (##1 $rose(alert_state_o) -> $past(alert_req_i))
+      else `ASSERT_ERROR(AlertTest_A)
 
-  // if alert_req_i is true, handshakes should be continuously repeated
-  `ASSERT(AlertHs_A, alert_req_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
-      clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+  // If alert_req_i is true, handshakes should be continuously repeated. This assertion checks that
+  // the sender doesn't remain in the Idle state without either asserting a new alert or reporting a
+  // signal integrity error.
+  AlertHs_A:
+    assert property (disable iff (!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+                     alert_req_i && state_q == Idle |=> $rose(alert_tx_o.alert_p))
+      else `ASSERT_ERROR(AlertHs_A)
 
-  // if alert_test_i is true, handshakes should be continuously repeated
-  `ASSERT(AlertTestHs_A, alert_test_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
-      clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+  // If alert_test_i is true, handshakes should be continuously repeated. This assertion is
+  // analogous to AlertHs_A.
+  AlertTestHs_A:
+    assert property (disable iff (!rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
+                     alert_test_i && state_q == Idle |=> $rose(alert_tx_o.alert_p))
+      else `ASSERT_ERROR(AlertHs_A)
 `endif
 
 `ifdef FPV_ALERT_NO_SIGINT_ERR
