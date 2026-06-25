@@ -168,12 +168,11 @@
     "//rules:extensions.bzl%hooks": {
       "general": {
         "bzlTransitiveDigest": "V/eMDDbzTPDq7RNmOtJFWYlGw3YpiUhcAYNL8Isz3Jc=",
-        "usagesDigest": "fVMLjSGwgHUujBxC+fs03K5K7OfTaTFZjTNRC7D5DMc=",
+        "usagesDigest": "WVsOp9EquKy809ks/wmu4ze/E3k27xjrpVot4Kq5d6w=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
           "MANUFACTURER_HOOKS_DIR": null,
-          "PROV_EXTS_DIR": null,
           "SECURE_MANUFACTURER_HOOKS_DIR": null
         },
         "generatedRepoSpecs": {
@@ -187,12 +186,6 @@
             "repoRuleId": "@@//rules:extensions.bzl%copy_from_label",
             "attributes": {
               "src": "@@//:sw/device/tests/closed_source"
-            }
-          },
-          "provisioning_exts": {
-            "repoRuleId": "@@//rules:extensions.bzl%copy_from_label",
-            "attributes": {
-              "src": "@@//:sw/device/silicon_creator/manuf/extensions"
             }
           }
         },
@@ -1286,6 +1279,47 @@
           ],
           [
             "buildifier_prebuilt+",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
+    "@@ot_provisioning_exts+//:extension.bzl%extra": {
+      "general": {
+        "bzlTransitiveDigest": "AyitBe/7dg+N1MilFPc/g1pGnbtPXIp2AgWqFz27lMQ=",
+        "usagesDigest": "vGQP8EiTAL7ViTz1FK7TROIj5907eEj51zdbYEDbz9U=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "presign_perso": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "url": "https://github.com/pamaury/ot-sku/releases/download/TEST_RELEASE_2/presign_perso.tar.xz",
+              "sha256": "c2241a0f3df8469d67afe2ea39de2bc64d56e63304a68179eba5d64ea6d3c360"
+            }
+          },
+          "presign_rom_ext": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "url": "https://github.com/pamaury/ot-sku/releases/download/TEST_RELEASE_2/presign_rom_ext.tar.xz",
+              "sha256": "027d9b65e3111cb0160680c0ea5492506b70c3a5e70cb7cdb576a104e200793c"
+            }
+          },
+          "provisioning_exts_extra": {
+            "repoRuleId": "@@ot_provisioning_exts+//:extension.bzl%hub_repo",
+            "attributes": {
+              "repo_mapping": {
+                "presign_perso": "@@ot_provisioning_exts++extra+presign_perso//:BUILD.bazel",
+                "presign_rom_ext": "@@ot_provisioning_exts++extra+presign_rom_ext//:BUILD.bazel"
+              }
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "ot_provisioning_exts+",
             "bazel_tools",
             "bazel_tools"
           ]

@@ -346,17 +346,34 @@ hooks.repo(
     dummy = "@lowrisc_opentitan//:sw/device/tests/closed_source",
     env = "SECURE_MANUFACTURER_HOOKS_DIR",
 )
-hooks.repo(
-    name = "provisioning_exts",
-    dummy = "@lowrisc_opentitan//:sw/device/silicon_creator/manuf/extensions",
-    env = "PROV_EXTS_DIR",
-)
 use_repo(
     hooks,
     "manufacturer_test_hooks",
-    "provisioning_exts",
     "secure_manufacturer_test_hooks",
 )
+
+# Provisioning extension module, use --override_module to point to the non-dummy implementation.
+bazel_dep(name = "ot_provisioning_exts", version = "1.0.1")
+
+# Dummy repository, can be overriden on the command-line to point to ot-sku
+local_path_override(
+    module_name = "ot_provisioning_exts",
+    path = "sw/device/silicon_creator/manuf/extensions",
+)
+
+# We import an extension of the repository so that it can define extra repositories.
+provisioning_exts_extra = use_extension("@ot_provisioning_exts//:extension.bzl", "extra")
+
+# We always import the provisioning_exts_extra repository so that it can be refered to by
+# the provisioning_exts repo defined below.
+use_repo(provisioning_exts_extra, "provisioning_exts_extra")
+
+# We import the repo rule.
+provisioning_exts_hook = use_repo_rule("@ot_provisioning_exts//:hook.bzl", "hook")
+
+# Crucially, this repository is injected into the OT module so it can freely depend on everything the OT repo depends on.
+# At the same time, it can also depend on everything in @ot_provisioning_exts, which can contain arbitrary stuff.
+provisioning_exts_hook(name = "provisioning_exts")
 
 register_toolchains("//rules/opentitan:localtools")
 
