@@ -9,7 +9,7 @@ set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 waive -rules RESET_MUX -location {rstmgr.sv} -msg {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
@@ -33,12 +33,12 @@ waive -rules CLOCK_MUX -location {darjeeling_pd_aon.sv} -regexp {Clock 'clk_io_i
       -comment "This is a clock signal that is fed back into AST."
 
 # Clock and reset feedthrough across the top_darjeeling wrapper. It distributes the
-# clkmgr_aon_clocks / rstmgr_aon_resets structs (which originate inside darjeeling_pd_aon)
+# clkmgr_clocks / rstmgr_resets structs (which originate inside darjeeling_pd_aon)
 # to the AST (in chip_darjeeling_asic) and the darjeeling_pd_main wrapper.
-waive -rules {CLOCK_USE} -location {top_darjeeling.sv} -regexp {'clkmgr_aon_clocks..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_clks_i..*|clkmgr_aon_clocks_(i|o)..*)', and used as a clock} \
+waive -rules {CLOCK_USE} -location {top_darjeeling.sv} -regexp {'clkmgr_clocks..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_clks_i..*|clkmgr_clocks_(i|o)..*)', and used as a clock} \
       -comment "Clock struct feedthrough across the wrapper into AST and the power domains."
 
-waive -rules {RESET_USE} -location {top_darjeeling.sv} -regexp {'rstmgr_aon_resets..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_rsts_i..*|rstmgr_aon_resets_(i|o)..*)', and used as an asynchronous reset or set} \
+waive -rules {RESET_USE} -location {top_darjeeling.sv} -regexp {'rstmgr_resets..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_rsts_i..*|rstmgr_resets_(i|o)..*)', and used as an asynchronous reset or set} \
       -comment "Reset struct feedthrough across the wrapper into AST and the power domains."
 
 waive -rules {CLOCK_MUX} -location {top_darjeeling.sv} -regexp {Clock 'ast_base_clks\.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
