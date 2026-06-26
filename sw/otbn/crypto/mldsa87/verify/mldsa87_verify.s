@@ -6,7 +6,7 @@
 
 .globl mldsa87_verify
 
-.text
+.section .text.start
 
 /*
  * Direct implementation of the `ML-DSA.Verify_internal` function (Algorithm 8)
@@ -21,6 +21,12 @@ mldsa87_verify:
   la x2, mldsa87_verify_const_params
   bn.lid x0, 0(x2)
   bn.wsrw MOD, w0
+
+  /* Copy rho. */
+  la x2, mldsa87_verify_pk_rho
+  la x3, mldsa87_verify_var_rho
+  bn.lid x0, 0(x2)
+  bn.sid x0, 0(x3)
 
   /* Decode the signature blob. */
   la x2, mldsa87_verify_sig_h
@@ -55,7 +61,7 @@ mldsa87_verify:
   jal x1, sample_in_ball
 
   /* Compute W_approx. */
-  la x2, mldsa87_verify_pk_rho
+  la x2, mldsa87_verify_var_rho
   la x3, mldsa87_verify_vector_slot0
   la x4, mldsa87_verify_var_c
   la x5, mldsa87_verify_pk_t1
@@ -71,7 +77,7 @@ mldsa87_verify:
   jal x1, use_hint
 
   /* Recompute the challenge hash. */
-  la x2, mldsa87_verify_sig_mu
+  la x2, mldsa87_verify_mu
   la x3, mldsa87_verify_vector_slot1
   la x4, mldsa87_verify_res_c_tilde_prime
   jal x1, challenge_hash
