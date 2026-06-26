@@ -443,7 +443,7 @@ impl UsbDevice for RusbDevice {
 // Structure representing a USB hub. The device needs to have sufficient permission
 // to be opened.
 pub struct UsbHub {
-    handle: rusb::DeviceHandle<rusb::Context>,
+    handle: Box<dyn UsbDevice>,
 }
 
 // USB hub operation.
@@ -465,34 +465,39 @@ const PORT_RESET: u16 = 4;
 const PORT_POWER: u16 = 8;
 
 impl UsbHub {
-    // Construct a hub from a device.
-    pub fn from_device(dev: &rusb::Device<rusb::Context>) -> Result<UsbHub> {
-        // Make sure the device is a hub.
-        let dev_desc = dev.device_descriptor()?;
-        // Assume that if the device has the HUB class then Linux will already enforce
-        // that it follows the specification.
-        ensure!(
-            dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB,
-            "device is not a hub"
-        );
-        Ok(UsbHub {
-            handle: dev.open().with_context(|| {
-                format!(
-                    "Cannot access USB hub on bus {bus}, address {addr}\n\
+    // Construct a hub from the parent of a device.
+    pub fn from_parent_device(dev: &dyn UsbDevice) -> Result<UsbHub> {
+        let handle = dev.get_parent().with_context(|| {
+            format!(
+                "Cannot access USB parent hub of device on bus {bus}, address {addr}\n\
                 If this test requires access to the HUB, you need to make sure that \
                 the program has sufficient permissions to access the hub\n\
                 See sw/host/tests/chip/usb/README.md for more information\n\
                 The following command may fix the issue:\n\
-                sudo chmod 0666 /dev/bus/usb/{bus:03}/{addr:03}",
-                    bus = dev.bus_number(),
-                    addr = dev.address(),
-                )
-            })?,
-        })
+                sudo chmod 0666 /dev/bus/usb/{bus:03}/ADDR\n\
+                where ADDR is the address of the hub",
+                bus = dev.bus_number(),
+                addr = dev.address(),
+            )
+        })?;
+        UsbHub::from_device(handle)
     }
 
-    pub fn device(&self) -> rusb::Device<rusb::Context> {
-        self.handle.device()
+    // Construct a hub from a device.
+    pub fn from_device(dev: Box<dyn UsbDevice>) -> Result<UsbHub> {
+        // Make sure the device is a hub.
+        let dev_desc = dev.device_descriptor().descriptor()?;
+        // Assume that if the device has the HUB class then Linux will already enforce
+        // that it follows the specification.
+        ensure!(
+            dev_desc.class == rusb::constants::LIBUSB_CLASS_HUB,
+            "device is not a hub"
+        );
+        Ok(UsbHub { handle: dev })
+    }
+
+    pub fn device(&self) -> &dyn UsbDevice {
+        &*self.handle
     }
 
     // Report the status of a port (only returns the port status, not the port change).
@@ -501,7 +506,7 @@ impl UsbHub {
             | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
             | rusb::constants::LIBUSB_ENDPOINT_IN;
         let mut status = [0u8; 4];
-        let _ = self.handle.read_control(
+        let _ = self.handle.read_control_timeout(
             req_type,
             rusb::constants::LIBUSB_REQUEST_GET_STATUS,
             0,
@@ -545,9 +550,14 @@ impl UsbHub {
             );
         }
         // Perform operation.
-        let _ =
-            self.handle
-                .write_control(req_type, req, feature_index, port as u16, &[], timeout)?;
+        let _ = self.handle.write_control_timeout(
+            req_type,
+            req,
+            feature_index,
+            port as u16,
+            &[],
+            timeout,
+        )?;
         // Wait until port has changed status.
         if check_status {
             let start = Instant::now();
