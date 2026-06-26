@@ -33,6 +33,9 @@ pub trait UsbDevice {
     /// Gets the serial number of the device.
     fn get_serial_number(&self) -> Option<&str>;
 
+    /// Try to get the parent of this device (or None if root).
+    fn get_parent(&self) -> Result<Box<dyn UsbDevice>>;
+
     /// Set the active configuration.
     fn set_active_configuration(&self, config: u8) -> Result<()>;
 

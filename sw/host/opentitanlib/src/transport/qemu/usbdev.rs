@@ -293,6 +293,10 @@ impl QemuUsbDevice {
 }
 
 impl UsbDevice for QemuUsbDevice {
+    fn get_parent(&self) -> anyhow::Result<Box<dyn UsbDevice>> {
+        Err(anyhow!("this is the root USB device"))
+    }
+
     fn get_vendor_id(&self) -> u16 {
         // This cannot fail, the device descriptor was parsed during enumeration.
         desc::DeviceDescriptor::ref_from_bytes(&self.dev_info.dev_desc)
