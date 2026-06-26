@@ -54,6 +54,9 @@ pub struct BackendOpts {
     pub opts: chip_whisperer::ChipWhispererOpts,
 
     #[command(flatten)]
+    pub hyperdebug_opts: hyperdebug::HyperdebugOpts,
+
+    #[command(flatten)]
     pub verilator_opts: verilator::VerilatorOpts,
 
     #[command(flatten)]
