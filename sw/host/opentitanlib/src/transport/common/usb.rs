@@ -283,6 +283,22 @@ impl UsbDevice for RusbDevice {
         self.timeout
     }
 
+    fn get_parent(&self) -> Result<Box<dyn UsbDevice>> {
+        let device = self
+            .handle
+            .device()
+            .get_parent()
+            .context("Unable to get parent USB device")?;
+        let handle = device.open().context(format!(
+            "Could not open device at bus={} address={}",
+            device.bus_number(),
+            device.address(),
+        ))?;
+        // We do not try to read the serial number of the parent because hubs generally do not have
+        // unique serial numbers.
+        Ok(Box::new(RusbDevice::new(handle, None, self.get_timeout())?))
+    }
+
     fn get_vendor_id(&self) -> u16 {
         self.handle
             .device()
