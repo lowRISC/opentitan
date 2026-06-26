@@ -11,40 +11,49 @@
  * Public key
  */
 
-.globl mldsa87_verify_pk_t1
+.globl mldsa87_verify_pk
 .globl mldsa87_verify_pk_rho
+.globl mldsa87_verify_pk_t1
 
-mldsa87_verify_pk_t1:
-.zero 2560
+mldsa87_verify_pk:
 mldsa87_verify_pk_rho:
 .zero 32
-.zero 32 /* Padding */
+mldsa87_verify_pk_t1:
+.zero 2560
 
 /*
  * Signature
  */
 
+.globl mldsa87_verify_sig
 .globl mldsa87_verify_sig_c_tilde
 .globl mldsa87_verify_sig_z
-.globl mldsa87_verify_sig_mu
 .globl mldsa87_verify_sig_h
 
+mldsa87_verify_sig:
 mldsa87_verify_sig_c_tilde:
 .zero 64
 mldsa87_verify_sig_z:
 .zero 4480
-mldsa87_verify_sig_mu:
-.zero 64
 mldsa87_verify_sig_h:
 .zero 83
 .zero 13 /* Padding */
+
+/*
+ * Message
+ */
+
+.globl mldsa87_verify_mu
+
+mldsa87_verify_mu:
+.zero 64
 
 /*
  * Verification result
  */
 
 .globl mldsa87_verify_res_ok
-.globl mldsa87_verify_c_tilde_prime
+.globl mldsa87_verify_res_c_tilde_prime
 
 mldsa87_verify_res_ok:
 .zero 4
@@ -56,9 +65,15 @@ mldsa87_verify_res_c_tilde_prime:
  * Intermediate variables
  */
 
+.globl mldsa87_verify_var_rho
 .globl mldsa87_verify_var_c
 .globl mldsa87_verify_var_h
 
+/* RHO with indices */
+mldsa87_verify_var_rho:
+.zero 32
+.zero 2  /* r, s */
+.zero 30 /* Padding */
 /* Challenge polynomial */
 mldsa87_verify_var_c:
 .zero 1024
