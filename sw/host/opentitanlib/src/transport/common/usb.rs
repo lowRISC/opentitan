@@ -377,6 +377,10 @@ impl UsbDevice for RusbDevice {
         self.handle.device().bus_number()
     }
 
+    fn address(&self) -> u8 {
+        self.handle.device().address()
+    }
+
     fn port_numbers(&self) -> Result<Vec<u8>> {
         self.handle.device().port_numbers().context("USB error")
     }

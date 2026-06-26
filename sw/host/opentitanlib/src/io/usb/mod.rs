@@ -66,6 +66,9 @@ pub trait UsbDevice {
     /// Return the device's bus number.
     fn bus_number(&self) -> u8;
 
+    /// Return the device's address.
+    fn address(&self) -> u8;
+
     /// Return the sequence of port numbers from the root down to the device.
     fn port_numbers(&self) -> Result<Vec<u8>>;
 
