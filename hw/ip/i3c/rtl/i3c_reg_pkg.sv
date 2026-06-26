@@ -3092,8 +3092,9 @@ package i3c_reg_pkg;
   parameter logic [1:0] I3C_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] I3C_INTR_TEST_HCI_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_INTR_TEST_TARG_RESVAL = 1'h 0;
-  parameter logic [0:0] I3C_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] I3C_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] I3C_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] I3C_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [28:0] I3C_INFO_RESVAL = 29'h fffff10;
   parameter logic [3:0] I3C_INFO_REVISION_RESVAL = 4'h 0;
   parameter logic [3:0] I3C_INFO_VERSION_RESVAL = 4'h 1;
@@ -3651,7 +3652,7 @@ package i3c_reg_pkg;
     4'b 0001, // index[  0] I3C_INTR_STATE
     4'b 0001, // index[  1] I3C_INTR_ENABLE
     4'b 0001, // index[  2] I3C_INTR_TEST
-    4'b 0001, // index[  3] I3C_ALERT_TEST
+    4'b 1111, // index[  3] I3C_ALERT_TEST
     4'b 1111, // index[  4] I3C_INFO
     4'b 1111, // index[  5] I3C_CTRL_STATUS
     4'b 0011, // index[  6] I3C_CTRL_ERROR

@@ -50,8 +50,9 @@ package rv_dm_reg_pkg;
   parameter logic [RegsAw-1:0] RV_DM_LATE_DEBUG_ENABLE_OFFSET = 4'h 8;
 
   // Reset values for hwext registers and their fields for regs interface
-  parameter logic [0:0] RV_DM_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] RV_DM_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] RV_DM_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] RV_DM_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
 
   // Register index for regs interface
   typedef enum int {
@@ -62,7 +63,7 @@ package rv_dm_reg_pkg;
 
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] RV_DM_REGS_PERMIT [3] = '{
-    4'b 0001, // index[0] RV_DM_ALERT_TEST
+    4'b 1111, // index[0] RV_DM_ALERT_TEST
     4'b 0001, // index[1] RV_DM_LATE_DEBUG_ENABLE_REGWEN
     4'b 1111  // index[2] RV_DM_LATE_DEBUG_ENABLE
   };

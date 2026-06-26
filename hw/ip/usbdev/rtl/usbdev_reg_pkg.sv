@@ -924,8 +924,9 @@ package usbdev_reg_pkg;
   parameter logic [0:0] USBDEV_INTR_TEST_POWERED_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_LINK_OUT_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_AV_SETUP_EMPTY_RESVAL = 1'h 0;
-  parameter logic [0:0] USBDEV_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] USBDEV_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] USBDEV_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] USBDEV_USBSTAT_RESVAL = 32'h 80000000;
   parameter logic [0:0] USBDEV_USBSTAT_RX_EMPTY_RESVAL = 1'h 1;
   parameter logic [4:0] USBDEV_AVOUTBUFFER_RESVAL = 5'h 0;
@@ -1022,7 +1023,7 @@ package usbdev_reg_pkg;
     4'b 0111, // index[ 0] USBDEV_INTR_STATE
     4'b 0111, // index[ 1] USBDEV_INTR_ENABLE
     4'b 0111, // index[ 2] USBDEV_INTR_TEST
-    4'b 0001, // index[ 3] USBDEV_ALERT_TEST
+    4'b 1111, // index[ 3] USBDEV_ALERT_TEST
     4'b 0111, // index[ 4] USBDEV_USBCTRL
     4'b 0011, // index[ 5] USBDEV_EP_OUT_ENABLE
     4'b 0011, // index[ 6] USBDEV_EP_IN_ENABLE

@@ -69,7 +69,8 @@ namespace {
   TEST_F(AlertForceTest, Success) {
     // Force first alert.
     EXPECT_WRITE32(${ip.name_upper}_ALERT_TEST_REG_OFFSET,
-      {{${ip.name_upper}_ALERT_TEST_${ip.alerts[0].name_upper}_BIT, true}});
+      {{${ip.name_upper}_ALERT_TEST_${ip.alerts[0].name_upper}_BIT, true},
+       {${ip.name_upper}_ALERT_TEST_REGWEN_BIT, true}});
     EXPECT_DIF_OK(dif_${ip.name_snake}_alert_force(
         &${ip.name_snake}_,
         kDif${ip.name_camel}Alert${ip.alerts[0].name_camel}));
@@ -77,7 +78,8 @@ namespace {
   % if len(ip.alerts) > 1:
     // Force last alert.
     EXPECT_WRITE32(${ip.name_upper}_ALERT_TEST_REG_OFFSET,
-        {{${ip.name_upper}_ALERT_TEST_${ip.alerts[-1].name_upper}_BIT, true}});
+        {{${ip.name_upper}_ALERT_TEST_${ip.alerts[-1].name_upper}_BIT, true},
+         {${ip.name_upper}_ALERT_TEST_REGWEN_BIT, true}});
     EXPECT_DIF_OK(dif_${ip.name_snake}_alert_force(
         &${ip.name_snake}_,
         kDif${ip.name_camel}Alert${ip.alerts[-1].name_camel}));

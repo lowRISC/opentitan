@@ -373,8 +373,9 @@ package uart_reg_pkg;
   parameter logic [0:0] UART_INTR_TEST_RX_TIMEOUT_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_RX_PARITY_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] UART_INTR_TEST_TX_EMPTY_RESVAL = 1'h 0;
-  parameter logic [0:0] UART_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] UART_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] UART_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] UART_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [5:0] UART_STATUS_RESVAL = 6'h 3c;
   parameter logic [0:0] UART_STATUS_TXEMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] UART_STATUS_TXIDLE_RESVAL = 1'h 1;
@@ -406,7 +407,7 @@ package uart_reg_pkg;
     4'b 0011, // index[ 0] UART_INTR_STATE
     4'b 0011, // index[ 1] UART_INTR_ENABLE
     4'b 0011, // index[ 2] UART_INTR_TEST
-    4'b 0001, // index[ 3] UART_ALERT_TEST
+    4'b 1111, // index[ 3] UART_ALERT_TEST
     4'b 1111, // index[ 4] UART_CTRL
     4'b 0001, // index[ 5] UART_STATUS
     4'b 0001, // index[ 6] UART_RDATA

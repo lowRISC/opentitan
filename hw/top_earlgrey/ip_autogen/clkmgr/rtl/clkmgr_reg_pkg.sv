@@ -338,9 +338,10 @@ package clkmgr_reg_pkg;
   parameter logic [BlockAw-1:0] CLKMGR_FATAL_ERR_CODE_OFFSET = 7'h 54;
 
   // Reset values for hwext registers and their fields
-  parameter logic [1:0] CLKMGR_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] CLKMGR_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] CLKMGR_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] CLKMGR_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] CLKMGR_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [3:0] CLKMGR_EXTCLK_STATUS_RESVAL = 4'h 9;
   parameter logic [3:0] CLKMGR_EXTCLK_STATUS_ACK_RESVAL = 4'h 9;
 
@@ -372,7 +373,7 @@ package clkmgr_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] CLKMGR_PERMIT [22] = '{
-    4'b 0001, // index[ 0] CLKMGR_ALERT_TEST
+    4'b 1111, // index[ 0] CLKMGR_ALERT_TEST
     4'b 0001, // index[ 1] CLKMGR_EXTCLK_CTRL_REGWEN
     4'b 0001, // index[ 2] CLKMGR_EXTCLK_CTRL
     4'b 0001, // index[ 3] CLKMGR_EXTCLK_STATUS

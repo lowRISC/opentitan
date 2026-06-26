@@ -124,8 +124,9 @@ package rv_timer_reg_pkg;
   parameter logic [BlockAw-1:0] RV_TIMER_COMPARE_UPPER0_0_OFFSET = 9'h 11c;
 
   // Reset values for hwext registers and their fields
-  parameter logic [0:0] RV_TIMER_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] RV_TIMER_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] RV_TIMER_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] RV_TIMER_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] RV_TIMER_INTR_TEST0_RESVAL = 1'h 0;
 
   // Register index
@@ -144,7 +145,7 @@ package rv_timer_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] RV_TIMER_PERMIT [10] = '{
-    4'b 0001, // index[0] RV_TIMER_ALERT_TEST
+    4'b 1111, // index[0] RV_TIMER_ALERT_TEST
     4'b 0001, // index[1] RV_TIMER_CTRL
     4'b 0001, // index[2] RV_TIMER_INTR_ENABLE0
     4'b 0001, // index[3] RV_TIMER_INTR_STATE0

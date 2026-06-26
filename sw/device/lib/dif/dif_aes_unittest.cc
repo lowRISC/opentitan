@@ -322,7 +322,8 @@ class AlertTest : public AesTestInitialized {};
 TEST_F(AlertTest, RecovCtrlUpdateErr) {
   EXPECT_WRITE32(AES_ALERT_TEST_REG_OFFSET,
                  {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true},
-                  {AES_ALERT_TEST_FATAL_FAULT_BIT, false}});
+                  {AES_ALERT_TEST_FATAL_FAULT_BIT, false},
+                  {AES_ALERT_TEST_REGWEN_BIT, true}});
 
   EXPECT_DIF_OK(dif_aes_alert_force(&aes_, kDifAesAlertRecovCtrlUpdateErr));
 }
@@ -330,7 +331,8 @@ TEST_F(AlertTest, RecovCtrlUpdateErr) {
 TEST_F(AlertTest, AlertFatalFault) {
   EXPECT_WRITE32(AES_ALERT_TEST_REG_OFFSET,
                  {{AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, false},
-                  {AES_ALERT_TEST_FATAL_FAULT_BIT, true}});
+                  {AES_ALERT_TEST_FATAL_FAULT_BIT, true},
+                  {AES_ALERT_TEST_REGWEN_BIT, true}});
 
   EXPECT_DIF_OK(dif_aes_alert_force(&aes_, kDifAesAlertFatalFault));
 }

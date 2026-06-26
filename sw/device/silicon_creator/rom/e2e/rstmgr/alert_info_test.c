@@ -26,9 +26,9 @@ static inline uint32_t uart_reg_base(void) {
 }
 
 static void uart_alert_trigger(void) {
-  abs_mmio_write32(
-      uart_reg_base() + UART_ALERT_TEST_REG_OFFSET,
-      bitfield_bit32_write(0, UART_ALERT_TEST_FATAL_FAULT_BIT, true));
+  abs_mmio_write32(uart_reg_base() + UART_ALERT_TEST_REG_OFFSET,
+                   bitfield_bit32_write(1u << UART_ALERT_TEST_REGWEN_BIT,
+                                        UART_ALERT_TEST_FATAL_FAULT_BIT, true));
 }
 
 static void check_alert_info_dump(void) {

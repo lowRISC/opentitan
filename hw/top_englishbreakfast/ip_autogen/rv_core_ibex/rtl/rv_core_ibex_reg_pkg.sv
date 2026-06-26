@@ -223,11 +223,12 @@ package rv_core_ibex_reg_pkg;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET = 8'h 68;
 
   // Reset values for hwext registers and their fields for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 4'h 0;
+  parameter logic [31:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_FATAL_SW_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_RECOV_SW_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_FATAL_HW_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_RECOV_HW_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RV_CORE_IBEX_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] RV_CORE_IBEX_RND_DATA_RESVAL = 32'h 0;
   parameter logic [31:0] RV_CORE_IBEX_RND_DATA_DATA_RESVAL = 32'h 0;
   parameter logic [1:0] RV_CORE_IBEX_RND_STATUS_RESVAL = 2'h 0;
@@ -274,7 +275,7 @@ package rv_core_ibex_reg_pkg;
 
   // Register width information to check illegal writes for cfg interface
   parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [27] = '{
-    4'b 0001, // index[ 0] RV_CORE_IBEX_ALERT_TEST
+    4'b 1111, // index[ 0] RV_CORE_IBEX_ALERT_TEST
     4'b 0001, // index[ 1] RV_CORE_IBEX_SW_RECOV_ERR
     4'b 0001, // index[ 2] RV_CORE_IBEX_SW_FATAL_ERR
     4'b 0001, // index[ 3] RV_CORE_IBEX_IBUS_REGWEN_0
