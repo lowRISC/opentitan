@@ -54,6 +54,8 @@ module tb;
     .rst_shadowed_ni  ( rst_shadowed_n                    ),
 
     .idle_o           ( idle_s                            ),
+    .output_valid_o   (                                   ),
+    .input_ready_o    (                                   ),
     .lc_escalate_en_i ( lc_escalate_en                    ),
     .clk_edn_i        ( edn_clk                           ),
     .rst_edn_ni       ( edn_rst_n                         ),
