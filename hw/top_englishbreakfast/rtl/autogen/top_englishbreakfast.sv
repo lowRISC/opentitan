@@ -899,6 +899,8 @@ module top_englishbreakfast #(
 
     // Inter-module signals
     .idle_o(clkmgr_aon_idle_o),
+    .output_valid_o(),
+    .input_ready_o(),
     .lc_escalate_en_i(lc_ctrl_pkg::Off),
     .edn_o(),
     .edn_i(edn_pkg::EDN_RSP_DEFAULT),

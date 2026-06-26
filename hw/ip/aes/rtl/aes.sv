@@ -46,6 +46,10 @@ module aes
   // Idle indicator for clock manager
   output prim_mubi_pkg::mubi4_t                     idle_o,
 
+  // Status indicators for DMA integrations
+  output logic                                      output_valid_o,
+  output logic                                      input_ready_o,
+
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t                       lc_escalate_en_i,
 
@@ -215,6 +219,8 @@ module aes
   );
 
   assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.status.idle.q);
+  assign output_valid_o = reg2hw.status.output_valid.q;
+  assign input_ready_o = reg2hw.status.input_ready.q;
 
   ////////////
   // Alerts //

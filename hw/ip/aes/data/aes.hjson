@@ -197,6 +197,18 @@
       struct:  "mubi4",
       width:   "1"
     },
+    { name:    "output_valid",
+      type:    "uni",
+      act:     "req",
+      struct:  "logic",
+      width:   "1"
+    },
+    { name:    "input_ready",
+      type:    "uni",
+      act:     "req",
+      struct:  "logic",
+      width:   "1"
+    },
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_escalate_en"
@@ -972,7 +984,8 @@
       }
       { bits: "3",
         name: "OUTPUT_VALID",
-        resval: "0"
+        resval: "0",
+        hwaccess: "hrw",
         desc:  '''
           The AES unit has no valid output (0) or has valid output data (1).
         '''
@@ -981,6 +994,7 @@
       { bits: "4",
         name: "INPUT_READY",
         resval: "0",
+        hwaccess: "hrw",
         desc:  '''
           The AES unit is ready (1) or not ready (0) to receive new data input via the DATA_IN registers.
           If the present values in the DATA_IN registers have not yet been loaded into the

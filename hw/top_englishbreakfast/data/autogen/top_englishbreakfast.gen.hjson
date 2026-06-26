@@ -3670,6 +3670,24 @@
           conn_type: false
         }
         {
+          name: output_valid
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: aes
+          index: -1
+        }
+        {
+          name: input_ready
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: aes
+          index: -1
+        }
+        {
           name: lc_escalate_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -11872,6 +11890,24 @@
         index: -1
         external: true
         conn_type: false
+      }
+      {
+        name: output_valid
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: aes
+        index: -1
+      }
+      {
+        name: input_ready
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: aes
+        index: -1
       }
       {
         name: lc_escalate_en
