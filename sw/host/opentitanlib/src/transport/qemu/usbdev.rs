@@ -361,6 +361,10 @@ impl UsbDevice for QemuUsbDevice {
         Ok(())
     }
 
+    fn device_descriptor(&self) -> desc::Device<'_> {
+        desc::Device::new(&self.dev_info.dev_desc)
+    }
+
     /// Return the currently active configuration's descriptor.
     fn active_configuration(&self) -> anyhow::Result<desc::Configuration> {
         Ok(desc::Configuration::new(
