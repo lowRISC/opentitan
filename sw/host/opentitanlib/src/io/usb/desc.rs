@@ -51,6 +51,28 @@ pub struct DeviceDescriptor {
     pub num_config: u8,
 }
 
+pub struct Device<'a> {
+    bytes: &'a [u8],
+}
+
+impl<'a> Device<'a> {
+    pub fn new(bytes: &'a [u8]) -> Self {
+        Device { bytes }
+    }
+
+    /// Return the entire configuration (all descriptors).
+    pub fn as_bytes(&self) -> &'a [u8] {
+        self.bytes
+    }
+
+    /// Return the configuration descriptor.
+    pub fn descriptor(&self) -> Result<&'a DeviceDescriptor> {
+        DeviceDescriptor::ref_from_prefix(self.bytes)
+            .map(|(desc, _)| desc)
+            .map_err(|_err| anyhow!("Cannot parse device descriptor"))
+    }
+}
+
 #[derive(Clone, FromBytes, KnownLayout, Immutable, Unaligned, Debug)]
 #[repr(C)]
 pub struct ConfigurationDescriptor {
