@@ -280,7 +280,10 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc_zba_zbb_zbc_zbs"],
+    args = [
+        "-march=rv32imc_zba_zbb_zbc_zbs",
+        "-DOT_PLATFORM_RV32_SUPPORTS_ZBT0P93",
+    ],
     requires_any_of = [":constraint_bitmanip"],
 )
 

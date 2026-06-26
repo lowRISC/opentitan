@@ -504,7 +504,7 @@ inline ct_bool32_t ct_seq32(uint32_t a, uint32_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline uint32_t ct_cmov32(ct_bool32_t c, uint32_t a, uint32_t b) {
-#if defined(OT_PLATFORM_RV32)
+#if defined(OT_PLATFORM_RV32) && defined(OT_PLATFORM_RV32_SUPPORTS_ZBT0P93)
   uint32_t res;
   asm volatile(
       ".option push;"
@@ -633,7 +633,7 @@ inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
-#if defined(OT_PLATFORM_RV32)
+#if defined(OT_PLATFORM_RV32) && defined(OT_PLATFORM_RV32_SUPPORTS_ZBT0P93)
   uintptr_t res;
   asm volatile(
       ".option push;"
