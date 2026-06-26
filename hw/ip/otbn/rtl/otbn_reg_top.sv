@@ -184,6 +184,8 @@ module otbn_reg_top (
   logic alert_test_we;
   logic alert_test_fatal_wd;
   logic alert_test_recov_wd;
+  logic alert_test_regwen_qs;
+  logic alert_test_regwen_wd;
   logic cmd_we;
   logic [7:0] cmd_wd;
   logic ctrl_re;
@@ -323,14 +325,17 @@ module otbn_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [1:0] alert_test_flds_we;
+  logic [2:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
+  // Create REGWEN-gated WE signal
+  logic alert_test_gated_we;
+  assign alert_test_gated_we = alert_test_we && alert_test_regwen_qs;
   //   F[fatal]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_wd),
     .d      ('0),
     .qre    (),
@@ -346,7 +351,7 @@ module otbn_reg_top (
     .DW    (1)
   ) u_alert_test_recov (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_recov_wd),
     .d      ('0),
     .qre    (),
@@ -356,6 +361,33 @@ module otbn_reg_top (
     .qs     ()
   );
   assign reg2hw.alert_test.recov.qe = alert_test_qe;
+
+  //   F[regwen]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_alert_test_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_test_we),
+    .wd     (alert_test_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (alert_test_flds_we[2]),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_test_regwen_qs)
+  );
 
 
   // R[cmd]: V(True)
@@ -1010,6 +1042,8 @@ module otbn_reg_top (
   assign alert_test_fatal_wd = reg_wdata[0];
 
   assign alert_test_recov_wd = reg_wdata[1];
+
+  assign alert_test_regwen_wd = reg_wdata[31];
   assign cmd_we = addr_hit[4] & reg_we & !reg_error;
 
   assign cmd_wd = reg_wdata[7:0];
@@ -1096,6 +1130,7 @@ module otbn_reg_top (
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[31] = alert_test_regwen_qs;
       end
 
       addr_hit[4]: begin

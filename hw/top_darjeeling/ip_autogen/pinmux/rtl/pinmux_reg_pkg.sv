@@ -797,8 +797,9 @@ package pinmux_reg_pkg;
   parameter logic [BlockAw-1:0] PINMUX_WKUP_CAUSE_OFFSET = 11'h 7d8;
 
   // Reset values for hwext registers and their fields
-  parameter logic [0:0] PINMUX_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] PINMUX_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] PINMUX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] PINMUX_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [23:0] PINMUX_MIO_PAD_ATTR_0_RESVAL = 24'h 0;
   parameter logic [0:0] PINMUX_MIO_PAD_ATTR_0_INVERT_0_RESVAL = 1'h 0;
   parameter logic [0:0] PINMUX_MIO_PAD_ATTR_0_VIRTUAL_OD_EN_0_RESVAL = 1'h 0;
@@ -2244,7 +2245,7 @@ package pinmux_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] PINMUX_PERMIT [503] = '{
-    4'b 0001, // index[  0] PINMUX_ALERT_TEST
+    4'b 1111, // index[  0] PINMUX_ALERT_TEST
     4'b 0001, // index[  1] PINMUX_MIO_PERIPH_INSEL_REGWEN_0
     4'b 0001, // index[  2] PINMUX_MIO_PERIPH_INSEL_REGWEN_1
     4'b 0001, // index[  3] PINMUX_MIO_PERIPH_INSEL_REGWEN_2

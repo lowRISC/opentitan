@@ -160,23 +160,24 @@ Interrupt Test Register
 ## ALERT_TEST
 Alert Test Register
 - Offset: `0xc`
-- Reset default: `0x0`
-- Reset mask: `0x1f`
+- Reset default: `0x80000000`
+- Reset mask: `0x8000001f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fatal_macro_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_check_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_bus_integ_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_prim_otp_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_prim_otp_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "fatal_macro_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_check_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_bus_integ_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_prim_otp_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_prim_otp_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 26}, {"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                      |
-|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------|
-|  31:5  |        |         |                       | Reserved                                         |
-|   4    |   wo   |   0x0   | recov_prim_otp_alert  | Write 1 to trigger one alert event of this kind. |
-|   3    |   wo   |   0x0   | fatal_prim_otp_alert  | Write 1 to trigger one alert event of this kind. |
-|   2    |   wo   |   0x0   | fatal_bus_integ_error | Write 1 to trigger one alert event of this kind. |
-|   1    |   wo   |   0x0   | fatal_check_error     | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | fatal_macro_error     | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                            |
+|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------------|
+|   31   |  rw0c  |   0x1   | regwen                | Write 0 to disable alert testing until the next reset. |
+|  30:5  |        |         |                       | Reserved                                               |
+|   4    |   wo   |   0x0   | recov_prim_otp_alert  | Write 1 to trigger one alert event of this kind.       |
+|   3    |   wo   |   0x0   | fatal_prim_otp_alert  | Write 1 to trigger one alert event of this kind.       |
+|   2    |   wo   |   0x0   | fatal_bus_integ_error | Write 1 to trigger one alert event of this kind.       |
+|   1    |   wo   |   0x0   | fatal_check_error     | Write 1 to trigger one alert event of this kind.       |
+|   0    |   wo   |   0x0   | fatal_macro_error     | Write 1 to trigger one alert event of this kind.       |
 
 ## STATUS
 OTP status register.

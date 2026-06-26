@@ -64,6 +64,14 @@ OPTIONAL_FIELDS = {
         "register name should be given here. empty-string for no register "
         "write protection"
     ],
+    'inregwen': [
+        's', "if the writable fields of this register are write-protected by a "
+        "single-bit field *within the same register*, that field name should "
+        "be given here. The named control field is stored inside the register "
+        "block (even when the register is hwext) and gates the write-enable "
+        "(and hence the 'qe' strobe) of all other writable fields. empty-string "
+        "for no in-register write protection"
+    ],
     'resval': ['d', "reset value of full register (default 0)"],
     'tags': [
         's',
@@ -100,6 +108,7 @@ class Register(RegBase):
     update_err_alert: str | None = None
     storage_err_alert: str | None = None
     writes_ignore_errors: bool = False
+    inregwen: str | None = None
     resval: int = field(init=False)
     resmask: int = field(init=False)
     name_to_field: dict[str, Field] = field(init=False)
@@ -132,9 +141,39 @@ class Register(RegBase):
                     f'{fld.name}.')
             self.name_to_field[fld.name] = fld
 
+        # Validate an in-register write-enable ("inregwen"), if present.
+        if self.inregwen is not None:
+            if self.inregwen not in self.name_to_field:
+                raise ValueError(
+                    f'Register {self.name} names {self.inregwen} as its '
+                    'inregwen, but it has no such field.')
+            ctrl = self.name_to_field[self.inregwen]
+            if ctrl.bits.width() != 1:
+                raise ValueError(
+                    f'The inregwen field {self.inregwen} of register '
+                    f'{self.name} must be a single bit, not '
+                    f'{ctrl.bits.width()} bits.')
+            # The control bit is stored inside the reg block and must not be
+            # exposed to HW and it must be SW-writable so software can engage the lock.
+            if ctrl.hwaccess.key != 'none':
+                raise ValueError(
+                    f'The inregwen field {self.inregwen} of register '
+                    f'{self.name} must have hwaccess "none" (it is stored in '
+                    f'the reg block), not "{ctrl.hwaccess.key}".')
+            if not ctrl.sw_writable():
+                raise ValueError(
+                    f'The inregwen field {self.inregwen} of register '
+                    f'{self.name} must be writable by software (mode '
+                    f'{ctrl.swaccess.key}).')
+
         # Check that fields have compatible access types if we are hwext
         if self.hwext:
             for fld in self.fields:
+                # An inregwen control field is intentionally stored inside the
+                # reg block, so it is exempt from the hwext field
+                # constraints below.
+                if self.inregwen is not None and fld.name == self.inregwen:
+                    continue
                 if fld.hwaccess.key == 'hro' and fld.sw_readable():
                     raise ValueError(
                         f'The {self.name} register has hwext set, but field '
@@ -288,6 +327,13 @@ class Register(RegBase):
         else:
             regwen = check_name(raw_regwen, f'regwen for {name} register')
 
+        raw_inregwen = rd.get('inregwen', '')
+        if not raw_inregwen:
+            inregwen = None
+        else:
+            inregwen = check_name(raw_inregwen,
+                                  f'inregwen for {name} register')
+
         raw_resval = rd.get('resval')
         if raw_resval is None:
             resval = None
@@ -357,7 +403,7 @@ class Register(RegBase):
                         desc, fields, hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed,
                         update_err_alert, storage_err_alert,
-                        writes_ignore_errors)
+                        writes_ignore_errors, inregwen=inregwen)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + addrsep
@@ -370,8 +416,16 @@ class Register(RegBase):
     def get_field_list(self) -> List[Field]:
         return self.fields
 
-    def is_homogeneous(self) -> bool:
-        return len(self.fields) == 1
+    def is_homogeneous(self, inregwen: bool = False) -> bool:
+        '''True if the register has a single field.
+
+        When inregwen is True, the inregwen control field is ignored so that
+        this bit does not affect the number of fields in a register.
+        '''
+        fields = self.fields
+        if inregwen and self.inregwen is not None:
+            fields = [fld for fld in fields if fld.name != self.inregwen]
+        return len(fields) == 1
 
     def is_hw_writable(self) -> bool:
         '''Returns true if any field in this register can be modified by HW'''
@@ -442,6 +496,12 @@ class Register(RegBase):
         for fld in self.fields:
             if fld.swaccess.key == 'rc':
                 return True
+
+            # An inregwen control field is stored inside the reg block (not
+            # external), so its read does not need a read-enable even though the
+            # register is hwext.
+            if self.inregwen is not None and fld.name == self.inregwen:
+                continue
 
             if self.hwext and fld.swaccess.allows_read():
                 return True
@@ -638,6 +698,8 @@ class Register(RegBase):
         }  # type: Dict[str, object]
         if self.regwen is not None:
             rd['regwen'] = self.regwen
+        if self.inregwen is not None:
+            rd['inregwen'] = self.inregwen
         if self.update_err_alert is not None:
             rd['update_err_alert'] = self.update_err_alert
         if self.storage_err_alert is not None:

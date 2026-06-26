@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 
 from reggen.alert import Alert
 from reggen.access import SWAccess, HWAccess
+from reggen.bits import Bits
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
 from reggen.field import Field
@@ -577,11 +578,62 @@ class RegBlock:
 
     def make_alert_regs(self, alerts: list[Alert]) -> None:
         assert alerts
-        assert len(alerts) < self._reg_width
-        self._add_intr_alert_reg(alerts, 'ALERT_TEST', 'Alert Test Register',
-                                 ('Write 1 to trigger '
-                                  'one alert event of this kind.'), 'wo',
-                                 'hro', True, [])
+        # The alert-test fields occupy bits [0 .. len(alerts)-1]; a single-bit
+        # in-register write-enable, `regwen`, is placed at the MSB. Make sure they
+        # do not overlap.
+        msb = self._reg_width - 1
+        assert len(alerts) <= msb
+
+        alert_sw = SWAccess('RegBlock.make_alert_regs()', 'wo')
+        alert_hw = HWAccess('RegBlock.make_alert_regs()', 'hro')
+        # rw0c, reset 1: alert testing is enabled out of reset; software writes 0
+        # to this bit to disable it until the next reset.
+        lock_sw = SWAccess('RegBlock.make_alert_regs()', 'rw0c')
+        lock_hw = HWAccess('RegBlock.make_alert_regs()', 'none')
+
+        fields = []
+        for alert in alerts:
+            fields.append(
+                Field(
+                    alert.name,
+                    None,  # no alias target
+                    'Write 1 to trigger one alert event of this kind.',
+                    tags=[],
+                    swaccess=alert_sw,
+                    hwaccess=alert_hw,
+                    hwqe=True,
+                    bits=alert.bits,
+                    resval=0,
+                    enum=None,
+                    mubi=False,
+                    auto_split=False))
+
+        fields.append(
+            Field(
+                'regwen',
+                None,  # no alias target
+                'Write 0 to disable alert testing until the next reset.',
+                tags=[],
+                swaccess=lock_sw,
+                hwaccess=lock_hw,
+                hwqe=False,
+                bits=Bits(msb, msb),
+                resval=1,
+                enum=None,
+                mubi=False,
+                auto_split=False))
+
+        self.add_register(Register('ALERT_TEST',
+                                   self.offset,
+                                   async_clk=None,
+                                   sync_clk=None,
+                                   alias_target=None,
+                                   desc='Alert Test Register',
+                                   fields=fields,
+                                   hwext=True,
+                                   hwqe=True,
+                                   inregwen='regwen',
+                                   tags=[]))
 
     def get_addr_width(self) -> int:
         '''Calculate the number of bits to address every byte of the block'''

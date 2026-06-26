@@ -243,8 +243,17 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     `DV_CHECK_NE_FATAL(alert_test_csr, null,
                        $sformatf("cannot find alert_test csr in %0s", blk.get_name()))
 
-    `DV_CHECK_EQ(alert_test_csr.get_n_used_bits(), alert_names.size(),
-                 "alert_test field number and list_of_alerts size mismatch")
+    // Ignore the `regwen` field in the alert_test register
+    begin
+      uvm_reg_field alert_test_fields[$];
+      int num_alert_test_fields;
+      alert_test_csr.get_fields(alert_test_fields);
+      foreach (alert_test_fields[i]) begin
+        if (alert_test_fields[i].get_name() != "regwen") num_alert_test_fields++;
+      end
+      `DV_CHECK_EQ(num_alert_test_fields, alert_names.size(),
+                   "alert_test field number and list_of_alerts size mismatch")
+    end
 
     foreach(alert_names[i]) begin
       uvm_reg_field alert_test_field = blk.get_field_by_name(alert_names[i]);

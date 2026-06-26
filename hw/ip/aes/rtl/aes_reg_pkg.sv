@@ -310,9 +310,10 @@ package aes_reg_pkg;
   parameter logic [BlockAw-1:0] AES_CTRL_GCM_SHADOWED_OFFSET = 8'h 88;
 
   // Reset values for hwext registers and their fields
-  parameter logic [1:0] AES_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] AES_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] AES_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] AES_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] AES_KEY_SHARE0_0_RESVAL = 32'h 0;
   parameter logic [31:0] AES_KEY_SHARE0_0_KEY_SHARE0_0_RESVAL = 32'h 0;
   parameter logic [31:0] AES_KEY_SHARE0_1_RESVAL = 32'h 0;
@@ -413,7 +414,7 @@ package aes_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] AES_PERMIT [35] = '{
-    4'b 0001, // index[ 0] AES_ALERT_TEST
+    4'b 1111, // index[ 0] AES_ALERT_TEST
     4'b 1111, // index[ 1] AES_KEY_SHARE0_0
     4'b 1111, // index[ 2] AES_KEY_SHARE0_1
     4'b 1111, // index[ 3] AES_KEY_SHARE0_2

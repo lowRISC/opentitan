@@ -950,16 +950,55 @@ endtask
 task cip_base_vseq::run_alert_test_vseq(int num_times = 1);
   int num_alerts = cfg.list_of_alerts.size();
   dv_base_reg alert_test_csr = ral.get_dv_base_reg_by_name("alert_test");
+  // Ensure we write the regwen bit of the alert_test register to not disable write access
+  uvm_reg_field alert_test_regwen_fld = alert_test_csr.get_field_by_name("regwen");
+  bit [BUS_DW-1:0] regwen_mask =
+      (alert_test_regwen_fld != null) ? (BUS_DW'(1) << alert_test_regwen_fld.get_lsb_pos()) : '0;
   `DV_CHECK_FATAL(num_alerts > 0, "Please declare `list_of_alerts` under cfg!")
 
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running alert test iteration %0d/%0d", trans, num_times), UVM_LOW)
 
     repeat ($urandom_range(num_alerts, num_alerts * 10)) begin
-      bit [BUS_DW-1:0] alert_req = $urandom_range(0, (1'b1 << num_alerts) - 1);
-      // Write random value to alert_test register.
-      csr_wr(.ptr(alert_test_csr), .value(alert_req));
+      bit [BUS_DW-1:0] alert_req     = $urandom_range(0, (1'b1 << num_alerts) - 1);
+      bit regwen_val_before          = 1'b1;
+      bit regwen_wr_val              = 1'b1;
+      bit [BUS_DW-1:0] regwen_wr_bit = regwen_mask;
+
+      // Read the current regwen value as it might already be 0. While
+      // still 1, randomly, 10%, write 0 to it to exercise the in-register lock.
+      if (alert_test_regwen_fld != null) begin
+        bit [BUS_DW-1:0] regwen_rd_val;
+        csr_rd(.ptr(alert_test_csr), .value(regwen_rd_val));
+        regwen_val_before = regwen_rd_val[alert_test_regwen_fld.get_lsb_pos()];
+        regwen_wr_val = (regwen_val_before && $urandom_range(1, 10) == 1) ? 1'b0 : regwen_val_before;
+        regwen_wr_bit = BUS_DW'(regwen_wr_val) << alert_test_regwen_fld.get_lsb_pos();
+      end
+
+      // Write random value to alert_test register
+      csr_wr(.ptr(alert_test_csr), .value(alert_req | regwen_wr_bit));
       `uvm_info(`gfn, $sformatf("Write alert_test with val %0h", alert_req), UVM_HIGH)
+
+      // Check the value written to regwen by reading the CSR back.
+      if (alert_test_regwen_fld != null) begin
+        bit [BUS_DW-1:0] regwen_rd_val;
+        csr_rd(.ptr(alert_test_csr), .value(regwen_rd_val));
+        `DV_CHECK_EQ(regwen_rd_val[alert_test_regwen_fld.get_lsb_pos()], regwen_wr_val,
+                     "alert_test regwen readback does not match the value written")
+      end
+
+      if (!regwen_val_before) begin
+        // regwen was already locked entering this write: the write-enable gate used that
+        // already-registered value, so this write could not have set any alert field.
+        cfg.clk_rst_vif.wait_clks($urandom_range(0, 3));
+        foreach (cfg.list_of_alerts[i]) begin
+          `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].vif.get_alert(), 0,
+                       $sformatf("expect no alert_test alert:%0s while regwen is locked",
+                                 cfg.list_of_alerts[i]))
+        end
+        continue;
+      end
+
       for (int i = 0; i < num_alerts; i++) begin
         string alert_name = cfg.list_of_alerts[i];
 
@@ -973,7 +1012,7 @@ task cip_base_vseq::run_alert_test_vseq(int num_times = 1);
 
           // write alert_test during alert handshake will be ignored
           if ($urandom_range(1, 10) == 10) begin
-            csr_wr(.ptr(alert_test_csr), .value(1'b1 << i));
+            csr_wr(.ptr(alert_test_csr), .value((1'b1 << i) | regwen_mask));
             `uvm_info(`gfn, "Write alert_test again during alert handshake", UVM_HIGH)
           end
 
@@ -987,12 +1026,13 @@ task cip_base_vseq::run_alert_test_vseq(int num_times = 1);
          `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(), 0,
                       $sformatf("alert_test did not set alert:%0s", alert_name))
 
-          // write alert_test field when there is ongoing alert handshake
-          if ($urandom_range(1, 10) == 10) begin
+          // write alert_test field when there is ongoing alert handshake. Skip if the write
+          // above just locked regwen.
+          if (regwen_wr_val && $urandom_range(1, 10) == 10) begin
             `uvm_info(`gfn,
                       $sformatf("Write alert_test with val %0h during alert_handshake",
                       1'b1 << i), UVM_HIGH)
-            csr_wr(.ptr(alert_test_csr), .value(1'b1 << i));
+            csr_wr(.ptr(alert_test_csr), .value((1'b1 << i) | regwen_mask));
             `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.get_alert())
                               cfg.clk_rst_vif.wait_clks(1);,
                               cfg.clk_rst_vif.wait_clks(2);,

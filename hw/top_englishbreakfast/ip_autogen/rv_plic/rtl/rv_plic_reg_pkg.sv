@@ -181,7 +181,8 @@ package rv_plic_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [6:0] RV_PLIC_CC0_RESVAL = 7'h 0;
-  parameter logic [0:0] RV_PLIC_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] RV_PLIC_ALERT_TEST_RESVAL = 32'h 80000000;
+  parameter logic [0:0] RV_PLIC_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
 
   // Register index
   typedef enum int {
@@ -384,7 +385,7 @@ package rv_plic_reg_pkg;
     4'b 0001, // index[94] RV_PLIC_THRESHOLD0
     4'b 0001, // index[95] RV_PLIC_CC0
     4'b 0001, // index[96] RV_PLIC_MSIP0
-    4'b 0001  // index[97] RV_PLIC_ALERT_TEST
+    4'b 1111  // index[97] RV_PLIC_ALERT_TEST
   };
 
 endpackage
