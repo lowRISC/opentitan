@@ -162,6 +162,23 @@ cc_library(
 )
 
 cc_library(
+    name = "mldsa",
+    srcs = ["mldsa.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":config",
+        ":integrity",
+        ":keyblob",
+        ":sha2",
+        ":sha3",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/impl/mldsa",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "hkdf",
     srcs = ["hkdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
@@ -490,17 +507,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/include:datatypes",
-    ],
-)
-
-cc_library(
-    name = "mldsa",
-    srcs = ["mldsa.c"],
-    hdrs = ["//sw/device/lib/crypto/include:mldsa.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":status",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
