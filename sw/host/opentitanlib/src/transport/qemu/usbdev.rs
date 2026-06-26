@@ -381,6 +381,10 @@ impl UsbDevice for QemuUsbDevice {
         0
     }
 
+    fn address(&self) -> u8 {
+        self.dev_info.address
+    }
+
     /// Return the sequence of port numbers from the root down to the device.
     fn port_numbers(&self) -> anyhow::Result<Vec<u8>> {
         Ok(vec![0])
