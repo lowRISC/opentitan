@@ -54,6 +54,9 @@ pub trait UsbDevice {
     /// Attach the kernel driver to the device.
     fn attach_kernel_driver(&self, iface: u8) -> Result<()>;
 
+    /// Return the device's descriptor.
+    fn device_descriptor(&self) -> desc::Device<'_>;
+
     /// Return the currently active configuration's descriptor.
     fn active_configuration(&self) -> Result<desc::Configuration>;
 

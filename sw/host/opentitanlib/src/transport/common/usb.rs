@@ -6,7 +6,7 @@ use anyhow::{Context, Result, bail, ensure};
 use rusb::{self, UsbContext};
 use std::time::{Duration, Instant};
 
-use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc::Configuration};
+use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
 use crate::transport::TransportError;
 
 /// Represents a device provided by the `rusb` crate.
@@ -14,6 +14,7 @@ pub struct RusbDevice {
     handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: Option<String>,
     timeout: Duration,
+    device_desc: Vec<u8>,
     configurations: Vec<Vec<u8>>,
 }
 
@@ -221,6 +222,23 @@ impl RusbDevice {
         // Unfortunately, rusb simply wraps around libusb which does not
         // give access to the raw configuration descriptor so we must
         // get it directly from the device.
+        let dev_desc_size = handle.device().device_descriptor()?.length() as usize;
+        let mut device_desc = vec![0u8; dev_desc_size];
+        let size = handle
+            .read_control(
+                0x80,   // Standard, device, IN
+                6,      // GET_DESCRIPTOR
+                1 << 8, // DEVICE
+                0,
+                &mut device_desc,
+                timeout,
+            )
+            .context("could not retrieve device descriptor")?;
+        ensure!(
+            size == dev_desc_size,
+            "Device did not return the full device descriptor"
+        );
+
         let nr_config = handle
             .device()
             .device_descriptor()
@@ -254,6 +272,7 @@ impl RusbDevice {
             handle,
             serial_number,
             timeout,
+            device_desc,
             configurations,
         })
     }
@@ -317,14 +336,18 @@ impl UsbDevice for RusbDevice {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
-    fn active_configuration(&self) -> Result<Configuration> {
+    fn device_descriptor(&self) -> desc::Device<'_> {
+        desc::Device::new(&self.device_desc)
+    }
+
+    fn active_configuration(&self) -> Result<desc::Configuration> {
         let active_cfg_val = self
             .handle
             .active_configuration()
             .context("Cannot retrieve active configuration value")?;
         // Find the configuration matching the currently active one.
         for cfg in self.configurations.iter() {
-            let cfg = Configuration::new(cfg);
+            let cfg = desc::Configuration::new(cfg);
             if let Ok(desc) = cfg.descriptor() {
                 if desc.config_val == active_cfg_val {
                     return Ok(cfg);
