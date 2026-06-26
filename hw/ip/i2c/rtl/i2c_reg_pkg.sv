@@ -737,8 +737,9 @@ package i2c_reg_pkg;
   parameter logic [0:0] I2C_INTR_TEST_ACQ_STRETCH_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_UNEXP_STOP_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_HOST_TIMEOUT_RESVAL = 1'h 0;
-  parameter logic [0:0] I2C_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] I2C_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] I2C_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [10:0] I2C_STATUS_RESVAL = 11'h 33c;
   parameter logic [0:0] I2C_STATUS_FMTEMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] I2C_STATUS_HOSTIDLE_RESVAL = 1'h 1;
@@ -795,7 +796,7 @@ package i2c_reg_pkg;
     4'b 0011, // index[ 0] I2C_INTR_STATE
     4'b 0011, // index[ 1] I2C_INTR_ENABLE
     4'b 0011, // index[ 2] I2C_INTR_TEST
-    4'b 0001, // index[ 3] I2C_ALERT_TEST
+    4'b 1111, // index[ 3] I2C_ALERT_TEST
     4'b 0001, // index[ 4] I2C_CTRL
     4'b 0011, // index[ 5] I2C_STATUS
     4'b 0001, // index[ 6] I2C_RDATA

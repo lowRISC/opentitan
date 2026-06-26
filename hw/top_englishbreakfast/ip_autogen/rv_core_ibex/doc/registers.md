@@ -39,22 +39,23 @@ A number of memory-mapped registers are available to control Ibex-related functi
 ## ALERT_TEST
 Alert Test Register
 - Offset: `0x0`
-- Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset default: `0x80000000`
+- Reset mask: `0x8000000f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fatal_sw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_sw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_hw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_hw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "fatal_sw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_sw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_hw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_hw_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 27}, {"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                      |
-|:------:|:------:|:-------:|:-------------|:-------------------------------------------------|
-|  31:4  |        |         |              | Reserved                                         |
-|   3    |   wo   |   0x0   | recov_hw_err | Write 1 to trigger one alert event of this kind. |
-|   2    |   wo   |   0x0   | fatal_hw_err | Write 1 to trigger one alert event of this kind. |
-|   1    |   wo   |   0x0   | recov_sw_err | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | fatal_sw_err | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name         | Description                                            |
+|:------:|:------:|:-------:|:-------------|:-------------------------------------------------------|
+|   31   |  rw0c  |   0x1   | regwen       | Write 0 to disable alert testing until the next reset. |
+|  30:4  |        |         |              | Reserved                                               |
+|   3    |   wo   |   0x0   | recov_hw_err | Write 1 to trigger one alert event of this kind.       |
+|   2    |   wo   |   0x0   | fatal_hw_err | Write 1 to trigger one alert event of this kind.       |
+|   1    |   wo   |   0x0   | recov_sw_err | Write 1 to trigger one alert event of this kind.       |
+|   0    |   wo   |   0x0   | fatal_sw_err | Write 1 to trigger one alert event of this kind.       |
 
 ## SW_RECOV_ERR
 Software recoverable error

@@ -47,7 +47,8 @@ rom_error_t alert_no_escalate_test(void) {
   RETURN_IF_ERROR(alert_class_configure(kAlertClassB, &config));
 
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1);
+  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET,
+                   (1u << OTP_CTRL_ALERT_TEST_REGWEN_BIT) | 1u);
   uint32_t count =
       abs_mmio_read32(kAlertBase + ALERT_HANDLER_CLASSB_ACCUM_CNT_REG_OFFSET);
   return count == 1 ? kErrorOk : kErrorUnknown;
@@ -70,7 +71,8 @@ rom_error_t alert_escalate_test(void) {
   RETURN_IF_ERROR(alert_class_configure(kAlertClassA, &config));
 
   LOG_INFO("Generate alert via test regs");
-  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET, 1u << 1);
+  abs_mmio_write32(kOtpCoreBase + OTP_CTRL_ALERT_TEST_REG_OFFSET,
+                   (1u << OTP_CTRL_ALERT_TEST_REGWEN_BIT) | (1u << 1));
   return kErrorUnknown;
 }
 

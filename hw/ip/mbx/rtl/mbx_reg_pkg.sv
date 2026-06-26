@@ -229,9 +229,10 @@ package mbx_reg_pkg;
   parameter logic [0:0] MBX_INTR_TEST_MBX_READY_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_INTR_TEST_MBX_ERROR_RESVAL = 1'h 0;
-  parameter logic [1:0] MBX_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] MBX_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] MBX_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_ALERT_TEST_RECOV_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] MBX_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [3:0] MBX_CONTROL_RESVAL = 4'h 0;
   parameter logic [0:0] MBX_CONTROL_ABORT_RESVAL = 1'h 0;
   parameter logic [0:0] MBX_CONTROL_ERROR_RESVAL = 1'h 0;
@@ -276,7 +277,7 @@ package mbx_reg_pkg;
     4'b 0001, // index[ 0] MBX_INTR_STATE
     4'b 0001, // index[ 1] MBX_INTR_ENABLE
     4'b 0001, // index[ 2] MBX_INTR_TEST
-    4'b 0001, // index[ 3] MBX_ALERT_TEST
+    4'b 1111, // index[ 3] MBX_ALERT_TEST
     4'b 0001, // index[ 4] MBX_CONTROL
     4'b 0001, // index[ 5] MBX_STATUS
     4'b 0001, // index[ 6] MBX_ADDRESS_RANGE_REGWEN

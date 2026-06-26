@@ -96,6 +96,8 @@ static status_t test_alert_caught_by_eval_exit(void) {
   // Force a recoverable alert of the AES
   uint32_t alert_test_reg =
       bitfield_bit32_write(0, AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true);
+  alert_test_reg =
+      bitfield_bit32_write(alert_test_reg, AES_ALERT_TEST_REGWEN_BIT, true);
   mmio_region_write32(mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)),
                       (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET, alert_test_reg);
 
@@ -159,6 +161,8 @@ static status_t test_lock(void) {
   // Recoverable alert
   uint32_t alert_test_reg =
       bitfield_bit32_write(0, AES_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_BIT, true);
+  alert_test_reg =
+      bitfield_bit32_write(alert_test_reg, AES_ALERT_TEST_REGWEN_BIT, true);
   mmio_region_write32(mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)),
                       (ptrdiff_t)AES_ALERT_TEST_REG_OFFSET, alert_test_reg);
 

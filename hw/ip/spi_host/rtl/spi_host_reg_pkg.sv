@@ -324,8 +324,9 @@ package spi_host_reg_pkg;
   parameter logic [1:0] SPI_HOST_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SPI_HOST_INTR_TEST_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_HOST_INTR_TEST_SPI_EVENT_RESVAL = 1'h 0;
-  parameter logic [0:0] SPI_HOST_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] SPI_HOST_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] SPI_HOST_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_HOST_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [24:0] SPI_HOST_COMMAND_RESVAL = 25'h 0;
   parameter logic [0:0] SPI_HOST_COMMAND_CSAAT_RESVAL = 1'h 0;
   parameter logic [1:0] SPI_HOST_COMMAND_SPEED_RESVAL = 2'h 0;
@@ -361,7 +362,7 @@ package spi_host_reg_pkg;
     4'b 0001, // index[ 0] SPI_HOST_INTR_STATE
     4'b 0001, // index[ 1] SPI_HOST_INTR_ENABLE
     4'b 0001, // index[ 2] SPI_HOST_INTR_TEST
-    4'b 0001, // index[ 3] SPI_HOST_ALERT_TEST
+    4'b 1111, // index[ 3] SPI_HOST_ALERT_TEST
     4'b 1111, // index[ 4] SPI_HOST_CONTROL
     4'b 1111, // index[ 5] SPI_HOST_STATUS
     4'b 1111, // index[ 6] SPI_HOST_CONFIGOPTS

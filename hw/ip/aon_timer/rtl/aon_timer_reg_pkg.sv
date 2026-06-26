@@ -174,8 +174,9 @@ package aon_timer_reg_pkg;
   parameter logic [BlockAw-1:0] AON_TIMER_WKUP_CAUSE_OFFSET = 6'h 34;
 
   // Reset values for hwext registers and their fields
-  parameter logic [0:0] AON_TIMER_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] AON_TIMER_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] AON_TIMER_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] AON_TIMER_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [1:0] AON_TIMER_INTR_TEST_RESVAL = 2'h 0;
 
   // Register index
@@ -198,7 +199,7 @@ package aon_timer_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] AON_TIMER_PERMIT [14] = '{
-    4'b 0001, // index[ 0] AON_TIMER_ALERT_TEST
+    4'b 1111, // index[ 0] AON_TIMER_ALERT_TEST
     4'b 0011, // index[ 1] AON_TIMER_WKUP_CTRL
     4'b 1111, // index[ 2] AON_TIMER_WKUP_THOLD_HI
     4'b 1111, // index[ 3] AON_TIMER_WKUP_THOLD_LO

@@ -38,8 +38,9 @@ package cheriot_reg_pkg;
   parameter logic [RegsAw-1:0] CHERIOT_ALERT_TEST_OFFSET = 2'h 0;
 
   // Reset values for hwext registers and their fields for regs interface
-  parameter logic [0:0] CHERIOT_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] CHERIOT_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] CHERIOT_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] CHERIOT_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
 
   // Register index for regs interface
   typedef enum int {
@@ -48,7 +49,7 @@ package cheriot_reg_pkg;
 
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] CHERIOT_REGS_PERMIT [1] = '{
-    4'b 0001  // index[0] CHERIOT_ALERT_TEST
+    4'b 1111  // index[0] CHERIOT_ALERT_TEST
   };
 
 endpackage

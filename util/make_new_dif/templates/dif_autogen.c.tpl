@@ -115,6 +115,9 @@ dif_result_t dif_${ip.name_snake}_get_dt(
   }
 
   uint32_t alert_test_reg = bitfield_bit32_write(0, alert_idx, true);
+  // Keep the alert test enabled: writing 0 to the regwen bit locks the register.
+  alert_test_reg = bitfield_bit32_write(
+      alert_test_reg, ${ip.name_upper}_ALERT_TEST_REGWEN_BIT, true);
   ${mmio_region_write32(ip.name_upper + "_ALERT_TEST_REG_OFFSET", "alert_test_reg")}
 
   return kDifOk;
