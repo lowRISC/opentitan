@@ -174,7 +174,7 @@ status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
 
   if (*keymgr_state == kDifKeymgrStateInvalid ||
       *keymgr_state == kDifKeymgrStateDisabled) {
-    LOG_INFO("Unexpected keymgr state: 0x%x", keymgr_state);
+    LOG_INFO("Unexpected keymgr state: 0x%x", *keymgr_state);
     return INTERNAL();
   }
 
