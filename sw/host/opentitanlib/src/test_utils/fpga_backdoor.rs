@@ -10,7 +10,9 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use crate::app::TransportWrapper;
-use crate::io::fpga_backdoor::{Backdoor, BackdoorParams, BackdoorTarget, enter_backdoor_loader};
+use crate::io::fpga_backdoor::{
+    Backdoor, BackdoorParams, BackdoorTarget, BackdoorTargetInfo, enter_backdoor_loader,
+};
 use crate::io::jtag::JtagParams;
 use crate::util::vmem::{Section, Vmem, Word};
 
@@ -82,7 +84,22 @@ pub fn write_to_target(
             target_id
         );
 
-        target.write(section.addr, &section.data, false, verify)?;
+        // Special case - if we're just trying to clear the entire target memory,
+        // instead use the fast clearing operation.
+        let first_word = &section.data.first().clone();
+        if section.addr == 0
+            && section.data.len() == target.info.depth as usize
+            && section.data.iter().all(|w| w == first_word.unwrap())
+        {
+            log::debug!(
+                "Clearing target {} with word {}",
+                target_id,
+                hex::encode(first_word.unwrap().bytes.clone())
+            );
+            target.clear(first_word.unwrap(), verify)?;
+        } else {
+            target.write(section.addr, &section.data, false, verify)?;
+        }
 
         // If requested, read back the data and verify against written contents
         if verify {
@@ -161,9 +178,74 @@ impl TargetWrite {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct TargetClear {
+    pub target: String,
+    pub num_words: Option<u32>,
+    pub offset: Option<u32>,
+}
+
+impl FromStr for TargetClear {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (target_words, offset) = s
+            .split_once('@')
+            .map(|(x, y)| (x, y.parse::<u32>().ok()))
+            .unwrap_or((s, None));
+
+        let (target, num_words) = target_words
+            .split_once('=')
+            .context("expected input like TARGET=NUM_WORDS[@OFFSET], but no '=' was seen")?;
+        if target.is_empty() {
+            bail!("target name cannot be empty");
+        }
+        if num_words.is_empty() {
+            bail!("num_words cannot be empty");
+        }
+        let num_words = if num_words.to_lowercase() == "all" {
+            None
+        } else {
+            Some(num_words.parse::<u32>()?)
+        };
+
+        Ok(TargetClear {
+            target: target.to_string(),
+            num_words,
+            offset,
+        })
+    }
+}
+
+impl TargetClear {
+    pub fn as_sections(&self, target_info: &BackdoorTargetInfo) -> Vec<Section> {
+        let num_bytes = target_info.width.div_ceil(8) as usize;
+        let remaining_words = target_info.depth - self.offset.unwrap_or(0);
+        let num_words = self.num_words.unwrap_or(remaining_words);
+        let data = vec![Word::new(vec![0x00; num_bytes]); num_words as usize];
+        vec![Section {
+            addr: self.offset.unwrap_or(0),
+            data,
+        }]
+    }
+
+    pub fn backdoor_write(&self, backdoor: &mut Backdoor, verify: bool) -> Result<()> {
+        let mut target = backdoor
+            .target_by_id_str(&self.target)?
+            .context(format!("FPGA target '{}' not found", &self.target))?;
+
+        let data = self.as_sections(&target.info);
+        write_to_target(&mut target, &self.target, data, verify)
+    }
+}
+
 // Write FPGA memories after loading the bitstream
 #[derive(Debug, Args)]
 pub struct LoadMemories {
+    /// Memories to be cleared / zeroed. All clears apply before writes.
+    #[arg(long = "clear-memory", value_name = "TARGET=NUM_WORDS[@OFFSET]")]
+    pub target_clears: Vec<TargetClear>,
+
     /// Memories to be written, mapping VMEM files to FPGA target memories.
     #[arg(long = "load-memory", value_name = "TARGET=FILE[@OFFSET]")]
     pub target_writes: Vec<TargetWrite>,
@@ -171,11 +253,14 @@ pub struct LoadMemories {
 
 impl LoadMemories {
     pub fn init(&self, transport: &TransportWrapper, jtag_params: &JtagParams) -> Result<()> {
-        if self.target_writes.is_empty() {
+        if self.target_clears.is_empty() && self.target_writes.is_empty() {
             return Ok(());
         }
 
         let mut backdoor = enter_backdoor(transport, jtag_params)?;
+        self.target_clears
+            .iter()
+            .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
         self.target_writes
             .iter()
             .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
