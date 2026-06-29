@@ -168,7 +168,7 @@ bazel test   --define DISABLE_VERILATOR_BUILD=true      \
     --build_tag_filters=cw340_sival,cw340_sival_rom_ext \
     --test_tag_filters=cw340_sival,cw340_sival_rom_ext  \
     --test_output=streamed          \
-    --define bitstream=gcp_splice   \
+    --define bitstream=gcp          \
     --cache_test_results=no         \
     //sw/device/tests/sival:sv1_tests
 ```
@@ -188,7 +188,7 @@ bazel test \
     --build_tag_filters=silicon_creator,-broken \
     --test_tag_filters=silicon_creator,-broken  \
     --test_output=streamed              \
-    --define bitstream=gcp_splice       \
+    --define bitstream=gcp              \
     --cache_test_results=no             \
     --local_test_jobs 1                 \
     //sw/device/tests/sival:sv2_tests
@@ -206,7 +206,7 @@ bazel test --define DISABLE_VERILATOR_BUILD=true       \
     --build_tag_filters=silicon_owner_sival_rom_ext,-broken \
     --test_tag_filters=silicon_owner_sival_rom_ext,-broken  \
     --test_output=streamed          \
-    --define bitstream=gcp_splice   \
+    --define bitstream=gcp          \
     --cache_test_results=no         \
     --local_test_jobs 1             \
     //sw/device/tests/sival:sv2_tests

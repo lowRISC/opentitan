@@ -32,8 +32,7 @@ filegroup(
 #   Vivado. You'll need to have Xilinx Vivado installed and have properly
 #   configured access to a license or license server.
 #
-# * `--define bitstream=gcp_splice` causes these targets to use a cached
-#   bitstream, but splice in a locally-built ROM image or OTP.
+# * `--define bitstream=gcp` causes these targets to use a cached bitstream.
 #
 # Downstream targets will see the effects of this caching logic. For example,
 # specifying `--define bitstream=vivado` when testing
@@ -55,9 +54,9 @@ config_setting(
 )
 
 config_setting(
-    name = "bitstream_gcp_splice",
+    name = "bitstream_gcp",
     define_values = {
-        "bitstream": "gcp_splice",
+        "bitstream": "gcp",
     },
 )
 
