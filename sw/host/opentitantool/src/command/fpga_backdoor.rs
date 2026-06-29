@@ -2,20 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result};
 use clap::{Args, Subcommand};
 use std::any::Any;
 use std::convert::From;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use opentitanlib::io::fpga_backdoor::{
-    Backdoor, BackdoorParams, BackdoorTargetInfo, enter_backdoor_loader,
-};
+use opentitanlib::io::fpga_backdoor::{BackdoorParams, BackdoorTargetInfo, enter_backdoor_loader};
+use opentitanlib::test_utils::fpga_backdoor::{TargetWrite, verify_readback, write_to_target};
 use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::vmem::{Section, Vmem, Word};
 
@@ -302,11 +300,11 @@ impl WriteInput {
     }
 
     fn load_input(
-        input: &WriteInput,
+        &self,
         target_info: &BackdoorTargetInfo,
         offset: Option<u32>,
     ) -> Result<Vec<Section>> {
-        let mut sections: Vec<Section> = match input {
+        let mut sections: Vec<Section> = match self {
             WriteInput::Hex(hex) => WriteInput::load_hex_words(hex)?,
             WriteInput::Clear(clear) => {
                 let num_bytes = target_info.width.div_ceil(8) as usize;
@@ -335,90 +333,6 @@ impl WriteInput {
     }
 }
 
-// Normalize a word to a given number of bits.
-fn normalize_word(word: &mut Word, bits_per_word: usize) {
-    let bytes_per_word = bits_per_word.div_ceil(8);
-    if word.bytes.len() > bytes_per_word {
-        let start = word.bytes.len() - bytes_per_word;
-        word.bytes.drain(..start);
-    } else if word.bytes.len() < bytes_per_word {
-        let mut padded = vec![0u8; bytes_per_word - word.bytes.len()];
-        padded.append(&mut word.bytes);
-        word.bytes = padded;
-    }
-
-    let extra_bits = bits_per_word % 8;
-    if extra_bits > 0 {
-        word.bytes[0] &= 0xFF >> (8 - extra_bits);
-    }
-}
-
-// Check that words read from target memory match input words.
-fn verify_readback(
-    input: &mut [Word],
-    readback: &mut [Word],
-    bits_per_word: usize,
-    mut offset: u32,
-) -> Result<()> {
-    for (write_word, read_word) in readback.iter_mut().zip(input) {
-        normalize_word(write_word, bits_per_word);
-        normalize_word(read_word, bits_per_word);
-        if write_word != read_word {
-            bail!(
-                "Read verification at word {} failed. Expected: {}, Got: {}",
-                offset,
-                hex::encode(write_word.bytes.clone()),
-                hex::encode(read_word.bytes.clone()),
-            );
-        }
-
-        offset += 1;
-    }
-
-    Ok(())
-}
-
-fn write_to_target(
-    backdoor: &mut Backdoor,
-    target_id: &str,
-    input: &WriteInput,
-    offset: Option<u32>,
-    verify: bool,
-) -> Result<()> {
-    // Try and find the requested target.
-    let mut target = backdoor
-        .target_by_id_str(target_id)?
-        .context(format!("FPGA target '{}' not found", target_id))?;
-
-    // Parse the input, which will depend on the given input type.
-    let sections: Vec<Section> = WriteInput::load_input(input, &target.info, offset)?;
-
-    // Perform the write(s)
-    log::info!("Writing to the {}...", target_id);
-    for mut section in sections {
-        log::debug!(
-            "Writing section of size {} to word {} of target {}",
-            section.data.len(),
-            section.addr,
-            target_id
-        );
-        target.write(section.addr, &section.data, false, verify)?;
-
-        // If requested, read back the data and verify against written contents
-        if verify {
-            let mut readback = target.read(section.addr, section.data.len() as u32, false)?;
-            verify_readback(
-                &mut section.data,
-                &mut readback,
-                target.info.width as usize,
-                section.addr,
-            )?;
-        }
-    }
-
-    Ok(())
-}
-
 impl CommandDispatch for BackdoorWrite {
     fn run(
         &self,
@@ -428,13 +342,15 @@ impl CommandDispatch for BackdoorWrite {
         let context = context.downcast_ref::<BackdoorCommand>().unwrap();
         let backdoor = context.params.create(transport)?;
         let mut backdoor = backdoor.connect(true)?;
-        write_to_target(
-            &mut backdoor,
-            &self.target,
-            &self.input,
-            self.offset,
-            self.verify,
-        )?;
+
+        // Try and find the requested target.
+        let mut target = backdoor
+            .target_by_id_str(&self.target)?
+            .context(format!("FPGA target '{}' not found", &self.target))?;
+
+        // Parse the input & write it to the target memory.
+        let sections: Vec<Section> = self.input.load_input(&target.info, self.offset)?;
+        write_to_target(&mut target, &self.target, sections, self.verify)?;
 
         Ok(None)
     }
@@ -495,45 +411,11 @@ impl CommandDispatch for BackdoorVerify {
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct TargetWrite {
-    pub target: String,
-    pub path: PathBuf,
-    pub offset: Option<u32>,
-}
-
-impl FromStr for TargetWrite {
-    type Err = anyhow::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let (target_path, offset) = s
-            .split_once('@')
-            .map(|(x, y)| (x, y.parse::<u32>().ok()))
-            .unwrap_or((s, None));
-
-        let (target, path) = target_path
-            .split_once('=')
-            .context("expected input like TARGET=FILE[@OFFSET], but no '=' was seen")?;
-        if target.is_empty() {
-            bail!("target name cannot be empty");
-        }
-        if path.is_empty() {
-            bail!("file path cannot be empty");
-        }
-
-        Ok(TargetWrite {
-            target: target.to_string(),
-            path: PathBuf::from(path),
-            offset,
-        })
-    }
-}
-
 #[derive(Debug, Args)]
 pub struct BackdoorBatch {
     /// Write operations to be batched, mapping VMEM files to FPGA targets.
-    #[arg(long = "write", required = true, value_name = "TARGET=FILE[@OFFSET]")]
-    pub targets: Vec<TargetWrite>,
+    #[arg(long = "write", value_name = "TARGET=FILE[@OFFSET]")]
+    pub target_writes: Vec<TargetWrite>,
 
     /// After completing all writes, enter "mission mode" & start the chip.
     #[arg(long)]
@@ -554,18 +436,9 @@ impl CommandDispatch for BackdoorBatch {
         let backdoor = context.params.create(transport)?;
         let mut backdoor = backdoor.connect(true)?;
 
-        for write_op in &self.targets {
-            let input = WriteInput::Vmem(VmemInput {
-                path: write_op.path.clone(),
-            });
-            write_to_target(
-                &mut backdoor,
-                &write_op.target,
-                &input,
-                write_op.offset,
-                self.verify,
-            )?;
-        }
+        self.target_writes
+            .iter()
+            .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
 
         if self.start {
             backdoor.set_done()?;
