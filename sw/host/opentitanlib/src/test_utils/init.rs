@@ -14,6 +14,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 use super::bootstrap::Bootstrap;
+use super::fpga_backdoor::LoadMemories;
 use super::load_bitstream::LoadBitstream;
 use crate::app::TransportWrapper;
 use crate::backend;
@@ -42,6 +43,9 @@ pub struct InitializeTest {
     //pub uart_params: UartParams,
     #[command(flatten)]
     pub load_bitstream: LoadBitstream,
+
+    #[command(flatten)]
+    pub load_memories: LoadMemories,
 
     #[command(flatten)]
     pub bootstrap: Bootstrap,
@@ -155,6 +159,14 @@ impl InitializeTest {
         Self::print_result(
             "load_bitstream",
             self.load_bitstream.init(&transport).map(|_| None),
+        )?;
+
+        // Program any memories (e.g. ROM, OTP).
+        Self::print_result(
+            "load_memories",
+            self.load_memories
+                .init(&transport, &self.jtag_params)
+                .map(|_| None),
         )?;
 
         // Bootstrap an rv32 test program.

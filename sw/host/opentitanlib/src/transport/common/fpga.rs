@@ -11,6 +11,11 @@ use crate::io::uart::Uart;
 use crate::transport::ProgressIndicator;
 use crate::util::rom_detect::RomDetect;
 
+// TODO: Consider deprecating use of `RomDetect` and instead use the FPGA `bkdr_loader`'s
+// `USR_ACCESS_TIMESTAMP` register, which should be exposing the exact same info. This
+// allows us to query this info even for tests that cannot boot into ROM. However, this
+// will require a JTAG connection to go via the bkdr_loader TAP.
+
 /// Command for Transport::dispatch().
 pub struct FpgaProgram {
     /// The bitstream content to load into the FPGA.
