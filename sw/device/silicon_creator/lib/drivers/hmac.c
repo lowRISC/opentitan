@@ -115,7 +115,7 @@ void hmac_sha256_final_truncated(uint32_t *digest, size_t len) {
     // Note: we rely on 32-bit integer wraparound to cause the result register
     // index to count down from 7 to 0.
     result = HMAC_DIGEST_7_REG_OFFSET;
-    incr = (uint32_t) - sizeof(uint32_t);
+    incr = (uint32_t)-sizeof(uint32_t);
   }
 
   // Ensure len is at most the digest length; this function should never be

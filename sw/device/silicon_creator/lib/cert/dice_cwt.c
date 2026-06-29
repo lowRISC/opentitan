@@ -105,6 +105,8 @@ enum cwt_cert_expectations {
                                   kDiceCwtCoseSign1IdSizeBytes,
 };
 
+/* clang-format off */
+
 // Reusable buffer for checking cose key identity.
 static char expected_cose_key_id[kDiceCwtCoseKeyIdSizeBytes] = {
     0x22,                                 // mapKey -3 (y-coord)
@@ -118,6 +120,8 @@ static char expected_cose_sign1_id[kDiceCwtCoseSign1IdSizeBytes] = {
     0x78, kIssuerSubjectNameLength,  // 64-byte text header
     // Remaining bytes will be filled during check.
 };
+
+/* clang-format on */
 
 // Reusable buffer for generating Configuration Descriptor
 static uint8_t config_desc_buf[kConfigDescBuffSize] = {0};
