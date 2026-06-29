@@ -21,7 +21,7 @@ _FIELDS = {
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
     "mmi": ("file.mmi", False),
-    "base_bitstream": ("file.base_bitstream", False),
+    "bitstream": ("file.base_bitstream", False),
     "args": ("attr.args", False),
     "test_cmd": ("attr.test_cmd", False),
     "param": ("attr.param", False),
@@ -391,7 +391,8 @@ def common_test_setup(ctx, exec_env, firmware):
     action_param = dict(param)
 
     # Collect all file resource specified in the exec_env or as overrides.
-    update_file_attr(ctx, "bitstream", ctx.attr.bitstream, None, data_files, param, action_param)
+    bitstream = get_fallback(ctx, "attr.bitstream", exec_env)
+    update_file_attr(ctx, "bitstream", bitstream, None, data_files, param, action_param)
 
     otp = get_fallback(ctx, "attr.otp", exec_env)
     update_file_attr(ctx, "otp", otp, None, data_files, param, action_param)
@@ -415,16 +416,12 @@ def common_test_setup(ctx, exec_env, firmware):
     if ctx.attr.needs_jtag:
         openocd = exec_env.openocd
         jtag_data = [openocd]
-        jtag_test_cmd = '''
-            --openocd="$(rootpath {})"
-        '''.format(openocd.label)
+        jtag_test_cmd = '''--openocd="$(rootpath {})"'''.format(openocd.label)
 
         openocd_adapter_config = get_fallback(ctx, "attr.openocd_adapter_config", exec_env)
         if openocd_adapter_config != None:
             jtag_data.append(openocd_adapter_config)
-            jtag_test_cmd += '''
-                --openocd-adapter-config="$(rootpath {})"
-            '''.format(openocd_adapter_config.label)
+            jtag_test_cmd += '''--openocd-adapter-config="$(rootpath {})"'''.format(openocd_adapter_config.label)
 
         data_labels += jtag_data
         data_files += get_files(jtag_data)
