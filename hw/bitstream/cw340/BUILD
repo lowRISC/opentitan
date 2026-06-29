@@ -17,7 +17,7 @@ filegroup(
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_test_rom"],
-        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
+        "//hw/bitstream:bitstream_gcp": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_bitstream"],
     }),
     tags = ["manual"],
@@ -29,7 +29,7 @@ filegroup(
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
         "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:cw340_mmi"],
-        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
+        "//hw/bitstream:bitstream_gcp": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
     }),
     tags = ["manual"],
