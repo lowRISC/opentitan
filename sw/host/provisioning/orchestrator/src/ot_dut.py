@@ -17,8 +17,10 @@ from device_id import DeviceId, DeviceIdentificationNumber
 from sku_config import SkuConfig
 from util import confirm, format_hex, resolve_runfile, run
 
-# FPGA bitstream.
-_FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
+# FPGA bitstream and memories
+_FPGA_BITSTREAM = "sw/host/provisioning/orchestrator/src/orchestrator_bitstream.bit"
+_FPGA_ROM = "sw/host/provisioning/orchestrator/src/orchestrator_rom.vmem"
+_FPGA_OTP = "sw/host/provisioning/orchestrator/src/orchestrator_otp.vmem"
 
 # Opentitantool interface
 _OTT_FPGA_INTERFACE = {
@@ -118,9 +120,13 @@ class OtDut():
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             if not self.fpga_dont_clear_bitstream:
+                bitstream = resolve_runfile(_FPGA_BITSTREAM)
+                rom = resolve_runfile(_FPGA_ROM)
+                otp = resolve_runfile(_FPGA_OTP)
                 host_flags += " --clear-bitstream"
-                bitstream = resolve_runfile(_FPGA_UNIVERSAL_SPLICE_BITSTREAM)
                 host_flags += f" --bitstream={bitstream}"
+                host_flags += f" --load-memory ROM={rom}"
+                host_flags += f" --load-memory OTP={otp}"
             device_elf = device_elf.format(
                 base_dir=self._base_dev_dir(),
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")

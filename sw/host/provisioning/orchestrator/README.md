@@ -12,8 +12,8 @@ To run on an FPGA for testing, run:
 
 ```
 bazel run \
-  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
-  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
+  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
+  --//sw/host/provisioning/orchestrator/src:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token="0x11111111_11111111_11111111_11111111" \
@@ -42,8 +42,8 @@ dependencies.
 
 ```
 bazel build \
-  --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
-  --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
+  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
+  --//sw/host/provisioning/orchestrator/src:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator.zip
 ```
 
