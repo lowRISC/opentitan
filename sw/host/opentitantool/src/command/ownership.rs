@@ -19,6 +19,7 @@ use opentitanlib::ownership::{
     DetachedSignature, DetachedSignatureCommand, GlobalFlags, KeyMaterial, OwnerBlock,
     OwnershipKeyAlg, TlvHeader,
 };
+use sphincsplus::{DecodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxRawSignature};
 
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq)]
 enum Format {
@@ -227,9 +228,17 @@ pub struct OwnershipVerifyCommand {
     #[arg(
         short,
         long,
-        help = "File containing the public key to verfify against"
+        help = "File containing the ECDSA public key to verify against"
     )]
-    signer_pub_key: Option<PathBuf>,
+    ecdsa_pub_key: Option<PathBuf>,
+    #[arg(long, help = "File containing the SPX public key to verify against")]
+    spx_pub_key: Option<PathBuf>,
+    #[arg(long, help = "File containing the detached ECDSA signature")]
+    ecdsa_sig: Option<PathBuf>,
+    #[arg(long, help = "File containing the detached SPX signature")]
+    spx_sig: Option<PathBuf>,
+    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple, help = "SPX algorithm")]
+    spx_algorithm: SphincsPlus,
 }
 
 impl CommandDispatch for OwnershipVerifyCommand {
@@ -243,29 +252,71 @@ impl CommandDispatch for OwnershipVerifyCommand {
         let header = TlvHeader::read(&mut cursor)?;
         let parsed_config = OwnerBlock::read(&mut cursor, header)?;
 
-        match parsed_config.ownership_key_alg {
-            OwnershipKeyAlg::EcdsaP256 => (),
-            _ => {
-                return Err(anyhow!(
-                    "The only supported verification algorithm is ECDSA"
-                ));
-            }
-        };
+        if !parsed_config.ownership_key_alg.is_ecdsa() && !parsed_config.ownership_key_alg.is_spx()
+        {
+            return Err(anyhow!(
+                "Unsupported verification algorithm: {}",
+                parsed_config.ownership_key_alg
+            ));
+        }
 
-        let ecdsa_key: EcdsaPublicKey = if let Some(key_file) = &self.signer_pub_key {
-            EcdsaPublicKey::load(key_file)?
-        } else {
-            // Retrieve the ECDSA key.
-            let pubk = match parsed_config.owner_key {
-                KeyMaterial::Ecdsa(ref raw_key) => raw_key,
-                _ => return Err(anyhow!("Owner key material does not match key algorithm!")),
-            };
-            pubk.try_into()?
-        };
         // Digest over the TBS section of the config.
         let digest = Sha256Digest::hash(&input[..OwnerBlock::SIGNATURE_OFFSET]);
 
-        ecdsa_key.verify(&digest, &parsed_config.signature)?;
+        if parsed_config.ownership_key_alg.is_ecdsa() {
+            let ecdsa_key: EcdsaPublicKey = if let Some(key_file) = &self.ecdsa_pub_key {
+                EcdsaPublicKey::load(key_file)?
+            } else {
+                let pubk = match parsed_config.owner_key {
+                    KeyMaterial::Ecdsa(ref raw_key) => raw_key,
+                    KeyMaterial::Hybrid(ref hybrid) => &hybrid.ecdsa,
+                    _ => return Err(anyhow!("Owner key material does not contain an ECDSA key!")),
+                };
+                pubk.try_into()?
+            };
+
+            let ecdsa_sig = if parsed_config.ownership_key_alg == OwnershipKeyAlg::EcdsaP256 {
+                parsed_config.signature.clone()
+            } else {
+                let sig_file = self.ecdsa_sig.as_ref().ok_or_else(|| {
+                    anyhow!("Algorithm {} requires a detached ECDSA signature, please provide --ecdsa-sig", parsed_config.ownership_key_alg)
+                })?;
+                EcdsaRawSignature::read_from_file(sig_file)?
+            };
+            ecdsa_key.verify(&digest, &ecdsa_sig)?;
+        }
+
+        if parsed_config.ownership_key_alg.is_spx() {
+            let spx_key = if let Some(key_file) = &self.spx_pub_key {
+                SpxPublicKey::read_pem_file(key_file)?
+            } else {
+                let pubk = match parsed_config.owner_key {
+                    KeyMaterial::Spx(ref raw_key) => raw_key,
+                    KeyMaterial::Hybrid(ref hybrid) => &hybrid.spx,
+                    _ => return Err(anyhow!("Owner key material does not contain an SPX key!")),
+                };
+                let mut key_bytes = Vec::new();
+                pubk.write(&mut key_bytes)?;
+                SpxPublicKey::from_bytes(self.spx_algorithm, &key_bytes)?
+            };
+
+            let sig_file = self.spx_sig.as_ref().ok_or_else(|| {
+                anyhow!(
+                    "Algorithm {} requires a detached SPX signature, please provide --spx-sig",
+                    parsed_config.ownership_key_alg
+                )
+            })?;
+            let spx_sig_bytes = SpxRawSignature::read_from_file(sig_file, self.spx_algorithm)?;
+
+            let (domain, msg) = if parsed_config.ownership_key_alg.is_prehashed() {
+                (SpxDomain::PreHashedSha256, digest.as_ref())
+            } else {
+                (SpxDomain::Pure, &input[..OwnerBlock::SIGNATURE_OFFSET])
+            };
+
+            spx_key.verify(domain, spx_sig_bytes.as_bytes(), msg)?;
+        }
+
         Ok(None)
     }
 }
