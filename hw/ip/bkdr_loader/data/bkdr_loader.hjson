@@ -58,46 +58,67 @@
       ////////////////////////
       { name: "STATUS",
         desc: "Status register",
-        swaccess: "rc",
+        swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
         hwqe:     "true",
         fields: [
           { bits: "0"
-            name: "ERROR"
+            name: "TARGET_ERROR"
             swaccess: "ro",
             hwaccess: "hwo",
             desc: '''
-                  Whether an error happened on the last access. Clear on read.
+                  Target index is currently misconfigured.
                   ''',
-          }
+          },
+          { bits: "1"
+            name: "CLEAR_IDLE"
+            swaccess: "ro",
+            hwaccess: "hwo",
+            desc: '''
+                  Read 1 if no clear operation is ongoing.
+                  ''',
+          },
         ]
       }
       { name: "CONTROL",
         desc: "Control register",
-        swaccess: "wo",
+        swaccess: "rw",
         hwaccess: "hro",
         hwqe:     "true",
         fields: [
           { bits: "0"
             name: "DONE"
-            swaccess: "wo",
+            swaccess: "rw",
             hwaccess: "hro",
             desc: '''
-                  Write 1'b1 switches bkdr loader to mission mode.
+                  Write 1 to trigger the bkdr_loader to switch to mission mode.
+                  After this, the bkdr_loader cannot be used until the next reset.
                   ''',
           },
           { bits: "1"
             name: "WRITE_ENA"
-            swaccess: "wo",
+            swaccess: "rw",
             hwaccess: "hro",
             desc: '''
                   If set, a bkdr write is launched when writing to the index register.
                   ''',
           },
+          { bits: "2"
+            name: "CLEAR_START"
+            swaccess: "rw",
+            hwaccess: "hrw"
+            desc: '''
+                  Write 1 to trigger the bkdr_loader to clear the entire target memory
+                  that is currently selected by `TARGET_IDX`.
+                  The word that is cleared with is selected by `WRITE_DATA`.
+                  Clear operation is completed if `CLEAR_IDLE` becomes 1.
+                  bkdr writes will not have any effects during an active clear operation.
+                  ''',
+          },
           { bits: "15:8"
             name: "TARGET_IDX"
-            swaccess: "wo",
+            swaccess: "rw",
             hwaccess: "hro",
             desc: '''
                   The bkdr memory index to write to.
@@ -210,7 +231,7 @@
         desc: "Value to be written to the target memory.",
         count: "MaxWordWidthDiv32",
         cname: "VAL",
-        swaccess: "wo",
+        swaccess: "rw",
         hwaccess: "hro",
         fields: [
           { bits: "31:0",
@@ -224,7 +245,7 @@
       { skipto: "0x600" }
       { name: "INDEX",
         desc: "Index address of the SRAM word to be accessed.",
-        swaccess: "wo",
+        swaccess: "rw",
         hwaccess: "hro",
         hwqe:     "true",
         fields: [

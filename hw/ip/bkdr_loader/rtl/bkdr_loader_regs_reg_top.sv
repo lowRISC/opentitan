@@ -122,10 +122,16 @@ module bkdr_loader_regs_reg_top (
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic status_re;
-  logic status_qs;
+  logic status_target_error_qs;
+  logic status_clear_idle_qs;
   logic control_we;
+  logic control_done_qs;
   logic control_done_wd;
+  logic control_write_ena_qs;
   logic control_write_ena_wd;
+  logic control_clear_start_qs;
+  logic control_clear_start_wd;
+  logic [7:0] control_target_idx_qs;
   logic [7:0] control_target_idx_wd;
   logic num_bkdr_targets_re;
   logic [31:0] num_bkdr_targets_qs;
@@ -220,48 +226,73 @@ module bkdr_loader_regs_reg_top (
   logic read_data_7_re;
   logic [31:0] read_data_7_qs;
   logic write_data_0_we;
+  logic [31:0] write_data_0_qs;
   logic [31:0] write_data_0_wd;
   logic write_data_1_we;
+  logic [31:0] write_data_1_qs;
   logic [31:0] write_data_1_wd;
   logic write_data_2_we;
+  logic [31:0] write_data_2_qs;
   logic [31:0] write_data_2_wd;
   logic write_data_3_we;
+  logic [31:0] write_data_3_qs;
   logic [31:0] write_data_3_wd;
   logic write_data_4_we;
+  logic [31:0] write_data_4_qs;
   logic [31:0] write_data_4_wd;
   logic write_data_5_we;
+  logic [31:0] write_data_5_qs;
   logic [31:0] write_data_5_wd;
   logic write_data_6_we;
+  logic [31:0] write_data_6_qs;
   logic [31:0] write_data_6_wd;
   logic write_data_7_we;
+  logic [31:0] write_data_7_qs;
   logic [31:0] write_data_7_wd;
   logic index_we;
+  logic [31:0] index_qs;
   logic [31:0] index_wd;
 
   // Register instances
   // R[status]: V(True)
   logic status_qe;
-  logic [0:0] status_flds_we;
+  logic [1:0] status_flds_we;
   // In case all fields are read-only the aggregated register QE will be zero as well.
   assign status_qe = &status_flds_we;
+  //   F[target_error]: 0:0
   prim_subreg_ext #(
     .DW    (1)
-  ) u_status (
+  ) u_status_target_error (
     .re     (status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.status.d),
+    .d      (hw2reg.status.target_error.d),
     .qre    (),
     .qe     (status_flds_we[0]),
     .q      (),
     .ds     (),
-    .qs     (status_qs)
+    .qs     (status_target_error_qs)
+  );
+
+  //   F[clear_idle]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_clear_idle (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.clear_idle.d),
+    .qre    (),
+    .qe     (status_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (status_clear_idle_qs)
   );
 
 
   // R[control]: V(False)
   logic control_qe;
-  logic [2:0] control_flds_we;
+  logic [3:0] control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -274,7 +305,7 @@ module bkdr_loader_regs_reg_top (
   //   F[done]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_control_done (
@@ -295,14 +326,14 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (control_done_qs)
   );
   assign reg2hw.control.done.qe = control_qe;
 
   //   F[write_ena]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_control_write_ena (
@@ -323,14 +354,42 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (control_write_ena_qs)
   );
   assign reg2hw.control.write_ena.qe = control_qe;
+
+  //   F[clear_start]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_control_clear_start (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_clear_start_wd),
+
+    // from internal hardware
+    .de     (hw2reg.control.clear_start.de),
+    .d      (hw2reg.control.clear_start.d),
+
+    // to internal hardware
+    .qe     (control_flds_we[2]),
+    .q      (reg2hw.control.clear_start.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_clear_start_qs)
+  );
+  assign reg2hw.control.clear_start.qe = control_qe;
 
   //   F[target_idx]: 15:8
   prim_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_control_target_idx (
@@ -346,12 +405,12 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (control_flds_we[2]),
+    .qe     (control_flds_we[3]),
     .q      (reg2hw.control.target_idx.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (control_target_idx_qs)
   );
   assign reg2hw.control.target_idx.qe = control_qe;
 
@@ -1140,7 +1199,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_0]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_0 (
@@ -1161,7 +1220,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_0_qs)
   );
 
 
@@ -1169,7 +1228,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_1]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_1 (
@@ -1190,7 +1249,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_1_qs)
   );
 
 
@@ -1198,7 +1257,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_2]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_2 (
@@ -1219,7 +1278,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_2_qs)
   );
 
 
@@ -1227,7 +1286,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_3]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_3 (
@@ -1248,7 +1307,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_3_qs)
   );
 
 
@@ -1256,7 +1315,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_4]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_4 (
@@ -1277,7 +1336,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_4_qs)
   );
 
 
@@ -1285,7 +1344,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_5]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_5 (
@@ -1306,7 +1365,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_5_qs)
   );
 
 
@@ -1314,7 +1373,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_6]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_6 (
@@ -1335,7 +1394,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_6_qs)
   );
 
 
@@ -1343,7 +1402,7 @@ module bkdr_loader_regs_reg_top (
   // R[write_data_7]: V(False)
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_write_data_7 (
@@ -1364,7 +1423,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (write_data_7_qs)
   );
 
 
@@ -1382,7 +1441,7 @@ module bkdr_loader_regs_reg_top (
   );
   prim_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0)
   ) u_index (
@@ -1403,7 +1462,7 @@ module bkdr_loader_regs_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (index_qs)
   );
   assign reg2hw.index.qe = index_qe;
 
@@ -1541,6 +1600,8 @@ module bkdr_loader_regs_reg_top (
   assign control_done_wd = reg_wdata[0];
 
   assign control_write_ena_wd = reg_wdata[1];
+
+  assign control_clear_start_wd = reg_wdata[2];
 
   assign control_target_idx_wd = reg_wdata[15:8];
   assign num_bkdr_targets_re = addr_hit[2] & reg_re & !reg_error;
@@ -1683,13 +1744,15 @@ module bkdr_loader_regs_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = status_qs;
+        reg_rdata_next[0] = status_target_error_qs;
+        reg_rdata_next[1] = status_clear_idle_qs;
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = '0;
-        reg_rdata_next[1] = '0;
-        reg_rdata_next[15:8] = '0;
+        reg_rdata_next[0] = control_done_qs;
+        reg_rdata_next[1] = control_write_ena_qs;
+        reg_rdata_next[2] = control_clear_start_qs;
+        reg_rdata_next[15:8] = control_target_idx_qs;
       end
 
       addr_hit[2]: begin
@@ -1877,39 +1940,39 @@ module bkdr_loader_regs_reg_top (
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_0_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_1_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_2_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_3_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_4_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_5_qs;
       end
 
       addr_hit[54]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_6_qs;
       end
 
       addr_hit[55]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = write_data_7_qs;
       end
 
       addr_hit[56]: begin
-        reg_rdata_next[31:0] = '0;
+        reg_rdata_next[31:0] = index_qs;
       end
 
       default: begin

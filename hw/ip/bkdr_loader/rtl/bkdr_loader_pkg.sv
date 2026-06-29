@@ -32,22 +32,22 @@ package bkdr_loader_pkg;
 
   // Target indices
   typedef enum logic [$clog2(NumBkdrTgts)-1:0] {
-    BkdrAon       = 32'd11,
-    BkdrFlashB1I2 = 32'd10,
-    BkdrFlashB1I1 = 32'd9,
-    BkdrFlashB1I0 = 32'd8,
-    BkdrFlashB1   = 32'd7,
-    BkdrFlashB0I2 = 32'd6,
-    BkdrFlashB0I1 = 32'd5,
-    BkdrFlashB0I0 = 32'd4,
-    BkdrFlashB0   = 32'd3,
-    BkdrSram      = 32'd2,
-    BkdrRom       = 32'd1,
-    BkdrOtp       = 32'd0
+    BkdrAon       = 'd11,
+    BkdrFlashB1I2 = 'd10,
+    BkdrFlashB1I1 = 'd9,
+    BkdrFlashB1I0 = 'd8,
+    BkdrFlashB1   = 'd7,
+    BkdrFlashB0I2 = 'd6,
+    BkdrFlashB0I1 = 'd5,
+    BkdrFlashB0I0 = 'd4,
+    BkdrFlashB0   = 'd3,
+    BkdrSram      = 'd2,
+    BkdrRom       = 'd1,
+    BkdrOtp       = 'd0
   } bkdr_idx_e;
 
   // Valid targets
-  localparam bkdr_idx_e [NumBkdrTgts-1:0] BkdrValidTgts = {
+  localparam bkdr_idx_e BkdrValidTgts [NumBkdrTgts] = {
     BkdrAon,
     BkdrFlashB1I2,
     BkdrFlashB1I1,
