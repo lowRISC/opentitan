@@ -148,6 +148,10 @@ class URNDWSR(ISPR):
         # generate a keystream.
         self.running = True
 
+    def pending_value(self) -> int:
+        '''Return the Bivium output scheduled by step(), before commit() latches it.'''
+        return self._next_value
+
     def step(self) -> None:
         # Schedule an state update and readout the keystream.
         self._trivium.update()
