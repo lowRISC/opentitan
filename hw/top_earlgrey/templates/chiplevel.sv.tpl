@@ -560,8 +560,8 @@ module chip_${top["name"]}_${target["name"]} #(
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -649,7 +649,7 @@ module chip_${top["name"]}_${target["name"]} #(
     ('rv_core_ibex_icache_tag',  'rv_core_ibex_icache_tag_ram_cfg',  '1p',   'ibex_pkg::IC_NUM_WAYS'),
     ('rv_core_ibex_icache_data', 'rv_core_ibex_icache_data_ram_cfg', '1p',   'ibex_pkg::IC_NUM_WAYS'),
     ('sram_ctrl_main',           'sram_ctrl_main_ram_cfg',           '1p',   'ast_pkg::SramCtrlMainNumRamInst'),
-    ('sram_ctrl_ret_aon',        'sram_ctrl_ret_aon_ram_cfg',        '1p',   'ast_pkg::SramCtrlRetAonNumRamInst'),
+    ('sram_ctrl_ret',            'sram_ctrl_ret_ram_cfg',            '1p',   'ast_pkg::SramCtrlRetNumRamInst'),
     ('spi_device_sys2spi',       'spi_device_sys2spi_ram_cfg',       '1r1w', None),
     ('spi_device_spi2sys',       'spi_device_spi2sys_ram_cfg',       '1r1w', None),
     ('rom_ctrl_rom',             'rom_ctrl_rom_cfg',                 'rom',  None),
@@ -710,7 +710,7 @@ module chip_${top["name"]}_${target["name"]} #(
   assign ext_clk = '0;
   assign pad2ast = '0;
 
-  // AON clock divider. Reset is not used because verilator uses only sync
+  // AON clock divider. Reset is not used because Verilator uses only sync
   // resets (and does not model 'x'); if the divider below were reset, clk_aon
   // would be silenced and the clk_aon logic inside top_${top["name"]} would not
   // get reset.
@@ -878,9 +878,9 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % endif
     // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_aon_clocks    ),
-    .sns_rsts_i            ( rstmgr_aon_resets    ),
-    .sns_spi_ext_clk_i     ( sck_monitor          ),
+    .sns_clks_i            ( clkmgr_clocks ),
+    .sns_rsts_i            ( rstmgr_resets ),
+    .sns_spi_ext_clk_i     ( sck_monitor   ),
     // tlul
     .tl_i                  ( ast_tl_req ),
     .tl_o                  ( ast_tl_rsp ),
@@ -1246,7 +1246,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .UsbdevRcvrWakeTimeUs(10000),
-    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlRetInstrExec(0),
 % elif target["name"] == "cw305":
     .RvCoreIbexPipeLine(0),
     .SecAesMasking(1'b1),
@@ -1285,7 +1285,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .UsbdevStub(1'b1),
     .RvCoreIbexICache(0),
   % else:
-    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlRetInstrExec(0),
   % endif
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
@@ -1294,7 +1294,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
 % endif
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
 <%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader" />\
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='', inter_pd=False, feedthrough=False, last_snippet=True" />\
@@ -1319,11 +1319,11 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_oe_io_clkout = 1'b1;
 
   // Capture trigger.
-  // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
+  // We use the clkmgr_idle signal of the IP of interest to form a precise capture trigger.
   // GPIO[11:10] is used for selecting the IP of interest. The encoding is as follows (see
   // hint_names_e enum in clkmgr_pkg.sv for details).
   //
-  // IP              - GPIO[11:10] - Index for clkmgr_aon_idle
+  // IP              - GPIO[11:10] - Index for clkmgr_idle
   // -------------------------------------------------------------
   //  AES            -   00       -  0
   //  HMAC           -   01       -  1 - not implemented on CW305
@@ -1339,7 +1339,7 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   % if target["name"] == "cw305":
-  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr_aon.idle_i;
+  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr.idle_i;
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
@@ -1351,7 +1351,7 @@ module chip_${top["name"]}_${target["name"]} #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr_aon.idle_i[trigger_sel];
+  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr.idle_i[trigger_sel];
   % endif
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;

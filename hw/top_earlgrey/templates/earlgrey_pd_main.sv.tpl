@@ -91,8 +91,8 @@ module ${top["name"]}_pd_${domain.lower()} #(
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
-    .req_i    (pinmux_aon_dft_jtag_req),
-    .rsp_o    (pinmux_aon_dft_jtag_rsp),
+    .req_i    (pinmux_dft_jtag_req),
+    .rsp_o    (pinmux_dft_jtag_rsp),
     .tck_o    (),
     .trst_no  (),
     .tms_o    (),

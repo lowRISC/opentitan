@@ -53,8 +53,8 @@ parameter int unsigned AstRegsNum       = 54;
 parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 
 // Number of physical RAM macros behind each sram_ctrl instance.
-parameter int unsigned SramCtrlMainNumRamInst   = 1;
-parameter int unsigned SramCtrlRetAonNumRamInst = 1;
+parameter int unsigned SramCtrlMainNumRamInst = 1;
+parameter int unsigned SramCtrlRetNumRamInst  = 1;
 
 // Memories Read-Write Margin Interface
 typedef struct packed {
@@ -71,35 +71,35 @@ typedef struct packed {
 
 // Aggregated memory configuration interface.
 typedef struct packed {
-  prim_ram_1p_pkg::ram_1p_cfg_req_t                                otbn_imem;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t                                otbn_dmem;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t                                i2c0;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t                                i2c1;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t                                i2c2;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t                                usbdev_ram;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]    rv_core_ibex_icache_tag;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]    rv_core_ibex_icache_data;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0]   sram_ctrl_main;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                            spi_device_sys2spi;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                            spi_device_spi2sys;
-  prim_rom_pkg::rom_cfg_req_t                                      rom_ctrl_rom;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              otbn_imem;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              otbn_dmem;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              i2c0;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              i2c1;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              i2c2;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t                              usbdev_ram;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_tag;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_data;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_sys2spi;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_spi2sys;
+  prim_rom_pkg::rom_cfg_req_t                                    rom_ctrl_rom;
 } ast_mem_cfg_req_t;
 
 typedef struct packed {
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                                otbn_imem;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                                otbn_dmem;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                                i2c0;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                                i2c1;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                                i2c2;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                                usbdev_ram;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]    rv_core_ibex_icache_tag;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]    rv_core_ibex_icache_data;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0]   sram_ctrl_main;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                            spi_device_sys2spi;
-  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                            spi_device_spi2sys;
-  prim_rom_pkg::rom_cfg_rsp_t                                      rom_ctrl_rom;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              otbn_imem;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              otbn_dmem;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c0;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c1;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              i2c2;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t                              usbdev_ram;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_tag;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_data;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_sys2spi;
+  prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_spi2sys;
+  prim_rom_pkg::rom_cfg_rsp_t                                    rom_ctrl_rom;
 } ast_mem_cfg_rsp_t;
 
 // ADC Interface
