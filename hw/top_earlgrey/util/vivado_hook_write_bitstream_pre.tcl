@@ -15,134 +15,18 @@ if [expr {$slack_ns < 0}] {
 # Enable bitstream identification via USR_ACCESS register.
 set_property BITSTREAM.CONFIG.USR_ACCESS TIMESTAMP [current_design]
 
-# Generate an MMI file for the given BRAM cells.
-#
+# Generate a dummy MMI file (FIXME: temporary, to be removed).
 # Args:
 #   filename:            Path to the output file.
-#   mem_info:            Dictionary of dictionaries with following properties for each (inner) value:
-#       brams:               A list of BRAM cells.
-#       mem_type_regex:      The BRAM type regex, dividing the mem type and site, e.g. {(RAMB\d+)_(\w+)}.
-#       fake_word_width:     If non-zero, pretend that $brams covers
-#                            `fake_word_width` bits. Influences the values of the
-#                            MMI's <AddressSpace> and <DataWidth> tags.
-#       addr_end_multiplier: A coefficient applied to the address space. Influences
-#                            the values of the MMI's <AddressSpace> and
-#                            <AddressRange> tags.
-#       schema:              Either "Processor" or "MemoryArray"
 #   designtask_count:    A number used for logging with `send_msg`.
-proc generate_mmi {filename mem_infos designtask_count} {
-    send_msg "${designtask_count}-1" INFO "Dumping MMI to ${filename}"
-
+proc generate_mmi {filename designtask_count} {
+    send_msg "${designtask_count}-1" INFO "Writing dummy MMI file to ${filename}"
     set workroot [file dirname [info script]]
     set filepath "${workroot}/${filename}"
     set fileout [open $filepath "w"]
-    set part [get_property PART [current_design]]
-    puts $fileout "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-    puts $fileout "<MemInfo Version=\"1\" Minor=\"1\">"
-
-    dict for {id mem_info} $mem_infos {
-        dict with mem_info {
-            if {[llen $brams] == 0} {
-                send_msg "${designtask_count}-1" INFO "Cannot make MMI for zero BRAMs"
-                return
-            }
-
-            set fake_slice_width [expr $fake_word_width / [llen $brams]]
-
-            # Calculate the overall address space.
-            set space 0
-            set width 0
-            foreach inst [lsort -dictionary $brams] {
-                set slice_begin [get_property ram_slice_begin [get_cells $inst]]
-                set slice_end [get_property ram_slice_end [get_cells $inst]]
-                if {$slice_begin eq {} || $slice_end eq {}} {
-                    send_msg "${designtask_count}-2" ERROR "Extraction of ${filename} information failed."
-                }
-                set slice_width [expr {$slice_end - $slice_begin + 1}]
-                if {$slice_width < $fake_slice_width} {
-                    set slice_end [expr {$slice_begin + $fake_slice_width - 1}]
-                    set slice_width $fake_slice_width
-                }
-                set addr_begin [get_property ram_addr_begin [get_cells $inst]]
-                set addr_end [get_property ram_addr_end [get_cells $inst]]
-                if {$addr_begin eq {} || $addr_end eq {}} {
-                    send_msg "${designtask_count}-3" ERROR "Extraction of ${filename} MMI information failed."
-                }
-
-                # Calculate total number of bits.
-                set space [expr {$space + ($addr_end - $addr_begin + 1) * $slice_width}]
-                set width [expr {$width + $slice_width}]
-                set last_slice_width $slice_width
-            }
-            set space [expr {($space * $addr_end_multiplier / 8) - 1}]
-
-            # Generate the MMI.
-            if { $schema eq "Processor" } {
-                puts $fileout "  <Processor Endianness=\"Little\" InstPath=\"$id\">"
-                puts $fileout "    <AddressSpace Name=\"dummy_addrspace\" Begin=\"0\" End=\"$space\">"
-                puts $fileout "      <BusBlock>"
-            } else {
-                puts $fileout "  <MemoryArray InstPath=\"$id\" MemoryPrimitive=\"auto\" MemoryConfiguration=\"enabled_configuration\">"
-                # Memory type could be retrieved from the RTL_RAM_TYPE property, if desired,
-                # but we hard-code it here for now.
-                puts $fileout "    <MemoryLayout Name=\"$id\" CoreMemory_Width=\"$width\" MemoryType=\"RAM_SP\">"
-            }
-
-            foreach inst [lsort -dictionary $brams] {
-                set loc [get_property LOC [get_cells $inst]]
-                set loc_matches [regexp $mem_type_regex $loc loc_match loc_prefix loc_suffix]
-                if {$loc_matches == 0} {
-                    send_msg "${designtask_count}-4" ERROR "Extraction of ${filename} mem location failed."
-                }
-                set slice_begin [get_property ram_slice_begin [get_cells $inst]]
-                set slice_end [get_property ram_slice_end [get_cells $inst]]
-                set slice_width [expr {$slice_end - $slice_begin + 1}]
-                if {$slice_width < $fake_slice_width} {
-                    set slice_end [expr {$slice_begin + $fake_slice_width - 1}]
-                    set slice_width $fake_slice_width
-                }
-                set addr_begin [get_property ram_addr_begin [get_cells $inst]]
-                set addr_end [get_property ram_addr_end [get_cells $inst]]
-                set addr_end [expr {($addr_end + 1) * $addr_end_multiplier - 1}]
-                set bit_layout [get_property "MEM.PORTA.DATA_BIT_LAYOUT" [get_cells $inst]]
-                set read_width_a [get_property "READ_WIDTH_A" [get_cells $inst]]
-                set read_width_b [get_property "READ_WIDTH_B" [get_cells $inst]]
-                set slr_index [get_property "SLR_INDEX" [get_cells $inst]]
-                if {$schema eq "Processor"} {
-                    puts $fileout "        <BitLane MemType=\"$loc_prefix\" Placement=\"$loc_suffix\">"
-                    puts $fileout "          <DataWidth MSB=\"$slice_end\" LSB=\"$slice_begin\"/>"
-                    puts $fileout "          <AddressRange Begin=\"$addr_begin\" End=\"$addr_end\"/>"
-                    puts $fileout "          <Parity ON=\"false\" NumBits=\"0\"/>"
-                    puts $fileout "        </BitLane>"
-                } else {
-                    puts $fileout "      <BRAM MemType=\"$loc_prefix\" Placement=\"$loc_suffix\" Read_Width_A=\"$read_width_a\" Read_Width_B=\"$read_width_b\" SLR_INDEX=\"$slr_index\">"
-                    puts $fileout "        <DataWidth_PortA MSB=\"$slice_end\" LSB=\"$slice_begin\"/>"
-                    puts $fileout "        <AddressRange_PortA Begin=\"$addr_begin\" End=\"$addr_end\"/>"
-                    puts $fileout "        <BitLayout_PortA pattern=\"$bit_layout\"/>"
-                    puts $fileout "        <DataWidth_PortB MSB=\"0\" LSB=\"0\"/>"
-                    puts $fileout "        <AddressRange_PortB Begin=\"0\" End=\"0\"/>"
-                    puts $fileout "        <BitLayout_PortB pattern=\"\"/>"
-                    puts $fileout "        <Parity ON=\"false\" NumBits=\"0\"/>"
-                    puts $fileout "      </BRAM>"
-                }
-            }
-            if {$schema eq "Processor"} {
-                puts $fileout "      </BusBlock>"
-                puts $fileout "    </AddressSpace>"
-                puts $fileout "  </Processor>"
-            } else {
-                puts $fileout "    </MemoryLayout>"
-                puts $fileout "  </MemoryArray>"
-            }
-        }
-    }
-
-    puts $fileout "  <Config>"
-    puts $fileout "    <Option Name=\"Part\" Val=\"$part\"/>"
-    puts $fileout "  </Config>"
-    puts $fileout "</MemInfo>"
+    puts $fileout "This is a temporary dummy file to placate Bazel/CI whilst migrating to the bkdr_loader flow."
+    puts $fileout "This file is not a valid MMI file, and should NOT be used as such."
     close $fileout
-    send_msg "${designtask_count}-4" INFO "MMI dumped to ${filepath}"
 }
 
 # Dump INIT_XX strings for the given BRAMs to an output file.
@@ -234,7 +118,7 @@ dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 40 1 "Proce
 set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_macro*"] " "]
 dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Processor"]
 
-generate_mmi "memories.mmi" $memInfo 1
+generate_mmi "memories.mmi" 1
 
 # For debugging purposes, dump the INIT_XX strings for ROM and OTP.
 dump_init_strings "rom_init_strings.txt" $rom_brams 3
