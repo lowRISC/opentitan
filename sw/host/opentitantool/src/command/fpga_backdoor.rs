@@ -13,7 +13,9 @@ use std::path::PathBuf;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::io::fpga_backdoor::{BackdoorParams, BackdoorTargetInfo, enter_backdoor_loader};
-use opentitanlib::test_utils::fpga_backdoor::{TargetWrite, verify_readback, write_to_target};
+use opentitanlib::test_utils::fpga_backdoor::{
+    TargetClear, TargetWrite, verify_readback, write_to_target,
+};
 use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::vmem::{Section, Vmem, Word};
 
@@ -413,6 +415,10 @@ impl CommandDispatch for BackdoorVerify {
 
 #[derive(Debug, Args)]
 pub struct BackdoorBatch {
+    /// Clear/zero operations to be batched. All clears apply before writes.
+    #[arg(long = "clear", value_name = "TARGET=NUM_WORDS[@OFFSET]")]
+    pub target_clears: Vec<TargetClear>,
+
     /// Write operations to be batched, mapping VMEM files to FPGA targets.
     #[arg(long = "write", value_name = "TARGET=FILE[@OFFSET]")]
     pub target_writes: Vec<TargetWrite>,
@@ -436,6 +442,9 @@ impl CommandDispatch for BackdoorBatch {
         let backdoor = context.params.create(transport)?;
         let mut backdoor = backdoor.connect(true)?;
 
+        self.target_clears
+            .iter()
+            .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
         self.target_writes
             .iter()
             .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;

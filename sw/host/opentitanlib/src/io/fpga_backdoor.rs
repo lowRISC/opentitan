@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use clap::Args;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use crate::app::TransportWrapper;
 use crate::debug::dmi::{Dmi, OpenOcdDmi};
@@ -21,11 +21,13 @@ pub mod regs {
     // STATUS register
     pub const STATUS_REG_OFFSET: usize = 0x0;
     pub const STATUS_ERROR_BIT: u32 = 0;
+    pub const STATUS_CLEAR_IDLE_BIT: u32 = 1;
 
     // CONTROL register
     pub const CONTROL_REG_OFFSET: usize = 0x4;
     pub const CONTROL_DONE_BIT: u32 = 0;
     pub const CONTROL_WRITE_ENA_BIT: u32 = 1;
+    pub const CONTROL_CLEAR_START_BIT: u32 = 2;
     pub const CONTROL_TARGET_IDX_MASK: u32 = 0xff;
     pub const CONTROL_TARGET_IDX_OFFSET: usize = 8;
 
@@ -47,6 +49,9 @@ pub mod consts {
 
     // How long the backdoor loader TAP strapping is held after leaving reset.
     pub const HOLD_TAP_STRAPS_MS: u64 = 50;
+
+    // Time to wait for a clear operation to finish.
+    pub const CLEAR_TIMEOUT_SECS: u64 = 5;
 
     // How many JTAG cycles to wait for before considering the `CONTROL.DONE` transaction
     // as being completed. We default to 10000, which is a conservative threshold.
@@ -254,6 +259,15 @@ impl<'a> BackdoorTarget<'a> {
         );
         self.backdoor
             .read_target(self.index, start, count, check_status)
+    }
+
+    /// Clear the entire memory of the target with a given word.
+    ///
+    /// An optimized fast-path for clearing memories, primarily used to replicate existing
+    /// bitstream synthesis defaults. The `check_status` parameter is used to control
+    /// whether the status bit is polled after clearing, to check for any errors.
+    pub fn clear(&mut self, word: &Word, check_status: bool) -> Result<()> {
+        self.backdoor.clear_target(self.index, word, check_status)
     }
 }
 
@@ -532,6 +546,79 @@ impl Backdoor {
         }
 
         Ok(words)
+    }
+
+    /// Clear the entire memory of a specified target with a given word.
+    ///
+    /// An optimized fast-path for clearing memories, primarily used to replicate existing
+    /// bitstream synthesis defaults. The `check_status` parameter is used to control
+    /// whether the status bit is polled after clearing, to check for any errors.
+    pub fn clear_target(
+        &mut self,
+        target_index: u8,
+        word: &Word,
+        check_status: bool,
+    ) -> Result<()> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        let info = self.targets[target_index as usize];
+
+        self.dmi
+            .batched_dmi_writes(
+                &word
+                    .to_u32_chunks()?
+                    .into_iter()
+                    .enumerate()
+                    .map(|(idx, reg)| {
+                        let addr_offset = idx * 4;
+                        (
+                            ((regs::WRITE_DATA_0_REG_OFFSET + addr_offset) >> 2) as u32,
+                            reg,
+                        )
+                    })
+                    .collect::<Vec<_>>(),
+            )
+            .context("failed to perform DMI writes")?;
+
+        let mut control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
+        control |= 0b1 << regs::CONTROL_WRITE_ENA_BIT;
+        control |= 0b1 << regs::CONTROL_CLEAR_START_BIT;
+        self.dmi_write(regs::CONTROL_REG_OFFSET, control)
+            .context("cannot write to control register")?;
+
+        // Wait for the `CLEAR_IDLE` bit to appear set in the status register.
+        let timeout = Instant::now() + Duration::from_secs(CLEAR_TIMEOUT_SECS);
+        let mut status: u32;
+        loop {
+            status = self
+                .dmi_read(regs::STATUS_REG_OFFSET)
+                .context("cannot read status")?;
+            if status & (0b1 << regs::STATUS_CLEAR_IDLE_BIT) != 0 {
+                break;
+            }
+
+            if Instant::now() > timeout {
+                bail!(
+                    "Timed out after {} seconds waiting for {} clear to complete",
+                    CLEAR_TIMEOUT_SECS,
+                    info.id_str()
+                );
+            }
+        }
+
+        if check_status {
+            ensure!(
+                status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
+                "fpga bkdr_loader reported an error writing to target {}",
+                info.id_str()
+            );
+        }
+
+        Ok(())
     }
 }
 
