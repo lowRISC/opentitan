@@ -32,13 +32,17 @@ ROM_EXT_FEATURES = [
     "use_lld",
 ]
 
-# To test that the prod-signed SiVAL ROM_EXT boots on the FPGA, you need a bitstream
-# with the sival keys pre-programmed into OTP.
-# You can manually create such a bitstream with:
+# To test that the prod-signed SiVAL ROM_EXT boots on the FPGA, you need your FPGA
+# to have the sival keys pre-programmed into OTP.
+# You can manually program the FPGA in this way using OpenTitanTool:
 #
-# bazel build //hw/bitstream/universal:splice \
-#   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_ext \
-#   --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
+# bazel build //third_party/openocd:openocd_bin //hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized
+# bazel run //sw/host/opentitantool -- --interface=hyper340 fpga backdoor enter
+# bazel run //sw/host/opentitantool -- --interface=hyper340 fpga backdoor \
+#   --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) batch \
+#   --write ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:mask_rom_fpga_cw340) \
+#   --write OTP=$(ci/scripts/target-location.sh //hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized) \
+#   --start
 [
     opentitan_binary(
         name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
