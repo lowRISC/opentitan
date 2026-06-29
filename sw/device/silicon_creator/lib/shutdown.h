@@ -120,8 +120,7 @@ uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity);
 // from within a test program.
 noreturn
 #endif
-    void
-    shutdown_finalize(rom_error_t reason);
+    void shutdown_finalize(rom_error_t reason);
 
 #ifdef __cplusplus
 }

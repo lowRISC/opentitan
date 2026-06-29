@@ -191,14 +191,14 @@ rom_error_t usb_control_setupdata(usb_control_ctx_t *ctx,
 #define USB_CFG_DSCR_LEN 9
 #define USB_CFG_DSCR_HEAD(total_len, nint)                                   \
   /* This is the actual configuration descriptor                 */          \
-  USB_CFG_DSCR_LEN,     /* bLength                                   */      \
-      2,                /* bDescriptorType                           */      \
-      (total_len)&0xff, /* wTotalLength[0]                           */      \
-      (total_len) >> 8, /* wTotalLength[1]                           */      \
-      (nint),           /* bNumInterfaces                            */      \
-      1,                /* bConfigurationValue                       */      \
-      0,                /* iConfiguration                            */      \
-      0xC0,             /* bmAttributes: must-be-one, self-powered   */      \
+  USB_CFG_DSCR_LEN,       /* bLength                                   */    \
+      2,                  /* bDescriptorType                           */    \
+      (total_len) & 0xff, /* wTotalLength[0]                           */    \
+      (total_len) >> 8,   /* wTotalLength[1]                           */    \
+      (nint),             /* bNumInterfaces                            */    \
+      1,                  /* bConfigurationValue                       */    \
+      0,                  /* iConfiguration                            */    \
+      0xC0,               /* bmAttributes: must-be-one, self-powered   */    \
       50 /* bMaxPower                                 */ /* MUST be followed \
                                                             by (nint)        \
                                                             Interface +      \
@@ -231,7 +231,7 @@ rom_error_t usb_control_setupdata(usb_control_ctx_t *ctx,
       5,                           /* bDescriptorType                      */ \
       (ep) | (((in) << 7) & 0x80), /* bEndpointAddress, top bit set for IN */ \
       attr,                        /* bmAttributes                         */ \
-      (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
+      (maxsize) & 0xff,            /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
       (interval)                   /* bInterval                            */
 
@@ -242,7 +242,7 @@ rom_error_t usb_control_setupdata(usb_control_ctx_t *ctx,
       5,                           /* bDescriptorType                      */ \
       (ep) | (((in) << 7) & 0x80), /* bEndpointAddress, top bit set for IN */ \
       0x02,                        /* bmAttributes (0x02=bulk, data)       */ \
-      (maxsize)&0xff,              /* wMaxPacketSize[0]                    */ \
+      (maxsize) & 0xff,            /* wMaxPacketSize[0]                    */ \
       (maxsize) >> 8,              /* wMaxPacketSize[1]                    */ \
       (interval)                   /* bInterval                            */
 

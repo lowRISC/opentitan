@@ -18,8 +18,8 @@
 
 // Seed numbers for the LFSR generators in each transfer direction for
 // the given stream number.
-#define USBTST_LFSR_SEED(s) (uint8_t)(0x10U + (s)*7U)
-#define USBDPI_LFSR_SEED(s) (uint8_t)(0x9BU - (s)*7U)
+#define USBTST_LFSR_SEED(s) (uint8_t)(0x10U + (s) * 7U)
+#define USBDPI_LFSR_SEED(s) (uint8_t)(0x9BU - (s) * 7U)
 
 // Simple LFSR for 8-bit sequences.
 #define LFSR_ADVANCE(lfsr) \

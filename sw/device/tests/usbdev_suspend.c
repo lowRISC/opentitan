@@ -1532,7 +1532,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
             // TODO: experimental test code! DO NOT MERGE
             if (false) {
               static uint8_t buf[4096];
-              extern void usbutils_gather(dif_usbdev_t * dev, uint8_t * buf,
+              extern void usbutils_gather(dif_usbdev_t * dev, uint8_t *buf,
                                           size_t n);
 
               while (!sense) {
@@ -1946,8 +1946,8 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
     // Keep going if we're advancing to the next phase.
     //  (NextPhase means that we advance whilst still active and can thus skip
     //   device setup and configuratinon)
-  } while (ctx->test_state == kSuspendStateNextPhase ||    // from Resume
-           ctx->test_state == kSuspendStateBusReset ||     // after Bus Reset
+  } while (ctx->test_state == kSuspendStateNextPhase ||  // from Resume
+           ctx->test_state == kSuspendStateBusReset ||   // after Bus Reset
            ctx->test_state == kSuspendStatePowerOnReset);  // after Disconnect
 
   if (verbose) {

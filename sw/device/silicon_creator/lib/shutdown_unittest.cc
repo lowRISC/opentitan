@@ -80,11 +80,9 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   return result;
 }
 
-#define FULL(name, prod, prodend, dev, rma)                          \
-  {                                                                  \
-    name, kAlertClass##prod, kAlertClass##prodend, kAlertClass##dev, \
-        kAlertClass##rma                                             \
-  }
+#define FULL(name, prod, prodend, dev, rma)                         \
+  {name, kAlertClass##prod, kAlertClass##prodend, kAlertClass##dev, \
+   kAlertClass##rma}
 
 #define CLASSIFY(name, prod, prodend, dev, rma)                     \
   Pack32(kAlertClass##prod, kAlertClass##prodend, kAlertClass##dev, \

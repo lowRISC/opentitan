@@ -23,11 +23,11 @@
  * Defined here to be able to use in tests.
  */
 #define FLASH_CTRL_OTP_FIELD_SCRAMBLING \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 0}
 #define FLASH_CTRL_OTP_FIELD_ECC \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 1}
 #define FLASH_CTRL_OTP_FIELD_HE \
-  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
+  (bitfield_field32_t){.mask = UINT8_MAX, .index = CHAR_BIT * 2}
 
 OTTF_DEFINE_TEST_CONFIG();
 
