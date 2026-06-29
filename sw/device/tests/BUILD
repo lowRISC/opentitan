@@ -3204,6 +3204,28 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "otbn_mai_test",
+    srcs = ["otbn_mai_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/mai:mai_tlt_test",
+    ],
+)
+
+opentitan_test(
     name = "otbn_isa_test",
     srcs = ["otbn_isa_test.c"],
     exec_env = dicts.add(
