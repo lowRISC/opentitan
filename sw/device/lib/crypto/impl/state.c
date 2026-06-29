@@ -21,6 +21,7 @@ otcrypto_status_t init_state(otcrypto_state_t *state,
   internal_state->locked_state = kHardenedBoolFalse;
   internal_state->self_check_state = kHardenedBoolFalse;
   internal_state->csrng_instantiated = kHardenedBoolFalse;
+  internal_state->csrng_is_default = kHardenedBoolFalse;
   internal_state->security_level = security_level;
   return OTCRYPTO_OK;
 }
