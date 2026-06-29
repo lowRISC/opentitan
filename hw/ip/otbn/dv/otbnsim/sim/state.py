@@ -23,7 +23,7 @@ from .wsr import WSRFile
 # The number of cycles spent per round of a secure wipe. This takes constant
 # time in the RTL, mirrored here. The constant here needs to be incremented
 # by one compared to the constant found in RTL (`otbn_core_model.sv`)
-_WIPE_CYCLES = 99 + 1
+WIPE_CYCLES = 99 + 1
 
 
 class FsmState(IntEnum):
@@ -484,7 +484,7 @@ class OTBNState:
         # the wiping operation itself will take.
         wiping_next = new_state == FsmState.WIPING
         if wiping_next:
-            self.wipe_cycles = _WIPE_CYCLES
+            self.wipe_cycles = WIPE_CYCLES
         self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
