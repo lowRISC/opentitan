@@ -57,6 +57,7 @@ otcrypto_status_t init_state(otcrypto_key_security_level_t security_level) {
       .self_check_state = kHardenedBoolFalse,
       .locked_state = kHardenedBoolFalse,
       .csrng_instantiated = kHardenedBoolFalse,
+      .csrng_is_default = kHardenedBoolFalse,
 #ifdef FIPS_MODE
       .cmvp_service_indicator = kOtcryptoCmvpNoService,
       .cmvp_call_depth = 0,
