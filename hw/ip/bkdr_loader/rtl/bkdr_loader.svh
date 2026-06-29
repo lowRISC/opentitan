@@ -6,7 +6,7 @@
 `define BKDR_LOADER_SVH
 
 `define BKDR_LOADER_CONNECT_REQS \
-  assign top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req                         = bkdr_req[bkdr_loader_pkg::BkdrAon];       \
+  assign top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req                             = bkdr_req[bkdr_loader_pkg::BkdrAon];       \
   assign top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[2].u_info_mem.bkdr_req = bkdr_req[bkdr_loader_pkg::BkdrFlashB1I2]; \
   assign top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[1].u_info_mem.bkdr_req = bkdr_req[bkdr_loader_pkg::BkdrFlashB1I1]; \
   assign top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[0].u_info_mem.bkdr_req = bkdr_req[bkdr_loader_pkg::BkdrFlashB1I0]; \
@@ -20,7 +20,7 @@
   assign top_earlgrey.earlgrey_pd_main.u_otp_macro.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req                                                  = bkdr_req[bkdr_loader_pkg::BkdrOtp];
 
 `define BKDR_LOADER_CONNECT_RSPS \
-  assign bkdr_rsp[bkdr_loader_pkg::BkdrAon]       = top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_rsp;                         \
+  assign bkdr_rsp[bkdr_loader_pkg::BkdrAon]       = top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_rsp;                             \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrFlashB1I2] = top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[2].u_info_mem.bkdr_rsp; \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrFlashB1I1] = top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[1].u_info_mem.bkdr_rsp; \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrFlashB1I0] = top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[1].u_prim_flash_bank.gen_info_types[0].u_info_mem.bkdr_rsp; \
