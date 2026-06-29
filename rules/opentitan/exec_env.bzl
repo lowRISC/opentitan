@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -437,3 +437,75 @@ def common_test_setup(ctx, exec_env, firmware):
     param.update(slot_spec)
 
     return test_harness, data_labels, data_files, param, action_param
+
+def _bitstream_from_env_impl(ctx):
+    """Retrieve the bitstream used by an execution environment, re-exporting it
+    as "<name>.bit". Can be overriden by `src` to allow build options to modify
+    the bitstream that is used. """
+
+    if ctx.attr.exec_env.label.name == "none":
+        # This is required so that this rule won't fail in Bazel queries.
+        print("{}: No exec_env. Nothing to do.".format(ctx.label))
+        return DefaultInfo()
+    if ExecEnvInfo not in ctx.attr.exec_env:
+        fail("Not an exec_env:", ctx.attr.exec_env.label)
+
+    exec_env = ctx.attr.exec_env[ExecEnvInfo]
+    src = ctx.file.src if ctx.file.src else exec_env.bitstream
+
+    # Re-export the input as an output of this rule; ensures the bitstream appears
+    # in runfiles under this target's path.
+    out = ctx.actions.declare_file("{}.bit".format(ctx.label.name))
+    ctx.actions.symlink(
+        output = out,
+        target_file = src,
+    )
+
+    return DefaultInfo(files = depset([out]))
+
+bitstream_from_env = rule(
+    implementation = _bitstream_from_env_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True, doc = "The bitstream to retrieve (i.e. an override)"),
+        "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to get the bitstream from"),
+    },
+)
+
+def _memory_from_env_impl(ctx):
+    """Retrieve some memory (e.g. OTP, ROM) used by an execution environment.
+    The memory will be in the form of some VMEM that has already had scrambling, etc.
+    applied, so that it can be directly used. Can be overriden by `src` to allow
+    build options to modify the bitstream that is used. """
+
+    if ctx.attr.exec_env.label.name == "none":
+        # This is required so that this rule won't fail in Bazel queries.
+        print("{}: No exec_env. Nothing to do.".format(ctx.label))
+        return DefaultInfo()
+    if ExecEnvInfo not in ctx.attr.exec_env:
+        fail("Not an exec_env:", ctx.attr.exec_env.label)
+
+    # If a src is given (and not named `none`), override and use that instead.
+    exec_env = ctx.attr.exec_env[ExecEnvInfo]
+    if ctx.file.src and ctx.attr.src.label.name != "none":
+        src = ctx.file.src
+    else:
+        src = getattr(exec_env, ctx.attr.memory)
+    if ctx.attr.memory == "rom":
+        src = get_one_binary_file(src, field = ctx.attr.memory, providers = [exec_env.provider])
+
+    out = ctx.actions.declare_file("{}.vmem".format(ctx.label.name))
+    ctx.actions.symlink(
+        output = out,
+        target_file = src,
+    )
+
+    return DefaultInfo(files = depset([out]))
+
+memory_from_env = rule(
+    implementation = _memory_from_env_impl,
+    attrs = {
+        "src": attr.label(allow_single_file = True, doc = "The VMEM to retrieve (i.e. an override)"),
+        "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to get the memory from"),
+        "memory": attr.string(mandatory = True, doc = "The type of memory to retrieve (e.g. 'rom', 'otp')"),
+    },
+)
