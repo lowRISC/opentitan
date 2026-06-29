@@ -27,6 +27,13 @@ load(
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
+# Memories to be loaded onto the FPGA after the bitstream is loaded
+# to replicate the specified execution environment.
+FPGA_LOADED_MEMORIES = [
+    "rom",
+    "otp",
+]
+
 _TEST_COMMANDS = """
 TEST_SETUP_CMD=({test_setup_cmd})
 TEST_CMD=({test_cmd})
