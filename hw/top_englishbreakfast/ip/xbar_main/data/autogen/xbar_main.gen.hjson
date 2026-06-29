@@ -30,8 +30,8 @@
   }
   clock_connections:
   {
-    clk_main_i: clkmgr_aon_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_main_i: clkmgr_aon_clocks_i.clk_main_infra
+    clk_fixed_i: clkmgr_aon_clocks_i.clk_io_div4_infra
   }
   domain: Main
   connections:
@@ -339,6 +339,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_rv_core_ibex__corei
       index: -1
     }
@@ -352,6 +353,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_rv_core_ibex__cored
       index: -1
     }
@@ -364,6 +366,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rom_ctrl_rom_tl
       index: -1
     }
@@ -376,6 +379,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rom_ctrl_regs_tl
       index: -1
     }
@@ -389,6 +393,7 @@
       width: 1
       default: ""
       end_idx: -1
+      top_type: one-to-one
       top_signame: main_tl_peri
       index: -1
     }
@@ -401,6 +406,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: flash_ctrl_core_tl
       index: -1
     }
@@ -413,6 +419,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: flash_ctrl_prim_tl
       index: -1
     }
@@ -425,6 +432,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: flash_ctrl_mem_tl
       index: -1
     }
@@ -437,6 +445,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: aes_tl
       index: -1
     }
@@ -449,6 +458,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_plic_tl
       index: -1
     }
@@ -461,6 +471,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_core_ibex_cfg_tl_d
       index: -1
     }
@@ -473,6 +484,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_main_regs_tl
       index: -1
     }
@@ -485,6 +497,7 @@
       inst_name: main
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_main_ram_tl
       index: -1
     }

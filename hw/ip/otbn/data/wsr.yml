@@ -71,44 +71,31 @@
 - name: kmac_data_s0
   address: 8
   doc: |
-    KMAC_DATA_S0 is the first 256-bit share of the masked message or digest interface.
+    KMAC_DATA_S0 and KMAC_DATA_S1 are used to send message parts towards the KMAC HWIP as well as to receive the resulting digest.
 
-    For masked operations, provide the first share here and the second share in KMAC_DATA_S1.
+    For sending message parts, i.e., when writing to the WSRs, the WSRs are 256-bit wide.
+    The message is sent towards the KMAC HWIP in 64-bit parts, starting with the least significant word.
+    To send a masked message, provide the first share in KMAC_DATA_S0 and the second share in KMAC_DATA_S1.
+    If no masking is required, set one share to the plaintext data and the other share to all-zeros.
 
-    If masking is not required:
-    - Set this share to the plaintext data.
-    - Set the other share to all-zeros.
+    When reading from the WSRs, the digest data is only 64-bit wide and is placed in the least significant 64 bits.
+    The upper bits [255:64] are not updated by the digest response.
+    If a valid response is present (indicated by KMAC_STATUS.RSP_VALID), once both KMAC_DATA_S0 and KMAC_DATA_S1 are read, the KMAC interface starts accepting the next digest part.
 
-    The digest data is provided in chunks of 64 bits at a time.
-    For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
+    The provided digest is always in Boolean shared representation.
+    To retrieve the plaintext digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
   bits:
     63-0: |
       Write: Least significant word of the message share.
       Read: Current 64-bit word of the digest share.
     255-64: |
       Write: Words 1-3 of the message share.
-      Read: Returns `0`. Digest shares are read out via the least significant word only.
+      Read: Digest shares are read out via the least significant word only, these bits are not affected by a digest response and keep the value written by SW.
 
 - name: kmac_data_s1
   address: 9
   doc: |
-    KMAC_DATA_S1 is the second 256-bit share of the masked message or digest interface.
-
-    For masked operations, provide the second share here and the second share in KMAC_DATA_S0.
-
-    If masking is not required:
-    - Set this share to the plaintext data.
-    - Set the other share to all-zeros.
-
-    The digest data is provided in chunks of 64 bits at a time.
-    For plaintext retrieval of the digest, software must XOR the values from KMAC_DATA_S0 and KMAC_DATA_S1.
-  bits:
-    63-0: |
-      Write: Least significant word of the message share.
-      Read: Current 64-bit word of the digest share.
-    255-64: |
-      Write: Words 1-3 of the message share.
-      Read: Returns `0`. Digest shares are read out via the least significant word only.
+    KMAC_DATA_S1 is the counterpart of KMAC_DATA_S0: see its documentation for details.
 
 - name: mai_res_s0
   address: 10

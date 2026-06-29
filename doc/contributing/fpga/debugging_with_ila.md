@@ -24,12 +24,12 @@ In a nutshell, we will take the following steps:
 
 ## Requirements
 
-This guide was written for OpenTitan on a [NewAE CW310 board](./get_a_board.md#chipwhisperer-cw310) with a Kintex 7 or a [NewAE CW340 board](./get_a_board.md#chipwhisperer-cw340-opentitan-kit-recommended) with a Kintex UltraScale FPGA on it.
+This guide was written for OpenTitan on a [NewAE CW340 board](./get_a_board.md#chipwhisperer-cw340-opentitan-kit-recommended) with a Kintex UltraScale FPGA on it.
 You further need to have Xilinx Vivado installed; see [Install Vivado](../../getting_started/install_vivado/README.md) for the currently supported version and installation instructions.
 Finally, you need a connection to the JTAG port of the FPGA.
 This guide was written using [Xilinx's Platform Cable USB II](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), although the first generation Platform Cable USB or the SmartLynq Data Cable may also work.
 
-[Set up the FPGA board](../../getting_started/setup_fpga.md) and connect the JTAG plug of Platform Cable USB II to J18 on the CW310 or to J2 on the CW340 and its USB plug to your workstation where Vivado is installed.
+[Set up the FPGA board](../../getting_started/setup_fpga.md) and connect the JTAG plug of Platform Cable USB II to J2 on the CW340 and its USB plug to your workstation where Vivado is installed.
 Make sure that the [drivers for Platform Cable USB II are installed](https://support.xilinx.com/s/article/59128?language=en_US) on that workstation.
 
 

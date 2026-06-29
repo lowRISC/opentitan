@@ -53,7 +53,8 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     end
 
     // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, addr_width, nonce_arr);
+    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(addr_arr, addr_width,
+                                                           mem_bkdr_util::depth, nonce_arr);
 
     for (int i = 0; i < addr_width; i++) begin
       mem_addr[i] = scrambled_addr[i];
@@ -112,7 +113,8 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     end
 
     // Calculate the scrambled address
-    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(rom_addr, addr_width, nonce_arr);
+    scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(rom_addr, addr_width,
+                                                           mem_bkdr_util::depth, nonce_arr);
 
     if (scramble_data) begin
       // Calculate the integrity constant

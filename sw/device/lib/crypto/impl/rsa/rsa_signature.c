@@ -107,13 +107,11 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
     }
     default:
       // Unrecognized padding mode.
-      // COVERAGE (MISSING) We only provide inputs with correct padding modes.
       return OTCRYPTO_BAD_ARGS;
   }
 
   // Unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
@@ -152,19 +150,17 @@ static status_t encoded_message_verify(
                                     encoded_message_len, result);
     default:
       // Unrecognized padding mode.
-      // COVERAGE (MISSING) We only provide inputs with correct padding modes.
       return OTCRYPTO_BAD_ARGS;
   }
 
   // Unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
 
 status_t rsa_signature_generate_start(
     rsa_size_t size, const uint32_t *d0, const uint32_t *d1, const uint32_t *n,
-    const otcrypto_hash_digest_t message_digest,
+    uint32_t checksum, const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode) {
   size_t num_words = 0;
   switch (launder32(size)) {
@@ -182,7 +178,6 @@ status_t rsa_signature_generate_start(
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -196,7 +191,7 @@ status_t rsa_signature_generate_start(
       message_encode(message_digest, padding_mode, num_words, encoded_message));
 
   // Start computing (encoded_message ^ d) mod n.
-  return rsa_modexp_consttime_start(size, encoded_message, d0, d1, n);
+  return rsa_modexp_consttime_start(size, encoded_message, d0, d1, n, checksum);
 }
 
 status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature) {
@@ -249,13 +244,10 @@ status_t rsa_signature_verify_finalize(
     }
     default:
       // Unexpected number of words; should never get here.
-      // COVERAGE (SW ERR) This is an internal function that is only given
-      // correctly encoded inputs.
       return OTCRYPTO_FATAL_ERR;
   }
 
   // Should be unreachable.
   HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }

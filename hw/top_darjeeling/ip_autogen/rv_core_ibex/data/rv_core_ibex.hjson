@@ -1098,6 +1098,47 @@
         ]
       },
 
+      { name: "MCOUNTEREN_WRITABLE_REGWEN",
+        desc: "Register write-enable for !!MCOUNTEREN_WRITABLE.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Write enable for !!MCOUNTEREN_WRITABLE. Once set to 0, it can no longer be configured to 1.",
+            enum: [
+              { value: "0",
+                name: "locked",
+                desc: "MCOUNTEREN_WRITABLE can no longer be configured until next reset."
+              },
+              { value: "1",
+                name: "enabled",
+                desc: "MCOUNTEREN_WRITABLE can still be configured."
+              },
+            ]
+          },
+        ],
+      },
+
+      { name: "MCOUNTEREN_WRITABLE",
+        desc: "Controls whether Ibex mcounteren CSR is writable by software.",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "MCOUNTEREN_WRITABLE_REGWEN",
+        fields: [
+          { bits: "3:0",
+            mubi: true,
+            name: "EN",
+            resval: true,
+            desc: '''
+              When set to kMultiBitBool4True, the mcounteren CSR is writable by software.
+              Drives the mcounteren_writable_i input on ibex_top.
+            '''
+          },
+        ],
+      },
+
       // dv simulation window
       { window: {
           name: "DV_SIM_WINDOW",

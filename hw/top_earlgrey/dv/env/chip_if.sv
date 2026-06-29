@@ -32,16 +32,18 @@ interface chip_if;
   // TODO: Autogen this in top_<top>_pkg.
 `ifdef XCELIUM
   `define TOP_HIER          tb.dut.top_earlgrey
+  `define TOP_HIER_AON      tb.dut.top_earlgrey_pd_aon
 `else
   `define TOP_HIER          top_earlgrey
+  `define TOP_HIER_AON      top_earlgrey_pd_aon
 `endif
-`define ADC_CTRL_HIER       `TOP_HIER.u_adc_ctrl_aon
+`define ADC_CTRL_HIER       `TOP_HIER_AON.u_adc_ctrl_aon
 `define AES_HIER            `TOP_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `TOP_HIER.u_alert_handler
-`define AON_TIMER_HIER      `TOP_HIER.u_aon_timer_aon
+`define AON_TIMER_HIER      `TOP_HIER_AON.u_aon_timer_aon
 `define AST_HIER            u_ast
-`define CLKMGR_HIER         `TOP_HIER.u_clkmgr_aon
+`define CLKMGR_HIER         `TOP_HIER_AON.u_clkmgr_aon
 `define CPU_HIER            `TOP_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
@@ -60,21 +62,19 @@ interface chip_if;
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define OTBN_HIER           `TOP_HIER.u_otbn
-`define PATTGEN_HIER        `TOP_HIER.u_pattgen
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
-`define PWM_HIER            `TOP_HIER.u_pwm_aon
-`define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
+`define PWRMGR_HIER         `TOP_HIER_AON.u_pwrmgr_aon
 `define ROM_CTRL_HIER       `TOP_HIER.u_rom_ctrl
-`define RSTMGR_HIER         `TOP_HIER.u_rstmgr_aon
+`define RSTMGR_HIER         `TOP_HIER_AON.u_rstmgr_aon
 `define RV_CORE_IBEX_HIER   `TOP_HIER.u_rv_core_ibex
 `define RV_PLIC_HIER        `TOP_HIER.u_rv_plic
 `define RV_TIMER_HIER       `TOP_HIER.u_rv_timer
-`define SENSOR_CTRL_HIER    `TOP_HIER.u_sensor_ctrl_aon
+`define SENSOR_CTRL_HIER    `TOP_HIER_AON.u_sensor_ctrl_aon
 `define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `TOP_HIER.u_sram_ctrl_ret_aon
-`define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
+`define SRAM_CTRL_RET_HIER  `TOP_HIER_AON.u_sram_ctrl_ret_aon
+`define SYSRST_CTRL_HIER    `TOP_HIER_AON.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
 `define USBDEV_HIER         `TOP_HIER.u_usbdev
 
@@ -568,52 +568,6 @@ interface chip_if;
     mios_if.pins_pu[AssignedI2cSdaIos[inst_num]] = enable;
     mios_if.pins_pd[AssignedI2cSdaIos[inst_num]] = 0;
     __enable_i2c[inst_num] = enable;
-  endfunction
-
-  // Functional (muxed) interface: PWM.
-  localparam int AssignedPwmIos[NUM_PWM_CHANNELS] = {
-      top_earlgrey_pkg::MioPadIob10, top_earlgrey_pkg::MioPadIob11, top_earlgrey_pkg::MioPadIob12,
-      top_earlgrey_pkg::MioPadIoc10, top_earlgrey_pkg::MioPadIoc11, top_earlgrey_pkg::MioPadIoc12
-  };
-
-  for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
-    pwm_if pwm_if(
-`ifdef GATE_LEVEL
-                  .clk (0),
-                  .rst_n (1),
-`else
-                  .clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                  .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
-`endif
-                  .start_cntr (`PWM_HIER.u_pwm_core.clr_phase_cntr),
-                  .pwm        (mios[AssignedPwmIos[i]]));
-
-    initial begin
-      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i), "vif",
-                                          pwm_if);
-    end
-  end : gen_pwm_if_conn
-
-  // Functional (muxed) interface: PATTGEN
-  // each channel has pda, pcl
-
-  bit __enable_pattgen = 0;
-
-  pattgen_if #(NUM_PATTGEN_CH) pattgen_if();
-  assign pattgen_if.rst_ni = `PATTGEN_HIER.rst_ni;
-  assign pattgen_if.clk_i  = `PATTGEN_HIER.clk_i;
-  assign pattgen_if.pda_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} :
-                                                 {mios[top_earlgrey_pkg::MioPadIob11],
-                                                  mios[top_earlgrey_pkg::MioPadIob9]};
-  assign pattgen_if.pcl_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} :
-                                                 {mios[top_earlgrey_pkg::MioPadIob12],
-                                                  mios[top_earlgrey_pkg::MioPadIob10]};
-
-  initial begin
-    uvm_config_db#(virtual pattgen_if)::set(null, "*.env.m_pattgen_agent*", "vif", pattgen_if);
-  end
-  function automatic void enable_pattgen(bit enable);
-    __enable_pattgen = enable;
   endfunction
 
   // Functional (muxed) interface: external clock source.
@@ -1318,28 +1272,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_entropy_src_fsm_state,
       entropy_src_fsm_state, 9)
 
-  // Signal probe function for `chan0.enable` and `chan1.enable`of PATTGEN
-  wire [1:0] pattgen_chan_1_0_enable;
-`ifdef GATE_LEVEL
-  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.ctrl_i_enable
-                                   ,`PATTGEN_HIER.u_pattgen_core.chan0.ctrl_i_enable};
-`else
-  assign pattgen_chan_1_0_enable = {`PATTGEN_HIER.u_pattgen_core.chan1.enable,
-                                    `PATTGEN_HIER.u_pattgen_core.chan0.enable};
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pattgen_chan_1_0_enable,
-      pattgen_chan_1_0_enable, 2)
-
-  // tb.dut.top_earlgrey.u_pwm_aon.u_pwm_core.cntr_en
-  wire pwm_core_cntr_en;
-`ifdef GATE_LEVEL
-  assign pwm_core_cntr_en = `PWM_HIER.u_reg.u_cfg_cntr_en.q;
-`else
-  assign pwm_core_cntr_en = `PWM_HIER.u_pwm_core.cntr_en;
-`endif
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwm_core_cntr_en,
-      pwm_core_cntr_en, 1)
-
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
 `undef AES_HIER
@@ -1364,9 +1296,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef OTP_CTRL_HIER
 `undef OTP_MACRO_HIER
 `undef OTBN_HIER
-`undef PATTGEN_HIER
 `undef PINMUX_HIER
-`undef PWM_HIER
 `undef PWRMGR_HIER
 `undef ROM_CTRL_HIER
 `undef RSTMGR_HIER

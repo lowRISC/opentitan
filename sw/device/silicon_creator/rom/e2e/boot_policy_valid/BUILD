@@ -5,7 +5,6 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -40,7 +39,7 @@ BOOT_POLICY_VALID_CASES = [
     },
     {
         "desc": "bad",
-        "suffix": "_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin",
+        "suffix": "_corrupted_fpga_cw340_rom_with_fake_keys_signed_bin",
     },
 ]
 
@@ -61,7 +60,6 @@ BOOT_POLICY_VALID_CASES = [
             b["desc"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(

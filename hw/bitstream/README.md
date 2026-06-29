@@ -39,7 +39,7 @@ opentitan_test(
         tags = ["manuf"],
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     deps = [
         ":individualize_sw_cfg_earlgrey_sku_sival",
@@ -81,7 +81,7 @@ opentitan_test(
         tags = ["manuf"],
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     deps = [
         ":individualize_sw_cfg_earlgrey_sku_sival",

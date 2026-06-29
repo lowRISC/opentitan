@@ -57,9 +57,12 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
   // requirements are met). We do this first (rather than parse) because if the
   // signature requirements are not met, the RAM copy of the owner page will be
   // destroyed.
-  if (owner_block_page1_valid_for_transfer(bootdata) != kHardenedBoolTrue) {
+  if (launder32(owner_block_page1_valid_for_transfer(bootdata)) !=
+      kHardenedBoolTrue) {
     return kErrorOwnershipInvalidInfoPage;
   }
+  HARDENED_CHECK_EQ(owner_block_page1_valid_for_transfer(bootdata),
+                    kHardenedBoolTrue);
 
   // Set the variable checking whether the correct signatures have been
   // verified.

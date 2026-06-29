@@ -2,9 +2,9 @@
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
 <%import topgen.lib as lib%>\
-<%page args="top"/>\
+<%page args="top, domain"/>\
   // Local Parameters
-% for m in top["module"]:
+% for m in lib.get_all_modules(top, domain=domain):
   % if not lib.is_inst(m):
 <% continue %>
   % endif

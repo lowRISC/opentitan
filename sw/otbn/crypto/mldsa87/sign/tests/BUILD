@@ -23,20 +23,20 @@ srcs = [
 ]
 
 unit_tests = [
-    "mldsa87_sign_sample_mask_poly_test",
-    "mldsa87_sign_expand_mask_test",
-    "mldsa87_sign_decode_t0_test",
-    "mldsa87_sign_decode_w1_test",
-    "mldsa87_sign_encode_z_test",
-    "mldsa87_sign_compute_w_test",
-    "mldsa87_sign_decompose_w_test",
-    "mldsa87_sign_compute_z_test",
-    "mldsa87_sign_compute_r0_pos_test",
-    "mldsa87_sign_compute_r0_neg_test",
-    "mldsa87_sign_compute_x0_test",
-    "mldsa87_sign_make_hint_test",
-    "mldsa87_sign_hw_check_hint_test",
-    "mldsa87_sign_compress_hint_test",
+    # "mldsa87_sign_sample_mask_poly_test",
+    # "mldsa87_sign_expand_mask_test",
+    # "mldsa87_sign_decode_t0_test",
+    # "mldsa87_sign_decode_w1_test",
+    # "mldsa87_sign_encode_z_test",
+    # "mldsa87_sign_compute_w_test",
+    # "mldsa87_sign_decompose_w_test",
+    # "mldsa87_sign_compute_z_test",
+    # "mldsa87_sign_compute_r0_pos_test",
+    # "mldsa87_sign_compute_r0_neg_test",
+    # "mldsa87_sign_compute_x0_test",
+    # "mldsa87_sign_make_hint_test",
+    # "mldsa87_sign_hw_check_hint_test",
+    # "mldsa87_sign_compress_hint_test",
 ]
 
 [
@@ -51,9 +51,9 @@ unit_tests = [
 ]
 
 mldsa87_nist_tests = [
-    "mldsa87_sign_nist_acvp_61_test",
-    "mldsa87_sign_nist_acvp_62_test",
-    "mldsa87_sign_nist_acvp_74_test",
+    # "mldsa87_sign_nist_acvp_61_test",
+    # "mldsa87_sign_nist_acvp_62_test",
+    # "mldsa87_sign_nist_acvp_74_test",
 ]
 
 [

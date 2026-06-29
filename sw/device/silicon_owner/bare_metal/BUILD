@@ -72,7 +72,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["bare_metal_start.S"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
@@ -88,7 +88,6 @@ opentitan_binary(
     testonly = True,
     srcs = ["bare_metal_start.S"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
@@ -106,7 +105,6 @@ opentitan_binary(
     testonly = True,
     srcs = ["bare_metal_start.S"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
@@ -130,7 +128,6 @@ BOOT_SUCCESS_MSG = "Bare metal PASS!"
 opentitan_test(
     name = "rom_ext_virtual_bare_metal_virtual_boot_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
@@ -150,7 +147,6 @@ opentitan_test(
     name = "rom_ext_virtual_ottf_bl0_virtual",
     srcs = ["empty_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",

@@ -121,7 +121,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     addr_arr  = {<<{addr}};
     nonce_arr = {<<{nonce}};
 
-    decrypt_addr_arr = sram_scrambler_pkg::decrypt_sram_addr(addr_arr, AddrWidth, nonce_arr);
+    decrypt_addr_arr =
+        sram_scrambler_pkg::decrypt_sram_addr(addr_arr, AddrWidth, 2**AddrWidth, nonce_arr);
 
     return {<<{decrypt_addr_arr}};
   endfunction

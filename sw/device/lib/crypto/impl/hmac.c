@@ -99,8 +99,6 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
         used_key_mode = launder32(used_key_mode) | kOtcryptoKeyModeHmacSha512;
         break;
       default:
-        // COVERAGE (SW ERR) This is an internal function which is given only
-        // correct coded inputs.
         return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(used_key_mode, key->config.key_mode);
@@ -169,7 +167,6 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
 
   // The underlying HMAC hardware does not have sideload support.
   if (key->config.hw_backed != kHardenedBoolFalse) {
-    // COVERAGE (SW ERR) HMAC does not allow sideloading.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -285,8 +282,6 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   }
 
   // Should be unreachable.
-  // COVERAGE (FI CM) This is unreachable code, it is added for fault
-  // protection.
   HARDENED_TRAP();
   return otcrypto_eval_exit(OTCRYPTO_FATAL_ERR);
 }

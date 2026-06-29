@@ -242,6 +242,8 @@ package top_englishbreakfast_pkg;
 
   // Number of englishbreakfast outgoing alerts
   parameter int unsigned NOutgoingAlertsEnglishbreakfast = 28;
+  parameter int unsigned NOutgoingAlertsEnglishbreakfastPdAon = 6;
+  parameter int unsigned NOutgoingAlertsEnglishbreakfastPdMain = 22;
 
   // Number of LPGs for outgoing alert group englishbreakfast
   parameter int unsigned NOutgoingLpgsEnglishbreakfast = 13;

@@ -26,8 +26,8 @@ if top["name"] == "earlgrey":
         "EARLGREY_TEST_ENVS",
         "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ]
@@ -38,7 +38,6 @@ else:
 
 defs_imports = sorted(
     [env for env in exec_envs if isinstance(env, str)] + [
-        "cw310_params",
         "fpga_params",
         "opentitan_test",
         "silicon_params",

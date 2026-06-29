@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -223,6 +224,7 @@ static status_t run_rsa_3072_sign(const uint8_t *msg, size_t msg_len,
   uint64_t t_start = profile_start();
   TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
+  LOG_INFO("OTBN sign instruction count: 0x%08x", otbn_instruction_count_get());
 
   return OK_STATUS();
 }
@@ -287,6 +289,8 @@ static status_t run_rsa_3072_verify(const uint8_t *msg, size_t msg_len,
   TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, &sig_buf,
                           verification_result));
   profile_end_and_print(t_start, "RSA verify");
+  LOG_INFO("OTBN verify instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   return OK_STATUS();
 }

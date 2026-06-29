@@ -17,6 +17,16 @@ mldsa87_sign_rnd:
 .zero 32
 
 /*
+ * Kappa
+ */
+
+.globl mldsa87_sign_kappa
+
+mldsa87_sign_kappa:
+.zero 2
+.zero 30 /* Padding */
+
+/*
  * Secret key
  */
 
@@ -168,6 +178,9 @@ stack:
 /*
  * Vector slots
  */
+
+.globl mldsa87_sign_vector_slot0
+.globl mldsa87_sign_vector_slot1
 
 mldsa87_sign_vector_slot0:
 .zero 8192

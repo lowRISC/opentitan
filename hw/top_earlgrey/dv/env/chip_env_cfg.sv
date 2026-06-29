@@ -81,9 +81,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand jtag_agent_cfg       m_jtag_agent_cfg;
   rand spi_agent_cfg        m_spi_host_agent_cfg;
-  pwm_monitor_cfg           m_pwm_monitor_cfg[NUM_PWM_CHANNELS];
   rand i2c_agent_cfg        m_i2c_agent_cfgs[NUM_I2CS];
-  rand pattgen_agent_cfg    m_pattgen_agent_cfg;
 
   // JTAG DMI register model
   rand jtag_dmi_reg_block jtag_dmi_ral;
@@ -176,21 +174,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       m_i2c_agent_cfgs[i] = i2c_agent_cfg::type_id::create($sformatf("m_i2c_agent_cfg%0d", i));
     end
 
-    // create pattgen agent config obj
-    m_pattgen_agent_cfg = pattgen_agent_cfg::type_id::create("m_pattgen_agent_cfg");
-    m_pattgen_agent_cfg.if_mode = Device;
-
     // create jtag agent config obj
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
 
     // create spi agent config obj
     m_spi_host_agent_cfg = spi_agent_cfg::type_id::create("m_spi_host_agent_cfg");
-
-    // create pwm monitor config obj
-    foreach (m_pwm_monitor_cfg[i]) begin
-      m_pwm_monitor_cfg[i] = pwm_monitor_cfg::type_id::create($sformatf("m_pwm_monitor%0d_cfg", i));
-      m_pwm_monitor_cfg[i].is_active = 0;
-    end
 
     // By default, assume these OTP image paths.
     // A customized OTP image may be specified loaded via the `sw_images` plusarg.

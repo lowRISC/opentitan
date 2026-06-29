@@ -191,7 +191,7 @@ jobs:
 
   airgapped_build:
     name: Airgapped build
-    runs-on: ubuntu-22.04-vivado
+    runs-on: ubuntu-22.04
     needs: quick_lint
     if: ${{ github.event_name != 'merge_group' }}
     steps:
@@ -203,8 +203,8 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
           configure-bazel: false
-      # - name: Free disk space
-      #   uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
       - name: Check disk space
         run: |
           df -h
@@ -299,7 +299,7 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Execute tests
-        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
+        run: ./bazelisk.sh test --test_tag_filters=-broken,-skip_in_ci,-nightly //sw/otbn/crypto/...
 
   verilator_englishbreakfast:
     name: Verilated English Breakfast
@@ -352,15 +352,6 @@ jobs:
         with:
           artifact-name: verilator_earlgrey-test-results
 
-  chip_earlgrey_cw310_hyperdebug:
-    name: Earl Grey for CW310 Hyperdebug
-    needs: quick_lint
-    uses: ./.github/workflows/bitstream.yml
-    secrets: inherit
-    with:
-      top_name: earlgrey
-      design_suffix: cw310_hyperdebug
-
   chip_earlgrey_cw340:
     name: Earl Grey for CW340
     needs: quick_lint
@@ -374,7 +365,6 @@ jobs:
     name: Cache bitstreams to GCP
     runs-on: ubuntu-22.04
     needs:
-      - chip_earlgrey_cw310_hyperdebug
       - chip_earlgrey_cw340
     steps:
       - name: Skipped message
@@ -393,7 +383,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         uses: ./.github/actions/download-partial-build-bin
         with:
-          job-patterns: chip_earlgrey_{cw310,cw310_hyperdebug,cw340}
+          job-patterns: chip_earlgrey_cw340
       - name: Create bitstream cache archive
         if: ${{ github.event_name != 'pull_request' }}
         run: |
@@ -416,8 +406,8 @@ jobs:
   schedule_fpga_jobs:
     name: Schedule FPGA jobs
     runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'merge_group' }}
     outputs:
-      jobs_cw310: ${{ steps.schedule.outputs.jobs_cw310 }}
       jobs_cw340: ${{ steps.schedule.outputs.jobs_cw340 }}
     steps:
       - uses: actions/checkout@v6
@@ -437,9 +427,6 @@ jobs:
             --test_tag_filters=-manual,-broken,-skip_in_ci,-slow_test,fpga \
             "tests(//sw/... union @manufacturer_test_hooks//...)")
           echo "$JOBS"
-          echo 'jobs_cw310<<EOF' >> "$GITHUB_OUTPUT"
-          echo "$JOBS" | jq '[.[] | select(.board == "cw310")]' >> "$GITHUB_OUTPUT"
-          echo EOF >> "$GITHUB_OUTPUT"
           echo 'jobs_cw340<<EOF' >> "$GITHUB_OUTPUT"
           echo "$JOBS" | jq '[.[] | select(.board == "cw340")]' >> "$GITHUB_OUTPUT"
           echo EOF >> "$GITHUB_OUTPUT"
@@ -448,27 +435,6 @@ jobs:
         with:
             name: fpga_jobs
             path: ${{ steps.schedule.outputs.jobs_dir }}
-
-  execute_fpga_cw310_jobs:
-    name: ${{ matrix.name }}
-    needs:
-      - schedule_fpga_jobs
-      - quick_lint
-      - chip_earlgrey_cw310_hyperdebug
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.schedule_fpga_jobs.outputs.jobs_cw310) }}
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      job_name: ${{ matrix.id }}
-      bitstream: chip_earlgrey_cw310_hyperdebug
-      board: ${{ matrix.board }}
-      interface: hyper310
-      artifact: fpga_jobs
-      target_file: ${{ matrix.target_file }}
 
   execute_fpga_cw340_jobs:
     name: ${{ matrix.name }}
@@ -560,7 +526,7 @@ jobs:
             --remote_download_outputs=minimal                \
             --build_tests_only=false                         \
             --define DISABLE_VERILATOR_BUILD=true            \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv \
+            --test_tag_filters=-broken,-fpga,-verilator,-dv \
             --target_pattern_file="$target_pattern_file"
       - name: Run software unit tests
         run: |
@@ -568,7 +534,7 @@ jobs:
             --build_tests_only=true                                   \
             --test_output=errors                                      \
             --define DISABLE_VERILATOR_BUILD=true                     \
-            --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
+            --test_tag_filters=-broken,-fpga,-verilator,-dv,-silicon \
             --target_pattern_file="$target_pattern_file"
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
@@ -623,43 +589,6 @@ jobs:
       - name: Execute QEMU smoketest
         run: |
           ./bazelisk.sh test //sw/device/tests:rom_exit_immediately_sim_qemu_base
-
-  qemu_local_dev_test:
-    name: Test QEMU local development override
-    runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          path: opentitan
-      - name: Prepare environment
-        uses: ./opentitan/.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-          working-directory: opentitan
-      - uses: actions/checkout@v6
-        with:
-          repository: lowRISC/qemu
-          ref: v9.2.0-2025-02-11
-          fetch-depth: 0
-          path: qemu
-      - name: Check that overrides works
-        run: |
-          # The following packages are required to build QEMU.
-          sudo apt-get install -y ninja-build libpixman-1-dev libglib2.0-dev
-          # We need to symlink the BUILD file and create an empty REPO file.
-          ln -s $PWD/opentitan/third_party/qemu/BUILD.qemu_opentitan.bazel qemu/BUILD.bazel
-          touch qemu/REPO.bazel
-          # Just make sure all expected targets are there after building.
-          opentitan/bazelisk.sh build --override_repository="+qemu+qemu_opentitan_src=$PWD/qemu/" //third_party/qemu/...
-      - name: Upload error logs
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: qemu-override-build-logs
-          path: qemu/build/*.log
 
   # Single job that we can gate pull requests and merge queues on:
   merge_blocker:

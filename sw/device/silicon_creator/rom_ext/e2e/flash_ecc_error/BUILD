@@ -89,7 +89,6 @@ opentitan_binary(
     srcs = ["secret_page_setup.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     ],
     deps = [
@@ -105,7 +104,6 @@ opentitan_binary(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:uncorrupted_test_src"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
             "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
@@ -128,7 +126,6 @@ opentitan_binary(
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:flash_ecc_error_test_src"],
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw310_rom_ext",
             "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_{}".format(slot),
@@ -169,7 +166,6 @@ opentitan_binary(
     opentitan_test(
         name = t["name"].format(c["cause"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
@@ -211,7 +207,6 @@ opentitan_binary(
 opentitan_test(
     name = "flash_exc_handler_disabled_test",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(

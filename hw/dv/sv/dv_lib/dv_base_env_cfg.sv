@@ -30,8 +30,9 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // dv_base_scoreboard::monitor_reset maintains this value.
   bit under_reset = 0;
 
-  // A flag to show that the initialize method has been called. This is protected (rather than
-  // local) to allow specialised environments set it to avoid the initialize method being called.
+  // A flag to show that the initialize_ral method has been called. This is protected (rather than
+  // local) to allow specialised environments to set it to avoid the initialize_ral method being
+  // called.
   protected bit is_initialized = 0;
 
   // The scope and runtime of a existing test can be reduced by setting this variable. This is
@@ -51,12 +52,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // is after a derived class can have overridden it).
   protected string ral_type_name = RAL_T::type_name;
 
-  // A queue of the names of RAL models that should be created in the `initialize` function. Related
-  // agents and adapters will be created in the environment as well as connecting them with the
-  // scoreboard.
+  // A queue of the names of RAL models that should be created in the `initialize_ral` function.
+  // Related agents and adapters will be created in the environment as well as connecting them with
+  // the scoreboard.
   //
-  // To add another RAL model, a subclass of dv_base_env_cfg should implement initialize and add its
-  // name before calling super.initialize.
+  // To add another RAL model, a subclass of dv_base_env_cfg must make sure that the model's name is
+  // added to this queue before running dv_base_env_cfg::initialize_ral. One way to do this is to
+  // implement the function itself and update the queue before calling super.initialize_ral.
   //
   // An index into the collection of RAL model names is used as an index in ral_models, clk_rst_vifs
   // and clk_freqs_mhz.
@@ -113,8 +115,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
 
   // Initialise the object with RAL models and set it up for randomisation
   //
-  // This is virtual, allowing subclasses to set up list_of_alerts and num_interrupts.
-  extern virtual function void initialize();
+  // The addr_width, data_width and be_width arguments are used to configure the analogous fields of
+  // the dv_base_reg_block instances that are created.
+  //
+  // This function is virtual, allowing subclasses to set up list_of_alerts and num_interrupts.
+  extern virtual function void initialize_ral(int unsigned addr_width,
+                                              int unsigned data_width,
+                                              int unsigned be_width);
 
   // Set pre-build RAL knobs.
   //
@@ -137,10 +144,21 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   extern virtual function void reset_deasserted();
 
   // Create missing RAL models and set their base addresses based on the supplied arg.
-  extern local function void make_ral_models();
+  //
+  // The addr_width, data_width and be_width arguments are used to configure the analogous fields of
+  // the dv_base_reg_block instances that are created.
+  extern local function void make_ral_models(int unsigned addr_width,
+                                             int unsigned data_width,
+                                             int unsigned be_width);
 
   // Create the named RAL model and give it a randomised base address.
-  extern local function void make_ral_model(string ral_model_name);
+  //
+  // The addr_width, data_width and be_width arguments are used to configure the analogous fields of
+  // the dv_base_reg_block that is created.
+  extern local function void make_ral_model(string       ral_model_name,
+                                            int unsigned addr_width,
+                                            int unsigned data_width,
+                                            int unsigned be_width);
 
   // Create the named register block. This protected function is virtual to allow subclasses to
   // customise how the register block is created.
@@ -163,7 +181,7 @@ function dv_base_env_cfg::new (string name="");
 endfunction
 
 function void dv_base_env_cfg::pre_randomize();
-  if (!is_initialized) `uvm_fatal(`gfn, "Run initialize() before randomizing this object.")
+  if (!is_initialized) `uvm_fatal(`gfn, "Run initialize_ral() before randomizing this object.")
 endfunction
 
 function void dv_base_env_cfg::post_randomize();
@@ -173,8 +191,10 @@ function void dv_base_env_cfg::post_randomize();
   end
 endfunction
 
-function void dv_base_env_cfg::initialize();
-  if (is_initialized) `uvm_fatal(`gfn, "Cannot call initialize when already initialized")
+function void dv_base_env_cfg::initialize_ral(int unsigned addr_width,
+                                              int unsigned data_width,
+                                              int unsigned be_width);
+  if (is_initialized) `uvm_fatal(`gfn, "Cannot call initialize_ral when already initialized")
 
   // Prepend ral_type_name to ral_model_names (so the "default RAL" for the class gets index 0)
   ral_model_names.push_front(ral_type_name);
@@ -182,7 +202,7 @@ function void dv_base_env_cfg::initialize();
   is_initialized = 1'b1;
 
   // build the ral model
-  make_ral_models();
+  make_ral_models(addr_width, data_width, be_width);
 
   // add items to clk_freqs_mhz before randomizing it
   foreach (ral_model_names[i]) begin
@@ -208,12 +228,24 @@ function void dv_base_env_cfg::reset_deasserted();
   csr_utils_pkg::reset_deasserted();
 endfunction
 
-function void dv_base_env_cfg::make_ral_models();
-  foreach (ral_model_names[i]) make_ral_model(ral_model_names[i]);
-  `DV_CHECK_FATAL(ral_models.exists(ral_type_name))
+function void dv_base_env_cfg::make_ral_models(int unsigned addr_width,
+                                               int unsigned data_width,
+                                               int unsigned be_width);
+  foreach (ral_model_names[i]) begin
+    make_ral_model(ral_model_names[i], addr_width, data_width, be_width);
+  end
+
+  if (!ral_models.exists(ral_type_name)) begin
+    `uvm_fatal(get_name(),
+               $sformatf("The generated RAL models don't include ral_type_name=%0s.",
+                         ral_type_name))
+  end
 endfunction
 
-function void dv_base_env_cfg::make_ral_model(string ral_model_name);
+function void dv_base_env_cfg::make_ral_model(string       ral_model_name,
+                                              int unsigned addr_width,
+                                              int unsigned data_width,
+                                              int unsigned be_width);
   dv_base_reg_block reg_blk;
 
   if (ral_models.exists(ral_model_name)) begin
@@ -227,9 +259,9 @@ function void dv_base_env_cfg::make_ral_model(string ral_model_name);
     // later.
     pre_build_ral_settings(reg_blk);
     reg_blk.build(.base_addr(0), .csr_excl(null));
-    reg_blk.addr_width = BUS_AW;
-    reg_blk.data_width = bus_params_pkg::BUS_DW;
-    reg_blk.be_width = bus_params_pkg::BUS_DBW;
+    reg_blk.addr_width = addr_width;
+    reg_blk.data_width = data_width;
+    reg_blk.be_width   = be_width;
     post_build_ral_settings(reg_blk);
     reg_blk.lock_model();
 

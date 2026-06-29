@@ -415,13 +415,22 @@ def get_hjsonobj_xbars(xbar_path: Path) -> Dict[str, ConfigT]:
     return xbar_objs
 
 
-def get_module_by_name(top: ConfigT, name: str) -> Optional[ConfigT]:
+def get_module_by_name(top: ConfigT, name: str,
+                       search_xbars: bool = False) -> Optional[ConfigT]:
     """Search in top["module"] by name
     """
     module = None
     for m in top["module"]:
         if m["name"] == name:
             module = m
+            break
+
+    if module or not search_xbars:
+        return module
+
+    for x in top["xbar"]:
+        if x["name"] == name:
+            module = x
             break
 
     return module
@@ -433,6 +442,25 @@ def intersignal_to_signalname(top, m_name: str, s_name: str) -> str:
     # signal name
 
     return "{m_name}_{s_name}".format(m_name=m_name, s_name=s_name)
+
+
+def get_intermodule_list(top: ConfigT, domain: str = None):
+    if domain is not None:
+        return [x for x in top["inter_signal"]["definitions"] if x["domain"] == domain]
+    else:
+        return top["inter_signal"]["definitions"]
+
+
+def get_intermodule_ports(top: ConfigT, domain: str = None, inter_pd: bool = None):
+    if inter_pd is not None:
+        inter_pd_list = [x for x in top["inter_signal"]["external"] if x["inter_pd"] == inter_pd]
+    else:
+        inter_pd_list = top["inter_signal"]["external"]
+
+    if domain is not None:
+        return [x for x in inter_pd_list if x["domain"] == domain]
+    else:
+        return inter_pd_list
 
 
 def get_package_name_by_intermodule_signal(top: ConfigT, struct: str) -> str:
@@ -480,6 +508,19 @@ def add_module_prefix_to_signal(signal, module: str) -> str:
     return result
 
 
+def invert_signal_act(signal) -> str:
+    if signal['type'] == "req_rsp":
+        if signal['act'] == "rsp":
+            return "req"
+        else:
+            return "rsp"
+    elif signal['type'] == "uni":
+        if signal['act'] == "rcv":
+            return "req"
+        else:
+            return "rcv"
+
+
 def get_ms_name(name: str) -> Tuple[str, Optional[str]]:
     """Split module_name.signal_name to module_name , signal_name
     """
@@ -523,12 +564,27 @@ def get_pad_list(padstr: str) -> List[Dict[str, Union[str, int]]]:
     return pads
 
 
-def idx_of_last_module_with_params(top: ConfigT) -> int:
+def idx_of_last_module_with_params(top: ConfigT, domain: str = None) -> int:
     last = -1
-    for idx, module in enumerate(top["module"]):
+
+    if domain is not None:
+        default_domain = top["power"]["default"]
+        modlist = [m for m in top["module"] if m.get("domain", default_domain) == domain]
+    else:
+        modlist = top["module"]
+
+    for idx, module in enumerate(modlist):
         if len(module["param_list"]):
             last = idx
+
     return last
+
+
+def get_all_modules(top: ConfigT, domain: str = None):
+    if domain is not None:
+        return [m for m in top["module"] if m.get("domain") == domain]
+    else:
+        return top["module"]
 
 
 # Template functions
@@ -571,10 +627,14 @@ def parameterize(text: str) -> str:
     return text
 
 
-def index(i: int) -> str:
-    """Return index if it is not -1
+def index(sig: Dict) -> str:
+    """Return index if it is not -1 and signal does not connect to
+    an intermediate net.
     """
-    return "[{}]".format(i) if i != -1 else ""
+    if sig.get("conn_type", False):
+        return ""
+    else:
+        return "[{}]".format(sig["index"]) if sig["index"] != -1 else ""
 
 
 def get_clk_name(clk: str) -> str:
@@ -605,47 +665,107 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
+def get_clock_prefixes(top, domain_mod: str = None) -> dict:
+    clkmgr = find_module(top['module'], 'clkmgr')
+    domain_clkmgr = clkmgr.get('domain')
+
+    if domain_clkmgr == domain_mod or domain_mod is None:
+        prefixes = {
+            'top': f"{clkmgr['name']}_clocks.",
+            'ext': '',
+            'lpg': f"{clkmgr['name']}_cg_en.",
+        }
+    else:
+        prefixes = {
+            'top': f"{clkmgr['name']}_clocks_i.",
+            'ext': '',
+            'lpg': f"{clkmgr['name']}_cg_en_i.",
+        }
+
+    return prefixes
+
+
+def get_clock_path(top: object,
+                   clk_name: str,
+                   domain_mod: str = None,
+                   unmanaged_clock: bool = False) -> str:
+    """Return the appropriate clock path given the clock name
+    """
+    prefixes = get_clock_prefixes(top, domain_mod)
+    if unmanaged_clock:
+        return top['unmanaged_clocks'].get_clock_by_signal_name(
+            clk_name).signal_name
+    else:
+        return prefixes['top'] + clk_name
+
+
 def get_clock_lpg_path(top: object,
                        clk_name: str,
+                       domain_mod: str = None,
                        unmanaged_clock: bool = False) -> str:
     """Return the appropriate LPG clock path given name
     """
+    prefixes = get_clock_prefixes(top, domain_mod)
     if unmanaged_clock:
         return top['unmanaged_clocks'].get_clock_by_signal_name(
             clk_name).cg_en_signal
     else:
         clk_name = clk_name.split('clk_')[-1]
-        return top['clocks'].hier_paths['lpg'] + clk_name
+        return prefixes['lpg'] + clk_name
+
+
+def get_reset_prefixes(top, domain_mod) -> dict:
+    rstmgr = find_module(top['module'], 'rstmgr')
+    domain_rstmgr = rstmgr.get('domain')
+
+    if domain_rstmgr == domain_mod or domain_mod is None:
+        prefixes = {
+            'top': f"{rstmgr['name']}_resets.",
+            'ext': '',
+            'lpg': f"{rstmgr['name']}_rst_en.",
+        }
+    else:
+        prefixes = {
+            'top': f"{rstmgr['name']}_resets_i.",
+            'ext': '',
+            'lpg': f"{rstmgr['name']}_rst_en_i.",
+        }
+
+    return prefixes
 
 
 def get_reset_path(top: object,
                    reset: Union[str, object],
+                   domain_mod: str = None,
                    shadow_sel: bool = False,
                    unmanaged_reset: bool = False) -> str:
     """Return the appropriate reset path given name
     """
+    prefixes = get_reset_prefixes(top, domain_mod)
     if unmanaged_reset:
         return top['unmanaged_resets'].get(reset['name']).signal_name
     else:
-        return top['resets'].get_path(reset['name'], reset['domain'],
+        return top['resets'].get_path(reset['name'], prefixes, reset['domain'],
                                       shadow_sel)
 
 
 def get_reset_lpg_path(top: object,
                        reset: Union[str, object],
+                       domain_mod: str = None,
                        shadow_sel: bool = False,
-                       domain: bool = None,
+                       reset_domain: str = None,
                        unmanaged_reset: bool = False) -> str:
     """Return the appropriate LPG reset path given name
     """
+    prefixes = get_reset_prefixes(top, domain_mod)
     if unmanaged_reset:
         return top['unmanaged_resets'].get(reset['name']).rst_en_signal_name
     else:
-        if domain is not None:
-            return top['resets'].get_lpg_path(reset['name'], domain,
+        if reset_domain is not None:
+            return top['resets'].get_lpg_path(reset['name'], prefixes, reset_domain,
                                               shadow_sel)
         else:
-            return top['resets'].get_lpg_path(reset['name'], reset['domain'],
+            return top['resets'].get_lpg_path(reset['name'], prefixes, reset['domain'],
                                               shadow_sel)
 
 
@@ -863,12 +983,14 @@ def make_bit_concatenation(sig_name: str, indices: List[int],
     return ''.join(acc)
 
 
-def num_rom_ctrl(modules: List[ConfigT]) -> int:
+def num_rom_ctrl(modules: List[ConfigT], domain: str = None) -> int:
     '''Return number of rom_ctrl's instantiated in the design
     '''
     num = 0
+
     for m in modules:
-        if m['type'] == 'rom_ctrl':
+        if m['type'] == 'rom_ctrl' and \
+           (domain is None or m.get('domain') == domain):
             num += 1
 
     return num
@@ -876,7 +998,8 @@ def num_rom_ctrl(modules: List[ConfigT]) -> int:
 
 def find_modules(modules: List[Dict[str, object]],
                  type: str,
-                 use_base_template_type=True) -> List[Dict[str, object]]:
+                 use_base_template_type=True,
+                 domain: str = None) -> List[Dict[str, object]]:
     '''Returns the modules of a given type
 
     If use_base_template_type is set to True, ipgen-based modules are
@@ -886,10 +1009,12 @@ def find_modules(modules: List[Dict[str, object]],
     modules_found = []
     for m in modules:
         if m.get('attr') == 'ipgen' and use_base_template_type:
-            if m['template_type'] == type:
+            if m['template_type'] == type and \
+               (domain is None or m.get('domain') == domain):
                 modules_found.append(m)
         else:
-            if m['type'] == type:
+            if m['type'] == type and \
+               (domain is None or m.get('domain') == domain):
                 modules_found.append(m)
 
     return modules_found
@@ -898,14 +1023,15 @@ def find_modules(modules: List[Dict[str, object]],
 def find_module(
         modules: List[Dict[str, object]],
         type: str,
-        use_base_template_type=True) -> Optional[Dict[str, object]]:
+        use_base_template_type=True,
+        domain: str = None) -> Optional[Dict[str, object]]:
     '''Returns the first module of a given type
 
     If use_base_template_type is set to True, ipgen-based modules are
     searched using the "template_type" attribute. If set to False,
     the search uses the "type" attribute instead.
     '''
-    mods = find_modules(modules, type, use_base_template_type)
+    mods = find_modules(modules, type, use_base_template_type, domain)
     return mods[0] if mods else None
 
 

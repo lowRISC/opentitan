@@ -104,6 +104,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic                         double_fault_seen_i,
 
   input  ibex_mubi_t                   fetch_enable_i,
+  input  ibex_mubi_t                   mcounteren_writable_i,
   output logic                         alert_minor_o,
   output logic                         alert_major_internal_o,
   output logic                         alert_major_bus_o,
@@ -247,6 +248,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic                        irq_nm;
     logic                        debug_req;
     ibex_mubi_t                  fetch_enable;
+    ibex_mubi_t                  mcounteren_writable;
     logic                        ic_scr_key_valid;
   } delayed_inputs_t;
 
@@ -310,24 +312,25 @@ module ibex_lockstep import ibex_pkg::*; #(
   end
 
   // Assign the inputs to the delay structure
-  assign shadow_inputs_in.instr_gnt        = instr_gnt_i;
-  assign shadow_inputs_in.instr_rvalid     = instr_rvalid_i;
-  assign shadow_inputs_in.instr_rdata      = instr_rdata_i;
-  assign shadow_inputs_in.instr_err        = instr_err_i;
-  assign shadow_inputs_in.data_gnt         = data_gnt_i;
-  assign shadow_inputs_in.data_rvalid      = data_rvalid_i;
-  assign shadow_inputs_in.data_rdata       = data_rdata_i;
-  assign shadow_inputs_in.data_err         = data_err_i;
-  assign shadow_inputs_in.rf_rdata_a       = rf_rdata_a_i;
-  assign shadow_inputs_in.rf_rdata_b       = rf_rdata_b_i;
-  assign shadow_inputs_in.irq_software     = irq_software_i;
-  assign shadow_inputs_in.irq_timer        = irq_timer_i;
-  assign shadow_inputs_in.irq_external     = irq_external_i;
-  assign shadow_inputs_in.irq_fast         = irq_fast_i;
-  assign shadow_inputs_in.irq_nm           = irq_nm_i;
-  assign shadow_inputs_in.debug_req        = debug_req_i;
-  assign shadow_inputs_in.fetch_enable     = fetch_enable_i;
-  assign shadow_inputs_in.ic_scr_key_valid = ic_scr_key_valid_i;
+  assign shadow_inputs_in.instr_gnt           = instr_gnt_i;
+  assign shadow_inputs_in.instr_rvalid        = instr_rvalid_i;
+  assign shadow_inputs_in.instr_rdata         = instr_rdata_i;
+  assign shadow_inputs_in.instr_err           = instr_err_i;
+  assign shadow_inputs_in.data_gnt            = data_gnt_i;
+  assign shadow_inputs_in.data_rvalid         = data_rvalid_i;
+  assign shadow_inputs_in.data_rdata          = data_rdata_i;
+  assign shadow_inputs_in.data_err            = data_err_i;
+  assign shadow_inputs_in.rf_rdata_a          = rf_rdata_a_i;
+  assign shadow_inputs_in.rf_rdata_b          = rf_rdata_b_i;
+  assign shadow_inputs_in.irq_software        = irq_software_i;
+  assign shadow_inputs_in.irq_timer           = irq_timer_i;
+  assign shadow_inputs_in.irq_external        = irq_external_i;
+  assign shadow_inputs_in.irq_fast            = irq_fast_i;
+  assign shadow_inputs_in.irq_nm              = irq_nm_i;
+  assign shadow_inputs_in.debug_req           = debug_req_i;
+  assign shadow_inputs_in.fetch_enable        = fetch_enable_i;
+  assign shadow_inputs_in.mcounteren_writable = mcounteren_writable_i;
+  assign shadow_inputs_in.ic_scr_key_valid    = ic_scr_key_valid_i;
 
   ///////////////////
   // Output delays //
@@ -554,6 +557,7 @@ module ibex_lockstep import ibex_pkg::*; #(
 `endif
 
     .fetch_enable_i         (shadow_inputs_q[0].fetch_enable),
+    .mcounteren_writable_i  (shadow_inputs_q[0].mcounteren_writable),
     .alert_minor_o          (shadow_alert_minor),
     .alert_major_internal_o (shadow_alert_major_internal),
     .alert_major_bus_o      (shadow_alert_major_bus),

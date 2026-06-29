@@ -18,7 +18,7 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
     cfg.sw_test_status_vif.can_pass_only_in_test = 0;
 
     // The steps in this test closely follow the gdb steps, which is embedded directly into the
-    // `opentitan_gdb_fpga_cw310_test` target `rom_e2e_debug_test_otp__<lc_state>` in the bazel
+    // `opentitan_gdb_fpga_cw340_test` target `rom_e2e_debug_test_otp__<lc_state>` in the bazel
     // BUILD file located at sw/device/silicon_creator/rom/e2e/BUILD.
 
     // Halt the CPU before the first instruction is executed. The chip just came out of POR - so

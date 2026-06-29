@@ -52,6 +52,9 @@ otcrypto_status_t otcrypto_kmac(
       kHardenedBoolFalse;
 
   // Ensure that tag buffer length and `required_output_len` match each other.
+  if (required_output_len > SIZE_MAX - (sizeof(uint32_t) - 1)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   size_t required_output_words =
       (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
@@ -98,7 +101,6 @@ otcrypto_status_t otcrypto_kmac(
 
     // Check `key_len` matches `keyblob_length`.
     if (key->keyblob_length != 2 * key->config.key_length) {
-      // COVERAGE (MISSING) We do not cover bad key_len inputs
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_TRY(keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));

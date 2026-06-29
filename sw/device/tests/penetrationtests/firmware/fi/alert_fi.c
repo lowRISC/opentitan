@@ -24,9 +24,7 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rom_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -72,9 +70,7 @@ static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux_aon;
-static dif_pwm_t pwm_aon;
 static dif_pwrmgr_t pwrmgr_aon;
 static dif_rom_ctrl_t rom_ctrl;
 static dif_rstmgr_t rstmgr_aon;
@@ -158,14 +154,8 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   TRY(dif_otp_ctrl_init(base_addr, &otp_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR);
-  TRY(dif_pattgen_init(base_addr, &pattgen));
-
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
   TRY(dif_pinmux_init(base_addr, &pinmux_aon));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR);
-  TRY(dif_pwm_init(base_addr, &pwm_aon));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
   TRY(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
@@ -368,91 +358,85 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
                                    kDifOtpCtrlAlertRecovPrimOtpAlert));
       break;
     case 37:
-      TRY(dif_pattgen_alert_force(&pattgen, kDifPattgenAlertFatalFault));
-      break;
-    case 38:
       TRY(dif_pinmux_alert_force(&pinmux_aon, kDifPinmuxAlertFatalFault));
       break;
-    case 39:
-      TRY(dif_pwm_alert_force(&pwm_aon, kDifPwmAlertFatalFault));
-      break;
-    case 40:
+    case 38:
       TRY(dif_pwrmgr_alert_force(&pwrmgr_aon, kDifPwrmgrAlertFatalFault));
       break;
-    case 41:
+    case 39:
       TRY(dif_rom_ctrl_alert_force(&rom_ctrl, kDifRomCtrlAlertFatal));
       break;
-    case 42:
+    case 40:
       TRY(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault));
       break;
-    case 43:
+    case 41:
       TRY(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalCnstyFault));
       break;
-    case 44:
+    case 42:
       TRY(dif_rv_core_ibex_alert_force(&rv_core_ibex,
                                        kDifRvCoreIbexAlertFatalSwErr));
       break;
-    case 45:
+    case 43:
       TRY(dif_rv_core_ibex_alert_force(&rv_core_ibex,
                                        kDifRvCoreIbexAlertRecovSwErr));
       break;
-    case 46:
+    case 44:
       TRY(dif_rv_core_ibex_alert_force(&rv_core_ibex,
                                        kDifRvCoreIbexAlertFatalHwErr));
       break;
-    case 47:
+    case 45:
       TRY(dif_rv_core_ibex_alert_force(&rv_core_ibex,
                                        kDifRvCoreIbexAlertRecovHwErr));
       break;
-    case 48:
+    case 46:
       TRY(dif_rv_plic_alert_force(&rv_plic, kDifRvPlicAlertFatalFault));
       break;
-    case 49:
+    case 47:
       TRY(dif_rv_timer_alert_force(&rv_timer, kDifRvTimerAlertFatalFault));
       break;
-    case 50:
+    case 48:
       TRY(dif_sensor_ctrl_alert_force(&sensor_ctrl_aon,
                                       kDifSensorCtrlAlertRecovAlert));
       break;
-    case 51:
+    case 49:
       TRY(dif_sensor_ctrl_alert_force(&sensor_ctrl_aon,
                                       kDifSensorCtrlAlertFatalAlert));
       break;
-    case 52:
+    case 50:
       TRY(dif_spi_device_alert_force(&spi_device,
                                      kDifSpiDeviceAlertFatalFault));
       break;
-    case 53:
+    case 51:
       TRY(dif_spi_host_alert_force(&spi_host0, kDifSpiHostAlertFatalFault));
       break;
-    case 54:
+    case 52:
       TRY(dif_spi_host_alert_force(&spi_host1, kDifSpiHostAlertFatalFault));
       break;
-    case 55:
+    case 53:
       TRY(dif_sram_ctrl_alert_force(&sram_ctrl_main,
                                     kDifSramCtrlAlertFatalError));
       break;
-    case 56:
+    case 54:
       TRY(dif_sram_ctrl_alert_force(&sram_ctrl_ret_aon,
                                     kDifSramCtrlAlertFatalError));
       break;
-    case 57:
+    case 55:
       TRY(dif_sysrst_ctrl_alert_force(&sysrst_ctrl_aon,
                                       kDifSysrstCtrlAlertFatalFault));
       break;
-    case 58:
+    case 56:
       TRY(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
       break;
-    case 59:
+    case 57:
       TRY(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));
       break;
-    case 60:
+    case 58:
       TRY(dif_uart_alert_force(&uart2, kDifUartAlertFatalFault));
       break;
-    case 61:
+    case 59:
       TRY(dif_uart_alert_force(&uart3, kDifUartAlertFatalFault));
       break;
-    case 62:
+    case 60:
       TRY(dif_usbdev_alert_force(&usbdev, kDifUsbdevAlertFatalFault));
       break;
     default:

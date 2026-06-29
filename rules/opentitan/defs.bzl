@@ -20,7 +20,6 @@ load(
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
-    _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
     _fpga_params = "fpga_params",
 )
@@ -84,12 +83,8 @@ opentitan_transition = _opentitan_transition
 
 opentitan_binary_blob = _opentitan_binary_blob
 fpga_cw305 = _fpga_cw305
-fpga_cw310 = _fpga_cw310
 fpga_cw340 = _fpga_cw340
 fpga_params = _fpga_params
-
-# Temporary export of the old name to prevent merge skew breakage.
-cw310_params = _fpga_params
 
 silicon = _silicon
 silicon_params = _silicon_params
@@ -116,9 +111,7 @@ opentitan_manual_test = _opentitan_manual_test
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
@@ -184,7 +177,7 @@ def _hacky_tags(env):
     if suffix.startswith("fpga"):
         tags.append("fpga")
 
-        # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
+        # We have tags like "cw340_rom_with_real_keys" or "cw340_test_rom"
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the
         # label name.
@@ -216,7 +209,7 @@ def exec_env_to_top_map(exec_env):
       //hw/top_earlgrey:<name_of_exec_env>. This directory is determined from the path
       of the top's hjson created by topgen.
     - or the target name must start with "top_<topname>", e.g.
-      top_earlgrey_fpga_cw310_sival_rom_ext_no_hyper
+      top_earlgrey_fpga_cw340_sival_rom_ext_no_hyper
     """
     top_map = {}
     for top in ALL_TOPS:
@@ -342,7 +335,6 @@ def opentitan_test(
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
-        "cw310": fpga,
         "fpga": fpga,
         "dv": dv,
         "silicon": silicon,
@@ -358,10 +350,6 @@ def opentitan_test(
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
 
-        # Temporary fallback to "cw310" if "fpga" parameters were not provided.
-        # Prevents merge skew problems while the default parameter name changes.
-        if pname == "fpga" and pname not in kwargs_unused:
-            pname = "cw310"
         if pname in kwargs_unused:
             kwargs_unused.remove(pname)
         if pname not in test_parameters:

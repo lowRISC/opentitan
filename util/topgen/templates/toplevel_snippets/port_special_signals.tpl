@@ -2,8 +2,10 @@
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
 <%import topgen.lib as lib%>\
-<%page args="top, feature_info, cio_info"/>\
+<%from topgen.merge import alert_handler_signals%>\
+<%page args="top, feature_info, cio_info, domain"/>\
 % if feature_info["has_pinmux"]:
+% if lib.find_module(top["module"], "pinmux").get("domain") == domain:
 % if cio_info["num_mio_pads"] != 0:
   // Multiplexed I/O
   input  logic ${lib.bitarray(cio_info["num_mio_pads"], cio_info["max_sigwidth"])} mio_in_i,
@@ -24,6 +26,7 @@
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 
+% endif
 % endif\
 
 % for irq_group, irqs in top['incoming_interrupt'].items():
@@ -36,19 +39,65 @@
   output logic [top_${top["name"]}_pkg::NOutgoingInterrupts${irq_group.capitalize()}-1:0] outgoing_interrupt_${irq_group}_o,
 % endfor\
 
-  // All externally supplied clocks
-% for clk in top['clocks'].typed_clocks().ast_clks:
-  input ${clk},
-% endfor\
+% for name, plic in top["plic_info"].items():
+<% prefix = "_" + name if len(top["plic_info"]) > 1 else "" %>\
+% if plic["domain"] == domain:
+  % for pd in top["power"]["domains"]:
+<% if pd == domain: continue %>\
+<% pd_len = plic["count_pd"][pd] - 1 %>\
+    % if pd_len >= 0:
+  // Interrupts from power domain ${pd}
+  input  logic [${pd_len}:0] intr_vector${prefix}_pd_${pd.lower()}_i,
+    % endif
+  % endfor
+% else:
+<% pd_len = plic["count_pd"][domain] - 1 %>\
+  % if pd_len >= 0:
+  // Interrupts to PLIC ${name} in power domain ${plic["domain"]}
+  output logic [${pd_len}:0] intr_vector${prefix}_o,
+  % endif
+% endif
+% endfor
+
+% if feature_info["has_alert_handler"]:
+% for name, ah in top["alert_handler_info"].items():
+<% signals = alert_handler_signals(name) %>\
+% if ah["domain"] == domain:
+  % for pd in top["power"]["domains"]:
+<% if pd == domain: continue %>\
+<% pd_len = ah["count_pd"][pd] - 1 %>\
+    % if pd_len >= 0:
+  // Alerts from power domain ${pd}
+  output prim_alert_pkg::alert_rx_t [${pd_len}:0] ${signals[1]}_pd_${pd.lower()}_o,
+  input  prim_alert_pkg::alert_tx_t [${pd_len}:0] ${signals[0]}_pd_${pd.lower()}_i,
+    % endif
+  % endfor
+% else:
+<% pd_len = ah["count_pd"][domain] - 1 %>\
+  % if pd_len >= 0:
+  // Alerts to power domain ${ah["domain"]}
+  input  prim_alert_pkg::alert_rx_t [${pd_len}:0] ${signals[1]}_i,
+  output prim_alert_pkg::alert_tx_t [${pd_len}:0] ${signals[0]}_o,
+  % endif
+% endif
+% endfor
+
+% endif\
 
 % for alert_group in top['outgoing_alert'].keys():
   // Outgoing alerts for group ${alert_group}
-  output prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_tx_o,
-  input  prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_rx_i,
+  output prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}Pd${domain.capitalize()}-1:0] outgoing_alert_${alert_group}_tx_o,
+  input  prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}Pd${domain.capitalize()}-1:0] outgoing_alert_${alert_group}_rx_i,
+% if lib.find_module(top["module"], "clkmgr", domain=domain):
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_cg_en_${alert_group}_o,
+% endif
+% if lib.find_module(top["module"], "rstmgr", domain=domain):
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_rst_en_${alert_group}_o,
+% endif
+
 % endfor\
 
+% if lib.find_module(top["module"], "alert_handler", domain=domain):
 % for alert_group in top['incoming_alert'].keys():
   // Incoming alerts for group ${alert_group}
   input  prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_tx_i,
@@ -56,13 +105,30 @@
   input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_cg_en_${alert_group}_i,
   input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_rst_en_${alert_group}_i,
 % endfor
-
-% if feature_info["has_ast"]:
-  // All clocks forwarded to ast
-  output clkmgr_pkg::clkmgr_out_t clks_ast_o,
-  output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
-
 % endif\
+
+<%
+  clkmgr = lib.find_module(top['module'], 'clkmgr')
+  rstmgr = lib.find_module(top['module'], 'rstmgr')
+  domain_clkmgr = clkmgr.get('domain')
+  domain_rstmgr = rstmgr.get('domain')
+%>\
+% if domain_clkmgr == domain:
+  // Externally supplied clocks
+  % for clk in top['clocks'].typed_clocks().ast_clks:
+  input ${clk},
+  % endfor
+% else:
+  // Clocks from clkmgr in power domain ${domain_clkmgr}
+  input clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_i,
+  input clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_i,
+% endif
+
+% if domain_rstmgr != domain:
+  // Resets from rstmgr in power domain ${domain_rstmgr}
+  input rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_i,
+  input rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_i,
+% endif
 
 % if len(top['unmanaged_clocks']._asdict().values()) > 0:
   // Unmanaged external clocks
@@ -82,8 +148,9 @@
 
 % endif\
 
-  input                      scan_rst_ni, // reset used for test mode
-% if feature_info["has_scan_en"]:
-  input                      scan_en_i,
+  // Manual DFT signals
+  input                        scan_rst_ni, // reset used for test mode
+% if feature_info["has_scan_en"][domain]:
+  input                        scan_en_i,
 % endif
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan

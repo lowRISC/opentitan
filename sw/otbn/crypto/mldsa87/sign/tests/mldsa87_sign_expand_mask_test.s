@@ -18,14 +18,15 @@ main:
   la x3, _expand_mask_y0_share1
   la x4, _expand_mask_rho_prime_share0
   la x5, _expand_mask_rho_prime_share1
-  addi x6, x0, 0 /* r */
+  la x6, _expand_mask_kappa
+  addi x7, x0, 0 /* r */
 
   /* Sample all mask polynomials Y[r], 0 <= r < 7. */
   loopi 7, 4
     jal x1, expand_mask
     addi x2, x2, 1024
     addi x3, x3, 1024
-    addi x6, x6, 1
+    addi x7, x7, 1
     /* End of loop */
 
   la x20, _expand_mask_y0_share0
@@ -39,9 +40,12 @@ main:
 .balign 32
 
 _expand_mask_rho_prime_share0:
-.zero 96
+.zero 64
 _expand_mask_rho_prime_share1:
-.zero 96
+.zero 64
+_expand_mask_kappa:
+.zero 2
+.zero 30 /* Padding */
 
 _params:
 .word 0x007fe001 /* q */

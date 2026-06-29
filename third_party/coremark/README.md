@@ -2,10 +2,10 @@
 
 ## Running CoreMark
 
-To build and run CoreMark on the CW310:
+To build and run CoreMark on the CW340:
 
 ```sh
-bazel test --test_tag_filters=cw310 \
+bazel test --test_tag_filters=cw340 \
 //third_party/coremark/top_earlgrey:coremark_test
 ```
 

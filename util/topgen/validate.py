@@ -65,6 +65,7 @@ top_optional = {
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupts': ['g', 'interrupt controller configuration'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
+    'plic_info': ['g', 'info about all PLICs present and number of interrupt sources'],
     'num_cores': ['pn', "number of computing units"],
     'outgoing_alert': ['g', 'the outgoing alert groups'],
     'outgoing_interrupt': ['g', 'the outgoing interrupt groups'],
@@ -74,7 +75,8 @@ top_optional = {
     'seed': ['g', "Seed information for topgen and subsequent flows"],
     'unmanaged_resets': ['l', 'List of unmanaged external resets'],
     'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
-    'default_plic': ['s', 'Modules not defining plic have interrupts sent here']
+    'default_plic': ['s', 'Modules not defining plic have interrupts sent here'],
+    'inter_pd': ['g', 'auto-generated struct containing multi-pd data objects']
 }
 
 top_added = {
@@ -109,6 +111,7 @@ pinmux_optional = {
     'num_wkup_detect': ['d', 'Number of wakeup detectors'],
     'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],
+    'inter_pd': ['g', 'Info about inter-PD pinmux related signals.'],
 }
 pinmux_added = {
     'ios': ['l', 'Full list of IO'],
@@ -421,6 +424,7 @@ interrupt_required = {
     'default_val': ['s', 'a string interpreted as boolean'],
     'incoming': ['s', 'a string interpreted as boolean'],
     'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
+    'domain': ['s', 'string that identifies the originating power domain'],
 }
 interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],

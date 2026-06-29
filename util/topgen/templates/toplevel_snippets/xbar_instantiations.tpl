@@ -3,18 +3,19 @@
 ## SPDX-License-Identifier: Apache-2.0
 <%import topgen.lib as lib%>\
 <%from topgen.merge import is_unmanaged_reset%>\
-<%page args="top"/>\
-  // TL-UL Crossbars
-% for xbar in top["xbar"]:
+<%page args="top, domain"/>\
+% if lib.find_modules(top["xbar"], "xbar", domain=domain):
+  // Instantiation of TL-UL crossbars
+% for xbar in lib.find_modules(top["xbar"], "xbar", domain=domain):
 <%
   name_len = max([len(x["name"]) for x in xbar["nodes"]]);
 %>\
   xbar_${xbar["name"]} u_xbar_${xbar["name"]} (
   % for k, v in xbar["clock_connections"].items():
-    .${k} (${v}),
+    .${k}(${v}),
   % endfor
   % for port, reset in xbar["reset_connections"].items():
-    .${port} (${lib.get_reset_path(top, reset, False, is_unmanaged_reset(top, reset['name']))}),
+    .${port}(${lib.get_reset_path(top, reset, False, is_unmanaged_reset(top, reset['name']))}),
   % endfor
 
   ## Inter-module signal
@@ -30,3 +31,4 @@
   );
 
 % endfor
+% endif\

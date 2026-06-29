@@ -62,7 +62,6 @@ JITTER_TESTCASES = [
         name = "jitter_{}_test".format(testcase["name"]),
         srcs = ["jitter_test.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = testcase["fpga"],

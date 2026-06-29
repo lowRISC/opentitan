@@ -25,6 +25,38 @@ static const uint8_t kDom2Prefix[34] = {
 };
 
 /**
+ * Extracts and verifies a Curve25519 masked scalar from a blinded key struct.
+ *
+ * This safely copies the blinded key material (two shares) from the opaque
+ * keyblob into the internal `curve25519_masked_scalar_t` representation.
+ *
+ * @param key The blinded key containing the raw 256-bit masked scalar shares.
+ * @param[out] scalar Destination struct for the extracted shares and checksum.
+ * @return OK on success, or an error code if a fault is detected.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t load_private_scalar(const otcrypto_blinded_key_t *key,
+                                    curve25519_masked_scalar_t *scalar) {
+  // From the key config we have two additional empty words per share in the
+  // keyblob Hence we copy from each share individually
+  size_t share_words = keyblob_share_num_words(key->config);
+
+  HARDENED_TRY(hardened_memcpy(scalar->share0, key->keyblob,
+                               kCurve25519MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(scalar->share1, key->keyblob + share_words,
+                               kCurve25519MaskedScalarShareWords));
+
+  // We only verify share0 as one badly copied share due to FI would only leave
+  // randomness
+  HARDENED_CHECK_EQ(hardened_memeq(key->keyblob, scalar->share0,
+                                   kCurve25519MaskedScalarShareWords),
+                    kHardenedBoolTrue);
+
+  scalar->checksum = curve25519_masked_scalar_checksum(scalar);
+  return OTCRYPTO_OK;
+}
+
+/**
  * Check the lengths of private keys for curve 25519.
  *
  * Checks the length of caller-allocated buffers for a 25519 private key.
@@ -324,7 +356,6 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
   } else {
     // Hardware backed keys are not possible due to the keys being SHA2 seeds
     // which does not allow sideloading.
-    // COVERAGE (SW ERR) Sideloading is not allowed with 25519.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -506,25 +537,24 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
   HARDENED_TRY(
       hardened_memcpy(s1->data, s.share1, kCurve25519MaskedScalarSWords));
 
-  // Prepend the dom2 prefix
-  size_t dom2_len =
-      (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
-  size_t msg_byte_len =
-      dom2_len + kCurve25519ScalarBytes + input_message_ph->len;
-  uint8_t msg_bytes[msg_byte_len];
-  size_t offset = 0;
+  // Compute SHA-512(prefix || PH(M))
+  otcrypto_sha2_context_t ctx;
+  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
 
-  if (dom2_len > 0) {
-    memcpy(msg_bytes, kDom2Prefix, dom2_len);
-    offset += dom2_len;
+  if (sign_mode == kOtcryptoEddsaSignModeHashEddsa) {
+    otcrypto_const_byte_buf_t dom2_buf =
+        otcrypto_make_const_byte_buf(kDom2Prefix, sizeof(kDom2Prefix));
+    HARDENED_TRY(otcrypto_sha2_update(&ctx, &dom2_buf));
   }
 
   // Compute SHA-512(prefix || PH(M)).
   uint32_t *prefix =
       key_digest.data + kCurve25519ScalarBytes / sizeof(uint32_t);
-  memcpy(&msg_bytes[offset], prefix, kCurve25519ScalarBytes);
-  offset += kCurve25519ScalarBytes;
-  memcpy(&msg_bytes[offset], input_message_ph->data, input_message_ph->len);
+  otcrypto_const_byte_buf_t prefix_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)prefix,
+                        kCurve25519ScalarBytes);
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, &prefix_buf));
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, input_message_ph));
 
   // Instantiate struct to store the message digest.
   uint32_t msg_digest_data[kCurve25519HashWords];
@@ -532,10 +562,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
   };
-
-  otcrypto_const_byte_buf_t msg_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, msg_byte_len);
-  HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
+  HARDENED_TRY(otcrypto_sha2_final(&ctx, &msg_digest));
 
   // Arithmetically mask r before passing it to the OTBN app.
   HARDENED_TRY(ed25519_mask_scalar(msg_digest.data, kCurve25519HashWords,
@@ -576,33 +603,33 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   reverse_bytecpy((uint8_t *)signature->data, (uint8_t *)sig_curve25519.r,
                   kCurve25519PointBytes);
 
-  // Prepend the dom2 prefix
-  size_t dom2_len =
-      (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
-  size_t challenge_byte_len =
-      dom2_len + input_message_ph->len + 2 * kCurve25519PointBytes;
-  uint8_t challenge_bytes[challenge_byte_len];
+  // Compute SHA512(R || A || PH(M))
+  otcrypto_sha2_context_t ctx;
+  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
 
-  memcpy(challenge_bytes, kDom2Prefix, dom2_len);
-  size_t offset = dom2_len;
+  if (sign_mode == kOtcryptoEddsaSignModeHashEddsa) {
+    otcrypto_const_byte_buf_t dom2_buf =
+        otcrypto_make_const_byte_buf(kDom2Prefix, sizeof(kDom2Prefix));
+    HARDENED_TRY(otcrypto_sha2_update(&ctx, &dom2_buf));
+  }
 
-  memcpy(&challenge_bytes[offset], (const uint8_t *)sig_curve25519.r,
-         kCurve25519PointBytes);
-  offset += kCurve25519PointBytes;
-  memcpy(&challenge_bytes[offset], (const uint8_t *)public_key_buf,
-         kCurve25519PointBytes);
-  offset += kCurve25519PointBytes;
-  memcpy(&challenge_bytes[offset], input_message_ph->data,
-         input_message_ph->len);
+  otcrypto_const_byte_buf_t r_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)sig_curve25519.r,
+      kCurve25519PointBytes);
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, &r_buf));
 
-  otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
+  otcrypto_const_byte_buf_t pub_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const uint8_t *)public_key_buf, kCurve25519PointBytes);
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, &pub_buf));
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, input_message_ph));
+
   uint32_t challenge_digest_data[kCurve25519HashWords];
   otcrypto_hash_digest_t challenge_digest = {
       .data = challenge_digest_data,
       .len = ARRAYSIZE(challenge_digest_data),
   };
-  HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
+  HARDENED_TRY(otcrypto_sha2_final(&ctx, &challenge_digest));
 
   curve25519_masked_scalar_s_t s;
   HARDENED_TRY(
@@ -660,33 +687,33 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   memcpy(sig_curve25519.s, &signature->data[kCurve25519PointWords],
          kCurve25519ScalarBytes);
 
-  // Prepend the dom2 prefix
-  size_t dom2_len =
-      (sign_mode == kOtcryptoEddsaSignModeHashEddsa) ? sizeof(kDom2Prefix) : 0;
-  size_t challenge_byte_len =
-      dom2_len + input_message_ph->len + 2 * kCurve25519PointBytes;
-  uint8_t challenge_bytes[challenge_byte_len];
+  // Compute SHA512(R || A || PH(M))
+  otcrypto_sha2_context_t ctx;
+  HARDENED_TRY(otcrypto_sha2_init(kOtcryptoHashModeSha512, &ctx));
 
-  memcpy(challenge_bytes, kDom2Prefix, dom2_len);
-  size_t offset = dom2_len;
+  if (sign_mode == kOtcryptoEddsaSignModeHashEddsa) {
+    otcrypto_const_byte_buf_t dom2_buf =
+        otcrypto_make_const_byte_buf(kDom2Prefix, sizeof(kDom2Prefix));
+    HARDENED_TRY(otcrypto_sha2_update(&ctx, &dom2_buf));
+  }
 
-  memcpy(&challenge_bytes[offset], (const uint8_t *)sig_curve25519.r,
-         kCurve25519PointBytes);
-  offset += kCurve25519PointBytes;
-  memcpy(&challenge_bytes[offset], (const uint8_t *)public_key->key,
-         kCurve25519PointBytes);
-  offset += kCurve25519PointBytes;
-  memcpy(&challenge_bytes[offset], input_message_ph->data,
-         input_message_ph->len);
+  otcrypto_const_byte_buf_t r_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)sig_curve25519.r,
+      kCurve25519PointBytes);
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, &r_buf));
 
-  otcrypto_const_byte_buf_t challenge_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_byte_buf_t, challenge_bytes, challenge_byte_len);
+  otcrypto_const_byte_buf_t pub_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)public_key->key,
+      kCurve25519PointBytes);
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, &pub_buf));
+  HARDENED_TRY(otcrypto_sha2_update(&ctx, input_message_ph));
+
   uint32_t challenge_digest_data[kCurve25519HashWords];
   otcrypto_hash_digest_t challenge_digest = {
       .data = challenge_digest_data,
       .len = ARRAYSIZE(challenge_digest_data),
   };
-  HARDENED_TRY(otcrypto_sha2_512(&challenge_buf, &challenge_digest));
+  HARDENED_TRY(otcrypto_sha2_final(&ctx, &challenge_digest));
 
   // Start the OTBN verify app.
   HARDENED_TRY_WIPE_DMEM(curve25519_verify_start(
@@ -729,11 +756,13 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 
     return otcrypto_eval_exit(curve25519_x25519_keygen_sideload_start());
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    uint32_t *share0 = private_key->keyblob;
-    uint32_t *share1 =
-        private_key->keyblob + keyblob_share_num_words(private_key->config);
+    curve25519_masked_scalar_t private_scalar;
+    HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
 
-    HARDENED_TRY(curve25519_x25519_keygen_start(share0, share1));
+    HARDENED_TRY(curve25519_x25519_keygen_start(&private_scalar));
+
+    HARDENED_TRY(hardened_memshred((uint32_t *)&private_scalar,
+                                   kCurve25519MaskedScalarTotalShareWords));
 
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
@@ -745,7 +774,8 @@ otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  // Clear the OTBN sideload slot (in case the seed was sideloaded).
+  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
 
 otcrypto_status_t otcrypto_x25519_async_start(
@@ -768,11 +798,13 @@ otcrypto_status_t otcrypto_x25519_async_start(
         curve25519_x25519_sideload_start(public_key->key));
 
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
-    uint32_t *share0 = private_key->keyblob;
-    uint32_t *share1 =
-        private_key->keyblob + keyblob_share_num_words(private_key->config);
+    curve25519_masked_scalar_t private_scalar;
+    HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
 
-    HARDENED_TRY(curve25519_x25519_start(share0, share1, public_key->key));
+    HARDENED_TRY(curve25519_x25519_start(&private_scalar, public_key->key));
+
+    HARDENED_TRY(hardened_memshred((uint32_t *)&private_scalar,
+                                   kCurve25519MaskedScalarTotalShareWords));
 
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
@@ -782,19 +814,8 @@ otcrypto_status_t otcrypto_x25519_async_start(
 
 otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
-  uint32_t unmasked_secret[kCurve25519PointWords];
-  memset(unmasked_secret, 0, sizeof(unmasked_secret));
-  HARDENED_TRY(curve25519_x25519_finalize(unmasked_secret));
-
-  uint32_t *share0 = shared_secret->keyblob;
-  uint32_t *share1 =
-      shared_secret->keyblob + keyblob_share_num_words(shared_secret->config);
-
-  HARDENED_TRY(hardened_memshred(share1, kCurve25519PointWords));
-
-  HARDENED_TRY(
-      hardened_sub(unmasked_secret, share1, kCurve25519PointWords, share0));
-
+  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shared_secret->keyblob));
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  // Clear the OTBN sideload slot (in case the seed was sideloaded).
+  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }

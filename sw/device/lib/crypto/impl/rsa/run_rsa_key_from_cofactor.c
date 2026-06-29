@@ -24,6 +24,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
                          rsa_d1);  // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
                          rsa_cofactor);  // Cofactor p or q.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
+                         ok);  // Status of the operation.
 
 // Declare mode constants.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor, MODE_COFACTOR_RSA_2048);
@@ -72,7 +74,6 @@ status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -99,6 +100,20 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
                                            uint32_t *private_key_d1) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+
+  uint32_t ok;
+  const otbn_addr_t kOtbnVarOk =
+      OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, ok);
+
+  // Read the status flag from OTBN memory
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarOk, &ok));
+
+  // Check if it matches the expected magic value
+  if (launder32(ok) != kHardenedBoolTrue) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_RECOV_ERR;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   size_t num_words = 0;
   uint32_t exp_mode = 0;
@@ -127,7 +142,6 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
       break;
     default:
       HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
       return OTCRYPTO_FATAL_ERR;
   }
 
@@ -138,7 +152,7 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
   if (act_mode != exp_mode) {
-    return OTCRYPTO_FATAL_ERR;
+    return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
 

@@ -6,17 +6,17 @@
 
 // This file must be `included in `hw/top_<toplevel>/dv/tb/tb.sv.
 
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.d2h = dut.top_darjeeling.u_``inst_name``.``sig_name``_i; \
-     force dut.top_darjeeling.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_darjeeling.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, pd_hier = ) \
+     force ``tl_name``_tl_if.d2h = dut.top_darjeeling``pd_hier``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_darjeeling``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
+     force dut.top_darjeeling``pd_hier``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_darjeeling.u_``inst_name``.``sig_name``_i; \
-     force dut.top_darjeeling.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_darjeeling.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, pd_hier = ) \
+     force ``tl_name``_tl_if.h2d = dut.top_darjeeling``pd_hier``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_darjeeling``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     force dut.top_darjeeling``pd_hier``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -154,8 +154,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl0__regs, rom_ctrl0, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl1__rom, rom_ctrl1, rom_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl1__regs, rom_ctrl1, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__core, soc_proxy, core_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__ctn, soc_proxy, ctn_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__core, soc_proxy, core_tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(soc_proxy__ctn, soc_proxy, ctn_tl, _pd_aon)
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aes, aes, tl)
@@ -199,17 +199,17 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_macro__prim, otp_macro, prim_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(soc_dbg_ctrl__core, soc_dbg_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx0__soc, mbx0, soc_tl_d)

@@ -126,21 +126,24 @@ module rom_ctrl
     // set 4 or 5 byte enables (4 for 32bit, 5 for 39bit)!
     localparam int NumBytes = (DataWidth + 7) / 8;
 
+    // ROM ctrl operates on unshared data and and accepts digest responses immediately.
     // SEC_CM: MEM.DIGEST
-    assign kmac_data_o = '{valid: kmac_rom_vld_outer,
-                           data: kmac_rom_data,
+    assign kmac_data_o = '{req_valid: kmac_rom_vld_outer,
+                           data_s0: kmac_rom_data,
+                           data_s1: '0,
                            strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
-                           last: kmac_rom_last_outer};
+                           req_last: kmac_rom_last_outer,
+                           rsp_ready: 1'b1};
 
-    assign kmac_rom_rdy_outer = kmac_data_i.ready;
-    assign kmac_done = kmac_data_i.done;
-    assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
+    assign kmac_rom_rdy_outer = kmac_data_i.req_ready;
+    assign kmac_done = kmac_data_i.rsp_valid;
+    assign kmac_digest = kmac_data_i.digest_s0[255:0] ^ kmac_data_i.digest_s1[255:0];
     assign kmac_err = kmac_data_i.error;
 
     logic unused_kmac_digest;
     assign unused_kmac_digest = ^{
-      kmac_data_i.digest_share0[kmac_pkg::AppDigestW-1:256],
-      kmac_data_i.digest_share1[kmac_pkg::AppDigestW-1:256]
+      kmac_data_i.digest_s0[kmac_pkg::AppDigestW-1:256],
+      kmac_data_i.digest_s1[kmac_pkg::AppDigestW-1:256]
     };
 
   end : gen_kmac_scramble_enabled
@@ -160,6 +163,10 @@ module rom_ctrl
     assign unused_kmac_outputs = ^{kmac_rom_vld, kmac_rom_data, kmac_rom_last};
 
   end : gen_kmac_scramble_disabled
+
+  // A static KMAC interface has no finish response.
+  logic unused_kmac_finish_rsp;
+  assign unused_kmac_finish_rsp = kmac_data_i.rsp_finish;
 
   // TL interface ==============================================================
   // This buffer ensures that when we calculate bus_rom_prince_index by snooping on
@@ -185,6 +192,7 @@ module rom_ctrl
   tlul_adapter_sram #(
     .SramAw(RomIndexWidth),
     .SramDw(32),
+    .SramDepth(RomSizeWords),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1),
@@ -556,17 +564,18 @@ module rom_ctrl
   `ASSERT_KNOWN_IF(KeymgrDataODataKnown_A, keymgr_data_o, keymgr_data_o.valid)
 
   // The valid signal for kmac_data_o should always be known when out of reset. The rest of the
-  // struct (data, strb and last) should be known whenever the valid signal is true.
-  `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
-  `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
+  // struct (data, strb and req_last) should be known whenever the valid signal is true.
+  `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.req_valid)
+  `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.req_valid)
 
-  // Check that kmac_data_o.last is "telling the truth": kmac_data_o.valid should drop on the cycle
-  // after the word that it decorates is transferred.
+  // Check that kmac_data_o.req_last is "telling the truth": kmac_data_o.rsp_valid should drop on
+  // the cycle after the word that it decorates is transferred.
   `ASSERT(KmacLastTrue_A,
-          kmac_data_o.valid && kmac_data_i.ready && kmac_data_o.last |=> !kmac_data_o.valid)
+          kmac_data_o.req_valid && kmac_data_i.req_ready && kmac_data_o.req_last
+          |=> !kmac_data_o.req_valid)
 
   // Check that pwrmgr_data_o.good is stable when kmac_data_o.valid is asserted
-  `ASSERT(StabilityChkKmac_A, kmac_data_o.valid && $past(kmac_data_o.valid)
+  `ASSERT(StabilityChkKmac_A, kmac_data_o.req_valid && $past(kmac_data_o.req_valid)
           |-> $stable(pwrmgr_data_o.good))
 
   // Check that pwrmgr_data_o.good is stable when keymgr_data_o.valid is asserted

@@ -11,7 +11,7 @@
 
 /**
  * @file
- * @brief Device-specific symbol definitions for the ChipWhisperer CW310 device.
+ * @brief Device-specific symbol definitions for the ChipWhisperer CW340 device.
  */
 
 const device_type_t kDeviceType = kDeviceFpgaCw340;

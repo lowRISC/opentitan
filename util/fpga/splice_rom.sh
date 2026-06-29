@@ -10,12 +10,12 @@
 #   ./util/fpga/splice_rom.sh
 #
 # The updated bitstream is located at the same place as the original Vivado bitstream e.g. at
-# $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
-#  lowrisc_systems_chip_earlgrey_cw310_0.1.bit
+# $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw340_0.1/synth-vivado/
+#  lowrisc_systems_chip_earlgrey_cw340_0.1.bit
 #
 # A copy of the original bitstream is created at e.g. at
-# $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw310_0.1/synth-vivado/
-#  lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
+# $REPO_TOP/build/lowrisc_systems_chip_earlgrey_cw340_0.1/synth-vivado/
+#  lowrisc_systems_chip_earlgrey_cw340_0.1.bit.orig
 set -e
 
 . util/build_consts.sh
@@ -26,7 +26,7 @@ Utility script to load ROM contents into the FPGA bitstream.
 
 Usage: $0 [-t TARGET_BOARD] [-T TARGET_TOP] [-b DV | PROD]
 
-  - t: Target board: cw310, cw305.
+  - t: Target board: cw340, cw305.
   - T: Target top: earlgrey.
   - b: ROM binary, set to either DV or PROD.
 
@@ -38,7 +38,7 @@ USAGE
 }
 
 # Change these variables when using the script for a different top level and/or FPGA board.
-FLAGS_TARGET_BOARD="cw310"
+FLAGS_TARGET_BOARD="cw340"
 FLAGS_TARGET_TOP="earlgrey"
 FLAGS_BIN="DV"
 

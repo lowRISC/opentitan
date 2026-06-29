@@ -1100,9 +1100,11 @@ module chip_darjeeling_asic #(
   tlul_pkg::tl_h2d_t ast_tl_req;
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
-  // synchronization clocks / rests
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  // Generated clocks, resets, and enable signals
+  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
+  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_aon_cg_en;
+  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
+  rstmgr_pkg::rstmgr_rst_en_t rstmgr_aon_rst_en;
 
   // monitored clock
   logic sck_monitor;
@@ -1538,6 +1540,61 @@ module chip_darjeeling_asic #(
   logic soc_rst_req_async;
   assign soc_rst_req_async = 1'b0;
 
+  // Inter-Power Domain signals
+  logic [2:0] intr_vector_pd_aon;
+  prim_alert_pkg::alert_tx_t [7:0] alert_tx_pd_aon;
+  prim_alert_pkg::alert_rx_t [7:0] alert_rx_pd_aon;
+  alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump;
+  prim_esc_pkg::esc_rx_t       alert_handler_esc_rx;
+  prim_esc_pkg::esc_tx_t       alert_handler_esc_tx;
+  logic       aon_timer_aon_nmi_wdog_timer_bark;
+  otp_ctrl_pkg::sram_otp_key_req_t       otp_ctrl_sram_otp_key_req;
+  otp_ctrl_pkg::sram_otp_key_rsp_t       otp_ctrl_sram_otp_key_rsp;
+  pwrmgr_pkg::pwr_otp_req_t       pwrmgr_aon_pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_aon_pwr_otp_rsp;
+  lc_ctrl_pkg::pwr_lc_req_t       pwrmgr_aon_pwr_lc_req;
+  lc_ctrl_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
+  logic       pwrmgr_aon_strap;
+  logic       pwrmgr_aon_low_power;
+  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
+  rom_ctrl_pkg::pwrmgr_data_t [2:0] pwrmgr_aon_rom_ctrl;
+  pwrmgr_pkg::pwr_boot_status_t       pwrmgr_aon_boot_status;
+  dma_pkg::lsio_trigger_t       dma_lsio_trigger;
+  logic       i2c0_lsio_trigger;
+  logic       spi_host0_lsio_trigger;
+  logic       uart0_lsio_trigger;
+  prim_mubi_pkg::mubi4_t [3:0] clkmgr_aon_idle;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
+  rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
+  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
+  logic       rv_dm_ndmreset_req;
+  tlul_pkg::tl_h2d_t       soc_proxy_dma_tl_h2d;
+  tlul_pkg::tl_d2h_t       soc_proxy_dma_tl_d2h;
+  tlul_pkg::tl_h2d_t       soc_proxy_ctn_tl_h2d;
+  tlul_pkg::tl_d2h_t       soc_proxy_ctn_tl_d2h;
+  logic       pwrmgr_aon_wakeups;
+  tlul_pkg::tl_h2d_t       soc_proxy_core_tl_req;
+  tlul_pkg::tl_d2h_t       soc_proxy_core_tl_rsp;
+  tlul_pkg::tl_h2d_t       soc_proxy_ctn_tl_req;
+  tlul_pkg::tl_d2h_t       soc_proxy_ctn_tl_rsp;
+  tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
+  tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
+  tlul_pkg::tl_d2h_t       rstmgr_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       clkmgr_aon_tl_req;
+  tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_ram_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_ram_tl_rsp;
+  tlul_pkg::tl_h2d_t       aon_timer_aon_tl_req;
+  tlul_pkg::tl_d2h_t       aon_timer_aon_tl_rsp;
+  logic [15:0] cio_soc_proxy_soc_gpi_p2d;
+  logic [15:0] cio_soc_proxy_soc_gpo_d2p;
+  logic [15:0] cio_soc_proxy_soc_gpo_en_d2p;
+
   //////////////////////
   // Top-level design //
   //////////////////////
@@ -1547,126 +1604,18 @@ module chip_darjeeling_asic #(
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
   ) top_darjeeling (
-    // AST clock and reset signals
-    .clk_main_i(ast_base_clks.clk_sys),
-    .clk_io_i  (ast_base_clks.clk_io ),
-    .clk_aon_i (ast_base_clks.clk_aon),
-    .clks_ast_o(clkmgr_aon_clocks    ),
-    .rsts_ast_o(rstmgr_aon_resets    ),
+    // Clocks and clock gating control from clkmgr_aon
+    .clkmgr_aon_clocks_i(clkmgr_aon_clocks),
+    .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en),
+
+    // Resets and reset assert info from rstmgr_aon
+    .rstmgr_aon_resets_i(rstmgr_aon_resets),
+    .rstmgr_aon_rst_en_i(rstmgr_aon_rst_en),
 
     // Manual DFT signals
-    .scan_en_i  (scan_en   ),
     .scan_rst_ni(scan_rst_n),
+    .scan_en_i  (scan_en   ),
     .scanmode_i (scanmode  ),
-
-    // Auto-generated port map
-    .ast_lc_dft_en_o                          (lc_dft_en                 ),
-    .ast_lc_hw_debug_en_o                     (                          ),
-    .obs_ctrl_i                               (obs_ctrl                  ),
-    .rom_ctrl0_cfg_i                          (rom_ctrl0_cfg             ),
-    .rom_ctrl1_cfg_i                          (rom_ctrl1_cfg             ),
-    .i2c_ram_1p_cfg_i                         (ram_1p_cfg                ),
-    .i2c_ram_1p_cfg_rsp_o                     (                          ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_i           (ram_1p_cfg                ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o       (                          ),
-    .sram_ctrl_main_ram_1p_cfg_i              (ram_1p_cfg                ),
-    .sram_ctrl_main_ram_1p_cfg_rsp_o          (                          ),
-    .sram_ctrl_mbox_ram_1p_cfg_i              (ram_1p_cfg                ),
-    .sram_ctrl_mbox_ram_1p_cfg_rsp_o          (                          ),
-    .otbn_imem_ram_1p_cfg_i                   (ram_1p_cfg                ),
-    .otbn_imem_ram_1p_cfg_rsp_o               (                          ),
-    .otbn_dmem_ram_1p_cfg_i                   (ram_1p_cfg                ),
-    .otbn_dmem_ram_1p_cfg_rsp_o               (                          ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_i     (ram_1p_cfg                ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o (                          ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_i    (ram_1p_cfg                ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o(                          ),
-    .spi_device_ram_2p_cfg_sys2spi_i          (spi_ram_2p_cfg            ),
-    .spi_device_ram_2p_cfg_rsp_sys2spi_o      (                          ),
-    .spi_device_ram_2p_cfg_rsp_spi2sys_o      (                          ),
-    .spi_device_ram_2p_cfg_spi2sys_i          (spi_ram_2p_cfg            ),
-    .pwrmgr_boot_status_o                     (pwrmgr_boot_status        ),
-    .pwrmgr_ext_rst_ack_i                     (1'b0                      ),
-    .clk_main_jitter_en_o                     (clk_main_jitter_en        ),
-    .dma_sys_req_o                            (                          ),
-    .dma_sys_rsp_i                            (dma_pkg::SYS_RSP_DEFAULT  ),
-    .es_rng_enable_o                          (es_rng_enable             ),
-    .es_rng_valid_i                           (es_rng_valid              ),
-    .es_rng_bit_i                             (es_rng_bit                ),
-    .es_rng_fips_o                            (es_rng_fips               ),
-    .mbx_tl_req_i                             (tlul_pkg::TL_H2D_DEFAULT  ),
-    .mbx_tl_rsp_o                             (                          ),
-    .mbx0_doe_intr_o                          (                          ),
-    .mbx0_doe_intr_en_o                       (                          ),
-    .mbx0_doe_intr_support_o                  (                          ),
-    .mbx0_doe_async_msg_support_o             (                          ),
-    .mbx1_doe_intr_o                          (                          ),
-    .mbx1_doe_intr_en_o                       (                          ),
-    .mbx1_doe_intr_support_o                  (                          ),
-    .mbx1_doe_async_msg_support_o             (                          ),
-    .mbx2_doe_intr_o                          (                          ),
-    .mbx2_doe_intr_en_o                       (                          ),
-    .mbx2_doe_intr_support_o                  (                          ),
-    .mbx2_doe_async_msg_support_o             (                          ),
-    .mbx3_doe_intr_o                          (                          ),
-    .mbx3_doe_intr_en_o                       (                          ),
-    .mbx3_doe_intr_support_o                  (                          ),
-    .mbx3_doe_async_msg_support_o             (                          ),
-    .mbx4_doe_intr_o                          (                          ),
-    .mbx4_doe_intr_en_o                       (                          ),
-    .mbx4_doe_intr_support_o                  (                          ),
-    .mbx4_doe_async_msg_support_o             (                          ),
-    .mbx5_doe_intr_o                          (                          ),
-    .mbx5_doe_intr_en_o                       (                          ),
-    .mbx5_doe_intr_support_o                  (                          ),
-    .mbx5_doe_async_msg_support_o             (                          ),
-    .mbx6_doe_intr_o                          (                          ),
-    .mbx6_doe_intr_en_o                       (                          ),
-    .mbx6_doe_intr_support_o                  (                          ),
-    .mbx6_doe_async_msg_support_o             (                          ),
-    .mbx_jtag_doe_intr_o                      (                          ),
-    .mbx_jtag_doe_intr_en_o                   (                          ),
-    .mbx_jtag_doe_intr_support_o              (                          ),
-    .mbx_jtag_doe_async_msg_support_o         (                          ),
-    .mbx_pcie0_doe_intr_o                     (                          ),
-    .mbx_pcie0_doe_intr_en_o                  (                          ),
-    .mbx_pcie0_doe_intr_support_o             (                          ),
-    .mbx_pcie0_doe_async_msg_support_o        (                          ),
-    .mbx_pcie1_doe_intr_o                     (                          ),
-    .mbx_pcie1_doe_intr_en_o                  (                          ),
-    .mbx_pcie1_doe_intr_support_o             (                          ),
-    .mbx_pcie1_doe_async_msg_support_o        (                          ),
-    .dbg_tl_req_i                             (dmi_req                   ),
-    .dbg_tl_rsp_o                             (dmi_rsp                   ),
-    .rv_dm_next_dm_addr_i                     ('0                        ),
-    .ast_tl_req_o                             (ast_tl_req                ),
-    .ast_tl_rsp_i                             (ast_tl_rsp                ),
-    .pwrmgr_ast_req_o                         (pwrmgr_ast_req            ),
-    .pwrmgr_ast_rsp_i                         (pwrmgr_ast_rsp            ),
-    .otp_macro_pwr_seq_o                      (otp_macro_pwr_seq         ),
-    .otp_macro_pwr_seq_h_i                    (otp_macro_pwr_seq_h       ),
-    .otp_ext_voltage_h_io                     (OTP_EXT_VOLT              ),
-    .otp_obs_o                                (otp_obs                   ),
-    .otp_cfg_i                                (otp_cfg                   ),
-    .otp_cfg_rsp_o                            (otp_cfg_rsp               ),
-    .por_n_i                                  (por_n                     ),
-    .fpga_info_i                              ('0                        ),
-    .ctn_misc_tl_h2d_i                        (ctn_misc_tl_h2d_i         ),
-    .ctn_misc_tl_d2h_o                        (ctn_misc_tl_d2h_o         ),
-    .soc_wkup_async_i                         (1'b0                      ),
-    .soc_rst_req_async_i                      (soc_rst_req_async         ),
-    .soc_lsio_trigger_i                       ('0                        ),
-    .soc_gpi_async_o                          (                          ),
-    .soc_gpo_async_i                          ('0                        ),
-    .integrator_id_i                          ('0                        ),
-    .sck_monitor_o                            (sck_monitor               ),
-    .soc_dbg_policy_bus_o                     (soc_dbg_policy_bus        ),
-    .debug_halt_cpu_boot_i                    (1'b0                      ),
-    .racl_policies_o                          (                          ),
-    .racl_error_i                             (ext_racl_error            ),
-    .ac_range_check_overwrite_i               (ac_range_check_overwrite_i),
-    .ctn_tl_h2d_o                             (ctn_tl_h2d[0]             ),
-    .ctn_tl_d2h_i                             (ctn_tl_d2h[0]             ),
 
     // Multiplexed I/O
     .mio_in_i (mio_in ),
@@ -1680,7 +1629,252 @@ module chip_darjeeling_asic #(
 
     // Pad attributes
     .mio_attr_o(mio_attr),
-    .dio_attr_o(dio_attr)
+    .dio_attr_o(dio_attr),
+
+    // Special inter-power domain signals (interrupts, alerts)
+    .intr_vector_pd_aon_i(intr_vector_pd_aon),
+
+    .alert_tx_pd_aon_i(alert_tx_pd_aon),
+    .alert_rx_pd_aon_o(alert_rx_pd_aon),
+
+    // Ports to and from other power domains (auto-generated)
+    .alert_handler_crashdump_o          (alert_handler_crashdump  ),
+    .alert_handler_esc_rx_i             (alert_handler_esc_rx     ),
+    .alert_handler_esc_tx_o             (alert_handler_esc_tx     ),
+    .aon_timer_aon_nmi_wdog_timer_bark_i(aon_timer_aon_nmi_wdog_timer_bark),
+    .otp_ctrl_sram_otp_key_req_i        (otp_ctrl_sram_otp_key_req),
+    .otp_ctrl_sram_otp_key_rsp_o        (otp_ctrl_sram_otp_key_rsp),
+    .pwrmgr_aon_pwr_otp_req_i           (pwrmgr_aon_pwr_otp_req   ),
+    .pwrmgr_aon_pwr_otp_rsp_o           (pwrmgr_aon_pwr_otp_rsp   ),
+    .pwrmgr_aon_pwr_lc_req_i            (pwrmgr_aon_pwr_lc_req    ),
+    .pwrmgr_aon_pwr_lc_rsp_o            (pwrmgr_aon_pwr_lc_rsp    ),
+    .pwrmgr_aon_strap_i                 (pwrmgr_aon_strap         ),
+    .pwrmgr_aon_low_power_i             (pwrmgr_aon_low_power     ),
+    .pwrmgr_aon_fetch_en_i              (pwrmgr_aon_fetch_en      ),
+    .pwrmgr_aon_rom_ctrl_o              (pwrmgr_aon_rom_ctrl      ),
+    .pwrmgr_aon_boot_status_i           (pwrmgr_aon_boot_status   ),
+    .dma_lsio_trigger_i                 (dma_lsio_trigger         ),
+    .i2c0_lsio_trigger_o                (i2c0_lsio_trigger        ),
+    .spi_host0_lsio_trigger_o           (spi_host0_lsio_trigger   ),
+    .uart0_lsio_trigger_o               (uart0_lsio_trigger       ),
+    .clkmgr_aon_idle_o                  (clkmgr_aon_idle          ),
+    .lc_ctrl_lc_dft_en_o                (lc_ctrl_lc_dft_en        ),
+    .lc_ctrl_lc_hw_debug_en_o           (lc_ctrl_lc_hw_debug_en   ),
+    .lc_ctrl_lc_escalate_en_o           (lc_ctrl_lc_escalate_en   ),
+    .rv_core_ibex_crash_dump_o          (rv_core_ibex_crash_dump  ),
+    .rv_core_ibex_pwrmgr_o              (rv_core_ibex_pwrmgr      ),
+    .rv_dm_ndmreset_req_o               (rv_dm_ndmreset_req       ),
+    .soc_proxy_dma_tl_h2d_o             (soc_proxy_dma_tl_h2d     ),
+    .soc_proxy_dma_tl_d2h_i             (soc_proxy_dma_tl_d2h     ),
+    .soc_proxy_ctn_tl_h2d_i             (soc_proxy_ctn_tl_h2d     ),
+    .soc_proxy_ctn_tl_d2h_o             (soc_proxy_ctn_tl_d2h     ),
+    .pwrmgr_aon_wakeups_o               (pwrmgr_aon_wakeups       ),
+    .soc_proxy_core_tl_req_o            (soc_proxy_core_tl_req    ),
+    .soc_proxy_core_tl_rsp_i            (soc_proxy_core_tl_rsp    ),
+    .soc_proxy_ctn_tl_req_o             (soc_proxy_ctn_tl_req     ),
+    .soc_proxy_ctn_tl_rsp_i             (soc_proxy_ctn_tl_rsp     ),
+    .pwrmgr_aon_tl_req_o                (pwrmgr_aon_tl_req        ),
+    .pwrmgr_aon_tl_rsp_i                (pwrmgr_aon_tl_rsp        ),
+    .rstmgr_aon_tl_req_o                (rstmgr_aon_tl_req        ),
+    .rstmgr_aon_tl_rsp_i                (rstmgr_aon_tl_rsp        ),
+    .clkmgr_aon_tl_req_o                (clkmgr_aon_tl_req        ),
+    .clkmgr_aon_tl_rsp_i                (clkmgr_aon_tl_rsp        ),
+    .sram_ctrl_ret_aon_regs_tl_req_o    (sram_ctrl_ret_aon_regs_tl_req),
+    .sram_ctrl_ret_aon_regs_tl_rsp_i    (sram_ctrl_ret_aon_regs_tl_rsp),
+    .sram_ctrl_ret_aon_ram_tl_req_o     (sram_ctrl_ret_aon_ram_tl_req),
+    .sram_ctrl_ret_aon_ram_tl_rsp_i     (sram_ctrl_ret_aon_ram_tl_rsp),
+    .aon_timer_aon_tl_req_o             (aon_timer_aon_tl_req     ),
+    .aon_timer_aon_tl_rsp_i             (aon_timer_aon_tl_rsp     ),
+    .cio_soc_proxy_soc_gpi_p2d_o        (cio_soc_proxy_soc_gpi_p2d),
+    .cio_soc_proxy_soc_gpo_d2p_i        (cio_soc_proxy_soc_gpo_d2p),
+    .cio_soc_proxy_soc_gpo_en_d2p_i     (cio_soc_proxy_soc_gpo_en_d2p),
+
+    // Regular ports (auto-generated)
+    .ast_lc_dft_en_o                          (lc_dft_en               ),
+    .ast_lc_hw_debug_en_o                     (                        ),
+    .obs_ctrl_i                               (obs_ctrl                ),
+    .rom_ctrl0_cfg_i                          (rom_ctrl0_cfg           ),
+    .rom_ctrl1_cfg_i                          (rom_ctrl1_cfg           ),
+    .i2c_ram_1p_cfg_i                         (ram_1p_cfg              ),
+    .i2c_ram_1p_cfg_rsp_o                     (                        ),
+    .sram_ctrl_main_ram_1p_cfg_i              (ram_1p_cfg              ),
+    .sram_ctrl_main_ram_1p_cfg_rsp_o          (                        ),
+    .sram_ctrl_mbox_ram_1p_cfg_i              (ram_1p_cfg              ),
+    .sram_ctrl_mbox_ram_1p_cfg_rsp_o          (                        ),
+    .otbn_imem_ram_1p_cfg_i                   (ram_1p_cfg              ),
+    .otbn_imem_ram_1p_cfg_rsp_o               (                        ),
+    .otbn_dmem_ram_1p_cfg_i                   (ram_1p_cfg              ),
+    .otbn_dmem_ram_1p_cfg_rsp_o               (                        ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_i     (ram_1p_cfg              ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o (                        ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_i    (ram_1p_cfg              ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o(                        ),
+    .spi_device_ram_2p_cfg_sys2spi_i          (spi_ram_2p_cfg          ),
+    .spi_device_ram_2p_cfg_rsp_sys2spi_o      (                        ),
+    .spi_device_ram_2p_cfg_rsp_spi2sys_o      (                        ),
+    .spi_device_ram_2p_cfg_spi2sys_i          (spi_ram_2p_cfg          ),
+    .dma_sys_req_o                            (                        ),
+    .dma_sys_rsp_i                            (dma_pkg::SYS_RSP_DEFAULT),
+    .es_rng_enable_o                          (es_rng_enable           ),
+    .es_rng_valid_i                           (es_rng_valid            ),
+    .es_rng_bit_i                             (es_rng_bit              ),
+    .es_rng_fips_o                            (es_rng_fips             ),
+    .mbx_tl_req_i                             (tlul_pkg::TL_H2D_DEFAULT),
+    .mbx_tl_rsp_o                             (                        ),
+    .mbx0_doe_intr_o                          (                        ),
+    .mbx0_doe_intr_en_o                       (                        ),
+    .mbx0_doe_intr_support_o                  (                        ),
+    .mbx0_doe_async_msg_support_o             (                        ),
+    .mbx1_doe_intr_o                          (                        ),
+    .mbx1_doe_intr_en_o                       (                        ),
+    .mbx1_doe_intr_support_o                  (                        ),
+    .mbx1_doe_async_msg_support_o             (                        ),
+    .mbx2_doe_intr_o                          (                        ),
+    .mbx2_doe_intr_en_o                       (                        ),
+    .mbx2_doe_intr_support_o                  (                        ),
+    .mbx2_doe_async_msg_support_o             (                        ),
+    .mbx3_doe_intr_o                          (                        ),
+    .mbx3_doe_intr_en_o                       (                        ),
+    .mbx3_doe_intr_support_o                  (                        ),
+    .mbx3_doe_async_msg_support_o             (                        ),
+    .mbx4_doe_intr_o                          (                        ),
+    .mbx4_doe_intr_en_o                       (                        ),
+    .mbx4_doe_intr_support_o                  (                        ),
+    .mbx4_doe_async_msg_support_o             (                        ),
+    .mbx5_doe_intr_o                          (                        ),
+    .mbx5_doe_intr_en_o                       (                        ),
+    .mbx5_doe_intr_support_o                  (                        ),
+    .mbx5_doe_async_msg_support_o             (                        ),
+    .mbx6_doe_intr_o                          (                        ),
+    .mbx6_doe_intr_en_o                       (                        ),
+    .mbx6_doe_intr_support_o                  (                        ),
+    .mbx6_doe_async_msg_support_o             (                        ),
+    .mbx_jtag_doe_intr_o                      (                        ),
+    .mbx_jtag_doe_intr_en_o                   (                        ),
+    .mbx_jtag_doe_intr_support_o              (                        ),
+    .mbx_jtag_doe_async_msg_support_o         (                        ),
+    .mbx_pcie0_doe_intr_o                     (                        ),
+    .mbx_pcie0_doe_intr_en_o                  (                        ),
+    .mbx_pcie0_doe_intr_support_o             (                        ),
+    .mbx_pcie0_doe_async_msg_support_o        (                        ),
+    .mbx_pcie1_doe_intr_o                     (                        ),
+    .mbx_pcie1_doe_intr_en_o                  (                        ),
+    .mbx_pcie1_doe_intr_support_o             (                        ),
+    .mbx_pcie1_doe_async_msg_support_o        (                        ),
+    .dbg_tl_req_i                             (dmi_req                 ),
+    .dbg_tl_rsp_o                             (dmi_rsp                 ),
+    .rv_dm_next_dm_addr_i                     ('0                      ),
+    .ast_tl_req_o                             (ast_tl_req              ),
+    .ast_tl_rsp_i                             (ast_tl_rsp              ),
+    .otp_macro_pwr_seq_o                      (otp_macro_pwr_seq       ),
+    .otp_macro_pwr_seq_h_i                    (otp_macro_pwr_seq_h     ),
+    .otp_ext_voltage_h_io                     (OTP_EXT_VOLT            ),
+    .otp_obs_o                                (otp_obs                 ),
+    .otp_cfg_i                                (otp_cfg                 ),
+    .fpga_info_i                              ('0                      ),
+    .sck_monitor_o                            (sck_monitor             ),
+    .soc_dbg_policy_bus_o                     (soc_dbg_policy_bus      ),
+    .debug_halt_cpu_boot_i                    (1'b0                    ),
+    .racl_policies_o                          (                        ),
+    .racl_error_i                             (ext_racl_error          ),
+    .ac_range_check_overwrite_i               (ac_range_check_overwrite_i),
+    .ctn_tl_h2d_o                             (ctn_tl_h2d[0]           ),
+    .ctn_tl_d2h_i                             (ctn_tl_d2h[0]           )
+  );
+
+
+  //////////////////////
+  // Always-on Domain //
+  //////////////////////
+  top_darjeeling_pd_aon top_darjeeling_pd_aon (
+    // All externally supplied clocks
+    .clk_main_i(ast_base_clks.clk_sys),
+    .clk_io_i  (ast_base_clks.clk_io ),
+    .clk_aon_i (ast_base_clks.clk_aon),
+
+    // Manual DFT signals
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i (scanmode  ),
+
+    // Special inter-power domain signals (interrupts, alerts)
+    .intr_vector_o(intr_vector_pd_aon),
+
+    .alert_tx_o(alert_tx_pd_aon),
+    .alert_rx_i(alert_rx_pd_aon),
+
+    // Ports to and from other power domains (auto-generated)
+    .alert_handler_crashdump_i          (alert_handler_crashdump  ),
+    .alert_handler_esc_rx_o             (alert_handler_esc_rx     ),
+    .alert_handler_esc_tx_i             (alert_handler_esc_tx     ),
+    .aon_timer_aon_nmi_wdog_timer_bark_o(aon_timer_aon_nmi_wdog_timer_bark),
+    .otp_ctrl_sram_otp_key_req_o        (otp_ctrl_sram_otp_key_req),
+    .otp_ctrl_sram_otp_key_rsp_i        (otp_ctrl_sram_otp_key_rsp),
+    .pwrmgr_aon_pwr_otp_req_o           (pwrmgr_aon_pwr_otp_req   ),
+    .pwrmgr_aon_pwr_otp_rsp_i           (pwrmgr_aon_pwr_otp_rsp   ),
+    .pwrmgr_aon_pwr_lc_req_o            (pwrmgr_aon_pwr_lc_req    ),
+    .pwrmgr_aon_pwr_lc_rsp_i            (pwrmgr_aon_pwr_lc_rsp    ),
+    .pwrmgr_aon_strap_o                 (pwrmgr_aon_strap         ),
+    .pwrmgr_aon_low_power_o             (pwrmgr_aon_low_power     ),
+    .pwrmgr_aon_fetch_en_o              (pwrmgr_aon_fetch_en      ),
+    .pwrmgr_aon_rom_ctrl_i              (pwrmgr_aon_rom_ctrl      ),
+    .pwrmgr_aon_boot_status_o           (pwrmgr_aon_boot_status   ),
+    .dma_lsio_trigger_o                 (dma_lsio_trigger         ),
+    .i2c0_lsio_trigger_i                (i2c0_lsio_trigger        ),
+    .spi_host0_lsio_trigger_i           (spi_host0_lsio_trigger   ),
+    .uart0_lsio_trigger_i               (uart0_lsio_trigger       ),
+    .clkmgr_aon_idle_i                  (clkmgr_aon_idle          ),
+    .lc_ctrl_lc_dft_en_i                (lc_ctrl_lc_dft_en        ),
+    .lc_ctrl_lc_hw_debug_en_i           (lc_ctrl_lc_hw_debug_en   ),
+    .lc_ctrl_lc_escalate_en_i           (lc_ctrl_lc_escalate_en   ),
+    .rv_core_ibex_crash_dump_i          (rv_core_ibex_crash_dump  ),
+    .rv_core_ibex_pwrmgr_i              (rv_core_ibex_pwrmgr      ),
+    .rv_dm_ndmreset_req_i               (rv_dm_ndmreset_req       ),
+    .soc_proxy_dma_tl_h2d_i             (soc_proxy_dma_tl_h2d     ),
+    .soc_proxy_dma_tl_d2h_o             (soc_proxy_dma_tl_d2h     ),
+    .soc_proxy_ctn_tl_h2d_o             (soc_proxy_ctn_tl_h2d     ),
+    .soc_proxy_ctn_tl_d2h_i             (soc_proxy_ctn_tl_d2h     ),
+    .pwrmgr_aon_wakeups_i               (pwrmgr_aon_wakeups       ),
+    .soc_proxy_core_tl_req_i            (soc_proxy_core_tl_req    ),
+    .soc_proxy_core_tl_rsp_o            (soc_proxy_core_tl_rsp    ),
+    .soc_proxy_ctn_tl_req_i             (soc_proxy_ctn_tl_req     ),
+    .soc_proxy_ctn_tl_rsp_o             (soc_proxy_ctn_tl_rsp     ),
+    .pwrmgr_aon_tl_req_i                (pwrmgr_aon_tl_req        ),
+    .pwrmgr_aon_tl_rsp_o                (pwrmgr_aon_tl_rsp        ),
+    .rstmgr_aon_tl_req_i                (rstmgr_aon_tl_req        ),
+    .rstmgr_aon_tl_rsp_o                (rstmgr_aon_tl_rsp        ),
+    .clkmgr_aon_tl_req_i                (clkmgr_aon_tl_req        ),
+    .clkmgr_aon_tl_rsp_o                (clkmgr_aon_tl_rsp        ),
+    .sram_ctrl_ret_aon_regs_tl_req_i    (sram_ctrl_ret_aon_regs_tl_req),
+    .sram_ctrl_ret_aon_regs_tl_rsp_o    (sram_ctrl_ret_aon_regs_tl_rsp),
+    .sram_ctrl_ret_aon_ram_tl_req_i     (sram_ctrl_ret_aon_ram_tl_req),
+    .sram_ctrl_ret_aon_ram_tl_rsp_o     (sram_ctrl_ret_aon_ram_tl_rsp),
+    .aon_timer_aon_tl_req_i             (aon_timer_aon_tl_req     ),
+    .aon_timer_aon_tl_rsp_o             (aon_timer_aon_tl_rsp     ),
+    .cio_soc_proxy_soc_gpi_p2d_i        (cio_soc_proxy_soc_gpi_p2d),
+    .cio_soc_proxy_soc_gpo_d2p_o        (cio_soc_proxy_soc_gpo_d2p),
+    .cio_soc_proxy_soc_gpo_en_d2p_o     (cio_soc_proxy_soc_gpo_en_d2p),
+
+    // Regular ports (auto-generated)
+    .sram_ctrl_ret_aon_ram_1p_cfg_i    (ram_1p_cfg        ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o(                  ),
+    .pwrmgr_boot_status_o              (pwrmgr_boot_status),
+    .pwrmgr_ext_rst_ack_i              (1'b0              ),
+    .clkmgr_aon_clocks_o               (clkmgr_aon_clocks ),
+    .clkmgr_aon_cg_en_o                (clkmgr_aon_cg_en  ),
+    .clk_main_jitter_en_o              (clk_main_jitter_en),
+    .pwrmgr_ast_req_o                  (pwrmgr_ast_req    ),
+    .pwrmgr_ast_rsp_i                  (pwrmgr_ast_rsp    ),
+    .por_n_i                           (por_n             ),
+    .rstmgr_aon_resets_o               (rstmgr_aon_resets ),
+    .rstmgr_aon_rst_en_o               (rstmgr_aon_rst_en ),
+    .ctn_misc_tl_h2d_i                 (ctn_misc_tl_h2d_i ),
+    .ctn_misc_tl_d2h_o                 (ctn_misc_tl_d2h_o ),
+    .soc_wkup_async_i                  (1'b0              ),
+    .soc_rst_req_async_i               (soc_rst_req_async ),
+    .soc_lsio_trigger_i                ('0                ),
+    .soc_gpi_async_o                   (                  ),
+    .soc_gpo_async_i                   ('0                ),
+    .integrator_id_i                   ('0                )
   );
 
   logic unused_signals;

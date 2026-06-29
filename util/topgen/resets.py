@@ -10,8 +10,7 @@ from .clocks import Clocks
 class ResetItem:
     '''Individual resets'''
 
-    def __init__(self, hier: Dict[str, str], raw: Dict[str, object],
-                 clocks: Clocks):
+    def __init__(self, raw: Dict[str, object], clocks: Clocks):
         if not raw['name']:
             raise ValueError('Reset has no name')
 
@@ -21,15 +20,15 @@ class ResetItem:
 
         self.path = ""
         if self.rst_type == 'top':
-            self.path = f"{hier['top']}rst_{self.name}_n"
-            self.lpg_path = f"{hier['lpg']}{self.name}"
+            self.path = f"rst_{self.name}_n"
+            self.lpg_path = self.name
         elif self.rst_type == 'ext':
-            self.path = f"{hier['ext']}{self.name}"
+            self.path = self.name
 
         self.shadow_path = ""
         if self.rst_type == 'top':
-            self.shadow_path = f"{hier['top']}rst_{self.name}_shadowed_n"
-            self.shadow_lpg_path = f"{hier['lpg']}{self.name}_shadowed"
+            self.shadow_path = f"rst_{self.name}_shadowed_n"
+            self.shadow_lpg_path = f"{self.name}_shadowed"
 
         # to be constructed later
         self.domains = []
@@ -69,26 +68,18 @@ class Resets:
     '''Resets for the chip'''
 
     def __init__(self, raw: Dict[str, object], clocks: Clocks):
-        self.hier_paths = {}
-        assert isinstance(raw['hier_paths'], dict)
-        for rst_src, path in raw['hier_paths'].items():
-            self.hier_paths[str(rst_src)] = str(path)
-
         assert isinstance(raw['nodes'], list)
 
         self.nodes = {}
         for node in raw['nodes']:
             assert isinstance(node, dict)
-            reset = ResetItem(self.hier_paths, node, clocks)
+            reset = ResetItem(node, clocks)
             self.nodes[reset.name] = reset
 
     def _asdict(self) -> Dict[str, object]:
-        ret = {
-            'hier_paths': self.hier_paths,
+        return {
             'nodes': list(self.nodes.values())
         }
-
-        return ret
 
     def get_reset_by_name(self, name: str) -> ResetItem:
 
@@ -136,7 +127,7 @@ class Resets:
 
         return [reset for reset in self.nodes.values() if reset.sw]
 
-    def get_path(self, name: str, domain: Optional[str], shadow=False) -> str:
+    def get_path(self, name: str, prefixes, domain: Optional[str], shadow=False) -> str:
         '''Get path to reset'''
 
         reset = self.get_reset_by_name(name)
@@ -145,12 +136,12 @@ class Resets:
                 f'Reset {name} is not a reset exported from rstmgr')
 
         if reset.rst_type == 'ext':
-            return reset.path
+            return prefixes['ext'] + reset.path
 
         if shadow:
-            path = reset.shadow_path
+            path = prefixes['top'] + reset.shadow_path
         else:
-            path = reset.path
+            path = prefixes['top'] + reset.path
 
         if domain:
             path += f'[rstmgr_pkg::Domain{domain}Sel]'
@@ -159,6 +150,7 @@ class Resets:
 
     def get_lpg_path(self,
                      name: str,
+                     prefixes: dict,
                      domain: Optional[str],
                      shadow=False) -> str:
         '''Get path to lpg indication signals'''
@@ -173,9 +165,9 @@ class Resets:
                 f'External reset {name} cannot be associated with an LPG')
 
         if shadow:
-            path = reset.shadow_lpg_path
+            path = prefixes['lpg'] + reset.shadow_lpg_path
         else:
-            path = reset.lpg_path
+            path = prefixes['lpg'] + reset.lpg_path
 
         if domain:
             path += f'[rstmgr_pkg::Domain{domain}Sel]'

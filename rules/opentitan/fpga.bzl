@@ -5,7 +5,6 @@
 load(
     "@lowrisc_opentitan//rules/opentitan:providers.bzl",
     "Cw305BinaryInfo",
-    "Cw310BinaryInfo",
     "Cw340BinaryInfo",
 )
 load(
@@ -117,7 +116,7 @@ def _test_dispatch(ctx, exec_env, firmware):
       (File, List[File]) The test script and needed runfiles.
     """
     if ctx.attr.kind == "rom":
-        fail("CW310 is not capable of executing ROM tests")
+        fail("FPGA is not capable of executing ROM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
 
@@ -172,21 +171,6 @@ def _test_dispatch(ctx, exec_env, firmware):
         is_executable = True,
     )
     return script, data_files
-
-def _fpga_cw310(ctx):
-    fields = exec_env_as_dict(ctx)
-    return ExecEnvInfo(
-        provider = Cw310BinaryInfo,
-        test_dispatch = _test_dispatch,
-        transform = _transform,
-        **fields
-    )
-
-fpga_cw310 = rule(
-    implementation = _fpga_cw310,
-    attrs = exec_env_common_attrs(),
-    toolchains = [LOCALTOOLS_TOOLCHAIN],
-)
 
 def _fpga_cw305(ctx):
     fields = exec_env_as_dict(ctx)
@@ -263,7 +247,7 @@ def fpga_params(
     return struct(
         # We do not yet know what FPGA platform the test will target (as this is
         # defined in the execution environment), so we do not know that tag
-        # (out of: "cw305", "cw310", ...") to apply. Therefore, we apply the tag
+        # (out of: "cw305", "cw340", ...") to apply. Therefore, we apply the tag
         # via the "_hacky_tags" macro in "rules/opentitan/defs.bzl".
         tags = ["exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
         timeout = timeout,

@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -74,7 +73,6 @@ SIGVERIFY_BAD_CASES = [
             case["b"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
@@ -84,7 +82,7 @@ SIGVERIFY_BAD_CASES = [
                 if case[slot] == "bad"
             ]),
             binaries = {
-                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_{}_{}_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin"
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_{}_{}_corrupted_fpga_cw340_rom_with_fake_keys_signed_bin"
                     .format(
                     slot,
                     filter_key_structs_for_lc_state(ECDSA_ONLY_KEY_STRUCTS, lc_state_val)[0].ecdsa.name,

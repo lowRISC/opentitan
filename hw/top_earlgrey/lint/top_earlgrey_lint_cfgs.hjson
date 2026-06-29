@@ -117,12 +117,6 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/lc_ctrl/lint/{tool}"
              },
-             {    name: pattgen
-                  fusesoc_core: lowrisc:ip:pattgen
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/ip/pattgen/lint/{tool}"
-             },
              {    name: keymgr
                   fusesoc_core: lowrisc:ip:keymgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -147,12 +141,6 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/pinmux/lint/{tool}"
              },
-             {    name: pwm
-                  fusesoc_core: lowrisc:earlgrey_ip:pwm
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/top_earlgrey/ip_autogen/pwm/lint/{tool}"
-             },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:earlgrey_ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
@@ -164,6 +152,18 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/rom_ctrl/lint/{tool}"
+             },
+             #{    name: rram_ctrl
+             #     fusesoc_core: lowrisc:ip:rram_ctrl
+             #     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+             #     additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+             #     rel_path: "hw/ip/rram_ctrl/lint/{tool}"
+             #},
+             {    name: rram_macro
+                  fusesoc_core: lowrisc:ip:rram_macro
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  rel_path: "hw/ip/rram_macro/lint/{tool}"
              },
              {    name: rstmgr
                   fusesoc_core: lowrisc:earlgrey_ip:rstmgr

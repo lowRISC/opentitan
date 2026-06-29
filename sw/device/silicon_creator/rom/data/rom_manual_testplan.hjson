@@ -92,8 +92,8 @@
       tests: []
     }
     {
-      name: rom_manual_e2e_fpga_cw310
-      desc: '''Verify that all ROM e2e tests pass on the FPGA_CW310 device.'''
+      name: rom_manual_e2e_fpga_cw340
+      desc: '''Verify that all ROM e2e tests pass on the FPGA_CW340 device.'''
       tags: ["manual"]
       stage: V2
       tests: []
@@ -117,7 +117,7 @@
       desc: '''Verify that the hash of the unscrambled ROM binary matches the expected value.
 
             Run the ROM self hash test with:
-            `bazel test //sw/device/silicon_creator/rom/e2e:rom_e2e_self_hash_test_fpga_cw310_rom_with_real_keys --test_output=streamed`
+            `bazel test //sw/device/silicon_creator/rom/e2e:rom_e2e_self_hash_test_fpga_cw340_rom_with_real_keys --test_output=streamed`
             '''
       tags: ["manual"]
       stage: V2

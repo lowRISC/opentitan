@@ -14,9 +14,9 @@ readonly WORKSPACE_PATH
 WORKSPACE_PATH=$(${BAZEL} info workspace)
 readonly BITSTREAM_PATH
 BITSTREAM_PATH=${WORKSPACE_PATH}/$(${BAZEL} cquery --output=starlark --starlark:expr "target.files.to_list()[0].path" "${BITSTREAM_TARGET}")
-readonly COVERAGE_TEST_TARGET="//sw/device/tests:coverage_test_fpga_cw310_test_rom"
+readonly COVERAGE_TEST_TARGET="//sw/device/tests:coverage_test_fpga_cw340_test_rom"
 readonly COVERAGE_TEST_LOG
-COVERAGE_TEST_LOG="$(${BAZEL} info bazel-testlogs)/sw/device/tests/coverage_test_fpga_cw310_test_rom/test.log"
+COVERAGE_TEST_LOG="$(${BAZEL} info bazel-testlogs)/sw/device/tests/coverage_test_fpga_cw340_test_rom/test.log"
 
 # Build and program bitstream with uninstrumented ROM
 log "Bitstream target: ${BITSTREAM_TARGET}"
@@ -24,7 +24,7 @@ log "Bitstream path: ${BITSTREAM_PATH}"
 log "Building bitstream..."
 ${BAZEL} build "${BITSTREAM_TARGET}"
 log "Programming the FPGA..."
-${BAZEL} run //sw/host/opentitantool -- --uarts=/dev/opentitan/cw_310_uart_0,/dev/opentitan/cw_310_uart_1 fpga load-bitstream "${BITSTREAM_PATH}"
+${BAZEL} run //sw/host/opentitantool -- --uarts=/dev/opentitan/cw_340_uart_0,/dev/opentitan/cw_340_uart_1 fpga load-bitstream "${BITSTREAM_PATH}"
 # Measure coverage
 log "Measuring coverage..."
 ${BAZEL} coverage --define bitstream=skip --test_output=streamed --config=ot_coverage_on_target "${COVERAGE_TEST_TARGET}"

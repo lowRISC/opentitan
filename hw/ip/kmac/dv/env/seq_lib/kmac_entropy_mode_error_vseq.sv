@@ -31,13 +31,13 @@ class kmac_entropy_mode_error_vseq extends kmac_edn_timeout_error_vseq;
   virtual task check_keymgr_rsp_nonblocking();
     fork begin
       while (cfg.en_scb == 0 && entropy_fetched == 0) begin
-        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.done == 1);
+        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.rsp_valid == 1);
         if (cfg.enable_masking && kmac_err_type == ErrIncorrectEntropyMode) begin
           if (entropy_fetched == 0) begin
             `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.error, 1)
           end
         end
-        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.done == 0);
+        wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.rsp_valid == 0);
       end
     end join_none
   endtask

@@ -49,12 +49,10 @@ hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
 hw/ip/otp_ctrl/rtl/*
 hw/ip/otp_macro/rtl/*
-hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
 hw/ip/prim_xilinx/rtl/*
 hw/ip/prim_xilinx_ultrascale/rtl/*
-hw/ip/pwm/rtl/*
 hw/ip/rom_ctrl/rtl/*
 hw/ip/rv_core_ibex/rtl/*
 hw/ip/rv_dm/rtl/*
@@ -74,7 +72,6 @@ hw/ip/rv_timer/data/rv_timer.hjson
 hw/ip/spi_host/data/spi_host.hjson
 hw/ip/spi_device/data/spi_device.hjson
 hw/ip/adc_ctrl/data/adc_ctrl.hjson
-hw/ip/pattgen/data/pattgen.hjson
 hw/ip/keymgr/data/keymgr.hjson
 hw/ip/edn/data/edn.hjson
 hw/ip/csrng/data/csrng.hjson
@@ -114,7 +111,6 @@ hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson
 hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson
 hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
-hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 hw/top_earlgrey/ip_autogen/gpio/rtl/gpio.hjson

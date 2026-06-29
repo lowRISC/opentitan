@@ -2,17 +2,17 @@
 ## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 ## SPDX-License-Identifier: Apache-2.0
 <%import topgen.lib as lib%>\
-<%page args="top"/>\
+<%page args="top, domain"/>\
 <%
-last_modidx_with_params = lib.idx_of_last_module_with_params(top)
+last_modidx_with_params = lib.idx_of_last_module_with_params(top, domain)
 %>\
-% if not lib.num_rom_ctrl(top["module"]):
+% if lib.num_rom_ctrl(lib.get_all_modules(top)) == 0:
   // Manually defined parameters
   parameter BootRomInitFile = "",
 
 % endif
   // Auto-inferred parameters
-% for m in top["module"]:
+% for m in lib.get_all_modules(top, domain=domain):
   % if not lib.is_inst(m):
 <% continue %>
   % endif

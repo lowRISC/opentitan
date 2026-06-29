@@ -49,7 +49,7 @@ filesets:
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
-  # --BootRomInitFile=$PWD/build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem
+  # --BootRomInitFile=$PWD/build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw340.scr.39.vmem
   # XXX: The VMEM file should be added to the sources of the Vivado project to
   # make the Vivado dependency tracking work. However this requires changes to
   # fusesoc first.

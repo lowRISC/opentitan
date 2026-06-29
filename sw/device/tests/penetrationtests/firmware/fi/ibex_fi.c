@@ -296,7 +296,13 @@ OT_ALWAYS_INLINE void save_all_regs(uint32_t buffer[]) {
  *
  * @param buffer: The buffer to store the register file content.
  */
-OT_ALWAYS_INLINE void save_tmp_regs(uint32_t buffer[]) {
+OT_ALWAYS_INLINE void save_tmp_regs(void) {
+  register uint32_t *buffer asm("x10");
+  asm volatile(
+      "1: auipc x10, %%pcrel_hi(registers_dumped)\n"
+      "   addi x10, x10, %%pcrel_lo(1b)\n"
+      : "=r"(buffer));
+
   asm volatile("mv %0, x5" : "=r"(buffer[kRegX5]));
   asm volatile("mv %0, x6" : "=r"(buffer[kRegX6]));
   asm volatile("mv %0, x7" : "=r"(buffer[kRegX7]));
@@ -374,7 +380,7 @@ OT_ALWAYS_INLINE void restore_all_regs(uint32_t buffer[]) {
   restore_all_regs(registers_saved);
 
 // Save the temporary registers.
-#define DUMP_TMP_REGISTER_FILE save_tmp_regs(registers_dumped);
+#define DUMP_TMP_REGISTER_FILE save_tmp_regs();
 
 // Flash information.
 static dif_flash_ctrl_state_t flash;

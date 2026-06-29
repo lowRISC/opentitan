@@ -1,0 +1,53 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:ip:rram_macro:0.1
+description: "Open-source RRAM macro for emulation purposes"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:lfsr
+      - lowrisc:ip:jtag_pkg
+      - lowrisc:ip:rram_ctrl_pkg
+      - lowrisc:ip:rram_macro_pkg
+      - lowrisc:prim:ram_1p
+    files:
+      - rtl/rram_macro_prim_reg_top.sv
+      - rtl/rram_macro.sv
+    file_type: systemVerilogSource
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/rram_macro.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: rram_macro
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

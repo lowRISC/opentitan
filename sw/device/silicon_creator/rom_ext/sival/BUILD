@@ -48,7 +48,6 @@ ROM_EXT_FEATURES = [
         }),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
@@ -82,7 +81,6 @@ ROM_EXT_FEATURES = [
         name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
-            "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),

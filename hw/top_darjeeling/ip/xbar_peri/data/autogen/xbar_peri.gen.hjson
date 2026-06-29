@@ -24,7 +24,7 @@
   }
   clock_connections:
   {
-    clk_peri_i: clkmgr_aon_clocks.clk_io_infra
+    clk_peri_i: clkmgr_aon_clocks_i.clk_io_infra
   }
   domain: Main
   connections:
@@ -484,6 +484,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: main_tl_peri
       index: -1
     }
@@ -496,6 +497,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: uart0_tl
       index: -1
     }
@@ -508,6 +510,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: i2c0_tl
       index: -1
     }
@@ -520,6 +523,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: gpio_tl
       index: -1
     }
@@ -532,6 +536,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: spi_host0_tl
       index: -1
     }
@@ -544,6 +549,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: spi_device_tl
       index: -1
     }
@@ -556,6 +562,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: rv_timer_tl
       index: -1
     }
@@ -568,8 +575,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: pwrmgr_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_rstmgr_aon
@@ -580,8 +590,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: rstmgr_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_clkmgr_aon
@@ -592,8 +605,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: clkmgr_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_pinmux_aon
@@ -604,6 +620,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: pinmux_aon_tl
       index: -1
     }
@@ -616,6 +633,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: otp_ctrl_core_tl
       index: -1
     }
@@ -628,6 +646,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: otp_macro_prim_tl
       index: -1
     }
@@ -640,6 +659,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: lc_ctrl_regs_tl
       index: -1
     }
@@ -652,6 +672,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: alert_handler_tl
       index: -1
     }
@@ -664,8 +685,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_ret_aon_regs_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_sram_ctrl_ret_aon__ram
@@ -676,8 +700,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: sram_ctrl_ret_aon_ram_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_aon_timer_aon
@@ -688,8 +715,11 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: aon_timer_aon_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_ast
@@ -714,6 +744,7 @@
       inst_name: peri
       width: 1
       default: ""
+      domain: Main
       top_signame: soc_dbg_ctrl_core_tl
       index: -1
     }

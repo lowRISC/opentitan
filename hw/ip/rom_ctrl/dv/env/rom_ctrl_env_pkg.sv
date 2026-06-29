@@ -30,18 +30,21 @@ package rom_ctrl_env_pkg;
   parameter uint   NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal"};
 
-  // The exact number of word address bits.
-  // Will be set to 15 for ROM0 and 16 for ROM1.
-  `ifndef ROM_BYTE_ADDR_WIDTH
-   `define ROM_BYTE_ADDR_WIDTH 32
+  // The exact ROM size in bytes.
+  // Will be set to 32 KiB for ROM0 and 64 KiB ROM1.
+  // Can be a non-power-of-2 size but must be a multiple of 16 KiB for due to the
+  // scrambling.
+  `ifndef ROM_SIZE_BYTES
+    `define ROM_SIZE_BYTES 2**15
   `endif
 
   // The top bytes in memory hold the digest
   // KMAC's max digest size is larger than what is required, so declare the size here.
   parameter uint DIGEST_SIZE    = 256;
-  parameter uint ROM_WORD_ADDR_WIDTH = `ROM_BYTE_ADDR_WIDTH - $clog2(TL_DW / 8);
-  parameter uint ROM_SIZE_BYTES = 2 ** `ROM_BYTE_ADDR_WIDTH;
-  parameter uint ROM_SIZE_WORDS = 2 ** ROM_WORD_ADDR_WIDTH;
+  parameter uint ROM_SIZE_BYTES = `ROM_SIZE_BYTES;
+  parameter uint ROM_BYTE_ADDR_WIDTH = $clog2(ROM_SIZE_BYTES);
+  parameter uint ROM_WORD_ADDR_WIDTH = ROM_BYTE_ADDR_WIDTH - $clog2(TL_DW / 8);
+  parameter uint ROM_SIZE_WORDS = ROM_SIZE_BYTES / (TL_DW / 8);
   parameter uint MAX_CHECK_ADDR = ROM_SIZE_BYTES - (DIGEST_SIZE / 8);
   // The data for each line in rom up to the digest padded to the next byte boundary
   parameter uint KMAC_DATA_WORD_SIZE = (39 + 7) / 8;

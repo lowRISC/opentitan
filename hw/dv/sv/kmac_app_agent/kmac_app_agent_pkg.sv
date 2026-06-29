@@ -16,9 +16,9 @@ package kmac_app_agent_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter int KMAC_REQ_DATA_WIDTH = keymgr_pkg::KmacDataIfWidth       // data width
-                                      + keymgr_pkg::KmacDataIfWidth / 8 // data mask width
-                                      + 1;                              // bit last
+  parameter int KMAC_REQ_DATA_WIDTH = 2 * kmac_pkg::MsgWidth   // share0 + share1
+                                      + kmac_pkg::MsgWidth / 8 // strobe
+                                      + 2;                     // req_last + rsp_ready
 
   `define CONNECT_DATA_WIDTH .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)
 

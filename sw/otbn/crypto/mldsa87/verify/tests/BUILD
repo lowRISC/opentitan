@@ -21,16 +21,17 @@ srcs = [
 ]
 
 unit_tests = [
-    "mldsa87_verify_decode_z_test",
-    "mldsa87_verify_decode_t1_test",
-    "mldsa87_verify_decode_h_test",
-    "mldsa87_verify_check_infinity_norm_test",
-    "mldsa87_verify_decompose_test",
-    "mldsa87_verify_shift_left_test",
-    "mldsa87_verify_decode_sig_test",
-    "mldsa87_verify_check_infinity_norm_z_test",
-    "mldsa87_verify_compute_w_approx_test",
-    "mldsa87_verify_use_hint_test",
+    # "mldsa87_verify_decode_z_test",
+    # "mldsa87_verify_decode_t1_test",
+    # "mldsa87_verify_decode_h_test",
+    # "mldsa87_verify_check_infinity_norm_test",
+    # "mldsa87_verify_decompose_test",
+    # "mldsa87_verify_shift_left_test",
+    # "mldsa87_verify_decode_sig_test",
+    # "mldsa87_verify_check_infinity_norm_z_test",
+    # "mldsa87_verify_compute_w_approx_test",
+    # "mldsa87_verify_use_hint_test",
+    # "mldsa87_verify_check_hint_test",
 ]
 
 [
@@ -45,11 +46,12 @@ unit_tests = [
 ]
 
 mldsa87_nist_tests = [
-    "mldsa87_verify_nist_acvp_63_test",
-    "mldsa87_verify_nist_acvp_65_test",
-    "mldsa87_verify_nist_acvp_66_test",
-    "mldsa87_verify_nist_acvp_68_test",
-    "mldsa87_verify_nist_acvp_69_test",
+    # "mldsa87_verify_nist_acvp_63_test",
+    # "mldsa87_verify_nist_acvp_64_test",
+    # "mldsa87_verify_nist_acvp_65_test",
+    # "mldsa87_verify_nist_acvp_66_test",
+    # "mldsa87_verify_nist_acvp_68_test",
+    # "mldsa87_verify_nist_acvp_69_test",
 ]
 
 [

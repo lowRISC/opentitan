@@ -427,6 +427,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
 
   hardened_memshred((uint32_t *)&private_scalar,
                     kP384MaskedScalarTotalShareWords);
+  hardened_memshred((uint32_t *)&config_k_scalar,
+                    kP384MaskedScalarTotalShareWords);
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

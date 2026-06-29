@@ -89,12 +89,11 @@ opentitan_test(
             EARLGREY_TEST_ENVS,
             # Not intended for ROM_EXT environments.
             [
-                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
                 "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
             ],
         ),
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
     ),
     verilator = verilator_params(
@@ -555,10 +554,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             # See #21706, expects keymgr state 0 so not working after ROM_EXT.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
         },
     ),

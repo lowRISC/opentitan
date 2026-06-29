@@ -153,6 +153,33 @@ p256_verify:
   /* Abort if they do not match */
   jal       x1, trigger_fault_if_fg0_z
 
+  /* Reverse check: We verify that (u1 * s) mod n == msg mod n */
+
+  /* Put u1 into w24 for multiplication */
+  bn.mov    w24, w1
+
+  /* Load original s from dmem directly into w25 */
+  la        x20, s
+  li        x2, 25
+  bn.lid    x2, 0(x20)
+
+  /* Compute w19 = (u1 * s) mod n */
+  jal       x1, mod_mul_256x256
+
+  /* Load original msg from dmem into w20 */
+  la        x19, msg
+  li        x2, 20
+  bn.lid    x2, 0(x19)
+
+  /* w20 = (w20 + 0) mod n */
+  bn.addm   w20, w20, w31
+
+  /* Compare calculated msg (w19) with reduced msg (w20) */
+  bn.cmp    w19, w20
+
+  /* Abort if they do not match */
+  jal       x1, trigger_fault_if_fg0_z
+
   /* Set up for coordinate arithmetic.
        MOD <= p
        w28 <= r256
@@ -293,7 +320,7 @@ p256_verify:
   la        x3, p256_n
   bn.lid    x0, 0(x3)
   bn.wsrw   MOD, w0
-  bn.addm   w24, w19, w31
+  bn.addm   w19, w19, w31
 
   /* Verify that w31 still holds zero */
   bn.xor w30, w30, w30
@@ -306,9 +333,9 @@ p256_verify:
   xor      x3, x3, x12
   sw       x3, 0(x2)
 
-  /* store affine x-coordinate in dmem: dmem[x_r] = w24 = x_r */
+  /* store affine x-coordinate in dmem: dmem[x_r] = w19 = x_r */
   la        x17, x_r
-  li        x2, 24
+  li        x2, 19
   bn.sid    x2, 0(x17)
 
   ret

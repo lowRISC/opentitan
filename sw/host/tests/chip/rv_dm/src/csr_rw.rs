@@ -165,19 +165,9 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::OTP_CTRL_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "pattgen",
-            top_earlgrey::PATTGEN_BASE_ADDR,
-            dif::PATTGEN_INTR_ENABLE_REG_OFFSET,
-        ),
-        (
             "pinmux",
             top_earlgrey::PINMUX_AON_BASE_ADDR,
             dif::PINMUX_MIO_PAD_ATTR_0_REG_OFFSET,
-        ),
-        (
-            "pwm",
-            top_earlgrey::PWM_AON_BASE_ADDR,
-            dif::PWM_INVERT_REG_OFFSET,
         ),
         (
             "pwrmgr",

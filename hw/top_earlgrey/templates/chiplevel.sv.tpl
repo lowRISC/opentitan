@@ -5,25 +5,16 @@ ${gencmd}
 <%
 import re
 import topgen.lib as lib
+from reggen.params import Parameter
+
 from copy import deepcopy
 
 # Provide shortcuts for some commonly used variables
 pinmux = top['pinmux']
 pinout = top['pinout']
 
-num_mio_inputs = pinmux['io_counts']['muxed']['inouts'] + \
-                 pinmux['io_counts']['muxed']['inputs']
-num_mio_outputs = pinmux['io_counts']['muxed']['inouts'] + \
-                  pinmux['io_counts']['muxed']['outputs']
-num_mio_pads = pinmux['io_counts']['muxed']['pads']
-
-num_dio_inputs = pinmux['io_counts']['dedicated']['inouts'] + \
-                 pinmux['io_counts']['dedicated']['inputs']
-num_dio_outputs = pinmux['io_counts']['dedicated']['inouts'] + \
-                  pinmux['io_counts']['dedicated']['outputs']
-num_dio_total = pinmux['io_counts']['dedicated']['inouts'] + \
-                pinmux['io_counts']['dedicated']['inputs'] + \
-                pinmux['io_counts']['dedicated']['outputs']
+feature_info = {}
+cio_info = {}
 
 def get_dio_sig(pinmux: {}, pad: {}):
   '''Get DIO signal associated with this pad or return None'''
@@ -59,10 +50,12 @@ for pad in target["pinout"]["add_pads"]:
 
 # Bkdr loader targets
 bkdr_loader_targets = ["cw340"]
+gen_bkdr_loader = target["name"] in bkdr_loader_targets
 %>\
+<%include file="/toplevel_snippets/info_dicts.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info" />\
 
 % if target["name"] != "asic":
-%   if target["name"] in bkdr_loader_targets:
+%   if gen_bkdr_loader:
 `include "bkdr_loader.svh"
 
 %   endif
@@ -72,7 +65,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = ""
 %   else:
-%     if target["name"] in bkdr_loader_targets:
+%     if gen_bkdr_loader:
   parameter bit BkdrLoaderEn = 1'b1,
 %     endif
   // Path to a VMEM file containing the contents of the boot ROM, which will be
@@ -220,7 +213,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % endfor
 
   logic [3:0] mux_iob_sel;
-% if target["name"] in bkdr_loader_targets:
+% if gen_bkdr_loader:
 
   pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_bkdr_attr;
   logic [pinmux_reg_pkg::NMioPads-1:0]      mio_bkdr_out;
@@ -303,7 +296,7 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] == "asic":
   // AST signals needed in padring
   logic scan_rst_n;
-   prim_mubi_pkg::mubi4_t scanmode;
+  prim_mubi_pkg::mubi4_t scanmode;
 % endif
 
   padring #(
@@ -530,9 +523,11 @@ module chip_${top["name"]}_${target["name"]} #(
   tlul_pkg::tl_h2d_t ast_tl_req;
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
-  // synchronization clocks / rests
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  // Generated clocks, resets, and enable signals
+  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
+  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_aon_cg_en;
+  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
+  rstmgr_pkg::rstmgr_rst_en_t rstmgr_aon_rst_en;
 
   // external clock
   logic ext_clk;
@@ -593,11 +588,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // Jitter enable for main clock
   prim_mubi_pkg::mubi4_t clk_main_jitter_en;
-
-  // reset domain connections
-  import rstmgr_pkg::PowerDomains;
-  import rstmgr_pkg::DomainAonSel;
-  import rstmgr_pkg::DomainMainSel;
 
   // Memory configuration connections
   ast_pkg::spm_rm_t ast_ram_1p_cfg;
@@ -697,7 +687,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   logic usb_diff_rx_obs;
 
-% elif target["name"] in ["cw305", "cw310"] and target["name"] not in bkdr_loader_targets:
+% elif target["name"] in ["cw305", "cw310"] and not gen_bkdr_loader:
   // TODO: Hook this up when FPGA pads are updated
   assign ext_clk = '0;
   assign pad2ast = '0;
@@ -728,7 +718,7 @@ module chip_${top["name"]}_${target["name"]} #(
     aon: clk_aon
   };
 
-% elif target["name"] in ["cw305", "cw310"] and target["name"] in bkdr_loader_targets:
+% elif target["name"] in ["cw305", "cw310"] and gen_bkdr_loader:
   // TODO: Hook this up when FPGA pads are updated
   assign ext_clk = '0;
   assign pad2ast = '0;
@@ -840,8 +830,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    % for port, clk in ast["clock_connections"].items():
-    .${port} (${clk}),
+    % for port, clk in ast["clock_srcs"].items():
+    .${port} (${lib.get_clock_prefixes(top)["top"]}clk_${clk["clock"]}_${clk["group"]}),
     % endfor
     % for port, reset in ast["reset_connections"].items():
     .${port} (${lib.get_reset_path(top, reset)}),
@@ -1027,7 +1017,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ## FPGA shared                                                   ##
 ###################################################################
 % else:
-% if target["name"] in bkdr_loader_targets:
+% if gen_bkdr_loader:
   /////////////////////
   // Memory Backdoor //
   /////////////////////
@@ -1144,14 +1134,31 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 % endif
 
+  // Inter-Power Domain signals
+% for sig in top["inter_pd"]["definitions"]:
+  % if isinstance(sig["width"], Parameter):
+  ${lib.im_defname(sig)} [${sig["width"].name_top}-1:0] ${sig["signame"]};
+  % else:
+  ${lib.im_defname(sig)} ${lib.bitarray(sig["width"],1)} ${sig["signame"]};
+  % endif
+% endfor
+
   //////////////////////
   // Top-level design //
   //////////////////////
   top_${top["name"]} #(
 % if target["name"] == "cw310":
+    .EntropySrcStub(1'b1), // Stub ENTROPY_SRC to reduce resource usage on CW310. See #30062.
+    .OtbnStub(1'b1), // Stub OTBN to reduce resource usage on CW310. See #30062.
+    .UsbdevStub(1'b1), // Stub USBDEV to reduce resource usage on CW310. See #30062.
     .SecAesMasking(1'b0), // Disable AES masking on the CW310, where we are constrained by area.
-    .OtbnFeatStubMai(1'b1), // Stub MAI to reduce resource usage on CW310. See #30062.
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
+    .RvCoreIbexPMPEnable(1'b0),
+    .RvCoreIbexRV32B(ibex_pkg::RV32BNone),
+    .RvCoreIbexRV32ZC(ibex_pkg::RV32Zca),
+    .RvCoreIbexBranchTargetALU(1'b0),
+    .RvCoreIbexWritebackStage(1'b0),
+    .RvCoreIbexICache(1'b0),
 % elif target["name"]  == "cw340":
     .SecAesMasking(1'b1),
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
@@ -1165,7 +1172,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecOtbnSkipUrndReseedAtStart(1'b0),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
-    .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
 % elif target["name"] == "cw305":
     .RvCoreIbexPipeLine(0),
@@ -1204,57 +1210,29 @@ module chip_${top["name"]}_${target["name"]} #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % endif
   ) top_${top["name"]} (
-    // AST clock and reset signals
-    .clk_main_i(ast_base_clks.clk_sys),
-    .clk_io_i  (ast_base_clks.clk_io ),
-    .clk_usb_i (ast_base_clks.clk_usb),
-    .clk_aon_i (ast_base_clks.clk_aon),
-    .clks_ast_o(clkmgr_aon_clocks    ),
-    .rsts_ast_o(rstmgr_aon_resets    ),
+<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader, domain='Main'" />\
 
-    // Manual DFT signals
-    .scan_en_i  (scan_en   ),
-    .scan_rst_ni(scan_rst_n),
-    .scanmode_i (scanmode  ),
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=True, last_snippet=False" />\
 
-<%
-port_list = top["inter_signal"]["external"]
-max_portwidth = max(len(x["signame"]) for x in port_list) if port_list else 0
-if port_list:
-  filtered_port_list = [p for p in port_list if len(p["signame_chip"][target["name"]]) <= 25]
-  max_sigwidth = max(len(p["signame_chip"][target["name"]]) for p in filtered_port_list)
-else:
-  max_sigwidth = 0
-%>\
-    // Auto-generated port map
-    % for sig in port_list:
-    .${lib.ljust(sig["signame"], max_portwidth)}(${lib.ljust(sig["signame_chip"][target["name"]], max_sigwidth)}),
-    % endfor
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Main', inter_pd=False, last_snippet=True" />\
+  );
 
-% if target["name"] in bkdr_loader_targets:
-    // Multiplexed I/O to backdoor
-    .mio_in_i (mio_bkdr_in ),
-    .mio_out_o(mio_bkdr_out),
-    .mio_oe_o (mio_bkdr_oe ),
-% else:
-    // Multiplexed I/O
-    .mio_in_i (mio_in ),
-    .mio_out_o(mio_out),
-    .mio_oe_o (mio_oe ),
-% endif
 
-    // Dedicated I/O
-    .dio_in_i (dio_in ),
-    .dio_out_o(dio_out),
-    .dio_oe_o (dio_oe ),
+  //////////////////////
+  // Always-on Domain //
+  //////////////////////
+  % if target["name"] in ["cw310", "cw340"]:
+  top_${top["name"]}_pd_aon #(
+    .SramCtrlRetAonInstrExec(0)
+  ) top_${top["name"]}_pd_aon (
+  % else:
+  top_${top["name"]}_pd_aon top_${top["name"]}_pd_aon (
+  % endif
+<%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader, domain='Aon'" />\
 
-    // Pad attributes
-% if target["name"] in bkdr_loader_targets:
-    .mio_attr_o(mio_bkdr_attr),
-% else:
-    .mio_attr_o(mio_attr),
-% endif
-    .dio_attr_o(dio_attr)
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=True, last_snippet=False" />\
+
+<%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='Aon', inter_pd=False, last_snippet=True" />\
   );
 
 ###################################################################
@@ -1296,7 +1274,7 @@ else:
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   % if target["name"] == "cw305":
-  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle;
+  assign clk_trans_idle = top_${top["name"]}_pd_aon.u_clkmgr_aon.idle_i;
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
@@ -1308,7 +1286,7 @@ else:
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
+  assign clk_trans_idle = top_${top["name"]}_pd_aon.u_clkmgr_aon.idle_i[trigger_sel];
   % endif
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;

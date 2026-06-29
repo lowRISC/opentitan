@@ -372,7 +372,8 @@ def generate_outgoing_alerts(top: ConfigT, out_path: Path) -> None:
 
     for alert_group, alerts in top['outgoing_alert'].items():
         # Outgoing alert definition
-        # 'outgoing_alerts.hjson.tpl' -> 'data/autogen/{top_name}.sv'
+        # 'outgoing_alerts.hjson.tpl' ->
+        # 'data/autogen/outgoing_alerts_{alert_group}.hjson'
         render_template(TOPGEN_TEMPLATE_PATH / 'outgoing_alerts.hjson.tpl',
                         out_path / 'data' / 'autogen' /
                         f'outgoing_alerts_{alert_group}.hjson',
@@ -394,7 +395,8 @@ def generate_outgoing_interrupts(top: ConfigT, out_path: Path) -> None:
 
     for interrupt_group, interrupts in top["outgoing_interrupt"].items():
         # Outgoing interrupt definition
-        # "outgoing_interrupts.hjson.tpl" -> "data/autogen/{top_name}.sv"
+        # "outgoing_interrupts.hjson.tpl" ->
+        # "data/autogen/outgoing_interrupts_{interrupt_group}.hjson"
         render_template(TOPGEN_TEMPLATE_PATH / "outgoing_interrupts.hjson.tpl",
                         out_path / "data" / "autogen" /
                         f"outgoing_interrupts_{interrupt_group}.hjson",
@@ -1063,32 +1065,50 @@ def amend_reset_connections(topcfg: ConfigT) -> None:
         _amend_block_reset_connections(xbar, default_power_domain)
 
 
-def create_generic_ip_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
+def create_generic_ip_blocks(topcfg: ConfigT,
+                             alias_cfgs: dict[str, ConfigT],
                              cfg_path: Path,
-                             out_path: Path) -> Dict[str, IpAttrs]:
-    """Create IpAttrs for each generic ip type.
+                             alt_hjson_path: Path | None) -> dict[str, IpAttrs]:
+    """Return a dictionary mapping each non-ipgen ip type in topcfg to an IpAttrs.
 
-    Most importantly, IpAttrs holds the IpBlock.
+    The IP types in topcfg will be looked up by parsing an hjson file in
+    IP_RAW_PATH (hw/ip) unless they are specific to the top-level, in which
+    case the hjson file is found under cfg_path.
 
-    Raise an exception if any module's "attr" flag is invalid.
+    If alt_hjson_path is supplied, a file under that path may override the
+    default for the type that was found.
+
+    The function raises an exception if any module's "attr" flag is invalid.
+
+    Args:
+      topcfg: Top configuration (from which we extract a list of IPs)
+      alias_cfgs: Map from IP name to ConfigT which may supply an overridden
+                  version of an IP block.
+      cfg_path: Path of a directory under which we can find top-specific IP blocks
+      alt_hjson_path: If not None, the path of a directory that can supply
+                      an overridden version of IP blocks
     """
 
     def handle_instance(top_only: bool) -> None:
-        if top_only:
-            hjson_path = cfg_path / "ip" / ip_type / "data" / f"{ip_type}.hjson"
-        else:
-            hjson_path = IP_RAW_PATH / ip_type / "data" / f"{ip_type}.hjson"
-        if ip_type in ip_attrs:
-            ip_attrs[ip_type].instances.append(instance)
-        else:
+        search_path = (cfg_path / "ip") if top_only else IP_RAW_PATH
+        hjson_path = search_path / ip_type / "data" / f"{ip_type}.hjson"
+        if alt_hjson_path is not None:
+            alt_path = alt_hjson_path / f"{ip_type}.hjson"
+            if alt_path.exists():
+                hjson_path = alt_path
+        attrs = ip_attrs.get(ip_type)
+        if attrs is None:
             ip_block = IpBlock.from_path(str(hjson_path), [])
-            if ip_type in alias_cfgs:
+            alias = alias_cfgs.get(ip_type)
+            if alias is not None:
                 ip_block.alias_from_raw(
-                    False, alias_cfgs[ip_type], f"alias file for {ip_type}")
-            ip_attrs[ip_type] = IpAttrs(ip_block=ip_block,
-                                        hjson_path=hjson_path,
-                                        top_only=top_only,
-                                        instances=[instance])
+                    False, alias, f"alias file for {ip_type}")
+            attrs = IpAttrs(ip_block=ip_block,
+                            hjson_path=hjson_path,
+                            top_only=top_only,
+                            instances=[])
+            ip_attrs[ip_type] = attrs
+        attrs.instances.append(instance)
 
     ip_attrs = {}
     invalid_attr_instances = []
@@ -1212,7 +1232,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
 
     # Pinmux depends on flash_ctrl and otp_ctrl
     if "pinmux" in ipgen_instances:
-        amend_pinmux_io(topcfg, name_to_block)
+        amend_pinmux_io(topcfg, name_to_block, allow_missing_blocks=True)
         instance = ipgen_instances["pinmux"][0]
         insert_ip_attrs(instance, _get_pinmux_params(topcfg))
 
@@ -1254,9 +1274,11 @@ def _process_top(
     them to further populate the top config. It can raise exceptions for
     errors found in the process.
     """
+    alt_hjson_path = Path(args.hjson_path) if args.hjson_path is not None else None
     # Prepare the topcfg.
     extract_clocks(topcfg)
-    ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path, out_path)
+    ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path,
+                                        alt_hjson_path)
     name_to_block = {name: attrs.ip_block for name, attrs in ip_attrs.items()}
     ipgen_attrs = create_ipgen_blocks(topcfg, alias_cfgs, cfg_path, out_path,
                                       name_to_block)
@@ -1804,11 +1826,20 @@ def main():
         # Top and chiplevel templates are top-specific
         top_template_path = SRCTREE_TOP / "hw" / top_name / "templates"
 
-        # SystemVerilog Top:
+        # SystemVerilog Top, equivalent to the default power domain:
         # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
         render_template(top_template_path / "toplevel.sv.tpl",
                         out_path / "rtl" / "autogen" / f"{top_name}.sv",
                         gencmd=gencmd_sv)
+
+        # Render all other power domains
+        for domain in completecfg["power"]["domains"]:
+            if domain == completecfg["power"]["default"]:
+                # Default power domain has already been rendered
+                continue
+            render_template(top_template_path / f"toplevel_{domain.lower()}.sv.tpl",
+                            out_path / "rtl" / "autogen" / f"{top_name}_pd_{domain.lower()}.sv",
+                            gencmd=gencmd_sv)
 
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
         for target in completecfg["targets"]:

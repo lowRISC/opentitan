@@ -129,7 +129,6 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
   // Key integrity check.
   if (launder32(otcrypto_integrity_blinded_key_check(blinded_key)) !=
       kHardenedBoolTrue) {
-    // COVERAGE (MISSING) The bad integrity input key is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -171,7 +170,6 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
     aes_key->key_shares[1] = share1;
     aes_key->sideload = launder32(kHardenedBoolFalse);
   } else {
-    // COVERAGE (MISSING) A bad parameter hw_backed is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(aes_key->sideload, blinded_key->config.hw_backed);
@@ -276,7 +274,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   // buffers.
   if (key == NULL || iv == NULL || iv->data == NULL || auth_tag == NULL ||
       auth_tag->data == NULL) {
-    // COVERAGE (MISSING) We do not cover NULL inputs.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -293,7 +290,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Ensure the plaintext and ciphertext lengths match.
   if (launder32(ciphertext->len) != plaintext->len) {
@@ -349,7 +346,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -388,7 +385,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -422,7 +419,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -453,14 +450,13 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
 
   if (aad->len == 0) {
     // Nothing to do.
-    // COVERAGE (MISSING) We do not cover the length 0 aad on update.
     return OTCRYPTO_OK;
   }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -492,14 +488,13 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
 
   if (input->len == 0) {
     // Nothing to do.
-    // COVERAGE (MISSING) We do not cover the length 0 input on update.
     return OTCRYPTO_OK;
   }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -515,7 +510,6 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   // exist after `input` is added.
   size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
   if (input->len > UINT32_MAX - partial_block_len) {
-    // COVERAGE (MISSING) We do not cover too short output buffers.
     return OTCRYPTO_BAD_ARGS;
   }
   size_t min_output_blocks =
@@ -560,7 +554,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
@@ -612,7 +606,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;

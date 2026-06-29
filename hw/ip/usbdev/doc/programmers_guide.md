@@ -162,9 +162,9 @@ The BOM can be filled by parts from Digikey.
 | 4 | 4 | R3, R4, R5, R6 | 22R | Device:R_Small_US | Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder | ~ |  |  |  |  | A126352CT-ND |  |  |  | |
 | 5 | 2 | R9, R10 | 1k5 | Device:R_Small_US | Resistor_SMD:R_0805_2012Metric_Pad1.15x1.40mm_HandSolder | ~ |  |  |  |  | A106057CT-ND |  |  |  | |
 
-### USRUSB socket on the CW310 and CW340 boards from NewAE Technology
+### USRUSB socket on the CW340 board from NewAE Technology
 
-For CW310 and CW340 FPGA builds that connect usbdev through the USRUSB socket it is important to make sure that the socket is cabled to a Type-A USB port at the host and not via a USB-C only cable to a USB-C port.
+For CW340 FPGA builds that connect usbdev through the USRUSB socket it is important to make sure that the socket is cabled to a Type-A USB port at the host and not via a USB-C only cable to a USB-C port.
 This is because the Power Delivery protocol over USB-C requires each unit to negotiate its power requirements and delivery capacity.
 
 Since these boards are intended to support both USB host and USB device designs via the USRUSB socket, the pull up and pull down resistors are not fitted as standard.

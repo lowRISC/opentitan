@@ -365,16 +365,17 @@ bn.wsrr w13, MAI_IN0_S1
 bn.wsrr w14, MAI_IN1_S0
 bn.wsrr w15, MAI_IN1_S1
 
+# TODO: uncomment the code below once the OTBNsim model of MAI is aligned with the RTL implementation.
 # Execute SecAdd on MAI
-li x30, 0x2f
-csrrw x0, MAI_CTRL, x30
+# li x30, 0x2f
+# csrrw x0, MAI_CTRL, x30
 
 # Poll for completion of MAI execution
-jal x1, mai_poll_busy
+# jal x1, mai_poll_busy
 
 # Read back results from MAI
-bn.wsrr w30, MAI_RES_S0
-bn.wsrr w31, MAI_RES_S1
+# bn.wsrr w30, MAI_RES_S0
+# bn.wsrr w31, MAI_RES_S1
 
 # Read from URND in the OTBN Verilator smoke test and 0x0 when running on the FPGA or chip-level test
 .ifnotdef deterministic

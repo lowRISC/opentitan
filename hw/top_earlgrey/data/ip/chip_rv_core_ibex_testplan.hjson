@@ -227,6 +227,16 @@
      bazel: []
     }
     {
+      name: chip_sw_rv_core_ibex_mcounteren_writable
+      desc: '''Verifies that the mcounteren_writable register is lockable.
+            '''
+      stage: V2
+      si_stage: SV1
+      lc_states: ["PROD"]
+      tests: ["chip_sw_rv_core_ibex_mcounteren_writable"]
+      bazel: ["//sw/device/tests:rv_core_ibex_mcounteren_writable_test"]
+    }
+    {
       name: chip_sw_rv_core_ibex_alerts
       desc: '''Inject and verify all available faults in rv_core_ibex / ibex_top.
 

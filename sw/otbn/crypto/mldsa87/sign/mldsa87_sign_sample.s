@@ -13,15 +13,14 @@
  * [-GAMMA1+1, GAMMA1] for GAMMA1 = 2^19.
  *
  * This routine is a subprocedure of `ExpandMask` (Algorithm 34) of FIPS-204
- * and is parametrized by a 66-byte secret Boolean-shared seed rho.
- *
- * Note that although rho is a 66-byte value it shall be provided in two
- * 96-byte allocated regions in DMEM for seamless processing by the XOF.
+ * and is parametrized by a 64-byte secret Boolean-shared seed rho and a 2-byte
+ * nonce kappa (provided in 32-byte DMEM region).
  *
  * @param[in] x2: DMEM address of the first arithmetic share of Y.
  * @param[in] x3: DMEM address of the second arithmetic share of Y.
- * @param[in] x4: DMEM address of the first Boolean share of rho (66 bytes).
- * @param[in] x5: DMEM address of the second Boolean share of rho (66 bytes).
+ * @param[in] x4: DMEM address of the first Boolean share of rho (64 bytes).
+ * @param[in] x5: DMEM address of the second Boolean share of rho (64 bytes).
+ * @param[in] x6: DMEM address of KAPPA (2 bytes, 32-byte DMEM region).
  */
 sample_mask_poly:
   /* Push clobbered registers onto the stack. */
@@ -39,11 +38,17 @@ sample_mask_poly:
   bn.not w16, w31
   bn.shv.8s w16, w16 >> 12
 
-  /* Initialize the SHAKE256 XOF and absorb the 66 bytes of rho. */
+  /* Initialize the SHAKE256 XOF and absorb the 64 bytes of rho. */
   jal x1, xof_shake256_init
-  addi x20, x0, 66
+  addi x20, x0, 64
   addi x21, x4, 0
   addi x22, x5, 0
+  jal x1, xof_absorb
+
+  /* Absorb the 2-byte nonce kappa. */
+  addi x20, x0, 2
+  addi x21, x6, 0
+  addi x22, x0, 0
   jal x1, xof_absorb
   jal x1, xof_process
 

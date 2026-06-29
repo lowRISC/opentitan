@@ -22,15 +22,13 @@ main:
 
   la x2, _compute_z_rho_prime_share0_neg
   la x3, _compute_z_rho_prime_share1_neg
-  la x4, _compute_z_c_neg
-  la x5, _compute_z_s1_share0_neg
-  la x6, _compute_z_s1_share1_neg
-  la x7, _compute_z_bound
-  la x8, _compute_z_z0
-  la x9, _compute_z_slot0
-  la x10, _compute_z_slot1
-  la x11, _compute_z_slot2
-  la x12, _compute_z_slot3
+  la x4, _compute_z_kappa_neg
+  la x5, _compute_z_c_neg
+  la x6, _compute_z_s1_share0_neg
+  la x7, _compute_z_s1_share1_neg
+  la x8, _compute_z_bound
+  la x9, _compute_z_z0
+  la x10, _compute_z_slot0
   jal x1, compute_z
 
   bn.not w0, w0
@@ -44,15 +42,13 @@ main:
 
   la x2, _compute_z_rho_prime_share0_pos
   la x3, _compute_z_rho_prime_share1_pos
-  la x4, _compute_z_c_pos
-  la x5, _compute_z_s1_share0_pos
-  la x6, _compute_z_s1_share1_pos
-  la x7, _compute_z_bound
-  la x8, _compute_z_z0
-  la x9, _compute_z_slot0
-  la x10, _compute_z_slot1
-  la x11, _compute_z_slot2
-  la x12, _compute_z_slot3
+  la x4, _compute_z_kappa_pos
+  la x5, _compute_z_c_pos
+  la x6, _compute_z_s1_share0_pos
+  la x7, _compute_z_s1_share1_pos
+  la x8, _compute_z_bound
+  la x9, _compute_z_z0
+  la x10, _compute_z_slot0
   jal x1, compute_z
 
   la x2, _compute_z_res_pos
@@ -65,9 +61,11 @@ main:
 
 /* Positive vectors. */
 _compute_z_rho_prime_share0_pos:
-.zero 96
+.zero 64
 _compute_z_rho_prime_share1_pos:
-.zero 96
+.zero 64
+_compute_z_kappa_pos:
+.zero 32
 _compute_z_c_pos:
 .zero 1024
 _compute_z_s1_share0_pos:
@@ -77,9 +75,11 @@ _compute_z_s1_share1_pos:
 
 /* Negative vectors. */
 _compute_z_rho_prime_share0_neg:
-.zero 96
+.zero 64
 _compute_z_rho_prime_share1_neg:
-.zero 96
+.zero 64
+_compute_z_kappa_neg:
+.zero 32
 _compute_z_c_neg:
 .zero 1024
 _compute_z_s1_share0_neg:

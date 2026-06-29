@@ -5,7 +5,6 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -94,7 +93,6 @@ otp_json(
             t["b"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(

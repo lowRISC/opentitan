@@ -117,7 +117,7 @@ endtask
 // Pull the expected digest value from the top of rom
 function bit [DIGEST_SIZE-1:0] rom_ctrl_base_vseq::get_expected_digest();
   bit [DIGEST_SIZE-1:0]    digest;
-  bit [`ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
+  bit [ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
   // Get the digest from rom
   // The digest is the top 8 words in memory (unscrambled)
   dig_addr = MAX_CHECK_ADDR;

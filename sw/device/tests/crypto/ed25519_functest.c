@@ -208,6 +208,8 @@ static status_t hasheddsa_test(void) {
 
   CHECK_STATUS_OK(
       otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  LOG_INFO("OTBN keygen instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   otcrypto_const_byte_buf_t input_message =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
@@ -220,6 +222,7 @@ static status_t hasheddsa_test(void) {
   CHECK_STATUS_OK(otcrypto_ed25519_sign(&private_key, &input_message,
                                         kOtcryptoEddsaSignModeHashEddsa,
                                         &signature));
+  LOG_INFO("OTBN sign instruction count: 0x%08x", otbn_instruction_count_get());
 
   otcrypto_const_word32_buf_t signature_verif = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, signature_data, ARRAYSIZE(signature_data));
@@ -228,6 +231,8 @@ static status_t hasheddsa_test(void) {
   CHECK_STATUS_OK(otcrypto_ed25519_verify(
       &public_key, &input_message, kOtcryptoEddsaSignModeHashEddsa,
       &signature_verif, &verification_result));
+  LOG_INFO("OTBN verify instruction count: 0x%08x",
+           otbn_instruction_count_get());
 
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 

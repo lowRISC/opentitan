@@ -7,7 +7,6 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
@@ -88,7 +87,7 @@ opentitan_test(
     exec_env = dicts.add(
         BASE_EXEC_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
         },
     ),
     fpga = fpga_params(
@@ -294,6 +293,16 @@ cc_library(
         ":bitfield",
         ":hardened",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+    ],
+)
+
+cc_library(
+    name = "lz4",
+    srcs = ["lz4.c"],
+    hdrs = ["lz4.h"],
+    deps = [
+        ":memory",
+        "//sw/device/lib/base:macros",
     ],
 )
 

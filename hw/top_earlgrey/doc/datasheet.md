@@ -92,8 +92,6 @@ The OpenTitan Earl Grey chip provides the following features:
             <li>Clock, reset and power management</li>
             <li>Fixed-frequency timer</li>
             <li>Always ON (AON) timer</li>
-            <li>Pulse-width modulator (PWM)</li>
-            <li>Pattern Generator</li>
           </ul>
         </li>
         <br></br>

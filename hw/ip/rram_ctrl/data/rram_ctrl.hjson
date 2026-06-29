@@ -1,0 +1,1448 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "rram_ctrl",
+  human_name:         "RRAM Controller",
+  one_line_desc:      "Interfaces and manages integrated non-volatile RRAM memory; supports scrambling, integrity, secure wipe and emulated OTP access.",
+  one_paragraph_desc: '''
+                      RRAM Controller interfaces the integrated, non-volatile RRAM memory with software and other hardware components in the system, such as Life Cycle Controller, Key Manager, and OTP Controller.
+                      It consists of the open-source RRAM controller that interfaces with a third party RRAM macro.
+                      The protocol controller handles direct memory mapped read requests, software controlled read and write requests, as well as life cycle RMA entry.
+                      The controller supports a differentiation between info and data partitions, RRAM memory protection at page boundaries, and the handling of key manager secrets inaccessible to software.
+                      The data partition of the RRAM is further divided into a data region and an OTP region.
+                      The controller handles OTP read and write requests that are emulated with a read-set-write algorithm on the OTP region.
+                      The actual physical controller is highly parameterized (number of pages, number of words and word size for each page, and number of read buffers) and supports XEX scrambling configurable by software, as well as ECC support configurable on a page boundary.
+                      '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "45",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv"
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_rram_ctrl",
+  revisions: [
+      {
+          version:            "0.1.0",
+          life_stage:         "L1",
+          design_stage:       "D0",
+          verification_stage: "V0",
+          commit_id:          "-",
+      },
+  ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_otp_i", reset: "rst_otp_ni"}
+  ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", name: "core" }
+    { protocol: "tlul", direction: "device", name: "host" }
+  ],
+  interrupt_list: [
+    // The first two status interrupts assert by default, since the FIFO is empty.
+    // This is captured in the Hjson via the `default` key so that automatically generated tests can incorporate this information.
+    { name: "wr_empty",   type: "status", desc: "Write FIFO empty",              default: "1"},
+    { name: "wr_lvl",     type: "status", desc: "Write FIFO drained to level",   default: "1"},
+    { name: "rd_full",    type: "status", desc: "Read FIFO full",                            },
+    { name: "rd_lvl",     type: "status", desc: "Read FIFO filled to level",                 },
+    { name: "op_done",    type: "event",  desc: "Operation complete",                        },
+    { name: "corr_err",   type: "event",  desc: "Correctable error encountered",             },
+  ],
+
+  alert_list: [
+    { name: "recov_err",
+      desc: "RRAM recoverable errors",
+    },
+    { name: "fatal_std_err",
+      desc: "RRAM standard fatal errors"
+    },
+    { name: "fatal_err",
+      desc: '''
+            RRAM fatal errors including uncorrectable ECC errors.
+
+            Note that this alert is not always fatal.
+            The underlying error bits in the !!FAULT_STATUS register remain set until reset, meaning the alert keeps firing.
+            This doesn't hold for !!FAULT_STATUS.PHY_RELBL_ERR.
+            To enable firmware dealing with multi-bit ECC errors during firmware selection and verification, these error bits can be cleared.
+            After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
+            '''
+    },
+    { name: "fatal_macro_err",
+      desc: "Fatal errors triggered inside the RRAM macro, including fatal TL-UL bus integrity faults of the test interface."
+    },
+    { name: "recov_macro_err",
+      desc: "Recoverable errors triggered inside the RRAM macro."
+    }
+  ],
+
+  inter_signal_list: [
+    { struct:  "rram_macro",
+      type:    "req_rsp",
+      name:    "rram_macro",
+      act:     "req",
+      package: "rram_ctrl_pkg"
+    },
+    { struct:  "nvm_otp_key",
+      type:    "req_rsp",
+      name:    "otp_key",
+      act:     "req",
+      package: "otp_ctrl_pkg"
+    },
+    { struct:  "otp_ctrl_macro"
+      type:    "req_rsp"
+      name:    "otp_macro"
+      act:     "rsp"
+      default: "'0"
+      package: "otp_ctrl_macro_pkg"
+      desc:    "Data interface for the OTP macro."
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_creator_seed_sw_rw_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_owner_seed_sw_rw_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_rd_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_iso_part_sw_wr_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_seed_hw_rd_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "rma_req"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "rma_ack"
+      act:     "req"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "lc_nvm_rma_seed"
+      type:    "uni"
+      name:    "rma_seed"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+    },
+    { struct:  "pwr_nvm",
+      type:    "uni",
+      name:    "pwrmgr",
+      act:     "req",
+      package: "pwrmgr_pkg"
+    },
+    { struct:  "keymgr_rram",
+      type:    "uni",
+      name:    "keymgr",
+      act:     "req",
+      package: "rram_ctrl_pkg"
+    }
+  ],
+
+  countermeasures: [
+    { name: "REG.BUS.INTEGRITY",
+      desc: '''
+            End-to-end bus integrity scheme.
+            Standard integrity protection to the register file
+            '''
+    }
+    { name: "HOST.BUS.INTEGRITY",
+      desc: '''
+            End-to-end bus integrity scheme.
+            The integrity is added in rram_phy_rd and stored alongside the data in the read-buffer.
+            From the read-buffer the integrity is passed through in u_tl_adapter_host to tl_host.
+            The path from RRAM to the read-buffer is integrity protected through secondary read operation.
+            '''
+    }
+    { name: "MEM.BUS.INTEGRITY",
+      desc: '''
+            End-to-end bus integrity scheme.
+            Integrity is added in rram_phy_rd  and stored alongside the data in the read-buffer.
+            Integrity is checked in rram_phy_wr.
+            '''
+    }
+    { name: "MEM.ADDR_INFECTION",
+      desc: '''
+            The write data is XORed with its address in rram_phy_wr on every RRAM write operation.
+            The XOR is then removed for every read operation.
+            For host reads, the address is removed in u_tl_adapter_host.
+            For all controller reads, the address is removed in u_rram_ctrl_rd.
+            '''
+    }
+    { name: "SCRAMBLE.KEY.SIDELOAD",
+      desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
+    }
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: '''
+            Life cycle control signals are used control information partition access
+            and RRAM debug access. See secret information partition, isolated information partitions
+            and jtag connection in documentation for more details.
+            '''
+    }
+    { name: "CTRL.CONFIG.REGWEN",
+      desc: "Configurations cannot be changed when an operation is ongoing."
+    }
+    { name: "DATA_REGIONS.CONFIG.REGWEN",
+      desc: "Each data region has a configurable regwen."
+    }
+    { name: "INFO_PAGE.CONFIG.REGWEN",
+      desc: "Each info page has a configurable regwen."
+    }
+    { name: "MEM.CTRL.GLOBAL_ESC",
+      desc: "Global escalation causes memory to no longer be accessible."
+    }
+    { name: "MEM.CTRL.LOCAL_ESC",
+      desc: '''
+            A subset of fatal errors cause memory to no longer be accessible.
+            This subset is defined in !!STD_FAULT_STATUS.
+            '''
+    }
+    { name: "MEM_DISABLE.CONFIG.MUBI",
+      desc: '''
+            Software control for RRAM disable is multibit.
+            The register is !!DIS.
+            '''
+    }
+    { name: "EXEC.CONFIG.REDUN",
+      desc: '''
+            Software control for RRAM enable is 32-bit constant.
+            The register is !!EXEC.
+            '''
+    }
+    { name: "MEM.SCRAMBLE",
+      desc: '''
+            The RRAM supports XEX scrambling.
+            The cipher used is PRINCE.
+            The scrambling scheme is enabled by software, please see RRAM scrambling in documentation for more details.
+            '''
+    }
+    { name: "RMA_ENTRY.MEM.SEC_WIPE",
+      desc: "RMA entry entry wipes RRAM memory and overwrites it with random data."
+    }
+    { name: "CTRL.FSM.SPARSE",
+      desc: '''
+             The following controller FSMs are sparesly encoded:
+            - rram_ctrl_lcmgr (RMA + seed FSM)
+            - rram_ctrl_otp
+            - rram_ctrl_arb
+            - rram_ctrl_rd/wr
+            '''
+    }
+    { name: "PHY_WR.FSM.SPARSE",
+      desc: "The rram_phy_wr FSM is sparsely encoded."
+    }
+    { name: "CTR.REDUN",
+      desc: '''
+            The following counters are redundantly encoded:
+            - rram_ctrl_otp
+            - rram_ctrl_rd/wr
+            - rram_phy_wr
+            This includes seed count and address count used during seed reading phase, as well as word count, page count and wipe index in RMA entry phase.
+            '''
+    }
+    { name: "PHY_ARBITER.CTRL.REDUN",
+      desc: '''
+            The phy arbiters for controller/host arbitration and in the shared scrambling module are redundant.
+            The arbiters have two instances underneath that are constantly compared to each other.
+            '''
+    }
+    { name: "PHY_HOST_GRANT.CTRL.CONSISTENCY",
+      desc: '''
+            The host grant is consistency checked.
+            If the host is ever granted with info partition access, it is an error.
+            If the host is ever granted while no request has been sent, it is an error.
+            '''
+    }
+    { name: "PHY_RSP.CTRL.CONSISTENCY",
+      desc: '''
+            If the host or controller ever receive an unexpected transaction done signal, it is an error.
+            '''
+    }
+    { name: "PHY_RD_RSP.CTRL.INTEGRITY",
+      desc: '''
+            The following control flow errors are detected and result in an error:
+            - data_valid_o is set while there is no pending request (meta_fifo empty).
+            - data_valid_o is set while a verify operation completes.
+            - A request is sent to the RRAM while no internal request is generated.
+            - The integrity of the response in the read-buffer does not match the integrity of the current request in the meta fifo.
+            '''
+    }
+    { name: "PHY_RD_BUF.CTRL.INTEGRITY",
+      desc: "If the verify operation does not return the same data as the original read, it is an error."
+    }
+    { name: "FIFO.CTR.REDUN",
+      desc: "The FIFO pointers of several FIFOs are implemented with duplicate counters."
+    }
+    { name: "HOST_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
+    { name: "WR_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
+  ]
+
+  param_list: [
+    // The reg parameters can be modified directly through top_*.hjson.
+    // The template will automatically propagate the appropriate values.
+
+    // Random netlist constants
+    { name:      "RndCnstAddrKey",
+      desc:      "Compile-time random bits for default address key",
+      type:      "rram_ctrl_pkg::rram_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    },
+    { name:      "RndCnstDataKey",
+      desc:      "Compile-time random bits for default data key",
+      type:      "rram_ctrl_pkg::rram_key_t"
+      randcount: "128",
+      randtype:  "data", // randomize randcount databits
+    },
+    { name:      "RndCnstAllSeeds",
+      desc:      "Compile-time random bits for default seeds",
+      type:      "rram_ctrl_pkg::all_seeds_t"
+      randcount: "512",
+      randtype:  "data", // randomize randcount databits
+    },
+    { name:      "RndCnstLfsrSeed",
+      desc:      "Compile-time random bits for initial LFSR seed",
+      type:      "rram_ctrl_pkg::lfsr_seed_t"
+      randcount: "32",
+      randtype:  "data",
+    },
+    { name:      "RndCnstLfsrPerm",
+      desc:      "Compile-time random permutation for LFSR output",
+      type:      "rram_ctrl_pkg::lfsr_perm_t"
+      randcount: "32",
+      randtype:  "perm",
+    },
+    { name:      "ExecEn",
+      desc:      "Constant value that enables RRAM execution",
+      type:      "int unsigned"
+      default:   "2724870391",
+      local:     "true"
+    },
+    { name:      "SecScrambleEn",
+      desc:      "Compile-time option to enable RRAM scrambling",
+      type:      "bit",
+      default:   "1",
+      local:     "false",
+      expose:    "true",
+    },
+    // Write FIFO depth
+    { name:      "WrFifoDepth",
+      desc:      "Depth of write fifo",
+      type:      "int"
+      default:   "4",
+      local:     "false",
+      expose:    "true"
+    },
+    // Read FIFO depth
+    { name:      "RdFifoDepth",
+      desc:      "Depth of read fifo",
+      type:      "int"
+      default:   "16",
+      local:     "false",
+      expose:    "true"
+    },
+    { name:      "NumRegions",
+      desc:      "Number of configurable rram regions",
+      type:      "int",
+      default:   "8",
+      local:     "true"
+    },
+    { name:      "NumInfoPages",
+      desc:      "Number of info pages",
+      type:      "int",
+      default:   "8",
+      local:     "true"
+    },
+    { name:      "NumDataPages",
+      desc:      "Number of data pages",
+      type:      "int",
+      default:   "4096",
+      local:     "true"
+    },
+    { name:      "WordsPerPage",
+      desc:      "Number of words per page",
+      type:      "int",
+      default:   "32",
+      local:     "true"
+    },
+    { name:      "BytesPerWord",
+      desc:      "Number of bytes per word",
+      type:      "int",
+      default:   "16",
+      local:     "true"
+    },
+    { name:      "BytesPerPage",
+      desc:      "Number of bytes per page",
+      type:      "int",
+      default:   "512",
+      local:     "true"
+    },
+  ],
+
+  features: [
+    {
+     name: "RRAM_CTRL.ESCALATION"
+     desc: '''rram controller has two sources of escalation.
+           1. Global escalation : This is initiated by the Lifecycle Controller through lc_escalate_en.
+           2. Local escalation : This is activated in response to standard faults detected within the RRAM.
+                                 These faults are monitored through RRAM_CTRL.STD_FAULT_STATUS.
+           '''
+    }
+    {
+      name: "RRAM_CTRL.FETCH_CODE"
+      desc: '''If SW programs RRAM_CTRL.EXEC to 0xA26A38F7, code fetch from RRAM device is allowed.
+            All top-level tests that make use of the tests uses this features. No dedicated test is required.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.INFO.CREATOR_PARTITION"
+      desc: '''This partition stores creator root seed.
+            It is accessed by the RRAM controller after scramble key is received.
+            SW can read or program the contents when both of the following conditions are satisfied:
+              1. Life cycle state is one of DEV, PROD, PROD_END, or RMA.
+              2. OTP SECRET2_DIGEST partition has not been written and locked.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.INFO.ISOLATED_PARTITION"
+      desc: '''This partition can hold extra manufacturing details (e.g., the wafer authentication secret).
+            SW can read or program the contents when life cycle state is one of PROD, PROD_END, or RMA.
+            SW can only program the contents when life cycle state is TEST_UNLOCKED* or DEV.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.INFO.OWNER_PARTITION"
+      desc: '''This partition stores owner root seed.
+            It is accessed by the RRAM controller after scramble key is received.
+            SW can read or program the contents when life cycle state is one of DEV, PROD, PROD_END, or RMA.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.INIT.ROOT_SEEDS"
+      desc: "After the scrambling keys are requested, the RRAM controller reads root seeds from secret partitions and provides them to the key manager."
+    }
+    {
+      name: "RRAM_CTRL.INIT.SCRAMBLING_KEYS"
+      desc: "When RRAM_CTRL.INIT is set, RRAM controller requests scrambling keys from otp controller."
+    }
+    {
+      name: "RRAM_CTRL.MEM_PROTECTION"
+      desc: '''For data partitions, SW can designate a memory region of up to 8 regions.
+            Each of these regions can contain more than one page, up to a maximum limit (which is 512 in earlgrey).
+            For each region, SW can establish the access policy by programming RRAM_CTRL.MP_REGION_CFG.
+            In the case of information partitions, the access policy can be configured on a per page basis.
+            To achieve this, SW must configure RRAM_CTRL.INFO_PAGE_CFG*.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.OP.HOST_READ"
+      desc: "Host can read any data partition by providing a valid physical address."
+    }
+    {
+      name: "RRAM_CTRL.OP.PROTOCOL_CTRL"
+      desc: '''As opposed to the host, the protocol controller can read, write both data and info partitions.
+            It has lower priority than host requests.
+            While an operation is in progress, other hw initiated request i.e. RMA, will be held until the operation is finished.
+            '''
+    }
+    {
+      name: "RRAM_CTRL.RMA"
+      desc: '''Upon receiving an RMA request from the LC (Lifecycle Controller), the RRAM controller ensures the completion of all ongoing processes.
+            Subsequently, it overwrites the following partitions with random data:
+              - Creator partition
+              - Owner partition
+              - Isolated partition
+              - Data partition
+            This procedure is implemented to guarantee that any sensitive information previously stored in these partitions remains unrecoverable.
+            '''
+    }
+  ],
+
+  regwidth: "32",
+  registers: {
+    core: [
+      { name: "DIS",
+        desc: "Disable RRAM functionality",
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "SW_DIS",
+            mubi: true,
+            desc: '''
+                  Disables RRAM functionality completely.
+                  This is a shortcut mechanism used by the software to completely kill RRAM in case of emergency.
+                  Since this register is rw1s instead of rw, to disable, write the value MuBi4True to the register to disable the RRAM.
+                  '''
+            resval: false,
+          },
+          { bits: "7:4",
+            name: "RELBL_ERR_FATAL",
+            mubi: true,
+            desc: '''
+                  Configuration bit for reliablity error.
+                  Once this config bit is set to MuBi4True, every fault in !!FAULT_STATUS will disable the RRAM immediately.
+                  Otherwise !!FAULT_STATUS.PHY_RELBL_ERR is excluded for the local escalation to deal with firmware selection during the boot process.
+                  Since this register is rw1s instead of rw this configuration cannot be reverted.
+                  '''
+            resval: false,
+          },
+        ]
+        tags: [// Dont touch disable, it has several side effects on the system
+               "excl:CsrAllTests:CsrExclWrite"],
+      },
+
+      { name: "EXEC",
+        desc: "Controls whether RRAM can be used for code execution fetches",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0",
+            name: "EN",
+            desc: '''
+                  A value of 0xa26a38f7 allows RRAM to be used for code execution.
+                  Any other value prevents code execution.
+                  '''
+            resval: 0
+          },
+        ]
+      },
+
+      { name: "INIT",
+        desc: "Controller init register",
+        swaccess: "rw1s",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "VAL",
+            desc: '''
+                  Initializes the RRAM controller.
+                  During the initialization process, the RRAM controller requests the address and data scramble keys and reads out the root seeds stored in RRAM before allowing other usage of the RRAM controller.
+                  '''
+            resval: "0"
+            tags: [// Dont init RRAM, it has several side effects on the status bits
+                   "excl:CsrAllTests:CsrExclAll"],
+          },
+        ]
+      },
+
+      { name: "CTRL_REGWEN",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        desc: '''
+              Controls the configurability of the !!CONTROL register.
+              This register ensures the contents of !!CONTROL cannot be changed by software once a RRAM operation has begun.
+              It unlocks whenever the existing RRAM operation completes, regardless of success or error.
+              ''',
+        fields: [
+          { bits: "0",
+            name: "EN",
+            desc: '''
+                  Configuration enable.
+
+                  This bit defaults to 1 and is set to 0 by hardware when RRAM operation is initiated.
+                  When the controller completes the RRAM operation, this bit is set back to 1 to allow software configuration of !!CONTROL.
+                  ''',
+            resval: "1",
+          },
+        ]
+        tags: [// This regwen is completely under HW management and thus cannot be manipulated
+               // by software.
+               "excl:CsrNonInitTests:CsrExclCheck"]
+      },
+
+
+      { name: "CONTROL",
+        desc: "Control register",
+        regwen: "CTRL_REGWEN",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            hwaccess: "hrw",
+            name: "START",
+            desc: '''
+                  Start RRAM transaction.
+                  This bit shall only be set at the same time or after the other fields of the !!CONTROL register and !!ADDR have been programmed.
+                  '''
+            resval: "0"
+            tags: [// Dont issue RRAM transactions - it causes several side-effects.
+                   "excl:CsrAllTests:CsrExclWrite"],
+          },
+          { bits: "5:4",
+            name: "OP",
+            desc: "RRAM operation selection",
+            resval: "0"
+            enum: [
+              { value: "0",
+                name: "Read",
+                desc: '''
+                      RRAM Read.
+                      Read desired number of RRAM words.
+                      '''
+              },
+              { value: "1",
+                name: "Write",
+                desc: '''
+                      RRAM write.
+                      Write desired number of RRAM words.
+                      '''
+              },
+              { value: "2",
+                name: "Rewrite",
+                desc: '''
+                      This operation reads a specific location and writes it back to the RRAM with the intention to fix errors that occured in the RRAM over time.
+                      '''
+              },
+            ]
+          },
+
+          { bits: "8",
+            name: "PARTITION",
+            desc: '''
+                  When doing a read or write operation, selects either info or data partition for operation.
+                  When 0, select data partition - this is the portion of RRAM that is accessible both by the host and by the controller.
+                  When 1, select info partition - this is the portion of RRAM that is only accessible by the controller.
+                  '''
+            resval: "0"
+          },
+          { bits: "25:16",
+            name: "NUM",
+            desc: '''
+                  One fewer than the number of bus words the RRAM operation should read or write.
+                  For write operations, the number of bus words must be a multiple of 4.
+                  For example, to read 10 words, software should program this field with the value 9.
+                  To write 16 words, the software should program this field to 15.
+                  '''
+            resval: "0"
+          },
+        ]
+      },
+      { name: "ADDR",
+        desc: "Address for RRAM operation",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "CTRL_REGWEN",
+        resval: "0",
+        fields: [
+          { bits: "20:0",
+            name: "START",
+            desc: '''
+                  Start address of a RRAM transaction.
+                  This is a byte address relative to the RRAM only.
+                  I.e., an address of 0 will access address 0 of the requested partition.
+
+                  For read operations, the RRAM controller will truncate to the closest, lower word aligned address.
+                  For example, if 0x13 is supplied, the controller will perform a read at address 0x10.
+
+                  For write operations, the RRAM controller will truncate to the closest, lower RRAM-word (128b).
+                  For example, if 0x2F is supplied, the controller will perform a write at address 0x20.
+                  '''
+            resval: "0"
+          },
+        ]
+      },
+
+      // Data partition memory properties region setup
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "REGION_CFG_REGWEN"
+          desc: "Memory region registers configuration enable.",
+          count: "NumRegions",
+          swaccess: "rw0c",
+          hwaccess: "none",
+          compact: false,
+          fields: [
+              { bits: "0",
+                name: "REGION",
+                resval: "1"
+                desc: "Region register write enable.  Once set to 0, it can longer be configured to 1",
+                enum: [
+                  { value: "0",
+                    name: "Region locked",
+                    desc: '''
+                          Region can no longer be configured until next reset.
+                          '''
+                  },
+                  { value: "1",
+                    name: "Region enabled",
+                    desc: '''
+                          Region can be configured.
+                          '''
+                  },
+                ]
+              },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "MP_REGION_CFG",
+          desc: "Memory property configuration for data partition",
+          count: "NumRegions",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "REGION_CFG_REGWEN",
+          regwen_multi: true,
+          fields: [
+              { bits: "3:0",
+                name: "EN",
+                mubi: true,
+                desc: '''
+                      Region enabled, following fields apply.
+                      If region is disabled, it is not matched against any incoming transaction.
+                      ''',
+                resval: false
+              },
+              { bits: "7:4",
+                name: "RD_EN",
+                mubi: true,
+                desc: '''
+                      Region can be read.
+                      ''',
+                resval: false
+              },
+              { bits: "11:8",
+                name: "WR_EN",
+                mubi: true,
+                desc: '''
+                      Region can be written.
+                      ''',
+                resval: false
+              }
+              { bits: "15:12",
+                name: "SCRAMBLE_EN",
+                mubi: true,
+                desc: '''
+                      Region is scramble enabled.
+                      ''',
+                resval: false
+              }
+              { bits: "19:16",
+                name: "ECC_EN",
+                mubi: true,
+                desc: '''
+                      Region is integrity checked and reliability ECC enabled.
+                      ''',
+                resval: false
+              }
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "MP_REGION",
+          desc: "Memory base and size configuration for data partition",
+          count: "NumRegions",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "REGION_CFG_REGWEN",
+          regwen_multi: true,
+          fields: [
+            { bits: "11:0",
+              name: "BASE",
+              desc: '''
+                    Region base page. Note the granularity is page, not byte or word.
+                    ''',
+              resval: "0"
+            },
+            { bits: "23:12",
+              name: "SIZE",
+              desc: '''
+                    Region size in number of pages.
+                    For example, if base is 0 and size is 1, then the region is defined by page 0.
+                    If base is 0 and size is 2, then the region is defined by pages 0 and 1.
+                    ''',
+              resval: "0"
+            },
+          ],
+        },
+      },
+
+      // Default region properties for data partition
+      { name: "DEFAULT_REGION",
+        desc: "Default region properties",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "RD_EN",
+            mubi: true,
+            desc: '''
+                  Region can be read
+                  ''',
+            resval: false
+          },
+          { bits: "7:4",
+            name: "WR_EN",
+            mubi: true,
+            desc: '''
+                  Region can be written
+                  ''',
+            resval: false
+          }
+          { bits: "11:8",
+            name: "SCRAMBLE_EN",
+            mubi: true,
+            desc: '''
+                  Region is scramble enabled.
+                  ''',
+            resval: false
+          }
+          { bits: "15:12",
+            name: "ECC_EN",
+            mubi: true,
+            desc: '''
+                  Region is ECC enabled (both integrity and reliability ECC).
+                  ''',
+            resval: false
+          }
+        ]
+      },
+
+      // Info partition memory properties setup
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "INFO_REGWEN"
+          desc: "Memory region registers configuration enable.",
+          count: "NumInfoPages",
+          swaccess: "rw0c",
+          hwaccess: "none",
+          compact: false,
+          fields: [
+              { bits: "0",
+                name: "REGION",
+                resval: "1"
+                desc: '''
+                      Info page write enable.
+                      Once set to 0, it can longer be configured to 1.
+                      '''
+                enum: [
+                  { value: "0",
+                    name: "Page locked",
+                    desc: '''
+                          Region can no longer be configured until next reset.
+                          '''
+                  },
+                  { value: "1",
+                    name: "Page enabled",
+                    desc: '''
+                          Region can be configured.
+                          '''
+                  },
+                ]
+              },
+          ],
+        },
+      },
+
+      { multireg: {
+          cname: "RRAM_CTRL",
+          name: "INFO_PAGE_CFG",
+          desc: '''
+                Memory property configuration for info partition.
+                Unlike data partition, each page is individually configured.
+                '''
+          count: "NumInfoPages",
+          swaccess: "rw",
+          hwaccess: "hro",
+          regwen: "INFO_REGWEN",
+          regwen_multi: true,
+          fields: [
+            { bits: "3:0",
+              name: "EN",
+              mubi: true,
+              desc: '''
+                    Region is enabled, the following fields apply.
+                    ''',
+              resval: false
+            },
+            { bits: "7:4",
+              name: "RD_EN",
+              mubi: true,
+              desc: '''
+                    Region can be read.
+                    ''',
+              resval: false
+            },
+            { bits: "11:8",
+              name: "WR_EN",
+              mubi: true,
+              desc: '''
+                    Region can be written.
+                    ''',
+              resval: false
+            }
+            { bits: "15:12",
+              name: "SCRAMBLE_EN",
+              mubi: true,
+              desc: '''
+                    Region is scramble enabled.
+                    ''',
+              resval: false
+            }
+            { bits: "19:16",
+              name: "ECC_EN",
+              mubi: true,
+              desc: '''
+                    Region is ECC enabled (both integrity and reliability ECC).
+                    ''',
+              resval: false
+            }
+          ],
+        },
+      },
+
+      { name: "HW_INFO_CFG_OVERRIDE",
+        desc: "HW interface info configuration rule overrides",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "SCRAMBLE_DIS",
+            mubi: true,
+            desc: '''
+                  The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field.
+                  If the hardware rules hardwires scramble to enable, we can disable via software if needed.
+
+                  By default this field is false.
+                  ''',
+            resval: false
+          }
+          { bits: "7:4",
+            name: "ECC_DIS",
+            mubi: true,
+            desc: '''
+                  The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field.
+                  If the hardware rules hardwires ECC to enable, we can disable via software if needed.
+
+                  By default this field is false.
+                  ''',
+            resval: false
+          }
+        ]
+      },
+
+      { name: "OP_STATUS",
+        desc: "RRAM Operation Status",
+        swaccess: "rw",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0", name: "done",
+            desc: "RRAM operation done. Set by HW, cleared by SW" },
+          { bits: "1", name: "err",
+            desc: "RRAM operation error. Set by HW, cleared by SW. See !!ERR_CODE for more details."},
+        ]
+      },
+
+      { name: "STATUS",
+        desc: "RRAM Controller Status",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",    name: "rd_full",    desc: "RRAM read FIFO full, software must consume data"},
+          { bits: "1",    name: "rd_empty",   desc: "RRAM read FIFO empty", resval: "1"},
+          { bits: "2",    name: "wr_full",    desc: "RRAM write FIFO full"},
+          { bits: "3",    name: "wr_empty",   desc: "RRAM write FIFO empty, software must provide data", resval: "1"},
+          { bits: "4",    name: "init_done",  desc: "RRAM controller is initilized"
+            tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
+          },
+          { bits: "5",    name: "keys_valid", desc: "RRAM controller scrambling keys are loaded"
+            tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
+          },
+        ]
+      },
+
+      { name: "ERR_CODE",
+        desc: '''
+              RRAM error code register.
+              This register tabulates detailed error status of the RRAM.
+              This is separate from !!OP_STATUS, which is used to indicate the current state of the software initiated RRAM operation.
+
+              Note, all errors in this register are considered recoverable errors, i.e., errors that could have been generated by software.
+              '''
+        swaccess: "rw1c",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "op_err",
+            desc: '''
+                  Software has supplied an undefined operation.
+                  See !!CONTROL.OP for list of valid operations.
+                  '''
+          },
+          { bits: "1",
+            name: "mp_err",
+            desc: '''
+                  RRAM access has encountered an access permission error.
+                  Please see !!ERR_ADDR for exact address.
+                  This is a synchronous error.
+                  '''
+          },
+          { bits: "2",
+            name: "rd_err",
+            desc: '''
+                  RRAM read has an error.
+                  This could be a reliability ECC error or integrity error encountered during a software issued controller read, see !!STD_FAULT_STATUS.
+                  See !!ERR_ADDR for exact address.
+                  This is a synchronous error.
+                  '''
+          },
+          { bits: "3",
+            name: "wr_err",
+            desc: '''
+                  RRAM write has an error.
+                  This could be a write integrity error, see !!STD_FAULT_STATUS.
+                  This is a synchronous error.
+                  '''
+          },
+        ]
+      },
+
+      { name: "STD_FAULT_STATUS",
+        desc: '''
+              This register tabulates standard fault status of the RRAM.
+
+              These represent errors that occur in the standard structures of the design.
+              For example fsm integrity, counter integrity and tlul integrity.
+              '''
+        swaccess: "ro",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "reg_intg_err",
+            desc: '''
+                  The RRAM controller encountered a register integrity error.
+                  '''
+          },
+          { bits: "1",
+            name: "lcmgr_err",
+            desc: '''
+                  The life cycle management interface has encountered a fatal error.
+                  The error is either an FSM sparse encoding error or a count error.
+                  '''
+          },
+          { bits: "2",
+            name: "lcmgr_intg_err",
+            desc: '''
+                  The life cycle management interface has encountered a transmission integrity error.
+                  This is an integrity error on the generated integrity during a life cycle management interface read.
+                  '''
+          },
+          { bits: "3",
+            name: "otp_err",
+            desc: '''
+                  The otp interface has encountered a fatal error.
+                  The error is either an FSM sparse encoding error or a count error.
+                  '''
+          },
+          { bits: "4",
+            name: "otp_intg_err",
+            desc: '''
+                  The otp interface has encountered a transmission integrity error.
+                  This is an integrity error on the generated integrity during an OTP read.
+                  '''
+          },
+          { bits: "5",
+            name: "phy_wr_intg_err",
+            desc: '''
+                  The RRAM phy controller encountered a write data transmission integrity error.
+                  '''
+          },
+          { bits: "6",
+            name: "phy_fifo_err",
+            desc: '''
+                  A RRAM phy fifo has encountered a count error.
+                  '''
+          },
+          { bits: "7",
+            name: "phy_fsm_err",
+            desc: '''
+                  A RRAM phy fsm has encountered a sparse encoding error.
+                  '''
+          },
+          { bits: "8",
+            name: "phy_cnt_err",
+            desc: '''
+                  A RRAM phy wr/read has encountered a count error.
+                  '''
+          },
+          { bits: "9",
+            name: "phy_arb_err",
+            desc: '''
+                  A RRAM phy arbiter has encountered an error.
+                  '''
+          },
+          { bits: "10",
+            name: "ctrl_fsm_err",
+            desc: '''
+                  Any of the arbiter or rd/wr control FSMs have encountered a sparse encoding error.
+                  '''
+          },
+          { bits: "11",
+            name: "ctrl_cnt_err",
+            desc: '''
+                  RRAM controller read/write has encountered a count error.
+                  '''
+          },
+          { bits: "12",
+            name: "ctrl_fifo_err",
+            desc: '''
+                  RRAM controller write fifo has encountered an error.
+                  '''
+          },
+        ]
+      },
+
+      { name: "FAULT_STATUS",
+        desc: '''
+              This register tabulates customized fault status of the RRAM.
+
+              These are errors that are impossible to have been caused by software or unrecoverable in nature.
+
+              All errors except for multi-bit ECC errors (!!FAULT_STATUS.PHY_RELBL_ERR).
+              Once set, they remain set until reset.
+              '''
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "lcmgr_op_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM life cycle management interface has supplied an undefined operation.
+                  See !!CONTROL.OP for list of valid operations.
+                  '''
+          },
+          { bits: "1",
+            name: "lcmgr_mp_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM life cycle management interface encountered a memory permission error.
+                  '''
+          },
+          { bits: "2",
+            name: "lcmgr_rd_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM life cycle management interface encountered a read error.
+                  This could be a reliability ECC error or an integrity ECC error encountered during a read, see !!STD_FAULT_STATUS for more details.
+                  '''
+          },
+          { bits: "3",
+            name: "lcmgr_wr_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM life cycle management interface encountered a write error.
+                  This could be a write integrity error, see !!STD_FAULT_STATUS for more details.
+                  '''
+          },
+          { bits: "4",
+            name: "otp_op_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM OTP interface has supplied an undefined operation.
+                  See !!CONTROL.OP for list of valid operations.
+                  '''
+          },
+          { bits: "5",
+            name: "otp_mp_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM OTP interface encountered a memory permission error.
+                  '''
+          },
+          { bits: "6",
+            name: "otp_rd_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM OTP interface encountered a read error.
+                  This could be a reliability ECC error or an integrity ECC error encountered during a read, see !!STD_FAULT_STATUS for more details.
+                  '''
+          },
+          { bits: "7",
+            name: "otp_wr_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM OTP interface encountered a write error.
+                  This could be a write integrity error, see !!STD_FAULT_STATUS for more details.
+                  '''
+          },
+          { bits: "8",
+            name: "seed_err",
+            swaccess: "ro",
+            desc: '''
+                  The seed reading process encountered an unexpected error.
+                  '''
+          },
+          { bits: "9",
+            name: "phy_relbl_err",
+            swaccess: "rw0c",
+            desc: '''
+                  The RRAM macro encountered a reliability ECC error that cannot be corrected.
+
+                  Note that this error bit can be cleared to allow firmware dealing with multi-bit ECC errors during firmware selection and verification.
+                  After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
+                  '''
+          },
+          { bits: "10",
+            name: "phy_rd_intg_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM phy controller encountered an integrity error. The shadow response was not identical to the original response.
+                  '''
+          },
+          { bits: "11",
+            name: "phy_rd_ctrl_err",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM phy controller detected one of the following errors:
+                  - a mismatch of command request integrity and command response integrity.
+                  - a spurious valid.
+                  - a spurious rram read request.
+                  '''
+          },
+          { bits: "12",
+            name: "spurious_done",
+            swaccess: "ro",
+            desc: '''
+                  The RRAM emitted an unexpected acknowledgement.
+                  '''
+          },
+          { bits: "13",
+            name: "host_gnt_err",
+            swaccess: "ro",
+            desc: '''
+                  A host transaction was granted with illegal properties.
+                  '''
+          },
+        ]
+      },
+
+      { name: "ERR_ADDR",
+        desc: "Synchronous error address",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "20:0",
+            resval: 0,
+          },
+        ]
+      },
+
+      { name: "CORR_ERR_CNT",
+        desc: "Count of correctable ECC errors",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "7:0",
+            name: "val",
+            desc: "This count will not wrap when saturated",
+            resval: 0,
+          },
+        ]
+      },
+
+      { name: "CORR_ERR_LOC",
+        desc: "Last address that was successfully corrected",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "20:0",
+            name: "addr",
+            desc: "Last successfully corrected address",
+            resval: 0,
+          },
+          { bits: "24",
+            name: "part"
+            desc: "Last successfully corrected partition",
+            resval: 0,
+          },
+        ]
+      }
+
+      { name: "PHY_ALERT_CFG",
+        desc: "Phy alert configuration",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "alert_ack",
+            desc: "Acknowledge RRAM phy alert"
+          },
+          { bits: "1",
+            name: "alert_trig",
+            desc: "Trigger RRAM phy alert"
+          }
+        ]
+        tags: [ // alert triggers should be tested by directed tests
+               "excl:CsrAllTests:CsrExclWrite"]
+      },
+
+      { name: "PHY_STATUS",
+        desc: "RRAM Phy Status",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "wr_busy",
+            desc: "RRAM phy is currently writing to RRAM"
+          },
+          { bits: "1",
+            name: "init_done",
+            desc: "RRAM phy controller is initialized (including RRAM)"
+            tags: [ // Bit changes after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
+          },
+        ]
+      },
+
+      { name: "SCRATCH",
+        desc: "RRAM Controller Scratch",
+        swaccess: "rw",
+        fields: [
+          { bits: "31:0", name: "data",  desc: "RRAM controller scratch register" },
+        ]
+      },
+
+      { name: "FIFO_LVL",
+        desc: "Programmable depth where FIFOs should generate interrupts",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "4:0",
+            name: "WR",
+            desc: '''
+                  When the write FIFO drains to this level, trigger an interrupt.
+                  Default value is set such that interrupt does not trigger at reset.
+                  '''
+            resval: "0xF"
+          },
+          { bits: "12:8",
+            name: "RD",
+            desc: '''
+                  When the read FIFO fills to this level, trigger an interrupt.
+                  Default value is set such that interrupt does not trigger at reset.
+                  '''
+            resval: "0xF"
+          },
+        ]
+      }
+
+      { name: "FIFO_CLR",
+        desc: "Clears RRAM controller FIFOs",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          { bits: "0",
+            name: "WR",
+            desc: '''
+                  This will clear the content of the controller write fifo.
+                  '''
+            resval: "0"
+          },
+          { bits: "1",
+            name: "RD",
+            desc: '''
+                  This will clear the content of the controller read fifo.
+                  '''
+            resval: "0"
+          },
+        ]
+      },
+
+      { name: "CURR_FIFO_LVL",
+        desc: "Current write and read fifo level",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "4:0",
+            name: "WR",
+            desc: '''
+                  Current write fifo level.
+                  '''
+            resval: "0x0"
+          },
+          { bits: "12:8",
+            name: "RD",
+            desc: '''
+                  Current read fifo level.
+                  '''
+            resval: "0x0"
+          },
+        ]
+      }
+
+      { window: {
+          name: "wr_fifo",
+          items: "1",
+          validbits: "32",
+          data-intg-passthru: "true",
+          byte-write: "false",
+          unusual: "false"
+          swaccess: "wo",
+          desc: '''
+                RRAM write FIFO.
+
+                The FIFO is 4 entries of 4B words. This FIFO can only be programmed by software after a write operation has been initiated via the !!CONTROL register.
+                This ensures accidental programming of the write FIFO cannot lock up the system.
+                '''
+        },
+      },
+
+      { window: {
+          name: "rd_fifo",
+          items: "1",
+          validbits: "32",
+          data-intg-passthru: "true",
+          byte-write: "false",
+          unusual: "false"
+          swaccess: "ro",
+          desc: '''
+                RRAM read FIFO.
+
+                The FIFO is 16 entries of 4B words.
+                '''
+        },
+      },
+    ]
+  }
+  memory: {
+    host: {}
+  }
+}

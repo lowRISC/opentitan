@@ -138,6 +138,8 @@ status_t key_exchange_test(void) {
   // Generate a keypair.
   LOG_INFO("Generating X25519 keypair A");
   TRY(otcrypto_x25519_keygen(&private_keyA, &public_keyA));
+  LOG_INFO("OTBN instruction count for keygen: 0x%08x",
+           otbn_instruction_count_get());
 
   // Generate a second keypair.
   LOG_INFO("Generating X25519 keypair B");
@@ -164,6 +166,8 @@ status_t key_exchange_test(void) {
   // Compute the shared secret from A's side.
   LOG_INFO("Generating shared secret (A)");
   TRY(otcrypto_x25519(&private_keyA, &public_keyB, &shared_keyA));
+  LOG_INFO("OTBN instruction count for x25519: 0x%08x",
+           otbn_instruction_count_get());
 
   // Compute the shared secret from B's side.
   LOG_INFO("Generating shared secret (B)");
@@ -180,8 +184,8 @@ status_t key_exchange_test(void) {
   uint32_t keyA[kX25519SharedKeyWords];
   uint32_t keyB[kX25519SharedKeyWords];
 
-  TRY(hardened_add(keyA0, keyA1, kX25519SharedKeyWords, keyA));
-  TRY(hardened_add(keyB0, keyB1, kX25519SharedKeyWords, keyB));
+  TRY(hardened_xor(keyA0, keyA1, kX25519SharedKeyWords, keyA));
+  TRY(hardened_xor(keyB0, keyB1, kX25519SharedKeyWords, keyB));
 
   CHECK_ARRAYS_EQ(keyA, keyB, ARRAYSIZE(keyA));
 

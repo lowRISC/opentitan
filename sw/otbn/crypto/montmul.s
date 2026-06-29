@@ -600,7 +600,8 @@ montmul:
   li        x8, 4
   li        x10, 4
   li        x11, 2
-
+  bn.add    w31, w31, w31, FG0
+  bn.add    w31, w31, w31, FG1
   ret
 
 

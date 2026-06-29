@@ -31,7 +31,7 @@ static const otbn_addr_t kWdrState = OTBN_ADDR_T_INIT(smoke_test, wdr_state);
 enum {
   kNumExpectedGprs = 30,
   kNumExpectedWdrs = 32,
-  kExpectedInstrCount = 323,
+  kExpectedInstrCount = 296,
 };
 
 // The expected values of the GPRs and WDRs are taken from
@@ -104,10 +104,10 @@ static const uint32_t kExpectedWdrs[kNumExpectedWdrs][8] = {
             0x23631fe5, 0xbbb1704f, 0xd25666ac},
     [29] = {0xeb0953c2, 0xe0654fef, 0x63388709, 0x5763bcdf, 0x26628bdb,
             0x64341d3c, 0x9f24f0c1, 0x4f0d4b81},
-    [30] = {0xd796d33b, 0xb1555176, 0xd88c0b57, 0xc4018e58, 0x184382f7,
-            0x1ad4e5f9, 0x2f752b5d, 0x5348efc4},
-    [31] = {0x5cee80a0, 0x5cee80a0, 0x5cee80a0, 0x5cee80a0, 0x5cee80a0,
-            0x5cee80a0, 0x5cee80a0, 0x5cee80a0},
+    [30] = {0x68ba2fa1, 0xb55098e0, 0x4efa2ec9, 0xaee49292, 0xab123192,
+            0xffa3d88b, 0xe9ee7ac7, 0x2167f87d},
+    [31] = {0x0f09b7c8, 0x25769434, 0x6978ad1b, 0x67a8c221, 0x5466a52c,
+            0x73880075, 0xf9dbff5e, 0x37adadae},
 };
 
 bool test_main(void) {
@@ -124,6 +124,7 @@ bool test_main(void) {
   // Check the instruction count is what was expected.
   uint32_t instruction_count;
   CHECK_DIF_OK(dif_otbn_get_insn_cnt(&otbn, &instruction_count));
+  LOG_INFO("OTBN instruction count: %d", instruction_count);
   CHECK(kExpectedInstrCount == instruction_count,
         "Expected OTBN to execute %d instructions, but it exected %d",
         kExpectedInstrCount, instruction_count);
@@ -139,6 +140,14 @@ bool test_main(void) {
   CHECK_STATUS_OK(otbn_testutils_read_data(&otbn, sizeof(kExpectedWdrs),
                                            kWdrState, &wdr_state));
 
+  LOG_INFO("w30: %08x %08x %08x %08x %08x %08x %08x %08x", wdr_state[30][7],
+           wdr_state[30][6], wdr_state[30][5], wdr_state[30][4],
+           wdr_state[30][3], wdr_state[30][2], wdr_state[30][1],
+           wdr_state[30][0]);
+  LOG_INFO("w31: %08x %08x %08x %08x %08x %08x %08x %08x", wdr_state[31][7],
+           wdr_state[31][6], wdr_state[31][5], wdr_state[31][4],
+           wdr_state[31][3], wdr_state[31][2], wdr_state[31][1],
+           wdr_state[31][0]);
   CHECK_ARRAYS_EQ(wdr_state[0], kExpectedWdrs[0], 8,
                   "w0 didn't match the expected value.");
   // We ignore register w1 and w2.

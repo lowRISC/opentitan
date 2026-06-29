@@ -122,13 +122,14 @@ status_t x25519_kat_test(void) {
   // Run X25519.
   CHECK_STATUS_OK(
       otcrypto_x25519(&private_key_alice, &public_key_bob, &shared_secret));
+  LOG_INFO("OTBN instruction count for x25519: 0x%08x",
+           otbn_instruction_count_get());
 
   // Unmask the shared secret.
   uint32_t shared_secret_unmasked[kX25519SharedSecretWords];
   uint32_t *share0 = shared_secret.keyblob;
-  uint32_t *share1 =
-      shared_secret.keyblob + keyblob_share_num_words(kPrivateKeyConfig);
-  HARDENED_TRY(hardened_add(share0, share1, kX25519SharedSecretWords,
+  uint32_t *share1 = shared_secret.keyblob + kX25519SharedSecretWords;
+  HARDENED_TRY(hardened_xor(share0, share1, kX25519SharedSecretWords,
                             shared_secret_unmasked));
 
   // Check the x25519 result.
@@ -165,6 +166,8 @@ status_t x25519_keygen_test(void) {
   // Run x25519 key generation.
   CHECK_STATUS_OK(
       otcrypto_x25519_keygen(&private_key_alice, &public_key_alice));
+  LOG_INFO("OTBN instruction count for keygen: 0x%08x",
+           otbn_instruction_count_get());
 
   // Check the x25519 key generation result.
   TRY_CHECK_ARRAYS_EQ(kPublicKeyAlice, public_key_alice.key,

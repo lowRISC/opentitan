@@ -880,7 +880,7 @@ status_t cryptolib_sca_ed25519_sign_impl(
               .key_length = ED25519_CMD_SCALAR_BYTES,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolFalse,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
@@ -1063,7 +1063,7 @@ status_t cryptolib_sca_x25519_ecdh_impl(
                                            &ss_share1_buf));
 
   uint32_t ss_unmasked[8];
-  HARDENED_TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+  HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
 
   uj_output->cfg = 0;
   memset(uj_output->shared_key, 0, X25519_CMD_BYTES);
@@ -1142,7 +1142,7 @@ status_t cryptolib_sca_x25519_point_mul_impl(
                                            &ss_share1_buf));
 
   uint32_t ss_unmasked[8];
-  HARDENED_TRY(hardened_add(ss_share0, ss_share1, 8, ss_unmasked));
+  HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
 
   uj_output->cfg = 0;
   memcpy(uj_output->x, ss_unmasked, X25519_CMD_BYTES);
@@ -1342,7 +1342,7 @@ status_t cryptolib_sca_ed25519_base_mul_impl(
               .key_length = ED25519_CMD_SCALAR_BYTES,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolFalse,
-              .security_level = kOtcryptoKeySecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelHigh,
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,

@@ -108,7 +108,6 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("I2c0FatalFault",                 C, C, X, X), \
       Xmacro("I2c1FatalFault",                 C, C, X, X), \
       Xmacro("I2c2FatalFault",                 C, C, X, X), \
-      Xmacro("PattgenFatalFault",              C, C, X, X), \
       Xmacro("OtpCtrlFatalMacroError",         A, A, X, X), \
       Xmacro("OtpCtrlFatalCheckError",         A, A, X, X), \
       Xmacro("LcCtrlFatalProgError",           A, A, X, X), \
@@ -119,7 +118,6 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("ClkmgrAonFatalFault",            C, C, X, X), \
       Xmacro("SysrstCtrlAonFatalFault",        C, C, X, X), \
       Xmacro("AdcCtrlAonFatalFault",           C, C, X, X), \
-      Xmacro("PwmAonFatalFault",               C, C, X, X), \
       Xmacro("PinmuxAonFatalFault",            C, C, X, X), \
       Xmacro("AonTimerAonFatalFault",          C, C, X, X), \
       Xmacro("SensorCtrlAonRecovAs",           B, B, X, X), \
@@ -158,6 +156,8 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("OtbnFatal",                      A, A, X, X), \
       Xmacro("OtbnRecov",                      D, D, X, X), \
       Xmacro("RomCtrlFatal",                   A, A, X, X), \
+      Xmacro("Dummy59",                        X, X, X, X), \
+      Xmacro("Dummy60",                        X, X, X, X), \
       Xmacro("Dummy61",                        X, X, X, X), \
       Xmacro("Dummy62",                        X, X, X, X), \
       Xmacro("Dummy63",                        X, X, X, X), \

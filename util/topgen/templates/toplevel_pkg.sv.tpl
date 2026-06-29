@@ -81,6 +81,9 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
 
   // Number of ${alert_group} outgoing alerts
   parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(top['outgoing_alert'][alert_group])};
+%       for pd in top["power"]["domains"]:
+  parameter int unsigned NOutgoingAlerts${alert_group.capitalize()}Pd${pd.capitalize()} = ${top['alert_handler_info'][alert_group]['count_pd'][pd]};
+%       endfor
 
   // Number of LPGs for outgoing alert group ${alert_group}
   parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${len(top["outgoing_alert_lpgs"][alert_group])};

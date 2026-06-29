@@ -688,12 +688,18 @@ def extract_clocks(top: ConfigT):
         # different groups inside clock_srcs.  This is generally not
         # recommended as it is better to stay consistent.  However
         # if needed, the method is available.
-        ep['clock_group'] = 'secure' if 'clock_group' not in ep else ep[
-            'clock_group']
-        ep_grp = ep['clock_group']
+        ep_grp = ep.get('clock_group', 'secure')
+        # Write value to dict in case it was unset before
+        ep['clock_group'] = ep_grp
 
         # end point names and clocks
         ep_name = ep['name']
+
+        # end point power domain
+        ep_domain = ep.get('domain', top['power']['default'])
+
+        # prefixes for all clocks of this endpoint
+        prefixes = lib.get_clock_prefixes(top, ep_domain)
 
         for port, clk in ep['clock_srcs'].items():
             group_name, src_name = _get_clock_group_name(clk, ep_grp)
@@ -707,7 +713,7 @@ def extract_clocks(top: ConfigT):
                 group = clocks.groups[group_name]
 
                 name = ''
-                hier_name = clocks.hier_paths[group.src]
+                hier_name = prefixes[group.src]
 
                 if group.src == 'ext':
                     name = "{}_i".format(src_name)
@@ -1113,6 +1119,7 @@ def amend_interrupt(top: ConfigT,
     default_plic = top.get("default_plic", None)
     interrupts = []
     outgoing_interrupts = defaultdict(list)
+    plic_info = {}
     for m in modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
@@ -1132,6 +1139,9 @@ def amend_interrupt(top: ConfigT,
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
             qual["incoming"] = False
+            # Add power domain info
+            module_dict = lib.get_module_by_name(top, m)
+            qual["domain"] = module_dict.get("domain", top["power"]["default"])
             plic = ip.get("plic", default_plic)
             if plic is not None:
                 qual["plic"] = plic
@@ -1156,8 +1166,56 @@ def amend_interrupt(top: ConfigT,
             qual_irq["outgoing"] = False
             interrupts.append(qual_irq)
 
+    # Determine PLIC info
+    plics = lib.find_modules(top["module"], "rv_plic", use_base_template_type=True)
+    for plic in plics:
+        domain = plic.get("domain", top["power"]["default"])
+        # Interrupt source 0 is tied to 0 to conform to the RISC-V PLIC spec.
+        # The total number of interrupts is the sum of the widths of each entry
+        # in the list over all power domains, plus 1.
+        p_info = {"domain": domain, "count_tot": 1, "count_pd": {}}
+        for pd in top["power"]["domains"]:
+            p_info["count_pd"][pd] = 0
+
+        # Add schaffold to dict
+        plic_info[plic["name"]] = p_info
+
+    # Populate counts
+    for irq in interrupts:
+        if irq["outgoing"]:
+            continue
+        plic_info[irq["plic"]]["count_tot"] += irq.get("width", 1)
+        plic_info[irq["plic"]]["count_pd"][irq["domain"]] += irq.get("width", 1)
+
     top["interrupt"] = interrupts
     top["outgoing_interrupt"] = outgoing_interrupts
+    top["plic_info"] = plic_info
+
+    # Create chiplevel signal definitions
+    sigdefs = []
+    for plic, info in plic_info.items():
+        plic_str = plic + "_" if len(plic_info) > 1 else ""
+        for pd in top["power"]["domains"]:
+            if pd != info["domain"] and info["count_pd"][pd] > 0:
+                sig_name = f"intr_vector{plic_str}_pd_{pd.lower()}"
+                sigdefs.append(
+                    OrderedDict([('package', ''),
+                                 ('struct', 'logic'),
+                                 ('domain', 'chip'),
+                                 ('signame', sig_name),
+                                 ('width', info["count_pd"][pd]),
+                                 ('type', 'uni'),
+                                 ('special', 'interrupt'),
+                                 ('end_idx', -1),
+                                 ('act', 'req'),
+                                 ('suffix', ''),
+                                 ('default', "'0")]))
+
+    # Add to inter-pd definitions
+    topdefs = top.setdefault("inter_pd", defaultdict()).setdefault("definitions", [])
+    for sd in sigdefs:
+        if sd["signame"] not in [td["signame"] for td in topdefs]:
+            topdefs.append(sd)
 
 
 def get_alert_modules(top: ConfigT,
@@ -1195,16 +1253,43 @@ def alert_handler_signals(handler):
     return (f"alert{suffix}_tx", f"alert{suffix}_rx")
 
 
-def get_alert_connections(top: ConfigT,
-                          name_to_block: IpBlocksT,
-                          allow_missing_blocks=False) -> List[str]:
-    """Return an existing top['alert_connections'] or generate one.
+def commit_alert_connections(top: ConfigT,
+                             name_to_block: IpBlocksT,
+                             allow_missing_blocks=False):
+    """Populate alert-related connection information in top
+
+    This function populates top['alert_connections'] and top['alert_handler_info'],
+    and adds the required chip-level signals to connect alert handlers with alert
+    sources in different power domains.
     """
     if "alert_connections" in top:
         return top["alert_connections"]
 
     default_handler = top.get("default_alert_handler", None)
     connections = defaultdict(list)
+
+    alert_handler_info = defaultdict()
+
+    # Construct info dicts for internal alert handlers
+    alert_handlers = lib.find_modules(top["module"], "alert_handler")
+    for ah in alert_handlers:
+        domain = ah.get("domain", top["power"]["default"])
+        ah_info = {"domain": domain, "count_tot": 0, "count_pd": {}, "connect_pd": {}}
+        for pd in top["power"]["domains"]:
+            ah_info["count_pd"][pd] = 0
+
+        # Add schaffold to dict
+        alert_handler_info[ah["name"]] = ah_info
+
+    # Construct info dicts for external alert handlers
+    alert_handlers = top["outgoing_alert"]
+    for ah in alert_handlers:
+        ah_info = {"domain": "external", "count_tot": 0, "count_pd": {}}
+        for pd in top["power"]["domains"]:
+            ah_info["count_pd"][pd] = 0
+
+        # Add schaffold to dict
+        alert_handler_info[ah] = ah_info
 
     # Construct the connection information here
     alert_idx = defaultdict(int)
@@ -1217,6 +1302,11 @@ def get_alert_connections(top: ConfigT,
         if block.alerts:
             alert_comments = []
             handler = module.get("alert_handler", default_handler)
+            m_domain = module.get("domain", top["power"]["default"])
+            if handler is not None:
+                a_domain = alert_handler_info[handler]["domain"]
+            else:
+                a_domain = top["power"]["default"]
 
             # Checking whether there is a handler is done in validation
             if not outgoing and not handler:
@@ -1226,18 +1316,52 @@ def get_alert_connections(top: ConfigT,
             w = len(block.alerts)
             if outgoing:
                 outgoing_group = module["outgoing_alert"]
-                lo = outgoing_alert_idx[outgoing_group]
-                slice = f"{lo+w-1}:{lo}"
-                async_expr = f"AsyncOnOutgoingAlert{outgoing_group.capitalize()}[{slice}]"
+                lo_async = outgoing_alert_idx[outgoing_group]
+                lo = alert_handler_info[outgoing_group]["count_pd"][m_domain]
+                if w > 1:
+                    slice = f"{lo+w-1}:{lo}"
+                    slice_async = f"{lo_async+w-1}:{lo_async}"
+                else:
+                    slice = lo
+                    slice_async = lo_async
+                async_expr = f"AsyncOnOutgoingAlert{outgoing_group.capitalize()}[{slice_async}]"
                 alert_tx_expr = f"outgoing_alert_{outgoing_group}_tx_o[{slice}]"
                 alert_rx_expr = f"outgoing_alert_{outgoing_group}_rx_i[{slice}]"
+
+                # Increase counts
+                alert_handler_info[outgoing_group]["count_tot"] += w
+                alert_handler_info[outgoing_group]["count_pd"][m_domain] += w
             else:
+                len_tot = alert_idx[handler]
+                len_pd = alert_handler_info[handler]["count_pd"][m_domain]
+                if m_domain != a_domain:
+                    for i in range(w):
+                        conn_info = {"src_pd": m_domain, "idx": len_pd + i}
+                        alert_handler_info[handler]["connect_pd"][len_tot + i] = conn_info
+
                 alert_tx, alert_rx = alert_handler_signals(handler)
-                lo = alert_idx[handler]
-                slice = f"{lo+w-1}:{lo}"
-                async_expr = f"{handler}_reg_pkg::AsyncOn[{slice}]"
+                lo_async = alert_idx[handler]
+                # Suffixes and indices for alerts to handlers in other domains
+                if m_domain != a_domain:
+                    alert_tx += "_o"
+                    alert_rx += "_i"
+                    lo = alert_handler_info[handler]["count_pd"][m_domain]
+                else:
+                    lo = alert_idx[handler]
+
+                if w > 1:
+                    slice = f"{lo+w-1}:{lo}"
+                    slice_async = f"{lo_async+w-1}:{lo_async}"
+                else:
+                    slice = lo
+                    slice_async = lo_async
+                async_expr = f"{handler}_reg_pkg::AsyncOn[{slice_async}]"
                 alert_tx_expr = f"{alert_tx}[{slice}]"
                 alert_rx_expr = f"{alert_rx}[{slice}]"
+
+                # Increase counts
+                alert_handler_info[handler]["count_tot"] += w
+                alert_handler_info[handler]["count_pd"][m_domain] += w
 
             # Generate comments, and increment the applicable alert indices
             for a in block.alerts:
@@ -1284,17 +1408,52 @@ def get_alert_connections(top: ConfigT,
         }
         connections["incoming_" + alert_group] = alert_info
 
-    return connections
+    # Create chiplevel signal definitions
+    sigdefs = []
+    proto = OrderedDict([('package', 'prim_alert_pkg'),
+                        ('struct', ''),
+                        ('domain', 'chip'),
+                        ('signame', ''),
+                        ('width', -1),
+                        ('type', 'uni'),
+                        ('special', 'alert'),
+                        ('end_idx', -1),
+                        ('act', 'req'),
+                        ('suffix', ''),
+                        ('default', "'0")])
+
+    for name, info in alert_handler_info.items():
+        signals = alert_handler_signals(name)
+        for pd in top["power"]["domains"]:
+            width = info["count_pd"][pd]
+            if pd != info["domain"] and width > 0:
+                sig_names = (signals[0] + f"_pd_{pd.lower()}",
+                             signals[1] + f"_pd_{pd.lower()}")
+                sig_tx = proto.copy()
+                sig_rx = proto.copy()
+                sig_tx["struct"] = 'alert_tx'
+                sig_rx["struct"] = 'alert_rx'
+                sig_tx["signame"] = sig_names[0]
+                sig_rx["signame"] = sig_names[1]
+                sig_tx["width"] = width
+                sig_rx["width"] = width
+
+                sigdefs.append(sig_tx)
+                sigdefs.append(sig_rx)
+
+    # Add to inter-pd dict, create if nonexistent, avoid duplicates
+    topdefs = top.setdefault("inter_pd", defaultdict()).setdefault("definitions", [])
+    for sd in sigdefs:
+        if sd["signame"] not in [td["signame"] for td in topdefs]:
+            topdefs.append(sd)
+
+    top['alert_connections'] = connections
+    top['alert_handler_info'] = alert_handler_info
 
 
 def commit_alert_modules(top: ConfigT, name_to_block: IpBlocksT):
     """Make sure top['alert_module'] is populated in the final config."""
     top['alert_module'] = get_alert_modules(top, name_to_block)
-
-
-def commit_alert_connections(top: ConfigT, name_to_block: IpBlocksT):
-    """Make sure top['alert_connections'] is populated in the final config."""
-    top['alert_connections'] = get_alert_connections(top, name_to_block)
 
 
 def get_outgoing_alert_modules(top: ConfigT,
@@ -1519,6 +1678,108 @@ def amend_pinmux_io(top: ConfigT,
     temp['inputs'] = []
     temp['outputs'] = []
 
+    # Port and signal prototypes for cross-PD connections
+    pd_default = top["power"]["default"]
+    m_pinmux = lib.find_module(top["module"], "pinmux")
+    pd_pinmux = m_pinmux.get("domain", pd_default)
+
+    port_proto = OrderedDict([('package', ''),
+                              ('struct', 'logic'),
+                              ('domain', ''),
+                              ('inter_pd', True),
+                              ('signame', ''),
+                              ('signame_chip', ''),
+                              ('width', -1),
+                              ('type', 'uni'),
+                              ('default', "'0"),
+                              ('direction', 'invalid'),
+                              ('conn_type', False),
+                              ('index', -1),
+                              ('netname', '')])
+
+    sig_proto = OrderedDict([('package', ''),
+                             ('struct', 'logic'),
+                             ('domain', 'chip'),
+                             ('signame', ''),
+                             ('width', -1),
+                             ('type', 'uni'),
+                             ('end_idx', -1),
+                             ('act', ''),
+                             ('suffix', ''),
+                             ('default', "'0")])
+
+    inter_pd_ports = []
+    chiplevel_sigs = []
+
+    # Helper function
+    def add_inter_pd_port_and_sig(sig_name, width, pd_mod, stem, mod_dir):
+        """Create ports for both PDs and a chiplevel signal for one IO signal.
+
+        mod_dir is the module port direction ('in' or 'out'); the pinmux port
+        gets the opposite direction. Port signames are stem + '_o'/'_i' to
+        match their respective directions.
+        """
+        pinm_dir = 'in' if mod_dir == 'out' else 'out'
+        mod_sfx = '_o' if mod_dir == 'out' else '_i'
+        pinm_sfx = '_i' if mod_dir == 'out' else '_o'
+
+        port_mod = port_proto.copy()
+        port_mod["domain"] = pd_mod
+        port_mod["signame"] = sig_name + stem + mod_sfx
+        port_mod["netname"] = sig_name + stem
+        port_mod["width"] = width
+        port_mod["direction"] = mod_dir
+
+        port_pinm = port_mod.copy()
+        port_pinm["domain"] = pd_pinmux
+        port_pinm["signame"] = sig_name + stem + pinm_sfx
+        port_pinm["direction"] = pinm_dir
+
+        chip_sig = sig_proto.copy()
+        chip_sig["signame"] = sig_name + stem
+        chip_sig["width"] = width
+
+        inter_pd_ports.append(port_mod)
+        inter_pd_ports.append(port_pinm)
+        chiplevel_sigs.append(chip_sig)
+
+    for m in top["module"]:
+        # Skip all modules that are in the same PD as the pinmux
+        pd_mod = m.get("domain", pd_default)
+        if pd_mod == pd_pinmux:
+            continue
+
+        block = name_to_block.get(m['type'])
+        if block is None and allow_missing_blocks:
+            continue
+
+        for sig in block.get_signals_as_list_of_dicts():
+            sig_name = f"cio_{m['name']}_{sig['name']}"
+
+            # Required objects to be created:
+            # 1) Ports for both PDs
+            # 2) Chiplevel signal
+            if sig["type"] in ['output', 'inout']:
+                add_inter_pd_port_and_sig(sig_name, sig['width'],
+                                          pd_mod, '_d2p', 'out')
+                add_inter_pd_port_and_sig(sig_name, sig['width'],
+                                          pd_mod, '_en_d2p', 'out')
+
+            if sig["type"] in ['input', 'inout']:
+                add_inter_pd_port_and_sig(sig_name, sig['width'],
+                                          pd_mod, '_p2d', 'in')
+
+    # Bring signame_chip into the expected dict format
+    for p in inter_pd_ports:
+        signame_chip = {}
+        for tgt in top["targets"]:
+            signame_chip[tgt["name"]] = p["netname"]
+        p["signame_chip"] = signame_chip
+
+    pinmux.setdefault("inter_pd", defaultdict())
+    pinmux["inter_pd"]["ports"] = inter_pd_ports
+    pinmux["inter_pd"]["definitions"] = chiplevel_sigs
+
     for sig in pinmux['signals']:
         # Get the signal information from the IP block type of this instance/
         mod_name = sig['instance']
@@ -1526,6 +1787,8 @@ def amend_pinmux_io(top: ConfigT,
 
         if m is None:
             raise SystemExit("Module {} is not searchable.".format(mod_name))
+
+        pd_mod = m.get("domain", pd_default)
 
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
@@ -1562,6 +1825,7 @@ def amend_pinmux_io(top: ConfigT,
                 'desc': sig['desc']
             })
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
+            sig_inst['domain'] = pd_mod
             append_io_signal(temp, sig_inst)
 
         # Otherwise the name is a wildcard for selecting all available IO
@@ -1585,6 +1849,7 @@ def amend_pinmux_io(top: ConfigT,
                         })
                         sig_inst_copy['name'] = sig[
                             'instance'] + '_' + sig_inst_copy['name']
+                        sig_inst_copy['domain'] = pd_mod
                         append_io_signal(temp, sig_inst_copy)
                 else:
                     sig_inst.update({
@@ -1595,6 +1860,7 @@ def amend_pinmux_io(top: ConfigT,
                         'desc': sig['desc']
                     })
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
+                    sig_inst['domain'] = pd_mod
                     append_io_signal(temp, sig_inst)
 
     # Now that we've collected all input and output signals,

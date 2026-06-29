@@ -147,7 +147,7 @@ task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
     // it's a DV bug: we should already have failed when the KMAC request was sent a few cycles ago.
     `DV_CHECK_FATAL(!rom_check_complete, "Extra KMAC response seen.")
 
-    kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
+    kmac_digest = kmac_rsp.digest_s0 ^ kmac_rsp.digest_s1;
     expected_digest = get_expected_digest();
     update_ral_digests(kmac_digest, expected_digest);
     digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(
@@ -158,7 +158,7 @@ endtask
 
 function bit [DIGEST_SIZE-1:0] rom_ctrl_scoreboard::get_expected_digest();
   bit [DIGEST_SIZE-1:0]    digest;
-  bit [`ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
+  bit [ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
   // Get the digest from rom
   // The digest is the top 8 words in memory (unscrambled)
   dig_addr = MAX_CHECK_ADDR;

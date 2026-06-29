@@ -161,6 +161,8 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/crypto/impl/rsa:run_rsa",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -248,7 +250,6 @@ opentitan_binary(
     testonly = True,
     srcs = [":firmware.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],

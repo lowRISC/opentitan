@@ -28,7 +28,9 @@ class kmac_app_host_seq extends kmac_app_base_seq;
 
     while (msg_size_bytes > 0) begin
 
-      bit [KmacDataIfWidth-1:0] req_data = '0;
+      // We send the data unmasked (share 1 is fixed to '0).
+      bit [KmacDataIfWidth-1:0] req_data_s0 = '0;
+      bit [KmacDataIfWidth-1:0] req_data_s1 = '0;
       bit [KmacDataIfWidth/8-1:0] req_strb = '1;
       bit req_last = 0;
 
@@ -46,11 +48,11 @@ class kmac_app_host_seq extends kmac_app_base_seq;
               ($countones(req_strb ^ {req_strb[KmacDataIfWidth/8-2:0], 1'b0}) <= 2);)
         end
         if (req_strb[i] == 1) begin
-          req_data[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
+          req_data_s0[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
           req_strb[i] = 1'b1;
           msg_size_bytes -= 1;
         end else begin
-          req_data[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
+          req_data_s0[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
           req_strb[i] = 1'b0;
         end
       end
@@ -58,7 +60,9 @@ class kmac_app_host_seq extends kmac_app_base_seq;
       // Set the last bit
       req_last = (msg_size_bytes == 0);
 
-      cfg.m_data_push_agent_cfg.add_h_user_data({req_data, req_strb, req_last});
+      // For now, a static app is assumed to be always ready to accept a response.
+      cfg.m_data_push_agent_cfg.add_h_user_data(
+          {req_data_s0, req_data_s1, req_strb, req_last, 1'b1});
 
       `uvm_send(host_seq)
 

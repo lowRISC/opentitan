@@ -129,7 +129,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // input message from keymgr
   byte kmac_app_msg[$];
 
-  // output digest from KMAC_APP intf (256 bits each)
+  // output digest from static KMAC_APP interfaces
   bit [kmac_pkg::AppDigestW-1:0] kmac_app_digest_share0;
   bit [kmac_pkg::AppDigestW-1:0] kmac_app_digest_share1;
 
@@ -332,14 +332,17 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // we need to choose the correct application interface
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
               app_mode = AppKeymgr;
-              strength = sha3_pkg::L256;
+              strength = APP_CFG[app_mode].session_cfg.kstrength;
               if (entropy_ready) incr_and_predict_hash_cnt();
             end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
               app_mode = AppLc;
-              strength = sha3_pkg::L128;
+              strength = APP_CFG[app_mode].session_cfg.kstrength;
             end else if (`KMAC_APP_VALID_TRANS(AppRom)) begin
               app_mode = AppRom;
-              strength = sha3_pkg::L256;
+              strength = APP_CFG[app_mode].session_cfg.kstrength;
+            end else if (`KMAC_APP_VALID_TRANS(AppOtbn)) begin
+              `uvm_fatal(get_full_name(),
+                         "Cannot start KMAC app for OTBN (no support for dynamic apps yet)")
             end
 
             // sample sideload-related coverage
@@ -406,7 +409,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               StAppCfg: begin
                 if (app_mode == AppKeymgr &&
                     !cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid) begin
-                  app_st = StKeyMgrErrKeyNotValid;
+                  app_st = StErrorKeyNotValid;
                 end else begin
                   app_st = StAppMsg;
                 end
@@ -430,9 +433,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
               StAppWait: begin
                 if (keccak_complete_cycle) begin
-                  app_st = StIdle;
-                  app_fsm_active = 0;
+                  app_st = StAppPushDigest;
                 end
+              end
+              StAppPushDigest: begin
+                app_st = StAppFinish;
+              end
+              StAppFinish: begin
+                app_st = StIdle;
+                app_fsm_active = 0;
               end
               StSw: begin
                 app_mux_sel = SelSw;
@@ -441,7 +450,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   app_fsm_active = 0;
                 end
               end
-              StKeyMgrErrKeyNotValid: begin
+              StErrorKeyNotValid: begin
                 app_st = StError;
                 app_fsm_active = 0;
                 in_kmac_app = 0;
@@ -464,8 +473,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                 // It's possible for SW to not clear the error until after the hash is done.
                 // In this case the hash will be garbage data, so do not check it.
-                if (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.valid &&
-                    cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.last) begin
+                if (cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.req_valid &&
+                    cfg.m_kmac_app_agent_cfg[app_mode].vif.kmac_data_req.req_last) begin
                   do_check_digest = 0;
                 end
 
@@ -563,7 +572,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   cov.app_cg_wrappers[app_mode].app_sample(
                     kmac_app_rsp.byte_data_q.size() <= keymgr_pkg::KmacDataIfWidth/8,
                     '0,
-                    kmac_app_rsp.rsp_error,
+                    kmac_app_rsp.error,
                     1,
                     0
                   );
@@ -582,20 +591,20 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                 ((cfg.enable_masking && !entropy_ready) || cfg.key_invalidated));
 
                 // Check app interface errors have been reported as expected.
-                `DV_CHECK_FATAL(kmac_app_rsp.rsp_error == app_intf_err)
+                `DV_CHECK_FATAL(kmac_app_rsp.error == app_intf_err)
 
 
                 // Check that digests have been zeroed if there was an interface error. If not,
                 // extract the digests and (if configured) check they are correct.
                 if (app_intf_err) begin
-                  `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share0 == 0,
+                  `DV_CHECK_FATAL(kmac_app_rsp.digest_s0 == 0,
                     "APP interface error, expect output to be all 0s")
-                  `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share1 == 0,
+                  `DV_CHECK_FATAL(kmac_app_rsp.digest_s1 == 0,
                     "APP interface error, expect output to be all 0s")
                 end else begin
-                  // assign digest values
-                  kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
-                  kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
+                  // Static app interface: assign digest values directly
+                  kmac_app_digest_share0 = kmac_app_rsp.digest_s0;
+                  kmac_app_digest_share1 = kmac_app_rsp.digest_s1;
 
                   if (do_check_digest) check_digest();
                 end
@@ -1469,9 +1478,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // - the expected output length in bytes
     // - if we are using the xof version of kmac
     if (in_kmac_app) begin
-      // KMAC_APP output will always be 384 bits (48 bytes)
+      // Static app interfaces always return 384 bits (48 bytes).
       output_len_bytes = AppDigestW / 8;
-
       // xof_en is 1 when the padded output length is 0,
       // but this will never happen in KMAC_APP
       xof_en = 0;
@@ -1511,7 +1519,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     /////////////////////////////////
     if (cfg.enable_masking) begin
       if (in_kmac_app) begin
-        unmasked_digest = {<< byte {kmac_app_digest_share0 ^ kmac_app_digest_share1}};
+       unmasked_digest = {<< byte {kmac_app_digest_share0 ^ kmac_app_digest_share1}};
       end else begin
         foreach (unmasked_digest[i]) begin
           unmasked_digest[i] = digest_share0[i] ^ digest_share1[i];
@@ -1740,8 +1748,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     byte fname_arr[];
     byte custom_str_arr[];
 
-    if (en_kmac_app && APP_CFG[app_mode].PrefixMode) begin
-      prefix_bytes = {<< byte {APP_CFG[app_mode].Prefix}};
+    if (en_kmac_app && APP_CFG[app_mode].session_cfg.prefix_mode) begin
+      prefix_bytes = {<< byte {APP_CFG[app_mode].prefix}};
     end else begin
       prefix_bytes = {<< 32 {prefix}};
       prefix_bytes = {<< byte {prefix_bytes}};

@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/crc32.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
@@ -199,8 +200,6 @@ static status_t kmac_get_keccak_rate_words(kmac_security_str_t security_str,
       security_str_set = launder32(security_str_set) | kKmacSecurityStrength512;
       break;
     default:
-      // COVERAGE (SW ERR) This is an internal function, we only provide valid
-      // inputs to it, hence the default case should not be reached.
       return OTCRYPTO_BAD_ARGS;
   }
   // Check if we landed in the correct case statement. Use ORs for this to
@@ -362,19 +361,15 @@ status_t kmac_hwip_default_configure(void) {
 OT_WARN_UNUSED_RESULT
 static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
   if (bit_position > 31) {
-    // COVERAGE (SW ERR) This is an internal function, we only provide valid
-    // inputs to it, hence the if case should not be reached.
     return OTCRYPTO_BAD_ARGS;
   }
 
   while (true) {
     uint32_t reg = abs_mmio_read32(kmac_base() + KMAC_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
-      // COVERAGE (HW ERR) This is only reached if KMAC raises an alert.
       return OTCRYPTO_FATAL_ERR;
     }
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT)) {
-      // COVERAGE (HW ERR) This is only reached if KMAC raises an alert.
       return OTCRYPTO_RECOV_ERR;
     }
     if (bitfield_bit32_read(reg, bit_position) == bit_value) {
@@ -522,8 +517,6 @@ static status_t kmac_init(kmac_operation_t operation,
   } else if (hw_backed == kHardenedBoolFalse) {
     cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
   } else {
-    // COVERAGE (SW ERR) This internal function is only given valid encodings of
-    // hw_backed.
     return OTCRYPTO_BAD_ARGS;
   };
 
@@ -563,8 +556,6 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
     return OTCRYPTO_OK;
   } else if (launder32(key->hw_backed) != kHardenedBoolFalse) {
     // Invalid value.
-    // COVERAGE (SW ERR) This is only reached with a bad encoding of
-    // key->hw_backed.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->hw_backed, kHardenedBoolFalse);
@@ -629,7 +620,7 @@ static status_t kmac_process_msg_blocks(
     uint32_t *digest, size_t digest_len_bytes, hardened_bool_t masked_digest) {
   // This variable guarantees kmac_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_wipe_guard))) = 1;
-  (void)hw_cleanup_guard;
+  barrier32(hw_cleanup_guard);
 
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
@@ -677,8 +668,6 @@ static status_t kmac_process_msg_blocks(
     uint32_t digest_len_bits = 8 * digest_len_bytes;
     // Check for overflow, i.e., when the input buffer is too large.
     if (digest_len_bits / 8 != digest_len_bytes) {
-      // COVERAGE (SW ERR) This is only triggered if the input length exceeds
-      // the uint32_t range.
       return OTCRYPTO_BAD_ARGS;
     }
 

@@ -29,17 +29,9 @@
   ]
 
   // This is the clock data structure of the design.
-  // The hier path refers to the clock reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The src key indicates the raw clock sources in the design
   // The groups key indicates the various clock groupings in the design
   clocks: {
-
-    hier_paths: {
-      top: "clkmgr_aon_clocks.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "clkmgr_aon_cg_en.",  // top level struct for alert lpg reset enables
-    },
 
     // Clock Source attributes
     // name: Name of group.
@@ -108,16 +100,8 @@
   // unmanaged_resets: []
 
   // This is the reset data structure of the design.
-  // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
-
-    hier_paths: {
-      top: "rstmgr_aon_resets.", // top level is a struct
-      ext: "",                   // ext is a port of the clock name
-      lpg: "rstmgr_aon_rst_en.", // top level struct for alert lpg reset enables
-    },
 
     // Reset node attributes
     // name: name of reset.
@@ -229,7 +213,6 @@
             "i2c0",
             "i2c1",
             "i2c2",
-            "pattgen",
             "rv_timer"
             "otp_ctrl",
             "lc_ctrl.regs",
@@ -242,7 +225,6 @@
             "clkmgr_aon",
             "sysrst_ctrl_aon",
             "adc_ctrl_aon",
-            "pwm_aon",
             "pinmux_aon",
             "aon_timer_aon",
             "ast",
@@ -372,6 +354,9 @@
       base_addr: {
         hart: "0x40050000",
       },
+      param_decl: {
+        "SramType": "spi_device_pkg::SramType1r1w"
+      }
     },
     { name: "i2c0",
       type: "i2c",
@@ -398,15 +383,6 @@
       reset_connections: {rst_ni: "i2c2"},
       base_addr: {
         hart: "0x400A0000",
-      },
-    },
-    { name: "pattgen",
-      type: "pattgen",
-      clock_srcs: {clk_i: "io_div4"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "lc_io_div4"},
-      base_addr: {
-        hart: "0x400E0000",
       },
     },
     { name: "rv_timer",
@@ -650,28 +626,26 @@
         hart: "0x40440000",
       }
     },
-    { name: "pwm_aon",
-      type: "pwm",
-      template_type: "pwm",
-      clock_srcs: {clk_i: "io_div4", clk_core_i: "aon"},
-      clock_group: "peri",
-      reset_connections: {rst_ni: "lc_io_div4", rst_core_ni: "lc_aon"},
-      domain: "Aon",
-      base_addr: {
-        hart: "0x40450000",
-      },
-      attr: "ipgen",
-    },
     { name: "pinmux_aon",
       type: "pinmux",
       template_type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io_div4",
-                          rst_aon_ni: "lc_aon",
-                          rst_sys_ni: "sys_io_div4"
-                         },
-      domain: "Aon",
+      reset_connections: {
+        rst_ni: {
+          name: "lc_io_div4",
+          domain: "Aon",
+        },
+        rst_aon_ni: {
+          name: "lc_aon",
+          domain: "Aon"
+        },
+        rst_sys_ni: {
+          name: "sys_io_div4",
+          domain: "Aon",
+        },
+      },
+      domain: "Main",
       base_addr: {
         hart: "0x40460000",
       },
@@ -748,7 +722,7 @@
           domain: "Main"
         }
       },
-      domain: "Aon",
+      domain: "Main",
       base_addr: {
         hart: "0x40480000",
       },
@@ -1226,9 +1200,10 @@
       'keymgr.otbn_key'         : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
-      'kmac.app'                : ['keymgr.kmac_data',    // Keymgr needs to be at index 0
-                                   'lc_ctrl.kmac_data',   // LC needs to be at index 1
-                                   'rom_ctrl.kmac_data'], // ROM needs to be at index 2
+      'kmac.app'                : ['keymgr.kmac_data',   // Keymgr needs to be at index 0
+                                   'lc_ctrl.kmac_data',  // LC needs to be at index 1
+                                   'rom_ctrl.kmac_data', // ROM needs to be at index 2
+                                   'otbn.kmac_data'],    // OTBN needs to be at index 3
       'kmac.en_masking'         : ['keymgr.kmac_en_masking'],
 
       // The idle connection is automatically connected through topgen.
@@ -1378,6 +1353,8 @@
         'ast.spi_ram_2p_cfg'                 : 'spi_ram_2p_cfg',
         'ast.usb_ram_1p_cfg'                 : 'usb_ram_1p_cfg',
         'ast.rom_cfg'                        : 'rom_cfg',
+        'clkmgr_aon.clocks'                  : '',
+        'clkmgr_aon.cg_en'                   : '',
         'clkmgr_aon.jitter_en'               : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'          : 'io_clk_byp_req',
         'clkmgr_aon.io_clk_byp_ack'          : 'io_clk_byp_ack',
@@ -1407,6 +1384,8 @@
         'otp_macro.ext_voltage_h'            : 'otp_ext_voltage_h',
         'otp_macro.otp_obs'                  : 'otp_obs',
         'rstmgr_aon.por_n'                   : 'por_n',
+        'rstmgr_aon.resets'                  : '',
+        'rstmgr_aon.rst_en'                  : '',
         'rv_core_ibex.fpga_info'             : 'fpga_info',
         'sensor_ctrl_aon.ast_alert'          : 'sensor_ctrl_ast_alert',
         'sensor_ctrl_aon.ast_status'         : 'sensor_ctrl_ast_status',
@@ -1622,12 +1601,10 @@
       { instance: "i2c0",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "i2c1",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "i2c2",            port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "pattgen",         port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_device",      port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "flash_ctrl",      port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl_aon", port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "pwm_aon",         port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "otp_macro",        port: 'test[0]',        connection: 'muxed' , pad: ''             , desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs
       { instance: "sysrst_ctrl_aon", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},
@@ -1736,86 +1713,6 @@
         //        parameter will be assigned the corresponding pad index.
         //
         // Each entry may have an optional 'desc' key for further description.
-        special_signals: [
-          // Straps
-          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
-          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
-          // JTAG
-          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
-        ],
-      }
-    },
-    { name: 'cw310',
-
-      // Chip level changes
-      chiplevel: {
-        port_overrides: {
-          'ast.lc_dft_en'                   : { unused: true },
-          'ast.usb_ram_1p_cfg'              : { unused: true },
-          'ast.ram_1p_cfg'                  : { unused: true },
-          'ast.spi_ram_2p_cfg'              : { unused: true },
-          'ast.rom_cfg'                     : { unused: true },
-          'clkmgr_aon.calib_rdy'            : { signal: 'ast_init_done' },
-          'sram_ctrl_main.cfg'              : { unused: true },
-          'sram_ctrl_ret_aon.cfg'           : { unused: true },
-          'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
-          'pinmux_aon.usb_dnpullup_en'      : { unused: true },
-          'pinmux_aon.dft_strap_test'       : { unused: true },
-          'usbdev.usb_tx_d'                 : { unused: true },
-          'usbdev.usb_tx_se0'               : { unused: true },
-          'usbdev.usb_tx_use_d_se0'         : { unused: true },
-          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'      },
-          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable' },
-          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
-          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
-          'sensor_ctrl_aon.manual_pad_attr' : { unused: true },
-          'sensor_ctrl_aon.ast_alert'       : { signal: 'ast_alert'       },
-          'sensor_ctrl_aon.ast_status'      : { signal: 'ast_pwst.io_pok' },
-          'entropy_src.rng_fips'            : { unused: true },
-          'otp_macro.ext_voltage_h'         : { unused: true },
-          'flash_ctrl.flash_test_mode_a'    : { unused: true },
-          'flash_ctrl.flash_test_voltage_h' : { unused: true },
-          'flash_ctrl.flash_power_down_h'   : { unused: true },
-          'flash_ctrl.flash_power_ready_h'  : { unused: true, tie_value: "1'b1" },
-        }
-      }
-
-      pinout: {
-        remove_ports: [],
-        remove_pads: [
-          'CC1', 'CC2',
-          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT',
-          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
-          'USB_P', 'USB_N'
-        ],
-
-        add_pads: [
-          // Additional infrastructure pads
-          { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'},
-          { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Power-on reset button input'},
-          // Custom USB pads
-          { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_OE_N',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_SPEED',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          { name: 'IO_USB_SUSPEND',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'},
-          // ChipWhisperer IO
-          { name: 'IO_CLKOUT',        type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual clock output for SCA setup'},
-          { name: 'IO_TRIGGER',       type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual trigger output for SCA setup'},
-        ],
-      },
-
-      pinmux: {
         special_signals: [
           // Straps
           { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },

@@ -6,17 +6,17 @@
 
 // This file must be `included in `hw/top_<toplevel>/dv/tb/tb.sv.
 
-`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.d2h = dut.top_englishbreakfast.u_``inst_name``.``sig_name``_i; \
-     force dut.top_englishbreakfast.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
-     force dut.top_englishbreakfast.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_HOST_IF(tl_name, inst_name, sig_name, pd_hier = ) \
+     force ``tl_name``_tl_if.d2h = dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.h2d; \
+     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_englishbreakfast.u_``inst_name``.``sig_name``_i; \
-     force dut.top_englishbreakfast.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
-     force dut.top_englishbreakfast.u_``inst_name``.clk_i = 0; \
+`define DRIVE_CHIP_TL_DEVICE_IF(tl_name, inst_name, sig_name, pd_hier = ) \
+     force ``tl_name``_tl_if.h2d = dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_i; \
+     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.``sig_name``_o = ``tl_name``_tl_if.d2h; \
+     force dut.top_englishbreakfast``pd_hier``.u_``inst_name``.clk_i = 0; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -106,9 +106,9 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, _pd_aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, _pd_aon)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
 `endif

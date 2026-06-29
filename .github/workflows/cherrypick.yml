@@ -31,6 +31,25 @@ jobs:
     if: github.event.pull_request.merged == true && (github.event_name != 'labeled' || startsWith('CherryPick:', github.event.label.name))
     runs-on: ubuntu-latest
     steps:
+      - name: Downgrade Git version
+        run: |
+          # FIXME: Due to a regression in Git 2.54.0, we temporarily pin a downgraded version.
+          # Ubuntu maintains an apt-repository for candidate/stable releases, but otherwise older
+          # versions are not available. We could optionally compile Git 2.53.0 from source, but
+          # instead we just revert to system Git 2.43.0 since we don't need any of the newer
+          # features. This should allow the cherry-picking flow to work consistently. When Git
+          # 2.55.0 (which contains a fix) is available and packaged in the GitHub ubuntu 2404
+          # runners, this step should be dropped.
+          # See: https://lore.kernel.org/git/CANOh7gEEw+6146NN3JV8EYxQarj0KkyA7r3RZ6v-DxeqQZLrCA@mail.gmail.com/
+          sudo apt-get update
+          mkdir -p /tmp/git-downgrade
+          cd /tmp/git-downgrade
+          apt-get download git=1:2.43.0* git-man=1:2.43.0*
+          sudo dpkg -i *.deb
+          sudo apt-get -f install || true
+          sudo apt-mark hold git git-man
+          git --version
+
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}

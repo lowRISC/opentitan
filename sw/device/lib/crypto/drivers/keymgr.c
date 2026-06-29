@@ -123,7 +123,6 @@ static status_t keymgr_wait_until_done(void) {
   }
 
   // Should be unreachable.
-  // COVERAGE (FI CM) Only reached if there is a fault.
   HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
 }
@@ -263,7 +262,6 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification,
       WRITE_CTRL(OTBN, GENERATE_HW, true);
       break;
     default:
-      // COVERAGE (FI CM) Only reached if there is a fault.
       HARDENED_TRAP();
       return OTCRYPTO_FATAL_ERR;
   }
@@ -280,7 +278,6 @@ status_t keymgr_generate_key_otbn(keymgr_diversification_t diversification,
       VERIFY_CTRL(OTBN, GENERATE_HW, true);
       break;
     default:
-      // COVERAGE (FI CM) Only reached if there is a fault.
       HARDENED_TRAP();
       return OTCRYPTO_FATAL_ERR;
   }
@@ -310,7 +307,6 @@ static status_t keymgr_sideload_clear(uint32_t slot) {
       abs_mmio_read32(keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET);
   if (bitfield_field32_read(sideload_clear, KEYMGR_SIDELOAD_CLEAR_VAL_FIELD) !=
       slot) {
-    // COVERAGE (FI CM) Only reached if there is a fault.
     return OTCRYPTO_FATAL_ERR;
   }
 

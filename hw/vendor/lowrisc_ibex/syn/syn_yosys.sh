@@ -37,10 +37,10 @@ LR_DEP_SOURCES=(
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_dec.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_lfsr.sv"
-    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_and2.sv"
-    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_buf.sv"
-    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_clock_mux2.sv"
-    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_generic_flop.sv"
+    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_and2.sv"
+    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_buf.sv"
+    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_clock_mux2.sv"
+    "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_flop.sv"
 )
 
 mkdir -p "$LR_SYNTH_OUT_DIR/generated"
@@ -78,8 +78,9 @@ for file in ../rtl/*.sv; do
   sv2v \
     --define=SYNTHESIS --define=YOSYS \
     ../rtl/*_pkg.sv \
-    ../vendor/lowrisc_ip/ip/prim/rtl/prim_ram_1p_pkg.sv \
+    ../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_ram_1p_pkg.sv \
     ../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv \
+    ../vendor/lowrisc_ip/ip/prim/rtl/prim_util_pkg.sv \
     -I../vendor/lowrisc_ip/ip/prim/rtl \
     -I../vendor/lowrisc_ip/dv/sv/dv_utils \
     "$file" \

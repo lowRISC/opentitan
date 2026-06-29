@@ -37,7 +37,7 @@ filegroup(
 #
 # Downstream targets will see the effects of this caching logic. For example,
 # specifying `--define bitstream=vivado` when testing
-# //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw310 will turn
+# //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw* will turn
 # `:test_rom` into a full Vivado bitstream build.
 
 config_setting(
@@ -59,74 +59,6 @@ config_setting(
     define_values = {
         "bitstream": "gcp_splice",
     },
-)
-
-filegroup(
-    name = "bitstream",
-    testonly = True,
-    srcs = select({
-        "bitstream_skip": ["//hw/bitstream/universal:none"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
-        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_bitstream"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_bitstream"],
-    }),
-    tags = ["manual"],
-)
-
-filegroup(
-    name = "cw310_mmi",
-    testonly = True,
-    srcs = select({
-        "bitstream_skip": ["//hw/bitstream/universal:none"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:cw310_mmi"],
-        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_mmi"],
-    }),
-    tags = ["manual"],
-)
-
-# Create manifest fragments for all the cached bitstreams
-bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw310_cached_fragment",
-    testonly = True,
-    srcs = [
-        "@bitstreams//:chip_earlgrey_cw310_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_mmi",
-    ],
-    design = "chip_earlgrey_cw310",
-    manifest = "@bitstreams//:manifest",
-    tags = ["manual"],
-)
-
-pkg_tar(
-    name = "chip_earlgrey_cw310_cached_archive",
-    testonly = True,
-    srcs = [":chip_earlgrey_cw310_cached_fragment"],
-    mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310",
-    strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_cached_fragment",
-    tags = ["manual"],
-)
-
-bitstream_fragment_from_manifest(
-    name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
-    srcs = [
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_mmi",
-    ],
-    design = "chip_earlgrey_cw310_hyperdebug",
-    manifest = "@bitstreams//:manifest",
-    tags = ["manual"],
-)
-
-pkg_tar(
-    name = "chip_earlgrey_cw310_hyperdebug_cached_archive",
-    testonly = True,
-    srcs = [":chip_earlgrey_cw310_hyperdebug_cached_fragment"],
-    mode = "0444",
-    package_dir = "build-bin/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug",
-    strip_prefix = "/hw/bitstream/chip_earlgrey_cw310_hyperdebug_cached_fragment",
-    tags = ["manual"],
 )
 
 bitstream_fragment_from_manifest(
