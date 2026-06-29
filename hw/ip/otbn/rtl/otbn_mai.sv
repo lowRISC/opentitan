@@ -429,14 +429,13 @@ module otbn_mai
   assign ispr_mai_ctrl_rdata_o = ispr_mai_ctrl_r;
 
   // Erroneous control accesses
-  assign ispr_mai_sw_err.busy_start     = ma_start & ma_busy_q;
-  // There may not be a write to the input WSRs nor the configuration whilst an execution is
-  // ongoing. This is required to keep data and configuration stable and valid for the whole
-  // execution.
+  // The start bit and configuration may only be written when not busy.
+  assign ispr_mai_sw_err.busy_start     = ma_busy_q & ispr_mai_ctrl_wr_i;
+  // There may not be a write to the input WSRs whilst an execution is ongoing. This is required to
+  // keep data stable and valid as long as elements are dispatched.
   assign ispr_mai_sw_err.busy_write     = ma_in_valid_q &
                                           |{ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
-                                            ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i,
-                                            ispr_mai_ctrl_wr_i};
+                                            ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i};
   assign ispr_mai_sw_err.rsvd_csr_write = ispr_mai_ctrl_wr_i & (|ispr_mai_ctrl_w.rsvd);
   // The configuration latched when an execution starts must be valid.
   assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_d inside
