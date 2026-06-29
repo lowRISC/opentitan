@@ -25,9 +25,6 @@ def _opentitan_transition_impl(settings, attr):
         "//command_line_option:platforms": attr.platform,
         "//command_line_option:copt": settings["//command_line_option:copt"],
         "//command_line_option:collect_code_coverage": coverage,
-        "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
-        "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
     }
 
 opentitan_transition = transition(
@@ -45,9 +42,6 @@ opentitan_transition = transition(
         "//command_line_option:platforms",
         "//command_line_option:copt",
         "//command_line_option:collect_code_coverage",
-        "//hw/bitstream/universal:rom",
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
     ],
 )
 

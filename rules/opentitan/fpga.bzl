@@ -137,14 +137,18 @@ def _get_test_commands(ctx, param, exec_env):
 
     Test Option Param Fields:
       testopt_bootstrap: If True, bootstrap the firmware before test.
-      testopt_clear_before_test: If True, clear the bitstream before test.
-      testopt_clear_after_test: If True, clear the bitstream after test.
+      testopt_clear_before_test: If True, reset the state of the FPGA before
+        the test (including all non-volatile memory). Currently implemented
+        by clearing the FPGA bitstream.
+      testopt_clear_after_test: If True, reset the state of the FPGA after
+        the test (including all non-volatile memory). Currently implemneted
+        by clearing the FPGA bitstream.
       testopt_needs_jtag: If True, tests require JTAG access.
 
     Common Param Fields:
       exit_success: The console output for test success.
       exit_failure: The console output for test failure.
-      jtag_test_cmd: The JTAG test command (if testopt_needs_jtag is True).
+      jtag_test_cmd: The JTAG test command.
       bitstream: The bitstream to load before test.
       firmware: The firmware to load with bootstrap.
 
@@ -175,6 +179,35 @@ def _get_test_commands(ctx, param, exec_env):
         test_setup_cmd.append('--exec="fpga clear-bitstream"')
     if "bitstream" in param:
         test_setup_cmd.append('--exec="fpga load-bitstream {bitstream}"')
+
+    # Reset OT and enter the backdoor loader
+    test_setup_cmd.append('--exec="fpga backdoor enter"')
+
+    # Zero all flash pages and retention SRAM to replicate a new bitstream.
+    # Eventually, this should be replaced with flash info splicing.
+    #
+    # This is necessary as tests tend not to be judicious about clearing non-volatile
+    # state both before and after running, allowing tests to have side effects and
+    # influence each other. We do not zero SRAM as it would typically start in some
+    # scrambled state, and is unlikely to influence test outcomes.
+    #
+    # In `sw/device/silicon_creator/lib/ownership/test_owner.c`, we override the weak
+    # `sku_creator_owner_init` symbol for FPGA environments. We detect bad ownership states
+    # from the active boot data and thus initialize a default ownership configuration which
+    # can be used for testing on FPGA. This is a workaround for the lack of info page
+    # splicing, but means that for now we need to make sure that at least the boot data
+    # info pages are cleared between each run.
+    backdoor_writes = "--clear AON=ALL"
+    backdoor_writes += " --clear FB0=ALL --clear FI00=ALL --clear FI01=ALL --clear FI02=ALL"
+    backdoor_writes += " --clear FB1=ALL --clear FI10=ALL --clear FI11=ALL --clear FI12=ALL"
+
+    # Load the ROM & OTP over the backdoor loader
+    if "rom" in param:
+        backdoor_writes += " --write ROM={rom}"
+    if "otp" in param:
+        backdoor_writes += " --write OTP={otp}"
+    test_setup_cmd.append('--exec="fpga backdoor {{jtag_test_cmd}} batch {backdoor_writes} --start"'.format(backdoor_writes = backdoor_writes))
+
     if _get_bool(param, "testopt_bootstrap") and "firmware" in param:
         test_setup_cmd.append('--exec="bootstrap --leave-in-reset --clear-uart=true {firmware}"')
     test_setup_cmd = "\n".join(test_setup_cmd)
@@ -225,8 +258,6 @@ def _test_dispatch(ctx, exec_env, firmware):
         param["firmware"] = image.short_path
         action_param["firmware"] = image.path
         data_files.append(image)
-
-    # FIXME: maybe splice a bitstream here
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
@@ -329,13 +360,13 @@ def fpga_params(
     Returns:
       struct of test parameters.
     """
-    if bitstream and (rom or otp):
-        fail("Cannot use rom or otp with bitstream.")
-    if not bitstream:
-        bitstream = "@//hw/bitstream/universal:splice"
 
     # Clear bitstream after the test if it changes the OTP.
     if changes_otp:
+        # FIXME: some tests may still be using `changes_otp` to mean "clear the bitstream"
+        # for unrelated changes, e.g. to clear NVM after running a test. These should be
+        # made more specific and these options more granular - for example, a test option
+        # to wipe only the OTP image or the NVM info pages, instead of the entire bitstream.
         kwargs["testopt_clear_after_test"] = "True"
     if needs_jtag:
         kwargs["testopt_needs_jtag"] = "True"
@@ -352,7 +383,8 @@ def fpga_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
-        needs_jtag = needs_jtag,
+        # FPGA tests always need JTAG for the bkdr_loader flow.
+        needs_jtag = True,
         test_cmd = test_cmd,
         data = data,
         param = kwargs,

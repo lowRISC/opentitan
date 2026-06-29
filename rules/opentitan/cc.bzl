@@ -748,25 +748,6 @@ opentitan_binary = rv_rule(
     toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
 )
 
-def _testing_bitstream_impl(settings, attr):
-    rom = attr.rom if attr.rom else "//hw/bitstream/universal:none"
-    otp = attr.otp if attr.otp else "//hw/bitstream/universal:none"
-    return {
-        "//hw/bitstream/universal:rom": rom,
-        "//hw/bitstream/universal:otp": otp,
-        "//hw/bitstream/universal:env": attr.exec_env,
-    }
-
-_testing_bitstream = transition(
-    implementation = _testing_bitstream_impl,
-    inputs = [],
-    outputs = [
-        "//hw/bitstream/universal:rom",
-        "//hw/bitstream/universal:otp",
-        "//hw/bitstream/universal:env",
-    ],
-)
-
 def _opentitan_test(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
 
@@ -833,7 +814,6 @@ opentitan_test = rv_rule(
         ),
         "bitstream": attr.label(
             allow_single_file = True,
-            cfg = _testing_bitstream,
             doc = "Bitstream override for this test",
         ),
         "post_test_harness": attr.label(
