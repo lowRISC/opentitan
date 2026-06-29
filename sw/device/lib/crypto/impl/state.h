@@ -16,13 +16,11 @@ extern "C" {
 typedef struct crypto_state {
   uint32_t imem_cache;
   uint32_t kat_state;
-  uint32_t csrng_seed_data[12];
   otcrypto_key_security_level_t security_level;
-  size_t csrng_seed_len;
   hardened_bool_t self_check_state;
   hardened_bool_t locked_state;
   hardened_bool_t csrng_instantiated;
-  hardened_bool_t disable_trng_input;
+  hardened_bool_t csrng_is_default;
   otcrypto_cmvp_service_indicator_t cmvp_service_indicator;
   uint32_t cmvp_call_depth;
 } crypto_state_t;
