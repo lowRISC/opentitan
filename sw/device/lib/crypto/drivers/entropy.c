@@ -1129,29 +1129,22 @@ status_t entropy_csrng_instantiate(
     const entropy_seed_material_t *seed_material) {
   crypto_state_t *state = NULL;
 
+  hardened_bool_t is_default = kHardenedBoolFalse;
+  if (launder32(disable_trng_input) == kHardenedBoolFalse &&
+      (seed_material == NULL || seed_material->len == 0)) {
+    HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
+    is_default = kHardenedBoolTrue;
+  }
+
   hardened_bool_t skip_inst = kHardenedBoolFalse;
   if (status_ok(read_state_pointer(&state)) && state != NULL) {
-    if (launder32(state->csrng_instantiated) == kHardenedBoolTrue &&
-        launder32(hardened_memeq(&state->disable_trng_input,
-                                 &disable_trng_input, 1)) ==
-            kHardenedBoolTrue) {
+    if (launder32(is_default) == kHardenedBoolTrue &&
+        launder32(state->csrng_instantiated) == kHardenedBoolTrue &&
+        launder32(state->csrng_is_default) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(is_default, kHardenedBoolTrue);
       HARDENED_CHECK_EQ(state->csrng_instantiated, kHardenedBoolTrue);
-      HARDENED_CHECK_EQ(
-          hardened_memeq(&state->disable_trng_input, &disable_trng_input, 1),
-          kHardenedBoolTrue);
-      uint32_t len = seed_material == NULL ? 0 : (uint32_t)seed_material->len;
-      uint32_t state_len = (uint32_t)state->csrng_seed_len;
-      if (hardened_memeq(&state_len, &len, 1) == kHardenedBoolTrue) {
-        hardened_bool_t match = kHardenedBoolTrue;
-        if (len > 0 && seed_material != NULL) {
-          match =
-              hardened_memeq(state->csrng_seed_data, seed_material->data, len);
-        }
-        if (launder32(match) == kHardenedBoolTrue) {
-          HARDENED_CHECK_EQ(match, kHardenedBoolTrue);
-          skip_inst = kHardenedBoolTrue;
-        }
-      }
+      HARDENED_CHECK_EQ(state->csrng_is_default, kHardenedBoolTrue);
+      skip_inst = kHardenedBoolTrue;
     }
   }
 
@@ -1175,14 +1168,7 @@ status_t entropy_csrng_instantiate(
 
   if (state != NULL) {
     state->csrng_instantiated = kHardenedBoolTrue;
-    state->disable_trng_input = disable_trng_input;
-    if (seed_material != NULL) {
-      state->csrng_seed_len = seed_material->len;
-      memcpy(state->csrng_seed_data, seed_material->data,
-             seed_material->len * sizeof(uint32_t));
-    } else {
-      state->csrng_seed_len = 0;
-    }
+    state->csrng_is_default = is_default;
   }
 
   return OTCRYPTO_OK;
@@ -1303,6 +1289,7 @@ status_t entropy_csrng_uninstantiate(void) {
   // Check whether the state is present and use it if so
   if (status_ok(read_state_pointer(&state)) && state != NULL) {
     state->csrng_instantiated = kHardenedBoolFalse;
+    state->csrng_is_default = kHardenedBoolFalse;
   }
 
   return OTCRYPTO_OK;

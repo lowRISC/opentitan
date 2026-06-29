@@ -96,8 +96,8 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
       // Generate a random salt value whose length matches the digest length.
       uint32_t salt[message_digest.len];
       HARDENED_TRY(entropy_csrng_instantiate(
-          /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-      HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, salt,
+          /*disable_trng_input=*/kHardenedBoolFalse, /*seed_material=*/NULL));
+      HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, salt,
                                           ARRAYSIZE(salt),
                                           /*fips_check=*/kHardenedBoolTrue));
       return rsa_padding_pss_encode(message_digest, salt, ARRAYSIZE(salt),

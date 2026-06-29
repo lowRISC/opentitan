@@ -675,6 +675,14 @@ The DRBG can be seeded with new entropy from OpenTitan's hardware [entropy sourc
 It is also possible to instantiate or reseed the DRBG with *only* caller-provided entropy ("manual instantiate" and "manual reseed").
 This is useful for testing, but undermines security guarantees and FIPS compliance until the DRBG is uninstantiated again, so it is best to use these operations with caution.
 
+### CSRNG Caching and Modes (Default vs Custom)
+
+The cryptolib distinguishes between two instantiation modes for CSRNG:
+
+1. **Default Instantiation (`otcrypto_drbg_instantiate(NULL)` or with empty string):** Instantiates the CSRNG using automatic hardware TRNG input without any personalization string or extra seed material.
+Redundant requests for default instantiation (such as internal calls during RSA padding and signature generation) detect this cached state and skip hardware re-instantiation for higher efficiency.
+2. **Custom Instantiation (`otcrypto_drbg_instantiate(perso_string)` with non-empty string, or manual operations):** Instantiates the CSRNG with custom personalization data or user-supplied entropy.
+Custom instantiations are not cached and will always perform a full re-instantiation of the hardware CSRNG.
 
 To learn more about DRBG details such as entropy requirements, seed construction, derivation functions and prediction resistance, please refer to the [NIST SP800-90A][nist-drbg-spec], [NIST SP800-90B][nist-entropy-spec], [NIST SP800-90C][nist-rng-spec], and [BSI AIS31][bsi-ais31] documents and the links in the [reference](#reference) section.
 

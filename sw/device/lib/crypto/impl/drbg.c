@@ -32,6 +32,10 @@
 static status_t seed_material_construct(
     const otcrypto_const_byte_buf_t *value,
     entropy_seed_material_t *seed_material) {
+  if (value == NULL || value->len == 0) {
+    seed_material->len = 0;
+    return OTCRYPTO_OK;
+  }
   if (value->len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -111,7 +115,8 @@ otcrypto_status_t otcrypto_drbg_instantiate(
     const otcrypto_const_byte_buf_t *perso_string) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
-  if (perso_string->len != 0 && perso_string->data == NULL) {
+  if (perso_string != NULL && perso_string->len != 0 &&
+      perso_string->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -122,7 +127,6 @@ otcrypto_status_t otcrypto_drbg_instantiate(
       hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
   HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
 
-  HARDENED_TRY(entropy_csrng_uninstantiate());
   return otcrypto_eval_exit(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &seed_material));
 }

@@ -22,12 +22,17 @@ extern "C" {
  * Initializes the DRBG and the context for DRBG. Gets the required entropy
  * input automatically from the entropy source.
  *
- * The personalization string may empty, and may be up to 48 bytes long; any
- * longer will result in an error. If the string is word aligned and the size
- * is a multiple of the word length (32-bit), it is handled using SCA hardened
- * memory operations. If not, a non SCA hardened fallback is used.
+ * The personalization string may be empty (or NULL), and may be up to 48 bytes
+ * long; any longer will result in an error.
  *
- * @param perso_string Pointer to personalization bitstring.
+ * Calling this function with NULL or an empty personalization string selects
+ * the default CSRNG instantiation mode (hardware TRNG input with no extra seed
+ * material). This default mode is cached in the internal state so that
+ * redundant calls skip hardware re-instantiation. Providing a non-empty
+ * personalization string selects a custom instantiation, which is not cached.
+ *
+ * @param perso_string Pointer to personalization bitstring, or NULL for default
+ * mode.
  * @return Result of the DRBG instantiate operation.
  */
 otcrypto_status_t otcrypto_drbg_instantiate(
