@@ -67,38 +67,57 @@
 Status register
 - Offset: `0x0`
 - Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TARGET_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLEAR_IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                  |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                     |
-|   0    |   ro   |    x    | ERROR  | Whether an error happened on the last access. Clear on read. |
+|  Bits  |  Type  |  Reset  | Name         | Description                              |
+|:------:|:------:|:-------:|:-------------|:-----------------------------------------|
+|  31:2  |        |         |              | Reserved                                 |
+|   1    |   ro   |    x    | CLEAR_IDLE   | Read 1 if no clear operation is ongoing. |
+|   0    |   ro   |    x    | TARGET_ERROR | Target index is currently misconfigured. |
 
 ## CONTROL
 Control register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0xff03`
+- Reset mask: `0xff07`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DONE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 6}, {"name": "TARGET_IDX", "bits": 8, "attr": ["wo"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "DONE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WRITE_ENA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLEAR_START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "TARGET_IDX", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                          |
-|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------|
-| 31:16  |        |         |            | Reserved                                                             |
-|  15:8  |   wo   |   0x0   | TARGET_IDX | The bkdr memory index to write to.                                   |
-|  7:2   |        |         |            | Reserved                                                             |
-|   1    |   wo   |   0x0   | WRITE_ENA  | If set, a bkdr write is launched when writing to the index register. |
-|   0    |   wo   |   0x0   | DONE       | Write 1'b1 switches bkdr loader to mission mode.                     |
+|  Bits  |  Type  |  Reset  | Name                                 |
+|:------:|:------:|:-------:|:-------------------------------------|
+| 31:16  |        |         | Reserved                             |
+|  15:8  |   rw   |   0x0   | [TARGET_IDX](#control--target_idx)   |
+|  7:3   |        |         | Reserved                             |
+|   2    |   rw   |   0x0   | [CLEAR_START](#control--clear_start) |
+|   1    |   rw   |   0x0   | [WRITE_ENA](#control--write_ena)     |
+|   0    |   rw   |   0x0   | [DONE](#control--done)               |
+
+### CONTROL . TARGET_IDX
+The bkdr memory index to write to.
+
+### CONTROL . CLEAR_START
+Write 1 to trigger the bkdr_loader to clear the entire target memory
+that is currently selected by `TARGET_IDX`.
+The word that is cleared with is selected by `WRITE_DATA`.
+Clear operation is completed if `CLEAR_IDLE` becomes 1.
+bkdr writes will not have any effects during an active clear operation.
+
+### CONTROL . WRITE_ENA
+If set, a bkdr write is launched when writing to the index register.
+
+### CONTROL . DONE
+Write 1 to trigger the bkdr_loader to switch to mission mode.
+After this, the bkdr_loader cannot be used until the next reset.
 
 ## NUM_BKDR_TARGETS
 Number of bkdr targets available.
@@ -282,12 +301,12 @@ Value to be written to the target memory.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VAL", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
-|  31:0  |   wo   |   0x0   | VAL    |               |
+|  31:0  |   rw   |   0x0   | VAL    |               |
 
 ## INDEX
 Index address of the SRAM word to be accessed.
@@ -298,12 +317,12 @@ Index address of the SRAM word to be accessed.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VAL", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
-|  31:0  |   wo   |   0x0   | VAL    |               |
+|  31:0  |   rw   |   0x0   | VAL    |               |
 
 
 <!-- END CMDGEN -->

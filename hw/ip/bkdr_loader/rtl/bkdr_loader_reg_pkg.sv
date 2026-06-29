@@ -28,6 +28,10 @@ package bkdr_loader_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } clear_start;
+    struct packed {
+      logic        q;
+      logic        qe;
     } write_ena;
     struct packed {
       logic        q;
@@ -45,8 +49,20 @@ package bkdr_loader_reg_pkg;
   } bkdr_loader_reg2hw_index_reg_t;
 
   typedef struct packed {
-    logic        d;
+    struct packed {
+      logic        d;
+    } clear_idle;
+    struct packed {
+      logic        d;
+    } target_error;
   } bkdr_loader_hw2reg_status_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } clear_start;
+  } bkdr_loader_hw2reg_control_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -74,14 +90,15 @@ package bkdr_loader_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    bkdr_loader_reg2hw_control_reg_t control; // [301:289]
+    bkdr_loader_reg2hw_control_reg_t control; // [303:289]
     bkdr_loader_reg2hw_write_data_mreg_t [7:0] write_data; // [288:33]
     bkdr_loader_reg2hw_index_reg_t index; // [32:0]
   } bkdr_loader_regs_reg2hw_t;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    bkdr_loader_hw2reg_status_reg_t status; // [1472:1472]
+    bkdr_loader_hw2reg_status_reg_t status; // [1475:1474]
+    bkdr_loader_hw2reg_control_reg_t control; // [1473:1472]
     bkdr_loader_hw2reg_num_bkdr_targets_reg_t num_bkdr_targets; // [1471:1440]
     bkdr_loader_hw2reg_usr_access_timestamp_reg_t usr_access_timestamp; // [1439:1408]
     bkdr_loader_hw2reg_target_info_mreg_t [11:0] target_info; // [1407:1024]
@@ -150,7 +167,7 @@ package bkdr_loader_reg_pkg;
   parameter logic [RegsAw-1:0] BKDR_LOADER_INDEX_OFFSET = 11'h 600;
 
   // Reset values for hwext registers and their fields for regs interface
-  parameter logic [0:0] BKDR_LOADER_STATUS_RESVAL = 1'h 0;
+  parameter logic [1:0] BKDR_LOADER_STATUS_RESVAL = 2'h 0;
   parameter logic [31:0] BKDR_LOADER_NUM_BKDR_TARGETS_RESVAL = 32'h 0;
   parameter logic [31:0] BKDR_LOADER_USR_ACCESS_TIMESTAMP_RESVAL = 32'h 0;
   parameter logic [31:0] BKDR_LOADER_TARGET_INFO_0_RESVAL = 32'h 0;
