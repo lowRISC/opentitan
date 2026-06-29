@@ -244,6 +244,20 @@ On your CW340 base board (the red board):
 4. Connect the PC USB-C cable back to your HyperDebug board.
 5. Power on the CW340 by setting the *Control Power* switch in the top left corner, *SW7*, to the left towards the barrel jack.
 
+##### Running TPM tests with HyperDebug
+
+To be able to run a specific subset of tests related to the SPI TPM, you will need some additional wires on your HyperDebug board:
+
+1. Between CN7.15 and CN10.24 (SPI SCK).
+2. Between CN7.14 and CN10.23 (SPI D0).
+3. Between CN7.12 and CN10.10 (SPI D1).
+
+When you've completed the rest of the setup, you can test that this is configured correctly by running a TPM test:
+
+```sh
+bazel test --test_output=streamed //sw/device/tests:spi_device_tpm_tx_rx_test_fpga_cw340_sival
+```
+
 ### Detecting the PC Connections to the Board(s)
 
 To detect if you PC has successfully connected to you FPGA and/or HyperDebug boards, you can use the following command to monitor output from dmesg:
