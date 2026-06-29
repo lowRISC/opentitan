@@ -511,13 +511,14 @@ jobs:
             "-//sw/otbn/crypto/..." \
             "-//third_party/..."    \
             >> "$target_pattern_file"
-          # Exclude anything that requires a bitstream splice.
-          ./bazelisk.sh cquery                               \
-            --noinclude_aspects                              \
-            --output=starlark                                \
-            --starlark:expr='"-{}".format(target.label)'     \
-            --define DISABLE_VERILATOR_BUILD=true            \
-            -- "rdeps(//..., kind(bitstream_splice, //...))" \
+          # Exclude building anything that is tagged as a target for FPGA,
+          # or anything which transitively depends on such a target.
+          ./bazelisk.sh cquery                           \
+            --noinclude_aspects                          \
+            --output=starlark                            \
+            --starlark:expr='"-{}".format(target.label)' \
+            --define DISABLE_VERILATOR_BUILD=true        \
+            -- "rdeps(//..., attr(tags, 'fpga', //...))" \
             >> "$target_pattern_file"
       - name: Build software targets
         run: |
