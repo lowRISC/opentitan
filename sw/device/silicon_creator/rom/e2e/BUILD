@@ -391,19 +391,16 @@ opentitan_test(
     ],
 )
 
-# Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
-# bitstream before it's sent to the FPGA.
+# Test that we can successfully boot after loading the Dev OTP image onto the
+# FPGA before test execution starts.
 opentitan_test(
     name = "e2e_bootup_success_otp_dev",
     srcs = [":empty_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
         otp = "//hw/top_earlgrey/data/otp:img_dev",
-        # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
-        # bitstream target can fetch pre-spliced bitstream from GCP.
-        tags = ["manual"],
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
