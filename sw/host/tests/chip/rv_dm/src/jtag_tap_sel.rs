@@ -10,6 +10,7 @@ use regex::Regex;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
+use opentitanlib::io::fpga_backdoor::BackdoorParams;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::util::parse_int::ParseInt;
@@ -92,6 +93,22 @@ fn test_jtag_tap_sel(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.pin_strapping("PINMUX_TAP_DFT")?.apply()?;
     if needs_reset {
         transport.reset(UartRx::Clear)?;
+
+        // On FPGA, the DFT TAP is also re-used on reset to enter the
+        // bkdr_loader for loading FPGA memories. We must proceed past
+        // this point to test the TAP as normal.
+        if transport.fpga_ops().is_ok() {
+            let backdoor_params = BackdoorParams {
+                jtag: opts.init.jtag_params.clone(),
+            };
+            let backdoor = backdoor_params
+                .create(transport)?
+                .connect(false)
+                .context("failed to connect to the bkdr_loader TAP on FPGA")?;
+            backdoor
+                .set_done()
+                .context("failed to exit the bkdr_loader on FPGA")?;
+        }
     }
 
     // If RV-DM is disabled, strapping DFT tap will result in LC TAP being selected.
