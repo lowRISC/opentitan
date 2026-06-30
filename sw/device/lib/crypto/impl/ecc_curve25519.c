@@ -83,17 +83,16 @@ static status_t curve25519_private_key_length_check(
                     kHardenedBoolTrue);
 
   // Check the unmasked length.
-  if (private_key->config.key_length != kCurve25519KeyBytes) {
+  if (launder32(private_key->config.key_length) != kCurve25519KeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(private_key->config.key_length),
-                    kCurve25519KeyBytes);
+  HARDENED_CHECK_EQ(private_key->config.key_length, kCurve25519KeyBytes);
 
   // Check the key mode.
-  if (private_key->config.key_mode != expected_mode) {
+  if (launder32(private_key->config.key_mode) != expected_mode) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(private_key->config.key_mode), expected_mode);
+  HARDENED_CHECK_EQ(private_key->config.key_mode, expected_mode);
 
   // Check the integrity of the key.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
@@ -127,10 +126,10 @@ static status_t curve25519_public_key_length_check(
 #endif
   // Check the key struct and key length.
   if (key->key_length != kCurve25519KeyBytes ||
-      key->key_mode != expected_mode) {
+      launder32(key->key_mode) != expected_mode) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(key->key_mode), expected_mode);
+  HARDENED_CHECK_EQ(key->key_mode, expected_mode);
 
   // Check the integrity of the key.
   if (otcrypto_integrity_unblinded_key_check(key) != kHardenedBoolTrue) {
@@ -162,10 +161,11 @@ static status_t ed25519_signature_check(otcrypto_word32_buf_t *signature) {
 #endif
   // Check the signature struct and signature length.
   if (signature->len > UINT32_MAX / sizeof(uint32_t) ||
-      signature->len * sizeof(uint32_t) != sizeof(curve25519_signature_t)) {
+      launder32(signature->len) * sizeof(uint32_t) !=
+          sizeof(curve25519_signature_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(launder32(signature->len) * sizeof(uint32_t),
+  HARDENED_CHECK_EQ(signature->len * sizeof(uint32_t),
                     sizeof(curve25519_signature_t));
 
   // Verify the input buffer
@@ -749,9 +749,8 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
   HARDENED_TRY(
       curve25519_private_key_length_check(private_key, kOtcryptoKeyModeX25519));
 
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
-                      kHardenedBoolTrue);
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
 
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
 
@@ -790,9 +789,8 @@ otcrypto_status_t otcrypto_x25519_async_start(
   HARDENED_TRY(
       curve25519_public_key_length_check(public_key, kOtcryptoKeyModeX25519));
 
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
-                      kHardenedBoolTrue);
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
 
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
 

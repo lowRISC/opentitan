@@ -153,10 +153,10 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, mode);
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(kOtbnRsaModeWords, kOtbnVarRsaMode, &act_mode));
-  if (act_mode != exp_mode) {
+  if (launder32(act_mode) != exp_mode) {
     return OTCRYPTO_RECOV_ERR;
   }
-  HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
+  HARDENED_CHECK_EQ(act_mode, exp_mode);
 
   // Read the public modulus (n) from OTBN dmem.
   const otbn_addr_t kOtbnVarRsaN =
