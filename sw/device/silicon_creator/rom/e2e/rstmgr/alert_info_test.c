@@ -57,7 +57,7 @@ bool test_main(void) {
     uart_alert_trigger();
     LOG_INFO("UART alert routine returned!");
     return false;
-  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reset_reasons,
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgr, reset_reasons,
                                        kDtInstanceIdAlertHandler, 0)) {
     LOG_INFO("Escalation detected!");
     check_alert_info_dump();

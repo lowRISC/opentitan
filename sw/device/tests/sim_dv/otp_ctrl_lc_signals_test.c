@@ -72,7 +72,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
   // Rstmgr
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
   // KMAC (init for Keymgr use)
   CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));

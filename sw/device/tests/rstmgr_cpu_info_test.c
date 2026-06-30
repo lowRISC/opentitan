@@ -190,9 +190,9 @@ bool test_main(void) {
                 "This test requires at least 1 Ibex core.");
 
   // Initialize Handles.
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
-  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimerAon, &aon_timer));
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimer, &aon_timer));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(ibex_dt, &ibex));
 
   switch (rstmgr_testutils_reason_get()) {
@@ -246,7 +246,7 @@ bool test_main(void) {
       dif_pwrmgr_request_sources_t reset_sources;
       CHECK_DIF_OK(dif_pwrmgr_find_request_source(
           &pwrmgr, kDifPwrmgrReqTypeReset,
-          dt_aon_timer_instance_id(kDtAonTimerAon), kDtAonTimerResetReqAonTimer,
+          dt_aon_timer_instance_id(kDtAonTimer), kDtAonTimerResetReqAonTimer,
           &reset_sources));
       CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
           &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));

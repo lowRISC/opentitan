@@ -18,7 +18,7 @@
 #include "hw/top/pwrmgr_regs.h"
 
 static inline uint32_t aon_timer_base(void) {
-  return dt_aon_timer_primary_reg_block(kDtAonTimerAon);
+  return dt_aon_timer_primary_reg_block(kDtAonTimer);
 }
 
 enum {
@@ -75,14 +75,14 @@ void watchdog_init(lifecycle_state_t lc_state) {
 
 void watchdog_configure(watchdog_config_t config) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioConfigure, 4);
-  uint32_t pwrmgr_base = dt_pwrmgr_primary_reg_block(kDtPwrmgrAon);
+  uint32_t pwrmgr_base = dt_pwrmgr_primary_reg_block(kDtPwrmgr);
   uint32_t enabled_resets = 0;
   size_t reset_source = 0;
 
   // Tell pwrmgr we want watchdog reset events to reset the chip.
   HARDENED_CHECK_EQ(
       pwrmgr_find_request_source(kPwrmgrReqTypeReset,
-                                 dt_aon_timer_instance_id(kDtAonTimerAon),
+                                 dt_aon_timer_instance_id(kDtAonTimer),
                                  kDtAonTimerResetReqAonTimer, &reset_source),
       kErrorOk);
   enabled_resets = bitfield_bit32_write(0, reset_source, true);

@@ -99,7 +99,7 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
   // Enable watchdog bite reset.
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimer),
       kDtAonTimerResetReqAonTimer, &reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
@@ -135,16 +135,16 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR), &aon_timer));
 
   // Initialize peripherals.
   CHECK_DIF_OK(dif_uart_init(

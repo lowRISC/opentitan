@@ -111,28 +111,28 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
       Xmacro("LcCtrlFatalProgError",           A, A, X, X), \
       Xmacro("LcCtrlFatalStateError",          A, A, X, X), \
       Xmacro("LcCtrlFatalBusIntegError",       A, A, X, X), \
-      Xmacro("PwrmgrAonFatalFault",            C, C, X, X), \
-      Xmacro("RstmgrAonFatalFault",            C, C, X, X), \
-      Xmacro("ClkmgrAonFatalFault",            C, C, X, X), \
-      Xmacro("SysrstCtrlAonFatalFault",        C, C, X, X), \
-      Xmacro("AdcCtrlAonFatalFault",           C, C, X, X), \
-      Xmacro("PinmuxAonFatalFault",            C, C, X, X), \
-      Xmacro("AonTimerAonFatalFault",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovAs",           B, B, X, X), \
-      Xmacro("SensorCtrlAonRecovCg",           C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovGd",           C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovTsHi",         C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovTsLo",         C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovFla",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOtp",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOt0",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOt1",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOt2",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOt3",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOt4",          C, C, X, X), \
-      Xmacro("SensorCtrlAonRecovOt5",          C, C, X, X), \
-      Xmacro("SramCtrlRetAonFatalIntgError",   B, B, X, X), \
-      Xmacro("SramCtrlRetAonFatalParityError", B, B, X, X), \
+      Xmacro("PwrmgrFatalFault",            C, C, X, X), \
+      Xmacro("RstmgrFatalFault",            C, C, X, X), \
+      Xmacro("ClkmgrFatalFault",            C, C, X, X), \
+      Xmacro("SysrstCtrlFatalFault",        C, C, X, X), \
+      Xmacro("AdcCtrlFatalFault",           C, C, X, X), \
+      Xmacro("PinmuxFatalFault",            C, C, X, X), \
+      Xmacro("AonTimerFatalFault",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovAs",           B, B, X, X), \
+      Xmacro("SensorCtrlRecovCg",           C, C, X, X), \
+      Xmacro("SensorCtrlRecovGd",           C, C, X, X), \
+      Xmacro("SensorCtrlRecovTsHi",         C, C, X, X), \
+      Xmacro("SensorCtrlRecovTsLo",         C, C, X, X), \
+      Xmacro("SensorCtrlRecovFla",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOtp",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOt0",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOt1",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOt2",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOt3",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOt4",          C, C, X, X), \
+      Xmacro("SensorCtrlRecovOt5",          C, C, X, X), \
+      Xmacro("SramCtrlRetFatalIntgError",   B, B, X, X), \
+      Xmacro("SramCtrlRetFatalParityError", B, B, X, X), \
       Xmacro("FlashCtrlRecovErr",              D, D, X, X), \
       Xmacro("FlashCtrlRecovMpErr",            D, D, X, X), \
       Xmacro("FlashCtrlRecovEccErr",           D, D, X, X), \

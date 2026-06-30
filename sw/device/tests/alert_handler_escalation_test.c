@@ -73,10 +73,10 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   CHECK_DIF_OK(dif_alert_handler_init(
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),

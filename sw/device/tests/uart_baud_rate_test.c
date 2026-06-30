@@ -94,7 +94,7 @@ bool test_main(void) {
 
   mmio_region_t base_addr;
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
   base_addr = mmio_region_from_addr(kBaseAddrs[uart_idx]);

@@ -42,7 +42,7 @@ static_assert(kDtAonTimerCount == 1,
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount >= 1, "this test expects at least one rv_plic");
 
-static const dt_sram_ctrl_t kRetSramCtrlDt = kDtSramCtrlRetAon;
+static const dt_sram_ctrl_t kRetSramCtrlDt = kDtSramCtrlRet;
 
 static dif_pwrmgr_request_sources_t aon_timer_wakeup_sources;
 

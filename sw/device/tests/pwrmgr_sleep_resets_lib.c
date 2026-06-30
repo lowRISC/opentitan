@@ -44,14 +44,14 @@ dif_rv_plic_t *plic;
 dif_alert_handler_t *alert_handler;
 dif_aon_timer_t *aon_timer;
 dif_pwrmgr_t *pwrmgr;
-dif_sysrst_ctrl_t *sysrst_ctrl_aon;
+dif_sysrst_ctrl_t *sysrst_ctrl;
 dif_rstmgr_t *rstmgr;
 
 dif_rv_plic_t plic_actual;
 dif_alert_handler_t alert_handler_actual;
 dif_aon_timer_t aon_timer_actual;
 dif_pwrmgr_t pwrmgr_actual;
-dif_sysrst_ctrl_t sysrst_ctrl_aon_actual;
+dif_sysrst_ctrl_t sysrst_ctrl_actual;
 dif_rstmgr_t rstmgr_actual;
 
 static dif_pwrmgr_request_sources_t aon_timer_wakeup_sources;
@@ -80,8 +80,8 @@ void init_peripherals(void) {
 
   // Initialize sysrst_ctrl.
   CHECK_DIF_OK(
-      dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl_aon_actual));
-  sysrst_ctrl_aon = &sysrst_ctrl_aon_actual;
+      dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl_actual));
+  sysrst_ctrl = &sysrst_ctrl_actual;
 
   // Initialize rstmgr to check the reset reason.
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr_actual));
@@ -96,8 +96,8 @@ void init_peripherals(void) {
   plic = &plic_actual;
 
   rv_plic_testutils_irq_range_enable(
-      plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired,
+      kTopEarlgreyPlicIrqIdAonTimerWdogTimerBark);
 
   // Initialize alert handler.
   CHECK_DIF_OK(
@@ -115,7 +115,7 @@ void init_peripherals(void) {
 }
 
 void config_alert_handler(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   uint32_t cycles[4] = {0};
@@ -192,7 +192,7 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
       .embedded_controller_reset_duration = 10};
 
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
-      sysrst_ctrl_aon, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
+      sysrst_ctrl, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
   // Configure sysrst input change
   // debounce duration : 100 us
   dif_sysrst_ctrl_input_change_config_t sysrst_ctrl_input_change_config = {
@@ -201,13 +201,13 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
   // Configure pinmux
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
-      sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
+      sysrst_ctrl, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In, pad_pin));
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In, pad_pin));
 }
 
 void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
@@ -229,7 +229,7 @@ void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
   // Set wdog as a reset source.
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimer),
       kDtAonTimerResetReqAonTimer, &reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
@@ -313,18 +313,18 @@ void ottf_external_isr(uint32_t *exc_info) {
   peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopEarlgreyPlicPeripheralAonTimer) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(alert_handler,
                                                     kDifAlertHandlerClassA));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer, irq));
 
-    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
+    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerWdogTimerBark,
           "AON Timer Wdog should not bark");
 
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {

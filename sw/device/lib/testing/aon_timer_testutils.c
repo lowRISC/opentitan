@@ -21,7 +21,7 @@ status_t aon_timer_testutils_get_aon_cycles_32_from_us(uint64_t microseconds,
                                                        uint32_t *cycles) {
   uint64_t cycles_ =
       udiv64_slow(microseconds * dt_clock_frequency(dt_aon_timer_clock(
-                                     kDtAonTimerAon, kDtAonTimerClockAon)),
+                                     kDtAonTimer, kDtAonTimerClockAon)),
                   1000000,
                   /*rem_out=*/NULL);
   TRY_CHECK(cycles_ <= UINT32_MAX,
@@ -33,20 +33,19 @@ status_t aon_timer_testutils_get_aon_cycles_32_from_us(uint64_t microseconds,
 
 status_t aon_timer_testutils_get_aon_cycles_64_from_us(uint64_t microseconds,
                                                        uint64_t *cycles) {
-  *cycles =
-      udiv64_slow(microseconds * dt_clock_frequency(dt_aon_timer_clock(
-                                     kDtAonTimerAon, kDtAonTimerClockAon)),
-                  1000000,
-                  /*rem_out=*/NULL);
+  *cycles = udiv64_slow(microseconds * dt_clock_frequency(dt_aon_timer_clock(
+                                           kDtAonTimer, kDtAonTimerClockAon)),
+                        1000000,
+                        /*rem_out=*/NULL);
   return OK_STATUS();
 }
 
 status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
                                                     uint32_t *us) {
-  uint64_t uss = udiv64_slow(cycles * 1000000,
-                             dt_clock_frequency(dt_aon_timer_clock(
-                                 kDtAonTimerAon, kDtAonTimerClockAon)),
-                             /*rem_out=*/NULL);
+  uint64_t uss = udiv64_slow(
+      cycles * 1000000,
+      dt_clock_frequency(dt_aon_timer_clock(kDtAonTimer, kDtAonTimerClockAon)),
+      /*rem_out=*/NULL);
   TRY_CHECK(uss <= UINT32_MAX,
             "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
             (uint32_t)(uss >> 32), (uint32_t)uss);

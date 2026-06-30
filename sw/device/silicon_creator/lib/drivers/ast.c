@@ -21,7 +21,7 @@ const uint32_t kAstCheckPollCpuCycles = 10000;
 #endif
 
 enum {
-  kBaseSensorCtrl = TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR,
+  kBaseSensorCtrl = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR,
   kBaseAst = TOP_EARLGREY_AST_BASE_ADDR,
 };
 

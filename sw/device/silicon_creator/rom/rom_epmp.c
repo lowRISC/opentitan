@@ -22,10 +22,10 @@ static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
 static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x10000000,
               "MMIO region changed, update ePMP configuration if needed");
 
-static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
+static_assert(TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR >=
                       TOP_EARLGREY_MMIO_BASE_ADDR &&
-                  TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                          TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES <
+                  TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR +
+                          TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES <
                       TOP_EARLGREY_MMIO_BASE_ADDR +
                           TOP_EARLGREY_MMIO_SIZE_BYTES,
               "Retention SRAM must be in the MMIO address space.");

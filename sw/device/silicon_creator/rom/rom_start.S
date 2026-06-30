@@ -167,7 +167,7 @@ LABEL_FOR_TEST(kRomStartBootExecEn)
 
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
-  li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
+  li t0, TOP_EARLGREY_PWRMGR_BASE_ADDR
   li t1, -1
   sw t1, PWRMGR_RESET_EN_REG_OFFSET(t0)
 
@@ -177,13 +177,13 @@ LABEL_FOR_TEST(kRomStartBootExecEn)
 
   // In case of waking from low power, with AON IP state intact,
   // skip watchdog configuration.
-  li a0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li a0, TOP_EARLGREY_RSTMGR_BASE_ADDR
   lw t0, RSTMGR_RESET_INFO_REG_OFFSET(a0)
   li t1, (1 << RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT)
   beq t0, t1, .L_skip_watchdog_init
 
   // Configure the watchdog's bark and bite thresholds.
-  li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  li t0, TOP_EARLGREY_AON_TIMER_BASE_ADDR
   li t1, WDOG_BARK_THOLD
   sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
   li t1, WDOG_BITE_THOLD
@@ -200,7 +200,7 @@ LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_RSTMGR_INFO_EN_OFFSET(a0)
   li   t1, HARDENED_BYTE_BOOL_TRUE
-  li   a0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li   a0, TOP_EARLGREY_RSTMGR_BASE_ADDR
   // Enable alert info collection if enabled in OTP.
   andi t2, t0, 0xff
   bne  t2, t1, .L_skip_rstmgr_alert_info_en
@@ -244,7 +244,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_FALSE
   beq  t0, t1, .L_ast_init_end
-  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+  li   a0, TOP_EARLGREY_CLKMGR_BASE_ADDR
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   sw   t1, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
@@ -278,7 +278,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // |------------------+----------------+----------------+------------------|
   // | Configuration:   | Input          | Input          | Input            |
   // |                  | Pull-down      | Pull-down      | Pull-up          |
-  li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
+  li   a0, (TOP_EARLGREY_PINMUX_BASE_ADDR + \
             PINMUX_MIO_PAD_ATTR_0_REG_OFFSET)
   li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT) | \
            (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT)
@@ -286,7 +286,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT)
   sw   t0, (SW_STRAP_1_PAD * 4)(a0)
   sw   t0, (SW_STRAP_2_PAD * 4)(a0)
-  li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
+  li   a0, (TOP_EARLGREY_PINMUX_BASE_ADDR + \
             PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET)
   li   t0, SW_STRAP_0_INSEL
   sw   t0, (SW_STRAP_0_PERIPH * 4)(a0)
@@ -330,7 +330,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // loop, disable the watchdog.
 .L_rma_spin_init:
   csrw mcycle, zero
-  li   a0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  li   a0, TOP_EARLGREY_AON_TIMER_BASE_ADDR
   sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
 .L_rma_spin_cycles_loop:
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \

@@ -38,12 +38,12 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen,
 };
 
 static const dif_pinmux_index_t kInputPadsDV[] = {
@@ -80,12 +80,11 @@ static uint8_t read_input_pins(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR), &sysrst_ctrl));
 
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   /* On real devices, we also need to configure the DIO pins */
   if (kDeviceType != kDeviceSimDV) {

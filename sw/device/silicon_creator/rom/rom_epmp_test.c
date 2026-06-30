@@ -294,14 +294,14 @@ static void test_noexec_mmio(void) {
   // Note: execution of retention RAM always fails regardless of controller or
   // ePMP configurations however it doesn't hurt to check it anyway.
   dif_sram_ctrl_t ret_ram_ctrl;
-  CHECK(dif_sram_ctrl_init(mmio_region_from_addr(
-                               TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
-                           &ret_ram_ctrl) == kDifOk);
+  CHECK(dif_sram_ctrl_init(
+            mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR),
+            &ret_ram_ctrl) == kDifOk);
   CHECK(dif_sram_ctrl_exec_set_enabled(&ret_ram_ctrl, kDifToggleEnabled) ==
         kDifOk);
-  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR;
   size_t ret_ram_len =
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
+      TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
   ret_ram[0] = kUnimpInstruction;
   CHECK(execute(&ret_ram[0], kIbexExcInstrAccessFault));
   ret_ram[ret_ram_len - 1] = kUnimpInstruction;
@@ -366,7 +366,7 @@ void rom_main(void) {
   // Initialize pinmux configuration so we can use the UART.
   dif_pinmux_t pinmux;
   OT_DISCARD(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // Enable execution of code in flash.

@@ -424,9 +424,9 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
     dbg_printf("warning: rescue configured for protocol %c\r\n", protocol);
   }
 
-  if (wdt_enable && rstmgr_is_hw_reset_reason(kDtRstmgrAon, reset_reasons,
-                                              kDtInstanceIdAonTimerAon,
-                                              kDtAonTimerResetReqAonTimer)) {
+  if (wdt_enable &&
+      rstmgr_is_hw_reset_reason(kDtRstmgr, reset_reasons, kDtInstanceIdAonTimer,
+                                kDtAonTimerResetReqAonTimer)) {
     return kHardenedBoolTrue;
   }
 

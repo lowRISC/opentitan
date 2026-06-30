@@ -31,8 +31,8 @@ dif_uart_t uart0;
 
 static status_t setup_uart(bool enable) {
   if (enable) {
-    TRY(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+    TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR),
+                        &pinmux));
     TRY(dif_pinmux_input_select(&pinmux, kTopEarlgreyPinmuxPeripheralInUart0Rx,
                                 kTopEarlgreyPinmuxInselIoc3));
     TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc3,

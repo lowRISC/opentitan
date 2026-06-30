@@ -17,7 +17,7 @@
 #include "hw/top/sensor_ctrl_regs.h"  // Generated.
 
 // Test handles its own alerts.
-// `sensor_ctrl_aon_recov_alert` fires immediately on wake-up which doesn't
+// `sensor_ctrl_recov_alert` fires immediately on wake-up which doesn't
 // give us enough time to disable it specifically.
 OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 

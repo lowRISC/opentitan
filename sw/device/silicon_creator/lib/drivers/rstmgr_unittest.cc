@@ -19,7 +19,7 @@ using ::testing::ElementsAre;
 
 class RstmgrTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR;
+  uint32_t base_ = TOP_EARLGREY_RSTMGR_BASE_ADDR;
   rom_test::MockAbsMmio mmio_;
 };
 

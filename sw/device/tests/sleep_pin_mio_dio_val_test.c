@@ -57,11 +57,11 @@ static dif_rv_plic_t plic;
  */
 bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
                      dif_rv_plic_irq_id_t irq_id) {
-  if (devid != dt_pwrmgr_instance_id(kDtPwrmgrAon)) {
+  if (devid != dt_pwrmgr_instance_id(kDtPwrmgr)) {
     return false;
   }
 
-  dt_pwrmgr_irq_t irq = dt_pwrmgr_irq_from_plic_id(kDtPwrmgrAon, irq_id);
+  dt_pwrmgr_irq_t irq = dt_pwrmgr_irq_from_plic_id(kDtPwrmgr, irq_id);
   CHECK(irq == kDtPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq);
   CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, irq));
   return true;
@@ -172,8 +172,8 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
 
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
@@ -198,8 +198,8 @@ bool test_main(void) {
       static const uint32_t kPlicTarget = 0;
       rv_plic_testutils_irq_range_enable(
           &plic, kPlicTarget,
-          dt_pwrmgr_irq_to_plic_id(kDtPwrmgrAon, kDtPwrmgrIrqWakeup),
-          dt_pwrmgr_irq_to_plic_id(kDtPwrmgrAon, kDtPwrmgrIrqWakeup));
+          dt_pwrmgr_irq_to_plic_id(kDtPwrmgr, kDtPwrmgrIrqWakeup),
+          dt_pwrmgr_irq_to_plic_id(kDtPwrmgr, kDtPwrmgrIrqWakeup));
       // Enable pwrmgr interrupt
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
     }
@@ -209,7 +209,7 @@ bool test_main(void) {
 
   dif_pwrmgr_request_sources_t wakeup_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kDtPinmuxAon),
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kDtPinmux),
       kDtPinmuxWakeupPinWkupReq, &wakeup_sources));
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources))) {
     // TODO: change PINMUX wakeup, not pin detector

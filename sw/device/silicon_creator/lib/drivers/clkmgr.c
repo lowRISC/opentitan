@@ -14,7 +14,7 @@
 #define MODULE_ID MAKE_MODULE_ID('c', 'l', 'k')
 
 hardened_bool_t clkmgr_check_jittery_clk_en(void) {
-  uintptr_t clkmgr_base_addr = dt_clkmgr_primary_reg_block(kDtClkmgrAon);
+  uintptr_t clkmgr_base_addr = dt_clkmgr_primary_reg_block(kDtClkmgr);
   uint32_t jittery_clk_en =
       abs_mmio_read32(clkmgr_base_addr + CLKMGR_JITTER_ENABLE_REG_OFFSET);
 

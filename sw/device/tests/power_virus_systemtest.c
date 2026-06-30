@@ -327,7 +327,7 @@ void ottf_external_isr(uint32_t *exc_info) {
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_alert_handler_init(
@@ -348,7 +348,7 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   // UART 0 is already configured (and used) by the OTTF.
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR), &uart_1));
@@ -371,7 +371,7 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));

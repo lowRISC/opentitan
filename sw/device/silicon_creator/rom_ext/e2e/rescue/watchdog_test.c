@@ -55,8 +55,7 @@ bool test_main(void) {
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
     LOG_INFO("Configure watchdog to bite.");
     result = watchdog_bite_setup();
-  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reason,
-                                       kDtInstanceIdAonTimerAon,
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgr, reason, kDtInstanceIdAonTimer,
                                        kDtAonTimerResetReqAonTimer)) {
     LOG_INFO("Got watchdog reset.");
     result = OK_STATUS();

@@ -128,13 +128,13 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_BASE_ADDR), &adc_ctrl));
 
   LOG_INFO("Running CHIP Power Sleep Load test");
 
@@ -163,16 +163,16 @@ bool test_main(void) {
   LOG_INFO("wakeup type:%d. wakeup reason: 0x%02X", wakeup_reason.types,
            wakeup_reason.request_sources);
 
-  static dif_pwrmgr_request_sources_t pwrmgr_aon_timer_wakeups;
+  static dif_pwrmgr_request_sources_t pwrmgr_timer_wakeups;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
-      kDtAonTimerWakeupWkupReq, &pwrmgr_aon_timer_wakeups));
+      kDtAonTimerWakeupWkupReq, &pwrmgr_timer_wakeups));
 
   if (wakeup_reason.types == 0) {
     // Wakeup due to Power Up - DO NOTHING HERE - go on with the rest of the
     // test's flow....
   } else if ((wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) &&
-             (wakeup_reason.request_sources == pwrmgr_aon_timer_wakeups)) {
+             (wakeup_reason.request_sources == pwrmgr_timer_wakeups)) {
     // Wakeup due to a peripheral request and reason is AON Timer.
     prepare_to_exit();
     return true;

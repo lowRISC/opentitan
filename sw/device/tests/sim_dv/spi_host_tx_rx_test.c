@@ -192,7 +192,7 @@ void setup_pinmux_pads_spi_host1(void) {
 bool test_main(void) {
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // Setup pinmux if required, enable weak pull-up on relevant pads, set slew

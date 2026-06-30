@@ -51,10 +51,10 @@
 static dif_rv_core_ibex_t rv_core_ibex;
 
 static dif_alert_handler_t alert_handler;
-static dif_adc_ctrl_t adc_ctrl_aon;
+static dif_adc_ctrl_t adc_ctrl;
 static dif_aes_t aes;
-static dif_aon_timer_t aon_timer_aon;
-static dif_clkmgr_t clkmgr_aon;
+static dif_aon_timer_t aon_timer;
+static dif_clkmgr_t clkmgr;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
@@ -70,20 +70,20 @@ static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
-static dif_pinmux_t pinmux_aon;
-static dif_pwrmgr_t pwrmgr_aon;
+static dif_pinmux_t pinmux;
+static dif_pwrmgr_t pwrmgr;
 static dif_rom_ctrl_t rom_ctrl;
-static dif_rstmgr_t rstmgr_aon;
+static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
-static dif_sensor_ctrl_t sensor_ctrl_aon;
+static dif_sensor_ctrl_t sensor_ctrl;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_sram_ctrl_t sram_ctrl_main;
-static dif_sram_ctrl_t sram_ctrl_ret_aon;
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
+static dif_sram_ctrl_t sram_ctrl_ret;
+static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_uart_t uart0;
 static dif_uart_t uart1;
 static dif_uart_t uart2;
@@ -97,17 +97,17 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   TRY(dif_alert_handler_init(base_addr, &alert_handler));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  TRY(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_BASE_ADDR);
+  TRY(dif_adc_ctrl_init(base_addr, &adc_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
   TRY(dif_aes_init(base_addr, &aes));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
-  TRY(dif_aon_timer_init(base_addr, &aon_timer_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR);
+  TRY(dif_aon_timer_init(base_addr, &aon_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  TRY(dif_clkmgr_init(base_addr, &clkmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR);
+  TRY(dif_clkmgr_init(base_addr, &clkmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
   TRY(dif_csrng_init(base_addr, &csrng));
@@ -154,17 +154,17 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   TRY(dif_otp_ctrl_init(base_addr, &otp_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  TRY(dif_pinmux_init(base_addr, &pinmux_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
+  TRY(dif_pinmux_init(base_addr, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  TRY(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_BASE_ADDR);
+  TRY(dif_pwrmgr_init(base_addr, &pwrmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
   TRY(dif_rom_ctrl_init(base_addr, &rom_ctrl));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
-  TRY(dif_rstmgr_init(base_addr, &rstmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR);
+  TRY(dif_rstmgr_init(base_addr, &rstmgr));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   TRY(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
@@ -175,8 +175,8 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
   TRY(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
-  TRY(dif_sensor_ctrl_init(base_addr, &sensor_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
+  TRY(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   TRY(dif_spi_device_init(base_addr, &spi_device));
@@ -190,12 +190,11 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR);
   TRY(dif_sram_ctrl_init(base_addr, &sram_ctrl_main));
 
-  base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
-  TRY(dif_sram_ctrl_init(base_addr, &sram_ctrl_ret_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR);
+  TRY(dif_sram_ctrl_init(base_addr, &sram_ctrl_ret));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
-  TRY(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR);
+  TRY(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
   TRY(dif_uart_init(base_addr, &uart0));
@@ -244,14 +243,13 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
       TRY(dif_aes_alert_force(&aes, kDifAesAlertFatalFault));
       break;
     case 2:
-      TRY(dif_aon_timer_alert_force(&aon_timer_aon,
-                                    kDifAonTimerAlertFatalFault));
+      TRY(dif_aon_timer_alert_force(&aon_timer, kDifAonTimerAlertFatalFault));
       break;
     case 3:
-      TRY(dif_clkmgr_alert_force(&clkmgr_aon, kDifClkmgrAlertRecovFault));
+      TRY(dif_clkmgr_alert_force(&clkmgr, kDifClkmgrAlertRecovFault));
       break;
     case 4:
-      TRY(dif_clkmgr_alert_force(&clkmgr_aon, kDifClkmgrAlertFatalFault));
+      TRY(dif_clkmgr_alert_force(&clkmgr, kDifClkmgrAlertFatalFault));
       break;
     case 5:
       TRY(dif_csrng_alert_force(&csrng, kDifCsrngAlertRecovAlert));
@@ -358,19 +356,19 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
                                    kDifOtpCtrlAlertRecovPrimOtpAlert));
       break;
     case 37:
-      TRY(dif_pinmux_alert_force(&pinmux_aon, kDifPinmuxAlertFatalFault));
+      TRY(dif_pinmux_alert_force(&pinmux, kDifPinmuxAlertFatalFault));
       break;
     case 38:
-      TRY(dif_pwrmgr_alert_force(&pwrmgr_aon, kDifPwrmgrAlertFatalFault));
+      TRY(dif_pwrmgr_alert_force(&pwrmgr, kDifPwrmgrAlertFatalFault));
       break;
     case 39:
       TRY(dif_rom_ctrl_alert_force(&rom_ctrl, kDifRomCtrlAlertFatal));
       break;
     case 40:
-      TRY(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault));
+      TRY(dif_rstmgr_alert_force(&rstmgr, kDifRstmgrAlertFatalFault));
       break;
     case 41:
-      TRY(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalCnstyFault));
+      TRY(dif_rstmgr_alert_force(&rstmgr, kDifRstmgrAlertFatalCnstyFault));
       break;
     case 42:
       TRY(dif_rv_core_ibex_alert_force(&rv_core_ibex,
@@ -395,11 +393,11 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
       TRY(dif_rv_timer_alert_force(&rv_timer, kDifRvTimerAlertFatalFault));
       break;
     case 48:
-      TRY(dif_sensor_ctrl_alert_force(&sensor_ctrl_aon,
+      TRY(dif_sensor_ctrl_alert_force(&sensor_ctrl,
                                       kDifSensorCtrlAlertRecovAlert));
       break;
     case 49:
-      TRY(dif_sensor_ctrl_alert_force(&sensor_ctrl_aon,
+      TRY(dif_sensor_ctrl_alert_force(&sensor_ctrl,
                                       kDifSensorCtrlAlertFatalAlert));
       break;
     case 50:
@@ -417,11 +415,11 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
                                     kDifSramCtrlAlertFatalError));
       break;
     case 54:
-      TRY(dif_sram_ctrl_alert_force(&sram_ctrl_ret_aon,
+      TRY(dif_sram_ctrl_alert_force(&sram_ctrl_ret,
                                     kDifSramCtrlAlertFatalError));
       break;
     case 55:
-      TRY(dif_sysrst_ctrl_alert_force(&sysrst_ctrl_aon,
+      TRY(dif_sysrst_ctrl_alert_force(&sysrst_ctrl,
                                       kDifSysrstCtrlAlertFatalFault));
       break;
     case 56:
@@ -500,7 +498,7 @@ status_t handle_alert_fi_sensor_ctrl_trigger(ujson_t *uj) {
   pentest_clear_sensor_recov_alerts();
 
   // Write to sensor control's ALERT_TRIG
-  TRY(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl_aon, 0,
+  TRY(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, 0,
                                             kDifToggleEnabled));
 
   // Cycle a duration to ensure escalation propagated following the duration

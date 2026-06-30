@@ -45,10 +45,10 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn,
 };
 
 static const dif_pinmux_index_t kInputPads[] = {
@@ -59,12 +59,12 @@ static const dif_pinmux_index_t kInputPads[] = {
 };
 
 static const dif_pinmux_index_t kPeripheralOutputs[] = {
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonKey2Out,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonPwrbOut,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable,
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
+    kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out,
+    kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out,
+    kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out,
+    kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut,
+    kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable,
+    kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup,
 };
 
 static const dif_pinmux_index_t kOutputPads[] = {
@@ -132,7 +132,7 @@ static void configure_combo_reset(void) {
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeReset,
-      dt_sysrst_ctrl_instance_id(kDtSysrstCtrlAon), kDtSysrstCtrlResetReqRstReq,
+      dt_sysrst_ctrl_instance_id(kDtSysrstCtrl), kDtSysrstCtrlResetReqRstReq,
       &reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
@@ -177,13 +177,12 @@ static void set_output_overrides(uint8_t override_value) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
+      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR), &sysrst_ctrl));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   pinmux_setup();
   rstmgr_reset_info = rstmgr_testutils_reason_get();

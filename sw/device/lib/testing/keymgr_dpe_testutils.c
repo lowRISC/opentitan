@@ -22,7 +22,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
-  TRY(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  TRY(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   // POR reset.

@@ -25,7 +25,7 @@ enum {
   /**
    * Base address of the pinmux registers.
    */
-  kPinmuxBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kPinmuxBase = TOP_EARLGREY_PINMUX_BASE_ADDR,
   /**
    * Base address of the UART registers.
    */

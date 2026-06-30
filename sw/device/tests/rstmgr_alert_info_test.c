@@ -332,9 +332,9 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   dt_instance_id_t inst_id = dt_plic_id_to_instance_id(plic_irq);
 
-  if (inst_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+  if (inst_id == dt_aon_timer_instance_id(kDtAonTimer)) {
     dt_aon_timer_irq_t irq =
-        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, plic_irq);
+        dt_aon_timer_irq_from_plic_id(kDtAonTimer, plic_irq);
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
   } else if (inst_id == dt_alert_handler_instance_id(kDtAlertHandler)) {
     dt_alert_handler_irq_t irq =
@@ -602,7 +602,7 @@ static void peripheral_init(void) {
   // Set pwrmgr reset_en
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimer),
       kDtAonTimerResetReqAonTimer, &reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
@@ -733,10 +733,10 @@ bool test_main(void) {
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, class_a_irq,
                                      class_d_irq);
 
-  dt_plic_irq_id_t timer_expired_irq = dt_aon_timer_irq_to_plic_id(
-      kDtAonTimerAon, kDtAonTimerIrqWkupTimerExpired);
+  dt_plic_irq_id_t timer_expired_irq =
+      dt_aon_timer_irq_to_plic_id(kDtAonTimer, kDtAonTimerIrqWkupTimerExpired);
   dt_plic_irq_id_t timer_bark_irq =
-      dt_aon_timer_irq_to_plic_id(kDtAonTimerAon, kDtAonTimerIrqWdogTimerBark);
+      dt_aon_timer_irq_to_plic_id(kDtAonTimer, kDtAonTimerIrqWdogTimerBark);
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, timer_expired_irq,
                                      timer_bark_irq);
 

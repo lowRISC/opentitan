@@ -2360,9 +2360,9 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
       uj_data.ref_values[5]);
   abs_mmio_write32(TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET,
                    uj_data.ref_values[6]);
-  abs_mmio_write32(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
-                       SRAM_CTRL_READBACK_REG_OFFSET,
-                   uj_data.ref_values[7]);
+  abs_mmio_write32(
+      TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR + SRAM_CTRL_READBACK_REG_OFFSET,
+      uj_data.ref_values[7]);
   abs_mmio_write32_shadowed(
       TOP_EARLGREY_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET,
       uj_data.ref_values[8]);
@@ -2416,7 +2416,7 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
                                  CSRNG_RESEED_INTERVAL_REG_OFFSET);
   read_csrs[6] =
       abs_mmio_read32(TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET);
-  read_csrs[7] = abs_mmio_read32(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
+  read_csrs[7] = abs_mmio_read32(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR +
                                  SRAM_CTRL_READBACK_REG_OFFSET);
   read_csrs[8] = abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR +
                                  AES_CTRL_SHADOWED_REG_OFFSET);
@@ -3745,7 +3745,7 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
   if (!sram_ret_init) {
     // Init retention SRAM, wipe and scramble it.
     mmio_region_t addr =
-        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR);
     TRY(dif_sram_ctrl_init(addr, &ret_sram));
     TRY(sram_ctrl_testutils_wipe(&ret_sram));
     TRY(sram_ctrl_testutils_scramble(&ret_sram));
@@ -3760,9 +3760,9 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR;
   size_t ret_ram_len =
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
+      TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
   size_t ret_ram_half_len = ret_ram_len / 2;
 
   // Write counter value into ret SRAM.
@@ -3852,7 +3852,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   if (!sram_ret_init) {
     // Init retention SRAM, wipe and scramble it.
     mmio_region_t addr =
-        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_REGS_BASE_ADDR);
     TRY(dif_sram_ctrl_init(addr, &ret_sram));
     TRY(sram_ctrl_testutils_wipe(&ret_sram));
     TRY(sram_ctrl_testutils_scramble(&ret_sram));
@@ -3870,9 +3870,8 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   pentest_clear_sensor_recov_alerts();
 
   // Get address of the ret. SRAM at the beginning of the owner section.
-  uintptr_t sram_ret_buffer_addr =
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-      offsetof(retention_sram_t, owner);
+  uintptr_t sram_ret_buffer_addr = TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR +
+                                   offsetof(retention_sram_t, owner);
   mmio_region_t sram_region_ret_addr =
       mmio_region_from_addr(sram_ret_buffer_addr);
 

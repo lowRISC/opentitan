@@ -36,7 +36,7 @@ static void chip_sw_reset(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
 
   // Check if there was a HW reset caused by the software.
   dif_rstmgr_reset_info_bitfield_t rst_info;

@@ -247,7 +247,7 @@ bool test_main(void) {
         "The test is configured to run in RMA mode.");
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   dif_otp_ctrl_t otp;

@@ -31,15 +31,14 @@ static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
  * Configure the sysrst.
  */
 static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
-                          const dif_sysrst_ctrl_t *sysrst_ctrl_aon) {
+                          const dif_sysrst_ctrl_t *sysrst_ctrl) {
   LOG_INFO("sysrst enabled");
 
   // Set sysrst as a reset source.
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      pwrmgr, kDifPwrmgrReqTypeReset,
-      dt_sysrst_ctrl_instance_id(kDtSysrstCtrlAon), kDtSysrstCtrlResetReqRstReq,
-      &reset_sources));
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_sysrst_ctrl_instance_id(kDtSysrstCtrl),
+      kDtSysrstCtrlResetReqRstReq, &reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   LOG_INFO("Reset Request SourceOne is set");
@@ -55,7 +54,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
       .embedded_controller_reset_duration = 10};
 
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
-      sysrst_ctrl_aon, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
+      sysrst_ctrl, kDifSysrstCtrlKeyCombo0, sysrst_ctrl_key_combo_config));
   // Configure sysrst input change
   // debounce duration : 100 us
   dif_sysrst_ctrl_input_change_config_t sysrst_ctrl_input_change_config = {
@@ -64,13 +63,13 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   // Configure pinmux
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(
-      sysrst_ctrl_aon, sysrst_ctrl_input_change_config));
+      sysrst_ctrl, sysrst_ctrl_input_change_config));
 
   CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
+      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In,
       kTopEarlgreyPinmuxInselIor13));
 
   // Wait for sysrst.
@@ -98,7 +97,7 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
   // Set wdog as a reset source.
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimer),
       kDtAonTimerResetReqAonTimer, &reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
       pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
@@ -141,23 +140,22 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 bool test_main(void) {
   // Initialize pwrmgr.
   dif_pwrmgr_t pwrmgr;
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
 
   // Initialize sysrst_ctrl.
-  dif_sysrst_ctrl_t sysrst_ctrl_aon;
+  dif_sysrst_ctrl_t sysrst_ctrl;
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl_aon));
+      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR), &sysrst_ctrl));
 
   // Initialize rstmgr to check the reset reason.
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
 
   // Initialize aon timer to use the wdog.
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR), &aon_timer));
 
   // First check the NVM stored value
   uint32_t event_idx = 0;
@@ -181,7 +179,7 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, setting sysrst");
-    config_sysrst(&pwrmgr, &sysrst_ctrl_aon);
+    config_sysrst(&pwrmgr, &sysrst_ctrl);
   } else if (rst_info == kDifRstmgrResetInfoSysRstCtrl) {
     LOG_INFO("Booting for the second time due to system reset control reset");
     // Executing the wdog bite reset test.

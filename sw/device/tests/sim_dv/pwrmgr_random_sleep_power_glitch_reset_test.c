@@ -109,18 +109,18 @@ void ottf_external_isr(uint32_t *exc_info) {
   peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+  if (peripheral == kTopEarlgreyPlicPeripheralAonTimer) {
     irq =
         (dif_aon_timer_irq_t)(irq_id -
                               (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                  kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired);
 
     // Stops escalation process.
     CHECK_DIF_OK(dif_alert_handler_escalation_clear(&alert_handler,
                                                     kDifAlertHandlerClassA));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
 
-    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
+    CHECK(irq != kTopEarlgreyPlicIrqIdAonTimerWdogTimerBark,
           "AON Timer Wdog should not bark");
 
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
@@ -164,8 +164,8 @@ void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired,
+      kTopEarlgreyPlicIrqIdAonTimerWdogTimerBark);
 
   // Initialize alert handler.
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
@@ -175,7 +175,7 @@ void init_peripherals(void) {
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_adc_ctrl_instance_id(kAdcCtrlDt),
       kDtAdcCtrlWakeupWkupReq, &adc_ctrl_wakeup_sources));
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimer),
       kDtAonTimerResetReqAonTimer, &wdog_reset_sources));
   CHECK_DIF_OK(dif_pwrmgr_get_all_request_sources(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, &all_wakeup_sources));
@@ -187,7 +187,7 @@ void init_peripherals(void) {
  * wdog is programed to bark.
  */
 static void alert_handler_config(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   uint32_t cycles[3] = {0};

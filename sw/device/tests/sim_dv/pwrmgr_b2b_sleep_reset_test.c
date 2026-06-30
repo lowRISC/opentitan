@@ -103,10 +103,10 @@ bool test_main(void) {
   LOG_INFO("wakeup type:%d   wakeup reason: 0x%02X", wakeup_reason.types,
            wakeup_reason.request_sources);
 
-  dif_pwrmgr_request_sources_t pwrmgr_aon_timer_wakeups;
+  dif_pwrmgr_request_sources_t pwrmgr_timer_wakeups;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
-      kDtAonTimerWakeupWkupReq, &pwrmgr_aon_timer_wakeups));
+      kDtAonTimerWakeupWkupReq, &pwrmgr_timer_wakeups));
   dif_pwrmgr_request_sources_t pwrmgr_sysrst_ctrl_wakeups;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
       &pwrmgr, kDifPwrmgrReqTypeWakeup,
@@ -122,7 +122,7 @@ bool test_main(void) {
   } else if (wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) {
     // sysrst_ctrl or aon_timer
     CHECK(wakeup_reason.request_sources ==
-          (pwrmgr_sysrst_ctrl_wakeups | pwrmgr_aon_timer_wakeups));
+          (pwrmgr_sysrst_ctrl_wakeups | pwrmgr_timer_wakeups));
   } else {
     LOG_ERROR("unexpected wakeup_type: 0x%x", wakeup_reason.types);
   }
@@ -146,7 +146,7 @@ bool test_main(void) {
     // aon timer clean up
     CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
     //    mmio_region_write32(
-    //        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
+    //        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR),
     //        AON_TIMER_WKUP_CAUSE_REG_OFFSET, 0);
     CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
     // sysrst ctrl status clean up

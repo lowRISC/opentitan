@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 static const dt_gpio_t kGpioDt = kDtGpio;
-static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
+static const dt_pinmux_t kPinmuxDt = kDtPinmux;
 static const dt_rv_plic_t kRvPlicDt = kDtRvPlic;
 
 enum {

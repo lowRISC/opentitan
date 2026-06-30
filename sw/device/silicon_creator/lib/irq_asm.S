@@ -26,7 +26,7 @@
 _asm_exception_handler:
 .L_exception_loop:
   // Request a system reset.
-  li t0, TOP_EARLGREY_RSTMGR_AON_BASE_ADDR
+  li t0, TOP_EARLGREY_RSTMGR_BASE_ADDR
   li t1, MULTIBIT_ASM_BOOL4_TRUE
   sw t1, RSTMGR_RESET_REQ_REG_OFFSET(t0)
 
