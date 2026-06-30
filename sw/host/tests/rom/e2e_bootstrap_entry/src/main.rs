@@ -39,7 +39,12 @@ struct Opts {
     jedec_id: u8,
 
     /// JEDEC manufacturer product ID.
-    #[arg(long, value_parser = u8::from_str, default_value = "0x29")]
+    /// This ID consists of the following fields:
+    /// [[4 LSBs of ProductId] [1] [3 LSBs of RevisionId]]
+    /// For details, see also
+    /// - spi_device_init() in sw/device/silicon_creator/lib/drivers/spi_device.c, and
+    /// - ProductId and RevisionId in the top-level hjson file.
+    #[arg(long, value_parser = u8::from_str, default_value = "0x09")]
     jedec_product: u8,
 
     /// Size of the internal flash.
