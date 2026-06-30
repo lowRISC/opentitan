@@ -14,12 +14,14 @@ filegroup(
 cmake(
     name = "softhsm2",
     build_args = ["-j"],
+    build_data = ["@openssl//:gen_dir"],
     cache_entries = {
         "ENABLE_GOST": "OFF",
         "ENABLE_P11_KIT": "OFF",
         "ENABLE_STATIC": "OFF",
         "ENABLE_ECC": "ON",
         "WITH_CRYPTO_BACKEND": "openssl",
+        "OPENSSL_ROOT_DIR": "${OPENSSL}/install",
 
         # This build is for tests only.
         # "CMAKE_BUILD_TYPE": "Debug",
@@ -38,9 +40,13 @@ cmake(
         # "-DDEBUG_LOG_STDERR",
         # "-DSOFTHSM_LOG_FUNCTION_NAME",
     ],
+    env = {
+        "OPENSSL": "$$(dirname $(execpath @openssl//:gen_dir))",
+    },
     lib_source = ":all_srcs",
     out_binaries = ["softhsm2-util"],
     out_shared_libs = ["softhsm/libsofthsm2.so"],
+    deps = ["@openssl//:ssl"],
 )
 
 filegroup(
