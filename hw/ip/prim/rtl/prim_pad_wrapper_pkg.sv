@@ -14,6 +14,11 @@ package prim_pad_wrapper_pkg;
     DualBidirTol = 3'h6  // Dual Voltage tolerant pad
   } pad_type_e;
 
+  typedef enum logic {
+    OrientH = 1'b0, // Horizontal
+    OrientV = 1'b1  // Vertical
+  } pad_orient_e;
+
   typedef enum logic [1:0] {
     NoScan = 2'h0,
     ScanIn = 2'h1,

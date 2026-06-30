@@ -17,6 +17,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:darjeeling_fpv:pinmux_common_fpv:0.1
       - lowrisc:darjeeling_constants:top_pkg
+      - lowrisc:darjeeling_systems:pad_orient_pkg
       - lowrisc:darjeeling_systems:scan_role_pkg
     files:
       - tb/pinmux_chip_tb.sv
