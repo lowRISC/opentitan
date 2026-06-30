@@ -44,10 +44,6 @@ unit_tests = [
         srcs = srcs + [
             test + ".s",
         ],
-        # FIXME: Temporarily broken after 058efa9ca0 as the mldsa87_xof implementation
-        # refers to CSR `KMAC_INTR` which no longer exists. This should be fixed and
-        # then this tag removed.
-        tags = ["broken"],
         testcase = test + ".hjson",
     )
     for test in unit_tests
@@ -67,10 +63,6 @@ mldsa87_nist_tests = [
             "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen.s",
             "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_mem.s",
         ],
-        # FIXME: Temporarily broken after 058efa9ca0 as the mldsa87_xof implementation
-        # refers to CSR `KMAC_INTR` which no longer exists. This should be fixed and
-        # then this tag removed.
-        tags = ["broken"],
         testcase = test + ".hjson",
     )
     for test in mldsa87_nist_tests
