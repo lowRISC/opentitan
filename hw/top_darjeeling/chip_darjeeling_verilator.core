@@ -12,6 +12,7 @@ filesets:
       - lowrisc:ibex:ibex_tracer
       - lowrisc:prim:clock_div
       - lowrisc:systems:top_darjeeling_ast
+      - lowrisc:darjeeling_systems:pad_orient_pkg
       - lowrisc:darjeeling_systems:scan_role_pkg
       - lowrisc:prim_generic:all
     files:

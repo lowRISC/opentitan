@@ -262,6 +262,16 @@ module chip_${top["name"]}_${target["name"]} #(
       scan_role_pkg::${lib.Name.from_snake_case('mio_pad_' + pad["name"] + '_scan_role').as_camel_case()}${"" if loop.last else ","}
 % endfor
     }),
+    .DioPadOrient ({
+% for pad in list(reversed(dedicated_pads)):
+      pad_orient_pkg::${lib.Name.from_snake_case('dio_pad_' + pad["name"] + '_pad_orient').as_camel_case()}${"" if loop.last else ","}
+% endfor
+    }),
+    .MioPadOrient ({
+% for pad in list(reversed(muxed_pads)):
+      pad_orient_pkg::${lib.Name.from_snake_case('mio_pad_' + pad["name"] + '_pad_orient').as_camel_case()}${"" if loop.last else ","}
+% endfor
+    }),
     .DioPadBank ({
 % for pad in list(reversed(dedicated_pads)):
       ${lib.Name.from_snake_case('io_bank_' + pad["bank"]).as_camel_case()}${" " if loop.last else ","} // ${pad['name']}

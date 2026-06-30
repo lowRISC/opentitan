@@ -17,6 +17,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:earlgrey_fpv:pinmux_common_fpv:0.1
       - lowrisc:earlgrey_constants:top_pkg
+      - lowrisc:earlgrey_systems:pad_orient_pkg
       - lowrisc:earlgrey_systems:scan_role_pkg
     files:
       - tb/pinmux_chip_tb.sv

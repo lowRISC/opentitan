@@ -12,6 +12,7 @@ filesets:
       - lowrisc:ibex:ibex_tracer
       - lowrisc:prim:clock_div
       - lowrisc:systems:top_earlgrey_ast
+      - lowrisc:earlgrey_systems:pad_orient_pkg
       - lowrisc:earlgrey_systems:scan_role_pkg
       - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
       - lowrisc:prim_generic:all
