@@ -949,7 +949,7 @@
       tests: ["chip_sw_pwrmgr_wdog_reset"]
     }
     {
-      name: chip_sw_pwrmgr_aon_power_glitch_reset
+      name: chip_sw_pwrmgr_power_glitch_reset
       desc: '''Verify the cold boot sequence through an AON power glitch.
 
 
