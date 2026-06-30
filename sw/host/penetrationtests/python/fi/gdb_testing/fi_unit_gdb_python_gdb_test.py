@@ -37,11 +37,15 @@ gdbfi = None
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
 parser.add_argument("--bitstream", type=str)
+parser.add_argument("--rom", type=str)
+parser.add_argument("--otp", type=str)
 parser.add_argument("--bootstrap", type=str)
 
 args, config_args = parser.parse_known_args()
 
 BITSTREAM = args.bitstream
+ROM_VMEM = args.rom
+OTP_VMEM = args.otp
 BOOTSTRAP = args.bootstrap
 
 
@@ -521,6 +525,13 @@ if __name__ == "__main__":
     bitstream_path = None
     if BITSTREAM:
         bitstream_path = r.Rlocation("lowrisc_opentitan/" + BITSTREAM)
+    # Load the ROM/OTP memories for FPGAs.
+    rom_path = None
+    if ROM_VMEM:
+        rom_path = r.Rlocation("lowrisc_opentitan/" + ROM_VMEM)
+    otp_path = None
+    if OTP_VMEM:
+        otp_path = r.Rlocation("lowrisc_opentitan/" + OTP_VMEM)
     # Get the test result path
     log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
     # Get the firmware path.
@@ -541,6 +552,8 @@ if __name__ == "__main__":
         fw_bin=firmware_path,
         opentitantool=opentitantool_path,
         bitstream=bitstream_path,
+        rom_vmem=rom_path,
+        otp_vmem=otp_path,
         tool_args=config_args,
         openocd=openocd_path,
         openocd_chip_config=CONFIG_FILE_CHIP,

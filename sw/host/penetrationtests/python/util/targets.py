@@ -20,6 +20,8 @@ class TargetConfig:
     interface_type: Optional[str] = None
     pll_frequency: Optional[int] = None
     bitstream: Optional[str] = None
+    rom_vmem: Optional[str] = None
+    otp_vmem: Optional[str] = None
     force_program_bitstream: Optional[bool] = False
     port: Optional[str] = None
     read_timeout: Optional[int] = 1
@@ -56,6 +58,9 @@ class Target:
                 target_cfg.opentitantool,
                 target_cfg.fw_bin,
                 target_cfg.bitstream,
+                target_cfg.force_program_bitstream,
+                target_cfg.rom_vmem,
+                target_cfg.otp_vmem,
                 target_cfg.tool_args,
                 target_cfg.openocd,
                 target_cfg.openocd_chip_config,
