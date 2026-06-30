@@ -259,103 +259,103 @@ pub const USBDEV_BASE_ADDR: usize = 0x40320000;
 /// `USBDEV_BASE_ADDR + USBDEV_SIZE_BYTES`.
 pub const USBDEV_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for pwrmgr_aon in top earlgrey.
+/// Peripheral base address for pwrmgr in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const PWRMGR_AON_BASE_ADDR: usize = 0x40400000;
+pub const PWRMGR_BASE_ADDR: usize = 0x40400000;
 
-/// Peripheral size for pwrmgr_aon in top earlgrey.
+/// Peripheral size for pwrmgr in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #PWRMGR_AON_BASE_ADDR and
-/// `PWRMGR_AON_BASE_ADDR + PWRMGR_AON_SIZE_BYTES`.
-pub const PWRMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #PWRMGR_BASE_ADDR and
+/// `PWRMGR_BASE_ADDR + PWRMGR_SIZE_BYTES`.
+pub const PWRMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for rstmgr_aon in top earlgrey.
+/// Peripheral base address for rstmgr in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const RSTMGR_AON_BASE_ADDR: usize = 0x40410000;
+pub const RSTMGR_BASE_ADDR: usize = 0x40410000;
 
-/// Peripheral size for rstmgr_aon in top earlgrey.
+/// Peripheral size for rstmgr in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #RSTMGR_AON_BASE_ADDR and
-/// `RSTMGR_AON_BASE_ADDR + RSTMGR_AON_SIZE_BYTES`.
-pub const RSTMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #RSTMGR_BASE_ADDR and
+/// `RSTMGR_BASE_ADDR + RSTMGR_SIZE_BYTES`.
+pub const RSTMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for clkmgr_aon in top earlgrey.
+/// Peripheral base address for clkmgr in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const CLKMGR_AON_BASE_ADDR: usize = 0x40420000;
+pub const CLKMGR_BASE_ADDR: usize = 0x40420000;
 
-/// Peripheral size for clkmgr_aon in top earlgrey.
+/// Peripheral size for clkmgr in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #CLKMGR_AON_BASE_ADDR and
-/// `CLKMGR_AON_BASE_ADDR + CLKMGR_AON_SIZE_BYTES`.
-pub const CLKMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #CLKMGR_BASE_ADDR and
+/// `CLKMGR_BASE_ADDR + CLKMGR_SIZE_BYTES`.
+pub const CLKMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for sysrst_ctrl_aon in top earlgrey.
+/// Peripheral base address for sysrst_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SYSRST_CTRL_AON_BASE_ADDR: usize = 0x40430000;
+pub const SYSRST_CTRL_BASE_ADDR: usize = 0x40430000;
 
-/// Peripheral size for sysrst_ctrl_aon in top earlgrey.
+/// Peripheral size for sysrst_ctrl in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #SYSRST_CTRL_AON_BASE_ADDR and
-/// `SYSRST_CTRL_AON_BASE_ADDR + SYSRST_CTRL_AON_SIZE_BYTES`.
-pub const SYSRST_CTRL_AON_SIZE_BYTES: usize = 0x100;
+/// address between #SYSRST_CTRL_BASE_ADDR and
+/// `SYSRST_CTRL_BASE_ADDR + SYSRST_CTRL_SIZE_BYTES`.
+pub const SYSRST_CTRL_SIZE_BYTES: usize = 0x100;
 
-/// Peripheral base address for adc_ctrl_aon in top earlgrey.
+/// Peripheral base address for adc_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const ADC_CTRL_AON_BASE_ADDR: usize = 0x40440000;
+pub const ADC_CTRL_BASE_ADDR: usize = 0x40440000;
 
-/// Peripheral size for adc_ctrl_aon in top earlgrey.
+/// Peripheral size for adc_ctrl in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #ADC_CTRL_AON_BASE_ADDR and
-/// `ADC_CTRL_AON_BASE_ADDR + ADC_CTRL_AON_SIZE_BYTES`.
-pub const ADC_CTRL_AON_SIZE_BYTES: usize = 0x80;
+/// address between #ADC_CTRL_BASE_ADDR and
+/// `ADC_CTRL_BASE_ADDR + ADC_CTRL_SIZE_BYTES`.
+pub const ADC_CTRL_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for pinmux_aon in top earlgrey.
+/// Peripheral base address for pinmux in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const PINMUX_AON_BASE_ADDR: usize = 0x40460000;
+pub const PINMUX_BASE_ADDR: usize = 0x40460000;
 
-/// Peripheral size for pinmux_aon in top earlgrey.
+/// Peripheral size for pinmux in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #PINMUX_AON_BASE_ADDR and
-/// `PINMUX_AON_BASE_ADDR + PINMUX_AON_SIZE_BYTES`.
-pub const PINMUX_AON_SIZE_BYTES: usize = 0x1000;
+/// address between #PINMUX_BASE_ADDR and
+/// `PINMUX_BASE_ADDR + PINMUX_SIZE_BYTES`.
+pub const PINMUX_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for aon_timer_aon in top earlgrey.
+/// Peripheral base address for aon_timer in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const AON_TIMER_AON_BASE_ADDR: usize = 0x40470000;
+pub const AON_TIMER_BASE_ADDR: usize = 0x40470000;
 
-/// Peripheral size for aon_timer_aon in top earlgrey.
+/// Peripheral size for aon_timer in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #AON_TIMER_AON_BASE_ADDR and
-/// `AON_TIMER_AON_BASE_ADDR + AON_TIMER_AON_SIZE_BYTES`.
-pub const AON_TIMER_AON_SIZE_BYTES: usize = 0x40;
+/// address between #AON_TIMER_BASE_ADDR and
+/// `AON_TIMER_BASE_ADDR + AON_TIMER_SIZE_BYTES`.
+pub const AON_TIMER_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for ast in top earlgrey.
 ///
@@ -371,33 +371,33 @@ pub const AST_BASE_ADDR: usize = 0x40480000;
 /// `AST_BASE_ADDR + AST_SIZE_BYTES`.
 pub const AST_SIZE_BYTES: usize = 0x400;
 
-/// Peripheral base address for sensor_ctrl_aon in top earlgrey.
+/// Peripheral base address for sensor_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SENSOR_CTRL_AON_BASE_ADDR: usize = 0x40490000;
+pub const SENSOR_CTRL_BASE_ADDR: usize = 0x40490000;
 
-/// Peripheral size for sensor_ctrl_aon in top earlgrey.
+/// Peripheral size for sensor_ctrl in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #SENSOR_CTRL_AON_BASE_ADDR and
-/// `SENSOR_CTRL_AON_BASE_ADDR + SENSOR_CTRL_AON_SIZE_BYTES`.
-pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x80;
+/// address between #SENSOR_CTRL_BASE_ADDR and
+/// `SENSOR_CTRL_BASE_ADDR + SENSOR_CTRL_SIZE_BYTES`.
+pub const SENSOR_CTRL_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
+/// Peripheral base address for regs device on sram_ctrl_ret in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SRAM_CTRL_RET_AON_REGS_BASE_ADDR: usize = 0x40500000;
+pub const SRAM_CTRL_RET_REGS_BASE_ADDR: usize = 0x40500000;
 
-/// Peripheral size for regs device on sram_ctrl_ret_aon in top earlgrey.
+/// Peripheral size for regs device on sram_ctrl_ret in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
-/// `SRAM_CTRL_RET_AON_REGS_BASE_ADDR + SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
-pub const SRAM_CTRL_RET_AON_REGS_SIZE_BYTES: usize = 0x40;
+/// address between #SRAM_CTRL_RET_REGS_BASE_ADDR and
+/// `SRAM_CTRL_RET_REGS_BASE_ADDR + SRAM_CTRL_RET_REGS_SIZE_BYTES`.
+pub const SRAM_CTRL_RET_REGS_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for core device on flash_ctrl in top earlgrey.
 ///
@@ -637,11 +637,11 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
-/// Memory base address for ram memory on sram_ctrl_ret_aon in top earlgrey.
-pub const SRAM_CTRL_RET_AON_RAM_BASE_ADDR: usize = 0x40600000;
+/// Memory base address for ram memory on sram_ctrl_ret in top earlgrey.
+pub const SRAM_CTRL_RET_RAM_BASE_ADDR: usize = 0x40600000;
 
-/// Memory size for ram memory on sram_ctrl_ret_aon in top earlgrey.
-pub const SRAM_CTRL_RET_AON_RAM_SIZE_BYTES: usize = 0x1000;
+/// Memory size for ram memory on sram_ctrl_ret in top earlgrey.
+pub const SRAM_CTRL_RET_RAM_SIZE_BYTES: usize = 0x1000;
 
 /// Memory base address for mem memory on flash_ctrl in top earlgrey.
 pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
@@ -700,16 +700,16 @@ pub enum PlicPeripheral {
     SpiHost1 = 14,
     /// usbdev
     Usbdev = 15,
-    /// pwrmgr_aon
-    PwrmgrAon = 16,
-    /// sysrst_ctrl_aon
-    SysrstCtrlAon = 17,
-    /// adc_ctrl_aon
-    AdcCtrlAon = 18,
-    /// aon_timer_aon
-    AonTimerAon = 19,
-    /// sensor_ctrl_aon
-    SensorCtrlAon = 20,
+    /// pwrmgr
+    Pwrmgr = 16,
+    /// sysrst_ctrl
+    SysrstCtrl = 17,
+    /// adc_ctrl
+    AdcCtrl = 18,
+    /// aon_timer
+    AonTimer = 19,
+    /// sensor_ctrl
+    SensorCtrl = 20,
     /// flash_ctrl
     FlashCtrl = 21,
     /// hmac
@@ -750,11 +750,11 @@ impl TryFrom<u32> for PlicPeripheral {
             13 => Ok(Self::SpiHost0),
             14 => Ok(Self::SpiHost1),
             15 => Ok(Self::Usbdev),
-            16 => Ok(Self::PwrmgrAon),
-            17 => Ok(Self::SysrstCtrlAon),
-            18 => Ok(Self::AdcCtrlAon),
-            19 => Ok(Self::AonTimerAon),
-            20 => Ok(Self::SensorCtrlAon),
+            16 => Ok(Self::Pwrmgr),
+            17 => Ok(Self::SysrstCtrl),
+            18 => Ok(Self::AdcCtrl),
+            19 => Ok(Self::AonTimer),
+            20 => Ok(Self::SensorCtrl),
             21 => Ok(Self::FlashCtrl),
             22 => Ok(Self::Hmac),
             23 => Ok(Self::Kmac),
@@ -1078,20 +1078,20 @@ pub enum PlicIrqId {
     UsbdevLinkOutErr = 149,
     /// usbdev_av_setup_empty
     UsbdevAvSetupEmpty = 150,
-    /// pwrmgr_aon_wakeup
-    PwrmgrAonWakeup = 151,
-    /// sysrst_ctrl_aon_event_detected
-    SysrstCtrlAonEventDetected = 152,
-    /// adc_ctrl_aon_match_pending
-    AdcCtrlAonMatchPending = 153,
-    /// aon_timer_aon_wkup_timer_expired
-    AonTimerAonWkupTimerExpired = 154,
-    /// aon_timer_aon_wdog_timer_bark
-    AonTimerAonWdogTimerBark = 155,
-    /// sensor_ctrl_aon_io_status_change
-    SensorCtrlAonIoStatusChange = 156,
-    /// sensor_ctrl_aon_init_status_change
-    SensorCtrlAonInitStatusChange = 157,
+    /// pwrmgr_wakeup
+    PwrmgrWakeup = 151,
+    /// sysrst_ctrl_event_detected
+    SysrstCtrlEventDetected = 152,
+    /// adc_ctrl_match_pending
+    AdcCtrlMatchPending = 153,
+    /// aon_timer_wkup_timer_expired
+    AonTimerWkupTimerExpired = 154,
+    /// aon_timer_wdog_timer_bark
+    AonTimerWdogTimerBark = 155,
+    /// sensor_ctrl_io_status_change
+    SensorCtrlIoStatusChange = 156,
+    /// sensor_ctrl_init_status_change
+    SensorCtrlInitStatusChange = 157,
     /// flash_ctrl_prog_empty
     FlashCtrlProgEmpty = 158,
     /// flash_ctrl_prog_lvl
@@ -1301,13 +1301,13 @@ impl TryFrom<u32> for PlicIrqId {
             148 => Ok(Self::UsbdevPowered),
             149 => Ok(Self::UsbdevLinkOutErr),
             150 => Ok(Self::UsbdevAvSetupEmpty),
-            151 => Ok(Self::PwrmgrAonWakeup),
-            152 => Ok(Self::SysrstCtrlAonEventDetected),
-            153 => Ok(Self::AdcCtrlAonMatchPending),
-            154 => Ok(Self::AonTimerAonWkupTimerExpired),
-            155 => Ok(Self::AonTimerAonWdogTimerBark),
-            156 => Ok(Self::SensorCtrlAonIoStatusChange),
-            157 => Ok(Self::SensorCtrlAonInitStatusChange),
+            151 => Ok(Self::PwrmgrWakeup),
+            152 => Ok(Self::SysrstCtrlEventDetected),
+            153 => Ok(Self::AdcCtrlMatchPending),
+            154 => Ok(Self::AonTimerWkupTimerExpired),
+            155 => Ok(Self::AonTimerWdogTimerBark),
+            156 => Ok(Self::SensorCtrlIoStatusChange),
+            157 => Ok(Self::SensorCtrlInitStatusChange),
             158 => Ok(Self::FlashCtrlProgEmpty),
             159 => Ok(Self::FlashCtrlProgLvl),
             160 => Ok(Self::FlashCtrlRdFull),
@@ -1657,20 +1657,20 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 184] = [
     PlicPeripheral::Usbdev,
     // UsbdevAvSetupEmpty -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,
-    // PwrmgrAonWakeup -> PlicPeripheral::PwrmgrAon
-    PlicPeripheral::PwrmgrAon,
-    // SysrstCtrlAonEventDetected -> PlicPeripheral::SysrstCtrlAon
-    PlicPeripheral::SysrstCtrlAon,
-    // AdcCtrlAonMatchPending -> PlicPeripheral::AdcCtrlAon
-    PlicPeripheral::AdcCtrlAon,
-    // AonTimerAonWkupTimerExpired -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
-    // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
-    // SensorCtrlAonIoStatusChange -> PlicPeripheral::SensorCtrlAon
-    PlicPeripheral::SensorCtrlAon,
-    // SensorCtrlAonInitStatusChange -> PlicPeripheral::SensorCtrlAon
-    PlicPeripheral::SensorCtrlAon,
+    // PwrmgrWakeup -> PlicPeripheral::Pwrmgr
+    PlicPeripheral::Pwrmgr,
+    // SysrstCtrlEventDetected -> PlicPeripheral::SysrstCtrl
+    PlicPeripheral::SysrstCtrl,
+    // AdcCtrlMatchPending -> PlicPeripheral::AdcCtrl
+    PlicPeripheral::AdcCtrl,
+    // AonTimerWkupTimerExpired -> PlicPeripheral::AonTimer
+    PlicPeripheral::AonTimer,
+    // AonTimerWdogTimerBark -> PlicPeripheral::AonTimer
+    PlicPeripheral::AonTimer,
+    // SensorCtrlIoStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
+    // SensorCtrlInitStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
     // FlashCtrlProgEmpty -> PlicPeripheral::FlashCtrl
     PlicPeripheral::FlashCtrl,
     // FlashCtrlProgLvl -> PlicPeripheral::FlashCtrl
@@ -1764,24 +1764,24 @@ pub enum AlertPeripheral {
     SpiHost1 = 14,
     /// usbdev
     Usbdev = 15,
-    /// pwrmgr_aon
-    PwrmgrAon = 16,
-    /// rstmgr_aon
-    RstmgrAon = 17,
-    /// clkmgr_aon
-    ClkmgrAon = 18,
-    /// sysrst_ctrl_aon
-    SysrstCtrlAon = 19,
-    /// adc_ctrl_aon
-    AdcCtrlAon = 20,
-    /// pinmux_aon
-    PinmuxAon = 21,
-    /// aon_timer_aon
-    AonTimerAon = 22,
-    /// sensor_ctrl_aon
-    SensorCtrlAon = 23,
-    /// sram_ctrl_ret_aon
-    SramCtrlRetAon = 24,
+    /// pwrmgr
+    Pwrmgr = 16,
+    /// rstmgr
+    Rstmgr = 17,
+    /// clkmgr
+    Clkmgr = 18,
+    /// sysrst_ctrl
+    SysrstCtrl = 19,
+    /// adc_ctrl
+    AdcCtrl = 20,
+    /// pinmux
+    Pinmux = 21,
+    /// aon_timer
+    AonTimer = 22,
+    /// sensor_ctrl
+    SensorCtrl = 23,
+    /// sram_ctrl_ret
+    SramCtrlRet = 24,
     /// flash_ctrl
     FlashCtrl = 25,
     /// rv_dm
@@ -1863,30 +1863,30 @@ pub enum AlertId {
     SpiHost1FatalFault = 19,
     /// usbdev_fatal_fault
     UsbdevFatalFault = 20,
-    /// pwrmgr_aon_fatal_fault
-    PwrmgrAonFatalFault = 21,
-    /// rstmgr_aon_fatal_fault
-    RstmgrAonFatalFault = 22,
-    /// rstmgr_aon_fatal_cnsty_fault
-    RstmgrAonFatalCnstyFault = 23,
-    /// clkmgr_aon_recov_fault
-    ClkmgrAonRecovFault = 24,
-    /// clkmgr_aon_fatal_fault
-    ClkmgrAonFatalFault = 25,
-    /// sysrst_ctrl_aon_fatal_fault
-    SysrstCtrlAonFatalFault = 26,
-    /// adc_ctrl_aon_fatal_fault
-    AdcCtrlAonFatalFault = 27,
-    /// pinmux_aon_fatal_fault
-    PinmuxAonFatalFault = 28,
-    /// aon_timer_aon_fatal_fault
-    AonTimerAonFatalFault = 29,
-    /// sensor_ctrl_aon_recov_alert
-    SensorCtrlAonRecovAlert = 30,
-    /// sensor_ctrl_aon_fatal_alert
-    SensorCtrlAonFatalAlert = 31,
-    /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 32,
+    /// pwrmgr_fatal_fault
+    PwrmgrFatalFault = 21,
+    /// rstmgr_fatal_fault
+    RstmgrFatalFault = 22,
+    /// rstmgr_fatal_cnsty_fault
+    RstmgrFatalCnstyFault = 23,
+    /// clkmgr_recov_fault
+    ClkmgrRecovFault = 24,
+    /// clkmgr_fatal_fault
+    ClkmgrFatalFault = 25,
+    /// sysrst_ctrl_fatal_fault
+    SysrstCtrlFatalFault = 26,
+    /// adc_ctrl_fatal_fault
+    AdcCtrlFatalFault = 27,
+    /// pinmux_fatal_fault
+    PinmuxFatalFault = 28,
+    /// aon_timer_fatal_fault
+    AonTimerFatalFault = 29,
+    /// sensor_ctrl_recov_alert
+    SensorCtrlRecovAlert = 30,
+    /// sensor_ctrl_fatal_alert
+    SensorCtrlFatalAlert = 31,
+    /// sram_ctrl_ret_fatal_error
+    SramCtrlRetFatalError = 32,
     /// flash_ctrl_recov_err
     FlashCtrlRecovErr = 33,
     /// flash_ctrl_fatal_std_err
@@ -1974,18 +1974,18 @@ impl TryFrom<u32> for AlertId {
             18 => Ok(Self::SpiHost0FatalFault),
             19 => Ok(Self::SpiHost1FatalFault),
             20 => Ok(Self::UsbdevFatalFault),
-            21 => Ok(Self::PwrmgrAonFatalFault),
-            22 => Ok(Self::RstmgrAonFatalFault),
-            23 => Ok(Self::RstmgrAonFatalCnstyFault),
-            24 => Ok(Self::ClkmgrAonRecovFault),
-            25 => Ok(Self::ClkmgrAonFatalFault),
-            26 => Ok(Self::SysrstCtrlAonFatalFault),
-            27 => Ok(Self::AdcCtrlAonFatalFault),
-            28 => Ok(Self::PinmuxAonFatalFault),
-            29 => Ok(Self::AonTimerAonFatalFault),
-            30 => Ok(Self::SensorCtrlAonRecovAlert),
-            31 => Ok(Self::SensorCtrlAonFatalAlert),
-            32 => Ok(Self::SramCtrlRetAonFatalError),
+            21 => Ok(Self::PwrmgrFatalFault),
+            22 => Ok(Self::RstmgrFatalFault),
+            23 => Ok(Self::RstmgrFatalCnstyFault),
+            24 => Ok(Self::ClkmgrRecovFault),
+            25 => Ok(Self::ClkmgrFatalFault),
+            26 => Ok(Self::SysrstCtrlFatalFault),
+            27 => Ok(Self::AdcCtrlFatalFault),
+            28 => Ok(Self::PinmuxFatalFault),
+            29 => Ok(Self::AonTimerFatalFault),
+            30 => Ok(Self::SensorCtrlRecovAlert),
+            31 => Ok(Self::SensorCtrlFatalAlert),
+            32 => Ok(Self::SramCtrlRetFatalError),
             33 => Ok(Self::FlashCtrlRecovErr),
             34 => Ok(Self::FlashCtrlFatalStdErr),
             35 => Ok(Self::FlashCtrlFatalErr),
@@ -2068,30 +2068,30 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 63] = [
     AlertPeripheral::SpiHost1,
     // UsbdevFatalFault -> AlertPeripheral::Usbdev
     AlertPeripheral::Usbdev,
-    // PwrmgrAonFatalFault -> AlertPeripheral::PwrmgrAon
-    AlertPeripheral::PwrmgrAon,
-    // RstmgrAonFatalFault -> AlertPeripheral::RstmgrAon
-    AlertPeripheral::RstmgrAon,
-    // RstmgrAonFatalCnstyFault -> AlertPeripheral::RstmgrAon
-    AlertPeripheral::RstmgrAon,
-    // ClkmgrAonRecovFault -> AlertPeripheral::ClkmgrAon
-    AlertPeripheral::ClkmgrAon,
-    // ClkmgrAonFatalFault -> AlertPeripheral::ClkmgrAon
-    AlertPeripheral::ClkmgrAon,
-    // SysrstCtrlAonFatalFault -> AlertPeripheral::SysrstCtrlAon
-    AlertPeripheral::SysrstCtrlAon,
-    // AdcCtrlAonFatalFault -> AlertPeripheral::AdcCtrlAon
-    AlertPeripheral::AdcCtrlAon,
-    // PinmuxAonFatalFault -> AlertPeripheral::PinmuxAon
-    AlertPeripheral::PinmuxAon,
-    // AonTimerAonFatalFault -> AlertPeripheral::AonTimerAon
-    AlertPeripheral::AonTimerAon,
-    // SensorCtrlAonRecovAlert -> AlertPeripheral::SensorCtrlAon
-    AlertPeripheral::SensorCtrlAon,
-    // SensorCtrlAonFatalAlert -> AlertPeripheral::SensorCtrlAon
-    AlertPeripheral::SensorCtrlAon,
-    // SramCtrlRetAonFatalError -> AlertPeripheral::SramCtrlRetAon
-    AlertPeripheral::SramCtrlRetAon,
+    // PwrmgrFatalFault -> AlertPeripheral::Pwrmgr
+    AlertPeripheral::Pwrmgr,
+    // RstmgrFatalFault -> AlertPeripheral::Rstmgr
+    AlertPeripheral::Rstmgr,
+    // RstmgrFatalCnstyFault -> AlertPeripheral::Rstmgr
+    AlertPeripheral::Rstmgr,
+    // ClkmgrRecovFault -> AlertPeripheral::Clkmgr
+    AlertPeripheral::Clkmgr,
+    // ClkmgrFatalFault -> AlertPeripheral::Clkmgr
+    AlertPeripheral::Clkmgr,
+    // SysrstCtrlFatalFault -> AlertPeripheral::SysrstCtrl
+    AlertPeripheral::SysrstCtrl,
+    // AdcCtrlFatalFault -> AlertPeripheral::AdcCtrl
+    AlertPeripheral::AdcCtrl,
+    // PinmuxFatalFault -> AlertPeripheral::Pinmux
+    AlertPeripheral::Pinmux,
+    // AonTimerFatalFault -> AlertPeripheral::AonTimer
+    AlertPeripheral::AonTimer,
+    // SensorCtrlRecovAlert -> AlertPeripheral::SensorCtrl
+    AlertPeripheral::SensorCtrl,
+    // SensorCtrlFatalAlert -> AlertPeripheral::SensorCtrl
+    AlertPeripheral::SensorCtrl,
+    // SramCtrlRetFatalError -> AlertPeripheral::SramCtrlRet
+    AlertPeripheral::SramCtrlRet,
     // FlashCtrlRecovErr -> AlertPeripheral::FlashCtrl
     AlertPeripheral::FlashCtrl,
     // FlashCtrlFatalStdErr -> AlertPeripheral::FlashCtrl
@@ -2267,17 +2267,17 @@ pub enum PinmuxPeripheralIn {
     /// Peripheral Input 49
     FlashCtrlTdi = 49,
     /// Peripheral Input 50
-    SysrstCtrlAonAcPresent = 50,
+    SysrstCtrlAcPresent = 50,
     /// Peripheral Input 51
-    SysrstCtrlAonKey0In = 51,
+    SysrstCtrlKey0In = 51,
     /// Peripheral Input 52
-    SysrstCtrlAonKey1In = 52,
+    SysrstCtrlKey1In = 52,
     /// Peripheral Input 53
-    SysrstCtrlAonKey2In = 53,
+    SysrstCtrlKey2In = 53,
     /// Peripheral Input 54
-    SysrstCtrlAonPwrbIn = 54,
+    SysrstCtrlPwrbIn = 54,
     /// Peripheral Input 55
-    SysrstCtrlAonLidOpen = 55,
+    SysrstCtrlLidOpen = 55,
     /// Peripheral Input 56
     UsbdevSense = 56,
 }
@@ -2336,12 +2336,12 @@ impl TryFrom<u32> for PinmuxPeripheralIn {
             47 => Ok(Self::FlashCtrlTck),
             48 => Ok(Self::FlashCtrlTms),
             49 => Ok(Self::FlashCtrlTdi),
-            50 => Ok(Self::SysrstCtrlAonAcPresent),
-            51 => Ok(Self::SysrstCtrlAonKey0In),
-            52 => Ok(Self::SysrstCtrlAonKey1In),
-            53 => Ok(Self::SysrstCtrlAonKey2In),
-            54 => Ok(Self::SysrstCtrlAonPwrbIn),
-            55 => Ok(Self::SysrstCtrlAonLidOpen),
+            50 => Ok(Self::SysrstCtrlAcPresent),
+            51 => Ok(Self::SysrstCtrlKey0In),
+            52 => Ok(Self::SysrstCtrlKey1In),
+            53 => Ok(Self::SysrstCtrlKey2In),
+            54 => Ok(Self::SysrstCtrlPwrbIn),
+            55 => Ok(Self::SysrstCtrlLidOpen),
             56 => Ok(Self::UsbdevSense),
             _ => Err(val),
         }
@@ -2775,37 +2775,37 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 48
     FlashCtrlTdo = 51,
     /// Peripheral Output 49
-    SensorCtrlAonAstDebugOut0 = 52,
+    SensorCtrlAstDebugOut0 = 52,
     /// Peripheral Output 50
-    SensorCtrlAonAstDebugOut1 = 53,
+    SensorCtrlAstDebugOut1 = 53,
     /// Peripheral Output 51
-    SensorCtrlAonAstDebugOut2 = 54,
+    SensorCtrlAstDebugOut2 = 54,
     /// Peripheral Output 52
-    SensorCtrlAonAstDebugOut3 = 55,
+    SensorCtrlAstDebugOut3 = 55,
     /// Peripheral Output 53
-    SensorCtrlAonAstDebugOut4 = 56,
+    SensorCtrlAstDebugOut4 = 56,
     /// Peripheral Output 54
-    SensorCtrlAonAstDebugOut5 = 57,
+    SensorCtrlAstDebugOut5 = 57,
     /// Peripheral Output 55
-    SensorCtrlAonAstDebugOut6 = 58,
+    SensorCtrlAstDebugOut6 = 58,
     /// Peripheral Output 56
-    SensorCtrlAonAstDebugOut7 = 59,
+    SensorCtrlAstDebugOut7 = 59,
     /// Peripheral Output 57
-    SensorCtrlAonAstDebugOut8 = 60,
+    SensorCtrlAstDebugOut8 = 60,
     /// Peripheral Output 58
     OtpMacroTest0 = 61,
     /// Peripheral Output 59
-    SysrstCtrlAonBatDisable = 62,
+    SysrstCtrlBatDisable = 62,
     /// Peripheral Output 60
-    SysrstCtrlAonKey0Out = 63,
+    SysrstCtrlKey0Out = 63,
     /// Peripheral Output 61
-    SysrstCtrlAonKey1Out = 64,
+    SysrstCtrlKey1Out = 64,
     /// Peripheral Output 62
-    SysrstCtrlAonKey2Out = 65,
+    SysrstCtrlKey2Out = 65,
     /// Peripheral Output 63
-    SysrstCtrlAonPwrbOut = 66,
+    SysrstCtrlPwrbOut = 66,
     /// Peripheral Output 64
-    SysrstCtrlAonZ3Wakeup = 67,
+    SysrstCtrlZ3Wakeup = 67,
 }
 
 impl TryFrom<u32> for PinmuxOutsel {
@@ -2864,22 +2864,22 @@ impl TryFrom<u32> for PinmuxOutsel {
             49 => Ok(Self::SpiHost1Sck),
             50 => Ok(Self::SpiHost1Csb),
             51 => Ok(Self::FlashCtrlTdo),
-            52 => Ok(Self::SensorCtrlAonAstDebugOut0),
-            53 => Ok(Self::SensorCtrlAonAstDebugOut1),
-            54 => Ok(Self::SensorCtrlAonAstDebugOut2),
-            55 => Ok(Self::SensorCtrlAonAstDebugOut3),
-            56 => Ok(Self::SensorCtrlAonAstDebugOut4),
-            57 => Ok(Self::SensorCtrlAonAstDebugOut5),
-            58 => Ok(Self::SensorCtrlAonAstDebugOut6),
-            59 => Ok(Self::SensorCtrlAonAstDebugOut7),
-            60 => Ok(Self::SensorCtrlAonAstDebugOut8),
+            52 => Ok(Self::SensorCtrlAstDebugOut0),
+            53 => Ok(Self::SensorCtrlAstDebugOut1),
+            54 => Ok(Self::SensorCtrlAstDebugOut2),
+            55 => Ok(Self::SensorCtrlAstDebugOut3),
+            56 => Ok(Self::SensorCtrlAstDebugOut4),
+            57 => Ok(Self::SensorCtrlAstDebugOut5),
+            58 => Ok(Self::SensorCtrlAstDebugOut6),
+            59 => Ok(Self::SensorCtrlAstDebugOut7),
+            60 => Ok(Self::SensorCtrlAstDebugOut8),
             61 => Ok(Self::OtpMacroTest0),
-            62 => Ok(Self::SysrstCtrlAonBatDisable),
-            63 => Ok(Self::SysrstCtrlAonKey0Out),
-            64 => Ok(Self::SysrstCtrlAonKey1Out),
-            65 => Ok(Self::SysrstCtrlAonKey2Out),
-            66 => Ok(Self::SysrstCtrlAonPwrbOut),
-            67 => Ok(Self::SysrstCtrlAonZ3Wakeup),
+            62 => Ok(Self::SysrstCtrlBatDisable),
+            63 => Ok(Self::SysrstCtrlKey0Out),
+            64 => Ok(Self::SysrstCtrlKey1Out),
+            65 => Ok(Self::SysrstCtrlKey2Out),
+            66 => Ok(Self::SysrstCtrlPwrbOut),
+            67 => Ok(Self::SysrstCtrlZ3Wakeup),
             _ => Err(val),
         }
     }
@@ -2899,8 +2899,8 @@ pub enum DirectPads {
     SpiDeviceSd1 = 7,
     SpiDeviceSd2 = 8,
     SpiDeviceSd3 = 9,
-    SysrstCtrlAonEcRstL = 10,
-    SysrstCtrlAonFlashWpL = 11,
+    SysrstCtrlEcRstL = 10,
+    SysrstCtrlFlashWpL = 11,
     SpiDeviceSck = 12,
     SpiDeviceCsb = 13,
     SpiHost0Sck = 14,
@@ -2921,8 +2921,8 @@ impl TryFrom<u32> for DirectPads {
             7 => Ok(Self::SpiDeviceSd1),
             8 => Ok(Self::SpiDeviceSd2),
             9 => Ok(Self::SpiDeviceSd3),
-            10 => Ok(Self::SysrstCtrlAonEcRstL),
-            11 => Ok(Self::SysrstCtrlAonFlashWpL),
+            10 => Ok(Self::SysrstCtrlEcRstL),
+            11 => Ok(Self::SysrstCtrlFlashWpL),
             12 => Ok(Self::SpiDeviceSck),
             13 => Ok(Self::SpiDeviceCsb),
             14 => Ok(Self::SpiHost0Sck),
@@ -3045,12 +3045,12 @@ impl TryFrom<u32> for MuxedPads {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerWakeUps {
-    SysrstCtrlAonWkupReq = 0,
-    AdcCtrlAonWkupReq = 1,
-    PinmuxAonPinWkupReq = 2,
-    PinmuxAonUsbWkupReq = 3,
-    AonTimerAonWkupReq = 4,
-    SensorCtrlAonWkupReq = 5,
+    SysrstCtrlWkupReq = 0,
+    AdcCtrlWkupReq = 1,
+    PinmuxPinWkupReq = 2,
+    PinmuxUsbWkupReq = 3,
+    AonTimerWkupReq = 4,
+    SensorCtrlWkupReq = 5,
 }
 
 /// Reset Manager Software Controlled Resets
@@ -3071,8 +3071,8 @@ pub enum ResetManagerSwResets {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerResetRequests {
-    SysrstCtrlAonRstReq = 0,
-    AonTimerAonAonTimerRstReq = 1,
+    SysrstCtrlRstReq = 0,
+    AonTimerAonTimerRstReq = 1,
 }
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.

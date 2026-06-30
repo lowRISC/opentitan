@@ -282,25 +282,25 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   ////////////////////////////////////////////
-  // sram_ctrl_ret_aon
+  // sram_ctrl_ret
   ////////////////////////////////////////////
   // Compile-time random reset value for SRAM scrambling key.
-  parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetAonSramKey = {
+  parameter otp_ctrl_pkg::sram_key_t RndCnstSramCtrlRetSramKey = {
     128'hE6596E87_F9F973DB_98AAA293_568FD1F3
   };
 
   // Compile-time random reset value for SRAM scrambling nonce.
-  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetAonSramNonce = {
+  parameter otp_ctrl_pkg::sram_nonce_t RndCnstSramCtrlRetSramNonce = {
     128'h1A016593_9D819D15_18690E64_73CDB247
   };
 
   // Compile-time random bits for initial LFSR seed
-  parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlRetAonLfsrSeed = {
+  parameter sram_ctrl_pkg::lfsr_seed_t RndCnstSramCtrlRetLfsrSeed = {
     64'h93916350_57CA1045
   };
 
   // Compile-time random permutation for LFSR output
-  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetAonLfsrPerm = {
+  parameter sram_ctrl_pkg::lfsr_perm_t RndCnstSramCtrlRetLfsrPerm = {
     128'h3C430AB7_72748764_115009E0_39CC9BAF,
     256'hB2F9597D_48F9E77D_F31CEF66_3A3056C4_8D0E5E85_6BF4E209_8AA90661_877E4E2E
   };

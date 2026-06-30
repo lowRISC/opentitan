@@ -81,25 +81,25 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_pwrmgr_aon"
+      name:   "tl_pwrmgr"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rstmgr_aon"
+      name:   "tl_rstmgr"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_clkmgr_aon"
+      name:   "tl_clkmgr"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_pinmux_aon"
+      name:   "tl_pinmux"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -123,7 +123,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sensor_ctrl_aon"
+      name:   "tl_sensor_ctrl"
       act:    "req"
       package: "tlul_pkg"
     }
@@ -135,31 +135,31 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sram_ctrl_ret_aon__regs"
+      name:   "tl_sram_ctrl_ret__regs"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sram_ctrl_ret_aon__ram"
+      name:   "tl_sram_ctrl_ret__ram"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_aon_timer_aon"
+      name:   "tl_aon_timer"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_sysrst_ctrl_aon"
+      name:   "tl_sysrst_ctrl"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_adc_ctrl_aon"
+      name:   "tl_adc_ctrl"
       act:    "req"
       package: "tlul_pkg"
     }

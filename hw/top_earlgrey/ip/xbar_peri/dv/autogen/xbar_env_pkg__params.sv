@@ -37,16 +37,16 @@ tl_device_t xbar_devices[$] = '{
     '{"rv_timer", '{
         '{32'h40100000, 32'h401001ff}
     }},
-    '{"pwrmgr_aon", '{
+    '{"pwrmgr", '{
         '{32'h40400000, 32'h4040007f}
     }},
-    '{"rstmgr_aon", '{
+    '{"rstmgr", '{
         '{32'h40410000, 32'h4041007f}
     }},
-    '{"clkmgr_aon", '{
+    '{"clkmgr", '{
         '{32'h40420000, 32'h4042007f}
     }},
-    '{"pinmux_aon", '{
+    '{"pinmux", '{
         '{32'h40460000, 32'h40460fff}
     }},
     '{"otp_ctrl__core", '{
@@ -58,25 +58,25 @@ tl_device_t xbar_devices[$] = '{
     '{"lc_ctrl__regs", '{
         '{32'h40140000, 32'h401400ff}
     }},
-    '{"sensor_ctrl_aon", '{
+    '{"sensor_ctrl", '{
         '{32'h40490000, 32'h4049007f}
     }},
     '{"alert_handler", '{
         '{32'h40150000, 32'h401507ff}
     }},
-    '{"sram_ctrl_ret_aon__regs", '{
+    '{"sram_ctrl_ret__regs", '{
         '{32'h40500000, 32'h4050003f}
     }},
-    '{"sram_ctrl_ret_aon__ram", '{
+    '{"sram_ctrl_ret__ram", '{
         '{32'h40600000, 32'h40600fff}
     }},
-    '{"aon_timer_aon", '{
+    '{"aon_timer", '{
         '{32'h40470000, 32'h4047003f}
     }},
-    '{"sysrst_ctrl_aon", '{
+    '{"sysrst_ctrl", '{
         '{32'h40430000, 32'h404300ff}
     }},
-    '{"adc_ctrl_aon", '{
+    '{"adc_ctrl", '{
         '{32'h40440000, 32'h4044007f}
     }},
     '{"ast", '{
@@ -96,19 +96,19 @@ tl_host_t xbar_hosts[$] = '{
         "gpio",
         "spi_device",
         "rv_timer",
-        "pwrmgr_aon",
-        "rstmgr_aon",
-        "clkmgr_aon",
-        "pinmux_aon",
+        "pwrmgr",
+        "rstmgr",
+        "clkmgr",
+        "pinmux",
         "otp_ctrl__core",
         "otp_macro__prim",
         "lc_ctrl__regs",
-        "sensor_ctrl_aon",
+        "sensor_ctrl",
         "alert_handler",
         "ast",
-        "sram_ctrl_ret_aon__ram",
-        "sram_ctrl_ret_aon__regs",
-        "aon_timer_aon",
-        "adc_ctrl_aon",
-        "sysrst_ctrl_aon"}}
+        "sram_ctrl_ret__ram",
+        "sram_ctrl_ret__regs",
+        "aon_timer",
+        "adc_ctrl",
+        "sysrst_ctrl"}}
 };
