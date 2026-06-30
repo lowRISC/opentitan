@@ -220,6 +220,14 @@ test_suite(
 )
 
 manifest(d = {
+    "name": "manifest_base_address_mismatch",
+    "address_translation": hex(CONST.HARDENED_TRUE),
+    "manifest_base_address": "0x10000000",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+})
+
+manifest(d = {
     "name": "bad_manifest",
     "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.OWNER),
@@ -246,6 +254,33 @@ opentitan_test(
     qemu = qemu_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
         exit_success = "BFV:054d410d",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_test(
+    name = "bad_base_address_manifest_test",
+    srcs = [":boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    fpga = fpga_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # Because our bad manifest has an invalid base address, we should
+        # expect kErrorManifestBadBaseAddress from the ROM_EXT.
+        exit_success = "BFV:064d410d",
+    ),
+    manifest = ":manifest_base_address_mismatch",
+    qemu = qemu_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        exit_success = "BFV:064d410d",
     ),
     deps = [
         "//sw/device/lib/base:status",
