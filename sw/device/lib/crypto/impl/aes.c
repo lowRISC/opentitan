@@ -364,16 +364,16 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Construct the IV and check its length. ECB mode will ignore the IV, so in
   // this case it is left uninitialized.
   aes_block_t aes_iv;
-  if (aes_mode == kOtcryptoAesModeEcb) {
-    HARDENED_CHECK_EQ(launder32(aes_mode), kOtcryptoAesModeEcb);
+  if (launder32(aes_mode) == kOtcryptoAesModeEcb) {
+    HARDENED_CHECK_EQ(aes_mode, kOtcryptoAesModeEcb);
   } else {
     HARDENED_CHECK_NE(launder32(aes_mode), kOtcryptoAesModeEcb);
 
     // The IV must be exactly one block long.
-    if (iv->len != kAesBlockNumWords) {
+    if (launder32(iv->len) != kAesBlockNumWords) {
       return OTCRYPTO_BAD_ARGS;
     }
-    HARDENED_CHECK_EQ(launder32(iv->len), kAesBlockNumWords);
+    HARDENED_CHECK_EQ(iv->len, kAesBlockNumWords);
     HARDENED_TRY(hardened_memcpy(aes_iv.data, iv->data, kAesBlockNumWords));
   }
 

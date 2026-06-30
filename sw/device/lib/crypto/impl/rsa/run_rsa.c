@@ -160,10 +160,10 @@ static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
 
   // Check that the inferred result size matches expectations.
-  if (num_words != num_words_inferred) {
+  if (launder32(num_words) != num_words_inferred) {
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_EQ(launder32(num_words), num_words_inferred);
+  HARDENED_CHECK_EQ(num_words, num_words_inferred);
 
   HARDENED_TRY(rsa_check_otbn_status());
 
@@ -236,10 +236,10 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   uint32_t act_mode = 0;
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
-  if (act_mode != exp_mode) {
+  if (launder32(act_mode) != exp_mode) {
     return OTCRYPTO_RECOV_ERR;
   }
-  HARDENED_CHECK_EQ(launder32(act_mode), exp_mode);
+  HARDENED_CHECK_EQ(act_mode, exp_mode);
 
   // Make sure that an exact amount of Miller-Rabin iterations have been
   // performed for both primes p and q.
@@ -248,19 +248,19 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
   // Prime p.
   const otbn_addr_t kOtbnVarRsaMrIterP = OTBN_ADDR_T_INIT(run_rsa, mr_iter_p);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterP, &mr_iters));
-  if (mr_iters != kMrIters) {
+  if (launder32(mr_iters) != kMrIters) {
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
+  HARDENED_CHECK_EQ(mr_iters, kMrIters);
 
   // Prime q.
   mr_iters = 0;
   const otbn_addr_t kOtbnVarRsaMrIterQ = OTBN_ADDR_T_INIT(run_rsa, mr_iter_q);
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMrIterQ, &mr_iters));
-  if (mr_iters != kMrIters) {
+  if (launder32(mr_iters) != kMrIters) {
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_EQ(launder32(mr_iters), kMrIters);
+  HARDENED_CHECK_EQ(mr_iters, kMrIters);
 
   // Read the public modulus (n) from OTBN dmem.
   const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
