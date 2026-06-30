@@ -14,7 +14,6 @@ dependencies = [
   "hjson==3.1.0",
   "libclang==16.0.0",
   "libcst ~= 1.1",
-  "lz4 == 4.4.5",
   "mako ~= 1.2",
   "ninja ~= 1.11.1.1",
   "pluralizer==1.2.0",
