@@ -203,6 +203,9 @@ def main(args_in):
     if db.DeviceRecord.query(db_handle, dut.device_id.to_hexstr()) is not None:
         logging.warning(
             "DeviceId already exists in database. Overwrite record?")
+        if args.non_interactive:
+            logging.error("Cannot overwrite database record in non-interactive mode.")
+            sys.exit(1)
         confirm()
 
     # Register the DUT in the database.

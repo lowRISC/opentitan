@@ -74,6 +74,7 @@ class OtDut():
         Retuns:
             The extracted JSON data.
         """
+        json_data = {}
         with open(log_file, "r", encoding='utf-8', errors='ignore') as f:
             log_data = f.read()
 
@@ -85,10 +86,16 @@ class OtDut():
                 json_data = hjson.loads(json_string)
             except hjson.HjsonDecodeError as e:
                 logging.error(f"Failed to parse {key}: {e}")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
+                else:
+                    sys.exit(1)
         else:
             logging.error(f"{key} not found.")
-            confirm()
+            if self.require_confirmation:
+                confirm()
+            else:
+                sys.exit(1)
         return json_data
 
     def _base_dev_dir(self) -> str:
@@ -153,7 +160,10 @@ class OtDut():
 
             if res.returncode != 0:
                 logging.warning(f"CP failed with exit code: {res.returncode}.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
+                else:
+                    sys.exit(res.returncode)
 
             # Extract CP device ID.
             chip_probe_data = self._extract_json_data("CHIP_PROBE_DATA",
@@ -161,7 +171,10 @@ class OtDut():
             din_from_device = None
             if "cp_device_id" not in chip_probe_data:
                 logging.error("cp_device_id not found in CHIP_PROBE_DATA.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
+                else:
+                    sys.exit(1)
             else:
                 # This can occur if the orchestrator is provisioning a chip that
                 # has already run through CP, and only needs to execute FT.
@@ -296,7 +309,10 @@ class OtDut():
             res = run(cmd, stdout_logfile, stderr_logfile)
             if res.returncode != 0:
                 logging.warning(f"FT failed with exit code: {res.returncode}.")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
+                else:
+                    sys.exit(res.returncode)
 
             self.ft_data = self._extract_json_data("PROVISIONING_DATA",
                                                    stdout_logfile)

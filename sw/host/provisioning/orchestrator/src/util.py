@@ -6,6 +6,7 @@ import logging
 import os
 import shlex
 import subprocess
+import sys
 
 from python.runfiles import Runfiles
 
@@ -47,10 +48,13 @@ def bcd_encode(x: int) -> int:
 
 def confirm():
     """Get user confirmation to continue."""
+    if not sys.stdin.isatty():
+        logging.error("Non-interactive environment detected. Cannot confirm. Aborting.")
+        sys.exit(1)
     confirm = input("Type confirm to continue: ")
     if confirm != "confirm":
         logging.info("Did not receive confirmation from user. Aborting.")
-        exit(1)
+        sys.exit(1)
 
 
 def run(cmd, stdout_logfile, stderr_logfile):
