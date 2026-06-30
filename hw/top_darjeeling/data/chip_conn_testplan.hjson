@@ -428,9 +428,9 @@
             - rstmgr clk_aon_i
             '''
       stage: V2
-      tests: ["clkmgr_powerup_clk_pinmux_aon_clk",
+      tests: ["clkmgr_powerup_clk_pinmux_clk",
               "clkmgr_powerup_clk_pwrmgr_slow_clk",
-              "clkmgr_powerup_clk_rstmgr_aon_clk"]
+              "clkmgr_powerup_clk_rstmgr_clk"]
       tags: ["conn"]
     }
     {
@@ -503,7 +503,7 @@
             - sensor_ctrl clk_aon_i
             '''
       stage: V2
-      tests: ["clkmgr_secure_clk_sensor_ctrl_aon_clk"]
+      tests: ["clkmgr_secure_clk_sensor_ctrl_clk"]
       tags: ["conn"]
     }
 
@@ -525,7 +525,7 @@
       name: clkmgr_clk_aon_timers
       desc: '''Verify clkmgr's `clk_aon_timers` is connected to aon_timer's aon clock.'''
       stage: V2
-      tests: ["clkmgr_timers_clk_aon_timer_aon_clk"]
+      tests: ["clkmgr_timers_clk_aon_timer_clk"]
       tags: ["conn"]
     }
 
