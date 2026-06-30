@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
