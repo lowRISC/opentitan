@@ -112,7 +112,7 @@
                   Write 1 to trigger the bkdr_loader to clear the entire target memory
                   that is currently selected by `TARGET_IDX`.
                   The word that is cleared with is selected by `WRITE_DATA`.
-                  Clear operation is completed if `CLEAR_IDLE` becomes 1.
+                  Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
                   bkdr writes will not have any effects during an active clear operation.
                   ''',
           },
@@ -136,6 +136,24 @@
             name: "VAL"
             swaccess: "ro",
             hwaccess: "hwo",
+            desc: '''
+                  ''',
+          }
+        ]
+      }
+      { name: "MISSION_MODE_SWITCH_DELAY",
+        desc: '''
+          Number of SoC clock cycles to wait before executing switch to mission mode
+          after writing CONTROL.DONE register.
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            resval: "25000"
+            swaccess: "rw",
+            hwaccess: "hro",
             desc: '''
                   ''',
           }
