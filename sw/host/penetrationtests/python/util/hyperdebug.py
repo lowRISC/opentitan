@@ -23,6 +23,9 @@ class HyperDebug:
         opentitantool,
         fw_bin,
         bitstream,
+        force_program_bitstream,
+        rom_vmem,
+        otp_vmem,
         tool_args,
         openocd,
         openocd_chip_config,
@@ -31,6 +34,9 @@ class HyperDebug:
         self.opentitantool = opentitantool
         self.fw_bin = fw_bin
         self.bitstream = bitstream
+        self.force_program_bitstream = force_program_bitstream
+        self.rom_vmem = rom_vmem
+        self.otp_vmem = otp_vmem
         self.tool_args = tool_args
         self.openocd = openocd
         self.openocd_chip_config = openocd_chip_config
@@ -40,8 +46,18 @@ class HyperDebug:
     def initialize_target(self, print_output=True):
         # Programming the bitstream via the opentitantool seems to block
         # communication, programming it twice seems to solve the problem
+        self.program_bitstream(
+            self.bitstream, force=self.force_program_bitstream, print_output=print_output,
+        )
         self.program_bitstream(self.bitstream, print_output=print_output)
-        self.program_bitstream(self.bitstream, print_output=print_output)
+
+        self.program_memories(
+            self.rom_vmem,
+            self.otp_vmem,
+            self.openocd,
+            self.openocd_chip_config,
+            print_output=print_output,
+        )
 
         self.flash_target(self.fw_bin, print_output=print_output)
 
@@ -62,14 +78,24 @@ class HyperDebug:
             print(f"Error: Failed to clear the bitstream.\nStderr: {e.stderr}", file=sys.stderr)
             raise
 
-    def program_bitstream(self, bitstream, program_delay=2, print_output=True):
+    def program_bitstream(
+        self,
+        bitstream: str | None = None,
+        *,
+        program_delay: float = 2.0,
+        force: bool = False,
+        print_output: bool = True,
+    ) -> None:
         if not bitstream:
             return
 
+        load_cmd = f"fpga load-bitstream {bitstream}"
+        if force:
+            load_cmd += " --force"
         command = (
             [self.opentitantool]
             + self.tool_args
-            + ["--exec", "transport init", "--exec", f"fpga load-bitstream {bitstream}", "no-op"]
+            + ["--exec", "transport init", "--exec", load_cmd, "no-op"]
         )
         try:
             result = run(command, check=True, capture_output=True, text=True)
@@ -77,6 +103,58 @@ class HyperDebug:
                 time.sleep(program_delay)
             if print_output:
                 print(f"Info: FPGA programmed with {bitstream}.")
+        except CalledProcessError as e:
+            print(f"Error: Failed to program the bitstream.\nStderr: {e.stderr}", file=sys.stderr)
+            raise
+
+    def program_memories(
+        self,
+        rom_vmem: str | None = None,
+        otp_vmem: str | None = None,
+        openocd_bin: str | None = None,
+        openocd_cfg: str | None = None,
+        *,
+        program_delay: float | None = None,
+        print_output: bool = True,
+    ) -> None:
+        if not rom_vmem and not otp_vmem:
+            return
+        if not openocd_bin:
+            # We can use OpenTitanTool's default JTAG adapter cfg, but we need the
+            # patched OpenOCD binary itself to be provided.
+            raise RuntimeError("OpenOCD binary not provided for programming ROM/OTP to FPGA.")
+
+        # List of FPGA target memories to clear for each test to make sure state does not persist.
+        # This encompasses Retention SRAM and Flash (both info & data pages).
+        clear_targets = (
+            "AON", "FB0", "FI00", "FI01", "FI02", "FB1", "FI10", "FI11", "FI12"
+        )
+        backdoor_writes = " ".join(f"--clear {target}=ALL" for target in clear_targets)
+        if rom_vmem:
+            backdoor_writes += f" --write ROM={rom_vmem}"
+        if otp_vmem:
+            backdoor_writes += f" --write OTP={otp_vmem}"
+        openocd_opts = f"--openocd={openocd_bin} --openocd-adapter-config={openocd_cfg}"
+
+        command = (
+            [self.opentitantool]
+            + self.tool_args
+            + [
+                "--exec", "transport init",
+                "--exec", "fpga backdoor enter",
+                "--exec", f"fpga backdoor {openocd_opts} batch {backdoor_writes} --start",
+                "no-op"
+            ]
+        )
+        try:
+            run(command, check=True, capture_output=True)
+            if program_delay:
+                time.sleep(program_delay)
+            if print_output:
+                if rom_vmem:
+                    print(f"Info: FPGA programmed with ROM={rom_vmem}")
+                if otp_vmem:
+                    print(f"Info: FPGA programmed with OTP={otp_vmem}")
         except CalledProcessError as e:
             print(f"Error: Failed to program the bitstream.\nStderr: {e.stderr}", file=sys.stderr)
             raise
