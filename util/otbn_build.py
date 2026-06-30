@@ -43,8 +43,6 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import List, Optional, Tuple
-import re
-import lz4.block
 
 import otbn_as
 import otbn_ld
@@ -214,24 +212,6 @@ def get_otbn_syms(elf_path: str) -> List[Tuple[str, int]]:
             return ret
 
 
-def compress_chunked(data: bytes, chunk_size: int = 1024) -> bytes:
-    # If there is no data (e.g., empty DMEM section),
-    # return a single 4-byte dummy header
-    # to prevent objcopy from crashing on an empty file.
-    if not data:
-        return bytes([0, 0, 0, 0])
-
-    result = bytearray()
-    for i in range(0, len(data), chunk_size):
-        chunk = data[i: i + chunk_size]
-        comp = lz4.block.compress(chunk, mode='high_compression', store_size=False)
-        # 4-byte header per chunk
-        result += len(comp).to_bytes(2, byteorder='little')
-        result += len(chunk).to_bytes(2, byteorder='little')
-        result += comp
-    return bytes(result)
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=__doc__,
@@ -325,15 +305,8 @@ def main() -> int:
         # the objcopy.
         host_side_pfx = '_otbn_local_app_{}_'.format(app_name)
         otbn_side_pfx = '_otbn_remote_app_{}_'.format(app_name)
-        # Compute the CRC32 checksum and add it as a constant. Ibex can use
-        # this with the LOAD_CHECKSUM register to ensure the app was loaded
-        # correctly.
-        checksum = get_app_checksum(out_elf)
         out_embedded_obj = out_dir / (app_name + '.rv32embed.o')
-
-        # Generate the uncompressed object
-        uncomp_obj = out_dir / f"{app_name}_uncomp.o"
-        uncomp_args = [
+        args = [
             '-O', 'elf32-littleriscv',
             '--set-section-flags=*=alloc,load,readonly',
             '--remove-section=.scratchpad', '--remove-section=.bss',
@@ -341,65 +314,22 @@ def main() -> int:
             '--prefix-sections=.rodata.otbn', '--prefix-symbols', host_side_pfx
         ]
         for name, addr in get_otbn_syms(out_elf):
-            uncomp_args += ['--add-symbol', f'{otbn_side_pfx}{name}=0x{addr:x}']
-        uncomp_args += ['--add-symbol', f'{otbn_side_pfx}_checksum={checksum:#x}']
+            args += ['--add-symbol', f'{otbn_side_pfx}{name}=0x{addr:x}']
 
-        call_rv32_objcopy(uncomp_args + [str(out_elf), str(uncomp_obj)])
+        # Compute the CRC32 checksum and add it as a constant. Ibex can use
+        # this with the LOAD_CHECKSUM register to ensure the app was loaded
+        # correctly.
+        checksum = get_app_checksum(out_elf)
+        args += ['--add-symbol', f'{otbn_side_pfx}_checksum={checksum:#x}']
 
-        # Generate the compressed object using LZ4
-        imem_bin = out_dir / f"{app_name}_imem.bin"
-        dmem_bin = out_dir / f"{app_name}_dmem.bin"
-        call_rv32_objcopy(['-O', 'binary', '-j', '.text', str(out_elf), str(imem_bin)])
-        call_rv32_objcopy(['-O', 'binary', '-j', '.data', str(out_elf), str(dmem_bin)])
+        call_rv32_objcopy(args + [out_elf, out_embedded_obj])
 
-        imem_compressed = out_dir / f"{app_name}_imem.lz4"
-        dmem_compressed = out_dir / f"{app_name}_dmem.lz4"
-
-        with open(imem_bin, 'rb') as f_in, open(imem_compressed, 'wb') as f_out:
-            imem_data = f_in.read()
-            imem_uncompressed_bytes = len(imem_data)
-            f_out.write(compress_chunked(imem_data, chunk_size=1024))
-
-        with open(dmem_bin, 'rb') as f_in, open(dmem_compressed, 'wb') as f_out:
-            dmem_data = f_in.read()
-            dmem_uncompressed_bytes = len(dmem_data)
-            f_out.write(compress_chunked(dmem_data, chunk_size=1024))
-
-        imem_obj = out_dir / f"{app_name}_imem.o"
-        dmem_obj = out_dir / f"{app_name}_dmem.o"
-        call_rv32_objcopy(['-I', 'binary', '-O', 'elf32-littleriscv', '-B',
-                           'riscv', str(imem_compressed), str(imem_obj)])
-        call_rv32_objcopy(['-I', 'binary', '-O', 'elf32-littleriscv', '-B',
-                           'riscv', str(dmem_compressed), str(dmem_obj)])
-
-        comp_obj_intermediate = out_dir / f"{app_name}_comp_intermediate.o"
-        rv32_tool_ld = os.environ.get('RV32_TOOL_LD', 'riscv32-unknown-elf-ld')
-        run_cmd([rv32_tool_ld, '-r', '-m', 'elf32lriscv',
-                 '-o', str(comp_obj_intermediate), str(imem_obj), str(dmem_obj)])
-
-        def path_to_sym(path):
-            return '_binary_' + re.sub(r'[^a-zA-Z0-9]', '_', str(path))
-
-        imem_sym_base = path_to_sym(imem_compressed)
-        dmem_sym_base = path_to_sym(dmem_compressed)
-
-        comp_obj = out_dir / f"{app_name}_comp.o"
-        comp_args = [
-            '--rename-section', '.data=.rodata.otbn.compressed,alloc,load,readonly,data,contents',
-            '--redefine-sym', f"{imem_sym_base}_start={host_side_pfx}imem_compressed_start",
-            '--redefine-sym', f"{imem_sym_base}_end={host_side_pfx}imem_compressed_end",
-            '--redefine-sym', f"{dmem_sym_base}_start={host_side_pfx}dmem_compressed_start",
-            '--redefine-sym', f"{dmem_sym_base}_end={host_side_pfx}dmem_compressed_end",
-            '--add-symbol', f'{otbn_side_pfx}imem_uncompressed_bytes={imem_uncompressed_bytes}',
-            '--add-symbol', f'{otbn_side_pfx}dmem_uncompressed_bytes={dmem_uncompressed_bytes}',
-        ]
-        call_rv32_objcopy(comp_args + [str(comp_obj_intermediate), str(comp_obj)])
-
-        # Merge the uncompressed and compressed object into a single binary
-        # We rely on the garbage collection to filter out the unused binary
-        run_cmd([rv32_tool_ld, '-r', '-m', 'elf32lriscv',
-                 '-o', str(out_embedded_obj), str(uncomp_obj), str(comp_obj)])
-
+        # After objcopy has finished, we have to do a little surgery to
+        # overwrite the ELF e_type field (a 16-bit little-endian number at file
+        # offset 0x10). It will currently be 0x2 (ET_EXEC), which means a
+        # fully-linked executable file. Binutils doesn't want to link with
+        # anything of type ET_EXEC (since it usually wouldn't make any sense to
+        # do so). Hack the type to be 0x1 (ET_REL), which means an object file.
         with open(out_embedded_obj, 'r+b') as emb_file:
             emb_file.seek(0x10)
             emb_file.write(b'\1\0')
