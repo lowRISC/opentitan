@@ -234,16 +234,16 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   hmac_key_t hmac_key;
   HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key));
 
-  if (key->config.security_level == kOtcryptoKeySecurityLevelLow) {
+  if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     // No protection against FI.
-    HARDENED_CHECK_EQ(launder32(key->config.security_level),
-                      kOtcryptoKeySecurityLevelLow);
+    HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);
     return otcrypto_eval_exit(cl_fn(&hmac_key, input_message, tag));
-  } else if (key->config.security_level == kOtcryptoKeySecurityLevelMedium) {
+  } else if (launder32(key->config.security_level) ==
+             kOtcryptoKeySecurityLevelMedium) {
     // Call the HMAC core twice and compare both tags. This serves as a FI
     // countermeasure.
     // First HMAC computation using the HMAC core.
-    HARDENED_CHECK_EQ(launder32(key->config.security_level),
+    HARDENED_CHECK_EQ(key->config.security_level,
                       kOtcryptoKeySecurityLevelMedium);
     HARDENED_TRY(cl_fn(&hmac_key, input_message, tag));
     // Second HMAC computation using the HMAC core.

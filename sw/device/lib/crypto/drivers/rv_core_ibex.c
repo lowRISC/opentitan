@@ -78,18 +78,18 @@ status_t ibex_disable_icache(hardened_bool_t *icache_enabled) {
   // Check if the instruction cache is already disabled.
   uint32_t csr;
   CSR_READ(CSR_REG_CPUCTRL, &csr);
-  if ((csr & kCpuctrlICacheMask) == 1) {
+  if (launder32(csr & kCpuctrlICacheMask) == 1) {
     *icache_enabled = kHardenedBoolTrue;
   } else {
     *icache_enabled = kHardenedBoolFalse;
-    HARDENED_CHECK_EQ(launder32((csr & kCpuctrlICacheMask)), 0);
+    HARDENED_CHECK_EQ(csr & kCpuctrlICacheMask, 0);
   }
 
   // If the instruction cache is enabled, disable it.
-  if (*icache_enabled == kHardenedBoolTrue) {
+  if (launder32(*icache_enabled) == kHardenedBoolTrue) {
     CSR_CLEAR_BITS(CSR_REG_CPUCTRL, kCpuctrlICacheMask);
   } else {
-    HARDENED_CHECK_EQ(launder32(*icache_enabled), kHardenedBoolFalse);
+    HARDENED_CHECK_EQ(*icache_enabled, kHardenedBoolFalse);
   }
 
   return LAUNDERED_OTCRYPTO_OK;
