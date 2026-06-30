@@ -45,30 +45,15 @@ static status_t run_negative_test(void) {
   // Test memory boundary check (offset + length exceeds memory)
   CHECK(otbn_dmem_read(0xFFFFFFFF, 0, NULL).value == OTCRYPTO_BAD_ARGS.value);
 
-  // Dummy byte array for testing invalid pointers
-  static const uint8_t kDummyMem[] = {0};
-
-  // App range check (imem_compressed_end comes before imem_compressed_start)
-  otbn_app_t bad_range_app = {.imem_compressed_start = kDummyMem + 1,
-                              .imem_compressed_end = kDummyMem,  // Backwards!
-                              .imem_uncompressed_words = 1,
-                              .dmem_compressed_start = kDummyMem,
-                              .dmem_compressed_end = kDummyMem,
-                              .dmem_uncompressed_words = 0,
+  // App range check (imem_end comes before imem_start)
+  static const uint32_t kDummyMem[] = {0};
+  otbn_app_t bad_range_app = {.imem_start = kDummyMem + 1,
+                              .imem_end = kDummyMem,  // Backwards!
+                              .dmem_data_start = kDummyMem,
+                              .dmem_data_end = kDummyMem,
                               .dmem_data_start_addr = 0,
                               .checksum = 0};
   CHECK(otbn_load_app(bad_range_app).value == OTCRYPTO_BAD_ARGS.value);
-
-  // App range check (imem uncompressed size is 0 - not allowed)
-  otbn_app_t empty_imem_app = {.imem_compressed_start = kDummyMem,
-                               .imem_compressed_end = kDummyMem + 1,
-                               .imem_uncompressed_words = 0,  // Empty!
-                               .dmem_compressed_start = kDummyMem,
-                               .dmem_compressed_end = kDummyMem,
-                               .dmem_uncompressed_words = 0,
-                               .dmem_data_start_addr = 0,
-                               .checksum = 0};
-  CHECK(otbn_load_app(empty_imem_app).value == OTCRYPTO_BAD_ARGS.value);
 
   // Force OTBN out of the IDLE state by manually triggering a Secure Wipe.
   abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, CMD_SEC_WIPE_DMEM);
@@ -80,21 +65,13 @@ static status_t run_negative_test(void) {
   CHECK(otbn_set_ctrl_software_errs_fatal(true).value == OTCRYPTO_OK.value);
   CHECK(otbn_set_ctrl_software_errs_fatal(false).value == OTCRYPTO_OK.value);
 
-  // Test bad checksum
-  // We provide a tiny valid compressed block (0x40 = 4 literals, followed by
-  // four 0x00 bytes) so decompression succeeds, ensuring we actually hit the
-  // checksum verification failure.
-  static const uint8_t kValidLz4[] = {0x40, 0x00, 0x00, 0x00, 0x00};
-
-  otbn_app_t bad_checksum_app = {
-      .imem_compressed_start = kValidLz4,
-      .imem_compressed_end = kValidLz4 + sizeof(kValidLz4),
-      .imem_uncompressed_words = 1,
-      .dmem_compressed_start = kDummyMem,
-      .dmem_compressed_end = kDummyMem,
-      .dmem_uncompressed_words = 0,
-      .dmem_data_start_addr = 0,
-      .checksum = 0xDEADBEEF};
+  // 6. Test bad checksum
+  otbn_app_t bad_checksum_app = {.imem_start = kDummyMem,
+                                 .imem_end = kDummyMem + 1,
+                                 .dmem_data_start = kDummyMem,
+                                 .dmem_data_end = kDummyMem + 1,
+                                 .dmem_data_start_addr = 0,
+                                 .checksum = 0xDEADBEEF};
   CHECK(otbn_load_app(bad_checksum_app).value == OTCRYPTO_FATAL_ERR.value);
 
   return OTCRYPTO_OK;

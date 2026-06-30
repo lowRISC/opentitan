@@ -34,6 +34,7 @@
  * $ ./otbn_test_params.py ecc otbn_ecdsa_p256_test_private_key.pem
  * </code>
  */
+
 OTBN_DECLARE_APP_SYMBOLS(run_p256);
 
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, mode);
