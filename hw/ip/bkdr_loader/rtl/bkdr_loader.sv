@@ -34,9 +34,10 @@ module bkdr_loader
   // Types //
   ///////////
 
-  typedef enum logic {
-    PRELOAD = 1'b0,
-    MISSION = 1'b1
+  typedef enum logic [1:0] {
+    PRELOAD   = 2'h0,
+    SWITCHING = 2'h1,
+    MISSION   = 2'h2
   } bkdr_state_t;
 
   typedef enum logic {
@@ -79,6 +80,8 @@ module bkdr_loader
   addr_t clear_addr_d, clear_addr_q;
   logic  clear_idle;
 
+  logic [31:0] mission_mode_dly_d, mission_mode_dly_q;
+
   //////////////
   // Bkdr FSM //
   //////////////
@@ -96,6 +99,9 @@ module bkdr_loader
     // Keep state
     state_d = state_q;
 
+    // Keep mission mode delay counter
+    mission_mode_dly_d = mission_mode_dly_q;
+
     bkdr_active = 1'b1;
 
     unique case (state_q)
@@ -109,7 +115,20 @@ module bkdr_loader
         // is sampled or on command through the done register.
         if ((reg2hw.control.done.q && reg2hw.control.done.qe && clear_idle) ||
             (!bkdr_ena_sampled_q && !bkdr_ena_i)) begin
+          state_d            = SWITCHING;
+          mission_mode_dly_d = reg2hw.mission_mode_switch_delay.q;
+        end
+      end
+
+      SWITCHING : begin
+        // Route upstream JTAG port to internal bkdr debug module
+        jtag_bkdr_req = jtag_req_i;
+        jtag_rsp_o    = jtag_bkdr_rsp;
+
+        if (mission_mode_dly_q == '0) begin
           state_d = MISSION;
+        end else begin
+          mission_mode_dly_d = mission_mode_dly_q - 'd1;
         end
       end
 
@@ -178,6 +197,14 @@ module bkdr_loader
       state_q <= PRELOAD;
     end else begin
       state_q <= state_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_store_mission_delay
+    if(!rst_ni) begin
+      mission_mode_dly_q <= '0;
+    end else begin
+      mission_mode_dly_q <= mission_mode_dly_d;
     end
   end
 
