@@ -11,8 +11,11 @@ const GENERIC_CERT: &str = include_str!("generic.hjson");
 const EXAMPLE_DATA: &str = include_str!("example_data.json");
 const EXAMPLE_CERT: &str = include_str!("example.hjson");
 
+const GENERIC_FW_IDS_RAW: &str = include_str!("generic_fw_ids_raw.hjson");
+const EXAMPLE_FW_IDS_RAW_DATA: &str = include_str!("example_fw_ids_raw_data.json");
+
 #[test]
-fn main() -> Result<()> {
+fn subst_generic() -> Result<()> {
     // Parse generic certificate.
     let generic_tmpl =
         Template::from_hjson_str(GENERIC_CERT).expect("failed to parse generic template");
@@ -32,6 +35,31 @@ fn main() -> Result<()> {
         bail!(
             "example.hjson does not correspond to substituting example_data.json in generic.hjson"
         );
+    }
+
+    Ok(())
+}
+
+#[test]
+fn subst_fw_ids_raw() -> Result<()> {
+    let generic_tmpl =
+        Template::from_hjson_str(GENERIC_CERT).expect("failed to parse generic template");
+    let test_data = SubstData::from_json(EXAMPLE_DATA).expect("failed to parse example data");
+    let mut cert_normal = generic_tmpl.subst(&test_data)?;
+    cert_normal.name = "example".to_string();
+
+    let generic_raw_tmpl =
+        Template::from_hjson_str(GENERIC_FW_IDS_RAW).expect("failed to parse generic raw template");
+    let test_raw_data =
+        SubstData::from_json(EXAMPLE_FW_IDS_RAW_DATA).expect("failed to parse example raw data");
+    let mut cert_raw = generic_raw_tmpl.subst(&test_raw_data)?;
+    cert_raw.name = "example".to_string();
+
+    let cert_normal_der = ot_certs::x509::generate_certificate(&cert_normal)?;
+    let cert_raw_der = ot_certs::x509::generate_certificate(&cert_raw)?;
+
+    if cert_normal_der != cert_raw_der {
+        bail!("re-serialized cert DER does not match pre-serialized cert DER");
     }
 
     Ok(())
