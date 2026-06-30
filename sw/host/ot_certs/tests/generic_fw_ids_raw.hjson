@@ -1,0 +1,175 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "generic_fw_ids_raw",
+
+    variables: {
+        serial_number: {
+            type: "integer",
+            range-size: [0, 32],
+        },
+        not_before: {
+            type: "string",
+            exact-size: 15,
+        }
+        not_after: {
+            type: "string",
+            exact-size: 15,
+        }
+        subject_serial_number: {
+            type: "string",
+            exact-size: 40,
+        },
+        issuer_c: {
+            type: "string",
+            exact-size: 2,
+        },
+        issuer_cn: {
+            type: "string",
+            exact-size: 20,
+        },
+        vendor: {
+            type: "string",
+            exact-size: 50,
+        },
+        model: {
+            type: "string",
+            exact-size: 50,
+        },
+        layer: {
+            type: "integer",
+            range-size: [0, 4],
+        },
+        pub_key_ec_x: {
+            type: "integer",
+            exact-size: 32,
+        },
+        pub_key_ec_y: {
+            type: "integer",
+            exact-size: 32,
+        },
+        pub_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        auth_key_id: {
+            type: "byte-array",
+            exact-size: 20,
+            tweak-msb: true,
+        },
+        raw_fw_ids: {
+            type: "byte-array",
+            range-size: [0, 100],
+        },
+        security_version: {
+            type: "byte-array",
+            exact-size: 4,
+            tweak-msb: true,
+        }
+        cert_signature_r: {
+            type: "integer",
+            range-size: [24, 32],
+        },
+        cert_signature_s: {
+            type: "integer",
+            range-size: [24, 32],
+        },
+        not_configured: {
+            type: "boolean",
+        }
+        not_secure: {
+            type: "boolean",
+        }
+        recovery: {
+            type: "boolean",
+        }
+        debug: {
+            type: "boolean",
+        }
+        basic_constraints_ca: {
+            type: "boolean",
+        }
+        tpm_vendor: {
+            type: "string",
+            range-size: [10, 150],
+        }
+        tpm_model: {
+            type: "string",
+            exact-size: 100,
+        }
+        tpm_version: {
+            type: "string",
+            exact-size: 100,
+        }
+        key_usage_cert_sign: {
+            type: "boolean"
+        }
+        key_usage_key_agreement: {
+            type: "boolean"
+        }
+        key_usage_digital_signature: {
+            type: "boolean"
+        }
+    },
+
+    certificate: {
+        serial_number: { var: "serial_number" },
+        issuer: [
+            { country: { var: "issuer_c" } },
+            { common_name: { var: "issuer_cn" } },
+        ],
+        subject: [
+            { serial_number: { var: "subject_serial_number" } },
+        ],
+        not_before: { var: "not_before" },
+        not_after: { var: "not_after" },
+        subject_public_key_info: {
+            algorithm: "ec-public-key",
+            curve: "prime256v1",
+            public_key: {
+                x: { var: "pub_key_ec_x" },
+                y: { var: "pub_key_ec_y" },
+            },
+        },
+        authority_key_identifier: { var: "auth_key_id" },
+        subject_key_identifier: { var: "pub_key_id" },
+        basic_constraints: {
+            ca: { var: "basic_constraints_ca" }
+        }
+        subject_alt_name: [
+            { tpm_vendor: { var: "tpm_vendor" } },
+            { tpm_model: { var: "tpm_model" } },
+            { tpm_version: { var: "tpm_version" } },
+        ],
+        key_usage: {
+            digital_signature: {var: "key_usage_digital_signature" },
+            key_agreement: {var: "key_usage_key_agreement" },
+            cert_sign: {var: "key_usage_cert_sign" },
+        }
+        private_extensions: [
+            {
+                type: "dice_tcb_info",
+                vendor: { var: "vendor" },
+                model: { var: "model" },
+                svn: { var: "security_version", convert: "big-endian" },
+                layer: { var: "layer" },
+                fw_ids: { var: "raw_fw_ids" },
+                flags: {
+                    not_configured: { var: "not_configured" },
+                    not_secure: { var: "not_secure" },
+                    recovery: { var: "recovery" },
+                    debug: { var: "debug" },
+                }
+            }
+        ],
+        signature: {
+            algorithm: "ecdsa-with-sha256",
+            value: {
+                r: { var: "cert_signature_r" },
+                s: { var: "cert_signature_s" }
+            }
+        }
+    }
+}

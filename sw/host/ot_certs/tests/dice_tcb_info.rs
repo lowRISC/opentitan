@@ -30,6 +30,31 @@ fn check_dice_tcb_info(dice_tcb_info: DiceTcbInfoExtension) -> Result<()> {
     Ok(())
 }
 
+fn check_dice_tcb_info_raw(
+    dice_tcb_info_raw: DiceTcbInfoExtension,
+    expected_dice_tcb_info: DiceTcbInfoExtension,
+) -> Result<()> {
+    // Generate the DER for the RAW version.
+    let der_raw = Der::generate(|builder| dice_tcb_info_raw.push_extension_raw(builder))?;
+    // Parse DER back.
+    let parsed_tcb =
+        parse_dice_tcb_info_extension(&der_raw).context("could not parse DICE TCB Info der")?;
+    // Check that it matches the expected (Literal) one.
+    if parsed_tcb != expected_dice_tcb_info {
+        println!("expected: {expected_dice_tcb_info:#?}");
+        println!("got: {parsed_tcb:#?}");
+        println!("DER: {}", base64ct::Base64::encode_string(&der_raw));
+        bail!("parsed DICE TCB does not match the expected one");
+    }
+    // Generate DER from parsed TCB (which is now Literal).
+    let der_parsed = Der::generate(|builder| parsed_tcb.push_extension_raw(builder))?;
+    // Check that the DERs match.
+    if der_raw != der_parsed {
+        bail!("DER mismatch between RAW and parsed Literal");
+    }
+    Ok(())
+}
+
 #[test]
 fn main() -> Result<()> {
     // For each optional field, we exercise one case where it is set
@@ -49,7 +74,7 @@ fn main() -> Result<()> {
         }),
     })?;
 
-    check_dice_tcb_info(DiceTcbInfoExtension {
+    let expected_tcb = DiceTcbInfoExtension {
         model: None,
         vendor: Some(Value::Literal("Vendor".into())),
         version: None,
@@ -75,7 +100,37 @@ fn main() -> Result<()> {
             },
         ])),
         flags: None,
-    })?;
+    };
+
+    check_dice_tcb_info(expected_tcb.clone())?;
+
+    // Test FwIds::Raw
+    let raw_fw_ids = vec![
+        // FWID 1: SHA256, digest: 465644d935385783658357583758c593583b6537
+        0x30, 0x21, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x04, 0x14,
+        0x46, 0x56, 0x44, 0xd9, 0x35, 0x38, 0x57, 0x83, 0x65, 0x83, 0x57, 0x58, 0x37, 0x58, 0xc5,
+        0x93, 0x58, 0x3b, 0x65, 0x37,
+        // FWID 2: SHA256, digest: 009e9809f85978327592857a093f539078626589
+        0x30, 0x21, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0x04, 0x14,
+        0x00, 0x9e, 0x98, 0x09, 0xf8, 0x59, 0x78, 0x32, 0x75, 0x92, 0x85, 0x7a, 0x09, 0x3f, 0x53,
+        0x90, 0x78, 0x62, 0x65, 0x89,
+    ];
+
+    check_dice_tcb_info_raw(
+        DiceTcbInfoExtension {
+            model: None,
+            vendor: Some(Value::Literal("Vendor".into())),
+            version: None,
+            svn: Some(Value::Literal(BigUint::from_str_radix(
+                "89485897489778474678876487678657",
+                10,
+            )?)),
+            layer: None,
+            fw_ids: Some(RawOr::Raw(Value::Literal(raw_fw_ids))),
+            flags: None,
+        },
+        expected_tcb,
+    )?;
 
     Ok(())
 }

@@ -40,6 +40,14 @@ filegroup(
     srcs = ["tests/example_data.json"],
 )
 
+filegroup(
+    name = "fw_ids_raw_test_files",
+    srcs = [
+        "tests/example_fw_ids_raw_data.json",
+        "tests/generic_fw_ids_raw.hjson",
+    ],
+)
+
 rust_library(
     name = "ot_certs",
     srcs = [
@@ -110,6 +118,7 @@ rust_test_suite(
         ":example_cert",
         ":example_data",
         ":mldsa_certs",
+        ":fw_ids_raw_test_files",
     ],
     edition = "2024",
     deps = [
