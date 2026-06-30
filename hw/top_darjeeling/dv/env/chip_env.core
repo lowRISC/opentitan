@@ -33,8 +33,7 @@ filesets:
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:dv:top_darjeeling_chip_ral
-      - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
-      - "fileset_partner ? (partner:systems:top_darjeeling_ast_pkg)"
+      - lowrisc:systems:ast_pkg
     files:
       - chip_common_pkg.sv
       - chip_if.sv
