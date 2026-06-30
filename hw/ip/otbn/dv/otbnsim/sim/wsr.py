@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple
 from .constants import WsrAddrs
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
-from .kmac_ispr import KmacDataWSRs
+from .kmac_ispr import KmacDataWSR
 from .mai_ispr import MaiInputWSR, MaiOutputWSR
 from .trace import Trace
 from .trivium import CipherType, SeedType, Trivium
@@ -250,7 +250,8 @@ class WSRFile:
         self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
         self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
         self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
-        self.KMAC_DATA = KmacDataWSRs(['KMAC_DATA_S0', 'KMAC_DATA_S1'])
+        self.KMAC_DATA_S0 = KmacDataWSR('KMAC_DATA_S0')
+        self.KMAC_DATA_S1 = KmacDataWSR('KMAC_DATA_S1')
         self.MAI_RES_S0 = MaiOutputWSR('MAI_RES_S0')
         self.MAI_RES_S1 = MaiOutputWSR('MAI_RES_S1')
         self.MAI_IN0_S0 = MaiInputWSR('MAI_IN0_S0')
@@ -267,8 +268,8 @@ class WSRFile:
             WsrAddrs.KEY_S0_H: self.KeyS0H,
             WsrAddrs.KEY_S1_L: self.KeyS1L,
             WsrAddrs.KEY_S1_H: self.KeyS1H,
-            WsrAddrs.KMAC_DATA_S0: self.KMAC_DATA.shares[0],
-            WsrAddrs.KMAC_DATA_S1: self.KMAC_DATA.shares[1],
+            WsrAddrs.KMAC_DATA_S0: self.KMAC_DATA_S0,
+            WsrAddrs.KMAC_DATA_S1: self.KMAC_DATA_S1,
             WsrAddrs.MAI_RES_S0: self.MAI_RES_S0,
             WsrAddrs.MAI_RES_S1: self.MAI_RES_S1,
             WsrAddrs.MAI_IN0_S0: self.MAI_IN0_S0,
@@ -306,13 +307,8 @@ class WSRFile:
 
         '''
         wsr_addr = WsrAddrs(idx)
-        # KMAC_DATA_S0/1 should only be accessed through the wrapper class.
-        if wsr_addr == WsrAddrs.KMAC_DATA_S0:
-            return self.KMAC_DATA.read_unsigned(share_idx=0)
-
-        elif wsr_addr == WsrAddrs.KMAC_DATA_S1:
-            return self.KMAC_DATA.read_unsigned(share_idx=1)
-
+        # KMAC_DATA_S0/1 track read/write events themselves; the generic path
+        # below dispatches to them like any other WSR.
         return self._by_addr[wsr_addr].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
@@ -322,14 +318,6 @@ class WSRFile:
 
         '''
         wsr_addr = WsrAddrs(idx)
-        if wsr_addr == WsrAddrs.KMAC_DATA_S0:
-            self.KMAC_DATA.write_unsigned(share_idx=0, value=value)
-            return
-
-        elif wsr_addr == WsrAddrs.KMAC_DATA_S1:
-            self.KMAC_DATA.write_unsigned(share_idx=1, value=value)
-            return
-
         self._by_addr[wsr_addr].write_unsigned(value)
 
     def commit(self) -> None:
@@ -339,7 +327,8 @@ class WSRFile:
         self.ACC.commit()
         self.KeyS0.commit()
         self.KeyS1.commit()
-        self.KMAC_DATA.commit()
+        self.KMAC_DATA_S0.commit()
+        self.KMAC_DATA_S1.commit()
         self.MAI_RES_S0.commit()
         self.MAI_RES_S1.commit()
         self.MAI_IN0_S0.commit()
@@ -352,7 +341,8 @@ class WSRFile:
         self.RND.abort()
         self.URND.abort()
         self.ACC.abort()
-        self.KMAC_DATA.abort()
+        self.KMAC_DATA_S0.abort()
+        self.KMAC_DATA_S1.abort()
         # We commit changes to the sideloaded keys from outside, even if the
         # instruction itself gets aborted.
         self.KeyS0.commit()
@@ -374,7 +364,8 @@ class WSRFile:
         ret += self.ACC.changes()
         ret += self.KeyS0.changes()
         ret += self.KeyS1.changes()
-        ret += self.KMAC_DATA.changes()
+        ret += self.KMAC_DATA_S0.changes()
+        ret += self.KMAC_DATA_S1.changes()
         ret += self.MAI_RES_S0.changes()
         ret += self.MAI_RES_S1.changes()
         ret += self.MAI_IN0_S0.changes()
@@ -392,6 +383,8 @@ class WSRFile:
     def wipe(self) -> None:
         self.MOD.write_invalid()
         self.ACC.write_invalid()
+        self.KMAC_DATA_S0.write_invalid()
+        self.KMAC_DATA_S1.write_invalid()
         self.MAI_RES_S0.write_invalid()
         self.MAI_RES_S1.write_invalid()
         self.MAI_IN0_S0.write_invalid()

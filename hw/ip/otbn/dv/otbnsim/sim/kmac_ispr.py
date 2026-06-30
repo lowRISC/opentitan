@@ -2,354 +2,361 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List
+from typing import List, Optional
 from .ispr import ISPR, DumbISPR, ISPRChange
 
 
-class KmacCommandCSR(DumbISPR):
-    '''Models a KMAC command CSR where the command is cleared one cycle after it has been issued.'''
+class KmacStatusCSR(ISPR):
+    '''Models the KMAC_STATUS CSR.
 
-    def __init__(self, name: str, write_mask: int):
-        super().__init__(name, 32)
-        self.write_mask = write_mask
+    Bit layout:
+      [0]     READY
+      [1]     RSP_VALID
+      [2]     RSP_ERROR (W1C)
+      [3]     CTRL_ERROR (W1C)
+      [4]     MSG_WRITE_ERROR (W1C)
+      [31:5]  reserved
+    '''
 
-    def write_unsigned(self, value: int) -> None:
-        assert 0 <= value < (1 << self.width)
-        super().write_unsigned(value & self.write_mask)
+    READY_POS = 0
+    RSP_VALID_POS = 1
+    RSP_ERROR_POS = 2
+    CTRL_ERROR_POS = 3
+    MSG_WRITE_ERROR_POS = 4
 
-    def commit(self) -> None:
-        self._pending_write = False
+    W1C_MASK = ((1 << CTRL_ERROR_POS) |
+                (1 << MSG_WRITE_ERROR_POS) |
+                (1 << RSP_ERROR_POS))
 
-        # In case of a write, commit the next state.
-        if self._next_value is not None:
-            self._value = self._next_value
-            # If we are writing a command, it needs to be cleared in the next cycle.
-            if self._next_value != 0:
-                self._next_value = 0
-                self._pending_write = True
-            # Clear the state after the command has been issued.
-            else:
-                self._next_value = None
-
-    def abort(self) -> None:
-        self._next_value = None
-        self._pending_write = False
-        self._value = 0
-
-    # TODO: Remove this function once the kmac interface traces are needed for DV.
-    # Without this override, changes will be handled by the super-class.
-    def changes(self) -> List[ISPRChange]:
-        return []
-
-
-class KmacMirrorCSR(DumbISPR):
-    '''Models a KMAC CSR which mirrors the CSR in the KMAC HWIP.'''
+    # All implemented status bits [4:0].
+    VALUE_MASK = ((1 << READY_POS) |
+                  (1 << RSP_VALID_POS) |
+                  (1 << RSP_ERROR_POS) |
+                  (1 << CTRL_ERROR_POS) |
+                  (1 << MSG_WRITE_ERROR_POS))
 
     def __init__(self, name: str):
         super().__init__(name, 32)
-
-    def write_unsigned(self, value: int) -> None:
-        # Writes from software are explicitly ignored as this is a Read-Only mirror.
-        return
-
-    def update_from_hw(self, value: int) -> None:
-        # Updates the register value from the Hardware side.
-        # This uses the superclass logic to stage the value as a pending write.
-        super().write_unsigned(value)
-
-    def abort(self) -> None:
-        # Since this CSR is read only for SW, HW is the only one writing to this register.
-        # Therefore, all writes are always committed (even on aborts).
-        self.commit()
-
-    # TODO: Remove this function once the kmac interface traces are needed for DV.
-    # Without this override, changes will be handled by the super-class.
-    def changes(self) -> List[ISPRChange]:
-        return []
-
-
-class KmacStatusCSR(KmacMirrorCSR):
-    '''Models the KMAC_STATUS CSR.'''
-
-    def set_idle(self) -> None:
-        self.update_from_hw(1)
-
-    def is_idle(self) -> bool:
-        return bool(self.read_unsigned() & 0x1)
-
-    def set_absorb(self) -> None:
-        self.update_from_hw(2)
-
-    def is_absorbing(self) -> bool:
-        return bool((self.read_unsigned() >> 1) & 0x1)
-
-    def set_squeeze(self) -> None:
-        self.update_from_hw(4)
-
-    def is_squeezing(self) -> bool:
-        return bool((self.read_unsigned() >> 2) & 0x1)
-
-
-class KmacErrorCSR(KmacMirrorCSR):
-    '''Models the KMAC_ERROR CSR.'''
-
-    def write_error(self, value: int) -> None:
-        assert 0 <= value < (1 << self.width)
-        super().update_from_hw(value & 0xff)
-
-
-class KmacCfgCSR(DumbISPR):
-    '''Models the KMAC_CFG CSR.'''
-
-    def __init__(self, name: str):
-        super().__init__(name, 32)
-
-    def get_kmac_en(self) -> bool:
-        return bool(self.read_unsigned() & 0x1)
-
-    def get_kstrength(self) -> int:
-        return (self.read_unsigned() >> 1) & 0x7
-
-    def get_mode(self) -> int:
-        return (self.read_unsigned() >> 4) & 0x3
-
-    # TODO: Remove this function once the kmac interface traces are needed for DV.
-    # Without this override, changes will be handled by the super-class.
-    def changes(self) -> List[ISPRChange]:
-        return []
-
-
-class KmacSetClrCSR(ISPR):
-    '''Models a CSR where bits are set by HW and can be cleared by SW'''
-    def __init__(self, name: str, clearable_mask: int):
-        super().__init__(name, 32)
-        self._value = 0
-        self._clr_mask = 0
-        self._set_mask = 0
-        self._clearable_mask = clearable_mask
-
-    def write_unsigned(self, value: int) -> None:
-        assert 0 <= value < (1 << self.width)
-        self.clr_bits(value & self._clearable_mask)
+        self.on_start()
 
     def on_start(self) -> None:
         self._value = 0
-        self._clr_mask = 0
         self._set_mask = 0
-        self._pending_write = False
+        self._clr_mask = 0
 
     def read_unsigned(self) -> int:
         return self._value
 
-    def clr_bit(self, pos: int) -> None:
-        assert 0 <= pos < self.width
-        self._clr_mask |= (1 << pos)
-        self._pending_write = True
+    def write_unsigned(self, value: int) -> None:
+        # SW writes are W1C.
+        self._clr_mask |= value & self.W1C_MASK
 
-    def clr_bits(self, mask: int) -> None:
-        assert 0 <= mask < self.width
-        self._clr_mask |= mask
-        self._pending_write |= (mask != 0)
+    def _hw_set_bit(self, bit: int, value: bool) -> None:
+        # Immediately update the selected bit.
+        if value:
+            self._value |= (1 << bit)
+        else:
+            self._value &= ~(1 << bit)
 
-    def get_bit(self, pos: int) -> bool:
-        assert 0 <= pos < self.width
-        return bool((self._value >> pos) & 0x1)
+    def hw_set_ready(self, value: bool) -> None:
+        self._hw_set_bit(self.READY_POS, value)
 
-    def set_bit(self, pos: int) -> None:
-        assert 0 <= pos < self.width
-        self._set_mask |= (1 << pos)
-        self._pending_write = True
+    def hw_set_rsp_valid(self, value: bool) -> None:
+        self._hw_set_bit(self.RSP_VALID_POS, value)
 
-    def _get_next_value(self) -> int:
-        # Set takes priority over clr.
-        return (self._value & ~self._clr_mask) | self._set_mask
+    def hw_write_error(self, bit: int) -> None:
+        # Stage a sticky error bit. Revealed to SW once instruction ends independently of whether
+        # the instruction commits or aborts.
+        self._set_mask |= (1 << bit)
+
+    def hw_set_rsp_error(self) -> None:
+        self.hw_write_error(self.RSP_ERROR_POS)
+
+    def hw_set_ctrl_error(self) -> None:
+        self.hw_write_error(self.CTRL_ERROR_POS)
+
+    def hw_set_msg_write_error(self) -> None:
+        self.hw_write_error(self.MSG_WRITE_ERROR_POS)
+
+    def hw_clr_error_bits(self) -> None:
+        error_mask = ((1 << self.RSP_ERROR_POS) |
+                      (1 << self.CTRL_ERROR_POS) |
+                      (1 << self.MSG_WRITE_ERROR_POS))
+        self._value &= ~error_mask
 
     def commit(self) -> None:
-        self._value = self._get_next_value()
-        self._clr_mask = 0
+        # Apply the staged SW W1C clear and the staged HW set. Setting a bit has priority over
+        # clearing it.
+        self._value = ((self._value & ~self._clr_mask) | self._set_mask) & self.VALUE_MASK
         self._set_mask = 0
+        self._clr_mask = 0
+
+    def abort(self) -> None:
+        # Abort the insn execution which means discarding any W1C. Hardware updates always commit.
+        self._value = (self._value | self._set_mask) & self.VALUE_MASK
+        self._set_mask = 0
+        self._clr_mask = 0
+
+    def changes(self) -> List[ISPRChange]:
+        # Do not emit a trace because reads are not traced, only SW writes are. But this is read
+        # only.
+        return []
+
+
+class KmacCtrlCSR(ISPR):
+    '''Models the KMAC_CTRL CSR.
+
+    Bit layout:
+      [4:0]   command bits START/SEND/PROCESS/DONE/CLOSE
+      [31:5]  reserved
+
+    KMAC_CTRL only issues commands and always reads as 0.
+    '''
+
+    CMD_MASK = 0x1f
+
+    def __init__(self, name: str):
+        super().__init__(name, 32)
+        self.on_start()
+
+    def on_start(self) -> None:
+        self._cmd = 0
+        self._cmd_next: Optional[int] = None
+        # Full 32-bit value of a SW write, required for tracing.
+        self._write_value = 0
+        self._pending_write = False
+
+    def read_unsigned(self) -> int:
+        # Cmd bits always read back as 0.
+        return 0
+
+    def write_unsigned(self, value: int) -> None:
+        # Keep the full written value for tracing.
+        self._write_value = value & ((1 << self.width) - 1)
+        self._cmd_next = value & self.CMD_MASK
+        self._pending_write = True
+
+    def take_cmd(self) -> int:
+        '''Read and clear the current command. Must be called before the next insn executes.'''
+        cmd = self._cmd
+        self._cmd = 0
+        return cmd
+
+    def peek_pending_cmd(self) -> int:
+        '''Return the command staged by the current insn (0 if none). To be used after the current
+        insn executed.'''
+        return self._cmd_next if self._cmd_next is not None else 0
+
+    def wipe(self) -> None:
+        self._cmd = 0
+        self._cmd_next = None
+        self._write_value = 0
+        self._pending_write = False
+
+    def commit(self) -> None:
+        if self._cmd_next is not None:
+            self._cmd = self._cmd_next
+            self._cmd_next = None
         self._pending_write = False
 
     def abort(self) -> None:
-        # Only reset the clear mask since SW doesn't set bits.
-        self._clr_mask = 0
-        self.commit()
+        self._cmd_next = None
+        self._pending_write = False
 
-    # TODO: Remove this function once the kmac interface traces are needed for DV.
-    # Without this override, changes will be handled by the super-class.
     def changes(self) -> List[ISPRChange]:
+        if self._pending_write:
+            return [ISPRChange(self.name, self.width, self._write_value)]
         return []
 
 
-class KmacIfStatusCSR(KmacSetClrCSR):
-    '''Models the KMAC_IF_STATUS CSR.'''
-    # Bit field positions.
-    MSG_WRITE_RDY_POS: int = 0
-    MSG_SEND_ERROR_POS: int = 1
-    MSG_WRITE_ERROR_POS: int = 2
-    DIGEST_VALID_POS: int = 3
+class KmacCfgCSR(ISPR):
+    '''Models the KMAC_CFG CSR.
 
-    # Bits that Software is allowed to clear (e.g., MSG_SEND_ERROR_POS, MSG_WRITE_ERROR_POS)
-    CLEARABLE_MASK: int = (1 << MSG_SEND_ERROR_POS) | (1 << MSG_WRITE_ERROR_POS)
+    Bit layout:
+      [0]     EN_XOF
+      [3:1]   STRENGTH
+      [5:4]   MODE
+      [15:6]  reserved
+      [16]    EN_XOF_INV
+      [19:17] STRENGTH_INV
+      [21:20] MODE_INV
+      [31:22] reserved
 
-    def __init__(self, name: str):
-        super().__init__(name, self.CLEARABLE_MASK)
-
-    def clr_msg_send_error(self) -> None:
-        self.clr_bit(self.MSG_SEND_ERROR_POS)
-
-    def clr_msg_write_error(self) -> None:
-        self.clr_bit(self.MSG_WRITE_ERROR_POS)
-
-    def clr_digest_valid(self) -> None:
-        # Clears the DIGEST_VALID bit immediately.
-        # Note: This creates a 0-cycle delay relative to the function call to
-        # compensate for the Kmac() model detecting reads 1 cycle late.
-        clr_mask = (1 << self.DIGEST_VALID_POS)
-        self._value &= ~clr_mask
-
-    def get_msg_write_rdy(self) -> bool:
-        return self.get_bit(self.MSG_WRITE_RDY_POS)
-
-    def get_msg_send_error(self) -> bool:
-        return self.get_bit(self.MSG_SEND_ERROR_POS)
-
-    def get_msg_write_error(self) -> bool:
-        return self.get_bit(self.MSG_WRITE_ERROR_POS)
-
-    def get_digest_valid(self) -> bool:
-        return self.get_bit(self.DIGEST_VALID_POS)
-
-    def set_msg_send_error(self) -> None:
-        self.set_bit(self.MSG_SEND_ERROR_POS)
-
-    def set_msg_write_error(self) -> None:
-        self.set_bit(self.MSG_WRITE_ERROR_POS)
-
-    def set_digest_valid(self) -> None:
-        self.set_bit(self.DIGEST_VALID_POS)
-
-    def update_msg_write_rdy(self, value: bool = True) -> None:
-        # Update the msg_write_rdy bit to "value"
-        if value:
-            self.set_bit(self.MSG_WRITE_RDY_POS)
-        else:
-            self.clr_bit(self.MSG_WRITE_RDY_POS)
-
-
-class KmacIntrCSR(KmacSetClrCSR):
-    '''Models the KMAC_INTR CSR.'''
-    # Bit field positions.
-    ERROR_POS: int = 0
-
-    # Bits that Software is allowed to clear (e.g., Error bit 0)
-    CLEARABLE_MASK: int = (1 << ERROR_POS)
-
-    def __init__(self, name: str):
-        super().__init__(name, self.CLEARABLE_MASK)
-
-    def clr_error(self) -> None:
-        self.clr_bit(self.ERROR_POS)
-
-    def get_error(self) -> bool:
-        return self.get_bit(self.ERROR_POS)
-
-    def set_error(self) -> None:
-        self.set_bit(self.ERROR_POS)
-
-
-class KmacDataWSR(DumbISPR):
-    '''Models a single KMAC_DATA_S0/1 WSR.
-
-    This class handles the logic for abortable vs non-abortable writes.
+    The _INV fields must hold the bitwise inverted value of their lower
+    counterparts for the configuration to be valid.
     '''
+
+    CFG_MASK = 0x3f003f  # lower fields [5:0] and inverted fields [21:16]
+
     def __init__(self, name: str):
-        super().__init__(name, 256)
-        self._is_abortable_write = True
+        super().__init__(name, 32)
+        self.on_start()
+
+    def on_start(self) -> None:
+        self._cfg = 0
+        self._cfg_next: Optional[int] = None
+        # Full 32-bit value of a SW write, required for tracing.
+        self._write_value = 0
+        self._pending_write = False
+
+    def read_unsigned(self) -> int:
+        return self._cfg & self.CFG_MASK
+
+    def write_unsigned(self, value: int) -> None:
+        # Keep the full written value for tracing.
+        self._write_value = value & ((1 << self.width) - 1)
+        self._cfg_next = value & self.CFG_MASK
+        self._pending_write = True
+
+    def get_en_xof(self) -> bool:
+        return bool(self._cfg & 0x1)
+
+    def get_strength(self) -> int:
+        return (self._cfg >> 1) & 0x7
+
+    def get_mode(self) -> int:
+        return (self._cfg >> 4) & 0x3
+
+    def get_en_xof_inv(self) -> int:
+        return (self._cfg >> 16) & 0x1
+
+    def get_strength_inv(self) -> int:
+        return (self._cfg >> 17) & 0x7
+
+    def get_mode_inv(self) -> int:
+        return (self._cfg >> 20) & 0x3
+
+    def redundancy_valid(self) -> bool:
+        '''Check that the _INV fields are the bitwise inverse of the lower fields.
+        Note, this check is actually performed on the KMAC side, not by OTBN. For simulation
+        reasons it is implemented here.'''
+        en_xof_ok = self.get_en_xof_inv() == (~int(self.get_en_xof()) & 0x1)
+        strength_ok = self.get_strength_inv() == (~self.get_strength() & 0x7)
+        mode_ok = self.get_mode_inv() == (~self.get_mode() & 0x3)
+        return en_xof_ok and strength_ok and mode_ok
+
+    def is_written(self) -> bool:
+        return self._pending_write
+
+    def wipe(self) -> None:
+        self._cfg = 0
+        self._cfg_next = None
+        self._write_value = 0
+        self._pending_write = False
+
+    def commit(self) -> None:
+        if self._cfg_next is not None:
+            self._cfg = self._cfg_next
+            self._cfg_next = None
+        self._pending_write = False
+
+    def abort(self) -> None:
+        self._cfg_next = None
+        self._pending_write = False
+
+    def changes(self) -> List[ISPRChange]:
+        # The full write is traced despite only the config bits are stored.
+        if self._pending_write:
+            return [ISPRChange(self.name, self.width, self._write_value)]
+        return []
+
+
+class KmacStrbCSR(DumbISPR):
+    '''Models the KMAC_STRB CSR.'''
+
+    def __init__(self, name: str):
+        super().__init__(name, 32)
+        self._written_this_cycle = False
 
     def on_start(self) -> None:
         super().on_start()
-        self._is_abortable_write = True
+        self._written_this_cycle = False
 
-    def write_unsigned(self, value: int, abortable: bool = False) -> None:
-        assert 0 <= value < (1 << self.width)
+    def write_unsigned(self, value: int) -> None:
         super().write_unsigned(value)
-        self._is_abortable_write = abortable
+        self._written_this_cycle = True
+
+    def is_written(self) -> bool:
+        return self._written_this_cycle
 
     def commit(self) -> None:
         super().commit()
-        self._is_abortable_write = True
+        self._written_this_cycle = False
 
     def abort(self) -> None:
-        # Abort the pending write if allowed, otherwise commit it.
-        if self._is_abortable_write:
-            super().abort()
-        else:
-            self.commit()
-
-    # TODO: Remove this function once the kmac interface traces are needed for DV.
-    # Without this override, changes will be handled by the super-class.
-    def changes(self) -> List[ISPRChange]:
-        return []
+        super().abort()
+        self._written_this_cycle = False
 
 
-class KmacDataWSRs():
-    """Models both of the KMAC_DATA_S0/1 WSRs and tracks their status."""
-    def __init__(self, names: List[str]):
-        self.shares: List[KmacDataWSR] = [KmacDataWSR(name) for name in names]
-        self._read = [False] * len(self.shares)
-        self._dirty = [False] * len(self.shares)
+class KmacDataWSR(DumbISPR):
+    '''Models one KMAC_DATA_S0 / KMAC_DATA_S1 WSR.
+
+    Written by SW (256-bit, abortable) or by the HW when a digest response arrives. A digest
+    response only updates the lowest 64 bits. A HW write is non-abortable and has priority over a
+    SW write. A SW read returns the full WSR.'''
+
+    HW_WRITE_BITS = 64
+    HW_WRITE_MASK = (1 << HW_WRITE_BITS) - 1
+
+    def __init__(self, name: str):
+        super().__init__(name, 256)
+        self._hw_value: Optional[int] = None
+        self._written_this_cycle = False
+        self._read = False
 
     def on_start(self) -> None:
-        for share in self.shares:
-            share.on_start()
-        self.mark_all_unread()
-        self.clean_shares()
+        super().on_start()
+        self._hw_value = None
+        self._written_this_cycle = False
+        self._read = False
 
-    def all_shares_read(self) -> bool:
-        return all(self._read)
+    def write_unsigned(self, value: int) -> None:
+        # Used by SW writes and is abortable.
+        assert 0 <= value < (1 << self.width)
+        super().write_unsigned(value)
+        self._written_this_cycle = True
 
-    def mark_all_unread(self) -> None:
-        self._read = [False] * len(self.shares)
+    def read_unsigned(self) -> int:
+        self._read = True
+        return self._value
 
-    def shares_dirty(self) -> bool:
-        return any(self._dirty)
+    def hw_write(self, value: int) -> None:
+        # A HW digest response writes only the lowest 64 bits, is non-abortable and not traced.
+        assert 0 <= value < (1 << self.HW_WRITE_BITS)
+        self._hw_value = value
 
-    def clean_shares(self) -> None:
-        self._dirty = [False] * len(self.shares)
+    def get_unsigned(self) -> int:
+        return self._value
 
-    def read_unsigned(self, share_idx: int) -> int:
-        if 0 <= share_idx < len(self.shares):
-            self._read[share_idx] = True
-            return self.shares[share_idx].read_unsigned()
-        raise IndexError(f"Share index {share_idx} out of range")
+    def is_written(self) -> bool:
+        # A SW write occurred in this cycle. Flag is cleared when change is committed.
+        return self._written_this_cycle
 
-    def get_unsigned(self, share_idx: int) -> int:
-        # Read without marking as read (peeking).
-        return self.shares[share_idx].read_unsigned()
+    def is_hw_written(self) -> bool:
+        # A HW write occurred in this cycle.
+        return self._hw_value is not None
 
-    def set_unsigned(self, value: int, share_idx: int = 0) -> None:
-        # Write to a share without marking it dirty (e.g., backdoor load).
-        self.shares[share_idx].write_unsigned(value, abortable=False)
+    def was_read(self) -> bool:
+        return self._read
 
-    def write_unsigned(self, value: int, share_idx: int = 0) -> None:
-        # Write to a share, marking it dirty and abortable.
-        if 0 <= share_idx < len(self.shares):
-            self._dirty[share_idx] = True
-            self.shares[share_idx].write_unsigned(value, abortable=True)
-        else:
-            raise IndexError(f"Share index {share_idx} out of range")
+    def clr_read(self) -> None:
+        self._read = False
 
     def commit(self) -> None:
-        for share in self.shares:
-            share.commit()
+        # A SW write updates all words. A HW digest response writes to the lowest 64 bits.
+        self._value = self._next_value if self._next_value is not None else self._value
+        if self._hw_value is not None:
+            self._value = (self._value & ~self.HW_WRITE_MASK) | self._hw_value
+        self._next_value = None
+        self._pending_write = False
+        self._hw_value = None
+        self._written_this_cycle = False
 
     def abort(self) -> None:
-        for share in self.shares:
-            share.abort()
-
-    def changes(self) -> List[ISPRChange]:
-        ret: List[ISPRChange] = []
-        for share in self.shares:
-            ret += share.changes()
-        return ret
+        # The SW write is discarded, but a HW digest response is non-abortable.
+        if self._hw_value is not None:
+            self._value = (self._value & ~self.HW_WRITE_MASK) | self._hw_value
+        self._next_value = None
+        self._pending_write = False
+        self._hw_value = None
+        self._written_this_cycle = False
