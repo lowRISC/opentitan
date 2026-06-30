@@ -26,7 +26,7 @@ void print_progress(const char *prefix, dif_aon_timer_t *aon_timer,
 bool test_main(void) {
   dif_aon_timer_t aon_timer;
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR), &aon_timer));
   /* Pet the watchdog to have make sure that we start from a known value */
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   ibex_timeout_t timeout = ibex_timeout_init(HANG_SECS * 1000000);

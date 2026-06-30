@@ -48,7 +48,7 @@ static dif_dma_t dma;
 
 bool test_main(void) {
   // Initialize the pinmux.
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmux, &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // Initialise DMA.

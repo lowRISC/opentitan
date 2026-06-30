@@ -20,7 +20,7 @@ enum {
   /**
    * Base address of the pinmux registers.
    */
-  kBase = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
+  kBase = TOP_EARLGREY_PINMUX_BASE_ADDR,
 };
 
 /**

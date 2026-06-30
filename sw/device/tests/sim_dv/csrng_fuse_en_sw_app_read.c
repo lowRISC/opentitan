@@ -106,7 +106,7 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR), &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   if (info == kDifRstmgrResetInfoPor) {

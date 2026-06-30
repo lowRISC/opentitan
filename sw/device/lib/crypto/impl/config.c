@@ -20,8 +20,7 @@ otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
     // Check if the jittery clock is enabled.
-    mmio_region_t clkmgr =
-        mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+    mmio_region_t clkmgr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR);
     uint32_t jittery_clk_en =
         mmio_region_read32(clkmgr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
     if (launder32(jittery_clk_en) != kMultiBitBool4True) {
@@ -48,7 +47,7 @@ otcrypto_status_t otcrypto_set_security_config(
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
     // Enable the jittery clock.
     abs_mmio_write32(
-        TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET,
+        TOP_EARLGREY_CLKMGR_BASE_ADDR + CLKMGR_JITTER_ENABLE_REG_OFFSET,
         kMultiBitBool4True);
 
     // Enable the dummy instructions and the data independent timing in ibex.

@@ -82,10 +82,10 @@ static dif_alert_handler_t alert_handler;
 bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t inst_id,
                      dif_rv_plic_irq_id_t plic_irq_id) {
   // Check if this is the AON timer peripheral
-  if (inst_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+  if (inst_id == dt_aon_timer_instance_id(kDtAonTimer)) {
     // We should not get aon timer interrupts since escalation suppresses them.
     dt_aon_timer_irq_t irq =
-        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, plic_irq_id);
+        dt_aon_timer_irq_from_plic_id(kDtAonTimer, plic_irq_id);
     LOG_ERROR("Unexpected aon timer interrupt %d", irq);
     return true;
   }
@@ -104,7 +104,7 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t inst_id,
 
     // Deals with the alert cause: we expect it to be from the pwrmgr.
     dif_alert_handler_alert_t alert =
-        dt_pwrmgr_alert_to_alert_id(kDtPwrmgrAon, kDtPwrmgrAlertFatalFault);
+        dt_pwrmgr_alert_to_alert_id(kDtPwrmgr, kDtPwrmgrAlertFatalFault);
     bool is_cause = false;
     CHECK_DIF_OK(
         dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
@@ -127,17 +127,17 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t inst_id,
  * Initialize the peripherals used in this test.
  */
 void init_peripherals(void) {
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
-  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimerAon, &aon_timer));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimer, &aon_timer));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
 
   // Enable AON timer interrupts in PLIC
-  dt_plic_irq_id_t wkup_irq = dt_aon_timer_irq_to_plic_id(
-      kDtAonTimerAon, kDtAonTimerIrqWkupTimerExpired);
+  dt_plic_irq_id_t wkup_irq =
+      dt_aon_timer_irq_to_plic_id(kDtAonTimer, kDtAonTimerIrqWkupTimerExpired);
   dt_plic_irq_id_t bark_irq =
-      dt_aon_timer_irq_to_plic_id(kDtAonTimerAon, kDtAonTimerIrqWdogTimerBark);
+      dt_aon_timer_irq_to_plic_id(kDtAonTimer, kDtAonTimerIrqWdogTimerBark);
 
   dt_plic_irq_id_t aon_irq_ids[] = {wkup_irq, bark_irq};
   for (size_t i = 0; i < ARRAYSIZE(aon_irq_ids); ++i) {
@@ -165,7 +165,7 @@ static uint32_t udiv64_slow_into_u32(uint64_t a, uint64_t b,
  */
 static void alert_handler_config(void) {
   dif_alert_handler_alert_t alerts[] = {
-      dt_pwrmgr_alert_to_alert_id(kDtPwrmgrAon, kDtPwrmgrAlertFatalFault)};
+      dt_pwrmgr_alert_to_alert_id(kDtPwrmgr, kDtPwrmgrAlertFatalFault)};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {

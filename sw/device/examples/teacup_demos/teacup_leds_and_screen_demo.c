@@ -105,7 +105,7 @@ static status_t peripheral_init(void) {
   // Initialize DIFs.
   TRY(dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR),
                       &pinmux));
   TRY(dif_spi_host_init(mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR),
                         &spi_host));

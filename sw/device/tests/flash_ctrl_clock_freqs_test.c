@@ -183,7 +183,7 @@ bool test_main(void) {
 
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR), &clkmgr));
 
   CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, kDifToggleEnabled));
 

@@ -68,8 +68,8 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
-  uint64_t aon_timer_clock_freq_hz = dt_clock_frequency(
-      dt_aon_timer_clock(kDtAonTimerAon, kDtAonTimerClockAon));
+  uint64_t aon_timer_clock_freq_hz =
+      dt_clock_frequency(dt_aon_timer_clock(kDtAonTimer, kDtAonTimerClockAon));
   uint32_t wait_us =
       (uint32_t)bark_time_us +
       (uint32_t)udiv64_slow(5 * 1000000 + aon_timer_clock_freq_hz - 1,

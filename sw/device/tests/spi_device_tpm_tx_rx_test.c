@@ -128,7 +128,7 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));

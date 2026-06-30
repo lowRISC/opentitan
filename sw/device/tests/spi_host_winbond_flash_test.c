@@ -41,7 +41,7 @@ bool test_main(void) {
 
     dif_pinmux_t pinmux;
     mmio_region_t base_addr =
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+        mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
     CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
     dif_pinmux_pad_attr_t out_attr;

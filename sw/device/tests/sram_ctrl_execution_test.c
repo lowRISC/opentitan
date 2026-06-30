@@ -73,7 +73,7 @@ bool test_main(void) {
   kSramEnd = kSramStart +
              dt_sram_ctrl_memory_size(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
   kSramRetStart =
-      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
+      dt_sram_ctrl_memory_base(kDtSramCtrlRet, kDtSramCtrlMemoryRam);
 
   // Unlock the entire address space for RWX so that we can run this test with
   // both rom and test_rom.

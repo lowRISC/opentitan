@@ -45,7 +45,7 @@ OTTF_DEFINE_TEST_CONFIG(
 
 static status_t peripheral_handles_init(void) {
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();
 }

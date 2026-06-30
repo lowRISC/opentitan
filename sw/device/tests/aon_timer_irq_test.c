@@ -32,7 +32,7 @@ static const uint32_t kTickFreqHz = 1000 * 1000;  // 1Mhz / 1us
 static dif_rv_core_ibex_t rv_core_ibex;
 static dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
 static dif_aon_timer_t aon_timer;
-static dt_aon_timer_t kAonTimerDt = kDtAonTimerAon;
+static dt_aon_timer_t kAonTimerDt = kDtAonTimer;
 static dif_rv_timer_t rv_timer;
 static dt_rv_timer_t kRvTimerDt = kDtRvTimer;
 static dif_rv_plic_t plic;

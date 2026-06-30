@@ -66,7 +66,7 @@ static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
 };
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgr, &clkmgr));
 
   dt_clock_t usb_clk = dt_usbdev_clock(kDtUsbdev, kDtUsbdevClockClk);
   CHECK_DIF_OK(
@@ -76,7 +76,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
 
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   aon_clk_period_us =
       cast_safely(udiv64_slow(1000 * 1000, kClockFreqAonHz, NULL));

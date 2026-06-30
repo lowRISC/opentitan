@@ -45,8 +45,8 @@
 #include "hw/top/dt/soc_proxy.h"
 #endif
 
-static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
-static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static const dt_pinmux_t kPinmuxDt = kDtPinmux;
+static const dt_rstmgr_t kRstmgrDt = kDtRstmgr;
 
 static const dt_uart_t kUart0Dt = kDtUart0;
 static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;

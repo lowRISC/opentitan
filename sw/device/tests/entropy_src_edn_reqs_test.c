@@ -216,7 +216,7 @@ void test_initialize(void) {
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &ibex));
-  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
   CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &kmgr));
   CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
@@ -226,7 +226,7 @@ void test_initialize(void) {
 
   // We intentionally trigger this alert later, ignore it in OTTF.
   CHECK_STATUS_OK(ottf_alerts_ignore_alert(
-      dt_pwrmgr_alert_to_alert_id(kDtPwrmgrAon, kDtPwrmgrAlertFatalFault)));
+      dt_pwrmgr_alert_to_alert_id(kDtPwrmgr, kDtPwrmgrAlertFatalFault)));
 }
 
 status_t execute_test(void) {

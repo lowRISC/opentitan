@@ -142,7 +142,7 @@ static void alert_handler_config(void) {
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
   }};
 
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrFatalFault};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
   dif_alert_handler_class_t classes[] = {kDifAlertHandlerClassA};
   dif_alert_handler_config_t config = {

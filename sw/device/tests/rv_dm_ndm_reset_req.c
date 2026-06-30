@@ -126,7 +126,7 @@ bool test_main(void) {
       },
       {
           .name = "PINMUX",
-          .base = dt_pinmux_primary_reg_block(kDtPinmuxAon),
+          .base = dt_pinmux_primary_reg_block(kDtPinmux),
           .offset = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_OFFSET,
           .write_val = 0x44,
           .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
@@ -135,7 +135,7 @@ bool test_main(void) {
 #if defined(OPENTITAN_IS_EARLGREY)
       {
           .name = "ADC_CTRL",
-          .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrlAon),
+          .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrl),
           .offset = ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
           .write_val = 0x37,
           .exp_read_val = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
@@ -143,7 +143,7 @@ bool test_main(void) {
       },
       {
           .name = "SYSRST_CTRL",
-          .base = dt_sysrst_ctrl_primary_reg_block(kDtSysrstCtrlAon),
+          .base = dt_sysrst_ctrl_primary_reg_block(kDtSysrstCtrl),
           .offset = SYSRST_CTRL_EC_RST_CTL_REG_OFFSET,
           .write_val = 0x567,
           .exp_read_val = SYSRST_CTRL_EC_RST_CTL_REG_RESVAL,
@@ -177,7 +177,7 @@ bool test_main(void) {
 #endif
   };
 
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
 
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     rstmgr_testutils_reason_clear();

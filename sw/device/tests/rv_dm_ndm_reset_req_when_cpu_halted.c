@@ -14,7 +14,7 @@ static dif_rstmgr_t rstmgr;
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false);
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
 
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     rstmgr_testutils_reason_clear();

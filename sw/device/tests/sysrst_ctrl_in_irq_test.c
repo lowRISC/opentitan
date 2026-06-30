@@ -50,12 +50,12 @@ enum {
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen,
 };
 
 static const dif_pinmux_index_t kInputPadsDV[] = {
@@ -223,13 +223,13 @@ void ottf_external_isr(uint32_t *exc_info) {
         goto unexpected_irq;
       };
       break;
-    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+    case kTopEarlgreyPlicPeripheralSysrstCtrl: {
       // Check that the ID matches the expected interrupt, then mask it, since
       // it's a status type.
       dif_sysrst_ctrl_irq_t irq =
           (dif_sysrst_ctrl_irq_t)(plic_irq_id -
                                   (dif_rv_plic_irq_id_t)
-                                      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+                                      kTopEarlgreyPlicIrqIdSysrstCtrlEventDetected);
       CHECK(irq == kDifSysrstCtrlIrqEventDetected);
       CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl, irq,
                                                    kDifToggleDisabled));
@@ -260,18 +260,17 @@ bool test_main(void) {
 
   // Enable all the SYSRST CTRL interrupts on PLIC.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
-      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdSysrstCtrlEventDetected,
+      kTopEarlgreyPlicIrqIdSysrstCtrlEventDetected);
 
   // Initialize sysrst ctrl.
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
+      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR), &sysrst_ctrl));
 
   // Set input pins.
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   // On real devices, we also need to configure the DIO pins.
   if (kDeviceType != kDeviceSimDV) {

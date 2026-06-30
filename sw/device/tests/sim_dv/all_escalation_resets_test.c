@@ -229,22 +229,22 @@ static dt_aes_t kAesDt = (dt_aes_t)0;
 static_assert(kDtAesCount >= 1, "This test requires an AES");
 static dt_alert_handler_t kAlertHandlerDt = (dt_alert_handler_t)0;
 static_assert(kDtAlertHandlerCount >= 1, "This test needs an Alert Handler");
-static dt_aon_timer_t kAonTimerDt = kDtAonTimerAon;
-static dt_clkmgr_t kClkmgrDt = kDtClkmgrAon;
+static dt_aon_timer_t kAonTimerDt = kDtAonTimer;
+static dt_clkmgr_t kClkmgrDt = kDtClkmgr;
 static dt_kmac_t kKmacDt = (dt_kmac_t)0;
 static_assert(kDtKmacCount >= 1, "This test requires a KMAC instance");
 static dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
 static_assert(kDtLcCtrlCount >= 1, "This test requries a LC CTRL");
 static dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
 static_assert(kDtOtpCtrlCount >= 1, "This test requires an OTP CTRL");
-static dt_pwrmgr_t kPwrmgrDt = kDtPwrmgrAon;
-static dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static dt_pwrmgr_t kPwrmgrDt = kDtPwrmgr;
+static dt_rstmgr_t kRstmgrDt = kDtRstmgr;
 static dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
 static_assert(kDtRvCoreIbexCount >= 1, "This test requires an Ibex core");
 static dt_rv_plic_t kRvPlicDt = (dt_rv_plic_t)0;
 static_assert(kDtRvPlicCount >= 1, "This test requries an RV PLIC instance");
 static dt_sram_ctrl_t kSramCtrlMainDt = kDtSramCtrlMain;
-static dt_sram_ctrl_t kSramCtrlRetAonDt = kDtSramCtrlRetAon;
+static dt_sram_ctrl_t kSramCtrlRetDt = kDtSramCtrlRet;
 
 static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
@@ -673,9 +673,8 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   dt_instance_id_t peripheral_id = dt_plic_id_to_instance_id(irq_id);
 
-  if (peripheral_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
-    dt_aon_timer_irq_t irq =
-        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, irq_id);
+  if (peripheral_id == dt_aon_timer_instance_id(kDtAonTimer)) {
+    dt_aon_timer_irq_t irq = dt_aon_timer_irq_from_plic_id(kDtAonTimer, irq_id);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
@@ -781,7 +780,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlMainDt, &sram_ctrl_main));
-  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlRetAonDt, &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlRetDt, &sram_ctrl_ret));
 }
 
 /**
@@ -885,7 +884,7 @@ static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
  */
 static void init_fault_checkers(fault_checker_t *checkers) {
 #if defined(OPENTITAN_IS_EARLGREY)
-  checkers[dt_adc_ctrl_alert_to_alert_id(kDtAdcCtrlAon,
+  checkers[dt_adc_ctrl_alert_to_alert_id(kDtAdcCtrl,
                                          kDtAdcCtrlAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, adc_ctrl_inst_name, we_check};
 
@@ -918,7 +917,7 @@ static void init_fault_checkers(fault_checker_t *checkers) {
   checkers[dt_rom_ctrl_alert_to_alert_id(kRomCtrlDt, kDtRomCtrlAlertFatal)] =
       (fault_checker_t){rom_ctrl_fault_checker, rom_ctrl_inst_name, we_check};
 
-  checkers[dt_sensor_ctrl_alert_to_alert_id(kDtSensorCtrlAon,
+  checkers[dt_sensor_ctrl_alert_to_alert_id(kDtSensorCtrl,
                                             kDtSensorCtrlAlertFatalAlert)] =
       (fault_checker_t){trivial_fault_checker, sensor_ctrl_inst_name, we_check};
 
@@ -927,7 +926,7 @@ static void init_fault_checkers(fault_checker_t *checkers) {
       (fault_checker_t){trivial_fault_checker, spi_host1_inst_name, we_check};
   static_assert(kDtSpiHostCount >= 2, "This test needs 2 SPI Host instances");
 
-  checkers[dt_sysrst_ctrl_alert_to_alert_id(kDtSysrstCtrlAon,
+  checkers[dt_sysrst_ctrl_alert_to_alert_id(kDtSysrstCtrl,
                                             kDtSysrstCtrlAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, sysrst_ctrl_inst_name, we_check};
 
@@ -1026,8 +1025,7 @@ static void init_fault_checkers(fault_checker_t *checkers) {
                                          kDtOtpCtrlAlertFatalBusIntegError)] =
       (fault_checker_t){otp_ctrl_fault_checker, otp_ctrl_inst_name, we_check};
 
-  checkers[dt_pinmux_alert_to_alert_id(kDtPinmuxAon,
-                                       kDtPinmuxAlertFatalFault)] =
+  checkers[dt_pinmux_alert_to_alert_id(kDtPinmux, kDtPinmuxAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, pinmux_inst_name, we_check};
 
   checkers[dt_pwrmgr_alert_to_alert_id(kPwrmgrDt, kDtPwrmgrAlertFatalFault)] =
@@ -1072,7 +1070,7 @@ static void init_fault_checkers(fault_checker_t *checkers) {
       kSramCtrlMainDt, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
       sram_ctrl_main_fault_checker, sram_ctrl_main_inst_name, we_check};
   checkers[dt_sram_ctrl_alert_to_alert_id(
-      kSramCtrlRetAonDt, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
+      kSramCtrlRetDt, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
       sram_ctrl_ret_fault_checker, sram_ctrl_ret_inst_name, we_check};
 
   checkers[dt_uart_alert_to_alert_id((dt_uart_t)0, kDtUartAlertFatalFault)] =
@@ -1157,9 +1155,8 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   IBEX_SPIN_FOR(alert_irq_seen, kTestTimeout);
   LOG_INFO("Alert IRQ seen");
 
-  if (kExpectedAlertNumber ==
-      dt_sram_ctrl_alert_to_alert_id(kSramCtrlRetAonDt,
-                                     kDtSramCtrlAlertFatalError)) {
+  if (kExpectedAlertNumber == dt_sram_ctrl_alert_to_alert_id(
+                                  kSramCtrlRetDt, kDtSramCtrlAlertFatalError)) {
     LOG_INFO("Check that the retention SRAM blocks accesses");
     uint32_t data = *((uint32_t *)kSramRetStart);
     LOG_INFO("Read from address 0x%0x with expected error gets 0x%x",
@@ -1208,7 +1205,7 @@ void check_alert_dump(void) {
 bool test_main(void) {
   // Retrieve the SRAM Ret Start address from the DT
   kSramRetStart =
-      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
+      dt_sram_ctrl_memory_base(kDtSramCtrlRet, kDtSramCtrlMemoryRam);
 
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);

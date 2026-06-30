@@ -76,7 +76,7 @@ volatile uint32_t *kMMIOTestLoc1 =
 const uint32_t kMMIOTestLoc1Content = 0x126d8c15;  // a random value
 
 volatile uint32_t *kMMIOTestLoc2 =
-    (uint32_t *)(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR +
+    (uint32_t *)(TOP_EARLGREY_AON_TIMER_BASE_ADDR +
                  AON_TIMER_WKUP_THOLD_HI_REG_OFFSET);
 const uint32_t kMMIOTestLoc2Content = 0xe4210e64;  // a random value
 
@@ -89,7 +89,7 @@ static void setup_uart(void) {
 
   // Initialise DIF handles
   CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
 
   // Initialise UART console.
   pinmux_testutils_init(&pinmux);

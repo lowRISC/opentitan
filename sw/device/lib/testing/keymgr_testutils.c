@@ -159,7 +159,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
   dif_rstmgr_t rstmgr;
   dif_otp_ctrl_t otp_ctrl;
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
                       &rstmgr));
   const dif_rstmgr_reset_info_bitfield_t reset_info =
       rstmgr_testutils_reason_get();
@@ -218,7 +218,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
 
   TRY(keymgr_testutils_init_nvm_then_reset());
 
-  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
+  TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_BASE_ADDR),
                       &rstmgr));
   const dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
 

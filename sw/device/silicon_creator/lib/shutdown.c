@@ -445,7 +445,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_software_escalate(void)) {
 }
 
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_reset(void)) {
-  const uint32_t rstmgr_base = dt_rstmgr_primary_reg_block(kDtRstmgrAon);
+  const uint32_t rstmgr_base = dt_rstmgr_primary_reg_block(kDtRstmgr);
   abs_mmio_write32(rstmgr_base + RSTMGR_RESET_REQ_REG_OFFSET,
                    kMultiBitBool4True);
 }
@@ -465,7 +465,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   const uint32_t sram_ctrl_base =
       dt_sram_ctrl_primary_reg_block(kDtSramCtrlMain);
-  const uint32_t rstmgr_base = dt_rstmgr_primary_reg_block(kDtRstmgrAon);
+  const uint32_t rstmgr_base = dt_rstmgr_primary_reg_block(kDtRstmgr);
 
   // Disable SRAM execution and lock the register.
   // Note: In addition to this register, which is disabled by default at reset,

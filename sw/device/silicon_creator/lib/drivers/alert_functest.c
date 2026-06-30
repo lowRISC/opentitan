@@ -91,7 +91,7 @@ bool test_main(void) {
     EXECUTE_TEST(result, alert_escalate_test);
     LOG_ERROR("Test failure: should have reset before this line.");
     result = UNKNOWN();
-  } else if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, reason,
+  } else if (rstmgr_is_hw_reset_reason(kDtRstmgr, reason,
                                        kDtInstanceIdAlertHandler, 0)) {
     CHECK(bitfield_popcount32(reason) == 1, "Expected exactly 1 reset reason.");
     LOG_INFO("Detected reset after escalation test");

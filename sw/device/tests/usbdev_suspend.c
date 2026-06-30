@@ -346,7 +346,7 @@ enum {
   /**
    * Retention SRAM start address
    */
-  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+  kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_RAM_BASE_ADDR,
   /**
    * Retention SRAM address at which we may store some state.
    */

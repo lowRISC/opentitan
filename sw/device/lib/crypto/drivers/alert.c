@@ -16,7 +16,7 @@
 
 uint32_t read_alert_registers(void) {
   mmio_region_t sensor_ctrl =
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
   mmio_region_t alert_handler =
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
 
@@ -78,7 +78,7 @@ status_t clear_alert_class_accum(void) {
 
 status_t init_alert_registers(void) {
   mmio_region_t sensor_ctrl =
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
+      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
   mmio_region_t alert_handler =
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
 
