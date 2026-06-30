@@ -58,8 +58,7 @@ filesets:
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
-      - "fileset_partner  ? (partner:systems:top_earlgrey_ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
+      - lowrisc:systems:ast_pkg
       - "fileset_partner  ? (partner:ip:otp_macro)"
       - "!fileset_partner ? (lowrisc:ip:otp_macro)"
     files:
