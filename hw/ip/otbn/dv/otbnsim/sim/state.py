@@ -335,13 +335,16 @@ class OTBNState:
         if self.old_state not in [FsmState.EXEC, FsmState.WIPING]:
             return
 
+        # Detect KMAC errors caused by this instruction. This relies on flags inside the ISPRs
+        # which are cleared when committing. Thus it must come before the register commit.
+        self.kmac.detect_errors()
+
         self.gprs.commit()
         self.dmem.commit()
         self.loop_stack.commit()
         self.wsrs.commit()
         self.csrs.commit()
         self.wdrs.commit()
-        self.kmac.end_cycle()
 
         if not sim_stalled:
             self.pc = self.get_next_pc()
@@ -349,6 +352,11 @@ class OTBNState:
 
     def _abort(self) -> None:
         '''Abort any pending state changes'''
+        # Detect KMAC errors caused by this instruction. This relies on flags inside the ISPRs
+        # which are cleared when aborting. The error bits however are always updated, thus it must
+        # come before the register abort.
+        self.kmac.detect_errors()
+
         self.gprs.abort()
         self._pc_next_override = None
         self.dmem.abort()
@@ -357,7 +365,6 @@ class OTBNState:
         self.wsrs.abort()
         self.csrs.abort()
         self.wdrs.abort()
-        self.kmac.end_cycle()
 
     def start(self) -> None:
         '''Start running; perform state init'''
@@ -374,9 +381,9 @@ class OTBNState:
         # Reset CSRs, WSRs, loop stack and call stack. WSRs have special
         # treatment because some of them have values that persist across
         # operations.
-        # TODO: Figure out when and how kmac should be reset.
         self.wsrs.on_start()
         self.csrs = CSRFile(self.wsrs)
+        # TODO: Figure out how to model the secure wipe persistent behaviour of the KMAC interface.
         self.kmac.on_start(self.csrs, self.wsrs)
         self.mai.on_start(self.csrs, self.wsrs)
         self.loop_stack = LoopStack()
