@@ -85,7 +85,7 @@ interface.
  */
 xof_shake128_init:
   /*
-   * Configuration SHAKE128 with EN_XOF=1, STRENGTH=L128(3'b000) and
+   * Configure SHAKE128 with EN_XOF=1, STRENGTH=L128(3'b000) and
    * MODE=AppShake(2'b01). The upper fields hold the bitwise inverted values:
    * EN_XOF_INV=0, STRENGTH_INV=3'b111, MODE_INV=2'b10.
    */
@@ -95,24 +95,20 @@ xof_shake128_init:
   jal x0, _xof_shake_init
 xof_shake256_init:
   /*
-   * Configuration SHAKE256 with EN_XOF=1, STRENGTH=L256(3'b010) and
+   * Configure SHAKE256 with EN_XOF=1, STRENGTH=L256(3'b010) and
    * MODE=AppShake(2'b01). The upper fields hold the bitwise inverted values:
    * EN_XOF_INV=0, STRENGTH_INV=3'b101, MODE_INV=2'b10.
    */
   li x24, 0x2a0015
-  csrrw x0, KMAC_CFG, x24
   addi x28, x0, KMAC_SHAKE256_RATE
   addi x29, x0, KMAC_SHAKE256_RATE
 _xof_shake_init:
-  /* Set the timeout maximum value. */
+  /* Set the timeout maximum value. Then poll until the KMAC is ready to start
+     a session. Must come before the configuration is written. */
   addi x30, x0, KMAC_POLL_MAX_ITERS
-
-  /* Poll until the KMAC is ready to start a session. */
   jal x1, _xof_ready_poll
-
-  /* Configure the KMAC block. */
+  /* Write the configuration */
   csrrw x0, KMAC_CFG, x24
-
   /* Send the `START` command. */
   addi x24, x0, KMAC_CTRL_START
   csrrs x0, KMAC_CTRL, x24
@@ -151,9 +147,12 @@ _xof_rsp_valid_poll_time_remaining:
 
 /**
  * Finish the KMAC session and release the block. Must be called after each
- * session.
+ * session and xof_process must be called before it.
  */
 xof_finish:
+  /* Poll until the interface is ready to accept a command. */
+  jal x1, _xof_ready_poll
+
   /* Send the `DONE` command. */
   addi x24, x0, KMAC_CTRL_DONE
   csrrs x0, KMAC_CTRL, x24
@@ -193,7 +192,7 @@ xof_absorb:
   /* Exit the absorption loop, if n == 0.  */
   beq x20, x0, _xof_absorb_end
 
-  /* Poll until the block is ready to receive a message. */
+  /* Poll until the interface is ready to accept a message. */
   jal x1, _xof_ready_poll
 
   /* x = n - 32. */
