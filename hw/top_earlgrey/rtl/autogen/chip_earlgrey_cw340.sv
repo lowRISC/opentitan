@@ -34,8 +34,8 @@ module chip_earlgrey_cw340 #(
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
-  inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
-  inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
+  inout IOR8, // Dedicated Pad for sysrst_ctrl_ec_rst_l
+  inout IOR9, // Dedicated Pad for sysrst_ctrl_flash_wp_l
   inout IO_CLK, // Manual Pad
   inout IO_USB_CONNECT, // Manual Pad
   inout IO_USB_DP_TX, // Manual Pad
@@ -137,8 +137,8 @@ module chip_earlgrey_cw340 #(
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
+      BidirOd, // DIO sysrst_ctrl_flash_wp_l
+      BidirOd, // DIO sysrst_ctrl_ec_rst_l
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -205,8 +205,8 @@ module chip_earlgrey_cw340 #(
       scan_role_pkg::DioPadSpiHostClkScanRole, // DIO spi_host0_sck
       scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
       scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
-      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_aon_flash_wp_l
-      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_aon_ec_rst_l
+      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_flash_wp_l
+      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_ec_rst_l
       scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd
       scan_role_pkg::DioPadSpiDevD2ScanRole, // DIO spi_device_sd
       scan_role_pkg::DioPadSpiDevD1ScanRole, // DIO spi_device_sd
@@ -530,8 +530,8 @@ module chip_earlgrey_cw340 #(
         manual_in_io_usb_dp_tx,
         manual_in_io_usb_connect,
         manual_in_io_clk,
-        dio_in[DioSysrstCtrlAonFlashWpL],
-        dio_in[DioSysrstCtrlAonEcRstL],
+        dio_in[DioSysrstCtrlFlashWpL],
+        dio_in[DioSysrstCtrlEcRstL],
         dio_in[DioSpiDeviceCsb],
         dio_in[DioSpiDeviceSck],
         dio_in[DioSpiDeviceSd3],
@@ -559,8 +559,8 @@ module chip_earlgrey_cw340 #(
         manual_out_io_usb_dp_tx,
         manual_out_io_usb_connect,
         manual_out_io_clk,
-        dio_out[DioSysrstCtrlAonFlashWpL],
-        dio_out[DioSysrstCtrlAonEcRstL],
+        dio_out[DioSysrstCtrlFlashWpL],
+        dio_out[DioSysrstCtrlEcRstL],
         dio_out[DioSpiDeviceCsb],
         dio_out[DioSpiDeviceSck],
         dio_out[DioSpiDeviceSd3],
@@ -588,8 +588,8 @@ module chip_earlgrey_cw340 #(
         manual_oe_io_usb_dp_tx,
         manual_oe_io_usb_connect,
         manual_oe_io_clk,
-        dio_oe[DioSysrstCtrlAonFlashWpL],
-        dio_oe[DioSysrstCtrlAonEcRstL],
+        dio_oe[DioSysrstCtrlFlashWpL],
+        dio_oe[DioSysrstCtrlEcRstL],
         dio_oe[DioSpiDeviceCsb],
         dio_oe[DioSpiDeviceSck],
         dio_oe[DioSpiDeviceSd3],
@@ -617,8 +617,8 @@ module chip_earlgrey_cw340 #(
         manual_attr_io_usb_dp_tx,
         manual_attr_io_usb_connect,
         manual_attr_io_clk,
-        dio_attr[DioSysrstCtrlAonFlashWpL],
-        dio_attr[DioSysrstCtrlAonEcRstL],
+        dio_attr[DioSysrstCtrlFlashWpL],
+        dio_attr[DioSysrstCtrlEcRstL],
         dio_attr[DioSpiDeviceCsb],
         dio_attr[DioSpiDeviceSck],
         dio_attr[DioSpiDeviceSd3],
@@ -711,8 +711,8 @@ module chip_earlgrey_cw340 #(
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -803,10 +803,10 @@ module chip_earlgrey_cw340 #(
       sram_ctrl_main_ram_cfg_req;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlMainNumRamInst-1:0]
       sram_ctrl_main_ram_cfg_rsp;
-  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlRetAonNumRamInst-1:0]
-      sram_ctrl_ret_aon_ram_cfg_req;
-  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlRetAonNumRamInst-1:0]
-      sram_ctrl_ret_aon_ram_cfg_rsp;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
+      sram_ctrl_ret_ram_cfg_req;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
+      sram_ctrl_ret_ram_cfg_rsp;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t spi_device_sys2spi_ram_cfg_req;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t spi_device_sys2spi_ram_cfg_rsp;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t spi_device_spi2sys_ram_cfg_req;
@@ -834,8 +834,8 @@ module chip_earlgrey_cw340 #(
   assign chip_mem_cfg_rsp.rv_core_ibex_icache_data = rv_core_ibex_icache_data_ram_cfg_rsp;
   assign sram_ctrl_main_ram_cfg_req                = chip_mem_cfg_req.sram_ctrl_main;
   assign chip_mem_cfg_rsp.sram_ctrl_main           = sram_ctrl_main_ram_cfg_rsp;
-  assign sram_ctrl_ret_aon_ram_cfg_req             = chip_mem_cfg_req.sram_ctrl_ret_aon;
-  assign chip_mem_cfg_rsp.sram_ctrl_ret_aon        = sram_ctrl_ret_aon_ram_cfg_rsp;
+  assign sram_ctrl_ret_ram_cfg_req                 = chip_mem_cfg_req.sram_ctrl_ret;
+  assign chip_mem_cfg_rsp.sram_ctrl_ret            = sram_ctrl_ret_ram_cfg_rsp;
   assign spi_device_sys2spi_ram_cfg_req            = chip_mem_cfg_req.spi_device_sys2spi;
   assign chip_mem_cfg_rsp.spi_device_sys2spi       = spi_device_sys2spi_ram_cfg_rsp;
   assign spi_device_spi2sys_ram_cfg_req            = chip_mem_cfg_req.spi_device_spi2sys;
@@ -901,27 +901,27 @@ module chip_earlgrey_cw340 #(
     .ast2pad_t1_ao         (  ),
 
     // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_aon_clocks    ),
-    .sns_rsts_i            ( rstmgr_aon_resets    ),
-    .sns_spi_ext_clk_i     ( sck_monitor          ),
+    .sns_clks_i            ( clkmgr_clocks ),
+    .sns_rsts_i            ( rstmgr_resets ),
+    .sns_spi_ext_clk_i     ( sck_monitor   ),
     // tlul
     .tl_i                  ( ast_tl_req ),
     .tl_o                  ( ast_tl_rsp ),
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_infra),
-    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
-    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
-    .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .clk_ast_usb_i (clkmgr_aon_clocks.clk_usb_peri),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_adc_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
+    .clk_ast_tlul_i (clkmgr_clocks.clk_io_div4_infra),
+    .clk_ast_adc_i (clkmgr_clocks.clk_aon_peri),
+    .clk_ast_alert_i (clkmgr_clocks.clk_io_div4_secure),
+    .clk_ast_es_i (clkmgr_clocks.clk_main_secure),
+    .clk_ast_rng_i (clkmgr_clocks.clk_main_secure),
+    .clk_ast_usb_i (clkmgr_clocks.clk_usb_peri),
+    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_adc_ni (rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_es_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_rng_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -1128,7 +1128,7 @@ module chip_earlgrey_cw340 #(
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .UsbdevRcvrWakeTimeUs(10000),
-    .SramCtrlRetAonInstrExec(0),
+    .SramCtrlRetInstrExec(0),
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(1),
@@ -1136,7 +1136,7 @@ module chip_earlgrey_cw340 #(
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // Base clocks from AST
     .ast_base_clks_i(ast_base_clks),
@@ -1161,24 +1161,24 @@ module chip_earlgrey_cw340 #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .adc_req_o                             (adc_req              ),
-    .adc_rsp_i                             (adc_rsp              ),
-    .ast_edn_req_i                         (ast_edn_req          ),
-    .ast_edn_rsp_o                         (ast_edn_rsp          ),
-    .ast_lc_dft_en_o                       (                     ),
-    .obs_ctrl_i                            (obs_ctrl             ),
-    .otbn_imem_ram_cfg_req_i               (otbn_imem_ram_cfg_req),
-    .otbn_imem_ram_cfg_rsp_o               (otbn_imem_ram_cfg_rsp),
-    .otbn_dmem_ram_cfg_req_i               (otbn_dmem_ram_cfg_req),
-    .otbn_dmem_ram_cfg_rsp_o               (otbn_dmem_ram_cfg_rsp),
-    .i2c0_ram_cfg_req_i                    (i2c0_ram_cfg_req     ),
-    .i2c0_ram_cfg_rsp_o                    (i2c0_ram_cfg_rsp     ),
-    .i2c1_ram_cfg_req_i                    (i2c1_ram_cfg_req     ),
-    .i2c1_ram_cfg_rsp_o                    (i2c1_ram_cfg_rsp     ),
-    .i2c2_ram_cfg_req_i                    (i2c2_ram_cfg_req     ),
-    .i2c2_ram_cfg_rsp_o                    (i2c2_ram_cfg_rsp     ),
-    .usbdev_ram_cfg_req_i                  (usbdev_ram_cfg_req   ),
-    .usbdev_ram_cfg_rsp_o                  (usbdev_ram_cfg_rsp   ),
+    .adc_req_o                             (adc_req                  ),
+    .adc_rsp_i                             (adc_rsp                  ),
+    .ast_edn_req_i                         (ast_edn_req              ),
+    .ast_edn_rsp_o                         (ast_edn_rsp              ),
+    .ast_lc_dft_en_o                       (                         ),
+    .obs_ctrl_i                            (obs_ctrl                 ),
+    .otbn_imem_ram_cfg_req_i               (otbn_imem_ram_cfg_req    ),
+    .otbn_imem_ram_cfg_rsp_o               (otbn_imem_ram_cfg_rsp    ),
+    .otbn_dmem_ram_cfg_req_i               (otbn_dmem_ram_cfg_req    ),
+    .otbn_dmem_ram_cfg_rsp_o               (otbn_dmem_ram_cfg_rsp    ),
+    .i2c0_ram_cfg_req_i                    (i2c0_ram_cfg_req         ),
+    .i2c0_ram_cfg_rsp_o                    (i2c0_ram_cfg_rsp         ),
+    .i2c1_ram_cfg_req_i                    (i2c1_ram_cfg_req         ),
+    .i2c1_ram_cfg_rsp_o                    (i2c1_ram_cfg_rsp         ),
+    .i2c2_ram_cfg_req_i                    (i2c2_ram_cfg_req         ),
+    .i2c2_ram_cfg_rsp_o                    (i2c2_ram_cfg_rsp         ),
+    .usbdev_ram_cfg_req_i                  (usbdev_ram_cfg_req       ),
+    .usbdev_ram_cfg_rsp_o                  (usbdev_ram_cfg_rsp       ),
     .rv_core_ibex_icache_tag_ram_cfg_req_i (rv_core_ibex_icache_tag_ram_cfg_req),
     .rv_core_ibex_icache_tag_ram_cfg_rsp_o (rv_core_ibex_icache_tag_ram_cfg_rsp),
     .rv_core_ibex_icache_data_ram_cfg_req_i(rv_core_ibex_icache_data_ram_cfg_req),
@@ -1187,62 +1187,62 @@ module chip_earlgrey_cw340 #(
     .spi_device_sys2spi_ram_cfg_rsp_o      (spi_device_sys2spi_ram_cfg_rsp),
     .spi_device_spi2sys_ram_cfg_req_i      (spi_device_spi2sys_ram_cfg_req),
     .spi_device_spi2sys_ram_cfg_rsp_o      (spi_device_spi2sys_ram_cfg_rsp),
-    .rom_ctrl_rom_cfg_req_i                (rom_ctrl_rom_cfg_req ),
-    .rom_ctrl_rom_cfg_rsp_o                (rom_ctrl_rom_cfg_rsp ),
+    .rom_ctrl_rom_cfg_req_i                (rom_ctrl_rom_cfg_req     ),
+    .rom_ctrl_rom_cfg_rsp_o                (rom_ctrl_rom_cfg_rsp     ),
     .sram_ctrl_main_ram_cfg_req_i          (sram_ctrl_main_ram_cfg_req),
     .sram_ctrl_main_ram_cfg_rsp_o          (sram_ctrl_main_ram_cfg_rsp),
-    .sram_ctrl_ret_aon_ram_cfg_req_i       (sram_ctrl_ret_aon_ram_cfg_req),
-    .sram_ctrl_ret_aon_ram_cfg_rsp_o       (sram_ctrl_ret_aon_ram_cfg_rsp),
-    .clkmgr_aon_clocks_o                   (clkmgr_aon_clocks    ),
-    .clkmgr_aon_cg_en_o                    (                     ),
-    .clk_main_jitter_en_o                  (clk_main_jitter_en   ),
-    .io_clk_byp_req_o                      (io_clk_byp_req       ),
-    .io_clk_byp_ack_i                      (io_clk_byp_ack       ),
-    .all_clk_byp_req_o                     (all_clk_byp_req      ),
-    .all_clk_byp_ack_i                     (all_clk_byp_ack      ),
-    .hi_speed_sel_o                        (hi_speed_sel         ),
-    .div_step_down_req_i                   (div_step_down_req    ),
-    .calib_rdy_i                           (ast_init_done        ),
-    .flash_bist_enable_i                   (flash_bist_enable    ),
-    .flash_power_down_h_i                  (1'b0                 ),
-    .flash_power_ready_h_i                 (1'b1                 ),
-    .flash_test_mode_a_io                  ('0                   ),
-    .flash_test_voltage_h_io               (1'b0                 ),
-    .flash_obs_o                           (flash_obs            ),
-    .es_rng_enable_o                       (es_rng_enable        ),
-    .es_rng_valid_i                        (es_rng_valid         ),
-    .es_rng_bit_i                          (es_rng_bit           ),
-    .es_rng_fips_o                         (                     ),
-    .ast_tl_req_o                          (ast_tl_req           ),
-    .ast_tl_rsp_i                          (ast_tl_rsp           ),
-    .dft_strap_test_o                      (                     ),
-    .dft_hold_tap_sel_i                    ('0                   ),
-    .usb_dp_pullup_en_o                    (usb_dp_pullup_en     ),
-    .usb_dn_pullup_en_o                    (                     ),
-    .pwrmgr_ast_req_o                      (pwrmgr_ast_req       ),
-    .pwrmgr_ast_rsp_i                      (pwrmgr_ast_rsp       ),
-    .otp_macro_pwr_seq_o                   (otp_macro_pwr_seq    ),
-    .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h  ),
-    .otp_ext_voltage_h_io                  ('0                   ),
-    .otp_obs_o                             (otp_obs              ),
-    .por_n_i                               (por_n                ),
-    .rstmgr_aon_resets_o                   (rstmgr_aon_resets    ),
-    .rstmgr_aon_rst_en_o                   (                     ),
-    .fpga_info_i                           (fpga_info            ),
-    .sensor_ctrl_ast_alert_req_i           (ast_alert_req        ),
-    .sensor_ctrl_ast_alert_rsp_o           (ast_alert_rsp        ),
-    .sensor_ctrl_ast_status_i              (ast_pwst.io_pok      ),
-    .ast2pinmux_i                          (ast2pinmux           ),
-    .ast_init_done_i                       (ast_init_done        ),
-    .sensor_ctrl_manual_pad_attr_o         (                     ),
-    .sck_monitor_o                         (sck_monitor          ),
-    .usbdev_usb_rx_d_i                     (usb_rx_d             ),
-    .usbdev_usb_tx_d_o                     (                     ),
-    .usbdev_usb_tx_se0_o                   (                     ),
-    .usbdev_usb_tx_use_d_se0_o             (                     ),
-    .usbdev_usb_rx_enable_o                (usb_rx_enable        ),
-    .usbdev_usb_ref_val_o                  (usb_ref_val          ),
-    .usbdev_usb_ref_pulse_o                (usb_ref_pulse        )
+    .sram_ctrl_ret_ram_cfg_req_i           (sram_ctrl_ret_ram_cfg_req),
+    .sram_ctrl_ret_ram_cfg_rsp_o           (sram_ctrl_ret_ram_cfg_rsp),
+    .clkmgr_clocks_o                       (clkmgr_clocks            ),
+    .clkmgr_cg_en_o                        (                         ),
+    .clk_main_jitter_en_o                  (clk_main_jitter_en       ),
+    .io_clk_byp_req_o                      (io_clk_byp_req           ),
+    .io_clk_byp_ack_i                      (io_clk_byp_ack           ),
+    .all_clk_byp_req_o                     (all_clk_byp_req          ),
+    .all_clk_byp_ack_i                     (all_clk_byp_ack          ),
+    .hi_speed_sel_o                        (hi_speed_sel             ),
+    .div_step_down_req_i                   (div_step_down_req        ),
+    .calib_rdy_i                           (ast_init_done            ),
+    .flash_bist_enable_i                   (flash_bist_enable        ),
+    .flash_power_down_h_i                  (1'b0                     ),
+    .flash_power_ready_h_i                 (1'b1                     ),
+    .flash_test_mode_a_io                  ('0                       ),
+    .flash_test_voltage_h_io               (1'b0                     ),
+    .flash_obs_o                           (flash_obs                ),
+    .es_rng_enable_o                       (es_rng_enable            ),
+    .es_rng_valid_i                        (es_rng_valid             ),
+    .es_rng_bit_i                          (es_rng_bit               ),
+    .es_rng_fips_o                         (                         ),
+    .ast_tl_req_o                          (ast_tl_req               ),
+    .ast_tl_rsp_i                          (ast_tl_rsp               ),
+    .dft_strap_test_o                      (                         ),
+    .dft_hold_tap_sel_i                    ('0                       ),
+    .usb_dp_pullup_en_o                    (usb_dp_pullup_en         ),
+    .usb_dn_pullup_en_o                    (                         ),
+    .pwrmgr_ast_req_o                      (pwrmgr_ast_req           ),
+    .pwrmgr_ast_rsp_i                      (pwrmgr_ast_rsp           ),
+    .otp_macro_pwr_seq_o                   (otp_macro_pwr_seq        ),
+    .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h      ),
+    .otp_ext_voltage_h_io                  ('0                       ),
+    .otp_obs_o                             (otp_obs                  ),
+    .por_n_i                               (por_n                    ),
+    .rstmgr_resets_o                       (rstmgr_resets            ),
+    .rstmgr_rst_en_o                       (                         ),
+    .fpga_info_i                           (fpga_info                ),
+    .sensor_ctrl_ast_alert_req_i           (ast_alert_req            ),
+    .sensor_ctrl_ast_alert_rsp_o           (ast_alert_rsp            ),
+    .sensor_ctrl_ast_status_i              (ast_pwst.io_pok          ),
+    .ast2pinmux_i                          (ast2pinmux               ),
+    .ast_init_done_i                       (ast_init_done            ),
+    .sensor_ctrl_manual_pad_attr_o         (                         ),
+    .sck_monitor_o                         (sck_monitor              ),
+    .usbdev_usb_rx_d_i                     (usb_rx_d                 ),
+    .usbdev_usb_tx_d_o                     (                         ),
+    .usbdev_usb_tx_se0_o                   (                         ),
+    .usbdev_usb_tx_use_d_se0_o             (                         ),
+    .usbdev_usb_rx_enable_o                (usb_rx_enable            ),
+    .usbdev_usb_ref_val_o                  (usb_ref_val              ),
+    .usbdev_usb_ref_pulse_o                (usb_ref_pulse            )
   );
 
 
@@ -1260,11 +1260,11 @@ module chip_earlgrey_cw340 #(
   assign manual_oe_io_clkout = 1'b1;
 
   // Capture trigger.
-  // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
+  // We use the clkmgr_idle signal of the IP of interest to form a precise capture trigger.
   // GPIO[11:10] is used for selecting the IP of interest. The encoding is as follows (see
   // hint_names_e enum in clkmgr_pkg.sv for details).
   //
-  // IP              - GPIO[11:10] - Index for clkmgr_aon_idle
+  // IP              - GPIO[11:10] - Index for clkmgr_idle
   // -------------------------------------------------------------
   //  AES            -   00       -  0
   //  HMAC           -   01       -  1 - not implemented on CW305
@@ -1289,7 +1289,7 @@ module chip_earlgrey_cw340 #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_earlgrey.earlgrey_pd_aon.u_clkmgr_aon.idle_i[trigger_sel];
+  assign clk_trans_idle = top_earlgrey.earlgrey_pd_aon.u_clkmgr.idle_i[trigger_sel];
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;

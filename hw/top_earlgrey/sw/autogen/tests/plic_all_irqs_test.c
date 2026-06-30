@@ -62,7 +62,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-static dif_adc_ctrl_t adc_ctrl_aon;
+static dif_adc_ctrl_t adc_ctrl;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -70,7 +70,7 @@ static dif_alert_handler_t alert_handler;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-static dif_aon_timer_t aon_timer_aon;
+static dif_aon_timer_t aon_timer;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
@@ -130,7 +130,7 @@ static dif_otp_ctrl_t otp_ctrl;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-static dif_pwrmgr_t pwrmgr_aon;
+static dif_pwrmgr_t pwrmgr;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 15 && 15 < TEST_MAX_IRQ_PERIPHERAL
@@ -138,7 +138,7 @@ static dif_rv_timer_t rv_timer;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-static dif_sensor_ctrl_t sensor_ctrl_aon;
+static dif_sensor_ctrl_t sensor_ctrl;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
@@ -154,7 +154,7 @@ static dif_spi_host_t spi_host1;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-static dif_sysrst_ctrl_t sysrst_ctrl_aon;
+static dif_sysrst_ctrl_t sysrst_ctrl;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
@@ -331,36 +331,36 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   switch (peripheral) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
+    case kTopEarlgreyPlicPeripheralAdcCtrl: {
       dif_adc_ctrl_irq_t irq =
           (dif_adc_ctrl_irq_t)(plic_irq_id -
                                (dif_rv_plic_irq_id_t)
-                                   kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending);
+                                   kTopEarlgreyPlicIrqIdAdcCtrlMatchPending);
       CHECK(irq == adc_ctrl_irq_expected,
-            "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect adc_ctrl IRQ triggered: exp = %d, obs = %d",
             adc_ctrl_irq_expected, irq);
       adc_ctrl_irq_serviced = irq;
 
       dif_adc_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
+      CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl, &snapshot));
       CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+            "Only adc_ctrl IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
       if (0x1 & (1 << irq)) {
         // We do not acknowledge status type interrupt at the IP side, but we
         // need to clear the test force register.
-        CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
+        CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl, irq, false));
         // In case this status interrupt is asserted by default, we also
         // disable it at this point so that it does not interfere with the
         // rest of the test.
         if ((0x0 & (1 << irq))) {
-          CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl_aon, irq, false));
+          CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl, irq, false));
         }
       } else {
         // We acknowledge event type interrupt.
-        CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
+        CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl, irq));
       }
       break;
     }
@@ -390,24 +390,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralAonTimerAon: {
+    case kTopEarlgreyPlicPeripheralAonTimer: {
       dif_aon_timer_irq_t irq =
           (dif_aon_timer_irq_t)(plic_irq_id -
                                 (dif_rv_plic_irq_id_t)
-                                    kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+                                    kTopEarlgreyPlicIrqIdAonTimerWkupTimerExpired);
       CHECK(irq == aon_timer_irq_expected,
-            "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect aon_timer IRQ triggered: exp = %d, obs = %d",
             aon_timer_irq_expected, irq);
       aon_timer_irq_serviced = irq;
 
       dif_aon_timer_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer_aon, &snapshot));
+      CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer, &snapshot));
       CHECK(snapshot == (dif_aon_timer_irq_state_snapshot_t)(1 << irq),
-            "Only aon_timer_aon IRQ %d expected to fire. Actual interrupt "
+            "Only aon_timer IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
+      CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
       break;
     }
 #endif
@@ -813,24 +813,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralPwrmgrAon: {
+    case kTopEarlgreyPlicPeripheralPwrmgr: {
       dif_pwrmgr_irq_t irq =
           (dif_pwrmgr_irq_t)(plic_irq_id -
                              (dif_rv_plic_irq_id_t)
-                                 kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+                                 kTopEarlgreyPlicIrqIdPwrmgrWakeup);
       CHECK(irq == pwrmgr_irq_expected,
-            "Incorrect pwrmgr_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect pwrmgr IRQ triggered: exp = %d, obs = %d",
             pwrmgr_irq_expected, irq);
       pwrmgr_irq_serviced = irq;
 
       dif_pwrmgr_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr_aon, &snapshot));
+      CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr, &snapshot));
       CHECK(snapshot == (dif_pwrmgr_irq_state_snapshot_t)(1 << irq),
-            "Only pwrmgr_aon IRQ %d expected to fire. Actual interrupt "
+            "Only pwrmgr IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
+      CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, irq));
       break;
     }
 #endif
@@ -859,24 +859,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSensorCtrlAon: {
+    case kTopEarlgreyPlicPeripheralSensorCtrl: {
       dif_sensor_ctrl_irq_t irq =
           (dif_sensor_ctrl_irq_t)(plic_irq_id -
                                   (dif_rv_plic_irq_id_t)
-                                      kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange);
+                                      kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange);
       CHECK(irq == sensor_ctrl_irq_expected,
-            "Incorrect sensor_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect sensor_ctrl IRQ triggered: exp = %d, obs = %d",
             sensor_ctrl_irq_expected, irq);
       sensor_ctrl_irq_serviced = irq;
 
       dif_sensor_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_aon, &snapshot));
+      CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl, &snapshot));
       CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sensor_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+            "Only sensor_ctrl IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl_aon, irq));
+      CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl, irq));
       break;
     }
 #endif
@@ -990,36 +990,36 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+    case kTopEarlgreyPlicPeripheralSysrstCtrl: {
       dif_sysrst_ctrl_irq_t irq =
           (dif_sysrst_ctrl_irq_t)(plic_irq_id -
                                   (dif_rv_plic_irq_id_t)
-                                      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+                                      kTopEarlgreyPlicIrqIdSysrstCtrlEventDetected);
       CHECK(irq == sysrst_ctrl_irq_expected,
-            "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+            "Incorrect sysrst_ctrl IRQ triggered: exp = %d, obs = %d",
             sysrst_ctrl_irq_expected, irq);
       sysrst_ctrl_irq_serviced = irq;
 
       dif_sysrst_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl_aon, &snapshot));
+      CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl, &snapshot));
       CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+            "Only sysrst_ctrl IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
       if (0x1 & (1 << irq)) {
         // We do not acknowledge status type interrupt at the IP side, but we
         // need to clear the test force register.
-        CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
+        CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl, irq, false));
         // In case this status interrupt is asserted by default, we also
         // disable it at this point so that it does not interfere with the
         // rest of the test.
         if ((0x0 & (1 << irq))) {
-          CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl_aon, irq, false));
+          CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl, irq, false));
         }
       } else {
         // We acknowledge event type interrupt.
-        CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
+        CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl, irq));
       }
       break;
     }
@@ -1220,8 +1220,8 @@ static void peripherals_init(void) {
   mmio_region_t base_addr;
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -1230,8 +1230,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR);
+  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
@@ -1305,8 +1305,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 15 && 15 < TEST_MAX_IRQ_PERIPHERAL
@@ -1315,8 +1315,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
@@ -1335,8 +1335,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
@@ -1373,7 +1373,7 @@ static void peripherals_init(void) {
  */
 static void peripheral_irqs_clear(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_aon));
+  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -1381,7 +1381,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
+  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
@@ -1443,7 +1443,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
+  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 15 && 15 < TEST_MAX_IRQ_PERIPHERAL
@@ -1451,7 +1451,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl_aon));
+  CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
@@ -1467,7 +1467,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
+  CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
@@ -1609,7 +1609,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
+  CHECK_DIF_OK(dif_adc_ctrl_irq_restore_all(&adc_ctrl, &adc_ctrl_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
@@ -1675,7 +1675,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_pwrmgr_irq_restore_all(&pwrmgr_aon, &pwrmgr_irqs));
+  CHECK_DIF_OK(dif_pwrmgr_irq_restore_all(&pwrmgr, &pwrmgr_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 15 && 15 < TEST_MAX_IRQ_PERIPHERAL
@@ -1683,7 +1683,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_sensor_ctrl_irq_restore_all(&sensor_ctrl_aon, &sensor_ctrl_irqs));
+  CHECK_DIF_OK(dif_sensor_ctrl_irq_restore_all(&sensor_ctrl, &sensor_ctrl_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
@@ -1699,7 +1699,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
+  CHECK_DIF_OK(dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl, &sysrst_ctrl_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
@@ -1743,26 +1743,26 @@ static void peripheral_irqs_trigger(void) {
   (void)status_default_mask;
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
+  peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrl;
   status_default_mask = 0x0;
   for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchPending; irq <= kDifAdcCtrlIrqMatchPending;
        ++irq) {
     adc_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
+    LOG_INFO("Triggering adc_ctrl IRQ %d.", irq);
+    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl, irq, true));
 
     // In this case, the interrupt has not been enabled yet because that would
     // interfere with testing other interrupts. We enable it here and let the
     // interrupt handler disable it again.
     if ((status_default_mask & 0x1)) {
-      CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl_aon, irq, true));
+      CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl, irq, true));
     }
     status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
     IBEX_SPIN_FOR(adc_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from adc_ctrl_aon is serviced.", irq);
+    LOG_INFO("IRQ %d from adc_ctrl is serviced.", irq);
   }
 #endif
 
@@ -1788,17 +1788,17 @@ static void peripheral_irqs_trigger(void) {
   // Since there are other tests covering this already, we just skip this for
   // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
-    peripheral_expected = kTopEarlgreyPlicPeripheralAonTimerAon;
+    peripheral_expected = kTopEarlgreyPlicPeripheralAonTimer;
     for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired; irq <= kDifAonTimerIrqWdogTimerBark;
          ++irq) {
       aon_timer_irq_expected = irq;
-      LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
-      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
+      LOG_INFO("Triggering aon_timer IRQ %d.", irq);
+      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer, irq, true));
 
       // This avoids a race where *irq_serviced is read before
       // entering the ISR.
       IBEX_SPIN_FOR(aon_timer_irq_serviced == irq, 1);
-      LOG_INFO("IRQ %d from aon_timer_aon is serviced.", irq);
+      LOG_INFO("IRQ %d from aon_timer is serviced.", irq);
     }
   }
 #endif
@@ -2072,17 +2072,17 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralPwrmgrAon;
+  peripheral_expected = kTopEarlgreyPlicPeripheralPwrmgr;
   for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup; irq <= kDifPwrmgrIrqWakeup;
        ++irq) {
     pwrmgr_irq_expected = irq;
-    LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, true));
+    LOG_INFO("Triggering pwrmgr IRQ %d.", irq);
+    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
     IBEX_SPIN_FOR(pwrmgr_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from pwrmgr_aon is serviced.", irq);
+    LOG_INFO("IRQ %d from pwrmgr is serviced.", irq);
   }
 #endif
 
@@ -2102,17 +2102,17 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrlAon;
+  peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrl;
   for (dif_sensor_ctrl_irq_t irq = kDifSensorCtrlIrqIoStatusChange; irq <= kDifSensorCtrlIrqInitStatusChange;
        ++irq) {
     sensor_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering sensor_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, true));
+    LOG_INFO("Triggering sensor_ctrl IRQ %d.", irq);
+    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
     IBEX_SPIN_FOR(sensor_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from sensor_ctrl_aon is serviced.", irq);
+    LOG_INFO("IRQ %d from sensor_ctrl is serviced.", irq);
   }
 #endif
 
@@ -2189,26 +2189,26 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrlAon;
+  peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrl;
   status_default_mask = 0x0;
   for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqEventDetected; irq <= kDifSysrstCtrlIrqEventDetected;
        ++irq) {
     sysrst_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, true));
+    LOG_INFO("Triggering sysrst_ctrl IRQ %d.", irq);
+    CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl, irq, true));
 
     // In this case, the interrupt has not been enabled yet because that would
     // interfere with testing other interrupts. We enable it here and let the
     // interrupt handler disable it again.
     if ((status_default_mask & 0x1)) {
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl_aon, irq, true));
+      CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl, irq, true));
     }
     status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
     IBEX_SPIN_FOR(sysrst_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
+    LOG_INFO("IRQ %d from sysrst_ctrl is serviced.", irq);
   }
 #endif
 

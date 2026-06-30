@@ -21,7 +21,7 @@
         {
           name: MainPwr
           desc: main power glitch reset request
-          module: pwrmgr_aon
+          module: pwrmgr
         }
         {
           name: Esc
@@ -42,14 +42,14 @@
         {
           name: rst_req
           width: "1"
-          module: sysrst_ctrl_aon
+          module: sysrst_ctrl
           desc: OpenTitan reset request to `rstmgr` (running on AON clock).
           enabled_after_reset: false
         }
         {
           name: aon_timer_rst_req
           width: "1"
-          module: aon_timer_aon
+          module: aon_timer
           desc: Watchdog reset request.
           enabled_after_reset: false
         }

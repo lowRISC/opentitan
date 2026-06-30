@@ -76,22 +76,22 @@
         clk_main_i:
         {
           src_name: main
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
         clk_io_i:
         {
           src_name: io
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
         clk_usb_i:
         {
           src_name: usb
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
         clk_aon_i:
         {
           src_name: aon
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
       }
       ft_clks:
@@ -99,37 +99,37 @@
         clk_io_div4_powerup:
         {
           src_name: io_div4
-          endpoint_ip: pwrmgr_aon
+          endpoint_ip: pwrmgr
         }
         clk_aon_powerup:
         {
           src_name: aon
-          endpoint_ip: pwrmgr_aon
+          endpoint_ip: pwrmgr
         }
         clk_main_powerup:
         {
           src_name: main
-          endpoint_ip: rstmgr_aon
+          endpoint_ip: rstmgr
         }
         clk_io_powerup:
         {
           src_name: io
-          endpoint_ip: rstmgr_aon
+          endpoint_ip: rstmgr
         }
         clk_usb_powerup:
         {
           src_name: usb
-          endpoint_ip: rstmgr_aon
+          endpoint_ip: rstmgr
         }
         clk_io_div2_powerup:
         {
           src_name: io_div2
-          endpoint_ip: rstmgr_aon
+          endpoint_ip: rstmgr
         }
         clk_aon_secure:
         {
           src_name: aon
-          endpoint_ip: sysrst_ctrl_aon
+          endpoint_ip: sysrst_ctrl
         }
         clk_aon_peri:
         {
@@ -139,7 +139,7 @@
         clk_aon_timers:
         {
           src_name: aon
-          endpoint_ip: aon_timer_aon
+          endpoint_ip: aon_timer
         }
       }
       rg_clks:
