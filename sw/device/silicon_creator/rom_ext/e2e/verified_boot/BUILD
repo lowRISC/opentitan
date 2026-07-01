@@ -78,6 +78,15 @@ _POSITIONS = {
         "success": "bl0_slot = AA__\r\n",
         "otp_img": None,
     },
+    "owner_slot_a_absent_base_address": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "owner_offset": "{owner_slot_a}",
+        "success": "bl0_slot = AA__\r\n",
+        "otp_img": None,
+        "manifest": ":manifest_base_address_default",
+    },
     "owner_slot_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "{rom_ext_slot_a}",
@@ -192,6 +201,7 @@ _POSITIONS = {
             romext_offset = position["romext_offset"],
         ),
         linker_script = position["linker_script"],
+        manifest = position.get("manifest", None),
         qemu = qemu_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
             binaries = {
@@ -223,6 +233,13 @@ manifest(d = {
     "name": "manifest_base_address_mismatch",
     "address_translation": hex(CONST.HARDENED_TRUE),
     "manifest_base_address": "0x10000000",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+})
+
+manifest(d = {
+    "name": "manifest_base_address_default",
+    "manifest_base_address": "0xa5a5a5a5",
     "identifier": hex(CONST.OWNER),
     "visibility": ["//visibility:public"],
 })
@@ -280,8 +297,49 @@ opentitan_test(
     manifest = ":manifest_base_address_mismatch",
     qemu = qemu_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # BFV:064d410d corresponds to kErrorManifestBadBaseAddress
         exit_success = "BFV:064d410d",
     ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_test(
+    name = "bad_base_address_absent_large_rom_ext_test",
+    srcs = [":boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a": "romext",
+        },
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # BFV:064d410d corresponds to kErrorManifestBadBaseAddress
+        exit_success = "BFV:064d410d",
+        owner_offset = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec["owner_slot_a"],
+        romext_offset = "0x0",
+    ),
+    manifest = ":manifest_base_address_default",
+    qemu = qemu_params(
+        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        binaries = {
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a": "romext",
+        },
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # BFV:064d410d corresponds to kErrorManifestBadBaseAddress
+        exit_success = "BFV:064d410d",
+        owner_offset = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec["owner_slot_a"],
+        romext_offset = "0x0",
+    ),
+    slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
