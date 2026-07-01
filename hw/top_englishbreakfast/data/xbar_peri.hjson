@@ -60,25 +60,25 @@
       reset:     "rst_usb_ni",
       pipeline:  false
     },
-    { name:      "pwrmgr_aon",
+    { name:      "pwrmgr",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "rstmgr_aon",
+    { name:      "rstmgr",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "clkmgr_aon",
+    { name:      "clkmgr",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "pinmux_aon",
+    { name:      "pinmux",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -95,7 +95,7 @@
     main:  [
       "uart0", "uart1",
       "gpio", "spi_device", "spi_host0", "rv_timer", "usbdev",
-      "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
+      "pwrmgr", "rstmgr", "clkmgr", "pinmux",
       "ast"
     ],
   },
