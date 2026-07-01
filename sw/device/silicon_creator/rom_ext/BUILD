@@ -444,7 +444,10 @@ hardened_comparison_test(
 output_groups(
     name = "fpga_dev_binaries",
     testonly = True,
-    srcs = [":rom_ext_dice_x509_slot_virtual"],
+    srcs = [
+        ":rom_ext_dice_x509_slot_virtual",
+        ":rom_ext_usbdfu_anyversion",
+    ],
     groups = [
         "fpga_cw310_signed_bin",
         "fpga_cw340_signed_bin",
