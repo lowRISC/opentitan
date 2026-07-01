@@ -10,11 +10,11 @@ set -euo pipefail
 : "${BAZELISK:=${REPO_TOP}/bazelisk.sh}"
 : "${BAZEL_VERSION:=$(cat "${REPO_TOP}/.bazelversion")}"
 
-: "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
-: "${BAZEL_DISTDIR:=bazel-distdir}"
-: "${BAZEL_CACHEDIR:=bazel-cache}"
-: "${BAZEL_VENDORDIR:=bazel-vendor}"
-: "${BAZEL_BITSTREAMS_CACHE:=bitstreams-cache}"
+: "${BAZEL_AIRGAPPED_DIR:=${REPO_TOP}/bazel-airgapped}"
+: "${BAZEL_DISTDIR:=${BAZEL_AIRGAPPED_DIR}/bazel-distdir}"
+: "${BAZEL_CACHEDIR:=${BAZEL_AIRGAPPED_DIR}/bazel-cache}"
+: "${BAZEL_VENDORDIR:=${BAZEL_AIRGAPPED_DIR}/bazel-vendor}"
+: "${BAZEL_BITSTREAMS_CACHE:=${BAZEL_AIRGAPPED_DIR}/bitstreams-cache}"
 : "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
 : "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
@@ -136,13 +136,13 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   echo $LINE_SEP
   echo "Preparing bazel offline cachedir ..."
   cd ${REPO_TOP}
-  mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}
+  mkdir -p ${BAZEL_CACHEDIR}
   # Make bazel forget everything it knows, then download everything.
   ${BAZELISK} clean --expunge
-  ${BAZELISK} vendor --vendor_dir="${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR}" //...
+  ${BAZELISK} vendor --vendor_dir="${BAZEL_VENDORDIR}" //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
-  mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
+  mkdir -p ${BAZEL_BITSTREAMS_CACHEDIR}
   readonly SYSTEM_BITSTREAM_CACHE="${HOME}/.cache/opentitan-bitstreams"
   readonly SYSTEM_BITSTREAM_CACHEDIR="${SYSTEM_BITSTREAM_CACHE}/cache"
   readonly LATEST_BISTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
@@ -150,10 +150,10 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   # cache backend to fetch the latest bitstreams.
   BITSTREAM="latest" ${BAZELISK} fetch @bitstreams//...
   cp "${LATEST_BISTREAM_HASH_FILE}" \
-    "${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHE}/"
+    "${BAZEL_BITSTREAMS_CACHE}/"
   LATEST_BISTREAM_HASH=$(cat "${LATEST_BISTREAM_HASH_FILE}")
   cp -r "${SYSTEM_BITSTREAM_CACHEDIR}/${LATEST_BISTREAM_HASH}" \
-    "${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}"
+    "${BAZEL_BITSTREAMS_CACHEDIR}"
   echo "Done."
 fi
 
@@ -164,5 +164,5 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" ]]; then
   echo $LINE_SEP
   echo "To perform an airgapped build, ship the contents of ${BAZEL_AIRGAPPED_DIR} to your airgapped environment and then:"
   echo ""
-  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} <label>"
+  echo "bazel build --distdir=${BAZEL_DISTDIR} --vendor_dir=${BAZEL_VENDORDIR} <label>"
 fi
