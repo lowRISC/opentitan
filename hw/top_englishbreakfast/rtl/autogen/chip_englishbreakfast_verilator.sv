@@ -257,8 +257,8 @@ module chip_englishbreakfast_verilator (
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -335,7 +335,7 @@ module chip_englishbreakfast_verilator (
   assign ext_clk = '0;
   assign pad2ast = '0;
 
-  // AON clock divider. Reset is not used because verilator uses only sync
+  // AON clock divider. Reset is not used because Verilator uses only sync
   // resets (and does not model 'x'); if the divider below were reset, clk_aon
   // would be silenced and the clk_aon logic inside top_englishbreakfast would not
   // get reset.
@@ -427,27 +427,27 @@ module chip_englishbreakfast_verilator (
     .ast2pad_t1_ao         (  ),
 
     // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_aon_clocks    ),
-    .sns_rsts_i            ( rstmgr_aon_resets    ),
-    .sns_spi_ext_clk_i     ( sck_monitor          ),
+    .sns_clks_i            ( clkmgr_clocks ),
+    .sns_rsts_i            ( rstmgr_resets ),
+    .sns_spi_ext_clk_i     ( sck_monitor   ),
     // tlul
     .tl_i                  ( ast_tl_req ),
     .tl_o                  ( ast_tl_rsp ),
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_secure),
-    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
-    .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .clk_ast_usb_i (clkmgr_aon_clocks.clk_usb_peri),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_adc_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
+    .clk_ast_tlul_i (clkmgr_clocks.clk_io_div4_secure),
+    .clk_ast_adc_i (clkmgr_clocks.clk_aon_secure),
+    .clk_ast_alert_i (clkmgr_clocks.clk_io_div4_secure),
+    .clk_ast_es_i (clkmgr_clocks.clk_main_secure),
+    .clk_ast_rng_i (clkmgr_clocks.clk_main_secure),
+    .clk_ast_usb_i (clkmgr_clocks.clk_usb_peri),
+    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_adc_ni (rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_es_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_rng_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -546,7 +546,7 @@ module chip_englishbreakfast_verilator (
     .RvCoreIbexICache(0),
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
     // Base clocks from AST
     .ast_base_clks_i(ast_base_clks),
@@ -571,8 +571,8 @@ module chip_englishbreakfast_verilator (
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .clkmgr_aon_clocks_o      (clkmgr_aon_clocks  ),
-    .clkmgr_aon_cg_en_o       (                   ),
+    .clkmgr_clocks_o          (clkmgr_clocks      ),
+    .clkmgr_cg_en_o           (                   ),
     .clk_main_jitter_en_o     (clk_main_jitter_en ),
     .hi_speed_sel_o           (hi_speed_sel       ),
     .div_step_down_req_i      (div_step_down_req  ),
@@ -594,8 +594,8 @@ module chip_englishbreakfast_verilator (
     .pwrmgr_ast_req_o         (pwrmgr_ast_req     ),
     .pwrmgr_ast_rsp_i         (pwrmgr_ast_rsp     ),
     .por_n_i                  (por_n              ),
-    .rstmgr_aon_resets_o      (rstmgr_aon_resets  ),
-    .rstmgr_aon_rst_en_o      (                   ),
+    .rstmgr_resets_o          (rstmgr_resets      ),
+    .rstmgr_rst_en_o          (                   ),
     .fpga_info_i              ('0                 ),
     .usbdev_usb_rx_d_i        (usb_rx_d           ),
     .usbdev_usb_tx_d_o        (usb_tx_d           ),

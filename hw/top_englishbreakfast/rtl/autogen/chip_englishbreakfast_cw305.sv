@@ -610,8 +610,8 @@ module chip_englishbreakfast_cw305 #(
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_aon_resets;
+  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -758,27 +758,27 @@ module chip_englishbreakfast_cw305 #(
     .ast2pad_t1_ao         (  ),
 
     // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_aon_clocks    ),
-    .sns_rsts_i            ( rstmgr_aon_resets    ),
-    .sns_spi_ext_clk_i     ( sck_monitor          ),
+    .sns_clks_i            ( clkmgr_clocks ),
+    .sns_rsts_i            ( rstmgr_resets ),
+    .sns_spi_ext_clk_i     ( sck_monitor   ),
     // tlul
     .tl_i                  ( ast_tl_req ),
     .tl_o                  ( ast_tl_rsp ),
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_secure),
-    .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
-    .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
-    .clk_ast_usb_i (clkmgr_aon_clocks.clk_usb_peri),
-    .rst_ast_tlul_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_adc_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_alert_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni (rstmgr_aon_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
+    .clk_ast_tlul_i (clkmgr_clocks.clk_io_div4_secure),
+    .clk_ast_adc_i (clkmgr_clocks.clk_aon_secure),
+    .clk_ast_alert_i (clkmgr_clocks.clk_io_div4_secure),
+    .clk_ast_es_i (clkmgr_clocks.clk_main_secure),
+    .clk_ast_rng_i (clkmgr_clocks.clk_main_secure),
+    .clk_ast_usb_i (clkmgr_clocks.clk_usb_peri),
+    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_adc_ni (rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_es_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_rng_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -903,7 +903,7 @@ module chip_englishbreakfast_cw305 #(
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
     // Base clocks from AST
     .ast_base_clks_i(ast_base_clks),
@@ -928,8 +928,8 @@ module chip_englishbreakfast_cw305 #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .clkmgr_aon_clocks_o      (clkmgr_aon_clocks ),
-    .clkmgr_aon_cg_en_o       (                  ),
+    .clkmgr_clocks_o          (clkmgr_clocks     ),
+    .clkmgr_cg_en_o           (                  ),
     .clk_main_jitter_en_o     (clk_main_jitter_en),
     .hi_speed_sel_o           (hi_speed_sel      ),
     .div_step_down_req_i      (div_step_down_req ),
@@ -951,8 +951,8 @@ module chip_englishbreakfast_cw305 #(
     .pwrmgr_ast_req_o         (pwrmgr_ast_req    ),
     .pwrmgr_ast_rsp_i         (pwrmgr_ast_rsp    ),
     .por_n_i                  (por_n             ),
-    .rstmgr_aon_resets_o      (rstmgr_aon_resets ),
-    .rstmgr_aon_rst_en_o      (                  ),
+    .rstmgr_resets_o          (rstmgr_resets     ),
+    .rstmgr_rst_en_o          (                  ),
     .fpga_info_i              (fpga_info         ),
     .usbdev_usb_rx_d_i        (1'b0              ),
     .usbdev_usb_tx_d_o        (                  ),
@@ -979,11 +979,11 @@ module chip_englishbreakfast_cw305 #(
   assign manual_oe_io_clkout = 1'b1;
 
   // Capture trigger.
-  // We use the clkmgr_aon_idle signal of the IP of interest to form a precise capture trigger.
+  // We use the clkmgr_idle signal of the IP of interest to form a precise capture trigger.
   // GPIO[11:10] is used for selecting the IP of interest. The encoding is as follows (see
   // hint_names_e enum in clkmgr_pkg.sv for details).
   //
-  // IP              - GPIO[11:10] - Index for clkmgr_aon_idle
+  // IP              - GPIO[11:10] - Index for clkmgr_idle
   // -------------------------------------------------------------
   //  AES            -   00       -  0
   //  HMAC           -   01       -  1 - not implemented on CW305
@@ -998,7 +998,7 @@ module chip_englishbreakfast_cw305 #(
 
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
-  assign clk_trans_idle = top_englishbreakfast.englishbreakfast_pd_aon.u_clkmgr_aon.idle_i;
+  assign clk_trans_idle = top_englishbreakfast.englishbreakfast_pd_aon.u_clkmgr.idle_i;
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;

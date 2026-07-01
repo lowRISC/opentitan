@@ -20,12 +20,12 @@ module top_englishbreakfast #(
   // parameters for usbdev
   parameter bit UsbdevStub = 0,
   parameter int UsbdevRcvrWakeTimeUs = 1,
-  // parameters for rstmgr_aon
-  parameter bit SecRstmgrAonCheck = 0,
-  parameter int SecRstmgrAonMaxSyncDelay = 2,
-  // parameters for pinmux_aon
-  parameter bit SecPinmuxAonVolatileRawUnlockEn = 1'b0,
-  parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
+  // parameters for rstmgr
+  parameter bit SecRstmgrCheck = 0,
+  parameter int SecRstmgrMaxSyncDelay = 2,
+  // parameters for pinmux
+  parameter bit SecPinmuxVolatileRawUnlockEn = 1'b0,
+  parameter pinmux_pkg::target_cfg_t PinmuxTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for flash_ctrl
   parameter bit SecFlashCtrlScrambleEn = 0,
   parameter int FlashCtrlProgFifoDepth = 16,
@@ -102,8 +102,8 @@ module top_englishbreakfast #(
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 
   // Inter-module Signal External type
-  output clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks_o,
-  output clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en_o,
+  output clkmgr_pkg::clkmgr_out_t       clkmgr_clocks_o,
+  output clkmgr_pkg::clkmgr_cg_en_t       clkmgr_cg_en_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       hi_speed_sel_o,
   input  prim_mubi_pkg::mubi4_t       div_step_down_req_i,
@@ -125,8 +125,8 @@ module top_englishbreakfast #(
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
   input  logic [1:0] por_n_i,
-  output rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets_o,
-  output rstmgr_pkg::rstmgr_rst_en_t       rstmgr_aon_rst_en_o,
+  output rstmgr_pkg::rstmgr_out_t       rstmgr_resets_o,
+  output rstmgr_pkg::rstmgr_rst_en_t       rstmgr_rst_en_o,
   input  logic [31:0] fpga_info_i,
   input  logic       usbdev_usb_rx_d_i,
   output logic       usbdev_usb_tx_d_o,
@@ -150,20 +150,20 @@ module top_englishbreakfast #(
   prim_alert_pkg::alert_rx_t [21:0] alertenglishbreakfast_rx_pd_main;
   prim_mubi_pkg::mubi4_t [12:0] outgoing_lpg_cg_en_englishbreakfast;
   prim_mubi_pkg::mubi4_t [12:0] outgoing_lpg_rst_en_englishbreakfast;
-  pwrmgr_pkg::pwr_nvm_t       pwrmgr_aon_pwr_nvm;
-  logic       pwrmgr_aon_strap;
-  logic       pwrmgr_aon_low_power;
-  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  prim_mubi_pkg::mubi4_t       clkmgr_aon_idle;
+  pwrmgr_pkg::pwr_nvm_t       pwrmgr_pwr_nvm;
+  logic       pwrmgr_strap;
+  logic       pwrmgr_low_power;
+  lc_ctrl_pkg::lc_tx_t       pwrmgr_fetch_en;
+  prim_mubi_pkg::mubi4_t       clkmgr_idle;
   rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
   rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
-  logic [1:0] pwrmgr_aon_wakeups;
-  tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       rstmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       clkmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
+  logic [1:0] pwrmgr_wakeups;
+  tlul_pkg::tl_h2d_t       pwrmgr_tl_req;
+  tlul_pkg::tl_d2h_t       pwrmgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       rstmgr_tl_req;
+  tlul_pkg::tl_d2h_t       rstmgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       clkmgr_tl_req;
+  tlul_pkg::tl_d2h_t       clkmgr_tl_rsp;
 
   // Outgoing alerts are currently unused
   assign alertenglishbreakfast_rx_pd_main = '{default: prim_alert_pkg::ALERT_RX_DEFAULT};
@@ -191,8 +191,8 @@ module top_englishbreakfast #(
   .SpiDeviceSramType(SpiDeviceSramType),
   .UsbdevStub(UsbdevStub),
   .UsbdevRcvrWakeTimeUs(UsbdevRcvrWakeTimeUs),
-  .SecPinmuxAonVolatileRawUnlockEn(SecPinmuxAonVolatileRawUnlockEn),
-  .PinmuxAonTargetCfg(PinmuxAonTargetCfg),
+  .SecPinmuxVolatileRawUnlockEn(SecPinmuxVolatileRawUnlockEn),
+  .PinmuxTargetCfg(PinmuxTargetCfg),
   .SecFlashCtrlScrambleEn(SecFlashCtrlScrambleEn),
   .FlashCtrlProgFifoDepth(FlashCtrlProgFifoDepth),
   .FlashCtrlRdFifoDepth(FlashCtrlRdFifoDepth),
@@ -241,13 +241,13 @@ module top_englishbreakfast #(
   .RvCoreIbexCsrMvendorId(RvCoreIbexCsrMvendorId),
   .RvCoreIbexCsrMimpId(RvCoreIbexCsrMimpId)
   ) englishbreakfast_pd_main (
-    // Clocks and clock gating control from clkmgr_aon
-    .clkmgr_aon_clocks_i(clkmgr_aon_clocks_o),
-    .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en_o),
+    // Clocks and clock gating control from clkmgr
+    .clkmgr_clocks_i(clkmgr_clocks_o),
+    .clkmgr_cg_en_i (clkmgr_cg_en_o),
 
-    // Resets and reset assert info from rstmgr_aon
-    .rstmgr_aon_resets_i(rstmgr_aon_resets_o),
-    .rstmgr_aon_rst_en_i(rstmgr_aon_rst_en_o),
+    // Resets and reset assert info from rstmgr
+    .rstmgr_resets_i(rstmgr_resets_o),
+    .rstmgr_rst_en_i(rstmgr_rst_en_o),
 
     // Manual DFT signals
     .scan_rst_ni,
@@ -276,20 +276,20 @@ module top_englishbreakfast #(
     .outgoing_alert_englishbreakfast_rx_i(alertenglishbreakfast_rx_pd_main),
 
     // Ports to and from other power domains (auto-generated)
-    .pwrmgr_aon_pwr_nvm_o     (pwrmgr_aon_pwr_nvm     ),
-    .pwrmgr_aon_strap_i       (pwrmgr_aon_strap       ),
-    .pwrmgr_aon_low_power_i   (pwrmgr_aon_low_power   ),
-    .pwrmgr_aon_fetch_en_i    (pwrmgr_aon_fetch_en    ),
-    .clkmgr_aon_idle_o        (clkmgr_aon_idle        ),
+    .pwrmgr_pwr_nvm_o         (pwrmgr_pwr_nvm         ),
+    .pwrmgr_strap_i           (pwrmgr_strap           ),
+    .pwrmgr_low_power_i       (pwrmgr_low_power       ),
+    .pwrmgr_fetch_en_i        (pwrmgr_fetch_en        ),
+    .clkmgr_idle_o            (clkmgr_idle            ),
     .rv_core_ibex_crash_dump_o(rv_core_ibex_crash_dump),
     .rv_core_ibex_pwrmgr_o    (rv_core_ibex_pwrmgr    ),
-    .pwrmgr_aon_wakeups_o     (pwrmgr_aon_wakeups     ),
-    .pwrmgr_aon_tl_req_o      (pwrmgr_aon_tl_req      ),
-    .pwrmgr_aon_tl_rsp_i      (pwrmgr_aon_tl_rsp      ),
-    .rstmgr_aon_tl_req_o      (rstmgr_aon_tl_req      ),
-    .rstmgr_aon_tl_rsp_i      (rstmgr_aon_tl_rsp      ),
-    .clkmgr_aon_tl_req_o      (clkmgr_aon_tl_req      ),
-    .clkmgr_aon_tl_rsp_i      (clkmgr_aon_tl_rsp      ),
+    .pwrmgr_wakeups_o         (pwrmgr_wakeups         ),
+    .pwrmgr_tl_req_o          (pwrmgr_tl_req          ),
+    .pwrmgr_tl_rsp_i          (pwrmgr_tl_rsp          ),
+    .rstmgr_tl_req_o          (rstmgr_tl_req          ),
+    .rstmgr_tl_rsp_i          (rstmgr_tl_rsp          ),
+    .clkmgr_tl_req_o          (clkmgr_tl_req          ),
+    .clkmgr_tl_rsp_i          (clkmgr_tl_rsp          ),
 
     // Regular ports (auto-generated)
     .flash_bist_enable_i,
@@ -319,8 +319,8 @@ module top_englishbreakfast #(
   //////////////////////////
   englishbreakfast_pd_aon #(
   // Auto-inferred parameters
-  .SecRstmgrAonCheck(SecRstmgrAonCheck),
-  .SecRstmgrAonMaxSyncDelay(SecRstmgrAonMaxSyncDelay)
+  .SecRstmgrCheck(SecRstmgrCheck),
+  .SecRstmgrMaxSyncDelay(SecRstmgrMaxSyncDelay)
   ) englishbreakfast_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks_i.clk_sys),
@@ -342,24 +342,24 @@ module top_englishbreakfast #(
     .outgoing_lpg_rst_en_englishbreakfast_o(outgoing_lpg_rst_en_englishbreakfast),
 
     // Ports to and from other power domains (auto-generated)
-    .pwrmgr_aon_pwr_nvm_i     (pwrmgr_aon_pwr_nvm     ),
-    .pwrmgr_aon_strap_o       (pwrmgr_aon_strap       ),
-    .pwrmgr_aon_low_power_o   (pwrmgr_aon_low_power   ),
-    .pwrmgr_aon_fetch_en_o    (pwrmgr_aon_fetch_en    ),
-    .clkmgr_aon_idle_i        (clkmgr_aon_idle        ),
+    .pwrmgr_pwr_nvm_i         (pwrmgr_pwr_nvm         ),
+    .pwrmgr_strap_o           (pwrmgr_strap           ),
+    .pwrmgr_low_power_o       (pwrmgr_low_power       ),
+    .pwrmgr_fetch_en_o        (pwrmgr_fetch_en        ),
+    .clkmgr_idle_i            (clkmgr_idle            ),
     .rv_core_ibex_crash_dump_i(rv_core_ibex_crash_dump),
     .rv_core_ibex_pwrmgr_i    (rv_core_ibex_pwrmgr    ),
-    .pwrmgr_aon_wakeups_i     (pwrmgr_aon_wakeups     ),
-    .pwrmgr_aon_tl_req_i      (pwrmgr_aon_tl_req      ),
-    .pwrmgr_aon_tl_rsp_o      (pwrmgr_aon_tl_rsp      ),
-    .rstmgr_aon_tl_req_i      (rstmgr_aon_tl_req      ),
-    .rstmgr_aon_tl_rsp_o      (rstmgr_aon_tl_rsp      ),
-    .clkmgr_aon_tl_req_i      (clkmgr_aon_tl_req      ),
-    .clkmgr_aon_tl_rsp_o      (clkmgr_aon_tl_rsp      ),
+    .pwrmgr_wakeups_i         (pwrmgr_wakeups         ),
+    .pwrmgr_tl_req_i          (pwrmgr_tl_req          ),
+    .pwrmgr_tl_rsp_o          (pwrmgr_tl_rsp          ),
+    .rstmgr_tl_req_i          (rstmgr_tl_req          ),
+    .rstmgr_tl_rsp_o          (rstmgr_tl_rsp          ),
+    .clkmgr_tl_req_i          (clkmgr_tl_req          ),
+    .clkmgr_tl_rsp_o          (clkmgr_tl_rsp          ),
 
     // Regular ports (auto-generated)
-    .clkmgr_aon_clocks_o,
-    .clkmgr_aon_cg_en_o,
+    .clkmgr_clocks_o,
+    .clkmgr_cg_en_o,
     .clk_main_jitter_en_o,
     .hi_speed_sel_o,
     .div_step_down_req_i,
@@ -370,8 +370,8 @@ module top_englishbreakfast #(
     .pwrmgr_ast_req_o,
     .pwrmgr_ast_rsp_i,
     .por_n_i,
-    .rstmgr_aon_resets_o,
-    .rstmgr_aon_rst_en_o
+    .rstmgr_resets_o,
+    .rstmgr_rst_en_o
   );
 
 endmodule

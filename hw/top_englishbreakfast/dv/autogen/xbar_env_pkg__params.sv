@@ -58,16 +58,16 @@ tl_device_t xbar_devices[$] = '{
     '{"usbdev", '{
         '{32'h40320000, 32'h40320fff}
     }},
-    '{"pwrmgr_aon", '{
+    '{"pwrmgr", '{
         '{32'h40400000, 32'h4040007f}
     }},
-    '{"rstmgr_aon", '{
+    '{"rstmgr", '{
         '{32'h40410000, 32'h4041007f}
     }},
-    '{"clkmgr_aon", '{
+    '{"clkmgr", '{
         '{32'h40420000, 32'h4042007f}
     }},
-    '{"pinmux_aon", '{
+    '{"pinmux", '{
         '{32'h40460000, 32'h40460fff}
     }},
     '{"ast", '{
@@ -93,10 +93,10 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "rv_timer",
         "usbdev",
-        "pwrmgr_aon",
-        "rstmgr_aon",
-        "clkmgr_aon",
-        "pinmux_aon",
+        "pwrmgr",
+        "rstmgr",
+        "clkmgr",
+        "pinmux",
         "ast",
         "flash_ctrl__core",
         "flash_ctrl__prim",

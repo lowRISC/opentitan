@@ -55,10 +55,10 @@ tl_if spi_device_tl_if(clk_io_div4, rst_n);
 tl_if spi_host0_tl_if(clk_io, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
 tl_if usbdev_tl_if(clk_usb, rst_n);
-tl_if pwrmgr_aon_tl_if(clk_io_div4, rst_n);
-tl_if rstmgr_aon_tl_if(clk_io_div4, rst_n);
-tl_if clkmgr_aon_tl_if(clk_io_div4, rst_n);
-tl_if pinmux_aon_tl_if(clk_io_div4, rst_n);
+tl_if pwrmgr_tl_if(clk_io_div4, rst_n);
+tl_if rstmgr_tl_if(clk_io_div4, rst_n);
+tl_if clkmgr_tl_if(clk_io_div4, rst_n);
+tl_if pinmux_tl_if(clk_io_div4, rst_n);
 tl_if ast_tl_if(clk_io_div4, rst_n);
 
 initial begin
@@ -106,10 +106,10 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
 `endif
 

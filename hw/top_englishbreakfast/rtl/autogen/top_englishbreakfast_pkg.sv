@@ -80,54 +80,54 @@ package top_englishbreakfast_pkg;
   parameter int unsigned TOP_ENGLISHBREAKFAST_USBDEV_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for pwrmgr_aon in top englishbreakfast.
+   * Peripheral base address for pwrmgr in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR = 32'h40400000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR = 32'h40400000;
 
   /**
-   * Peripheral size in bytes for pwrmgr_aon in top englishbreakfast.
+   * Peripheral size in bytes for pwrmgr in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_PWRMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_PWRMGR_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rstmgr_aon in top englishbreakfast.
+   * Peripheral base address for rstmgr in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR = 32'h40410000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR = 32'h40410000;
 
   /**
-   * Peripheral size in bytes for rstmgr_aon in top englishbreakfast.
+   * Peripheral size in bytes for rstmgr in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_RSTMGR_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for clkmgr_aon in top englishbreakfast.
+   * Peripheral base address for clkmgr in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR = 32'h40420000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR = 32'h40420000;
 
   /**
-   * Peripheral size in bytes for clkmgr_aon in top englishbreakfast.
+   * Peripheral size in bytes for clkmgr in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_CLKMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_CLKMGR_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for pinmux_aon in top englishbreakfast.
+   * Peripheral base address for pinmux in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR = 32'h40460000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR = 32'h40460000;
 
   /**
-   * Peripheral size in bytes for pinmux_aon in top englishbreakfast.
+   * Peripheral size in bytes for pinmux in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_PINMUX_AON_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_PINMUX_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for aon_timer_aon in top englishbreakfast.
+   * Peripheral base address for aon_timer in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR = 32'h40470000;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR = 32'h40470000;
 
   /**
-   * Peripheral size in bytes for aon_timer_aon in top englishbreakfast.
+   * Peripheral size in bytes for aon_timer in top englishbreakfast.
    */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_AON_TIMER_AON_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_ENGLISHBREAKFAST_AON_TIMER_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for ast in top englishbreakfast.
@@ -257,11 +257,11 @@ package top_englishbreakfast_pkg;
     TopEnglishbreakfastAlertPeripheralSpiHost0 = 4,
     TopEnglishbreakfastAlertPeripheralRvTimer = 5,
     TopEnglishbreakfastAlertPeripheralUsbdev = 6,
-    TopEnglishbreakfastAlertPeripheralPwrmgrAon = 7,
-    TopEnglishbreakfastAlertPeripheralRstmgrAon = 8,
-    TopEnglishbreakfastAlertPeripheralClkmgrAon = 9,
-    TopEnglishbreakfastAlertPeripheralPinmuxAon = 10,
-    TopEnglishbreakfastAlertPeripheralAonTimerAon = 11,
+    TopEnglishbreakfastAlertPeripheralPwrmgr = 7,
+    TopEnglishbreakfastAlertPeripheralRstmgr = 8,
+    TopEnglishbreakfastAlertPeripheralClkmgr = 9,
+    TopEnglishbreakfastAlertPeripheralPinmux = 10,
+    TopEnglishbreakfastAlertPeripheralAonTimer = 11,
     TopEnglishbreakfastAlertPeripheralFlashCtrl = 12,
     TopEnglishbreakfastAlertPeripheralRvPlic = 13,
     TopEnglishbreakfastAlertPeripheralAes = 14,
@@ -280,13 +280,13 @@ package top_englishbreakfast_pkg;
     TopEnglishbreakfastAlertIdSpiHost0FatalFault = 4,
     TopEnglishbreakfastAlertIdRvTimerFatalFault = 5,
     TopEnglishbreakfastAlertIdUsbdevFatalFault = 6,
-    TopEnglishbreakfastAlertIdPwrmgrAonFatalFault = 7,
-    TopEnglishbreakfastAlertIdRstmgrAonFatalFault = 8,
-    TopEnglishbreakfastAlertIdRstmgrAonFatalCnstyFault = 9,
-    TopEnglishbreakfastAlertIdClkmgrAonRecovFault = 10,
-    TopEnglishbreakfastAlertIdClkmgrAonFatalFault = 11,
-    TopEnglishbreakfastAlertIdPinmuxAonFatalFault = 12,
-    TopEnglishbreakfastAlertIdAonTimerAonFatalFault = 13,
+    TopEnglishbreakfastAlertIdPwrmgrFatalFault = 7,
+    TopEnglishbreakfastAlertIdRstmgrFatalFault = 8,
+    TopEnglishbreakfastAlertIdRstmgrFatalCnstyFault = 9,
+    TopEnglishbreakfastAlertIdClkmgrRecovFault = 10,
+    TopEnglishbreakfastAlertIdClkmgrFatalFault = 11,
+    TopEnglishbreakfastAlertIdPinmuxFatalFault = 12,
+    TopEnglishbreakfastAlertIdAonTimerFatalFault = 13,
     TopEnglishbreakfastAlertIdFlashCtrlRecovErr = 14,
     TopEnglishbreakfastAlertIdFlashCtrlFatalStdErr = 15,
     TopEnglishbreakfastAlertIdFlashCtrlFatalErr = 16,
@@ -417,9 +417,9 @@ package top_englishbreakfast_pkg;
     TopEnglishbreakfastPlicIrqIdUsbdevPowered = 76,
     TopEnglishbreakfastPlicIrqIdUsbdevLinkOutErr = 77,
     TopEnglishbreakfastPlicIrqIdUsbdevAvSetupEmpty = 78,
-    TopEnglishbreakfastPlicIrqIdPwrmgrAonWakeup = 79,
-    TopEnglishbreakfastPlicIrqIdAonTimerAonWkupTimerExpired = 80,
-    TopEnglishbreakfastPlicIrqIdAonTimerAonWdogTimerBark = 81,
+    TopEnglishbreakfastPlicIrqIdPwrmgrWakeup = 79,
+    TopEnglishbreakfastPlicIrqIdAonTimerWkupTimerExpired = 80,
+    TopEnglishbreakfastPlicIrqIdAonTimerWdogTimerBark = 81,
     TopEnglishbreakfastPlicIrqIdFlashCtrlProgEmpty = 82,
     TopEnglishbreakfastPlicIrqIdFlashCtrlProgLvl = 83,
     TopEnglishbreakfastPlicIrqIdFlashCtrlRdFull = 84,
@@ -628,15 +628,15 @@ package top_englishbreakfast_pkg;
   // List of peripheral instantiated in this chip.
   typedef enum {
     PeripheralAes,
-    PeripheralAonTimerAon,
+    PeripheralAonTimer,
     PeripheralAst,
-    PeripheralClkmgrAon,
+    PeripheralClkmgr,
     PeripheralFlashCtrl,
     PeripheralGpio,
-    PeripheralPinmuxAon,
-    PeripheralPwrmgrAon,
+    PeripheralPinmux,
+    PeripheralPwrmgr,
     PeripheralRomCtrl,
-    PeripheralRstmgrAon,
+    PeripheralRstmgr,
     PeripheralRvCoreIbex,
     PeripheralRvPlic,
     PeripheralRvTimer,

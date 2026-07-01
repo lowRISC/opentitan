@@ -176,90 +176,90 @@
  */
 #define TOP_ENGLISHBREAKFAST_USBDEV_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for pwrmgr_aon in top englishbreakfast.
+ * Peripheral base address for pwrmgr in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR 0x40400000
+#define TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR 0x40400000
 
 /**
- * Peripheral size for pwrmgr_aon in top englishbreakfast.
+ * Peripheral size for pwrmgr in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_PWRMGR_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_PWRMGR_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_PWRMGR_BASE_ADDR + TOP_ENGLISHBREAKFAST_PWRMGR_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_PWRMGR_AON_SIZE_BYTES 0x80
+#define TOP_ENGLISHBREAKFAST_PWRMGR_SIZE_BYTES 0x80
 /**
- * Peripheral base address for rstmgr_aon in top englishbreakfast.
+ * Peripheral base address for rstmgr in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR 0x40410000
+#define TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR 0x40410000
 
 /**
- * Peripheral size for rstmgr_aon in top englishbreakfast.
+ * Peripheral size for rstmgr in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_RSTMGR_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_RSTMGR_BASE_ADDR + TOP_ENGLISHBREAKFAST_RSTMGR_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_RSTMGR_AON_SIZE_BYTES 0x80
+#define TOP_ENGLISHBREAKFAST_RSTMGR_SIZE_BYTES 0x80
 /**
- * Peripheral base address for clkmgr_aon in top englishbreakfast.
+ * Peripheral base address for clkmgr in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR 0x40420000
+#define TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR 0x40420000
 
 /**
- * Peripheral size for clkmgr_aon in top englishbreakfast.
+ * Peripheral size for clkmgr in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_CLKMGR_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_CLKMGR_BASE_ADDR + TOP_ENGLISHBREAKFAST_CLKMGR_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_CLKMGR_AON_SIZE_BYTES 0x80
+#define TOP_ENGLISHBREAKFAST_CLKMGR_SIZE_BYTES 0x80
 /**
- * Peripheral base address for pinmux_aon in top englishbreakfast.
+ * Peripheral base address for pinmux in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR 0x40460000
+#define TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR 0x40460000
 
 /**
- * Peripheral size for pinmux_aon in top englishbreakfast.
+ * Peripheral size for pinmux in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_PINMUX_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_PINMUX_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_PINMUX_BASE_ADDR + TOP_ENGLISHBREAKFAST_PINMUX_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_PINMUX_AON_SIZE_BYTES 0x1000
+#define TOP_ENGLISHBREAKFAST_PINMUX_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for aon_timer_aon in top englishbreakfast.
+ * Peripheral base address for aon_timer in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR 0x40470000
+#define TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR 0x40470000
 
 /**
- * Peripheral size for aon_timer_aon in top englishbreakfast.
+ * Peripheral size for aon_timer in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_AON_TIMER_AON_BASE_ADDR + TOP_ENGLISHBREAKFAST_AON_TIMER_AON_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_AON_TIMER_BASE_ADDR + TOP_ENGLISHBREAKFAST_AON_TIMER_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_AON_TIMER_AON_SIZE_BYTES 0x40
+#define TOP_ENGLISHBREAKFAST_AON_TIMER_SIZE_BYTES 0x40
 /**
  * Peripheral base address for ast in top englishbreakfast.
  *

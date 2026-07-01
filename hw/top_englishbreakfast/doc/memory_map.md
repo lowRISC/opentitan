@@ -21,11 +21,11 @@ The main address space, shared between the CPU and DM
 | spi_host0      | default     | `0x40060000`   | `0x40`         | `0x10`         | spi_host0                     |
 | rv_timer       | default     | `0x40100000`   | `0x200`        | `0x80`         | rv_timer                      |
 | usbdev         | default     | `0x40320000`   | `0x1000`       | `0x400`        | usbdev                        |
-| pwrmgr_aon     | default     | `0x40400000`   | `0x80`         | `0x20`         | pwrmgr_aon                    |
-| rstmgr_aon     | default     | `0x40410000`   | `0x80`         | `0x20`         | rstmgr_aon                    |
-| clkmgr_aon     | default     | `0x40420000`   | `0x80`         | `0x20`         | clkmgr_aon                    |
-| pinmux_aon     | default     | `0x40460000`   | `0x1000`       | `0x400`        | pinmux_aon                    |
-| aon_timer_aon  | default     | `0x40470000`   | `0x40`         | `0x10`         | aon_timer_aon                 |
+| pwrmgr         | default     | `0x40400000`   | `0x80`         | `0x20`         | pwrmgr                        |
+| rstmgr         | default     | `0x40410000`   | `0x80`         | `0x20`         | rstmgr                        |
+| clkmgr         | default     | `0x40420000`   | `0x80`         | `0x20`         | clkmgr                        |
+| pinmux         | default     | `0x40460000`   | `0x1000`       | `0x400`        | pinmux                        |
+| aon_timer      | default     | `0x40470000`   | `0x40`         | `0x10`         | aon_timer                     |
 | ast            | default     | `0x40480000`   | `0x400`        | `0x100`        | ast                           |
 | flash_ctrl     | core        | `0x41000000`   | `0x200`        | `0x80`         | core device on flash_ctrl     |
 | flash_ctrl     | prim        | `0x41008000`   | `0x80`         | `0x20`         | prim device on flash_ctrl     |

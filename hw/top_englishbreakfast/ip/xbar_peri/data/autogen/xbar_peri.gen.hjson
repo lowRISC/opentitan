@@ -36,9 +36,9 @@
   }
   clock_connections:
   {
-    clk_peri_i: clkmgr_aon_clocks_i.clk_io_div4_infra
-    clk_spi_host0_i: clkmgr_aon_clocks_i.clk_io_infra
-    clk_usb_i: clkmgr_aon_clocks_i.clk_usb_infra
+    clk_peri_i: clkmgr_clocks_i.clk_io_div4_infra
+    clk_spi_host0_i: clkmgr_clocks_i.clk_io_infra
+    clk_usb_i: clkmgr_clocks_i.clk_usb_infra
   }
   domain: Main
   connections:
@@ -52,10 +52,10 @@
       spi_host0
       rv_timer
       usbdev
-      pwrmgr_aon
-      rstmgr_aon
-      clkmgr_aon
-      pinmux_aon
+      pwrmgr
+      rstmgr
+      clkmgr
+      pinmux
       ast
     ]
   }
@@ -222,7 +222,7 @@
       req_fifo_pass: true
     }
     {
-      name: pwrmgr_aon
+      name: pwrmgr
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -243,7 +243,7 @@
       req_fifo_pass: true
     }
     {
-      name: rstmgr_aon
+      name: rstmgr
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -264,7 +264,7 @@
       req_fifo_pass: true
     }
     {
-      name: clkmgr_aon
+      name: clkmgr
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -285,7 +285,7 @@
       req_fifo_pass: true
     }
     {
-      name: pinmux_aon
+      name: pinmux
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -440,7 +440,7 @@
       index: -1
     }
     {
-      name: tl_pwrmgr_aon
+      name: tl_pwrmgr
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -449,13 +449,13 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: pwrmgr_aon_tl
+      top_signame: pwrmgr_tl
       index: -1
       external: true
       conn_type: false
     }
     {
-      name: tl_rstmgr_aon
+      name: tl_rstmgr
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -464,13 +464,13 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: rstmgr_aon_tl
+      top_signame: rstmgr_tl
       index: -1
       external: true
       conn_type: false
     }
     {
-      name: tl_clkmgr_aon
+      name: tl_clkmgr
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -479,13 +479,13 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: clkmgr_aon_tl
+      top_signame: clkmgr_tl
       index: -1
       external: true
       conn_type: false
     }
     {
-      name: tl_pinmux_aon
+      name: tl_pinmux
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -494,7 +494,7 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: pinmux_aon_tl
+      top_signame: pinmux_tl
       index: -1
     }
     {
