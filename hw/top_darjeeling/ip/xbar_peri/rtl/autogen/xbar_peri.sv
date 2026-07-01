@@ -14,18 +14,18 @@
 //     -> spi_host0
 //     -> spi_device
 //     -> rv_timer
-//     -> pwrmgr_aon
-//     -> rstmgr_aon
-//     -> clkmgr_aon
-//     -> pinmux_aon
+//     -> pwrmgr
+//     -> rstmgr
+//     -> clkmgr
+//     -> pinmux
 //     -> otp_ctrl.core
 //     -> otp_macro.prim
 //     -> lc_ctrl.regs
 //     -> alert_handler
 //     -> ast
-//     -> sram_ctrl_ret_aon.ram
-//     -> sram_ctrl_ret_aon.regs
-//     -> aon_timer_aon
+//     -> sram_ctrl_ret.ram
+//     -> sram_ctrl_ret.regs
+//     -> aon_timer
 //     -> soc_dbg_ctrl.core
 
 module xbar_peri (
@@ -49,14 +49,14 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_spi_device_i,
   output tlul_pkg::tl_h2d_t tl_rv_timer_o,
   input  tlul_pkg::tl_d2h_t tl_rv_timer_i,
-  output tlul_pkg::tl_h2d_t tl_pwrmgr_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_pwrmgr_aon_i,
-  output tlul_pkg::tl_h2d_t tl_rstmgr_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_rstmgr_aon_i,
-  output tlul_pkg::tl_h2d_t tl_clkmgr_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_clkmgr_aon_i,
-  output tlul_pkg::tl_h2d_t tl_pinmux_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_pinmux_aon_i,
+  output tlul_pkg::tl_h2d_t tl_pwrmgr_o,
+  input  tlul_pkg::tl_d2h_t tl_pwrmgr_i,
+  output tlul_pkg::tl_h2d_t tl_rstmgr_o,
+  input  tlul_pkg::tl_d2h_t tl_rstmgr_i,
+  output tlul_pkg::tl_h2d_t tl_clkmgr_o,
+  input  tlul_pkg::tl_d2h_t tl_clkmgr_i,
+  output tlul_pkg::tl_h2d_t tl_pinmux_o,
+  input  tlul_pkg::tl_d2h_t tl_pinmux_i,
   output tlul_pkg::tl_h2d_t tl_otp_ctrl__core_o,
   input  tlul_pkg::tl_d2h_t tl_otp_ctrl__core_i,
   output tlul_pkg::tl_h2d_t tl_otp_macro__prim_o,
@@ -65,12 +65,12 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_lc_ctrl__regs_i,
   output tlul_pkg::tl_h2d_t tl_alert_handler_o,
   input  tlul_pkg::tl_d2h_t tl_alert_handler_i,
-  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret_aon__regs_o,
-  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret_aon__regs_i,
-  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret_aon__ram_o,
-  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret_aon__ram_i,
-  output tlul_pkg::tl_h2d_t tl_aon_timer_aon_o,
-  input  tlul_pkg::tl_d2h_t tl_aon_timer_aon_i,
+  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret__regs_o,
+  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret__regs_i,
+  output tlul_pkg::tl_h2d_t tl_sram_ctrl_ret__ram_o,
+  input  tlul_pkg::tl_d2h_t tl_sram_ctrl_ret__ram_i,
+  output tlul_pkg::tl_h2d_t tl_aon_timer_o,
+  input  tlul_pkg::tl_d2h_t tl_aon_timer_i,
   output tlul_pkg::tl_h2d_t tl_ast_o,
   input  tlul_pkg::tl_d2h_t tl_ast_i,
   output tlul_pkg::tl_h2d_t tl_soc_dbg_ctrl__core_o,
@@ -117,17 +117,17 @@ module xbar_peri (
   assign tl_rv_timer_o = tl_s1n_20_ds_h2d[5];
   assign tl_s1n_20_ds_d2h[5] = tl_rv_timer_i;
 
-  assign tl_pwrmgr_aon_o = tl_s1n_20_ds_h2d[6];
-  assign tl_s1n_20_ds_d2h[6] = tl_pwrmgr_aon_i;
+  assign tl_pwrmgr_o = tl_s1n_20_ds_h2d[6];
+  assign tl_s1n_20_ds_d2h[6] = tl_pwrmgr_i;
 
-  assign tl_rstmgr_aon_o = tl_s1n_20_ds_h2d[7];
-  assign tl_s1n_20_ds_d2h[7] = tl_rstmgr_aon_i;
+  assign tl_rstmgr_o = tl_s1n_20_ds_h2d[7];
+  assign tl_s1n_20_ds_d2h[7] = tl_rstmgr_i;
 
-  assign tl_clkmgr_aon_o = tl_s1n_20_ds_h2d[8];
-  assign tl_s1n_20_ds_d2h[8] = tl_clkmgr_aon_i;
+  assign tl_clkmgr_o = tl_s1n_20_ds_h2d[8];
+  assign tl_s1n_20_ds_d2h[8] = tl_clkmgr_i;
 
-  assign tl_pinmux_aon_o = tl_s1n_20_ds_h2d[9];
-  assign tl_s1n_20_ds_d2h[9] = tl_pinmux_aon_i;
+  assign tl_pinmux_o = tl_s1n_20_ds_h2d[9];
+  assign tl_s1n_20_ds_d2h[9] = tl_pinmux_i;
 
   assign tl_otp_ctrl__core_o = tl_s1n_20_ds_h2d[10];
   assign tl_s1n_20_ds_d2h[10] = tl_otp_ctrl__core_i;
@@ -144,14 +144,14 @@ module xbar_peri (
   assign tl_ast_o = tl_s1n_20_ds_h2d[14];
   assign tl_s1n_20_ds_d2h[14] = tl_ast_i;
 
-  assign tl_sram_ctrl_ret_aon__ram_o = tl_s1n_20_ds_h2d[15];
-  assign tl_s1n_20_ds_d2h[15] = tl_sram_ctrl_ret_aon__ram_i;
+  assign tl_sram_ctrl_ret__ram_o = tl_s1n_20_ds_h2d[15];
+  assign tl_s1n_20_ds_d2h[15] = tl_sram_ctrl_ret__ram_i;
 
-  assign tl_sram_ctrl_ret_aon__regs_o = tl_s1n_20_ds_h2d[16];
-  assign tl_s1n_20_ds_d2h[16] = tl_sram_ctrl_ret_aon__regs_i;
+  assign tl_sram_ctrl_ret__regs_o = tl_s1n_20_ds_h2d[16];
+  assign tl_s1n_20_ds_d2h[16] = tl_sram_ctrl_ret__regs_i;
 
-  assign tl_aon_timer_aon_o = tl_s1n_20_ds_h2d[17];
-  assign tl_s1n_20_ds_d2h[17] = tl_aon_timer_aon_i;
+  assign tl_aon_timer_o = tl_s1n_20_ds_h2d[17];
+  assign tl_s1n_20_ds_d2h[17] = tl_aon_timer_i;
 
   assign tl_soc_dbg_ctrl__core_o = tl_s1n_20_ds_h2d[18];
   assign tl_s1n_20_ds_d2h[18] = tl_soc_dbg_ctrl__core_i;
@@ -187,19 +187,19 @@ module xbar_peri (
       dev_sel_s1n_20 = 5'd5;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_PWRMGR_AON)) == ADDR_SPACE_PWRMGR_AON) begin
+                  ~(ADDR_MASK_PWRMGR)) == ADDR_SPACE_PWRMGR) begin
       dev_sel_s1n_20 = 5'd6;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_RSTMGR_AON)) == ADDR_SPACE_RSTMGR_AON) begin
+                  ~(ADDR_MASK_RSTMGR)) == ADDR_SPACE_RSTMGR) begin
       dev_sel_s1n_20 = 5'd7;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_CLKMGR_AON)) == ADDR_SPACE_CLKMGR_AON) begin
+                  ~(ADDR_MASK_CLKMGR)) == ADDR_SPACE_CLKMGR) begin
       dev_sel_s1n_20 = 5'd8;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_PINMUX_AON)) == ADDR_SPACE_PINMUX_AON) begin
+                  ~(ADDR_MASK_PINMUX)) == ADDR_SPACE_PINMUX) begin
       dev_sel_s1n_20 = 5'd9;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
@@ -223,15 +223,15 @@ module xbar_peri (
       dev_sel_s1n_20 = 5'd14;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_SRAM_CTRL_RET_AON__RAM)) == ADDR_SPACE_SRAM_CTRL_RET_AON__RAM) begin
+                  ~(ADDR_MASK_SRAM_CTRL_RET__RAM)) == ADDR_SPACE_SRAM_CTRL_RET__RAM) begin
       dev_sel_s1n_20 = 5'd15;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_SRAM_CTRL_RET_AON__REGS)) == ADDR_SPACE_SRAM_CTRL_RET_AON__REGS) begin
+                  ~(ADDR_MASK_SRAM_CTRL_RET__REGS)) == ADDR_SPACE_SRAM_CTRL_RET__REGS) begin
       dev_sel_s1n_20 = 5'd16;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_AON_TIMER_AON)) == ADDR_SPACE_AON_TIMER_AON) begin
+                  ~(ADDR_MASK_AON_TIMER)) == ADDR_SPACE_AON_TIMER) begin
       dev_sel_s1n_20 = 5'd17;
 
     end else if ((tl_s1n_20_us_h2d.a_address &

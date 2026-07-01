@@ -30,8 +30,8 @@
   }
   clock_connections:
   {
-    clk_dbg_i: clkmgr_aon_clocks_i.clk_main_infra
-    clk_peri_i: clkmgr_aon_clocks_i.clk_io_infra
+    clk_dbg_i: clkmgr_clocks_i.clk_main_infra
+    clk_peri_i: clkmgr_clocks_i.clk_io_infra
   }
   domain: Main
   connections:

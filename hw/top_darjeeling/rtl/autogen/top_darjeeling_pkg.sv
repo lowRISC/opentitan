@@ -110,54 +110,54 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SPI_HOST0_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for pwrmgr_aon in top darjeeling.
+   * Peripheral base address for pwrmgr in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_PWRMGR_AON_BASE_ADDR = 32'h30400000;
+  parameter int unsigned TOP_DARJEELING_PWRMGR_BASE_ADDR = 32'h30400000;
 
   /**
-   * Peripheral size in bytes for pwrmgr_aon in top darjeeling.
+   * Peripheral size in bytes for pwrmgr in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_PWRMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_PWRMGR_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for rstmgr_aon in top darjeeling.
+   * Peripheral base address for rstmgr in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RSTMGR_AON_BASE_ADDR = 32'h30410000;
+  parameter int unsigned TOP_DARJEELING_RSTMGR_BASE_ADDR = 32'h30410000;
 
   /**
-   * Peripheral size in bytes for rstmgr_aon in top darjeeling.
+   * Peripheral size in bytes for rstmgr in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_RSTMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_RSTMGR_SIZE_BYTES = 32'h80;
 
   /**
-   * Peripheral base address for clkmgr_aon in top darjeeling.
+   * Peripheral base address for clkmgr in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CLKMGR_AON_BASE_ADDR = 32'h30420000;
+  parameter int unsigned TOP_DARJEELING_CLKMGR_BASE_ADDR = 32'h30420000;
 
   /**
-   * Peripheral size in bytes for clkmgr_aon in top darjeeling.
+   * Peripheral size in bytes for clkmgr in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_CLKMGR_SIZE_BYTES = 32'h40;
 
   /**
-   * Peripheral base address for pinmux_aon in top darjeeling.
+   * Peripheral base address for pinmux in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_PINMUX_AON_BASE_ADDR = 32'h30460000;
+  parameter int unsigned TOP_DARJEELING_PINMUX_BASE_ADDR = 32'h30460000;
 
   /**
-   * Peripheral size in bytes for pinmux_aon in top darjeeling.
+   * Peripheral size in bytes for pinmux in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_PINMUX_AON_SIZE_BYTES = 32'h800;
+  parameter int unsigned TOP_DARJEELING_PINMUX_SIZE_BYTES = 32'h800;
 
   /**
-   * Peripheral base address for aon_timer_aon in top darjeeling.
+   * Peripheral base address for aon_timer in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR = 32'h30470000;
+  parameter int unsigned TOP_DARJEELING_AON_TIMER_BASE_ADDR = 32'h30470000;
 
   /**
-   * Peripheral size in bytes for aon_timer_aon in top darjeeling.
+   * Peripheral size in bytes for aon_timer in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_AON_TIMER_AON_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_AON_TIMER_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for ast in top darjeeling.
@@ -180,14 +180,14 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES = 32'h8;
 
   /**
-   * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
+   * Peripheral base address for regs device on sram_ctrl_ret in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR = 32'h30500000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_REGS_BASE_ADDR = 32'h30500000;
 
   /**
-   * Peripheral size in bytes for regs device on sram_ctrl_ret_aon in top darjeeling.
+   * Peripheral size in bytes for regs device on sram_ctrl_ret in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_REGS_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for regs device on rv_dm in top darjeeling.
@@ -500,14 +500,14 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_SOC_PROXY_RAM_CTN_SIZE_BYTES = 32'h100000;
 
   /**
-   * Memory base address for ram memory on sram_ctrl_ret_aon in top darjeeling.
+   * Memory base address for ram memory on sram_ctrl_ret in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR = 32'h30600000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR = 32'h30600000;
 
   /**
-   * Memory size for ram memory on sram_ctrl_ret_aon in top darjeeling.
+   * Memory size for ram memory on sram_ctrl_ret in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_SRAM_CTRL_RET_RAM_SIZE_BYTES = 32'h1000;
 
   /**
    * Memory base address for ram memory on sram_ctrl_main in top darjeeling.
@@ -560,13 +560,13 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralOtpCtrl = 5,
     TopDarjeelingAlertPeripheralLcCtrl = 6,
     TopDarjeelingAlertPeripheralSpiHost0 = 7,
-    TopDarjeelingAlertPeripheralPwrmgrAon = 8,
-    TopDarjeelingAlertPeripheralRstmgrAon = 9,
-    TopDarjeelingAlertPeripheralClkmgrAon = 10,
-    TopDarjeelingAlertPeripheralPinmuxAon = 11,
-    TopDarjeelingAlertPeripheralAonTimerAon = 12,
+    TopDarjeelingAlertPeripheralPwrmgr = 8,
+    TopDarjeelingAlertPeripheralRstmgr = 9,
+    TopDarjeelingAlertPeripheralClkmgr = 10,
+    TopDarjeelingAlertPeripheralPinmux = 11,
+    TopDarjeelingAlertPeripheralAonTimer = 12,
     TopDarjeelingAlertPeripheralSocProxy = 13,
-    TopDarjeelingAlertPeripheralSramCtrlRetAon = 14,
+    TopDarjeelingAlertPeripheralSramCtrlRet = 14,
     TopDarjeelingAlertPeripheralRvDm = 15,
     TopDarjeelingAlertPeripheralRvPlic = 16,
     TopDarjeelingAlertPeripheralAes = 17,
@@ -616,15 +616,15 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdLcCtrlFatalStateError = 11,
     TopDarjeelingAlertIdLcCtrlFatalBusIntegError = 12,
     TopDarjeelingAlertIdSpiHost0FatalFault = 13,
-    TopDarjeelingAlertIdPwrmgrAonFatalFault = 14,
-    TopDarjeelingAlertIdRstmgrAonFatalFault = 15,
-    TopDarjeelingAlertIdRstmgrAonFatalCnstyFault = 16,
-    TopDarjeelingAlertIdClkmgrAonRecovFault = 17,
-    TopDarjeelingAlertIdClkmgrAonFatalFault = 18,
-    TopDarjeelingAlertIdPinmuxAonFatalFault = 19,
-    TopDarjeelingAlertIdAonTimerAonFatalFault = 20,
+    TopDarjeelingAlertIdPwrmgrFatalFault = 14,
+    TopDarjeelingAlertIdRstmgrFatalFault = 15,
+    TopDarjeelingAlertIdRstmgrFatalCnstyFault = 16,
+    TopDarjeelingAlertIdClkmgrRecovFault = 17,
+    TopDarjeelingAlertIdClkmgrFatalFault = 18,
+    TopDarjeelingAlertIdPinmuxFatalFault = 19,
+    TopDarjeelingAlertIdAonTimerFatalFault = 20,
     TopDarjeelingAlertIdSocProxyFatalAlertIntg = 21,
-    TopDarjeelingAlertIdSramCtrlRetAonFatalError = 22,
+    TopDarjeelingAlertIdSramCtrlRetFatalError = 22,
     TopDarjeelingAlertIdRvDmFatalFault = 23,
     TopDarjeelingAlertIdRvPlicFatalFault = 24,
     TopDarjeelingAlertIdAesRecovCtrlUpdateErr = 25,
@@ -758,9 +758,9 @@ package top_darjeeling_pkg;
     TopDarjeelingPlicIrqIdAlertHandlerClassd = 71,
     TopDarjeelingPlicIrqIdSpiHost0Error = 72,
     TopDarjeelingPlicIrqIdSpiHost0SpiEvent = 73,
-    TopDarjeelingPlicIrqIdPwrmgrAonWakeup = 74,
-    TopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired = 75,
-    TopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark = 76,
+    TopDarjeelingPlicIrqIdPwrmgrWakeup = 74,
+    TopDarjeelingPlicIrqIdAonTimerWkupTimerExpired = 75,
+    TopDarjeelingPlicIrqIdAonTimerWdogTimerBark = 76,
     TopDarjeelingPlicIrqIdHmacHmacDone = 77,
     TopDarjeelingPlicIrqIdHmacFifoEmpty = 78,
     TopDarjeelingPlicIrqIdHmacHmacErr = 79,
@@ -1036,9 +1036,9 @@ package top_darjeeling_pkg;
   typedef enum {
     PeripheralAes,
     PeripheralAlertHandler,
-    PeripheralAonTimerAon,
+    PeripheralAonTimer,
     PeripheralAst,
-    PeripheralClkmgrAon,
+    PeripheralClkmgr,
     PeripheralCsrng,
     PeripheralDma,
     PeripheralEdn0,
@@ -1063,11 +1063,11 @@ package top_darjeeling_pkg;
     PeripheralOtbn,
     PeripheralOtpCtrl,
     PeripheralOtpMacro,
-    PeripheralPinmuxAon,
-    PeripheralPwrmgrAon,
+    PeripheralPinmux,
+    PeripheralPwrmgr,
     PeripheralRomCtrl0,
     PeripheralRomCtrl1,
-    PeripheralRstmgrAon,
+    PeripheralRstmgr,
     PeripheralRvCoreIbex,
     PeripheralRvDm,
     PeripheralRvPlic,
@@ -1078,7 +1078,7 @@ package top_darjeeling_pkg;
     PeripheralSpiHost0,
     PeripheralSramCtrlMain,
     PeripheralSramCtrlMbox,
-    PeripheralSramCtrlRetAon,
+    PeripheralSramCtrlRet,
     PeripheralUart0,
     PeripheralCount
   } peripheral_e;

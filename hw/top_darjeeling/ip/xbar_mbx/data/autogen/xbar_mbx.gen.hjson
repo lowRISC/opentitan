@@ -24,7 +24,7 @@
   }
   clock_connections:
   {
-    clk_mbx_i: clkmgr_aon_clocks_i.clk_main_infra
+    clk_mbx_i: clkmgr_clocks_i.clk_main_infra
   }
   domain: Main
   connections:

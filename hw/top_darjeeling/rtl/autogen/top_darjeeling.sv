@@ -31,17 +31,17 @@ module top_darjeeling #(
   // parameters for alert_handler
   parameter int AlertHandlerEscNumSeverities = 4,
   parameter int AlertHandlerEscPingCountWidth = 16,
-  // parameters for rstmgr_aon
-  parameter bit SecRstmgrAonCheck = 1'b1,
-  parameter int SecRstmgrAonMaxSyncDelay = 2,
-  // parameters for pinmux_aon
-  parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
-  // parameters for sram_ctrl_ret_aon
-  parameter int SramCtrlRetAonInstSize = 4096,
-  parameter int SramCtrlRetAonNumRamInst = 1,
-  parameter bit SramCtrlRetAonInstrExec = 0,
-  parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
-  parameter bit SramCtrlRetAonEccCorrection = 0,
+  // parameters for rstmgr
+  parameter bit SecRstmgrCheck = 1'b1,
+  parameter int SecRstmgrMaxSyncDelay = 2,
+  // parameters for pinmux
+  parameter pinmux_pkg::target_cfg_t PinmuxTargetCfg = pinmux_pkg::DefaultTargetCfg,
+  // parameters for sram_ctrl_ret
+  parameter int SramCtrlRetInstSize = 4096,
+  parameter int SramCtrlRetNumRamInst = 1,
+  parameter bit SramCtrlRetInstrExec = 0,
+  parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
+  parameter bit SramCtrlRetEccCorrection = 0,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   parameter bit RvDmUseDmiInterface = 1,
@@ -190,14 +190,14 @@ module top_darjeeling #(
   output prim_rom_pkg::rom_cfg_rsp_t       rom_ctrl1_rom_cfg_rsp_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_cfg_req_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_cfg_rsp_o,
-  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_cfg_req_i,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_rsp_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_cfg_req_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_cfg_rsp_o,
-  output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
+  output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_obs_o,
   input  logic       pwrmgr_ext_rst_ack_i,
-  output clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks_o,
-  output clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en_o,
+  output clkmgr_pkg::clkmgr_out_t       clkmgr_clocks_o,
+  output clkmgr_pkg::clkmgr_cg_en_t       clkmgr_cg_en_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output dma_pkg::sys_req_t       dma_sys_req_o,
   input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
@@ -260,8 +260,8 @@ module top_darjeeling #(
   output logic [7:0] otp_obs_o,
   input  otp_macro_pkg::otp_cfg_t       otp_cfg_i,
   input  logic [1:0] por_n_i,
-  output rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets_o,
-  output rstmgr_pkg::rstmgr_rst_en_t       rstmgr_aon_rst_en_o,
+  output rstmgr_pkg::rstmgr_out_t       rstmgr_resets_o,
+  output rstmgr_pkg::rstmgr_rst_en_t       rstmgr_rst_en_o,
   input  logic [31:0] fpga_info_i,
   input  tlul_pkg::tl_h2d_t       ctn_misc_tl_h2d_i,
   output tlul_pkg::tl_d2h_t       ctn_misc_tl_d2h_o,
@@ -292,23 +292,23 @@ module top_darjeeling #(
   alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t       alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t       alert_handler_esc_tx;
-  logic       aon_timer_aon_nmi_wdog_timer_bark;
+  logic       aon_timer_nmi_wdog_timer_bark;
   otp_ctrl_pkg::sram_otp_key_req_t       otp_ctrl_sram_otp_key_req;
   otp_ctrl_pkg::sram_otp_key_rsp_t       otp_ctrl_sram_otp_key_rsp;
-  pwrmgr_pkg::pwr_otp_req_t       pwrmgr_aon_pwr_otp_req;
-  pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_aon_pwr_otp_rsp;
-  lc_ctrl_pkg::pwr_lc_req_t       pwrmgr_aon_pwr_lc_req;
-  lc_ctrl_pkg::pwr_lc_rsp_t       pwrmgr_aon_pwr_lc_rsp;
-  logic       pwrmgr_aon_strap;
-  logic       pwrmgr_aon_low_power;
-  lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  rom_ctrl_pkg::pwrmgr_data_t [2:0] pwrmgr_aon_rom_ctrl;
-  pwrmgr_pkg::pwr_boot_status_t       pwrmgr_aon_boot_status;
+  pwrmgr_pkg::pwr_otp_req_t       pwrmgr_pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t       pwrmgr_pwr_otp_rsp;
+  lc_ctrl_pkg::pwr_lc_req_t       pwrmgr_pwr_lc_req;
+  lc_ctrl_pkg::pwr_lc_rsp_t       pwrmgr_pwr_lc_rsp;
+  logic       pwrmgr_strap;
+  logic       pwrmgr_low_power;
+  lc_ctrl_pkg::lc_tx_t       pwrmgr_fetch_en;
+  rom_ctrl_pkg::pwrmgr_data_t [2:0] pwrmgr_rom_ctrl;
+  pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status;
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   logic       i2c0_lsio_trigger;
   logic       spi_host0_lsio_trigger;
   logic       uart0_lsio_trigger;
-  prim_mubi_pkg::mubi4_t [3:0] clkmgr_aon_idle;
+  prim_mubi_pkg::mubi4_t [3:0] clkmgr_idle;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
@@ -319,23 +319,23 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       soc_proxy_dma_tl_d2h;
   tlul_pkg::tl_h2d_t       soc_proxy_ctn_tl_h2d;
   tlul_pkg::tl_d2h_t       soc_proxy_ctn_tl_d2h;
-  logic       pwrmgr_aon_wakeups;
+  logic       pwrmgr_wakeups;
   tlul_pkg::tl_h2d_t       soc_proxy_core_tl_req;
   tlul_pkg::tl_d2h_t       soc_proxy_core_tl_rsp;
   tlul_pkg::tl_h2d_t       soc_proxy_ctn_tl_req;
   tlul_pkg::tl_d2h_t       soc_proxy_ctn_tl_rsp;
-  tlul_pkg::tl_h2d_t       pwrmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       pwrmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       rstmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       rstmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       clkmgr_aon_tl_req;
-  tlul_pkg::tl_d2h_t       clkmgr_aon_tl_rsp;
-  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_regs_tl_req;
-  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_regs_tl_rsp;
-  tlul_pkg::tl_h2d_t       sram_ctrl_ret_aon_ram_tl_req;
-  tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_ram_tl_rsp;
-  tlul_pkg::tl_h2d_t       aon_timer_aon_tl_req;
-  tlul_pkg::tl_d2h_t       aon_timer_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       pwrmgr_tl_req;
+  tlul_pkg::tl_d2h_t       pwrmgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       rstmgr_tl_req;
+  tlul_pkg::tl_d2h_t       rstmgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       clkmgr_tl_req;
+  tlul_pkg::tl_d2h_t       clkmgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_ret_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_ret_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_ret_ram_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_ret_ram_tl_rsp;
+  tlul_pkg::tl_h2d_t       aon_timer_tl_req;
+  tlul_pkg::tl_d2h_t       aon_timer_tl_rsp;
   logic [15:0] cio_soc_proxy_soc_gpi_p2d;
   logic [15:0] cio_soc_proxy_soc_gpo_d2p;
   logic [15:0] cio_soc_proxy_soc_gpo_en_d2p;
@@ -359,7 +359,7 @@ module top_darjeeling #(
   .LcCtrlIdcodeValue(LcCtrlIdcodeValue),
   .AlertHandlerEscNumSeverities(AlertHandlerEscNumSeverities),
   .AlertHandlerEscPingCountWidth(AlertHandlerEscPingCountWidth),
-  .PinmuxAonTargetCfg(PinmuxAonTargetCfg),
+  .PinmuxTargetCfg(PinmuxTargetCfg),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
   .SecRvDmVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
@@ -441,13 +441,13 @@ module top_darjeeling #(
   .RvCoreIbexCsrMvendorId(RvCoreIbexCsrMvendorId),
   .RvCoreIbexCsrMimpId(RvCoreIbexCsrMimpId)
   ) darjeeling_pd_main (
-    // Clocks and clock gating control from clkmgr_aon
-    .clkmgr_aon_clocks_i(clkmgr_aon_clocks_o),
-    .clkmgr_aon_cg_en_i (clkmgr_aon_cg_en_o),
+    // Clocks and clock gating control from clkmgr
+    .clkmgr_clocks_i(clkmgr_clocks_o),
+    .clkmgr_cg_en_i (clkmgr_cg_en_o),
 
-    // Resets and reset assert info from rstmgr_aon
-    .rstmgr_aon_resets_i(rstmgr_aon_resets_o),
-    .rstmgr_aon_rst_en_i(rstmgr_aon_rst_en_o),
+    // Resets and reset assert info from rstmgr
+    .rstmgr_resets_i(rstmgr_resets_o),
+    .rstmgr_rst_en_i(rstmgr_rst_en_o),
 
     // Manual DFT signals
     .scan_rst_ni,
@@ -475,56 +475,56 @@ module top_darjeeling #(
     .alert_rx_pd_aon_o(alert_rx_pd_aon),
 
     // Ports to and from other power domains (auto-generated)
-    .alert_handler_crashdump_o          (alert_handler_crashdump  ),
-    .alert_handler_esc_rx_i             (alert_handler_esc_rx     ),
-    .alert_handler_esc_tx_o             (alert_handler_esc_tx     ),
-    .aon_timer_aon_nmi_wdog_timer_bark_i(aon_timer_aon_nmi_wdog_timer_bark),
-    .otp_ctrl_sram_otp_key_req_i        (otp_ctrl_sram_otp_key_req),
-    .otp_ctrl_sram_otp_key_rsp_o        (otp_ctrl_sram_otp_key_rsp),
-    .pwrmgr_aon_pwr_otp_req_i           (pwrmgr_aon_pwr_otp_req   ),
-    .pwrmgr_aon_pwr_otp_rsp_o           (pwrmgr_aon_pwr_otp_rsp   ),
-    .pwrmgr_aon_pwr_lc_req_i            (pwrmgr_aon_pwr_lc_req    ),
-    .pwrmgr_aon_pwr_lc_rsp_o            (pwrmgr_aon_pwr_lc_rsp    ),
-    .pwrmgr_aon_strap_i                 (pwrmgr_aon_strap         ),
-    .pwrmgr_aon_low_power_i             (pwrmgr_aon_low_power     ),
-    .pwrmgr_aon_fetch_en_i              (pwrmgr_aon_fetch_en      ),
-    .pwrmgr_aon_rom_ctrl_o              (pwrmgr_aon_rom_ctrl      ),
-    .pwrmgr_aon_boot_status_i           (pwrmgr_aon_boot_status   ),
-    .dma_lsio_trigger_i                 (dma_lsio_trigger         ),
-    .i2c0_lsio_trigger_o                (i2c0_lsio_trigger        ),
-    .spi_host0_lsio_trigger_o           (spi_host0_lsio_trigger   ),
-    .uart0_lsio_trigger_o               (uart0_lsio_trigger       ),
-    .clkmgr_aon_idle_o                  (clkmgr_aon_idle          ),
-    .lc_ctrl_lc_dft_en_o                (lc_ctrl_lc_dft_en        ),
-    .lc_ctrl_lc_hw_debug_en_o           (lc_ctrl_lc_hw_debug_en   ),
-    .lc_ctrl_lc_escalate_en_o           (lc_ctrl_lc_escalate_en   ),
-    .rv_core_ibex_crash_dump_o          (rv_core_ibex_crash_dump  ),
-    .rv_core_ibex_pwrmgr_o              (rv_core_ibex_pwrmgr      ),
-    .rv_dm_ndmreset_req_o               (rv_dm_ndmreset_req       ),
-    .soc_proxy_dma_tl_h2d_o             (soc_proxy_dma_tl_h2d     ),
-    .soc_proxy_dma_tl_d2h_i             (soc_proxy_dma_tl_d2h     ),
-    .soc_proxy_ctn_tl_h2d_i             (soc_proxy_ctn_tl_h2d     ),
-    .soc_proxy_ctn_tl_d2h_o             (soc_proxy_ctn_tl_d2h     ),
-    .pwrmgr_aon_wakeups_o               (pwrmgr_aon_wakeups       ),
-    .soc_proxy_core_tl_req_o            (soc_proxy_core_tl_req    ),
-    .soc_proxy_core_tl_rsp_i            (soc_proxy_core_tl_rsp    ),
-    .soc_proxy_ctn_tl_req_o             (soc_proxy_ctn_tl_req     ),
-    .soc_proxy_ctn_tl_rsp_i             (soc_proxy_ctn_tl_rsp     ),
-    .pwrmgr_aon_tl_req_o                (pwrmgr_aon_tl_req        ),
-    .pwrmgr_aon_tl_rsp_i                (pwrmgr_aon_tl_rsp        ),
-    .rstmgr_aon_tl_req_o                (rstmgr_aon_tl_req        ),
-    .rstmgr_aon_tl_rsp_i                (rstmgr_aon_tl_rsp        ),
-    .clkmgr_aon_tl_req_o                (clkmgr_aon_tl_req        ),
-    .clkmgr_aon_tl_rsp_i                (clkmgr_aon_tl_rsp        ),
-    .sram_ctrl_ret_aon_regs_tl_req_o    (sram_ctrl_ret_aon_regs_tl_req),
-    .sram_ctrl_ret_aon_regs_tl_rsp_i    (sram_ctrl_ret_aon_regs_tl_rsp),
-    .sram_ctrl_ret_aon_ram_tl_req_o     (sram_ctrl_ret_aon_ram_tl_req),
-    .sram_ctrl_ret_aon_ram_tl_rsp_i     (sram_ctrl_ret_aon_ram_tl_rsp),
-    .aon_timer_aon_tl_req_o             (aon_timer_aon_tl_req     ),
-    .aon_timer_aon_tl_rsp_i             (aon_timer_aon_tl_rsp     ),
-    .cio_soc_proxy_soc_gpi_p2d_o        (cio_soc_proxy_soc_gpi_p2d),
-    .cio_soc_proxy_soc_gpo_d2p_i        (cio_soc_proxy_soc_gpo_d2p),
-    .cio_soc_proxy_soc_gpo_en_d2p_i     (cio_soc_proxy_soc_gpo_en_d2p),
+    .alert_handler_crashdump_o      (alert_handler_crashdump  ),
+    .alert_handler_esc_rx_i         (alert_handler_esc_rx     ),
+    .alert_handler_esc_tx_o         (alert_handler_esc_tx     ),
+    .aon_timer_nmi_wdog_timer_bark_i(aon_timer_nmi_wdog_timer_bark),
+    .otp_ctrl_sram_otp_key_req_i    (otp_ctrl_sram_otp_key_req),
+    .otp_ctrl_sram_otp_key_rsp_o    (otp_ctrl_sram_otp_key_rsp),
+    .pwrmgr_pwr_otp_req_i           (pwrmgr_pwr_otp_req       ),
+    .pwrmgr_pwr_otp_rsp_o           (pwrmgr_pwr_otp_rsp       ),
+    .pwrmgr_pwr_lc_req_i            (pwrmgr_pwr_lc_req        ),
+    .pwrmgr_pwr_lc_rsp_o            (pwrmgr_pwr_lc_rsp        ),
+    .pwrmgr_strap_i                 (pwrmgr_strap             ),
+    .pwrmgr_low_power_i             (pwrmgr_low_power         ),
+    .pwrmgr_fetch_en_i              (pwrmgr_fetch_en          ),
+    .pwrmgr_rom_ctrl_o              (pwrmgr_rom_ctrl          ),
+    .pwrmgr_boot_status_i           (pwrmgr_boot_status       ),
+    .dma_lsio_trigger_i             (dma_lsio_trigger         ),
+    .i2c0_lsio_trigger_o            (i2c0_lsio_trigger        ),
+    .spi_host0_lsio_trigger_o       (spi_host0_lsio_trigger   ),
+    .uart0_lsio_trigger_o           (uart0_lsio_trigger       ),
+    .clkmgr_idle_o                  (clkmgr_idle              ),
+    .lc_ctrl_lc_dft_en_o            (lc_ctrl_lc_dft_en        ),
+    .lc_ctrl_lc_hw_debug_en_o       (lc_ctrl_lc_hw_debug_en   ),
+    .lc_ctrl_lc_escalate_en_o       (lc_ctrl_lc_escalate_en   ),
+    .rv_core_ibex_crash_dump_o      (rv_core_ibex_crash_dump  ),
+    .rv_core_ibex_pwrmgr_o          (rv_core_ibex_pwrmgr      ),
+    .rv_dm_ndmreset_req_o           (rv_dm_ndmreset_req       ),
+    .soc_proxy_dma_tl_h2d_o         (soc_proxy_dma_tl_h2d     ),
+    .soc_proxy_dma_tl_d2h_i         (soc_proxy_dma_tl_d2h     ),
+    .soc_proxy_ctn_tl_h2d_i         (soc_proxy_ctn_tl_h2d     ),
+    .soc_proxy_ctn_tl_d2h_o         (soc_proxy_ctn_tl_d2h     ),
+    .pwrmgr_wakeups_o               (pwrmgr_wakeups           ),
+    .soc_proxy_core_tl_req_o        (soc_proxy_core_tl_req    ),
+    .soc_proxy_core_tl_rsp_i        (soc_proxy_core_tl_rsp    ),
+    .soc_proxy_ctn_tl_req_o         (soc_proxy_ctn_tl_req     ),
+    .soc_proxy_ctn_tl_rsp_i         (soc_proxy_ctn_tl_rsp     ),
+    .pwrmgr_tl_req_o                (pwrmgr_tl_req            ),
+    .pwrmgr_tl_rsp_i                (pwrmgr_tl_rsp            ),
+    .rstmgr_tl_req_o                (rstmgr_tl_req            ),
+    .rstmgr_tl_rsp_i                (rstmgr_tl_rsp            ),
+    .clkmgr_tl_req_o                (clkmgr_tl_req            ),
+    .clkmgr_tl_rsp_i                (clkmgr_tl_rsp            ),
+    .sram_ctrl_ret_regs_tl_req_o    (sram_ctrl_ret_regs_tl_req),
+    .sram_ctrl_ret_regs_tl_rsp_i    (sram_ctrl_ret_regs_tl_rsp),
+    .sram_ctrl_ret_ram_tl_req_o     (sram_ctrl_ret_ram_tl_req ),
+    .sram_ctrl_ret_ram_tl_rsp_i     (sram_ctrl_ret_ram_tl_rsp ),
+    .aon_timer_tl_req_o             (aon_timer_tl_req         ),
+    .aon_timer_tl_rsp_i             (aon_timer_tl_rsp         ),
+    .cio_soc_proxy_soc_gpi_p2d_o    (cio_soc_proxy_soc_gpi_p2d),
+    .cio_soc_proxy_soc_gpo_d2p_i    (cio_soc_proxy_soc_gpo_d2p),
+    .cio_soc_proxy_soc_gpo_en_d2p_i (cio_soc_proxy_soc_gpo_en_d2p),
 
     // Regular ports (auto-generated)
     .ast_lc_dft_en_o,
@@ -626,13 +626,13 @@ module top_darjeeling #(
   //////////////////////////
   darjeeling_pd_aon #(
   // Auto-inferred parameters
-  .SecRstmgrAonCheck(SecRstmgrAonCheck),
-  .SecRstmgrAonMaxSyncDelay(SecRstmgrAonMaxSyncDelay),
-  .SramCtrlRetAonInstSize(SramCtrlRetAonInstSize),
-  .SramCtrlRetAonNumRamInst(SramCtrlRetAonNumRamInst),
-  .SramCtrlRetAonInstrExec(SramCtrlRetAonInstrExec),
-  .SramCtrlRetAonNumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
-  .SramCtrlRetAonEccCorrection(SramCtrlRetAonEccCorrection)
+  .SecRstmgrCheck(SecRstmgrCheck),
+  .SecRstmgrMaxSyncDelay(SecRstmgrMaxSyncDelay),
+  .SramCtrlRetInstSize(SramCtrlRetInstSize),
+  .SramCtrlRetNumRamInst(SramCtrlRetNumRamInst),
+  .SramCtrlRetInstrExec(SramCtrlRetInstrExec),
+  .SramCtrlRetNumPrinceRoundsHalf(SramCtrlRetNumPrinceRoundsHalf),
+  .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection)
   ) darjeeling_pd_aon (
     // All externally supplied clocks
     .clk_main_i(ast_base_clks_i.clk_sys),
@@ -650,70 +650,70 @@ module top_darjeeling #(
     .alert_rx_i(alert_rx_pd_aon),
 
     // Ports to and from other power domains (auto-generated)
-    .alert_handler_crashdump_i          (alert_handler_crashdump  ),
-    .alert_handler_esc_rx_o             (alert_handler_esc_rx     ),
-    .alert_handler_esc_tx_i             (alert_handler_esc_tx     ),
-    .aon_timer_aon_nmi_wdog_timer_bark_o(aon_timer_aon_nmi_wdog_timer_bark),
-    .otp_ctrl_sram_otp_key_req_o        (otp_ctrl_sram_otp_key_req),
-    .otp_ctrl_sram_otp_key_rsp_i        (otp_ctrl_sram_otp_key_rsp),
-    .pwrmgr_aon_pwr_otp_req_o           (pwrmgr_aon_pwr_otp_req   ),
-    .pwrmgr_aon_pwr_otp_rsp_i           (pwrmgr_aon_pwr_otp_rsp   ),
-    .pwrmgr_aon_pwr_lc_req_o            (pwrmgr_aon_pwr_lc_req    ),
-    .pwrmgr_aon_pwr_lc_rsp_i            (pwrmgr_aon_pwr_lc_rsp    ),
-    .pwrmgr_aon_strap_o                 (pwrmgr_aon_strap         ),
-    .pwrmgr_aon_low_power_o             (pwrmgr_aon_low_power     ),
-    .pwrmgr_aon_fetch_en_o              (pwrmgr_aon_fetch_en      ),
-    .pwrmgr_aon_rom_ctrl_i              (pwrmgr_aon_rom_ctrl      ),
-    .pwrmgr_aon_boot_status_o           (pwrmgr_aon_boot_status   ),
-    .dma_lsio_trigger_o                 (dma_lsio_trigger         ),
-    .i2c0_lsio_trigger_i                (i2c0_lsio_trigger        ),
-    .spi_host0_lsio_trigger_i           (spi_host0_lsio_trigger   ),
-    .uart0_lsio_trigger_i               (uart0_lsio_trigger       ),
-    .clkmgr_aon_idle_i                  (clkmgr_aon_idle          ),
-    .lc_ctrl_lc_dft_en_i                (lc_ctrl_lc_dft_en        ),
-    .lc_ctrl_lc_hw_debug_en_i           (lc_ctrl_lc_hw_debug_en   ),
-    .lc_ctrl_lc_escalate_en_i           (lc_ctrl_lc_escalate_en   ),
-    .rv_core_ibex_crash_dump_i          (rv_core_ibex_crash_dump  ),
-    .rv_core_ibex_pwrmgr_i              (rv_core_ibex_pwrmgr      ),
-    .rv_dm_ndmreset_req_i               (rv_dm_ndmreset_req       ),
-    .soc_proxy_dma_tl_h2d_i             (soc_proxy_dma_tl_h2d     ),
-    .soc_proxy_dma_tl_d2h_o             (soc_proxy_dma_tl_d2h     ),
-    .soc_proxy_ctn_tl_h2d_o             (soc_proxy_ctn_tl_h2d     ),
-    .soc_proxy_ctn_tl_d2h_i             (soc_proxy_ctn_tl_d2h     ),
-    .pwrmgr_aon_wakeups_i               (pwrmgr_aon_wakeups       ),
-    .soc_proxy_core_tl_req_i            (soc_proxy_core_tl_req    ),
-    .soc_proxy_core_tl_rsp_o            (soc_proxy_core_tl_rsp    ),
-    .soc_proxy_ctn_tl_req_i             (soc_proxy_ctn_tl_req     ),
-    .soc_proxy_ctn_tl_rsp_o             (soc_proxy_ctn_tl_rsp     ),
-    .pwrmgr_aon_tl_req_i                (pwrmgr_aon_tl_req        ),
-    .pwrmgr_aon_tl_rsp_o                (pwrmgr_aon_tl_rsp        ),
-    .rstmgr_aon_tl_req_i                (rstmgr_aon_tl_req        ),
-    .rstmgr_aon_tl_rsp_o                (rstmgr_aon_tl_rsp        ),
-    .clkmgr_aon_tl_req_i                (clkmgr_aon_tl_req        ),
-    .clkmgr_aon_tl_rsp_o                (clkmgr_aon_tl_rsp        ),
-    .sram_ctrl_ret_aon_regs_tl_req_i    (sram_ctrl_ret_aon_regs_tl_req),
-    .sram_ctrl_ret_aon_regs_tl_rsp_o    (sram_ctrl_ret_aon_regs_tl_rsp),
-    .sram_ctrl_ret_aon_ram_tl_req_i     (sram_ctrl_ret_aon_ram_tl_req),
-    .sram_ctrl_ret_aon_ram_tl_rsp_o     (sram_ctrl_ret_aon_ram_tl_rsp),
-    .aon_timer_aon_tl_req_i             (aon_timer_aon_tl_req     ),
-    .aon_timer_aon_tl_rsp_o             (aon_timer_aon_tl_rsp     ),
-    .cio_soc_proxy_soc_gpi_p2d_i        (cio_soc_proxy_soc_gpi_p2d),
-    .cio_soc_proxy_soc_gpo_d2p_o        (cio_soc_proxy_soc_gpo_d2p),
-    .cio_soc_proxy_soc_gpo_en_d2p_o     (cio_soc_proxy_soc_gpo_en_d2p),
+    .alert_handler_crashdump_i      (alert_handler_crashdump  ),
+    .alert_handler_esc_rx_o         (alert_handler_esc_rx     ),
+    .alert_handler_esc_tx_i         (alert_handler_esc_tx     ),
+    .aon_timer_nmi_wdog_timer_bark_o(aon_timer_nmi_wdog_timer_bark),
+    .otp_ctrl_sram_otp_key_req_o    (otp_ctrl_sram_otp_key_req),
+    .otp_ctrl_sram_otp_key_rsp_i    (otp_ctrl_sram_otp_key_rsp),
+    .pwrmgr_pwr_otp_req_o           (pwrmgr_pwr_otp_req       ),
+    .pwrmgr_pwr_otp_rsp_i           (pwrmgr_pwr_otp_rsp       ),
+    .pwrmgr_pwr_lc_req_o            (pwrmgr_pwr_lc_req        ),
+    .pwrmgr_pwr_lc_rsp_i            (pwrmgr_pwr_lc_rsp        ),
+    .pwrmgr_strap_o                 (pwrmgr_strap             ),
+    .pwrmgr_low_power_o             (pwrmgr_low_power         ),
+    .pwrmgr_fetch_en_o              (pwrmgr_fetch_en          ),
+    .pwrmgr_rom_ctrl_i              (pwrmgr_rom_ctrl          ),
+    .pwrmgr_boot_status_o           (pwrmgr_boot_status       ),
+    .dma_lsio_trigger_o             (dma_lsio_trigger         ),
+    .i2c0_lsio_trigger_i            (i2c0_lsio_trigger        ),
+    .spi_host0_lsio_trigger_i       (spi_host0_lsio_trigger   ),
+    .uart0_lsio_trigger_i           (uart0_lsio_trigger       ),
+    .clkmgr_idle_i                  (clkmgr_idle              ),
+    .lc_ctrl_lc_dft_en_i            (lc_ctrl_lc_dft_en        ),
+    .lc_ctrl_lc_hw_debug_en_i       (lc_ctrl_lc_hw_debug_en   ),
+    .lc_ctrl_lc_escalate_en_i       (lc_ctrl_lc_escalate_en   ),
+    .rv_core_ibex_crash_dump_i      (rv_core_ibex_crash_dump  ),
+    .rv_core_ibex_pwrmgr_i          (rv_core_ibex_pwrmgr      ),
+    .rv_dm_ndmreset_req_i           (rv_dm_ndmreset_req       ),
+    .soc_proxy_dma_tl_h2d_i         (soc_proxy_dma_tl_h2d     ),
+    .soc_proxy_dma_tl_d2h_o         (soc_proxy_dma_tl_d2h     ),
+    .soc_proxy_ctn_tl_h2d_o         (soc_proxy_ctn_tl_h2d     ),
+    .soc_proxy_ctn_tl_d2h_i         (soc_proxy_ctn_tl_d2h     ),
+    .pwrmgr_wakeups_i               (pwrmgr_wakeups           ),
+    .soc_proxy_core_tl_req_i        (soc_proxy_core_tl_req    ),
+    .soc_proxy_core_tl_rsp_o        (soc_proxy_core_tl_rsp    ),
+    .soc_proxy_ctn_tl_req_i         (soc_proxy_ctn_tl_req     ),
+    .soc_proxy_ctn_tl_rsp_o         (soc_proxy_ctn_tl_rsp     ),
+    .pwrmgr_tl_req_i                (pwrmgr_tl_req            ),
+    .pwrmgr_tl_rsp_o                (pwrmgr_tl_rsp            ),
+    .rstmgr_tl_req_i                (rstmgr_tl_req            ),
+    .rstmgr_tl_rsp_o                (rstmgr_tl_rsp            ),
+    .clkmgr_tl_req_i                (clkmgr_tl_req            ),
+    .clkmgr_tl_rsp_o                (clkmgr_tl_rsp            ),
+    .sram_ctrl_ret_regs_tl_req_i    (sram_ctrl_ret_regs_tl_req),
+    .sram_ctrl_ret_regs_tl_rsp_o    (sram_ctrl_ret_regs_tl_rsp),
+    .sram_ctrl_ret_ram_tl_req_i     (sram_ctrl_ret_ram_tl_req ),
+    .sram_ctrl_ret_ram_tl_rsp_o     (sram_ctrl_ret_ram_tl_rsp ),
+    .aon_timer_tl_req_i             (aon_timer_tl_req         ),
+    .aon_timer_tl_rsp_o             (aon_timer_tl_rsp         ),
+    .cio_soc_proxy_soc_gpi_p2d_i    (cio_soc_proxy_soc_gpi_p2d),
+    .cio_soc_proxy_soc_gpo_d2p_o    (cio_soc_proxy_soc_gpo_d2p),
+    .cio_soc_proxy_soc_gpo_en_d2p_o (cio_soc_proxy_soc_gpo_en_d2p),
 
     // Regular ports (auto-generated)
-    .sram_ctrl_ret_aon_ram_cfg_req_i,
-    .sram_ctrl_ret_aon_ram_cfg_rsp_o,
-    .pwrmgr_boot_status_o,
+    .sram_ctrl_ret_ram_cfg_req_i,
+    .sram_ctrl_ret_ram_cfg_rsp_o,
+    .pwrmgr_boot_status_obs_o,
     .pwrmgr_ext_rst_ack_i,
-    .clkmgr_aon_clocks_o,
-    .clkmgr_aon_cg_en_o,
+    .clkmgr_clocks_o,
+    .clkmgr_cg_en_o,
     .clk_main_jitter_en_o,
     .pwrmgr_ast_req_o,
     .pwrmgr_ast_rsp_i,
     .por_n_i,
-    .rstmgr_aon_resets_o,
-    .rstmgr_aon_rst_en_o,
+    .rstmgr_resets_o,
+    .rstmgr_rst_en_o,
     .ctn_misc_tl_h2d_i,
     .ctn_misc_tl_d2h_o,
     .soc_wkup_async_i,
