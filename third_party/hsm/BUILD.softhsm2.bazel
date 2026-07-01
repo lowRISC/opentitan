@@ -20,6 +20,7 @@ cmake(
         "ENABLE_P11_KIT": "OFF",
         "ENABLE_STATIC": "OFF",
         "ENABLE_ECC": "ON",
+        "ENABLE_SLHDSA": "ON",
         "WITH_CRYPTO_BACKEND": "openssl",
         "OPENSSL_ROOT_DIR": "${OPENSSL}/install",
 
