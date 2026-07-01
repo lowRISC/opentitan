@@ -9,7 +9,7 @@
 `define PD_AON_HIER           `DUT_HIER.top_darjeeling.darjeeling_pd_aon
 
 `define ALERT_HANDLER_HIER    `PD_MAIN_HIER.u_alert_handler
-`define CLKMGR_HIER           `PD_AON_HIER.u_clkmgr_aon
+`define CLKMGR_HIER           `PD_AON_HIER.u_clkmgr
 `define CPU_HIER              `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER         `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
@@ -19,14 +19,14 @@
 `define OTP_CTRL_HIER         `PD_MAIN_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER        `PD_MAIN_HIER.u_otp_macro
 `define RAM_MAIN_HIER         `PD_MAIN_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
-`define RAM_RET_HIER          `PD_AON_HIER.u_sram_ctrl_ret_aon.u_prim_ram_1p_scr
+`define RAM_RET_HIER          `PD_AON_HIER.u_sram_ctrl_ret.u_prim_ram_1p_scr
 `define RAM_MBOX_HIER         `PD_MAIN_HIER.u_sram_ctrl_mbox.u_prim_ram_1p_scr
 `define ROM_CTRL0_HIER        `PD_MAIN_HIER.u_rom_ctrl0
 `define ROM_CTRL1_HIER        `PD_MAIN_HIER.u_rom_ctrl1
-`define RSTMGR_HIER           `PD_AON_HIER.u_rstmgr_aon
+`define RSTMGR_HIER           `PD_AON_HIER.u_rstmgr
 `define SPI_DEVICE_HIER       `PD_MAIN_HIER.u_spi_device
 `define UART_HIER             `PD_MAIN_HIER.u_uart
-`define PWRMGR_HIER           `PD_AON_HIER.u_pwrmgr_aon
+`define PWRMGR_HIER           `PD_AON_HIER.u_pwrmgr
 `define OTBN_HIER             `PD_MAIN_HIER.u_otbn
 
 // The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path

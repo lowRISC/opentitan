@@ -80,7 +80,7 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
     cfg.debugger.check_debug_cause(jtag_rv_debugger_pkg::RvDebugCauseTrigger);
 
     `uvm_info(`gfn, "Disable watchdog config", UVM_LOW)
-    cfg.debugger.mem_write(.addr(ral.aon_timer_aon.wdog_ctrl.get_address()),
+    cfg.debugger.mem_write(.addr(ral.aon_timer.wdog_ctrl.get_address()),
                            .value_q({0}),
                            .status(status));
     `DV_CHECK_EQ(status, 0)
@@ -228,9 +228,9 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
 
     };
     addr_range_t sram_ret = '{
-        start_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-        end_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                  top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1
+        start_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR,
+        end_addr: top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR +
+                  top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_SIZE_BYTES - 1
 
     };
 

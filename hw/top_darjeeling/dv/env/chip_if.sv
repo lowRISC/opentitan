@@ -44,8 +44,8 @@ interface chip_if;
 `define AES_HIER            `PD_MAIN_HIER.u_aes
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
-`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer_aon
-`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr_aon
+`define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer
+`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr
 `define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
@@ -62,11 +62,11 @@ interface chip_if;
 `define OTBN_HIER           `PD_MAIN_HIER.u_otbn
 `define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `PD_MAIN_HIER.u_otp_macro
-`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux_aon
-`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr_aon
+`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux
+`define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
 `define ROM_CTRL0_HIER      `PD_MAIN_HIER.u_rom_ctrl0
 `define ROM_CTRL1_HIER      `PD_MAIN_HIER.u_rom_ctrl1
-`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr_aon
+`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr
 `define RV_CORE_IBEX_HIER   `PD_MAIN_HIER.u_rv_core_ibex
 `define RV_DM_HIER          `PD_MAIN_HIER.u_rv_dm
 `define RV_PLIC_HIER        `PD_MAIN_HIER.u_rv_plic
@@ -76,7 +76,7 @@ interface chip_if;
 `define SPI_DEVICE_HIER     `PD_MAIN_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `PD_MAIN_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `PD_MAIN_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret_aon
+`define SRAM_CTRL_RET_HIER  `PD_AON_HIER.u_sram_ctrl_ret
 `define SRAM_CTRL_MBOX      `PD_MAIN_HIER.u_sram_ctrl_mbox
 `define UART_HIER(i)        `PD_MAIN_HIER.u_uart``i
 
@@ -393,8 +393,8 @@ interface chip_if;
   // patch-through the mailbox interfaces. For now, use hierarchical references to
   // connect to these signals.
 
-  wire mbx_if_clk = `PD_AON_HIER.clkmgr_aon_clocks.clk_main_infra;
-  wire mbx_if_rst_n = `PD_AON_HIER.rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel];
+  wire mbx_if_clk = `PD_AON_HIER.clkmgr_clocks.clk_main_infra;
+  wire mbx_if_rst_n = `PD_AON_HIER.rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel];
   wire mbx_intr_signals_t[NUM_MBXS-1:0] mbx_interrupts;
   mbx_if darjeeling_mbx_if(.clk(mbx_if_clk), .rst_n(mbx_if_rst_n));
   function automatic void connect_mbx_if();

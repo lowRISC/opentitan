@@ -17,7 +17,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   // to avoid the location of the scramble buffer. This will have been allocated by the
   // compiler close to the start of the RAM.
   // For both, an offset that is at the midpoint of the SRAM should suffice.
-  localparam uint BACKDOOR_RET_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8);
+  localparam uint BACKDOOR_RET_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_SIZE_BYTES / 8);
   localparam uint BACKDOOR_MAIN_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8);
 
   // Note that for Darjeeling the _REQ_INDEX values differ from those of Earl Grey; within the
@@ -31,7 +31,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   localparam string RET_INDEX = "1";
   localparam string RET_REQ_INDEX = "2";
 
-  localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_darjeeling.darjeeling_pd_aon.u_sram_ctrl_ret_aon";
+  localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_darjeeling.darjeeling_pd_aon.u_sram_ctrl_ret";
   localparam string SRAM_CTRL_MAIN_HDL_PATH = "tb.dut.top_darjeeling.darjeeling_pd_main.u_sram_ctrl_main";
   localparam string OTP_CTRL_KDI_HDL_PATH = "tb.dut.top_darjeeling.darjeeling_pd_main.u_otp_ctrl.u_otp_ctrl_kdi";
 
@@ -158,7 +158,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   virtual task ret_backdoor_write(int addr);
     int retval;
     bit scr_key_valid;
-    int offset = addr - top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+    int offset = addr - top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR;
     // `backdoor` comes after `pattern` which is `BACKDOOR_DATA_WORDS` long.
     offset += BACKDOOR_DATA_WORDS * 4;
     forever begin

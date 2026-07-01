@@ -41,7 +41,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.chip_vif.sram_ret_init_done == 1)
 
     `uvm_info(`gfn, "Checking ROM clock jitter configuration ...", UVM_LOW)
-    csr_rd_check(.ptr(ral.clkmgr_aon.jitter_enable),
+    csr_rd_check(.ptr(ral.clkmgr.jitter_enable),
                  .compare_value(otp_creator_sw_cfg_jitter_en),
                  .backdoor(1));
 
