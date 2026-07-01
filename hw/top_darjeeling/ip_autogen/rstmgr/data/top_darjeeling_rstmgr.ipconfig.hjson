@@ -18,7 +18,7 @@
         {
           name: MainPwr
           desc: main power glitch reset request
-          module: pwrmgr_aon
+          module: pwrmgr
         }
         {
           name: Esc
@@ -39,7 +39,7 @@
         {
           name: aon_timer_rst_req
           width: "1"
-          module: aon_timer_aon
+          module: aon_timer
           desc: Watchdog reset request.
           enabled_after_reset: false
         }

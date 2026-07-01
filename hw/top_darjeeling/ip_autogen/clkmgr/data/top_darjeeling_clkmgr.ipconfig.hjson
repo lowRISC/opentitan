@@ -38,17 +38,17 @@
         clk_main_i:
         {
           src_name: main
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
         clk_io_i:
         {
           src_name: io
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
         clk_aon_i:
         {
           src_name: aon
-          endpoint_ip: clkmgr_aon
+          endpoint_ip: clkmgr
         }
       }
       ft_clks:
@@ -56,17 +56,17 @@
         clk_io_powerup:
         {
           src_name: io
-          endpoint_ip: pwrmgr_aon
+          endpoint_ip: pwrmgr
         }
         clk_aon_powerup:
         {
           src_name: aon
-          endpoint_ip: pwrmgr_aon
+          endpoint_ip: pwrmgr
         }
         clk_main_powerup:
         {
           src_name: main
-          endpoint_ip: rstmgr_aon
+          endpoint_ip: rstmgr
         }
         clk_aon_infra:
         {
@@ -76,7 +76,7 @@
         clk_aon_timers:
         {
           src_name: aon
-          endpoint_ip: aon_timer_aon
+          endpoint_ip: aon_timer
         }
       }
       rg_clks:

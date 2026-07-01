@@ -211,94 +211,94 @@ extern "C" {
 #define TOP_DARJEELING_SPI_HOST0_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for pwrmgr_aon in top darjeeling.
+ * Peripheral base address for pwrmgr in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_PWRMGR_AON_BASE_ADDR 0x30400000u
+#define TOP_DARJEELING_PWRMGR_BASE_ADDR 0x30400000u
 
 /**
- * Peripheral size for pwrmgr_aon in top darjeeling.
+ * Peripheral size for pwrmgr in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_PWRMGR_AON_BASE_ADDR and
- * `TOP_DARJEELING_PWRMGR_AON_BASE_ADDR + TOP_DARJEELING_PWRMGR_AON_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_PWRMGR_BASE_ADDR and
+ * `TOP_DARJEELING_PWRMGR_BASE_ADDR + TOP_DARJEELING_PWRMGR_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_PWRMGR_AON_SIZE_BYTES 0x80u
+#define TOP_DARJEELING_PWRMGR_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for rstmgr_aon in top darjeeling.
+ * Peripheral base address for rstmgr in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_RSTMGR_AON_BASE_ADDR 0x30410000u
+#define TOP_DARJEELING_RSTMGR_BASE_ADDR 0x30410000u
 
 /**
- * Peripheral size for rstmgr_aon in top darjeeling.
+ * Peripheral size for rstmgr in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_RSTMGR_AON_BASE_ADDR and
- * `TOP_DARJEELING_RSTMGR_AON_BASE_ADDR + TOP_DARJEELING_RSTMGR_AON_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_RSTMGR_BASE_ADDR and
+ * `TOP_DARJEELING_RSTMGR_BASE_ADDR + TOP_DARJEELING_RSTMGR_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_RSTMGR_AON_SIZE_BYTES 0x80u
+#define TOP_DARJEELING_RSTMGR_SIZE_BYTES 0x80u
 
 /**
- * Peripheral base address for clkmgr_aon in top darjeeling.
+ * Peripheral base address for clkmgr in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_CLKMGR_AON_BASE_ADDR 0x30420000u
+#define TOP_DARJEELING_CLKMGR_BASE_ADDR 0x30420000u
 
 /**
- * Peripheral size for clkmgr_aon in top darjeeling.
+ * Peripheral size for clkmgr in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_CLKMGR_AON_BASE_ADDR and
- * `TOP_DARJEELING_CLKMGR_AON_BASE_ADDR + TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_CLKMGR_BASE_ADDR and
+ * `TOP_DARJEELING_CLKMGR_BASE_ADDR + TOP_DARJEELING_CLKMGR_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES 0x40u
+#define TOP_DARJEELING_CLKMGR_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for pinmux_aon in top darjeeling.
+ * Peripheral base address for pinmux in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_PINMUX_AON_BASE_ADDR 0x30460000u
+#define TOP_DARJEELING_PINMUX_BASE_ADDR 0x30460000u
 
 /**
- * Peripheral size for pinmux_aon in top darjeeling.
+ * Peripheral size for pinmux in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_PINMUX_AON_BASE_ADDR and
- * `TOP_DARJEELING_PINMUX_AON_BASE_ADDR + TOP_DARJEELING_PINMUX_AON_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_PINMUX_BASE_ADDR and
+ * `TOP_DARJEELING_PINMUX_BASE_ADDR + TOP_DARJEELING_PINMUX_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_PINMUX_AON_SIZE_BYTES 0x800u
+#define TOP_DARJEELING_PINMUX_SIZE_BYTES 0x800u
 
 /**
- * Peripheral base address for aon_timer_aon in top darjeeling.
+ * Peripheral base address for aon_timer in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR 0x30470000u
+#define TOP_DARJEELING_AON_TIMER_BASE_ADDR 0x30470000u
 
 /**
- * Peripheral size for aon_timer_aon in top darjeeling.
+ * Peripheral size for aon_timer in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR and
- * `TOP_DARJEELING_AON_TIMER_AON_BASE_ADDR + TOP_DARJEELING_AON_TIMER_AON_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_AON_TIMER_BASE_ADDR and
+ * `TOP_DARJEELING_AON_TIMER_BASE_ADDR + TOP_DARJEELING_AON_TIMER_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_AON_TIMER_AON_SIZE_BYTES 0x40u
+#define TOP_DARJEELING_AON_TIMER_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for ast in top darjeeling.
@@ -337,22 +337,22 @@ extern "C" {
 #define TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES 0x8u
 
 /**
- * Peripheral base address for regs device on sram_ctrl_ret_aon in top darjeeling.
+ * Peripheral base address for regs device on sram_ctrl_ret in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR 0x30500000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_REGS_BASE_ADDR 0x30500000u
 
 /**
- * Peripheral size for regs device on sram_ctrl_ret_aon in top darjeeling.
+ * Peripheral size for regs device on sram_ctrl_ret in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
- * `TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_SRAM_CTRL_RET_REGS_BASE_ADDR and
+ * `TOP_DARJEELING_SRAM_CTRL_RET_REGS_BASE_ADDR + TOP_DARJEELING_SRAM_CTRL_RET_REGS_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x40u
+#define TOP_DARJEELING_SRAM_CTRL_RET_REGS_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for regs device on rv_dm in top darjeeling.
@@ -888,14 +888,14 @@ extern "C" {
 #define TOP_DARJEELING_SOC_PROXY_CTN_SIZE_BYTES 0x80000000u
 
 /**
- * Memory base address for ram memory on sram_ctrl_ret_aon in top darjeeling.
+ * Memory base address for ram memory on sram_ctrl_ret in top darjeeling.
  */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR 0x30600000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR 0x30600000u
 
 /**
- * Memory size for ram memory on sram_ctrl_ret_aon in top darjeeling.
+ * Memory size for ram memory on sram_ctrl_ret in top darjeeling.
  */
-#define TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES 0x1000u
+#define TOP_DARJEELING_SRAM_CTRL_RET_RAM_SIZE_BYTES 0x1000u
 
 /**
  * Memory base address for ram memory on sram_ctrl_main in top darjeeling.
@@ -954,8 +954,8 @@ typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralOtpCtrl = 6, /**< otp_ctrl */
   kTopDarjeelingPlicPeripheralAlertHandler = 7, /**< alert_handler */
   kTopDarjeelingPlicPeripheralSpiHost0 = 8, /**< spi_host0 */
-  kTopDarjeelingPlicPeripheralPwrmgrAon = 9, /**< pwrmgr_aon */
-  kTopDarjeelingPlicPeripheralAonTimerAon = 10, /**< aon_timer_aon */
+  kTopDarjeelingPlicPeripheralPwrmgr = 9, /**< pwrmgr */
+  kTopDarjeelingPlicPeripheralAonTimer = 10, /**< aon_timer */
   kTopDarjeelingPlicPeripheralHmac = 11, /**< hmac */
   kTopDarjeelingPlicPeripheralKmac = 12, /**< kmac */
   kTopDarjeelingPlicPeripheralOtbn = 13, /**< otbn */
@@ -1061,9 +1061,9 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdAlertHandlerClassd = 71, /**< alert_handler_classd */
   kTopDarjeelingPlicIrqIdSpiHost0Error = 72, /**< spi_host0_error */
   kTopDarjeelingPlicIrqIdSpiHost0SpiEvent = 73, /**< spi_host0_spi_event */
-  kTopDarjeelingPlicIrqIdPwrmgrAonWakeup = 74, /**< pwrmgr_aon_wakeup */
-  kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired = 75, /**< aon_timer_aon_wkup_timer_expired */
-  kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark = 76, /**< aon_timer_aon_wdog_timer_bark */
+  kTopDarjeelingPlicIrqIdPwrmgrWakeup = 74, /**< pwrmgr_wakeup */
+  kTopDarjeelingPlicIrqIdAonTimerWkupTimerExpired = 75, /**< aon_timer_wkup_timer_expired */
+  kTopDarjeelingPlicIrqIdAonTimerWdogTimerBark = 76, /**< aon_timer_wdog_timer_bark */
   kTopDarjeelingPlicIrqIdHmacHmacDone = 77, /**< hmac_hmac_done */
   kTopDarjeelingPlicIrqIdHmacFifoEmpty = 78, /**< hmac_fifo_empty */
   kTopDarjeelingPlicIrqIdHmacHmacErr = 79, /**< hmac_hmac_err */
@@ -1159,13 +1159,13 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralOtpCtrl = 6, /**< otp_ctrl */
   kTopDarjeelingAlertPeripheralLcCtrl = 7, /**< lc_ctrl */
   kTopDarjeelingAlertPeripheralSpiHost0 = 8, /**< spi_host0 */
-  kTopDarjeelingAlertPeripheralPwrmgrAon = 9, /**< pwrmgr_aon */
-  kTopDarjeelingAlertPeripheralRstmgrAon = 10, /**< rstmgr_aon */
-  kTopDarjeelingAlertPeripheralClkmgrAon = 11, /**< clkmgr_aon */
-  kTopDarjeelingAlertPeripheralPinmuxAon = 12, /**< pinmux_aon */
-  kTopDarjeelingAlertPeripheralAonTimerAon = 13, /**< aon_timer_aon */
+  kTopDarjeelingAlertPeripheralPwrmgr = 9, /**< pwrmgr */
+  kTopDarjeelingAlertPeripheralRstmgr = 10, /**< rstmgr */
+  kTopDarjeelingAlertPeripheralClkmgr = 11, /**< clkmgr */
+  kTopDarjeelingAlertPeripheralPinmux = 12, /**< pinmux */
+  kTopDarjeelingAlertPeripheralAonTimer = 13, /**< aon_timer */
   kTopDarjeelingAlertPeripheralSocProxy = 14, /**< soc_proxy */
-  kTopDarjeelingAlertPeripheralSramCtrlRetAon = 15, /**< sram_ctrl_ret_aon */
+  kTopDarjeelingAlertPeripheralSramCtrlRet = 15, /**< sram_ctrl_ret */
   kTopDarjeelingAlertPeripheralRvDm = 16, /**< rv_dm */
   kTopDarjeelingAlertPeripheralRvPlic = 17, /**< rv_plic */
   kTopDarjeelingAlertPeripheralAes = 18, /**< aes */
@@ -1220,15 +1220,15 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdLcCtrlFatalStateError = 11, /**< lc_ctrl_fatal_state_error */
   kTopDarjeelingAlertIdLcCtrlFatalBusIntegError = 12, /**< lc_ctrl_fatal_bus_integ_error */
   kTopDarjeelingAlertIdSpiHost0FatalFault = 13, /**< spi_host0_fatal_fault */
-  kTopDarjeelingAlertIdPwrmgrAonFatalFault = 14, /**< pwrmgr_aon_fatal_fault */
-  kTopDarjeelingAlertIdRstmgrAonFatalFault = 15, /**< rstmgr_aon_fatal_fault */
-  kTopDarjeelingAlertIdRstmgrAonFatalCnstyFault = 16, /**< rstmgr_aon_fatal_cnsty_fault */
-  kTopDarjeelingAlertIdClkmgrAonRecovFault = 17, /**< clkmgr_aon_recov_fault */
-  kTopDarjeelingAlertIdClkmgrAonFatalFault = 18, /**< clkmgr_aon_fatal_fault */
-  kTopDarjeelingAlertIdPinmuxAonFatalFault = 19, /**< pinmux_aon_fatal_fault */
-  kTopDarjeelingAlertIdAonTimerAonFatalFault = 20, /**< aon_timer_aon_fatal_fault */
+  kTopDarjeelingAlertIdPwrmgrFatalFault = 14, /**< pwrmgr_fatal_fault */
+  kTopDarjeelingAlertIdRstmgrFatalFault = 15, /**< rstmgr_fatal_fault */
+  kTopDarjeelingAlertIdRstmgrFatalCnstyFault = 16, /**< rstmgr_fatal_cnsty_fault */
+  kTopDarjeelingAlertIdClkmgrRecovFault = 17, /**< clkmgr_recov_fault */
+  kTopDarjeelingAlertIdClkmgrFatalFault = 18, /**< clkmgr_fatal_fault */
+  kTopDarjeelingAlertIdPinmuxFatalFault = 19, /**< pinmux_fatal_fault */
+  kTopDarjeelingAlertIdAonTimerFatalFault = 20, /**< aon_timer_fatal_fault */
   kTopDarjeelingAlertIdSocProxyFatalAlertIntg = 21, /**< soc_proxy_fatal_alert_intg */
-  kTopDarjeelingAlertIdSramCtrlRetAonFatalError = 22, /**< sram_ctrl_ret_aon_fatal_error */
+  kTopDarjeelingAlertIdSramCtrlRetFatalError = 22, /**< sram_ctrl_ret_fatal_error */
   kTopDarjeelingAlertIdRvDmFatalFault = 23, /**< rv_dm_fatal_fault */
   kTopDarjeelingAlertIdRvPlicFatalFault = 24, /**< rv_plic_fatal_fault */
   kTopDarjeelingAlertIdAesRecovCtrlUpdateErr = 25, /**< aes_recov_ctrl_update_err */
@@ -1473,8 +1473,8 @@ typedef enum top_darjeeling_muxed_pads {
  * Power Manager Wakeup Signals
  */
 typedef enum top_darjeeling_power_manager_wake_ups {
-  kTopDarjeelingPowerManagerWakeUpsPinmuxAonPinWkupReq = 0, /**<  */
-  kTopDarjeelingPowerManagerWakeUpsAonTimerAonWkupReq = 1, /**<  */
+  kTopDarjeelingPowerManagerWakeUpsPinmuxPinWkupReq = 0, /**<  */
+  kTopDarjeelingPowerManagerWakeUpsAonTimerWkupReq = 1, /**<  */
   kTopDarjeelingPowerManagerWakeUpsSocProxyWkupExternalReq = 2, /**<  */
   kTopDarjeelingPowerManagerWakeUpsLast = 2, /**< \internal Last valid pwrmgr wakeup signal */
 } top_darjeeling_power_manager_wake_ups_t;
@@ -1493,7 +1493,7 @@ typedef enum top_darjeeling_reset_manager_sw_resets {
  * Power Manager Reset Request Signals
  */
 typedef enum top_darjeeling_power_manager_reset_requests {
-  kTopDarjeelingPowerManagerResetRequestsAonTimerAonAonTimerRstReq = 0, /**<  */
+  kTopDarjeelingPowerManagerResetRequestsAonTimerAonTimerRstReq = 0, /**<  */
   kTopDarjeelingPowerManagerResetRequestsSocProxyRstReqExternal = 1, /**<  */
   kTopDarjeelingPowerManagerResetRequestsLast = 1, /**< \internal Last valid pwrmgr reset_request signal */
 } top_darjeeling_power_manager_reset_requests_t;

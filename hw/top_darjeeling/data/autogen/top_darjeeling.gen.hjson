@@ -307,7 +307,7 @@
       {
         name: MainPwr
         desc: main power glitch reset request
-        module: pwrmgr_aon
+        module: pwrmgr
       }
       {
         name: Esc
@@ -328,7 +328,7 @@
       {
         name: aon_timer_rst_req
         width: "1"
-        module: aon_timer_aon
+        module: aon_timer
         desc: Watchdog reset request.
         enabled_after_reset: false
       }
@@ -370,15 +370,15 @@
             lc_ctrl.regs
             alert_handler
             spi_host0
-            pwrmgr_aon
-            rstmgr_aon
-            clkmgr_aon
-            pinmux_aon
-            aon_timer_aon
+            pwrmgr
+            rstmgr
+            clkmgr
+            pinmux
+            aon_timer
             ast
             soc_proxy.core
             soc_dbg_ctrl.core
-            sram_ctrl_ret_aon
+            sram_ctrl_ret
             rv_plic
             aes
             hmac
@@ -437,7 +437,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_peri
+        clk_i: clkmgr_clocks_i.clk_io_peri
       }
       param_decl: {}
       memory: {}
@@ -545,7 +545,7 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_peri
+        clk_i: clkmgr_clocks_i.clk_io_peri
       }
       memory: {}
       param_list:
@@ -586,7 +586,7 @@
           inst_name: gpio
           package: ""
           domain: Main
-          top_signame: pwrmgr_aon_strap
+          top_signame: pwrmgr_strap
           index: -1
           external: true
           conn_type: false
@@ -677,8 +677,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_peri
-        scan_clk_i: clkmgr_aon_clocks_i.clk_io_peri
+        clk_i: clkmgr_clocks_i.clk_io_peri
+        scan_clk_i: clkmgr_clocks_i.clk_io_peri
       }
       memory: {}
       param_list:
@@ -829,7 +829,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_peri
+        clk_i: clkmgr_clocks_i.clk_io_peri
       }
       param_decl: {}
       memory: {}
@@ -955,7 +955,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_timers
+        clk_i: clkmgr_clocks_i.clk_io_timers
       }
       param_decl: {}
       memory: {}
@@ -1046,8 +1046,8 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_secure
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_io_secure
+        clk_edn_i: clkmgr_clocks_i.clk_main_secure
       }
       param_decl: {}
       memory: {}
@@ -1079,7 +1079,7 @@
           default: "'0"
           inst_name: otp_ctrl
           domain: Main
-          top_signame: pwrmgr_aon_pwr_otp
+          top_signame: pwrmgr_pwr_otp
           index: -1
           external: true
           conn_type: false
@@ -1381,7 +1381,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_secure
+        clk_i: clkmgr_clocks_i.clk_io_secure
       }
       memory: {}
       param_list:
@@ -1677,8 +1677,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_secure
-        clk_kmac_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_io_secure
+        clk_kmac_i: clkmgr_clocks_i.clk_main_secure
       }
       memory: {}
       param_list:
@@ -1849,7 +1849,7 @@
           inst_name: lc_ctrl
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_pwr_lc
+          top_signame: pwrmgr_pwr_lc
           index: -1
           external: true
           conn_type: false
@@ -2346,8 +2346,8 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_secure
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_io_secure
+        clk_edn_i: clkmgr_clocks_i.clk_main_secure
       }
       memory: {}
       param_list:
@@ -2477,7 +2477,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_peri
+        clk_i: clkmgr_clocks_i.clk_io_peri
       }
       param_decl: {}
       memory: {}
@@ -2581,7 +2581,7 @@
       domain: Main
     }
     {
-      name: pwrmgr_aon
+      name: pwrmgr
       type: pwrmgr
       template_type: pwrmgr
       clock_group: powerup
@@ -2633,10 +2633,10 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_powerup
-        clk_slow_i: clkmgr_aon_clocks.clk_aon_powerup
-        clk_lc_i: clkmgr_aon_clocks.clk_io_powerup
-        clk_esc_i: clkmgr_aon_clocks.clk_io_secure
+        clk_i: clkmgr_clocks.clk_io_powerup
+        clk_slow_i: clkmgr_clocks.clk_aon_powerup
+        clk_lc_i: clkmgr_clocks.clk_io_powerup
+        clk_esc_i: clkmgr_clocks.clk_io_secure
       }
       memory: {}
       param_list:
@@ -2648,7 +2648,7 @@
           default: AlertHandlerEscNumSeverities
           local: "false"
           expose: "false"
-          name_top: PwrmgrAonEscNumSeverities
+          name_top: PwrmgrEscNumSeverities
         }
         {
           name: EscPingCountWidth
@@ -2657,7 +2657,7 @@
           default: AlertHandlerEscPingCountWidth
           local: "false"
           expose: "false"
-          name_top: PwrmgrAonEscPingCountWidth
+          name_top: PwrmgrEscPingCountWidth
         }
       ]
       inter_signal_list:
@@ -2669,11 +2669,11 @@
           type: uni
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: pwrmgr_aon_boot_status
+          top_signame: pwrmgr_boot_status
           index: -1
           external: true
           conn_type: true
@@ -2684,7 +2684,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           package: ""
           external: true
@@ -2699,7 +2699,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           external: true
           conn_type: false
@@ -2713,11 +2713,11 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: pwrmgr_aon_pwr_rst
+          top_signame: pwrmgr_pwr_rst
           index: -1
         }
         {
@@ -2727,11 +2727,11 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: pwrmgr_aon_pwr_clk
+          top_signame: pwrmgr_pwr_clk
           index: -1
         }
         {
@@ -2741,11 +2741,11 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: pwrmgr_aon_pwr_otp
+          top_signame: pwrmgr_pwr_otp
           index: -1
           external: true
           conn_type: false
@@ -2757,11 +2757,11 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: pwrmgr_aon_pwr_lc
+          top_signame: pwrmgr_pwr_lc
           index: -1
           external: true
           conn_type: false
@@ -2773,7 +2773,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           index: -1
         }
         {
@@ -2783,7 +2783,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           domain: Aon
           top_signame: alert_handler_esc_tx
@@ -2798,7 +2798,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           domain: Aon
           top_signame: alert_handler_esc_rx
@@ -2813,7 +2813,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           domain: Aon
           top_signame: rv_core_ibex_pwrmgr
@@ -2827,12 +2827,12 @@
           type: uni
           act: rcv
           width: 3
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           package: ""
           end_idx: -1
           top_type: one-to-N
-          top_signame: pwrmgr_aon_wakeups
+          top_signame: pwrmgr_wakeups
           index: 0
           external: true
           conn_type: true
@@ -2843,12 +2843,12 @@
           type: uni
           act: rcv
           width: 2
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           package: ""
           end_idx: -1
           top_type: one-to-N
-          top_signame: pwrmgr_aon_rstreqs
+          top_signame: pwrmgr_rstreqs
           index: -1
         }
         {
@@ -2857,7 +2857,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           package: ""
           domain: Aon
@@ -2872,12 +2872,12 @@
           type: uni
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           package: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: pwrmgr_aon_strap
+          top_signame: pwrmgr_strap
           index: -1
           external: true
           conn_type: false
@@ -2888,12 +2888,12 @@
           type: uni
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           package: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: pwrmgr_aon_low_power
+          top_signame: pwrmgr_low_power
           index: -1
           external: true
           conn_type: true
@@ -2906,10 +2906,10 @@
           act: rcv
           width: 3
           default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           end_idx: -1
           top_type: one-to-N
-          top_signame: pwrmgr_aon_rom_ctrl
+          top_signame: pwrmgr_rom_ctrl
           index: -1
           external: true
           conn_type: false
@@ -2921,11 +2921,11 @@
           type: uni
           act: req
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: pwrmgr_aon_fetch_en
+          top_signame: pwrmgr_fetch_en
           index: -1
           external: true
           conn_type: false
@@ -2937,7 +2937,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           domain: Aon
           top_signame: lc_ctrl_lc_dft_en
@@ -2952,7 +2952,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           domain: Aon
           top_signame: lc_ctrl_lc_hw_debug_en
@@ -2967,10 +2967,10 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           domain: Aon
-          top_signame: rstmgr_aon_sw_rst_req
+          top_signame: rstmgr_sw_rst_req
           index: -1
         }
         {
@@ -2980,11 +2980,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: pwrmgr_aon
+          inst_name: pwrmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: pwrmgr_aon_tl
+          top_signame: pwrmgr_tl
           index: -1
           external: true
           conn_type: false
@@ -3000,7 +3000,7 @@
       generate_dif: true
     }
     {
-      name: rstmgr_aon
+      name: rstmgr
       type: rstmgr
       template_type: rstmgr
       clock_srcs:
@@ -3033,11 +3033,11 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_powerup
-        clk_por_i: clkmgr_aon_clocks.clk_io_powerup
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
-        clk_main_i: clkmgr_aon_clocks.clk_main_powerup
-        clk_io_i: clkmgr_aon_clocks.clk_io_powerup
+        clk_i: clkmgr_clocks.clk_io_powerup
+        clk_por_i: clkmgr_clocks.clk_io_powerup
+        clk_aon_i: clkmgr_clocks.clk_aon_powerup
+        clk_main_i: clkmgr_clocks.clk_main_powerup
+        clk_io_i: clkmgr_clocks.clk_io_powerup
       }
       param_decl: {}
       memory: {}
@@ -3054,7 +3054,7 @@
           default: 1'b1
           local: "false"
           expose: "true"
-          name_top: SecRstmgrAonCheck
+          name_top: SecRstmgrCheck
         }
         {
           name: SecMaxSyncDelay
@@ -3063,7 +3063,7 @@
           default: "2"
           local: "false"
           expose: "true"
-          name_top: SecRstmgrAonMaxSyncDelay
+          name_top: SecRstmgrMaxSyncDelay
         }
       ]
       inter_signal_list:
@@ -3079,7 +3079,7 @@
           type: uni
           act: rcv
           width: 2
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
           package: ""
           external: true
@@ -3098,11 +3098,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
           package: pwrmgr_pkg
           domain: Aon
-          top_signame: pwrmgr_aon_pwr_rst
+          top_signame: pwrmgr_pwr_rst
           index: -1
         }
         {
@@ -3113,9 +3113,9 @@
           type: uni
           act: req
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
-          top_signame: rstmgr_aon_resets
+          top_signame: rstmgr_resets
           index: -1
           external: true
           conn_type: true
@@ -3128,9 +3128,9 @@
           type: uni
           act: req
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
-          top_signame: rstmgr_aon_rst_en
+          top_signame: rstmgr_rst_en
           index: -1
           external: true
           conn_type: true
@@ -3143,7 +3143,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
           domain: Aon
           top_signame: alert_handler_crashdump
@@ -3159,7 +3159,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
           domain: Aon
           top_signame: rv_core_ibex_crash_dump
@@ -3175,11 +3175,11 @@
           type: uni
           act: req
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: rstmgr_aon_sw_rst_req
+          top_signame: rstmgr_sw_rst_req
           index: -1
         }
         {
@@ -3189,11 +3189,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: rstmgr_aon
+          inst_name: rstmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: rstmgr_aon_tl
+          top_signame: rstmgr_tl
           index: -1
           external: true
           conn_type: false
@@ -3209,7 +3209,7 @@
       generate_dif: true
     }
     {
-      name: clkmgr_aon
+      name: clkmgr
       type: clkmgr
       template_type: clkmgr
       clock_srcs:
@@ -3278,7 +3278,7 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_powerup
+        clk_i: clkmgr_clocks.clk_io_powerup
         clk_main_i: clk_main_i
         clk_io_i: clk_io_i
         clk_aon_i: clk_aon_i
@@ -3295,9 +3295,9 @@
           type: uni
           act: req
           width: 1
-          inst_name: clkmgr_aon
+          inst_name: clkmgr
           default: ""
-          top_signame: clkmgr_aon_clocks
+          top_signame: clkmgr_clocks
           index: -1
           external: true
           conn_type: true
@@ -3309,9 +3309,9 @@
           type: uni
           act: req
           width: 1
-          inst_name: clkmgr_aon
+          inst_name: clkmgr
           default: ""
-          top_signame: clkmgr_aon_cg_en
+          top_signame: clkmgr_cg_en
           index: -1
           external: true
           conn_type: true
@@ -3323,7 +3323,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: clkmgr_aon
+          inst_name: clkmgr
           default: ""
           external: true
           conn_type: false
@@ -3336,11 +3336,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: clkmgr_aon
+          inst_name: clkmgr
           default: ""
           package: pwrmgr_pkg
           domain: Aon
-          top_signame: pwrmgr_aon_pwr_clk
+          top_signame: pwrmgr_pwr_clk
           index: -1
         }
         {
@@ -3350,11 +3350,11 @@
           type: uni
           act: rcv
           width: 4
-          inst_name: clkmgr_aon
+          inst_name: clkmgr
           default: ""
           end_idx: -1
           top_type: one-to-N
-          top_signame: clkmgr_aon_idle
+          top_signame: clkmgr_idle
           index: -1
           external: true
           conn_type: false
@@ -3366,11 +3366,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: clkmgr_aon
+          inst_name: clkmgr
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: clkmgr_aon_tl
+          top_signame: clkmgr_tl
           index: -1
           external: true
           conn_type: false
@@ -3386,7 +3386,7 @@
       generate_dif: true
     }
     {
-      name: pinmux_aon
+      name: pinmux
       type: pinmux
       template_type: pinmux
       clock_srcs:
@@ -3412,8 +3412,8 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_powerup
-        clk_aon_i: clkmgr_aon_clocks_i.clk_aon_powerup
+        clk_i: clkmgr_clocks_i.clk_io_powerup
+        clk_aon_i: clkmgr_clocks_i.clk_aon_powerup
       }
       param_decl: {}
       memory: {}
@@ -3426,7 +3426,7 @@
           default: pinmux_pkg::DefaultTargetCfg
           local: "false"
           expose: "true"
-          name_top: PinmuxAonTargetCfg
+          name_top: PinmuxTargetCfg
         }
       ]
       inter_signal_list:
@@ -3439,10 +3439,10 @@
           act: rcv
           width: 1
           default: 1'b0
-          inst_name: pinmux_aon
+          inst_name: pinmux
           package: ""
           domain: Main
-          top_signame: pwrmgr_aon_low_power
+          top_signame: pwrmgr_low_power
           index: -1
           external: true
           conn_type: false
@@ -3455,10 +3455,10 @@
           act: req
           width: 1
           default: 1'b0
-          inst_name: pinmux_aon
+          inst_name: pinmux
           package: ""
           domain: Main
-          top_signame: pwrmgr_aon_wakeups
+          top_signame: pwrmgr_wakeups
           index: -1
           external: true
           conn_type: false
@@ -3470,11 +3470,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: pinmux_aon
+          inst_name: pinmux
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: pinmux_aon_tl
+          top_signame: pinmux_tl
           index: -1
         }
       ]
@@ -3488,7 +3488,7 @@
       generate_dif: true
     }
     {
-      name: aon_timer_aon
+      name: aon_timer
       type: aon_timer
       clock_srcs:
       {
@@ -3512,8 +3512,8 @@
       domain: Aon
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_timers
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_timers
+        clk_i: clkmgr_clocks.clk_io_timers
+        clk_aon_i: clkmgr_clocks.clk_aon_timers
       }
       param_decl: {}
       memory: {}
@@ -3527,11 +3527,11 @@
           act: req
           width: 1
           default: 1'b0
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           package: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: aon_timer_aon_nmi_wdog_timer_bark
+          top_signame: aon_timer_nmi_wdog_timer_bark
           index: -1
           external: true
           conn_type: false
@@ -3543,10 +3543,10 @@
           act: req
           width: 1
           default: 1'b0
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           package: ""
           domain: Aon
-          top_signame: pwrmgr_aon_wakeups
+          top_signame: pwrmgr_wakeups
           index: 1
         }
         {
@@ -3556,10 +3556,10 @@
           act: req
           width: 1
           default: 1'b0
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           package: ""
           domain: Aon
-          top_signame: pwrmgr_aon_rstreqs
+          top_signame: pwrmgr_rstreqs
           index: 0
         }
         {
@@ -3570,7 +3570,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           domain: Aon
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -3583,11 +3583,11 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           default: ""
           package: ""
           domain: Aon
-          top_signame: pwrmgr_aon_low_power
+          top_signame: pwrmgr_low_power
           index: -1
         }
         {
@@ -3602,7 +3602,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           index: -1
         }
         {
@@ -3613,7 +3613,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           index: -1
         }
         {
@@ -3623,11 +3623,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: aon_timer_aon
+          inst_name: aon_timer
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: aon_timer_aon_tl
+          top_signame: aon_timer_tl
           index: -1
           external: true
           conn_type: false
@@ -3686,9 +3686,9 @@
       attr: reggen_only
       clock_connections:
       {
-        clk_ast_tlul_i: clkmgr_aon_clocks_i.clk_io_infra
-        clk_ast_alert_i: clkmgr_aon_clocks_i.clk_io_secure
-        clk_ast_rng_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_ast_tlul_i: clkmgr_clocks_i.clk_io_infra
+        clk_ast_alert_i: clkmgr_clocks_i.clk_io_secure
+        clk_ast_rng_i: clkmgr_clocks_i.clk_main_secure
       }
       param_decl: {}
       memory: {}
@@ -3764,8 +3764,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_main_infra
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_infra
+        clk_i: clkmgr_clocks.clk_main_infra
+        clk_aon_i: clkmgr_clocks.clk_aon_infra
       }
       param_decl: {}
       param_list: []
@@ -3845,7 +3845,7 @@
           default: ""
           package: ""
           domain: Aon
-          top_signame: pwrmgr_aon_wakeups
+          top_signame: pwrmgr_wakeups
           index: 2
         }
         {
@@ -3858,7 +3858,7 @@
           default: ""
           package: ""
           domain: Aon
-          top_signame: pwrmgr_aon_rstreqs
+          top_signame: pwrmgr_rstreqs
           index: 1
         }
         {
@@ -4085,7 +4085,7 @@
       generate_dif: true
     }
     {
-      name: sram_ctrl_ret_aon
+      name: sram_ctrl_ret
       type: sram_ctrl
       clock_srcs:
       {
@@ -4137,8 +4137,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_infra
-        clk_otp_i: clkmgr_aon_clocks.clk_io_infra
+        clk_i: clkmgr_clocks.clk_io_infra
+        clk_otp_i: clkmgr_clocks.clk_io_infra
       }
       param_list:
       [
@@ -4146,7 +4146,7 @@
           name: MemSizeRam
           desc: Memory size of the RAM (in bytes).
           type: int
-          name_top: MemSizeSramCtrlRetAonRam
+          name_top: MemSizeSramCtrlRetRam
           default: 4096
         }
         {
@@ -4156,7 +4156,7 @@
           default: 4096
           local: "false"
           expose: "true"
-          name_top: SramCtrlRetAonInstSize
+          name_top: SramCtrlRetInstSize
         }
         {
           name: NumRamInst
@@ -4165,7 +4165,7 @@
           default: 1
           local: "false"
           expose: "true"
-          name_top: SramCtrlRetAonNumRamInst
+          name_top: SramCtrlRetNumRamInst
         }
         {
           name: InstrExec
@@ -4174,7 +4174,7 @@
           default: "0"
           local: "false"
           expose: "true"
-          name_top: SramCtrlRetAonInstrExec
+          name_top: SramCtrlRetInstrExec
         }
         {
           name: NumPrinceRoundsHalf
@@ -4183,7 +4183,7 @@
           default: "3"
           local: "false"
           expose: "true"
-          name_top: SramCtrlRetAonNumPrinceRoundsHalf
+          name_top: SramCtrlRetNumPrinceRoundsHalf
         }
         {
           name: Outstanding
@@ -4192,7 +4192,7 @@
           default: "2"
           local: "true"
           expose: "true"
-          name_top: SramCtrlRetAonOutstanding
+          name_top: SramCtrlRetOutstanding
         }
         {
           name: EccCorrection
@@ -4201,7 +4201,7 @@
           default: "0"
           local: "false"
           expose: "true"
-          name_top: SramCtrlRetAonEccCorrection
+          name_top: SramCtrlRetEccCorrection
         }
       ]
       inter_signal_list:
@@ -4213,7 +4213,7 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           default: ""
           domain: Aon
           top_signame: otp_ctrl_sram_otp_key
@@ -4236,14 +4236,14 @@
             default: 1
             local: false
             expose: true
-            name_top: SramCtrlRetAonNumRamInst
+            name_top: SramCtrlRetNumRamInst
           }
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           default: ""
           external: true
           conn_type: false
           index: -1
-          top_signame: sram_ctrl_ret_aon_ram_cfg
+          top_signame: sram_ctrl_ret_ram_cfg
         }
         {
           name: lc_escalate_en
@@ -4253,7 +4253,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           domain: Aon
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -4268,7 +4268,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           index: -1
         }
         {
@@ -4279,7 +4279,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8False
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           index: -1
         }
         {
@@ -4294,7 +4294,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           index: -1
         }
         {
@@ -4305,7 +4305,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           index: -1
         }
         {
@@ -4316,7 +4316,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           index: -1
         }
         {
@@ -4326,11 +4326,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: sram_ctrl_ret_aon_regs_tl
+          top_signame: sram_ctrl_ret_regs_tl
           index: -1
           external: true
           conn_type: false
@@ -4342,11 +4342,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: sram_ctrl_ret_aon
+          inst_name: sram_ctrl_ret
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: sram_ctrl_ret_aon_ram_tl
+          top_signame: sram_ctrl_ret_ram_tl
           index: -1
           external: true
           conn_type: false
@@ -4399,8 +4399,8 @@
       generate_dif: false
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_lc_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
+        clk_lc_i: clkmgr_clocks_i.clk_main_infra
       }
       memory: {}
       param_list:
@@ -4690,7 +4690,7 @@
           inst_name: rv_dm
           package: ""
           domain: Main
-          top_signame: pwrmgr_aon_strap
+          top_signame: pwrmgr_strap
           index: -1
           external: true
           conn_type: false
@@ -4823,7 +4823,7 @@
       ]
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
       }
       param_decl: {}
       memory: {}
@@ -4922,8 +4922,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_aes
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_aes
+        clk_i: clkmgr_clocks_i.clk_main_aes
+        clk_edn_i: clkmgr_clocks_i.clk_main_aes
       }
       memory: {}
       param_list:
@@ -5022,7 +5022,7 @@
           inst_name: aes
           default: ""
           domain: Main
-          top_signame: clkmgr_aon_idle
+          top_signame: clkmgr_idle
           index: 0
           external: true
           conn_type: false
@@ -5127,7 +5127,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_hmac
+        clk_i: clkmgr_clocks_i.clk_main_hmac
       }
       param_decl: {}
       memory: {}
@@ -5144,7 +5144,7 @@
           inst_name: hmac
           default: ""
           domain: Main
-          top_signame: clkmgr_aon_idle
+          top_signame: clkmgr_idle
           index: 1
           external: true
           conn_type: false
@@ -5210,8 +5210,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_kmac
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_kmac
+        clk_i: clkmgr_clocks_i.clk_main_kmac
+        clk_edn_i: clkmgr_clocks_i.clk_main_kmac
       }
       memory: {}
       param_list:
@@ -5361,7 +5361,7 @@
           inst_name: kmac
           default: ""
           domain: Main
-          top_signame: clkmgr_aon_idle
+          top_signame: clkmgr_idle
           index: 2
           external: true
           conn_type: false
@@ -5460,9 +5460,9 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_otbn
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_secure
-        clk_otp_i: clkmgr_aon_clocks_i.clk_io_secure
+        clk_i: clkmgr_clocks_i.clk_main_otbn
+        clk_edn_i: clkmgr_clocks_i.clk_main_secure
+        clk_otp_i: clkmgr_clocks_i.clk_io_secure
       }
       param_decl: {}
       memory: {}
@@ -5594,7 +5594,7 @@
           inst_name: otbn
           default: ""
           domain: Main
-          top_signame: clkmgr_aon_idle
+          top_signame: clkmgr_idle
           index: 3
           external: true
           conn_type: false
@@ -5739,8 +5739,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
+        clk_edn_i: clkmgr_clocks_i.clk_main_secure
       }
       param_decl: {}
       memory: {}
@@ -5973,7 +5973,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
       }
       param_decl: {}
       memory: {}
@@ -6094,7 +6094,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
       }
       memory: {}
       param_list:
@@ -6430,7 +6430,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
       }
       memory: {}
       param_list:
@@ -6533,7 +6533,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
       }
       memory: {}
       param_list:
@@ -6666,8 +6666,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_otp_i: clkmgr_aon_clocks_i.clk_io_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
+        clk_otp_i: clkmgr_clocks_i.clk_io_infra
       }
       param_list:
       [
@@ -6931,8 +6931,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_otp_i: clkmgr_aon_clocks_i.clk_io_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
+        clk_otp_i: clkmgr_clocks_i.clk_io_infra
       }
       param_list:
       [
@@ -7187,7 +7187,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_list:
       [
@@ -7263,7 +7263,7 @@
           inst_name: rom_ctrl0
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_rom_ctrl
+          top_signame: pwrmgr_rom_ctrl
           index: 0
           external: true
           conn_type: false
@@ -7372,7 +7372,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_list:
       [
@@ -7448,7 +7448,7 @@
           inst_name: rom_ctrl1
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_rom_ctrl
+          top_signame: pwrmgr_rom_ctrl
           index: 1
           external: true
           conn_type: false
@@ -7529,7 +7529,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -7759,7 +7759,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -7948,7 +7948,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -8137,7 +8137,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -8326,7 +8326,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -8515,7 +8515,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -8704,7 +8704,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -8893,7 +8893,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -9082,7 +9082,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -9271,7 +9271,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -9460,7 +9460,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -9629,7 +9629,7 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_io_secure
+        clk_i: clkmgr_clocks_i.clk_io_secure
       }
       param_decl: {}
       memory: {}
@@ -9646,7 +9646,7 @@
           inst_name: soc_dbg_ctrl
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_boot_status
+          top_signame: pwrmgr_boot_status
           index: -1
           external: true
           conn_type: false
@@ -9789,7 +9789,7 @@
           inst_name: soc_dbg_ctrl
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_rom_ctrl
+          top_signame: pwrmgr_rom_ctrl
           index: 2
           external: true
           conn_type: false
@@ -9846,7 +9846,7 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_i: clkmgr_clocks_i.clk_main_infra
       }
       param_decl: {}
       memory: {}
@@ -9997,7 +9997,7 @@
       attr: ipgen
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_secure
+        clk_i: clkmgr_clocks_i.clk_main_secure
       }
       param_decl: {}
       memory: {}
@@ -10417,10 +10417,10 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_edn_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_esc_i: clkmgr_aon_clocks_i.clk_io_secure
-        clk_otp_i: clkmgr_aon_clocks_i.clk_io_secure
+        clk_i: clkmgr_clocks_i.clk_main_infra
+        clk_edn_i: clkmgr_clocks_i.clk_main_infra
+        clk_esc_i: clkmgr_clocks_i.clk_io_secure
+        clk_otp_i: clkmgr_clocks_i.clk_io_secure
       }
       memory: {}
       param_list:
@@ -10943,7 +10943,7 @@
           inst_name: rv_core_ibex
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_fetch_en
+          top_signame: pwrmgr_fetch_en
           index: -1
           external: true
           conn_type: false
@@ -10974,7 +10974,7 @@
           default: ""
           package: ""
           domain: Main
-          top_signame: aon_timer_aon_nmi_wdog_timer_bark
+          top_signame: aon_timer_nmi_wdog_timer_bark
           index: -1
           external: true
           conn_type: false
@@ -11136,23 +11136,23 @@
       ]
       alert_handler.crashdump:
       [
-        rstmgr_aon.alert_dump
+        rstmgr.alert_dump
       ]
       alert_handler.esc_rx:
       [
         rv_core_ibex.esc_rx
         lc_ctrl.esc_scrap_state0_rx
         lc_ctrl.esc_scrap_state1_rx
-        pwrmgr_aon.esc_rst_rx
+        pwrmgr.esc_rst_rx
       ]
       alert_handler.esc_tx:
       [
         rv_core_ibex.esc_tx
         lc_ctrl.esc_scrap_state0_tx
         lc_ctrl.esc_scrap_state1_tx
-        pwrmgr_aon.esc_rst_tx
+        pwrmgr.esc_rst_tx
       ]
-      aon_timer_aon.nmi_wdog_timer_bark:
+      aon_timer.nmi_wdog_timer_bark:
       [
         rv_core_ibex.nmi_wdog
       ]
@@ -11168,47 +11168,47 @@
       otp_ctrl.sram_otp_key:
       [
         sram_ctrl_main.sram_otp_key
-        sram_ctrl_ret_aon.sram_otp_key
+        sram_ctrl_ret.sram_otp_key
         sram_ctrl_mbox.sram_otp_key
         rv_core_ibex.icache_otp_key
       ]
-      pwrmgr_aon.pwr_rst:
+      pwrmgr.pwr_rst:
       [
-        rstmgr_aon.pwr
+        rstmgr.pwr
       ]
-      pwrmgr_aon.pwr_clk:
+      pwrmgr.pwr_clk:
       [
-        clkmgr_aon.pwr
+        clkmgr.pwr
       ]
-      pwrmgr_aon.pwr_otp:
+      pwrmgr.pwr_otp:
       [
         otp_ctrl.pwr_otp
       ]
-      pwrmgr_aon.pwr_lc:
+      pwrmgr.pwr_lc:
       [
         lc_ctrl.pwr_lc
       ]
-      pwrmgr_aon.strap:
+      pwrmgr.strap:
       [
         gpio.strap_en
         rv_dm.strap_en
       ]
-      pwrmgr_aon.low_power:
+      pwrmgr.low_power:
       [
-        pinmux_aon.sleep_en
-        aon_timer_aon.sleep_mode
+        pinmux.sleep_en
+        aon_timer.sleep_mode
       ]
-      pwrmgr_aon.fetch_en:
+      pwrmgr.fetch_en:
       [
         rv_core_ibex.pwrmgr_cpu_en
       ]
-      pwrmgr_aon.rom_ctrl:
+      pwrmgr.rom_ctrl:
       [
         rom_ctrl0.pwrmgr_data
         rom_ctrl1.pwrmgr_data
         soc_dbg_ctrl.continue_cpu_boot
       ]
-      pwrmgr_aon.boot_status:
+      pwrmgr.boot_status:
       [
         soc_dbg_ctrl.boot_status
       ]
@@ -11294,7 +11294,7 @@
       [
         keymgr_dpe.kmac_en_masking
       ]
-      clkmgr_aon.idle:
+      clkmgr.idle:
       [
         aes.idle
         hmac.idle
@@ -11329,7 +11329,7 @@
       [
         otp_macro.lc_dft_en
         ast.lc_dft_en
-        pwrmgr_aon.lc_dft_en
+        pwrmgr.lc_dft_en
         soc_dbg_ctrl.lc_dft_en
         rv_dm.lc_dft_en
       ]
@@ -11347,7 +11347,7 @@
         ast.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
-        pwrmgr_aon.lc_hw_debug_en
+        pwrmgr.lc_hw_debug_en
         soc_dbg_ctrl.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en:
@@ -11366,9 +11366,9 @@
         otbn.lc_escalate_en
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
-        sram_ctrl_ret_aon.lc_escalate_en
+        sram_ctrl_ret.lc_escalate_en
         sram_ctrl_mbox.lc_escalate_en
-        aon_timer_aon.lc_escalate_en
+        aon_timer.lc_escalate_en
         rv_dm.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
@@ -11415,11 +11415,11 @@
       ]
       rv_core_ibex.crash_dump:
       [
-        rstmgr_aon.cpu_dump
+        rstmgr.cpu_dump
       ]
       rv_core_ibex.pwrmgr:
       [
-        pwrmgr_aon.pwr_cpu
+        pwrmgr.pwr_cpu
       ]
       spi_device.passthrough:
       [
@@ -11427,11 +11427,11 @@
       ]
       rv_dm.ndmreset_req:
       [
-        pwrmgr_aon.ndmreset_req
+        pwrmgr.ndmreset_req
       ]
-      rstmgr_aon.sw_rst_req:
+      rstmgr.sw_rst_req:
       [
-        pwrmgr_aon.sw_rst_req
+        pwrmgr.sw_rst_req
       ]
       soc_proxy.dma_tl_h2d:
       [
@@ -11449,15 +11449,15 @@
       [
         ac_range_check.ctn_tl_d2h
       ]
-      pwrmgr_aon.wakeups:
+      pwrmgr.wakeups:
       [
-        pinmux_aon.pin_wkup_req
-        aon_timer_aon.wkup_req
+        pinmux.pin_wkup_req
+        aon_timer.wkup_req
         soc_proxy.wkup_external_req
       ]
-      pwrmgr_aon.rstreqs:
+      pwrmgr.rstreqs:
       [
-        aon_timer_aon.aon_timer_rst_req
+        aon_timer.aon_timer_rst_req
         soc_proxy.rst_req_external
       ]
       main.tl_rv_core_ibex__corei:
@@ -11680,21 +11680,21 @@
       [
         peri.tl_rv_timer
       ]
-      pwrmgr_aon.tl:
+      pwrmgr.tl:
       [
-        peri.tl_pwrmgr_aon
+        peri.tl_pwrmgr
       ]
-      rstmgr_aon.tl:
+      rstmgr.tl:
       [
-        peri.tl_rstmgr_aon
+        peri.tl_rstmgr
       ]
-      clkmgr_aon.tl:
+      clkmgr.tl:
       [
-        peri.tl_clkmgr_aon
+        peri.tl_clkmgr
       ]
-      pinmux_aon.tl:
+      pinmux.tl:
       [
-        peri.tl_pinmux_aon
+        peri.tl_pinmux
       ]
       otp_ctrl.core_tl:
       [
@@ -11712,17 +11712,17 @@
       [
         peri.tl_alert_handler
       ]
-      sram_ctrl_ret_aon.regs_tl:
+      sram_ctrl_ret.regs_tl:
       [
-        peri.tl_sram_ctrl_ret_aon__regs
+        peri.tl_sram_ctrl_ret__regs
       ]
-      sram_ctrl_ret_aon.ram_tl:
+      sram_ctrl_ret.ram_tl:
       [
-        peri.tl_sram_ctrl_ret_aon__ram
+        peri.tl_sram_ctrl_ret__ram
       ]
-      aon_timer_aon.tl:
+      aon_timer.tl:
       [
-        peri.tl_aon_timer_aon
+        peri.tl_aon_timer
       ]
       soc_dbg_ctrl.core_tl:
       [
@@ -11819,10 +11819,10 @@
     }
     top:
     [
-      clkmgr_aon.clocks
-      clkmgr_aon.cg_en
-      rstmgr_aon.resets
-      rstmgr_aon.rst_en
+      clkmgr.clocks
+      clkmgr.cg_en
+      rstmgr.resets
+      rstmgr.rst_en
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
@@ -11850,13 +11850,13 @@
       rom_ctrl0.rom_cfg: rom_ctrl0_rom_cfg
       rom_ctrl1.rom_cfg: rom_ctrl1_rom_cfg
       sram_ctrl_main.ram_cfg: sram_ctrl_main_ram_cfg
-      sram_ctrl_ret_aon.ram_cfg: sram_ctrl_ret_aon_ram_cfg
+      sram_ctrl_ret.ram_cfg: sram_ctrl_ret_ram_cfg
       sram_ctrl_mbox.ram_cfg: sram_ctrl_mbox_ram_cfg
-      pwrmgr_aon.boot_status: pwrmgr_boot_status
-      pwrmgr_aon.ext_rst_ack: pwrmgr_ext_rst_ack
-      clkmgr_aon.clocks: ""
-      clkmgr_aon.cg_en: ""
-      clkmgr_aon.jitter_en: clk_main_jitter_en
+      pwrmgr.boot_status: pwrmgr_boot_status_obs
+      pwrmgr.ext_rst_ack: pwrmgr_ext_rst_ack
+      clkmgr.clocks: ""
+      clkmgr.cg_en: ""
+      clkmgr.jitter_en: clk_main_jitter_en
       dma.sys: dma_sys
       entropy_src.entropy_src_rng_enable: es_rng_enable
       entropy_src.entropy_src_rng_valid: es_rng_valid
@@ -11906,15 +11906,15 @@
       dbg.tl_dbg: dbg_tl
       rv_dm.next_dm_addr: rv_dm_next_dm_addr
       peri.tl_ast: ast_tl
-      pwrmgr_aon.pwr_ast: pwrmgr_ast
+      pwrmgr.pwr_ast: pwrmgr_ast
       otp_macro.pwr_seq: ""
       otp_macro.pwr_seq_h: ""
       otp_macro.ext_voltage_h: otp_ext_voltage_h
       otp_macro.otp_obs: otp_obs
       otp_macro.cfg: otp_cfg
-      rstmgr_aon.por_n: por_n
-      rstmgr_aon.resets: ""
-      rstmgr_aon.rst_en: ""
+      rstmgr.por_n: por_n
+      rstmgr.resets: ""
+      rstmgr.rst_en: ""
       rv_core_ibex.fpga_info: fpga_info
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
@@ -11960,8 +11960,8 @@
       }
       clock_connections:
       {
-        clk_main_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_fixed_i: clkmgr_aon_clocks_i.clk_io_infra
+        clk_main_i: clkmgr_clocks_i.clk_main_infra
+        clk_fixed_i: clkmgr_clocks_i.clk_io_infra
       }
       domain: Main
       connections:
@@ -13738,7 +13738,7 @@
       }
       clock_connections:
       {
-        clk_peri_i: clkmgr_aon_clocks_i.clk_io_infra
+        clk_peri_i: clkmgr_clocks_i.clk_io_infra
       }
       domain: Main
       connections:
@@ -13751,18 +13751,18 @@
           spi_host0
           spi_device
           rv_timer
-          pwrmgr_aon
-          rstmgr_aon
-          clkmgr_aon
-          pinmux_aon
+          pwrmgr
+          rstmgr
+          clkmgr
+          pinmux
           otp_ctrl.core
           otp_macro.prim
           lc_ctrl.regs
           alert_handler
           ast
-          sram_ctrl_ret_aon.ram
-          sram_ctrl_ret_aon.regs
-          aon_timer_aon
+          sram_ctrl_ret.ram
+          sram_ctrl_ret.regs
+          aon_timer
           soc_dbg_ctrl.core
         ]
       }
@@ -13908,7 +13908,7 @@
           req_fifo_pass: true
         }
         {
-          name: pwrmgr_aon
+          name: pwrmgr
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -13929,7 +13929,7 @@
           req_fifo_pass: true
         }
         {
-          name: rstmgr_aon
+          name: rstmgr
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -13950,7 +13950,7 @@
           req_fifo_pass: true
         }
         {
-          name: clkmgr_aon
+          name: clkmgr
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -13971,7 +13971,7 @@
           req_fifo_pass: true
         }
         {
-          name: pinmux_aon
+          name: pinmux
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -14076,7 +14076,7 @@
           req_fifo_pass: true
         }
         {
-          name: sram_ctrl_ret_aon.regs
+          name: sram_ctrl_ret.regs
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -14097,7 +14097,7 @@
           req_fifo_pass: true
         }
         {
-          name: sram_ctrl_ret_aon.ram
+          name: sram_ctrl_ret.ram
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -14118,7 +14118,7 @@
           req_fifo_pass: true
         }
         {
-          name: aon_timer_aon
+          name: aon_timer
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -14281,7 +14281,7 @@
           index: -1
         }
         {
-          name: tl_pwrmgr_aon
+          name: tl_pwrmgr
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14290,13 +14290,13 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: pwrmgr_aon_tl
+          top_signame: pwrmgr_tl
           index: -1
           external: true
           conn_type: false
         }
         {
-          name: tl_rstmgr_aon
+          name: tl_rstmgr
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14305,13 +14305,13 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: rstmgr_aon_tl
+          top_signame: rstmgr_tl
           index: -1
           external: true
           conn_type: false
         }
         {
-          name: tl_clkmgr_aon
+          name: tl_clkmgr
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14320,13 +14320,13 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: clkmgr_aon_tl
+          top_signame: clkmgr_tl
           index: -1
           external: true
           conn_type: false
         }
         {
-          name: tl_pinmux_aon
+          name: tl_pinmux
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14335,7 +14335,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: pinmux_aon_tl
+          top_signame: pinmux_tl
           index: -1
         }
         {
@@ -14391,7 +14391,7 @@
           index: -1
         }
         {
-          name: tl_sram_ctrl_ret_aon__regs
+          name: tl_sram_ctrl_ret__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14400,13 +14400,13 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: sram_ctrl_ret_aon_regs_tl
+          top_signame: sram_ctrl_ret_regs_tl
           index: -1
           external: true
           conn_type: false
         }
         {
-          name: tl_sram_ctrl_ret_aon__ram
+          name: tl_sram_ctrl_ret__ram
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14415,13 +14415,13 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: sram_ctrl_ret_aon_ram_tl
+          top_signame: sram_ctrl_ret_ram_tl
           index: -1
           external: true
           conn_type: false
         }
         {
-          name: tl_aon_timer_aon
+          name: tl_aon_timer
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14430,7 +14430,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: aon_timer_aon_tl
+          top_signame: aon_timer_tl
           index: -1
           external: true
           conn_type: false
@@ -14482,7 +14482,7 @@
       }
       clock_connections:
       {
-        clk_mbx_i: clkmgr_aon_clocks_i.clk_main_infra
+        clk_mbx_i: clkmgr_clocks_i.clk_main_infra
       }
       domain: Main
       connections:
@@ -14951,8 +14951,8 @@
       }
       clock_connections:
       {
-        clk_dbg_i: clkmgr_aon_clocks_i.clk_main_infra
-        clk_peri_i: clkmgr_aon_clocks_i.clk_io_infra
+        clk_dbg_i: clkmgr_clocks_i.clk_main_infra
+        clk_peri_i: clkmgr_clocks_i.clk_io_infra
       }
       domain: Main
       connections:
@@ -17714,17 +17714,21 @@
           {
             signal: ext_racl_error
           }
-          clkmgr_aon.cg_en:
+          clkmgr.cg_en:
           {
             unused: true
           }
-          rstmgr_aon.rst_en:
+          rstmgr.rst_en:
           {
             unused: true
           }
-          pwrmgr_aon.ext_rst_ack:
+          pwrmgr.ext_rst_ack:
           {
             unused: true
+          }
+          pwrmgr.boot_status:
+          {
+            signal: pwrmgr_boot_status
           }
           soc_dbg_ctrl.halt_cpu_boot:
           {
@@ -17993,17 +17997,21 @@
           {
             signal: ext_racl_error
           }
-          clkmgr_aon.cg_en:
+          clkmgr.cg_en:
           {
             unused: true
           }
-          rstmgr_aon.rst_en:
+          rstmgr.rst_en:
           {
             unused: true
           }
-          pwrmgr_aon.ext_rst_ack:
+          pwrmgr.ext_rst_ack:
           {
             unused: true
+          }
+          pwrmgr.boot_status:
+          {
+            signal: pwrmgr_boot_status
           }
           soc_dbg_ctrl.halt_cpu_boot:
           {
@@ -18303,12 +18311,12 @@
     {
       name: pin_wkup_req
       width: "1"
-      module: pinmux_aon
+      module: pinmux
     }
     {
       name: wkup_req
       width: "1"
-      module: aon_timer_aon
+      module: aon_timer
     }
     {
       name: wkup_external_req
@@ -18475,79 +18483,79 @@
       lpg_idx: 5
     }
     {
-      name: pwrmgr_aon_fatal_fault
+      name: pwrmgr_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: pwrmgr_aon
-      desc: pwrmgr_aon fatal_fault alert
+      module_name: pwrmgr
+      desc: pwrmgr fatal_fault alert
       lpg_name: powerup_por_io_Aon
       lpg_idx: 6
     }
     {
-      name: rstmgr_aon_fatal_fault
+      name: rstmgr_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: rstmgr_aon
-      desc: rstmgr_aon fatal_fault alert
+      module_name: rstmgr
+      desc: rstmgr fatal_fault alert
       lpg_name: powerup_lc_io_Aon
       lpg_idx: 7
     }
     {
-      name: rstmgr_aon_fatal_cnsty_fault
+      name: rstmgr_fatal_cnsty_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: rstmgr_aon
-      desc: rstmgr_aon fatal_cnsty_fault alert
+      module_name: rstmgr
+      desc: rstmgr fatal_cnsty_fault alert
       lpg_name: powerup_lc_io_Aon
       lpg_idx: 7
     }
     {
-      name: clkmgr_aon_recov_fault
+      name: clkmgr_recov_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: clkmgr_aon
-      desc: clkmgr_aon recov_fault alert
+      module_name: clkmgr
+      desc: clkmgr recov_fault alert
       lpg_name: powerup_lc_io_Aon
       lpg_idx: 7
     }
     {
-      name: clkmgr_aon_fatal_fault
+      name: clkmgr_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: clkmgr_aon
-      desc: clkmgr_aon fatal_fault alert
+      module_name: clkmgr
+      desc: clkmgr fatal_fault alert
       lpg_name: powerup_lc_io_Aon
       lpg_idx: 7
     }
     {
-      name: pinmux_aon_fatal_fault
+      name: pinmux_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: pinmux_aon
-      desc: pinmux_aon fatal_fault alert
+      module_name: pinmux
+      desc: pinmux fatal_fault alert
       lpg_name: powerup_lc_io_Aon
       lpg_idx: 7
     }
     {
-      name: aon_timer_aon_fatal_fault
+      name: aon_timer_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: aon_timer_aon
-      desc: aon_timer_aon fatal_fault alert
+      module_name: aon_timer
+      desc: aon_timer fatal_fault alert
       lpg_name: timers_lc_io_Aon
       lpg_idx: 8
     }
@@ -18563,13 +18571,13 @@
       lpg_idx: 10
     }
     {
-      name: sram_ctrl_ret_aon_fatal_error
+      name: sram_ctrl_ret_fatal_error
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: sram_ctrl_ret_aon
-      desc: sram_ctrl_ret_aon fatal_error alert
+      module_name: sram_ctrl_ret
+      desc: sram_ctrl_ret fatal_error alert
       lpg_name: infra_lc_io_Aon
       lpg_idx: 11
     }
@@ -19718,11 +19726,11 @@
       outgoing: false
     }
     {
-      name: pwrmgr_aon_wakeup
+      name: pwrmgr_wakeup
       width: 1
       type: interrupt
-      module_name: pwrmgr_aon
-      desc: pwrmgr_aon wakeup interrupt
+      module_name: pwrmgr
+      desc: pwrmgr wakeup interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -19731,11 +19739,11 @@
       outgoing: false
     }
     {
-      name: aon_timer_aon_wkup_timer_expired
+      name: aon_timer_wkup_timer_expired
       width: 1
       type: interrupt
-      module_name: aon_timer_aon
-      desc: aon_timer_aon wkup_timer_expired interrupt
+      module_name: aon_timer
+      desc: aon_timer wkup_timer_expired interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -19744,11 +19752,11 @@
       outgoing: false
     }
     {
-      name: aon_timer_aon_wdog_timer_bark
+      name: aon_timer_wdog_timer_bark
       width: 1
       type: interrupt
-      module_name: aon_timer_aon
-      desc: aon_timer_aon wdog_timer_bark interrupt
+      module_name: aon_timer
+      desc: aon_timer wdog_timer_bark interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -20569,7 +20577,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: aon_timer_aon_nmi_wdog_timer_bark
+        signame: aon_timer_nmi_wdog_timer_bark
         width: 1
         type: uni
         end_idx: -1
@@ -20605,7 +20613,7 @@
         package: pwrmgr_pkg
         struct: pwr_otp_req
         domain: chip
-        signame: pwrmgr_aon_pwr_otp_req
+        signame: pwrmgr_pwr_otp_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20617,7 +20625,7 @@
         package: pwrmgr_pkg
         struct: pwr_otp_rsp
         domain: chip
-        signame: pwrmgr_aon_pwr_otp_rsp
+        signame: pwrmgr_pwr_otp_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20629,7 +20637,7 @@
         package: lc_ctrl_pkg
         struct: pwr_lc_req
         domain: chip
-        signame: pwrmgr_aon_pwr_lc_req
+        signame: pwrmgr_pwr_lc_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20641,7 +20649,7 @@
         package: lc_ctrl_pkg
         struct: pwr_lc_rsp
         domain: chip
-        signame: pwrmgr_aon_pwr_lc_rsp
+        signame: pwrmgr_pwr_lc_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20653,7 +20661,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: pwrmgr_aon_strap
+        signame: pwrmgr_strap
         width: 1
         type: uni
         end_idx: -1
@@ -20665,7 +20673,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: pwrmgr_aon_low_power
+        signame: pwrmgr_low_power
         width: 1
         type: uni
         end_idx: -1
@@ -20677,7 +20685,7 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: chip
-        signame: pwrmgr_aon_fetch_en
+        signame: pwrmgr_fetch_en
         width: 1
         type: uni
         end_idx: -1
@@ -20689,7 +20697,7 @@
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         domain: chip
-        signame: pwrmgr_aon_rom_ctrl
+        signame: pwrmgr_rom_ctrl
         width: 3
         type: uni
         end_idx: -1
@@ -20701,7 +20709,7 @@
         package: pwrmgr_pkg
         struct: pwr_boot_status
         domain: chip
-        signame: pwrmgr_aon_boot_status
+        signame: pwrmgr_boot_status
         width: 1
         type: uni
         end_idx: -1
@@ -20761,7 +20769,7 @@
         package: prim_mubi_pkg
         struct: mubi4
         domain: chip
-        signame: clkmgr_aon_idle
+        signame: clkmgr_idle
         width: 4
         type: uni
         end_idx: -1
@@ -20893,7 +20901,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: pwrmgr_aon_wakeups
+        signame: pwrmgr_wakeups
         width: 1
         type: uni
         end_idx: -1
@@ -20953,7 +20961,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: chip
-        signame: pwrmgr_aon_tl_req
+        signame: pwrmgr_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20965,7 +20973,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: chip
-        signame: pwrmgr_aon_tl_rsp
+        signame: pwrmgr_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20977,7 +20985,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: chip
-        signame: rstmgr_aon_tl_req
+        signame: rstmgr_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20989,7 +20997,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: chip
-        signame: rstmgr_aon_tl_rsp
+        signame: rstmgr_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21001,7 +21009,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: chip
-        signame: clkmgr_aon_tl_req
+        signame: clkmgr_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21013,7 +21021,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: chip
-        signame: clkmgr_aon_tl_rsp
+        signame: clkmgr_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21025,7 +21033,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: chip
-        signame: sram_ctrl_ret_aon_regs_tl_req
+        signame: sram_ctrl_ret_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21037,7 +21045,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: chip
-        signame: sram_ctrl_ret_aon_regs_tl_rsp
+        signame: sram_ctrl_ret_regs_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21049,7 +21057,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: chip
-        signame: sram_ctrl_ret_aon_ram_tl_req
+        signame: sram_ctrl_ret_ram_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21061,7 +21069,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: chip
-        signame: sram_ctrl_ret_aon_ram_tl_rsp
+        signame: sram_ctrl_ret_ram_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21073,7 +21081,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: chip
-        signame: aon_timer_aon_tl_req
+        signame: aon_timer_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21085,7 +21093,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: chip
-        signame: aon_timer_aon_tl_rsp
+        signame: aon_timer_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21141,13 +21149,13 @@
     otp_ctrl
     lc_ctrl
     spi_host0
-    pwrmgr_aon
-    rstmgr_aon
-    clkmgr_aon
-    pinmux_aon
-    aon_timer_aon
+    pwrmgr
+    rstmgr
+    clkmgr
+    pinmux
+    aon_timer
     soc_proxy
-    sram_ctrl_ret_aon
+    sram_ctrl_ret
     rv_dm
     rv_plic
     aes
@@ -21267,7 +21275,7 @@
         alert_handler[13]: fatal_fault
       ]
     }
-    module_pwrmgr_aon:
+    module_pwrmgr:
     {
       tx_expr: alert_tx_o[0]
       rx_expr: alert_rx_i[0]
@@ -21277,7 +21285,7 @@
         alert_handler[14]: fatal_fault
       ]
     }
-    module_rstmgr_aon:
+    module_rstmgr:
     {
       tx_expr: alert_tx_o[2:1]
       rx_expr: alert_rx_i[2:1]
@@ -21288,7 +21296,7 @@
         alert_handler[16]: fatal_cnsty_fault
       ]
     }
-    module_clkmgr_aon:
+    module_clkmgr:
     {
       tx_expr: alert_tx_o[4:3]
       rx_expr: alert_rx_i[4:3]
@@ -21299,7 +21307,7 @@
         alert_handler[18]: fatal_fault
       ]
     }
-    module_pinmux_aon:
+    module_pinmux:
     {
       tx_expr: alert_tx[19]
       rx_expr: alert_rx[19]
@@ -21309,7 +21317,7 @@
         alert_handler[19]: fatal_fault
       ]
     }
-    module_aon_timer_aon:
+    module_aon_timer:
     {
       tx_expr: alert_tx_o[5]
       rx_expr: alert_rx_i[5]
@@ -21329,7 +21337,7 @@
         alert_handler[21]: fatal_alert_intg
       ]
     }
-    module_sram_ctrl_ret_aon:
+    module_sram_ctrl_ret:
     {
       tx_expr: alert_tx_o[7]
       rx_expr: alert_rx_i[7]
@@ -21730,8 +21738,8 @@
     otp_ctrl
     alert_handler
     spi_host0
-    pwrmgr_aon
-    aon_timer_aon
+    pwrmgr
+    aon_timer
     hmac
     kmac
     otbn
@@ -21771,7 +21779,7 @@
           clk_io_peri: io
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_peri
+      clock_connection: clkmgr_clocks_i.clk_io_peri
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21793,7 +21801,7 @@
           clk_io_peri: io
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_peri
+      clock_connection: clkmgr_clocks_i.clk_io_peri
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21815,7 +21823,7 @@
           clk_io_peri: io
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_peri
+      clock_connection: clkmgr_clocks_i.clk_io_peri
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21838,7 +21846,7 @@
           clk_aon_timers: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_timers
+      clock_connection: clkmgr_clocks_i.clk_io_timers
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21861,7 +21869,7 @@
           clk_main_secure: main
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_secure
+      clock_connection: clkmgr_clocks_i.clk_io_secure
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21883,7 +21891,7 @@
           clk_io_peri: io
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_peri
+      clock_connection: clkmgr_clocks_i.clk_io_peri
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21907,7 +21915,7 @@
           clk_main_powerup: main
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_powerup
+      clock_connection: clkmgr_clocks.clk_io_powerup
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21931,7 +21939,7 @@
           clk_main_powerup: main
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_powerup
+      clock_connection: clkmgr_clocks.clk_io_powerup
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21954,7 +21962,7 @@
           clk_aon_timers: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_timers
+      clock_connection: clkmgr_clocks.clk_io_timers
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -21978,7 +21986,7 @@
           clk_aon_infra: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_io_infra
+      clock_connection: clkmgr_clocks_i.clk_io_infra
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22002,7 +22010,7 @@
           clk_aon_infra: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_main_infra
+      clock_connection: clkmgr_clocks.clk_main_infra
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22026,7 +22034,7 @@
           clk_aon_infra: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_infra
+      clock_connection: clkmgr_clocks.clk_io_infra
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22050,7 +22058,7 @@
           clk_aon_infra: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_main_infra
+      clock_connection: clkmgr_clocks_i.clk_main_infra
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22073,7 +22081,7 @@
           clk_main_secure: main
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_main_secure
+      clock_connection: clkmgr_clocks_i.clk_main_secure
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22098,7 +22106,7 @@
           clk_main_otbn: main
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_main_aes
+      clock_connection: clkmgr_clocks_i.clk_main_aes
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22123,7 +22131,7 @@
           clk_main_otbn: main
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_main_hmac
+      clock_connection: clkmgr_clocks_i.clk_main_hmac
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22148,7 +22156,7 @@
           clk_main_otbn: main
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_main_kmac
+      clock_connection: clkmgr_clocks_i.clk_main_kmac
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22173,7 +22181,7 @@
           clk_main_otbn: main
         }
       }
-      clock_connection: clkmgr_aon_clocks_i.clk_main_otbn
+      clock_connection: clkmgr_clocks_i.clk_main_otbn
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:
@@ -22264,7 +22272,7 @@
         inst_name: gpio
         package: ""
         domain: Main
-        top_signame: pwrmgr_aon_strap
+        top_signame: pwrmgr_strap
         index: -1
         external: true
         conn_type: false
@@ -22566,7 +22574,7 @@
         default: "'0"
         inst_name: otp_ctrl
         domain: Main
-        top_signame: pwrmgr_aon_pwr_otp
+        top_signame: pwrmgr_pwr_otp
         index: -1
         external: true
         conn_type: false
@@ -23087,7 +23095,7 @@
         inst_name: lc_ctrl
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_pwr_lc
+        top_signame: pwrmgr_pwr_lc
         index: -1
         external: true
         conn_type: false
@@ -23705,11 +23713,11 @@
         type: uni
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: pwrmgr_aon_boot_status
+        top_signame: pwrmgr_boot_status
         index: -1
         external: true
         conn_type: true
@@ -23720,7 +23728,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         package: ""
         external: true
@@ -23735,7 +23743,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         external: true
         conn_type: false
@@ -23749,11 +23757,11 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: pwrmgr_aon_pwr_rst
+        top_signame: pwrmgr_pwr_rst
         index: -1
       }
       {
@@ -23763,11 +23771,11 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: pwrmgr_aon_pwr_clk
+        top_signame: pwrmgr_pwr_clk
         index: -1
       }
       {
@@ -23777,11 +23785,11 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: pwrmgr_aon_pwr_otp
+        top_signame: pwrmgr_pwr_otp
         index: -1
         external: true
         conn_type: false
@@ -23793,11 +23801,11 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: pwrmgr_aon_pwr_lc
+        top_signame: pwrmgr_pwr_lc
         index: -1
         external: true
         conn_type: false
@@ -23809,7 +23817,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         index: -1
       }
       {
@@ -23819,7 +23827,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         domain: Aon
         top_signame: alert_handler_esc_tx
@@ -23834,7 +23842,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         domain: Aon
         top_signame: alert_handler_esc_rx
@@ -23849,7 +23857,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         domain: Aon
         top_signame: rv_core_ibex_pwrmgr
@@ -23863,12 +23871,12 @@
         type: uni
         act: rcv
         width: 3
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         package: ""
         end_idx: -1
         top_type: one-to-N
-        top_signame: pwrmgr_aon_wakeups
+        top_signame: pwrmgr_wakeups
         index: 0
         external: true
         conn_type: true
@@ -23879,12 +23887,12 @@
         type: uni
         act: rcv
         width: 2
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         package: ""
         end_idx: -1
         top_type: one-to-N
-        top_signame: pwrmgr_aon_rstreqs
+        top_signame: pwrmgr_rstreqs
         index: -1
       }
       {
@@ -23893,7 +23901,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         package: ""
         domain: Aon
@@ -23908,12 +23916,12 @@
         type: uni
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         package: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: pwrmgr_aon_strap
+        top_signame: pwrmgr_strap
         index: -1
         external: true
         conn_type: false
@@ -23924,12 +23932,12 @@
         type: uni
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         package: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: pwrmgr_aon_low_power
+        top_signame: pwrmgr_low_power
         index: -1
         external: true
         conn_type: true
@@ -23942,10 +23950,10 @@
         act: rcv
         width: 3
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         end_idx: -1
         top_type: one-to-N
-        top_signame: pwrmgr_aon_rom_ctrl
+        top_signame: pwrmgr_rom_ctrl
         index: -1
         external: true
         conn_type: false
@@ -23957,11 +23965,11 @@
         type: uni
         act: req
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: pwrmgr_aon_fetch_en
+        top_signame: pwrmgr_fetch_en
         index: -1
         external: true
         conn_type: false
@@ -23973,7 +23981,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         domain: Aon
         top_signame: lc_ctrl_lc_dft_en
@@ -23988,7 +23996,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         domain: Aon
         top_signame: lc_ctrl_lc_hw_debug_en
@@ -24003,10 +24011,10 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         domain: Aon
-        top_signame: rstmgr_aon_sw_rst_req
+        top_signame: rstmgr_sw_rst_req
         index: -1
       }
       {
@@ -24016,11 +24024,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: pwrmgr_aon
+        inst_name: pwrmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: pwrmgr_aon_tl
+        top_signame: pwrmgr_tl
         index: -1
         external: true
         conn_type: false
@@ -24036,7 +24044,7 @@
         type: uni
         act: rcv
         width: 2
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
         package: ""
         external: true
@@ -24055,11 +24063,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
         package: pwrmgr_pkg
         domain: Aon
-        top_signame: pwrmgr_aon_pwr_rst
+        top_signame: pwrmgr_pwr_rst
         index: -1
       }
       {
@@ -24070,9 +24078,9 @@
         type: uni
         act: req
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
-        top_signame: rstmgr_aon_resets
+        top_signame: rstmgr_resets
         index: -1
         external: true
         conn_type: true
@@ -24085,9 +24093,9 @@
         type: uni
         act: req
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
-        top_signame: rstmgr_aon_rst_en
+        top_signame: rstmgr_rst_en
         index: -1
         external: true
         conn_type: true
@@ -24100,7 +24108,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
         domain: Aon
         top_signame: alert_handler_crashdump
@@ -24116,7 +24124,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
         domain: Aon
         top_signame: rv_core_ibex_crash_dump
@@ -24132,11 +24140,11 @@
         type: uni
         act: req
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: rstmgr_aon_sw_rst_req
+        top_signame: rstmgr_sw_rst_req
         index: -1
       }
       {
@@ -24146,11 +24154,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: rstmgr_aon
+        inst_name: rstmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: rstmgr_aon_tl
+        top_signame: rstmgr_tl
         index: -1
         external: true
         conn_type: false
@@ -24162,9 +24170,9 @@
         type: uni
         act: req
         width: 1
-        inst_name: clkmgr_aon
+        inst_name: clkmgr
         default: ""
-        top_signame: clkmgr_aon_clocks
+        top_signame: clkmgr_clocks
         index: -1
         external: true
         conn_type: true
@@ -24176,9 +24184,9 @@
         type: uni
         act: req
         width: 1
-        inst_name: clkmgr_aon
+        inst_name: clkmgr
         default: ""
-        top_signame: clkmgr_aon_cg_en
+        top_signame: clkmgr_cg_en
         index: -1
         external: true
         conn_type: true
@@ -24190,7 +24198,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: clkmgr_aon
+        inst_name: clkmgr
         default: ""
         external: true
         conn_type: false
@@ -24203,11 +24211,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: clkmgr_aon
+        inst_name: clkmgr
         default: ""
         package: pwrmgr_pkg
         domain: Aon
-        top_signame: pwrmgr_aon_pwr_clk
+        top_signame: pwrmgr_pwr_clk
         index: -1
       }
       {
@@ -24217,11 +24225,11 @@
         type: uni
         act: rcv
         width: 4
-        inst_name: clkmgr_aon
+        inst_name: clkmgr
         default: ""
         end_idx: -1
         top_type: one-to-N
-        top_signame: clkmgr_aon_idle
+        top_signame: clkmgr_idle
         index: -1
         external: true
         conn_type: false
@@ -24233,11 +24241,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: clkmgr_aon
+        inst_name: clkmgr
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: clkmgr_aon_tl
+        top_signame: clkmgr_tl
         index: -1
         external: true
         conn_type: false
@@ -24250,10 +24258,10 @@
         act: rcv
         width: 1
         default: 1'b0
-        inst_name: pinmux_aon
+        inst_name: pinmux
         package: ""
         domain: Main
-        top_signame: pwrmgr_aon_low_power
+        top_signame: pwrmgr_low_power
         index: -1
         external: true
         conn_type: false
@@ -24266,10 +24274,10 @@
         act: req
         width: 1
         default: 1'b0
-        inst_name: pinmux_aon
+        inst_name: pinmux
         package: ""
         domain: Main
-        top_signame: pwrmgr_aon_wakeups
+        top_signame: pwrmgr_wakeups
         index: -1
         external: true
         conn_type: false
@@ -24281,11 +24289,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: pinmux_aon
+        inst_name: pinmux
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: pinmux_aon_tl
+        top_signame: pinmux_tl
         index: -1
       }
       {
@@ -24295,11 +24303,11 @@
         act: req
         width: 1
         default: 1'b0
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         package: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: aon_timer_aon_nmi_wdog_timer_bark
+        top_signame: aon_timer_nmi_wdog_timer_bark
         index: -1
         external: true
         conn_type: false
@@ -24311,10 +24319,10 @@
         act: req
         width: 1
         default: 1'b0
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         package: ""
         domain: Aon
-        top_signame: pwrmgr_aon_wakeups
+        top_signame: pwrmgr_wakeups
         index: 1
       }
       {
@@ -24324,10 +24332,10 @@
         act: req
         width: 1
         default: 1'b0
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         package: ""
         domain: Aon
-        top_signame: pwrmgr_aon_rstreqs
+        top_signame: pwrmgr_rstreqs
         index: 0
       }
       {
@@ -24338,7 +24346,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         domain: Aon
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -24351,11 +24359,11 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         default: ""
         package: ""
         domain: Aon
-        top_signame: pwrmgr_aon_low_power
+        top_signame: pwrmgr_low_power
         index: -1
       }
       {
@@ -24370,7 +24378,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         index: -1
       }
       {
@@ -24381,7 +24389,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         index: -1
       }
       {
@@ -24391,11 +24399,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: aon_timer_aon
+        inst_name: aon_timer
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: aon_timer_aon_tl
+        top_signame: aon_timer_tl
         index: -1
         external: true
         conn_type: false
@@ -24484,7 +24492,7 @@
         default: ""
         package: ""
         domain: Aon
-        top_signame: pwrmgr_aon_wakeups
+        top_signame: pwrmgr_wakeups
         index: 2
       }
       {
@@ -24497,7 +24505,7 @@
         default: ""
         package: ""
         domain: Aon
-        top_signame: pwrmgr_aon_rstreqs
+        top_signame: pwrmgr_rstreqs
         index: 1
       }
       {
@@ -24727,7 +24735,7 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         default: ""
         domain: Aon
         top_signame: otp_ctrl_sram_otp_key
@@ -24750,14 +24758,14 @@
           default: 1
           local: false
           expose: true
-          name_top: SramCtrlRetAonNumRamInst
+          name_top: SramCtrlRetNumRamInst
         }
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         default: ""
         external: true
         conn_type: false
         index: -1
-        top_signame: sram_ctrl_ret_aon_ram_cfg
+        top_signame: sram_ctrl_ret_ram_cfg
       }
       {
         name: lc_escalate_en
@@ -24767,7 +24775,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         domain: Aon
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -24782,7 +24790,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         index: -1
       }
       {
@@ -24793,7 +24801,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8False
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         index: -1
       }
       {
@@ -24808,7 +24816,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         index: -1
       }
       {
@@ -24819,7 +24827,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         index: -1
       }
       {
@@ -24830,7 +24838,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         index: -1
       }
       {
@@ -24840,11 +24848,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: sram_ctrl_ret_aon_regs_tl
+        top_signame: sram_ctrl_ret_regs_tl
         index: -1
         external: true
         conn_type: false
@@ -24856,11 +24864,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: sram_ctrl_ret_aon
+        inst_name: sram_ctrl_ret
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: sram_ctrl_ret_aon_ram_tl
+        top_signame: sram_ctrl_ret_ram_tl
         index: -1
         external: true
         conn_type: false
@@ -25104,7 +25112,7 @@
         inst_name: rv_dm
         package: ""
         domain: Main
-        top_signame: pwrmgr_aon_strap
+        top_signame: pwrmgr_strap
         index: -1
         external: true
         conn_type: false
@@ -25271,7 +25279,7 @@
         inst_name: aes
         default: ""
         domain: Main
-        top_signame: clkmgr_aon_idle
+        top_signame: clkmgr_idle
         index: 0
         external: true
         conn_type: false
@@ -25357,7 +25365,7 @@
         inst_name: hmac
         default: ""
         domain: Main
-        top_signame: clkmgr_aon_idle
+        top_signame: clkmgr_idle
         index: 1
         external: true
         conn_type: false
@@ -25436,7 +25444,7 @@
         inst_name: kmac
         default: ""
         domain: Main
-        top_signame: clkmgr_aon_idle
+        top_signame: clkmgr_idle
         index: 2
         external: true
         conn_type: false
@@ -25531,7 +25539,7 @@
         inst_name: otbn
         default: ""
         domain: Main
-        top_signame: clkmgr_aon_idle
+        top_signame: clkmgr_idle
         index: 3
         external: true
         conn_type: false
@@ -26537,7 +26545,7 @@
         inst_name: rom_ctrl0
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_rom_ctrl
+        top_signame: pwrmgr_rom_ctrl
         index: 0
         external: true
         conn_type: false
@@ -26620,7 +26628,7 @@
         inst_name: rom_ctrl1
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_rom_ctrl
+        top_signame: pwrmgr_rom_ctrl
         index: 1
         external: true
         conn_type: false
@@ -28095,7 +28103,7 @@
         inst_name: soc_dbg_ctrl
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_boot_status
+        top_signame: pwrmgr_boot_status
         index: -1
         external: true
         conn_type: false
@@ -28238,7 +28246,7 @@
         inst_name: soc_dbg_ctrl
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_rom_ctrl
+        top_signame: pwrmgr_rom_ctrl
         index: 2
         external: true
         conn_type: false
@@ -28680,7 +28688,7 @@
         inst_name: rv_core_ibex
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_fetch_en
+        top_signame: pwrmgr_fetch_en
         index: -1
         external: true
         conn_type: false
@@ -28711,7 +28719,7 @@
         default: ""
         package: ""
         domain: Main
-        top_signame: aon_timer_aon_nmi_wdog_timer_bark
+        top_signame: aon_timer_nmi_wdog_timer_bark
         index: -1
         external: true
         conn_type: false
@@ -29544,7 +29552,7 @@
         index: -1
       }
       {
-        name: tl_pwrmgr_aon
+        name: tl_pwrmgr
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29553,13 +29561,13 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: pwrmgr_aon_tl
+        top_signame: pwrmgr_tl
         index: -1
         external: true
         conn_type: false
       }
       {
-        name: tl_rstmgr_aon
+        name: tl_rstmgr
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29568,13 +29576,13 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: rstmgr_aon_tl
+        top_signame: rstmgr_tl
         index: -1
         external: true
         conn_type: false
       }
       {
-        name: tl_clkmgr_aon
+        name: tl_clkmgr
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29583,13 +29591,13 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: clkmgr_aon_tl
+        top_signame: clkmgr_tl
         index: -1
         external: true
         conn_type: false
       }
       {
-        name: tl_pinmux_aon
+        name: tl_pinmux
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29598,7 +29606,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: pinmux_aon_tl
+        top_signame: pinmux_tl
         index: -1
       }
       {
@@ -29654,7 +29662,7 @@
         index: -1
       }
       {
-        name: tl_sram_ctrl_ret_aon__regs
+        name: tl_sram_ctrl_ret__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29663,13 +29671,13 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: sram_ctrl_ret_aon_regs_tl
+        top_signame: sram_ctrl_ret_regs_tl
         index: -1
         external: true
         conn_type: false
       }
       {
-        name: tl_sram_ctrl_ret_aon__ram
+        name: tl_sram_ctrl_ret__ram
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29678,13 +29686,13 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: sram_ctrl_ret_aon_ram_tl
+        top_signame: sram_ctrl_ret_ram_tl
         index: -1
         external: true
         conn_type: false
       }
       {
-        name: tl_aon_timer_aon
+        name: tl_aon_timer
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29693,7 +29701,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: aon_timer_aon_tl
+        top_signame: aon_timer_tl
         index: -1
         external: true
         conn_type: false
@@ -30116,11 +30124,11 @@
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: aon_timer_aon_nmi_wdog_timer_bark_o
+        signame: aon_timer_nmi_wdog_timer_bark_o
         signame_chip:
         {
-          asic: aon_timer_aon_nmi_wdog_timer_bark
-          verilator: aon_timer_aon_nmi_wdog_timer_bark
+          asic: aon_timer_nmi_wdog_timer_bark
+          verilator: aon_timer_nmi_wdog_timer_bark
         }
         width: 1
         type: uni
@@ -30128,18 +30136,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: aon_timer_aon_nmi_wdog_timer_bark
+        netname: aon_timer_nmi_wdog_timer_bark
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: aon_timer_aon_nmi_wdog_timer_bark_i
+        signame: aon_timer_nmi_wdog_timer_bark_i
         signame_chip:
         {
-          asic: aon_timer_aon_nmi_wdog_timer_bark
-          verilator: aon_timer_aon_nmi_wdog_timer_bark
+          asic: aon_timer_nmi_wdog_timer_bark
+          verilator: aon_timer_nmi_wdog_timer_bark
         }
         width: 1
         type: uni
@@ -30147,7 +30155,7 @@
         direction: in
         conn_type: false
         index: -1
-        netname: aon_timer_aon_nmi_wdog_timer_bark
+        netname: aon_timer_nmi_wdog_timer_bark
       }
       {
         package: otp_ctrl_pkg
@@ -30230,11 +30238,11 @@
         struct: pwr_otp_req
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_pwr_otp_req_o
+        signame: pwrmgr_pwr_otp_req_o
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_otp_req
-          verilator: pwrmgr_aon_pwr_otp_req
+          asic: pwrmgr_pwr_otp_req
+          verilator: pwrmgr_pwr_otp_req
         }
         width: 1
         type: req_rsp
@@ -30242,18 +30250,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_otp_req
+        netname: pwrmgr_pwr_otp_req
       }
       {
         package: pwrmgr_pkg
         struct: pwr_otp_rsp
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_pwr_otp_rsp_i
+        signame: pwrmgr_pwr_otp_rsp_i
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_otp_rsp
-          verilator: pwrmgr_aon_pwr_otp_rsp
+          asic: pwrmgr_pwr_otp_rsp
+          verilator: pwrmgr_pwr_otp_rsp
         }
         width: 1
         type: req_rsp
@@ -30261,18 +30269,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_otp_rsp
+        netname: pwrmgr_pwr_otp_rsp
       }
       {
         package: pwrmgr_pkg
         struct: pwr_otp_req
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_pwr_otp_req_i
+        signame: pwrmgr_pwr_otp_req_i
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_otp_req
-          verilator: pwrmgr_aon_pwr_otp_req
+          asic: pwrmgr_pwr_otp_req
+          verilator: pwrmgr_pwr_otp_req
         }
         width: 1
         type: req_rsp
@@ -30280,18 +30288,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_otp_req
+        netname: pwrmgr_pwr_otp_req
       }
       {
         package: pwrmgr_pkg
         struct: pwr_otp_rsp
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_pwr_otp_rsp_o
+        signame: pwrmgr_pwr_otp_rsp_o
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_otp_rsp
-          verilator: pwrmgr_aon_pwr_otp_rsp
+          asic: pwrmgr_pwr_otp_rsp
+          verilator: pwrmgr_pwr_otp_rsp
         }
         width: 1
         type: req_rsp
@@ -30299,18 +30307,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_otp_rsp
+        netname: pwrmgr_pwr_otp_rsp
       }
       {
         package: lc_ctrl_pkg
         struct: pwr_lc_req
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_pwr_lc_req_o
+        signame: pwrmgr_pwr_lc_req_o
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_lc_req
-          verilator: pwrmgr_aon_pwr_lc_req
+          asic: pwrmgr_pwr_lc_req
+          verilator: pwrmgr_pwr_lc_req
         }
         width: 1
         type: req_rsp
@@ -30318,18 +30326,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_lc_req
+        netname: pwrmgr_pwr_lc_req
       }
       {
         package: lc_ctrl_pkg
         struct: pwr_lc_rsp
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_pwr_lc_rsp_i
+        signame: pwrmgr_pwr_lc_rsp_i
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_lc_rsp
-          verilator: pwrmgr_aon_pwr_lc_rsp
+          asic: pwrmgr_pwr_lc_rsp
+          verilator: pwrmgr_pwr_lc_rsp
         }
         width: 1
         type: req_rsp
@@ -30337,18 +30345,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_lc_rsp
+        netname: pwrmgr_pwr_lc_rsp
       }
       {
         package: lc_ctrl_pkg
         struct: pwr_lc_req
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_pwr_lc_req_i
+        signame: pwrmgr_pwr_lc_req_i
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_lc_req
-          verilator: pwrmgr_aon_pwr_lc_req
+          asic: pwrmgr_pwr_lc_req
+          verilator: pwrmgr_pwr_lc_req
         }
         width: 1
         type: req_rsp
@@ -30356,18 +30364,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_lc_req
+        netname: pwrmgr_pwr_lc_req
       }
       {
         package: lc_ctrl_pkg
         struct: pwr_lc_rsp
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_pwr_lc_rsp_o
+        signame: pwrmgr_pwr_lc_rsp_o
         signame_chip:
         {
-          asic: pwrmgr_aon_pwr_lc_rsp
-          verilator: pwrmgr_aon_pwr_lc_rsp
+          asic: pwrmgr_pwr_lc_rsp
+          verilator: pwrmgr_pwr_lc_rsp
         }
         width: 1
         type: req_rsp
@@ -30375,18 +30383,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_pwr_lc_rsp
+        netname: pwrmgr_pwr_lc_rsp
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_strap_o
+        signame: pwrmgr_strap_o
         signame_chip:
         {
-          asic: pwrmgr_aon_strap
-          verilator: pwrmgr_aon_strap
+          asic: pwrmgr_strap
+          verilator: pwrmgr_strap
         }
         width: 1
         type: uni
@@ -30394,18 +30402,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_strap
+        netname: pwrmgr_strap
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_strap_i
+        signame: pwrmgr_strap_i
         signame_chip:
         {
-          asic: pwrmgr_aon_strap
-          verilator: pwrmgr_aon_strap
+          asic: pwrmgr_strap
+          verilator: pwrmgr_strap
         }
         width: 1
         type: uni
@@ -30413,18 +30421,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_strap
+        netname: pwrmgr_strap
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_low_power_o
+        signame: pwrmgr_low_power_o
         signame_chip:
         {
-          asic: pwrmgr_aon_low_power
-          verilator: pwrmgr_aon_low_power
+          asic: pwrmgr_low_power
+          verilator: pwrmgr_low_power
         }
         width: 1
         type: uni
@@ -30432,18 +30440,18 @@
         direction: out
         conn_type: true
         index: -1
-        netname: pwrmgr_aon_low_power
+        netname: pwrmgr_low_power
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_low_power_i
+        signame: pwrmgr_low_power_i
         signame_chip:
         {
-          asic: pwrmgr_aon_low_power
-          verilator: pwrmgr_aon_low_power
+          asic: pwrmgr_low_power
+          verilator: pwrmgr_low_power
         }
         width: 1
         type: uni
@@ -30451,18 +30459,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_low_power
+        netname: pwrmgr_low_power
       }
       {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_fetch_en_o
+        signame: pwrmgr_fetch_en_o
         signame_chip:
         {
-          asic: pwrmgr_aon_fetch_en
-          verilator: pwrmgr_aon_fetch_en
+          asic: pwrmgr_fetch_en
+          verilator: pwrmgr_fetch_en
         }
         width: 1
         type: uni
@@ -30470,18 +30478,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_fetch_en
+        netname: pwrmgr_fetch_en
       }
       {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_fetch_en_i
+        signame: pwrmgr_fetch_en_i
         signame_chip:
         {
-          asic: pwrmgr_aon_fetch_en
-          verilator: pwrmgr_aon_fetch_en
+          asic: pwrmgr_fetch_en
+          verilator: pwrmgr_fetch_en
         }
         width: 1
         type: uni
@@ -30489,18 +30497,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_fetch_en
+        netname: pwrmgr_fetch_en
       }
       {
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_rom_ctrl_i
+        signame: pwrmgr_rom_ctrl_i
         signame_chip:
         {
-          asic: pwrmgr_aon_rom_ctrl
-          verilator: pwrmgr_aon_rom_ctrl
+          asic: pwrmgr_rom_ctrl
+          verilator: pwrmgr_rom_ctrl
         }
         width: 3
         type: uni
@@ -30508,18 +30516,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_rom_ctrl
+        netname: pwrmgr_rom_ctrl
       }
       {
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_rom_ctrl_o
+        signame: pwrmgr_rom_ctrl_o
         signame_chip:
         {
-          asic: pwrmgr_aon_rom_ctrl
-          verilator: pwrmgr_aon_rom_ctrl
+          asic: pwrmgr_rom_ctrl
+          verilator: pwrmgr_rom_ctrl
         }
         width: 3
         type: uni
@@ -30527,18 +30535,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_rom_ctrl
+        netname: pwrmgr_rom_ctrl
       }
       {
         package: pwrmgr_pkg
         struct: pwr_boot_status
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_boot_status_o
+        signame: pwrmgr_boot_status_o
         signame_chip:
         {
-          asic: pwrmgr_aon_boot_status
-          verilator: pwrmgr_aon_boot_status
+          asic: pwrmgr_boot_status
+          verilator: pwrmgr_boot_status
         }
         width: 1
         type: uni
@@ -30546,18 +30554,18 @@
         direction: out
         conn_type: true
         index: -1
-        netname: pwrmgr_aon_boot_status
+        netname: pwrmgr_boot_status
       }
       {
         package: pwrmgr_pkg
         struct: pwr_boot_status
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_boot_status_i
+        signame: pwrmgr_boot_status_i
         signame_chip:
         {
-          asic: pwrmgr_aon_boot_status
-          verilator: pwrmgr_aon_boot_status
+          asic: pwrmgr_boot_status
+          verilator: pwrmgr_boot_status
         }
         width: 1
         type: uni
@@ -30565,7 +30573,7 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_boot_status
+        netname: pwrmgr_boot_status
       }
       {
         package: dma_pkg
@@ -30724,11 +30732,11 @@
         struct: mubi4
         domain: Aon
         inter_pd: true
-        signame: clkmgr_aon_idle_i
+        signame: clkmgr_idle_i
         signame_chip:
         {
-          asic: clkmgr_aon_idle
-          verilator: clkmgr_aon_idle
+          asic: clkmgr_idle
+          verilator: clkmgr_idle
         }
         width: 4
         type: uni
@@ -30736,18 +30744,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: clkmgr_aon_idle
+        netname: clkmgr_idle
       }
       {
         package: prim_mubi_pkg
         struct: mubi4
         domain: Main
         inter_pd: true
-        signame: clkmgr_aon_idle_o
+        signame: clkmgr_idle_o
         signame_chip:
         {
-          asic: clkmgr_aon_idle
-          verilator: clkmgr_aon_idle
+          asic: clkmgr_idle
+          verilator: clkmgr_idle
         }
         width: 4
         type: uni
@@ -30755,7 +30763,7 @@
         direction: out
         conn_type: false
         index: -1
-        netname: clkmgr_aon_idle
+        netname: clkmgr_idle
       }
       {
         package: lc_ctrl_pkg
@@ -31142,11 +31150,11 @@
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_wakeups_i
+        signame: pwrmgr_wakeups_i
         signame_chip:
         {
-          asic: pwrmgr_aon_wakeups
-          verilator: pwrmgr_aon_wakeups
+          asic: pwrmgr_wakeups
+          verilator: pwrmgr_wakeups
         }
         width: 1
         type: uni
@@ -31154,18 +31162,18 @@
         direction: in
         conn_type: true
         index: 0
-        netname: pwrmgr_aon_wakeups
+        netname: pwrmgr_wakeups
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_wakeups_o
+        signame: pwrmgr_wakeups_o
         signame_chip:
         {
-          asic: pwrmgr_aon_wakeups
-          verilator: pwrmgr_aon_wakeups
+          asic: pwrmgr_wakeups
+          verilator: pwrmgr_wakeups
         }
         width: 1
         type: uni
@@ -31173,7 +31181,7 @@
         direction: out
         conn_type: false
         index: 0
-        netname: pwrmgr_aon_wakeups
+        netname: pwrmgr_wakeups
       }
       {
         package: tlul_pkg
@@ -31332,11 +31340,11 @@
         struct: tl_h2d
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_tl_req_i
+        signame: pwrmgr_tl_req_i
         signame_chip:
         {
-          asic: pwrmgr_aon_tl_req
-          verilator: pwrmgr_aon_tl_req
+          asic: pwrmgr_tl_req
+          verilator: pwrmgr_tl_req
         }
         width: 1
         type: req_rsp
@@ -31344,18 +31352,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_tl_h2d
+        netname: pwrmgr_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Aon
         inter_pd: true
-        signame: pwrmgr_aon_tl_rsp_o
+        signame: pwrmgr_tl_rsp_o
         signame_chip:
         {
-          asic: pwrmgr_aon_tl_rsp
-          verilator: pwrmgr_aon_tl_rsp
+          asic: pwrmgr_tl_rsp
+          verilator: pwrmgr_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31363,18 +31371,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_tl_d2h
+        netname: pwrmgr_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_tl_req_o
+        signame: pwrmgr_tl_req_o
         signame_chip:
         {
-          asic: pwrmgr_aon_tl_req
-          verilator: pwrmgr_aon_tl_req
+          asic: pwrmgr_tl_req
+          verilator: pwrmgr_tl_req
         }
         width: 1
         type: req_rsp
@@ -31382,18 +31390,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_tl_h2d
+        netname: pwrmgr_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
         inter_pd: true
-        signame: pwrmgr_aon_tl_rsp_i
+        signame: pwrmgr_tl_rsp_i
         signame_chip:
         {
-          asic: pwrmgr_aon_tl_rsp
-          verilator: pwrmgr_aon_tl_rsp
+          asic: pwrmgr_tl_rsp
+          verilator: pwrmgr_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31401,94 +31409,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: pwrmgr_aon_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Aon
-        inter_pd: true
-        signame: rstmgr_aon_tl_req_i
-        signame_chip:
-        {
-          asic: rstmgr_aon_tl_req
-          verilator: rstmgr_aon_tl_req
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: rstmgr_aon_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Aon
-        inter_pd: true
-        signame: rstmgr_aon_tl_rsp_o
-        signame_chip:
-        {
-          asic: rstmgr_aon_tl_rsp
-          verilator: rstmgr_aon_tl_rsp
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: rstmgr_aon_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
-        inter_pd: true
-        signame: rstmgr_aon_tl_req_o
-        signame_chip:
-        {
-          asic: rstmgr_aon_tl_req
-          verilator: rstmgr_aon_tl_req
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: rstmgr_aon_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        inter_pd: true
-        signame: rstmgr_aon_tl_rsp_i
-        signame_chip:
-        {
-          asic: rstmgr_aon_tl_rsp
-          verilator: rstmgr_aon_tl_rsp
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: rstmgr_aon_tl_d2h
+        netname: pwrmgr_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Aon
         inter_pd: true
-        signame: clkmgr_aon_tl_req_i
+        signame: rstmgr_tl_req_i
         signame_chip:
         {
-          asic: clkmgr_aon_tl_req
-          verilator: clkmgr_aon_tl_req
+          asic: rstmgr_tl_req
+          verilator: rstmgr_tl_req
         }
         width: 1
         type: req_rsp
@@ -31496,18 +31428,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: clkmgr_aon_tl_h2d
+        netname: rstmgr_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Aon
         inter_pd: true
-        signame: clkmgr_aon_tl_rsp_o
+        signame: rstmgr_tl_rsp_o
         signame_chip:
         {
-          asic: clkmgr_aon_tl_rsp
-          verilator: clkmgr_aon_tl_rsp
+          asic: rstmgr_tl_rsp
+          verilator: rstmgr_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31515,18 +31447,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: clkmgr_aon_tl_d2h
+        netname: rstmgr_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
         inter_pd: true
-        signame: clkmgr_aon_tl_req_o
+        signame: rstmgr_tl_req_o
         signame_chip:
         {
-          asic: clkmgr_aon_tl_req
-          verilator: clkmgr_aon_tl_req
+          asic: rstmgr_tl_req
+          verilator: rstmgr_tl_req
         }
         width: 1
         type: req_rsp
@@ -31534,18 +31466,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: clkmgr_aon_tl_h2d
+        netname: rstmgr_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
         inter_pd: true
-        signame: clkmgr_aon_tl_rsp_i
+        signame: rstmgr_tl_rsp_i
         signame_chip:
         {
-          asic: clkmgr_aon_tl_rsp
-          verilator: clkmgr_aon_tl_rsp
+          asic: rstmgr_tl_rsp
+          verilator: rstmgr_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31553,94 +31485,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: clkmgr_aon_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Aon
-        inter_pd: true
-        signame: sram_ctrl_ret_aon_regs_tl_req_i
-        signame_chip:
-        {
-          asic: sram_ctrl_ret_aon_regs_tl_req
-          verilator: sram_ctrl_ret_aon_regs_tl_req
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: sram_ctrl_ret_aon_regs_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Aon
-        inter_pd: true
-        signame: sram_ctrl_ret_aon_regs_tl_rsp_o
-        signame_chip:
-        {
-          asic: sram_ctrl_ret_aon_regs_tl_rsp
-          verilator: sram_ctrl_ret_aon_regs_tl_rsp
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: sram_ctrl_ret_aon_regs_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
-        inter_pd: true
-        signame: sram_ctrl_ret_aon_regs_tl_req_o
-        signame_chip:
-        {
-          asic: sram_ctrl_ret_aon_regs_tl_req
-          verilator: sram_ctrl_ret_aon_regs_tl_req
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: sram_ctrl_ret_aon_regs_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        inter_pd: true
-        signame: sram_ctrl_ret_aon_regs_tl_rsp_i
-        signame_chip:
-        {
-          asic: sram_ctrl_ret_aon_regs_tl_rsp
-          verilator: sram_ctrl_ret_aon_regs_tl_rsp
-        }
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: sram_ctrl_ret_aon_regs_tl_d2h
+        netname: rstmgr_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Aon
         inter_pd: true
-        signame: sram_ctrl_ret_aon_ram_tl_req_i
+        signame: clkmgr_tl_req_i
         signame_chip:
         {
-          asic: sram_ctrl_ret_aon_ram_tl_req
-          verilator: sram_ctrl_ret_aon_ram_tl_req
+          asic: clkmgr_tl_req
+          verilator: clkmgr_tl_req
         }
         width: 1
         type: req_rsp
@@ -31648,18 +31504,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: sram_ctrl_ret_aon_ram_tl_h2d
+        netname: clkmgr_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Aon
         inter_pd: true
-        signame: sram_ctrl_ret_aon_ram_tl_rsp_o
+        signame: clkmgr_tl_rsp_o
         signame_chip:
         {
-          asic: sram_ctrl_ret_aon_ram_tl_rsp
-          verilator: sram_ctrl_ret_aon_ram_tl_rsp
+          asic: clkmgr_tl_rsp
+          verilator: clkmgr_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31667,18 +31523,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: sram_ctrl_ret_aon_ram_tl_d2h
+        netname: clkmgr_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
         inter_pd: true
-        signame: sram_ctrl_ret_aon_ram_tl_req_o
+        signame: clkmgr_tl_req_o
         signame_chip:
         {
-          asic: sram_ctrl_ret_aon_ram_tl_req
-          verilator: sram_ctrl_ret_aon_ram_tl_req
+          asic: clkmgr_tl_req
+          verilator: clkmgr_tl_req
         }
         width: 1
         type: req_rsp
@@ -31686,18 +31542,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: sram_ctrl_ret_aon_ram_tl_h2d
+        netname: clkmgr_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
         inter_pd: true
-        signame: sram_ctrl_ret_aon_ram_tl_rsp_i
+        signame: clkmgr_tl_rsp_i
         signame_chip:
         {
-          asic: sram_ctrl_ret_aon_ram_tl_rsp
-          verilator: sram_ctrl_ret_aon_ram_tl_rsp
+          asic: clkmgr_tl_rsp
+          verilator: clkmgr_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31705,18 +31561,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: sram_ctrl_ret_aon_ram_tl_d2h
+        netname: clkmgr_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Aon
         inter_pd: true
-        signame: aon_timer_aon_tl_req_i
+        signame: sram_ctrl_ret_regs_tl_req_i
         signame_chip:
         {
-          asic: aon_timer_aon_tl_req
-          verilator: aon_timer_aon_tl_req
+          asic: sram_ctrl_ret_regs_tl_req
+          verilator: sram_ctrl_ret_regs_tl_req
         }
         width: 1
         type: req_rsp
@@ -31724,18 +31580,18 @@
         direction: in
         conn_type: false
         index: -1
-        netname: aon_timer_aon_tl_h2d
+        netname: sram_ctrl_ret_regs_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Aon
         inter_pd: true
-        signame: aon_timer_aon_tl_rsp_o
+        signame: sram_ctrl_ret_regs_tl_rsp_o
         signame_chip:
         {
-          asic: aon_timer_aon_tl_rsp
-          verilator: aon_timer_aon_tl_rsp
+          asic: sram_ctrl_ret_regs_tl_rsp
+          verilator: sram_ctrl_ret_regs_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31743,18 +31599,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: aon_timer_aon_tl_d2h
+        netname: sram_ctrl_ret_regs_tl_d2h
       }
       {
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
         inter_pd: true
-        signame: aon_timer_aon_tl_req_o
+        signame: sram_ctrl_ret_regs_tl_req_o
         signame_chip:
         {
-          asic: aon_timer_aon_tl_req
-          verilator: aon_timer_aon_tl_req
+          asic: sram_ctrl_ret_regs_tl_req
+          verilator: sram_ctrl_ret_regs_tl_req
         }
         width: 1
         type: req_rsp
@@ -31762,18 +31618,18 @@
         direction: out
         conn_type: false
         index: -1
-        netname: aon_timer_aon_tl_h2d
+        netname: sram_ctrl_ret_regs_tl_h2d
       }
       {
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
         inter_pd: true
-        signame: aon_timer_aon_tl_rsp_i
+        signame: sram_ctrl_ret_regs_tl_rsp_i
         signame_chip:
         {
-          asic: aon_timer_aon_tl_rsp
-          verilator: aon_timer_aon_tl_rsp
+          asic: sram_ctrl_ret_regs_tl_rsp
+          verilator: sram_ctrl_ret_regs_tl_rsp
         }
         width: 1
         type: req_rsp
@@ -31781,7 +31637,159 @@
         direction: in
         conn_type: false
         index: -1
-        netname: aon_timer_aon_tl_d2h
+        netname: sram_ctrl_ret_regs_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Aon
+        inter_pd: true
+        signame: sram_ctrl_ret_ram_tl_req_i
+        signame_chip:
+        {
+          asic: sram_ctrl_ret_ram_tl_req
+          verilator: sram_ctrl_ret_ram_tl_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_ret_ram_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Aon
+        inter_pd: true
+        signame: sram_ctrl_ret_ram_tl_rsp_o
+        signame_chip:
+        {
+          asic: sram_ctrl_ret_ram_tl_rsp
+          verilator: sram_ctrl_ret_ram_tl_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_ret_ram_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        inter_pd: true
+        signame: sram_ctrl_ret_ram_tl_req_o
+        signame_chip:
+        {
+          asic: sram_ctrl_ret_ram_tl_req
+          verilator: sram_ctrl_ret_ram_tl_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_ret_ram_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        inter_pd: true
+        signame: sram_ctrl_ret_ram_tl_rsp_i
+        signame_chip:
+        {
+          asic: sram_ctrl_ret_ram_tl_rsp
+          verilator: sram_ctrl_ret_ram_tl_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_ret_ram_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Aon
+        inter_pd: true
+        signame: aon_timer_tl_req_i
+        signame_chip:
+        {
+          asic: aon_timer_tl_req
+          verilator: aon_timer_tl_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: aon_timer_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Aon
+        inter_pd: true
+        signame: aon_timer_tl_rsp_o
+        signame_chip:
+        {
+          asic: aon_timer_tl_rsp
+          verilator: aon_timer_tl_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: aon_timer_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        inter_pd: true
+        signame: aon_timer_tl_req_o
+        signame_chip:
+        {
+          asic: aon_timer_tl_req
+          verilator: aon_timer_tl_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: aon_timer_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        inter_pd: true
+        signame: aon_timer_tl_rsp_i
+        signame_chip:
+        {
+          asic: aon_timer_tl_rsp
+          verilator: aon_timer_tl_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: aon_timer_tl_d2h
       }
       {
         package: lc_ctrl_pkg
@@ -32285,11 +32293,11 @@
         struct: ram_1p_cfg_req
         domain: Aon
         inter_pd: false
-        signame: sram_ctrl_ret_aon_ram_cfg_req_i
+        signame: sram_ctrl_ret_ram_cfg_req_i
         signame_chip:
         {
-          asic: sram_ctrl_ret_aon_ram_cfg_req
-          verilator: sram_ctrl_ret_aon_ram_cfg_req
+          asic: sram_ctrl_ret_ram_cfg_req
+          verilator: sram_ctrl_ret_ram_cfg_req
         }
         width:
         {
@@ -32300,25 +32308,25 @@
           default: 1
           local: false
           expose: true
-          name_top: SramCtrlRetAonNumRamInst
+          name_top: SramCtrlRetNumRamInst
         }
         type: req_rsp
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: sram_ctrl_ret_aon_ram_cfg_req
+        netname: sram_ctrl_ret_ram_cfg_req
       }
       {
         package: prim_ram_1p_pkg
         struct: ram_1p_cfg_rsp
         domain: Aon
         inter_pd: false
-        signame: sram_ctrl_ret_aon_ram_cfg_rsp_o
+        signame: sram_ctrl_ret_ram_cfg_rsp_o
         signame_chip:
         {
-          asic: sram_ctrl_ret_aon_ram_cfg_rsp
-          verilator: sram_ctrl_ret_aon_ram_cfg_rsp
+          asic: sram_ctrl_ret_ram_cfg_rsp
+          verilator: sram_ctrl_ret_ram_cfg_rsp
         }
         width:
         {
@@ -32329,14 +32337,14 @@
           default: 1
           local: false
           expose: true
-          name_top: SramCtrlRetAonNumRamInst
+          name_top: SramCtrlRetNumRamInst
         }
         type: req_rsp
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: sram_ctrl_ret_aon_ram_cfg_rsp
+        netname: sram_ctrl_ret_ram_cfg_rsp
       }
       {
         package: prim_ram_1p_pkg
@@ -32401,7 +32409,7 @@
         struct: pwr_boot_status
         domain: Aon
         inter_pd: false
-        signame: pwrmgr_boot_status_o
+        signame: pwrmgr_boot_status_obs_o
         signame_chip:
         {
           asic: pwrmgr_boot_status
@@ -32413,7 +32421,7 @@
         direction: out
         conn_type: true
         index: -1
-        netname: pwrmgr_aon_boot_status
+        netname: pwrmgr_boot_status
       }
       {
         package: ""
@@ -32439,11 +32447,11 @@
         struct: clkmgr_out
         domain: Aon
         inter_pd: false
-        signame: clkmgr_aon_clocks_o
+        signame: clkmgr_clocks_o
         signame_chip:
         {
-          asic: clkmgr_aon_clocks
-          verilator: clkmgr_aon_clocks
+          asic: clkmgr_clocks
+          verilator: clkmgr_clocks
         }
         width: 1
         type: uni
@@ -32451,14 +32459,14 @@
         direction: out
         conn_type: true
         index: -1
-        netname: clkmgr_aon_clocks
+        netname: clkmgr_clocks
       }
       {
         package: clkmgr_pkg
         struct: clkmgr_cg_en
         domain: Aon
         inter_pd: false
-        signame: clkmgr_aon_cg_en_o
+        signame: clkmgr_cg_en_o
         signame_chip:
         {
           asic: ""
@@ -32470,7 +32478,7 @@
         direction: out
         conn_type: true
         index: -1
-        netname: clkmgr_aon_cg_en
+        netname: clkmgr_cg_en
       }
       {
         package: prim_mubi_pkg
@@ -33670,11 +33678,11 @@
         struct: rstmgr_out
         domain: Aon
         inter_pd: false
-        signame: rstmgr_aon_resets_o
+        signame: rstmgr_resets_o
         signame_chip:
         {
-          asic: rstmgr_aon_resets
-          verilator: rstmgr_aon_resets
+          asic: rstmgr_resets
+          verilator: rstmgr_resets
         }
         width: 1
         type: uni
@@ -33682,14 +33690,14 @@
         direction: out
         conn_type: true
         index: -1
-        netname: rstmgr_aon_resets
+        netname: rstmgr_resets
       }
       {
         package: rstmgr_pkg
         struct: rstmgr_rst_en
         domain: Aon
         inter_pd: false
-        signame: rstmgr_aon_rst_en_o
+        signame: rstmgr_rst_en_o
         signame_chip:
         {
           asic: ""
@@ -33701,7 +33709,7 @@
         direction: out
         conn_type: true
         index: -1
-        netname: rstmgr_aon_rst_en
+        netname: rstmgr_rst_en
       }
       {
         package: ""
@@ -34265,7 +34273,7 @@
         package: pwrmgr_pkg
         struct: pwr_rst_req
         domain: Aon
-        signame: pwrmgr_aon_pwr_rst_req
+        signame: pwrmgr_pwr_rst_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34277,7 +34285,7 @@
         package: pwrmgr_pkg
         struct: pwr_rst_rsp
         domain: Aon
-        signame: pwrmgr_aon_pwr_rst_rsp
+        signame: pwrmgr_pwr_rst_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34289,7 +34297,7 @@
         package: pwrmgr_pkg
         struct: pwr_clk_req
         domain: Aon
-        signame: pwrmgr_aon_pwr_clk_req
+        signame: pwrmgr_pwr_clk_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34301,7 +34309,7 @@
         package: pwrmgr_pkg
         struct: pwr_clk_rsp
         domain: Aon
-        signame: pwrmgr_aon_pwr_clk_rsp
+        signame: pwrmgr_pwr_clk_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34313,7 +34321,7 @@
         package: ""
         struct: logic
         domain: Aon
-        signame: pwrmgr_aon_low_power
+        signame: pwrmgr_low_power
         width: 1
         type: uni
         end_idx: -1
@@ -34325,7 +34333,7 @@
         package: pwrmgr_pkg
         struct: pwr_boot_status
         domain: Aon
-        signame: pwrmgr_aon_boot_status
+        signame: pwrmgr_boot_status
         width: 1
         type: uni
         end_idx: -1
@@ -34949,7 +34957,7 @@
         package: prim_mubi_pkg
         struct: mubi4
         domain: Aon
-        signame: rstmgr_aon_sw_rst_req
+        signame: rstmgr_sw_rst_req
         width: 1
         type: uni
         end_idx: -1
@@ -34961,7 +34969,7 @@
         package: ""
         struct: logic
         domain: Aon
-        signame: pwrmgr_aon_wakeups
+        signame: pwrmgr_wakeups
         width: 3
         type: uni
         end_idx: -1
@@ -34973,7 +34981,7 @@
         package: ""
         struct: logic
         domain: Aon
-        signame: pwrmgr_aon_rstreqs
+        signame: pwrmgr_rstreqs
         width: 2
         type: uni
         end_idx: -1
@@ -36257,7 +36265,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: pinmux_aon_tl_req
+        signame: pinmux_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -36269,7 +36277,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: pinmux_aon_tl_rsp
+        signame: pinmux_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -36794,7 +36802,7 @@
       {
         package: clkmgr_pkg
         struct: clkmgr_out
-        signame: clkmgr_aon_clocks
+        signame: clkmgr_clocks
         domain: Aon
         width: 1
         type: uni
@@ -36804,7 +36812,7 @@
       {
         package: clkmgr_pkg
         struct: clkmgr_cg_en
-        signame: clkmgr_aon_cg_en
+        signame: clkmgr_cg_en
         domain: Aon
         width: 1
         type: uni
@@ -36814,7 +36822,7 @@
       {
         package: rstmgr_pkg
         struct: rstmgr_out
-        signame: rstmgr_aon_resets
+        signame: rstmgr_resets
         domain: Aon
         width: 1
         type: uni
@@ -36824,7 +36832,7 @@
       {
         package: rstmgr_pkg
         struct: rstmgr_rst_en
-        signame: rstmgr_aon_rst_en
+        signame: rstmgr_rst_en
         domain: Aon
         width: 1
         type: uni

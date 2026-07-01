@@ -86,17 +86,17 @@ tl_if gpio_tl_if(clk_io, rst_n);
 tl_if spi_host0_tl_if(clk_io, rst_n);
 tl_if spi_device_tl_if(clk_io, rst_n);
 tl_if rv_timer_tl_if(clk_io, rst_n);
-tl_if pwrmgr_aon_tl_if(clk_io, rst_n);
-tl_if rstmgr_aon_tl_if(clk_io, rst_n);
-tl_if clkmgr_aon_tl_if(clk_io, rst_n);
-tl_if pinmux_aon_tl_if(clk_io, rst_n);
+tl_if pwrmgr_tl_if(clk_io, rst_n);
+tl_if rstmgr_tl_if(clk_io, rst_n);
+tl_if clkmgr_tl_if(clk_io, rst_n);
+tl_if pinmux_tl_if(clk_io, rst_n);
 tl_if otp_ctrl__core_tl_if(clk_io, rst_n);
 tl_if otp_macro__prim_tl_if(clk_io, rst_n);
 tl_if lc_ctrl__regs_tl_if(clk_io, rst_n);
 tl_if alert_handler_tl_if(clk_io, rst_n);
-tl_if sram_ctrl_ret_aon__regs_tl_if(clk_io, rst_n);
-tl_if sram_ctrl_ret_aon__ram_tl_if(clk_io, rst_n);
-tl_if aon_timer_aon_tl_if(clk_io, rst_n);
+tl_if sram_ctrl_ret__regs_tl_if(clk_io, rst_n);
+tl_if sram_ctrl_ret__ram_tl_if(clk_io, rst_n);
+tl_if aon_timer_tl_if(clk_io, rst_n);
 tl_if ast_tl_if(clk_io, rst_n);
 tl_if soc_dbg_ctrl__core_tl_if(clk_io, rst_n);
 tl_if mbx0__soc_tl_if(clk_main, rst_n);
@@ -199,17 +199,17 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr_aon, pwrmgr_aon, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr_aon, rstmgr_aon, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr_aon, clkmgr_aon, tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(pinmux_aon, pinmux_aon, tl, main)
+    `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_macro__prim, otp_macro, prim_tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(alert_handler, alert_handler, tl, main)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__regs, sram_ctrl_ret_aon, regs_tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl, aon)
-    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret__regs, sram_ctrl_ret, regs_tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret__ram, sram_ctrl_ret, ram_tl, aon)
+    `DRIVE_CHIP_TL_DEVICE_IF(aon_timer, aon_timer, tl, aon)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(soc_dbg_ctrl__core, soc_dbg_ctrl, core_tl, main)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx0__soc, mbx0, soc_tl_d, main)
