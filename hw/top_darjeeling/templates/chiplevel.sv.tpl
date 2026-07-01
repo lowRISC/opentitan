@@ -399,8 +399,8 @@ module chip_${top["name"]}_${target["name"]} #(
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t    clkmgr_aon_clocks;
-  rstmgr_pkg::rstmgr_out_t    rstmgr_aon_resets;
+  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
 
   // monitored clock
   logic sck_monitor;
@@ -452,7 +452,7 @@ module chip_${top["name"]}_${target["name"]} #(
     ('rv_core_ibex_icache_tag',  'rv_core_ibex_icache_tag_ram_cfg',  '1p',   'ibex_pkg::IC_NUM_WAYS'),
     ('rv_core_ibex_icache_data', 'rv_core_ibex_icache_data_ram_cfg', '1p',   'ibex_pkg::IC_NUM_WAYS'),
     ('sram_ctrl_main',           'sram_ctrl_main_ram_cfg',           '1p',   'ast_pkg::SramCtrlMainNumRamInst'),
-    ('sram_ctrl_ret_aon',        'sram_ctrl_ret_aon_ram_cfg',        '1p',   'ast_pkg::SramCtrlRetAonNumRamInst'),
+    ('sram_ctrl_ret',            'sram_ctrl_ret_ram_cfg',            '1p',   'ast_pkg::SramCtrlRetNumRamInst'),
     ('sram_ctrl_mbox',           'sram_ctrl_mbox_ram_cfg',           '1p',   'ast_pkg::SramCtrlMboxNumRamInst'),
     ('spi_device_sys2spi',       'spi_device_sys2spi_ram_cfg',       '1r1w', None),
     ('spi_device_spi2sys',       'spi_device_spi2sys_ram_cfg',       '1r1w', None),
@@ -565,9 +565,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast2pad_t1_ao         ( unused_t1 ),
 
     // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_aon_clocks    ),
-    .sns_rsts_i            ( rstmgr_aon_resets    ),
-    .sns_spi_ext_clk_i     ( sck_monitor          ),
+    .sns_clks_i            ( clkmgr_clocks ),
+    .sns_rsts_i            ( rstmgr_resets ),
+    .sns_spi_ext_clk_i     ( sck_monitor   ),
 % if target["name"] == "verilator":
     // clocks' oscillator bypass for verilator
     .clk_osc_byp_i         ( clks_osc_byp ),
@@ -696,8 +696,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // - setting this to 18bits effectively gives us 2^6 = 64 addressable 12bit ranges
     .NumDmiByteAbits(18)
   ) u_tlul_jtag_dtm (
-    .clk_i      (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni     (rstmgr_aon_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i      (clkmgr_clocks.clk_main_infra),
+    .rst_ni     (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
     .jtag_i     (jtag_req),
     .jtag_o     (jtag_rsp),
     .scan_rst_ni(scan_rst_n),
@@ -742,8 +742,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .DReqDepth (4'd0),
     .DRspDepth (4'd0)
   ) u_ctn_sm1 (
-    .clk_i  (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i  (clkmgr_clocks.clk_main_infra),
+    .rst_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_h_i (ctn_tl_h2d),
     .tl_h_o (ctn_tl_d2h),
     .tl_d_o (ctn_sm1_to_s1n_tl_h2d),
@@ -788,8 +788,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .DRspDepth (8'h0),
     .N         (1)
   ) u_ctn_s1n (
-    .clk_i        (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i        (clkmgr_clocks.clk_main_infra),
+    .rst_ni       (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_h_i       (ctn_sm1_to_s1n_tl_h2d),
     .tl_h_o       (ctn_sm1_to_s1n_tl_d2h),
     .tl_d_o       (ctn_s1n_tl_h2d),
@@ -808,8 +808,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .EnableDataIntgPt(1),
     .SecFifoPtr      (0)
   ) u_tlul_adapter_sram_ctn (
-    .clk_i       (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni      (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i       (clkmgr_clocks.clk_main_infra),
+    .rst_ni      (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .tl_i        (ctn_s1n_tl_h2d[0]),
     .tl_o        (ctn_s1n_tl_d2h[0]),
     // Ifetch is explicitly allowed
@@ -843,8 +843,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .EnableInputPipeline(1),
     .EnableOutputPipeline(1)
   ) u_prim_ram_1p_adv_ctn (
-    .clk_i    (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .clk_i    (clkmgr_clocks.clk_main_infra),
+    .rst_ni   (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .req_i    (sram_req),
     .write_i  (sram_we),
     .addr_i   (sram_addr),
@@ -895,10 +895,10 @@ module chip_${top["name"]}_${target["name"]} #(
   // top_${top["name"]} power domains wrapper //
   //////////////////////////////////////////////
   top_${top["name"]} #(
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
-    .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
+    .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling),
+    .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
 <%include file="/chiplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, gen_bkdr_loader=gen_bkdr_loader" />\
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target=target, domain='', inter_pd=False, feedthrough=False, last_snippet=True" />\

@@ -613,7 +613,7 @@ tri-state.</td>
 <p>rv_core_ibex_icache_tag_ram_cfg_req_o,</p>
 <p>rv_core_ibex_icache_data_ram_cfg_req_o,</p>
 <p>sram_ctrl_main_ram_cfg_req_o,</p>
-<p>sram_ctrl_ret_aon_ram_cfg_req_o,</p>
+<p>sram_ctrl_ret_ram_cfg_req_o,</p>
 <p>sram_ctrl_mbox_ram_cfg_req_o,</p>
 <p>spi_device_sys2spi_ram_cfg_req_o,</p>
 <p>spi_device_spi2sys_ram_cfg_req_o,</p>
@@ -626,7 +626,7 @@ tri-state.</td>
 <p>rv_core_ibex_icache_tag_ram_cfg_rsp_i,</p>
 <p>rv_core_ibex_icache_data_ram_cfg_rsp_i,</p>
 <p>sram_ctrl_main_ram_cfg_rsp_i,</p>
-<p>sram_ctrl_ret_aon_ram_cfg_rsp_i,</p>
+<p>sram_ctrl_ret_ram_cfg_rsp_i,</p>
 <p>sram_ctrl_mbox_ram_cfg_rsp_i,</p>
 <p>spi_device_sys2spi_ram_cfg_rsp_i,</p>
 <p>spi_device_spi2sys_ram_cfg_rsp_i,</p>
