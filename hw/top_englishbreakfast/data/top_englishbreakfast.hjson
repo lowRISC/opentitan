@@ -159,7 +159,7 @@
       {
         "name": "MainPwr",
         "desc": "main power glitch reset request",
-        "module": "pwrmgr_aon"
+        "module": "pwrmgr"
       },
       {
         "name": "Esc",
@@ -210,11 +210,11 @@
             "rv_timer"
             "spi_host0",
             "usbdev",
-            "pwrmgr_aon",
-            "rstmgr_aon",
-            "clkmgr_aon",
-            "pinmux_aon",
-            "aon_timer_aon",
+            "pwrmgr",
+            "rstmgr",
+            "clkmgr",
+            "pinmux",
+            "aon_timer",
             "ast",
             "flash_ctrl.core",
             "flash_ctrl.prim",
@@ -331,7 +331,7 @@
       },
       outgoing_alert: "englishbreakfast",
     },
-    { name: "pwrmgr_aon",
+    { name: "pwrmgr",
       type: "pwrmgr",
       template_type: "pwrmgr",
       clock_srcs: {clk_i: "io_div4", clk_slow_i: "aon", clk_lc_i: "io_div4", clk_esc_i: "io_div4"},
@@ -350,7 +350,7 @@
       attr: "ipgen",
       outgoing_alert: "englishbreakfast",
     },
-    { name: "rstmgr_aon",
+    { name: "rstmgr",
       type: "rstmgr",
       template_type: "rstmgr",
       clock_srcs: {clk_i: "io_div4", clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
@@ -367,7 +367,7 @@
       attr: "ipgen",
       outgoing_alert: "englishbreakfast",
     },
-    { name: "clkmgr_aon",
+    { name: "clkmgr",
       type: "clkmgr",
       template_type: "clkmgr",
       clock_srcs: {
@@ -411,7 +411,7 @@
       attr: "ipgen",
       outgoing_alert: "englishbreakfast",
     },
-    { name: "pinmux_aon",
+    { name: "pinmux",
       type: "pinmux",
       template_type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
@@ -437,7 +437,7 @@
       attr: "ipgen",
       outgoing_alert: "englishbreakfast",
     },
-    { name: "aon_timer_aon",
+    { name: "aon_timer",
       type: "aon_timer",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "timers",
@@ -705,27 +705,27 @@
   //  e.g flash_ctrl0.flash: [flash_phy0.flash_ctrl]
   inter_module: {
     'connect': {
-      'pwrmgr_aon.pwr_nvm'      : ['flash_ctrl.pwrmgr'],
-      'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
-      'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
-      'pwrmgr_aon.strap'        : ['pinmux_aon.strap_en'],
-      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
-                                   'aon_timer_aon.sleep_mode'],
-      'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
+      'pwrmgr.pwr_nvm'          : ['flash_ctrl.pwrmgr'],
+      'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
+      'pwrmgr.strap'            : ['pinmux.strap_en'],
+      'pwrmgr.low_power'        : ['pinmux.sleep_en',
+                                   'aon_timer.sleep_mode'],
+      'pwrmgr.fetch_en'         : ['rv_core_ibex.pwrmgr_cpu_en'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
-      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usbdev_dnpullup_en'],
-      'usbdev.usb_aon_suspend_req': ['pinmux_aon.usbdev_suspend_req'],
-      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usbdev_wake_ack'],
-      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usbdev_bus_reset'],
-      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usbdev_sense_lost'],
-      'pinmux_aon.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
+      'usbdev.usb_dp_pullup'      : ['pinmux.usbdev_dppullup_en'],
+      'usbdev.usb_dn_pullup'      : ['pinmux.usbdev_dnpullup_en'],
+      'usbdev.usb_aon_suspend_req': ['pinmux.usbdev_suspend_req'],
+      'usbdev.usb_aon_wake_ack'   : ['pinmux.usbdev_wake_ack'],
+      'usbdev.usb_aon_bus_reset'  : ['pinmux.usbdev_bus_reset'],
+      'usbdev.usb_aon_sense_lost' : ['pinmux.usbdev_sense_lost'],
+      'pinmux.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr_aon.idle'         : [],
+      'clkmgr.idle'             : [],
 
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
@@ -735,14 +735,14 @@
 
 
       // rv core ibex connections
-      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
-      'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
+      'rv_core_ibex.crash_dump' : ['rstmgr.cpu_dump'],
+      'rv_core_ibex.pwrmgr'     : ['pwrmgr.pwr_cpu'],
 
       // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']
 
       // Reset manager software reset request to pwrmgr
-      'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
+      'rstmgr.sw_rst_req' : ['pwrmgr.sw_rst_req'],
     }
 
     // top is to connect to top net/struct.
@@ -750,16 +750,16 @@
     // use of the signal is up to top template
     'top': [
         // top level net for clocks
-        'clkmgr_aon.clocks',
+        'clkmgr.clocks',
 
         // top level clock gating indications for alert subsystem
-        'clkmgr_aon.cg_en',
+        'clkmgr.cg_en',
 
         // top level net for reset
-        'rstmgr_aon.resets',
+        'rstmgr.resets',
 
         // top level reset asserted indications for alert subsystem
-        'rstmgr_aon.rst_en',
+        'rstmgr.rst_en',
 
         // dedicated timer interrupt
         'rv_core_ibex.irq_timer',
@@ -770,34 +770,34 @@
         // Xbars
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
-        'pinmux_aon.dft_jtag'
+        'pinmux.dft_jtag'
     ],
 
     // ext is to create port in the top.
     'external': {
-        'clkmgr_aon.clocks'              : '',
-        'clkmgr_aon.cg_en'               : '',
-        'clkmgr_aon.jitter_en'           : 'clk_main_jitter_en',
-        'clkmgr_aon.hi_speed_sel'        : 'hi_speed_sel',
-        'clkmgr_aon.div_step_down_req'   : 'div_step_down_req',
-        'clkmgr_aon.all_clk_byp_req'     : 'all_clk_byp_req',
-        'clkmgr_aon.all_clk_byp_ack'     : 'all_clk_byp_ack',
-        'clkmgr_aon.io_clk_byp_req'      : 'io_clk_byp_req',
-        'clkmgr_aon.io_clk_byp_ack'      : 'io_clk_byp_ack',
+        'clkmgr.clocks'                  : '',
+        'clkmgr.cg_en'                   : '',
+        'clkmgr.jitter_en'               : 'clk_main_jitter_en',
+        'clkmgr.hi_speed_sel'            : 'hi_speed_sel',
+        'clkmgr.div_step_down_req'       : 'div_step_down_req',
+        'clkmgr.all_clk_byp_req'         : 'all_clk_byp_req',
+        'clkmgr.all_clk_byp_ack'         : 'all_clk_byp_ack',
+        'clkmgr.io_clk_byp_req'          : 'io_clk_byp_req',
+        'clkmgr.io_clk_byp_ack'          : 'io_clk_byp_ack',
         'flash_ctrl.flash_bist_enable'   : 'flash_bist_enable',
         'flash_ctrl.flash_power_down_h'  : 'flash_power_down_h',
         'flash_ctrl.flash_power_ready_h' : 'flash_power_ready_h',
         'flash_ctrl.obs_ctrl'            : 'obs_ctrl',
         'flash_ctrl.fla_obs'             : 'flash_obs',
         'peri.tl_ast'                    : 'ast_tl',
-        'pinmux_aon.dft_strap_test'      : 'dft_strap_test'
-        'pinmux_aon.dft_hold_tap_sel'    : 'dft_hold_tap_sel',
-        'pinmux_aon.usb_dppullup_en'     : 'usb_dp_pullup_en',
-        'pinmux_aon.usb_dnpullup_en'     : 'usb_dn_pullup_en',
-        'pwrmgr_aon.pwr_ast'             : 'pwrmgr_ast',
-        'rstmgr_aon.por_n'               : 'por_n',
-        'rstmgr_aon.resets'              : '',
-        'rstmgr_aon.rst_en'              : '',
+        'pinmux.dft_strap_test'          : 'dft_strap_test'
+        'pinmux.dft_hold_tap_sel'        : 'dft_hold_tap_sel',
+        'pinmux.usb_dppullup_en'         : 'usb_dp_pullup_en',
+        'pinmux.usb_dnpullup_en'         : 'usb_dn_pullup_en',
+        'pwrmgr.pwr_ast'                 : 'pwrmgr_ast',
+        'rstmgr.por_n'                   : 'por_n',
+        'rstmgr.resets'                  : '',
+        'rstmgr.rst_en'                  : '',
         'rv_core_ibex.fpga_info'         : 'fpga_info',
         'usbdev.usb_rx_d'                : '',
         'usbdev.usb_tx_d'                : '',
@@ -837,8 +837,8 @@
     "spi_host0",
     // "rv_timer", connected to a dedicated interrupt input in rv_core_ibex.
     "usbdev",
-    "pwrmgr_aon",
-    "aon_timer_aon",
+    "pwrmgr",
+    "aon_timer",
     "flash_ctrl",
   ]
 
@@ -1034,21 +1034,21 @@
       // Chip level changes
       chiplevel: {
         port_overrides: {
-          'pinmux_aon.dft_hold_tap_sel'     : { unused: true },
-          'pinmux_aon.dft_strap_test'       : { unused: true },
-          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en' },
-          'pinmux_aon.usb_dnpullup_en'      : { signal: 'usb_dn_pullup_en' },
-          'clkmgr_aon.cg_en'                : { unused: true },
-          'rstmgr_aon.rst_en'               : { unused: true },
-          'usbdev.usb_tx_d'                 : { unused: true },
-          'usbdev.usb_tx_se0'               : { unused: true },
-          'usbdev.usb_tx_use_d_se0'         : { unused: true },
-          'usbdev.usb_rx_d'                 : { unused: true },
-          'usbdev.usb_rx_enable'            : { unused: true },
-          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'   },
-          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse' },
-          'flash_ctrl.flash_power_down_h'   : { unused: true },
-          'flash_ctrl.flash_power_ready_h'  : { unused: true, tie_value: "1'b1" },
+          'pinmux.dft_hold_tap_sel'        : { unused: true },
+          'pinmux.dft_strap_test'          : { unused: true },
+          'pinmux.usb_dppullup_en'         : { signal: 'usb_dp_pullup_en' },
+          'pinmux.usb_dnpullup_en'         : { signal: 'usb_dn_pullup_en' },
+          'clkmgr.cg_en'                   : { unused: true },
+          'rstmgr.rst_en'                  : { unused: true },
+          'usbdev.usb_tx_d'                : { unused: true },
+          'usbdev.usb_tx_se0'              : { unused: true },
+          'usbdev.usb_tx_use_d_se0'        : { unused: true },
+          'usbdev.usb_rx_d'                : { unused: true },
+          'usbdev.usb_rx_enable'           : { unused: true },
+          'usbdev.usb_ref_val'             : { signal: 'usb_ref_val'   },
+          'usbdev.usb_ref_pulse'           : { signal: 'usb_ref_pulse' },
+          'flash_ctrl.flash_power_down_h'  : { unused: true },
+          'flash_ctrl.flash_power_ready_h' : { unused: true, tie_value: "1'b1" },
         }
       }
 
@@ -1107,19 +1107,19 @@
       // they are driven/consumed identically to the earlgrey verilator top.
       chiplevel: {
         port_overrides: {
-          'pinmux_aon.dft_hold_tap_sel'     : { unused: true              },
-          'pinmux_aon.usb_dppullup_en'      : { signal: 'usb_dp_pullup_en'},
-          'pinmux_aon.usb_dnpullup_en'      : { signal: 'usb_dn_pullup_en'},
-          'clkmgr_aon.cg_en'                : { unused: true              },
-          'rstmgr_aon.rst_en'               : { unused: true              },
-          'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
-          'usbdev.usb_rx_enable'            : { signal: 'usb_rx_enable'   },
-          'usbdev.usb_tx_d'                 : { signal: 'usb_tx_d'        },
-          'usbdev.usb_tx_se0'               : { signal: 'usb_tx_se0'      },
-          'usbdev.usb_tx_use_d_se0'         : { signal: 'usb_tx_use_d_se0'},
-          'usbdev.usb_ref_val'              : { signal: 'usb_ref_val'     },
-          'usbdev.usb_ref_pulse'            : { signal: 'usb_ref_pulse'   },
-          'rv_core_ibex.fpga_info'          : { unused: true              },
+          'pinmux.dft_hold_tap_sel' : { unused: true              },
+          'pinmux.usb_dppullup_en'  : { signal: 'usb_dp_pullup_en'},
+          'pinmux.usb_dnpullup_en'  : { signal: 'usb_dn_pullup_en'},
+          'clkmgr.cg_en'            : { unused: true              },
+          'rstmgr.rst_en'           : { unused: true              },
+          'usbdev.usb_rx_d'         : { signal: 'usb_rx_d'        },
+          'usbdev.usb_rx_enable'    : { signal: 'usb_rx_enable'   },
+          'usbdev.usb_tx_d'         : { signal: 'usb_tx_d'        },
+          'usbdev.usb_tx_se0'       : { signal: 'usb_tx_se0'      },
+          'usbdev.usb_tx_use_d_se0' : { signal: 'usb_tx_use_d_se0'},
+          'usbdev.usb_ref_val'      : { signal: 'usb_ref_val'     },
+          'usbdev.usb_ref_pulse'    : { signal: 'usb_ref_pulse'   },
+          'rv_core_ibex.fpga_info'  : { unused: true              },
         }
       }
 
