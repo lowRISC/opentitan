@@ -148,7 +148,7 @@
       {
         "name": "MainPwr",
         "desc": "main power glitch reset request",
-        "module": "pwrmgr_aon"
+        "module": "pwrmgr"
       },
       {
         "name": "Esc",
@@ -199,15 +199,15 @@
             "lc_ctrl.regs",
             "alert_handler",
             "spi_host0",
-            "pwrmgr_aon",
-            "rstmgr_aon",
-            "clkmgr_aon",
-            "pinmux_aon",
-            "aon_timer_aon",
+            "pwrmgr",
+            "rstmgr",
+            "clkmgr",
+            "pinmux",
+            "aon_timer",
             "ast"
             "soc_proxy.core",
             "soc_dbg_ctrl.core",
-            "sram_ctrl_ret_aon",
+            "sram_ctrl_ret",
             "rv_plic",
             "aes",
             "hmac",
@@ -397,7 +397,7 @@
         hart: "0x30300000",
       },
     },
-    { name: "pwrmgr_aon",
+    { name: "pwrmgr",
       type: "pwrmgr",
       template_type: "pwrmgr",
       clock_group: "powerup",
@@ -443,7 +443,7 @@
       attr: "ipgen",
 
     },
-    { name: "rstmgr_aon",
+    { name: "rstmgr",
       type: "rstmgr",
       template_type: "rstmgr",
       clock_srcs: {
@@ -470,7 +470,7 @@
       },
       attr: "ipgen",
     },
-    { name: "clkmgr_aon",
+    { name: "clkmgr",
       type: "clkmgr",
       template_type: "clkmgr",
       clock_srcs: {
@@ -506,7 +506,7 @@
       },
       attr: "ipgen",
     },
-    { name: "pinmux_aon",
+    { name: "pinmux",
       type: "pinmux",
       template_type: "pinmux",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
@@ -527,7 +527,7 @@
       },
       attr: "ipgen",
     },
-    { name: "aon_timer_aon",
+    { name: "aon_timer",
       type: "aon_timer",
       clock_srcs: {clk_i: "io", clk_aon_i: "aon"},
       clock_group: "timers",
@@ -605,7 +605,7 @@
         }
       }
     },
-    { name: "sram_ctrl_ret_aon",
+    { name: "sram_ctrl_ret",
       type: "sram_ctrl",
       clock_srcs: {clk_i: "io", clk_otp_i: "io"},
       clock_group: "infra",
@@ -1169,38 +1169,38 @@
   inter_module: {
     'connect': {
       'ast.obs_ctrl'            : ['otp_macro.obs_ctrl']
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
                                    'lc_ctrl.esc_scrap_state1_rx'
-                                   'pwrmgr_aon.esc_rst_rx'],
+                                   'pwrmgr.esc_rst_rx'],
       'alert_handler.esc_tx'    : ['rv_core_ibex.esc_tx',
                                    'lc_ctrl.esc_scrap_state0_tx',
                                    'lc_ctrl.esc_scrap_state1_tx',
-                                   'pwrmgr_aon.esc_rst_tx'],
-      'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
+                                   'pwrmgr.esc_rst_tx'],
+      'aon_timer.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
-                                   'sram_ctrl_ret_aon.sram_otp_key',
+                                   'sram_ctrl_ret.sram_otp_key',
                                    'sram_ctrl_mbox.sram_otp_key'
                                    'rv_core_ibex.icache_otp_key']
-      'pwrmgr_aon.pwr_rst'      : ['rstmgr_aon.pwr'],
-      'pwrmgr_aon.pwr_clk'      : ['clkmgr_aon.pwr'],
-      'pwrmgr_aon.pwr_otp'      : ['otp_ctrl.pwr_otp'],
-      'pwrmgr_aon.pwr_lc'       : ['lc_ctrl.pwr_lc'],
-      'pwrmgr_aon.strap'        : ['gpio.strap_en',
+      'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
+      'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
+      'pwrmgr.pwr_otp'          : ['otp_ctrl.pwr_otp'],
+      'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
+      'pwrmgr.strap'            : ['gpio.strap_en',
                                    'rv_dm.strap_en'],
-      'pwrmgr_aon.low_power'    : ['pinmux_aon.sleep_en',
-                                   'aon_timer_aon.sleep_mode'],
-      'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
-      'pwrmgr_aon.rom_ctrl'     : ['rom_ctrl0.pwrmgr_data',
+      'pwrmgr.low_power'        : ['pinmux.sleep_en',
+                                   'aon_timer.sleep_mode'],
+      'pwrmgr.fetch_en'         : ['rv_core_ibex.pwrmgr_cpu_en'],
+      'pwrmgr.rom_ctrl'         : ['rom_ctrl0.pwrmgr_data',
                                    'rom_ctrl1.pwrmgr_data',
                                    'soc_dbg_ctrl.continue_cpu_boot'],
-      'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],
+      'pwrmgr.boot_status'      : ['soc_dbg_ctrl.boot_status'],
       'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr.alert_dump'],
 
       // DMA LSIO triggers
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
@@ -1242,7 +1242,7 @@
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr_aon.idle'         : [],
+      'clkmgr.idle'             : [],
 
       // OTP LC interface
       'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
@@ -1260,7 +1260,7 @@
       'lc_ctrl.lc_raw_test_rma'    : ['soc_dbg_ctrl.lc_raw_test_rma']
       'lc_ctrl.lc_dft_en'          : ['otp_macro.lc_dft_en',
                                       'ast.lc_dft_en',
-                                      'pwrmgr_aon.lc_dft_en',
+                                      'pwrmgr.lc_dft_en',
                                       'soc_dbg_ctrl.lc_dft_en',
                                       'rv_dm.lc_dft_en'
                                      ],
@@ -1270,7 +1270,7 @@
                                       'ast.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
-                                      'pwrmgr_aon.lc_hw_debug_en',
+                                      'pwrmgr.lc_hw_debug_en',
                                       'soc_dbg_ctrl.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en',
                                       'soc_dbg_ctrl.lc_cpu_en'],
@@ -1280,9 +1280,9 @@
                                       'otbn.lc_escalate_en',
                                       'otp_ctrl.lc_escalate_en',
                                       'sram_ctrl_main.lc_escalate_en',
-                                      'sram_ctrl_ret_aon.lc_escalate_en',
+                                      'sram_ctrl_ret.lc_escalate_en',
                                       'sram_ctrl_mbox.lc_escalate_en',
-                                      'aon_timer_aon.lc_escalate_en',
+                                      'aon_timer.lc_escalate_en',
                                       'rv_dm.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
@@ -1312,17 +1312,17 @@
 
 
       // rv core ibex connections
-      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
-      'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
+      'rv_core_ibex.crash_dump' : ['rstmgr.cpu_dump'],
+      'rv_core_ibex.pwrmgr'     : ['pwrmgr.pwr_cpu'],
 
       // spi passthrough connection
       'spi_device.passthrough'     : ['spi_host0.passthrough']
 
       // Debug module reset request to power manager
-      'rv_dm.ndmreset_req' : ['pwrmgr_aon.ndmreset_req'],
+      'rv_dm.ndmreset_req' : ['pwrmgr.ndmreset_req'],
 
       // Reset manager software reset request to pwrmgr
-      'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
+      'rstmgr.sw_rst_req' : ['pwrmgr.sw_rst_req'],
 
       // SOC Proxy TLUL Muxing
       'soc_proxy.dma_tl_h2d' : ['dma.ctn_tl_h2d']
@@ -1337,16 +1337,16 @@
     // use of the signal is up to top template
     'top': [
         // top level net for clocks
-        'clkmgr_aon.clocks',
+        'clkmgr.clocks',
 
         // top level clock gating indications for alert subsystem
-        'clkmgr_aon.cg_en',
+        'clkmgr.cg_en',
 
         // top level net for reset
-        'rstmgr_aon.resets',
+        'rstmgr.resets',
 
         // top level reset asserted indications for alert subsystem
-        'rstmgr_aon.rst_en',
+        'rstmgr.rst_en',
 
         // dedicated timer interrupt
         'rv_core_ibex.irq_timer',
@@ -1385,13 +1385,13 @@
         'rom_ctrl0.rom_cfg'                    : 'rom_ctrl0_rom_cfg',
         'rom_ctrl1.rom_cfg'                    : 'rom_ctrl1_rom_cfg',
         'sram_ctrl_main.ram_cfg'               : 'sram_ctrl_main_ram_cfg',
-        'sram_ctrl_ret_aon.ram_cfg'            : 'sram_ctrl_ret_aon_ram_cfg',
+        'sram_ctrl_ret.ram_cfg'                : 'sram_ctrl_ret_ram_cfg',
         'sram_ctrl_mbox.ram_cfg'               : 'sram_ctrl_mbox_ram_cfg',
-        'pwrmgr_aon.boot_status'               : 'pwrmgr_boot_status',
-        'pwrmgr_aon.ext_rst_ack'               : 'pwrmgr_ext_rst_ack',
-        'clkmgr_aon.clocks'                    : '',
-        'clkmgr_aon.cg_en'                     : '',
-        'clkmgr_aon.jitter_en'                 : 'clk_main_jitter_en',
+        'pwrmgr.boot_status'                   : 'pwrmgr_boot_status_obs',
+        'pwrmgr.ext_rst_ack'                   : 'pwrmgr_ext_rst_ack',
+        'clkmgr.clocks'                        : '',
+        'clkmgr.cg_en'                         : '',
+        'clkmgr.jitter_en'                     : 'clk_main_jitter_en',
         'dma.sys'                              : 'dma_sys',
         'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
         'entropy_src.entropy_src_rng_valid'    : 'es_rng_valid',
@@ -1441,15 +1441,15 @@
         'dbg.tl_dbg'                           : 'dbg_tl',
         'rv_dm.next_dm_addr'                   : 'rv_dm_next_dm_addr',
         'peri.tl_ast'                          : 'ast_tl',
-        'pwrmgr_aon.pwr_ast'                   : 'pwrmgr_ast',
+        'pwrmgr.pwr_ast'                       : 'pwrmgr_ast',
         'otp_macro.pwr_seq'                    : '',
         'otp_macro.pwr_seq_h'                  : '',
         'otp_macro.ext_voltage_h'              : 'otp_ext_voltage_h',
         'otp_macro.otp_obs'                    : 'otp_obs',
         'otp_macro.cfg'                        : 'otp_cfg',
-        'rstmgr_aon.por_n'                     : 'por_n',
-        'rstmgr_aon.resets'                    : '',
-        'rstmgr_aon.rst_en'                    : '',
+        'rstmgr.por_n'                         : 'por_n',
+        'rstmgr.resets'                        : '',
+        'rstmgr.rst_en'                        : '',
         'rv_core_ibex.fpga_info'               : 'fpga_info',
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
@@ -1799,9 +1799,10 @@
           'ac_range_check.ctn_filtered_tl_d2h'   : { signal:      "ctn_tl_d2h[0]"  },
           'racl_ctrl.racl_policies'              : { unused:      true             },
           'racl_ctrl.racl_error_external'        : { signal:      "ext_racl_error" },
-          'clkmgr_aon.cg_en'                     : { unused:      true             },
-          'rstmgr_aon.rst_en'                    : { unused:      true             },
-          'pwrmgr_aon.ext_rst_ack'               : { unused:      true             },
+          'clkmgr.cg_en'                         : { unused:      true             },
+          'rstmgr.rst_en'                        : { unused:      true             },
+          'pwrmgr.ext_rst_ack'                   : { unused:      true             },
+          'pwrmgr.boot_status'                   : { signal:     'pwrmgr_boot_status' },
           'soc_dbg_ctrl.halt_cpu_boot'           : { unused:      true             },
           'soc_dbg_ctrl.soc_dbg_policy_bus'      : { unused:      true             },
           'ast.lc_hw_debug_en'                   : { unused:      true             },
@@ -1923,9 +1924,10 @@
           'ac_range_check.ctn_filtered_tl_d2h'   : { signal:      "ctn_tl_d2h[0]"  },
           'racl_ctrl.racl_policies'              : { unused:      true             },
           'racl_ctrl.racl_error_external'        : { signal:      "ext_racl_error" },
-          'clkmgr_aon.cg_en'                     : { unused:      true             },
-          'rstmgr_aon.rst_en'                    : { unused:      true             },
-          'pwrmgr_aon.ext_rst_ack'               : { unused:      true             },
+          'clkmgr.cg_en'                         : { unused:      true             },
+          'rstmgr.rst_en'                        : { unused:      true             },
+          'pwrmgr.ext_rst_ack'                   : { unused:      true             },
+          'pwrmgr.boot_status'                   : { signal:     'pwrmgr_boot_status' },
           'soc_dbg_ctrl.halt_cpu_boot'           : { unused:      true             },
           'soc_dbg_ctrl.soc_dbg_policy_bus'      : { unused:      true             },
           'ast.lc_hw_debug_en'                   : { unused:      true             },
