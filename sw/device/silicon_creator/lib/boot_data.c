@@ -334,7 +334,7 @@ static rom_error_t boot_data_page_info_update_impl(
     boot_data_t *boot_data) {
   uint32_t sniff_results[kBootDataEntriesPerPage];
 
-  boot_data_t buf;
+  boot_data_t buf = {0};
 
   // Perform a forward search to find the first empty entry.
   hardened_bool_t has_empty_entry = kHardenedBoolFalse;
