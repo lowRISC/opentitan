@@ -119,75 +119,75 @@ pub const USBDEV_BASE_ADDR: usize = 0x40320000;
 /// `USBDEV_BASE_ADDR + USBDEV_SIZE_BYTES`.
 pub const USBDEV_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for pwrmgr_aon in top englishbreakfast.
+/// Peripheral base address for pwrmgr in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const PWRMGR_AON_BASE_ADDR: usize = 0x40400000;
+pub const PWRMGR_BASE_ADDR: usize = 0x40400000;
 
-/// Peripheral size for pwrmgr_aon in top englishbreakfast.
+/// Peripheral size for pwrmgr in top englishbreakfast.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #PWRMGR_AON_BASE_ADDR and
-/// `PWRMGR_AON_BASE_ADDR + PWRMGR_AON_SIZE_BYTES`.
-pub const PWRMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #PWRMGR_BASE_ADDR and
+/// `PWRMGR_BASE_ADDR + PWRMGR_SIZE_BYTES`.
+pub const PWRMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for rstmgr_aon in top englishbreakfast.
+/// Peripheral base address for rstmgr in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const RSTMGR_AON_BASE_ADDR: usize = 0x40410000;
+pub const RSTMGR_BASE_ADDR: usize = 0x40410000;
 
-/// Peripheral size for rstmgr_aon in top englishbreakfast.
+/// Peripheral size for rstmgr in top englishbreakfast.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #RSTMGR_AON_BASE_ADDR and
-/// `RSTMGR_AON_BASE_ADDR + RSTMGR_AON_SIZE_BYTES`.
-pub const RSTMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #RSTMGR_BASE_ADDR and
+/// `RSTMGR_BASE_ADDR + RSTMGR_SIZE_BYTES`.
+pub const RSTMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for clkmgr_aon in top englishbreakfast.
+/// Peripheral base address for clkmgr in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const CLKMGR_AON_BASE_ADDR: usize = 0x40420000;
+pub const CLKMGR_BASE_ADDR: usize = 0x40420000;
 
-/// Peripheral size for clkmgr_aon in top englishbreakfast.
+/// Peripheral size for clkmgr in top englishbreakfast.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #CLKMGR_AON_BASE_ADDR and
-/// `CLKMGR_AON_BASE_ADDR + CLKMGR_AON_SIZE_BYTES`.
-pub const CLKMGR_AON_SIZE_BYTES: usize = 0x80;
+/// address between #CLKMGR_BASE_ADDR and
+/// `CLKMGR_BASE_ADDR + CLKMGR_SIZE_BYTES`.
+pub const CLKMGR_SIZE_BYTES: usize = 0x80;
 
-/// Peripheral base address for pinmux_aon in top englishbreakfast.
+/// Peripheral base address for pinmux in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const PINMUX_AON_BASE_ADDR: usize = 0x40460000;
+pub const PINMUX_BASE_ADDR: usize = 0x40460000;
 
-/// Peripheral size for pinmux_aon in top englishbreakfast.
+/// Peripheral size for pinmux in top englishbreakfast.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #PINMUX_AON_BASE_ADDR and
-/// `PINMUX_AON_BASE_ADDR + PINMUX_AON_SIZE_BYTES`.
-pub const PINMUX_AON_SIZE_BYTES: usize = 0x1000;
+/// address between #PINMUX_BASE_ADDR and
+/// `PINMUX_BASE_ADDR + PINMUX_SIZE_BYTES`.
+pub const PINMUX_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for aon_timer_aon in top englishbreakfast.
+/// Peripheral base address for aon_timer in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const AON_TIMER_AON_BASE_ADDR: usize = 0x40470000;
+pub const AON_TIMER_BASE_ADDR: usize = 0x40470000;
 
-/// Peripheral size for aon_timer_aon in top englishbreakfast.
+/// Peripheral size for aon_timer in top englishbreakfast.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #AON_TIMER_AON_BASE_ADDR and
-/// `AON_TIMER_AON_BASE_ADDR + AON_TIMER_AON_SIZE_BYTES`.
-pub const AON_TIMER_AON_SIZE_BYTES: usize = 0x40;
+/// address between #AON_TIMER_BASE_ADDR and
+/// `AON_TIMER_BASE_ADDR + AON_TIMER_SIZE_BYTES`.
+pub const AON_TIMER_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for ast in top englishbreakfast.
 ///
@@ -340,10 +340,10 @@ pub enum PlicPeripheral {
     SpiHost0 = 5,
     /// usbdev
     Usbdev = 6,
-    /// pwrmgr_aon
-    PwrmgrAon = 7,
-    /// aon_timer_aon
-    AonTimerAon = 8,
+    /// pwrmgr
+    Pwrmgr = 7,
+    /// aon_timer
+    AonTimer = 8,
     /// flash_ctrl
     FlashCtrl = 9,
 }
@@ -359,8 +359,8 @@ impl TryFrom<u32> for PlicPeripheral {
             4 => Ok(Self::SpiDevice),
             5 => Ok(Self::SpiHost0),
             6 => Ok(Self::Usbdev),
-            7 => Ok(Self::PwrmgrAon),
-            8 => Ok(Self::AonTimerAon),
+            7 => Ok(Self::Pwrmgr),
+            8 => Ok(Self::AonTimer),
             9 => Ok(Self::FlashCtrl),
             _ => Err(val),
         }
@@ -532,12 +532,12 @@ pub enum PlicIrqId {
     UsbdevLinkOutErr = 77,
     /// usbdev_av_setup_empty
     UsbdevAvSetupEmpty = 78,
-    /// pwrmgr_aon_wakeup
-    PwrmgrAonWakeup = 79,
-    /// aon_timer_aon_wkup_timer_expired
-    AonTimerAonWkupTimerExpired = 80,
-    /// aon_timer_aon_wdog_timer_bark
-    AonTimerAonWdogTimerBark = 81,
+    /// pwrmgr_wakeup
+    PwrmgrWakeup = 79,
+    /// aon_timer_wkup_timer_expired
+    AonTimerWkupTimerExpired = 80,
+    /// aon_timer_wdog_timer_bark
+    AonTimerWdogTimerBark = 81,
     /// flash_ctrl_prog_empty
     FlashCtrlProgEmpty = 82,
     /// flash_ctrl_prog_lvl
@@ -635,9 +635,9 @@ impl TryFrom<u32> for PlicIrqId {
             76 => Ok(Self::UsbdevPowered),
             77 => Ok(Self::UsbdevLinkOutErr),
             78 => Ok(Self::UsbdevAvSetupEmpty),
-            79 => Ok(Self::PwrmgrAonWakeup),
-            80 => Ok(Self::AonTimerAonWkupTimerExpired),
-            81 => Ok(Self::AonTimerAonWdogTimerBark),
+            79 => Ok(Self::PwrmgrWakeup),
+            80 => Ok(Self::AonTimerWkupTimerExpired),
+            81 => Ok(Self::AonTimerWdogTimerBark),
             82 => Ok(Self::FlashCtrlProgEmpty),
             83 => Ok(Self::FlashCtrlProgLvl),
             84 => Ok(Self::FlashCtrlRdFull),
@@ -823,12 +823,12 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 88] = [
     PlicPeripheral::Usbdev,
     // UsbdevAvSetupEmpty -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,
-    // PwrmgrAonWakeup -> PlicPeripheral::PwrmgrAon
-    PlicPeripheral::PwrmgrAon,
-    // AonTimerAonWkupTimerExpired -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
-    // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
+    // PwrmgrWakeup -> PlicPeripheral::Pwrmgr
+    PlicPeripheral::Pwrmgr,
+    // AonTimerWkupTimerExpired -> PlicPeripheral::AonTimer
+    PlicPeripheral::AonTimer,
+    // AonTimerWdogTimerBark -> PlicPeripheral::AonTimer
+    PlicPeripheral::AonTimer,
     // FlashCtrlProgEmpty -> PlicPeripheral::FlashCtrl
     PlicPeripheral::FlashCtrl,
     // FlashCtrlProgLvl -> PlicPeripheral::FlashCtrl
@@ -1583,9 +1583,9 @@ impl TryFrom<u32> for MuxedPads {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerWakeUps {
-    PinmuxAonPinWkupReq = 0,
-    PinmuxAonUsbWkupReq = 1,
-    AonTimerAonWkupReq = 2,
+    PinmuxPinWkupReq = 0,
+    PinmuxUsbWkupReq = 1,
+    AonTimerWkupReq = 2,
 }
 
 /// Reset Manager Software Controlled Resets
@@ -1601,7 +1601,7 @@ pub enum ResetManagerSwResets {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerResetRequests {
-    AonTimerAonAonTimerRstReq = 0,
+    AonTimerAonTimerRstReq = 0,
 }
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.

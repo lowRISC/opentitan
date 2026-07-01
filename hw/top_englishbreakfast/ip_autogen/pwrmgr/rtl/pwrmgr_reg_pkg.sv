@@ -8,9 +8,9 @@ package pwrmgr_reg_pkg;
 
   // Param list
   parameter int NumWkups = 3;
-  parameter int PINMUX_AON_PIN_WKUP_REQ_IDX = 0;
-  parameter int PINMUX_AON_USB_WKUP_REQ_IDX = 1;
-  parameter int AON_TIMER_AON_WKUP_REQ_IDX = 2;
+  parameter int PINMUX_PIN_WKUP_REQ_IDX = 0;
+  parameter int PINMUX_USB_WKUP_REQ_IDX = 1;
+  parameter int AON_TIMER_WKUP_REQ_IDX = 2;
   parameter int NumRstReqs = 1;
   parameter int NumIntRstReqs = 2;
   parameter int NumDebugRstReqs = 1;

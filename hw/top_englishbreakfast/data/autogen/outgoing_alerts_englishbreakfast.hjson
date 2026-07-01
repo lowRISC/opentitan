@@ -70,8 +70,8 @@
             lpg_idx: 5
         }
         {
-            name: pwrmgr_aon_fatal_fault
-            module_name: pwrmgr_aon
+            name: pwrmgr_fatal_fault
+            module_name: pwrmgr
             index: 7
             type: alert
             async: 1
@@ -79,8 +79,8 @@
             lpg_idx: 6
         }
         {
-            name: rstmgr_aon_fatal_fault
-            module_name: rstmgr_aon
+            name: rstmgr_fatal_fault
+            module_name: rstmgr
             index: 8
             type: alert
             async: 1
@@ -88,8 +88,8 @@
             lpg_idx: 7
         }
         {
-            name: rstmgr_aon_fatal_cnsty_fault
-            module_name: rstmgr_aon
+            name: rstmgr_fatal_cnsty_fault
+            module_name: rstmgr
             index: 9
             type: alert
             async: 1
@@ -97,8 +97,8 @@
             lpg_idx: 7
         }
         {
-            name: clkmgr_aon_recov_fault
-            module_name: clkmgr_aon
+            name: clkmgr_recov_fault
+            module_name: clkmgr
             index: 10
             type: alert
             async: 1
@@ -106,8 +106,8 @@
             lpg_idx: 6
         }
         {
-            name: clkmgr_aon_fatal_fault
-            module_name: clkmgr_aon
+            name: clkmgr_fatal_fault
+            module_name: clkmgr
             index: 11
             type: alert
             async: 1
@@ -115,8 +115,8 @@
             lpg_idx: 6
         }
         {
-            name: pinmux_aon_fatal_fault
-            module_name: pinmux_aon
+            name: pinmux_fatal_fault
+            module_name: pinmux
             index: 12
             type: alert
             async: 1
@@ -124,8 +124,8 @@
             lpg_idx: 7
         }
         {
-            name: aon_timer_aon_fatal_fault
-            module_name: aon_timer_aon
+            name: aon_timer_fatal_fault
+            module_name: aon_timer
             index: 13
             type: alert
             async: 1

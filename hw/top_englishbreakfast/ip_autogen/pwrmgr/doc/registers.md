@@ -312,10 +312,10 @@ Whenever a particular bit is set to 0, that reset request cannot reset the devic
 {"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                        |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                           |
-|   0    |   rw   |   0x0   | EN_0   | Reset enable for aon_timer_aon: aon_timer_rst_req. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                    |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------|
+|  31:1  |        |         |        | Reserved                                       |
+|   0    |   rw   |   0x0   | EN_0   | Reset enable for aon_timer: aon_timer_rst_req. |
 
 ## RESET_STATUS
 A read only register of all current reset requests post enable mask
