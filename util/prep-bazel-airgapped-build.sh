@@ -109,12 +109,13 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
       ${AIRGAPPED_DIR_CONTENTS} == "DISTDIR" ]]; then
   echo $LINE_SEP
   echo "Preparing bazel offline distdir ..."
-  mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR}
-  cd ${BAZEL_AIRGAPPED_DIR}
+  mkdir -p ${BAZEL_DISTDIR}
+  pushd ${BAZEL_AIRGAPPED_DIR}
   curl --silent --location \
     https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 \
     --output bazel
   chmod +x bazel
+  popd
 
   # Make Bazel fetch its own dependencies to the repository cache:
   # https://bazel.build/run/build#repository_cache_with_bazel_7_or_later
@@ -122,7 +123,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   pushd "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
     touch MODULE.bazel
     cp "${REPO_TOP}/.bazelversion" .
-    "$BAZELISK" fetch --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
+    ../bazel fetch --repository_cache="${BAZEL_CACHEDIR}"
   popd
   rm -rf "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
 fi
