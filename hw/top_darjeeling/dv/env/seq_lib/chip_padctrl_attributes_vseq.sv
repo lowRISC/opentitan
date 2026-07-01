@@ -321,35 +321,35 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(mio_pad_attr)
     for (int i = 0; i < MioPadCount; i++) begin
       uvm_reg_data_t value = '0;
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].invert, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].invert, value,
                                              mio_pad_attr[i].invert);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].virtual_od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].virtual_od_en, value,
                                              mio_pad_attr[i].virt_od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].pull_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].pull_en, value,
                                              mio_pad_attr[i].pull_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].pull_select, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].pull_select, value,
                                              mio_pad_attr[i].pull_select);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].keeper_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].keeper_en, value,
                                              mio_pad_attr[i].keep_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].schmitt_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].schmitt_en, value,
                                              mio_pad_attr[i].schmitt_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].od_en, value,
                                              mio_pad_attr[i].od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].slew_rate, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].slew_rate, value,
                                              mio_pad_attr[i].slew_rate);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.mio_pad_attr[i].drive_strength, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.mio_pad_attr[i].drive_strength, value,
                                              mio_pad_attr[i].drive_strength);
       `uvm_info(`gfn, $sformatf("%0d: mio_pad_attr = %0p / 0x%0h", i, mio_pad_attr[i], value),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
   // Reset the MIO pad attr registers.
   task pinmux_mio_pad_attr_reset();
     for (int i = 0; i < MioPadCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.mio_pad_attr[i].get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.mio_pad_attr[i].get_reset();
+      csr_wr(.ptr(ral.pinmux.mio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -365,15 +365,15 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       `uvm_info(`gfn, $sformatf("%0d: outsel_value_kind = %0s, periph_to_mio_map = %0s",
                                 i, outsel_value_kind[i].name(), periph_to_mio_map[i].name()),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
   // Reset the MIO outsel registers.
   task pinmux_mio_outsel_reset();
     for (int i = 0; i < MioPadCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.mio_outsel[i].out.get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.mio_outsel[i].out.get_reset();
+      csr_wr(.ptr(ral.pinmux.mio_outsel[i].out), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -478,15 +478,15 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       `uvm_info(`gfn, $sformatf("%0d: insel_value_kind = %0s, mio_to_periph_map = %0s",
                                 i, insel_value_kind[i].name(), mio_to_periph_map[i].name()),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
   // Reset the MIO insel registers.
   task pinmux_mio_insel_reset();
     for (int i = 0; i < MioInCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.mio_periph_insel[i].in.get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.mio_periph_insel[i].in.get_reset();
+      csr_wr(.ptr(ral.pinmux.mio_periph_insel[i].in), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -552,27 +552,27 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dio_pad_attr)
     for (int i = 0; i < DioCount; i++) begin
       uvm_reg_data_t value = '0;
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].invert, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].invert, value,
                                              dio_pad_attr[i].invert);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].virtual_od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].virtual_od_en, value,
                                              dio_pad_attr[i].virt_od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].pull_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].pull_en, value,
                                              dio_pad_attr[i].pull_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].pull_select, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].pull_select, value,
                                              dio_pad_attr[i].pull_select);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].keeper_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].keeper_en, value,
                                              dio_pad_attr[i].keep_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].schmitt_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].schmitt_en, value,
                                              dio_pad_attr[i].schmitt_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].od_en, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].od_en, value,
                                              dio_pad_attr[i].od_en);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].slew_rate, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].slew_rate, value,
                                              dio_pad_attr[i].slew_rate);
-      value = get_csr_val_with_updated_field(ral.pinmux_aon.dio_pad_attr[i].drive_strength, value,
+      value = get_csr_val_with_updated_field(ral.pinmux.dio_pad_attr[i].drive_strength, value,
                                              dio_pad_attr[i].drive_strength);
       `uvm_info(`gfn, $sformatf("%0d: dio_pad_attr = %0p / 0x%0h", i, dio_pad_attr[i], value),
                 UVM_LOW)
-      csr_wr(.ptr(ral.pinmux_aon.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      csr_wr(.ptr(ral.pinmux.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 
@@ -590,8 +590,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   // Reset the DIO pad attr registers.
   task pinmux_dio_pad_attr_reset();
     for (int i = 0; i < DioCount; i++) begin
-      uvm_reg_data_t value = ral.pinmux_aon.dio_pad_attr[i].get_reset();
-      csr_wr(.ptr(ral.pinmux_aon.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
+      uvm_reg_data_t value = ral.pinmux.dio_pad_attr[i].get_reset();
+      csr_wr(.ptr(ral.pinmux.dio_pad_attr[i]), .value(value), .blocking(1), .predict(1));
     end
   endtask
 

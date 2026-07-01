@@ -383,7 +383,7 @@ module tb;
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_RAM_BASE_ADDR));
       m_mem_bkdr_util[RamRet0] = ram_ret0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
@@ -521,14 +521,14 @@ module tb;
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_i2c0);
-          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux_aon);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_host0);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_uart0);
         end else begin
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_i2c0);
-          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux_aon);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_host0);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_uart0);

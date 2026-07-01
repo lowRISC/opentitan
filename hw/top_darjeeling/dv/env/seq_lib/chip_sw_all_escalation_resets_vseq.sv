@@ -15,8 +15,8 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
 
   ip_fatal_alert_t ip_alerts[] = '{
     '{"*aes*prim_reg_we_check*", TopDarjeelingAlertIdAesFatalFault},
-    '{"*aon_timer*prim_reg_we_check*", TopDarjeelingAlertIdAonTimerAonFatalFault},
-    '{"*clkmgr*prim_reg_we_check*", TopDarjeelingAlertIdClkmgrAonFatalFault},
+    '{"*aon_timer*prim_reg_we_check*", TopDarjeelingAlertIdAonTimerFatalFault},
+    '{"*clkmgr*prim_reg_we_check*", TopDarjeelingAlertIdClkmgrFatalFault},
     '{"*csrng*prim_reg_we_check*", TopDarjeelingAlertIdCsrngFatalAlert},
     '{"*edn0*prim_reg_we_check*", TopDarjeelingAlertIdEdn0FatalAlert},
     '{"*edn1*prim_reg_we_check*", TopDarjeelingAlertIdEdn1FatalAlert},
@@ -33,12 +33,12 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*otp_ctrl.u_otp.*u_state_regs", TopDarjeelingAlertIdOtpCtrlFatalPrimOtpAlert},
     '{"*otp_ctrl*u_otp_ctrl_dai*", TopDarjeelingAlertIdOtpCtrlFatalCheckError},
     '{"*otp_ctrl*prim_reg_we_check*", TopDarjeelingAlertIdOtpCtrlFatalBusIntegError},
-    '{"*pinmux*prim_reg_we_check*", TopDarjeelingAlertIdPinmuxAonFatalFault},
-    '{"*pwrmgr*prim_reg_we_check*", TopDarjeelingAlertIdPwrmgrAonFatalFault},
+    '{"*pinmux*prim_reg_we_check*", TopDarjeelingAlertIdPinmuxFatalFault},
+    '{"*pwrmgr*prim_reg_we_check*", TopDarjeelingAlertIdPwrmgrFatalFault},
     '{"*rom_ctrl0*prim_reg_we_check*", TopDarjeelingAlertIdRomCtrl0Fatal},
     '{"*rom_ctrl1*prim_reg_we_check*", TopDarjeelingAlertIdRomCtrl1Fatal},
-    '{"*rstmgr*prim_reg_we_check*", TopDarjeelingAlertIdRstmgrAonFatalFault},
-    // TopDarjeelingAlertIdRstmgrAonFatalCnstyFault cannot use this test.
+    '{"*rstmgr*prim_reg_we_check*", TopDarjeelingAlertIdRstmgrFatalFault},
+    // TopDarjeelingAlertIdRstmgrFatalCnstyFault cannot use this test.
     //
     '{"*rv_core_ibex*sw_fatal_err*", TopDarjeelingAlertIdRvCoreIbexFatalSwErr},
     '{"*rv_core_ibex*prim_reg_we_check*", TopDarjeelingAlertIdRvCoreIbexFatalHwErr},
@@ -48,7 +48,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*spi_device*prim_reg_we_check*", TopDarjeelingAlertIdSpiDeviceFatalFault},
     '{"*spi_host0*prim_reg_we_check*", TopDarjeelingAlertIdSpiHost0FatalFault},
     '{"*sram_ctrl_main*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlMainFatalError},
-    '{"*sram_ctrl_ret*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlRetAonFatalError},
+    '{"*sram_ctrl_ret*prim_reg_we_check*", TopDarjeelingAlertIdSramCtrlRetFatalError},
     '{"*uart0*prim_reg_we_check*", TopDarjeelingAlertIdUart0FatalFault}
   };
 

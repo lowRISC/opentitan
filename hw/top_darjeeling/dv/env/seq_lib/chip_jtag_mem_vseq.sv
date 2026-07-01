@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This test write and read back test through jtag interface for
-// following memories : otbn.imem, otbn.dmem, sram_ctrl_main_ram.ram, sram_ctrl_ret_aon_ram.ram
+// following memories : otbn.imem, otbn.dmem, sram_ctrl_main_ram.ram, sram_ctrl_ret_ram.ram
 // Also preload random data to rom_ctrl_rom.rom and check read data integrity
 // through jtag interface
 class chip_jtag_mem_vseq extends chip_common_vseq;

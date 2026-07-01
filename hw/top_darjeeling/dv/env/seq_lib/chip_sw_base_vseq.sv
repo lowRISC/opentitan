@@ -51,8 +51,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
       // Await the report of an internal reset request from the power manager.
       if (cfg.chip_vif.aon_clk_por_rst_if.rst_n === 1'b1) begin
         // For a software reset request we need in practice to check the `light_reset_req` signal
-        // on every AON clock cycle because as soon as pwrmgr_aon detects the internal reset request
-        // it acknowledges to the rstmgr_aon, which deasserts the software reset request.
+        // on every AON clock cycle because as soon as pwrmgr detects the internal reset request
+        // it acknowledges to the rstmgr, which deasserts the software reset request.
         cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
         if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
               .kind(dv_utils_pkg::SignalProbeSample))) begin
@@ -262,8 +262,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void ret_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
-      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetSramNonce,
       bit [38:0] flip_bits = '0);
     _sram_bkdr_write32(addr, data, RamRet0, cfg.num_ram_ret_tiles, 1, key, nonce, flip_bits);
   endfunction
