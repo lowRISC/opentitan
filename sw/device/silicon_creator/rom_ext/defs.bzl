@@ -138,6 +138,22 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
     },
+    "usbdfu_anyversion": {
+        # Enable USB-DFU triggered by SW_STRAPS value 0x33.
+        "owner_defines": [
+            # Enable the AnyVersion ownership update mode.
+            "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeAnyVersion",
+            # 0x55 is 'U'sb.
+            "WITH_RESCUE_PROTOCOL=0x55",
+            # Trigger 2 is strap pins combination.
+            "WITH_RESCUE_TRIGGER=2",
+            # Strapping value of 0x33.
+            "WITH_RESCUE_INDEX=0x33",
+            # Timeout: 0x80=enter_on_fail, 0x7f=timeout mask in seconds.
+            "WITH_RESCUE_TIMEOUT={}".format(0x80 + USBDFU_RESCUE_TIMEOUT_SECS),
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
+    },
     "spidfu": {
         "owner_defines": [
             # 0x53 is 'S'pi.
