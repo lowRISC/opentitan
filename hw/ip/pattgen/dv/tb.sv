@@ -67,7 +67,7 @@ module tb;
 
   // Pattgen has four "enable" ports that are just wired to 1'b1. Rather than doing any functional
   // verification about these signals, it's easiest to assert that they are '1.
-  `ASSERT(TxEnHigh_A, &{cio_pda0_tx_en, cio_pcl0_tx_en, cio_pda1_tx_en, cio_pcl1_tx_en},
+  `OCAH_OT_ASSERT(TxEnHigh_A, &{cio_pda0_tx_en, cio_pcl0_tx_en, cio_pda1_tx_en, cio_pcl1_tx_en},
           clk_rst_if.clk, !clk_rst_if.rst_n)
 
   initial begin

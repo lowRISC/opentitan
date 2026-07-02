@@ -197,7 +197,7 @@ interface alert_esc_if(input clk, input rst_n);
   always_comb alert_sva_active = is_alert && rst_n;
 
   // Check the differential alert signals have no unknown values.
-  `ASSERT_KNOWN(PingKnown_A, alert_rx.ping_p ^ alert_rx.ping_n, clk, !alert_sva_active)
-  `ASSERT_KNOWN(AckKnown_A, alert_rx.ack_p ^ alert_rx.ack_n, clk, !alert_sva_active)
-  `ASSERT_KNOWN(AlertKnown_A, alert_tx.alert_p ^ alert_tx.alert_n, clk, !alert_sva_active)
+  `OCAH_OT_ASSERT_KNOWN(PingKnown_A, alert_rx.ping_p ^ alert_rx.ping_n, clk, !alert_sva_active)
+  `OCAH_OT_ASSERT_KNOWN(AckKnown_A, alert_rx.ack_p ^ alert_rx.ack_n, clk, !alert_sva_active)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnown_A, alert_tx.alert_p ^ alert_tx.alert_n, clk, !alert_sva_active)
 endinterface: alert_esc_if

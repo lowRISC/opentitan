@@ -44,5 +44,5 @@ module prim_onehot_mux #(
   assign unused_clk   = clk_i;
   assign unused_rst_n = rst_ni;
 
-  `ASSERT(SelIsOnehot_A, $onehot0(sel_i))
+  `OCAH_OT_ASSERT(SelIsOnehot_A, $onehot0(sel_i))
 endmodule

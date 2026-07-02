@@ -27,7 +27,7 @@ interface adc_ctrl_sva_if
   int cfg_wakeup_time;
   bit cfg_lp_mode;
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
 
   initial begin
     #1ps;
@@ -104,14 +104,14 @@ interface adc_ctrl_sva_if
   //verilog_format: on
 
   // Assertions
-  `ASSERT(ChannelSelOnehot_A, $onehot0(adc_o.channel_sel), clk_aon_i, ~rst_aon_ni)
-  `ASSERT_KNOWN(ChannelSelKnown_A, adc_o.channel_sel, clk_aon_i, ~rst_aon_ni)
-  `ASSERT_KNOWN(PdKnown_A, adc_o.pd, clk_aon_i, ~rst_aon_ni)
-  `ASSERT(PwrupTime_A, $rose(pwrup_time_chk) |-> pwrup_time == (cfg_pwrup_time + 1), clk_aon_i,
+  `OCAH_OT_ASSERT(ChannelSelOnehot_A, $onehot0(adc_o.channel_sel), clk_aon_i, ~rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(ChannelSelKnown_A, adc_o.channel_sel, clk_aon_i, ~rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(PdKnown_A, adc_o.pd, clk_aon_i, ~rst_aon_ni)
+  `OCAH_OT_ASSERT(PwrupTime_A, $rose(pwrup_time_chk) |-> pwrup_time == (cfg_pwrup_time + 1), clk_aon_i,
           ~rst_aon_ni)
-  `ASSERT(WakeupTime_A, $rose(wakeup_time_chk) |-> wakeup_time == cfg_wakeup_time, clk_aon_i,
+  `OCAH_OT_ASSERT(WakeupTime_A, $rose(wakeup_time_chk) |-> wakeup_time == cfg_wakeup_time, clk_aon_i,
           ~rst_aon_ni)
-  `ASSERT(EnterLowPower_A, EnterLowPower_P, clk_aon_i, ~rst_aon_ni | ~testmode_low_power)
+  `OCAH_OT_ASSERT(EnterLowPower_A, EnterLowPower_P, clk_aon_i, ~rst_aon_ni | ~testmode_low_power)
 
   // Assertion controls
 

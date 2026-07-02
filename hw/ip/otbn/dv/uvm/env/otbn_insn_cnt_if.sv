@@ -18,7 +18,7 @@ interface otbn_insn_cnt_if (
 );
 
   // Check that the model and OTBN have matching instruction counters
-  `ASSERT(InsnCntMatches_A, model_insn_cnt_i == insn_cnt_i)
+  `OCAH_OT_ASSERT(InsnCntMatches_A, model_insn_cnt_i == insn_cnt_i)
 
   // As well as exposing the count itself, we've also exposed the "increment me" signal
   // (insn_executing_i && !stall_i). This means we can see when an instruction counter of all ones
@@ -35,13 +35,13 @@ interface otbn_insn_cnt_if (
       increment_me_r <= insn_executing_i & ~stall_i;
     end
   end
-  `ASSERT(IncWhenTold_A,
+  `OCAH_OT_ASSERT(IncWhenTold_A,
           (increment_me_r && (insn_cnt_r < '1)) |-> (insn_cnt_i == insn_cnt_r + 32'd1))
 
   // Now we know that the insn_executing_i and stall_i signals have the behaviour we expect, check
   // for insn_cnt saturating by expecting to see a cycle where increment_me_r is true but insn_cnt_r
   // and insn_cnt both equal '1.
-  `COVER(InsnCntSaturated_C,
+  `OCAH_OT_COVER(InsnCntSaturated_C,
          increment_me_r && (insn_cnt_i == '1) && (insn_cnt_r == '1))
 
 endinterface

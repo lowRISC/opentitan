@@ -110,10 +110,10 @@ end
 // ASSERTIONS
 /////////////////////////
 // Add Assertion mux selector is onehot - zero is allowed
-`ASSERT(AdcChnselOneHot_A, $onehot0(adc_chnsel_i), clk_adc_i, !rst_adc_ni)
+`OCAH_OT_ASSERT(AdcChnselOneHot_A, $onehot0(adc_chnsel_i), clk_adc_i, !rst_adc_ni)
 
 // Add Assertion adc_en=0 chnsel is 0.
-`ASSERT(NoChannelWhileDisabled_A, (adc_en == 0) |-> (adc_chnsel_i == 4'h0), clk_adc_i, !rst_adc_ni)
+`OCAH_OT_ASSERT(NoChannelWhileDisabled_A, (adc_en == 0) |-> (adc_chnsel_i == 4'h0), clk_adc_i, !rst_adc_ni)
 
 // The power up time period is 30us throughout which the adc_chnsel_i needs to be stable at 0.
 // Since we are dealing with a time period here, and not clock cycles, we need to make sure
@@ -135,7 +135,7 @@ end
 // ChannelStableOnAdcEn_A:       |      |      |      |      |      |      |      |
 //                              -1      0      1      2      3      4      5      6
 //                                       <------------ 6 x 5us = 30us ----------->
-`ASSERT(ChannelStableOnAdcEn_A,
+`OCAH_OT_ASSERT(ChannelStableOnAdcEn_A,
         $fell(adc_pd_i) |-> ($past(adc_chnsel_i) == 4'h0)[*8], clk_adc_i, !rst_adc_ni)
 
 endmodule : adc

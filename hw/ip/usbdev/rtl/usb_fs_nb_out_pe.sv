@@ -318,7 +318,7 @@ module usb_fs_nb_out_pe #(
     endcase
   end
 
-  `ASSERT(OutXactStateValid_A,
+  `OCAH_OT_ASSERT(OutXactStateValid_A,
     out_xact_state inside {StIdle, StRcvdOut, StRcvdDataStart, StRcvdDataEnd, StRcvdIsoDataEnd},
     clk_48mhz_i)
 

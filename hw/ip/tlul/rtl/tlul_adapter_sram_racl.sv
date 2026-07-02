@@ -139,6 +139,6 @@ module tlul_adapter_sram_racl
   );
 
   // Ensure that RACL signals are not undefined
-  `ASSERT_KNOWN(RaclAdapterSramErrorKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(RaclAdapterSramErrorKnown_A, racl_error_o.valid)
 
 endmodule

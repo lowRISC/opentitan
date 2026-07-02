@@ -1207,6 +1207,6 @@ module ibex_decoder #(
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT(IbexRegImmAluOpKnown, (opcode == OPCODE_OP_IMM) |->
+  `OCAH_OT_ASSERT(IbexRegImmAluOpKnown, (opcode == OPCODE_OP_IMM) |->
       !$isunknown(instr[14:12]))
 endmodule // controller

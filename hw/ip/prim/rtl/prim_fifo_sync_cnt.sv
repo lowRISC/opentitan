@@ -143,7 +143,7 @@ module prim_fifo_sync_cnt #(
   end
 
   if (NeverClears) begin : gen_never_clears
-    `ASSERT(NeverClears_A, !clr_i)
+    `OCAH_OT_ASSERT(NeverClears_A, !clr_i)
   end
 
 endmodule // prim_fifo_sync_cnt

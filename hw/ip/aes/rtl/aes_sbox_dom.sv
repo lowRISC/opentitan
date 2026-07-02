@@ -177,7 +177,7 @@ module aes_dom_indep_mul_gf2pn #(
   assign b_q = mul_bx_by ^ bq_z0_q;
 
   // Only GF(2^4) and GF(2^2) is supported.
-  `ASSERT_INIT(AesDomIndepMulPower, NPower == 4 || NPower == 2)
+  `OCAH_OT_ASSERT_INIT(AesDomIndepMulPower, NPower == 4 || NPower == 2)
 
 endmodule
 
@@ -307,7 +307,7 @@ module aes_dom_dep_mul_gf2pn_unopt #(
   assign b_q = b_mul_x_z ^ b_mul_bx_b;
 
   // Only GF(2^4) and GF(2^2) is supported.
-  `ASSERT_INIT(AesDomDepMulUnoptPower, NPower == 4 || NPower == 2)
+  `OCAH_OT_ASSERT_INIT(AesDomDepMulUnoptPower, NPower == 4 || NPower == 2)
 
 endmodule
 
@@ -573,7 +573,7 @@ module aes_dom_dep_mul_gf2pn #(
   end
 
   // Only GF(2^4) and GF(2^2) is supported.
-  `ASSERT_INIT(AesDomDepMulPower, NPower == 4 || NPower == 2)
+  `OCAH_OT_ASSERT_INIT(AesDomDepMulPower, NPower == 4 || NPower == 2)
 
 endmodule
 

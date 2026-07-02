@@ -131,40 +131,40 @@ module sha3pad_fpv
   // SHA3-512 c9f25eee75ab4cf9 a8cfd44f4992b282 079b64d94647edbd 88e818e44f701ede
   //          b450818f7272cba7 a20205b3671ce199 1ce9a6d2df8dbad6 e0bb3e50493d7fa7
 
-  `ASSUME(Sha3Mode_A, mode_i == Sha3)
-  `ASSUME(KeccakStrength_A, strength_i == L256)
+  `OCAH_OT_ASSUME(Sha3Mode_A, mode_i == Sha3)
+  `OCAH_OT_ASSUME(KeccakStrength_A, strength_i == L256)
 
   // If absorbed signal is asserted, sw can complete by asserting `done_o`.
 
-  //`ASSUME(DoneStayZero_A, $rose(absorbed_o) |=> ##3 done_i ##1 !done_i)
-  //`ASSUME(DoneStayZeroEnd_A, done_i == 0 throughout (start_i ##[1:$] absorbed_o))
-  `ASSUME(DoneControl_a, absorbed_o |=> ##5 done_i )
+  //`OCAH_OT_ASSUME(DoneStayZero_A, $rose(absorbed_o) |=> ##3 done_i ##1 !done_i)
+  //`OCAH_OT_ASSUME(DoneStayZeroEnd_A, done_i == 0 throughout (start_i ##[1:$] absorbed_o))
+  `OCAH_OT_ASSUME(DoneControl_a, absorbed_o |=> ##5 done_i )
 
   // Empty Vector check
-  //`ASSUME(EmptyInputVector_A, start_i |=> ##3 process_i , clk_i, !rst_ni)
-  //`ASSUME(EmptyInputVectorData_A, msg_valid_i == 1'b 0, clk_i, !rst_ni)
+  //`OCAH_OT_ASSUME(EmptyInputVector_A, start_i |=> ##3 process_i , clk_i, !rst_ni)
+  //`OCAH_OT_ASSUME(EmptyInputVectorData_A, msg_valid_i == 1'b 0, clk_i, !rst_ni)
 
-  //`ASSERT(EmptyVector_A, absorbed_o |->
+  //`OCAH_OT_ASSERT(EmptyVector_A, absorbed_o |->
   //  state[0][255:0] == 256'h 4a43_f880_4b0a_d882_fa49_3be4_4dff_80f5_62d6_61a0_5647_c151_66d7_1ebf_f8c6_ffa7,
   //  clk_i, !rst_ni)
 
   // "abcdefgh"
-  //`ASSUME(AbcdefghInputVector_A, start_i |=> !start_i ##2 (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h
+  //`OCAH_OT_ASSUME(AbcdefghInputVector_A, start_i |=> !start_i ##2 (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h
   //68676665_64636261 ##1 msg_valid_i == 1'b0) ##1 process_i && $stable(msg_valid_i) ##1 !process_i)
-  //`ASSUME(AbcdefghInputMask_A, msg_strb_i == '1)
+  //`OCAH_OT_ASSUME(AbcdefghInputMask_A, msg_strb_i == '1)
 
-  //`ASSERT(AbcdefghVector_A, keccak_complete |->
+  //`OCAH_OT_ASSERT(AbcdefghVector_A, keccak_complete |->
   //256'({<<8{state[0][255:0]}}) == 256'h 3e2020725a38a48e_b3bbf75767f03a22_c6b3f41f459c8313_09b06433ec649779)
 
   // "abc"
-  `ASSUME(AbcInputVector_A, start_i |=> !process_i ##2
+  `OCAH_OT_ASSUME(AbcInputVector_A, start_i |=> !process_i ##2
     (msg_valid_i == 1'b1 && msg_data_i[0] == 64'h 68676665_64636261
     ##1 msg_valid_i == 1'b0) ##1 process_i && $stable(msg_valid_i)
     ##1 !process_i && $stable(msg_valid_i)
     ##[0:$] $stable(msg_valid_i))
-  `ASSUME(AbcInputMask_A, msg_strb_i == 8'b 0000_0111)
+  `OCAH_OT_ASSUME(AbcInputMask_A, msg_strb_i == 8'b 0000_0111)
 
-  `ASSERT(AbcVector_A, absorbed_o |->
+  `OCAH_OT_ASSERT(AbcVector_A, absorbed_o |->
       256'({<<8{state[0][255:0]}})
           == 256'h 3a985da74fe225b2_045c172d6bd390bd_855f086e3e9d525b_46bfe24511431532)
 

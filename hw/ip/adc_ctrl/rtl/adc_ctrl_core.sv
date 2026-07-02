@@ -125,13 +125,13 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
    // Explicitly create assertions for all the matching conditions.
    // These assertions are unwieldy and not suitable for expansion to more channels.
    // They should be adjusted eventually.
-   `ASSERT(MatchCheck00_A, !aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en |->
+   `OCAH_OT_ASSERT(MatchCheck00_A, !aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en |->
            !match[k], clk_aon_i, !rst_aon_ni)
-   `ASSERT(MatchCheck01_A, !aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en  |->
+   `OCAH_OT_ASSERT(MatchCheck01_A, !aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en  |->
            match[k] == chn1_match[k], clk_aon_i, !rst_aon_ni)
-   `ASSERT(MatchCheck10_A, aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en  |->
+   `OCAH_OT_ASSERT(MatchCheck10_A, aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en  |->
            match[k] == chn0_match[k], clk_aon_i, !rst_aon_ni)
-   `ASSERT(MatchCheck11_A, aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en   |->
+   `OCAH_OT_ASSERT(MatchCheck11_A, aon_filter_ctl[0][k].en & aon_filter_ctl[1][k].en   |->
            match[k] == (chn0_match[k] & chn1_match[k]), clk_aon_i, !rst_aon_ni)
   end
 
@@ -218,6 +218,6 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   // Assertions
   //////////////////////
 
-  `ASSERT(MaxFilters_A, NumAdcFilter <= 32, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT(MaxFilters_A, NumAdcFilter <= 32, clk_aon_i, !rst_aon_ni)
 
 endmodule

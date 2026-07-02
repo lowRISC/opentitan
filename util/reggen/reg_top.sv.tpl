@@ -946,16 +946,16 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
 % if rb.all_regs:
 
   // Assertions for Register Interface
-  `ASSERT_PULSE(wePulse, reg_we, ${reg_clk_expr}, !${reg_rst_expr})
-  `ASSERT_PULSE(rePulse, reg_re, ${reg_clk_expr}, !${reg_rst_expr})
+  `OCAH_OT_ASSERT_PULSE(wePulse, reg_we, ${reg_clk_expr}, !${reg_rst_expr})
+  `OCAH_OT_ASSERT_PULSE(rePulse, reg_re, ${reg_clk_expr}, !${reg_rst_expr})
 
-  `ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o_pre.d_valid, ${reg_clk_expr}, !${reg_rst_expr})
+  `OCAH_OT_ASSERT(reAfterRv, $rose(reg_re || reg_we) |=> tl_o_pre.d_valid, ${reg_clk_expr}, !${reg_rst_expr})
 
-  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), ${reg_clk_expr}, !${reg_rst_expr})
+  `OCAH_OT_ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit), ${reg_clk_expr}, !${reg_rst_expr})
 
   // this is formulated as an assumption such that the FPV testbenches do disprove this
   // property by mistake
-  //`ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
+  //`OCAH_OT_ASSUME(reqParity, tl_reg_h2d.a_valid |-> tl_reg_h2d.a_user.chk_en == tlul_pkg::CheckDis)
 
 % endif
 endmodule

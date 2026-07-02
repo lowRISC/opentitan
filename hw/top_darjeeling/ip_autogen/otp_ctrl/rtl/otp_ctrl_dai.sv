@@ -91,8 +91,8 @@ module otp_ctrl_dai
   localparam int CntWidth = OtpByteAddrWidth - $clog2(ScrmblBlockWidth/8);
 
   // Integration checks for parameters.
-  `ASSERT_INIT(CheckNativeOtpWidth0_A, (ScrmblBlockWidth % OtpWidth) == 0)
-  `ASSERT_INIT(CheckNativeOtpWidth1_A, (32 % OtpWidth) == 0)
+  `OCAH_OT_ASSERT_INIT(CheckNativeOtpWidth0_A, (ScrmblBlockWidth % OtpWidth) == 0)
+  `OCAH_OT_ASSERT_INIT(CheckNativeOtpWidth1_A, (32 % OtpWidth) == 0)
 
   /////////////////////
   // DAI Control FSM //
@@ -834,7 +834,7 @@ module otp_ctrl_dai
     // PartEnd has an extra bit to cope with the case where offset + size overflows. However, we
     // arrange the address map to make sure that PartEndInt is at most 1 << OtpByteAddrWidth. Check
     // that here.
-    `ASSERT_INIT(PartEndMax_A, PartEndInt <= (1 << OtpByteAddrWidth))
+    `OCAH_OT_ASSERT_INIT(PartEndMax_A, PartEndInt <= (1 << OtpByteAddrWidth))
 
     // The shift right by OtpAddrShift drops exactly the bottom bits that are needed to convert
     // between OtpAddrWidth and OtpByteAddrWidth, so we know that we can slice safely here.
@@ -852,8 +852,8 @@ module otp_ctrl_dai
     assign zeroize_addr_lut[k] = ZeroizeAddrLut;
   end
 
-  `ASSERT(ScrmblBlockWidthGe8_A, ScrmblBlockWidth >= 8)
-  `ASSERT(PartSelMustBeOnehot_A, $onehot0(part_sel_oh))
+  `OCAH_OT_ASSERT(ScrmblBlockWidthGe8_A, ScrmblBlockWidth >= 8)
+  `OCAH_OT_ASSERT(PartSelMustBeOnehot_A, $onehot0(part_sel_oh))
 
   prim_arbiter_fixed #(
     .N(NumPart),
@@ -1002,25 +1002,25 @@ module otp_ctrl_dai
   ////////////////
 
   // Known assertions
-  `ASSERT_KNOWN(InitDoneKnown_A,     init_done_o)
-  `ASSERT_KNOWN(PartInitReqKnown_A,  part_init_req_o)
-  `ASSERT_KNOWN(ErrorKnown_A,        error_o)
-  `ASSERT_KNOWN(DaiIdleKnown_A,      dai_idle_o)
-  `ASSERT_KNOWN(DaiRdataKnown_A,     dai_rdata_o)
-  `ASSERT_KNOWN(OtpReqKnown_A,       otp_req_o)
-  `ASSERT_KNOWN(OtpCmdKnown_A,       otp_cmd_o)
-  `ASSERT_KNOWN(OtpSizeKnown_A,      otp_size_o)
-  `ASSERT_KNOWN(OtpWdataKnown_A,     otp_wdata_o)
-  `ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
-  `ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
-  `ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
-  `ASSERT_KNOWN(ScrmblModeKnown_A,   scrmbl_mode_o)
-  `ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
-  `ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
-  `ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)
+  `OCAH_OT_ASSERT_KNOWN(InitDoneKnown_A,     init_done_o)
+  `OCAH_OT_ASSERT_KNOWN(PartInitReqKnown_A,  part_init_req_o)
+  `OCAH_OT_ASSERT_KNOWN(ErrorKnown_A,        error_o)
+  `OCAH_OT_ASSERT_KNOWN(DaiIdleKnown_A,      dai_idle_o)
+  `OCAH_OT_ASSERT_KNOWN(DaiRdataKnown_A,     dai_rdata_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpReqKnown_A,       otp_req_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpCmdKnown_A,       otp_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpSizeKnown_A,      otp_size_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpWdataKnown_A,     otp_wdata_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblModeKnown_A,   scrmbl_mode_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)
 
   // OTP error response
-  `ASSERT(OtpErrorState_A,
+  `OCAH_OT_ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
       !(otp_err inside {NoError, MacroEccCorrError, MacroWriteBlankError})
       |=>

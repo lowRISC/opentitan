@@ -332,18 +332,18 @@ module keccak_2share
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(ValidWidth_A,
+  `OCAH_OT_ASSERT_INIT(ValidWidth_A,
       EnMasking == 0 && Width inside {25, 50, 100, 200, 400, 800, 1600} ||
       EnMasking == 1 && Width inside {50, 100, 200, 400, 800, 1600})
-  `ASSERT_INIT(ValidW_A, W inside {1, 2, 4, 8, 16, 32, 64})
-  `ASSERT_INIT(ValidL_A, L inside {0, 1, 2, 3, 4, 5, 6})
-  `ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
+  `OCAH_OT_ASSERT_INIT(ValidW_A, W inside {1, 2, 4, 8, 16, 32, 64})
+  `OCAH_OT_ASSERT_INIT(ValidL_A, L inside {0, 1, 2, 3, 4, 5, 6})
+  `OCAH_OT_ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
 
   // phase_sel_i shall stay for two cycle after change to 1.
   lc_ctrl_pkg::lc_tx_t unused_lc_sig;
   assign unused_lc_sig = lc_escalate_en_i;
   if (EnMasking) begin : gen_selperiod_chk
-    `ASSUME(SelStayTwoCycleIfTrue_A,
+    `OCAH_OT_ASSUME(SelStayTwoCycleIfTrue_A,
         ($past(phase_sel_i) == MuBi4False) && (phase_sel_i == MuBi4True)
         |=> phase_sel_i == MuBi4True, clk_i, !rst_ni ||
             lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i))

@@ -975,7 +975,7 @@ module i2c_controller_fsm import i2c_pkg::*;
                                    (stretch_idle_cnt > 31'(stretch_timeout_i));
 
   // Make sure we never attempt to send a single cycle glitch
-  `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)
+  `OCAH_OT_ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)
 
   // TODO: Handle the assertion below
 //  // I2C bus outputs
@@ -990,6 +990,6 @@ module i2c_controller_fsm import i2c_pkg::*;
 //  end
 //
 //  // Check that we don't change SCL and SDA in the same clock cycle in host mode.
-//  `ASSERT(SclSdaChangeNotSimultaneous_A, !(host_enable_i && (scl_d != scl_q) && (sda_d != sda_q)))
+//  `OCAH_OT_ASSERT(SclSdaChangeNotSimultaneous_A, !(host_enable_i && (scl_d != scl_q) && (sda_d != sda_q)))
 
 endmodule

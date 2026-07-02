@@ -137,5 +137,5 @@ module mbx_sramrwarb
                                     (tl_host_i.d_opcode == tlul_pkg::AccessAckData);
 
   // Functional Coverage
-  `COVER(MaxOutstandingRequestsReached_C, sram_req & max_outstanding_reqs_reached)
+  `OCAH_OT_COVER(MaxOutstandingRequestsReached_C, sram_req & max_outstanding_reqs_reached)
 endmodule

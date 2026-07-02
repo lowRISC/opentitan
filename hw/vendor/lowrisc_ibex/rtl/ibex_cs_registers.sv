@@ -1211,7 +1211,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
         .rd_error_o(pmp_addr_err[i])
       );
 
-      `ASSERT_INIT(PMPAddrRstLowBitsZero_A, PMPRstAddr[i][PMP_ADDR_MSB-PMPAddrWidth:0] == '0)
+      `OCAH_OT_ASSERT_INIT(PMPAddrRstLowBitsZero_A, PMPRstAddr[i][PMP_ADDR_MSB-PMPAddrWidth:0] == '0)
 
       assign csr_pmp_cfg_o[i]  = pmp_cfg[i];
       assign csr_pmp_addr_o[i] = {pmp_addr_rdata[i], 2'b00};
@@ -1677,6 +1677,6 @@ module ibex_cs_registers import ibex_pkg::*; #(
   // Assertions //
   ////////////////
 
-  `ASSERT(IbexCsrOpEnRequiresAccess, csr_op_en_i |-> csr_access_i)
+  `OCAH_OT_ASSERT(IbexCsrOpEnRequiresAccess, csr_op_en_i |-> csr_access_i)
 
 endmodule

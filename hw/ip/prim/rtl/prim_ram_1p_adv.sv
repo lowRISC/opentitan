@@ -70,7 +70,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4Width;
 
-  `ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
+  `OCAH_OT_ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
 
   // Calculate ECC width
   localparam int ParWidth  = (EnableParity) ? Width/8 :
@@ -145,7 +145,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   end
 
   // Ensure that only one RAM instance gets activated
-  `ASSERT(OneHotInstReq_A, $onehot0(inst_req_d))
+  `OCAH_OT_ASSERT(OneHotInstReq_A, $onehot0(inst_req_d))
 
   for (genvar i = 0; i < NumRamInst; i++) begin : gen_ram_inst
     prim_ram_1p #(
@@ -229,10 +229,10 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
     assign unused_wmask = ^wmask_i;
 
     // check supported widths
-    `ASSERT_INIT(SecDecWidth_A, Width inside {16, 32})
+    `OCAH_OT_ASSERT_INIT(SecDecWidth_A, Width inside {16, 32})
 
     // the wmask is constantly set to 1 in this case
-    `ASSERT(OnlyWordWritePossibleWithEccPortA_A, req_i |->
+    `OCAH_OT_ASSERT(OnlyWordWritePossibleWithEccPortA_A, req_i |->
           wmask_i == {Width{1'b1}})
 
     assign wmask_d = {TotalWidth{1'b1}};
@@ -289,8 +289,8 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
 
   end else if (EnableParity) begin : gen_byte_parity
 
-    `ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
-    `ASSERT_INIT(ParityNeedsByteWriteMask_A, DataBitsPerMask == 8)
+    `OCAH_OT_ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
+    `OCAH_OT_ASSERT_INIT(ParityNeedsByteWriteMask_A, DataBitsPerMask == 8)
 
     always_comb begin : p_parity
       rerror_d = '0;

@@ -25,13 +25,13 @@ interface rstmgr_rst_en_track_sva_if (
 %>\
   % for domain in rst['domains']:
     % if rst['shadowed']:
-  `ASSERT(D${domain.capitalize()}Rst${rst_camel_name}ShadowedEnTracksRst${rst_camel_name}ShadowedActive_A,
+  `OCAH_OT_ASSERT(D${domain.capitalize()}Rst${rst_camel_name}ShadowedEnTracksRst${rst_camel_name}ShadowedActive_A,
           $fell(resets_i.rst_${rst['name']}_shadowed_n[Domain${domain}Sel]) |-> ##[0:DELAY]
           reset_en_i.${rst['name']}_shadowed[Domain${domain}Sel] == prim_mubi_pkg::MuBi4True,
           clk_${rst['clock']}_i,
           !rst_por_ni)
 
-  `ASSERT(D${domain.capitalize()}Rst${rst_camel_name}ShadowedEnTracksRst${rst_camel_name}ShadowedInactive_A,
+  `OCAH_OT_ASSERT(D${domain.capitalize()}Rst${rst_camel_name}ShadowedEnTracksRst${rst_camel_name}ShadowedInactive_A,
           $rose(resets_i.rst_${rst['name']}_shadowed_n[Domain${domain}Sel]) |-> ##DELAY
           !resets_i.rst_${rst['name']}_shadowed_n[Domain${domain}Sel] ||
           reset_en_i.${rst['name']}_shadowed[Domain${domain}Sel] == prim_mubi_pkg::MuBi4False,
@@ -39,13 +39,13 @@ interface rstmgr_rst_en_track_sva_if (
           !rst_por_ni)
 
     % else:
-  `ASSERT(D${domain.capitalize()}Rst${rst_camel_name}EnTracksRst${rst_camel_name}Active_A,
+  `OCAH_OT_ASSERT(D${domain.capitalize()}Rst${rst_camel_name}EnTracksRst${rst_camel_name}Active_A,
           $fell(resets_i.rst_${rst['name']}_n[Domain${domain}Sel]) |-> ##[0:DELAY]
           reset_en_i.${rst['name']}[Domain${domain}Sel] == prim_mubi_pkg::MuBi4True,
           clk_${rst['clock']}_i,
           !rst_por_ni)
 
-  `ASSERT(D${domain.capitalize()}Rst${rst_camel_name}EnTracksRst${rst_camel_name}Inactive_A,
+  `OCAH_OT_ASSERT(D${domain.capitalize()}Rst${rst_camel_name}EnTracksRst${rst_camel_name}Inactive_A,
           $rose(resets_i.rst_${rst['name']}_n[Domain${domain}Sel]) |-> ##DELAY
           !resets_i.rst_${rst['name']}_n[Domain${domain}Sel] ||
           reset_en_i.${rst['name']}[Domain${domain}Sel] == prim_mubi_pkg::MuBi4False,

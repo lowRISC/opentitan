@@ -48,7 +48,7 @@
       .Width($bits(__type)),                          \
       .ResetValue($bits(__type)'(__resval)),          \
       .EnableAlertTriggerSVA(__alert_trigger_sva_en), \
-      .CustomForceName(`PRIM_STRINGIFY(__q))          \
+      .CustomForceName(`OCAH_OT_PRIM_STRINGIFY(__q))          \
     ) __name (                                        \
       .clk_i   ( __clk   ),                           \
       .rst_ni  ( __rst_n ),                           \
@@ -56,7 +56,7 @@
       .state_o (         )                            \
     );                                                \
     `PRIM_FLOP_A(__d, __q, __resval, __clk, __rst_n)  \
-    `ASSERT(``__name``_A, __q === ``__name``.state_o) \
+    `OCAH_OT_ASSERT(``__name``_A, __q === ``__name``.state_o) \
   `else                                               \
     prim_sparse_fsm_flop #(                           \
       .StateEnumT(__type),                            \

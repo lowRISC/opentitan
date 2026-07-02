@@ -520,11 +520,11 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   //--------------------------------------------
 
   // Currently not supported, but most probably never intended (would yield a very wide counter)
-  `ASSERT_INIT(CsrngCtrLenLessBlkLen, CtrLen < BlkLen)
+  `OCAH_OT_ASSERT_INIT(CsrngCtrLenLessBlkLen, CtrLen < BlkLen)
   // Make sure the FSM has a stable error state that cannot be escaped
-  `ASSERT(CsrngCtrDrbgSmErrorStStable_A, state_q == Error |=> $stable(state_q))
+  `OCAH_OT_ASSERT(CsrngCtrDrbgSmErrorStStable_A, state_q == Error |=> $stable(state_q))
   // Outside of any non-error state, the FSM error output must be asserted
-  `ASSERT(CsrngCtrDrbgSmErrorOutput_A, !(state_q inside
+  `OCAH_OT_ASSERT(CsrngCtrDrbgSmErrorOutput_A, !(state_q inside
           {Idle, CtrInc, ReqSend, RspWait, Hndshk, HndshkGen, HndshkLoad})
           |-> sm_err_o)
 

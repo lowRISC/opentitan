@@ -288,16 +288,16 @@ module tb;
 
   // Assertions
   // HW Revision
-  `ASSERT(HwRevSiliconCreatorId_A, hw_rev_o.silicon_creator_id ==
+  `OCAH_OT_ASSERT(HwRevSiliconCreatorId_A, hw_rev_o.silicon_creator_id ==
                        LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0],
                        clk, ~rst_n)
-  `ASSERT(HwRevProductId_A, hw_rev_o.product_id ==
+  `OCAH_OT_ASSERT(HwRevProductId_A, hw_rev_o.product_id ==
                        LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0],
                        clk, ~rst_n)
-  `ASSERT(HwRevRevisionId_A, hw_rev_o.revision_id ==
+  `OCAH_OT_ASSERT(HwRevRevisionId_A, hw_rev_o.revision_id ==
                        LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0],
                        clk, ~rst_n)
-  `ASSERT(HwRevReserved_A, hw_rev_o.reserved == '0,
+  `OCAH_OT_ASSERT(HwRevReserved_A, hw_rev_o.reserved == '0,
                        clk, ~rst_n)
 
 

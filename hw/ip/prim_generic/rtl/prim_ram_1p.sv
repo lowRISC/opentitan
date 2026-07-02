@@ -38,7 +38,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
 `ifndef SYNTHESIS_MEMORY_BLACK_BOXING
 
   // Width must be fully divisible by DataBitsPerMask
-  `ASSERT_INIT(DataBitsPerMaskCheck_A, (Width % DataBitsPerMask) == 0)
+  `OCAH_OT_ASSERT_INIT(DataBitsPerMaskCheck_A, (Width % DataBitsPerMask) == 0)
 
   logic unused_signals;
   assign unused_signals = ^{cfg_i, rst_ni};
@@ -55,7 +55,7 @@ module prim_ram_1p import prim_ram_1p_pkg::*; #(
     assign wmask[k] = &wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
 
     // Ensure that all mask bits within a group have the same value for a write
-    `ASSERT(MaskCheck_A, req_i && write_i |->
+    `OCAH_OT_ASSERT(MaskCheck_A, req_i && write_i |->
         wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_i, '0)
   end

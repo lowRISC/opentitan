@@ -122,7 +122,7 @@ module aes_ctr_fsm import aes_pkg::*;
   ////////////////
   // Assertions //
   ////////////////
-  `ASSERT(AesCtrStateValid, !alert_o |-> aes_ctr_cs inside {
+  `OCAH_OT_ASSERT(AesCtrStateValid, !alert_o |-> aes_ctr_cs inside {
       CTR_IDLE,
       CTR_INCR
       })

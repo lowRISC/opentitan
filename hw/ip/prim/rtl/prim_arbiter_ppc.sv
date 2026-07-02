@@ -54,7 +54,7 @@ module prim_arbiter_ppc #(
   logic unused_req_chk;
   assign unused_req_chk = req_chk_i;
 
-  `ASSERT_INIT(CheckNGreaterZero_A, N > 0)
+  `OCAH_OT_ASSERT_INIT(CheckNGreaterZero_A, N > 0)
 
   // this case is basically just a bypass
   if (N == 1) begin : gen_degenerate_case
@@ -121,42 +121,42 @@ module prim_arbiter_ppc #(
 
   // KNOWN assertions on outputs, except for data as that may be partially X in simulation
   // e.g. when used on a BUS
-  `ASSERT_KNOWN(ValidKnown_A, valid_o)
-  `ASSERT_KNOWN(GrantKnown_A, gnt_o)
-  `ASSERT_KNOWN(IdxKnown_A, idx_o)
+  `OCAH_OT_ASSERT_KNOWN(ValidKnown_A, valid_o)
+  `OCAH_OT_ASSERT_KNOWN(GrantKnown_A, gnt_o)
+  `OCAH_OT_ASSERT_KNOWN(IdxKnown_A, idx_o)
 
   // grant index shall be higher index than previous index, unless no higher requests exist.
-  `ASSERT(RoundRobin_A,
+  `OCAH_OT_ASSERT(RoundRobin_A,
       ##1 valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
       |(req_i & ~((N'(1) << $past(idx_o)+1) - 1)) |->
       idx_o > $past(idx_o))
   // we can only grant one requester at a time
-  `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
+  `OCAH_OT_ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
-  `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
+  `OCAH_OT_ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
   // A grant implies that the arbiter asserts valid as well
-  `ASSERT(GntImpliesValid_A, |gnt_o |-> valid_o)
+  `OCAH_OT_ASSERT(GntImpliesValid_A, |gnt_o |-> valid_o)
   // A request and a sink that is ready imply a grant
-  `ASSERT(ReqAndReadyImplyGrant_A, |req_i && ready_i |-> |gnt_o)
+  `OCAH_OT_ASSERT(ReqAndReadyImplyGrant_A, |req_i && ready_i |-> |gnt_o)
   // A request and a sink that is ready imply a grant
-  `ASSERT(ReqImpliesValid_A, |req_i |-> valid_o)
+  `OCAH_OT_ASSERT(ReqImpliesValid_A, |req_i |-> valid_o)
   // Both conditions above combined and reversed
-  `ASSERT(ReadyAndValidImplyGrant_A, ready_i && valid_o |-> |gnt_o)
+  `OCAH_OT_ASSERT(ReadyAndValidImplyGrant_A, ready_i && valid_o |-> |gnt_o)
   // Both conditions above combined and reversed
-  `ASSERT(NoReadyValidNoGrant_A, !(ready_i || valid_o) |-> gnt_o == 0)
+  `OCAH_OT_ASSERT(NoReadyValidNoGrant_A, !(ready_i || valid_o) |-> gnt_o == 0)
   // check index / grant correspond
-  `ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
+  `OCAH_OT_ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
 
 if (EnDataPort) begin: gen_data_port_assertion
   // data flow
-  `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
+  `OCAH_OT_ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
 end
 
   // requests must stay asserted until they have been granted
-  `ASSUME(ReqStaysHighUntilGranted0_M, |req_i && !ready_i |=>
+  `OCAH_OT_ASSUME(ReqStaysHighUntilGranted0_M, |req_i && !ready_i |=>
       (req_i & $past(req_i)) == $past(req_i), clk_i, !rst_ni || !req_chk_i)
   // check that the arbitration decision is held if the sink is not ready
-  `ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o),
+  `OCAH_OT_ASSERT(LockArbDecision_A, |req_i && !ready_i |=> idx_o == $past(idx_o),
       clk_i, !rst_ni || !req_chk_i)
 
 // FPV-only assertions with symbolic variables
@@ -167,20 +167,20 @@ end
   bit ReqsAreStable;
 
   // constraints for symbolic variables
-  `ASSUME(KStable_M, ##1 $stable(k))
-  `ASSUME(KRange_M, k < N)
+  `OCAH_OT_ASSUME(KStable_M, ##1 $stable(k))
+  `OCAH_OT_ASSUME(KRange_M, k < N)
   // this is used enable checking for stable and unstable ready_i and req_i signals in the same run.
   // the symbolic variables act like a switch that the solver can turn on and off.
-  `ASSUME(ReadyIsStable_M, ##1 $stable(ReadyIsStable))
-  `ASSUME(ReqsAreStable_M, ##1 $stable(ReqsAreStable))
-  `ASSUME(ReadyStable_M, ##1 !ReadyIsStable || $stable(ready_i))
-  `ASSUME(ReqsStable_M, ##1 !ReqsAreStable || $stable(req_i))
+  `OCAH_OT_ASSUME(ReadyIsStable_M, ##1 $stable(ReadyIsStable))
+  `OCAH_OT_ASSUME(ReqsAreStable_M, ##1 $stable(ReqsAreStable))
+  `OCAH_OT_ASSUME(ReadyStable_M, ##1 !ReadyIsStable || $stable(ready_i))
+  `OCAH_OT_ASSUME(ReqsStable_M, ##1 !ReqsAreStable || $stable(req_i))
 
   // A grant implies a request
-  `ASSERT(GntImpliesReq_A, gnt_o[k] |-> req_i[k])
+  `OCAH_OT_ASSERT(GntImpliesReq_A, gnt_o[k] |-> req_i[k])
 
   // if request and ready are constantly held at 1, we should eventually get a grant
-  `ASSERT(NoStarvation_A,
+  `OCAH_OT_ASSERT(NoStarvation_A,
       ReqsAreStable && ReadyIsStable && ready_i && req_i[k] |->
       strong(##[0:$] gnt_o[k]))
 
@@ -188,7 +188,7 @@ end
   // be granted exactly once over a time window of N cycles for the arbiter to be fair.
   for (genvar n = 1; n <= N; n++) begin : gen_fairness
     integer gnt_cnt;
-    `ASSERT(Fairness_A,
+    `OCAH_OT_ASSERT(Fairness_A,
         ReqsAreStable && ReadyIsStable && ready_i && req_i[k] &&
         $countones(req_i) == n |->
         ##n gnt_cnt == $past(gnt_cnt, n) + 1)
@@ -203,7 +203,7 @@ end
   end
 
   // requests must stay asserted until they have been granted
-  `ASSUME(ReqStaysHighUntilGranted1_M, req_i[k] && !gnt_o[k] |=>
+  `OCAH_OT_ASSUME(ReqStaysHighUntilGranted1_M, req_i[k] && !gnt_o[k] |=>
       req_i[k], clk_i, !rst_ni || !req_chk_i)
 `endif
 

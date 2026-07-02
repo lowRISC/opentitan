@@ -359,6 +359,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   ////////////////////////////
   // Under normal circumstances, this should NEVER fire
   // May need to add a signal to disable this check for simulation
-  `ASSERT(IntRstReq_A, pwr_rst_req == '0)
+  `OCAH_OT_ASSERT(IntRstReq_A, pwr_rst_req == '0)
 
 endmodule

@@ -477,10 +477,10 @@ module aes_key_expand import aes_pkg::*;
   ////////////////
 
   // Create a lint error to reduce the risk of accidentally disabling the masking.
-  `ASSERT_STATIC_LINT_ERROR(AesKeyExpandSecMaskingNonDefault, SecMasking == 1)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesKeyExpandSecMaskingNonDefault, SecMasking == 1)
 
   // Cipher core masking requires a masked SBox and vice versa.
-  `ASSERT_INIT(AesMaskedCoreAndSBox,
+  `OCAH_OT_ASSERT_INIT(AesMaskedCoreAndSBox,
       (SecMasking &&
       (SecSBoxImpl == SBoxImplCanrightMasked ||
        SecSBoxImpl == SBoxImplCanrightMaskedNoreuse ||
@@ -490,11 +490,11 @@ module aes_key_expand import aes_pkg::*;
        SecSBoxImpl == SBoxImplCanright)))
 
   // Selectors must be known/valid
-  `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
+  `OCAH_OT_ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
       CIPH_FWD,
       CIPH_INV
       })
-  `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
+  `OCAH_OT_ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,
       AES_256

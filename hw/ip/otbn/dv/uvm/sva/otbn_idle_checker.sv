@@ -83,8 +83,8 @@ module otbn_idle_checker
   // We should never see done when we're not already running. The converse assertion, that we never
   // see cmd_start when we are running, need not be true: the host can do that if it likes and OTBN
   // will ignore it. But we should never see do_start when we think we're running.
-  `ASSERT(RunningIfDone_A, done |-> running_q)
-  `ASSERT(IdleIfStart_A, do_start |-> !running_q)
+  `OCAH_OT_ASSERT(RunningIfDone_A, done |-> running_q)
+  `OCAH_OT_ASSERT(IdleIfStart_A, do_start |-> !running_q)
 
   // Key rotation (used in the logic below) can delay the idle signal. This signal is flopped an
   // extra time to stay "busy" for an extra cycle, so we mirror that here.
@@ -125,7 +125,7 @@ module otbn_idle_checker
   //  - If STATUS has value LOCKED and no secure wipe is running, we should not think OTBN is
   //    running (NotRunningWhenLocked_A).
 
-  `ASSERT(NotIdleIfRunning_A,
+  `OCAH_OT_ASSERT(NotIdleIfRunning_A,
           running_q |-> ##[0:1] (idle_o_i == prim_mubi_pkg::MuBi4False))
 
   // TODO(#23903):
@@ -147,26 +147,26 @@ module otbn_idle_checker
     end
   end
 
-  `ASSERT(IdleIfNotRunningOrLocked_A, !(missing_idle_d && missing_idle_q))
+  `OCAH_OT_ASSERT(IdleIfNotRunningOrLocked_A, !(missing_idle_d && missing_idle_q))
 
-  `ASSERT(NotIdleIfLockedAndRotatingKeys_A,
+  `OCAH_OT_ASSERT(NotIdleIfLockedAndRotatingKeys_A,
           ((status_q_i == otbn_pkg::StatusLocked) && keys_busy) |->
           (idle_o_i == prim_mubi_pkg::MuBi4False))
 
-  `ASSERT(IdleIfLockedAndNotRotatingKeys_A,
+  `OCAH_OT_ASSERT(IdleIfLockedAndNotRotatingKeys_A,
           // `keys_busy` runs a cycle late compared to `busy_secure_wipe`.  Thus, depending on which
           // component causes the condition to become true, it can take one or two cycles for `idle`
           // to become true.
           ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy && !busy_secure_wipe) |-> ##[1:2]
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
-  `ASSERT(NoStartKeyRotationWhenLocked_A,
+  `OCAH_OT_ASSERT(NoStartKeyRotationWhenLocked_A,
           (status_q_i == otbn_pkg::StatusLocked) |=> !$rose(keys_busy))
 
-  `ASSERT(OnlyKeyRotationWhenRunningOrLocked_A,
+  `OCAH_OT_ASSERT(OnlyKeyRotationWhenRunningOrLocked_A,
           keys_busy |-> (running_q || (status_q_i == otbn_pkg::StatusLocked)))
 
-  `ASSERT(NotRunningWhenLocked_A,
+  `OCAH_OT_ASSERT(NotRunningWhenLocked_A,
           (status_q_i == otbn_pkg::StatusLocked && !busy_secure_wipe) |->
           !running_d)
 
@@ -174,7 +174,7 @@ module otbn_idle_checker
   // a locked OTBN don't cause an integrity error). There is a small window where running_q is set
   // with status_q reporting 'StatusLocked'. So expected bus read data depends upon locked status
   // when running.
-  `ASSERT(NoMemRdataWhenBusy_A,
+  `OCAH_OT_ASSERT(NoMemRdataWhenBusy_A,
     running_q && !(status_q_i == otbn_pkg::StatusBusySecWipeInt) |->
       ((status_q_i == otbn_pkg::StatusLocked) ?
       imem_rdata_bus == EccZeroWord && dmem_rdata_bus == EccWideZeroWord :

@@ -248,20 +248,20 @@ module prim_diff_decode #(
   // shared assertions
   // sigint -> level stays the same during sigint
   // $isunknown is needed to avoid false assertion in first clock cycle
-  `ASSERT(SigintLevelCheck_A, ##1 sigint_o |-> $stable(level_o))
+  `OCAH_OT_ASSERT(SigintLevelCheck_A, ##1 sigint_o |-> $stable(level_o))
   // sigint -> no additional events asserted at output
-  `ASSERT(SigintEventCheck_A, sigint_o |-> !event_o)
-  `ASSERT(SigintRiseCheck_A,  sigint_o |-> !rise_o)
-  `ASSERT(SigintFallCheck_A,  sigint_o |-> !fall_o)
+  `OCAH_OT_ASSERT(SigintEventCheck_A, sigint_o |-> !event_o)
+  `OCAH_OT_ASSERT(SigintRiseCheck_A,  sigint_o |-> !rise_o)
+  `OCAH_OT_ASSERT(SigintFallCheck_A,  sigint_o |-> !fall_o)
 
   if (AsyncOn) begin : gen_async_assert
     // assertions for asynchronous case
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   `ifndef FPV_ALERT_NO_SIGINT_ERR
     // Correctly detect signal integrity issue:
     // If diff_pd and diff_nd are equal for (SkewCycles + 1) consecutive cycles, sigint_o must be
     // asserted.
-    `ASSERT(SigintCheck0_A,
+    `OCAH_OT_ASSERT(SigintCheck0_A,
             gen_async.diff_pd == gen_async.diff_nd [* (SkewCycles + 1)] |-> sigint_o)
 
     // The following assertions (SigintCheck1_A to SigintCheck4_A) describe specific
@@ -269,25 +269,25 @@ module prim_diff_decode #(
     // specific to SkewCycles = 1. Therefore, they are only included when SkewCycles is 1.
     // the synchronizer adds 2 cycles of latency with respect to input signals.
     if (SkewCycles == 1) begin : gen_specific_skew_asserts
-      `ASSERT(SigintCheck1_A,
+      `OCAH_OT_ASSERT(SigintCheck1_A,
           ##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
           $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
           $rose(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
           $stable(gen_async.diff_pd) && $fell(gen_async.diff_nd)
           |-> rise_o)
-      `ASSERT(SigintCheck2_A,
+      `OCAH_OT_ASSERT(SigintCheck2_A,
           ##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
           $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
           $fell(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
           $stable(gen_async.diff_pd) && $rose(gen_async.diff_nd)
           |-> fall_o)
-      `ASSERT(SigintCheck3_A,
+      `OCAH_OT_ASSERT(SigintCheck3_A,
           ##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
           $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
           $rose(gen_async.diff_nd) && $stable(gen_async.diff_pd) ##1
           $stable(gen_async.diff_nd) && $fell(gen_async.diff_pd)
           |-> fall_o)
-      `ASSERT(SigintCheck4_A,
+      `OCAH_OT_ASSERT(SigintCheck4_A,
           ##1 (gen_async.diff_pd ^ gen_async.diff_nd) &&
           $stable(gen_async.diff_pd) && $stable(gen_async.diff_nd) ##1
           $fell(gen_async.diff_nd) && $stable(gen_async.diff_pd) ##1
@@ -297,18 +297,18 @@ module prim_diff_decode #(
     `endif
     // Correctly detect edges: an event should be asserted within SkewCycles cycles after a valid
     // transition
-    `ASSERT(RiseCheck_A,
+    `OCAH_OT_ASSERT(RiseCheck_A,
         !sigint_o ##1 $rose(gen_async.diff_pd) && (gen_async.diff_pd ^ gen_async.diff_nd) |->
         ##[0:SkewCycles] rise_o,  clk_i, !rst_ni || sigint_o)
-    `ASSERT(FallCheck_A,
+    `OCAH_OT_ASSERT(FallCheck_A,
         !sigint_o ##1 $fell(gen_async.diff_pd) && (gen_async.diff_pd ^ gen_async.diff_nd) |->
         ##[0:SkewCycles] fall_o,  clk_i, !rst_ni || sigint_o)
-    `ASSERT(EventCheck_A,
+    `OCAH_OT_ASSERT(EventCheck_A,
         !sigint_o ##1 $changed(gen_async.diff_pd) && (gen_async.diff_pd ^ gen_async.diff_nd) |->
         ##[0:SkewCycles] event_o, clk_i, !rst_ni || sigint_o)
     // Correctly detect level: the output level should match diff_pd once the differential pair is
     // stable
-    `ASSERT(LevelCheck0_A,
+    `OCAH_OT_ASSERT(LevelCheck0_A,
         // Stable for SkewCycles + 1 cycles
         !sigint_o && (gen_async.diff_pd ^ gen_async.diff_nd) [* (SkewCycles + 1)] |->
         gen_async.diff_pd == level_o,
@@ -319,15 +319,15 @@ module prim_diff_decode #(
 
   `ifndef FPV_ALERT_NO_SIGINT_ERR
     // correctly detect sigint issue
-    `ASSERT(SigintCheck_A, diff_pi == diff_ni |-> sigint_o)
+    `OCAH_OT_ASSERT(SigintCheck_A, diff_pi == diff_ni |-> sigint_o)
   `endif
 
     // correctly detect edges
-    `ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o)
-    `ASSERT(FallCheck_A,  ##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o)
-    `ASSERT(EventCheck_A, ##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> event_o)
+    `OCAH_OT_ASSERT(RiseCheck_A,  ##1 $rose(diff_pi)    && (diff_pi ^ diff_ni) |->  rise_o)
+    `OCAH_OT_ASSERT(FallCheck_A,  ##1 $fell(diff_pi)    && (diff_pi ^ diff_ni) |->  fall_o)
+    `OCAH_OT_ASSERT(EventCheck_A, ##1 $changed(diff_pi) && (diff_pi ^ diff_ni) |-> event_o)
     // correctly detect level
-    `ASSERT(LevelCheck_A, (diff_pi ^ diff_ni) |-> diff_pi == level_o)
+    `OCAH_OT_ASSERT(LevelCheck_A, (diff_pi ^ diff_ni) |-> diff_pi == level_o)
   end
 
 endmodule : prim_diff_decode

@@ -33,12 +33,12 @@ interface clkmgr_extclk_sva_if
   logic lc_clk_byp_req;
   always_comb lc_clk_byp_req = lc_clk_byp_req_i == On;
 
-  `ASSERT(IoClkBypReqRise_A,
+  `OCAH_OT_ASSERT(IoClkBypReqRise_A,
           $rose(
               lc_clk_byp_req
           ) |=> ##[RiseCyclesMin:RiseCyclesMax] !lc_clk_byp_req || (io_clk_byp_req_o == MuBi4True),
           clk_i, !rst_ni || disable_sva)
-  `ASSERT(IoClkBypReqFall_A,
+  `OCAH_OT_ASSERT(IoClkBypReqFall_A,
           $fell(
               lc_clk_byp_req
           ) |=> ##[FallCyclesMin:FallCyclesMax] lc_clk_byp_req || (io_clk_byp_req_o != MuBi4False),
@@ -48,13 +48,13 @@ interface clkmgr_extclk_sva_if
   logic extclk_sel_enabled;
   always_comb extclk_sel_enabled = extclk_ctrl_sel == MuBi4True && lc_hw_debug_en_i == On;
 
-  `ASSERT(AllClkBypReqRise_A,
+  `OCAH_OT_ASSERT(AllClkBypReqRise_A,
           $rose(
               extclk_sel_enabled
           ) |=> ##[RiseCyclesMin:RiseCyclesMax]
               !extclk_sel_enabled || (all_clk_byp_req_o == MuBi4True),
           clk_i, !rst_ni || disable_sva)
-  `ASSERT(AllClkBypReqFall_A,
+  `OCAH_OT_ASSERT(AllClkBypReqFall_A,
           $fell(
               extclk_sel_enabled
           ) |=> ##[FallCyclesMin:FallCyclesMax]
@@ -67,12 +67,12 @@ interface clkmgr_extclk_sva_if
         lc_hw_debug_en_i == On;
   end
 
-  `ASSERT(HiSpeedSelRise_A,
+  `OCAH_OT_ASSERT(HiSpeedSelRise_A,
           $rose(
               hi_speed_enabled
           ) |=> ##[RiseCyclesMin:RiseCyclesMax] !hi_speed_enabled || (hi_speed_sel_o == MuBi4True),
           clk_i, !rst_ni || disable_sva)
-  `ASSERT(HiSpeedSelFall_A,
+  `OCAH_OT_ASSERT(HiSpeedSelFall_A,
           $fell(
               hi_speed_enabled
           ) |=> ##[FallCyclesMin:FallCyclesMax] hi_speed_enabled || (hi_speed_sel_o != MuBi4True),

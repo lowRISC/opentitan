@@ -178,6 +178,6 @@ module tlul_adapter_dmi
     .err_o (tl_err)
   );
 
-  `ASSERT_INIT(DwMatchedWithDm_A, top_pkg::TL_DW == $bits(dmi_req_o.data))
+  `OCAH_OT_ASSERT_INIT(DwMatchedWithDm_A, top_pkg::TL_DW == $bits(dmi_req_o.data))
 
 endmodule : tlul_adapter_dmi

@@ -34,7 +34,7 @@ module rom_ctrl_compare
   import prim_util_pkg::vbits;
   import prim_mubi_pkg::mubi4_bool_to_mubi;
 
-  `ASSERT_INIT(NumWordsPositive_A, 0 < NumWords)
+  `OCAH_OT_ASSERT_INIT(NumWordsPositive_A, 0 < NumWords)
 
   localparam int AW = vbits(NumWords);
 

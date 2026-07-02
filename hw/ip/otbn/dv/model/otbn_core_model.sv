@@ -395,9 +395,9 @@ module otbn_core_model
   end
 
   // Assertion to ensure that keymgr key valid is never unknown.
-  `ASSERT_KNOWN(KeyValidIsKnownChk_A, keymgr_key_i.valid)
+  `OCAH_OT_ASSERT_KNOWN(KeyValidIsKnownChk_A, keymgr_key_i.valid)
   // Assertion to ensure that keymgr key values are never unknown if valid is high.
-  `ASSERT_KNOWN_IF(KeyIsKnownChk_A, {keymgr_key_i.key[0], keymgr_key_i.key[1]}, keymgr_key_i.valid)
+  `OCAH_OT_ASSERT_KNOWN_IF(KeyIsKnownChk_A, {keymgr_key_i.key[0], keymgr_key_i.key[1]}, keymgr_key_i.valid)
   assign unused_raw_err_bits = ^raw_err_bits_q[31:$bits(err_bits_t)];
   assign unused_edn_rsp_fips = edn_urnd_i.edn_fips;
 

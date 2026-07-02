@@ -23,25 +23,25 @@ module clkmgr_sec_cm_checker_assert (
   always_comb reset_or_disable = !rst_ni || disable_sva;
 
   // sec_cm_lc_ctrl_intersig_mubi
-  `ASSERT(AllClkBypReqTrue_A,
+  `OCAH_OT_ASSERT(AllClkBypReqTrue_A,
           lc_hw_debug_en_i == lc_ctrl_pkg::On && extclk_ctrl_sel == prim_mubi_pkg::MuBi4True |=>
           all_clk_byp_req_o == prim_mubi_pkg::MuBi4True,
           clk_i, reset_or_disable)
-  `ASSERT(AllClkBypReqFalse_A,
+  `OCAH_OT_ASSERT(AllClkBypReqFalse_A,
           lc_hw_debug_en_i != lc_ctrl_pkg::On || extclk_ctrl_sel != prim_mubi_pkg::MuBi4True |=>
           all_clk_byp_req_o != prim_mubi_pkg::MuBi4True,
           clk_i, reset_or_disable)
 
   // sec_cm_lc_ctrl_clk_handshake_intersig_mubi
-  `ASSERT(IoClkBypReqTrue_A,
+  `OCAH_OT_ASSERT(IoClkBypReqTrue_A,
           lc_clk_byp_req_i == lc_ctrl_pkg::On |=> ##[2:3]
           io_clk_byp_req_o == prim_mubi_pkg::MuBi4True, clk_i, reset_or_disable)
-  `ASSERT(IoClkBypReqFalse_A,
+  `OCAH_OT_ASSERT(IoClkBypReqFalse_A,
           lc_clk_byp_req_i != lc_ctrl_pkg::On |=> ##[2:3]
           io_clk_byp_req_o == prim_mubi_pkg::MuBi4False, clk_i, reset_or_disable)
 
   // sec_cm_clk_handshake_intersig_mubi, sec_cm_div_intersig_mubi
-  `ASSERT(LcClkBypAckTrue_A,
+  `OCAH_OT_ASSERT(LcClkBypAckTrue_A,
           step_down_acks_sync == 2'b11 && io_clk_byp_ack == prim_mubi_pkg::MuBi4True |=> ($past(
               lc_clk_byp_req_i, 3
           ) == lc_clk_byp_ack_o) || ($past(
@@ -50,7 +50,7 @@ module clkmgr_sec_cm_checker_assert (
               lc_clk_byp_req_i, 3
           )),
           clk_i, reset_or_disable)
-  `ASSERT(LcClkBypAckFalse_A,
+  `OCAH_OT_ASSERT(LcClkBypAckFalse_A,
           step_down_acks_sync != 2'b11 ||
           io_clk_byp_ack != prim_mubi_pkg::MuBi4True |=>
           lc_clk_byp_ack_o == lc_ctrl_pkg::Off,

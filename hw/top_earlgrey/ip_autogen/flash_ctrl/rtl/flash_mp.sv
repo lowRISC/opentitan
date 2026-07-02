@@ -333,22 +333,22 @@ import flash_ctrl_reg_pkg::*; (
 
   // Bank erase enable should always be one-hot.  We cannot erase multiple banks
   // at the same time
-  `ASSERT(bkEraseEnOnehot_A, (req_o & bk_erase_o) |-> $onehot(bk_erase_en))
+  `OCAH_OT_ASSERT(bkEraseEnOnehot_A, (req_o & bk_erase_o) |-> $onehot(bk_erase_en))
   // Requests can only happen one at a time
-  `ASSERT(requestTypesOnehot_A, req_o |-> $onehot({rd_o, prog_o, pg_erase_o, bk_erase_o}))
+  `OCAH_OT_ASSERT(requestTypesOnehot_A, req_o |-> $onehot({rd_o, prog_o, pg_erase_o, bk_erase_o}))
   // Info / data errors are mutually exclusive
-  `ASSERT(invalidReqOnehot_A, req_o |-> $onehot0({invalid_data_txn, invalid_info_txn}))
+  `OCAH_OT_ASSERT(invalidReqOnehot_A, req_o |-> $onehot0({invalid_data_txn, invalid_info_txn}))
   // Cannot match more than one info rule at a time
-  `ASSERT(hwInfoRuleOnehot_A, req_i & hw_sel |-> $onehot0(unused_rule_match))
+  `OCAH_OT_ASSERT(hwInfoRuleOnehot_A, req_i & hw_sel |-> $onehot0(unused_rule_match))
   // An input request should lead to an output request if there are no errors
-  `ASSERT(InReqOutReq_A, req_i |-> req_o | no_allowed_txn)
+  `OCAH_OT_ASSERT(InReqOutReq_A, req_i |-> req_o | no_allowed_txn)
   // An Info request should not lead to data requests
-  `ASSERT(InfoReqToData_A, req_i & info_part_sel |-> ~|{data_en,
+  `OCAH_OT_ASSERT(InfoReqToData_A, req_i & info_part_sel |-> ~|{data_en,
                                                         data_rd_en,
                                                         data_prog_en,
                                                         data_pg_erase_en})
   // A data request should not lead to info requests
-  `ASSERT(DataReqToInfo_A, req_i & data_part_sel |->
+  `OCAH_OT_ASSERT(DataReqToInfo_A, req_i & data_part_sel |->
     ~|{info_en,
     info_rd_en,
     info_prog_en,
@@ -356,18 +356,18 @@ import flash_ctrl_reg_pkg::*; (
     info_bk_erase_en})
 
   // If a bank erase request only selects data, then info should be erased
-  `ASSERT(BankEraseData_A, req_i & bk_erase_i & |bk_erase_en & data_part_sel |-> data_bk_erase_en &
+  `OCAH_OT_ASSERT(BankEraseData_A, req_i & bk_erase_i & |bk_erase_en & data_part_sel |-> data_bk_erase_en &
           ~info_bk_erase_en)
 
   // If a bank erase request also selects the info partition, then both data
   // and info must be erased
-  `ASSERT(BankEraseInfo_A, req_i & bk_erase_i & |bk_erase_en & info_part_sel |-> &{data_bk_erase_en,
+  `OCAH_OT_ASSERT(BankEraseInfo_A, req_i & bk_erase_i & |bk_erase_en & info_part_sel |-> &{data_bk_erase_en,
                                                                     info_bk_erase_en})
 
   // When no transactions are allowed, the output request should always be 0.
   // The assertion is disabled during escalation since req_o takes a few cycles to
   // go to 0 if escalation is asserted mid transaction.
-  `ASSERT(NoReqWhenErr_A, no_allowed_txn |-> ~req_o,
+  `OCAH_OT_ASSERT(NoReqWhenErr_A, no_allowed_txn |-> ~req_o,
       clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i))
 
   // This signal is only used in the assertion above.

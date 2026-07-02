@@ -198,9 +198,9 @@ module spi_p2s
   ////////////////
 
   // Right after reset (CSb assert), the io_mode_i shall be Single IO
-  `ASSERT(IoModeDefault_A, $rose(rst_ni) |-> io_mode_i == SingleIO, clk_i, 0)
+  `OCAH_OT_ASSERT(IoModeDefault_A, $rose(rst_ni) |-> io_mode_i == SingleIO, clk_i, 0)
 
   // io_mode shall be changed when bit 0.
-  `ASSERT(IoModeChangeValid_A, $changed(io_mode_i) |-> first_beat)
+  `OCAH_OT_ASSERT(IoModeChangeValid_A, $changed(io_mode_i) |-> first_beat)
 
 endmodule : spi_p2s

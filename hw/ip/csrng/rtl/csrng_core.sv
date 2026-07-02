@@ -1023,14 +1023,14 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // Assertions
   //--------------------------------------------
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   logic state_db_zeroize;
   assign state_db_zeroize = state_db_wr_vld && (ctr_drbg_rsp_data.cmd == UNI);
-  `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (ctr_drbg_rsp_data.fips   == '0))
-  `ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (ctr_drbg_rsp_data.key    == '0))
-  `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (ctr_drbg_rsp_data.v      == '0))
-  `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (ctr_drbg_rsp_data.rs_ctr == '0))
-  `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (ctr_drbg_rsp_sts == CMD_STS_SUCCESS))
+  `OCAH_OT_ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (ctr_drbg_rsp_data.fips   == '0))
+  `OCAH_OT_ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (ctr_drbg_rsp_data.key    == '0))
+  `OCAH_OT_ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (ctr_drbg_rsp_data.v      == '0))
+  `OCAH_OT_ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (ctr_drbg_rsp_data.rs_ctr == '0))
+  `OCAH_OT_ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (ctr_drbg_rsp_sts == CMD_STS_SUCCESS))
 `endif
 
 endmodule // csrng_core

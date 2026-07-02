@@ -1173,15 +1173,15 @@ module ibex_icache import ibex_pkg::*; #(
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(size_param_legal, (IC_LINE_SIZE > 32))
+  `OCAH_OT_ASSERT_INIT(size_param_legal, (IC_LINE_SIZE > 32))
 
   // ECC primitives will need to be changed for different sizes
-  `ASSERT_INIT(ecc_tag_param_legal, (IC_TAG_SIZE <= 27))
-  `ASSERT_INIT(ecc_data_param_legal, !ICacheECC || (BUS_SIZE == 32))
+  `OCAH_OT_ASSERT_INIT(ecc_tag_param_legal, (IC_TAG_SIZE <= 27))
+  `OCAH_OT_ASSERT_INIT(ecc_data_param_legal, !ICacheECC || (BUS_SIZE == 32))
 
   // Lookups in the tag ram should always give a known result
-  `ASSERT_KNOWN(TagHitKnown,     lookup_valid_ic1 & tag_hit_ic1)
-  `ASSERT_KNOWN(TagInvalidKnown, lookup_valid_ic1 & tag_invalid_ic1)
+  `OCAH_OT_ASSERT_KNOWN(TagHitKnown,     lookup_valid_ic1 & tag_hit_ic1)
+  `OCAH_OT_ASSERT_KNOWN(TagInvalidKnown, lookup_valid_ic1 & tag_invalid_ic1)
 
   // This is only used for the Yosys-based formal flow. Once we have working bind support, we can
   // get rid of it.

@@ -35,7 +35,7 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
     list_of_alerts = pwrmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(csr_base_addr);
     num_interrupts = ral.intr_state.get_n_used_bits();
-    `ASSERT_I(NumInstrMatch_A, num_interrupts == NUM_INTERRUPTS)
+    `OCAH_OT_ASSERT_I(NumInstrMatch_A, num_interrupts == NUM_INTERRUPTS)
     `uvm_info(`gfn, $sformatf("num_interrupts = %0d", num_interrupts), UVM_MEDIUM)
 
     // pwrmgr_tl_intg_err test uses default alert name "fata_fault"

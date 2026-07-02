@@ -250,7 +250,7 @@ module mbx_hostif
   assign hw2reg.doe_intr_msg_data.d  = sysif_intr_msg_data_i;
 
   // Assertions
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_regs_core,
                                                  alert_tx_o[0])
 endmodule

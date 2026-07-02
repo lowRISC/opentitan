@@ -340,7 +340,7 @@ module otbn_mac_bignum_fsm
                                                            CycleCountWidth'(LatencyVec));
 
   // To be disabled when testing the out of bound check alert.
-  `ASSERT(CurrentCycleIsInBounds_A, !current_cycle_oob, clk_i, !rst_ni || !mac_en_i)
+  `OCAH_OT_ASSERT(CurrentCycleIsInBounds_A, !current_cycle_oob, clk_i, !rst_ni || !mac_en_i)
 
   assign state_err_o = current_cycle_oob;
 
@@ -380,7 +380,7 @@ module otbn_mac_bignum_fsm
   //////////////////////
   // Alert assertions //
   //////////////////////
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
@@ -388,7 +388,7 @@ module otbn_mac_bignum_fsm
   // to how it is checked that errors from prim blocks result in an alert. This unused signal is
   // connected / used if such an assertion is present, ensuring the assertion is not forgotten.
   logic unused_assert_connected;
-  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
+  `OCAH_OT_ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
 `endif
 
 endmodule

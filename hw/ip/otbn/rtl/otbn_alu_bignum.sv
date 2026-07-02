@@ -210,7 +210,7 @@ module otbn_alu_bignum
     .out_o(selected_flags)
   );
 
-  `ASSERT(BlankingSelectedFlags_A, expected_flag_group_sel == '0 |-> selected_flags == '0, clk_i,
+  `OCAH_OT_ASSERT(BlankingSelectedFlags_A, expected_flag_group_sel == '0 |-> selected_flags == '0, clk_i,
     !rst_ni || alu_predec_error_o  || !operation_commit_i)
 
   logic                  flag_mux_in [FlagsWidth];
@@ -236,7 +236,7 @@ module otbn_alu_bignum
     .out_o(selection_flag_o)
   );
 
-  `ASSERT(BlankingSelectionFlag_A, expected_flag_sel == '0 |-> selection_flag_o == '0, clk_i,
+  `OCAH_OT_ASSERT(BlankingSelectionFlag_A, expected_flag_sel == '0 |-> selection_flag_o == '0, clk_i,
     !rst_ni || alu_predec_error_o  || !operation_commit_i)
 
   //////////////////
@@ -245,7 +245,7 @@ module otbn_alu_bignum
 
   // Flags are only updated for regular 256b operations.
   // Vectorized operations do not update the flags.
-  `ASSERT(VecAndModAndRshiOpsNoFlagUpdate_A,
+  `OCAH_OT_ASSERT(VecAndModAndRshiOpsNoFlagUpdate_A,
           operation_i.op inside {AluOpBignumAddv, AluOpBignumSubv,
                                  AluOpBignumAddm, AluOpBignumAddvm,
                                  AluOpBignumSubm, AluOpBignumSubvm,
@@ -446,7 +446,7 @@ module otbn_alu_bignum
       endcase
     end
 
-    `ASSERT(ModWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
+    `OCAH_OT_ASSERT(ModWrSelOneHot, $onehot0({ispr_init_i, ispr_base_wr_en_i[i_word]}))
 
     assign mod_ispr_wr_en[i_word] = (ispr_addr_i == IsprMod)                          &
                                     (ispr_base_wr_en_i[i_word] | ispr_bignum_wr_en_i) &
@@ -563,15 +563,15 @@ module otbn_alu_bignum
       ispr_bignum_predec_i.ispr_rd_en[IsprRnd]};
 
   // If we're reading from an ISPR we must be using the ispr_rdata_intg_mux
-  `ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
+  `OCAH_OT_ASSERT(IsprRDataIntgMuxSelIfIsprRd_A,
     |ispr_bignum_predec_i.ispr_rd_en |-> |ispr_rdata_intg_mux_sel)
 
   // If we're reading from MOD or ACC we must not take the read data from the calculated integrity
   // path
-  `ASSERT(IsprModMustTakeIntg_A,
+  `OCAH_OT_ASSERT(IsprModMustTakeIntg_A,
     ispr_bignum_predec_i.ispr_rd_en[IsprMod] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
-  `ASSERT(IsprAccMustTakeIntg_A,
+  `OCAH_OT_ASSERT(IsprAccMustTakeIntg_A,
     ispr_bignum_predec_i.ispr_rd_en[IsprAcc] |-> !ispr_rdata_intg_mux_sel[IsprNoIntg])
 
 
@@ -1161,7 +1161,7 @@ module otbn_alu_bignum
   // pushed through the modulo result selector.
   assign operation_result_o = arithmetic_result | unpacked_res | logical_res | vec_transposer_res;
 
-  `ASSERT(OnlyOneResultActive_A,
+  `OCAH_OT_ASSERT(OnlyOneResultActive_A,
           $onehot0({|arithmetic_result,
                     |unpacked_res,
                     |logical_res,
@@ -1210,12 +1210,12 @@ module otbn_alu_bignum
   logic mod_used;
   assign mod_used = operation_valid_i & (operation_i.op != AluOpBignumNone) &
                     !alu_bignum_predec_i.shift_mod_sel & adder_y_res_used;
-  `ASSERT_KNOWN(ModUsed_A, mod_used)
+  `OCAH_OT_ASSERT_KNOWN(ModUsed_A, mod_used)
 
   // Raise a register integrity violation error iff `mod_intg_q` is used and (at least partially)
   // invalid.
   assign reg_intg_violation_err_o = mod_used & |(mod_intg_err);
-  `ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
+  `OCAH_OT_ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
 
   // Detect and signal unexpected secure wipe signals.
   assign sec_wipe_err_o = sec_wipe_mod_urnd_i & ~sec_wipe_running_i;
@@ -1226,23 +1226,23 @@ module otbn_alu_bignum
   // of an error.
 
   // adder_x_res related blanking
-  `ASSERT(BlankingBignumAluXOp_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluXOp_A,
           !expected_adder_x_en
           |-> {adder_x_op_a_blanked, adder_x_op_b_blanked, adder_x_res, adder_x_carries_out} == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // adder_y_res related blanking
-  `ASSERT(BlankingBignumAluYOpA_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluYOpA_A,
           !expected_adder_y_op_a_en |-> adder_y_op_a_blanked == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
-  `ASSERT(BlankingBignumAluYOpShft_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluYOpShft_A,
           !expected_adder_y_op_shifter_en |-> adder_y_op_shifter_res_blanked == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // Adder Y must be blanked when its result is not used, with one exception: For `BN.SUBM` and
   // `BN.SUBVM` with `a >= b` (thus the result of Adder X has the carry bit set), the result of
   // Adder Y is not used but it cannot be blanked solely based on the carry bit.
-  `ASSERT(BlankingBignumAluYResUsed_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluYResUsed_A,
           !adder_y_res_used &&
           !((operation_i.op == AluOpBignumSubm || operation_i.op == AluOpBignumSubvm)
             && !arithmetic_result_used_adder_y)
@@ -1250,49 +1250,49 @@ module otbn_alu_bignum
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // shifter_res related blanking
-  `ASSERT(BlankingBignumAluShftA_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluShftA_A,
           (expected_shift_op_a_sel == '0) |-> shifter_in_upper == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
-  `ASSERT(BlankingBignumAluShftB_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluShftB_A,
           (expected_shift_op_b_sel == '0) |-> shifter_in_lower == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
-  `ASSERT(BlankingBignumAluShftRes_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluShftRes_A,
           (expected_shift_op_a_sel == '0) && (expected_shift_op_b_sel == '0) |-> shifter_res == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // logical_res related blanking
-  `ASSERT(BlankingBignumAluLogicOpA_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluLogicOpA_A,
           !expected_logic_a_en |-> logical_op_a_blanked == '0,
           clk_i, !rst_ni || alu_predec_error_o  || !operation_commit_i)
 
-  `ASSERT(BlankingBignumAluLogicShft_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluLogicShft_A,
           !expected_logic_shifter_en |-> logical_op_shifter_res_blanked == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
-  `ASSERT(BlankingBignumAluLogicRes_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluLogicRes_A,
           !(expected_logic_a_en || expected_logic_shifter_en) |-> logical_res == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // Vector transposer related blanking
-  `ASSERT(BlankingBignumAluVecTrn_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluVecTrn_A,
           !expected_trn_en
           |-> {vec_transposer_op_a_blanked, vec_transposer_op_b_blanked} == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // Vector unpack related blanking
-  `ASSERT(BlankingBignumAluVecUnpk_A,
+  `OCAH_OT_ASSERT(BlankingBignumAluVecUnpk_A,
           !(expected_unpack_shifter_en) |-> unpacked_res == '0,
           clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // MOD ISPR Blanking
-  `ASSERT(BlankingIsprMod_A,
+  `OCAH_OT_ASSERT(BlankingIsprMod_A,
           !(|mod_wr_en) |-> ispr_mod_bignum_wdata_intg_blanked == '0,
           clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
   // ACC ISPR Blanking
-  `ASSERT(BlankingIsprACC_A,
+  `OCAH_OT_ASSERT(BlankingIsprACC_A,
           !(|ispr_acc_wr_en_o) |-> ispr_acc_bignum_wdata_intg_blanked == '0,
           clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 

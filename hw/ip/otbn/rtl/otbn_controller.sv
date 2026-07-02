@@ -542,10 +542,10 @@ module otbn_controller
     .q_o(state_error_q)
   );
 
-  `ASSERT(InsnAlwaysValidInStall, state_q == OtbnStateStall |-> insn_valid_i)
+  `OCAH_OT_ASSERT(InsnAlwaysValidInStall, state_q == OtbnStateStall |-> insn_valid_i)
 
   // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
-  `ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
+  `OCAH_OT_ASSERT(StallIfNextStateStall, insn_valid_i & (state_d == OtbnStateStall) |-> stall)
 
   // The raw signal is needed by the instruction fetch stage for generating instruction address
   // errors (where instruction fetch and prefetch disagree on address). `err` will factor this in so
@@ -682,19 +682,19 @@ module otbn_controller
   // Instructions must not execute if there is an error
   assign insn_executing = insn_valid_i & ~err;
 
-  `ASSERT(ErrBitSetOnErr,
+  `OCAH_OT_ASSERT(ErrBitSetOnErr,
       err & (mubi4_test_false_strict(fatal_escalate_en_i) &
              mubi4_test_false_strict(recov_escalate_en_i) &
              mubi4_test_false_loose(rma_req_i)) |=>
           err_bits_o)
-  `ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
-  `ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
+  `OCAH_OT_ASSERT(ErrSetOnFatalErr, fatal_err |-> err)
+  `OCAH_OT_ASSERT(SoftwareErrIfNonInsnAddrSoftwareErr, non_insn_addr_software_err |-> software_err)
 
-  `ASSERT(ControllerStateValid,
+  `OCAH_OT_ASSERT(ControllerStateValid,
           state_q inside {OtbnStateHalt, OtbnStateRun, OtbnStateStall, OtbnStateLocked})
   // Branch only takes effect in OtbnStateRun so must not go into stall state for branch
   // instructions.
-  `ASSERT(NoStallOnBranch,
+  `OCAH_OT_ASSERT(NoStallOnBranch,
       insn_valid_i & insn_dec_shared_i.branch_insn |-> state_q != OtbnStateStall)
 
   // SEC_CM: CONTROLLER.FSM.SPARSE
@@ -1075,7 +1075,7 @@ module otbn_controller
   // - When executing a selection instruction, programmers can expected that there will be some SCA
   //   leakage between the two options. But it may be much less expected for such leakage to occur
   //   for other instructions.
-  `ASSERT(SelFlagValid, insn_valid_i & insn_dec_bignum_i.sel_insn |->
+  `OCAH_OT_ASSERT(SelFlagValid, insn_valid_i & insn_dec_bignum_i.sel_insn |->
     insn_dec_bignum_i.alu_sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
 
   // SEC_CM: DATA_REG_SW.SCA
@@ -1085,7 +1085,7 @@ module otbn_controller
     .out_o(rf_bignum_rd_data_b_intg_blanked)
   );
 
-  `ASSERT(BlankingBignumRdDataBSel,
+  `OCAH_OT_ASSERT(BlankingBignumRdDataBSel,
     ~(insn_valid_i & insn_dec_bignum_i.sel_insn) |-> rf_bignum_rd_data_b_intg_blanked == '0,
     clk_i, !rst_ni || ctrl_predec_error || !insn_executing)
 
@@ -1379,7 +1379,7 @@ module otbn_controller
 
   assign ispr_rdata_intg_err = non_prefetch_insn_running & |(ispr_rdata_used_intg_err);
 
-  `ASSERT_KNOWN(IsprRdataIntgErrKnown_A, ispr_rdata_intg_err)
+  `OCAH_OT_ASSERT_KNOWN(IsprRdataIntgErrKnown_A, ispr_rdata_intg_err)
 
   for (genvar i_bit = 0; i_bit < 32; i_bit++) begin : g_csr_rdata_mux
     for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_csr_rdata_mux_inner
@@ -1420,7 +1420,7 @@ module otbn_controller
 
   // ISPR RS (read and set) must not be combined with ISPR RD or WR (read or write). ISPR RD and
   // WR (read and write) is allowed.
-  `ASSERT(NoIsprRorWAndRs, insn_valid_i |-> ~(insn_dec_shared_i.ispr_rs_insn   &
+  `OCAH_OT_ASSERT(NoIsprRorWAndRs, insn_valid_i |-> ~(insn_dec_shared_i.ispr_rs_insn   &
                                               (insn_dec_shared_i.ispr_rd_insn |
                                                insn_dec_shared_i.ispr_wr_insn)))
 
@@ -1572,7 +1572,7 @@ module otbn_controller
   );
 
   // Check stability property described above (see the lsu_addr_saved_sel signal) holds.
-  `ASSERT(LsuAddrBlankedStable_A, insn_valid_i & stall & ~err |=> $stable(lsu_addr_blanked))
+  `OCAH_OT_ASSERT(LsuAddrBlankedStable_A, insn_valid_i & stall & ~err |=> $stable(lsu_addr_blanked))
 
   assign lsu_addr_o = lsu_addr_blanked;
 

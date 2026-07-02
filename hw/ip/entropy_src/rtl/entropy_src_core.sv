@@ -1097,7 +1097,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          {1'b0,
           (sfifo_esrng_pop && !sfifo_esrng_not_empty),
           (sfifo_esrng_full && !sfifo_esrng_not_empty) || sfifo_esrng_int_err};
-  `ASSERT(RngBackpressureNotAllowed_A, sfifo_esrng_push |-> sfifo_esrng_not_full)
+  `OCAH_OT_ASSERT(RngBackpressureNotAllowed_A, sfifo_esrng_push |-> sfifo_esrng_not_full)
 
   // Read the health test data from the esrng FIFO.
   assign health_test_esbus = sfifo_esrng_rdata;
@@ -1202,7 +1202,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Window sizes other than 384 bits (the seed length) are currently not tested nor supported in
   // bypass or boot-time mode.
-  `ASSERT(EsBootTimeHtWindowSizeSupported_A,
+  `OCAH_OT_ASSERT(EsBootTimeHtWindowSizeSupported_A,
       main_sm_enable && es_bypass_mode && !fw_ov_mode_entropy_insert
       |-> health_test_bypass_window == HalfRegWidth'(SeedLen))
 
@@ -2697,7 +2697,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // output signal is not sufficient. The only exception is when the pipeline is entirely full.
   logic [PostHTFifoDepthW-1:0] unused_pfifo_postht_depth;
   assign unused_pfifo_postht_depth = pfifo_postht_depth;
-  `ASSERT(PosthtFifoEmptyWhenHtDonePulse_A, main_sm_done_pulse |-> pfifo_postht_depth == '0 ||
+  `OCAH_OT_ASSERT(PosthtFifoEmptyWhenHtDonePulse_A, main_sm_done_pulse |-> pfifo_postht_depth == '0 ||
       !pfifo_postht_not_full && sfifo_distr_full)
 
   // Pipeline depth computation
@@ -2712,7 +2712,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // pulse is signaled, meaning there are 1 (postht FIFO) + DistrFifoDepth + 2 (precon FIFO)
   // number of 32-bit words in the pipeline. As a consequence, this number needs to be divisible
   // by two and the distribution FIFO depth needs to be an odd number.
-  `ASSERT_INIT(DistrFifoDepthOdd_A, DistrFifoDepth % 2 == 1)
+  `OCAH_OT_ASSERT_INIT(DistrFifoDepthOdd_A, DistrFifoDepth % 2 == 1)
 
   logic                      pipeline_depth_cntr_set;
   logic                      pipeline_depth_cntr_decr_en;
@@ -3122,12 +3122,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
   // Assertions
   //--------------------------------------------
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
 `include "prim_macros.svh"
 
   // Assert that we request high quality entropy only when the rng_fips field of the conf register
   // is set to Mubi4True.
-  `ASSERT(RngFipsOutputHighInFipsMode_A,
+  `OCAH_OT_ASSERT(RngFipsOutputHighInFipsMode_A,
           prim_mubi_pkg::mubi4_test_true_loose(mubi4_t'(reg2hw.conf.rng_fips.q)) === rng_fips_o)
 
   // Count number of disables since last reset.
@@ -3169,7 +3169,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Assert that as many bits got pushed into the esrng FIFO (destination) as there were valid RNG
   // input bits (source).  RngBusWidth bits may get lost after every re-enable; add a margin to
   // account for that.
-  `ASSERT_AT_RESET_AND_FINAL(ValidRngBitsPushedIntoEsrngFifo_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(ValidRngBitsPushedIntoEsrngFifo_A,
                              `WITHIN_MARGIN(esrng_push_bit_cnt_q,        // actual
                                             rng_valid_bit_cnt_q,         // expected
                                             disable_cnt_q * RngBusWidth, // allowed less
@@ -3200,7 +3200,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // into the esbit FIFO for every pop from the esrng FIFO.  Add a margin (allowed less) because:
   // - RngBusWidth bits may get lost after every re-enable
   // - one entry may just have been pushed into esrng FIFO when the assertion gets evaluated.
-  `ASSERT_AT_RESET_AND_FINAL(EsrngFifoPushedIntoEsbitOrPosthtFifos_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(EsrngFifoPushedIntoEsbitOrPosthtFifos_A,
                              `WITHIN_MARGIN((esbit_push_bit_cnt_q * RngBusWidth +
                                              postht_from_esrng_push_bit_cnt_q), // actual
                                             esrng_push_bit_cnt_q,               // expected
@@ -3218,7 +3218,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // (source) when the latter was selected as source.  Add a margin (allowed less) because:
   // - RngBusWidth bits may get lost after every re-enable
   // - esbit FIFO may be partially full when the assertion gets evaluated.
-  `ASSERT_AT_RESET_AND_FINAL(EsbitFifoPushedIntoPosthtFifo_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(EsbitFifoPushedIntoPosthtFifo_A,
                              `WITHIN_MARGIN(postht_from_esbit_push_bit_cnt_q,      // actual
                                             esbit_push_bit_cnt_q,                  // expected
                                             (disable_cnt_q + 1) * RngBusWidth - 1, // allowed less
@@ -3227,7 +3227,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Assert that as many bits got pushed into the postht FIFO as got counted from the esrng FIFO or
   // the esbit FIFO.  This assertion checks more the completeness of the other assertions than the
   // design itself.
-  `ASSERT_AT_RESET_AND_FINAL(PosthtFifoPushedFromEsbitOrEsrngFifos_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(PosthtFifoPushedFromEsbitOrEsrngFifos_A,
                              postht_push_bit_cnt_q == (postht_from_esrng_push_bit_cnt_q +
                                                        postht_from_esbit_push_bit_cnt_q))
 
@@ -3248,7 +3248,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Assert that as many bits got pushed into the distr FIFO (destination) as got popped from the
   // postht FIFO when bypass mode was disabled (source).
-  `ASSERT_AT_RESET_AND_FINAL(PosthtFifoPushedIntoDistrFifo_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(PosthtFifoPushedIntoDistrFifo_A,
                              distr_non_bypass_push_bit_cnt_q == postht_non_bypass_pop_bit_cnt_q)
 
   // Count number of bits popped from distr FIFO (DistrFifoWidth wide output) when bypass mode was
@@ -3268,7 +3268,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Assert that as many bits got pushed into the precon FIFO (destination) as got popped from the
   // distr FIFO when bypass mode was disabled (source).
-  `ASSERT_AT_RESET_AND_FINAL(DistrFifoPushedIntoPreconFifo_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(DistrFifoPushedIntoPreconFifo_A,
                              precon_push_bit_cnt_q == distr_non_bypass_pop_bit_cnt_q)
 
   // Track when boot and startup checks are completing.
@@ -3341,7 +3341,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       esfinal_post_startup_push_bit_cnt_q;
 
   // Assert that all bits pushed into the esfinal FIFO came from or after passed startup checks.
-  `ASSERT_AT_RESET_AND_FINAL(EsfinalFifoPushed_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(EsfinalFifoPushed_A,
                              esfinal_non_bypass_push_cnt_q == esfinal_post_startup_push_bit_cnt_q)
 
   // Track result of health tests after boot and startup tests.
@@ -3370,7 +3370,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
         ht_state_d = HtStNoResult;
       end
       if (ht_state_q == HtStFailed) begin
-        `ASSERT_I(NoPushAfterFailedHealthTest_A, rst_ni !== 1'b1 || !main_stage_push_raw)
+        `OCAH_OT_ASSERT_I(NoPushAfterFailedHealthTest_A, rst_ni !== 1'b1 || !main_stage_push_raw)
       end
     end
     // If not enabled, always clear to no result.
@@ -3409,22 +3409,22 @@ module entropy_src_core import entropy_src_pkg::*; #(
       logic [63:0] diff_;
       diff_ = precon_post_startup_push_bit_cnt_q - precon_post_startup_exp_push_bit_cnt_q;
       // Assert that the difference is not negative.
-      `ASSERT_I(PreconPostStartupDiffNonNegative_A,
+      `OCAH_OT_ASSERT_I(PreconPostStartupDiffNonNegative_A,
                 rst_ni !== 1'b1 || (precon_post_startup_push_bit_cnt_q >=
                                     precon_post_startup_exp_push_bit_cnt_q))
       // Assert that the difference is smaller than the number of bits that would have sufficed to
       // get pushed into the conditioner.
-      `ASSERT_I(PreconPostStartupDiffSmall_A, rst_ni !== 1'b1 || diff_ < health_test_window)
+      `OCAH_OT_ASSERT_I(PreconPostStartupDiffSmall_A, rst_ni !== 1'b1 || diff_ < health_test_window)
       precon_post_startup_exp_push_bit_cnt_d += diff_;
     end
   end
   // This code assumes that `health_test_window` does not change dynamically; capture that in an
   // assertion ensuring it only changes when entropy_src is not enabled.
-  `ASSERT(HealthTestWindowStableWhenEnabled_A,
+  `OCAH_OT_ASSERT(HealthTestWindowStableWhenEnabled_A,
           mubi4_test_true_strict(mubi_es_enable) |-> $stable(health_test_window))
 
   // Assert that all bits pushed into the esfinal FIFO after startup checks were expected.
-  `ASSERT_AT_RESET_AND_FINAL(EsfinalFifoPushedPostStartup_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(EsfinalFifoPushedPostStartup_A,
                              esfinal_post_startup_push_bit_cnt_q ==
                              esfinal_post_startup_exp_push_bit_cnt_q)
 
@@ -3434,7 +3434,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // FIFO have not resulted in conditioner output and Entropy Source has not been disabled.
   logic [63:0] ppspb_allowed_more;
   assign ppspb_allowed_more = bsc_state_q != BscStIncomplete ? health_test_window : '0;
-  `ASSERT_AT_RESET_AND_FINAL(PreconFifoPushedPostStartup_A,
+  `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(PreconFifoPushedPostStartup_A,
                              `WITHIN_MARGIN(precon_post_startup_push_bit_cnt_q,     // actual
                                             precon_post_startup_exp_push_bit_cnt_q, // expected
                                             0,                                      // allowed less

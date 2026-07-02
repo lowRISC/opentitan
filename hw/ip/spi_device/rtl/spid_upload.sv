@@ -300,7 +300,7 @@ module spid_upload
   // get the event.
 
   logic sck_cmdfifo_set, sys_cmdfifo_set;
-  `ASSERT(CmdFifoPush_A,
+  `OCAH_OT_ASSERT(CmdFifoPush_A,
           cmdfifo_wvalid && cmdfifo_wready |=> cmdfifo_depth != 0,
           clk_i, !sys_rst_ni)
 
@@ -711,12 +711,12 @@ module spid_upload
   ///////////////
 
   // As SCK fifo control can't handle the full condition. Assume the wready
-  `ASSUME(CmdFifoNeverFull_M,  cmdfifo_wvalid  |-> cmdfifo_wready)
-  `ASSUME(AddrFifoNeverFull_M, addrfifo_wvalid |-> addrfifo_wready)
-  `ASSUME(PayloadNeverFull_M,  payload_wvalid  |-> payload_wready)
+  `OCAH_OT_ASSUME(CmdFifoNeverFull_M,  cmdfifo_wvalid  |-> cmdfifo_wready)
+  `OCAH_OT_ASSUME(AddrFifoNeverFull_M, addrfifo_wvalid |-> addrfifo_wready)
+  `OCAH_OT_ASSUME(PayloadNeverFull_M,  payload_wvalid  |-> payload_wready)
 
   // Assert FIFO wvalid onehot0
-  `ASSERT(FifosOnlyOneValid_A,
+  `OCAH_OT_ASSERT(FifosOnlyOneValid_A,
     $onehot0({cmdfifo_wvalid, addrfifo_wvalid, payload_wvalid}))
 
   // Sram Arbiter does not have a push back mechanism. Assume grant is always 1

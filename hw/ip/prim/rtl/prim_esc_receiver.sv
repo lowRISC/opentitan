@@ -265,30 +265,30 @@ module prim_esc_receiver
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(EscEnKnownO_A, esc_req_o)
-  `ASSERT_KNOWN(RespPKnownO_A, esc_rx_o)
+  `OCAH_OT_ASSERT_KNOWN(EscEnKnownO_A, esc_req_o)
+  `OCAH_OT_ASSERT_KNOWN(RespPKnownO_A, esc_rx_o)
 
-  `ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_rx_o.resp_p == esc_rx_o.resp_n)
-  `ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt)
+  `OCAH_OT_ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_rx_o.resp_p == esc_rx_o.resp_n)
+  `OCAH_OT_ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt)
   // auto-escalate in case of signal integrity issue
-  `ASSERT(SigIntCheck2_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_req_d)
+  `OCAH_OT_ASSERT(SigIntCheck2_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_req_d)
   // correct diff encoding
-  `ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=> esc_rx_o.resp_p ^ esc_rx_o.resp_n)
+  `OCAH_OT_ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=> esc_rx_o.resp_p ^ esc_rx_o.resp_n)
   // disable in case of signal integrity issue
-  `ASSERT(PingRespCheck_A, state_q == Idle ##1 $rose(esc_tx_i.esc_p) ##1 $fell(esc_tx_i.esc_p) |->
+  `OCAH_OT_ASSERT(PingRespCheck_A, state_q == Idle ##1 $rose(esc_tx_i.esc_p) ##1 $fell(esc_tx_i.esc_p) |->
       $rose(esc_rx_o.resp_p) ##1 $fell(esc_rx_o.resp_p),
       clk_i, !rst_ni || (esc_tx_i.esc_p == esc_tx_i.esc_n))
   // escalation response needs to continuously toggle
-  `ASSERT(EscRespCheck_A, ##1 esc_tx_i.esc_p && $past(esc_tx_i.esc_p) &&
+  `OCAH_OT_ASSERT(EscRespCheck_A, ##1 esc_tx_i.esc_p && $past(esc_tx_i.esc_p) &&
       (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && $past(esc_tx_i.esc_p ^ esc_tx_i.esc_n)
       |=> esc_rx_o.resp_p != $past(esc_rx_o.resp_p))
   // detect escalation pulse
-  `ASSERT(EscEnCheck_A,
+  `OCAH_OT_ASSERT(EscEnCheck_A,
           esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
       ##1 esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_req_d)
   // make sure the counter does not wrap around
-  `ASSERT(EscCntWrap_A, &timeout_cnt |=> timeout_cnt != 0)
+  `OCAH_OT_ASSERT(EscCntWrap_A, &timeout_cnt |=> timeout_cnt != 0)
   // if the counter expires, escalation should be asserted
-  `ASSERT(EscCntEsc_A, &timeout_cnt |-> esc_req_d)
+  `OCAH_OT_ASSERT(EscCntEsc_A, &timeout_cnt |-> esc_req_d)
 
 endmodule : prim_esc_receiver

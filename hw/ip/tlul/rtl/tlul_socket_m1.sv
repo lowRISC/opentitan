@@ -43,7 +43,7 @@ module tlul_socket_m1 #(
   input  tlul_pkg::tl_d2h_t tl_d_i
 );
 
-  `ASSERT_INIT(maxM, M < 16)
+  `OCAH_OT_ASSERT_INIT(maxM, M < 16)
 
 
   // Signals
@@ -98,7 +98,7 @@ module tlul_socket_m1 #(
       reqid_sub
     };
 
-  `ASSERT(idInRange, tl_h_i[i].a_valid |-> tl_h_i[i].a_source[IDW-1 -:STIDW] == '0)
+  `OCAH_OT_ASSERT(idInRange, tl_h_i[i].a_valid |-> tl_h_i[i].a_source[IDW-1 -:STIDW] == '0)
 
     // assign not connected bits to nc_* signal to make lint happy
     logic [IDW-1 : IDW-STIDW] unused_tl_h_source;
@@ -198,7 +198,7 @@ module tlul_socket_m1 #(
       .ready_i   ( arb_ready   )
     );
   end else begin : gen_unknown
-    `ASSERT_INIT(UnknownArbImpl_A, 0)
+    `OCAH_OT_ASSERT_INIT(UnknownArbImpl_A, 0)
   end
 
   logic [  M-1:0] hfifo_rspvalid;
@@ -254,7 +254,7 @@ module tlul_socket_m1 #(
   end
 
   // this assertion fails when rspid[0+:STIDW] not in [0..M-1]
-  `ASSERT(rspIdInRange, drsp_fifo_o.d_valid |->
+  `OCAH_OT_ASSERT(rspIdInRange, drsp_fifo_o.d_valid |->
       drsp_fifo_o.d_source[0+:STIDW] >= 0 && drsp_fifo_o.d_source[0+:STIDW] < M)
 
 endmodule

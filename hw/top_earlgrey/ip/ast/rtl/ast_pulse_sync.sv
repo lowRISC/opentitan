@@ -140,8 +140,8 @@ assign dst_pulse_o = (dst_req ^ dst_req_d);
 ////////////////////
 
 // A new PULSE can only be introduced when source is not BUSY.
-`ASSERT(NewPulseWhenSrcBusy, $rose(src_pulse_i) |-> !src_busy_o, clk_src_i, !rst_src_n)
+`OCAH_OT_ASSERT(NewPulseWhenSrcBusy, $rose(src_pulse_i) |-> !src_busy_o, clk_src_i, !rst_src_n)
 
-`ASSERT(DstPulseCheck_A, dst_pulse_o |=> !dst_pulse_o, clk_dst_i, !rst_dst_n)
+`OCAH_OT_ASSERT(DstPulseCheck_A, dst_pulse_o |=> !dst_pulse_o, clk_dst_i, !rst_dst_n)
 
 endmodule : ast_pulse_sync

@@ -187,9 +187,9 @@ module lc_ctrl_fsm
   // Conditional LC signal outputs
   lc_tx_t lc_clk_byp_req, lc_nvm_rma_req, lc_check_byp_en;
 
-  `ASSERT_KNOWN(LcStateKnown_A,   lc_state_q   )
-  `ASSERT_KNOWN(LcCntKnown_A,     lc_cnt_q     )
-  `ASSERT_KNOWN(FsmStateKnown_A,  fsm_state_q  )
+  `OCAH_OT_ASSERT_KNOWN(LcStateKnown_A,   lc_state_q   )
+  `OCAH_OT_ASSERT_KNOWN(LcCntKnown_A,     lc_cnt_q     )
+  `OCAH_OT_ASSERT_KNOWN(FsmStateKnown_A,  fsm_state_q  )
 
   // Hashed token to compare against.
   logic [1:0] hashed_token_valid_mux;
@@ -847,47 +847,47 @@ module lc_ctrl_fsm
   // Assertions //
   ////////////////
 
-  `ASSERT(EscStaysOnOnceAsserted_A,
+  `OCAH_OT_ASSERT(EscStaysOnOnceAsserted_A,
       lc_tx_test_true_strict(lc_escalate_en_o)
       |=>
       lc_tx_test_true_strict(lc_escalate_en_o))
 
-  `ASSERT(ClkBypStaysOnOnceAsserted_A,
+  `OCAH_OT_ASSERT(ClkBypStaysOnOnceAsserted_A,
       lc_tx_test_true_strict(lc_clk_byp_req_o)
       |=>
       lc_tx_test_true_strict(lc_clk_byp_req_o))
 
-  `ASSERT(NvmRmaStaysOnOnceAsserted_A,
+  `OCAH_OT_ASSERT(NvmRmaStaysOnOnceAsserted_A,
       lc_tx_test_true_strict(lc_nvm_rma_req_o)
       |=>
       lc_tx_test_true_strict(lc_nvm_rma_req_o))
 
-  `ASSERT(NoClkBypInProdStates_A,
+  `OCAH_OT_ASSERT(NoClkBypInProdStates_A,
       lc_state_q inside {LcStProd, LcStProdEnd, LcStDev}
       |=>
       lc_tx_test_false_strict(lc_clk_byp_req_o))
 
-  `ASSERT(SecCmCFITerminal0_A,
+  `OCAH_OT_ASSERT(SecCmCFITerminal0_A,
       fsm_state_q == PostTransSt
       |=>
       fsm_state_q inside {PostTransSt, InvalidSt, EscalateSt})
 
-  `ASSERT(SecCmCFITerminal1_A,
+  `OCAH_OT_ASSERT(SecCmCFITerminal1_A,
       fsm_state_q == ScrapSt
       |=>
       fsm_state_q inside {ScrapSt, InvalidSt, EscalateSt})
 
-  `ASSERT(SecCmCFITerminal2_A,
+  `OCAH_OT_ASSERT(SecCmCFITerminal2_A,
       fsm_state_q == EscalateSt
       |=>
       fsm_state_q == EscalateSt)
 
-  `ASSERT(SecCmCFITerminal3_A,
+  `OCAH_OT_ASSERT(SecCmCFITerminal3_A,
       fsm_state_q == InvalidSt
       |=>
       fsm_state_q inside {InvalidSt, EscalateSt})
 
   // Check that the FSM is linear and does not contain any loops
-  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, fsm_state_q, fsm_state_e)
+  `OCAH_OT_ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, fsm_state_q, fsm_state_e)
 
 endmodule : lc_ctrl_fsm

@@ -490,7 +490,7 @@ module otp_macro
   );
 
   // Currently it is assumed that no wrap arounds can occur.
-  `ASSERT(NoWrapArounds_A, req |-> (addr >= addr_q))
+  `OCAH_OT_ASSERT(NoWrapArounds_A, req |-> (addr >= addr_q))
 
   //////////
   // Regs //
@@ -529,38 +529,38 @@ module otp_macro
   ////////////////
 
   // Check that the otp_ctrl FSMs only issue legal commands to the wrapper.
-  `ASSERT(CheckCommands0_A, state_q == ResetSt && otp_i.valid && otp_o.ready |-> otp_i.cmd == Init)
-  `ASSERT(CheckCommands1_A, state_q != ResetSt && otp_i.valid && otp_o.ready
+  `OCAH_OT_ASSERT(CheckCommands0_A, state_q == ResetSt && otp_i.valid && otp_o.ready |-> otp_i.cmd == Init)
+  `OCAH_OT_ASSERT(CheckCommands1_A, state_q != ResetSt && otp_i.valid && otp_o.ready
       |-> otp_i.cmd inside {Read, ReadRaw, Write, WriteRaw, Zeroize})
 
   // Check all parameters are as expected.
-  `ASSERT_INIT(WidthMatches_A, Width == otp_ctrl_macro_pkg::OtpWidth)
-  `ASSERT_INIT(DepthMatches_A, Depth == otp_ctrl_macro_pkg::OtpDepth)
-  `ASSERT_INIT(SizeWidthMatches_A, SizeWidth == otp_ctrl_macro_pkg::OtpSizeWidth)
-  `ASSERT_INIT(VendorTestOffsetMatches_A, VendorTestOffset == otp_ctrl_reg_pkg::VendorTestOffset)
-  `ASSERT_INIT(VendorTestSizeMatches_A, VendorTestSize == otp_ctrl_reg_pkg::VendorTestSize)
+  `OCAH_OT_ASSERT_INIT(WidthMatches_A, Width == otp_ctrl_macro_pkg::OtpWidth)
+  `OCAH_OT_ASSERT_INIT(DepthMatches_A, Depth == otp_ctrl_macro_pkg::OtpDepth)
+  `OCAH_OT_ASSERT_INIT(SizeWidthMatches_A, SizeWidth == otp_ctrl_macro_pkg::OtpSizeWidth)
+  `OCAH_OT_ASSERT_INIT(VendorTestOffsetMatches_A, VendorTestOffset == otp_ctrl_reg_pkg::VendorTestOffset)
+  `OCAH_OT_ASSERT_INIT(VendorTestSizeMatches_A, VendorTestSize == otp_ctrl_reg_pkg::VendorTestSize)
 
-  `ASSERT_KNOWN(OtpAstPwrSeqKnown_A, pwr_seq_o)
-  `ASSERT_KNOWN(OtpMacroTlOutKnown_A, prim_tl_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpAstPwrSeqKnown_A, pwr_seq_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpMacroTlOutKnown_A, prim_tl_o)
 
   // Assertions for countermeasures inside otp_macro are done in three parts
   // - Assert invalid conditions propagate to otp_o.fatal_alert
   // - Check that otp_o.fatal_alert is connected to u_otp_ctrl.otp_macro_i as a connectivity check
   // - Check that u_otp_ctrl.otp_macro_i is connected to u_otp_ctrl.alert_tx_o[3]
-  `ASSERT_ERROR_TRIGGER_ERR(PrimFsmCheck_A, u_state_regs, otp_o.fatal_alert, 0,
-      `_SEC_CM_ALERT_MAX_CYC, unused_err_o, `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
-  `ASSUME_FPV(PrimFsmCheck_ATriggerAfterAlertInit_S,
+  `OCAH_OT_ASSERT_ERROR_TRIGGER_ERR(PrimFsmCheck_A, u_state_regs, otp_o.fatal_alert, 0,
+      `_SEC_CM_ALERT_MAX_CYC, unused_err_o, `OCAH_OT_ASSERT_DEFAULT_CLK, `OCAH_OT_ASSERT_DEFAULT_RST)
+  `OCAH_OT_ASSUME_FPV(PrimFsmCheck_ATriggerAfterAlertInit_S,
               $stable(rst_ni) == 0 |-> u_state_regs.unused_err_o == 0 [*10])
 
-  `ASSERT_ERROR_TRIGGER_ERR(TlLcGateFsm_A, u_tlul_lc_gate.u_state_regs, otp_o.fatal_lc_fsm_err, 0,
-      `_SEC_CM_ALERT_MAX_CYC, unused_err_o, `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
-  `ASSUME_FPV(TlLcGateFsm_ATriggerAfterAlertInit_S,
+  `OCAH_OT_ASSERT_ERROR_TRIGGER_ERR(TlLcGateFsm_A, u_tlul_lc_gate.u_state_regs, otp_o.fatal_lc_fsm_err, 0,
+      `_SEC_CM_ALERT_MAX_CYC, unused_err_o, `OCAH_OT_ASSERT_DEFAULT_CLK, `OCAH_OT_ASSERT_DEFAULT_RST)
+  `OCAH_OT_ASSUME_FPV(TlLcGateFsm_ATriggerAfterAlertInit_S,
               $stable(rst_ni) == 0 |-> u_tlul_lc_gate.u_state_regs.unused_err_o == 0 [*10])
 
-  `ASSERT_ERROR_TRIGGER_ERR(PrimRegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_ERROR_TRIGGER_ERR(PrimRegWeOnehotCheck_A,
       u_reg_top.u_prim_reg_we_check.u_prim_onehot_check, otp_o.fatal_alert, 0,
-      `_SEC_CM_ALERT_MAX_CYC, err_o, `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
-  `ASSUME_FPV(PrimRegWeOneHotCheck_ATriggerAfterAlertInit_S,
+      `_SEC_CM_ALERT_MAX_CYC, err_o, `OCAH_OT_ASSERT_DEFAULT_CLK, `OCAH_OT_ASSERT_DEFAULT_RST)
+  `OCAH_OT_ASSUME_FPV(PrimRegWeOneHotCheck_ATriggerAfterAlertInit_S,
               $stable(rst_ni) == 0 |-> u_state_regs.err_o == 0 [*10])
 
 endmodule : otp_macro

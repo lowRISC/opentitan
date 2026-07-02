@@ -283,22 +283,22 @@ module mbx_ombx #(
   //////////////////////////////////////////////////////////////////////////////
 
   // When reading from the ombx doe_status.ready must have been asserted
-  `ASSERT_NEVER(ReadyAssertedWhenRead_A, ombx_sram_read_req_o &
+  `OCAH_OT_ASSERT_NEVER(ReadyAssertedWhenRead_A, ombx_sram_read_req_o &
                 ~(first_req_q | sysif_status_ready_i))
   // System write-to-read data is non-posted.  No subsequent read or write comes before the
   // write is ACKed
-  `ASSERT_NEVER(NoReadBeforeWriteAcked_A, ombx_pending_o &
+  `OCAH_OT_ASSERT_NEVER(NoReadBeforeWriteAcked_A, ombx_pending_o &
                 (sysif_read_data_read_valid_i | sysif_read_data_write_valid_i))
   // Never read the SRAM if it is empty
   logic ombx_is_empty;
   assign ombx_is_empty = (sram_read_ptr_q == sram_read_ptr_limit_q);
-  `ASSERT_NEVER(NeverReadWhenEmpty_A, ombx_sram_read_req_o & ombx_is_empty)
+  `OCAH_OT_ASSERT_NEVER(NeverReadWhenEmpty_A, ombx_sram_read_req_o & ombx_is_empty)
   // Never let the read pointer run beyond the limit, but allow the range to be redefined whilst
   // the mailbox is not active
-  `ASSERT_NEVER(NeverRunOutOfLimit_A, |{first_req_q, mbx_read} &
+  `OCAH_OT_ASSERT_NEVER(NeverRunOutOfLimit_A, |{first_req_q, mbx_read} &
                 (sram_read_ptr_q > sram_read_ptr_limit_q))
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   logic[CfgSramAddrWidth-1:0] sram_read_ptr_assert_q;
   prim_flop #(
     .Width(CfgSramAddrWidth)
@@ -310,7 +310,7 @@ module mbx_ombx #(
   );
 
   // A granted read by the host adapter must advance the read pointer
-  `ASSERT_IF(GntMustAdvanceReadPtr_A, advance_read_ptr &
+  `OCAH_OT_ASSERT_IF(GntMustAdvanceReadPtr_A, advance_read_ptr &
              (sram_read_ptr_d == sram_read_ptr_assert_q + LCFG_SRM_ADDRINC),
              ombx_sram_read_gnt_i)
 `endif

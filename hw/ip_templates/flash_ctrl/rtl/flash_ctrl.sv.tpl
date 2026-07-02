@@ -96,7 +96,7 @@ module flash_ctrl
   //////////////////////////////////////////////////////////
   // Double check supplied param is not bigger than allowed
   //////////////////////////////////////////////////////////
-  `ASSERT_INIT(FifoDepthCheck_A, (ProgFifoDepth <= MaxFifoDepth) &
+  `OCAH_OT_ASSERT_INIT(FifoDepthCheck_A, (ProgFifoDepth <= MaxFifoDepth) &
                                  (RdFifoDepth <= MaxFifoDepth))
 
   import prim_mubi_pkg::mubi4_t;
@@ -1376,29 +1376,29 @@ module flash_ctrl
   // Assertions
   /////////////////////////////////
 
-  `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
-  `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
-  `ASSERT_KNOWN_IF(RspPayLoad_A,        core_tl_o, core_tl_o.d_valid)
-  `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
-  `ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_tl_o.a_ready )
-  `ASSERT_KNOWN_IF(PrimRspPayLoad_A,    prim_tl_o, prim_tl_o.d_valid)
-  `ASSERT_KNOWN(MemTlDValidKnownO_A,    mem_tl_o.d_valid )
-  `ASSERT_KNOWN(MemTlAReadyKnownO_A,    mem_tl_o.a_ready )
-  `ASSERT_KNOWN_IF(MemRspPayLoad_A,     mem_tl_o, mem_tl_o.d_valid)
-  `ASSERT_KNOWN(FlashKnownO_A,          {flash_phy_req.req, flash_phy_req.rd,
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
+  `OCAH_OT_ASSERT_KNOWN_IF(RspPayLoad_A,        core_tl_o, core_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
+  `OCAH_OT_ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_tl_o.a_ready )
+  `OCAH_OT_ASSERT_KNOWN_IF(PrimRspPayLoad_A,    prim_tl_o, prim_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(MemTlDValidKnownO_A,    mem_tl_o.d_valid )
+  `OCAH_OT_ASSERT_KNOWN(MemTlAReadyKnownO_A,    mem_tl_o.a_ready )
+  `OCAH_OT_ASSERT_KNOWN_IF(MemRspPayLoad_A,     mem_tl_o, mem_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(FlashKnownO_A,          {flash_phy_req.req, flash_phy_req.rd,
                                          flash_phy_req.prog, flash_phy_req.pg_erase,
                                          flash_phy_req.bk_erase})
-  `ASSERT_KNOWN_IF(FlashAddrKnown_A,    flash_phy_req.addr, flash_phy_req.req)
-  `ASSERT_KNOWN_IF(FlashProgKnown_A,    flash_phy_req.prog_data,
+  `OCAH_OT_ASSERT_KNOWN_IF(FlashAddrKnown_A,    flash_phy_req.addr, flash_phy_req.req)
+  `OCAH_OT_ASSERT_KNOWN_IF(FlashProgKnown_A,    flash_phy_req.prog_data,
     flash_phy_req.prog & flash_phy_req.req)
-  `ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o)
-  `ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o  )
-  `ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )
-  `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
-  `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
-  `ASSERT_KNOWN(IntrErrO_A,             intr_corr_err_o  )
-  `ASSERT_KNOWN(TdoKnown_A,             cio_tdo_o        )
-  `ASSERT(TdoEnIsOne_A,                 cio_tdo_en_o === 1'b1)
+  `OCAH_OT_ASSERT_KNOWN(IntrProgEmptyKnownO_A,  intr_prog_empty_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrProgLvlKnownO_A,    intr_prog_lvl_o  )
+  `OCAH_OT_ASSERT_KNOWN(IntrProgRdFullKnownO_A, intr_rd_full_o   )
+  `OCAH_OT_ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
+  `OCAH_OT_ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
+  `OCAH_OT_ASSERT_KNOWN(IntrErrO_A,             intr_corr_err_o  )
+  `OCAH_OT_ASSERT_KNOWN(TdoKnown_A,             cio_tdo_o        )
+  `OCAH_OT_ASSERT(TdoEnIsOne_A,                 cio_tdo_en_o === 1'b1)
 
   // combined indication that an operation has started
   // This is used only for assertions
@@ -1406,41 +1406,41 @@ module flash_ctrl
   assign unused_op_valid = prog_op_valid | rd_op_valid | erase_op_valid;
 
   // add more assertions
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedCntAlertCheck_A, u_flash_hw_if.u_seed_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedCntAlertCheck_A, u_flash_hw_if.u_seed_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AddrCntAlertCheck_A, u_flash_hw_if.u_addr_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AddrCntAlertCheck_A, u_flash_hw_if.u_addr_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_flash_hw_if.u_wipe_idx_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_flash_hw_if.u_wipe_idx_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ProgCnt_A, u_flash_ctrl_prog.u_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ProgCnt_A, u_flash_ctrl_prog.u_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdCnt_A, u_flash_ctrl_rd.u_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdCnt_A, u_flash_ctrl_rd.u_cnt,
                                          alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,
     u_flash_hw_if.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A,
     u_flash_hw_if.u_rma_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
     u_ctrl_arb.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
     u_tl_gate.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlProgLcGateFsm_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlProgLcGateFsm_A,
     u_prog_tl_gate.u_state_regs, alert_tx_o[1])
 
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_assertions
-     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,
+     `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,
        u_eflash.gen_flash_cores[i].u_core.u_state_regs, alert_tx_o[1])
 
-     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
+     `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
        u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[1])
    end
 
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
    `define PHY u_eflash.gen_flash_cores[i]
    `define PHY_CORE `PHY.u_core
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_cnt_errs
@@ -1458,7 +1458,7 @@ module flash_ctrl
 
      // Outstanding count error is merged into host_gnt_err instead of being an
      // individual count error.
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyHostCnt_A,
+     `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyHostCnt_A,
        `PHY_CORE.u_host_outstanding_cnt, alert_tx_o[2])
    end
    `endif
@@ -1489,7 +1489,7 @@ module flash_ctrl
                                               alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
 
   `ifdef FI_SIM_Z01X
     // Check if there are any TL-UL integrity errors caused by faults that Z01X has introduced.

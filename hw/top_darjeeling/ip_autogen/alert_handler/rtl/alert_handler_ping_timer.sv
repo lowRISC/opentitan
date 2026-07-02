@@ -65,8 +65,8 @@ module alert_handler_ping_timer import alert_handler_pkg::*; #(
   // 1) make sure the value is a right-aligned mask.
   //    this can be done by checking that mask+1 is a power of 2.
   // 2) also make sure that the value is always >= 0x7.
-  `ASSERT(WaitCycMaskMin_A, wait_cyc_mask_i >= 'h7)
-  `ASSERT(WaitCycMaskIsRightAlignedMask_A, $onehot(32'(wait_cyc_mask_i) + 1))
+  `OCAH_OT_ASSERT(WaitCycMaskMin_A, wait_cyc_mask_i >= 'h7)
+  `OCAH_OT_ASSERT(WaitCycMaskIsRightAlignedMask_A, $onehot(32'(wait_cyc_mask_i) + 1))
 
   ////////////////////
   // Reseed counter //
@@ -430,13 +430,13 @@ module alert_handler_ping_timer import alert_handler_pkg::*; #(
   ////////////////
 
   // make sure the ID width is within bounds.
-  `ASSERT_INIT(MaxIdDw_A, IdDw <= (LfsrWidth - PING_CNT_DW))
+  `OCAH_OT_ASSERT_INIT(MaxIdDw_A, IdDw <= (LfsrWidth - PING_CNT_DW))
 
   // only one module is pinged at a time.
-  `ASSERT(PingOH0_A, $onehot0({alert_ping_req_o, esc_ping_req_o}))
+  `OCAH_OT_ASSERT(PingOH0_A, $onehot0({alert_ping_req_o, esc_ping_req_o}))
 
   // we should never get into the ping state without knowing which module to ping.
-  `ASSERT(AlertPingOH_A, alert_ping_en |-> $onehot(alert_ping_req_o))
-  `ASSERT(EscPingOH_A, esc_ping_en |-> $onehot(esc_ping_req_o))
+  `OCAH_OT_ASSERT(AlertPingOH_A, alert_ping_en |-> $onehot(alert_ping_req_o))
+  `OCAH_OT_ASSERT(EscPingOH_A, esc_ping_en |-> $onehot(esc_ping_req_o))
 
 endmodule : alert_handler_ping_timer

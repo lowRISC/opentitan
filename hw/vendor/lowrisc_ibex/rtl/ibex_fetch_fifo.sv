@@ -259,11 +259,11 @@ module ibex_fetch_fifo #(
   ////////////////
 
   // Must not push and pop simultaneously when FIFO full.
-  `ASSERT(IbexFetchFifoPushPopFull,
+  `OCAH_OT_ASSERT(IbexFetchFifoPushPopFull,
       (in_valid_i && pop_fifo) |-> (!valid_q[DEPTH-1] || clear_i))
 
   // Must not push to FIFO when full.
-  `ASSERT(IbexFetchFifoPushFull,
+  `OCAH_OT_ASSERT(IbexFetchFifoPushFull,
       (in_valid_i) |-> (!valid_q[DEPTH-1] || clear_i))
 
 endmodule

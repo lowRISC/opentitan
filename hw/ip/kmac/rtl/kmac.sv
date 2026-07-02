@@ -180,17 +180,17 @@ module kmac
   logic [sha3_pkg::NSRegisterSize*8-1:0] ns_prefix;
 
   // NumWordsPrefix from kmac_reg_pkg
-  `ASSERT_INIT(PrefixRegSameToPrefixPkg_A,
+  `OCAH_OT_ASSERT_INIT(PrefixRegSameToPrefixPkg_A,
                kmac_reg_pkg::NumWordsPrefix*4 == sha3_pkg::NSRegisterSize)
 
   // NumEntriesMsgFifo from kmac_reg_pkg must match calculated MsgFifoDepth
   // from kmac_pkg.
-  `ASSERT_INIT(NumEntriesRegSameToNumEntriesPkg_A,
+  `OCAH_OT_ASSERT_INIT(NumEntriesRegSameToNumEntriesPkg_A,
                kmac_reg_pkg::NumEntriesMsgFifo == kmac_pkg::MsgFifoDepth)
 
   // NumBytesMsgFifoEntry from kmac_reg_pkg must match the MsgWidth calculated
   // in kmac_pkg (although MsgWidth is in bits, so we multiply by 8).
-  `ASSERT_INIT(EntrySizeRegSameToEntrySizePkg_A,
+  `OCAH_OT_ASSERT_INIT(EntrySizeRegSameToEntrySizePkg_A,
                kmac_reg_pkg::NumBytesMsgFifoEntry * 8 == kmac_pkg::MsgWidth)
 
   // Output state: this is used to redirect the digest to KeyMgr or Software
@@ -353,7 +353,7 @@ module kmac
   end
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(KmacSecCmdDelayNonDefault, SecCmdDelay == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(KmacSecCmdDelayNonDefault, SecCmdDelay == 0)
 
   if (SecCmdDelay > 0) begin : gen_cmd_delay_buf
     // Delay and buffer commands for SCA measurements.
@@ -428,7 +428,7 @@ module kmac
 
   // Command signals
   assign sw_cmd = (cmd_update) ? cmd_q : CmdNone;
-  `ASSERT_KNOWN(KmacCmd_A, sw_cmd)
+  `OCAH_OT_ASSERT_KNOWN(KmacCmd_A, sw_cmd)
   always_comb begin
     sha3_start = 1'b 0;
     sha3_run = 1'b 0;
@@ -557,7 +557,7 @@ module kmac
   assign cfg_en_unsupported_modestrength =
     reg2hw.cfg_shadowed.en_unsupported_modestrength.q;
 
-  `ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
+  `OCAH_OT_ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
 
   // Idle control (registered output)
   // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
@@ -575,7 +575,7 @@ module kmac
   assign err_processed = reg2hw.cmd.err_processed.q & reg2hw.cmd.err_processed.qe;
 
   // Make sure the field has latch in reg_top
-  `ASSERT(ErrProcessedLatched_A, $rose(err_processed) |=> !err_processed)
+  `OCAH_OT_ASSERT(ErrProcessedLatched_A, $rose(err_processed) |=> !err_processed)
 
   // App mode, strength, kmac_en
   assign reg_kmac_en         = reg2hw.cfg_shadowed.kmac_en.q;
@@ -603,7 +603,7 @@ module kmac
     .intr_o                 (intr_kmac_done_o)
   );
 
-  `ASSERT(Sha3AbsorbedPulse_A,
+  `OCAH_OT_ASSERT(Sha3AbsorbedPulse_A,
     $rose(prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed)) |=>
       prim_mubi_pkg::mubi4_test_false_strict(sha3_absorbed))
 
@@ -852,7 +852,7 @@ module kmac
       kmac_st_d = KmacTerminalError;
     end
   end
-  `ASSERT_KNOWN(KmacStKnown_A, kmac_st)
+  `OCAH_OT_ASSERT_KNOWN(KmacStKnown_A, kmac_st)
 
   ///////////////
   // Instances //
@@ -1483,7 +1483,7 @@ module kmac
   end
 
   // Below assumes NumAlerts == 2
-  `ASSERT_INIT(NumAlerts2_A, NumAlerts == 2)
+  `OCAH_OT_ASSERT_INIT(NumAlerts2_A, NumAlerts == 2)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
   // break up the combinatorial path for local escalation
@@ -1534,61 +1534,61 @@ module kmac
   ////////////////
 
   // Assert known for output values
-  `ASSERT_KNOWN(KmacDone_A, intr_kmac_done_o)
-  `ASSERT_KNOWN(FifoEmpty_A, intr_fifo_empty_o)
-  `ASSERT_KNOWN(KmacErr_A, intr_kmac_err_o)
-  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
-  `ASSERT_KNOWN(EnMaskingKnown_A, en_masking_o)
+  `OCAH_OT_ASSERT_KNOWN(KmacDone_A, intr_kmac_done_o)
+  `OCAH_OT_ASSERT_KNOWN(FifoEmpty_A, intr_fifo_empty_o)
+  `OCAH_OT_ASSERT_KNOWN(KmacErr_A, intr_kmac_err_o)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(EnMaskingKnown_A, en_masking_o)
 
   // Parameter as desired
-  `ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
+  `OCAH_OT_ASSERT_INIT(SecretKeyDivideBy32_A, (kmac_pkg::MaxKeyLen % 32) == 0)
 
   // Command input should be sparse
-  `ASSUME(CmdSparse_M, reg2hw.cmd.cmd.qe |-> reg2hw.cmd.cmd.q inside {CmdStart, CmdProcess,
+  `OCAH_OT_ASSUME(CmdSparse_M, reg2hw.cmd.cmd.qe |-> reg2hw.cmd.cmd.q inside {CmdStart, CmdProcess,
                                                                 CmdManualRun,CmdDone, CmdNone})
 
   // redundant counter error
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A, u_sha3.u_keccak.u_round_count,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A, u_sha3.u_keccak.u_round_count,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KeyIndexCountCheck_A, u_kmac_core.u_key_index_count,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KeyIndexCountCheck_A, u_kmac_core.u_key_index_count,
                                          alert_tx_o[1])
 
   // Sparse FSM state error
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A, u_sha3.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A, u_sha3.u_pad.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccackFsmCheck_A, u_sha3.u_keccak.u_state_regs,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A, u_sha3.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A, u_sha3.u_pad.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccackFsmCheck_A, u_sha3.u_keccak.u_state_regs,
                                        alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ErrorCheckFsmCheck_A, u_errchk.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacFsmCheck_A, u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ErrorCheckFsmCheck_A, u_errchk.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacFsmCheck_A, u_state_regs, alert_tx_o[1])
 
   // prim is only instantiated if masking is enabled
   if (EnMasking == 1) begin : g_testassertion
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(EntropyFsmCheck_A, gen_entropy.u_entropy.u_state_regs,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(EntropyFsmCheck_A, gen_entropy.u_entropy.u_state_regs,
                                          alert_tx_o[1])
 
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(HashCountCheck_A, gen_entropy.u_entropy.u_hash_count,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(HashCountCheck_A, gen_entropy.u_entropy.u_hash_count,
                                          alert_tx_o[1])
 
     // MsgFifo.Packer
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       PackerCountCheck_A,
       u_msgfifo.u_packer.g_pos_dupcnt.u_pos,
       alert_tx_o[1]
     )
 
     // MsgFifo.Fifo
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifoWptrCheck_A,
       u_msgfifo.u_msgfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
       alert_tx_o[1]
     )
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifoRptrCheck_A,
       u_msgfifo.u_msgfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[1]
@@ -1596,5 +1596,5 @@ module kmac
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule

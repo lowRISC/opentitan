@@ -998,11 +998,11 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
   // Do not accept new genbits into the CSRNG interface genbits FIFO if we are in the alert state
   // due to a CSRNG status error response.
-  `ASSERT(CsErrAcceptNoEntropy_A, reject_csrng_entropy |-> packer_cs_push == 0)
+  `OCAH_OT_ASSERT(CsErrAcceptNoEntropy_A, reject_csrng_entropy |-> packer_cs_push == 0)
   // Do not issue new commands to the CSRNG if we are in the alert state due to a CSRNG status
   // error response. The only exception is if we need to hold the valid to complete a started
   // handshake.
-  `ASSERT(CsErrIssueNoCommands_A, reject_csrng_entropy |->
+  `OCAH_OT_ASSERT(CsErrIssueNoCommands_A, reject_csrng_entropy |->
       csrng_cmd_o.csrng_req_valid == 0 || cs_cmd_req_vld_hold_q == 1'b1)
 
   //--------------------------------------------

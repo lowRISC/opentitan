@@ -72,15 +72,15 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
   assign unused_tl = ^tl_i;
 
 
-  `ASSERT_INIT(PayLoadWidthCheck, $bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)
-  `ASSERT_INIT(DataWidthCheck_A, $bits(tl_i.d_data) <= DataMaxWidth)
+  `OCAH_OT_ASSERT_INIT(PayLoadWidthCheck, $bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)
+  `OCAH_OT_ASSERT_INIT(DataWidthCheck_A, $bits(tl_i.d_data) <= DataMaxWidth)
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
 `ifndef SYNTHESIS
   always @(tl_i) begin
-    `ASSERT_I(RspZero_A, tl_i.d_valid & RspIntgInIsZero -> ~|tl_i.d_user.rsp_intg)
-    `ASSERT_I(UserZero_A, tl_i.d_valid & UserInIsZero -> ~|tl_i.d_user)
+    `OCAH_OT_ASSERT_I(RspZero_A, tl_i.d_valid & RspIntgInIsZero -> ~|tl_i.d_user.rsp_intg)
+    `OCAH_OT_ASSERT_I(UserZero_A, tl_i.d_valid & UserInIsZero -> ~|tl_i.d_user)
   end
 `endif
 

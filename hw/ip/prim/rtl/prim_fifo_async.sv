@@ -31,7 +31,7 @@ module prim_fifo_async #(
 );
 
   // Depth must be a power of 2 for the gray code pointers to work
-  `ASSERT_INIT(ParamCheckDepth_A, (Depth == 2**$clog2(Depth)))
+  `OCAH_OT_ASSERT_INIT(ParamCheckDepth_A, (Depth == 2**$clog2(Depth)))
 
   localparam int unsigned PTRV_W    = (Depth == 1) ? 1 : $clog2(Depth);
   localparam int unsigned PTR_WIDTH = (Depth == 1) ? 1 : PTRV_W+1;
@@ -290,9 +290,9 @@ module prim_fifo_async #(
   end
 
   // TODO: assertions on full, empty
-  `ASSERT(GrayWptr_A, ##1 $countones(fifo_wptr_gray_q ^ $past(fifo_wptr_gray_q)) <= 1,
+  `OCAH_OT_ASSERT(GrayWptr_A, ##1 $countones(fifo_wptr_gray_q ^ $past(fifo_wptr_gray_q)) <= 1,
           clk_wr_i, !rst_wr_ni)
-  `ASSERT(GrayRptr_A, ##1 $countones(fifo_rptr_gray_q ^ $past(fifo_rptr_gray_q)) <= 1,
+  `OCAH_OT_ASSERT(GrayRptr_A, ##1 $countones(fifo_rptr_gray_q ^ $past(fifo_rptr_gray_q)) <= 1,
           clk_rd_i, !rst_rd_ni)
 
 endmodule

@@ -123,7 +123,7 @@ module rv_dm_dmi_gate
     assign strap_en = strap_en_i || (strap_en_override_d && !strap_en_override_q);
 
     // Once strap_en_override_i is asserted, it will always stay high
-    `ASSUME(LcCtrlStrapSampleOverrideOnce_A, strap_en_override_i |=> strap_en_override_i)
+    `OCAH_OT_ASSUME(LcCtrlStrapSampleOverrideOnce_A, strap_en_override_i |=> strap_en_override_i)
 
   end else begin : gen_no_strap_override
     logic unused_strap_en_override;
@@ -271,7 +271,7 @@ module rv_dm_dmi_gate
   ////////////////
 
   // Check that we can correctly latch upon strap_en_i
-  `ASSERT(LcHwDebugEnSet_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnSet_A,
       (lc_tx_test_true_strict(lc_hw_debug_en[0]) ||
        lc_tx_test_true_strict(strap_hw_debug_en_q)) &&
       lc_tx_test_false_strict(lc_hw_debug_clr[0]) &&
@@ -281,20 +281,20 @@ module rv_dm_dmi_gate
       |=>
       lc_tx_test_true_strict(strap_hw_debug_en_q))
   // Check that latching ON can only occur if lc_hw_debug_en_i is set.
-  `ASSERT(LcHwDebugEnSetRev0_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnSetRev0_A,
       lc_tx_test_false_loose(strap_hw_debug_en_q) ##1
       lc_tx_test_true_strict(strap_hw_debug_en_q)
       |->
       $past(lc_tx_test_true_strict(lc_hw_debug_en[0])))
   // Check that latching ON can only occur if strap_en is set.
-  `ASSERT(LcHwDebugEnSetRev1_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnSetRev1_A,
       lc_tx_test_false_loose(strap_hw_debug_en_q) ##1
       lc_tx_test_true_strict(strap_hw_debug_en_q)
       |->
       $past(strap_en))
   // Check that any non-OFF value on lc_check_byp_en_i and
   // lc_escalate_en_i clears the latched value.
-  `ASSERT(LcHwDebugEnClear_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnClear_A,
       lc_tx_test_true_loose(lc_check_byp_en[0]) ||
       lc_tx_test_true_loose(lc_escalate_en[0]) ||
       lc_tx_test_true_loose(lc_hw_debug_clr[0])

@@ -999,7 +999,7 @@ module spi_device
       end
     endcase
   end
-  `ASSERT_KNOWN(SpiModeKnown_A, spi_mode)
+  `OCAH_OT_ASSERT_KNOWN(SpiModeKnown_A, spi_mode)
 
   // Add 2-cycle delay to flash read data when requested.
   // This mechanism should only be deployed on read commands with dummy cycles,
@@ -1126,7 +1126,7 @@ module spi_device
     else                intercept_en <= |intercept;
   end
   // intercept_en shall not be de-asserted except mailbox
-  `ASSUME(InterceptLevel_M,
+  `OCAH_OT_ASSUME(InterceptLevel_M,
     $rose(|{intercept.status, intercept.jedec, intercept.sfdp}) |=>
       ##1 $stable(intercept_en) until !rst_spi_out_n,
     clk_spi_out_buf, !rst_spi_out_n)
@@ -1480,7 +1480,7 @@ module spi_device
 
   assign hw2reg.upload_status2.payload_start_idx.de = 1'b 1;
   assign hw2reg.upload_status2.payload_start_idx.d = payload_start_idx;
-  `ASSERT_INIT(PayloadStartIdxWidthMatch_A,
+  `OCAH_OT_ASSERT_INIT(PayloadStartIdxWidthMatch_A,
     $bits(hw2reg.upload_status2.payload_start_idx.d) == PayloadIdxW)
 
   // End:   Upload ---------------------------------------------------
@@ -1818,7 +1818,7 @@ module spi_device
 
     // There is only ever a single source of requests on the SYS port (SW), so
     // requests should always be granted.
-    `ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
+    `OCAH_OT_ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
   end : g_sram_connect
 
   prim_sram_arbiter #(
@@ -1955,31 +1955,31 @@ module spi_device
   end
 
   // make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
-  `ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
+  `OCAH_OT_ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_i, 0)
+  `OCAH_OT_ASSERT_KNOWN(CioSdoEnOKnown, cio_sd_en_o)
 
-  `ASSERT_KNOWN(IntrUploadCmdfifoNotEmptyOKnown,
+  `OCAH_OT_ASSERT_KNOWN(IntrUploadCmdfifoNotEmptyOKnown,
                 intr_upload_cmdfifo_not_empty_o)
-  `ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,
+  `OCAH_OT_ASSERT_KNOWN(IntrUploadPayloadNotEmptyOKnown,
                 intr_upload_payload_not_empty_o)
-  `ASSERT_KNOWN(IntrUploadPayloadOverflowOKnown,
+  `OCAH_OT_ASSERT_KNOWN(IntrUploadPayloadOverflowOKnown,
                 intr_upload_payload_overflow_o)
-  `ASSERT_KNOWN(IntrReadbufWatermarkOKnown,  intr_readbuf_watermark_o)
-  `ASSERT_KNOWN(IntrReadbufFlipOKnown,       intr_readbuf_flip_o)
-  `ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)
-  `ASSERT_KNOWN(IntrTpmRdfifoCmdEndOKnown, intr_tpm_rdfifo_cmd_end_o)
-  `ASSERT_KNOWN(IntrTpmRdfifoDropOKnown, intr_tpm_rdfifo_drop_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrReadbufWatermarkOKnown,  intr_readbuf_watermark_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrReadbufFlipOKnown,       intr_readbuf_flip_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrTpmRdfifoCmdEndOKnown, intr_tpm_rdfifo_cmd_end_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrTpmRdfifoDropOKnown, intr_tpm_rdfifo_drop_o)
 
-  `ASSERT_KNOWN(AlertKnownO_A,         alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnownO_A,         alert_tx_o)
 
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Assume the tpm_en is set when TPM transaction is idle.
-  `ASSUME(TpmEnableWhenTpmCsbIdle_M, $rose(cfg_tpm_en) |-> cio_tpm_csb_i)
+  `OCAH_OT_ASSUME(TpmEnableWhenTpmCsbIdle_M, $rose(cfg_tpm_en) |-> cio_tpm_csb_i)
 
   // When CSBs are inactive, spi_device shouldn't drive the CIO
-  `ASSERT(CioSdoEnOffWhenInactive, cio_csb_i && cio_tpm_csb_i -> cio_sd_en_o === 0)
+  `OCAH_OT_ASSERT(CioSdoEnOffWhenInactive, cio_csb_i && cio_tpm_csb_i -> cio_sd_en_o === 0)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

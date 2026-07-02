@@ -306,46 +306,46 @@ module prim_packer #(
   // e.g: 0011100 --> OK
   //      0100011 --> Not OK
   if (InW > 1) begin : gen_mask_assert
-    `ASSUME(ContiguousOnesMask_M,
+    `OCAH_OT_ASSUME(ContiguousOnesMask_M,
             valid_i |-> $countones(mask_i ^ {mask_i[InW-2:0],1'b0}) <= 2)
   end
 
   // Flush and Write Enable cannot be asserted same time
-  `ASSUME(ExFlushValid_M, flush_i |-> !valid_i)
+  `OCAH_OT_ASSUME(ExFlushValid_M, flush_i |-> !valid_i)
 
   // While in flush state, new request shouldn't come
-  `ASSUME(ValidIDeassertedOnFlush_M,
+  `OCAH_OT_ASSUME(ValidIDeassertedOnFlush_M,
           flush_st == FlushSend |-> $stable(valid_i))
 
   // If not acked, input port keeps asserting valid and data
-  `ASSUME(DataIStable_M,
+  `OCAH_OT_ASSUME(DataIStable_M,
           ##1 valid_i && $past(valid_i) && !$past(ready_o)
           |-> $stable(data_i) && $stable(mask_i))
 
-  `ASSERT(FlushFollowedByDone_A,
+  `OCAH_OT_ASSERT(FlushFollowedByDone_A,
           ##1 $rose(flush_i) && !flush_done_o |-> !flush_done_o [*0:$] ##1 flush_done_o)
 
   // If not acked, valid_o should keep asserting
-  `ASSERT(ValidOPairedWidthReadyI_A,
+  `OCAH_OT_ASSERT(ValidOPairedWidthReadyI_A,
           valid_o && !ready_i |=> valid_o)
 
   // If stored data is greater than the output width, valid should be asserted
-  `ASSERT(ValidOAssertedForStoredDataGTEOutW_A,
+  `OCAH_OT_ASSERT(ValidOAssertedForStoredDataGTEOutW_A,
           ($countones(stored_mask) >= OutW) |-> valid_o)
 
   // If output port doesn't accept the data, the data should be stable
-  `ASSERT(DataOStableWhenPending_A,
+  `OCAH_OT_ASSERT(DataOStableWhenPending_A,
           ##1 valid_o && $past(valid_o)
           && !$past(ready_i) |-> $stable(data_o))
 
   // If input data & stored data are greater than OutW, remained should be stored
-  `ASSERT(ExcessiveDataStored_A,
+  `OCAH_OT_ASSERT(ExcessiveDataStored_A,
           ack_in && ack_out && (($countones(mask_i) + $countones(stored_mask)) > OutW)
           |=> (($past(data_i) &  $past(mask_i)) >>
                ($past(lod_idx)+OutW-$countones($past(stored_mask))))
                == stored_data)
 
-  `ASSERT(ExcessiveMaskStored_A,
+  `OCAH_OT_ASSERT(ExcessiveMaskStored_A,
           ack_in && ack_out && (($countones(mask_i) + $countones(stored_mask)) > OutW)
           |=> ($past(mask_i) >>
                ($past(lod_idx)+OutW-$countones($past(stored_mask))))
@@ -353,17 +353,17 @@ module prim_packer #(
 
   // Assertions for byte hint enabled
   if (HintByteData != 0) begin : g_byte_assert
-    `ASSERT_INIT(InputDividedBy8_A,  InW  % 8 == 0)
-    `ASSERT_INIT(OutputDividedBy8_A, OutW % 8 == 0)
+    `OCAH_OT_ASSERT_INIT(InputDividedBy8_A,  InW  % 8 == 0)
+    `OCAH_OT_ASSERT_INIT(OutputDividedBy8_A, OutW % 8 == 0)
 
     // Masking[8*i+:8] should be all zero or all one
     for (genvar i = 0 ; i < InW/8 ; i++) begin : g_byte_input_masking
-      `ASSERT(InputMaskContiguous_A,
+      `OCAH_OT_ASSERT(InputMaskContiguous_A,
               valid_i |-> (|mask_i[8*i+:8] == 1'b 0)
                        || (&mask_i[8*i+:8] == 1'b 1))
     end
     for (genvar i = 0 ; i < OutW/8 ; i++) begin : g_byte_output_masking
-      `ASSERT(OutputMaskContiguous_A,
+      `OCAH_OT_ASSERT(OutputMaskContiguous_A,
               valid_o |-> (|mask_o[8*i+:8] == 1'b 0)
                        || (&mask_o[8*i+:8] == 1'b 1))
     end

@@ -90,8 +90,8 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     end
   end
 
-  //`ASSERT_PULSE(claimPulse, claim_re[i])
-  //`ASSERT_PULSE(completePulse, complete_we[i])
+  //`OCAH_OT_ASSERT_PULSE(claimPulse, claim_re[i])
+  //`OCAH_OT_ASSERT_PULSE(completePulse, complete_we[i])
 
   `ASSERT(onehot0Claim, $onehot0(claim_re))
 
@@ -324,16 +324,16 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   );
 
   // Assertions
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(IrqKnownO_A, irq_o)
-  `ASSERT_KNOWN(MsipKnownO_A, msip_o)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(IrqKnownO_A, irq_o)
+  `OCAH_OT_ASSERT_KNOWN(MsipKnownO_A, msip_o)
   for (genvar k = 0; k < NumTarget; k++) begin : gen_irq_id_known
-    `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
+    `OCAH_OT_ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
   end
 
   // Assume
-  `ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
+  `OCAH_OT_ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
 
   // This assertion should be provable in FPV because we don't have a block-level DV environment. It
   // is trying to say that any integrity error detected inside the register block (u_reg) will cause
@@ -353,7 +353,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   //    form "If no integrity error is detected for _SEC_CM_ALERT_MAX_CYC cycles, the alert_p signal
   //    must go high". To encode this cleanly in SVA, we actually say "We can't have neither an
   //    integrity error nor an alert signal for too many cycles".
-  `ASSERT(FpvSecCmBusIntegrity_A,
+  `OCAH_OT_ASSERT(FpvSecCmBusIntegrity_A,
           ($rose(u_reg.intg_err) &&
            gen_alert_tx[0].u_prim_alert_sender.state_q == gen_alert_tx[0].u_prim_alert_sender.Idle)
           |->
@@ -361,7 +361,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
                [*`_SEC_CM_ALERT_MAX_CYC]))
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
                                                     u_reg,
                                                     gen_alert_tx[0].u_prim_alert_sender.alert_req_i)
 endmodule

@@ -41,10 +41,10 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   bit [SrcIdxWidth-1:0] src_sel;
   bit [TgtIdxWidth-1:0] tgt_sel;
 
-  `ASSUME_FPV(IsrcRange_M, src_sel >  0 && src_sel < NumSrc, clk_i, !rst_ni)
-  `ASSUME_FPV(ItgtRange_M, tgt_sel >= 0 && tgt_sel < NumTarget, clk_i, !rst_ni)
-  `ASSUME_FPV(IsrcStable_M, ##1 $stable(src_sel), clk_i, !rst_ni)
-  `ASSUME_FPV(ItgtStable_M, ##1 $stable(tgt_sel), clk_i, !rst_ni)
+  `OCAH_OT_ASSUME_FPV(IsrcRange_M, src_sel >  0 && src_sel < NumSrc, clk_i, !rst_ni)
+  `OCAH_OT_ASSUME_FPV(ItgtRange_M, tgt_sel >= 0 && tgt_sel < NumTarget, clk_i, !rst_ni)
+  `OCAH_OT_ASSUME_FPV(IsrcStable_M, ##1 $stable(src_sel), clk_i, !rst_ni)
+  `OCAH_OT_ASSUME_FPV(ItgtStable_M, ##1 $stable(tgt_sel), clk_i, !rst_ni)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -83,40 +83,50 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   end
 
   // when IP is set, previous cycle should follow edge or level triggered criteria
-  `ASSERT(LevelTriggeredIp_A, ##3 $rose(ip[src_sel]) |-> $past(intr_src_i[src_sel], 3))
+  `OCAH_OT_ASSERT(LevelTriggeredIp_A, ##3 $rose(ip[src_sel]) |-> $past(intr_src_i[src_sel], 3))
 
   // when interrupt is trigger, and nothing claimed yet, then next cycle should assert IP.
-  `ASSERT(LevelTriggeredIpWithClaim_A, ##2 $past(intr_src_i[src_sel], 2) &&
+  `OCAH_OT_ASSERT(LevelTriggeredIpWithClaim_A, ##2 $past(intr_src_i[src_sel], 2) &&
           !claimed |=> ip[src_sel])
 
   // ip stays stable until claimed, reset to 0 after claimed, and stays 0 until complete
-  `ASSERT(IpStableAfterTriggered_A, ip[src_sel] && !claimed  |=> ip[src_sel])
-  `ASSERT(IpClearAfterClaim_A, ip[src_sel] && claim[src_sel] |=> !ip[src_sel])
-  `ASSERT(IpStableAfterClaimed_A, claimed |=> !ip[src_sel])
+  `OCAH_OT_ASSERT(IpStableAfterTriggered_A, ip[src_sel] && !claimed  |=> ip[src_sel])
+  `OCAH_OT_ASSERT(IpClearAfterClaim_A, ip[src_sel] && claim[src_sel] |=> !ip[src_sel])
+  `OCAH_OT_ASSERT(IpStableAfterClaimed_A, claimed |=> !ip[src_sel])
 
   // when ip is set and priority is the largest and above threshold, and interrupt enable is set,
   // assertion irq_o at next cycle
-  `ASSERT(TriggerIrqForwardCheck_A, ip[src_sel] && prio[src_sel] > threshold[tgt_sel] &&
+  `OCAH_OT_ASSERT(TriggerIrqForwardCheck_A, ip[src_sel] && prio[src_sel] > threshold[tgt_sel] &&
           max_priority && ie[tgt_sel][src_sel] |=> irq_o[tgt_sel])
 
-  `ASSERT(TriggerIrqBackwardCheck_A, $rose(irq_o[tgt_sel]) |->
+  `OCAH_OT_ASSERT(TriggerIrqBackwardCheck_A, $rose(irq_o[tgt_sel]) |->
           $past(irq) && (irq_id_o[tgt_sel] == $past(i_high_prio)))
 
   // when irq ID changed, but not to ID=0, irq_o should be high, or irq represents the largest prio
   // but smaller than the threshold
-  `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
+  `OCAH_OT_ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
           irq_o[tgt_sel] || ((irq_id_o[tgt_sel]) == $past(i_high_prio) && !$past(irq)))
 
   // If a response is coming back from the device, then check if it contains the correct integrity
   // bits.
-  `ASSERT(DataIntg_A,
+  `OCAH_OT_ASSERT(DataIntg_A,
           tl_o.d_valid -> (tlul_pkg::get_data_intg(tl_o.d_data) == tl_o.d_user.data_intg))
 
-  `ASSERT(RspIntg_A,
+  `OCAH_OT_ASSERT(RspIntg_A,
           tl_o.d_valid ->
           (prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0, tlul_pkg::extract_d2h_rsp_intg(tl_o)})
           >> (64-tlul_pkg::D2HRspIntgWidth)) == tl_o.d_user.rsp_intg)
 
   // When fatal alert happens then only reset can clear it.
-  `ASSERT(FatalAlertNeverdrops_A, ##1 !$fell(fatal_alert_i))
+  `OCAH_OT_ASSERT(FatalAlertNeverdrops_A, ##1 !$fell(fatal_alert_i))
+
+  // The interrupt gateway in u_gateway is in charge of making sure that the "set; claim; complete"
+  // flow is followed for each interrupt line. This is done with an ia ("interrupt active") signal.
+  // When interrupt i is asserted, both ip[i] and ia[i] are set. When it is claimed, ip[i] gets
+  // cleared (but ia[i] stays high). Subsequent assertions are ignored until the processor marks the
+  // handling complete, which clears ia[i] again.
+  //
+  // As such, ia[i] should always be true when ip[i] is true.
+  `OCAH_OT_ASSERT(ActiveIfPending_A, u_gateway.ia | ~u_gateway.ip_o)
+
 endmodule : rv_plic_assert_fpv

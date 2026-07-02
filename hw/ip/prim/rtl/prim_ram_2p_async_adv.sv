@@ -63,7 +63,7 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
 );
 
 
-  `ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
+  `OCAH_OT_ASSERT_INIT(CannotHaveEccAndParity_A, !(EnableParity && EnableECC))
 
   // Calculate ECC width
   localparam int ParWidth  = (EnableParity) ? Width/8 :
@@ -170,12 +170,12 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
   if (EnableParity == 0 && EnableECC) begin : gen_secded
 
     // check supported widths
-    `ASSERT_INIT(SecDecWidth_A, Width inside {32})
+    `OCAH_OT_ASSERT_INIT(SecDecWidth_A, Width inside {32})
 
     // the wmask is constantly set to 1 in this case
-    `ASSERT(OnlyWordWritePossibleWithEccPortA_A, a_req_i |->
+    `OCAH_OT_ASSERT(OnlyWordWritePossibleWithEccPortA_A, a_req_i |->
         a_wmask_i == {Width{1'b1}}, clk_a_i, rst_a_ni)
-    `ASSERT(OnlyWordWritePossibleWithEccPortB_A, b_req_i |->
+    `OCAH_OT_ASSERT(OnlyWordWritePossibleWithEccPortB_A, b_req_i |->
         b_wmask_i == {Width{1'b1}}, clk_b_i, rst_b_ni)
 
     assign a_wmask_d = {TotalWidth{1'b1}};
@@ -228,8 +228,8 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
     end
   end else if (EnableParity) begin : gen_byte_parity
 
-    `ASSERT_INIT(ParityNeedsByteWriteMask_A, DataBitsPerMask == 8)
-    `ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
+    `OCAH_OT_ASSERT_INIT(ParityNeedsByteWriteMask_A, DataBitsPerMask == 8)
+    `OCAH_OT_ASSERT_INIT(WidthNeedsToBeByteAligned_A, Width % 8 == 0)
 
     always_comb begin : p_parity
       a_rerror_d = '0;

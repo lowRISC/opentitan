@@ -31,7 +31,7 @@ module sim_sram #(
 `else
 
   `include "prim_assert.sv"
-  `ASSERT_INIT(WidthAlignment_A, Width[2:0] == 0)
+  `OCAH_OT_ASSERT_INIT(WidthAlignment_A, Width[2:0] == 0)
 
   localparam int WidthBytes = Width >> 3;
 

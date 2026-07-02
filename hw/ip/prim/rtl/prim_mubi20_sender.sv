@@ -89,6 +89,6 @@ module prim_mubi20_sender
   ////////////////
 
   // The outputs should be known at all times.
-  `ASSERT_KNOWN(OutputsKnown_A, mubi_o)
+  `OCAH_OT_ASSERT_KNOWN(OutputsKnown_A, mubi_o)
 
 endmodule : prim_mubi20_sender

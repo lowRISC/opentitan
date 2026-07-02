@@ -65,12 +65,12 @@ module spid_fifo2sram_adapter #(
 
   if (EnPack == 1 && NumEntryPerWord != 1) begin : g_multiple_entry_per_word
     // If pack, the FifoWidth shall divide SramDw
-    `ASSERT_INIT(WidthDivideSramDw_A, SramDw == (SramDw/FifoWidth)*FifoWidth)
+    `OCAH_OT_ASSERT_INIT(WidthDivideSramDw_A, SramDw == (SramDw/FifoWidth)*FifoWidth)
 
     localparam int unsigned SubWordW = $clog2(NumEntryPerWord);
 
     // Should be multiple of 2
-    `ASSERT_INIT(NumEntryPerWordPowerOf2_A, NumEntryPerWord == 2**SubWordW)
+    `OCAH_OT_ASSERT_INIT(NumEntryPerWordPowerOf2_A, NumEntryPerWord == 2**SubWordW)
 
     assign sram_addr_o = SramBaseAddr + SramAw'(fifoptr[FifoPtrW-1:SubWordW]);
 

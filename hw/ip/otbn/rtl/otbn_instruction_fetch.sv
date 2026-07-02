@@ -479,6 +479,6 @@ module otbn_instruction_fetch
   assign mac_bignum_predec_o       = mac_bignum_predec_q;
   assign lsu_addr_en_predec_o      = lsu_addr_en_predec_q;
 
-  `ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
-  `ASSERT(NoFetchEnAndIndirectEn, !(insn_fetch_en && rf_bignum_indirect_en_i))
+  `OCAH_OT_ASSERT(FetchEnOnlyIfValidIMem, insn_fetch_en |-> imem_rvalid_i)
+  `OCAH_OT_ASSERT(NoFetchEnAndIndirectEn, !(insn_fetch_en && rf_bignum_indirect_en_i))
 endmodule

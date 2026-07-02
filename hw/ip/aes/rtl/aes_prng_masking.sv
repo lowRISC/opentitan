@@ -65,7 +65,7 @@ module aes_prng_masking import aes_pkg::*;
   // which prevents meaningful SCA resistance evaluations.
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(AesSecAllowForcingMasksNonDefault, SecAllowForcingMasks == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesSecAllowForcingMasksNonDefault, SecAllowForcingMasks == 0)
 
   if (SecAllowForcingMasks == 0) begin : gen_unused_force_masks
     logic unused_force_masks;
@@ -73,7 +73,7 @@ module aes_prng_masking import aes_pkg::*;
   end
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(AesSecSkipPRNGReseedingNonDefault, SecSkipPRNGReseeding == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesSecSkipPRNGReseedingNonDefault, SecSkipPRNGReseeding == 0)
 
   if (SecSkipPRNGReseeding == 1) begin : gen_unused_prng_seed_done
     logic unused_prng_seed_done;
@@ -143,7 +143,7 @@ module aes_prng_masking import aes_pkg::*;
       perm_test[RndCnstLfsrPerm[k]] = 1'b1;
     end
     // All bit positions must be marked with 1.
-    `ASSERT_I(PermutationCheck_A, &perm_test)
+    `OCAH_OT_ASSERT_I(PermutationCheck_A, &perm_test)
   end
 `endif
 

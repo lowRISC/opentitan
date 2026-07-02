@@ -225,6 +225,6 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   /////////////////////////////////////
 
   // When updating a sideload key, the secret key state must always be used as the source
-  `ASSERT(KmacKeySource_a, data_valid_i |-> key_i.valid)
+  `OCAH_OT_ASSERT(KmacKeySource_a, data_valid_i |-> key_i.valid)
 
 endmodule // keymgr_sideload_key_ctrl

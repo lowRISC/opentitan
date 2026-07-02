@@ -234,9 +234,9 @@ module prim_prince #(
   // assertions //
   ////////////////
 
-  `ASSERT_INIT(SupportedWidths_A, (DataWidth == 64 && KeyWidth == 128) ||
+  `OCAH_OT_ASSERT_INIT(SupportedWidths_A, (DataWidth == 64 && KeyWidth == 128) ||
                                   (DataWidth == 32 && KeyWidth == 64))
-  `ASSERT_INIT(SupportedNumRounds_A, NumRoundsHalf > 0 && NumRoundsHalf < 6)
+  `OCAH_OT_ASSERT_INIT(SupportedNumRounds_A, NumRoundsHalf > 0 && NumRoundsHalf < 6)
 
 
 endmodule : prim_prince

@@ -356,7 +356,7 @@ module ibex_id_stage #(
         default:         imm_b = 32'h4;
       endcase
     end
-    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
+    `OCAH_OT_ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
         IMM_B_I,
         IMM_B_S,
         IMM_B_U,
@@ -384,7 +384,7 @@ module ibex_id_stage #(
         default:         imm_b = 32'h4;
       endcase
     end
-    `ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
+    `OCAH_OT_ASSERT(IbexImmBMuxSelValid, instr_valid_i |-> imm_b_mux_sel inside {
         IMM_B_I,
         IMM_B_S,
         IMM_B_B,
@@ -745,8 +745,8 @@ module ibex_id_stage #(
   // Holding branch_set/jump_set high for more than one cycle should not cause a functional issue.
   // However it could generate needless prefetch buffer flushes and instruction fetches. The ID/EX
   // designs ensures that this never happens for non-predicted branches.
-  `ASSERT(NeverDoubleBranch, branch_set & ~instr_bp_taken_i |=> ~branch_set)
-  `ASSERT(NeverDoubleJump, jump_set & ~instr_bp_taken_i |=> ~jump_set)
+  `OCAH_OT_ASSERT(NeverDoubleBranch, branch_set & ~instr_bp_taken_i |=> ~branch_set)
+  `OCAH_OT_ASSERT(NeverDoubleJump, jump_set & ~instr_bp_taken_i |=> ~jump_set)
 
   //////////////////////////////
   // Branch not-taken address //
@@ -872,7 +872,7 @@ module ibex_id_stage #(
   // Note for the two-stage configuration ready_wb_i is always set
   assign multdiv_ready_id_o = ready_wb_i;
 
-  `ASSERT(StallIDIfMulticycle, (id_fsm_q == FIRST_CYCLE) & (id_fsm_d == MULTI_CYCLE) |-> stall_id)
+  `OCAH_OT_ASSERT(StallIDIfMulticycle, (id_fsm_q == FIRST_CYCLE) & (id_fsm_d == MULTI_CYCLE) |-> stall_id)
 
 
   // Stall ID/EX stage for reason that relates to instruction in ID/EX, update assertion below if
@@ -883,7 +883,7 @@ module ibex_id_stage #(
   // Generally illegal instructions have no reason to stall, however they must still stall waiting
   // for outstanding memory requests so exceptions related to them take priority over the illegal
   // instruction exception.
-  `ASSERT(IllegalInsnStallMustBeMemStall, illegal_insn_o & stall_id |-> stall_mem &
+  `OCAH_OT_ASSERT(IllegalInsnStallMustBeMemStall, illegal_insn_o & stall_id |-> stall_mem &
     ~(stall_ld_hz | stall_multdiv | stall_jump | stall_branch | stall_alu))
 
   assign instr_done = ~stall_id & ~flush_id & instr_executing;
@@ -955,12 +955,12 @@ module ibex_id_stage #(
                              ~stall_ld_hz               &
                              ~outstanding_memory_access;
 
-    `ASSERT(IbexExecutingSpecIfExecuting, instr_executing |-> instr_executing_spec)
+    `OCAH_OT_ASSERT(IbexExecutingSpecIfExecuting, instr_executing |-> instr_executing_spec)
 
-    `ASSERT(IbexStallIfValidInstrNotExecuting,
+    `OCAH_OT_ASSERT(IbexStallIfValidInstrNotExecuting,
       instr_valid_i & ~instr_kill & ~instr_executing |-> stall_id)
 
-    `ASSERT(IbexCannotRetireWithPendingExceptions,
+    `OCAH_OT_ASSERT(IbexCannotRetireWithPendingExceptions,
       instr_done |-> ~(wb_exception | outstanding_memory_access))
 
     // Stall for reasons related to memory:
@@ -973,7 +973,7 @@ module ibex_id_stage #(
 
     // If we stall a load in ID for any reason, it must not make an LSU request
     // (otherwise we might issue two requests for the same instruction)
-    `ASSERT(IbexStallMemNoRequest,
+    `OCAH_OT_ASSERT(IbexStallMemNoRequest,
       instr_valid_i & lsu_req_dec & ~instr_done |-> ~lsu_req_done_i)
 
     assign rf_rd_a_wb_match = (rf_waddr_wb_i == rf_raddr_a_o) & |rf_raddr_a_o;
@@ -1028,7 +1028,7 @@ module ibex_id_stage #(
     assign instr_executing_spec = instr_valid_i & ~instr_fetch_err_i & controller_run;
     assign instr_executing = instr_executing_spec;
 
-    `ASSERT(IbexStallIfValidInstrNotExecuting,
+    `OCAH_OT_ASSERT(IbexStallIfValidInstrNotExecuting,
       instr_valid_i & ~instr_fetch_err_i & ~instr_executing & controller_run |-> stall_id)
 
     // No data forwarding without writeback stage so always take source register data direct from
@@ -1103,54 +1103,54 @@ module ibex_id_stage #(
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT_KNOWN_IF(IbexAluOpMuxSelKnown, alu_op_a_mux_sel, instr_valid_i)
-  `ASSERT(IbexAluAOpMuxSelValid, instr_valid_i |-> alu_op_a_mux_sel inside {
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexAluOpMuxSelKnown, alu_op_a_mux_sel, instr_valid_i)
+  `OCAH_OT_ASSERT(IbexAluAOpMuxSelValid, instr_valid_i |-> alu_op_a_mux_sel inside {
       OP_A_REG_A,
       OP_A_FWD,
       OP_A_CURRPC,
       OP_A_IMM})
-  `ASSERT_KNOWN_IF(IbexBTAluAOpMuxSelKnown, bt_a_mux_sel, instr_valid_i)
-  `ASSERT(IbexBTAluAOpMuxSelValid, instr_valid_i |-> bt_a_mux_sel inside {
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexBTAluAOpMuxSelKnown, bt_a_mux_sel, instr_valid_i)
+  `OCAH_OT_ASSERT(IbexBTAluAOpMuxSelValid, instr_valid_i |-> bt_a_mux_sel inside {
       OP_A_REG_A,
       OP_A_CURRPC})
-  `ASSERT_KNOWN_IF(IbexBTAluBOpMuxSelKnown, bt_b_mux_sel, instr_valid_i)
-  `ASSERT(IbexBTAluBOpMuxSelValid, instr_valid_i |-> bt_b_mux_sel inside {
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexBTAluBOpMuxSelKnown, bt_b_mux_sel, instr_valid_i)
+  `OCAH_OT_ASSERT(IbexBTAluBOpMuxSelValid, instr_valid_i |-> bt_b_mux_sel inside {
       IMM_B_I,
       IMM_B_B,
       IMM_B_J,
       IMM_B_INCR_PC})
-  `ASSERT(IbexRegfileWdataSelValid, instr_valid_i |-> rf_wdata_sel inside {
+  `OCAH_OT_ASSERT(IbexRegfileWdataSelValid, instr_valid_i |-> rf_wdata_sel inside {
       RF_WD_EX,
       RF_WD_CSR})
-  `ASSERT_KNOWN(IbexWbStateKnown, id_fsm_q)
+  `OCAH_OT_ASSERT_KNOWN(IbexWbStateKnown, id_fsm_q)
 
   // Branch decision must be valid when jumping.
-  `ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i,
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexBranchDecisionValid, branch_decision_i,
       instr_valid_i && !(illegal_csr_insn_i || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
-  `ASSERT_KNOWN_IF(IbexIdInstrKnown, instr_rdata_i,
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexIdInstrKnown, instr_rdata_i,
       instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
-  `ASSERT_KNOWN_IF(IbexIdInstrALUKnown, instr_rdata_alu_i,
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexIdInstrALUKnown, instr_rdata_alu_i,
       instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
 
   // Multicycle enable signals must be unique.
-  `ASSERT(IbexMulticycleEnableUnique,
+  `OCAH_OT_ASSERT(IbexMulticycleEnableUnique,
       $onehot0({lsu_req_dec, multdiv_en_dec, branch_in_dec, jump_in_dec}))
 
   // Duplicated instruction flops must match
   // === as DV environment can produce instructions with Xs in, so must use precise match that
   // includes Xs
-  `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
+  `OCAH_OT_ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
 
   // Check that when ID stage is ready for next instruction FSM is in FIRST_CYCLE state the
   // following cycle (when the new instruction may begin executing).
-  `ASSERT(IbexMoveToFirstCycleWhenIdReady, id_in_ready_o |=> id_fsm_q == FIRST_CYCLE)
+  `OCAH_OT_ASSERT(IbexMoveToFirstCycleWhenIdReady, id_in_ready_o |=> id_fsm_q == FIRST_CYCLE)
 
   `ifdef CHECK_MISALIGNED
-  `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
+  `OCAH_OT_ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
   `endif
 
 endmodule

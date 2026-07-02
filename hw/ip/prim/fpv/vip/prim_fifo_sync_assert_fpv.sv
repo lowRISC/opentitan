@@ -39,7 +39,7 @@ module prim_fifo_sync_assert_fpv #(
 
   // no need to consider all possible input words
   // 2-3 different values suffice
-  `ASSUME(WdataValues_M, wdata_i inside {Width'(1'b0), Width'(1'b1), {Width{1'b1}}}, clk_i, !rst_ni)
+  `OCAH_OT_ASSUME(WdataValues_M, wdata_i inside {Width'(1'b0), Width'(1'b1), {Width{1'b1}}}, clk_i, !rst_ni)
 
   ////////////////////////////////
   // Data and Depth Value Check //
@@ -131,9 +131,9 @@ module prim_fifo_sync_assert_fpv #(
     end
 
     // check the data
-    `ASSERT(DataCheck_A, rvalid_o |-> rdata_o == ref_rdata)
+    `OCAH_OT_ASSERT(DataCheck_A, rvalid_o |-> rdata_o == ref_rdata)
     // check the depth
-    `ASSERT(DepthCheck_A, ref_depth == depth_o)
+    `OCAH_OT_ASSERT(DepthCheck_A, ref_depth == depth_o)
 
   end
 
@@ -142,40 +142,40 @@ module prim_fifo_sync_assert_fpv #(
   ////////////////////////
 
   // The full_o port should be high iff the depth is maximal.
-  `ASSERT(FullIffFullDepth_A, (depth_o == Depth) <-> (full_o))
+  `OCAH_OT_ASSERT(FullIffFullDepth_A, (depth_o == Depth) <-> (full_o))
 
   // assert depth of FIFO
-  `ASSERT(Depth_A, depth_o <= Depth)
+  `OCAH_OT_ASSERT(Depth_A, depth_o <= Depth)
   // if we clear the FIFO, it must be empty in the next cycle
-  `ASSERT(CheckClrDepth_A, clr_i |=> depth_o == 0)
+  `OCAH_OT_ASSERT(CheckClrDepth_A, clr_i |=> depth_o == 0)
   // check write on full
-  `ASSERT(WriteFull_A, depth_o == Depth && wvalid_i && !rready_i |=> depth_o == $past(depth_o),
+  `OCAH_OT_ASSERT(WriteFull_A, depth_o == Depth && wvalid_i && !rready_i |=> depth_o == $past(depth_o),
       clk_i, !rst_ni || clr_i)
   // read empty
-  `ASSERT(ReadEmpty_A, depth_o == 0 && rready_i && !wvalid_i |=> depth_o == 0,
+  `OCAH_OT_ASSERT(ReadEmpty_A, depth_o == 0 && rready_i && !wvalid_i |=> depth_o == 0,
       clk_i, !rst_ni || clr_i)
 
   // this is unreachable in depth 1 no-pass through mode
   if (Depth == 1 && Pass) begin : gen_d1_passthru
     // check simultaneous write and read
-    `ASSERT(WriteAndRead_A,
+    `OCAH_OT_ASSERT(WriteAndRead_A,
         wready_o && wvalid_i && rvalid_o && rready_i |=> depth_o == $past(depth_o),
         clk_i, !rst_ni || clr_i)
   end
 
   if (Depth == 0) begin : gen_depth0
     // if there is no register, the FIFO is per definition pass-through
-    `ASSERT_INIT(ZeroDepthNeedsPass_A, Pass == 1)
+    `OCAH_OT_ASSERT_INIT(ZeroDepthNeedsPass_A, Pass == 1)
     // depth must remain zero
-    `ASSERT(DepthAlwaysZero_A, depth_o == 0)
+    `OCAH_OT_ASSERT(DepthAlwaysZero_A, depth_o == 0)
     // data is just passed through
-    `ASSERT(DataPassThru_A, wdata_i == rdata_o)
+    `OCAH_OT_ASSERT(DataPassThru_A, wdata_i == rdata_o)
     // FIFO is ready if downstream logic is ready
-    `ASSERT(Wready_A, rready_i == wready_o)
+    `OCAH_OT_ASSERT(Wready_A, rready_i == wready_o)
     // valid input is valid output
-    `ASSERT(Rvalid_A, rvalid_o == wvalid_i)
+    `OCAH_OT_ASSERT(Rvalid_A, rvalid_o == wvalid_i)
     // ensure full coverage
-    `ASSERT(UnusedClr_A, prim_fifo_sync.gen_passthru_fifo.unused_clr == clr_i)
+    `OCAH_OT_ASSERT(UnusedClr_A, prim_fifo_sync.gen_passthru_fifo.unused_clr == clr_i)
   end else begin : gen_depth_gt0
     // check wready
 
@@ -183,24 +183,24 @@ module prim_fifo_sync_assert_fpv #(
     // FIFO is not currently full, which can be checked my seeing that depth_o < Depth. This
     // property is delayed for a single cycle after coming out of reset (because of an under_rst
     // signal that gets cleared on the first clock afterwards).
-    `ASSERT(Wready_A, 1 |=> depth_o < Depth -> wready_o)
+    `OCAH_OT_ASSERT(Wready_A, 1 |=> depth_o < Depth -> wready_o)
     // check rvalid
-    `ASSERT(Rvalid_A, depth_o > 0 |-> rvalid_o)
+    `OCAH_OT_ASSERT(Rvalid_A, depth_o > 0 |-> rvalid_o)
     // check write only
-    `ASSERT(WriteOnly_A, wvalid_i && wready_o && !rready_i && depth_o < Depth |=>
+    `OCAH_OT_ASSERT(WriteOnly_A, wvalid_i && wready_o && !rready_i && depth_o < Depth |=>
         depth_o == $past(depth_o) + 1, clk_i, !rst_ni || clr_i)
     // check read only
-    `ASSERT(ReadOnly_A, !wvalid_i && rready_i && rvalid_o && depth_o > 0 |=>
+    `OCAH_OT_ASSERT(ReadOnly_A, !wvalid_i && rready_i && rvalid_o && depth_o > 0 |=>
       depth_o == $past(depth_o) - 1, clk_i, !rst_ni || clr_i)
   end
 
   if (Pass) begin : gen_pass_fwd
     // if we clear the FIFO, it must be empty in the next cycle
     // but we may also get a pass through
-    `ASSERT(CheckClrValid_A, clr_i |=> wvalid_i == rvalid_o)
+    `OCAH_OT_ASSERT(CheckClrValid_A, clr_i |=> wvalid_i == rvalid_o)
   end else begin : gen_nopass_fwd
     // if we clear the FIFO, it must be empty in the next cycle
-    `ASSERT(CheckClrValid_A, clr_i |=> !rvalid_o)
+    `OCAH_OT_ASSERT(CheckClrValid_A, clr_i |=> !rvalid_o)
   end
 
   /////////////////////////
@@ -209,24 +209,24 @@ module prim_fifo_sync_assert_fpv #(
 
   if (Pass) begin : gen_pass_bkwd
     // there is still space in the FIFO or downstream logic is ready
-    `ASSERT(WreadySpacekBkwd_A, wready_o |-> depth_o < Depth || rready_i)
+    `OCAH_OT_ASSERT(WreadySpacekBkwd_A, wready_o |-> depth_o < Depth || rready_i)
     // elements ready to be read or upstream data is valid
-    `ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0 || wvalid_i)
+    `OCAH_OT_ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0 || wvalid_i)
   end else begin : gen_nopass_bkwd
     // there is still space in the FIFO
-    `ASSERT(WreadySpacekBkwd_A, wready_o |-> depth_o < Depth)
+    `OCAH_OT_ASSERT(WreadySpacekBkwd_A, wready_o |-> depth_o < Depth)
     // elements ready to be read
-    `ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0)
+    `OCAH_OT_ASSERT(RvalidElemskBkwd_A, rvalid_o |-> depth_o > 0)
   end
 
   // If the wready_o signal is not high, the FIFO should be full. As with Wready_A, this property is
   // delayed by a cycle after coming out of reset, to handle the clearing of the under_rst signal.
-  `ASSERT(WreadyNoSpaceBkwd_A, 1 |=> !wready_o -> depth_o == Depth)
+  `OCAH_OT_ASSERT(WreadyNoSpaceBkwd_A, 1 |=> !wready_o -> depth_o == Depth)
   // elements ready to be read
-  `ASSERT(RvalidNoElemskBkwd_A, !rvalid_o |-> depth_o == 0)
+  `OCAH_OT_ASSERT(RvalidNoElemskBkwd_A, !rvalid_o |-> depth_o == 0)
 
   // The err_o signal should never go high. This isn't supposed to be triggerable without fault
   // injection (which isn't modelled in FPV so the output should be constant zero).
-  `ASSERT(NoErrSignal_A, !err_o)
+  `OCAH_OT_ASSERT(NoErrSignal_A, !err_o)
 
 endmodule : prim_fifo_sync_assert_fpv

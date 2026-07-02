@@ -57,8 +57,8 @@ module prim_gate_gen #(
   localparam int NumOuterRounds = (NumGates + GatesPerRound / 2) / GatesPerRound;
 
   // do not use for fewer than 500 GE
-  `ASSERT(MinimumNumGates_A, NumGates >= 500)
-  `ASSERT(DataMustBeMultipleOfFour_A, DataWidth % 4 == 0)
+  `OCAH_OT_ASSERT(MinimumNumGates_A, NumGates >= 500)
+  `OCAH_OT_ASSERT(DataMustBeMultipleOfFour_A, DataWidth % 4 == 0)
 
   /////////////////////
   // Generator Loops //

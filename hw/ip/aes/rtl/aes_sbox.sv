@@ -26,7 +26,7 @@ module aes_sbox import aes_pkg::*;
 
   // Create a lint error to reduce the risk of accidentally using a less secure SBox
   // implementation.
-  `ASSERT_STATIC_LINT_ERROR(AesSBoxSecSBoxImplNonDefault, SecSBoxImpl == SBoxImplDom)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesSBoxSecSBoxImplNonDefault, SecSBoxImpl == SBoxImplDom)
 
   localparam bit SBoxMasked = (SecSBoxImpl == SBoxImplCanrightMasked ||
                                SecSBoxImpl == SBoxImplCanrightMaskedNoreuse ||
@@ -83,7 +83,7 @@ module aes_sbox import aes_pkg::*;
         .prd_o      ( prd_o       )
       );
 
-      `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
+      `OCAH_OT_ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
 
     end else if (SecSBoxImpl == SBoxImplCanrightMaskedNoreuse) begin :
         gen_sbox_canright_masked_noreuse
@@ -106,7 +106,7 @@ module aes_sbox import aes_pkg::*;
 
       assign prd_o = '0;
 
-      `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 18)
+      `OCAH_OT_ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 18)
 
     end else begin : gen_sbox_canright_masked // SecSBoxImpl == SBoxImplCanrightMasked
       // Tie off unused inputs.
@@ -128,7 +128,7 @@ module aes_sbox import aes_pkg::*;
 
       assign prd_o = '0;
 
-      `ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
+      `OCAH_OT_ASSERT_INIT(AesWidthPRDSBox, WidthPRDSBox == 8)
     end
   end
 

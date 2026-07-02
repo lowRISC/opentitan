@@ -327,7 +327,7 @@ module prim_sync_reqack #(
   // Assertions //
   ////////////////
 
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
     //VCS coverage off
     // pragma coverage off
 
@@ -346,16 +346,16 @@ module prim_sync_reqack #(
     // pragma coverage on
 
     // SRC domain can only de-assert REQ after receiving ACK.
-    `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) && req_chk_i && chk_flag |->
+    `OCAH_OT_ASSERT(SyncReqAckHoldReq, $fell(src_req_i) && req_chk_i && chk_flag |->
         $fell(src_ack_o), clk_src_i, !rst_src_ni || !rst_dst_ni || !req_chk_i || !chk_flag)
   `endif
 
   // DST domain cannot assert ACK without REQ.
-  `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |->
+  `OCAH_OT_ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |->
       dst_req_o, clk_dst_i, !rst_src_ni || !rst_dst_ni)
 
   if (EnRstChks) begin : gen_assert_en_rst_chks
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
 
     //VCS coverage off
     // pragma coverage off
@@ -389,10 +389,10 @@ module prim_sync_reqack #(
     // pragma coverage on
 
     // Always reset both domains. Both resets need to be active at the same time.
-    `ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
+    `OCAH_OT_ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
         (!src_reset_flag throughout !dst_reset_flag[->1]),
         clk_src_i, 0)
-    `ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
+    `OCAH_OT_ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
         (!dst_reset_flag throughout !src_reset_flag[->1]),
         clk_dst_i, 0)
 

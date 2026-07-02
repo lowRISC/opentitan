@@ -311,7 +311,7 @@ module prim_trivium import prim_trivium_pkg::*;
   // greater than the width of the smallest NFSR (= 84) inside the primitive. Otherwise, there is a
   // risk of overwriting the previously provided partial seed which reduces the amount of fresh
   // entropy injected per full reseed operation.
-  `ASSERT(PrimTriviumPartialStateSeedWhileUpdate_A,
+  `OCAH_OT_ASSERT(PrimTriviumPartialStateSeedWhileUpdate_A,
       (SeedType == SeedTypeStatePartial) && seed_req_o && en_i |-> OutputWidth >= MinNfsrWidth)
 
 endmodule

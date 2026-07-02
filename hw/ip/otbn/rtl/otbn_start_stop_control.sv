@@ -68,8 +68,8 @@ module otbn_start_stop_control
 );
 
   // Create lint errors to reduce the risk of accidentally enabling these features.
-  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
-  `ASSERT_STATIC_LINT_ERROR(OtbnSecSkipUrndReseedAtStartNonDefault, SecSkipUrndReseedAtStart == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(OtbnSecSkipUrndReseedAtStartNonDefault, SecSkipUrndReseedAtStart == 0)
 
   otbn_start_stop_state_e state_q, state_d;
   logic init_sec_wipe_done_q, init_sec_wipe_done_d;
@@ -424,7 +424,7 @@ module otbn_start_stop_control
   // Clip the secure wipe address to [0..31].  This is safe because the wipe enable signals are
   // never set when the counter exceeds 5 bit, which we assert below.
   assign sec_wipe_addr_o = addr_cnt_q[4:0];
-  `ASSERT(NoSecWipeAbove32Bit_A, addr_cnt_q[5] |-> (!sec_wipe_wdr_o && !sec_wipe_mac_urnd_o))
+  `OCAH_OT_ASSERT(NoSecWipeAbove32Bit_A, addr_cnt_q[5] |-> (!sec_wipe_wdr_o && !sec_wipe_mac_urnd_o))
 
   // SEC_CM: START_STOP_CTRL.STATE.CONSISTENCY
   // A check for spurious or dropped secure wipe requests.
@@ -463,7 +463,7 @@ module otbn_start_stop_control
 
   assign secure_wipe_running_o = secure_wipe_running_q;
 
-  `ASSERT(StartStopStateValid_A,
+  `OCAH_OT_ASSERT(StartStopStateValid_A,
       state_q inside {OtbnStartStopStateInitial,
                       OtbnStartStopStateHalt,
                       OtbnStartStopStateUrndRefresh,
@@ -474,7 +474,7 @@ module otbn_start_stop_control
                       OtbnStartStopSecureWipeComplete,
                       OtbnStartStopStateLocked})
 
-  `ASSERT(StartSecureWipeImpliesRunning_A,
+  `OCAH_OT_ASSERT(StartSecureWipeImpliesRunning_A,
           $rose(secure_wipe_req_i) |-> (state_q == OtbnStartStopStateRunning))
 
 endmodule

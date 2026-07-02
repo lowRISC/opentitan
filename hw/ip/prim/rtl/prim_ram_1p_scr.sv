@@ -113,9 +113,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   //////////////////////
 
   // The depth needs to be a power of 2 in case address scrambling is turned on
-  `ASSERT_INIT(DepthPow2Check_A, NumAddrScrRounds <= '0 || 2**$clog2(Depth) == Depth)
-  `ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
-  `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
+  `OCAH_OT_ASSERT_INIT(DepthPow2Check_A, NumAddrScrRounds <= '0 || 2**$clog2(Depth) == Depth)
+  `OCAH_OT_ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
+  `OCAH_OT_ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
 
   /////////////////////////////////////////
   // Pending Write and Address Registers //

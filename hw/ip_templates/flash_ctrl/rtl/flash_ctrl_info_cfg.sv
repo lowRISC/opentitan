@@ -83,7 +83,7 @@ module flash_ctrl_info_cfg import flash_ctrl_top_specific_pkg::*; # (
   // is really designed a page inside a Data partition (the "addr" field has width BankW + PageW,
   // not BankW + InfoPageW). This will work just fine so long as InfoPageW <= PageW, but we should
   // check that's always true.
-  `ASSERT_INIT(InfoNoBiggerThanData_A, InfoPageW <= PageW)
+  `OCAH_OT_ASSERT_INIT(InfoNoBiggerThanData_A, InfoPageW <= PageW)
 
   for (genvar i = 0; i < InfosPerBank; i++) begin : gen_info_priv
 

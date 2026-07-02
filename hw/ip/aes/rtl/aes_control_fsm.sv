@@ -1166,10 +1166,10 @@ module aes_control_fsm
   ////////////////
 
   // Create a lint error to reduce the risk of accidentally disabling the masking.
-  `ASSERT_STATIC_LINT_ERROR(AesControlFsmSecMaskingNonDefault, SecMasking == 1)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesControlFsmSecMaskingNonDefault, SecMasking == 1)
 
   // Selectors must be known/valid
-  `ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {
+  `OCAH_OT_ASSERT(AesModeValid, !ctrl_err_storage_i |-> mode_i inside {
       AES_ECB,
       AES_CBC,
       AES_CFB,
@@ -1178,15 +1178,15 @@ module aes_control_fsm
       AES_GCM,
       AES_NONE
       })
-  `ASSERT(AesOpValid, !ctrl_err_storage_i |-> op_i inside {
+  `OCAH_OT_ASSERT(AesOpValid, !ctrl_err_storage_i |-> op_i inside {
       AES_ENC,
       AES_DEC
       })
-  `ASSERT(AesCiphOpValid, !cipher_op_err |-> cipher_op_i inside {
+  `OCAH_OT_ASSERT(AesCiphOpValid, !cipher_op_err |-> cipher_op_i inside {
       CIPH_FWD,
       CIPH_INV
       })
-  `ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
+  `OCAH_OT_ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
       CTRL_IDLE,
       CTRL_LOAD,
       CTRL_GHASH_READY,
@@ -1197,6 +1197,6 @@ module aes_control_fsm
       })
 
   // Check parameters
-  `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
+  `OCAH_OT_ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
 
 endmodule

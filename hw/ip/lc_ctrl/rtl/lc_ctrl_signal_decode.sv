@@ -357,28 +357,28 @@ module lc_ctrl_signal_decode
   ////////////////
 
   // Need to make sure that the random netlist constants are all unique.
-  `ASSERT_INIT(LcKeymgrDivUnique0_A,
+  `OCAH_OT_ASSERT_INIT(LcKeymgrDivUnique0_A,
       !(RndCnstLcKeymgrDivInvalid inside {RndCnstLcKeymgrDivTestUnlocked,
                                           RndCnstLcKeymgrDivDev,
                                           RndCnstLcKeymgrDivRma,
                                           RndCnstLcKeymgrDivProduction}))
-  `ASSERT_INIT(LcKeymgrDivUnique1_A,
+  `OCAH_OT_ASSERT_INIT(LcKeymgrDivUnique1_A,
       !(RndCnstLcKeymgrDivTestUnlocked inside {RndCnstLcKeymgrDivInvalid,
                                                RndCnstLcKeymgrDivDev,
                                                RndCnstLcKeymgrDivRma,
                                                RndCnstLcKeymgrDivProduction}))
-  `ASSERT_INIT(LcKeymgrDivUnique2_A,
+  `OCAH_OT_ASSERT_INIT(LcKeymgrDivUnique2_A,
       !(RndCnstLcKeymgrDivDev inside {RndCnstLcKeymgrDivInvalid,
                                       RndCnstLcKeymgrDivTestUnlocked,
                                       RndCnstLcKeymgrDivRma,
                                       RndCnstLcKeymgrDivProduction}))
-  `ASSERT_INIT(LcKeymgrDivUnique3_A,
+  `OCAH_OT_ASSERT_INIT(LcKeymgrDivUnique3_A,
       !(RndCnstLcKeymgrDivRma inside {RndCnstLcKeymgrDivInvalid,
                                       RndCnstLcKeymgrDivTestUnlocked,
                                       RndCnstLcKeymgrDivDev,
                                       RndCnstLcKeymgrDivProduction}))
 
-  `ASSERT(SignalsAreOffWhenNotEnabled_A,
+  `OCAH_OT_ASSERT(SignalsAreOffWhenNotEnabled_A,
       !lc_state_valid_i
       |=>
       lc_tx_test_false_strict(lc_raw_test_rma_o) &&
@@ -397,7 +397,7 @@ module lc_ctrl_signal_decode
       lc_keymgr_div_o == RndCnstLcKeymgrDivInvalid)
 
 
-  `ASSERT(FsmInScrap_A,
+  `OCAH_OT_ASSERT(FsmInScrap_A,
       !(fsm_state_i inside {ResetSt,
                             TransProgSt,
                             IdleSt,
@@ -413,7 +413,7 @@ module lc_ctrl_signal_decode
       |=>
       lc_tx_test_true_strict(lc_escalate_en_o))
 
-  `ASSERT(StateInScrap_A,
+  `OCAH_OT_ASSERT(StateInScrap_A,
       lc_state_valid_i &&
       fsm_state_i inside {IdleSt,
                           ClkMuxSt,

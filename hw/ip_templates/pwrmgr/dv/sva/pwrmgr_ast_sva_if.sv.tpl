@@ -48,9 +48,9 @@ interface pwrmgr_ast_sva_if #(
 %>\
 % for clk in src_clks:
 <% ast_clk_name = 'core' if clk == 'main' else clk %>\
-  `ASSERT(${clk.capitalize()}ClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:${cycle_bounds[clk][0]}] !pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:${cycle_bounds[clk][0]}] !pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(${clk.capitalize()}ClkGlitchToValOn_A,
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkGlitchToValOn_A,
           $rose(por_d0_ni) && pwr_ast_o.${ast_clk_name}_clk_en |-> ##[0:${cycle_bounds[clk][1]}] pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
           reset_or_disable)
 % endfor
@@ -60,17 +60,17 @@ interface pwrmgr_ast_sva_if #(
   % if clk == 'usb':
   // Usb is a bit different: apparently usb_clk_val can stay low after a power glitch, so it may
   // already be low when usb_clk_en drops.
-  `ASSERT(UsbClkHandshakeOn_A,
+  `OCAH_OT_ASSERT(UsbClkHandshakeOn_A,
           $rose(pwr_ast_o.usb_clk_en) && por_d0_ni && $past(por_d0_ni, 1) |-> `CLK_WAIT_BOUNDS
           pwr_ast_i.usb_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(UsbClkHandshakeOff_A,
+  `OCAH_OT_ASSERT(UsbClkHandshakeOff_A,
           $fell(pwr_ast_o.usb_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val, clk_slow_i,
           reset_or_disable)
   % else:
-  `ASSERT(${clk.capitalize()}ClkHandshakeOn_A,
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkHandshakeOn_A,
           $rose(pwr_ast_o.${ast_clk_name}_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
           pwr_ast_i.${ast_clk_name}_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(${clk.capitalize()}ClkHandshakeOff_A,
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkHandshakeOff_A,
           $fell(pwr_ast_o.${ast_clk_name}_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
           reset_or_disable)
   % endif
@@ -84,14 +84,14 @@ interface pwrmgr_ast_sva_if #(
 
 % for clk in src_clks:
 <% ast_clk_name = 'core' if clk == 'main' else clk %>\
-    `ASSERT(${clk.capitalize() if clk == 'main' else clk.upper()}ClkStopped_A,
+    `OCAH_OT_ASSERT(${clk.capitalize() if clk == 'main' else clk.upper()}ClkStopped_A,
             $fell(
                 pwr_ast_i.${ast_clk_name}_clk_val
             ) |=> ($stable(
                 ${clk}_clk_cycles
             ) || pwr_ast_i.${ast_clk_name}_clk_val) [* 1 : $],
             clk_slow_i, reset_or_disable)
-    `ASSERT(${clk.capitalize()}ClkRun_A,
+    `OCAH_OT_ASSERT(${clk.capitalize()}ClkRun_A,
             $rose(
                 pwr_ast_i.${ast_clk_name}_clk_val
             ) |=> (!$stable(
@@ -103,9 +103,9 @@ interface pwrmgr_ast_sva_if #(
   end
 
   // Main pd-pok
-  `ASSERT(MainPdHandshakeOn_A, pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS pwr_ast_i.main_pok,
+  `OCAH_OT_ASSERT(MainPdHandshakeOn_A, pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS pwr_ast_i.main_pok,
           clk_slow_i, reset_or_disable)
-  `ASSERT(MainPdHandshakeOff_A, !pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS !pwr_ast_i.main_pok,
+  `OCAH_OT_ASSERT(MainPdHandshakeOff_A, !pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS !pwr_ast_i.main_pok,
           clk_slow_i, reset_or_disable)
 
   `undef CLK_WAIT_BOUNDS

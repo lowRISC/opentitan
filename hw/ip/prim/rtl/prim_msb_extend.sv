@@ -14,7 +14,7 @@ module prim_msb_extend # (
   output [OutWidth-1:0] out_o
 );
 
-  `ASSERT_INIT(WidthCheck_A, OutWidth >= InWidth)
+  `OCAH_OT_ASSERT_INIT(WidthCheck_A, OutWidth >= InWidth)
 
   localparam int WidthDiff = OutWidth - InWidth;
 

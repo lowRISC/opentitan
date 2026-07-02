@@ -264,7 +264,7 @@ module usb_fs_tx (
     end
   end
 
-  `ASSERT(StateValid_A, state_q inside {Idle, Sync, Pid, DataOrCrc160, Crc161, Eop, OscTest})
+  `OCAH_OT_ASSERT(StateValid_A, state_q inside {Idle, Sync, Pid, DataOrCrc160, Crc161, Eop, OscTest})
 
   always_comb begin : proc_byte_str
     if (bit_strobe_i && !bitstuff && !pkt_start_i) begin
@@ -368,7 +368,7 @@ module usb_fs_tx (
     endcase
   end
 
-  `ASSERT(OutStateValid_A, out_state_q inside {OsIdle, OsWaitByte, OsTransmit})
+  `OCAH_OT_ASSERT(OutStateValid_A, out_state_q inside {OsIdle, OsWaitByte, OsTransmit})
 
   always_comb begin : proc_diff
     usb_d_d   = usb_d_q;

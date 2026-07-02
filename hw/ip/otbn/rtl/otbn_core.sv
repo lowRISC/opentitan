@@ -103,7 +103,7 @@ module otbn_core
   import prim_mubi_pkg::*;
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
 
   // Fetch request (the next instruction)
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr;
@@ -589,7 +589,7 @@ module otbn_core
     .predec_error_o           (controller_predec_error)
   );
 
-  `ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
+  `OCAH_OT_ASSERT(InsnDataStableInStall, u_otbn_controller.state_q == OtbnStateStall |->
                                  insn_fetch_resp_data == $past(insn_fetch_resp_data))
 
   // Spot the fatal error bits from the controller
@@ -1025,32 +1025,32 @@ module otbn_core
   // Asserts =======================================================================================
 
   // All outputs should be known.
-  `ASSERT_KNOWN(DoneOKnown_A, done_o)
-  `ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
-  `ASSERT_KNOWN_IF(ImemAddrOKnown_A, imem_addr_o, imem_req_o)
-  `ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
-  `ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)
-  `ASSERT_KNOWN_IF(DmemAddrOKnown_A, dmem_addr_o, dmem_req_o)
-  `ASSERT_KNOWN_IF(DmemWdataOKnown_A, dmem_wdata_o, dmem_req_o & dmem_write_o)
-  `ASSERT_KNOWN_IF(DmemWmaskOKnown_A, dmem_wmask_o, dmem_req_o & dmem_write_o)
-  `ASSERT_KNOWN_IF(DmemRmaskOKnown_A, dmem_rmask_o, dmem_req_o)
-  `ASSERT_KNOWN(EdnRndReqOKnown_A, edn_rnd_req_o)
-  `ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_req_o)
-  `ASSERT_KNOWN(InsnCntOKnown_A, insn_cnt_o)
-  `ASSERT_KNOWN(ErrBitsKnown_A, err_bits_o)
+  `OCAH_OT_ASSERT_KNOWN(DoneOKnown_A, done_o)
+  `OCAH_OT_ASSERT_KNOWN(ImemReqOKnown_A, imem_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(ImemAddrOKnown_A, imem_addr_o, imem_req_o)
+  `OCAH_OT_ASSERT_KNOWN(DmemReqOKnown_A, dmem_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(DmemWriteOKnown_A, dmem_write_o, dmem_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(DmemAddrOKnown_A, dmem_addr_o, dmem_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(DmemWdataOKnown_A, dmem_wdata_o, dmem_req_o & dmem_write_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(DmemWmaskOKnown_A, dmem_wmask_o, dmem_req_o & dmem_write_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(DmemRmaskOKnown_A, dmem_rmask_o, dmem_req_o)
+  `OCAH_OT_ASSERT_KNOWN(EdnRndReqOKnown_A, edn_rnd_req_o)
+  `OCAH_OT_ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_req_o)
+  `OCAH_OT_ASSERT_KNOWN(InsnCntOKnown_A, insn_cnt_o)
+  `OCAH_OT_ASSERT_KNOWN(ErrBitsKnown_A, err_bits_o)
 
   // Keep the EDN requests active until they are acknowledged.
-  `ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
-  `ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
+  `OCAH_OT_ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
+  `OCAH_OT_ASSERT(EdnUrndReqStable_A, edn_urnd_req_o & ~edn_urnd_ack_i |=> edn_urnd_req_o)
 
-  `ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
+  `OCAH_OT_ASSERT(OnlyWriteLoadDataBignumWhenDMemValid_A,
           rf_bignum_wr_en_ctrl & insn_dec_bignum.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
-  `ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
+  `OCAH_OT_ASSERT(OnlyWriteLoadDataBaseWhenDMemValid_A,
           rf_base_wr_en_ctrl & insn_dec_base.rf_wdata_sel == RfWdSelLsu |-> dmem_rvalid_i)
 
   // Error handling: if we pass an error signal down to the controller then we should also be
   // setting an error flag, unless the signal came from above.
-  `ASSERT(ErrBitsIfControllerEscalate_A,
+  `OCAH_OT_ASSERT(ErrBitsIfControllerEscalate_A,
           (mubi4_test_true_loose(controller_fatal_escalate_en) ||
            mubi4_test_true_loose(controller_recov_escalate_en)) &&
           mubi4_test_false_strict(escalate_en_i)
@@ -1058,7 +1058,7 @@ module otbn_core
 
   // Similarly, if we pass an escalation signal down to the start/stop controller then we should
   // also be setting an error flag, unless the signal came from above.
-  `ASSERT(ErrBitsIfStartStopEscalate_A,
+  `OCAH_OT_ASSERT(ErrBitsIfStartStopEscalate_A,
           mubi4_test_true_loose(start_stop_escalate_en) && mubi4_test_false_strict(escalate_en_i)
           |=> err_bits_q)
 
@@ -1068,22 +1068,22 @@ module otbn_core
   // for URND data" and "do the secure wipe once it arrives" is duplicated in the Python model,
   // against which the RTL is checked.
 
-  `ASSERT(OtbnStartStopGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
+  `OCAH_OT_ASSERT(OtbnStartStopGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
           && mubi4_test_true_loose(start_stop_escalate_en)|=> ##[1:4000]
           u_otbn_start_stop_control.state_q == otbn_pkg::OtbnStartStopStateLocked)
 
-  `ASSERT(OtbnStartStopLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
+  `OCAH_OT_ASSERT(OtbnStartStopLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
           && mubi4_test_true_loose(start_stop_escalate_en) |=>  ##[1:4000]
           u_otbn_start_stop_control.state_q == otbn_pkg::OtbnStartStopStateLocked)
 
   // In contrast to the start/stop FSM, the controller FSM should lock quickly after an escalation,
   // independent of the secure wipe.
 
-  `ASSERT(OtbnControllerGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
+  `OCAH_OT_ASSERT(OtbnControllerGlobalEscCntrMeasure_A, err_bits_q && mubi4_test_true_loose(escalate_en_i)
           && mubi4_test_true_loose(controller_fatal_escalate_en)|=> ##[1:100]
           u_otbn_controller.state_q == otbn_pkg::OtbnStateLocked)
 
-  `ASSERT(OtbnControllerLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
+  `OCAH_OT_ASSERT(OtbnControllerLocalEscCntrMeasure_A, err_bits_q && mubi4_test_false_strict(escalate_en_i)
           && mubi4_test_true_loose(controller_fatal_escalate_en) |=>  ##[1:100]
           u_otbn_controller.state_q == otbn_pkg::OtbnStateLocked)
 

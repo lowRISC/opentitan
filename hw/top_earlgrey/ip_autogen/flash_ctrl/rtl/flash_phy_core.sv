@@ -257,7 +257,7 @@ module flash_phy_core
 
   // If host_outstanding is non-zero, the controller fsm must be idle..
   // This assertion needs to be disabled for sec_cm testing
-  `ASSERT(HostTransIdleChk_A, |host_outstanding |-> ctrl_fsm_idle)
+  `OCAH_OT_ASSERT(HostTransIdleChk_A, |host_outstanding |-> ctrl_fsm_idle)
 
   //always_ff @(posedge clk_i or negedge rst_ni) begin
   //  if (!rst_ni) begin
@@ -269,7 +269,7 @@ module flash_phy_core
   //  end
   //end
 
-  `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
+  `OCAH_OT_ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
 
   // The host request is suppressed under a variety of conditions:
   // 1. If a controller transaction is already ongoing.
@@ -592,14 +592,14 @@ module flash_phy_core
   /////////////////////////////////
 
   // requests to flash must always be one hot
-  `ASSERT(OneHotReqs_A, $onehot0(reqs))
-  `ASSERT_INIT(NoRemainder_A, AddrBitsRemain == 0)
-  `ASSERT_INIT(Pow2Multiple_A, $onehot(WidthMultiple))
+  `OCAH_OT_ASSERT(OneHotReqs_A, $onehot0(reqs))
+  `OCAH_OT_ASSERT_INIT(NoRemainder_A, AddrBitsRemain == 0)
+  `OCAH_OT_ASSERT_INIT(Pow2Multiple_A, $onehot(WidthMultiple))
 
   // once arb count maxes, the host request should be masked
-  `ASSERT(ArbCntMax_A, arb_cnt == ArbCnt |-> !inc_arb_cnt)
+  `OCAH_OT_ASSERT(ArbCntMax_A, arb_cnt == ArbCnt |-> !inc_arb_cnt)
 
   // once arb count maxes, the host request needs to be masked until the arb count is cleared
-  `ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> (!host_req throughout (ctrl_rsp_vld[->1])))
+  `OCAH_OT_ASSERT(CtrlPrio_A, arb_cnt == ArbCnt |-> (!host_req throughout (ctrl_rsp_vld[->1])))
 
 endmodule // flash_phy_core

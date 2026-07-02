@@ -790,15 +790,15 @@ module aes_cipher_core import aes_pkg::*;
 // Typically assertions already contain this macro, which ensures that assertions are only compiled
 // in simulation and FPV. However, we wrap the entire assertion section with INC_ASSERT so that the
 // helper logic below is not synthesized either, since that could cause issues in DC.
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
   // Create a lint error to reduce the risk of accidentally disabling the masking.
-  `ASSERT_STATIC_LINT_ERROR(AesSecMaskingNonDefault, SecMasking == 1)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesSecMaskingNonDefault, SecMasking == 1)
 
   // Cipher core masking requires a masked SBox and vice versa.
-  `ASSERT_INIT(AesMaskedCoreAndSBox,
+  `OCAH_OT_ASSERT_INIT(AesMaskedCoreAndSBox,
       (SecMasking &&
       (SecSBoxImpl == SBoxImplCanrightMasked ||
        SecSBoxImpl == SBoxImplCanrightMaskedNoreuse ||
@@ -818,7 +818,7 @@ module aes_cipher_core import aes_pkg::*;
   //    cleared upon loading the new initial state).
   // 2. The previous pseudo-random data is equal to the previous output.
   // Otherwise, we must see an alert e.g. because the state multiplexer got glitched.
-  `ASSERT(AesSecCmDataRegKeySca, (state_we == SP2V_HIGH) &&
+  `OCAH_OT_ASSERT(AesSecCmDataRegKeySca, (state_we == SP2V_HIGH) &&
       ((key_len_i == AES_128 && u_aes_cipher_control.rnd_ctr == 4'd10) ||
        (key_len_i == AES_192 && u_aes_cipher_control.rnd_ctr == 4'd12) ||
        (key_len_i == AES_256 && u_aes_cipher_control.rnd_ctr == 4'd14)) |=>
@@ -836,7 +836,7 @@ module aes_cipher_core import aes_pkg::*;
       // last NumCyclesPerRound cycles. This also holds for the very first round, as the PRNG
       // is always updated in the last cycle of the IDLE state and/or the first cycle of the
       // INIT state.
-      `ASSERT(AesSecCmKeyMaskingPrdSubBytes,
+      `OCAH_OT_ASSERT(AesSecCmKeyMaskingPrdSubBytes,
           sub_bytes_en == SP2V_HIGH && ($past(sub_bytes_en) == SP2V_LOW ||
               ($past(sub_bytes_out_req) == SP2V_HIGH &&
                $past(sub_bytes_out_ack) == SP2V_HIGH)) |=>
@@ -849,14 +849,14 @@ module aes_cipher_core import aes_pkg::*;
       // i.e., no fresh randomness is required. For the other key lengths, KeyExpand evaluates
       // its S-Boxes which takes NumCyclesPerRound cycles. When computing the start key for
       // decryption, the input isn't loaded and the PRNG is thus not advanced.
-      `ASSERT(AesSecCmKeyMaskingInitialPrngUpdateSubBytes,
+      `OCAH_OT_ASSERT(AesSecCmKeyMaskingInitialPrngUpdateSubBytes,
           sub_bytes_en == SP2V_HIGH && $past(sub_bytes_en) == SP2V_LOW |=>
           (key_len_i == AES_256 &&
               $past(prd_masking) != $past(prd_masking, 3)) ||
           ((key_len_i == AES_128 || key_len_i == AES_192) &&
               $past(prd_masking) != $past(prd_masking, NumCyclesPerRound + 2)) ||
           (SecAllowForcingMasks && force_masks_i))
-      `ASSERT(AesSecCmKeyMaskingInitialPrngUpdateKeyExpand,
+      `OCAH_OT_ASSERT(AesSecCmKeyMaskingInitialPrngUpdateKeyExpand,
           key_expand_en == SP2V_HIGH && $past(key_expand_en) == SP2V_LOW |=>
           (key_len_i == AES_256 &&
               $past(prd_masking) != $past(prd_masking, 3)) ||
@@ -869,12 +869,12 @@ module aes_cipher_core import aes_pkg::*;
       // share remains constant throughout one round. The SVAs thus only fire if a share
       // remains constant across two rounds.
       for (genvar s = 0; s < NumShares; s++) begin : gen_sec_cm_key_masking_share_svas
-        `ASSERT(AesSecCmKeyMaskingStateShare, state_we == SP2V_HIGH &&
+        `OCAH_OT_ASSERT(AesSecCmKeyMaskingStateShare, state_we == SP2V_HIGH &&
             (crypt_i == SP2V_HIGH || crypt_o == SP2V_HIGH) |=>
             state_q[s] != $past(state_q[s], NumCyclesPerRound) ||
             $past(state_q[s], NumCyclesPerRound) != $past(state_q[s], 2*NumCyclesPerRound) ||
             (SecAllowForcingMasks && force_masks_i) || dec_key_gen_o == SP2V_HIGH)
-        `ASSERT(AesSecCmKeyMaskingOutputShare,
+        `OCAH_OT_ASSERT(AesSecCmKeyMaskingOutputShare,
             (out_valid_o == SP2V_HIGH && $past(out_valid_o) == SP2V_LOW) &&
             (crypt_o == SP2V_HIGH) |=>
             $past(state_o[s]) != $past(state_q[s], NumCyclesPerRound) ||
@@ -923,7 +923,7 @@ module aes_cipher_core import aes_pkg::*;
           aes_prd_concat_bits(data_in_mask[i], unused_prd_msbs[i]);
     end
     assign unused_prd_masking[WidthPRDMasking-1 -: WidthPRDKey] = prd_key_expand;
-    `ASSERT(AesMskgPrdExtraction, prd_masking == unused_prd_masking)
+    `OCAH_OT_ASSERT(AesMskgPrdExtraction, prd_masking == unused_prd_masking)
   end
   //VCS coverage on
   // pragma coverage on

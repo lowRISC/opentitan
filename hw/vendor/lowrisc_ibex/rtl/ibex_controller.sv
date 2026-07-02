@@ -204,7 +204,7 @@ module ibex_controller #(
   // illegal_insn_i only set when instr_valid_i is set.
   assign illegal_insn_d = illegal_insn_i & (ctrl_fsm_cs != FLUSH);
 
-  `ASSERT(IllegalInsnOnlyIfInsnValid, illegal_insn_i |-> instr_valid_i)
+  `OCAH_OT_ASSERT(IllegalInsnOnlyIfInsnValid, illegal_insn_i |-> instr_valid_i)
 
   // exception requests
   // requests are flopped in exc_req_q.  This is cleared when controller is in
@@ -292,7 +292,7 @@ module ibex_controller #(
     assign wb_exception_o = 1'b0;
   end
 
-  `ASSERT_IF(IbexExceptionPrioOnehot,
+  `OCAH_OT_ASSERT_IF(IbexExceptionPrioOnehot,
              $onehot({instr_fetch_err_prio,
                       illegal_insn_prio,
                       ecall_insn_prio,
@@ -895,7 +895,7 @@ module ibex_controller #(
     end
   end
 
-  `ASSERT(PipeEmptyOnIrq, ctrl_fsm_cs != IRQ_TAKEN & ctrl_fsm_ns == IRQ_TAKEN |->
+  `OCAH_OT_ASSERT(PipeEmptyOnIrq, ctrl_fsm_cs != IRQ_TAKEN & ctrl_fsm_ns == IRQ_TAKEN |->
     ~instr_valid_i & ready_wb_i)
 
   //////////
@@ -918,10 +918,10 @@ module ibex_controller #(
   // Assertions //
   ////////////////
 
-  `ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o |-> instr_valid_clear_o)
+  `OCAH_OT_ASSERT(AlwaysInstrClearOnMispredict, nt_branch_mispredict_o |-> instr_valid_clear_o)
 
   // Selectors must be known/valid.
-  `ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {
+  `OCAH_OT_ASSERT(IbexCtrlStateValid, ctrl_fsm_cs inside {
       RESET, BOOT_SET, WAIT_SLEEP, SLEEP, FIRST_FETCH, DECODE, FLUSH,
       IRQ_TAKEN, DBG_TAKEN_IF, DBG_TAKEN_ID})
 
@@ -931,7 +931,7 @@ module ibex_controller #(
   // stage but does not prevent a fetched instruction from proceeding to ID/EX the next cycle, the
   // assertion additionally requires `pc_set_o`, which sets the PC in the IF stage to a new value,
   // hence preventing a fetched instruction from proceeding to the ID/EX stage in the next cycle.
-  `ASSERT(IbexPipelineFlushOnChangingDebugMode,
+  `OCAH_OT_ASSERT(IbexPipelineFlushOnChangingDebugMode,
     debug_mode_d != debug_mode_q |-> flush_id_o & pc_set_o)
 
   `ifdef RVFI

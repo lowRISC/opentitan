@@ -477,7 +477,7 @@ module aes_cipher_control import aes_pkg::*;
   ////////////////
 
   // Selectors must be known/valid
-  `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
+  `OCAH_OT_ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
       CIPH_FWD,
       CIPH_INV
       })

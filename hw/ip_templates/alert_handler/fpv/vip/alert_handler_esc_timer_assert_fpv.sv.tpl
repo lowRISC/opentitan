@@ -48,16 +48,16 @@ module ${module_instance_name}_esc_timer_assert_fpv import ${module_instance_nam
   // Assumptions //
   /////////////////
 
-  `ASSUME(TimeoutCycles_M, timeout_cyc_i < MAX_TIMEOUT_CYCLES)
-  `ASSUME(TimeoutCyclesConst_M, ${"##"}1 $stable(timeout_cyc_i))
+  `OCAH_OT_ASSUME(TimeoutCycles_M, timeout_cyc_i < MAX_TIMEOUT_CYCLES)
+  `OCAH_OT_ASSUME(TimeoutCyclesConst_M, ${"##"}1 $stable(timeout_cyc_i))
 
-  `ASSUME(PhaseCycles_M, phase_cyc_i < MAX_PHASE_CYCLES)
-  `ASSUME(PhaseCyclesConst_M, ${"##"}1 $stable(phase_cyc_i))
+  `OCAH_OT_ASSUME(PhaseCycles_M, phase_cyc_i < MAX_PHASE_CYCLES)
+  `OCAH_OT_ASSUME(PhaseCyclesConst_M, ${"##"}1 $stable(phase_cyc_i))
 
-  `ASSUME(CrashdumpPhaseConst_M, ${"##"}1 $stable(crashdump_phase_i))
+  `OCAH_OT_ASSUME(CrashdumpPhaseConst_M, ${"##"}1 $stable(crashdump_phase_i))
 
-  `ASSUME(EscSelConst_M, ${"##"}1 $stable(esc_sel))
-  `ASSUME(PhaseSelConst_M, ${"##"}1 $stable(phase_sel))
+  `OCAH_OT_ASSUME(EscSelConst_M, ${"##"}1 $stable(esc_sel))
+  `OCAH_OT_ASSUME(PhaseSelConst_M, ${"##"}1 $stable(phase_sel))
 
   ////////////////////////
   // Forward Assertions //
@@ -65,40 +65,40 @@ module ${module_instance_name}_esc_timer_assert_fpv import ${module_instance_nam
 
   // if the class is not enabled and we are in IDLE state,
   // neither of the two escalation mechanisms shall fire
-  `ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o)
-  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i && !${module_instance_name}_esc_timer.fsm_error
+  `OCAH_OT_ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o)
+  `OCAH_OT_ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i && !${module_instance_name}_esc_timer.fsm_error
           |-> !esc_sig_req_o)
-  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && !${module_instance_name}_esc_timer.fsm_error |->
+  `OCAH_OT_ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && !${module_instance_name}_esc_timer.fsm_error |->
       !esc_sig_req_o[esc_sel])
 
   // if timeout counter is enabled due to a pending interrupt, check escalation
   // assume accumulation trigger is not asserted during this sequence
-  `ASSERT(TimeoutEscTrig_A, esc_state_o == Idle ${"##"}1 en_i && $rose(timeout_en_i) &&
+  `OCAH_OT_ASSERT(TimeoutEscTrig_A, esc_state_o == Idle ${"##"}1 en_i && $rose(timeout_en_i) &&
       (timeout_cyc_i > 0) ${"##"}1 timeout_en_i [*MAX_TIMEOUT_CYCLES] |=> esc_has_triggered_q,
       clk_i, !rst_ni || accu_trig_i || clr_i || accu_fail_i)
 
   // check whether an accum trig leads to escalation if enabled
-  `ASSERT(AccumEscTrig_A, ${"##"}1 en_i && accu_trig_i && esc_state_o inside {Idle, Timeout} |=>
+  `OCAH_OT_ASSERT(AccumEscTrig_A, ${"##"}1 en_i && accu_trig_i && esc_state_o inside {Idle, Timeout} |=>
       esc_has_triggered_q, clk_i, !rst_ni || clr_i || accu_fail_i)
 
   // check escalation cnt and state out
-  `ASSERT(EscCntOut_A, ${module_instance_name}_esc_timer.u_prim_count.cnt_q[0] == esc_cnt_o)
+  `OCAH_OT_ASSERT(EscCntOut_A, ${module_instance_name}_esc_timer.u_prim_count.cnt_q[0] == esc_cnt_o)
 
   // check clr input
   // we cannot use clr to exit from the timeout state
-  `ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout, FsmError}) && !accu_fail_i |=>
+  `OCAH_OT_ASSERT(ClrCheck_A, clr_i && !(esc_state_o inside {Idle, Timeout, FsmError}) && !accu_fail_i |=>
       esc_state_o == Idle)
 
   // check escalation map
-  `ASSERT(PhaseEscMap_A, esc_state_o == Phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
+  `OCAH_OT_ASSERT(PhaseEscMap_A, esc_state_o == Phases[phase_sel] && esc_map_i[esc_sel] == phase_sel &&
       esc_en_i[esc_sel] |-> esc_sig_req_o[esc_sel])
 
   // check terminal state is reached eventually if triggered and not cleared
-  `ASSERT(TerminalState_A, esc_trig_o |-> strong(${"##"}[1:$] esc_state_o == Terminal),
+  `OCAH_OT_ASSERT(TerminalState_A, esc_trig_o |-> strong(${"##"}[1:$] esc_state_o == Terminal),
       clk_i, !rst_ni || clr_i || accu_fail_i)
 
   // check that the crashdump capture trigger is asserted correctly
-  `ASSERT(CrashdumpTrigger_A,
+  `OCAH_OT_ASSERT(CrashdumpTrigger_A,
       ${"##"}1 $changed(esc_state_o) &&
       esc_state_o == cstate_e'(4 + crashdump_phase_i)
       <->
@@ -110,16 +110,16 @@ module ${module_instance_name}_esc_timer_assert_fpv import ${module_instance_nam
 
   // escalation can only be triggered when in Idle or Timeout state. Trigger mechanisms are either
   // the accumulation trigger or a timeout trigger
-  `ASSERT(EscTrigBkwd_A, esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accu_trig_i ||
+  `OCAH_OT_ASSERT(EscTrigBkwd_A, esc_trig_o |-> esc_state_o inside {Idle, Timeout} && accu_trig_i ||
       esc_state_o == Timeout && esc_cnt_o >= timeout_cyc_i)
-  `ASSERT(NoEscTrigBkwd_A, !esc_trig_o |-> !(esc_state_o inside {Idle, Timeout}) ||
+  `OCAH_OT_ASSERT(NoEscTrigBkwd_A, !esc_trig_o |-> !(esc_state_o inside {Idle, Timeout}) ||
       !en_i || !accu_trig_i || !timeout_en_i || clr_i)
 
   // escalation signals can only be asserted in the escalation phase states, or
   // if we are in the terminal FsmError state
-  `ASSERT(EscBkwd_A, esc_sig_req_o[esc_sel] |-> esc_en_i[esc_sel] &&
+  `OCAH_OT_ASSERT(EscBkwd_A, esc_sig_req_o[esc_sel] |-> esc_en_i[esc_sel] &&
       esc_has_triggered_q || ${module_instance_name}_esc_timer.fsm_error)
-  `ASSERT(NoEscBkwd_A, !esc_sig_req_o[esc_sel] |-> !esc_en_i[esc_sel] ||
+  `OCAH_OT_ASSERT(NoEscBkwd_A, !esc_sig_req_o[esc_sel] |-> !esc_en_i[esc_sel] ||
       esc_state_o != Phases[esc_map_i[esc_sel]] && esc_state_o != FsmError,
       clk_i, !rst_ni || clr_i)
 

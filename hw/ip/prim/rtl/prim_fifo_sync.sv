@@ -42,7 +42,7 @@ module prim_fifo_sync #(
 
   // FIFO is in complete passthrough mode
   if (Depth == 0) begin : gen_passthru_fifo
-    `ASSERT_INIT(paramCheckPass, Pass == 1)
+    `OCAH_OT_ASSERT_INIT(paramCheckPass, Pass == 1)
 
     assign depth_o = 1'b0; //output is meaningless
 
@@ -208,25 +208,25 @@ module prim_fifo_sync #(
       assign rdata_o = rdata_int;
     end
 
-    `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth_o <= DepthW'(Depth))
-    `ASSERT(OnlyRvalidWhenNotUnderRst_A, rvalid_o -> ~under_rst)
+    `OCAH_OT_ASSERT(depthShallNotExceedParamDepth, !empty |-> depth_o <= DepthW'(Depth))
+    `OCAH_OT_ASSERT(OnlyRvalidWhenNotUnderRst_A, rvalid_o -> ~under_rst)
   end // block: gen_normal_fifo
 
 
   if (NeverClears) begin : gen_never_clears
-    `ASSERT(NeverClears_A, !clr_i)
+    `OCAH_OT_ASSERT(NeverClears_A, !clr_i)
   end
 
   //////////////////////
   // Known Assertions //
   //////////////////////
 
-  `ASSERT_KNOWN_IF(DataKnown_A, rdata_o, rvalid_o)
-  `ASSERT_KNOWN(DepthKnown_A, depth_o)
-  `ASSERT_KNOWN(RvalidKnown_A, rvalid_o)
-  `ASSERT_KNOWN(WreadyKnown_A, wready_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(DataKnown_A, rdata_o, rvalid_o)
+  `OCAH_OT_ASSERT_KNOWN(DepthKnown_A, depth_o)
+  `OCAH_OT_ASSERT_KNOWN(RvalidKnown_A, rvalid_o)
+  `OCAH_OT_ASSERT_KNOWN(WreadyKnown_A, wready_o)
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // When Depth=1 and Secure=1, there is a specialized countermeasure that works by replicating
   // the full_q flag. To set the logic value below to one, the user must use the
   // ASSERT_PRIM_FIFO_SYNC_SINGLETON_ERROR_TRIGGER_ALERT macro (which checks that the error signal
@@ -236,7 +236,7 @@ module prim_fifo_sync #(
   // fail.
   logic unused_assert_connected;
   if (Depth == 1 && Secure) begin : gen_secure_singleton
-    `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)
+    `OCAH_OT_ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)
   end
 `endif
 endmodule

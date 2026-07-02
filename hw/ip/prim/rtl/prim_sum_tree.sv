@@ -38,7 +38,7 @@ module prim_sum_tree #(
   ///////////////////////
 
   // This only works with 2 or more sources.
-  `ASSERT_INIT(NumSources_A, NumSrc >= 2)
+  `OCAH_OT_ASSERT_INIT(NumSources_A, NumSrc >= 2)
 
   // Align to powers of 2 for simplicity.
   // A full binary tree with N levels has 2**N + 2**N-1 nodes.
@@ -117,7 +117,7 @@ module prim_sum_tree #(
   // Assertions //
   ////////////////
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
@@ -147,9 +147,9 @@ module prim_sum_tree #(
   //VCS coverage on
   // pragma coverage on
 
-  `ASSERT(ValidInImpliesValidOut_A, |valid_i === sum_valid_o)
-  `ASSERT(SumComputation_A, sum_valid_o |-> sum_value_o == sum_value_exp)
-  `ASSERT(SumComputationInvalid_A, !sum_valid_o |-> sum_value_o == '0)
+  `OCAH_OT_ASSERT(ValidInImpliesValidOut_A, |valid_i === sum_valid_o)
+  `OCAH_OT_ASSERT(SumComputation_A, sum_valid_o |-> sum_value_o == sum_value_exp)
+  `OCAH_OT_ASSERT(SumComputationInvalid_A, !sum_valid_o |-> sum_value_o == '0)
 `endif
 
 endmodule : prim_sum_tree

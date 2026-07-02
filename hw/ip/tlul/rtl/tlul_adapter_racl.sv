@@ -106,9 +106,9 @@ module tlul_adapter_racl
   logic unused_policy_sel;
   assign unused_policy_sel = ^racl_policies_i;
 
-  `ASSERT(RaclAdapterNumRanges, EnableRacl |-> RaclPolicySelNumRanges > 0)
+  `OCAH_OT_ASSERT(RaclAdapterNumRanges, EnableRacl |-> RaclPolicySelNumRanges > 0)
 
   // Ensure that RACL signals are not undefined
-  `ASSERT_KNOWN(RaclAdapterErrorKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(RaclAdapterErrorKnown_A, racl_error_o.valid)
 
 endmodule

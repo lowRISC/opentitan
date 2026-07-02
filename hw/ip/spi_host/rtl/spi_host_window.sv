@@ -81,7 +81,7 @@ module spi_host_window
      assign tx_be_o[i] = |bit_mask[i*8 +: 8];
 
     // all the bits of particular byte must be the same
-    `ASSERT(BitMaskCheck_A, (|bit_mask[i*8 +: 8] == 1'b0) ||
+    `OCAH_OT_ASSERT(BitMaskCheck_A, (|bit_mask[i*8 +: 8] == 1'b0) ||
                             (&bit_mask[i*8 +: 8] == 1'b1))
   end
 

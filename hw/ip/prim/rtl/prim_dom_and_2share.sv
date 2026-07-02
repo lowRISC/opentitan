@@ -150,7 +150,7 @@ module prim_dom_and_2share #(
 
   // To speed up the FPV process, random value is ready in less than or
   // equal to two cycles.
-  `ASSUME_FPV(RandomReadyInShortTime_A,
+  `OCAH_OT_ASSUME_FPV(RandomReadyInShortTime_A,
     $changed(a0_i) || $changed(a1_i) || $changed(b0_i) || $changed(b1_i)
       |-> ##[0:2] z_valid_i,
     clk_i, !rst_ni)
@@ -159,13 +159,13 @@ module prim_dom_and_2share #(
     // If Pipeline is not set, the computation takes two cycles without flop
     // crossing the domain. In this case, the signal should be stable for at
     // least two cycles.
-    `ASSUME(StableTwoCycles_M,
+    `OCAH_OT_ASSUME(StableTwoCycles_M,
       ($changed(a0_i)  || $changed(a1_i) || $changed(b0_i) || $changed(b1_i))
         ##[0:$] z_valid_i |=>
         $stable(a0_i) && $stable(a1_i) && $stable(b0_i) && $stable(b1_i))
   end
 
-  `ASSERT(UnmaskedAndMatched_A,
+  `OCAH_OT_ASSERT(UnmaskedAndMatched_A,
     z_valid_i |=> (q0_o ^ q1_o) ==
       (($past(a0_i) ^ $past(a1_i)) & ($past(b0_i) ^ $past(b1_i))),
     clk_i, !rst_ni)

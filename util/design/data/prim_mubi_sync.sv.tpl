@@ -38,7 +38,7 @@ module prim_mubi${n_bits}_sync
   output mubi${n_bits}_t [NumCopies-1:0] mubi_o
 );
 
-  `ASSERT_INIT(NumCopiesMustBeGreaterZero_A, NumCopies > 0)
+  `OCAH_OT_ASSERT_INIT(NumCopiesMustBeGreaterZero_A, NumCopies > 0)
 
   logic [MuBi${n_bits}Width-1:0] mubi;
   if (AsyncOn) begin : gen_flops
@@ -111,23 +111,23 @@ module prim_mubi${n_bits}_sync
 // cycle, whereas RTL will because SVAs sample values in the "preponed" region. To that end we make
 // use of an RTL helper variable to sample the lc_en_i signal, hence ensuring that there are no
 // sampling mismatches.
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
       mubi${n_bits}_t mubi_in_sva_q;
       always_ff @(posedge clk_i) begin
         mubi_in_sva_q <= mubi_i;
       end
-      `ASSERT(OutputIfUnstable_A, sig_unstable |-> mubi_o == {NumCopies{reset_value}})
-      `ASSERT(OutputDelay_A,
+      `OCAH_OT_ASSERT(OutputIfUnstable_A, sig_unstable |-> mubi_o == {NumCopies{reset_value}})
+      `OCAH_OT_ASSERT(OutputDelay_A,
               rst_ni |-> ##[3:4] sig_unstable || mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}})
 `endif
     end else begin : gen_no_stable_chks
       assign mubi = mubi_sync;
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
       mubi${n_bits}_t mubi_in_sva_q;
       always_ff @(posedge clk_i) begin
         mubi_in_sva_q <= mubi_i;
       end
-      `ASSERT(OutputDelay_A,
+      `OCAH_OT_ASSERT(OutputDelay_A,
               rst_ni |-> ##3 (mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}} ||
                               $past(mubi_in_sva_q, 2) != $past(mubi_in_sva_q, 1)))
 `endif
@@ -154,7 +154,7 @@ module prim_mubi${n_bits}_sync
 
     assign mubi = MuBi${n_bits}Width'(mubi_i);
 
-    `ASSERT(OutputDelay_A, mubi_o == {NumCopies{mubi_i}})
+    `OCAH_OT_ASSERT(OutputDelay_A, mubi_o == {NumCopies{mubi_i}})
   end
 
   for (genvar j = 0; j < NumCopies; j++) begin : gen_buffs
@@ -173,6 +173,6 @@ module prim_mubi${n_bits}_sync
   ////////////////
 
   // The outputs should be known at all times.
-  `ASSERT_KNOWN(OutputsKnown_A, mubi_o)
+  `OCAH_OT_ASSERT_KNOWN(OutputsKnown_A, mubi_o)
 
 endmodule : prim_mubi${n_bits}_sync

@@ -9,10 +9,32 @@ module tb;
   import csrng_env_pkg::*;
   import csrng_test_pkg::*;
   import prim_mubi_pkg::*;
+  import csrng_reg_pkg::NumApps;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+
+  // CSRNG has a "software app" for random numbers that are read over TLUL, then zero or more
+  // "hardware apps" which each have a connection through csrng_cmd_i / csrng_cmd_o.
+  //
+  // This number of apps isn't passed as a parameter to the design because each app has associated
+  // registers, which need auto-generating by reggen. However, the design exposes the number of apps
+  // (both HW and SW) as csrng_reg_pkg::NumApps.
+  //
+  // This value should be positive. Define NumHwApps locally because several things depend on that
+  // (such as the width of the csrng_cmd_i/o ports).
+  localparam int unsigned NumHwApps = (NumApps > 0) ? NumApps - 1 : 0;
+
+  // Check that NumApps really was positive. Also, check that NumHwApps matches the corresponding
+  // parameter in the dut.
+  initial begin
+    if (NumApps <= 0)
+      `uvm_error("tb", "NumApps should be strictly positive.")
+
+    if (NumHwApps != dut.NumHwApps)
+      `uvm_error("tb", "NumHwApps from dut doesn't match the value inferred from csrng_reg_pkg.")
+  end
 
   wire   clk, rst_n;
   wire   edn_disable, entropy_src_disable;
@@ -20,11 +42,11 @@ module tb;
   wire   intr_entropy_req;
   wire   intr_hw_inst_exc;
   wire   intr_cs_fatal_err;
-  wire[NUM_MAX_INTERRUPTS-1:0]              interrupts;
-  wire[MuBi8Width - 1:0]                    otp_en_cs_sw_app_read;
-  wire[MuBi4Width - 1:0]                    lc_hw_debug_en;
-  csrng_pkg::csrng_req_t[NUM_HW_APPS-1:0]   csrng_cmd_req;
-  csrng_pkg::csrng_rsp_t[NUM_HW_APPS-1:0]   csrng_cmd_rsp;
+  wire[NUM_MAX_INTERRUPTS-1:0]          interrupts;
+  wire[MuBi8Width - 1:0]                otp_en_cs_sw_app_read;
+  wire[MuBi4Width - 1:0]                lc_hw_debug_en;
+  csrng_pkg::csrng_req_t[NumHwApps-1:0] csrng_cmd_req;
+  csrng_pkg::csrng_rsp_t[NumHwApps-1:0] csrng_cmd_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -32,7 +54,7 @@ module tb;
   pins_if#(MuBi8Width) otp_en_cs_sw_app_read_if(otp_en_cs_sw_app_read);
   pins_if#(MuBi4Width) lc_hw_debug_en_if(lc_hw_debug_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  csrng_if  csrng_if[NUM_HW_APPS](.clk(clk), .rst_n(edn_disable === 1'b1 ? 1'b0 : rst_n));
+  csrng_if  csrng_if[NumHwApps](.clk(clk), .rst_n(edn_disable === 1'b1 ? 1'b0 : rst_n));
   csrng_agents_if csrng_agents_if();
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       entropy_src_if(.clk(clk), .rst_n(entropy_src_disable === 1'b1 ? 1'b0 : rst_n));
@@ -47,8 +69,7 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  csrng#(.NHwApps(NUM_HW_APPS),
-         .RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
+  csrng#(.RndCnstCsKeymgrDivNonProduction(LC_HW_DEBUG_EN_ON_DATA),
          .RndCnstCsKeymgrDivProduction(LC_HW_DEBUG_EN_OFF_DATA))
   dut (
     .clk_i                      (clk      ),
@@ -78,7 +99,7 @@ module tb;
     .intr_cs_fatal_err_o        (intr_cs_fatal_err)
   );
 
-  for (genvar i = 0; i < NUM_HW_APPS; i++) begin : gen_csrng_if
+  for (genvar i = 0; i < NumHwApps; i++) begin : gen_csrng_if
     assign csrng_cmd_req[i]    = csrng_if[i].cmd_req;
     assign csrng_if[i].cmd_rsp = csrng_cmd_rsp[i];
     initial begin
@@ -93,6 +114,8 @@ module tb;
   assign interrupts[FifoErr]    = intr_cs_fatal_err;
 
   initial begin
+    uvm_config_db#(int unsigned)::set(null, "uvm_test_top", "num_hw_apps", dut.NumHwApps);
+
     // Drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
@@ -115,14 +138,14 @@ module tb;
   end
 
   // Assertions
-  for (genvar i = 0; i < NUM_HW_APPS + 1; i++) begin : gen_cmd_stage_asserts
-    `ASSERT(CmdStageFifoNotFullReady,
+  for (genvar i = 0; i < NumApps; i++) begin : gen_cmd_stage_asserts
+    `OCAH_OT_ASSERT(CmdStageFifoNotFullReady,
       $past(rst_n) &&
       (tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth != 2'h2) |->
       tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_rdy_o,
       clk,
       !rst_n)
-    `ASSERT(CmdStageFifoFullNotReady,
+    `OCAH_OT_ASSERT(CmdStageFifoFullNotReady,
       (tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth == 2'h2) |->
       !tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_rdy_o,
       clk,

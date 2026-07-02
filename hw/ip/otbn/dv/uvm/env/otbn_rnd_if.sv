@@ -109,7 +109,7 @@ interface otbn_rnd_if (
   assign edn_data_ignored = edn_rnd_ack_i & edn_rnd_data_ignore_q;
 
 `define ASSERT_IN_STATE(NAME, STATE, PROP) \
-  `ASSERT(NAME, (fsm_state == ST_``STATE) |-> (PROP))
+  `OCAH_OT_ASSERT(NAME, (fsm_state == ST_``STATE) |-> (PROP))
 
 `define ASSERT_NO_EDGE(FROM, TO) \
   `ASSERT_IN_STATE(No``FROM``To``TO``_A, FROM, fsm_state != ST_``TO)
@@ -118,12 +118,12 @@ interface otbn_rnd_if (
   `ASSERT_IN_STATE(Edge``FROM``To``TO``_A, FROM, (EVENT) |=> (fsm_state == ST_``TO))
 
 `define COVER_IN_STATE(NAME, STATE, PROP) \
-  `COVER(NAME, (fsm_state == ST_``STATE) && (PROP))
+  `OCAH_OT_COVER(NAME, (fsm_state == ST_``STATE) && (PROP))
 
   // We never expect to see rd_rnd and wr_rnd_prefetch on the same cycle (since that would mean a
   // write to the RND_PREFETCH register at the same time as a read of the RND register, or while
   // that read was stalled).
-  `ASSERT(NandReqPrefetch_A, !(rd_rnd && wr_rnd_prefetch))
+  `OCAH_OT_ASSERT(NandReqPrefetch_A, !(rd_rnd && wr_rnd_prefetch))
 
   // Consistency checks for the IDLE state
   //

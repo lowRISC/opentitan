@@ -23,6 +23,7 @@ module tlul_adapter_sram
 #(
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
+  parameter int SramDepth         = 2**SramAw, // Must be <= 2**SramAw
   parameter int Outstanding       = 1,  // Only one request is accepted
   parameter int SramBusBankAW     = 12, // SRAM bus address width of the SRAM bank. Only used
                                         // when DataXorAddr=1.
@@ -90,6 +91,7 @@ module tlul_adapter_sram
   logic tlul_error;
   logic readback_error;
   logic sram_byte_readback_error;
+  logic addr_miss_error;
 
   // readback check
   logic readback_error_q;
@@ -163,6 +165,16 @@ module tlul_adapter_sram
     assign rd_vld_error = 1'b0;
   end
 
+  if (2**SramAw == SramDepth) begin : gen_no_addr_chk
+    // The depth of the memory is a power of two. Here, we only ever get to see addresses that hit
+    // in the memory.
+    assign addr_miss_error = 1'b0;
+  end else begin : gen_addr_chk
+    // The depth of the memory is not a power of two. We have to signal an error if the address
+    // hits the unmapped range.
+    assign addr_miss_error = tl_i.a_address[DataBitWidth +: SramAw] >= SramDepth;
+  end
+
   // tlul protocol check
   tlul_err u_err (
     .clk_i,
@@ -173,7 +185,7 @@ module tlul_adapter_sram
 
   // error return is transactional and thus does not used the "latched" intg_err signal
   assign error_det = wr_attr_error | wr_vld_error | rd_vld_error | instr_error |
-                     tlul_error    | intg_error;
+                     tlul_error    | intg_error   | addr_miss_error;
 
   // from sram_byte to adapter logic
   tl_h2d_t tl_i_int;
@@ -633,27 +645,32 @@ module tlul_adapter_sram
   );
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
-  `ASSERT(rvalidHighReqFifoEmpty, rvalid_i |-> reqfifo_rvalid)
+  `OCAH_OT_ASSERT(rvalidHighReqFifoEmpty, rvalid_i |-> reqfifo_rvalid)
 
   // below assertion fails when outstanding value is too small (SRAM rvalid is asserted
   // even though the RspFifo is full)
-  `ASSERT(rvalidHighWhenRspFifoFull, rvalid_i |-> rspfifo_wready)
+  `OCAH_OT_ASSERT(rvalidHighWhenRspFifoFull, rvalid_i |-> rspfifo_wready)
 
   // If both ErrOnWrite and ErrOnRead are set, this block is useless
-  `ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
+  `OCAH_OT_ASSERT_INIT(adapterNoReadOrWrite, (ErrOnWrite & ErrOnRead) == 0)
 
-  `ASSERT_INIT(SramDwHasByteGranularity_A, SramDw % 8 == 0)
-  `ASSERT_INIT(SramDwIsMultipleOfTlulWidth_A, SramDw % top_pkg::TL_DW == 0)
+  `OCAH_OT_ASSERT_INIT(SramDwHasByteGranularity_A, SramDw % 8 == 0)
+  `OCAH_OT_ASSERT_INIT(SramDwIsMultipleOfTlulWidth_A, SramDw % top_pkg::TL_DW == 0)
+  // Either the memory has a power-of-two depth and the address width perfectly matches, or the
+  // depth is not a power of two but the address width is still minimal.
+  `OCAH_OT_ASSERT_INIT(SramAwCorrectlySizedForDepth_A,
+      ((SramDepth & (SramDepth - 1)) == 0) ? (2**SramAw == SramDepth) :
+                                             ($clog2(SramDepth) == SramAw))
 
   // These parameter options cannot both be true at the same time
-  `ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))
+  `OCAH_OT_ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))
 
   // Make sure that outputs are defined (a special case for tl_o is explained separately below)
-  `ASSERT_KNOWN(ReqOutKnown_A,   req_o  )
-  `ASSERT_KNOWN(WeOutKnown_A,    we_o   )
-  `ASSERT_KNOWN(AddrOutKnown_A,  addr_o )
-  `ASSERT_KNOWN(WdataOutKnown_A, wdata_o)
-  `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o)
+  `OCAH_OT_ASSERT_KNOWN(ReqOutKnown_A,   req_o  )
+  `OCAH_OT_ASSERT_KNOWN(WeOutKnown_A,    we_o   )
+  `OCAH_OT_ASSERT_KNOWN(AddrOutKnown_A,  addr_o )
+  `OCAH_OT_ASSERT_KNOWN(WdataOutKnown_A, wdata_o)
+  `OCAH_OT_ASSERT_KNOWN(WmaskOutKnown_A, wmask_o)
 
   // We'd like to claim that the payload of the TL output is known, but this isn't necessarily true!
   // This block is just an adapter that converts from an SRAM interface to a TL interface. To make
@@ -663,9 +680,9 @@ module tlul_adapter_sram
   // This is a bit tricky to track because SRAM responses get stored in u_rspfifo. Assuming that the
   // FIFO doesn't manufacture X's (an assertion in prim_fifo_sync), the only stage of the path
   // needed in this file is the following:
-  `ASSERT_KNOWN(TlOutValidKnown_A, tl_o.d_valid)
-  `ASSERT(TlOutKnownIfFifoKnown_A, !$isunknown(rspfifo_rdata) -> !$isunknown(tl_o))
+  `OCAH_OT_ASSERT_KNOWN(TlOutValidKnown_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT(TlOutKnownIfFifoKnown_A, !$isunknown(rspfifo_rdata) -> !$isunknown(tl_o))
 
   // The definition of d_valid leads to the assertion below.
-  `ASSERT(DValidNeedsReqFifoRValid_A, d_valid -> reqfifo_rvalid)
+  `OCAH_OT_ASSERT(DValidNeedsReqFifoRValid_A, d_valid -> reqfifo_rvalid)
 endmodule

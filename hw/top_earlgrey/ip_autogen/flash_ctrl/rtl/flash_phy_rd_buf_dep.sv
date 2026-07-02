@@ -99,16 +99,16 @@ module flash_phy_rd_buf_dep import flash_phy_pkg::*;(
 
   // If there are more buffers than there are number of response fifo entries, we an never have
   // a fully dependent condition
-  `ASSERT(BufferDepRsp_A, NumBuf > RspOrderDepth |-> ~all_dependency_o)
+  `OCAH_OT_ASSERT(BufferDepRsp_A, NumBuf > RspOrderDepth |-> ~all_dependency_o)
 
   // We should never attempt to increment when at max value
-  `ASSERT(BufferIncrOverFlow_A, en_i & fifo_wr_i |-> curr_incr_cnt < RspOrderDepth)
+  `OCAH_OT_ASSERT(BufferIncrOverFlow_A, en_i & fifo_wr_i |-> curr_incr_cnt < RspOrderDepth)
 
   // We should never attempt to decrement when at min value
-  `ASSERT(BufferDecrUnderRun_A, en_i & fifo_rd_i |-> (curr_decr_cnt > '0))
+  `OCAH_OT_ASSERT(BufferDecrUnderRun_A, en_i & fifo_rd_i |-> (curr_decr_cnt > '0))
 
   // The total number of dependent buffers cannot never exceed the size of response queue
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
   logic [31:0] assert_cnt;
@@ -121,7 +121,7 @@ module flash_phy_rd_buf_dep import flash_phy_pkg::*;(
   //VCS coverage on
   // pragma coverage on
 
-  `ASSERT(DepBufferRspOrder_A, fifo_wr_i |=> assert_cnt <= RspOrderDepth)
+  `OCAH_OT_ASSERT(DepBufferRspOrder_A, fifo_wr_i |=> assert_cnt <= RspOrderDepth)
   `endif
 
 

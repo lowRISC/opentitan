@@ -156,7 +156,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     endcase
   end
 
-  `ASSERT_KNOWN(WakeDetectActiveAonKnown_A, wake_detect_active_aon_o,
+  `OCAH_OT_ASSERT_KNOWN(WakeDetectActiveAonKnown_A, wake_detect_active_aon_o,
     clk_aon_i, !rst_aon_ni)
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : proc_reg_awk

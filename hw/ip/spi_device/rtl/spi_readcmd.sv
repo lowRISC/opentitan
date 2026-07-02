@@ -261,7 +261,7 @@ module spi_readcmd
   } main_st_e;
   main_st_e main_st, main_st_d;
 
-  `ASSERT(ValidCmdConfig_A,
+  `OCAH_OT_ASSERT(ValidCmdConfig_A,
           main_st == MainAddress |-> (cmd_info_i.addr_mode != AddrDisabled &&
                                       cmd_info_i.payload_dir == PayloadOut &&
                                       cmd_info_i.valid))
@@ -785,11 +785,11 @@ module spi_readcmd
   ////////////////
 
   // `addr_inc` should not be asserted in Address phase
-  `ASSERT(AddrIncNotAssertInAddressState_A, addr_inc |-> main_st != MainAddress)
+  `OCAH_OT_ASSERT(AddrIncNotAssertInAddressState_A, addr_inc |-> main_st != MainAddress)
 
   // Assume mailbox addr config is mailbox size.
   // As depth is # of entries and the entry is word, the size should add 2bits
-  `ASSUME(MailboxSizeMatch_M, mailbox_addr_i[$clog2(MailboxDepth)+1:0] == '0)
+  `OCAH_OT_ASSUME(MailboxSizeMatch_M, mailbox_addr_i[$clog2(MailboxDepth)+1:0] == '0)
 
 
 endmodule : spi_readcmd

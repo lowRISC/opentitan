@@ -203,7 +203,7 @@ module pinmux_strap_sampling
   assign pinmux_hw_debug_en_o = pinmux_hw_debug_en[HwDebugEnRvDmOut];
 
   // Check that we can correctly latch upon strap_en_i
-  `ASSERT(LcHwDebugEnSet_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnSet_A,
       (lc_tx_test_true_strict(lc_hw_debug_en[0]) ||
        lc_tx_test_true_strict(pinmux_hw_debug_en_q)) &&
       lc_tx_test_false_strict(lc_hw_debug_clr[0]) &&
@@ -213,20 +213,20 @@ module pinmux_strap_sampling
       |=>
       lc_tx_test_true_strict(pinmux_hw_debug_en_q))
   // Check that latching ON can only occur if lc_hw_debug_en_i is set.
-  `ASSERT(LcHwDebugEnSetRev0_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnSetRev0_A,
       lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
       lc_tx_test_true_strict(pinmux_hw_debug_en_q)
       |->
       lc_tx_test_true_strict($past(lc_hw_debug_en[0])))
   // Check that latching ON can only occur if strap_en_i is set.
-  `ASSERT(LcHwDebugEnSetRev1_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnSetRev1_A,
       lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
       lc_tx_test_true_strict(pinmux_hw_debug_en_q)
       |->
       $past(strap_en_i))
   // Check that any non-OFF value on lc_check_byp_en_i or lc_escalate_en_i or lc_hw_debug_clr_i
   // clears the latched value.
-  `ASSERT(LcHwDebugEnClear_A,
+  `OCAH_OT_ASSERT(LcHwDebugEnClear_A,
       lc_tx_test_true_loose(lc_check_byp_en[0]) ||
       lc_tx_test_true_loose(lc_escalate_en[0]) ||
       lc_tx_test_true_loose(lc_hw_debug_clr[0])
@@ -323,7 +323,7 @@ module pinmux_strap_sampling
   // sampled straps. Further, the individual JTAG signals are gated
   // using the corresponding life cycle signal.
   assign tap_strap = tap_strap_t'(tap_strap_q);
-  `ASSERT_KNOWN(TapStrapKnown_A, tap_strap)
+  `OCAH_OT_ASSERT_KNOWN(TapStrapKnown_A, tap_strap)
 
   always_comb begin : p_tap_mux
     jtag_rsp     = '0;
@@ -442,30 +442,30 @@ module pinmux_strap_sampling
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(tck_idxRange_A,  TargetCfg.tck_idx  >= 0 && TargetCfg.tck_idx  < NumIOs)
-  `ASSERT_INIT(tms_idxRange_A,  TargetCfg.tms_idx  >= 0 && TargetCfg.tms_idx  < NumIOs)
-  `ASSERT_INIT(trst_idxRange_A, TargetCfg.trst_idx >= 0 && TargetCfg.trst_idx < NumIOs)
-  `ASSERT_INIT(tdi_idxRange_A,  TargetCfg.tdi_idx  >= 0 && TargetCfg.tdi_idx  < NumIOs)
-  `ASSERT_INIT(tdo_idxRange_A,  TargetCfg.tdo_idx  >= 0 && TargetCfg.tdo_idx  < NumIOs)
+  `OCAH_OT_ASSERT_INIT(tck_idxRange_A,  TargetCfg.tck_idx  >= 0 && TargetCfg.tck_idx  < NumIOs)
+  `OCAH_OT_ASSERT_INIT(tms_idxRange_A,  TargetCfg.tms_idx  >= 0 && TargetCfg.tms_idx  < NumIOs)
+  `OCAH_OT_ASSERT_INIT(trst_idxRange_A, TargetCfg.trst_idx >= 0 && TargetCfg.trst_idx < NumIOs)
+  `OCAH_OT_ASSERT_INIT(tdi_idxRange_A,  TargetCfg.tdi_idx  >= 0 && TargetCfg.tdi_idx  < NumIOs)
+  `OCAH_OT_ASSERT_INIT(tdo_idxRange_A,  TargetCfg.tdo_idx  >= 0 && TargetCfg.tdo_idx  < NumIOs)
 
-  `ASSERT_INIT(tap_strap0_idxRange_A, TargetCfg.tap_strap0_idx >= 0 &&
+  `OCAH_OT_ASSERT_INIT(tap_strap0_idxRange_A, TargetCfg.tap_strap0_idx >= 0 &&
                                       TargetCfg.tap_strap0_idx < NumIOs)
-  `ASSERT_INIT(tap_strap1_idxRange_A, TargetCfg.tap_strap1_idx >= 0 &&
+  `OCAH_OT_ASSERT_INIT(tap_strap1_idxRange_A, TargetCfg.tap_strap1_idx >= 0 &&
                                       TargetCfg.tap_strap1_idx < NumIOs)
-  `ASSERT_INIT(dft_strap0_idxRange_A, TargetCfg.dft_strap0_idx >= 0 &&
+  `OCAH_OT_ASSERT_INIT(dft_strap0_idxRange_A, TargetCfg.dft_strap0_idx >= 0 &&
                                       TargetCfg.dft_strap0_idx < NumIOs)
-  `ASSERT_INIT(dft_strap1_idxRange_A, TargetCfg.dft_strap1_idx >= 0 &&
+  `OCAH_OT_ASSERT_INIT(dft_strap1_idxRange_A, TargetCfg.dft_strap1_idx >= 0 &&
                                       TargetCfg.dft_strap1_idx < NumIOs)
 
-  `ASSERT(RvTapOff0_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off
+  `OCAH_OT_ASSERT(RvTapOff0_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off
       |=> rv_jtag_o == '0)
-  `ASSERT(RvTapOff1_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_o == '0)
-  `ASSERT(DftTapOff0_A, lc_dft_en_i == Off |-> ##2 dft_jtag_o == '0)
+  `OCAH_OT_ASSERT(RvTapOff1_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_o == '0)
+  `OCAH_OT_ASSERT(DftTapOff0_A, lc_dft_en_i == Off |-> ##2 dft_jtag_o == '0)
 
   // These assumptions are only used in FPV. They will cause failures in simulations.
-  `ASSUME_FPV(RvTapOff2_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off
+  `OCAH_OT_ASSUME_FPV(RvTapOff2_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off
       |=> rv_jtag_i == '0)
-  `ASSUME_FPV(RvTapOff3_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_i == '0)
-  `ASSUME_FPV(DftTapOff1_A, lc_dft_en_i == Off |-> ##2 dft_jtag_i == '0)
+  `OCAH_OT_ASSUME_FPV(RvTapOff3_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_i == '0)
+  `OCAH_OT_ASSUME_FPV(DftTapOff1_A, lc_dft_en_i == Off |-> ##2 dft_jtag_i == '0)
 
 endmodule : pinmux_strap_sampling

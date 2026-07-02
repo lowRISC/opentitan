@@ -52,8 +52,8 @@ module prim_gf_mult #(
   output logic [Width-1:0] prod_o
 );
 
-  `ASSERT_INIT(IntegerLoops_A, (Width % StagesPerCycle) == 0)
-  `ASSERT_INIT(StagePow2_A, $onehot(StagesPerCycle))
+  `OCAH_OT_ASSERT_INIT(IntegerLoops_A, (Width % StagesPerCycle) == 0)
+  `OCAH_OT_ASSERT_INIT(StagePow2_A, $onehot(StagesPerCycle))
 
   localparam int Loops = Width / StagesPerCycle;
   localparam int CntWidth = (Loops == 1) ? 1 : $clog2(Loops);

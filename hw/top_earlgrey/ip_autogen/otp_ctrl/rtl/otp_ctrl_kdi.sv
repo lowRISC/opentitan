@@ -63,19 +63,19 @@ module otp_ctrl_kdi
   // 2xNvm, OTBN + SRAM slots
   localparam int NumReq = 3 + NumSramKeyReqSlots;
   // Make sure key sizes in the system are multiples of 64bit and not larger than 256bit.
-  `ASSERT_INIT(KeyNonceSize0_A, (NvmKeySeedWidth   <= 256) && ((NvmKeySeedWidth % 64) == 0))
-  `ASSERT_INIT(KeyNonceSize1_A, (SramKeySeedWidth  <= 256) && ((SramKeySeedWidth  % 64) == 0))
-  `ASSERT_INIT(KeyNonceSize2_A, (NvmKeyWidth       <= 256) && ((NvmKeyWidth     % 64) == 0))
-  `ASSERT_INIT(KeyNonceSize3_A, (SramKeyWidth      <= 256) && ((SramKeyWidth      % 64) == 0))
-  `ASSERT_INIT(KeyNonceSize4_A, (SramNonceWidth    <= 256) && ((SramNonceWidth    % 64) == 0))
-  `ASSERT_INIT(KeyNonceSize5_A, (OtbnKeyWidth      <= 256) && ((OtbnKeyWidth      % 64) == 0))
-  `ASSERT_INIT(KeyNonceSize6_A, (OtbnNonceWidth    <= 256) && ((OtbnNonceWidth    % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize0_A, (NvmKeySeedWidth   <= 256) && ((NvmKeySeedWidth % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize1_A, (SramKeySeedWidth  <= 256) && ((SramKeySeedWidth  % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize2_A, (NvmKeyWidth       <= 256) && ((NvmKeyWidth     % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize3_A, (SramKeyWidth      <= 256) && ((SramKeyWidth      % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize4_A, (SramNonceWidth    <= 256) && ((SramNonceWidth    % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize5_A, (OtbnKeyWidth      <= 256) && ((OtbnKeyWidth      % 64) == 0))
+  `OCAH_OT_ASSERT_INIT(KeyNonceSize6_A, (OtbnNonceWidth    <= 256) && ((OtbnNonceWidth    % 64) == 0))
 
   // Make sure EDN interface has compatible width.
-  `ASSERT_INIT(EntropyWidthDividesDigestBlockWidth_A, (ScrmblKeyWidth % EdnDataWidth) == 0)
+  `OCAH_OT_ASSERT_INIT(EntropyWidthDividesDigestBlockWidth_A, (ScrmblKeyWidth % EdnDataWidth) == 0)
 
   // Currently the assumption is that the SRAM nonce is the widest.
-  `ASSERT_INIT(NonceWidth_A, NumNonceChunks * ScrmblBlockWidth == SramNonceWidth)
+  `OCAH_OT_ASSERT_INIT(NonceWidth_A, NumNonceChunks * ScrmblBlockWidth == SramNonceWidth)
 
   ///////////////////////////////////
   // Input Mapping and Arbitration //
@@ -589,16 +589,16 @@ module otp_ctrl_kdi
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(FsmErrKnown_A,             fsm_err_o)
-  `ASSERT_KNOWN(EdnReqKnown_A,             edn_req_o)
-  `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,       nvm_otp_key_o)
-  `ASSERT_KNOWN(SramOtpKeyRspKnown_A,      sram_otp_key_o)
-  `ASSERT_KNOWN(OtbnOtpKeyRspKnown_A,      otbn_otp_key_o)
-  `ASSERT_KNOWN(ScrmblMtxReqKnown_A,       scrmbl_mtx_req_o)
-  `ASSERT_KNOWN(ScrmblCmdKnown_A,          scrmbl_cmd_o)
-  `ASSERT_KNOWN(ScrmblModeKnown_A,         scrmbl_mode_o)
-  `ASSERT_KNOWN(ScrmblSelKnown_A,          scrmbl_sel_o)
-  `ASSERT_KNOWN(ScrmblDataKnown_A,         scrmbl_data_o)
-  `ASSERT_KNOWN(ScrmblValidKnown_A,        scrmbl_valid_o)
+  `OCAH_OT_ASSERT_KNOWN(FsmErrKnown_A,             fsm_err_o)
+  `OCAH_OT_ASSERT_KNOWN(EdnReqKnown_A,             edn_req_o)
+  `OCAH_OT_ASSERT_KNOWN(NvmOtpKeyRspKnown_A,       nvm_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(SramOtpKeyRspKnown_A,      sram_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(OtbnOtpKeyRspKnown_A,      otbn_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblMtxReqKnown_A,       scrmbl_mtx_req_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblCmdKnown_A,          scrmbl_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblModeKnown_A,         scrmbl_mode_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblSelKnown_A,          scrmbl_sel_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblDataKnown_A,         scrmbl_data_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblValidKnown_A,        scrmbl_valid_o)
 
 endmodule : otp_ctrl_kdi

@@ -77,12 +77,12 @@ logic [12-1:0] rng_srate_value_max = 12'd128;
 initial begin : rng_plusargs
   void'($value$plusargs("rng_srate_value_min=%0d", rng_srate_value_min));
   void'($value$plusargs("rng_srate_value_max=%0d", rng_srate_value_max));
-  `ASSERT_I(DvRngSrateMinCheck, rng_srate_value_min inside {[5:500]})
-  `ASSERT_I(DvRngSrateMaxCheck, rng_srate_value_max inside {[5:500]})
-  `ASSERT_I(DvRngSrateBoundsCheck, rng_srate_value_max >= rng_srate_value_min)
+  `OCAH_OT_ASSERT_I(DvRngSrateMinCheck, rng_srate_value_min inside {[5:500]})
+  `OCAH_OT_ASSERT_I(DvRngSrateMaxCheck, rng_srate_value_max inside {[5:500]})
+  `OCAH_OT_ASSERT_I(DvRngSrateBoundsCheck, rng_srate_value_max >= rng_srate_value_min)
   dv_srate_value = 12'($urandom_range(int'(rng_srate_value_min), int'(rng_srate_value_max)));
   void'($value$plusargs("rng_srate_value=%0d", dv_srate_value));
-  `ASSERT_I(DvSrateValueCheck, dv_srate_value inside {[5:500]})
+  `OCAH_OT_ASSERT_I(DvSrateValueCheck, dv_srate_value inside {[5:500]})
 end
 
 assign srate_value = dv_srate_value;

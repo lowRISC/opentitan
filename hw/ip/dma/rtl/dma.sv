@@ -1535,39 +1535,39 @@ module dma
   //////////////////////////////////////////////////////////////////////////////
 
   // All outputs should be known values after reset
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
-  `ASSERT_KNOWN(IntrDmaDoneKnown_A, intr_dma_done_o)
-  `ASSERT_KNOWN(IntrDmaChunkDoneKnown_A, intr_dma_chunk_done_o)
-  `ASSERT_KNOWN(IntrDmaErrorKnown_A, intr_dma_error_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(IntrDmaDoneKnown_A, intr_dma_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrDmaChunkDoneKnown_A, intr_dma_chunk_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrDmaErrorKnown_A, intr_dma_error_o)
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_d_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_d_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_d_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(CtnTlAValidKnownO_A, ctn_tl_h2d_o.a_valid)
-  `ASSERT_KNOWN(CtnTlDReadyKnownO_A, ctn_tl_h2d_o.d_ready)
-  `ASSERT_KNOWN(HostTlAValidKnownO_A, host_tl_h_o.a_valid)
-  `ASSERT_KNOWN(HostTlDReadyKnownO_A, host_tl_h_o.d_ready)
+  `OCAH_OT_ASSERT_KNOWN(CtnTlAValidKnownO_A, ctn_tl_h2d_o.a_valid)
+  `OCAH_OT_ASSERT_KNOWN(CtnTlDReadyKnownO_A, ctn_tl_h2d_o.d_ready)
+  `OCAH_OT_ASSERT_KNOWN(HostTlAValidKnownO_A, host_tl_h_o.a_valid)
+  `OCAH_OT_ASSERT_KNOWN(HostTlDReadyKnownO_A, host_tl_h_o.d_ready)
 
-  `ASSERT_KNOWN(SysValidKnownO_A, sys_o.vld_vec)
+  `OCAH_OT_ASSERT_KNOWN(SysValidKnownO_A, sys_o.vld_vec)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
 
   // Handshake interrupt enable register must be expanded if there are more than 32 handshake
   // trigger wires
-  `ASSERT_NEVER(LimitHandshakeTriggerWires_A, NumIntClearSources > 32)
+  `OCAH_OT_ASSERT_NEVER(LimitHandshakeTriggerWires_A, NumIntClearSources > 32)
 
   // The RTL code assumes the BE signal is 4-bit wide
-  `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
+  `OCAH_OT_ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
 
   // The DMA enabled memory should not be changed after lock
-  `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
+  `OCAH_OT_ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
                 prim_mubi_pkg::mubi4_test_false_loose(
                   prim_mubi_pkg::mubi4_t'(reg2hw.range_regwen.q)) &&
                   (reg2hw.enabled_memory_range_base.qe ||
                    reg2hw.enabled_memory_range_limit.qe))
 
   // Alert assertion for sparse FSM.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlStateFsmCheck_A, aff_ctrl_state_q, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlStateFsmCheck_A, aff_ctrl_state_q, alert_tx_o[0])
 endmodule

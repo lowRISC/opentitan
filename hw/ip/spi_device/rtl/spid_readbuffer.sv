@@ -229,6 +229,6 @@ module spid_readbuffer
     endcase
   end
 
-  `ASSERT(StartWithAddressUpdate_A, start_i |-> address_update_i)
+  `OCAH_OT_ASSERT(StartWithAddressUpdate_A, start_i |-> address_update_i)
 
 endmodule : spid_readbuffer

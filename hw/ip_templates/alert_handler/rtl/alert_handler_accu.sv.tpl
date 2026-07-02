@@ -59,7 +59,7 @@ module ${module_instance_name}_accu import ${module_instance_name}_pkg::*; (
   // Assertions //
   ////////////////
 
-  `ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o)
-  `ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i)
-  `ASSERT(CountSaturateStable_A, accu_cnt_o == {AccuCntDw{1'b1}} |=> $stable(accu_cnt_o))
+  `OCAH_OT_ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o)
+  `OCAH_OT_ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i)
+  `OCAH_OT_ASSERT(CountSaturateStable_A, accu_cnt_o == {AccuCntDw{1'b1}} |=> $stable(accu_cnt_o))
 endmodule : ${module_instance_name}_accu

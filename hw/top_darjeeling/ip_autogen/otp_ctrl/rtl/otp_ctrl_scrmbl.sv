@@ -141,7 +141,7 @@ module otp_ctrl_scrmbl
   logic [2**$clog2(NumDigestSets)-1:0][ScrmblBlockWidth-1:0] digest_iv_lut;
 
   // This pre-calculates the inverse scrambling keys at elab time.
-  `ASSERT_INIT(NumMaxPresentRounds_A, NumPresentRounds <= 31)
+  `OCAH_OT_ASSERT_INIT(NumMaxPresentRounds_A, NumPresentRounds <= 31)
 
   always_comb begin : p_luts
     otp_enc_key_lut = '0;
@@ -163,10 +163,10 @@ module otp_ctrl_scrmbl
       digest_iv_lut[k]    = rnd_cnst_digest_iv_anchor[k];
     end
   end
-  `ASSERT_KNOWN(EncKeyLutKnown_A,      otp_enc_key_lut)
-  `ASSERT_KNOWN(DecKeyLutKnown_A,      otp_dec_key_lut)
-  `ASSERT_KNOWN(DigestConstLutKnown_A, digest_const_lut)
-  `ASSERT_KNOWN(DigestIvLutKnown_A,    digest_iv_lut)
+  `OCAH_OT_ASSERT_KNOWN(EncKeyLutKnown_A,      otp_enc_key_lut)
+  `OCAH_OT_ASSERT_KNOWN(DecKeyLutKnown_A,      otp_dec_key_lut)
+  `OCAH_OT_ASSERT_KNOWN(DigestConstLutKnown_A, digest_const_lut)
+  `OCAH_OT_ASSERT_KNOWN(DigestIvLutKnown_A,    digest_iv_lut)
 
   //////////////
   // Datapath //
@@ -208,9 +208,9 @@ module otp_ctrl_scrmbl
   assign otp_digest_iv_mux    = digest_iv_lut[DigestSetSelWidth'(sel_i)];
 
   // Make sure we always select a valid key / digest constant.
-  `ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_i < NumScrmblKeys)
-  `ASSERT(CheckNumDecKeys_A, key_state_sel == SelDecKeyInit  |-> sel_i < NumScrmblKeys)
-  `ASSERT(CheckNumDigest1_A, key_state_sel == SelDigestConst |-> sel_i < NumDigestSets)
+  `OCAH_OT_ASSERT(CheckNumEncKeys_A, key_state_sel == SelEncKeyInit  |-> sel_i < NumScrmblKeys)
+  `OCAH_OT_ASSERT(CheckNumDecKeys_A, key_state_sel == SelDecKeyInit  |-> sel_i < NumScrmblKeys)
+  `OCAH_OT_ASSERT(CheckNumDigest1_A, key_state_sel == SelDigestConst |-> sel_i < NumDigestSets)
 
   assign data_state_d    = (data_state_sel == SelEncDataOut)    ? enc_data_out     :
                            (data_state_sel == SelDecDataOut)    ? dec_data_out     :

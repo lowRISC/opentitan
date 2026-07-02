@@ -50,12 +50,12 @@ interface aes_masking_reseed_if
   end
 
   // Make sure the entropy input obtained from EDN actually ends up in one part of the PRNG state.
-  `ASSERT(MaskingPrngStatePartMatchesEdnInput_A, entropy_masking_req && entropy_masking_ack
+  `OCAH_OT_ASSERT(MaskingPrngStatePartMatchesEdnInput_A, entropy_masking_req && entropy_masking_ack
       |-> ##1 |state_part_matches_input)
 
   // Make sure the masking PRNG is reseeded when a new block is started while the block counter
   // has expired unless a fatal alert is triggered.
-  `ASSERT(MaskingPrngReseedWhenCtrExpires_A,
+  `OCAH_OT_ASSERT(MaskingPrngReseedWhenCtrExpires_A,
       (block_ctr_expr && (cipher_in_valid == 1'b1) && (ctrl_state == CTRL_IDLE) &&
       (ctrl_state_next == CTRL_LOAD)) |-> ##[1:20] entropy_masking_req || alert_fatal)
 

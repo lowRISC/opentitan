@@ -19,7 +19,7 @@ module prim_clock_div #(
 
   // Only even divide is supported at the moment
   // For odd divide we need to introduce more parameters to control duty cycle
-  `ASSERT_INIT(DivEven_A, (Divisor % 2) == 0)
+  `OCAH_OT_ASSERT_INIT(DivEven_A, (Divisor % 2) == 0)
 
   // It is assumed the flops in this module are NOT on the scan-chain, as a result only
   // the input values are guarded

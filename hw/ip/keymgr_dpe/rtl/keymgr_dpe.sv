@@ -72,9 +72,9 @@ module keymgr_dpe
   output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
-  `ASSERT_INIT(DpeAdvDataWidth_A, DpeAdvDataWidth <= KDFMaxWidth)
-  `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
-  `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
+  `OCAH_OT_ASSERT_INIT(DpeAdvDataWidth_A, DpeAdvDataWidth <= KDFMaxWidth)
+  `OCAH_OT_ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
+  `OCAH_OT_ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_false_strict;
@@ -213,7 +213,7 @@ module keymgr_dpe
     .entropy_i('0),
     .state_o(lfsr)
   );
-  `ASSERT_INIT(LfsrWidth_A, LfsrWidth == 64)
+  `OCAH_OT_ASSERT_INIT(LfsrWidth_A, LfsrWidth == 64)
 
 
   logic [Shares-1:0][RandWidth-1:0] ctrl_rand;
@@ -793,15 +793,15 @@ module keymgr_dpe
   );
 
   // known asserts
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(IntrKnownO_A, intr_op_done_o)
-  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(IntrKnownO_A, intr_op_done_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
-  `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
-  `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
-  `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
-  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `OCAH_OT_ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
+  `OCAH_OT_ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
+  `OCAH_OT_ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
+  `OCAH_OT_ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
 
 
   // kmac parameter consistency
@@ -816,27 +816,27 @@ module keymgr_dpe
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
 
-  `ASSERT_INIT(KeyWidthEqualityCheck_A, otp_ctrl_pkg::KeyMgrKeyWidth == KeyWidth)
+  `OCAH_OT_ASSERT_INIT(KeyWidthEqualityCheck_A, otp_ctrl_pkg::KeyMgrKeyWidth == KeyWidth)
 
-  `ASSERT_INIT_NET(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
+  `OCAH_OT_ASSERT_INIT_NET(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
 
   // Ensure all parameters are consistent
-  `ASSERT_INIT(FaultCntMatch_A, FaultLastPos == AsyncFaultLastIdx + SyncFaultLastIdx)
-  `ASSERT_INIT(ErrCntMatch_A, ErrLastPos == AsyncErrLastIdx + SyncErrLastIdx)
+  `OCAH_OT_ASSERT_INIT(FaultCntMatch_A, FaultLastPos == AsyncFaultLastIdx + SyncFaultLastIdx)
+  `OCAH_OT_ASSERT_INIT(ErrCntMatch_A, ErrLastPos == AsyncErrLastIdx + SyncErrLastIdx)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReseedCtrlCntAlertCheck_A, u_reseed_ctrl.u_reseed_cnt,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReseedCtrlCntAlertCheck_A, u_reseed_ctrl.u_reseed_cnt,
                                          alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDataFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDataFsmCheck_A,
       u_ctrl.u_data_en.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlOpFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlOpFsmCheck_A,
       u_ctrl.u_op_state.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SideloadCtrlFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SideloadCtrlFsmCheck_A,
       u_sideload_ctrl.u_state_regs, alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule // keymgr_dpe

@@ -401,24 +401,24 @@ module ${module_instance_name}
   //////////////////////////////////////////////////////////////////////////////
 
   // All outputs should have known values after reset
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(DenyCntIrqKnown_A, intr_deny_cnt_reached_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(DenyCntIrqKnown_A, intr_deny_cnt_reached_o)
 
-  `ASSERT_KNOWN_IF(TlODKnown_A, tl_o, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(TlODKnown_A, tl_o, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
 
-  `ASSERT_KNOWN_IF(TlCtnODKnown_A, ctn_tl_d2h_o, ctn_tl_d2h_o.d_valid)
-  `ASSERT_KNOWN(TlCtnOAReadyKnown_A, ctn_tl_d2h_o.a_ready)
-  `ASSERT_KNOWN_IF(TlCtnFilteredOAKnown_A, ctn_filtered_tl_h2d_o, ctn_filtered_tl_h2d_o.a_valid)
-  `ASSERT_KNOWN(TlCtnFilteredODReadyKnown_A, ctn_filtered_tl_h2d_o.d_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(TlCtnODKnown_A, ctn_tl_d2h_o, ctn_tl_d2h_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlCtnOAReadyKnown_A, ctn_tl_d2h_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(TlCtnFilteredOAKnown_A, ctn_filtered_tl_h2d_o, ctn_filtered_tl_h2d_o.a_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlCtnFilteredODReadyKnown_A, ctn_filtered_tl_h2d_o.d_ready)
 
-  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,
                                                  alert_tx_o[0])
   // Deny Counter error
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DenyCountCheck_A, u_deny_count,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DenyCountCheck_A, u_deny_count,
                                          alert_tx_o[1])
 
 endmodule

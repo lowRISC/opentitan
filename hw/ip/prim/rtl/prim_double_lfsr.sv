@@ -105,9 +105,9 @@ module prim_double_lfsr #(
   // This logic that will be assign to one, when user adds macro
   // ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT to check the error with alert, in case that
   // prim_double_lfsr is used in design without adding this assertion check.
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
   logic unused_assert_connected;
 
-  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
+  `OCAH_OT_ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
   `endif
 endmodule : prim_double_lfsr

@@ -14,29 +14,29 @@
 ///////////////////
 
 // Default clk and reset signals used by assertion macros below.
-`define ASSERT_DEFAULT_CLK clk_i
-`define ASSERT_DEFAULT_RST !rst_ni
+`define OCAH_OT_ASSERT_DEFAULT_CLK clk_i
+`define OCAH_OT_ASSERT_DEFAULT_RST !rst_ni
 
 // Converts an arbitrary block of code into a Verilog string
-`define PRIM_STRINGIFY(__x) `"__x`"
+`define OCAH_OT_PRIM_STRINGIFY(__x) `"__x`"
 
 // ASSERT_ERROR logs an error message with either `uvm_error or with $error.
 //
 // This somewhat duplicates `DV_ERROR macro defined in hw/dv/sv/dv_utils/dv_macros.svh. The reason
 // for redefining it here is to avoid creating a dependency.
-`define ASSERT_ERROR(__name)                                                             \
+`define OCAH_OT_ASSERT_ERROR(__name)                                                             \
 `ifdef UVM                                                                               \
-  uvm_pkg::uvm_report_error("ASSERT FAILED", `PRIM_STRINGIFY(__name), uvm_pkg::UVM_NONE, \
+  uvm_pkg::uvm_report_error("ASSERT FAILED", `OCAH_OT_PRIM_STRINGIFY(__name), uvm_pkg::UVM_NONE, \
                             `__FILE__, `__LINE__, "", 1);                                \
 `else                                                                                    \
   $error("%0t: (%0s:%0d) [%m] [ASSERT FAILED] %0s", $time, `__FILE__, `__LINE__,         \
-         `PRIM_STRINGIFY(__name));                                                       \
+         `OCAH_OT_PRIM_STRINGIFY(__name));                                                       \
 `endif
 
 // This macro is suitable for conditionally triggering lint errors, e.g., if a Sec parameter takes
 // on a non-default value. This may be required for pre-silicon/FPGA evaluation but we don't want
 // to allow this for tapeout.
-`define ASSERT_STATIC_LINT_ERROR(__name, __prop)     \
+`define OCAH_OT_ASSERT_STATIC_LINT_ERROR(__name, __prop)     \
   localparam int __name = (__prop) ? 1 : 2;          \
   always_comb begin                                  \
     logic unused_assert_static_lint_error;           \
@@ -45,7 +45,7 @@
 
 // Static assertions for checks inside SV packages. If the conditions is not true, this will
 // trigger an error during elaboration.
-`define ASSERT_STATIC_IN_PACKAGE(__name, __prop)              \
+`define OCAH_OT_ASSERT_STATIC_IN_PACKAGE(__name, __prop)              \
   function automatic bit assert_static_in_package_``__name(); \
     bit unused_bit [((__prop) ? 1 : -1)];                     \
     unused_bit = '{default: 1'b0};                            \
@@ -105,10 +105,10 @@
  `include "prim_assert_dummy_macros.svh"
 `elsif YOSYS
  `include "prim_assert_yosys_macros.svh"
- `define INC_ASSERT
+ `define OCAH_OT_INC_ASSERT
 `else
  `include "prim_assert_standard_macros.svh"
- `define INC_ASSERT
+ `define OCAH_OT_INC_ASSERT
 `endif
 
 //////////////////////////////
@@ -116,20 +116,20 @@
 //////////////////////////////
 
 // Assert that signal is an active-high pulse with pulse length of 1 clock cycle
-`define ASSERT_PULSE(__name, __sig, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-  `ASSERT(__name, $rose(__sig) |=> !(__sig), __clk, __rst)
+`define OCAH_OT_ASSERT_PULSE(__name, __sig, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST) \
+  `OCAH_OT_ASSERT(__name, $rose(__sig) |=> !(__sig), __clk, __rst)
 
 // Assert that a property is true only when an enable signal is set.  It can be called as a module
 // (or interface) body item.
-`define ASSERT_IF(__name, __prop, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-  `ASSERT(__name, (__enable) |-> (__prop), __clk, __rst)
+`define OCAH_OT_ASSERT_IF(__name, __prop, __enable, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST) \
+  `OCAH_OT_ASSERT(__name, (__enable) |-> (__prop), __clk, __rst)
 
 // Assert that signal has a known value (each bit is either '0' or '1') after reset if enable is
 // set.  It can be called as a module (or interface) body item.
-`define ASSERT_KNOWN_IF(__name, __sig, __enable, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`define OCAH_OT_ASSERT_KNOWN_IF(__name, __sig, __enable, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST) \
 `ifndef FPV_ON                                                                                             \
-  `ASSERT_KNOWN(__name``KnownEnable, __enable, __clk, __rst)                                               \
-  `ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst)                                           \
+  `OCAH_OT_ASSERT_KNOWN(__name``KnownEnable, __enable, __clk, __rst)                                               \
+  `OCAH_OT_ASSERT_IF(__name, !$isunknown(__sig), __enable, __clk, __rst)                                           \
 `endif
 
 //////////////////////////////////
@@ -141,23 +141,23 @@
 
 // ASSUME_FPV
 // Assume a concurrent property during formal verification only.
-`define ASSUME_FPV(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`define OCAH_OT_ASSUME_FPV(__name, __prop, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST) \
 `ifdef FPV_ON                                                                                \
-   `ASSUME(__name, __prop, __clk, __rst)                                                     \
+   `OCAH_OT_ASSUME(__name, __prop, __clk, __rst)                                                     \
 `endif
 
 // ASSUME_I_FPV
 // Assume a concurrent property during formal verification only.
-`define ASSUME_I_FPV(__name, __prop) \
+`define OCAH_OT_ASSUME_I_FPV(__name, __prop) \
 `ifdef FPV_ON                        \
-   `ASSUME_I(__name, __prop)         \
+   `OCAH_OT_ASSUME_I(__name, __prop)         \
 `endif
 
 // COVER_FPV
 // Cover a concurrent property during formal verification
-`define COVER_FPV(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
+`define OCAH_OT_COVER_FPV(__name, __prop, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST) \
 `ifdef FPV_ON                                                                               \
-   `COVER(__name, __prop, __clk, __rst)                                                     \
+   `OCAH_OT_COVER(__name, __prop, __clk, __rst)                                                     \
 `endif
 
 // FPV assertion that proves that the FSM control flow is linear (no loops)
@@ -166,8 +166,8 @@
 // It is possible for the reset to release ahead of the clock.
 // Create a small "gray" window beyond the usual rst time to avoid
 // checking.
-`define ASSERT_FPV_LINEAR_FSM(__name, __state, __type, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST) \
-  `ifdef INC_ASSERT                                                                                              \
+`define OCAH_OT_ASSERT_FPV_LINEAR_FSM(__name, __state, __type, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST) \
+  `ifdef OCAH_OT_INC_ASSERT                                                                                              \
      bit __name``_cond;                                                                                          \
      always_ff @(posedge __clk or posedge __rst) begin                                                           \
        if (__rst) begin                                                                                          \
@@ -181,7 +181,7 @@
        (!$stable(__state) & __name``_cond, initial_state = $past(__state)) |->                                   \
            (__state != initial_state) until !(__name``_cond);                                                    \
      endproperty                                                                                                 \
-   `ASSERT(__name, __name``_p, __clk, 0)                                                                         \
+   `OCAH_OT_ASSERT(__name, __name``_p, __clk, 0)                                                                         \
   `endif
 
 `include "prim_assert_sec_cm.svh"

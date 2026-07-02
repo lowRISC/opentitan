@@ -57,7 +57,7 @@ module sha3_fpv
   );
 
   // Assumption for testvector
-  `ASSUME(Sha3Only_a, mode_i == Sha3)
-  `ASSUME(L256Only_a, strength_i == L256)
+  `OCAH_OT_ASSUME(Sha3Only_a, mode_i == Sha3)
+  `OCAH_OT_ASSUME(L256Only_a, strength_i == L256)
 
 endmodule

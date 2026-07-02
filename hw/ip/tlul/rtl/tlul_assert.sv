@@ -34,7 +34,7 @@ module tlul_assert #(
   bit disable_sva;
 
   default disable iff disable_sva || !rst_ni;
-  default clocking @(negedge clk_i); endclocking
+  default clocking @(posedge clk_i); endclocking
 
   //////////////////////////////////
   // check requests and responses //
@@ -54,13 +54,6 @@ module tlul_assert #(
   } pend_req_t;
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
-
-  logic [7:0]  a_mask, d_mask;
-  logic [63:0] a_data, d_data;
-  assign a_mask = 8'(h2d.a_mask);
-  assign a_data = 64'(h2d.a_data);
-  assign d_mask = 8'(pend_req[d2h.d_source].mask);
-  assign d_data = 64'(d2h.d_data);
 
   ////////////////////////////////////
   // Current request                //
@@ -82,27 +75,34 @@ module tlul_assert #(
   logic curr_fwd;
   assign curr_fwd = curr_req.pend & (d2h.d_source == h2d.a_source);
 
+  logic [7:0]  a_mask, d_mask;
+  logic [63:0] a_data, d_data;
+  assign a_mask = 8'(h2d.a_mask);
+  assign a_data = 64'(h2d.a_data);
+  assign d_mask = 8'(curr_fwd ? curr_req.mask : pend_req[d2h.d_source].mask);
+  assign d_data = 64'(d2h.d_data);
+
   ////////////////////////////////////
   // keep track of pending requests //
   ////////////////////////////////////
 
-  // use negedge clk to avoid possible race conditions
-  always_ff @(negedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       pend_req <= '0;
     end else begin
-      // store each request in pend_req array, ignoring requests that receive a combinational
-      // response.
-      if (curr_req.pend & (!d2h.d_valid || d2h.d_source != h2d.a_source)) begin
+      // Update pend_req if there is an A channel transaction on this cycle.
+      //
+      // Note that we can safely do this if there was a combinatorial response. In that case, it
+      // will be removed again just below.
+      if (curr_req.pend) begin
         pend_req[h2d.a_source] <= curr_req;
       end
 
-      if (d2h.d_valid) begin
-        // update pend_req array
-        if (h2d.d_ready) begin
-          pend_req[d2h.d_source].pend <= 0;
-        end
-      end //d2h.d_valid
+      // If there is a D channel transaction on this cycle, clear any pending request for the
+      // associated d_source.
+      if (d2h.d_valid && h2d.d_ready) begin
+        pend_req[d2h.d_source] <= '0;
+      end
     end
   end
 
@@ -259,64 +259,116 @@ module tlul_assert #(
   if (EndpointType == "Host") begin : gen_host
     // h2d
     if (1) begin : gen_h2d
-      legalAOpcode_A:     assert property (h2d_pre_S |-> legalAOpcode_S);
-      legalAParam_A:      assert property (h2d_pre_S |-> legalAParam_S);
-      sizeGTEMask_A:      assert property (h2d_pre_S |-> sizeGTEMask_S);
-      sizeMatchesMask_A:  assert property (h2d_pre_S |-> sizeMatchesMask_S);
-      pendingReqPerSrc_A: assert property (h2d_pre_S |-> pendingReqPerSrc_S);
-      addrSizeAligned_A:  assert property (h2d_pre_S |-> addrSizeAligned_S);
-      contigMask_A:       assert property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
-      aDataKnown_A:       assert property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
+      legalAOpcode_A:
+        assert property (h2d_pre_S |-> legalAOpcode_S)
+        else `OCAH_OT_ASSERT_ERROR(legalAOpcode_A)
+      legalAParam_A:
+        assert property (h2d_pre_S |-> legalAParam_S)
+        else `OCAH_OT_ASSERT_ERROR(legalAParam_A)
+      sizeGTEMask_A:
+        assert property (h2d_pre_S |-> sizeGTEMask_S)
+        else `OCAH_OT_ASSERT_ERROR(sizeGTEMask_A)
+      sizeMatchesMask_A:
+        assert property (h2d_pre_S |-> sizeMatchesMask_S)
+        else `OCAH_OT_ASSERT_ERROR(sizeMatchesMask_A)
+      pendingReqPerSrc_A:
+        assert property (h2d_pre_S |-> pendingReqPerSrc_S)
+        else `OCAH_OT_ASSERT_ERROR(pendingReqPerSrc_A)
+      addrSizeAligned_A:
+        assert property (h2d_pre_S |-> addrSizeAligned_S)
+        else `OCAH_OT_ASSERT_ERROR(addrSizeAligned_A)
+      contigMask_A:
+        assert property (h2d_pre_S and contigMask_pre_S |-> contigMask_S)
+        else `OCAH_OT_ASSERT_ERROR(contigMask_A)
+      aDataKnown_A:
+        assert property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S)
+        else `OCAH_OT_ASSERT_ERROR(aDataKnown_A)
     end
     // d2h
     if (1) begin : gen_d2h
-      respOpcode_M:       assume property (d2h_pre_S |-> respOpcode_S);
-      legalDParam_M:      assume property (d2h_pre_S |-> legalDParam_S);
-      respSzEqReqSz_M:    assume property (d2h_pre_S |-> respSzEqReqSz_S);
-      respMustHaveReq_M:  assume property (d2h_pre_S |-> respMustHaveReq_S);
-      dDataKnown_M:       assume property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S);
+      respOpcode_M:
+        assume property (d2h_pre_S |-> respOpcode_S)
+        else `OCAH_OT_ASSERT_ERROR(respOpcode_M)
+      legalDParam_M:
+        assume property (d2h_pre_S |-> legalDParam_S)
+        else `OCAH_OT_ASSERT_ERROR(legalDParam_M)
+      respSzEqReqSz_M:
+        assume property (d2h_pre_S |-> respSzEqReqSz_S)
+        else `OCAH_OT_ASSERT_ERROR(respSzEqReqSz_M)
+      respMustHaveReq_M:
+        assume property (d2h_pre_S |-> respMustHaveReq_S)
+        else `OCAH_OT_ASSERT_ERROR(respMustHaveReq_M)
+      dDataKnown_M:
+        assume property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S)
+        else `OCAH_OT_ASSERT_ERROR(dDataKnown_M)
     end
   // in this case all signals coming from the host side have an assumed property
   end else if (EndpointType == "Device") begin : gen_device
     // h2d
     if (1) begin : gen_h2d
-      legalAParam_M:      assume property (h2d_pre_S |-> legalAParam_S);
-      pendingReqPerSrc_M: assume property (h2d_pre_S |-> pendingReqPerSrc_S);
-      aDataKnown_M:       assume property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S);
-      contigMask_M:       assume property (h2d_pre_S and contigMask_pre_S |-> contigMask_S);
+      legalAParam_M:
+        assume property (h2d_pre_S |-> legalAParam_S)
+        else `OCAH_OT_ASSERT_ERROR(legalAParam_M)
+      pendingReqPerSrc_M:
+        assume property (h2d_pre_S |-> pendingReqPerSrc_S)
+        else `OCAH_OT_ASSERT_ERROR(pendingReqPerSrc_M)
+      aDataKnown_M:
+        assume property (h2d_pre_S and aDataKnown_pre_S |-> aDataKnown_S)
+        else `OCAH_OT_ASSERT_ERROR(aDataKnown_M)
+      contigMask_M:
+        assume property (h2d_pre_S and contigMask_pre_S |-> contigMask_S)
+        else `OCAH_OT_ASSERT_ERROR(contigMask_M)
     end
     // d2h
     if (1) begin : gen_d2h
-      respOpcode_A: assert property (d2h_pre_S |-> respOpcode_S);
-      legalDParam_A: assert property (d2h_pre_S |-> legalDParam_S);
-      respSzEqReqSz_A: assert property (d2h_pre_S |-> respSzEqReqSz_S);
-      respMustHaveReq_A: assert property (d2h_pre_S |-> respMustHaveReq_S);
-      dDataKnown_A: assert property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S);
+      respOpcode_A:
+        assert property (d2h_pre_S |-> respOpcode_S)
+        else `OCAH_OT_ASSERT_ERROR(respOpcode_A)
+      legalDParam_A:
+        assert property (d2h_pre_S |-> legalDParam_S)
+        else `OCAH_OT_ASSERT_ERROR(legalDParam_A)
+      respSzEqReqSz_A:
+        assert property (d2h_pre_S |-> respSzEqReqSz_S)
+        else `OCAH_OT_ASSERT_ERROR(respSzEqReqSz_A)
+      respMustHaveReq_A:
+        assert property (d2h_pre_S |-> respMustHaveReq_S)
+        else `OCAH_OT_ASSERT_ERROR(respMustHaveReq_A)
+      dDataKnown_A:
+        assert property (d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S)
+        else `OCAH_OT_ASSERT_ERROR(dDataKnown_A)
 
       // d2h error cases
-      legalAOpcodeErr_A:    assert property (d_error_pre_S and legalAOpcodeErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
-      sizeGTEMaskErr_A:     assert property (d_error_pre_S and sizeGTEMaskErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
-      sizeMatchesMaskErr_A: assert property (d_error_pre_S and sizeMatchesMaskErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
-      addrSizeAlignedErr_A: assert property (d_error_pre_S and addrSizeAlignedErr_S |=>
-                                             s_eventually (d2h.d_valid && d2h.d_error));
+      legalAOpcodeErr_A:
+        assert property (d_error_pre_S and legalAOpcodeErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `OCAH_OT_ASSERT_ERROR(legalAOpcodeErr_A)
+      sizeGTEMaskErr_A:
+        assert property (d_error_pre_S and sizeGTEMaskErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `OCAH_OT_ASSERT_ERROR(sizeGTEMaskErr_A)
+      sizeMatchesMaskErr_A:
+        assert property (d_error_pre_S and sizeMatchesMaskErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `OCAH_OT_ASSERT_ERROR(sizeMatchesMaskErr_A)
+      addrSizeAlignedErr_A:
+        assert property (d_error_pre_S and addrSizeAlignedErr_S |=>
+                         s_eventually (d2h.d_valid && d2h.d_error))
+        else `OCAH_OT_ASSERT_ERROR(addrSizeAlignedErr_A)
     end
   end else begin : gen_unknown
     initial begin : p_unknown
-      `ASSERT_I(unknownConfig_A, 0 == 1)
+      `OCAH_OT_ASSERT_I(unknownConfig_A, 0 == 1)
     end
   end
 
   initial begin : p_dbw
     // widths up to 64bit / 8 Byte are supported
-    `ASSERT_I(TlDbw_A, TL_DBW <= 8)
+    `OCAH_OT_ASSERT_I(TlDbw_A, TL_DBW <= 8)
   end
 
   // make sure all "pending" bits are 0 at the end of the sim
   for (genvar ii = 0; ii < 2**TL_AIW; ii++) begin : gen_assert_final
-    `ASSERT_FINAL(noOutstandingReqsAtEndOfSim_A, (pend_req[ii].pend == 0))
+    `OCAH_OT_ASSERT_FINAL(noOutstandingReqsAtEndOfSim_A, (pend_req[ii].pend == 0))
   end
 
   ////////////////////////////////////
@@ -325,21 +377,21 @@ module tlul_assert #(
 
   // a_* should be known when a_valid == 1 (a_opcode and a_param are already covered above)
   // This also covers ASSERT_KNOWN of a_valid
-  `ASSERT_KNOWN_IF(aKnown_A, {h2d.a_size, h2d.a_source, h2d.a_address, h2d.a_mask, h2d.a_user},
+  `OCAH_OT_ASSERT_KNOWN_IF(aKnown_A, {h2d.a_size, h2d.a_source, h2d.a_address, h2d.a_mask, h2d.a_user},
     h2d.a_valid)
 
   // d_* should be known when d_valid == 1 (d_opcode, d_param, d_size already covered above)
   // This also covers ASSERT_KNOWN of d_valid
-  `ASSERT_KNOWN_IF(dKnown_A, {d2h.d_source, d2h.d_sink, d2h.d_error, d2h.d_user}, d2h.d_valid)
+  `OCAH_OT_ASSERT_KNOWN_IF(dKnown_A, {d2h.d_source, d2h.d_sink, d2h.d_error, d2h.d_user}, d2h.d_valid)
 
   //  make sure ready is not X after reset
-  `ASSERT_KNOWN(aReadyKnown_A, d2h.a_ready)
-  `ASSERT_KNOWN(dReadyKnown_A, h2d.d_ready)
+  `OCAH_OT_ASSERT_KNOWN(aReadyKnown_A, d2h.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(dReadyKnown_A, h2d.d_ready)
 
   ////////////////////////////////////
   // SVA coverage //
   ////////////////////////////////////
-  `define TLUL_COVER(SEQ) `COVER(``SEQ``_C, ``SEQ``_S, !clk_i, !rst_ni || disable_sva)
+  `define TLUL_COVER(SEQ) `OCAH_OT_COVER(``SEQ``_C, ``SEQ``_S, !clk_i, !rst_ni || disable_sva)
 
   // host sends back2back requests
   sequence b2bReq_S;
@@ -419,16 +471,17 @@ module tlul_assert #(
     `TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(mask)
   end else begin : gen_unknown_cov
     initial begin : p_unknown_cov
-      `ASSERT_I(unknownConfig_A, 0 == 1)
+      `OCAH_OT_ASSERT_I(unknownConfig_A, 0 == 1)
     end
   end
 
   `ifdef UVM
     initial forever begin
+      automatic string hier_path = $sformatf("%m");
       bit tlul_assert_en;
-      uvm_config_db#(bit)::wait_modified(null, "%m", "tlul_assert_en");
-      if (!uvm_config_db#(bit)::get(null, "%m", "tlul_assert_en", tlul_assert_en)) begin
-        `uvm_fatal($sformatf("%m"), "Can't find tlul_assert_en")
+      uvm_config_db#(bit)::wait_modified(null, hier_path, "tlul_assert_en");
+      if (!uvm_config_db#(bit)::get(null, hier_path, "tlul_assert_en", tlul_assert_en)) begin
+        `uvm_fatal(hier_path, "Can't find tlul_assert_en")
       end
       disable_sva = !tlul_assert_en;
     end

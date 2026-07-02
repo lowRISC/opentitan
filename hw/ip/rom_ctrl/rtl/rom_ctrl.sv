@@ -126,21 +126,24 @@ module rom_ctrl
     // set 4 or 5 byte enables (4 for 32bit, 5 for 39bit)!
     localparam int NumBytes = (DataWidth + 7) / 8;
 
+    // ROM ctrl operates on unshared data and and accepts digest responses immediately.
     // SEC_CM: MEM.DIGEST
-    assign kmac_data_o = '{valid: kmac_rom_vld_outer,
-                           data: kmac_rom_data,
+    assign kmac_data_o = '{req_valid: kmac_rom_vld_outer,
+                           data_s0: kmac_rom_data,
+                           data_s1: '0,
                            strb: kmac_pkg::MsgStrbW'({NumBytes{1'b1}}),
-                           last: kmac_rom_last_outer};
+                           req_last: kmac_rom_last_outer,
+                           rsp_ready: 1'b1};
 
-    assign kmac_rom_rdy_outer = kmac_data_i.ready;
-    assign kmac_done = kmac_data_i.done;
-    assign kmac_digest = kmac_data_i.digest_share0[255:0] ^ kmac_data_i.digest_share1[255:0];
+    assign kmac_rom_rdy_outer = kmac_data_i.req_ready;
+    assign kmac_done = kmac_data_i.rsp_valid;
+    assign kmac_digest = kmac_data_i.digest_s0[255:0] ^ kmac_data_i.digest_s1[255:0];
     assign kmac_err = kmac_data_i.error;
 
     logic unused_kmac_digest;
     assign unused_kmac_digest = ^{
-      kmac_data_i.digest_share0[kmac_pkg::AppDigestW-1:256],
-      kmac_data_i.digest_share1[kmac_pkg::AppDigestW-1:256]
+      kmac_data_i.digest_s0[kmac_pkg::AppDigestW-1:256],
+      kmac_data_i.digest_s1[kmac_pkg::AppDigestW-1:256]
     };
 
   end : gen_kmac_scramble_enabled
@@ -160,6 +163,10 @@ module rom_ctrl
     assign unused_kmac_outputs = ^{kmac_rom_vld, kmac_rom_data, kmac_rom_last};
 
   end : gen_kmac_scramble_disabled
+
+  // A static KMAC interface has no finish response.
+  logic unused_kmac_finish_rsp;
+  assign unused_kmac_finish_rsp = kmac_data_i.rsp_finish;
 
   // TL interface ==============================================================
   // This buffer ensures that when we calculate bus_rom_prince_index by snooping on
@@ -185,6 +192,7 @@ module rom_ctrl
   tlul_adapter_sram #(
     .SramAw(RomIndexWidth),
     .SramDw(32),
+    .SramDepth(RomSizeWords),
     .Outstanding(2),
     .ByteAccess(0),
     .ErrOnWrite(1),
@@ -226,7 +234,7 @@ module rom_ctrl
 
   // Unless there has been an injected fault, bus_rom_prince_index and bus_rom_rom_index should have
   // the same value.
-  `ASSERT(BusRomIndicesMatch_A, bus_rom_prince_index == bus_rom_rom_index)
+  `OCAH_OT_ASSERT(BusRomIndicesMatch_A, bus_rom_prince_index == bus_rom_rom_index)
 
   // The mux ===================================================================
 
@@ -516,30 +524,30 @@ module rom_ctrl
   //
   // "ROM" TL interface: The d_valid and a_ready signals should be unconditionally defined. The
   // other signals in rom_tl_o (which are the other D channel signals) should be defined if d_valid.
-  `ASSERT_KNOWN(RomTlODValidKnown_A, rom_tl_o.d_valid)
-  `ASSERT_KNOWN(RomTlOAReadyKnown_A, rom_tl_o.a_ready)
-  `ASSERT_KNOWN_IF(RomTlODDataKnown_A, rom_tl_o, rom_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(RomTlODValidKnown_A, rom_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(RomTlOAReadyKnown_A, rom_tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(RomTlODDataKnown_A, rom_tl_o, rom_tl_o.d_valid)
 
   // "regs" TL interface: The d_valid and a_ready signals should be unconditionally defined. The
   // other signals in rom_tl_o (which are the other D channel signals) should be defined if d_valid.
-  `ASSERT_KNOWN(RegsTlODValidKnown_A, regs_tl_o.d_valid)
-  `ASSERT_KNOWN(RegsTlOAReadyKnown_A, regs_tl_o.a_ready)
-  `ASSERT_KNOWN_IF(RegsTlODDataKnown_A, regs_tl_o, regs_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(RegsTlODValidKnown_A, regs_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(RegsTlOAReadyKnown_A, regs_tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(RegsTlODDataKnown_A, regs_tl_o, regs_tl_o.d_valid)
 
   // The assert_tx_o output should have a known value when out of reset
-  `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
 
   // Assertions to check that we've wired up our alert bits correctly
   if (!SecDisableScrambling) begin : gen_asserts_with_scrambling
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(CompareFsmAlert_A,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(CompareFsmAlert_A,
                                             gen_fsm_scramble_enabled.
                                             u_checker_fsm.u_compare.u_state_regs,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheckerFsmAlert_A,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheckerFsmAlert_A,
                                          gen_fsm_scramble_enabled.
                                          u_checker_fsm.u_state_regs,
                                          alert_tx_o[AlertFatalIdx])
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(CompareAddrCtrCheck_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(CompareAddrCtrCheck_A,
       gen_fsm_scramble_enabled.
       u_checker_fsm.u_compare.u_prim_count_addr,
       gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
@@ -548,34 +556,39 @@ module rom_ctrl
   // The pwrmgr_data_o output (the "done" and "good" signals) should have a known value when out of
   // reset. (In theory, the "good" signal could be unknown when !done, but the stronger and simpler
   // assertion is also true, so we use that)
-  `ASSERT_KNOWN(PwrmgrDataOKnown_A, pwrmgr_data_o)
+  `OCAH_OT_ASSERT_KNOWN(PwrmgrDataOKnown_A, pwrmgr_data_o)
 
   // The valid signal for keymgr_data_o should always be known when out of reset. The rest of the
   // struct (a data signal) should be known whenever the valid signal is true.
-  `ASSERT_KNOWN(KeymgrDataOValidKnown_A, keymgr_data_o.valid)
-  `ASSERT_KNOWN_IF(KeymgrDataODataKnown_A, keymgr_data_o, keymgr_data_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(KeymgrDataOValidKnown_A, keymgr_data_o.valid)
+  `OCAH_OT_ASSERT_KNOWN_IF(KeymgrDataODataKnown_A, keymgr_data_o, keymgr_data_o.valid)
 
   // The valid signal for kmac_data_o should always be known when out of reset. The rest of the
-  // struct (data, strb and last) should be known whenever the valid signal is true.
-  `ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.valid)
-  `ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.valid)
+  // struct (data, strb and req_last) should be known whenever the valid signal is true.
+  `OCAH_OT_ASSERT_KNOWN(KmacDataOValidKnown_A, kmac_data_o.req_valid)
+  `OCAH_OT_ASSERT_KNOWN_IF(KmacDataODataKnown_A, kmac_data_o, kmac_data_o.req_valid)
+
+  // Check that kmac_data_o.req_last is "telling the truth": kmac_data_o.rsp_valid should drop on
+  // the cycle after the word that it decorates is transferred.
+  `OCAH_OT_ASSERT(KmacLastTrue_A,
+          kmac_data_o.req_valid && kmac_data_i.req_ready && kmac_data_o.req_last
+          |=> !kmac_data_o.req_valid)
 
   // Check that pwrmgr_data_o.good is stable when kmac_data_o.valid is asserted
-  `ASSERT(StabilityChkKmac_A, kmac_data_o.valid && $past(kmac_data_o.valid)
+  `OCAH_OT_ASSERT(StabilityChkKmac_A, kmac_data_o.req_valid && $past(kmac_data_o.req_valid)
           |-> $stable(pwrmgr_data_o.good))
 
   // Check that pwrmgr_data_o.good is stable when keymgr_data_o.valid is asserted
-  `ASSERT(StabilityChkkeymgr_A, keymgr_data_o.valid && $past(keymgr_data_o.valid)
+  `OCAH_OT_ASSERT(StabilityChkkeymgr_A, keymgr_data_o.valid && $past(keymgr_data_o.valid)
           |-> $stable(pwrmgr_data_o.good))
 
   // Check that pwrmgr_data_o.done is never de-asserted once asserted
-  `ASSERT(PwrmgrDataChk_A,
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True |=>
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True,
+  `OCAH_OT_ASSERT(PwrmgrDataChk_A,
+          !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True),
           clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
-  `ASSERT(KeymgrValidChk_A, keymgr_data_o.valid |=> keymgr_data_o.valid,
+  `OCAH_OT_ASSERT(KeymgrValidChk_A, !$fell(keymgr_data_o.valid),
           clk_i, !rst_ni || internal_alert)
 
   // It should not be possible to read from the ROM unless the check has finished, implying that
@@ -586,48 +599,48 @@ module rom_ctrl
   // might supply data after that happens. To avoid this problem, we actually look at the
   // bus_rom_rvalid signal, which is a validity bit for data coming back from the ROM that will be
   // supplied to the TileLink interface.
-  `ASSERT(NoReadsBeforeDone_A,
+  `OCAH_OT_ASSERT(NoReadsBeforeDone_A,
           pwrmgr_data_o.done != prim_mubi_pkg::MuBi4True -> !bus_rom_rvalid)
 
   // Check that whenever there is an alert triggered and FSM state is Invalid, there is no response
   // to read requests.
   if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled_asserts
 
-    `ASSERT(InvalidStateTerminal_A,
+    `OCAH_OT_ASSERT(InvalidStateTerminal_A,
             ##1 !$fell(gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid))
-    `ASSERT(BusLocalEscChk_A,
+    `OCAH_OT_ASSERT(BusLocalEscChk_A,
             gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid |=>
             !bus_rom_rvalid)
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
                                                     u_reg_regs,
                                                     (gen_alert_tx[AlertFatalIdx].
                                                      u_alert_sender.alert_req_i))
 
   // Alert assertions for redundant counters.
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoWptrCheck_A,
                                             u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.
                                             u_fifo_cnt.gen_secure_ptrs.u_wptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoRptrCheck_A,
                                             u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.
                                             u_fifo_cnt.gen_secure_ptrs.u_rptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoWptrCheck_A,
                                             u_tl_adapter_rom.u_sramreqfifo.gen_normal_fifo.
                                             u_fifo_cnt.gen_secure_ptrs.u_wptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoRptrCheck_A,
                                             u_tl_adapter_rom.u_sramreqfifo.gen_normal_fifo.
                                             u_fifo_cnt.gen_secure_ptrs.u_rptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoWptrCheck_A,
                                             u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.
                                             u_fifo_cnt.gen_secure_ptrs.u_wptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoRptrCheck_A,
                                             u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.
                                             u_fifo_cnt.gen_secure_ptrs.u_rptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)

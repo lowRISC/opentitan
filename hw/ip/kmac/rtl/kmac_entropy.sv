@@ -349,7 +349,7 @@ module kmac_entropy
 
   // PRNG primitive ===========================================================
 
-  `ASSERT_KNOWN(ModeKnown_A, mode_i)
+  `OCAH_OT_ASSERT_KNOWN(ModeKnown_A, mode_i)
   assign seed = (mode_q == EntropyModeSw) ? seed_data_i : entropy_data_i;
 
   // We employ a single unrolled Bivium stream cipher primitive to generate
@@ -454,7 +454,7 @@ module kmac_entropy
   // before the valid is de-asserted. If this happens, the current buffer output
   // might be used for both remasking and as auxiliary randomness which isn't ideal
   // but given this happens only very rarely it should be okay.
-  `ASSUME(ConsumeNotAssertWhenNotValid_M,
+  `OCAH_OT_ASSUME(ConsumeNotAssertWhenNotValid_M,
       rand_update_i | rand_consumed_i |-> rand_valid_o || $past(seed_done))
 
   // Upon escalation or in case the EDN wait timer expires the entropy_req signal
@@ -735,7 +735,7 @@ module kmac_entropy
       st_d = StTerminalError;
     end
   end
-  `ASSERT_KNOWN(RandStKnown_A, st)
+  `OCAH_OT_ASSERT_KNOWN(RandStKnown_A, st)
 
   // mubi4 sender
 
@@ -758,7 +758,7 @@ module kmac_entropy
 
   // The EDN bus width needs to be equal to the width of the ENTROPY_SEED
   // register as this module doesn't perform width adaption.
-  `ASSERT_INIT(EdnBusWidth_A, edn_pkg::ENDPOINT_BUS_WIDTH == 32)
+  `OCAH_OT_ASSERT_INIT(EdnBusWidth_A, edn_pkg::ENDPOINT_BUS_WIDTH == 32)
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
@@ -771,7 +771,7 @@ module kmac_entropy
       perm_test[RndCnstLfsrPerm[k]] = 1'b1;
     end
     // All bit positions must be marked with 1.
-    `ASSERT_I(PermutationCheck_A, &perm_test)
+    `OCAH_OT_ASSERT_I(PermutationCheck_A, &perm_test)
   end
 `endif
 

@@ -381,7 +381,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   // Assertions //
   ////////////////
 
-  `ASSERT(ValidDigestModeFlag_A, sel_data inside {Pad80, LenHi, LenLo} || inc_txcount |->
+  `OCAH_OT_ASSERT(ValidDigestModeFlag_A, sel_data inside {Pad80, LenHi, LenLo} || inc_txcount |->
       digest_mode_flag_q inside {SHA2_256, SHA2_384, SHA2_512})
 
 endmodule

@@ -1404,30 +1404,30 @@ module rv_core_ibex
     .tl_h_o(tl_win_d2h_err_rsp)
   );
 
-  `ASSERT_INIT(ICacheNWaysCorrect_A, ICacheNWays == ibex_pkg::IC_NUM_WAYS)
+  `OCAH_OT_ASSERT_INIT(ICacheNWaysCorrect_A, ICacheNWays == ibex_pkg::IC_NUM_WAYS)
 
   // Assertions for CPU enable
   // Allow 2 or 3 cycles for input to enable due to synchronizers
-  `ASSERT(FpvSecCmIbexFetchEnable0_A,
+  `OCAH_OT_ASSERT(FpvSecCmIbexFetchEnable0_A,
       fatal_core_err
       |=>
       lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
-  `ASSERT(FpvSecCmIbexFetchEnable1_A,
+  `OCAH_OT_ASSERT(FpvSecCmIbexFetchEnable1_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(lc_cpu_en_i)
       |->
       ##[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
-  `ASSERT(FpvSecCmIbexFetchEnable2_A,
+  `OCAH_OT_ASSERT(FpvSecCmIbexFetchEnable2_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(pwrmgr_cpu_en_i)
       |->
       ##[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
-  `ASSERT(FpvSecCmIbexFetchEnable3_A,
+  `OCAH_OT_ASSERT(FpvSecCmIbexFetchEnable3_A,
       lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i) &&
       lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ##1
       lc_ctrl_pkg::lc_tx_test_true_strict(local_fetch_enable_q) &&
       !fatal_core_err
       |=>
       ##[0:1] lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
-  `ASSERT(FpvSecCmIbexFetchEnable3Rev_A,
+  `OCAH_OT_ASSERT(FpvSecCmIbexFetchEnable3Rev_A,
       ##2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
       |->
       ($past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 2) ||
@@ -1437,13 +1437,13 @@ module rv_core_ibex
       $past(!fatal_core_err))
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
   if (SecureIbex) begin : gen_u_reg_cfg_shadow_assert
-    `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheckShdw_A,
+    `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheckShdw_A,
         gen_tlul_lockstep.u_reg_cfg_shadow, alert_tx_o[2])
   end
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   if (ICache && ICacheScramble) begin : gen_icache_scramble_asserts
 
     // Sample icache scramble key for use in assertions below.
@@ -1463,14 +1463,14 @@ module rv_core_ibex
     // Ensure that when a scramble key is received, it is correctly forwarded to the core.  The core
     // will then internally ensure that the key is correctly applied to the icache scrambled
     // memory primitives.
-    `ASSERT(IbexIcacheScrambleKeyForwardedToCore_A,
+    `OCAH_OT_ASSERT(IbexIcacheScrambleKeyForwardedToCore_A,
             icache_otp_key_i.ack
             |-> ##[0:10] // upper bound is not exact, but it should not take more than 10 cycles
             u_core.scramble_key_valid_i && (u_core.scramble_key_i == icache_otp_key_q)
     )
 
     // Ensure that when a FENCE.I is executed, a new icache scramble key is requested.
-    `ASSERT(IbexIcacheScrambleKeyRequestAfterFenceI_A,
+    `OCAH_OT_ASSERT(IbexIcacheScrambleKeyRequestAfterFenceI_A,
         u_core.u_ibex_core.id_stage_i.instr_valid_i
         && u_core.u_ibex_core.id_stage_i.decoder_i.opcode == ibex_pkg::OPCODE_MISC_MEM
         && u_core.u_ibex_core.id_stage_i.decoder_i.instr[14:12] == 3'b001 // FENCE.I
@@ -1486,9 +1486,9 @@ module rv_core_ibex
       assign __error_name = u_core._hier``.__error_name;                                           \
                                                                                                    \
       logic unused_assert_connected;                                                               \
-      `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)                        \
+      `OCAH_OT_ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)                        \
     end                                                                                            \
-    `ASSERT_ERROR_TRIGGER_ALERT(__assert_name, g_``__error_name``_assert_signals, __alert_name, 0, \
+    `OCAH_OT_ASSERT_ERROR_TRIGGER_ALERT(__assert_name, g_``__error_name``_assert_signals, __alert_name, 0, \
         30, // MAX_CYCLES_, use a large value as ibex clock is 4x faster than clk in alert_handler \
         __error_name)
 
@@ -1503,10 +1503,10 @@ module rv_core_ibex
   `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
       instr_intg_err)
   if (LockstepOffset > 1) begin: gen_lockstep_rst_cnt_assert
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
       u_core.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt, alert_tx_o[2])
   end
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
       u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
 `endif // ifdef INC_ASSERT

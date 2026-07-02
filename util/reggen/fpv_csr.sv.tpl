@@ -98,8 +98,8 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 
     // These two assumptions bound h2d.a_source and d2h.d_source for FPV because they are used as
     // indices for the array.
-    `ASSUME_FPV(TlulSourceA_M, h2d.a_source >=  0 && h2d.a_source < PendTransLen, clk_i, !rst_ni)
-    `ASSUME_FPV(TlulSourceD_M, d2h.d_source >=  0 && d2h.d_source < PendTransLen, clk_i, !rst_ni)
+    `OCAH_OT_ASSUME_FPV(TlulSourceA_M, h2d.a_source >=  0 && h2d.a_source < PendTransLen, clk_i, !rst_ni)
+    `OCAH_OT_ASSUME_FPV(TlulSourceD_M, d2h.d_source >=  0 && d2h.d_source < PendTransLen, clk_i, !rst_ni)
   `else
     localparam int PendTransLen = 2**TL_AIW;
   `endif
@@ -293,7 +293,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 %>\
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
-  `ASSERT(${r_name}_rd_A,
+  `OCAH_OT_ASSERT(${r_name}_rd_A,
           (d2h.d_valid && pend_trans[d_source_idx].rd_pending &&
            pend_trans[d_source_idx].addr == ${addr_width}'h${reg_addr_hex}) |->
           (d2h.d_error ||
@@ -303,7 +303,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   % endfor
 % endif
 
-  `ASSERT(TlulOOBAddrErr_A, oob_addr_err |-> s_eventually(d2h.d_valid && d2h.d_error))
+  `OCAH_OT_ASSERT(TlulOOBAddrErr_A, oob_addr_err |-> s_eventually(d2h.d_valid && d2h.d_error))
 
   `ifdef UVM
     initial forever begin

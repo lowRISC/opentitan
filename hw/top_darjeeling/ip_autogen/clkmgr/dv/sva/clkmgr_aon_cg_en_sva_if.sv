@@ -6,5 +6,5 @@
 // AON clocks: they are never gated off.
 interface clkmgr_aon_cg_en_sva_if (input logic cg_en);
 
-  `ASSERT_INIT_NET(CgEn_A, !cg_en)
+  `OCAH_OT_ASSERT_INIT_NET(CgEn_A, !cg_en)
 endinterface

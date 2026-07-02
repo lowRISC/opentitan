@@ -135,11 +135,11 @@ module lc_ctrl
   ////////////////////////
 
   // Check that the CSR parameters correspond with the ones used in the design.
-  `ASSERT_INIT(DecLcStateWidthCheck_A, CsrLcStateWidth == ExtDecLcStateWidth)
-  `ASSERT_INIT(DecLcCountWidthCheck_A, CsrLcCountWidth == DecLcCountWidth)
-  `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == ExtDecLcIdStateWidth)
-  `ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
-  `ASSERT_INIT(OtpTestCtrlWidth_A, otp_macro_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
+  `OCAH_OT_ASSERT_INIT(DecLcStateWidthCheck_A, CsrLcStateWidth == ExtDecLcStateWidth)
+  `OCAH_OT_ASSERT_INIT(DecLcCountWidthCheck_A, CsrLcCountWidth == DecLcCountWidth)
+  `OCAH_OT_ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == ExtDecLcIdStateWidth)
+  `OCAH_OT_ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
+  `OCAH_OT_ASSERT_INIT(OtpTestCtrlWidth_A, otp_macro_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
 
   /////////////
   // Regfile //
@@ -848,67 +848,65 @@ module lc_ctrl
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(RegsTlOKnown,           regs_tl_o                  )
-  `ASSERT_KNOWN(DmiTlOKnown,            dmi_tl_o                   )
-  `ASSERT_KNOWN(JtagTDOKnown_A,         jtag_o                     )
-  `ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
-  `ASSERT_KNOWN(EscScrapState0Known_A,  esc_scrap_state0_rx_o      )
-  `ASSERT_KNOWN(EscScrapState1Known_A,  esc_scrap_state1_rx_o      )
-  `ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
-  `ASSERT_KNOWN(StrapEnOverrideKnown_A, strap_en_override_o        )
-  `ASSERT_KNOWN(VendorTestReqKnown_A,   lc_otp_vendor_test_o       )
-  `ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
-  `ASSERT_KNOWN(LcOtpTokenKnown_A,      kmac_data_o                )
-  `ASSERT_KNOWN(LcInitDoneKnown_A,      lc_init_done_o             )
-  `ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
-  `ASSERT_KNOWN(LcRawTestRmaKnown_A,    lc_raw_test_rma_o          )
-  `ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )
-  `ASSERT_KNOWN(LcHwDebugClrKnown_A,    lc_hw_debug_clr_o          )
-  `ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o           )
-  `ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o                )
-  `ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o )
-  `ASSERT_KNOWN(LcOwnerSwRwEn_A,        lc_owner_seed_sw_rw_en_o   )
-  `ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o     )
-  `ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o     )
-  `ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o         )
-  `ASSERT_KNOWN(LcRmaState_A,           lc_rma_state_o             )
-  `ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o             )
-  `ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
-  `ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
-  `ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o           )
-  `ASSERT_KNOWN(LcNvmRmaSeedKnown_A,    lc_nvm_rma_seed_o          )
-  `ASSERT_KNOWN(LcNvmRmaReqKnown_A,     lc_nvm_rma_req_o           )
-  `ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
-  `ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
+  `OCAH_OT_ASSERT_KNOWN(RegsTlOKnown,           regs_tl_o                  )
+  `OCAH_OT_ASSERT_KNOWN(DmiTlOKnown,            dmi_tl_o                   )
+  `OCAH_OT_ASSERT_KNOWN(JtagTDOKnown_A,         jtag_o                     )
+  `OCAH_OT_ASSERT_KNOWN(AlertTxKnown_A,         alert_tx_o                 )
+  `OCAH_OT_ASSERT_KNOWN(EscScrapState0Known_A,  esc_scrap_state0_rx_o      )
+  `OCAH_OT_ASSERT_KNOWN(EscScrapState1Known_A,  esc_scrap_state1_rx_o      )
+  `OCAH_OT_ASSERT_KNOWN(PwrLcKnown_A,           pwr_lc_o                   )
+  `OCAH_OT_ASSERT_KNOWN(StrapEnOverrideKnown_A, strap_en_override_o        )
+  `OCAH_OT_ASSERT_KNOWN(VendorTestReqKnown_A,   lc_otp_vendor_test_o       )
+  `OCAH_OT_ASSERT_KNOWN(LcOtpProgramKnown_A,    lc_otp_program_o           )
+  `OCAH_OT_ASSERT_KNOWN(LcOtpTokenKnown_A,      kmac_data_o                )
+  `OCAH_OT_ASSERT_KNOWN(LcInitDoneKnown_A,      lc_init_done_o             )
+  `OCAH_OT_ASSERT_KNOWN(LcDftEnKnown_A,         lc_dft_en_o                )
+  `OCAH_OT_ASSERT_KNOWN(LcRawTestRmaKnown_A,    lc_raw_test_rma_o          )
+  `OCAH_OT_ASSERT_KNOWN(LcNvmDebugEnKnown_A,    lc_nvm_debug_en_o          )
+  `OCAH_OT_ASSERT_KNOWN(LcHwDebugClrKnown_A,    lc_hw_debug_clr_o          )
+  `OCAH_OT_ASSERT_KNOWN(LcHwDebugEnKnown_A,     lc_hw_debug_en_o           )
+  `OCAH_OT_ASSERT_KNOWN(LcCpuEnKnown_A,         lc_cpu_en_o                )
+  `OCAH_OT_ASSERT_KNOWN(LcCreatorSwRwEn_A,      lc_creator_seed_sw_rw_en_o )
+  `OCAH_OT_ASSERT_KNOWN(LcOwnerSwRwEn_A,        lc_owner_seed_sw_rw_en_o   )
+  `OCAH_OT_ASSERT_KNOWN(LcIsoSwRwEn_A,          lc_iso_part_sw_rd_en_o     )
+  `OCAH_OT_ASSERT_KNOWN(LcIsoSwWrEn_A,          lc_iso_part_sw_wr_en_o     )
+  `OCAH_OT_ASSERT_KNOWN(LcSeedHwRdEn_A,         lc_seed_hw_rd_en_o         )
+  `OCAH_OT_ASSERT_KNOWN(LcRmaState_A,           lc_rma_state_o             )
+  `OCAH_OT_ASSERT_KNOWN(LcKeymgrEnKnown_A,      lc_keymgr_en_o             )
+  `OCAH_OT_ASSERT_KNOWN(LcEscalateEnKnown_A,    lc_escalate_en_o           )
+  `OCAH_OT_ASSERT_KNOWN(LcCheckBypassEnKnown_A, lc_check_byp_en_o          )
+  `OCAH_OT_ASSERT_KNOWN(LcClkBypReqKnown_A,     lc_clk_byp_req_o           )
+  `OCAH_OT_ASSERT_KNOWN(LcNvmRmaSeedKnown_A,    lc_nvm_rma_seed_o          )
+  `OCAH_OT_ASSERT_KNOWN(LcNvmRmaReqKnown_A,     lc_nvm_rma_req_o           )
+  `OCAH_OT_ASSERT_KNOWN(LcKeymgrDiv_A,          lc_keymgr_div_o            )
+  `OCAH_OT_ASSERT_KNOWN(HwRevKnown_A,           hw_rev_o                   )
 
-  `ASSERT(LcInitDoneSticky_A,
-      lc_tx_test_true_strict(lc_init_done_o)
-      |=>
-      ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
+  `OCAH_OT_ASSERT(LcInitDoneSticky_A,
+          ##1 !$fell(lc_tx_test_true_strict(lc_init_done_o)))
 
   // Alert assertions for sparse FSMs.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
       u_lc_ctrl_fsm.u_fsm_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcStateCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcStateCheck_A,
       u_lc_ctrl_fsm.u_state_regs, alert_tx_o[1],
       !$past(otp_lc_data_i.valid) ||
       u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcCntCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcCntCheck_A,
       u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[1],
        !$past(otp_lc_data_i.valid) ||
       u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
- `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
+ `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
       u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1],
       u_lc_ctrl_fsm.fsm_state_q inside {EscalateSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[2])
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(TapDmiWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[2])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(TapDmiWeOnehotCheck_A,
                                                  u_reg_tap_dmi, alert_tx_o[2], 0)
 endmodule : lc_ctrl

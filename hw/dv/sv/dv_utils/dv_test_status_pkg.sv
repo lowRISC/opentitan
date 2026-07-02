@@ -10,7 +10,7 @@ package dv_test_status_pkg;
   // signature along with a banner. The signature can be used by external scripts to determine if
   // the test passed or failed.
   function automatic void dv_test_status(bit passed);
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
     if (prim_util_pkg::end_of_simulation) begin
       // The first arg '1' is the error code, arbitrarily set to 1.
       $fatal(1, "prim_util_pkg::end_of_simulation was already signaled!");

@@ -43,18 +43,18 @@ module ${dut.name}_assert_fpv (
   // Assumptions //
   /////////////////
 
-  // `ASSUME(MyAssumption_M, ...)
+  // `OCAH_OT_ASSUME(MyAssumption_M, ...)
 
   ////////////////////////
   // Forward Assertions //
   ////////////////////////
 
-  // `ASSERT(MyFwdAssertion_A, ...)
+  // `OCAH_OT_ASSERT(MyFwdAssertion_A, ...)
 
   /////////////////////////
   // Backward Assertions //
   /////////////////////////
 
-  // `ASSERT(MyBkwdAssertion_A, ...)
+  // `OCAH_OT_ASSERT(MyBkwdAssertion_A, ...)
 
 endmodule : ${dut.name}_assert_fpv

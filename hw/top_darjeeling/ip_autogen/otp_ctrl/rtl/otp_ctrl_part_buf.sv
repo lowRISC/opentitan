@@ -113,19 +113,19 @@ module otp_ctrl_part_buf
   localparam bit [CntWidth-1:0] PenultimateScrmblBlock = PenultimateScrmblBlockInt[CntWidth-1:0];
 
   // Integration checks for parameters.
-  `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
-  `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
-  `ASSERT_INIT(DigestOffsetMustBeRepresentable_A, DigestOffsetInt == int'(DigestOffset))
-  `ASSERT_INIT(ZeroizeOffsetMustBeRepresentable_A, ZeroizeOffsetInt == int'(ZeroizeOffset))
-  `ASSERT(ScrambledImpliesBuffered_A, Info.secret |-> Info.variant == Buffered)
-  `ASSERT(ScrambledImpliesDigest_A, Info.secret |-> Info.hw_digest)
-  `ASSERT(WriteLockImpliesDigest_A, Info.read_lock |-> Info.hw_digest)
-  `ASSERT(ReadLockImpliesDigest_A, Info.write_lock |-> Info.hw_digest)
+  `OCAH_OT_ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
+  `OCAH_OT_ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
+  `OCAH_OT_ASSERT_INIT(DigestOffsetMustBeRepresentable_A, DigestOffsetInt == int'(DigestOffset))
+  `OCAH_OT_ASSERT_INIT(ZeroizeOffsetMustBeRepresentable_A, ZeroizeOffsetInt == int'(ZeroizeOffset))
+  `OCAH_OT_ASSERT(ScrambledImpliesBuffered_A, Info.secret |-> Info.variant == Buffered)
+  `OCAH_OT_ASSERT(ScrambledImpliesDigest_A, Info.secret |-> Info.hw_digest)
+  `OCAH_OT_ASSERT(WriteLockImpliesDigest_A, Info.read_lock |-> Info.hw_digest)
+  `OCAH_OT_ASSERT(ReadLockImpliesDigest_A, Info.write_lock |-> Info.hw_digest)
 
   // This feature is only supposed to be used with partitions that are not scrambled
   // and that do not have a digest.
-  `ASSERT(BypassEnable0_A, Info.secret    |-> lc_ctrl_pkg::lc_tx_test_false_strict(check_byp_en_i))
-  `ASSERT(BypassEnable1_A, Info.hw_digest |-> lc_ctrl_pkg::lc_tx_test_false_strict(check_byp_en_i))
+  `OCAH_OT_ASSERT(BypassEnable0_A, Info.secret    |-> lc_ctrl_pkg::lc_tx_test_false_strict(check_byp_en_i))
+  `OCAH_OT_ASSERT(BypassEnable1_A, Info.hw_digest |-> lc_ctrl_pkg::lc_tx_test_false_strict(check_byp_en_i))
 
   ///////////////////////
   // OTP Partition FSM //
@@ -893,7 +893,7 @@ module otp_ctrl_part_buf
       .mubi_o(access_o.write_lock)
     );
 
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.write_lock))
+    `OCAH_OT_ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.write_lock))
   end else begin : gen_no_digest_write_lock
     assign access_o.write_lock = access_pre.write_lock;
   end
@@ -913,7 +913,7 @@ module otp_ctrl_part_buf
       .mubi_o(access_o.read_lock)
     );
 
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.read_lock))
+    `OCAH_OT_ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.read_lock))
   end else begin : gen_no_digest_read_lock
     assign access_o.read_lock = access_pre.read_lock;
   end
@@ -973,50 +973,50 @@ module otp_ctrl_part_buf
   ////////////////
 
   // Known assertions
-  `ASSERT_KNOWN(InitDoneKnown_A,     init_done_o)
-  `ASSERT_KNOWN(IntegChkAckKnown_A,  integ_chk_ack_o)
-  `ASSERT_KNOWN(CnstyChkAckKnown_A,  cnsty_chk_ack_o)
-  `ASSERT_KNOWN(ErrorKnown_A,        error_o)
-  `ASSERT_KNOWN(AccessKnown_A,       access_o)
-  `ASSERT_KNOWN(DigestKnown_A,       digest_o)
-  `ASSERT_KNOWN(DataKnown_A,         data_o)
-  `ASSERT_KNOWN(OtpReqKnown_A,       otp_req_o)
-  `ASSERT_KNOWN(OtpCmdKnown_A,       otp_cmd_o)
-  `ASSERT_KNOWN(OtpSizeKnown_A,      otp_size_o)
-  `ASSERT_KNOWN(OtpWdataKnown_A,     otp_wdata_o)
-  `ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
-  `ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
-  `ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
-  `ASSERT_KNOWN(ScrmblModeKnown_A,   scrmbl_mode_o)
-  `ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
-  `ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
-  `ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)
+  `OCAH_OT_ASSERT_KNOWN(InitDoneKnown_A,     init_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntegChkAckKnown_A,  integ_chk_ack_o)
+  `OCAH_OT_ASSERT_KNOWN(CnstyChkAckKnown_A,  cnsty_chk_ack_o)
+  `OCAH_OT_ASSERT_KNOWN(ErrorKnown_A,        error_o)
+  `OCAH_OT_ASSERT_KNOWN(AccessKnown_A,       access_o)
+  `OCAH_OT_ASSERT_KNOWN(DigestKnown_A,       digest_o)
+  `OCAH_OT_ASSERT_KNOWN(DataKnown_A,         data_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpReqKnown_A,       otp_req_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpCmdKnown_A,       otp_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpSizeKnown_A,      otp_size_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpWdataKnown_A,     otp_wdata_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpAddrKnown_A,      otp_addr_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblMtxReqKnown_A, scrmbl_mtx_req_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblCmdKnown_A,    scrmbl_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblModeKnown_A,   scrmbl_mode_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblSelKnown_A,    scrmbl_sel_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblDataKnown_A,   scrmbl_data_o)
+  `OCAH_OT_ASSERT_KNOWN(ScrmblValidKnown_A,  scrmbl_valid_o)
 
   // Uninitialized partitions should always be locked, no matter what.
-  `ASSERT(InitWriteLocksPartition_A,
+  `OCAH_OT_ASSERT(InitWriteLocksPartition_A,
       mubi8_test_true_loose(dout_locked_q)
       |->
       mubi8_test_true_loose(access_o.write_lock))
-  `ASSERT(InitReadLocksPartition_A,
+  `OCAH_OT_ASSERT(InitReadLocksPartition_A,
       mubi8_test_true_loose(dout_locked_q)
       |->
       mubi8_test_true_loose(access_o.read_lock))
   // Incoming Lock propagation
-  `ASSERT(WriteLockPropagation_A,
+  `OCAH_OT_ASSERT(WriteLockPropagation_A,
       mubi8_test_true_loose(access_i.write_lock)
       |->
       mubi8_test_true_loose(access_o.write_lock))
-  `ASSERT(ReadLockPropagation_A,
+  `OCAH_OT_ASSERT(ReadLockPropagation_A,
       mubi8_test_true_loose(access_i.read_lock)
       |->
       mubi8_test_true_loose(access_o.read_lock))
   // ECC error in buffer regs
-  `ASSERT(EccErrorState_A,
+  `OCAH_OT_ASSERT(EccErrorState_A,
       ecc_err
       |=>
       state_q == ErrorSt)
   // OTP error response
-  `ASSERT(OtpErrorState_A,
+  `OCAH_OT_ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
       !(otp_err inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
@@ -1024,6 +1024,6 @@ module otp_ctrl_part_buf
 
   // The partition size must be greater than one scrambling block for the address calculation
   // and muxing to work correctly.
-  `ASSERT_INIT(OtpPartBufSize_A, Info.size > (ScrmblBlockWidth/8))
+  `OCAH_OT_ASSERT_INIT(OtpPartBufSize_A, Info.size > (ScrmblBlockWidth/8))
 
 endmodule : otp_ctrl_part_buf

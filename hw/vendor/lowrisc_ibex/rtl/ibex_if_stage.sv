@@ -267,7 +267,7 @@ module ibex_if_stage import ibex_pkg::*; #(
 
   // We should never see a mispredict and an incoming branch on the same cycle. The mispredict also
   // cancels any predicted branch so overall branch_req must be low.
-  `ASSERT(NoMispredBranch, nt_branch_mispredict_i |-> ~branch_req)
+  `OCAH_OT_ASSERT(NoMispredBranch, nt_branch_mispredict_i |-> ~branch_req)
 
   if (ICache) begin : gen_icache
     // Full I-Cache option
@@ -691,8 +691,8 @@ module ibex_if_stage import ibex_pkg::*; #(
 
     assign instr_bp_taken_o = instr_bp_taken_q;
 
-    `ASSERT(NoPredictSkid, instr_skid_valid_q |-> ~predict_branch_taken)
-    `ASSERT(NoPredictIllegal, predict_branch_taken |-> ~illegal_c_insn)
+    `OCAH_OT_ASSERT(NoPredictSkid, instr_skid_valid_q |-> ~predict_branch_taken)
+    `OCAH_OT_ASSERT(NoPredictIllegal, predict_branch_taken |-> ~illegal_c_insn)
   end else begin : g_no_branch_predictor
     assign instr_bp_taken_o     = 1'b0;
     assign predict_branch_taken = 1'b0;
@@ -723,10 +723,10 @@ module ibex_if_stage import ibex_pkg::*; #(
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT_KNOWN(IbexExcPcMuxKnown, exc_pc_mux_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexExcPcMuxKnown, exc_pc_mux_i)
 
   if (BranchPredictor) begin : g_branch_predictor_asserts
-    `ASSERT_IF(IbexPcMuxValid, pc_mux_internal inside {
+    `OCAH_OT_ASSERT_IF(IbexPcMuxValid, pc_mux_internal inside {
         PC_BOOT,
         PC_JUMP,
         PC_EXC,
@@ -735,7 +735,7 @@ module ibex_if_stage import ibex_pkg::*; #(
         PC_BP},
       pc_set_i)
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
     /**
      * Checks for branch prediction interface to fetch_fifo/icache
      *
@@ -800,23 +800,23 @@ module ibex_if_stage import ibex_pkg::*; #(
 
     // Must only see mispredict after we've performed a predicted branch but before we've accepted
     // any instruction (with fetch_ready & fetch_valid) that follows that predicted branch.
-    `ASSERT(MispredictOnlyImmediatelyAfterPredictedBranch,
+    `OCAH_OT_ASSERT(MispredictOnlyImmediatelyAfterPredictedBranch,
       nt_branch_mispredict_i |-> predicted_branch_live_q)
     // Check that on mispredict we get the correct PC for the non-taken side of the branch when
     // prefetch buffer/icache makes that PC available.
-    `ASSERT(CorrectPCOnMispredict,
+    `OCAH_OT_ASSERT(CorrectPCOnMispredict,
       predicted_branch_live_q & mispredicted_d & fetch_valid |->
       fetch_addr == predicted_branch_nt_pc_q)
     // Must not signal mispredict over multiple cycles but it's possible to have back to back
     // mispredicts for different branches (core signals mispredict, prefetch buffer/icache immediate
     // has not-taken side of the mispredicted branch ready, which itself is a predicted branch,
     // following cycle core signal that that branch has mispredicted).
-    `ASSERT(MispredictSingleCycle,
+    `OCAH_OT_ASSERT(MispredictSingleCycle,
       nt_branch_mispredict_i & ~(fetch_valid & fetch_ready) |=> ~nt_branch_mispredict_i)
 `endif
 
   end else begin : g_no_branch_predictor_asserts
-    `ASSERT_IF(IbexPcMuxValid, pc_mux_internal inside {
+    `OCAH_OT_ASSERT_IF(IbexPcMuxValid, pc_mux_internal inside {
         PC_BOOT,
         PC_JUMP,
         PC_EXC,
@@ -826,12 +826,12 @@ module ibex_if_stage import ibex_pkg::*; #(
   end
 
   // Boot address must be aligned to 256 bytes.
-  `ASSERT(IbexBootAddrUnaligned, boot_addr_i[7:0] == 8'h00)
+  `OCAH_OT_ASSERT(IbexBootAddrUnaligned, boot_addr_i[7:0] == 8'h00)
 
   // Address must not contain X when request is sent.
-  `ASSERT(IbexInstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o))
+  `OCAH_OT_ASSERT(IbexInstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o))
 
   // Address must be word aligned when request is sent.
-  `ASSERT(IbexInstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00))
+  `OCAH_OT_ASSERT(IbexInstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00))
 
 endmodule

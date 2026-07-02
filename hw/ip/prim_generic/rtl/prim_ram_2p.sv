@@ -63,10 +63,10 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
     assign b_wmask[k] = &b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
 
     // Ensure that all mask bits within a group have the same value for a write
-    `ASSERT(MaskCheckPortA_A, a_req_i && a_write_i |->
+    `OCAH_OT_ASSERT(MaskCheckPortA_A, a_req_i && a_write_i |->
         a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_a_i, '0)
-    `ASSERT(MaskCheckPortB_A, b_req_i && b_write_i |->
+    `OCAH_OT_ASSERT(MaskCheckPortB_A, b_req_i && b_write_i |->
         b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_b_i, '0)
   end

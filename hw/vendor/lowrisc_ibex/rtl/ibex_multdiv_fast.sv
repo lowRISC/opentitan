@@ -114,9 +114,9 @@ module ibex_multdiv_fast #(
     end
   end
 
-  `ASSERT_KNOWN(DivEnKnown, div_en_internal)
-  `ASSERT_KNOWN(MultEnKnown, mult_en_internal)
-  `ASSERT_KNOWN(MultDivEnKnown, multdiv_en)
+  `OCAH_OT_ASSERT_KNOWN(DivEnKnown, div_en_internal)
+  `OCAH_OT_ASSERT_KNOWN(MultEnKnown, mult_en_internal)
+  `OCAH_OT_ASSERT_KNOWN(MultDivEnKnown, multdiv_en)
 
   assign multdiv_en = mult_en_internal | div_en_internal;
 
@@ -255,7 +255,7 @@ module ibex_multdiv_fast #(
     assign unused_mult1_res_uns = mult1_res_uns[33:32];
 
     // States must be known/valid.
-    `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
+    `OCAH_OT_ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
 
     assign sva_mul_fsm_idle = mult_state_q == MULL;
 
@@ -375,7 +375,7 @@ module ibex_multdiv_fast #(
     end
 
     // States must be known/valid.
-    `ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
+    `OCAH_OT_ASSERT_KNOWN(IbexMultStateKnown, mult_state_q)
 
     assign sva_mul_fsm_idle = mult_state_q == ALBL;
 
@@ -529,10 +529,10 @@ module ibex_multdiv_fast #(
   assign valid_o = mult_valid | div_valid;
 
   // States must be known/valid.
-  `ASSERT(IbexMultDivStateValid, md_state_q inside {
+  `OCAH_OT_ASSERT(IbexMultDivStateValid, md_state_q inside {
       MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH})
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   logic sva_fsm_idle;
   logic unused_sva_fsm_idle;
 

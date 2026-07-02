@@ -105,8 +105,8 @@ module otbn
   localparam int DmemBusAddrWidth = vbits(DmemBusSizeByte);
   localparam int DmemAddrWidth    = vbits(DmemSizeByte);
 
-  `ASSERT_INIT(ImemSizePowerOfTwo, 2 ** ImemAddrWidth == ImemSizeByte)
-  `ASSERT_INIT(DmemSizePowerOfTwo, 2 ** DmemAddrWidth == DmemSizeByte)
+  `OCAH_OT_ASSERT_INIT(ImemSizePowerOfTwo, 2 ** ImemAddrWidth == ImemSizeByte)
+  `OCAH_OT_ASSERT_INIT(DmemSizePowerOfTwo, 2 ** DmemAddrWidth == DmemSizeByte)
 
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
@@ -446,7 +446,7 @@ module otbn
   // don't have the corresponding check for writes from the core because the
   // core cannot perform writes (and has no imem_wmask_o port).
   assign imem_wmask = imem_access_core ? '1 : imem_wmask_bus;
-  `ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
+  `OCAH_OT_ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
 
   // SEC_CM: DATA_REG_SW.SCA
   // Blank bus read data interface during core operation to avoid leaking the currently executed
@@ -479,10 +479,10 @@ module otbn
     {locking_q ? prim_secded_pkg::SecdedInv3932ZeroEcc : imem_rdata_bus_raw[38:32],
      imem_rdata_bus_raw[31:0]};
 
-  `ASSERT(ImemRDataBusDisabledWhenCoreAccess_A, imem_access_core |-> !imem_rdata_bus_en_q)
-  `ASSERT(ImemRDataBusEnabledWhenIdle_A, status_q == StatusIdle |-> imem_rdata_bus_en_q)
-  `ASSERT(ImemRDataBusDisabledWhenLocked_A, locking |=> !imem_rdata_bus_en_q)
-  `ASSERT(ImemRDataBusReadAsZeroWhenLocked_A,
+  `OCAH_OT_ASSERT(ImemRDataBusDisabledWhenCoreAccess_A, imem_access_core |-> !imem_rdata_bus_en_q)
+  `OCAH_OT_ASSERT(ImemRDataBusEnabledWhenIdle_A, status_q == StatusIdle |-> imem_rdata_bus_en_q)
+  `OCAH_OT_ASSERT(ImemRDataBusDisabledWhenLocked_A, locking |=> !imem_rdata_bus_en_q)
+  `OCAH_OT_ASSERT(ImemRDataBusReadAsZeroWhenLocked_A,
     imem_rvalid_bus & locking |-> imem_rdata_bus_raw == '0)
 
   assign imem_rdata_core = imem_rdata;
@@ -726,10 +726,10 @@ module otbn
        dmem_rdata_bus_raw[i_word*39+:32]};
   end
 
-  `ASSERT(DmemRDataBusDisabledWhenCoreAccess_A, dmem_access_core |-> !dmem_rdata_bus_en_q)
-  `ASSERT(DmemRDataBusEnabledWhenIdle_A, status_q == StatusIdle |-> dmem_rdata_bus_en_q)
-  `ASSERT(DmemRDataBusDisabledWhenLocked_A, locking |=> !dmem_rdata_bus_en_q)
-  `ASSERT(DmemRDataBusReadAsZeroWhenLocked_A,
+  `OCAH_OT_ASSERT(DmemRDataBusDisabledWhenCoreAccess_A, dmem_access_core |-> !dmem_rdata_bus_en_q)
+  `OCAH_OT_ASSERT(DmemRDataBusEnabledWhenIdle_A, status_q == StatusIdle |-> dmem_rdata_bus_en_q)
+  `OCAH_OT_ASSERT(DmemRDataBusDisabledWhenLocked_A, locking |=> !dmem_rdata_bus_en_q)
+  `OCAH_OT_ASSERT(DmemRDataBusReadAsZeroWhenLocked_A,
     dmem_rvalid_bus & locking |-> dmem_rdata_bus_raw == '0)
 
   assign dmem_rdata_core = dmem_rdata;
@@ -750,9 +750,9 @@ module otbn
   // Memory Load Integrity =====================================================
   // CRC logic below assumes an incoming data bus width of 32 bits and considers
   // 15 bits of the 32-bit word based addresses.
-  `ASSERT_INIT(TLDWIs32Bit_A, top_pkg::TL_DW == 32)
-  `ASSERT_INIT(ImemAddrTooWideForLoadCrc_A, ImemIndexWidth <= 15)
-  `ASSERT_INIT(DmemBusAddrTooWideForLoadCrc_A, (DmemBusAddrWidth - 2) <= 15)
+  `OCAH_OT_ASSERT_INIT(TLDWIs32Bit_A, top_pkg::TL_DW == 32)
+  `OCAH_OT_ASSERT_INIT(ImemAddrTooWideForLoadCrc_A, ImemIndexWidth <= 15)
+  `OCAH_OT_ASSERT_INIT(DmemBusAddrTooWideForLoadCrc_A, (DmemBusAddrWidth - 2) <= 15)
 
   // Only advance CRC calculation on full 32-bit writes;
   assign mem_crc_data_in_valid   = ~(dmem_access_core | imem_access_core) &
@@ -896,7 +896,7 @@ module otbn
   // - Once locking is high, we guarantee never to see a new execution or the start of a key
   //   rotation. (Assertion: NoStartWhenLocked_A)
 
-  `ASSERT(NoStartWhenLocked_A,
+  `OCAH_OT_ASSERT(NoStartWhenLocked_A,
           locking |=> !($rose(busy_execute_d) ||
                         $rose(otbn_dmem_scramble_key_req_busy) ||
                         $rose(otbn_imem_scramble_key_req_busy)))
@@ -1233,7 +1233,7 @@ module otbn
 
   // Asserts ===================================================================
   for (genvar i = 0; i < LoopStackDepth; ++i) begin : gen_loop_stack_cntr_asserts
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
       LoopStackCntAlertCheck_A,
       u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].u_loop_count,
       alert_tx_o[AlertFatal]
@@ -1249,7 +1249,7 @@ module otbn
   // behaviour in which it's not guaranteed to see a successful secure wipe.
   for (genvar i = 2; i < NGpr; ++i) begin : gen_sec_wipe_gpr_asserts
     // Initial secure wipe needs to initialise all registers to nonzero
-    `ASSERT(InitSecWipeNonZeroBaseRegs_A,
+    `OCAH_OT_ASSERT(InitSecWipeNonZeroBaseRegs_A,
       $fell(busy_secure_wipe) |->
       u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
         EccZeroWord,
@@ -1257,7 +1257,7 @@ module otbn
       !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
       u_otbn_core.u_otbn_start_stop_control.state_error_d)
     // After execution, it's expected to see a change resulting with a nonzero register value
-    `ASSERT(SecWipeChangedBaseRegs_A,
+    `OCAH_OT_ASSERT(SecWipeChangedBaseRegs_A,
       $rose(busy_secure_wipe) |-> ((##[0:$]
         u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
           EccZeroWord &&
@@ -1289,7 +1289,7 @@ module otbn
     // behaviour in which it's not guaranteed to see a successful secure wipe.
     for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
       // Initial secure wipe needs to initialise all registers to nonzero
-      `ASSERT(InitSecWipeNonZeroWideRegs_A,
+      `OCAH_OT_ASSERT(InitSecWipeNonZeroWideRegs_A,
               $fell(busy_secure_wipe) |->
                 u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
                   EccWideZeroWord,
@@ -1299,7 +1299,7 @@ module otbn
                 u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
       // After execution, it's expected to see a change resulting with a nonzero register value
-      `ASSERT(SecWipeChangedWideRegs_A,
+      `OCAH_OT_ASSERT(SecWipeChangedWideRegs_A,
               $rose(busy_secure_wipe) |-> ((##[0:$]
                 u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
                   EccWideZeroWord &&
@@ -1319,14 +1319,14 @@ module otbn
   // 2. mubi_err_d of start_stop_control disables the secure wipe related assertions because a
   // fatal error affecting internal secure wiping could cause an immediate locking behaviour
   // in which it's not guaranteed to see a successful secure wipe.
-  `ASSERT(SecWipeInvalidCallStack_A,
+  `OCAH_OT_ASSERT(SecWipeInvalidCallStack_A,
           $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_rf_base.u_call_stack.top_valid_o),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
             u_otbn_core.u_otbn_start_stop_control.state_error_d ||
             u_otbn_core.u_otbn_start_stop_control.state_error_d)
-  `ASSERT(SecWipeInvalidLoopStack_A,
+  `OCAH_OT_ASSERT(SecWipeInvalidLoopStack_A,
           $fell(busy_secure_wipe) |->
             (!u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.top_valid_o),
           clk_i,
@@ -1335,7 +1335,7 @@ module otbn
             u_otbn_core.u_otbn_start_stop_control.state_error_d ||
             u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
-  `ASSERT(SecWipeNonZeroMod_A,
+  `OCAH_OT_ASSERT(SecWipeNonZeroMod_A,
           $fell(busy_secure_wipe) |-> u_otbn_core.u_otbn_alu_bignum.mod_intg_q != EccWideZeroWord,
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
@@ -1343,7 +1343,7 @@ module otbn
             u_otbn_core.u_otbn_start_stop_control.state_error_d ||
             u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
-  `ASSERT(SecWipeNonZeroACC_A,
+  `OCAH_OT_ASSERT(SecWipeNonZeroACC_A,
           $fell(busy_secure_wipe) |->
             u_otbn_core.u_otbn_alu_bignum.ispr_acc_intg_i != EccWideZeroWord,
           clk_i,
@@ -1351,7 +1351,7 @@ module otbn
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d ||
             u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
-  `ASSERT(SecWipeNonZeroFlags_A,
+  `OCAH_OT_ASSERT(SecWipeNonZeroFlags_A,
           $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_alu_bignum.flags_flattened),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
@@ -1360,25 +1360,25 @@ module otbn
             u_otbn_core.u_otbn_start_stop_control.state_error_d)
 
   // Secure wipe of IMEM and DMEM first happens with a key change from URND (while valid is zero)
-  `ASSERT(ImemSecWipeRequiresUrndKey_A,
+  `OCAH_OT_ASSERT(ImemSecWipeRequiresUrndKey_A,
           $rose(imem_sec_wipe) |=> (otbn_imem_scramble_key == $past(imem_sec_wipe_urnd_key)),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
-  `ASSERT(DmemSecWipeRequiresUrndKey_A,
+  `OCAH_OT_ASSERT(DmemSecWipeRequiresUrndKey_A,
           $rose(dmem_sec_wipe) |=> (otbn_dmem_scramble_key == $past(dmem_sec_wipe_urnd_key)),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
 
   // Then it is guaranteed to have a valid key from OTP interface which is different from URND key
-  `ASSERT(ImemSecWipeRequiresOtpKey_A,
+  `OCAH_OT_ASSERT(ImemSecWipeRequiresOtpKey_A,
           $rose(imem_sec_wipe) ##1 (otbn_imem_scramble_key == $past(imem_sec_wipe_urnd_key)) |=>
             ##[0:$] otbn_imem_scramble_valid && $changed(otbn_imem_scramble_key),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
-  `ASSERT(DmemSecWipeRequiresOtpKey_A,
+  `OCAH_OT_ASSERT(DmemSecWipeRequiresOtpKey_A,
           $rose(dmem_sec_wipe) ##1 (otbn_dmem_scramble_key == $past(dmem_sec_wipe_urnd_key)) |=>
             ##[0:$] otbn_dmem_scramble_valid && $changed(otbn_dmem_scramble_key),
           clk_i,
@@ -1386,27 +1386,27 @@ module otbn
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
-  `ASSERT_KNOWN(IdleOKnown_A, idle_o)
-  `ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
-  `ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o, clk_edn_i, !rst_edn_ni)
-  `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
-  `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
-  `ASSERT_KNOWN(ErrBitsKnown_A, err_bits)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(IdleOKnown_A, idle_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrDoneOKnown_A, intr_done_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxOKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(EdnRndOKnown_A, edn_rnd_o, clk_edn_i, !rst_edn_ni)
+  `OCAH_OT_ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
+  `OCAH_OT_ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
+  `OCAH_OT_ASSERT_KNOWN(ErrBitsKnown_A, err_bits)
 
   // Incoming key must be valid (other inputs go via prim modules that handle the X checks).
-  `ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
+  `OCAH_OT_ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
 
   // In locked state, the readable registers INSN_CNT, IMEM, and DMEM are expected to always read 0
   // when accessed from the bus. For INSN_CNT, we use "|=>" so that the assertion lines up with
   // "status.q" (a signal that isn't directly accessible here).
-  `ASSERT(LockedInsnCntReadsZero_A, (hw2reg.status.d == StatusLocked) |=> insn_cnt == 'd0)
-  `ASSERT(ExecuteOrLockedImemReadsZero_A,
+  `OCAH_OT_ASSERT(LockedInsnCntReadsZero_A, (hw2reg.status.d == StatusLocked) |=> insn_cnt == 'd0)
+  `OCAH_OT_ASSERT(ExecuteOrLockedImemReadsZero_A,
           (hw2reg.status.d inside {StatusBusyExecute, StatusLocked}) & imem_rvalid_bus
           |-> imem_rdata_bus == 'd0)
-  `ASSERT(ExecuteOrLockedDmemReadsZero_A,
+  `OCAH_OT_ASSERT(ExecuteOrLockedDmemReadsZero_A,
           (hw2reg.status.d inside {StatusBusyExecute, StatusLocked}) & dmem_rvalid_bus
           |-> dmem_rdata_bus == 'd0)
 
@@ -1414,94 +1414,94 @@ module otbn
   // locking, or both -- even if the core is never done.  We use this property to enable blanking
   // while the core is executing or locking, and this assertion ensures that there is no gap
   // between execution and locking.
-  `ASSERT(BusyOrLockingFromStartToDone_A,
+  `OCAH_OT_ASSERT(BusyOrLockingFromStartToDone_A,
           $rose(start_q) |-> (busy_execute_d | locking) |-> ##[0:$] $rose(done_core))
 
   // Error handling: if we pass an error signal down to the core then we should also be setting an
   // error flag. Note that this uses err_bits, not err_bits_q, because the latter signal only gets
   // asserted when an operation finishes.
-  `ASSERT(ErrBitIfEscalate_A, mubi4_test_true_loose(core_escalate_en) |=> |err_bits)
+  `OCAH_OT_ASSERT(ErrBitIfEscalate_A, mubi4_test_true_loose(core_escalate_en) |=> |err_bits)
 
-  // Constraint from package, check here as we cannot have `ASSERT_INIT in package
-  `ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
+  // Constraint from package, check here as we cannot have `OCAH_OT_ASSERT_INIT in package
+  `OCAH_OT_ASSERT_INIT(WsrESizeMatchesParameter_A, $bits(wsr_e) == WsrNumWidth)
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnStartStopFsmCheck_A,
     u_otbn_core.u_otbn_start_stop_control.u_state_regs,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnControllerFsmCheck_A,
     u_otbn_core.u_otbn_controller.u_state_regs,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnScrambleCtrlFsmCheck_A,
     u_otbn_scramble_ctrl.u_state_regs,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnCallStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_rf_base.u_call_stack.u_stack_wr_ptr,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(
     OtbnLoopInfoStackWrPtrAlertCheck_A,
     u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.u_stack_wr_ptr,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i)
 
-  `ASSERT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_ERROR_TRIGGER_ALERT_IN(
     OtbnBnMacCycleCountAlertCheck_A,
     u_otbn_core.u_otbn_mac_bignum.u_mac_bignum_fsm,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i,
     0, 2, state_err_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
     RegWeOnehotCheck_A,
     u_reg,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
   // other onehot checks
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(
     RfBaseOnehotCheck_A,
     u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.u_prim_onehot_check,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(
     RfBignumOnehotCheck_A,
     u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_prim_onehot_check,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemRspFifo,
     u_tlul_adapter_sram_dmem.u_rspfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemSramReqFifo,
     u_tlul_adapter_sram_dmem.u_sramreqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemReqFifo,
     u_tlul_adapter_sram_dmem.u_reqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemRspFifo,
     u_tlul_adapter_sram_imem.u_rspfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemSramReqFifo,
     u_tlul_adapter_sram_imem.u_sramreqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemReqFifo,
     u_tlul_adapter_sram_imem.u_reqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i

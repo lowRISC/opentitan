@@ -13,7 +13,7 @@ interface rstmgr_attrs_sva_if (
 
   initial
     @(posedge rst_ni) begin
-      `ASSERT_I(AlertInfoAttr_A, actual_alert_info_attr == expected_alert_info_attr)
-      `ASSERT_I(CpuInfoAttr_A, actual_cpu_info_attr == expected_cpu_info_attr)
+      `OCAH_OT_ASSERT_I(AlertInfoAttr_A, actual_alert_info_attr == expected_alert_info_attr)
+      `OCAH_OT_ASSERT_I(CpuInfoAttr_A, actual_cpu_info_attr == expected_cpu_info_attr)
     end
 endinterface

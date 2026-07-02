@@ -105,23 +105,23 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   /////////////////////////////////////////
 
   // The ready and valid signals should always have known values.
-  `ASSERT_KNOWN_IF(ReadyIsKnown_A, ready, is_push_agent, clk, !rst_n)
-  `ASSERT_KNOWN_IF(ValidIsKnown_A, valid, is_push_agent, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(ReadyIsKnown_A, ready, is_push_agent, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(ValidIsKnown_A, valid, is_push_agent, clk, !rst_n)
 
   // Whenever valid is asserted, h_data must have a known value.
-  `ASSERT_KNOWN_IF(H_DataKnownWhenValid_A, h_data, valid && is_push_agent, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(H_DataKnownWhenValid_A, h_data, valid && is_push_agent, clk, !rst_n)
 
   // Whenever ready is asserted and the agent is in bidirectional mode,
   // d_data must have a known value.
-  `ASSERT_KNOWN_IF(D_DataKnownWhenReady_A, d_data,
+  `OCAH_OT_ASSERT_KNOWN_IF(D_DataKnownWhenReady_A, d_data,
                    ready && is_push_agent && in_bidirectional_mode, clk, !rst_n)
 
   // When valid is asserted but ready is low the h_data must stay stable.
-  `ASSERT_IF(H_DataStableWhenValidAndNotReady_A, (valid && !ready) |=> $stable(h_data),
+  `OCAH_OT_ASSERT_IF(H_DataStableWhenValidAndNotReady_A, (valid && !ready) |=> $stable(h_data),
              is_push_agent, clk, !rst_n)
 
   // When valid is asserted, it must stay high until seeing ready be asserted.
-  `ASSERT_IF(ValidHighUntilReady_A, $rose(valid) |-> (valid throughout ready [->1]),
+  `OCAH_OT_ASSERT_IF(ValidHighUntilReady_A, $rose(valid) |-> (valid throughout ready [->1]),
              is_push_agent, clk, !rst_n)
 
   /////////////////////////////////////
@@ -129,20 +129,20 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   /////////////////////////////////////
 
   // The req and ack signals should always have known values.
-  `ASSERT_KNOWN_IF(ReqIsKnown_A, req, !is_push_agent, clk, !rst_n)
-  `ASSERT_KNOWN_IF(AckIsKnown_A, ack, !is_push_agent, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(ReqIsKnown_A, req, !is_push_agent, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(AckIsKnown_A, ack, !is_push_agent, clk, !rst_n)
 
   // When ack is asserted, d_data must have a known value.
-  `ASSERT_KNOWN_IF(D_DataKnownWhenAck_A, d_data, ack && !is_push_agent, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(D_DataKnownWhenAck_A, d_data, ack && !is_push_agent, clk, !rst_n)
 
   // When req is asserted and the agent is in bidirectional mode,
   // h_data must have a known value.
-  `ASSERT_KNOWN_IF(H_DataKnownWhenReq_A, h_data,
+  `OCAH_OT_ASSERT_KNOWN_IF(H_DataKnownWhenReq_A, h_data,
                    req && !is_push_agent && in_bidirectional_mode, clk, !rst_n)
 
   // When req is asserted but ack is low, and the agent is in bidirectional mode,
   // h_data must remain stable.
-  `ASSERT_IF(H_DataStableWhenBidirectionalAndReq_A, (req && !ack) |=> $stable(h_data),
+  `OCAH_OT_ASSERT_IF(H_DataStableWhenBidirectionalAndReq_A, (req && !ack) |=> $stable(h_data),
              !is_push_agent && in_bidirectional_mode, clk, !rst_n)
 
   // TODO: The following two assertions make a rather important assumption about the req/ack
@@ -154,20 +154,20 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   //       if it is allowed for requests to be dropped.
 
   // I 2-phase req-ack handshake, ack cannot be 1 if req is not 1.
-  `ASSERT_IF(AckAssertedOnlyWhenReqAsserted_A, ack |-> req,
+  `OCAH_OT_ASSERT_IF(AckAssertedOnlyWhenReqAsserted_A, ack |-> req,
              !is_push_agent && !is_pull_handshake_4_phase, clk, !rst_n)
 
   // Req is asserted only after previous ack is de-asserted.
-  `ASSERT_IF(NoAckOnNewReq_A, $rose(req) |-> !($past(ack, 1)) && !ack,
+  `OCAH_OT_ASSERT_IF(NoAckOnNewReq_A, $rose(req) |-> !($past(ack, 1)) && !ack,
              !is_push_agent, clk, !rst_n)
 
   // When req is asserted, it must stay high until a corresponding ack is seen.
-  `ASSERT_IF(ReqHighUntilAck_A, $rose(req) |-> (req throughout ack[->1]),
+  `OCAH_OT_ASSERT_IF(ReqHighUntilAck_A, $rose(req) |-> (req throughout ack[->1]),
              !is_push_agent, clk, !rst_n)
 
   // When ack is asserted, it must stay high until a corresponding req is de-asserted,
   // in case of four-phase handshake.
-  `ASSERT_IF(AckHighUntilReq_A, $rose(ack) |-> (ack throughout (!req[->1])),
+  `OCAH_OT_ASSERT_IF(AckHighUntilReq_A, $rose(ack) |-> (ack throughout (!req[->1])),
              !is_push_agent && is_pull_handshake_4_phase, clk, !rst_n)
 
   // TODO: Add support for async clock domains.

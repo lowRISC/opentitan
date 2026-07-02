@@ -607,18 +607,18 @@ module ibex_load_store_unit #(
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT(IbexDataTypeKnown, (lsu_req_i | busy_o) |-> !$isunknown(lsu_type_i))
-  `ASSERT(IbexDataOffsetKnown, (lsu_req_i | busy_o) |-> !$isunknown(data_offset))
-  `ASSERT_KNOWN(IbexRDataOffsetQKnown, rdata_offset_q)
-  `ASSERT_KNOWN(IbexDataTypeQKnown, data_type_q)
-  `ASSERT(IbexLsuStateValid, ls_fsm_cs inside {
+  `OCAH_OT_ASSERT(IbexDataTypeKnown, (lsu_req_i | busy_o) |-> !$isunknown(lsu_type_i))
+  `OCAH_OT_ASSERT(IbexDataOffsetKnown, (lsu_req_i | busy_o) |-> !$isunknown(data_offset))
+  `OCAH_OT_ASSERT_KNOWN(IbexRDataOffsetQKnown, rdata_offset_q)
+  `OCAH_OT_ASSERT_KNOWN(IbexDataTypeQKnown, data_type_q)
+  `OCAH_OT_ASSERT(IbexLsuStateValid, ls_fsm_cs inside {
       IDLE, WAIT_GNT_MIS, WAIT_RVALID_MIS, WAIT_GNT,
       WAIT_RVALID_MIS_GNTS_DONE})
 
   // Address must not contain X when request is sent.
-  `ASSERT(IbexDataAddrUnknown, data_req_o |-> !$isunknown(data_addr_o))
+  `OCAH_OT_ASSERT(IbexDataAddrUnknown, data_req_o |-> !$isunknown(data_addr_o))
 
   // Address must be word aligned when request is sent.
-  `ASSERT(IbexDataAddrUnaligned, data_req_o |-> (data_addr_o[1:0] == 2'b00))
+  `OCAH_OT_ASSERT(IbexDataAddrUnaligned, data_req_o |-> (data_addr_o[1:0] == 2'b00))
 
 endmodule

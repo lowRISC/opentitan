@@ -240,8 +240,8 @@ module otbn_rf_base
 
   // Make sure we're not outputting X. This indicates that something went wrong during the initial
   // secure wipe.
-  `ASSERT(OtbnRfBaseRdAKnown, rd_en_a_i && !pop_stack_a |-> !$isunknown(rd_data_a_raw_intg))
-  `ASSERT(OtbnRfBaseRdBKnown, rd_en_b_i && !pop_stack_b |-> !$isunknown(rd_data_b_raw_intg))
+  `OCAH_OT_ASSERT(OtbnRfBaseRdAKnown, rd_en_a_i && !pop_stack_a |-> !$isunknown(rd_data_a_raw_intg))
+  `OCAH_OT_ASSERT(OtbnRfBaseRdBKnown, rd_en_b_i && !pop_stack_b |-> !$isunknown(rd_data_b_raw_intg))
 
   assign sec_wipe_err_o = sec_wipe_stack_reset_i & ~sec_wipe_running_i;
 endmodule

@@ -667,7 +667,7 @@ module ibex_top import ibex_pkg::*; #(
           .alert_o          (icache_data_alert[way])
         );
 
-        `ifdef INC_ASSERT
+        `ifdef OCAH_OT_INC_ASSERT
           // Sample scramble key whenever it is valid for use in the assertions below.  This may be
           // redundant with the sampling performed in the actual design, but that is okay because
           // the assertions exist to check the correct functioning of the design.
@@ -683,13 +683,13 @@ module ibex_top import ibex_pkg::*; #(
           // Ensure that when a scramble key is received, it is correctly applied to the icache
           // scrambled memory primitives.  The upper bound in the cycle ranges below is not exact,
           // but it should not take more than 10 cycles.
-          `ASSERT(ScrambleKeyAppliedAtTagBank_A,
+          `OCAH_OT_ASSERT(ScrambleKeyAppliedAtTagBank_A,
                   scramble_key_valid_i
                   |-> ##[0:10]
                   tag_bank.key_valid_i && (tag_bank.key_i == sampled_scramble_key),
                   clk_i, !rst_ni
           )
-          `ASSERT(ScrambleKeyAppliedAtDataBank_A,
+          `OCAH_OT_ASSERT(ScrambleKeyAppliedAtDataBank_A,
                   scramble_key_valid_i
                   |-> ##[0:10]
                   data_bank.key_valid_i && (data_bank.key_i == sampled_scramble_key),
@@ -1142,35 +1142,35 @@ module ibex_top import ibex_pkg::*; #(
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
 
   // X checks for top-level outputs
-  `ASSERT_KNOWN(IbexInstrReqX, instr_req_o)
-  `ASSERT_KNOWN_IF(IbexInstrReqPayloadX, instr_addr_o, instr_req_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexInstrReqX, instr_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexInstrReqPayloadX, instr_addr_o, instr_req_o)
 
-  `ASSERT_KNOWN(IbexDataReqX, data_req_o)
-  `ASSERT_KNOWN_IF(IbexDataReqPayloadX,
+  `OCAH_OT_ASSERT_KNOWN(IbexDataReqX, data_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexDataReqPayloadX,
     {data_we_o, data_be_o, data_addr_o, data_wdata_o, data_wdata_intg_o}, data_req_o)
 
-  `ASSERT_KNOWN(IbexScrambleReqX, scramble_req_o)
-  `ASSERT_KNOWN(IbexDoubleFaultSeenX, double_fault_seen_o)
-  `ASSERT_KNOWN(IbexAlertMinorX, alert_minor_o)
-  `ASSERT_KNOWN(IbexAlertMajorInternalX, alert_major_internal_o)
-  `ASSERT_KNOWN(IbexAlertMajorBusX, alert_major_bus_o)
-  `ASSERT_KNOWN(IbexCoreSleepX, core_sleep_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexScrambleReqX, scramble_req_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexDoubleFaultSeenX, double_fault_seen_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexAlertMinorX, alert_minor_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexAlertMajorInternalX, alert_major_internal_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexAlertMajorBusX, alert_major_bus_o)
+  `OCAH_OT_ASSERT_KNOWN(IbexCoreSleepX, core_sleep_o)
 
   // X check for top-level inputs
-  `ASSERT_KNOWN(IbexTestEnX, test_en_i)
-  `ASSERT_KNOWN(IbexRamCfgTagX, ram_cfg_icache_tag_i)
-  `ASSERT_KNOWN(IbexRamCfgDataX, ram_cfg_icache_data_i)
-  `ASSERT_KNOWN(IbexHartIdX, hart_id_i)
-  `ASSERT_KNOWN(IbexBootAddrX, boot_addr_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexTestEnX, test_en_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexRamCfgTagX, ram_cfg_icache_tag_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexRamCfgDataX, ram_cfg_icache_data_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexHartIdX, hart_id_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexBootAddrX, boot_addr_i)
 
-  `ASSERT_KNOWN(IbexInstrGntX, instr_gnt_i)
-  `ASSERT_KNOWN(IbexInstrRValidX, instr_rvalid_i)
-  `ASSERT_KNOWN_IF(IbexInstrRPayloadX,
+  `OCAH_OT_ASSERT_KNOWN(IbexInstrGntX, instr_gnt_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexInstrRValidX, instr_rvalid_i)
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexInstrRPayloadX,
     {instr_rdata_i, instr_rdata_intg_i, instr_err_i}, instr_rvalid_i)
 
-  `ASSERT_KNOWN(IbexDataGntX, data_gnt_i)
-  `ASSERT_KNOWN(IbexDataRValidX, data_rvalid_i)
-  `ifdef INC_ASSERT
+  `OCAH_OT_ASSERT_KNOWN(IbexDataGntX, data_gnt_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexDataRValidX, data_rvalid_i)
+  `ifdef OCAH_OT_INC_ASSERT
     // Ibex can have a maximum of 2 accesses outstanding on the DSide. This is because it does not
     // speculative data accesses so the only requests that can be in flight must relate to a single
     // ongoing load or store instruction. Due to unaligned access support a single load or store can
@@ -1233,27 +1233,27 @@ module ibex_top import ibex_pkg::*; #(
     // start a new request in the same cycle an old one ends, in which case we'll see all pending
     // accesses valid but one will be ending this cycle so the empty slot can be immediately used by
     // the new request.
-    `ASSERT(MaxOutstandingDSideAccessesCorrect,
+    `OCAH_OT_ASSERT(MaxOutstandingDSideAccessesCorrect,
         data_req_o |->
         ~pending_dside_accesses_q[MaxOutstandingDSideAccesses-1].valid | data_rvalid_i)
 
     // Should only see a request response if we're expecting one
-    `ASSERT(PendingAccessTrackingCorrect, data_rvalid_i |-> pending_dside_accesses_q[0])
+    `OCAH_OT_ASSERT(PendingAccessTrackingCorrect, data_rvalid_i |-> pending_dside_accesses_q[0])
 
     if (SecureIbex) begin : g_secure_ibex_mem_assert
       // For SecureIbex responses to both writes and reads must specify rdata and rdata_intg (for
       // writes rdata is effectively ignored by rdata_intg still checked against rdata)
-      `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+      `OCAH_OT_ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
           data_rvalid_i)
     end else begin : g_no_secure_ibex_mem_assert
       // Without SecureIbex data_rdata_i and data_rdata_intg_i are only relevant to reads. Check
       // neither are X on a response to a read.
-      `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+      `OCAH_OT_ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
           data_rvalid_i & pending_dside_accesses_q[0].is_read)
     end
 
     // data_err_i relevant to both reads and writes. Check it isn't X on any response.
-    `ASSERT_KNOWN_IF(IbexDataRErrPayloadX, data_err_i, data_rvalid_i)
+    `OCAH_OT_ASSERT_KNOWN_IF(IbexDataRErrPayloadX, data_err_i, data_rvalid_i)
 
     `ifdef RVFI
     // Tracking logic and predictor for double_fault_seen_o output, relies on RVFI so only include
@@ -1326,41 +1326,41 @@ module ibex_top import ibex_pkg::*; #(
     end
 
     // We should only have a single assertion of double_fault_seen in the delay buffer
-    `ASSERT(DoubleFaultSinglePulse, $onehot0(double_fault_seen_delay_buffer))
+    `OCAH_OT_ASSERT(DoubleFaultSinglePulse, $onehot0(double_fault_seen_delay_buffer))
     // If we predict a double_fault_seen_o we should see one in the delay buffer
-    `ASSERT(DoubleFaultPulseSeenOnDoubleFault,
+    `OCAH_OT_ASSERT(DoubleFaultPulseSeenOnDoubleFault,
       double_fault_seen_predicted |-> |double_fault_seen_delay_buffer)
     // If double_fault_seen_o is asserted we should see predict one occurring within a bounded time
-    `ASSERT(DoubleFaultPulseOnlyOnDoubleFault,
+    `OCAH_OT_ASSERT(DoubleFaultPulseOnlyOnDoubleFault,
       double_fault_seen_o |-> ##[0:DoubleFaultSeenLatency] double_fault_seen_predicted)
     `endif // RVFI
   `endif
 
-  `ASSERT_KNOWN(IbexIrqX, {irq_software_i, irq_timer_i, irq_external_i, irq_fast_i, irq_nm_i})
+  `OCAH_OT_ASSERT_KNOWN(IbexIrqX, {irq_software_i, irq_timer_i, irq_external_i, irq_fast_i, irq_nm_i})
 
-  `ASSERT_KNOWN(IbexScrambleKeyValidX, scramble_key_valid_i)
-  `ASSERT_KNOWN_IF(IbexScramblePayloadX, {scramble_key_i, scramble_nonce_i}, scramble_key_valid_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexScrambleKeyValidX, scramble_key_valid_i)
+  `OCAH_OT_ASSERT_KNOWN_IF(IbexScramblePayloadX, {scramble_key_i, scramble_nonce_i}, scramble_key_valid_i)
 
-  `ASSERT_KNOWN(IbexDebugReqX, debug_req_i)
-  `ASSERT_KNOWN(IbexFetchEnableX, fetch_enable_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexDebugReqX, debug_req_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexFetchEnableX, fetch_enable_i)
 
   // Dummy instructions may only write to register 0, which is a special register when dummy
   // instructions are enabled.
-  `ASSERT(WaddrAZeroForDummyInstr, dummy_instr_wb && rf_we_wb |-> rf_waddr_wb == '0)
+  `OCAH_OT_ASSERT(WaddrAZeroForDummyInstr, dummy_instr_wb && rf_we_wb |-> rf_waddr_wb == '0)
 
   // Ensure the crash dump is connected to the correct internal signals
-  `ASSERT(CrashDumpCurrentPCConn, crash_dump_o.current_pc === u_ibex_core.pc_id)
-  `ASSERT(CrashDumpNextPCConn, crash_dump_o.next_pc === u_ibex_core.pc_if)
-  `ASSERT(CrashDumpLastDataAddrConn,
+  `OCAH_OT_ASSERT(CrashDumpCurrentPCConn, crash_dump_o.current_pc === u_ibex_core.pc_id)
+  `OCAH_OT_ASSERT(CrashDumpNextPCConn, crash_dump_o.next_pc === u_ibex_core.pc_if)
+  `OCAH_OT_ASSERT(CrashDumpLastDataAddrConn,
     crash_dump_o.last_data_addr === u_ibex_core.load_store_unit_i.addr_last_q)
-  `ASSERT(CrashDumpExceptionPCConn,
+  `OCAH_OT_ASSERT(CrashDumpExceptionPCConn,
     crash_dump_o.exception_pc === u_ibex_core.cs_registers_i.mepc_q)
-  `ASSERT(CrashDumpExceptionAddrConn,
+  `OCAH_OT_ASSERT(CrashDumpExceptionAddrConn,
     crash_dump_o.exception_addr === u_ibex_core.cs_registers_i.mtval_q)
 
   // Explicit INC_ASSERT due to instantiation of prim_secded_inv_39_32_dec below that is only used
   // by assertions
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
   if (MemECC) begin : g_mem_ecc_asserts
     logic [1:0] data_ecc_err, instr_ecc_err;
 
@@ -1372,7 +1372,7 @@ module ibex_top import ibex_pkg::*; #(
       .syndrome_o (),
       .err_o      (data_ecc_err)
     );
-    `ASSERT(MajorAlertOnDMemIntegrityErr,
+    `OCAH_OT_ASSERT(MajorAlertOnDMemIntegrityErr,
       data_rvalid_i && (|data_ecc_err) |-> ##[0:5] alert_major_bus_o)
 
     prim_secded_inv_39_32_dec u_instr_intg_dec (
@@ -1382,7 +1382,7 @@ module ibex_top import ibex_pkg::*; #(
       .err_o      (instr_ecc_err)
     );
     // Check alerts from memory integrity failures
-    `ASSERT(MajorAlertOnIMemIntegrityErr,
+    `OCAH_OT_ASSERT(MajorAlertOnIMemIntegrityErr,
       instr_rvalid_i && (|instr_ecc_err) |-> ##[0:5] alert_major_bus_o)
   end
   `endif

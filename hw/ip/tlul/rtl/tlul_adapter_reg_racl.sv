@@ -132,6 +132,6 @@ module tlul_adapter_reg_racl
   assign unused_policy = ^racl_policies_i;
 
   // Ensure that RACL signals are not undefined
-  `ASSERT_KNOWN(RaclAdapterRegErrorKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(RaclAdapterRegErrorKnown_A, racl_error_o.valid)
 
 endmodule

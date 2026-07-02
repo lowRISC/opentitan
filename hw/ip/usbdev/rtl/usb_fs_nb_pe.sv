@@ -129,7 +129,7 @@ module usb_fs_nb_pe #(
 
   // The code below assumes the number of OUT endpoints and IN endpoints are
   // interchangeable. Require them to be equal.
-  `ASSERT_INIT(NumOutEpsEqualsNumInEps_A, NumOutEps == NumInEps)
+  `OCAH_OT_ASSERT_INIT(NumOutEpsEqualsNumInEps_A, NumOutEps == NumInEps)
 
   // rx interface
   logic bit_strobe;
@@ -346,8 +346,8 @@ module usb_fs_nb_pe #(
   ////////////////
   // Assertions //
   ////////////////
-  `ASSERT_INIT(ParamNumEpsOutAndInEqual, NumOutEps == NumInEps)
-  `ASSERT_INIT(ParamNumOutEpsValid, (NumOutEps > 0) && (NumOutEps <= 16))
-  `ASSERT_INIT(ParamNumInEpsValid, (NumInEps > 0) && (NumInEps <= 16))
-  `ASSERT_INIT(ParamMaxPktSizeByteValid, (MaxPktSizeByte >= 8) && (MaxPktSizeByte <= 64))
+  `OCAH_OT_ASSERT_INIT(ParamNumEpsOutAndInEqual, NumOutEps == NumInEps)
+  `OCAH_OT_ASSERT_INIT(ParamNumOutEpsValid, (NumOutEps > 0) && (NumOutEps <= 16))
+  `OCAH_OT_ASSERT_INIT(ParamNumInEpsValid, (NumInEps > 0) && (NumInEps <= 16))
+  `OCAH_OT_ASSERT_INIT(ParamMaxPktSizeByteValid, (MaxPktSizeByte >= 8) && (MaxPktSizeByte <= 64))
 endmodule

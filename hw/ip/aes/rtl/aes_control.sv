@@ -135,7 +135,7 @@ module aes_control
   logic start_trigger;
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(AesSecStartTriggerDelayNonDefault, SecStartTriggerDelay == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesSecStartTriggerDelayNonDefault, SecStartTriggerDelay == 0)
 
   if (SecStartTriggerDelay > 0) begin : gen_start_delay
     // Delay the manual start trigger input for SCA measurements.

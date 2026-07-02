@@ -88,7 +88,7 @@ module otbn_vec_transposer
   assign unused_rst_n = rst_ni;
 
   // Assert VLEN = 256 as otherwise this module does not work properly.
-  `ASSERT_INIT(OtbnVecTransposerUnsupportedVLEN, VLEN == 256)
+  `OCAH_OT_ASSERT_INIT(OtbnVecTransposerUnsupportedVLEN, VLEN == 256)
 
-  `ASSERT(OtbnVecTransposerInvalidElen, elen_i inside {TrnElen32, TrnElen64, TrnElen128})
+  `OCAH_OT_ASSERT(OtbnVecTransposerInvalidElen, elen_i inside {TrnElen32, TrnElen64, TrnElen128})
 endmodule

@@ -52,6 +52,6 @@ module ibex_csr #(
     assign rd_error_o = 1'b0;
   end
 
-  `ASSERT_KNOWN(IbexCSREnValid, wr_en_i)
+  `OCAH_OT_ASSERT_KNOWN(IbexCSREnValid, wr_en_i)
 
 endmodule

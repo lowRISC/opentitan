@@ -152,6 +152,6 @@ module csrng_state_db
 
   // Assertions
   // The current architecture assumes the reseed counter fits into a single register
-  `ASSERT_INIT(CsrngRsCtrRegFit, RegWidth >= RsCtrWidth)
+  `OCAH_OT_ASSERT_INIT(CsrngRsCtrRegFit, RegWidth >= RsCtrWidth)
 
 endmodule

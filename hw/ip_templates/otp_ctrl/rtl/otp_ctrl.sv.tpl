@@ -105,25 +105,25 @@ module otp_ctrl
   ////////////////////////
 
   // This ensures that we can transfer scrambler data blocks in and out of OTP atomically.
-  `ASSERT_INIT(OtpIfWidth_A, OtpIfWidth == ScrmblBlockWidth)
+  `OCAH_OT_ASSERT_INIT(OtpIfWidth_A, OtpIfWidth == ScrmblBlockWidth)
 
   // These error codes need to be identical.
-  `ASSERT_INIT(OtpErrorCode0_A,  int'(NoError) == int'(otp_ctrl_macro_pkg::NoError))
-  `ASSERT_INIT(OtpErrorCode1_A,  int'(MacroError) == int'(otp_ctrl_macro_pkg::MacroError))
-  `ASSERT_INIT(OtpErrorCode2_A,
+  `OCAH_OT_ASSERT_INIT(OtpErrorCode0_A,  int'(NoError) == int'(otp_ctrl_macro_pkg::NoError))
+  `OCAH_OT_ASSERT_INIT(OtpErrorCode1_A,  int'(MacroError) == int'(otp_ctrl_macro_pkg::MacroError))
+  `OCAH_OT_ASSERT_INIT(OtpErrorCode2_A,
       int'(MacroEccCorrError) == int'(otp_ctrl_macro_pkg::MacroEccCorrError))
-  `ASSERT_INIT(OtpErrorCode3_A,
+  `OCAH_OT_ASSERT_INIT(OtpErrorCode3_A,
                int'(MacroEccUncorrError) == int'(otp_ctrl_macro_pkg::MacroEccUncorrError))
-  `ASSERT_INIT(OtpErrorCode4_A,
+  `OCAH_OT_ASSERT_INIT(OtpErrorCode4_A,
                int'(MacroWriteBlankError) == int'(otp_ctrl_macro_pkg::MacroWriteBlankError))
   // Ensure that scrambling keys and digest constants are not all zero and defaults have been
   // overwritten with a meaningful value.
 % for i in range(otp_mmap["scrambling"]["num_keys"]):
-  `ASSERT_INIT(ScrmblKeyNotAllZero_A${i}, RndCnstScrmblKey${i} != 0)
+  `OCAH_OT_ASSERT_INIT(ScrmblKeyNotAllZero_A${i}, RndCnstScrmblKey${i} != 0)
 % endfor
 % for i in range(otp_mmap["scrambling"]["num_digests"]):
-  `ASSERT_INIT(DigestConstNotAllZero_A${i}, RndCnstDigestConst${i} != 0)
-  `ASSERT_INIT(DigestIVNotAllZero_A${i}, RndCnstDigestIV${i} != 0)
+  `OCAH_OT_ASSERT_INIT(DigestConstNotAllZero_A${i}, RndCnstDigestConst${i} != 0)
+  `OCAH_OT_ASSERT_INIT(DigestIVNotAllZero_A${i}, RndCnstDigestIV${i} != 0)
 % endfor
 
   ////////////////
@@ -302,7 +302,7 @@ module otp_ctrl
     end
   end
 
-  `ASSERT(PartSelMustBeOnehot_A, $onehot0(tlul_part_sel_oh))
+  `OCAH_OT_ASSERT(PartSelMustBeOnehot_A, $onehot0(tlul_part_sel_oh))
 
   logic [NumPartWidth-1:0] tlul_part_idx;
   prim_arbiter_fixed #(
@@ -922,7 +922,7 @@ end
   end
 
   // Note that this must be true by construction.
-  `ASSERT(OtpRespFifoUnderflow_A, otp_rvalid |-> otp_fifo_valid)
+  `OCAH_OT_ASSERT(OtpRespFifoUnderflow_A, otp_rvalid |-> otp_fifo_valid)
 
   /////////////////////////////////////////
   // Scrambling Datapath and Arbitration //
@@ -1256,7 +1256,7 @@ end
                                          cnsty_chk_req[k]};
 
       // Alert assertion for sparse FSM.
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartUnbufFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartUnbufFsmCheck_A,
           u_part_unbuf.u_state_regs, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
@@ -1313,9 +1313,9 @@ end
       assign part_tlul_rdata[k]  = '0;
 
       // Alert assertion for sparse FSM.
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
           u_part_buf.u_state_regs, alert_tx_o[1])
-      `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartBufCheck_A,
+      `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartBufCheck_A,
           u_part_buf.u_prim_count, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
@@ -1384,9 +1384,9 @@ end
                                          part_scrmbl_req_ready[k],
                                          part_scrmbl_rsp_valid[k]};
       // Alert assertion for sparse FSM.
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartLcFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartLcFsmCheck_A,
           u_part_buf.u_state_regs, alert_tx_o[1])
-      `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartLcCheck_A,
+      `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartLcCheck_A,
           u_part_buf.u_prim_count, alert_tx_o[1])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else begin : gen_invalid
@@ -1472,19 +1472,19 @@ end
   end
 
   // Check that the lc_seed_hw_rd_en remains stable, once the key material is valid.
-  `ASSERT(LcSeedHwRdEnStable0_A,
+  `OCAH_OT_ASSERT(LcSeedHwRdEnStable0_A,
     $rose(creator_root_key_share0_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
-  `ASSERT(LcSeedHwRdEnStable1_A,
+  `OCAH_OT_ASSERT(LcSeedHwRdEnStable1_A,
     $rose(creator_root_key_share1_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
-  `ASSERT(LcSeedHwRdEnStable2_A,
+  `OCAH_OT_ASSERT(LcSeedHwRdEnStable2_A,
     $rose(creator_seed_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
-  `ASSERT(LcSeedHwRdEnStable3_A,
+  `OCAH_OT_ASSERT(LcSeedHwRdEnStable3_A,
     $rose(owner_seed_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
@@ -1566,80 +1566,80 @@ end
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
-  `ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
+  `OCAH_OT_ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
+  `OCAH_OT_ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
 % if enable_nvm_key:
-  `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
-  `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
+  `OCAH_OT_ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
+  `OCAH_OT_ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
 % endif
-  `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
+  `OCAH_OT_ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
-  `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)
-  `ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_state_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
-  `ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_state_pkg::LcTokenWidth == TestExitTokenSize * 8)
-  `ASSERT_INIT(LcStateSize_A,         lc_ctrl_state_pkg::LcStateWidth == LcStateSize * 8)
-  `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_state_pkg::LcCountWidth == LcTransitionCntSize * 8)
+  `OCAH_OT_ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)
+  `OCAH_OT_ASSERT_INIT(TestUnlockTokenSize_A, lc_ctrl_state_pkg::LcTokenWidth == TestUnlockTokenSize * 8)
+  `OCAH_OT_ASSERT_INIT(TestExitTokenSize_A,   lc_ctrl_state_pkg::LcTokenWidth == TestExitTokenSize * 8)
+  `OCAH_OT_ASSERT_INIT(LcStateSize_A,         lc_ctrl_state_pkg::LcStateWidth == LcStateSize * 8)
+  `OCAH_OT_ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_state_pkg::LcCountWidth == LcTransitionCntSize * 8)
 
-  `ASSERT_KNOWN(CoreTlOutKnown_A,            core_tl_o)
-  `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
-  `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
-  `ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)
-  `ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_o)
-  `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
-  `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
-  `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
+  `OCAH_OT_ASSERT_KNOWN(CoreTlOutKnown_A,            core_tl_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(PwrOtpInitRspKnown_A,        pwr_otp_o)
+  `OCAH_OT_ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
 % if enable_nvm_key:
-  `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
 % endif
-  `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
-  `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
-  `ASSERT_KNOWN(OtpBroadcastKnown_A,         otp_broadcast_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpBroadcastKnown_A,         otp_broadcast_o)
 
   // Alert assertions for sparse FSMs.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDaiFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDaiFsmCheck_A,
       u_otp_ctrl_dai.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKdiFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKdiFsmCheck_A,
       u_otp_ctrl_kdi.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLciFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLciFsmCheck_A,
       u_otp_ctrl_lci.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLfsrTimerFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLfsrTimerFsmCheck_A,
       u_otp_ctrl_lfsr_timer.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlScrambleFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlScrambleFsmCheck_A,
       u_otp_ctrl_scrmbl.u_state_regs, alert_tx_o[1])
 
   // Alert assertions for redundant counters.
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntIntegCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntIntegCheck_A,
       u_otp_ctrl_lfsr_timer.u_prim_count_integ, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCnstyCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCnstyCheck_A,
       u_otp_ctrl_lfsr_timer.u_prim_count_cnsty, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntDaiCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntDaiCheck_A,
       u_otp_ctrl_dai.u_prim_count, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiSeedCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiSeedCheck_A,
       u_otp_ctrl_kdi.u_prim_count_seed, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiEntropyCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiEntropyCheck_A,
       u_otp_ctrl_kdi.u_prim_count_entropy, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntLciCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntLciCheck_A,
       u_otp_ctrl_lci.u_prim_count, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
       u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
 
   // Alert assertions for double LFSR.
-  `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
       u_otp_ctrl_lfsr_timer.u_prim_double_lfsr, alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[2])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[2])
 
   // IMPORTANT TODO:
   //   Add checks that the incoming fatal conditions from prim_otp trigger alerts.
 
   // Assertions for countermeasures inside prim_otp
   // if (prim_pkg::PrimTechName == "Generic") begin : gen_reg_we_assert_generic
-  //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
+  //   `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
   //       u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
-  //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
+  //   `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
   //       u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[3])
-  //   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
+  //   `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
   //       u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
   // end
 endmodule : otp_ctrl

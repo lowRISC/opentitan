@@ -48,6 +48,6 @@ module tlul_cmd_intg_chk import tlul_pkg::*; (
   logic unused_tl;
   assign unused_tl = |tl_i;
 
-  `ASSERT_INIT(PayLoadWidthCheck, $bits(tl_h2d_cmd_intg_t) <= H2DCmdMaxWidth)
+  `OCAH_OT_ASSERT_INIT(PayLoadWidthCheck, $bits(tl_h2d_cmd_intg_t) <= H2DCmdMaxWidth)
 
 endmodule // tlul_payload_chk

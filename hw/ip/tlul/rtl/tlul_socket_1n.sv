@@ -67,7 +67,7 @@ module tlul_socket_1n #(
   input  [NWD-1:0]          dev_select_i
 );
 
-  `ASSERT_INIT(maxN, N < 64)
+  `OCAH_OT_ASSERT_INIT(maxN, N < 64)
 
   // Since our steering is done after potential FIFOing, we need to
   // shove our device select bits into spare bits of reqfifo
@@ -126,7 +126,7 @@ module tlul_socket_1n #(
     end
   end
 
-  `ASSERT(NotOverflowed_A,
+  `OCAH_OT_ASSERT(NotOverflowed_A,
           accept_t_req && !accept_t_rsp -> num_req_outstanding <= MaxOutstanding)
 
   assign hold_all_requests =

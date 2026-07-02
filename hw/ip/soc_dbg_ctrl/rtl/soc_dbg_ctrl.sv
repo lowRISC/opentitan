@@ -406,20 +406,20 @@ module soc_dbg_ctrl
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
-  `ASSERT_KNOWN_IF(CoreTlODKnown_A, core_tl_o, core_tl_o.d_valid)
-  `ASSERT_KNOWN(CoreTlOAReadyKnown_A, core_tl_o.a_ready)
-  `ASSERT_KNOWN_IF(JtagTlODKnown_A, jtag_tl_o, jtag_tl_o.d_valid)
-  `ASSERT_KNOWN(JtagTlOAReadyKnown_A, jtag_tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(CoreTlODKnown_A, core_tl_o, core_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(CoreTlOAReadyKnown_A, core_tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN_IF(JtagTlODKnown_A, jtag_tl_o, jtag_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(JtagTlOAReadyKnown_A, jtag_tl_o.a_ready)
 
-  `ASSERT_KNOWN(SocDbgPolicyBusKnown_A, soc_dbg_policy_bus_o)
-  `ASSERT_KNOWN(ContinueBootKnown_A, continue_cpu_boot_o)
+  `OCAH_OT_ASSERT_KNOWN(SocDbgPolicyBusKnown_A, soc_dbg_policy_bus_o)
+  `OCAH_OT_ASSERT_KNOWN(ContinueBootKnown_A, continue_cpu_boot_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg, alert_tx_o[0])
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg, alert_tx_o[0])
 
   // Alert assertion for sparse FSM.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HaltStateFsmCheck_A, u_state_regs, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HaltStateFsmCheck_A, u_state_regs, alert_tx_o[0])
 endmodule

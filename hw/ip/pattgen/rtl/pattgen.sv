@@ -90,21 +90,21 @@ module pattgen
     .intr_done_ch1_o
   );
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(Pcl0TxKnownO_A, cio_pcl0_tx_o)
-  `ASSERT_KNOWN(Pda0TxKnownO_A, cio_pda0_tx_o)
-  `ASSERT_KNOWN(Pcl1TxKnownO_A, cio_pcl1_tx_o)
-  `ASSERT_KNOWN(Pda1TxKnownO_A, cio_pda1_tx_o)
-  `ASSERT_KNOWN(IntrCh0DoneKnownO_A, intr_done_ch0_o)
-  `ASSERT_KNOWN(IntrCh1DoneKnownO_A, intr_done_ch1_o)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(Pcl0TxKnownO_A, cio_pcl0_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(Pda0TxKnownO_A, cio_pda0_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(Pcl1TxKnownO_A, cio_pcl1_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(Pda1TxKnownO_A, cio_pda1_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrCh0DoneKnownO_A, intr_done_ch0_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrCh1DoneKnownO_A, intr_done_ch1_o)
 
-  `ASSERT(Pcl0TxEnIsOne_A, cio_pcl0_tx_en_o === 1'b1)
-  `ASSERT(Pda0TxEnIsOne_A, cio_pda0_tx_en_o === 1'b1)
-  `ASSERT(Pcl1TxEnIsOne_A, cio_pcl1_tx_en_o === 1'b1)
-  `ASSERT(Pda1TxEnIsOne_A, cio_pda1_tx_en_o === 1'b1)
+  `OCAH_OT_ASSERT(Pcl0TxEnIsOne_A, cio_pcl0_tx_en_o === 1'b1)
+  `OCAH_OT_ASSERT(Pda0TxEnIsOne_A, cio_pda0_tx_en_o === 1'b1)
+  `OCAH_OT_ASSERT(Pcl1TxEnIsOne_A, cio_pcl1_tx_en_o === 1'b1)
+  `OCAH_OT_ASSERT(Pda1TxEnIsOne_A, cio_pda1_tx_en_o === 1'b1)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule : pattgen

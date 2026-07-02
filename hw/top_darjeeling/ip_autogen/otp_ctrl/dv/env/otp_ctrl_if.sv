@@ -379,18 +379,18 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   endtask
 
   // Connectivity assertions for test related I/Os.
-//  `ASSERT(LcOtpTestStatusO_A, otp_vendor_test_status_o == `PRIM_GENERIC_OTP_PATH.test_status_o)
-//  `ASSERT(LcOtpTestCtrlI_A, otp_vendor_test_ctrl_i == `PRIM_GENERIC_OTP_PATH.test_ctrl_i)
+//  `OCAH_OT_ASSERT(LcOtpTestStatusO_A, otp_vendor_test_status_o == `PRIM_GENERIC_OTP_PATH.test_status_o)
+//  `OCAH_OT_ASSERT(LcOtpTestCtrlI_A, otp_vendor_test_ctrl_i == `PRIM_GENERIC_OTP_PATH.test_ctrl_i)
 
-//  `ASSERT(CioTestOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |->
+//  `OCAH_OT_ASSERT(CioTestOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |->
 //                               ##[2:3] cio_test_o == `PRIM_GENERIC_OTP_PATH.test_vect_o)
-  `ASSERT(CioTestOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##[2:3] cio_test_o == 0)
-  `ASSERT(CioTestEnOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |-> ##[2:3] cio_test_en_o == '1)
-  `ASSERT(CioTestEnOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##[2:3] cio_test_en_o == 0)
+  `OCAH_OT_ASSERT(CioTestOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##[2:3] cio_test_o == 0)
+  `OCAH_OT_ASSERT(CioTestEnOWithDftOn_A, lc_dft_en_i == lc_ctrl_pkg::On |-> ##[2:3] cio_test_en_o == '1)
+  `OCAH_OT_ASSERT(CioTestEnOWithDftOff_A, lc_dft_en_i != lc_ctrl_pkg::On |-> ##[2:3] cio_test_en_o == 0)
 
 
   `define OTP_ASSERT_WO_LC_ESC(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)
+    `OCAH_OT_ASSERT(NAME, SEQ, clk_i, !rst_ni || lc_esc_on || alert_reqs)
 
   // If pwr_otp_idle is set only if pwr_otp init is done
   `OTP_ASSERT_WO_LC_ESC(OtpPwrDoneWhenIdle_A, pwr_otp_idle_o |-> pwr_otp_done_o)
@@ -423,7 +423,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // During fatal alert, check if otp outputs revert back to default value.
   // Wait three clock cycles until error propagates to each FSM states and regs.
   `define OTP_FATAL_ERR_ASSERT(NAME, SEQ) \
-    `ASSERT(FatalErr``NAME``, alert_reqs |-> ##3 SEQ)
+    `OCAH_OT_ASSERT(FatalErr``NAME``, alert_reqs |-> ##3 SEQ)
 
   `OTP_FATAL_ERR_ASSERT(LcDataValid_A, lc_data_o.valid == 0 && lc_data_o.error == 1)
   `OTP_FATAL_ERR_ASSERT(LcDataState_A, lc_data_o.state ==

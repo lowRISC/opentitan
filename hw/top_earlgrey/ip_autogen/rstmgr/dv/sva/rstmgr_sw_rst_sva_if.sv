@@ -32,13 +32,13 @@ interface rstmgr_sw_rst_sva_if (
       ) ##1 !rst_cause [* RiseMin];
     endsequence
 
-    `ASSERT(RstNOn_A, CauseReadyOn_S |=> ##[0:RiseMax-RiseMin] !rst_cause || !rst_ns[i], clk_i[i],
+    `OCAH_OT_ASSERT(RstNOn_A, CauseReadyOn_S |=> ##[0:RiseMax-RiseMin] !rst_cause || !rst_ns[i], clk_i[i],
             !rst_ni || disable_sva)
-    `ASSERT(RstNOff_A, CauseReadyOff_S |=> ##[0:RiseMax-RiseMin] rst_cause || rst_ns[i], clk_i[i],
+    `OCAH_OT_ASSERT(RstNOff_A, CauseReadyOff_S |=> ##[0:RiseMax-RiseMin] rst_cause || rst_ns[i], clk_i[i],
             !rst_ni || disable_sva)
-    `ASSERT(RstEnOn_A, CauseReadyOn_S |=> ##[0:RiseMax-RiseMin] !rst_cause || rst_ens[i], clk_i[i],
+    `OCAH_OT_ASSERT(RstEnOn_A, CauseReadyOn_S |=> ##[0:RiseMax-RiseMin] !rst_cause || rst_ens[i], clk_i[i],
             !rst_ni || disable_sva)
-    `ASSERT(RstEnOff_A, CauseReadyOff_S |=> ##[0:RiseMax-RiseMin] rst_cause || !rst_ens[i],
+    `OCAH_OT_ASSERT(RstEnOff_A, CauseReadyOff_S |=> ##[0:RiseMax-RiseMin] rst_cause || !rst_ens[i],
             clk_i[i], !rst_ni || disable_sva)
   end
 endinterface

@@ -16,7 +16,7 @@ interface pins_if #(
 
   `include "prim_assert.sv"
 
-  `ASSERT_INIT(PullStrengthParamValid, PullStrength inside {"Weak", "Pull"})
+  `OCAH_OT_ASSERT_INIT(PullStrengthParamValid, PullStrength inside {"Weak", "Pull"})
 
   logic [Width-1:0] pins_o;       // value to be driven out
   bit   [Width-1:0] pins_oe = '0; // output enable

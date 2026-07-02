@@ -203,5 +203,5 @@ module otbn_rnd import otbn_pkg::*;
     .all_zero_o   (urnd_all_zero_o)
   );
 
-  `ASSERT(rnd_clear_on_req_complete, rnd_req_complete |=> ~rnd_valid_q)
+  `OCAH_OT_ASSERT(rnd_clear_on_req_complete, rnd_req_complete |=> ~rnd_valid_q)
 endmodule

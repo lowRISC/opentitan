@@ -899,7 +899,7 @@ module otbn_predecode
   assign unused_clk = clk_i;
   assign unused_rst = rst_ni;
 
-  `ASSERT(RFRenABignumOnehot, $onehot0(rf_bignum_predec_o.rf_ren_a))
-  `ASSERT(RFRenBBignumOnehot, $onehot0(rf_bignum_predec_o.rf_ren_b))
-  `ASSERT(RFWeBignumOnehot,   $onehot0(rf_bignum_predec_o.rf_we))
+  `OCAH_OT_ASSERT(RFRenABignumOnehot, $onehot0(rf_bignum_predec_o.rf_ren_a))
+  `OCAH_OT_ASSERT(RFRenBBignumOnehot, $onehot0(rf_bignum_predec_o.rf_ren_b))
+  `OCAH_OT_ASSERT(RFWeBignumOnehot,   $onehot0(rf_bignum_predec_o.rf_we))
 endmodule

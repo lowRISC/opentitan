@@ -49,6 +49,6 @@ module tlul_rsp_intg_chk import tlul_pkg::*; #(
   logic unused_tl;
   assign unused_tl = |tl_i;
 
-  `ASSERT_INIT(PayLoadWidthCheck, $bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)
+  `OCAH_OT_ASSERT_INIT(PayLoadWidthCheck, $bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)
 
 endmodule // tlul_rsp_intg_chk

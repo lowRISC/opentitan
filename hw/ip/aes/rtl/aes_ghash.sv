@@ -1061,7 +1061,7 @@ module aes_ghash
 // Typically assertions already contain this macro, which ensures that assertions are only compiled
 // in simulation and FPV. However, we wrap the entire assertion section with INC_ASSERT so that the
 // helper logic below is not synthesized either, since that could cause issues in DC.
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
@@ -1089,18 +1089,18 @@ module aes_ghash
 
     for (genvar s = 0; s < NumShares; s++) begin : gen_sec_cm_key_masking_share_svas
       // Ensure that none of the hash subkey shares are zero when they are used.
-      `ASSERT(AesSecCmKeyMaskingGhashHskNonZero,
+      `OCAH_OT_ASSERT(AesSecCmKeyMaskingGhashHskNonZero,
           hsk_vld_after_rst_q && gf_mult_req[s] |-> |hash_subkey_q[s])
       // Ensure that none of the GHASH state shares (initialized to S) are zero.
-      `ASSERT(AesSecCmKeyMaskingGhashInitialStateNonZero,
+      `OCAH_OT_ASSERT(AesSecCmKeyMaskingGhashInitialStateNonZero,
           s_vld_after_rst_q && (aes_ghash_cs == GHASH_MASKED_INIT) |-> |ghash_state_q[s])
       // Ensure that none of the repeatedly used correction terms are zero when they're used.
-      `ASSERT(AesSecCmKeyMaskingGhashCorrNonZero,
+      `OCAH_OT_ASSERT(AesSecCmKeyMaskingGhashCorrNonZero,
           aes_ghash_cs == GHASH_MASKED_ADD_CORR |-> |corr_q[s])
     end
     // Ensure that S1 is not zero when it's used. This includes both the computation of the
     // correction term used only once, as well as the final addition of S1.
-    `ASSERT(AesSecCmKeyMaskingGhashS1NonZero,
+    `OCAH_OT_ASSERT(AesSecCmKeyMaskingGhashS1NonZero,
         (aes_ghash_cs == GHASH_MASKED_ADD_CORR && first_block_q) ||
         (aes_ghash_cs == GHASH_OUT) |-> |s_q)
   end
