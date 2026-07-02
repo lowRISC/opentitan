@@ -916,13 +916,13 @@ module otbn_kmac_if
 
   // Assert that only one request source  is active at the same time as otherwise requests are
   // colliding.
-  `ASSERT(OnlyOneReqSourceActive_A,
+  `OCAH_OT_ASSERT(OnlyOneReqSourceActive_A,
       $onehot0({send_start_req, send_msg_beat, send_process_req, send_termination_req}))
 
   // There may only happen one response handshake simultaneously.
-  `ASSERT(OnlyOneRspHandshake_A, $onehot0({data_rsp_hs, finish_rsp_hs}))
+  `OCAH_OT_ASSERT(OnlyOneRspHandshake_A, $onehot0({data_rsp_hs, finish_rsp_hs}))
   // There may only be one receiver active at the same time.
-  `ASSERT(OnlyOneReceiverActive_A, $onehot0({data_rsp_ready, discard_rsp_ready}))
+  `OCAH_OT_ASSERT(OnlyOneReceiverActive_A, $onehot0({data_rsp_ready, discard_rsp_ready}))
 
   ////////////////////
   // Error handling //

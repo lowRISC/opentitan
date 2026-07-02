@@ -191,6 +191,6 @@ module bkdr_loader
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(RegsTlOutKnown_A,  regs_tl_d2h)
+  `OCAH_OT_ASSERT_KNOWN(RegsTlOutKnown_A,  regs_tl_d2h)
 
 endmodule

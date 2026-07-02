@@ -736,29 +736,29 @@ module sha3pad
   ////////////////
 
   // Prefix size is smaller than the smallest Keccak Block Size, which is 72 bytes.
-  `ASSERT_INIT(PrefixLessThanBlock_A, PrefixSize/8 < KeccakRate[4])
+  `OCAH_OT_ASSERT_INIT(PrefixLessThanBlock_A, PrefixSize/8 < KeccakRate[4])
 
   // Some part of datapath in sha3pad assumes Data width as 64bit.
   // If data width need to be changed, funcpad_data part should be changed too.
   // Also, The blocksize shall be divided by MsgWidth, which means, MsgWidth
   // can be {16, 32, 64} even funcpad_data mux is fully flexible.
-  `ASSERT_INIT(MsgWidthidth_A, MsgWidth == 64)
+  `OCAH_OT_ASSERT_INIT(MsgWidthidth_A, MsgWidth == 64)
 
   // Assume pulse signals: start, process, done
-  `ASSUME(StartPulse_A, start_i |=> !start_i)
-  `ASSUME(ProcessPulse_A, process_i |=> !process_i)
-  `ASSUME(DonePulse_A,
+  `OCAH_OT_ASSUME(StartPulse_A, start_i |=> !start_i)
+  `OCAH_OT_ASSUME(ProcessPulse_A, process_i |=> !process_i)
+  `OCAH_OT_ASSUME(DonePulse_A,
     prim_mubi_pkg::mubi4_test_true_strict(done_i) |=>
       prim_mubi_pkg::mubi4_test_false_strict(done_i))
 
   // ASSERT output pulse signals: absorbed_o, keccak_run_o
-  `ASSERT(AbsorbedPulse_A,
+  `OCAH_OT_ASSERT(AbsorbedPulse_A,
     prim_mubi_pkg::mubi4_test_true_strict(absorbed_o) |=>
       prim_mubi_pkg::mubi4_test_false_strict(absorbed_o))
-  `ASSERT(KeccakRunPulse_A, keccak_run_o |=> !keccak_run_o)
+  `OCAH_OT_ASSERT(KeccakRunPulse_A, keccak_run_o |=> !keccak_run_o)
 
   // start_i, done_i, process_i cannot set high at the same time
-  `ASSUME(StartProcessDoneMutex_a,
+  `OCAH_OT_ASSUME(StartProcessDoneMutex_a,
     $onehot0({
       start_i,
       process_i,
@@ -766,7 +766,7 @@ module sha3pad
     }))
 
   // Sequence, start_i --> process_i --> absorbed_o --> done_i
-  //`ASSUME(Sequence_a, start_i ##[1:$] process_i ##[1:$] ##[1:$] absorbed_o ##[1:$] done_i)
+  //`OCAH_OT_ASSUME(Sequence_a, start_i ##[1:$] process_i ##[1:$] ##[1:$] absorbed_o ##[1:$] done_i)
 
 `ifndef SYNTHESIS
   // Process only asserts after start and all message are fed.
@@ -805,80 +805,80 @@ module sha3pad
   end
 
   // Message can be fed in between start_i and process_i.
-  `ASSUME(MessageCondition_M, msg_valid_i && msg_ready_o |-> process_valid && !process_i)
+  `OCAH_OT_ASSUME(MessageCondition_M, msg_valid_i && msg_ready_o |-> process_valid && !process_i)
 
   // Message ready should be asserted only in between start_i and process_i
-  `ASSERT(MsgReadyCondition_A, msg_ready_o |-> process_valid && !process_i)
+  `OCAH_OT_ASSERT(MsgReadyCondition_A, msg_ready_o |-> process_valid && !process_i)
 
-  `ASSUME(ProcessCondition_M, process_i |-> process_valid)
-  `ASSUME(StartCondition_M, start_i |-> start_valid)
-  `ASSUME(DoneCondition_M,
+  `OCAH_OT_ASSUME(ProcessCondition_M, process_i |-> process_valid)
+  `OCAH_OT_ASSUME(StartCondition_M, start_i |-> start_valid)
+  `OCAH_OT_ASSUME(DoneCondition_M,
     prim_mubi_pkg::mubi4_test_true_strict(done_i) |-> done_valid)
 
   // Assume mode_i and strength_i are stable during the operation
   // This will be guarded at the kmac top level
-  `ASSUME(ModeStableDuringOp_M,
+  `OCAH_OT_ASSUME(ModeStableDuringOp_M,
     $changed(mode_i) |-> start_valid)
-  `ASSUME(StrengthStableDuringOp_M,
+  `OCAH_OT_ASSUME(StrengthStableDuringOp_M,
     $changed(strength_i) |-> start_valid)
 
 `endif // SYNTHESIS
 
   // If not full block is written, the pad shall send message to keccak_round
   // If it is end of the message, the state moves to StPad and send the request
-  `ASSERT(CompleteBlockWhenProcess_A,
+  `OCAH_OT_ASSERT(CompleteBlockWhenProcess_A,
     $rose(process_latched) && (!end_of_block && !sent_blocksize )
     && !(st inside {StPrefixWait, StMessageWait}) |-> ##[1:5] keccak_valid_o,
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i))
 
   // If process_i asserted, completion shall be asserted shall be asserted
-  //`ASSERT(ProcessToAbsorbed_A, process_i |=> strong(##[24*Share:$] absorbed_o))
+  //`OCAH_OT_ASSERT(ProcessToAbsorbed_A, process_i |=> strong(##[24*Share:$] absorbed_o))
 
 
   // Assumption of input mode_i and strength_i
   // SHA3 variants: SHA3-224, SHA3-256, SHA3-384, SHA3-512
   // SHAKE, cSHAKE variants: SHAKE128, SHAKE256, cSHAKE128, cSHAKE256
-  `ASSUME_FPV(ModeStrengthCombinations_M,
+  `OCAH_OT_ASSUME_FPV(ModeStrengthCombinations_M,
     start_i |->
       (mode_i == Sha3 && (strength_i inside {L224, L256, L384, L512})) ||
       ((mode_i == Shake || mode_i == CShake) && (strength_i inside {L128, L256})),
     clk_i, !rst_ni)
 
   // No partial write is allowed for Message FIFO interface
-  `ASSUME(NoPartialMsgFifo_M,
+  `OCAH_OT_ASSUME(NoPartialMsgFifo_M,
     keccak_valid_o && (sel_mux == MuxFifo) |-> (&msg_strb_i) == 1'b1,
     clk_i, !rst_ni)
 
   // When transaction is stored into msg_buf, it shall be partial write.
-  `ASSUME(AlwaysPartialMsgBuf_M,
+  `OCAH_OT_ASSUME(AlwaysPartialMsgBuf_M,
     en_msgbuf |-> msg_valid_i && (msg_strb_i[MsgStrbW-1] == 1'b0),
     clk_i, !rst_ni)
 
   // if partial write comes and is acked, then no more msg_valid_i until
   // next message
-  `ASSUME(PartialEndOfMsg_M,
+  `OCAH_OT_ASSUME(PartialEndOfMsg_M,
     msg_valid_i && msg_ready_o && msg_partial |=>
       !msg_valid_i ##[1:$] $stable(msg_valid_i) ##1 process_latched,
     clk_i, !rst_ni)
 
   // At the first clock in StPad01 state, sent_blocksize shall not be set
-  `ASSERT(Pad01NotAttheEndOfBlock_A,
+  `OCAH_OT_ASSERT(Pad01NotAttheEndOfBlock_A,
     (st == StPad && st_d == StPad01) |-> !end_of_block,
     clk_i, !rst_ni)
 
   // When data sent to the keccak_round, the address should be in the range
-  `ASSERT(KeccakAddrInRange_A,
+  `OCAH_OT_ASSERT(KeccakAddrInRange_A,
     keccak_valid_o |-> keccak_addr_o < KeccakRate[strength_i],
     clk_i, !rst_ni)
 
   // NS data shall be stable during the operation.
-  //`ASSUME(NsStableInProcess_A,
+  //`OCAH_OT_ASSUME(NsStableInProcess_A,
   //  $stable(ns_data_i) throughout(start_i ##[1:$] process_i ##[1:$] absorbed_o),
   //  clk_i, !rst_ni)
 
   // Functional Coverage
-  `COVER(StMessageFeed_C, st == StMessage)
-  `COVER(StPad_C, st == StPad01 && sent_blocksize)
-  `COVER(StPadSendMsg_C, st == StPad01 && keccak_ack)
-  `COVER(StComplete_C, st == StPadFlush)
+  `OCAH_OT_COVER(StMessageFeed_C, st == StMessage)
+  `OCAH_OT_COVER(StPad_C, st == StPad01 && sent_blocksize)
+  `OCAH_OT_COVER(StPadSendMsg_C, st == StPad01 && keccak_ack)
+  `OCAH_OT_COVER(StComplete_C, st == StPadFlush)
 endmodule

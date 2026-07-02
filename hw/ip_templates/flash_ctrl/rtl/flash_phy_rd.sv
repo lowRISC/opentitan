@@ -808,40 +808,40 @@ module flash_phy_rd
   /////////////////////////////////
 
   // The buffers are flip flop based, do not allow too many of them
-  `ASSERT_INIT(MaxBufs_A, NumBuf <= 8)
+  `OCAH_OT_ASSERT_INIT(MaxBufs_A, NumBuf <= 8)
 
   // match should happen only to 1 buffer
-  `ASSERT(OneHotMatch_A, $onehot0(buf_match))
+  `OCAH_OT_ASSERT(OneHotMatch_A, $onehot0(buf_match))
 
   // allocate should happen only to 1 buffer at time
-  `ASSERT(OneHotAlloc_A, $onehot0(alloc))
+  `OCAH_OT_ASSERT(OneHotAlloc_A, $onehot0(alloc))
 
   // update should happen only to 1 buffer at time
-  `ASSERT(OneHotUpdate_A, $onehot0(update))
+  `OCAH_OT_ASSERT(OneHotUpdate_A, $onehot0(update))
 
   // buffer response match should happen only to 1 buffer at time
-  `ASSERT(OneHotRspMatch_A, $onehot0(buf_rsp_match))
+  `OCAH_OT_ASSERT(OneHotRspMatch_A, $onehot0(buf_rsp_match))
 
   // alloc and update should be mutually exclusive for a buffer
-  `ASSERT(ExclusiveOps_A, (alloc & update) == 0 )
+  `OCAH_OT_ASSERT(ExclusiveOps_A, (alloc & update) == 0 )
 
   // valid and wip are mutually exclusive
-  `ASSERT(ExclusiveState_A, (buf_valid & buf_wip) == 0)
+  `OCAH_OT_ASSERT(ExclusiveState_A, (buf_valid & buf_wip) == 0)
 
   // data_hazard and wip should be mutually exclusive
-  `ASSERT(ExclusiveProgHazard_A, (data_hazard & buf_wip) == 0)
+  `OCAH_OT_ASSERT(ExclusiveProgHazard_A, (data_hazard & buf_wip) == 0)
 
   // unless the pipeline is idle, we should not have non-read transactions
-  `ASSERT(IdleCheck_A, !idle_o |-> {prog_i,pg_erase_i,bk_erase_i} == '0)
+  `OCAH_OT_ASSERT(IdleCheck_A, !idle_o |-> {prog_i,pg_erase_i,bk_erase_i} == '0)
 
   // Whenever forward is true, hint_descram should always be 0
-  `ASSERT(ForwardCheck_A, forward |-> hint_descram == '0)
+  `OCAH_OT_ASSERT(ForwardCheck_A, forward |-> hint_descram == '0)
 
   // Whenever response is coming from buffer, ecc error cannot be set
-  `ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
+  `OCAH_OT_ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
 
   // The read storage depth and mask depth should always be the same after popping
-  //`ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
+  //`OCAH_OT_ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
 
   /////////////////////////////////
   // Functional coverage points to add

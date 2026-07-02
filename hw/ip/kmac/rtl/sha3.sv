@@ -496,7 +496,7 @@ module sha3
   ////////////////
 
   // The Keccak core can only be active when the run REQ is ACKed.
-  `ASSERT(KeccakIdleWhenNoRunHs_A,
+  `OCAH_OT_ASSERT(KeccakIdleWhenNoRunHs_A,
       u_keccak.keccak_st inside {KeccakStActive,
                                  KeccakStPhase1,
                                  KeccakStPhase2Cycle1,
@@ -505,27 +505,27 @@ module sha3
       run_req_o && run_ack_i)
 
   // Unknown check for case statement
-  `ASSERT(MuxSelKnown_A, mux_sel inside {MuxGuard, MuxRelease})
-  `ASSERT(FsmKnown_A, st inside {StIdle_sparse, StAbsorb_sparse, StSqueeze_sparse,
+  `OCAH_OT_ASSERT(MuxSelKnown_A, mux_sel inside {MuxGuard, MuxRelease})
+  `OCAH_OT_ASSERT(FsmKnown_A, st inside {StIdle_sparse, StAbsorb_sparse, StSqueeze_sparse,
                                  StManualRun_sparse, StFlush_sparse, StTerminalError_sparse})
 
   // `state` shall be 0 in invalid
   if (EnMasking) begin: gen_chk_digest_masked
-    `ASSERT(StateZeroInvalid_A, !state_valid_o |-> ((|state_o[0]) | (|state_o[1])) == 1'b 0)
+    `OCAH_OT_ASSERT(StateZeroInvalid_A, !state_valid_o |-> ((|state_o[0]) | (|state_o[1])) == 1'b 0)
   end else begin : gen_chk_digest_unmasked
-    `ASSERT(StateZeroInvalid_A, !state_valid_o |-> (|state_o[0]) == 1'b 0)
+    `OCAH_OT_ASSERT(StateZeroInvalid_A, !state_valid_o |-> (|state_o[0]) == 1'b 0)
   end
 
   // `state_valid_o` asserts only in between the completion and done
-  //`ASSERT(StateValidPeriod_A, state_valid_o |-> )
+  //`OCAH_OT_ASSERT(StateValidPeriod_A, state_valid_o |-> )
 
   // skip the msg interface assertions as they are in sha3pad.sv
 
   // Software run signal happens in Squeezing stage
-  `ASSUME(SwRunInSqueezing_a, run_i |-> error_o.valid || (st == StSqueeze_sparse))
+  `OCAH_OT_ASSUME(SwRunInSqueezing_a, run_i |-> error_o.valid || (st == StSqueeze_sparse))
 
   // If control received but not propagated into submodules, it is error condition
-  `ASSERT(ErrDetection_A, error_o.valid
+  `OCAH_OT_ASSERT(ErrDetection_A, error_o.valid
     |-> {start_i,      process_i,      run_i,         done_i}
      != {keccak_start, keccak_process, sw_keccak_run, keccak_done})
 

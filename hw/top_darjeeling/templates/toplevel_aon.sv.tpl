@@ -48,6 +48,6 @@ module top_${top["name"]}_pd_${domain.lower()} #(
 <%include file="/toplevel_snippets/cio_assigns.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, domain=domain" />\
 
   // Make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
+  `OCAH_OT_ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
 endmodule

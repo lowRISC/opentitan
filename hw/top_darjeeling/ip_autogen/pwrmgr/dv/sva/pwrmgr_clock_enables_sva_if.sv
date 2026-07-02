@@ -32,11 +32,11 @@ interface pwrmgr_clock_enables_sva_if (
   bit fast_is_active;
   always_comb fast_is_active = fast_state == pwrmgr_pkg::FastPwrStateActive;
 
-  `ASSERT(MainClkPwrUp_A, transitionUp_S |=> main_clk_en == 1'b1, clk_i, reset_or_disable)
-  `ASSERT(IoClkPwrUp_A, transitionUp_S |=> io_clk_en == 1'b1, clk_i, reset_or_disable)
+  `OCAH_OT_ASSERT(MainClkPwrUp_A, transitionUp_S |=> main_clk_en == 1'b1, clk_i, reset_or_disable)
+  `OCAH_OT_ASSERT(IoClkPwrUp_A, transitionUp_S |=> io_clk_en == 1'b1, clk_i, reset_or_disable)
 
-  `ASSERT(MainClkPwrDown_A, transitionDown_S |=> main_clk_en == (main_clk_en_i && main_pd_ni),
+  `OCAH_OT_ASSERT(MainClkPwrDown_A, transitionDown_S |=> main_clk_en == (main_clk_en_i && main_pd_ni),
           clk_i, reset_or_disable)
-  `ASSERT(IoClkPwrDown_A, transitionDown_S |=> io_clk_en == (io_clk_en_i && main_pd_ni),
+  `OCAH_OT_ASSERT(IoClkPwrDown_A, transitionDown_S |=> io_clk_en == (io_clk_en_i && main_pd_ni),
           clk_i, reset_or_disable)
 endinterface

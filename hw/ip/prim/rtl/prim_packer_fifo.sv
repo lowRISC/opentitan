@@ -170,11 +170,11 @@ module prim_packer_fifo #(
   //////////////////////////////////////////////
 
   // If not acked, valid_o should keep asserting
-  `ASSERT(ValidOPairedWithReadyI_A,
+  `OCAH_OT_ASSERT(ValidOPairedWithReadyI_A,
           rvalid_o && !rready_i && !clr_i |=> rvalid_o)
 
   // If output port doesn't accept the data, the data should be stable
-  `ASSERT(DataOStableWhenPending_A,
+  `OCAH_OT_ASSERT(DataOStableWhenPending_A,
           ##1 rvalid_o && $past(rvalid_o)
           && !$past(rready_i) && !$past(clr_i) |-> $stable(rdata_o))
 

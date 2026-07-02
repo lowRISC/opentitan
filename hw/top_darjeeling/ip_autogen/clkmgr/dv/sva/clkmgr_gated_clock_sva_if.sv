@@ -17,10 +17,10 @@ interface clkmgr_gated_clock_sva_if (
   logic clk_enabled;
   always_comb clk_enabled = sw_clk_en && ip_clk_en || scanmode;
 
-  `ASSERT(GateOpen_A,
+  `OCAH_OT_ASSERT(GateOpen_A,
           $rose(clk_enabled) |=> ##[0:3] !clk_enabled || $changed(clk_enabled) || gated_clk, !clk,
           !rst_n)
-  `ASSERT(GateClose_A,
+  `OCAH_OT_ASSERT(GateClose_A,
           $fell(clk_enabled) |=> ##[0:3] clk_enabled || $changed(clk_enabled) || !gated_clk, !clk,
           !rst_n)
 endinterface

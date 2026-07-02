@@ -109,6 +109,6 @@ module prim_intr_hw # (
     assign intr_o = reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i;
   end
 
-  `ASSERT_INIT(IntrTKind_A, IntrT inside {"Event", "Status"})
+  `OCAH_OT_ASSERT_INIT(IntrTKind_A, IntrT inside {"Event", "Status"})
 
 endmodule

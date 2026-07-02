@@ -37,8 +37,8 @@ module uart_core (
   localparam int RxFifoDepthW = $clog2(RxFifoDepth)+1;
 
   // The design does not support FIFOs deeper than 255 elements with the current CSR layout.
-  `ASSERT_INIT(TxFifoDepth_A, TxFifoDepth < 256)
-  `ASSERT_INIT(RxFifoDepth_A, RxFifoDepth < 256)
+  `OCAH_OT_ASSERT_INIT(TxFifoDepth_A, TxFifoDepth < 256)
+  `OCAH_OT_ASSERT_INIT(RxFifoDepth_A, RxFifoDepth < 256)
 
   logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;

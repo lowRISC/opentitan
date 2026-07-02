@@ -991,7 +991,7 @@
     .reg_en_o(hw2reg.clk_hints_status.clk_main_aes_val.d),
     .reg_cnt_err_o(idle_cnt_err[HintMainAes])
   );
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainAesCountCheck_A,
     u_clk_main_aes_trans.u_idle_cnt,
     alert_tx_o[1])
@@ -1013,7 +1013,7 @@
     .reg_en_o(hw2reg.clk_hints_status.clk_main_hmac_val.d),
     .reg_cnt_err_o(idle_cnt_err[HintMainHmac])
   );
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainHmacCountCheck_A,
     u_clk_main_hmac_trans.u_idle_cnt,
     alert_tx_o[1])
@@ -1035,7 +1035,7 @@
     .reg_en_o(hw2reg.clk_hints_status.clk_main_kmac_val.d),
     .reg_cnt_err_o(idle_cnt_err[HintMainKmac])
   );
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainKmacCountCheck_A,
     u_clk_main_kmac_trans.u_idle_cnt,
     alert_tx_o[1])
@@ -1057,7 +1057,7 @@
     .reg_en_o(hw2reg.clk_hints_status.clk_main_otbn_val.d),
     .reg_cnt_err_o(idle_cnt_err[HintMainOtbn])
   );
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainOtbnCountCheck_A,
     u_clk_main_otbn_trans.u_idle_cnt,
     alert_tx_o[1])
@@ -1082,17 +1082,17 @@
   // Assertions
   ////////////////////////////////////////////////////
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
-  `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-  `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
-  `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
-  `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
-  `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
-  `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
-  `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
+  `OCAH_OT_ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
+  `OCAH_OT_ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
+  `OCAH_OT_ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
+  `OCAH_OT_ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
+  `OCAH_OT_ASSERT_KNOWN(ClocksKownO_A, clocks_o)
+  `OCAH_OT_ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule // clkmgr

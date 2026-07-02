@@ -63,7 +63,7 @@ package prim_util_pkg;
     ceil_div = ((dividend % divisor) != 0) ? (dividend / divisor) + 1 : (dividend / divisor);
   endfunction
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // Package-scoped variable to detect the end of simulation.
   //
   // Used only in DV simulations. The bit will be used by assertions in RTL to perform end-of-test

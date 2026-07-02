@@ -94,6 +94,6 @@ module tlul_err import tlul_pkg::*; (
                           & (op_get | op_partial | fulldata_chk) ;
 
   // Only 32 bit data width for current tlul_err
-  `ASSERT_INIT(dataWidthOnly32_A, DW == 32)
+  `OCAH_OT_ASSERT_INIT(dataWidthOnly32_A, DW == 32)
 
 endmodule

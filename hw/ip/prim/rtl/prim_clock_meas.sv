@@ -263,15 +263,15 @@ module prim_clock_meas #(
 
   if (TimeOutChkEn) begin : gen_timeout_assert
     // the measured clock must be faster than the reference clock
-    `ASSERT_INIT(ClkRatios_A, ClkRatio > 2)
+    `OCAH_OT_ASSERT_INIT(ClkRatios_A, ClkRatio > 2)
   end
 
   // reference count has to be at least 1
-  `ASSERT_INIT(RefCntVal_A, RefCnt >= 1)
+  `OCAH_OT_ASSERT_INIT(RefCntVal_A, RefCnt >= 1)
 
   // if we've reached the max count, enable must be 0 next.
   // Otherwise the width of the counter is too small to accommodate the use case
-  `ASSERT(MaxWidth_A, (cnt == Cnt-1) |=> !cnt_en )
+  `OCAH_OT_ASSERT(MaxWidth_A, (cnt == Cnt-1) |=> !cnt_en )
 
 
 

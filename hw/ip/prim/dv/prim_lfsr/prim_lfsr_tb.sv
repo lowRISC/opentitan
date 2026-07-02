@@ -41,7 +41,7 @@ module prim_lfsr_tb;
   localparam logic SEED = 1'b1;
 
   // The StatePerm below is only defined for LFSRs up to 256bit wide.
-  `ASSERT_INIT(MaxStateSizeCheck_A, MaxLfsrDw < 256)
+  `OCAH_OT_ASSERT_INIT(MaxStateSizeCheck_A, MaxLfsrDw < 256)
 
   logic [MaxLfsrDw:MinLfsrDw] err, test_done;
   logic                 lfsr_en      [MaxLfsrDw+1];

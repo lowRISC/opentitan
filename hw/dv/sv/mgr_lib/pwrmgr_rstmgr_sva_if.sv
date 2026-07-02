@@ -34,14 +34,14 @@ interface pwrmgr_rstmgr_sva_if #(
 
   // Lc and Sys handshake: pwrmgr rst_*_req causes rstmgr rst_*_src_n
   for (genvar pd = 0; pd < PowerDomains; ++pd) begin : gen_assertions_per_power_domains
-    `ASSERT(LcHandshakeOn_A, rst_lc_req[pd] |-> `LC_SYS_CYCLES !rst_lc_req[pd] || !rst_lc_src_n[pd],
+    `OCAH_OT_ASSERT(LcHandshakeOn_A, rst_lc_req[pd] |-> `LC_SYS_CYCLES !rst_lc_req[pd] || !rst_lc_src_n[pd],
             clk_i, reset_or_disable)
-    `ASSERT(LcHandshakeOff_A, $fell(rst_lc_req[pd])
+    `OCAH_OT_ASSERT(LcHandshakeOff_A, $fell(rst_lc_req[pd])
             |-> `LC_SYS_CYCLES rst_lc_req[pd] || rst_lc_src_n[pd], clk_i, reset_or_disable)
-    `ASSERT(SysHandshakeOn_A,
+    `OCAH_OT_ASSERT(SysHandshakeOn_A,
             rst_sys_req[pd] |-> `LC_SYS_CYCLES !rst_sys_req[pd] || !rst_sys_src_n[pd], clk_i,
             reset_or_disable)
-    `ASSERT(SysHandshakeOff_A,
+    `OCAH_OT_ASSERT(SysHandshakeOff_A,
             !rst_sys_req[pd] |-> `LC_SYS_CYCLES rst_sys_req[pd] || rst_sys_src_n[pd], clk_i,
             reset_or_disable)
   end : gen_assertions_per_power_domains

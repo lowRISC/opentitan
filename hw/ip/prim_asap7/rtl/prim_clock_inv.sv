@@ -20,6 +20,6 @@ module prim_clock_inv #(
     .Y(clk_no)
   );
 
-  `ASSERT(scanmodeKnown, ##1 !$isunknown(scanmode_i), clk_no, 0)
+  `OCAH_OT_ASSERT(scanmodeKnown, ##1 !$isunknown(scanmode_i), clk_no, 0)
 
 endmodule : prim_clock_inv

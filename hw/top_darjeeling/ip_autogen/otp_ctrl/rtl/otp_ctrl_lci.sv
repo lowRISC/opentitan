@@ -73,7 +73,7 @@ module otp_ctrl_lci
   localparam bit [CntWidth-1:0] LastLcOtpWord = LastLcOtpWordInt[CntWidth-1:0];
 
   // This is required, since each native OTP word can only be programmed once.
-  `ASSERT_INIT(LcValueMustBeWiderThanNativeOtpWidth_A, lc_ctrl_state_pkg::LcValueWidth >= OtpWidth)
+  `OCAH_OT_ASSERT_INIT(LcValueMustBeWiderThanNativeOtpWidth_A, lc_ctrl_state_pkg::LcValueWidth >= OtpWidth)
 
   ////////////////////
   // Controller FSM //
@@ -291,14 +291,14 @@ module otp_ctrl_lci
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(LcAckKnown_A,    lc_ack_o)
-  `ASSERT_KNOWN(LcErrKnown_A,    lc_err_o)
-  `ASSERT_KNOWN(ErrorKnown_A,    error_o)
-  `ASSERT_KNOWN(LciIdleKnown_A,  lci_prog_idle_o)
-  `ASSERT_KNOWN(OtpReqKnown_A,   otp_req_o)
-  `ASSERT_KNOWN(OtpCmdKnown_A,   otp_cmd_o)
-  `ASSERT_KNOWN(OtpSizeKnown_A,  otp_size_o)
-  `ASSERT_KNOWN(OtpWdataKnown_A, otp_wdata_o)
-  `ASSERT_KNOWN(OtpAddrKnown_A,  otp_addr_o)
+  `OCAH_OT_ASSERT_KNOWN(LcAckKnown_A,    lc_ack_o)
+  `OCAH_OT_ASSERT_KNOWN(LcErrKnown_A,    lc_err_o)
+  `OCAH_OT_ASSERT_KNOWN(ErrorKnown_A,    error_o)
+  `OCAH_OT_ASSERT_KNOWN(LciIdleKnown_A,  lci_prog_idle_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpReqKnown_A,   otp_req_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpCmdKnown_A,   otp_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpSizeKnown_A,  otp_size_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpWdataKnown_A, otp_wdata_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpAddrKnown_A,  otp_addr_o)
 
 endmodule : otp_ctrl_lci

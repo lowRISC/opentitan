@@ -77,7 +77,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   import lc_ctrl_pkg::lc_tx_test_true_strict;
 
   // The code below always assumes the always on domain is index 0
-  `ASSERT_INIT(AlwaysOnIndex_A, ALWAYS_ON_DOMAIN == 0)
+  `OCAH_OT_ASSERT_INIT(AlwaysOnIndex_A, ALWAYS_ON_DOMAIN == 0)
 
   // when there are multiple on domains, the latter 1 should become another parameter
   localparam int OffDomainSelStart = ALWAYS_ON_DOMAIN + 1;

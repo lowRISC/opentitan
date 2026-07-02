@@ -159,7 +159,7 @@ module spid_status
   //  https://docs.google.com/document/d/1wUIynMYVfVg9HmCL0q5-6r9BuN-XM0z--wGqU0bXRQ0
 
   // assumes BUSY bit as 0
-  `ASSERT_INIT(BusyBitZero_A, BitBusy == 0)
+  `OCAH_OT_ASSERT_INIT(BusyBitZero_A, BitBusy == 0)
 
   // BUSY status in SCK
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin

@@ -297,9 +297,9 @@ module prim_alert_sender
 
 // however, since we use sequence constructs below, we need to wrap the entire block again.
 // typically, the ASSERT macros already contain this INC_ASSERT macro.
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(AlertPKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertPKnownO_A, alert_tx_o)
 
   if (AsyncOn) begin : gen_async_assert
     sequence PingSigInt_S;
@@ -312,26 +312,26 @@ module prim_alert_sender
   `ifndef FPV_ALERT_NO_SIGINT_ERR
     // check propagation of sigint issues to output within three cycles, or four due to CDC
     // shift sequence to the right to avoid reset effects.
-    `ASSERT(SigIntPing_A, ##1 PingSigInt_S |->
+    `OCAH_OT_ASSERT(SigIntPing_A, ##1 PingSigInt_S |->
         ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n)
-    `ASSERT(SigIntAck_A, ##1 AckSigInt_S |->
+    `OCAH_OT_ASSERT(SigIntAck_A, ##1 AckSigInt_S |->
         ##[SkewCycles+2:SkewCycles+3] alert_tx_o.alert_p == alert_tx_o.alert_n)
   `endif
 
     // Test in-band FSM reset request (via signal integrity error)
-    `ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |->
+    `OCAH_OT_ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |->
         ##[SkewCycles+2:SkewCycles+3] state_q == Idle)
-    `ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |->
+    `OCAH_OT_ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |->
         ##[SkewCycles+2:SkewCycles+3] !ping_set_q)
     // output must be driven diff unless sigint issue detected
-    `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
+    `OCAH_OT_ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
         (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |->
         ##[SkewCycles+2:SkewCycles+4] alert_tx_o.alert_p ^ alert_tx_o.alert_n)
 
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the
     // handshake is correctly initiated and defer the full handshake checking to the testbench.
-    `ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) &&
+    `OCAH_OT_ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) &&
         (alert_rx_i.ping_p ^ alert_rx_i.ping_n) ##2 state_q == Idle |=>
         ##[0:1] $rose(alert_tx_o.alert_p), clk_i,
         !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
@@ -345,54 +345,54 @@ module prim_alert_sender
 
   `ifndef FPV_ALERT_NO_SIGINT_ERR
     // check propagation of sigint issues to output within one cycle
-    `ASSERT(SigIntPing_A, PingSigInt_S |=>
+    `OCAH_OT_ASSERT(SigIntPing_A, PingSigInt_S |=>
         alert_tx_o.alert_p == alert_tx_o.alert_n)
-    `ASSERT(SigIntAck_A,  AckSigInt_S |=>
+    `OCAH_OT_ASSERT(SigIntAck_A,  AckSigInt_S |=>
         alert_tx_o.alert_p == alert_tx_o.alert_n)
   `endif
 
     // Test in-band FSM reset request (via signal integrity error)
-    `ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |=> state_q == Idle)
-    `ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |=> !ping_set_q)
+    `OCAH_OT_ASSERT(InBandInitFsm_A, PingSigInt_S or AckSigInt_S |=> state_q == Idle)
+    `OCAH_OT_ASSERT(InBandInitPing_A, PingSigInt_S or AckSigInt_S |=> !ping_set_q)
     // output must be driven diff unless sigint issue detected
-    `ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
+    `OCAH_OT_ASSERT(DiffEncoding_A, (alert_rx_i.ack_p ^ alert_rx_i.ack_n) &&
         (alert_rx_i.ping_p ^ alert_rx_i.ping_n) |=> alert_tx_o.alert_p ^ alert_tx_o.alert_n)
     // handshakes can take indefinite time if blocked due to sigint on outgoing
     // lines (which is not visible here). thus, we only check whether the handshake
     // is correctly initiated and defer the full handshake checking to the testbench.
-    `ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) && state_q == Idle |=>
+    `OCAH_OT_ASSERT(PingHs_A, ##1 $changed(alert_rx_i.ping_p) && state_q == Idle |=>
         $rose(alert_tx_o.alert_p), clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
   end
 
   // Test the alert state output.
-  `ASSERT(AlertState0_A, alert_set_q === alert_state_o)
+  `OCAH_OT_ASSERT(AlertState0_A, alert_set_q === alert_state_o)
 
   if (IsFatal) begin : gen_fatal_assert
-    `ASSERT(AlertState1_A, alert_req_i |=> alert_state_o)
-    `ASSERT(AlertState2_A, alert_state_o |=> $stable(alert_state_o))
-    `ASSERT(AlertState3_A, alert_ack_o |=> alert_state_o)
+    `OCAH_OT_ASSERT(AlertState1_A, alert_req_i |=> alert_state_o)
+    `OCAH_OT_ASSERT(AlertState2_A, alert_state_o |=> $stable(alert_state_o))
+    `OCAH_OT_ASSERT(AlertState3_A, alert_ack_o |=> alert_state_o)
   end else begin : gen_recov_assert
-    `ASSERT(AlertState1_A, alert_req_i && !alert_clr |=> alert_state_o)
-    `ASSERT(AlertState2_A, alert_req_i && alert_ack_o |=> !alert_state_o)
+    `OCAH_OT_ASSERT(AlertState1_A, alert_req_i && !alert_clr |=> alert_state_o)
+    `OCAH_OT_ASSERT(AlertState2_A, alert_req_i && alert_ack_o |=> !alert_state_o)
   end
 
   // The alert test input should not set the alert state register.
-  `ASSERT(AlertTest1_A, alert_test_i && !alert_req_i && !alert_state_o |=> $stable(alert_state_o))
+  `OCAH_OT_ASSERT(AlertTest1_A, alert_test_i && !alert_req_i && !alert_state_o |=> $stable(alert_state_o))
 
   // if alert_req_i is true, handshakes should be continuously repeated
-  `ASSERT(AlertHs_A, alert_req_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
+  `OCAH_OT_ASSERT(AlertHs_A, alert_req_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
       clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
 
   // if alert_test_i is true, handshakes should be continuously repeated
-  `ASSERT(AlertTestHs_A, alert_test_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
+  `OCAH_OT_ASSERT(AlertTestHs_A, alert_test_i && state_q == Idle |=> $rose(alert_tx_o.alert_p),
       clk_i, !rst_ni || (alert_tx_o.alert_p == alert_tx_o.alert_n))
 `endif
 
 `ifdef FPV_ALERT_NO_SIGINT_ERR
   // Assumptions for FPV security countermeasures to ensure the alert protocol functions correctly.
-  `ASSUME_FPV(AckPFollowsAlertP_S, alert_rx_i.ack_p == $past(alert_tx_o.alert_p))
-  `ASSUME_FPV(AckNFollowsAlertN_S, alert_rx_i.ack_n == $past(alert_tx_o.alert_n))
-  `ASSUME_FPV(TriggerAlertInit_S, $stable(rst_ni) == 0 |=> alert_rx_i.ping_p == alert_rx_i.ping_n)
-  `ASSUME_FPV(PingDiffPair_S, ##2 alert_rx_i.ping_p != alert_rx_i.ping_n)
+  `OCAH_OT_ASSUME_FPV(AckPFollowsAlertP_S, alert_rx_i.ack_p == $past(alert_tx_o.alert_p))
+  `OCAH_OT_ASSUME_FPV(AckNFollowsAlertN_S, alert_rx_i.ack_n == $past(alert_tx_o.alert_n))
+  `OCAH_OT_ASSUME_FPV(TriggerAlertInit_S, $stable(rst_ni) == 0 |=> alert_rx_i.ping_p == alert_rx_i.ping_n)
+  `OCAH_OT_ASSUME_FPV(PingDiffPair_S, ##2 alert_rx_i.ping_p != alert_rx_i.ping_n)
 `endif
 endmodule : prim_alert_sender

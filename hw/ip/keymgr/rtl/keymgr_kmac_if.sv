@@ -84,9 +84,9 @@ module keymgr_kmac_if
   localparam int GenRem = GenDataWidth    % KmacDataIfWidth;
 
   // the remainder must be in number of bytes
-  `ASSERT_INIT(AdvRemBytes_A, AdvRem % 8 == 0)
-  `ASSERT_INIT(IdRemBytes_A,  IdRem  % 8 == 0)
-  `ASSERT_INIT(GenRemBytes_A, GenRem % 8 == 0)
+  `OCAH_OT_ASSERT_INIT(AdvRemBytes_A, AdvRem % 8 == 0)
+  `OCAH_OT_ASSERT_INIT(IdRemBytes_A,  IdRem  % 8 == 0)
+  `OCAH_OT_ASSERT_INIT(GenRemBytes_A, GenRem % 8 == 0)
 
   // Number of kmac transactions required
   localparam int AdvRounds = (MaxAdvDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
@@ -402,7 +402,7 @@ module keymgr_kmac_if
   assign prng_en_o = kmac_data_o.req_valid & kmac_data_i.req_ready;
 
   // as long as we are transmitting, the strobe should never be 0.
-  `ASSERT(LastStrb_A, valid |-> strb != '0)
+  `OCAH_OT_ASSERT(LastStrb_A, valid |-> strb != '0)
 
 
 endmodule // keymgr_kmac_if

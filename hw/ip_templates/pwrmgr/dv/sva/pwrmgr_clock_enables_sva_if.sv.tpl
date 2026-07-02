@@ -42,10 +42,10 @@ interface pwrmgr_clock_enables_sva_if (
 
 % for clk in src_clks:
   % if clk == 'usb':
-  `ASSERT(UsbClkPwrUp_A, transitionUp_S |=> usb_clk_en == usb_clk_en_active_i, clk_i,
+  `OCAH_OT_ASSERT(UsbClkPwrUp_A, transitionUp_S |=> usb_clk_en == usb_clk_en_active_i, clk_i,
           reset_or_disable)
   % else:
-  `ASSERT(${clk.capitalize()}ClkPwrUp_A, transitionUp_S |=> ${clk}_clk_en == 1'b1, clk_i, reset_or_disable)
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkPwrUp_A, transitionUp_S |=> ${clk}_clk_en == 1'b1, clk_i, reset_or_disable)
   % endif
 % endfor
 
@@ -55,16 +55,16 @@ interface pwrmgr_clock_enables_sva_if (
   sequence usbActiveTransition_S;
     ${"##"}[0:7] !fast_is_active || usb_clk_en == (usb_clk_en_active_i | usb_ip_clk_status_i);
   endsequence
-  `ASSERT(UsbClkActive_A, fast_is_active && $changed(usb_clk_en_active_i) |=> usbActiveTransition_S,
+  `OCAH_OT_ASSERT(UsbClkActive_A, fast_is_active && $changed(usb_clk_en_active_i) |=> usbActiveTransition_S,
           clk_i, reset_or_disable)
 
 % endif
 % for clk in src_clks:
   % if clk == 'usb':
-  `ASSERT(${clk.capitalize()}ClkPwrDown_A, transitionDown_S |=> ${clk}_clk_en == (usb_clk_en_lp_i && main_pd_ni),
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkPwrDown_A, transitionDown_S |=> ${clk}_clk_en == (usb_clk_en_lp_i && main_pd_ni),
           clk_i, reset_or_disable)
   % else:
-  `ASSERT(${clk.capitalize()}ClkPwrDown_A, transitionDown_S |=> ${clk}_clk_en == (${clk}_clk_en_i && main_pd_ni),
+  `OCAH_OT_ASSERT(${clk.capitalize()}ClkPwrDown_A, transitionDown_S |=> ${clk}_clk_en == (${clk}_clk_en_i && main_pd_ni),
           clk_i, reset_or_disable)
   % endif
 % endfor

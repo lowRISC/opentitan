@@ -104,7 +104,7 @@ module ${module_instance_name}_gateway #(
   end
 
   // Check the claim_i and complete_i input ports are being driven with onehot0 values.
-  `ASSERT(ClaimOneHot0_A,    $onehot0(claim_i))
-  `ASSERT(CompleteOneHot0_A, $onehot0(complete_i))
+  `OCAH_OT_ASSERT(ClaimOneHot0_A,    $onehot0(claim_i))
+  `OCAH_OT_ASSERT(CompleteOneHot0_A, $onehot0(complete_i))
 
 endmodule

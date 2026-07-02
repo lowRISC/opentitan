@@ -130,7 +130,7 @@ module prim_reg_cdc_arb #(
     // dst_req_q will be 0 when dst_req_i is set, this assertion checks the conditional branch
     // (dst_req_i && !dst_req_q && !idle_q) can be simplified to avoid conditional coverage
     // holes
-    `ASSERT(Not_Dst_req_q_while_dst_req_i_A, dst_req_i |-> !dst_req_q,
+    `OCAH_OT_ASSERT(Not_Dst_req_q_while_dst_req_i_A, dst_req_i |-> !dst_req_q,
             clk_dst_i, !rst_dst_ni)
 
     assign dst_req = dst_req_q | dst_req_i;
@@ -167,17 +167,17 @@ module prim_reg_cdc_arb #(
     end
 
     // dst_update_ack should only be sent if there was a dst_update_req.
-    `ASSERT(DstAckReqChk_A, dst_update_ack |-> dst_update_req, clk_dst_i, !rst_dst_ni)
+    `OCAH_OT_ASSERT(DstAckReqChk_A, dst_update_ack |-> dst_update_req, clk_dst_i, !rst_dst_ni)
 
     // if a destination update is received when the system is idle and there is no
     // software side request, hw update must be selected.
-    `ASSERT(DstUpdateReqCheck_A, ##1 dst_update & !dst_req & idle_q |=> id_q == SelHwReq,
+    `OCAH_OT_ASSERT(DstUpdateReqCheck_A, ##1 dst_update & !dst_req & idle_q |=> id_q == SelHwReq,
       clk_dst_i, !rst_dst_ni)
 
     // if hw select was chosen, then it must be the case there was a destination update
     // indication or there was a difference between the transit register and the
     // latest incoming value.
-    `ASSERT(HwIdSelCheck_A, $rose(id_q == SelHwReq) |-> $past(dst_update_i, 1) ||
+    `OCAH_OT_ASSERT(HwIdSelCheck_A, $rose(id_q == SelHwReq) |-> $past(dst_update_i, 1) ||
       $past(dst_lat_q, 1),
       clk_dst_i, !rst_dst_ni)
 
@@ -250,7 +250,7 @@ module prim_reg_cdc_arb #(
     // The possible clock ratios rely on tool configuration, but we set N=10 (which matches the
     // configuration for the main clock and the slow aon clock in our FPV tool setup).
     `ifdef FPV_ON
-    `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> ##[0:20] src_update_o,
+    `OCAH_OT_ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> ##[0:20] src_update_o,
             clk_src_i, !rst_src_ni)
       // TODO: #14913 check if we can add additional sim assertions.
     `endif
@@ -275,7 +275,7 @@ module prim_reg_cdc_arb #(
 
       // once hardware makes an update request, we must eventually see an update pulse
       // TODO: #14913 check if we can add additional sim assertions.
-      `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
+      `OCAH_OT_ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
               clk_src_i, !rst_src_ni)
     `endif
 

@@ -82,6 +82,6 @@ module prim_xoshiro256pp #(
   assign all_zero_o = lockup;
 
   // check that seed is not all-zero
-  `ASSERT_INIT(DefaultSeedNzCheck_A, |DefaultSeed)
+  `OCAH_OT_ASSERT_INIT(DefaultSeedNzCheck_A, |DefaultSeed)
 
 endmodule

@@ -20,13 +20,13 @@ interface clkmgr_trans_sva_if (
   localparam int MIN_STOP_CYCLES = 2;
   localparam int MAX_STOP_CYCLES = 15;
 
-  `ASSERT(TransStart_A,
+  `OCAH_OT_ASSERT(TransStart_A,
           $rose(
               hint
           ) ##1 hint [* MIN_START_CYCLES] |=>
               ##[0:MAX_START_CYCLES-MIN_START_CYCLES] !hint || trans_clk,
           !clk, !rst_n)
-  `ASSERT(TransStop_A,
+  `OCAH_OT_ASSERT(TransStop_A,
           $fell(
               hint || !idle || scanmode
           ) ##1 !hint && !scanmode [* MIN_STOP_CYCLES] |=>

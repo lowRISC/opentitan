@@ -76,13 +76,13 @@ module entropy_src
 
   // Register interface supports up to 256-bit wide noise source bus widths. Ensure the that the
   // parameter does not exceed that limit.
-  `ASSERT_INIT(RngBusBitWidthMaxValue_A, RngBusWidth <= 256)
+  `OCAH_OT_ASSERT_INIT(RngBusBitWidthMaxValue_A, RngBusWidth <= 256)
   // The IP needs to define both RngBusWidth, RngBusBitSelWidth, and HealthTestWindowWidth, although
   // the last two are derived from the first. This is needed to allow topgen to pick up the widths
   // for interfaces IP-level interfaces based on these parameters.
-  `ASSERT_INIT(RngBusBitSelWidthSameAsComputed_A,
+  `OCAH_OT_ASSERT_INIT(RngBusBitSelWidthSameAsComputed_A,
                RngBusBitSelWidth == prim_util_pkg::vbits(RngBusWidth))
-  `ASSERT_INIT(HealthTestWindowWidthSameAsComputed_A,
+  `OCAH_OT_ASSERT_INIT(HealthTestWindowWidthSameAsComputed_A,
                HealthTestWindowWidth == 16 + prim_util_pkg::vbits(RngBusWidth))
 
   // common signals
@@ -280,202 +280,202 @@ module entropy_src
   end
 
   // Outputs should have a known value after reset
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 
   // Entropy Interface
-  `ASSERT_KNOWN(EsHwIfEsAckKnownO_A, entropy_src_hw_if_o.es_ack)
-  `ASSERT_KNOWN_IF(EsHwIfEsBitsKnownO_A, entropy_src_hw_if_o.es_bits,
+  `OCAH_OT_ASSERT_KNOWN(EsHwIfEsAckKnownO_A, entropy_src_hw_if_o.es_ack)
+  `OCAH_OT_ASSERT_KNOWN_IF(EsHwIfEsBitsKnownO_A, entropy_src_hw_if_o.es_bits,
       entropy_src_hw_if_o.es_ack)
-  `ASSERT_KNOWN_IF(EsHwIfEsFipsKnownO_A, entropy_src_hw_if_o.es_fips,
+  `OCAH_OT_ASSERT_KNOWN_IF(EsHwIfEsFipsKnownO_A, entropy_src_hw_if_o.es_fips,
       entropy_src_hw_if_o.es_ack)
 
   // RNG Interface
-  `ASSERT_KNOWN(EsRngEnableKnownO_A, entropy_src_rng_enable_o)
+  `OCAH_OT_ASSERT_KNOWN(EsRngEnableKnownO_A, entropy_src_rng_enable_o)
 
   // External Health Test Interface
-  `ASSERT_KNOWN_IF(EsXhtEntropyBitKnownO_A, entropy_src_xht_bits_o, entropy_src_xht_valid_o)
-  `ASSERT_KNOWN(EsXhtEntropyBitValidKnownO_A, entropy_src_xht_valid_o)
-  `ASSERT_KNOWN(EsXhtClearKnownO_A, entropy_src_xht_meta_o.clear)
-  `ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_meta_o.active)
-  `ASSERT_KNOWN(EsXhtThreshHiKnownO_A, entropy_src_xht_meta_o.thresh_hi)
-  `ASSERT_KNOWN(EsXhtThreshLoKnownO_A, entropy_src_xht_meta_o.thresh_lo)
-  `ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_meta_o.window_wrap_pulse)
+  `OCAH_OT_ASSERT_KNOWN_IF(EsXhtEntropyBitKnownO_A, entropy_src_xht_bits_o, entropy_src_xht_valid_o)
+  `OCAH_OT_ASSERT_KNOWN(EsXhtEntropyBitValidKnownO_A, entropy_src_xht_valid_o)
+  `OCAH_OT_ASSERT_KNOWN(EsXhtClearKnownO_A, entropy_src_xht_meta_o.clear)
+  `OCAH_OT_ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_meta_o.active)
+  `OCAH_OT_ASSERT_KNOWN(EsXhtThreshHiKnownO_A, entropy_src_xht_meta_o.thresh_hi)
+  `OCAH_OT_ASSERT_KNOWN(EsXhtThreshLoKnownO_A, entropy_src_xht_meta_o.thresh_lo)
+  `OCAH_OT_ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_meta_o.window_wrap_pulse)
 
   // Alerts
-  `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
 
   // Interrupts
-  `ASSERT_KNOWN(IntrEsEntropyValidKnownO_A, intr_es_entropy_valid_o)
-  `ASSERT_KNOWN(IntrEsHealthTestFailedKnownO_A, intr_es_health_test_failed_o)
-  `ASSERT_KNOWN(IntrEsFifoErrKnownO_A, intr_es_fatal_err_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrEsEntropyValidKnownO_A, intr_es_entropy_valid_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrEsHealthTestFailedKnownO_A, intr_es_health_test_failed_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrEsFifoErrKnownO_A, intr_es_fatal_err_o)
 
   // prim_count alerts
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck0_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck0_A,
     u_entropy_src_core.u_prim_count_window_cntr,
     alert_tx_o[1])
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_bit_cntrs
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck1_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck1_A,
       u_entropy_src_core.u_entropy_src_adaptp_ht.gen_cntrs[sh].u_prim_count_test_cnt,
       alert_tx_o[1])
   end : gen_bit_cntrs
 
   for (genvar j = 0; j < NumBucketHtInst; j = j + 1) begin : gen_symbol_match_inst_loop
     for (genvar i = 0; i < NumBuckets; i = i + 1) begin : gen_symbol_match
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_entropy_src_core.gen_health_test[j].u_entropy_src_bucket_ht.gen_symbol_match[i].
       u_prim_count_bin_cntr, alert_tx_o[1])
     end : gen_symbol_match
   end : gen_symbol_match_inst_loop
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_pair_cntrs
-   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+   `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
      u_entropy_src_core.u_entropy_src_markov_ht.gen_cntrs[sh].u_prim_count_pair_cntr,
      alert_tx_o[1])
   end : gen_pair_cntrs
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_rep_cntrs
-   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+   `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
      u_entropy_src_core.u_entropy_src_repcnt_ht.gen_cntrs[sh].u_prim_count_rep_cntr,
      alert_tx_o[1])
   end : gen_rep_cntrs
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck7_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck7_A,
     u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_rep_cntr,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
     u_entropy_src_core.u_entropy_src_main_sm.u_state_regs,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlAckFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlAckFsmCheck_A,
     u_entropy_src_core.u_entropy_src_ack_sm.u_state_regs,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PipelineDepthCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PipelineDepthCheck_A,
     u_entropy_src_core.u_prim_count_pipeline_depth, alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A,
     u_entropy_src_core.u_sha3.u_state_regs, alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccakRoundFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccakRoundFsmCheck_A,
     u_entropy_src_core.u_sha3.u_keccak.u_state_regs, alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A,
     u_entropy_src_core.u_sha3.u_pad.u_state_regs, alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A,
     u_entropy_src_core.u_sha3.u_pad.u_sentmsg_count, alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A,
     u_entropy_src_core.u_sha3.u_keccak.u_round_count, alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck8_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck8_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnt.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck9_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck9_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnts.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck10_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck10_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_hi.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck11_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck11_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_lo.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck12_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck12_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_bucket.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck13_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck13_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_hi.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck14_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck14_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_lo.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck15_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck15_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_hi.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck16_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck16_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_lo.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck17_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck17_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_any_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck18_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck18_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnt_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck19_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck19_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnts_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck20_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck20_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_hi_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck21_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck21_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_lo_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck22_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck22_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_bucket_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck23_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck23_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_hi_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck24_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck24_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_lo_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck25_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck25_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_hi_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck26_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck26_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_lo_alert_fails.u_prim_count_cntr_reg,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esrng.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esrng.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DistrFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DistrFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_distr.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DistrFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DistrFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_distr.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ObserveFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ObserveFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_observe.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ObserveFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ObserveFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_observe.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsfinalFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsfinalFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esfinal.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsfinalFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsfinalFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esfinal.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
     alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 
 endmodule

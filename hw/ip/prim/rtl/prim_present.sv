@@ -148,11 +148,11 @@ module prim_present #(
   // assertions //
   ////////////////
 
-  `ASSERT_INIT(SupportedWidths_A, (DataWidth == 64 && KeyWidth inside {80, 128}) ||
+  `OCAH_OT_ASSERT_INIT(SupportedWidths_A, (DataWidth == 64 && KeyWidth inside {80, 128}) ||
                                   (DataWidth == 32 && KeyWidth == 64))
-  `ASSERT_INIT(SupportedNumRounds_A, NumRounds > 0 && NumRounds <= 31)
-  `ASSERT_INIT(SupportedNumPhysRounds0_A, NumPhysRounds > 0 && NumPhysRounds <= NumRounds)
+  `OCAH_OT_ASSERT_INIT(SupportedNumRounds_A, NumRounds > 0 && NumRounds <= 31)
+  `OCAH_OT_ASSERT_INIT(SupportedNumPhysRounds0_A, NumPhysRounds > 0 && NumPhysRounds <= NumRounds)
   // Currently we do not support other arrangements
-  `ASSERT_INIT(SupportedNumPhysRounds1_A, (NumRounds % NumPhysRounds) == 0)
+  `OCAH_OT_ASSERT_INIT(SupportedNumPhysRounds1_A, (NumRounds % NumPhysRounds) == 0)
 
 endmodule : prim_present

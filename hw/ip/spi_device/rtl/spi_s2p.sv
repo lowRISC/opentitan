@@ -104,6 +104,6 @@ module spi_s2p
 
   // Right after reset (CSb assert), the io_mode_i shall be Single IO
   // to decode SPI Opcode.
-  `ASSERT(IoModeDefault_A, $rose(rst_ni) |-> io_mode_i == SingleIO, clk_i, 0)
+  `OCAH_OT_ASSERT(IoModeDefault_A, $rose(rst_ni) |-> io_mode_i == SingleIO, clk_i, 0)
 
 endmodule

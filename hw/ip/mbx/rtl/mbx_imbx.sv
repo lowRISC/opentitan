@@ -180,10 +180,10 @@ module mbx_imbx #(
   //////////////////////////////////////////////////////////////////////////////
 
   // Don't write to the mailbox if it is full
-  `ASSERT_NEVER(NeverWriteMbxIfFull_A, hostif_sram_write_req_o &
+  `OCAH_OT_ASSERT_NEVER(NeverWriteMbxIfFull_A, hostif_sram_write_req_o &
                 (sram_write_ptr_q > hostif_limit_i))
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   logic[CfgSramAddrWidth-1:0] sram_write_ptr_assert_q;
   prim_flop #(
     .Width(CfgSramAddrWidth)
@@ -195,17 +195,17 @@ module mbx_imbx #(
   );
   // A granted write by the host adapter must advance the write pointer unless it's being reloaded
   // because an abort request has been processed.
-  `ASSERT_IF(GntMustAdvanceWritePtr_A, (advance_write_ptr &
+  `OCAH_OT_ASSERT_IF(GntMustAdvanceWritePtr_A, (advance_write_ptr &
              (sram_write_ptr_d == sram_write_ptr_assert_q + LCFG_SRM_ADDRINC)) | host_clear_abort,
              hostif_sram_write_gnt_i)
 `endif
 
   // Ready IRQ to core should not be asserted whilst there is still pending write traffic
-  `ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
+  `OCAH_OT_ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
                 hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
 
   // The write pointer should not be advanced if the request has not yet been granted.
-  `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,
+  `OCAH_OT_ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,
              advance_write_ptr & imbx_pending_o)
 
 endmodule

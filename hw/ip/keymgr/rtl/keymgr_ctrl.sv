@@ -860,38 +860,38 @@ module keymgr_ctrl
 
   // This assertion will not work if fault_status ever takes on metafields such as
   // qe / re etc.
-  `ASSERT_INIT(SameErrCnt_A, $bits(keymgr_reg2hw_fault_status_reg_t) ==
+  `OCAH_OT_ASSERT_INIT(SameErrCnt_A, $bits(keymgr_reg2hw_fault_status_reg_t) ==
                              (SyncFaultLastIdx + AsyncFaultLastIdx))
 
   // stage select should always be Disable whenever it is not enabled
-  `ASSERT(StageDisableSel_A, !en_i |-> stage_sel_o == Disable)
+  `OCAH_OT_ASSERT(StageDisableSel_A, !en_i |-> stage_sel_o == Disable)
 
   // Unless it is a legal command, only select disable
-  `ASSERT(InitLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlInit} &
+  `OCAH_OT_ASSERT(InitLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlInit} &
                                !(op_i inside {OpAdvance}) |-> stage_sel_o == Disable)
 
   // All commands are legal, so select disable only if operation is disable
-  `ASSERT(GeneralLegalCommands_A, op_start_i & en_i &
+  `OCAH_OT_ASSERT(GeneralLegalCommands_A, op_start_i & en_i &
                                   state_q inside {StCtrlCreatorRootKey, StCtrlOwnerIntKey} &
                                   (op_i inside {OpDisable}) |-> stage_sel_o == Disable)
 
-  `ASSERT(OwnerLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlOwnerKey} &
+  `OCAH_OT_ASSERT(OwnerLegalCommands_A, op_start_i & en_i & state_q inside {StCtrlOwnerKey} &
                                 (op_i inside {OpAdvance, OpDisable}) |-> stage_sel_o == Disable)
 
   // load_key should not be high if there is no ongoing operation
-  `ASSERT(LoadKey_A, key_o.valid |-> op_start_i)
+  `OCAH_OT_ASSERT(LoadKey_A, key_o.valid |-> op_start_i)
 
   // The count value should always be 0 when a transaction start
-  `ASSERT(CntZero_A, $rose(op_start_i) |-> cnt == '0)
+  `OCAH_OT_ASSERT(CntZero_A, $rose(op_start_i) |-> cnt == '0)
 
   // Whenever a transaction completes, data_en must return to 0 on the next cycle
-  `ASSERT(DataEnDis_A, op_start_i & op_done_o |=> ~data_hw_en_o && ~data_sw_en_o)
+  `OCAH_OT_ASSERT(DataEnDis_A, op_start_i & op_done_o |=> ~data_hw_en_o && ~data_sw_en_o)
 
   // Whenever data enable asserts, it must be the case that there was a generate or
   // id operation
-  `ASSERT(DataEn_A, data_hw_en_o | data_sw_en_o |-> (id_en_o | gen_en_o) & ~adv_en_o)
+  `OCAH_OT_ASSERT(DataEn_A, data_hw_en_o | data_sw_en_o |-> (id_en_o | gen_en_o) & ~adv_en_o)
 
   // Check that the FSM is linear and does not contain any loops
-  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, state_e)
+  `OCAH_OT_ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, state_e)
 
 endmodule

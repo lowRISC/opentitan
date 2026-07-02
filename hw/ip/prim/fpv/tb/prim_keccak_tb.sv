@@ -53,8 +53,8 @@ module prim_keccak_tb #(
   );
 
 
-  `ASSUME_FPV(ValidSequence_A, ##1 valid_i |=> !valid_i)
-  `ASSUME_FPV(ValidValid_A, active |-> !valid_i)
+  `OCAH_OT_ASSUME_FPV(ValidSequence_A, ##1 valid_i |=> !valid_i)
+  `OCAH_OT_ASSUME_FPV(ValidValid_A, active |-> !valid_i)
 
   // Test with value 0
   logic [1599:0] data_0 ;
@@ -67,7 +67,7 @@ module prim_keccak_tb #(
   logic [255:0] digest_0;
   // Big-Endian a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
   assign digest_0 = 256'h 4a43_f880_4b0a_d882_fa49_3be4_4dff_80f5_62d6_61a0_5647_c151_66d7_1ebf_f8c6_ffa7;
-  `ASSUME_FPV(Data0TestSHA3_256_A, state_i == data_0)
-  `ASSERT(DigestForData0TestSHA3_256_A, done_o |-> state_o[255:0] == digest_0)
+  `OCAH_OT_ASSUME_FPV(Data0TestSHA3_256_A, state_i == data_0)
+  `OCAH_OT_ASSERT(DigestForData0TestSHA3_256_A, done_o |-> state_o[255:0] == digest_0)
 
 endmodule

@@ -167,7 +167,7 @@ module spi_host
   end                   : gen_passthrough_implementation
   else begin            : gen_passthrough_ignore
      // Passthrough only supported for instances with one CSb line
-    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
+    `OCAH_OT_ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
 
     assign cio_sck_o    = sck;
     assign cio_sck_en_o = output_en;
@@ -634,28 +634,28 @@ module spi_host
   );
 
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
-  `ASSERT_KNOWN(CioSckKnownO_A, cio_sck_o)
-  `ASSERT_KNOWN(CioSckEnKnownO_A, cio_sck_en_o)
-  `ASSERT_KNOWN(CioCsbKnownO_A, cio_csb_o)
-  `ASSERT_KNOWN(CioCsbEnKnownO_A, cio_csb_en_o)
-  `ASSERT_KNOWN_IF(CioSdKnownO_A, cio_sd_o, !passthrough_i.passthrough_en |
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(CioSckKnownO_A, cio_sck_o)
+  `OCAH_OT_ASSERT_KNOWN(CioSckEnKnownO_A, cio_sck_en_o)
+  `OCAH_OT_ASSERT_KNOWN(CioCsbKnownO_A, cio_csb_o)
+  `OCAH_OT_ASSERT_KNOWN(CioCsbEnKnownO_A, cio_csb_en_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(CioSdKnownO_A, cio_sd_o, !passthrough_i.passthrough_en |
     (passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb),
     passthrough_i.sck_en & passthrough_i.sck)
-  `ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
-  `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
-  `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
-  `ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
+  `OCAH_OT_ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
 
   // passthrough_o.s is passed through to spi_device, it may contain unknown data,
   // but the unknown data won't be used based on the SPI protocol.
   // Hence, instead of checking known data, here does a connectivity check.
-  `ASSERT(PassthroughConn_A, passthrough_o.s === cio_sd_i)
+  `OCAH_OT_ASSERT(PassthroughConn_A, passthrough_o.s === cio_sd_i)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule : spi_host

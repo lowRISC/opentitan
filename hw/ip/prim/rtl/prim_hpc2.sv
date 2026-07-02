@@ -232,9 +232,9 @@ module prim_hpc2 #(
   end
 
   // Stage 2 may only fire if Stage 1 has been triggered since the last Stage 2.
-  `ASSERT(AsymLatencyEn1BeforeEn2, en2_i |-> s_stage1_pending, clk_i, !rst_ni)
+  `OCAH_OT_ASSERT(AsymLatencyEn1BeforeEn2, en2_i |-> s_stage1_pending, clk_i, !rst_ni)
   // Stage 1 may not overwrite pending data unless Stage 2 is completing this cycle.
-  `ASSERT(AsymLatencyNoStage1Overwrite,
+  `OCAH_OT_ASSERT(AsymLatencyNoStage1Overwrite,
       en1_i && s_stage1_pending |-> en2_i, clk_i, !rst_ni)
 `endif
 

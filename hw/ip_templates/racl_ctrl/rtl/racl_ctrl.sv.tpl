@@ -235,15 +235,15 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(RaclErrorIrqKnown_A, intr_racl_error_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorIrqKnown_A, intr_racl_error_o)
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_policies_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorKnown_A, racl_policies_o)
 
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
       RegWeOnehotCheck_A,
       u_reg,
       gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.alert_req_i

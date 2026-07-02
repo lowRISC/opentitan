@@ -361,22 +361,22 @@ module spid_readsram
 
   // FIFO should not overflow. The Main state machine shall send request only
   // when it needs the data within 2 cycles
-  `ASSERT(NotOverflow_A, sram_l2m_o.req && !sram_l2m_o.we |-> !sram_fifo_full)
+  `OCAH_OT_ASSERT(NotOverflow_A, sram_l2m_o.req && !sram_l2m_o.we |-> !sram_fifo_full)
 
   // SRAM access always read
-  `ASSERT(SramReadOnly_A, sram_l2m_o.req |-> !sram_l2m_o.we)
+  `OCAH_OT_ASSERT(SramReadOnly_A, sram_l2m_o.req |-> !sram_l2m_o.we)
 
   // SRAM data should return in next cycle
-  `ASSUME(SramDataReturnRequirement_M, sram_l2m_o.req && !sram_l2m_o.we |=> sram_m2l_i.rvalid)
+  `OCAH_OT_ASSUME(SramDataReturnRequirement_M, sram_l2m_o.req && !sram_l2m_o.we |=> sram_m2l_i.rvalid)
 
   // in fifo_pop, FIFO should not be empty for permitted operations.
-  `ASSERT(FifoNotEmpty_A,
+  `OCAH_OT_ASSERT(FifoNotEmpty_A,
           fifo_rready_i |-> unused_fifo_depth != 0)
 
   // strb_set is asserted together with sram_req or follows the req
-  `ASSUME(ReqStrbRelation_M, sram_read_req_i |-> ##[0:2] addr_latched_i)
+  `OCAH_OT_ASSUME(ReqStrbRelation_M, sram_read_req_i |-> ##[0:2] addr_latched_i)
 
   // Address latched signal is a pulse signal
-  `ASSUME(AddrLatchedPulse_M, addr_latched_i |=> !addr_latched_i)
+  `OCAH_OT_ASSUME(AddrLatchedPulse_M, addr_latched_i |=> !addr_latched_i)
 
 endmodule : spid_readsram

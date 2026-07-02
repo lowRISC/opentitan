@@ -53,7 +53,7 @@ module spi_host_shift_register (
   logic              rx_buf_valid_q;
   logic              rx_buf_valid_d;
 
-  `ASSERT(SpeedValid, speed_i != RsvdSpd, clk_i, rst_ni)
+  `OCAH_OT_ASSERT(SpeedValid, speed_i != RsvdSpd, clk_i, rst_ni)
 
   assign next_bits  = full_cyc_i ? sd_i : sd_i_q;
   assign sr_shifted = (speed_i == Standard) ? {sr_q[6:0], next_bits[1]} :

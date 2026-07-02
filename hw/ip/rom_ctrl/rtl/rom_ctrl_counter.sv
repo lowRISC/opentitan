@@ -54,8 +54,8 @@ module rom_ctrl_counter
   // register the data_last_nontop_o signal.
   localparam int RomNonTopCount = RomDepth - RomTopCount;
 
-  `ASSERT_INIT(TopCountValid_A, 1 <= RomTopCount && RomTopCount < RomDepth)
-  `ASSERT_INIT(NonTopCountValid_A, 2 <= RomNonTopCount)
+  `OCAH_OT_ASSERT_INIT(TopCountValid_A, 1 <= RomTopCount && RomTopCount < RomDepth)
+  `OCAH_OT_ASSERT_INIT(NonTopCountValid_A, 2 <= RomNonTopCount)
 
   localparam int AW = vbits(RomDepth);
 

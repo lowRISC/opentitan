@@ -117,10 +117,10 @@ module edn_ack_sm (
   // The `local_escalate_i` includes `ack_sm_err_o`.
   // The following assertion ensures the Error state is stable until reset.
   // With `FpvSecCm` prefix, this assertion will added to weekly FPV sec_cm regression.
-  `ASSERT(FpvSecCmErrorStEscalate_A, state_q == Error |-> local_escalate_i)
+  `OCAH_OT_ASSERT(FpvSecCmErrorStEscalate_A, state_q == Error |-> local_escalate_i)
 
   // This assertion does not have `FpvSecCm` prefix because the sec_cm FPV environment will
   // blackbox the `prim_sparse_fsm` `state_q` output.
-  `ASSERT(AckSmErrorStStable_A,   state_q == Error |=> $stable(state_q))
+  `OCAH_OT_ASSERT(AckSmErrorStStable_A,   state_q == Error |=> $stable(state_q))
 
 endmodule

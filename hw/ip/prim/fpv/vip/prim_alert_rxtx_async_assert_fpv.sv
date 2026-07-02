@@ -84,14 +84,14 @@ module prim_alert_rxtx_async_assert_fpv
   end
 
   // Note: we can only detect sigint errors where one wire is flipped.
-  `ASSUME_FPV(PingErrorsAreOH_M,  $onehot0({ping_err_pi, ping_err_ni})  )
-  `ASSUME_FPV(AckErrorsAreOH_M,   $onehot0({ack_err_pi, ack_err_ni})    )
-  `ASSUME_FPV(AlertErrorsAreOH_M, $onehot0({alert_err_pi, alert_err_ni}))
+  `OCAH_OT_ASSUME_FPV(PingErrorsAreOH_M,  $onehot0({ping_err_pi, ping_err_ni})  )
+  `OCAH_OT_ASSUME_FPV(AckErrorsAreOH_M,   $onehot0({ack_err_pi, ack_err_ni})    )
+  `OCAH_OT_ASSUME_FPV(AlertErrorsAreOH_M, $onehot0({alert_err_pi, alert_err_ni}))
 
   // ping will stay high until ping ok received, then it must be deasserted
   // TODO: this excludes the case where no ping ok will be returned due to an error
-  `ASSUME_FPV(PingDeassert_M, ping_req_i && ping_ok_o |=> !ping_req_i)
-  `ASSUME_FPV(PingEn_M, $rose(ping_req_i) |-> ping_req_i throughout
+  `OCAH_OT_ASSUME_FPV(PingDeassert_M, ping_req_i && ping_ok_o |=> !ping_req_i)
+  `OCAH_OT_ASSUME_FPV(PingEn_M, $rose(ping_req_i) |-> ping_req_i throughout
       (ping_ok_o || error_present)[->1] ##1 $fell(ping_req_i))
 
   // The alert signal being sent from the alert sender
@@ -171,19 +171,19 @@ module prim_alert_rxtx_async_assert_fpv
   // Note 2: The receiver gives up on a ping request if it receives an alert (this is strong
   // evidence that alerts can come through, so it doesn't really need to do the ping at all!) To see
   // the ping handshake go through, we constrain things to ensure this doesn't happen.
-  `ASSERT(AlertPingOk_A,
+  `OCAH_OT_ASSERT(AlertPingOk_A,
           !sender_is_pinging && $rose(ping_req_i) |-> ##[1:23] ping_ok_o,
           clk_i,
           (!rst_ni || error_setreg_q || init_pending || alert_from_sender ||
            $changed(ping_skew_i, @clk_i) || ^ping_skew_i ||
            ack_skew_i))
 
-  `ASSERT(AlertPingIgnored_A,
+  `OCAH_OT_ASSERT(AlertPingIgnored_A,
           sender_is_pinging && $rose(ping_req_i) |-> ping_ok_o == 0 throughout ping_req_i[->1],
           clk_i, !rst_ni || error_setreg_q)
 
   // transmission of first alert assertion (no ping collision)
-  `ASSERT(AlertCheck0_A,
+  `OCAH_OT_ASSERT(AlertCheck0_A,
       !ping_req_i [*10] ##1 ($rose(alert_req_i) || $rose(alert_test_i)) && sender_is_idle |->
       ##[3:5] alert_o,
       clk_i, !rst_ni || ping_req_i || error_setreg_q || init_pending || alert_skew_i || ack_skew_i)
@@ -215,7 +215,7 @@ module prim_alert_rxtx_async_assert_fpv
                      s_eventually receiver_is_idle);
 
   // check that the in-band reset moves sender FSM into Idle state.
-  `ASSERT(InBandInitFromReceiverToSender_A,
+  `OCAH_OT_ASSERT(InBandInitFromReceiverToSender_A,
       mubi4_test_true_strict(init_trig_i)
       |->
       ##[1:30] sender_is_idle,

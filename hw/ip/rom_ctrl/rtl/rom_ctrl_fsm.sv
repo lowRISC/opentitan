@@ -245,7 +245,7 @@ module rom_ctrl_fsm
   end
 
   // Check that the FSM is linear and does not contain any loops
-  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, fsm_state_e)
+  `OCAH_OT_ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, fsm_state_e)
 
   // The in_state_done signal is supposed to be true iff we're in FSM state Done. Grabbing just the
   // bottom 4 bits of state_q is equivalent to "mubi4_bool_to_mubi(state_q == Done)" except that it
@@ -277,7 +277,7 @@ module rom_ctrl_fsm
   // Consider them unused and add an assertion to check that the are indeed zero.
   logic unused_top_rel_addr_wide;
   assign unused_top_rel_addr_wide = |rel_addr_wide[AW-1:TAW];
-  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> !unused_top_rel_addr_wide)
+  `OCAH_OT_ASSERT(RelAddrWide_A, exp_digest_vld_o |-> !unused_top_rel_addr_wide)
 
   assign exp_digest_o = rom_data_i;
   assign exp_digest_vld_o = reading_top;
@@ -321,7 +321,7 @@ module rom_ctrl_fsm
 
   // The "last" flag is signalled when we're reading the last word in the first part of the ROM. As
   // a quick consistency check, this should only happen when the "valid" flag is also high.
-  `ASSERT(LastImpliesValid_A, kmac_rom_last_o |-> kmac_rom_vld_o,
+  `OCAH_OT_ASSERT(LastImpliesValid_A, kmac_rom_last_o |-> kmac_rom_vld_o,
           clk_i, !rst_ni || (state_q == Invalid))
 
   // Start the checker when transitioning into the "Checking" state
@@ -352,7 +352,7 @@ module rom_ctrl_fsm
 
   assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
-  `ASSERT(CounterLntImpliesKmacRomVldO_A,
+  `OCAH_OT_ASSERT(CounterLntImpliesKmacRomVldO_A,
           state_q == ReadingLow && counter_lnt -> kmac_rom_vld_o)
 
 endmodule

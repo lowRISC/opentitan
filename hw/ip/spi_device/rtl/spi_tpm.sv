@@ -396,9 +396,9 @@ module spi_tpm
   logic [NumBits-1:0] isck_sel_rdata;
 
   // Assume the NumBytes is power of two
-  `ASSERT_INIT(RdFifoNumBytesPoT_A,
+  `OCAH_OT_ASSERT_INIT(RdFifoNumBytesPoT_A,
     (2**RdFifoOffsetW == RdFifoNumBytes) || (RdFifoNumBytes == 1))
-  `ASSERT_INIT(RdFifoDepthPoT_A, 2**$clog2(RdFifoDepth) == RdFifoDepth)
+  `OCAH_OT_ASSERT_INIT(RdFifoDepthPoT_A, 2**$clog2(RdFifoDepth) == RdFifoDepth)
 
   // If cmdaddr_shift_en is 1, the logic stacks the incoming MOSI into cmdaddr
   // register.
@@ -628,7 +628,7 @@ module spi_tpm
       isck_fifoaddr <= isck_fifoaddr + 1'b 1;
     end
   end
-  `ASSERT(SckFifoAddrLatchCondition_A,
+  `OCAH_OT_ASSERT(SckFifoAddrLatchCondition_A,
           sck_fifoaddr_latch |=>
             $past(sck_st_q) == StAddr && (sck_st_q inside {StWait, StStartByte}
                                           || invalid_locality),
@@ -890,7 +890,7 @@ module spi_tpm
   );
 
   // Output data mux
-  `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_out_ni)
+  `OCAH_OT_ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_out_ni)
   always_comb begin
     isck_p2s_data = 8'h 00;
 
@@ -932,7 +932,7 @@ module spi_tpm
     .data_o (isck_hw_reg_byte)
   );
 
-  `ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_out_ni)
+  `OCAH_OT_ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_out_ni)
   always_comb begin : hw_reg_mux
     isck_hw_reg_word = 32'h FFFF_FFFF;
 
@@ -1567,54 +1567,54 @@ module spi_tpm
   ///////////////
 
   // Parameters
-  `ASSERT_INIT(CmdPowerof2_A,  CmdAddrFifoDepth  == 2**$clog2(CmdAddrFifoDepth))
-  `ASSERT_INIT(RdPowerof2_A,   RdFifoDepth       == 2**$clog2(RdFifoDepth))
+  `OCAH_OT_ASSERT_INIT(CmdPowerof2_A,  CmdAddrFifoDepth  == 2**$clog2(CmdAddrFifoDepth))
+  `OCAH_OT_ASSERT_INIT(RdPowerof2_A,   RdFifoDepth       == 2**$clog2(RdFifoDepth))
   // Write FIFO: should be in the range of TPM spec supported (4B, 8B, 32B, 64B)
   // Read FIFO can have more flexible size as SW can push more bytes in
   // a transaction.
-  `ASSERT_INIT(WrDepthSpec_A, (SramTpmWrFifoDepth * SramDw / NumBits) inside {4, 8, 32, 64})
+  `OCAH_OT_ASSERT_INIT(WrDepthSpec_A, (SramTpmWrFifoDepth * SramDw / NumBits) inside {4, 8, 32, 64})
 
-  `ASSERT_INIT(DataFifoLessThan64_A, RdFifoDepth <= 64)
+  `OCAH_OT_ASSERT_INIT(DataFifoLessThan64_A, RdFifoDepth <= 64)
 
-  `ASSERT_INIT(TpmRegSizeMatch_A, TpmRegisterSize == $bits(tpm_reg_t))
+  `OCAH_OT_ASSERT_INIT(TpmRegSizeMatch_A, TpmRegisterSize == $bits(tpm_reg_t))
 
   // CMDADDR buffer should be available, if not, at least error to be propagated
-  `ASSERT(CmdAddrAvailable_A,
+  `OCAH_OT_ASSERT(CmdAddrAvailable_A,
           sck_cmdaddr_wvalid |-> sck_cmdaddr_wready,
           clk_in_i, !rst_ni)
 
   // When a byte is being pushed to WrFifo, the FIFO should have a space
-  `ASSERT(WrFifoAvailable_A,
+  `OCAH_OT_ASSERT(WrFifoAvailable_A,
           sck_wrfifo_wvalid |-> sck_wrfifo_wready,
           clk_in_i, !rst_ni)
 
   // If the command and the address have been shifted, the Locality, command
   // type should be matched with the shifted register.
-  `ASSERT(CmdAddrInfo_A,
+  `OCAH_OT_ASSERT(CmdAddrInfo_A,
           $fell(cmdaddr_shift_en) && !csb_i && sys_clk_tpm_cfg.tpm_en && is_tpm_reg_q |->
             (locality == sck_cmdaddr_wdata_q[15:12]) &&
             (cmd_type == sck_cmdaddr_wdata_q[31]),
           clk_in_i, !rst_ni)
 
   // when latch_locality, the address should have 24 bits received.
-  `ASSERT(LocalityLatchCondition_A,
+  `OCAH_OT_ASSERT(LocalityLatchCondition_A,
           check_locality|-> (cmdaddr_bitcnt == 5'h 1b),
           clk_in_i, !rst_ni)
 
   // when check_hw_reg is set, the address should have a word size
-  `ASSERT(HwRegCondition_A,
+  `OCAH_OT_ASSERT(HwRegCondition_A,
           check_hw_reg |-> (cmdaddr_bitcnt == 5'h 1D),
           clk_in_i, !rst_ni)
 
   // If is_hw_reg set, then it should be FIFO reg and within locality
-  `ASSERT(HwRegCondition2_a,
+  `OCAH_OT_ASSERT(HwRegCondition2_a,
           $rose(is_hw_reg) |->
             is_tpm_reg_q && !invalid_locality && !sys_clk_tpm_cfg.hw_reg_dis,
           clk_in_i, !rst_ni)
 
   // If module returns data in StAddr, the cmdaddr_bitcount should be the last
   // byte
-  `ASSERT(CmdAddrBitCntInAddrSt_A,
+  `OCAH_OT_ASSERT(CmdAddrBitCntInAddrSt_A,
           (sck_st_q == StAddr) && sck_p2s_valid |-> (cmdaddr_bitcnt inside {[23:31]}),
           clk_in_i, !rst_ni)
 

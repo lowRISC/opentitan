@@ -71,12 +71,12 @@ interface rstmgr_cascading_sva_if (
 
   // Macros to avoid excessive boiler-plate code below.
   `define FALL_ASSERT(_name, _from, _to, _cycles, _clk) \
-    `ASSERT(_name``AboveFall_A, \
+    `OCAH_OT_ASSERT(_name``AboveFall_A, \
             $fell(_from) |-> ##[_cycles.fall.min:_cycles.fall.max] _from || !_to, _clk, \
             disable_sva)
 
   `define RISE_ASSERTS(_name, _from, _to, _cycles, _clk) \
-    `ASSERT(_name``AboveRise_A, \
+    `OCAH_OT_ASSERT(_name``AboveRise_A, \
             $rose(_from) ##1 _from [* _cycles.rise.min] |=> ##[0:_cycles.rise.max-_cycles.rise.min] (!_from || _to), _clk, \
             disable_sva)
 
@@ -110,13 +110,13 @@ interface rstmgr_cascading_sva_if (
   endsequence
 
   // The reset stretching assertion.
-  `ASSERT(StablePorToAonRise_A,
+  `OCAH_OT_ASSERT(StablePorToAonRise_A,
           PorStable_S |-> ##[0:(PorCycles.rise.max-PorCycles.rise.min)]
           !aon_por_n_i || resets_o.rst_por_aon_n[0],
           clk_aon_i, disable_sva)
 
   // The scan reset to Por.
-  `ASSERT(ScanRstToAonRise_A, scan_reset_n && scanmode |-> resets_o.rst_por_aon_n[0], clk_aon_i,
+  `OCAH_OT_ASSERT(ScanRstToAonRise_A, scan_reset_n && scanmode |-> resets_o.rst_por_aon_n[0], clk_aon_i,
           disable_sva)
 
   logic [rstmgr_pkg::PowerDomains-1:0] effective_aon_rst_n;

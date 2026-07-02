@@ -925,32 +925,32 @@ module hmac
   end
 
   // the host doesn't write data after hash_process until hash_start_or_continue.
-  `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
+  `OCAH_OT_ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
   // Below condition is covered by the design (2020-02-19)
-  //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
+  //`OCAH_OT_ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
   // `hash_process` or `reg_hash_stop` should be toggled and paired with `hash_start_or_continue`
-  `ASSERT(ValidHashProcessAssert, (hash_process || reg_hash_stop) |-> initiated)
+  `OCAH_OT_ASSERT(ValidHashProcessAssert, (hash_process || reg_hash_stop) |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
-  `ASSERT(ValidHmacEnConditionAssert,
+  `OCAH_OT_ASSERT(ValidHmacEnConditionAssert,
           hmac_en != $past(hmac_en) |-> !in_process && !initiated)
 
   // When wipe_secret is high, sensitive internal variables are cleared by extending the wipe
   // value specifed in the register
-  `ASSERT(WipeSecretKeyAssert,
+  `OCAH_OT_ASSERT(WipeSecretKeyAssert,
           wipe_secret |=> (secret_key == {($bits(secret_key)/$bits(wipe_v)){$past(wipe_v)}}))
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
-  `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
-  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
 `endif // SYNTHESIS
 `endif // VERILATOR
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

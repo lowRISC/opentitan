@@ -56,18 +56,18 @@ module prim_esc_rxtx_assert_fpv
   end
 
   // ping will stay high until ping ok received, then it must be deasserted
-  `ASSUME_FPV(PingReqDeassert_M,
+  `OCAH_OT_ASSUME_FPV(PingReqDeassert_M,
       ping_req_i &&
       ping_ok_o
       |=>
       !ping_req_i)
-  `ASSUME_FPV(PingReqStaysAsserted0_M,
+  `OCAH_OT_ASSUME_FPV(PingReqStaysAsserted0_M,
       ping_req_i &&
       !ping_ok_o
       |=>
       ping_req_i)
   // this timing is guaranteed by the lfsr ping timer.
-  `ASSUME_FPV(PingReqStaysLowFor3Cycles_M,
+  `OCAH_OT_ASSUME_FPV(PingReqStaysLowFor3Cycles_M,
       $fell(ping_req_i)
       |->
       !ping_req_i [*3])
@@ -76,14 +76,14 @@ module prim_esc_rxtx_assert_fpv
   // assume that escalation enable signal will eventually be deasserted
   // for more than 3 cycles (this assumption is needed such that the FSM liveness
   // assertion below can be proven).
-  `ASSUME_FPV(FiniteEsc_M,
+  `OCAH_OT_ASSUME_FPV(FiniteEsc_M,
       esc_req_i
       |->
       strong(##[1:$] !esc_req_i [*3]))
 
   // check that ping response time is bounded if no error has occurred so far, and
   // no escalation is being requested.
-  `ASSERT(PingRespCheck_A,
+  `OCAH_OT_ASSERT(PingRespCheck_A,
       $rose(ping_req_i) &&
       !esc_req_i
       |->
@@ -94,7 +94,7 @@ module prim_esc_rxtx_assert_fpv
       esc_req_i)
 
   // check escalation response toggles.
-  `ASSERT(EscRespCheck_A,
+  `OCAH_OT_ASSERT(EscRespCheck_A,
       ##1 esc_req_i
       |->
       ##[0:1] prim_esc_rxtx_tb.esc_rx_out.resp_p
@@ -104,7 +104,7 @@ module prim_esc_rxtx_assert_fpv
       error_present)
 
   // check correct transmission of escalation within 1-2 cycles
-  `ASSERT(EscCheck_A,
+  `OCAH_OT_ASSERT(EscCheck_A,
       ##1 esc_req_i
       |->
       ##[1:2] esc_req_o,
@@ -113,26 +113,26 @@ module prim_esc_rxtx_assert_fpv
       error_present)
 
   // check that a single error on the diffpairs is detected
-  `ASSERT(SingleSigIntDetected0_A,
+  `OCAH_OT_ASSERT(SingleSigIntDetected0_A,
       {esc_err_pi, esc_err_ni} == '0 ##1
       $onehot({resp_err_pi, resp_err_ni})
       |->
       integ_fail_o)
-  `ASSERT(SingleSigIntDetected1_A,
+  `OCAH_OT_ASSERT(SingleSigIntDetected1_A,
       $onehot({esc_err_pi, esc_err_ni}) ##1
       {resp_err_pi, resp_err_ni} == '0
       |->
       integ_fail_o)
 
   // basic liveness of sender FSM
-  `ASSERT(FsmLivenessSender_A,
+  `OCAH_OT_ASSERT(FsmLivenessSender_A,
       (prim_esc_rxtx_tb.u_prim_esc_sender.state_q !=
       prim_esc_rxtx_tb.u_prim_esc_sender.Idle)
       |->
       strong(##[1:$] (prim_esc_rxtx_tb.u_prim_esc_sender.state_q
       == prim_esc_rxtx_tb.u_prim_esc_sender.Idle)))
   // basic liveness of sender FSM (can only be guaranteed if no error is present)
-  `ASSERT(FsmLivenessReceiver_A,
+  `OCAH_OT_ASSERT(FsmLivenessReceiver_A,
       (prim_esc_rxtx_tb.u_prim_esc_receiver.state_q !=
       prim_esc_rxtx_tb.u_prim_esc_receiver.Idle)
       |->
@@ -144,12 +144,12 @@ module prim_esc_rxtx_assert_fpv
 
   // The assertions below use TimeoutCntDw to bound some sequence lengths. Add an assertion to check
   // it matches the parameter in the design.
-  `ASSERT(TimeoutCntDwConsistent_A,
+  `OCAH_OT_ASSERT(TimeoutCntDwConsistent_A,
           TimeoutCntDw == prim_esc_rxtx_tb.u_prim_esc_receiver.TimeoutCntDw)
 
   // check that auto escalation timeout does not trigger prematurely.
   // this requires that no errors have been present so far.
-  `ASSERT(AutoEscalation0_A,
+  `OCAH_OT_ASSERT(AutoEscalation0_A,
       ping_req_i &&
       ping_ok_o &&
       !esc_req_o ##1
@@ -163,7 +163,7 @@ module prim_esc_rxtx_assert_fpv
 
   // check that auto escalation timeout kicks in if pings are absent for too long.
   // this requires that no errors have been present so far.
-  `ASSERT(AutoEscalation1_A,
+  `OCAH_OT_ASSERT(AutoEscalation1_A,
       ping_req_i &&
       ping_ok_o &&
       !esc_req_o ##1

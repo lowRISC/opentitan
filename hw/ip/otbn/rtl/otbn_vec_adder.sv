@@ -116,6 +116,6 @@ module otbn_vec_adder
     assign unused_adder_res_lsb = result[0];
   end
 
-  `ASSERT_INIT(LvlenDivideNoRemainder_A, (LVLEN % LVChunkLEN) == 0)
+  `OCAH_OT_ASSERT_INIT(LvlenDivideNoRemainder_A, (LVLEN % LVChunkLEN) == 0)
 
 endmodule

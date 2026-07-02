@@ -385,23 +385,23 @@ module mbx
   );
 
   // Assertions
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_sysif.u_regs_soc,
                                                  alert_tx_o[0])
   // All outputs should be known at all times after reset.
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(IntrMbxReadyKnown_A, intr_mbx_ready_o)
-  `ASSERT_KNOWN(IntrMbxAbortKnown_A, intr_mbx_abort_o)
-  `ASSERT_KNOWN(IntrMbxErrorKnown_A, intr_mbx_error_o)
-  `ASSERT_KNOWN(DoeIntrSupportKnown_A, doe_intr_support_o)
-  `ASSERT_KNOWN(DoeIntrEnKnown_A, doe_intr_en_o)
-  `ASSERT_KNOWN(DoeIntrKnown_A, doe_intr_o)
-  `ASSERT_KNOWN(DoeAsyncMsgSupportKnown_A, doe_async_msg_support_o)
-  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_d_o.d_valid)
-  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_d_o.a_ready)
-  `ASSERT_KNOWN(SocTlDValidKnownO_A, soc_tl_d_o.d_valid)
-  `ASSERT_KNOWN(SocTlAReadyKnownO_A, soc_tl_d_o.a_ready)
-  `ASSERT_KNOWN(SramTlAValidKnownO_A, sram_tl_h_o.a_valid)
-  `ASSERT_KNOWN(SramTlDReadyKnownO_A, sram_tl_h_o.d_ready)
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrMbxReadyKnown_A, intr_mbx_ready_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrMbxAbortKnown_A, intr_mbx_abort_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrMbxErrorKnown_A, intr_mbx_error_o)
+  `OCAH_OT_ASSERT_KNOWN(DoeIntrSupportKnown_A, doe_intr_support_o)
+  `OCAH_OT_ASSERT_KNOWN(DoeIntrEnKnown_A, doe_intr_en_o)
+  `OCAH_OT_ASSERT_KNOWN(DoeIntrKnown_A, doe_intr_o)
+  `OCAH_OT_ASSERT_KNOWN(DoeAsyncMsgSupportKnown_A, doe_async_msg_support_o)
+  `OCAH_OT_ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_d_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_d_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(SocTlDValidKnownO_A, soc_tl_d_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(SocTlAReadyKnownO_A, soc_tl_d_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(SramTlAValidKnownO_A, sram_tl_h_o.a_valid)
+  `OCAH_OT_ASSERT_KNOWN(SramTlDReadyKnownO_A, sram_tl_h_o.d_ready)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 endmodule

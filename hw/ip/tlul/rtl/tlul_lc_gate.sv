@@ -261,7 +261,7 @@ module tlul_lc_gate
   );
 
   // Add assertion
-  `ASSERT(OutStandingOvfl_A, (outstanding_txn == Outstanding) |-> ~a_ack)
-  `ASSERT(SizeOutstandingTxn_A, (2 ** $bits(outstanding_txn)) - 1 >= Outstanding)
+  `OCAH_OT_ASSERT(OutStandingOvfl_A, (outstanding_txn == Outstanding) |-> ~a_ack)
+  `OCAH_OT_ASSERT(SizeOutstandingTxn_A, (2 ** $bits(outstanding_txn)) - 1 >= Outstanding)
 
 endmodule : tlul_lc_gate

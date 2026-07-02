@@ -16,22 +16,22 @@ module prim_secded_inv_hamming_22_16_assert_fpv (
 );
 
   // Inject a maximum of two errors simultaneously.
-  `ASSUME_FPV(MaxTwoErrors_M, $countones(error_inject_i) <= 2)
+  `OCAH_OT_ASSUME_FPV(MaxTwoErrors_M, $countones(error_inject_i) <= 2)
   // Single bit error detection
-  `ASSERT(SingleErrorDetect_A, $countones(error_inject_i) == 1 |-> err_o[0])
-  `ASSERT(SingleErrorDetectReverse_A, err_o[0] |-> $countones(error_inject_i) == 1)
+  `OCAH_OT_ASSERT(SingleErrorDetect_A, $countones(error_inject_i) == 1 |-> err_o[0])
+  `OCAH_OT_ASSERT(SingleErrorDetectReverse_A, err_o[0] |-> $countones(error_inject_i) == 1)
   // Double bit error detection
-  `ASSERT(DoubleErrorDetect_A, $countones(error_inject_i) == 2 |-> err_o[1])
-  `ASSERT(DoubleErrorDetectReverse_A, err_o[1] |-> $countones(error_inject_i) == 2)
+  `OCAH_OT_ASSERT(DoubleErrorDetect_A, $countones(error_inject_i) == 2 |-> err_o[1])
+  `OCAH_OT_ASSERT(DoubleErrorDetectReverse_A, err_o[1] |-> $countones(error_inject_i) == 2)
   // Single bit error correction (implicitly tests the syndrome output)
-  `ASSERT(SingleErrorCorrect_A, $countones(error_inject_i) < 2 |-> data_i == data_o)
+  `OCAH_OT_ASSERT(SingleErrorCorrect_A, $countones(error_inject_i) < 2 |-> data_i == data_o)
   // Basic syndrome check
-  `ASSERT(SyndromeCheck_A, |syndrome_o |-> $countones(error_inject_i) > 0)
-  `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
+  `OCAH_OT_ASSERT(SyndromeCheck_A, |syndrome_o |-> $countones(error_inject_i) > 0)
+  `OCAH_OT_ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
 
   // Check that all-one and all-zero data does not result in all-one or all-zero codewords
-  `ASSERT(AllZerosCheck_A, data_i == '0 |-> encoded_o != '0)
-  `ASSERT(AllOnesCheck_A, data_i == '1 |-> encoded_o != '1)
+  `OCAH_OT_ASSERT(AllZerosCheck_A, data_i == '0 |-> encoded_o != '0)
+  `OCAH_OT_ASSERT(AllOnesCheck_A, data_i == '1 |-> encoded_o != '1)
 
 
 endmodule : prim_secded_inv_hamming_22_16_assert_fpv

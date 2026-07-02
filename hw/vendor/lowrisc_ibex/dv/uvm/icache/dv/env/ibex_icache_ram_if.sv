@@ -96,17 +96,17 @@ always @(negedge clk) begin
   end
 end
 
-`ASSERT(TagErrChk_A, (& ic_tag_rvalid) && enable_ecc_errors && (tag_sel_line != 0) |-> ecc_err,
+`OCAH_OT_ASSERT(TagErrChk_A, (& ic_tag_rvalid) && enable_ecc_errors && (tag_sel_line != 0) |-> ecc_err,
         clk, rst_n)
 
 for (genvar i = 0; i < IC_NUM_WAYS; i++) begin : g_data_assertion
-  `ASSERT(DataErrChk_A,
+  `OCAH_OT_ASSERT(DataErrChk_A,
           (& ic_data_rvalid) && !$isunknown(ic_data_rdata_in[i]) && (data_sel_line[i]) &&
           enable_ecc_errors |-> ecc_err,
           clk,
           rst_n)
 end
 
-`ASSERT(TagValidChk_A, always (& ic_tag_rvalid == (| ic_tag_rvalid)), clk, rst_n)
-`ASSERT(DataValidChk_A, always (| ic_data_rvalid) == (& ic_data_rvalid), clk, rst_n)
+`OCAH_OT_ASSERT(TagValidChk_A, always (& ic_tag_rvalid == (| ic_tag_rvalid)), clk, rst_n)
+`OCAH_OT_ASSERT(DataValidChk_A, always (| ic_data_rvalid) == (& ic_data_rvalid), clk, rst_n)
 endinterface

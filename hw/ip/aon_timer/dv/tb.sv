@@ -69,7 +69,7 @@ module tb;
     .sleep_mode_i              (sleep)
   );
 
-  `ASSERT(wdog_bark_intr_is_nmi, wdog_bark === wdog_bark_nmi, clk, rst_n)
+  `OCAH_OT_ASSERT(wdog_bark_intr_is_nmi, wdog_bark === wdog_bark_nmi, clk, rst_n)
 
   initial begin
     // Configure interfaces

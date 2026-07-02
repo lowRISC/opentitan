@@ -177,7 +177,7 @@ module otbn_loop_controller
   assign loop_stack_push_req = loop_start_req_i;
 
   // The OTBN controller must not commit a loop request if it sees a loop error.
-  `ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !sw_err_o)
+  `OCAH_OT_ASSERT(NoStartCommitIfLoopErr, loop_start_req_i && loop_start_commit_i |-> !sw_err_o)
 
   // Pop from the loop stack when the current loop finishes. Stack internally checks to see if it's
   // empty when asked to pop so no need to factor that in here.
@@ -249,7 +249,7 @@ module otbn_loop_controller
     assign loop_counter_err_d[i_count] = loop_counter_err_q[i_count] | loop_counter_err[i_count];
 
     // Cannot clear and set prim_count in the same cycle
-    `ASSERT(NoLoopCountClrAndSet_A, !(state_reset_i & loop_count_set))
+    `OCAH_OT_ASSERT(NoLoopCountClrAndSet_A, !(state_reset_i & loop_count_set))
   end
 
   prim_flop #(
@@ -319,12 +319,12 @@ module otbn_loop_controller
 
   // Check that an instruction that tries to cause a stack push and pop at the same time will be
   // reported as a SW error.
-  `ASSERT(LoopStackPushAndPopCausesErr, loop_stack_push_req && loop_stack_pop |-> sw_err_o)
-  `ASSERT(LoopStackPushAndPopNeverCommits,
+  `OCAH_OT_ASSERT(LoopStackPushAndPopCausesErr, loop_stack_push_req && loop_stack_pop |-> sw_err_o)
+  `OCAH_OT_ASSERT(LoopStackPushAndPopNeverCommits,
     loop_stack_push_req && loop_stack_pop |-> ~loop_stack_commit)
 
   // The stack counter shouldn't get decremented at the same time as we write to the top of the loop
   // stack. This can only happen on a combined push and pop, which will cause a SW error (so the
   // contents of the stack will no longer matter any more).
-  `ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> (!loop_stack_write | sw_err_o))
+  `OCAH_OT_ASSERT(NoLoopWriteIfCounterDec, current_loop_counter_dec |-> (!loop_stack_write | sw_err_o))
 endmodule

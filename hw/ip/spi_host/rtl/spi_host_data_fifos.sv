@@ -130,6 +130,6 @@ module spi_host_data_fifos #(
 
   // Due to the addition of the byte_sel as a N+1'th fifo stage, ensure
   // we have adequate resolution in our counter (tx_qd_o) to represent this.
-  `ASSERT_INIT(TxDepth_A, TxDepth < (2**$size(tx_qd_o)) - 1)
+  `OCAH_OT_ASSERT_INIT(TxDepth_A, TxDepth < (2**$size(tx_qd_o)) - 1)
 
 endmodule : spi_host_data_fifos

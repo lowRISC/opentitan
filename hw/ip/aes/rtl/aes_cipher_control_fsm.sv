@@ -486,23 +486,23 @@ module aes_cipher_control_fsm import aes_pkg::*;
   ////////////////
 
   // Create a lint error to reduce the risk of accidentally disabling the masking.
-  `ASSERT_STATIC_LINT_ERROR(AesCipherControlFsmSecMaskingNonDefault, SecMasking == 1)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesCipherControlFsmSecMaskingNonDefault, SecMasking == 1)
 
   // Create a lint error to reduce the risk of accidentally using a less secure SBox
   // implementation.
-  `ASSERT_STATIC_LINT_ERROR(AesCipherControlFsmSecSBoxImplNonDefault, SecSBoxImpl == SBoxImplDom)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesCipherControlFsmSecSBoxImplNonDefault, SecSBoxImpl == SBoxImplDom)
 
   // Selectors must be known/valid
-  `ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
+  `OCAH_OT_ASSERT(AesCiphOpValid, cfg_valid_i |-> op_i inside {
       CIPH_FWD,
       CIPH_INV
       })
-  `ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
+  `OCAH_OT_ASSERT(AesKeyLenValid, cfg_valid_i |-> key_len_i inside {
       AES_128,
       AES_192,
       AES_256
       })
-  `ASSERT(AesCipherControlStateValid, !alert_o |-> aes_cipher_ctrl_cs inside {
+  `OCAH_OT_ASSERT(AesCipherControlStateValid, !alert_o |-> aes_cipher_ctrl_cs inside {
       CIPHER_CTRL_IDLE,
       CIPHER_CTRL_INIT,
       CIPHER_CTRL_ROUND,

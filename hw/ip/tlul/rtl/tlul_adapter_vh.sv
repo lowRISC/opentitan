@@ -141,9 +141,9 @@ module tlul_adapter_vh
   assign error_o = tl_i.d_error | int_error_i | intg_err_chk;
 
   // Make sure the VH parameters are compatible with TLUL datapath widths.
-  `ASSERT_INIT(TlInvalidAddrWidth_A, ADDR_WIDTH == top_pkg::TL_AW)
-  `ASSERT_INIT(TlInvalidDataWidth_A, DATA_WIDTH == top_pkg::TL_DW)
-  `ASSERT_INIT(TlInvalidMaskWidth_A, MASK_WIDTH == top_pkg::TL_DBW)
-  `ASSERT_INIT(TlInvalidUserWidth_A, ID_WIDTH == top_pkg::TL_AIW)
+  `OCAH_OT_ASSERT_INIT(TlInvalidAddrWidth_A, ADDR_WIDTH == top_pkg::TL_AW)
+  `OCAH_OT_ASSERT_INIT(TlInvalidDataWidth_A, DATA_WIDTH == top_pkg::TL_DW)
+  `OCAH_OT_ASSERT_INIT(TlInvalidMaskWidth_A, MASK_WIDTH == top_pkg::TL_DBW)
+  `OCAH_OT_ASSERT_INIT(TlInvalidUserWidth_A, ID_WIDTH == top_pkg::TL_AIW)
 
 endmodule

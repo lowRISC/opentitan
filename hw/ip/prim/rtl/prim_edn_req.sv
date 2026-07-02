@@ -153,7 +153,7 @@ module prim_edn_req
   ////////////////
 
   // Check EDN data is valid: Not all zeros, all ones, or not the same as previous data.
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
@@ -171,8 +171,8 @@ module prim_edn_req
   //VCS coverage on
   // pragma coverage on
 
-  `ASSERT(DataOutputValid_A, ack_o |-> (data_o != 0) && (data_o != '1))
-  `ASSERT(DataOutputDiffFromPrev_A, data_prev != 0 |-> data_prev != data_o)
+  `OCAH_OT_ASSERT(DataOutputValid_A, ack_o |-> (data_o != 0) && (data_o != '1))
+  `OCAH_OT_ASSERT(DataOutputDiffFromPrev_A, data_prev != 0 |-> data_prev != data_o)
 `endif
 
   // EDN Max Latency Checker
@@ -196,7 +196,7 @@ module prim_edn_req
     //VCS coverage on
     // pragma coverage on
 
-    `ASSERT(MaxLatency_A, latency_counter <= MaxLatency)
+    `OCAH_OT_ASSERT(MaxLatency_A, latency_counter <= MaxLatency)
 
     // TODO: Is it worth to check req & ack pair?
     //         _________________________________

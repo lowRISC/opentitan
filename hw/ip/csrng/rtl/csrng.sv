@@ -133,61 +133,61 @@ module csrng
 
   // Assertions
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(EsReqKnownO_A, entropy_src_hw_if_o.es_req)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(EsReqKnownO_A, entropy_src_hw_if_o.es_req)
 
   // Application Interface Asserts
   for (genvar i = 0; i < NumHwApps; i = i+1) begin : gen_app_if_asserts
-    `ASSERT_KNOWN(CsrngReqReadyKnownO_A, csrng_cmd_o[i].csrng_req_ready)
-    `ASSERT_KNOWN(CsrngRspAckKnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
-    `ASSERT_KNOWN(CsrngRspStsKnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
-    `ASSERT_KNOWN(CsrngGenbitsValidKnownO_A, csrng_cmd_o[i].genbits_valid)
-    `ASSERT_KNOWN_IF(CsrngGenbitsFipsKnownO_A, csrng_cmd_o[i].genbits_fips,
+    `OCAH_OT_ASSERT_KNOWN(CsrngReqReadyKnownO_A, csrng_cmd_o[i].csrng_req_ready)
+    `OCAH_OT_ASSERT_KNOWN(CsrngRspAckKnownO_A, csrng_cmd_o[i].csrng_rsp_ack)
+    `OCAH_OT_ASSERT_KNOWN(CsrngRspStsKnownO_A, csrng_cmd_o[i].csrng_rsp_sts)
+    `OCAH_OT_ASSERT_KNOWN(CsrngGenbitsValidKnownO_A, csrng_cmd_o[i].genbits_valid)
+    `OCAH_OT_ASSERT_KNOWN_IF(CsrngGenbitsFipsKnownO_A, csrng_cmd_o[i].genbits_fips,
         csrng_cmd_o[i].genbits_valid)
-    `ASSERT_KNOWN_IF(CsrngGenbitsBusKnownO_A, csrng_cmd_o[i].genbits_bus,
+    `OCAH_OT_ASSERT_KNOWN_IF(CsrngGenbitsBusKnownO_A, csrng_cmd_o[i].genbits_bus,
         csrng_cmd_o[i].genbits_valid)
   end : gen_app_if_asserts
 
   // Alerts
-  `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
 
-  `ASSERT_KNOWN(IntrCsCmdReqDoneKnownO_A, intr_cs_cmd_req_done_o)
-  `ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
-  `ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
-  `ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrCsCmdReqDoneKnownO_A, intr_cs_cmd_req_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrCsEntropyReqKnownO_A, intr_cs_entropy_req_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrCsHwInstExcKnownO_A, intr_cs_hw_inst_exc_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrCsFatalErrKnownO_A, intr_cs_fatal_err_o)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
     u_csrng_core.u_csrng_ctr_drbg.u_prim_count_ctr_drbg,
     alert_tx_o[1])
 
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr,
       alert_tx_o[1])
 
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_state_regs,
       alert_tx_o[1])
   end
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
     u_csrng_core.u_csrng_main_sm.u_state_regs,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
     u_csrng_core.u_csrng_ctr_drbg.u_state_regs,
     alert_tx_o[1])
 
 
   for (genvar i = 0; i < aes_pkg::Sp2VWidth; i++) begin : gen_aes_cipher_control_fsm_svas
     if (aes_pkg::SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_aes_cipher_control_fsm_svas_p
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
           u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].
               gen_fsm_p.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
           alert_tx_o[1])
     end else begin : gen_aes_cipher_control_fsm_svas_n
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
           u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].
               gen_fsm_n.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
           alert_tx_o[1])
@@ -195,9 +195,9 @@ module csrng
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 
   // The total number of application interfaces defined in the hjson must be at least two:
   // One SW interface and at least one HW interface. Zero HW interfaces is currently not supported.
-  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps >= 2)
+  `OCAH_OT_ASSERT_INIT(CsrngNumAppsMatch_A, NumApps >= 2)
 endmodule

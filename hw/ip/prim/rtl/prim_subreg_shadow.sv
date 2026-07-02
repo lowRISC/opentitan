@@ -46,7 +46,7 @@ module prim_subreg_shadow
   // Since the shadow register works with the 1's complement value,
   // we need to invert the polarity of the SW access if it is either "W1S" or "W0C".
   // W1C is forbidden since the W0S complement is not implemented.
-  `ASSERT_INIT(CheckSwAccessIsLegal_A,
+  `OCAH_OT_ASSERT_INIT(CheckSwAccessIsLegal_A,
       SwAccess inside {SwAccessRW, SwAccessRO, SwAccessWO, SwAccessW1S, SwAccessW0C})
   localparam sw_access_e InvertedSwAccess = (SwAccess == SwAccessW1S) ? SwAccessW0C :
                                             (SwAccess == SwAccessW0C) ? SwAccessW1S : SwAccess;

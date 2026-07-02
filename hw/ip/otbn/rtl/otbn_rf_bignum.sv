@@ -178,16 +178,16 @@ module otbn_rf_bignum
 
   assign intg_err_o = intg_err_buf;
 
-  `ASSERT(BlankingBignumRegReadA_A,
+  `OCAH_OT_ASSERT(BlankingBignumRegReadA_A,
           !rd_en_a_i |->  rd_data_a_intg_o == '0,
           clk_i, !rst_ni || predec_error_o || !wr_commit_i)
 
-  `ASSERT(BlankingBignumRegReadB_A,
+  `OCAH_OT_ASSERT(BlankingBignumRegReadB_A,
           !rd_en_b_i |->  rd_data_b_intg_o == '0,
           clk_i, !rst_ni || predec_error_o || !wr_commit_i)
 
   // Make sure we're not outputting X. This indicates that something went wrong during the initial
   // secure wipe.
-  `ASSERT(OtbnRfBignumRdAKnown, rd_en_a_i && !rd_en_a_mismatch |-> !$isunknown(rd_data_a_intg_o))
-  `ASSERT(OtbnRfBignumRdBKnown, rd_en_b_i && !rd_en_b_mismatch |-> !$isunknown(rd_data_b_intg_o))
+  `OCAH_OT_ASSERT(OtbnRfBignumRdAKnown, rd_en_a_i && !rd_en_a_mismatch |-> !$isunknown(rd_data_a_intg_o))
+  `OCAH_OT_ASSERT(OtbnRfBignumRdBKnown, rd_en_b_i && !rd_en_b_mismatch |-> !$isunknown(rd_data_b_intg_o))
 endmodule

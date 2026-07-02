@@ -358,7 +358,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // Assertions
   /////////////////////////////////
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   logic txn_done;
   logic [15:0] done_cnt_d, done_cnt_q;
 
@@ -374,17 +374,17 @@ module flash_phy_prog import flash_phy_pkg::*; (
   end
 
   // We can only observe one done per transaction.
-  `ASSERT(OneDonePerTxn_A,  txn_done |-> done_cnt_d == '0)
+  `OCAH_OT_ASSERT(OneDonePerTxn_A,  txn_done |-> done_cnt_d == '0)
 
 `endif
 
   // Prepack state can only pack up to WidthMultiple - 1
-  `ASSERT(PrePackRule_A, state_q == StPrePack && pack_valid |-> idx < MaxIdx)
+  `OCAH_OT_ASSERT(PrePackRule_A, state_q == StPrePack && pack_valid |-> idx < MaxIdx)
 
   // Postpack states should never pack the first index (as it would be aligned in that case)
-  `ASSERT(PostPackRule_A, state_q == StPostPack && pack_valid |-> idx != '0)
+  `OCAH_OT_ASSERT(PostPackRule_A, state_q == StPostPack && pack_valid |-> idx != '0)
 
   // The metadata width must always be greater than the ecc width
-  `ASSERT_INIT(WidthCheck_A, MetaDataWidth >= EccWidth)
+  `OCAH_OT_ASSERT_INIT(WidthCheck_A, MetaDataWidth >= EccWidth)
 
 endmodule // flash_phy_prog

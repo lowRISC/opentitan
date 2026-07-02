@@ -235,7 +235,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // no address collision should happen inside prim_ram_1p_scr. If this would be the
     // case, we would read from the holding register inside prim_ram_1p_scr instead of
     // actually performing the readback from the memory.
-    `ASSERT(WRCollisionDuringReadBack_A, (rdback_phase | rdback_phase_wrreadback) &
+    `OCAH_OT_ASSERT(WRCollisionDuringReadBack_A, (rdback_phase | rdback_phase_wrreadback) &
         mubi4_test_true_loose(rdback_en_q) |-> !wr_collision_i)
 
 
@@ -243,7 +243,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // due to the underlying scrambling mechanism. If this additional cycle is not needed anymore
     // in the future (e.g. due to the removal of the scrambling mechanism), the readback does not
     // need to be delayed by one cycle in the FSM below.
-    `ASSERT(NoPendingWriteAfterWrite_A, wr_phase & mubi4_test_true_loose(rdback_en_q)
+    `OCAH_OT_ASSERT(NoPendingWriteAfterWrite_A, wr_phase & mubi4_test_true_loose(rdback_en_q)
         |=> write_pending_i)
 
 
@@ -756,7 +756,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
     end
 
     // This assert is necessary for the casting of AccessSize.
-    `ASSERT(TlulSramByteTlSize_A, top_pkg::TL_SZW >= $clog2(AccessSize + 1))
+    `OCAH_OT_ASSERT(TlulSramByteTlSize_A, top_pkg::TL_SZW >= $clog2(AccessSize + 1))
 
     assign error_o = error_i & ~stall_host;
 
@@ -861,10 +861,10 @@ module tlul_sram_byte import tlul_pkg::*; #(
     assign unused_tl = |tl_sram_i.d_size;
 
     // when byte access detected, go to wait read
-    `ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask & ~error_i |=>
+    `OCAH_OT_ASSERT(ByteAccessStateChange_A, a_ack & wr_txn & ~&tl_i.a_mask & ~error_i |=>
       state_q inside {StWaitRd})
     // when in wait for read, a successful response should move to write phase
-    `ASSERT(ReadCompleteStateChange_A,
+    `OCAH_OT_ASSERT(ReadCompleteStateChange_A,
         (state_q == StWaitRd) && (sync_fifo_a_size_outputs.pending_txn_cnt == 1) &&
         sram_d_ack |=> state_q == StWriteCmd)
     // The readback logic assumes that any request on the readback channel will be instantly granted
@@ -873,19 +873,19 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // produces no back pressure. When connected to a scrambled SRAM the key going invalid will
     // cause a_ready to drop. The `compound_txn_in_progress_o` output is provided for this scenario.
     // When asserted SRAM should not drop `a_ready` even if there is an invalid scrambling key.
-    `ASSERT(ReadbackAccessAlwaysGranted_A, (rdback_phase | rdback_phase_wrreadback) && !error_i
+    `OCAH_OT_ASSERT(ReadbackAccessAlwaysGranted_A, (rdback_phase | rdback_phase_wrreadback) && !error_i
       |-> tl_sram_i.a_ready)
 
     // The readback logic assumes the result of a read transaction issues for the readback will get
     // an immediate response. This can be guaranteed when connected to a SRAM, see above comment.
-    `ASSERT(ReadbackDataImmediatelyAvailable_A, (state_q == StPassThru) &&
+    `OCAH_OT_ASSERT(ReadbackDataImmediatelyAvailable_A, (state_q == StPassThru) &&
       mubi4_test_true_loose(rdback_en_q) && mubi4_test_true_loose(rdback_check_q) &&
       !error_i|-> tl_sram_i.d_valid)
 
     // When in the StByteWrReadbackInit state, pending_txn_cnt (the depth of a FIFO)
     // will always be 1. We will have seen StWaitRd -> StWriteCmd -> StByteWrReadBackInit
     // to get to this FSM state and the FIFO cannot be pushed or popped along that path.
-    `ASSERT(WrReadBackInitPendingTxn_A,
+    `OCAH_OT_ASSERT(WrReadBackInitPendingTxn_A,
       (state_q == StByteWrReadBackInit) |-> sync_fifo_a_size_outputs.pending_txn_cnt ==
       PendingTxnCntW'(1))
 
@@ -911,6 +911,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   // EnableReadback requires that EnableIntg is on.
   // EnableIntg can be used without EnableReadback.
-  `ASSERT_INIT(SramReadbackAndIntg,
+  `OCAH_OT_ASSERT_INIT(SramReadbackAndIntg,
       (EnableReadback && EnableIntg) || (!EnableReadback && (EnableIntg || !EnableIntg)))
 endmodule // tlul_adapter_sram

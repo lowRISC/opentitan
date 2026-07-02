@@ -31,10 +31,10 @@ interface clkmgr_pwrmgr_sva_if #(
 
   bit disable_sva;
 
-  `ASSERT(StatusFall_A,
+  `OCAH_OT_ASSERT(StatusFall_A,
           $fell(clk_en) |-> ##[FallCyclesMin:FallCyclesMax] clk_en || !status, clk_i,
           !rst_ni || disable_sva)
-  `ASSERT(StatusRise_A,
+  `OCAH_OT_ASSERT(StatusRise_A,
           $rose(clk_en) |-> ##[RiseCyclesMin:RiseCyclesMax] !clk_en || status, clk_i,
           !rst_ni || disable_sva)
 endinterface

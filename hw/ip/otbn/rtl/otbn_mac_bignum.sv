@@ -428,7 +428,7 @@ module otbn_mac_bignum
     endcase
   end
 
-  `ASSERT_KNOWN_IF(PreAccShiftImmKnown, operation_i.pre_acc_shift_imm, mac_en_i)
+  `OCAH_OT_ASSERT_KNOWN_IF(PreAccShiftImmKnown, operation_i.pre_acc_shift_imm, mac_en_i)
 
   //////////////////////
   // Vectorized Adder //
@@ -671,7 +671,7 @@ module otbn_mac_bignum
 
   // For non modulo vectorized multiplications, the blanker must be active if the instructions
   // starts and it must definitively be high if it is already ongoing.
-  `ASSERT(VecMulBlankerMulMergerEn_A,
+  `OCAH_OT_ASSERT(VecMulBlankerMulMergerEn_A,
           predec_i.is_vec && !predec_i.is_mod && predec_i.mac_en
           |-> predec_i.mul_merger_en,
           clk_i, !rst_ni || !predec_i.mac_en)
@@ -738,10 +738,10 @@ module otbn_mac_bignum
 
   assign sec_wipe_err_o = sec_wipe_urnd_i & ~sec_wipe_running_i;
 
-  `ASSERT(NoISPRAccWrAndMacEn, ~(ispr_acc_wr_en_i & mac_en_i))
+  `OCAH_OT_ASSERT(NoISPRAccWrAndMacEn, ~(ispr_acc_wr_en_i & mac_en_i))
 
   // Only one QWORD must be overwritten at the same time.
-  `ASSERT(AccQwSelOnehot_A,
+  `OCAH_OT_ASSERT(AccQwSelOnehot_A,
           predec_i.acc_merger_en |-> $onehot(predec_i.acc_qw_sel),
           clk_i, !rst_ni || predec_error_o || state_err_o)
 

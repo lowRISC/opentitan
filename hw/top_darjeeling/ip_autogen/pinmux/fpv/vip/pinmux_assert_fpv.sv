@@ -58,45 +58,45 @@ module pinmux_assert_fpv
   logic [$clog2(pinmux_reg_pkg::NDioPads)-1:0] dio_sel_i;
   logic [$clog2(pinmux_reg_pkg::NWkupDetect)-1:0] wkup_sel_i;
 
-  `ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NMioPeriphIn)
-  `ASSUME(PeriphSelStable_M, ##1 $stable(periph_sel_i))
+  `OCAH_OT_ASSUME(PeriphSelRange_M, periph_sel_i < pinmux_reg_pkg::NMioPeriphIn)
+  `OCAH_OT_ASSUME(PeriphSelStable_M, ##1 $stable(periph_sel_i))
 
-  `ASSUME(MioSelRange_M, mio_sel_i < pinmux_reg_pkg::NMioPads && !(mio_sel_i inside
+  `OCAH_OT_ASSUME(MioSelRange_M, mio_sel_i < pinmux_reg_pkg::NMioPads && !(mio_sel_i inside
           {TargetCfg.tck_idx, TargetCfg.tms_idx, TargetCfg.trst_idx, TargetCfg.tdi_idx,
            TargetCfg.tdo_idx}))
-  `ASSUME(MioSelStable_M, ##1 $stable(mio_sel_i))
+  `OCAH_OT_ASSUME(MioSelStable_M, ##1 $stable(mio_sel_i))
 
-  `ASSUME(DioSelRange_M, dio_sel_i < pinmux_reg_pkg::NDioPads)
-  `ASSUME(DioSelStable_M, ##1 $stable(dio_sel_i))
+  `OCAH_OT_ASSUME(DioSelRange_M, dio_sel_i < pinmux_reg_pkg::NDioPads)
+  `OCAH_OT_ASSUME(DioSelStable_M, ##1 $stable(dio_sel_i))
 
-  `ASSUME(WkupSelRange_M, wkup_sel_i < pinmux_reg_pkg::NWkupDetect)
-  `ASSUME(WkupSelStable_M, ##1 $stable(wkup_sel_i))
+  `OCAH_OT_ASSUME(WkupSelRange_M, wkup_sel_i < pinmux_reg_pkg::NWkupDetect)
+  `OCAH_OT_ASSUME(WkupSelStable_M, ##1 $stable(wkup_sel_i))
 
   // ------ Input mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_periph_insel_mreg_t periph_insel;
   assign periph_insel = pinmux.reg2hw.mio_periph_insel[periph_sel_i];
 
-  `ASSERT(InSel0_A, periph_insel.q == 0 |-> mio_to_periph_o[periph_sel_i] == 1'b0)
-  `ASSERT(InSel1_A, periph_insel.q == 1 |-> mio_to_periph_o[periph_sel_i] == 1'b1)
-  `ASSERT(InSelN_A, periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
+  `OCAH_OT_ASSERT(InSel0_A, periph_insel.q == 0 |-> mio_to_periph_o[periph_sel_i] == 1'b0)
+  `OCAH_OT_ASSERT(InSel1_A, periph_insel.q == 1 |-> mio_to_periph_o[periph_sel_i] == 1'b1)
+  `OCAH_OT_ASSERT(InSelN_A, periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
           !((periph_insel.q - 2) inside {TargetCfg.tck_idx, TargetCfg.tms_idx, TargetCfg.trst_idx,
                                          TargetCfg.tdi_idx, TargetCfg.tdo_idx}) |->
           mio_to_periph_o[periph_sel_i] == mio_in_i[periph_insel.q - 2])
-  `ASSERT(InSelOOB_A, periph_insel.q >= (pinmux_reg_pkg::NMioPads + 2) |->
+  `OCAH_OT_ASSERT(InSelOOB_A, periph_insel.q >= (pinmux_reg_pkg::NMioPads + 2) |->
           mio_to_periph_o[periph_sel_i] == 0)
 
-  `ASSERT(MioToPeriph0Backward_A, mio_to_periph_o[periph_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(MioToPeriph0Backward_A, mio_to_periph_o[periph_sel_i] == 0 |->
           (periph_insel.q == 0) ||
           ((periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
            (pinmux.u_pinmux_strap_sampling.jtag_en || mio_in_i[periph_insel.q - 2] == 0)) ||
            periph_insel.q >= (pinmux_reg_pkg::NMioPads + 2)))
 
-  `ASSERT(MioToPeriph1Backward_A, mio_to_periph_o[periph_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(MioToPeriph1Backward_A, mio_to_periph_o[periph_sel_i] == 1 |->
           (periph_insel.q == 1) ||
           (periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
           (mio_in_i[periph_insel.q - 2] == 1 || pinmux.u_pinmux_strap_sampling.jtag_en)))
 
-  `ASSERT(DioInSelN_A, dio_to_periph_o == dio_in_i)
+  `OCAH_OT_ASSERT(DioInSelN_A, dio_to_periph_o == dio_in_i)
 
   // ------ Output mux assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_mio_outsel_mreg_t mio_outsel;
@@ -106,47 +106,47 @@ module pinmux_assert_fpv
   assign mio_pad_sleep_status = pinmux.reg2hw.mio_pad_sleep_status[mio_sel_i];
 
 
-  `ASSERT(OutSel0_A, mio_outsel.q == 0 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSel1_A, mio_outsel.q == 1 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b1)
-  `ASSERT(OutSel2_A, mio_outsel.q == 2 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSelN_A, mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+  `OCAH_OT_ASSERT(OutSel0_A, mio_outsel.q == 0 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b0)
+  `OCAH_OT_ASSERT(OutSel1_A, mio_outsel.q == 1 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b1)
+  `OCAH_OT_ASSERT(OutSel2_A, mio_outsel.q == 2 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b0)
+  `OCAH_OT_ASSERT(OutSelN_A, mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
           !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == periph_to_mio_i[mio_outsel.q - 3])
-  `ASSERT(OutSelOOB_A, mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+  `OCAH_OT_ASSERT(OutSelOOB_A, mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) &&
           !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 0)
 
-  `ASSERT(MioOut0Backward_A, mio_out_o[mio_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(MioOut0Backward_A, mio_out_o[mio_sel_i] == 0 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q inside {0, 2} ||
           mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) ||
           (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
            periph_to_mio_i[mio_outsel.q - 3] == 0))
 
-  `ASSERT(MioOut1Backward_A, mio_out_o[mio_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(MioOut1Backward_A, mio_out_o[mio_sel_i] == 1 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q == 1 ||
           mio_outsel.q > (pinmux_reg_pkg::NMioPeriphOut + 3) ||
           (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
            periph_to_mio_i[mio_outsel.q - 3] == 1))
 
-  `ASSERT(OutSelOe0_A, mio_outsel.q == 0 && !mio_pad_sleep_status.q |->
+  `OCAH_OT_ASSERT(OutSelOe0_A, mio_outsel.q == 0 && !mio_pad_sleep_status.q |->
           mio_oe_o[mio_sel_i] == 1'b1)
-  `ASSERT(OutSelOe1_A, mio_outsel.q == 1 && !mio_pad_sleep_status.q |->
+  `OCAH_OT_ASSERT(OutSelOe1_A, mio_outsel.q == 1 && !mio_pad_sleep_status.q |->
           mio_oe_o[mio_sel_i] == 1'b1)
-  `ASSERT(OutSelOe2_A, mio_outsel.q == 2 && !mio_pad_sleep_status.q |->
+  `OCAH_OT_ASSERT(OutSelOe2_A, mio_outsel.q == 2 && !mio_pad_sleep_status.q |->
           mio_oe_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSelOeN_A, mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+  `OCAH_OT_ASSERT(OutSelOeN_A, mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
           !mio_pad_sleep_status.q |-> mio_oe_o[mio_sel_i] == periph_to_mio_oe_i[mio_outsel.q - 3])
-  `ASSERT(OutSelOeOOB_A, mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+  `OCAH_OT_ASSERT(OutSelOeOOB_A, mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) &&
           !mio_pad_sleep_status.q |-> mio_oe_o[mio_sel_i] == 0)
 
-  `ASSERT(MioOe0Backward_A, mio_oe_o[mio_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(MioOe0Backward_A, mio_oe_o[mio_sel_i] == 0 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q == 2 ||
           mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) ||
           (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
            periph_to_mio_oe_i[mio_outsel.q - 3] == 0))
 
-  `ASSERT(MioOe1Backward_A, mio_oe_o[mio_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(MioOe1Backward_A, mio_oe_o[mio_sel_i] == 1 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q inside {0, 1} ||
           mio_outsel.q > (pinmux_reg_pkg::NMioPeriphOut + 3) ||
@@ -159,58 +159,58 @@ module pinmux_assert_fpv
   pinmux_reg_pkg::pinmux_reg2hw_mio_pad_sleep_mode_mreg_t mio_pad_sleep_mode;
   assign mio_pad_sleep_mode = pinmux.reg2hw.mio_pad_sleep_mode[mio_sel_i];
 
-  `ASSERT(MioSleepMode0_A, ##1 mio_pad_sleep_mode.q == 0 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioSleepMode0_A, ##1 mio_pad_sleep_mode.q == 0 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           mio_out_o[mio_sel_i] == 1'b0)
-  `ASSERT(MioSleepMode1_A, ##1 mio_pad_sleep_mode.q == 1 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioSleepMode1_A, ##1 mio_pad_sleep_mode.q == 1 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           mio_out_o[mio_sel_i] == 1'b1)
-  `ASSERT(MioSleepMode2_A, ##1 mio_pad_sleep_mode.q == 2 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioSleepMode2_A, ##1 mio_pad_sleep_mode.q == 2 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           mio_out_o[mio_sel_i] == 1'b0)
-  `ASSERT(MioSleepMode3_A, ##1 mio_pad_sleep_mode.q == 3 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioSleepMode3_A, ##1 mio_pad_sleep_mode.q == 3 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           $stable(mio_out_o[mio_sel_i]))
-  `ASSERT(MioSleepStable_A, ##1 !$rose(sleep_en_i)
+  `OCAH_OT_ASSERT(MioSleepStable_A, ##1 !$rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           $stable(mio_out_o[mio_sel_i]))
 
-  `ASSERT(MioOeSleepMode0_A, ##1 mio_pad_sleep_mode.q == 0 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioOeSleepMode0_A, ##1 mio_pad_sleep_mode.q == 0 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q && sleep_en_i|->
           mio_oe_o[mio_sel_i] == 1'b1)
-  `ASSERT(MioOeSleepMode1_A, ##1 mio_pad_sleep_mode.q == 1 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioOeSleepMode1_A, ##1 mio_pad_sleep_mode.q == 1 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           mio_oe_o[mio_sel_i] == 1'b1)
-  `ASSERT(MioOeSleepMode2_A, ##1 mio_pad_sleep_mode.q == 2 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioOeSleepMode2_A, ##1 mio_pad_sleep_mode.q == 2 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           mio_oe_o[mio_sel_i] == 1'b0)
-  `ASSERT(MioOeSleepMode3_A, ##1 mio_pad_sleep_mode.q == 3 && mio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(MioOeSleepMode3_A, ##1 mio_pad_sleep_mode.q == 3 && mio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           $stable(mio_oe_o[mio_sel_i]))
-  `ASSERT(MioOeSleepStable_A, ##1 !$rose(sleep_en_i)
+  `OCAH_OT_ASSERT(MioOeSleepStable_A, ##1 !$rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 mio_pad_sleep_status.q |->
           $stable(mio_oe_o[mio_sel_i]))
 
   // ------Mio sleep enabled backward assertions ------
-  `ASSERT(MioSleep0Backward_A, mio_out_o[mio_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(MioSleep0Backward_A, mio_out_o[mio_sel_i] == 0 |->
           mio_pad_sleep_status.q == 0 ||
           // Sleep mode set to 0 and 2.
           $past(mio_pad_sleep_mode.q) inside {0, 2} ||
@@ -221,7 +221,7 @@ module pinmux_assert_fpv
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !mio_pad_sleep_en.q) && mio_pad_sleep_status.q)))
 
-  `ASSERT(MioSleep1Backward_A, mio_out_o[mio_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(MioSleep1Backward_A, mio_out_o[mio_sel_i] == 1 |->
           mio_pad_sleep_status.q == 0 ||
           // Sleep mode set to 1.
           $past(mio_pad_sleep_mode.q) == 1 ||
@@ -232,7 +232,7 @@ module pinmux_assert_fpv
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !mio_pad_sleep_en.q) && mio_pad_sleep_status.q)))
 
-  `ASSERT(MioOeSleep0Backward_A, mio_oe_o[mio_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(MioOeSleep0Backward_A, mio_oe_o[mio_sel_i] == 0 |->
           mio_pad_sleep_status.q == 0 ||
           // Sleep mode set to 2.
           $past(mio_pad_sleep_mode.q) == 2 ||
@@ -243,7 +243,7 @@ module pinmux_assert_fpv
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !mio_pad_sleep_en.q) && mio_pad_sleep_status.q)))
 
-  `ASSERT(MioOeSleep1Backward_A, mio_oe_o[mio_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(MioOeSleep1Backward_A, mio_oe_o[mio_sel_i] == 1 |->
           mio_pad_sleep_status.q == 0 ||
           // Sleep mode set to 0 or 1.
           $past(mio_pad_sleep_mode.q) inside {0, 1} ||
@@ -274,11 +274,11 @@ module pinmux_assert_fpv
   assign mio_pad_attr_mask.slew_rate = '0;
   assign mio_pad_attr_mask.drive_strength[3:1] = '0;
 
-  `ASSERT(MioAttrO_A, mio_attr_o[mio_sel_i] == (mio_pad_attr & mio_pad_attr_mask))
+  `OCAH_OT_ASSERT(MioAttrO_A, mio_attr_o[mio_sel_i] == (mio_pad_attr & mio_pad_attr_mask))
 
   // When JTAG is enabled, the mio pad addributes should mostly be tied to zero. The only exception
   // is for the tck and trst signals, which should be configured to enable Schmitt triggering.
-  `ASSERT(MioJtagAttrO_A,
+  `OCAH_OT_ASSERT(MioJtagAttrO_A,
           pinmux.u_pinmux_strap_sampling.jtag_en |->
           mio_attr_o[TargetCfg.tck_idx]  == '{schmitt_en: 1'b1, default: '0} &&
           mio_attr_o[TargetCfg.tms_idx]  == '0 &&
@@ -304,16 +304,16 @@ module pinmux_assert_fpv
   assign dio_pad_attr_mask.slew_rate = '0;
   assign dio_pad_attr_mask.drive_strength[3:1] = '0;
 
-  `ASSERT(DioAttrO_A, dio_attr_o[dio_sel_i] == (dio_pad_attr & dio_pad_attr_mask))
+  `OCAH_OT_ASSERT(DioAttrO_A, dio_attr_o[dio_sel_i] == (dio_pad_attr & dio_pad_attr_mask))
 
   // ------ Output dedicated output assertions ------
   pinmux_reg_pkg::pinmux_reg2hw_dio_pad_sleep_status_mreg_t dio_pad_sleep_status;
   assign dio_pad_sleep_status = pinmux.reg2hw.dio_pad_sleep_status[dio_sel_i];
 
-  `ASSERT(DOutSelN_A, !dio_pad_sleep_status.q |->
+  `OCAH_OT_ASSERT(DOutSelN_A, !dio_pad_sleep_status.q |->
           dio_out_o[dio_sel_i] == periph_to_dio_i[dio_sel_i])
 
-  `ASSERT(DOutSelOeN_A, !dio_pad_sleep_status.q |->
+  `OCAH_OT_ASSERT(DOutSelOeN_A, !dio_pad_sleep_status.q |->
           dio_oe_o[dio_sel_i] == periph_to_dio_oe_i[dio_sel_i])
 
   // ------ Dio sleep behavior assertions ------
@@ -322,58 +322,58 @@ module pinmux_assert_fpv
   pinmux_reg_pkg::pinmux_reg2hw_dio_pad_sleep_mode_mreg_t dio_pad_sleep_mode;
   assign dio_pad_sleep_mode = pinmux.reg2hw.dio_pad_sleep_mode[dio_sel_i];
 
-  `ASSERT(DioSleepMode0_A, ##1 dio_pad_sleep_mode.q == 0 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioSleepMode0_A, ##1 dio_pad_sleep_mode.q == 0 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           dio_out_o[dio_sel_i] == 1'b0)
-  `ASSERT(DioSleepMode1_A, ##1 dio_pad_sleep_mode.q == 1 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioSleepMode1_A, ##1 dio_pad_sleep_mode.q == 1 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           dio_out_o[dio_sel_i] == 1'b1)
-  `ASSERT(DioSleepMode2_A, ##1 dio_pad_sleep_mode.q == 2 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioSleepMode2_A, ##1 dio_pad_sleep_mode.q == 2 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           dio_out_o[dio_sel_i] == 1'b0)
-  `ASSERT(DioSleepMode3_A, ##1 dio_pad_sleep_mode.q == 3 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioSleepMode3_A, ##1 dio_pad_sleep_mode.q == 3 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           $stable(dio_out_o[dio_sel_i]))
-  `ASSERT(DioSleepStable_A, ##1 !$rose(sleep_en_i)
+  `OCAH_OT_ASSERT(DioSleepStable_A, ##1 !$rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           $stable(dio_out_o[dio_sel_i]))
 
-  `ASSERT(DioOeSleepMode0_A, ##1 dio_pad_sleep_mode.q == 0 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioOeSleepMode0_A, ##1 dio_pad_sleep_mode.q == 0 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           dio_oe_o[dio_sel_i] == 1'b1)
-  `ASSERT(DioOeSleepMode1_A, ##1 dio_pad_sleep_mode.q == 1 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioOeSleepMode1_A, ##1 dio_pad_sleep_mode.q == 1 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           dio_oe_o[dio_sel_i] == 1'b1)
-  `ASSERT(DioOeSleepMode2_A, ##1 dio_pad_sleep_mode.q == 2 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioOeSleepMode2_A, ##1 dio_pad_sleep_mode.q == 2 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           dio_oe_o[dio_sel_i] == 1'b0)
-  `ASSERT(DioOeSleepMode3_A, ##1 dio_pad_sleep_mode.q == 3 && dio_pad_sleep_en.q == 1 &&
+  `OCAH_OT_ASSERT(DioOeSleepMode3_A, ##1 dio_pad_sleep_mode.q == 3 && dio_pad_sleep_en.q == 1 &&
           $rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           $stable(dio_oe_o[dio_sel_i]))
-  `ASSERT(DioOeSleepStable_A, ##1 !$rose(sleep_en_i)
+  `OCAH_OT_ASSERT(DioOeSleepStable_A, ##1 !$rose(sleep_en_i)
           // Ensure SW does not write to sleep status register to clear sleep status.
           ##1 dio_pad_sleep_status.q |->
           $stable(dio_oe_o[dio_sel_i]))
 
   // ------Dio backward assertions ------
-  `ASSERT(Dio0Backward_A, dio_out_o[dio_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(Dio0Backward_A, dio_out_o[dio_sel_i] == 0 |->
           // Input is 0.
           periph_to_dio_i[dio_sel_i] == 0 ||
           // Sleep mode set to 0 and 2.
@@ -385,7 +385,7 @@ module pinmux_assert_fpv
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
 
-  `ASSERT(Dio1Backward_A, dio_out_o[dio_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(Dio1Backward_A, dio_out_o[dio_sel_i] == 1 |->
           // input is 1.
           periph_to_dio_i[dio_sel_i] == 1 ||
           // Sleep mode set to 1.
@@ -397,7 +397,7 @@ module pinmux_assert_fpv
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
 
-  `ASSERT(DioOe0Backward_A, dio_oe_o[dio_sel_i] == 0 |->
+  `OCAH_OT_ASSERT(DioOe0Backward_A, dio_oe_o[dio_sel_i] == 0 |->
           // Input is 0.
           periph_to_dio_oe_i[dio_sel_i] == 0 ||
           // Sleep mode set to 2.
@@ -409,7 +409,7 @@ module pinmux_assert_fpv
             // or sleep_en CSR.
             ($past(!$rose(sleep_en_i) || !dio_pad_sleep_en.q) && dio_pad_sleep_status.q)))
 
-  `ASSERT(DioOe1Backward_A, dio_oe_o[dio_sel_i] == 1 |->
+  `OCAH_OT_ASSERT(DioOe1Backward_A, dio_oe_o[dio_sel_i] == 1 |->
           // input is 1.
           periph_to_dio_oe_i[dio_sel_i] == 1 ||
           // Sleep mode set to 0 or 1.
@@ -502,28 +502,28 @@ module pinmux_assert_fpv
     end
   end
 
-  `ASSERT(WkupPosedge_A, wkup_detector_en.q && wkup_detector.mode.q == 0 &&
+  `OCAH_OT_ASSERT(WkupPosedge_A, wkup_detector_en.q && wkup_detector.mode.q == 0 &&
           $rose(final_pin_val) |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
-  `ASSERT(WkupNegedge_A, wkup_detector_en.q && wkup_detector.mode.q == 1 &&
+  `OCAH_OT_ASSERT(WkupNegedge_A, wkup_detector_en.q && wkup_detector.mode.q == 1 &&
           $fell(final_pin_val) |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
-  `ASSERT(WkupEdge_A, wkup_detector_en.q && wkup_detector.mode.q == 2 &&
+  `OCAH_OT_ASSERT(WkupEdge_A, wkup_detector_en.q && wkup_detector.mode.q == 2 &&
           ($fell(final_pin_val) || $rose(final_pin_val)) |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
-  `ASSERT(WkupTimedHigh_A, (cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
+  `OCAH_OT_ASSERT(WkupTimedHigh_A, (cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
           wkup_detector.mode.q == 3 |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
-  `ASSERT(WkupTimedLow_A, (cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
+  `OCAH_OT_ASSERT(WkupTimedLow_A, (cnter >= wkup_detector_cnt_th.q) && wkup_detector_en.q &&
           wkup_detector.mode.q == 4 |-> wkup_cause.de,
           clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(WkupCauseQ_A, wkup_cause.de && !u_reg.aon_wkup_cause_we |=>
+  `OCAH_OT_ASSERT(WkupCauseQ_A, wkup_cause.de && !u_reg.aon_wkup_cause_we |=>
           wkup_cause_reg2hw.q, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(AonWkupO_A, |wkup_cause_q <-> pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT(AonWkupO_A, |wkup_cause_q <-> pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(WkupCause0_A, wkup_cause.de == 0 |->
+  `OCAH_OT_ASSERT(WkupCause0_A, wkup_cause.de == 0 |->
           (wkup_detector_en.q == 0) ||
           (wkup_detector_en.q == 1 &&
            ((wkup_detector.mode.q == 0 && !$rose(final_pin_val)) ||
@@ -534,7 +534,7 @@ module pinmux_assert_fpv
             (wkup_detector.mode.q == 4 && (cnter < wkup_detector_cnt_th.q)))),
           clk_aon_i, !rst_aon_ni)
 
-  `ASSERT(WkupCause1_A, wkup_cause.de == 1 |->
+  `OCAH_OT_ASSERT(WkupCause1_A, wkup_cause.de == 1 |->
           wkup_detector_en.q == 1 &&
            ((wkup_detector.mode.q == 0 && $rose(final_pin_val)) ||
             (wkup_detector.mode.q > 4 && $rose(final_pin_val)) ||
@@ -545,15 +545,15 @@ module pinmux_assert_fpv
           clk_aon_i, !rst_aon_ni)
 
   // Fatal alert related assertions
-  `ASSUME(TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |->
+  `OCAH_OT_ASSUME(TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |->
           pinmux.u_reg.intg_err_o == 0 [*10])
-  `ASSERT(TlIntgFatalAlert_A, pinmux.u_reg.intg_err_o |-> (##[0:7] (alert_tx_o[0].alert_p)) [*2])
+  `OCAH_OT_ASSERT(TlIntgFatalAlert_A, pinmux.u_reg.intg_err_o |-> (##[0:7] (alert_tx_o[0].alert_p)) [*2])
 
   // Since the USB wake module is blackboxed, we have to add an assumption here since the
   // ASSERT_KNOWN assertions embedded in pinmux.sv would fail otherwise.
-  `ASSUME_FPV(UsbWkupReqKnownO_M,
+  `OCAH_OT_ASSUME_FPV(UsbWkupReqKnownO_M,
               !$isunknown(u_usbdev_aon_wake.wake_req_aon_o), clk_aon_i, !rst_aon_ni)
-  `ASSUME_FPV(UsbWakeDetectActiveKnownO_M,
+  `OCAH_OT_ASSUME_FPV(UsbWakeDetectActiveKnownO_M,
               !$isunknown(u_usbdev_aon_wake.wake_detect_active_aon_o), clk_aon_i, !rst_aon_ni)
 
 endmodule : pinmux_assert_fpv

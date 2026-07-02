@@ -160,7 +160,7 @@ module prim_count
   ////////////////
   // Assertions //
   ////////////////
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
@@ -184,20 +184,20 @@ module prim_count
   // pragma coverage on
 
   if (!(PossibleActions & Clr)) begin : g_check_no_clr
-    `ASSERT(ClrNeverTrue_A, clr_i !== 1'b1)
+    `OCAH_OT_ASSERT(ClrNeverTrue_A, clr_i !== 1'b1)
   end
   if (!(PossibleActions & Set)) begin : g_check_no_set
-    `ASSERT(SetNeverTrue_A, set_i !== 1'b1)
+    `OCAH_OT_ASSERT(SetNeverTrue_A, set_i !== 1'b1)
   end
   if (!(PossibleActions & Incr)) begin : g_check_no_incr
-    `ASSERT(IncrNeverTrue_A, incr_en_i !== 1'b1)
+    `OCAH_OT_ASSERT(IncrNeverTrue_A, incr_en_i !== 1'b1)
   end
   if (!(PossibleActions & Decr)) begin : g_check_no_decr
-    `ASSERT(DecrNeverTrue_A, decr_en_i !== 1'b1)
+    `OCAH_OT_ASSERT(DecrNeverTrue_A, decr_en_i !== 1'b1)
   end
 
   // Cnt next
-  `ASSERT(CntNext_A,
+  `OCAH_OT_ASSERT(CntNext_A,
       rst_ni
       |=>
       $past(!commit_i) || (cnt_o == $past(cnt_after_commit_o)),
@@ -205,7 +205,7 @@ module prim_count
 
   // Clear
   if (PossibleActions & Clr) begin : g_check_clr_fwd_a
-    `ASSERT(ClrFwd_A,
+    `OCAH_OT_ASSERT(ClrFwd_A,
             rst_ni && commit_i && clr_i
             |=>
             (cnt_o == ResetValue) &&
@@ -215,7 +215,7 @@ module prim_count
 
   // Set
   if (PossibleActions & Set) begin : g_check_set_fwd_a
-    `ASSERT(SetFwd_A,
+    `OCAH_OT_ASSERT(SetFwd_A,
         rst_ni && commit_i && set_i && !clr_i
         |=>
         (cnt_o == $past(set_cnt_i)) &&
@@ -225,7 +225,7 @@ module prim_count
 
   // Do not count if both increment and decrement are asserted.
   if ((PossibleActions & Incr) && (PossibleActions & Decr)) begin : g_check_inc_and_dec
-    `ASSERT(IncrDecrUpDnCnt_A,
+    `OCAH_OT_ASSERT(IncrDecrUpDnCnt_A,
         rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
         |=>
         $stable(cnt_o) && $stable(cnt_q[1]),
@@ -234,23 +234,23 @@ module prim_count
 
   // Increment
   if ((PossibleActions & Incr)) begin : g_check_incr
-    `ASSERT(IncrUpCnt_A,
+    `OCAH_OT_ASSERT(IncrUpCnt_A,
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
         |=>
         cnt_o == min($past(cnt_o) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
         clk_i, err_d || fpv_err_present || !rst_ni)
-    `ASSERT(IncrDnCnt_A,
+    `OCAH_OT_ASSERT(IncrDnCnt_A,
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
         |=>
         cnt_q[1] == max($past(signed'({2'b0, cnt_q[1]})) - $past({2'b0, step_i}), '0),
         clk_i, err_d || fpv_err_present || !rst_ni)
-    `ASSERT(UpCntIncrStable_A,
+    `OCAH_OT_ASSERT(UpCntIncrStable_A,
         incr_en_i && !(clr_i || set_i || decr_en_i) &&
         cnt_o == {Width{1'b1}}
         |=>
         $stable(cnt_o),
         clk_i, err_d || fpv_err_present || !rst_ni)
-    `ASSERT(DnCntIncrStable_A,
+    `OCAH_OT_ASSERT(DnCntIncrStable_A,
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
         cnt_q[1] == '0
         |=>
@@ -260,23 +260,23 @@ module prim_count
 
   // Decrement
   if ((PossibleActions & Decr)) begin : g_check_decr
-    `ASSERT(DecrUpCnt_A,
+    `OCAH_OT_ASSERT(DecrUpCnt_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
         |=>
         cnt_o == max($past(signed'({2'b0, cnt_o})) - $past({2'b0, step_i}), '0),
         clk_i, err_d || fpv_err_present || !rst_ni)
-    `ASSERT(DecrDnCnt_A,
+    `OCAH_OT_ASSERT(DecrDnCnt_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
         |=>
         cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
         clk_i, err_d || fpv_err_present || !rst_ni)
-    `ASSERT(UpCntDecrStable_A,
+    `OCAH_OT_ASSERT(UpCntDecrStable_A,
         decr_en_i && !(clr_i || set_i || incr_en_i) &&
         cnt_o == '0
         |=>
         $stable(cnt_o),
         clk_i, err_d || fpv_err_present || !rst_ni)
-    `ASSERT(DnCntDecrStable_A,
+    `OCAH_OT_ASSERT(DnCntDecrStable_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
         cnt_q[1] == {Width{1'b1}}
         |=>
@@ -286,7 +286,7 @@ module prim_count
 
   // A backwards check for count changes. This asserts that the count only changes if one of the
   // inputs that should tell it to change (clear, set, increment, decrement) does so.
-  `ASSERT(ChangeBackward_A,
+  `OCAH_OT_ASSERT(ChangeBackward_A,
           rst_ni ##1 $changed(cnt_o) && $changed(cnt_q[1])
           |->
           $past(clr_i || set_i || (commit_i && (incr_en_i || decr_en_i))),
@@ -297,9 +297,9 @@ module prim_count
   // This is essentially a "|=> implication", but is structured in a way to avoid generating a cover
   // property for the left hand side if PrimCountFpv is not defined (because we won't have a way to
   // inject an error if not)
-  `ASSERT(CntErrReported_A, ##1 $past((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o)
+  `OCAH_OT_ASSERT(CntErrReported_A, ##1 $past((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o)
  `ifdef PrimCountFpv
-  `COVER(CntErr_C, err_o)
+  `OCAH_OT_COVER(CntErr_C, err_o)
  `endif
 
   // This logic that will be assign to one, when user adds macro
@@ -307,7 +307,7 @@ module prim_count
   // is used in design without adding this assertion check.
   logic unused_assert_connected;
 
-  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
+  `OCAH_OT_ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
 `endif
 
 endmodule // prim_count

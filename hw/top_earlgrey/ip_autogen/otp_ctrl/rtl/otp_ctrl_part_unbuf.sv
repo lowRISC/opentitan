@@ -88,11 +88,11 @@ module otp_ctrl_part_unbuf
   localparam bit [OtpByteAddrWidth-1:0] ZeroizeOffset = ZeroizeOffsetInt[OtpByteAddrWidth-1:0];
 
   // Integration checks for parameters.
-  `ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
-  `ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
-  `ASSERT_INIT(DigestOffsetMustBeRepresentable_A, DigestOffsetInt == int'(DigestOffset))
-  `ASSERT_INIT(ZeroizeOffsetMustBeRepresentable_A, ZeroizeOffsetInt == int'(ZeroizeOffset))
-  `ASSERT(ScrambledImpliesBuffered_A, Info.secret |-> Info.variant == Buffered)
+  `OCAH_OT_ASSERT_INIT(OffsetMustBeBlockAligned_A, (Info.offset % (ScrmblBlockWidth/8)) == 0)
+  `OCAH_OT_ASSERT_INIT(SizeMustBeBlockAligned_A, (Info.size % (ScrmblBlockWidth/8)) == 0)
+  `OCAH_OT_ASSERT_INIT(DigestOffsetMustBeRepresentable_A, DigestOffsetInt == int'(DigestOffset))
+  `OCAH_OT_ASSERT_INIT(ZeroizeOffsetMustBeRepresentable_A, ZeroizeOffsetInt == int'(ZeroizeOffset))
+  `OCAH_OT_ASSERT(ScrambledImpliesBuffered_A, Info.secret |-> Info.variant == Buffered)
 
   ///////////////////////
   // OTP Partition FSM //
@@ -254,7 +254,7 @@ module otp_ctrl_part_unbuf
   mubi8_t unused_zer_trig;
   assign unused_zer_trig = zer_trig_i;
 
-  `ASSERT_KNOWN(FsmStateKnown_A, state_q)
+  `OCAH_OT_ASSERT_KNOWN(FsmStateKnown_A, state_q)
   always_comb begin : p_fsm
     // Default assignments
     state_d = state_q;
@@ -593,7 +593,7 @@ module otp_ctrl_part_unbuf
       .mubi_o(access_o.write_lock)
     );
 
-    `ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.write_lock))
+    `OCAH_OT_ASSERT(DigestWriteLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.write_lock))
   end else begin : gen_no_digest_write_lock
     assign access_o.write_lock = access_pre.write_lock;
   end
@@ -613,7 +613,7 @@ module otp_ctrl_part_unbuf
       .mubi_o(access_o.read_lock)
     );
 
-    `ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.read_lock))
+    `OCAH_OT_ASSERT(DigestReadLocksPartition_A, digest_o |-> mubi8_test_true_loose(access_o.read_lock))
   end else begin : gen_no_digest_read_lock
     assign access_o.read_lock = access_pre.read_lock;
   end
@@ -675,50 +675,50 @@ module otp_ctrl_part_unbuf
   ////////////////
 
   // Known assertions
-  `ASSERT_KNOWN(InitDoneKnown_A,   init_done_o)
-  `ASSERT_KNOWN(ErrorKnown_A,      error_o)
-  `ASSERT_KNOWN(AccessKnown_A,     access_o)
-  `ASSERT_KNOWN(DigestKnown_A,     digest_o)
-  `ASSERT_KNOWN(TlulGntKnown_A,    tlul_gnt_o)
-  `ASSERT_KNOWN(TlulRerrorKnown_A, tlul_rerror_o)
-  `ASSERT_KNOWN(TlulRvalidKnown_A, tlul_rvalid_o)
-  `ASSERT_KNOWN(TlulRdataKnown_A,  tlul_rdata_o)
-  `ASSERT_KNOWN(OtpReqKnown_A,     otp_req_o)
-  `ASSERT_KNOWN(OtpCmdKnown_A,     otp_cmd_o)
-  `ASSERT_KNOWN(OtpSizeKnown_A,    otp_size_o)
-  `ASSERT_KNOWN(OtpWdataKnown_A,   otp_wdata_o)
-  `ASSERT_KNOWN(OtpAddrKnown_A,    otp_addr_o)
+  `OCAH_OT_ASSERT_KNOWN(InitDoneKnown_A,   init_done_o)
+  `OCAH_OT_ASSERT_KNOWN(ErrorKnown_A,      error_o)
+  `OCAH_OT_ASSERT_KNOWN(AccessKnown_A,     access_o)
+  `OCAH_OT_ASSERT_KNOWN(DigestKnown_A,     digest_o)
+  `OCAH_OT_ASSERT_KNOWN(TlulGntKnown_A,    tlul_gnt_o)
+  `OCAH_OT_ASSERT_KNOWN(TlulRerrorKnown_A, tlul_rerror_o)
+  `OCAH_OT_ASSERT_KNOWN(TlulRvalidKnown_A, tlul_rvalid_o)
+  `OCAH_OT_ASSERT_KNOWN(TlulRdataKnown_A,  tlul_rdata_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpReqKnown_A,     otp_req_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpCmdKnown_A,     otp_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpSizeKnown_A,    otp_size_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpWdataKnown_A,   otp_wdata_o)
+  `OCAH_OT_ASSERT_KNOWN(OtpAddrKnown_A,    otp_addr_o)
 
   // Uninitialized partitions should always be locked, no matter what.
-  `ASSERT(InitWriteLocksPartition_A,
+  `OCAH_OT_ASSERT(InitWriteLocksPartition_A,
       ~init_done_o
       |->
       mubi8_test_true_loose(access_o.write_lock))
-  `ASSERT(InitReadLocksPartition_A,
+  `OCAH_OT_ASSERT(InitReadLocksPartition_A,
       ~init_done_o
       |->
       mubi8_test_true_loose(access_o.read_lock))
   // Incoming Lock propagation
-  `ASSERT(WriteLockPropagation_A,
+  `OCAH_OT_ASSERT(WriteLockPropagation_A,
       mubi8_test_true_loose(access_i.write_lock)
       |->
       mubi8_test_true_loose(access_o.write_lock))
-  `ASSERT(ReadLockPropagation_A,
+  `OCAH_OT_ASSERT(ReadLockPropagation_A,
       mubi8_test_true_loose(access_i.read_lock)
       |->
       mubi8_test_true_loose(access_o.read_lock))
   // If the partition is read locked, the TL-UL access must error out
-  `ASSERT(TlulReadOnReadLock_A,
+  `OCAH_OT_ASSERT(TlulReadOnReadLock_A,
       tlul_req_i && tlul_gnt_o ##1 mubi8_test_true_loose(access_o.read_lock)
       |->
       tlul_rerror_o > '0 && tlul_rvalid_o)
   // ECC error in buffer regs.
-  `ASSERT(EccErrorState_A,
+  `OCAH_OT_ASSERT(EccErrorState_A,
       ecc_err
       |=>
       state_q == ErrorSt)
   // OTP error response
-  `ASSERT(OtpErrorState_A,
+  `OCAH_OT_ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, ReadWaitSt} && otp_rvalid_i &&
       !(otp_err inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>

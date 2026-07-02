@@ -75,10 +75,10 @@ module prim_keccak #(
   // Assertions //
   ////////////////
 
-  `ASSERT_INIT(ValidWidth_A, Width inside {25, 50, 100, 200, 400, 800, 1600})
-  `ASSERT_INIT(ValidW_A, W inside {1, 2, 4, 8, 16, 32, 64})
-  `ASSERT_INIT(ValidL_A, L inside {0, 1, 2, 3, 4, 5, 6})
-  `ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
+  `OCAH_OT_ASSERT_INIT(ValidWidth_A, Width inside {25, 50, 100, 200, 400, 800, 1600})
+  `OCAH_OT_ASSERT_INIT(ValidW_A, W inside {1, 2, 4, 8, 16, 32, 64})
+  `OCAH_OT_ASSERT_INIT(ValidL_A, L inside {0, 1, 2, 3, 4, 5, 6})
+  `OCAH_OT_ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
 
   ///////////////
   // Functions //

@@ -331,7 +331,7 @@ module pinmux
     assign strap_en = strap_en_i || (strap_en_override_d && !strap_en_override_q);
 
     // The strap sampling override shall be set to high exactly once.
-    `ASSUME(LcCtrlStrapSampleOverrideOnce_A,
+    `OCAH_OT_ASSUME(LcCtrlStrapSampleOverrideOnce_A,
         $rose(strap_en_override_i) |-> always strap_en_override_i)
 
   end else begin : gen_no_strap_override
@@ -635,63 +635,63 @@ module pinmux
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o)
-  `ASSERT_KNOWN(DioOeKnownO_A, dio_oe_o)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(MioOeKnownO_A, mio_oe_o)
+  `OCAH_OT_ASSERT_KNOWN(DioOeKnownO_A, dio_oe_o)
 
-  `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
-  `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
+  `OCAH_OT_ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
+  `OCAH_OT_ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
 
-  `ASSERT_KNOWN(LcJtagTckKnown_A, lc_jtag_o.tck)
-  `ASSERT_KNOWN(LcJtagTrstKnown_A, lc_jtag_o.trst_n)
-  `ASSERT_KNOWN(LcJtagTmsKnown_A, lc_jtag_o.tms)
+  `OCAH_OT_ASSERT_KNOWN(LcJtagTckKnown_A, lc_jtag_o.tck)
+  `OCAH_OT_ASSERT_KNOWN(LcJtagTrstKnown_A, lc_jtag_o.trst_n)
+  `OCAH_OT_ASSERT_KNOWN(LcJtagTmsKnown_A, lc_jtag_o.tms)
 
-  `ASSERT_KNOWN(RvJtagTckKnown_A, rv_jtag_o.tck)
-  `ASSERT_KNOWN(RvJtagTrstKnown_A, rv_jtag_o.trst_n)
-  `ASSERT_KNOWN(RvJtagTmsKnown_A, rv_jtag_o.tms)
+  `OCAH_OT_ASSERT_KNOWN(RvJtagTckKnown_A, rv_jtag_o.tck)
+  `OCAH_OT_ASSERT_KNOWN(RvJtagTrstKnown_A, rv_jtag_o.trst_n)
+  `OCAH_OT_ASSERT_KNOWN(RvJtagTmsKnown_A, rv_jtag_o.tms)
 
-  `ASSERT_KNOWN(DftJtagTckKnown_A, dft_jtag_o.tck)
-  `ASSERT_KNOWN(DftJtagTrstKnown_A, dft_jtag_o.trst_n)
-  `ASSERT_KNOWN(DftJtagTmsKnown_A, dft_jtag_o.tms)
+  `OCAH_OT_ASSERT_KNOWN(DftJtagTckKnown_A, dft_jtag_o.tck)
+  `OCAH_OT_ASSERT_KNOWN(DftJtagTrstKnown_A, dft_jtag_o.trst_n)
+  `OCAH_OT_ASSERT_KNOWN(DftJtagTmsKnown_A, dft_jtag_o.tms)
 
-  `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
+  `OCAH_OT_ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
 
   // running on slow AON clock
-  `ASSERT_KNOWN(AonWkupReqKnownO_A, pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
-  `ASSERT_KNOWN(UsbWkupReqKnownO_A, usb_wkup_req_o, clk_aon_i, !rst_aon_ni)
-  `ASSERT_KNOWN(UsbWakeDetectActiveKnownO_A, usbdev_wake_detect_active_o, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(AonWkupReqKnownO_A, pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(UsbWkupReqKnownO_A, usb_wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(UsbWakeDetectActiveKnownO_A, usbdev_wake_detect_active_o, clk_aon_i, !rst_aon_ni)
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
-  `ASSUME(PinmuxWkupStable_A, pin_wkup_req_o |=> pin_wkup_req_o ||
+  `OCAH_OT_ASSUME(PinmuxWkupStable_A, pin_wkup_req_o |=> pin_wkup_req_o ||
       $fell(|reg2hw.wkup_cause) && !sleep_en_i, clk_aon_i, !rst_aon_ni)
 
   // Some inputs at the chip-level may be forced to X in chip-level simulations.
   // Therefore, we do not instantiate these assertions.
-  // `ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o)
-  // `ASSERT_KNOWN(DioToPeriphKnownO_A, dio_to_periph_o)
+  // `OCAH_OT_ASSERT_KNOWN(MioToPeriphKnownO_A, mio_to_periph_o)
+  // `OCAH_OT_ASSERT_KNOWN(DioToPeriphKnownO_A, dio_to_periph_o)
 
   // The assertions below are not instantiated for a similar reason as the assertions above.
   // I.e., some IPs have pass-through paths, which may lead to X'es propagating
   // from input to output.
   // for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_known_if
-  //   `ASSERT_KNOWN_IF(MioOutKnownO_A, mio_out_o[k], mio_oe_o[k])
+  //   `OCAH_OT_ASSERT_KNOWN_IF(MioOutKnownO_A, mio_out_o[k], mio_oe_o[k])
   // end
   // for (genvar k = 0; k < NDioPads; k++) begin : gen_dio_known_if
-  //   `ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
+  //   `OCAH_OT_ASSERT_KNOWN_IF(DioOutKnownO_A, dio_out_o[k], dio_oe_o[k])
   // end
 
   // Check that an integrity error in the register block will cause the alert sender to be told to
   // send an alert. This is equivalent to ASSERT_ERROR_TRIGGER_ALERT_IN (but doesn't set
   // unused_assert_connected, because that signal doesn't exist).
-  `ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[0])
+  `OCAH_OT_ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[0])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 
   // The strap sampling enable input shall be pulsed high for exactly one cycle after cold boot.
-  `ASSUME(PwrMgrStrapSampleOnce0_A, strap_en_i |=> !strap_en_i)
-  `ASSUME(PwrMgrStrapSampleOnce1_A, $fell(strap_en_i) |-> always !strap_en_i)
+  `OCAH_OT_ASSUME(PwrMgrStrapSampleOnce0_A, strap_en_i |=> !strap_en_i)
+  `OCAH_OT_ASSUME(PwrMgrStrapSampleOnce1_A, $fell(strap_en_i) |-> always !strap_en_i)
 
 endmodule : pinmux

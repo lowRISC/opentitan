@@ -366,11 +366,11 @@ module ibex_multdiv_slow
   ////////////////
 
   // State must be valid.
-  `ASSERT(IbexMultDivStateValid, md_state_q inside {
+  `OCAH_OT_ASSERT(IbexMultDivStateValid, md_state_q inside {
       MD_IDLE, MD_ABS_A, MD_ABS_B, MD_COMP, MD_LAST, MD_CHANGE_SIGN, MD_FINISH
       }, clk_i, !rst_ni)
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   logic sva_fsm_idle;
   logic unused_sva_fsm_idle;
 

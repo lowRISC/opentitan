@@ -69,7 +69,7 @@ initial begin
   if ( !$value$plusargs("accelerate_regulators_power_up_time=%d", dv_hook) ) begin
     dv_hook = 2'd0;
   end
-  `ASSERT_I(accelerate_regulators_power_up_time, dv_hook inside {[0:3]})
+  `OCAH_OT_ASSERT_I(accelerate_regulators_power_up_time, dv_hook inside {[0:3]})
 end
 `else
 assign dv_hook = 2'd0;
@@ -85,7 +85,7 @@ initial begin
   if ( !$value$plusargs("accelerate_cold_power_up_time=%d", cld_pu_val) ) begin
     cld_pu_val = LC2HCOC[9-1:0];
   end
-  `ASSERT_I(accelerate_cold_power_up_time, cld_pu_val inside {[2:LC2HCOC[9-1:0]]})
+  `OCAH_OT_ASSERT_I(accelerate_cold_power_up_time, cld_pu_val inside {[2:LC2HCOC[9-1:0]]})
 end
 `else
 assign cld_pu_val = LC2HCOC[9-1:0];

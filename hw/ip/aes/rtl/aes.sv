@@ -248,21 +248,21 @@ module aes
   ////////////////
 
   // All outputs should have a known value after reset
-  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-  `ASSERT_KNOWN(IdleKnown, idle_o)
-  `ASSERT_KNOWN(EdnReqKnown, edn_o)
-  `ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(IdleKnown, idle_o)
+  `OCAH_OT_ASSERT_KNOWN(EdnReqKnown, edn_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxKnown, alert_tx_o)
 
   // Alert assertions for sparse FSMs.
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_control_fsm_svas
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_control_fsm_svas_p
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesControlFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesControlFsmCheck_A,
           u_aes_core.u_aes_control.gen_fsm[i].gen_fsm_p.
               u_aes_control_fsm_i.u_aes_control_fsm.u_state_regs,
           alert_tx_o[1])
     end else begin : gen_control_fsm_svas_n
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesControlFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesControlFsmCheck_A,
           u_aes_core.u_aes_control.gen_fsm[i].gen_fsm_n.
               u_aes_control_fsm_i.u_aes_control_fsm.u_state_regs,
           alert_tx_o[1])
@@ -271,12 +271,12 @@ module aes
 
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_ctr_fsm_svas
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_ctr_fsm_svas_p
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCtrFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCtrFsmCheck_A,
           u_aes_core.u_aes_ctr.gen_fsm[i].gen_fsm_p.
               u_aes_ctr_fsm_i.u_aes_ctr_fsm.u_state_regs,
           alert_tx_o[1])
     end else begin : gen_ctr_fsm_svas_n
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCtrFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCtrFsmCheck_A,
           u_aes_core.u_aes_ctr.gen_fsm[i].gen_fsm_n.
               u_aes_ctr_fsm_i.u_aes_ctr_fsm.u_state_regs,
           alert_tx_o[1])
@@ -285,12 +285,12 @@ module aes
 
   for (genvar i = 0; i < Sp2VWidth; i++) begin : gen_cipher_control_fsm_svas
     if (SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_cipher_control_fsm_svas_p
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
           u_aes_core.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].gen_fsm_p.
               u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
           alert_tx_o[1])
     end else begin : gen_cipher_control_fsm_svas_n
-      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
+      `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
           u_aes_core.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].gen_fsm_n.
               u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
           alert_tx_o[1])
@@ -298,23 +298,23 @@ module aes
   end
 
   if (AESGCMEnable) begin : gen_ghash_fsm_sva
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesGhashFsmCheck_A,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesGhashFsmCheck_A,
         u_aes_core.gen_ghash.u_aes_ghash.u_state_regs,
         alert_tx_o[1])
   end
 
   if (AESGCMEnable && SecMasking) begin : gen_ghash_onehot_sva
     for (genvar s = 0; s < 2; s++) begin : gen_ghash_onehot_add_in_sva
-      `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashAadOnehotCheck_A,
+      `OCAH_OT_ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashAadOnehotCheck_A,
           u_aes_core.gen_ghash.u_aes_ghash.gen_masked_add.gen_add_in_muxes[s].
               u_prim_onehot_check_add_in_sel,
           alert_tx_o[1])
     end
-    `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashMultOnehotCheck_A,
+    `OCAH_OT_ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashMultOnehotCheck_A,
         u_aes_core.gen_ghash.u_aes_ghash.gen_gf_mult1_mux.u_prim_onehot_check_gf_mult1_in_sel,
         alert_tx_o[1])
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule

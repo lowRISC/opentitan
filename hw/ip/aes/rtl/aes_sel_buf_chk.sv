@@ -70,7 +70,7 @@ module aes_sel_buf_chk #(
     end
 
     // Assertion
-    `ASSERT(AesMux2SelValid, !err_o |-> sel_chk inside {
+    `OCAH_OT_ASSERT(AesMux2SelValid, !err_o |-> sel_chk inside {
         MUX2_SEL_0,
         MUX2_SEL_1
         })
@@ -91,7 +91,7 @@ module aes_sel_buf_chk #(
     end
 
     // Assertion
-    `ASSERT(AesMux3SelValid, !err_o |-> sel_chk inside {
+    `OCAH_OT_ASSERT(AesMux3SelValid, !err_o |-> sel_chk inside {
         MUX3_SEL_0,
         MUX3_SEL_1,
         MUX3_SEL_2
@@ -114,7 +114,7 @@ module aes_sel_buf_chk #(
     end
 
     // Assertion
-    `ASSERT(AesMux4SelValid, !err_o |-> sel_chk inside {
+    `OCAH_OT_ASSERT(AesMux4SelValid, !err_o |-> sel_chk inside {
         MUX4_SEL_0,
         MUX4_SEL_1,
         MUX4_SEL_2,
@@ -140,7 +140,7 @@ module aes_sel_buf_chk #(
     end
 
     // Assertion
-    `ASSERT(AesMux6SelValid, !err_o |-> sel_chk inside {
+    `OCAH_OT_ASSERT(AesMux6SelValid, !err_o |-> sel_chk inside {
         MUX6_SEL_0,
         MUX6_SEL_1,
         MUX6_SEL_2,
@@ -159,6 +159,6 @@ module aes_sel_buf_chk #(
   ////////////////
 
   // We only have generic sparse encodings defined for certain mux input numbers (see aes_pkg.sv).
-  `ASSERT_INIT(AesSelBufChkNum, Num inside {2, 3, 4, 6})
+  `OCAH_OT_ASSERT_INIT(AesSelBufChkNum, Num inside {2, 3, 4, 6})
 
 endmodule

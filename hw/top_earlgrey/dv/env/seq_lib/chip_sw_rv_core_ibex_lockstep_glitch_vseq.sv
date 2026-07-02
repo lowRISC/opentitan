@@ -520,7 +520,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       default: ;
     endcase
 
-    `ASSERT_I(GlitchedInpUsedKnown_A, !$isunknown(glitched_inp_used))
+    `OCAH_OT_ASSERT_I(GlitchedInpUsedKnown_A, !$isunknown(glitched_inp_used))
 
     // Sample port value prior to glitching.
     `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_val))

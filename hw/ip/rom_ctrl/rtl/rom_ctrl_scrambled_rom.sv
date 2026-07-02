@@ -90,13 +90,13 @@ module rom_ctrl_scrambled_rom
 
   // Trigger an SVA and further a lint error to reduce the risk of accidentally going below the
   // minimum ChunkDepth.
-  `ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
+  `OCAH_OT_ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
       DepthPow2 || Depth % MinChunkDepth == 0)
-  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
       DepthPow2 || Depth % MinChunkDepth == 0)
 
   // We only support a width up to 64
-  `ASSERT_INIT(MaxWidthCheck_A, Width <= 64)
+  `OCAH_OT_ASSERT_INIT(MaxWidthCheck_A, Width <= 64)
 
   // Address scrambling ========================================================
   logic [Aw-1:0] addr_scr;

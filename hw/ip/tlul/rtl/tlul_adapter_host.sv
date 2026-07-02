@@ -155,7 +155,7 @@ module tlul_adapter_host
                                 tl_i.d_size, tl_i.d_source, tl_i.d_sink,
                                 tl_i.d_user};
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
   localparam int OutstandingReqCntW =
@@ -185,6 +185,6 @@ module tlul_adapter_host
   //VCS coverage on
   // pragma coverage on
 
-  `ASSERT(DontExceeedMaxReqs, req_i |-> outstanding_reqs_d <= MAX_REQS)
+  `OCAH_OT_ASSERT(DontExceeedMaxReqs, req_i |-> outstanding_reqs_d <= MAX_REQS)
 `endif
 endmodule

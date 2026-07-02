@@ -1098,10 +1098,10 @@ module aes_core
   ////////////////
 
   // Create a lint error to reduce the risk of accidentally disabling the masking.
-  `ASSERT_STATIC_LINT_ERROR(AesCoreSecMaskingNonDefault, SecMasking == 1)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesCoreSecMaskingNonDefault, SecMasking == 1)
 
   // Selectors must be known/valid
-  `ASSERT(AesModeValid, !ctrl_err_storage |-> aes_mode_q inside {
+  `OCAH_OT_ASSERT(AesModeValid, !ctrl_err_storage |-> aes_mode_q inside {
       AES_ECB,
       AES_CBC,
       AES_CFB,
@@ -1110,13 +1110,13 @@ module aes_core
       AES_GCM,
       AES_NONE
       })
-  `ASSERT(AesOpValid, !ctrl_err_storage |-> aes_op_q inside {
+  `OCAH_OT_ASSERT(AesOpValid, !ctrl_err_storage |-> aes_op_q inside {
       AES_ENC,
       AES_DEC
       })
 
   // Check parameters
-  `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
+  `OCAH_OT_ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
 
   // Signals used for assertions only.
   logic [3:0][31:0] state_done_transposed, unused_state_done_transposed;
@@ -1129,13 +1129,13 @@ module aes_core
 
   // Ensure that upon local escalation of any of the FSMs, no intermediate state is released from
   // the cipher core into the software readable output data or IV registers.
-  `ASSERT(AesSecCmDataRegLocalEscDataOut, $changed(data_out_q) && alert_fatal_o &&
+  `OCAH_OT_ASSERT(AesSecCmDataRegLocalEscDataOut, $changed(data_out_q) && alert_fatal_o &&
       ($past(cipher_crypt, 2) == SP2V_HIGH || $past(cipher_crypt_busy, 2) == SP2V_HIGH) |=>
       ($past(data_out_q) != $past(state_done_transposed, 2)) &&
       ($past(data_out_q) != $past(state_done_transposed, 2) ^ $past(iv_q, 2)) &&
       ($past(data_out_q) != $past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2)))
 
-  `ASSERT(AesSecCmDataRegLocalEscIv, $changed(iv_q) && alert_fatal_o &&
+  `OCAH_OT_ASSERT(AesSecCmDataRegLocalEscIv, $changed(iv_q) && alert_fatal_o &&
       ($past(cipher_crypt, 2) == SP2V_HIGH || $past(cipher_crypt_busy, 2) == SP2V_HIGH) |=>
       ($past(iv_q) != $past(state_done_transposed, 2)) &&
       ($past(iv_q) != $past(state_done_transposed, 2) ^ $past(iv_q, 2)) &&

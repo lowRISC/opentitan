@@ -30,7 +30,7 @@ module prim_pad_wrapper
 );
 
   // analog pads cannot have a scan role.
-  `ASSERT_INIT(AnalogNoScan_A, PadType != AnalogIn0 || ScanRole == NoScan)
+  `OCAH_OT_ASSERT_INIT(AnalogNoScan_A, PadType != AnalogIn0 || ScanRole == NoScan)
 
   // not all signals are used here.
   logic unused_sigs;

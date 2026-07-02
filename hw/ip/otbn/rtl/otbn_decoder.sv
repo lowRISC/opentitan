@@ -1177,25 +1177,25 @@ module otbn_decoder
   ////////////////
   // Shift amount for bn.shv must be within 5 bits to ensure that the generated shifter mask
   // matches the actual shift amount.
-  `ASSERT(BignumShvAmtLimit,
+  `OCAH_OT_ASSERT(BignumShvAmtLimit,
           insn_valid_o && (alu_operator_bignum == AluOpBignumShv) |-> (alu_shift_amt_bignum < 32))
 
   // Selectors must be known/valid.
-  `ASSERT(IbexRegImmAluOpBaseKnown, (opcode == InsnOpcodeBaseOpImm) |-> !$isunknown(insn[14:12]))
+  `OCAH_OT_ASSERT(IbexRegImmAluOpBaseKnown, (opcode == InsnOpcodeBaseOpImm) |-> !$isunknown(insn[14:12]))
 
   // Can only do a single inc. Selection mux in controller doesn't factor in instruction valid (to
   // ease timing), so these must always be one-hot to 0 to avoid violating unique constraint for mux
   // case statement.
-  `ASSERT(BignumRegIncOnehot,
+  `OCAH_OT_ASSERT(BignumRegIncOnehot,
           $onehot0({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
   // RfWdSelIncr requires active selection
-  `ASSERT(BignumRegIncReq,
+  `OCAH_OT_ASSERT(BignumRegIncReq,
           (insn_valid_o && (rf_wdata_sel_base == RfWdSelIncr))
           |->
           $onehot({a_inc_bignum, a_wlen_word_inc_bignum, b_inc_bignum, d_inc_bignum}))
 
-  `ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base)
-  `ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base)
-  `ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base)
+  `OCAH_OT_ASSERT(BaseRenOnBignumIndirectA, insn_valid_o & rf_a_indirect_bignum |-> rf_ren_a_base)
+  `OCAH_OT_ASSERT(BaseRenOnBignumIndirectB, insn_valid_o & rf_b_indirect_bignum |-> rf_ren_b_base)
+  `OCAH_OT_ASSERT(BaseRenOnBignumIndirectD, insn_valid_o & rf_d_indirect_bignum |-> rf_ren_b_base)
 endmodule

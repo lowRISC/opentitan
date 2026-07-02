@@ -229,6 +229,6 @@ module otbn_rnd import otbn_pkg::*;
   logic unused_trivium;
   assign unused_trivium = ^edn_urnd_i.edn_fips;
 
-  `ASSERT(RndClearOnReqComplete_A, rnd_req_complete |=> ~rnd_valid_q)
-  `ASSERT(UrndNoReseedOnReset_A, ~rst_ni === ~seed_en_q, clk_i, rst_ni)
+  `OCAH_OT_ASSERT(RndClearOnReqComplete_A, rnd_req_complete |=> ~rnd_valid_q)
+  `OCAH_OT_ASSERT(UrndNoReseedOnReset_A, ~rst_ni === ~seed_en_q, clk_i, rst_ni)
 endmodule

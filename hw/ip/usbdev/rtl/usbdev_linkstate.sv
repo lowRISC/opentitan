@@ -224,7 +224,7 @@ module usbdev_linkstate (
     end
   end
 
-  `ASSERT(LinkStateValid_A, link_state_q inside {LinkDisconnected, LinkPowered,
+  `OCAH_OT_ASSERT(LinkStateValid_A, link_state_q inside {LinkDisconnected, LinkPowered,
     LinkPoweredSuspended, LinkResuming, LinkActiveNoSOF, LinkActive, LinkSuspended}, clk_48mhz_i)
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
@@ -284,7 +284,7 @@ module usbdev_linkstate (
     endcase
   end
 
-  `ASSERT(LinkRstStateValid_A, link_rst_state_q inside {NoRst, RstCnt, RstPend}, clk_48mhz_i)
+  `OCAH_OT_ASSERT(LinkRstStateValid_A, link_rst_state_q inside {NoRst, RstCnt, RstPend}, clk_48mhz_i)
 
   assign link_reset_o = link_reset;
 
@@ -342,7 +342,7 @@ module usbdev_linkstate (
     endcase
   end
 
-  `ASSERT(LincInacStateValid_A, link_inac_state_q inside {Active, InactCnt, InactPend}, clk_48mhz_i)
+  `OCAH_OT_ASSERT(LincInacStateValid_A, link_inac_state_q inside {Active, InactCnt, InactPend}, clk_48mhz_i)
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin : proc_reg_idle_det
     if (!rst_ni) begin

@@ -224,7 +224,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   // of them. This assertion checks that we don't miss writes if the register top changes and the
   // "unused_extra_qe" signal avoids a lint error (because the lint tool doesn't expand the
   // assertion).
-  `ASSERT(IntrTestFieldsQeMatch_A,
+  `OCAH_OT_ASSERT(IntrTestFieldsQeMatch_A,
           reg2hw.intr_test.wkup_timer_expired.qe == reg2hw.intr_test.wdog_timer_bark.qe)
   logic unused_extra_qe;
   assign unused_extra_qe = reg2hw.intr_test.wdog_timer_bark.qe;
@@ -285,17 +285,17 @@ module aon_timer import aon_timer_reg_pkg::*;
   /////////////////////////////
 
   // clk_i domain
-  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(IntrWkupKnown_A, intr_wkup_timer_expired_o)
-  `ASSERT_KNOWN(IntrWdogKnown_A, intr_wdog_timer_bark_o)
-  `ASSERT_KNOWN(NmiWdogKnown_A, nmi_wdog_timer_bark_o)
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrWkupKnown_A, intr_wkup_timer_expired_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrWdogKnown_A, intr_wdog_timer_bark_o)
+  `OCAH_OT_ASSERT_KNOWN(NmiWdogKnown_A, nmi_wdog_timer_bark_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o.valid)
   // clk_aon_i domain
-  `ASSERT_KNOWN(WkupReqKnown_A, wkup_req_o, clk_aon_i, !rst_aon_ni)
-  `ASSERT_KNOWN(RstReqKnown_A, aon_timer_rst_req_o, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(WkupReqKnown_A, wkup_req_o, clk_aon_i, !rst_aon_ni)
+  `OCAH_OT_ASSERT_KNOWN(RstReqKnown_A, aon_timer_rst_req_o, clk_aon_i, !rst_aon_ni)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

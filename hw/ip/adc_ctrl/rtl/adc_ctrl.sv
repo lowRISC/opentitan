@@ -100,13 +100,13 @@ module adc_ctrl
   );
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(IntrKnown, intr_match_pending_o)
-  `ASSERT_KNOWN(WakeKnown, wkup_req_o)
-  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-  `ASSERT_KNOWN(AdcKnown_A, adc_o)
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrKnown, intr_match_pending_o)
+  `OCAH_OT_ASSERT_KNOWN(WakeKnown, wkup_req_o)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AdcKnown_A, adc_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

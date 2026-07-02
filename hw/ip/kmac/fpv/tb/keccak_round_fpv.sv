@@ -193,23 +193,23 @@ module keccak_round_fpv #(
     endcase
   end
 
-  //`ASSUME_FPV(DataNotPushWhenProgress_A, msg_valid |-> !in_progress && !valid_i)
-  `ASSUME_FPV(ValidPulse_A, ##1 valid_i |=> !valid_i, clk_i, !rst_ni)
+  //`OCAH_OT_ASSUME_FPV(DataNotPushWhenProgress_A, msg_valid |-> !in_progress && !valid_i)
+  `OCAH_OT_ASSUME_FPV(ValidPulse_A, ##1 valid_i |=> !valid_i, clk_i, !rst_ni)
 
 
   logic [255:0] digest_0;
   // Big-Endian a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
   assign digest_0 = 256'h 4a43_f880_4b0a_d882_fa49_3be4_4dff_80f5_62d6_61a0_5647_c151_66d7_1ebf_f8c6_ffa7;
-  `ASSUME_FPV(FixedRandomValue_A, rand_i == '1)
-  `ASSUME_FPV(FixedRandomValid_A, rand_valid_i == '1)
-  `ASSERT(DigestForData0TestSHA3_256_Masked_A,
+  `OCAH_OT_ASSUME_FPV(FixedRandomValue_A, rand_i == '1)
+  `OCAH_OT_ASSUME_FPV(FixedRandomValid_A, rand_valid_i == '1)
+  `OCAH_OT_ASSERT(DigestForData0TestSHA3_256_Masked_A,
           masked_complete |-> (masked_state[0][255:0] ^ masked_state[1][255:0]) == digest_0,
           clk_i, !rst_ni)
-  `ASSERT(DigestForData0TestSHA3_256_Unmasked_A,
+  `OCAH_OT_ASSERT(DigestForData0TestSHA3_256_Unmasked_A,
           unmasked_complete |-> unmasked_state[0][255:0] == digest_0,
           clk_i, !rst_ni)
 
   // After a round is completed or at the beginning, golden value and keccak 2share shall be same
-  `ASSERT(MaskedSameToUnmasked_A, masked_complete |-> compare_states == '0, clk_i, !rst_ni)
+  `OCAH_OT_ASSERT(MaskedSameToUnmasked_A, masked_complete |-> compare_states == '0, clk_i, !rst_ni)
 
 endmodule

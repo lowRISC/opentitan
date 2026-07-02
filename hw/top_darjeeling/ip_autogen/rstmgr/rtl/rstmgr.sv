@@ -309,7 +309,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_daon_por_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonPorFsmCheck_A,
     u_daon_por.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -343,7 +343,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_daon_por_io_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonPorIoFsmCheck_A,
     u_daon_por_io.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -377,7 +377,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_daon_lc_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonLcFsmCheck_A,
     u_daon_lc.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -401,7 +401,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_dmain_lc_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DMainLcFsmCheck_A,
     u_dmain_lc.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -425,7 +425,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_daon_lc_shadowed_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonLcShadowedFsmCheck_A,
     u_daon_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -449,7 +449,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_dmain_lc_shadowed_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DMainLcShadowedFsmCheck_A,
     u_dmain_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -477,7 +477,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_daon_lc_aon_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonLcAonFsmCheck_A,
     u_daon_lc_aon.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -591,7 +591,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_dmain_sys_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DMainSysFsmCheck_A,
     u_dmain_sys.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -625,7 +625,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_dmain_spi_device_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DMainSpiDeviceFsmCheck_A,
     u_dmain_spi_device.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -659,7 +659,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_dmain_spi_host0_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DMainSpiHost0FsmCheck_A,
     u_dmain_spi_host0.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -693,7 +693,7 @@ module rstmgr
   );
 
   if (SecCheck) begin : gen_dmain_i2c0_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DMainI2c0FsmCheck_A,
     u_dmain_i2c0.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -798,18 +798,18 @@ module rstmgr
   // Assertions                                     //
   ////////////////////////////////////////////////////
 
-  `ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::HwResetWidth)
+  `OCAH_OT_ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::HwResetWidth)
 
   // when upstream resets, downstream must also reset
 
   // output known asserts
-  `ASSERT_KNOWN(TlDValidKnownO_A,    tl_o.d_valid  )
-  `ASSERT_KNOWN(TlAReadyKnownO_A,    tl_o.a_ready  )
-  `ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
-  `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
-  `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
-  `ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A,    tl_o.d_valid  )
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A,    tl_o.a_ready  )
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
+  `OCAH_OT_ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
+  `OCAH_OT_ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
+  `OCAH_OT_ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule // rstmgr

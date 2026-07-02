@@ -41,10 +41,10 @@ interface aes_reseed_if
   assign seed = {buffer_q, entropy_i};
 
   // Make sure the LFSR of the clearing PRNG is set to the correct value.
-  `ASSERT(ClearingPrngStateMatchesEdnInput_A, seed_en |-> ##1 seed == lfsr_q)
+  `OCAH_OT_ASSERT(ClearingPrngStateMatchesEdnInput_A, seed_en |-> ##1 seed == lfsr_q)
 
   // Make sure the PRNGs get reseeded as expected based on the KEY_TOUCH_FORCES_RESEED control bit.
-  `ASSERT(KeyTouchForcesReseed_A, key_touch_forces_reseed && key_init_new_pulse |->
+  `OCAH_OT_ASSERT(KeyTouchForcesReseed_A, key_touch_forces_reseed && key_init_new_pulse |->
     ##[1:20] entropy_clearing_req && (`EN_MASKING == entropy_masking_req) || alert_fatal)
 
 endinterface // aes_reseed_if

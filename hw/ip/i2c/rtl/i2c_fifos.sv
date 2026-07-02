@@ -64,10 +64,10 @@ import i2c_reg_pkg::AcqFifoDepth;
 
   // RAM synthesis parameters
   localparam int unsigned RamDepth = 464;
-  `ASSERT_INIT(RamDepthSuffices_A, RamDepth >= 3 * FifoDepth + AcqFifoDepth)
+  `OCAH_OT_ASSERT_INIT(RamDepthSuffices_A, RamDepth >= 3 * FifoDepth + AcqFifoDepth)
   localparam int unsigned RamAw = prim_util_pkg::vbits(RamDepth);
   localparam int unsigned RamWidth = 13;
-  `ASSERT_INIT(RamWidthSuffices_A,
+  `OCAH_OT_ASSERT_INIT(RamWidthSuffices_A,
                RamWidth >= FMT_FIFO_WIDTH &&
                RamWidth >= RX_FIFO_WIDTH &&
                RamWidth >= TX_FIFO_WIDTH &&
@@ -309,13 +309,13 @@ import i2c_reg_pkg::AcqFifoDepth;
   // granted.  Put differently, we assume this module for those FIFOs will never see a write that
   // would be dropped (e.g., because the FIFO is full).  This does not hold for the RX FIFO, for
   // which `i2c_core` will register an overflow event if there is a wvalid without a wready.
-  `ASSUME(FmtWriteStableBeforeHandshake_A,
+  `OCAH_OT_ASSUME(FmtWriteStableBeforeHandshake_A,
           fmt_fifo_wvalid_i && !fmt_fifo_wready_o
           |=> $stable(fmt_fifo_wvalid_i) && $stable(fmt_fifo_wdata_i))
-  `ASSUME(AcqWriteStableBeforeHandshake_A,
+  `OCAH_OT_ASSUME(AcqWriteStableBeforeHandshake_A,
           acq_fifo_wvalid_i && !acq_fifo_wready_o
           |=> $stable(acq_fifo_wvalid_i) && $stable(acq_fifo_wdata_i))
-  `ASSUME(TxWriteStableBeforeHandshake_A,
+  `OCAH_OT_ASSUME(TxWriteStableBeforeHandshake_A,
           tx_fifo_wvalid_i && !tx_fifo_wready_o
           |=> $stable(tx_fifo_wvalid_i) && $stable(tx_fifo_wdata_i))
 

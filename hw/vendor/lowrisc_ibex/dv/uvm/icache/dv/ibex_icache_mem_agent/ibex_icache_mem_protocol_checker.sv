@@ -24,21 +24,21 @@ interface ibex_icache_mem_protocol_checker (
 );
 
   // The req, gnt and rvalid lines should always be known
-  `ASSERT_KNOWN(ReqKnown,    req,     clk, !rst_n)
-  `ASSERT_KNOWN(GntKnown,    gnt,     clk, !rst_n)
-  `ASSERT_KNOWN(RvalidKnown, rvalid,  clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN(ReqKnown,    req,     clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN(GntKnown,    gnt,     clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN(RvalidKnown, rvalid,  clk, !rst_n)
 
   // The addr value should be known when req is asserted
-  `ASSERT_KNOWN_IF(AddrKnown, addr, req, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(AddrKnown, addr, req, clk, !rst_n)
 
   // The err value should be known when rvalid is asserted and rdata should be known if err is
   // false.
-  `ASSERT_KNOWN_IF(ErrKnown,   err,   rvalid,        clk, !rst_n)
-  `ASSERT_KNOWN_IF(RDataKnown, rdata, rvalid & ~err, clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(ErrKnown,   err,   rvalid,        clk, !rst_n)
+  `OCAH_OT_ASSERT_KNOWN_IF(RDataKnown, rdata, rvalid & ~err, clk, !rst_n)
 
   // The 'req' signal starts a request and shouldn't drop again until granted. Similarly, requested
   // address must be stable until the request is granted.
-  `ASSERT(ReqUntilGrant, req & ~gnt |=> req,           clk, !rst_n)
-  `ASSERT(AddrStable,    req & ~gnt |=> $stable(addr), clk, !rst_n)
+  `OCAH_OT_ASSERT(ReqUntilGrant, req & ~gnt |=> req,           clk, !rst_n)
+  `OCAH_OT_ASSERT(AddrStable,    req & ~gnt |=> $stable(addr), clk, !rst_n)
 
 endinterface

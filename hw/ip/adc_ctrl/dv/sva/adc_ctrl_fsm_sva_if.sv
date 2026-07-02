@@ -32,24 +32,24 @@ interface adc_ctrl_fsm_sva_if
     // FSM software reset
     FsmStateSwReset_A:
       assert property (cfg_fsm_rst_i |=> fsm_state_q == FsmResetState)
-      else `ASSERT_ERROR(FsmStateSwReset_A)
+      else `OCAH_OT_ASSERT_ERROR(FsmStateSwReset_A)
     PwrupTimerCntSwReset_A:
       assert property (cfg_fsm_rst_i |=> pwrup_timer_cnt_q == 0)
-      else `ASSERT_ERROR(PwrupTimerCntSwReset_A)
+      else `OCAH_OT_ASSERT_ERROR(PwrupTimerCntSwReset_A)
     WakeupTimerCntSwReset_A:
       assert property (cfg_fsm_rst_i |=> wakeup_timer_cnt_q == 0)
-      else `ASSERT_ERROR(WakeupTimerCntSwReset_A)
+      else `OCAH_OT_ASSERT_ERROR(WakeupTimerCntSwReset_A)
     NpSampleCntSwReset_A:
       assert property (cfg_fsm_rst_i |=> np_sample_cnt_q == 0)
-      else `ASSERT_ERROR(NpSampleCntSwReset_A)
+      else `OCAH_OT_ASSERT_ERROR(NpSampleCntSwReset_A)
     LpSampleCntSwReset_A:
       assert property (cfg_fsm_rst_i |=> lp_sample_cnt_q == 0)
-      else `ASSERT_ERROR(LpSampleCntSwReset_A)
+      else `OCAH_OT_ASSERT_ERROR(LpSampleCntSwReset_A)
 
     // Check connectivity of the state output register (this is used for debug only).
     FsmDebugOut_A:
       assert property (fsm_state_q === tb.dut.u_reg.hw2reg.adc_fsm_state.d)
-      else `ASSERT_ERROR(FsmDebugOut_A)
+      else `OCAH_OT_ASSERT_ERROR(FsmDebugOut_A)
   end
 
   // FSM hardware reset
@@ -68,17 +68,17 @@ interface adc_ctrl_fsm_sva_if
 
   FsmStateHwReset_A:
     assert property (start_of_reset -> fsm_state_q == FsmResetState)
-    else `ASSERT_ERROR(FsmStateHwReset_A)
+    else `OCAH_OT_ASSERT_ERROR(FsmStateHwReset_A)
   PwrupTimerCntHwReset_A:
     assert property (start_of_reset -> pwrup_timer_cnt_q == 0)
-    else `ASSERT_ERROR(PwrupTimerCntHwReset_A)
+    else `OCAH_OT_ASSERT_ERROR(PwrupTimerCntHwReset_A)
   WakeupTimerCntHwReset_A:
     assert property (start_of_reset -> wakeup_timer_cnt_q == 0)
-    else `ASSERT_ERROR(WakeupTimerCntHwReset_A)
+    else `OCAH_OT_ASSERT_ERROR(WakeupTimerCntHwReset_A)
   NpSampleCntHwReset_A:
     assert property (start_of_reset -> np_sample_cnt_q == 0)
-    else `ASSERT_ERROR(NpSampleCntHwReset_A)
+    else `OCAH_OT_ASSERT_ERROR(NpSampleCntHwReset_A)
   LpSampleCntHwReset_A:
     assert property (start_of_reset -> lp_sample_cnt_q == 0)
-    else `ASSERT_ERROR(LpSampleCntHwReset_A)
+    else `OCAH_OT_ASSERT_ERROR(LpSampleCntHwReset_A)
 endinterface

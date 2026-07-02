@@ -48,7 +48,7 @@ module otbn_sec_add
 );
 
   // Width needs to be a power of 2.
-  `ASSERT_INIT(OtbnSecAddWidthPow2_A, (Width & (Width - 1)) == 0)
+  `OCAH_OT_ASSERT_INIT(OtbnSecAddWidthPow2_A, (Width & (Width - 1)) == 0)
 
   // g[l][s][i]: prefix generate for share s, bit i, after l prefix stages.
   // p[l][s][i]: prefix propagate for share s, bit i, after l prefix stages.
@@ -57,7 +57,7 @@ module otbn_sec_add
   logic [Stages:0][NumShares-1:0][Width-1:0] p;
   logic [Stages+1:0][NumShares-1:0][Width-1:0] pre_p;
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // Tracks which rand_i bits are consumed by the generate loops below.
   // ASSERT_FINAL at the end of the module verifies full coverage.
   logic [RandWidth-1:0] rand_coverage;
@@ -120,7 +120,7 @@ module otbn_sec_add
       .z_o ({g[0][1][i], g[0][0][i]})
     );
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
     assign rand_coverage[2*i]   = 1'b1;
     assign rand_coverage[2*i+1] = 1'b1;
 `endif
@@ -221,7 +221,7 @@ module otbn_sec_add
           .z_o ({g[level][1][i], g[level][0][i]})
         );
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
         assign rand_coverage[NodeRandOffset]   = 1'b1;
         assign rand_coverage[NodeRandOffset+1] = 1'b1;
 `endif
@@ -262,7 +262,7 @@ module otbn_sec_add
             .z_o ({p[level][1][i], p[level][0][i]})
           );
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
           assign rand_coverage[NodeRandOffset+2] = 1'b1;
           assign rand_coverage[NodeRandOffset+3] = 1'b1;
 `endif
@@ -317,9 +317,9 @@ module otbn_sec_add
   // Output valid signal only when there was no stall in the previous cycle.
   assign valid_o = en[Stages+1] && !stall_q;
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // Assert that all rand_i bits are assigned.
-  `ASSERT_FINAL(OtbnSecAddRandCoverageComplete_A, rand_coverage == {RandWidth{1'b1}})
+  `OCAH_OT_ASSERT_FINAL(OtbnSecAddRandCoverageComplete_A, rand_coverage == {RandWidth{1'b1}})
 `endif
 
 endmodule

@@ -57,7 +57,7 @@ module aes_prng_clearing import aes_pkg::*;
   // which prevents meaningful SCA resistance evaluations.
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(AesSecSkipPRNGReseedingNonDefault, SecSkipPRNGReseeding == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(AesSecSkipPRNGReseedingNonDefault, SecSkipPRNGReseeding == 0)
 
   // LFSR control
   assign lfsr_en = data_update_i;
@@ -144,7 +144,7 @@ module aes_prng_clearing import aes_pkg::*;
   end
 
   // Width must be 64.
-  `ASSERT_INIT(AesPrngWidth, Width == 64)
+  `OCAH_OT_ASSERT_INIT(AesPrngWidth, Width == 64)
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
@@ -158,7 +158,7 @@ module aes_prng_clearing import aes_pkg::*;
     end
     unused_share_perm_test = share_perm_test;
     // All bit positions must be marked with 1.
-    `ASSERT_I(SharePermutationCheck_A, &share_perm_test)
+    `OCAH_OT_ASSERT_I(SharePermutationCheck_A, &share_perm_test)
   end
 `endif
 

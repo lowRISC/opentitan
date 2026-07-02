@@ -162,49 +162,49 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   // the result of the ALU but aren't themselves ALU operations (such as load/store and JALR). This
   // categorizes anything that selects the ALU as the source of register write data and enables
   // register writes minus some exclusions as an ALU operation.
-  `ASSERT(InstrCategoryALUCorrect, id_instr_category == InstrCategoryALU |->
+  `OCAH_OT_ASSERT(InstrCategoryALUCorrect, id_instr_category == InstrCategoryALU |->
       (id_stage_i.rf_wdata_sel == RF_WD_EX) && id_stage_i.rf_we_dec && ~id_stage_i.mult_sel_ex_o &&
       ~id_stage_i.div_sel_ex_o && ~id_stage_i.lsu_req_dec && ~id_stage_i.jump_in_dec)
 
-  `ASSERT(InstrCategoryMulCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryMulCorrect,
       id_instr_category == InstrCategoryMul |-> id_stage_i.mult_sel_ex_o)
 
-  `ASSERT(InstrCategoryDivCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryDivCorrect,
       id_instr_category == InstrCategoryDiv |-> id_stage_i.div_sel_ex_o)
 
-  `ASSERT(InstrCategoryBranchCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryBranchCorrect,
       id_instr_category == InstrCategoryBranch |-> id_stage_i.branch_in_dec)
 
-  `ASSERT(InstrCategoryJumpCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryJumpCorrect,
       id_instr_category == InstrCategoryJump |-> id_stage_i.jump_in_dec)
 
-  `ASSERT(InstrCategoryLoadCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryLoadCorrect,
       id_instr_category == InstrCategoryLoad |-> id_stage_i.lsu_req_dec && !id_stage_i.lsu_we)
 
-  `ASSERT(InstrCategoryStoreCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryStoreCorrect,
       id_instr_category == InstrCategoryStore |-> id_stage_i.lsu_req_dec && id_stage_i.lsu_we)
 
-  `ASSERT(InstrCategoryCSRAccessCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryCSRAccessCorrect,
       id_instr_category == InstrCategoryCSRAccess |-> id_stage_i.csr_access_o)
-  `ASSERT(InstrCategoryEBreakDbgCorrect, id_instr_category == InstrCategoryEBreakDbg |->
+  `OCAH_OT_ASSERT(InstrCategoryEBreakDbgCorrect, id_instr_category == InstrCategoryEBreakDbg |->
       id_stage_i.ebrk_insn && id_stage_i.controller_i.ebreak_into_debug)
 
-  `ASSERT(InstrCategoryEBreakExcCorrect, id_instr_category == InstrCategoryEBreakExc |->
+  `OCAH_OT_ASSERT(InstrCategoryEBreakExcCorrect, id_instr_category == InstrCategoryEBreakExc |->
       id_stage_i.ebrk_insn && !id_stage_i.controller_i.ebreak_into_debug)
 
-  `ASSERT(InstrCategoryECallCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryECallCorrect,
       id_instr_category == InstrCategoryECall |-> id_stage_i.ecall_insn_dec)
 
-  `ASSERT(InstrCategoryMRetCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryMRetCorrect,
       id_instr_category == InstrCategoryMRet |-> id_stage_i.mret_insn_dec)
 
-  `ASSERT(InstrCategoryDRetCorrect,
+  `OCAH_OT_ASSERT(InstrCategoryDRetCorrect,
       id_instr_category == InstrCategoryDRet |-> id_stage_i.dret_insn_dec)
 
-  `ASSERT(InstrCategoryWFICorrect,
+  `OCAH_OT_ASSERT(InstrCategoryWFICorrect,
       id_instr_category == InstrCategoryWFI |-> id_stage_i.wfi_insn_dec)
 
-  `ASSERT(InstrCategoryFenceICorrect,
+  `OCAH_OT_ASSERT(InstrCategoryFenceICorrect,
       id_instr_category == InstrCategoryFenceI && id_stage_i.instr_first_cycle |->
       id_stage_i.icache_inval_o)
 

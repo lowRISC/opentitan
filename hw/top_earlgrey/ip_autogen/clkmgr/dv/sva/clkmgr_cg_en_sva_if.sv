@@ -23,8 +23,8 @@ interface clkmgr_cg_en_sva_if
   logic clk_enable;
   always_comb clk_enable = ip_clk_en && sw_clk_en;
 
-  `ASSERT(CgEnOn_A, $fell(clk_enable) |=> ##[0:2] clk_enable || cg_en, clk,
+  `OCAH_OT_ASSERT(CgEnOn_A, $fell(clk_enable) |=> ##[0:2] clk_enable || cg_en, clk,
           !rst_n || scanmode == prim_mubi_pkg::MuBi4True || disable_sva)
-  `ASSERT(CgEnOff_A, $rose(clk_enable) |=> ##[0:2] !clk_enable || !cg_en, clk,
+  `OCAH_OT_ASSERT(CgEnOff_A, $rose(clk_enable) |=> ##[0:2] !clk_enable || !cg_en, clk,
           !rst_n || scanmode == prim_mubi_pkg::MuBi4True || disable_sva)
 endinterface

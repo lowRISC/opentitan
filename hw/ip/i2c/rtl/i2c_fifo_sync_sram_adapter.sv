@@ -60,14 +60,14 @@ module i2c_fifo_sync_sram_adapter #(
 
   // While it would theoretically be possible that the output buffer is as deep as the entire FIFO,
   // the current implementation doesn't support this.
-  `ASSERT_INIT(MinimalSramFifoDepth_A, SramFifoDepth >= 1)
+  `OCAH_OT_ASSERT_INIT(MinimalSramFifoDepth_A, SramFifoDepth >= 1)
 
   localparam int unsigned InpBufDepthW = prim_util_pkg::vbits(InpBufDepth + 1);
   localparam int unsigned OupBufDepthW = prim_util_pkg::vbits(OupBufDepth + 1);
   localparam int unsigned SramPtrW = prim_util_pkg::vbits(SramFifoDepth);
   localparam int unsigned SramDepthW = prim_util_pkg::vbits(SramFifoDepth + 1);
 
-  `ASSERT_INIT(MinimalSramAw_A, SramAw >= SramPtrW)
+  `OCAH_OT_ASSERT_INIT(MinimalSramAw_A, SramAw >= SramPtrW)
 
   localparam int unsigned SramAddrLeadingZeros = SramAw - SramPtrW;
 
@@ -251,18 +251,18 @@ module i2c_fifo_sync_sram_adapter #(
   assign unused_sram_rvalid = sram_rvalid_i;
 
   // When we read from the SRAM in the previous cycle, we expect valid read data in this cycle.
-  `ASSUME(SramRvalidAfterRead_A, sram_read_in_prev_cyc_q |-> sram_rvalid_i)
+  `OCAH_OT_ASSUME(SramRvalidAfterRead_A, sram_read_in_prev_cyc_q |-> sram_rvalid_i)
 
   // When we read from the SRAM in the previous cycle, the output buffer must be ready to store data
   // in this cycle.
-  `ASSERT(OupBufWreadyAfterSramRead_A, sram_read_in_prev_cyc_q |-> oup_buf_wready)
+  `OCAH_OT_ASSERT(OupBufWreadyAfterSramRead_A, sram_read_in_prev_cyc_q |-> oup_buf_wready)
 
   // We must never write the SRAM when it is full.
-  `ASSERT(NoSramWriteWhenFull_A, sram_full |-> !sram_incr_wr_ptr)
+  `OCAH_OT_ASSERT(NoSramWriteWhenFull_A, sram_full |-> !sram_incr_wr_ptr)
 
   // We must never read from the SRAM when it is empty.
-  `ASSERT(NoSramReadWhenEmpty_A, sram_empty |-> !sram_incr_rd_ptr)
+  `OCAH_OT_ASSERT(NoSramReadWhenEmpty_A, sram_empty |-> !sram_incr_rd_ptr)
 
   // We must never be in an erroneous state (impossible without functional defects).
-  `ASSERT(NoErr_A, !err_o)
+  `OCAH_OT_ASSERT(NoErr_A, !err_o)
 endmodule

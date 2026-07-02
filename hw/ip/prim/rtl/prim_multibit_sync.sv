@@ -53,7 +53,7 @@ module prim_multibit_sync #(
   output logic [Width-1:0] data_o
 );
 
-  `ASSERT_INIT(NumChecks_A, NumChecks >= 1)
+  `OCAH_OT_ASSERT_INIT(NumChecks_A, NumChecks >= 1)
 
   // First, synchronize the input data to this clock domain.
   logic [NumChecks:0][Width-1:0]   data_check_d;
@@ -77,7 +77,7 @@ module prim_multibit_sync #(
   for (genvar k = 0; k < NumChecks; k++) begin : gen_checks
     assign checks[k] = (data_check_d[k] == data_check_d[NumChecks]);
     // Output is only allowed to change when all checks have passed.
-    `ASSERT(StableCheck_A,
+    `OCAH_OT_ASSERT(StableCheck_A,
           data_o != $past(data_o)
           |->
           $past(data_check_d[k]) == $past(data_check_d[NumChecks]))
@@ -98,6 +98,6 @@ module prim_multibit_sync #(
     end
   end
 
-  `ASSERT_KNOWN(DataKnown_A, data_o)
+  `OCAH_OT_ASSERT_KNOWN(DataKnown_A, data_o)
 
 endmodule : prim_multibit_sync

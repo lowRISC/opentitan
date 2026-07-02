@@ -42,7 +42,7 @@ end else if (!TestTrue && TestStrict) begin : gen_test_false_strict
 end else if (!TestTrue && !TestStrict) begin : gen_test_false_loose
   assign mubi_dec_o = mubi${n_bits}_test_false_loose(mubi${n_bits}_t'(mubi_out));
 end else begin : gen_unknown_config
-  `ASSERT_INIT(UnknownConfig_A, 0)
+  `OCAH_OT_ASSERT_INIT(UnknownConfig_A, 0)
 end
 
 endmodule : prim_mubi${n_bits}_dec

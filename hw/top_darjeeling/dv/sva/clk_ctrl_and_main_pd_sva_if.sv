@@ -40,48 +40,48 @@ interface clk_ctrl_and_main_pd_sva_if (
   `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_PDN_WAIT_CYCLES]
 
   // Changes triggered by por_d0_ni only affect clk_val.
-  `ASSERT(CoreClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !core_clk_val, clk_slow_i,
+  `OCAH_OT_ASSERT(CoreClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !core_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(CoreClkGlitchToValOn_A, $rose(por_d0_ni) && core_clk_en |-> ##[0:2] core_clk_val,
+  `OCAH_OT_ASSERT(CoreClkGlitchToValOn_A, $rose(por_d0_ni) && core_clk_en |-> ##[0:2] core_clk_val,
           clk_slow_i, reset_or_disable)
-  `ASSERT(IoClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !io_clk_val, clk_slow_i,
+  `OCAH_OT_ASSERT(IoClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !io_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(IoClkGlitchToValOn_A, $rose(por_d0_ni) && io_clk_en |-> ##[0:2] io_clk_val, clk_slow_i,
+  `OCAH_OT_ASSERT(IoClkGlitchToValOn_A, $rose(por_d0_ni) && io_clk_en |-> ##[0:2] io_clk_val, clk_slow_i,
           reset_or_disable)
 
   // Changes not triggered by por_d0_ni
-  `ASSERT(CoreClkHandshakeOn_A,
+  `OCAH_OT_ASSERT(CoreClkHandshakeOn_A,
           $rose(core_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
           core_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(CoreClkHandshakeOff_A, $fell(core_clk_en) |-> `CLK_WAIT_BOUNDS !core_clk_val, clk_slow_i,
+  `OCAH_OT_ASSERT(CoreClkHandshakeOff_A, $fell(core_clk_en) |-> `CLK_WAIT_BOUNDS !core_clk_val, clk_slow_i,
           reset_or_disable)
 
-  `ASSERT(IoClkHandshakeOn_A,
+  `OCAH_OT_ASSERT(IoClkHandshakeOn_A,
           $rose(io_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
           io_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(IoClkHandshakeOff_A, $fell(io_clk_en) |-> `CLK_WAIT_BOUNDS !io_clk_val, clk_slow_i,
+  `OCAH_OT_ASSERT(IoClkHandshakeOff_A, $fell(io_clk_en) |-> `CLK_WAIT_BOUNDS !io_clk_val, clk_slow_i,
           reset_or_disable)
 
   int main_clk_cycles, io_clk_cycles;
   always_ff @(posedge clk_core_i) main_clk_cycles++;
   always_ff @(posedge clk_io_i) io_clk_cycles++;
 
-  `ASSERT(MainClkStopped_A,
+  `OCAH_OT_ASSERT(MainClkStopped_A,
           $fell(core_clk_val) |=> ($stable(main_clk_cycles) || core_clk_val) [* 1 : $], clk_slow_i,
           reset_or_disable)
-  `ASSERT(MainClkRun_A,
+  `OCAH_OT_ASSERT(MainClkRun_A,
           $rose(core_clk_val) |=> (!$stable(main_clk_cycles) || !core_clk_val) [* 1 : $],
           clk_slow_i, reset_or_disable)
 
-  `ASSERT(IOClkStopped_A, $fell(io_clk_val) |=> ($stable(io_clk_cycles) || io_clk_val) [* 1 : $],
+  `OCAH_OT_ASSERT(IOClkStopped_A, $fell(io_clk_val) |=> ($stable(io_clk_cycles) || io_clk_val) [* 1 : $],
           clk_slow_i, reset_or_disable)
-  `ASSERT(IOClkRun_A, $rose(io_clk_val) |=> (!$stable(io_clk_cycles) || !io_clk_val) [* 1 : $],
+  `OCAH_OT_ASSERT(IOClkRun_A, $rose(io_clk_val) |=> (!$stable(io_clk_cycles) || !io_clk_val) [* 1 : $],
           clk_slow_i, reset_or_disable)
 
   // Main pd-pok
-  `ASSERT(MainPdHandshakeOn_A, main_pd_n |-> `PDN_WAIT_BOUNDS main_pok, clk_slow_i,
+  `OCAH_OT_ASSERT(MainPdHandshakeOn_A, main_pd_n |-> `PDN_WAIT_BOUNDS main_pok, clk_slow_i,
           reset_or_disable)
-  `ASSERT(MainPdHandshakeOff_A, !main_pd_n |-> `PDN_WAIT_BOUNDS !main_pok, clk_slow_i,
+  `OCAH_OT_ASSERT(MainPdHandshakeOff_A, !main_pd_n |-> `PDN_WAIT_BOUNDS !main_pok, clk_slow_i,
           reset_or_disable)
 
   `undef CLK_WAIT_BOUNDS

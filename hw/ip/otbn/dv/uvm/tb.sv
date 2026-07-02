@@ -289,14 +289,14 @@ module tb;
   // In theory, we could see mismatches by probing the STATUS register over the TL bus, but we have
   // to be lucky with exactly when the reads happen if we want to see off-by-one cycle errors. This
   // assertion gives a continuous check.
-  `ASSERT(MatchingStatus_A, {status_mismatch_d, status_mismatch_q} != 2'b11, clk, !rst_n)
+  `OCAH_OT_ASSERT(MatchingStatus_A, {status_mismatch_d, status_mismatch_q} != 2'b11, clk, !rst_n)
 
   // Check that if the modelled EDN requests are matching with the requests from DUT
-  `ASSERT(MatchingReqRND_A, dut.u_otbn_core.edn_rnd_req_o == edn_rnd_req_model, clk, !rst_n)
+  `OCAH_OT_ASSERT(MatchingReqRND_A, dut.u_otbn_core.edn_rnd_req_o == edn_rnd_req_model, clk, !rst_n)
   // Disable checking URND in the case of Locked status since it's modelling is not exactly accurate
   // for that state.
   // TODO (#15710): Fix modelling of URND in the locked state.
-  `ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_o.edn_req == edn_urnd_req_model,
+  `OCAH_OT_ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_o.edn_req == edn_urnd_req_model,
     clk, !rst_n || model_if.status == otbn_pkg::StatusLocked)
 
   initial begin

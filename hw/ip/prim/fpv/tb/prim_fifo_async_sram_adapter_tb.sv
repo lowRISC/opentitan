@@ -164,7 +164,7 @@ end // !FpgaSram
 
   assign r_sram_rerror = '0;
 
-  `ASSUME_FPV(WdataBins_M,
+  `OCAH_OT_ASSUME_FPV(WdataBins_M,
               wvalid_i |-> wdata_i inside {
                 32'h DEAD_BEEF, 32'h5A5A_A5A5, 32'h 1234_5678
                 },
@@ -197,7 +197,7 @@ end // !FpgaSram
 
   assign rdata = storage[rptr];
 
-  `ASSERT(DataIntegrityCheck_A,
+  `OCAH_OT_ASSERT(DataIntegrityCheck_A,
           rack |-> rdata_o == rdata,
           clk_rd_i, !rst_ni)
 `endif // FPV_ON

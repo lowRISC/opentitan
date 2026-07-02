@@ -57,7 +57,7 @@ module prim_lc_and_hardened
   ////////////////
 
   // The outputs should be known at all times.
-  `ASSERT_KNOWN(OutputsKnown_A, lc_en_o)
-  `ASSERT(FunctionCheck_A, ((lc_en_a_i == ActVal) && (lc_en_b_i == ActVal)) == (lc_en_o == ActVal))
+  `OCAH_OT_ASSERT_KNOWN(OutputsKnown_A, lc_en_o)
+  `OCAH_OT_ASSERT(FunctionCheck_A, ((lc_en_a_i == ActVal) && (lc_en_b_i == ActVal)) == (lc_en_o == ActVal))
 
 endmodule : prim_lc_and_hardened

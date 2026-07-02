@@ -248,5 +248,5 @@ module ibex_wb_stage #(
 
   `DV_FCOV_SIGNAL_GEN_IF(logic, wb_valid, g_writeback_stage.wb_valid_q, WritebackStage)
 
-  `ASSERT(RFWriteFromOneSourceOnly, $onehot0(rf_wdata_wb_mux_we))
+  `OCAH_OT_ASSERT(RFWriteFromOneSourceOnly, $onehot0(rf_wdata_wb_mux_we))
 endmodule

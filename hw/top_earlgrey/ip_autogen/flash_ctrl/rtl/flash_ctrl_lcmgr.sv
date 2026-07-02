@@ -577,7 +577,7 @@ module flash_ctrl_lcmgr
   // If state is already invalid, disable has no impact.
   // If state is currently in StRmaRsp with a successful RMA transition, also do not
   // transition to disabled state as we need to continue acknowledging lc_ctrl.
-  `ASSERT(DisableChk_A, prim_mubi_pkg::mubi4_test_true_loose(disable_i) & state_q != StRmaRsp
+  `OCAH_OT_ASSERT(DisableChk_A, prim_mubi_pkg::mubi4_test_true_loose(disable_i) & state_q != StRmaRsp
           |=> state_q == StDisabled)
 
   ///////////////////////////////
@@ -922,7 +922,7 @@ module flash_ctrl_lcmgr
 
   // assertion
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
   localparam int MaxRmaDataWidth = MaxRmaProgBurst * BusWidth;
@@ -939,7 +939,7 @@ module flash_ctrl_lcmgr
   assign rma_data = {rdata_i, rma_data_q[MaxRmaDataWidth-1 -: ShiftWidth]};
 
   // check the rma programmed value actually matches what was read back
-  `ASSERT(ProgRdVerify_A, rma_start & rd_cnt_en & done_i |-> prog_data == rma_data)
+  `OCAH_OT_ASSERT(ProgRdVerify_A, rma_start & rd_cnt_en & done_i |-> prog_data == rma_data)
 
 `endif
 

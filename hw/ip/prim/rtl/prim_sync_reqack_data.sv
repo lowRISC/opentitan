@@ -97,7 +97,7 @@ module prim_sync_reqack_data #(
   // Assertions //
   ////////////////
   if (DataSrc2Dst == 1'b1) begin : gen_assert_data_src2dst
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
     //VCS coverage off
     // pragma coverage off
     logic effective_rst_n;
@@ -117,12 +117,12 @@ module prim_sync_reqack_data #(
     // pragma coverage on
 
     // SRC domain cannot change data while waiting for ACK.
-    `ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) && chk_flag_q |->
+    `OCAH_OT_ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) && chk_flag_q |->
         (!src_req_i || (src_req_i && src_ack_o)),
         clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag_q)
 
     // Register stage cannot be used.
-    `ASSERT_INIT(SyncReqAckDataReg, DataSrc2Dst && !DataReg)
+    `OCAH_OT_ASSERT_INIT(SyncReqAckDataReg, DataSrc2Dst && !DataReg)
 `endif
   end else if (DataSrc2Dst == 1'b0 && DataReg == 1'b0) begin : gen_assert_data_dst2src
     // DST domain shall not change data while waiting for SRC domain to latch it (together with
@@ -146,7 +146,7 @@ module prim_sync_reqack_data #(
     // assertion into two pieces. The first (SyncReqAckDataHoldDst2SrcA) checks that data doesn't
     // change in a way that could cause data corruption. The second (SyncReqAckDataHoldDst2SrcB)
     // checks that the DST side doesn't do anything that it shouldn't know is safe.
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
     //VCS coverage off
     // pragma coverage off
     logic effective_rst_n;
@@ -165,11 +165,11 @@ module prim_sync_reqack_data #(
     //VCS coverage on
     // pragma coverage on
 
-    `ASSERT(SyncReqAckDataHoldDst2SrcA,
+    `OCAH_OT_ASSERT(SyncReqAckDataHoldDst2SrcA,
             chk_flag_q && src_req_i && src_ack_o |->
             $past(data_o, 2) == data_o && $past(data_o) == data_o,
             clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag_q)
-    `ASSERT(SyncReqAckDataHoldDst2SrcB,
+    `OCAH_OT_ASSERT(SyncReqAckDataHoldDst2SrcB,
             chk_flag_q && $past(src_req_i && src_ack_o) |-> $past(data_o) == data_o,
             clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag_q)
 `endif

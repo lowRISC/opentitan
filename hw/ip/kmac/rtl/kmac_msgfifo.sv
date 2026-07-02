@@ -319,18 +319,18 @@ module kmac_msgfifo
   ////////////////
 
   // Flush state known checker
-  `ASSERT(FlushStInValid_A, flush_st inside {FlushIdle, FlushPacker, FlushFifo, FlushClear})
+  `OCAH_OT_ASSERT(FlushStInValid_A, flush_st inside {FlushIdle, FlushPacker, FlushFifo, FlushClear})
 
   // Packer done signal is asserted at least one cycle later
-  `ASSERT(PackerDoneDelay_A, $onehot0({packer_flush, packer_flush_done}))
+  `OCAH_OT_ASSERT(PackerDoneDelay_A, $onehot0({packer_flush, packer_flush_done}))
 
   // process_i not asserted during the flush operation
-  `ASSUME(PackerDoneValid_a, packer_flush |-> flush_st == FlushIdle)
+  `OCAH_OT_ASSUME(PackerDoneValid_a, packer_flush |-> flush_st == FlushIdle)
 
   // No messages in between `process_i` and `clear_i`
-  `ASSUME(MessageValid_a, fifo_valid_i |-> flush_st == FlushIdle)
+  `OCAH_OT_ASSUME(MessageValid_a, fifo_valid_i |-> flush_st == FlushIdle)
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // INC_ASSERT is used to hide signal definitions that are only used for assertions.
   //VCS coverage off
   // pragma coverage off
@@ -348,7 +348,7 @@ module kmac_msgfifo
     end
   end
 
-  `ASSERT(BypassCtrlStable_A,
+  `OCAH_OT_ASSERT(BypassCtrlStable_A,
     first_data_entered && !process_o
     |-> fifo_bypass_i == $past(fifo_bypass_i))
 

@@ -343,6 +343,6 @@ module top_englishbreakfast_pd_aon #(
 
 
   // Make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
+  `OCAH_OT_ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
 endmodule

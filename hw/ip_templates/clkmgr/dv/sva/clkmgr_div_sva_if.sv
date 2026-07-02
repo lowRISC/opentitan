@@ -41,9 +41,9 @@ interface clkmgr_div_sva_if #(
 
     // Notice this fires at negedges, since maybe_divided_clk's value will be on when
     // tracking.
-    `ASSERT(Div2Stepped_A, $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> TracksClk_S, !clk,
+    `OCAH_OT_ASSERT(Div2Stepped_A, $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> TracksClk_S, !clk,
             !rst_n)
-    `ASSERT(Div2Whole_A,
+    `OCAH_OT_ASSERT(Div2Whole_A,
             $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
             !clk, !rst_n)
 
@@ -57,10 +57,10 @@ interface clkmgr_div_sva_if #(
       step_up || !maybe_divided_clk ##1 step_up || maybe_divided_clk;
     endsequence
 
-    `ASSERT(Div4Stepped_A,
+    `OCAH_OT_ASSERT(Div4Stepped_A,
             $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> StepLeadLow_S or StepLeadHigh_S,
             !clk, !rst_n)
-    `ASSERT(Div4Whole_A,
+    `OCAH_OT_ASSERT(Div4Whole_A,
             $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
             !clk, !rst_n)
 

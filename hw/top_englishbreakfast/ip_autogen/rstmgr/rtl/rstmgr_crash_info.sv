@@ -54,7 +54,7 @@ module rstmgr_crash_info
   end
 
   // Make sure the crash dump isn't excessively large
-  `ASSERT_INIT(CntStoreSlot_A, CrashStoreSlot < (1 << IdxWidth))
-  `ASSERT_INIT(CntWidth_A, SlotCntWidth <= IdxWidth)
+  `OCAH_OT_ASSERT_INIT(CntStoreSlot_A, CrashStoreSlot < (1 << IdxWidth))
+  `OCAH_OT_ASSERT_INIT(CntWidth_A, SlotCntWidth <= IdxWidth)
 
 endmodule  // rstmgr_crash_info

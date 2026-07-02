@@ -148,19 +148,19 @@ module alert_handler
     .esc_ping_fail_o    ( loc_alert_trig[1]              )
   );
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(PingTimerEscCnterCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(PingTimerEscCnterCheck_A,
       u_ping_timer.u_prim_count_esc_cnt,
       loc_alert_trig[0] & loc_alert_trig[1],
       (reg2hw_wrap.ping_enable == 0))
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(PingTimerCnterCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(PingTimerCnterCheck_A,
       u_ping_timer.u_prim_count_cnt,
       loc_alert_trig[0] & loc_alert_trig[1],
       (reg2hw_wrap.ping_enable == 0))
-  `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ERR(PingTimerDoubleLfsrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ERR(PingTimerDoubleLfsrCheck_A,
       u_ping_timer.u_prim_double_lfsr,
       loc_alert_trig[0] & loc_alert_trig[1],
       (reg2hw_wrap.ping_enable == 0))
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(PingTimerFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(PingTimerFsmCheck_A,
       u_ping_timer.u_state_regs,
       loc_alert_trig[0] & loc_alert_trig[1],
       (reg2hw_wrap.ping_enable == 0))
@@ -242,7 +242,7 @@ module alert_handler
       .accu_trig_o   ( class_accu_trig                   ),
       .accu_fail_o   ( class_accu_fail                   )
     );
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(AccuCnterCheck_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(AccuCnterCheck_A,
         u_accu.u_prim_count,
         esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
 
@@ -268,10 +268,10 @@ module alert_handler
       .esc_sig_req_o     ( class_esc_sig_req[k]                 )
     );
 
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(EscTimerCnterCheck_A,
+    `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ERR(EscTimerCnterCheck_A,
         u_esc_timer.u_prim_count,
         esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(EscTimerFsmCheck_A,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(EscTimerFsmCheck_A,
         u_esc_timer.u_state_regs,
         esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
   end
@@ -320,25 +320,25 @@ module alert_handler
   ////////////////
 
   // check whether all outputs have a good known state after reset
-  `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready)
-  `ASSERT_KNOWN(IrqAKnownO_A,      intr_classa_o)
-  `ASSERT_KNOWN(IrqBKnownO_A,      intr_classb_o)
-  `ASSERT_KNOWN(IrqCKnownO_A,      intr_classc_o)
-  `ASSERT_KNOWN(IrqDKnownO_A,      intr_classd_o)
-  `ASSERT_KNOWN(CrashdumpKnownO_A, crashdump_o)
-  `ASSERT_KNOWN(AckPKnownO_A,      alert_rx_o)
-  `ASSERT_KNOWN(EscPKnownO_A,      esc_tx_o)
-  `ASSERT_KNOWN(EdnKnownO_A,       edn_o)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(IrqAKnownO_A,      intr_classa_o)
+  `OCAH_OT_ASSERT_KNOWN(IrqBKnownO_A,      intr_classb_o)
+  `OCAH_OT_ASSERT_KNOWN(IrqCKnownO_A,      intr_classc_o)
+  `OCAH_OT_ASSERT_KNOWN(IrqDKnownO_A,      intr_classd_o)
+  `OCAH_OT_ASSERT_KNOWN(CrashdumpKnownO_A, crashdump_o)
+  `OCAH_OT_ASSERT_KNOWN(AckPKnownO_A,      alert_rx_o)
+  `OCAH_OT_ASSERT_KNOWN(EscPKnownO_A,      esc_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(EdnKnownO_A,       edn_o)
 
   // this restriction is due to specifics in the ping selection mechanism
-  `ASSERT_INIT(CheckNAlerts,   NAlerts  < (256 - N_CLASSES))
-  `ASSERT_INIT(CheckEscCntDw,  EscCntDw  <= 32)
-  `ASSERT_INIT(CheckAccuCntDw, AccuCntDw <= 32)
-  `ASSERT_INIT(CheckNClasses,  N_CLASSES <= 8)
-  `ASSERT_INIT(CheckNEscSev,   N_ESC_SEV <= 8)
+  `OCAH_OT_ASSERT_INIT(CheckNAlerts,   NAlerts  < (256 - N_CLASSES))
+  `OCAH_OT_ASSERT_INIT(CheckEscCntDw,  EscCntDw  <= 32)
+  `OCAH_OT_ASSERT_INIT(CheckAccuCntDw, AccuCntDw <= 32)
+  `OCAH_OT_ASSERT_INIT(CheckNClasses,  N_CLASSES <= 8)
+  `OCAH_OT_ASSERT_INIT(CheckNEscSev,   N_ESC_SEV <= 8)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehotCheck_A,
       u_reg_wrap.u_reg, loc_alert_trig[4])
 endmodule

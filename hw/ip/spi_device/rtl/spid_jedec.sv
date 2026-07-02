@@ -133,7 +133,7 @@ module spid_jedec
     else         st_q <= st_d;
   end : state_latch
 
-  `ASSERT_KNOWN(JedecStKnown_A, st_q)
+  `OCAH_OT_ASSERT_KNOWN(JedecStKnown_A, st_q)
   always_comb begin : next_state_logic
     st_d = st_q;
 

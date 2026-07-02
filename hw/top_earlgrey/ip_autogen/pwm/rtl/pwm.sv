@@ -92,16 +92,16 @@ module pwm
     .pwm_o       (cio_pwm_o)
   );
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 
-  `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
-  `ASSERT_KNOWN(CioPWMKnownO_A, cio_pwm_o)
-  `ASSERT(CioPWMEnIsOneO_A, (&cio_pwm_en_o) === 1'b1)
+  `OCAH_OT_ASSERT_KNOWN(CioPWMKnownO_A, cio_pwm_o)
+  `OCAH_OT_ASSERT(CioPWMEnIsOneO_A, (&cio_pwm_en_o) === 1'b1)
 
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule : pwm

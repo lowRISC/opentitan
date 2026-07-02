@@ -159,25 +159,25 @@ module pwrmgr
   // receiving it, one to the slow clock, and one back to the fast one. And there are additional
   // cycles in the fast fsm to generate outputs. However, esc_rst_req_q can be dropped due to
   // rst_lc_n, which will cause slow_peri_reqs_masked.rstreqs[ResetEscIdx] to drop.
-  `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
+  `OCAH_OT_ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
           esc_rst_req_q |-> ##[1:5] !esc_rst_req_q || slow_peri_reqs_masked.rstreqs[ResetEscIdx],
           clk_slow_i, !rst_slow_ni)
-  `ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
+  `OCAH_OT_ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
           slow_peri_reqs_masked.rstreqs[ResetEscIdx] |->
           ##[1:4] !slow_peri_reqs_masked.rstreqs[ResetEscIdx] || u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `else
-  `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
+  `OCAH_OT_ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
           esc_rst_req_d |-> ##[2:3] (
               (!esc_rst_req_d && lc_ctrl_pkg::lc_tx_test_false_loose(fetch_en_o)) ||
               slow_peri_reqs_masked.rstreqs[ResetEscIdx]
           ), clk_slow_i, !rst_slow_ni)
-  `ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,
+  `OCAH_OT_ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,
           slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##1 u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `endif
 
-  `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
+  `OCAH_OT_ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
           u_fsm.state_q == FastPwrStateActive |-> ##4 pwr_rst_o.rst_lc_req == 2'b11,
           clk_i, !rst_ni)
 
@@ -362,7 +362,7 @@ module pwrmgr
   assign hw2reg.fault_status.main_pd_glitch.d   = peri_reqs_masked.rstreqs[ResetMainPwrIdx] |
                                                   reg2hw.fault_status.main_pd_glitch.q;
 
-  `ASSERT(GlitchStatusPersist_A, $rose(reg2hw.fault_status.main_pd_glitch.q) |->
+  `OCAH_OT_ASSERT(GlitchStatusPersist_A, $rose(reg2hw.fault_status.main_pd_glitch.q) |->
           reg2hw.fault_status.main_pd_glitch.q until !rst_lc_ni)
 
   ////////////////////////////
@@ -371,7 +371,7 @@ module pwrmgr
 
   // the logic below assumes there is only one alert, so make an
   // explicit assertion check for it.
-  `ASSERT_INIT(AlertNumCheck_A, NumAlerts == 1)
+  `OCAH_OT_ASSERT_INIT(AlertNumCheck_A, NumAlerts == 1)
 
   assign alert_test = {
     reg2hw.alert_test.q &
@@ -719,19 +719,19 @@ module pwrmgr
   ///  Assertions
   ////////////////////////////
 
-  `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid     )
-  `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready     )
-  `ASSERT_KNOWN(AlertsKnownO_A,    alert_tx_o       )
-  `ASSERT_KNOWN(AstKnownO_A,       pwr_ast_o        )
-  `ASSERT_KNOWN(RstKnownO_A,       pwr_rst_o        )
-  `ASSERT_KNOWN(ClkKnownO_A,       pwr_clk_o        )
-  `ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
-  `ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
-  `ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid     )
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready     )
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnownO_A,    alert_tx_o       )
+  `OCAH_OT_ASSERT_KNOWN(AstKnownO_A,       pwr_ast_o        )
+  `OCAH_OT_ASSERT_KNOWN(RstKnownO_A,       pwr_rst_o        )
+  `OCAH_OT_ASSERT_KNOWN(ClkKnownO_A,       pwr_clk_o        )
+  `OCAH_OT_ASSERT_KNOWN(OtpKnownO_A,       pwr_otp_o        )
+  `OCAH_OT_ASSERT_KNOWN(LcKnownO_A,        pwr_lc_o         )
+  `OCAH_OT_ASSERT_KNOWN(IntrKnownO_A,      intr_wakeup_o    )
 
   // EscTimeOutCnt also sets the required clock ratios between escalator and local clock
   // Ie, clk_lc cannot be so slow that the timeout count is reached
-  `ifdef INC_ASSERT
+  `ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
   logic effective_rst_n;
@@ -748,16 +748,16 @@ module pwrmgr
   //VCS coverage on
   // pragma coverage on
 
-  `ASSERT(ClkRatio_A, cnt < EscTimeOutCnt)
+  `OCAH_OT_ASSERT(ClkRatio_A, cnt < EscTimeOutCnt)
 
   `endif
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(FsmCheck_A, u_fsm.u_state_regs,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(FsmCheck_A, u_fsm.u_state_regs,
       pwr_rst_o.rst_lc_req && pwr_rst_o.rst_sys_req)
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(SlowFsmCheck_A, u_slow_fsm.u_state_regs,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(SlowFsmCheck_A, u_slow_fsm.u_state_regs,
       pwr_ast_o.pwr_clamp && !pwr_ast_o.main_pd_n, 0, 2,
       clk_slow_i, !rst_slow_ni)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule // pwrmgr

@@ -498,8 +498,8 @@ module hmac_core import prim_sha2_pkg::*; (
   // Assertions //
   ////////////////
 
-  `ASSERT(ValidSelRdata_A, hmac_en_i |-> sel_rdata inside {SelIPad, SelOPad, SelFifo})
-  `ASSERT(ValidDigestSize_A, (hmac_en_i && (sel_msglen == SelOPadMsg)) |->
+  `OCAH_OT_ASSERT(ValidSelRdata_A, hmac_en_i |-> sel_rdata inside {SelIPad, SelOPad, SelFifo})
+  `OCAH_OT_ASSERT(ValidDigestSize_A, (hmac_en_i && (sel_msglen == SelOPadMsg)) |->
       digest_size_i inside {SHA2_256, SHA2_384, SHA2_512})
 
 endmodule

@@ -333,5 +333,5 @@ module mbx_sysif
   assign sysif_intr_msg_data_o = reg2hw.soc_doe_intr_msg_data.q;
 
   // Assertions
-  `ASSERT(DataWidthCheck_A, CfgSramDataWidth == top_pkg::TL_DW)
+  `OCAH_OT_ASSERT(DataWidthCheck_A, CfgSramDataWidth == top_pkg::TL_DW)
 endmodule

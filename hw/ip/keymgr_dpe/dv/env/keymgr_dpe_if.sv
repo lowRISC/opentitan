@@ -611,7 +611,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
 
   // Create a macro to skip checking key values when LC is off or fault error occurs
   `define ASSERT_IFF_KEYMGR_DPE_LEGAL(NAME, SEQ) \
-    `ASSERT(NAME, SEQ, clk, !rst_n || keymgr_dpe_en_sync2 != lc_ctrl_pkg::On || !en_chk)
+    `OCAH_OT_ASSERT(NAME, SEQ, clk, !rst_n || keymgr_dpe_en_sync2 != lc_ctrl_pkg::On || !en_chk)
 
   `ASSERT_IFF_KEYMGR_DPE_LEGAL(
     CheckKmacKey,
@@ -715,11 +715,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // `edn_tolerance_upd` tolerance error on the cnt.
   // `edn_tolerance_upd` default value is 20, but if the frequency difference between edn and main
   // clock is too big, the testbench will scale it up to a larger value.
-  `ASSERT(CheckEdn1stReq, $rose(edn_req_sync) && edn_req_cnt == 0 && start_edn_req |->
+  `OCAH_OT_ASSERT(CheckEdn1stReq, $rose(edn_req_sync) && edn_req_cnt == 0 && start_edn_req |->
           (edn_wait_cnt >= edn_interval) && (edn_wait_cnt - edn_interval < edn_tolerance_upd),
           clk, !rst_n || !en_chk)
 
-  `ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |->
+  `OCAH_OT_ASSERT(CheckEdn2ndReq, $rose(edn_req_sync) && edn_req_cnt == 1 |->
           edn_wait_cnt < edn_tolerance_upd,
           clk, !rst_n || !en_chk)
 

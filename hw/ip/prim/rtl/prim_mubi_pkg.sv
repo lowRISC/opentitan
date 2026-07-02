@@ -25,7 +25,7 @@ package prim_mubi_pkg;
   } mubi4_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi4ValsComplementary_A, MuBi4True == ~MuBi4False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi4ValsComplementary_A, MuBi4True == ~MuBi4False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi4_test_invalid(mubi4_t val);
@@ -164,7 +164,7 @@ package prim_mubi_pkg;
   } mubi8_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi8ValsComplementary_A, MuBi8True == ~MuBi8False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi8ValsComplementary_A, MuBi8True == ~MuBi8False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi8_test_invalid(mubi8_t val);
@@ -303,7 +303,7 @@ package prim_mubi_pkg;
   } mubi12_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi12ValsComplementary_A, MuBi12True == ~MuBi12False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi12ValsComplementary_A, MuBi12True == ~MuBi12False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi12_test_invalid(mubi12_t val);
@@ -442,7 +442,7 @@ package prim_mubi_pkg;
   } mubi16_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi16ValsComplementary_A, MuBi16True == ~MuBi16False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi16ValsComplementary_A, MuBi16True == ~MuBi16False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi16_test_invalid(mubi16_t val);
@@ -581,7 +581,7 @@ package prim_mubi_pkg;
   } mubi20_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi20ValsComplementary_A, MuBi20True == ~MuBi20False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi20ValsComplementary_A, MuBi20True == ~MuBi20False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi20_test_invalid(mubi20_t val);
@@ -720,7 +720,7 @@ package prim_mubi_pkg;
   } mubi24_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi24ValsComplementary_A, MuBi24True == ~MuBi24False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi24ValsComplementary_A, MuBi24True == ~MuBi24False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi24_test_invalid(mubi24_t val);
@@ -859,7 +859,7 @@ package prim_mubi_pkg;
   } mubi28_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi28ValsComplementary_A, MuBi28True == ~MuBi28False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi28ValsComplementary_A, MuBi28True == ~MuBi28False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi28_test_invalid(mubi28_t val);
@@ -998,7 +998,7 @@ package prim_mubi_pkg;
   } mubi32_t;
 
   // This is a prerequisite for the multibit functions below to work.
-  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi32ValsComplementary_A, MuBi32True == ~MuBi32False)
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMuBi32ValsComplementary_A, MuBi32True == ~MuBi32False)
 
   // Test whether the multibit value is one of the valid enumerations
   function automatic logic mubi32_test_invalid(mubi32_t val);

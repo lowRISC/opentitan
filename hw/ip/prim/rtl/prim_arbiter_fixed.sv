@@ -38,7 +38,7 @@ module prim_arbiter_fixed #(
   input                    ready_i
 );
 
-  `ASSERT_INIT(CheckNGreaterZero_A, N > 0)
+  `OCAH_OT_ASSERT_INIT(CheckNGreaterZero_A, N > 0)
 
   // this case is basically just a bypass
   if (N == 1) begin : gen_degenerate_case
@@ -138,33 +138,33 @@ module prim_arbiter_fixed #(
 
   // KNOWN assertions on outputs, except for data as that may be partially X in simulation
   // e.g. when used on a BUS
-  `ASSERT_KNOWN(ValidKnown_A, valid_o)
-  `ASSERT_KNOWN(GrantKnown_A, gnt_o)
-  `ASSERT_KNOWN(IdxKnown_A, idx_o)
+  `OCAH_OT_ASSERT_KNOWN(ValidKnown_A, valid_o)
+  `OCAH_OT_ASSERT_KNOWN(GrantKnown_A, gnt_o)
+  `OCAH_OT_ASSERT_KNOWN(IdxKnown_A, idx_o)
 
   // Make sure no higher prio req is asserted
-  `ASSERT(Priority_A, |req_i |-> req_i[idx_o] && (((N'(1'b1) << idx_o) - 1'b1) & req_i) == '0)
+  `OCAH_OT_ASSERT(Priority_A, |req_i |-> req_i[idx_o] && (((N'(1'b1) << idx_o) - 1'b1) & req_i) == '0)
 
   // we can only grant one requester at a time
-  `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
+  `OCAH_OT_ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
-  `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
+  `OCAH_OT_ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
   // A grant implies that the arbiter asserts valid as well
-  `ASSERT(GntImpliesValid_A, |gnt_o |-> valid_o)
+  `OCAH_OT_ASSERT(GntImpliesValid_A, |gnt_o |-> valid_o)
   // A request and a sink that is ready imply a grant
-  `ASSERT(ReqAndReadyImplyGrant_A, |req_i && ready_i |-> |gnt_o)
+  `OCAH_OT_ASSERT(ReqAndReadyImplyGrant_A, |req_i && ready_i |-> |gnt_o)
   // A request and a sink that is ready imply a grant
-  `ASSERT(ReqImpliesValid_A, |req_i |-> valid_o)
+  `OCAH_OT_ASSERT(ReqImpliesValid_A, |req_i |-> valid_o)
   // Both conditions above combined and reversed
-  `ASSERT(ReadyAndValidImplyGrant_A, ready_i && valid_o |-> |gnt_o)
+  `OCAH_OT_ASSERT(ReadyAndValidImplyGrant_A, ready_i && valid_o |-> |gnt_o)
   // Both conditions above combined and reversed
-  `ASSERT(NoReadyValidNoGrant_A, !(ready_i || valid_o) |-> gnt_o == 0)
+  `OCAH_OT_ASSERT(NoReadyValidNoGrant_A, !(ready_i || valid_o) |-> gnt_o == 0)
   // check index / grant correspond
-  `ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
+  `OCAH_OT_ASSERT(IndexIsCorrect_A, ready_i && valid_o |-> gnt_o[idx_o] && req_i[idx_o])
 
 if (EnDataPort) begin: gen_data_port_assertion
   // data flow
-  `ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
+  `OCAH_OT_ASSERT(DataFlow_A, ready_i && valid_o |-> data_o == data_i[idx_o])
 end
 
 endmodule : prim_arbiter_fixed

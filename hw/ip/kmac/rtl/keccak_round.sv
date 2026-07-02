@@ -584,27 +584,27 @@ module keccak_round
   ////////////////
 
   // Only allow `DInWidth` that `Width` is integer divisible by `DInWidth`
-  `ASSERT_INIT(WidthDivisableByDInWidth_A, (Width % DInWidth) == 0)
+  `OCAH_OT_ASSERT_INIT(WidthDivisableByDInWidth_A, (Width % DInWidth) == 0)
 
   // If `run_i` triggered, it shall complete
-  //`ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
+  //`OCAH_OT_ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
 
   // valid_i and run_i cannot be asserted at the same time
-  `ASSUME(OneHot0ValidAndRun_A, $onehot0({valid_i, run_i}), clk_i, !rst_ni)
+  `OCAH_OT_ASSUME(OneHot0ValidAndRun_A, $onehot0({valid_i, run_i}), clk_i, !rst_ni)
 
   // valid_i, run_i only asserted in Idle state
-  `ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
+  `OCAH_OT_ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
 
   // clear_i is assumed to be asserted in Idle state
-  `ASSUME(ClearAssertStIdle_A,
+  `OCAH_OT_ASSUME(ClearAssertStIdle_A,
     prim_mubi_pkg::mubi4_test_true_strict(clear_i)
      |-> keccak_st == KeccakStIdle, clk_i, !rst_ni)
 
   // EnMasking controls the valid states
   if (EnMasking) begin : gen_mask_st_chk
-    `ASSERT(EnMaskingValidStates_A, keccak_st != KeccakStActive, clk_i, !rst_ni)
+    `OCAH_OT_ASSERT(EnMaskingValidStates_A, keccak_st != KeccakStActive, clk_i, !rst_ni)
   end else begin : gen_unmask_st_chk
-    `ASSERT(UnmaskValidStates_A, !(keccak_st
+    `OCAH_OT_ASSERT(UnmaskValidStates_A, !(keccak_st
         inside {KeccakStPhase1, KeccakStPhase2Cycle1, KeccakStPhase2Cycle2, KeccakStPhase2Cycle3}),
         clk_i, !rst_ni)
   end

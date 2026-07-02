@@ -505,44 +505,44 @@ package spi_device_pkg;
     sram_addr_t'(SramEgressByteOffset[$clog2(SramDw / 8) +: SramAw]);
   parameter sram_addr_t SramReadBufferIdx  = SramEgressIdx;
   parameter sram_addr_t SramReadBufferSize = sram_addr_t'(SramMsgDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckReadBufferOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckReadBufferOffset,
       SramReadBufferIdx == spi_device_reg_pkg::SramReadBufferOffset)
 
   parameter sram_addr_t SramMailboxIdx  = SramReadBufferIdx + SramReadBufferSize;
   parameter sram_addr_t SramMailboxSize = sram_addr_t'(SramMailboxDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckMailboxOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckMailboxOffset,
       SramMailboxIdx == spi_device_reg_pkg::SramMailboxOffset)
 
   parameter sram_addr_t SramSfdpIdx  = SramMailboxIdx + SramMailboxSize;
   parameter sram_addr_t SramSfdpSize = sram_addr_t'(SramSfdpDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckSfdpOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckSfdpOffset,
       SramSfdpIdx == spi_device_reg_pkg::SramSfdpOffset)
 
   parameter sram_addr_t SramTpmRdFifoIdx  = SramSfdpIdx + SramSfdpSize;
   parameter sram_addr_t SramTpmRdFifoSize = sram_addr_t'(SramTpmRdFifoDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckTpmRdFifoOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckTpmRdFifoOffset,
       SramTpmRdFifoIdx == spi_device_reg_pkg::SramTpmRdFifoOffset)
 
   parameter sram_addr_t SramIngressIdx =
     sram_addr_t'(SramIngressByteOffset[$clog2(SramDw / 8) +: SramAw]);
   parameter sram_addr_t SramPayloadIdx  = SramIngressIdx;
   parameter sram_addr_t SramPayloadSize = sram_addr_t'(SramPayloadDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckPayloadOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckPayloadOffset,
       (SramPayloadIdx - SramIngressIdx) == spi_device_reg_pkg::SramPayloadOffset)
 
   parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize;
   parameter sram_addr_t SramCmdFifoSize = sram_addr_t'(SramCmdFifoDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckCmdFifoOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckCmdFifoOffset,
       (SramCmdFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramCmdFifoOffset)
 
   parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize;
   parameter sram_addr_t SramAddrFifoSize = sram_addr_t'(SramAddrFifoDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckAddrFifoOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckAddrFifoOffset,
       (SramAddrFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramAddrFifoOffset)
 
   parameter sram_addr_t SramTpmWrFifoIdx  = SramAddrFifoIdx + SramAddrFifoSize;
   parameter sram_addr_t SramTpmWrFifoSize = sram_addr_t'(SramTpmWrFifoDepth);
-  `ASSERT_STATIC_IN_PACKAGE(CheckTpmWrFifoOffset,
+  `OCAH_OT_ASSERT_STATIC_IN_PACKAGE(CheckTpmWrFifoOffset,
       (SramTpmWrFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramTpmWrFifoOffset)
 
   // Max BitCount in a transaction

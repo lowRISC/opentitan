@@ -44,7 +44,7 @@ module lc_ctrl_kmac_if
   assign kmac_transition_token = transition_token_i;
 
   // SRC domain cannot change data while waiting for ACK.
-  `ASSERT(DataStable_A, token_hash_req_i && !token_hash_ack_o |-> $stable(transition_token_i))
+  `OCAH_OT_ASSERT(DataStable_A, token_hash_req_i && !token_hash_ack_o |-> $stable(transition_token_i))
 
   // Second synchronizer instance for handshake and return data synchronization.
   logic kmac_req, kmac_ack;

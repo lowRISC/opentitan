@@ -506,11 +506,11 @@ module csrng_cmd_stage import csrng_pkg::*; (
           (!sfifo_genbits_wrdy && !sfifo_genbits_rvld)};
 
   // We're only allowed to request more bits if the genbits FIFO has indeed space.
-  `ASSERT(CsrngCmdStageGenbitsFifoFull_A, state_q == GenSOP |-> sfifo_genbits_wrdy)
+  `OCAH_OT_ASSERT(CsrngCmdStageGenbitsFifoFull_A, state_q == GenSOP |-> sfifo_genbits_wrdy)
 
   // Pushes to the genbits FIFO outside of the GenCmdChk and CmdAck states or while handling a
   // command other than Generate are not allowed.
-  `ASSERT(CsrngCmdStageGenbitsFifoPushExpected_A,
+  `OCAH_OT_ASSERT(CsrngCmdStageGenbitsFifoPushExpected_A,
       sfifo_genbits_wvld |-> state_q inside {GenCmdChk, CmdAck} && cmd_gen_flag_q)
 
   //---------------------------------------------------------
@@ -541,8 +541,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.
-  `ASSERT(CsrngCmdStageErrorStStable_A, state_q == Error |=> $stable(state_q))
+  `OCAH_OT_ASSERT(CsrngCmdStageErrorStStable_A, state_q == Error |=> $stable(state_q))
   // If in error state, the error output must be high.
-  `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
+  `OCAH_OT_ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
 
 endmodule

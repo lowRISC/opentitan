@@ -96,10 +96,10 @@ module sram_ctrl
   localparam int unsigned InstDepth = InstSize >> 2;
   localparam int unsigned AddrWidth = prim_util_pkg::vbits(Depth);
 
-  `ASSERT_INIT(NumRamInstSameAsComputed_A,
+  `OCAH_OT_ASSERT_INIT(NumRamInstSameAsComputed_A,
                NumRamInst == prim_util_pkg::ceil_div(MemSizeRam, InstSize))
 
-  `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
+  `OCAH_OT_ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
   top_racl_pkg::racl_error_log_t racl_error[2];
   if (EnableRacl) begin : gen_racl_error_arb
@@ -718,46 +718,46 @@ module sram_ctrl
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(RegsTlOutKnown_A,  regs_tl_o)
-  `ASSERT_KNOWN(RamTlOutKnown_A,   ram_tl_o.d_valid)
-  `ASSERT_KNOWN_IF(RamTlOutPayLoadKnown_A, ram_tl_o, ram_tl_o.d_valid)
-  `ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
-  `ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
-  `ASSERT_KNOWN(SramRerrorKnown_A, sram_rerror_o)
+  `OCAH_OT_ASSERT_KNOWN(RegsTlOutKnown_A,  regs_tl_o)
+  `OCAH_OT_ASSERT_KNOWN(RamTlOutKnown_A,   ram_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN_IF(RamTlOutPayLoadKnown_A, ram_tl_o, ram_tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(SramRerrorKnown_A, sram_rerror_o)
 
   // Alert assertions for redundant counters.
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,
       u_prim_count, alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcGateFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcGateFsmCheck_A,
       u_tlul_lc_gate.u_state_regs, alert_tx_o[0])
 
   // Alert assertions for reg_we onehot check.
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
       u_reg_regs, alert_tx_o[0])
 
   // Alert assertions for redundant counters.
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoWptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_wptr,
       alert_tx_o[0])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoWptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_wptr,
       alert_tx_o[0])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoWptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_wptr,
       alert_tx_o[0])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
@@ -765,7 +765,7 @@ module sram_ctrl
   // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that
   // `tlul_gnt` is the same as `sram_gnt` when there's an active `tlul_req` that isn't being ignored
   // because the SRAM is initializing.
-  `ASSERT(TlulGntIsCorrect_A, tlul_req |-> (sram_gnt & ~init_req) == tlul_gnt)
+  `OCAH_OT_ASSERT(TlulGntIsCorrect_A, tlul_req |-> (sram_gnt & ~init_req) == tlul_gnt)
 
   `ifdef FI_SIM_Z01X
     // Check if there are any TL-UL integrity errors caused by faults that Z01X has introduced.

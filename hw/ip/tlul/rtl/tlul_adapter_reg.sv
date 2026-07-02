@@ -129,7 +129,7 @@ module tlul_adapter_reg
   input                    error_i
 );
 
-  `ASSERT_INIT(AllowedLatency_A, AccessLatency inside {0, 1})
+  `OCAH_OT_ASSERT_INIT(AllowedLatency_A, AccessLatency inside {0, 1})
 
   localparam int IW  = $bits(tl_i.a_source);
   localparam int SZW = $bits(tl_i.a_size);
@@ -302,6 +302,6 @@ module tlul_adapter_reg
     .err_o (tl_err)
   );
 
-  `ASSERT_INIT(MatchedWidth_A, RegDw == top_pkg::TL_DW)
+  `OCAH_OT_ASSERT_INIT(MatchedWidth_A, RegDw == top_pkg::TL_DW)
 
 endmodule

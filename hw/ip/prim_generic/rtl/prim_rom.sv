@@ -47,5 +47,5 @@ module prim_rom import prim_rom_pkg::*; #(
   ////////////////
 
   // Control Signals should never be X
-  `ASSERT(noXOnCsI, !$isunknown(req_i), clk_i, '0)
+  `OCAH_OT_ASSERT(noXOnCsI, !$isunknown(req_i), clk_i, '0)
 endmodule

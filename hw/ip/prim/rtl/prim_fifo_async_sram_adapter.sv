@@ -383,59 +383,59 @@ module prim_fifo_async_sram_adapter #(
   // Assertion //
   ///////////////
 
-  `ASSERT_INIT(ParamCheckDepth_A, (Depth == 2**$clog2(Depth)))
+  `OCAH_OT_ASSERT_INIT(ParamCheckDepth_A, (Depth == 2**$clog2(Depth)))
 
   // Use FF if less than 4.
-  `ASSERT_INIT(MinDepth_A, Depth >= 4)
+  `OCAH_OT_ASSERT_INIT(MinDepth_A, Depth >= 4)
 
   // SramDw greather than or equal to Width
-  `ASSERT_INIT(WidthMatch_A, SramDw >= Width)
+  `OCAH_OT_ASSERT_INIT(WidthMatch_A, SramDw >= Width)
 
   // Not stored, Not read valid, but rptr_inc case is impossible
-  `ASSERT(RptrIncDataValid_A,
+  `OCAH_OT_ASSERT(RptrIncDataValid_A,
           r_rptr_inc |-> stored || r_sram_rvalid_i,
           clk_rd_i, !rst_rd_ni)
-  `ASSERT(SramRvalid_A,
+  `OCAH_OT_ASSERT(SramRvalid_A,
           r_sram_rvalid_i |-> !stored || r_rptr_inc,
           clk_rd_i, !rst_rd_ni)
 
   // FIFO interface
-  `ASSERT(NoWAckInFull_A, w_wptr_inc |-> !w_full,
+  `OCAH_OT_ASSERT(NoWAckInFull_A, w_wptr_inc |-> !w_full,
           clk_wr_i, !rst_wr_ni)
 
   // If a valid/ready handshake happens for the write pointer, that pointer should increment by one
-  `ASSERT(WptrIncrease_A,
+  `OCAH_OT_ASSERT(WptrIncrease_A,
           w_wptr_inc |=> w_wptr_q == $past(w_wptr_q) + PtrW'(1),
           clk_wr_i, !rst_wr_ni)
   // Check that the Gray coding works correctly, so the increment to w_wptr_gray_q changes exactly
   // one bit.
-  `ASSERT(WptrGrayOneBitAtATime_A,
+  `OCAH_OT_ASSERT(WptrGrayOneBitAtATime_A,
           w_wptr_inc |=> $countones(w_wptr_gray_q ^ $past(w_wptr_gray_q)) == 1,
           clk_wr_i, !rst_wr_ni)
 
-  `ASSERT(NoRAckInEmpty_A, r_rptr_inc |-> !r_empty,
+  `OCAH_OT_ASSERT(NoRAckInEmpty_A, r_rptr_inc |-> !r_empty,
           clk_rd_i, !rst_rd_ni)
 
-  `ASSERT(RptrIncrease_A,
+  `OCAH_OT_ASSERT(RptrIncrease_A,
           r_rptr_inc |=> PtrVW'($past(r_rptr_v) + 1) == r_rptr_v,
           clk_rd_i, !rst_rd_ni)
-  `ASSERT(RptrGrayOneBitAtATime_A,
+  `OCAH_OT_ASSERT(RptrGrayOneBitAtATime_A,
           r_rptr_inc |=> $countones(r_rptr_gray_q ^ $past(r_rptr_gray_q)) == 1,
           clk_rd_i, !rst_rd_ni)
 
   // SRAM interface
-  `ASSERT(WSramRvalid_A, !w_sram_rvalid_i, clk_wr_i, !rst_wr_ni)
-  `ASSUME_FPV(WSramRdataError_M, w_sram_rdata_i == '0 && w_sram_rerror_i == '0,
+  `OCAH_OT_ASSERT(WSramRvalid_A, !w_sram_rvalid_i, clk_wr_i, !rst_wr_ni)
+  `OCAH_OT_ASSUME_FPV(WSramRdataError_M, w_sram_rdata_i == '0 && w_sram_rerror_i == '0,
               clk_wr_i, !rst_wr_ni)
 
-  `ASSUME(RSramRvalidOneCycle_M,
+  `OCAH_OT_ASSUME(RSramRvalidOneCycle_M,
           r_sram_req_o && r_sram_gnt_i |=> r_sram_rvalid_i,
           clk_rd_i, !rst_rd_ni)
-  `ASSUME_FPV(RErrorTied_M, r_sram_rerror_i == '0,
+  `OCAH_OT_ASSUME_FPV(RErrorTied_M, r_sram_rerror_i == '0,
               clk_rd_i, !rst_rd_ni)
 
 
   // FPV coverage
-  `COVER_FPV(WFull_C, w_full, clk_wr_i, !rst_wr_ni)
+  `OCAH_OT_COVER_FPV(WFull_C, w_full, clk_wr_i, !rst_wr_ni)
 
 endmodule : prim_fifo_async_sram_adapter

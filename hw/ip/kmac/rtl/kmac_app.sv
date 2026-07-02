@@ -138,7 +138,7 @@ module kmac_app
 );
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
-  `ASSERT_STATIC_LINT_ERROR(KmacSecIdleAcceptSwMsgNonDefault, SecIdleAcceptSwMsg == 0)
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(KmacSecIdleAcceptSwMsgNonDefault, SecIdleAcceptSwMsg == 0)
 
   import sha3_pkg::KeccakBitCapacity;
   import sha3_pkg::L128;
@@ -406,7 +406,7 @@ module kmac_app
 
   // A compile-time defined configuration must always result in a valid mode-strength
   // configuration.
-  `ASSERT(ConfigAlwaysValidIfStatic_A,
+  `OCAH_OT_ASSERT(ConfigAlwaysValidIfStatic_A,
           app_active_o && app_cfg.if_type == AppStatic |-> valid_app_mode_strength)
 
   /////////////////////////////
@@ -435,7 +435,7 @@ module kmac_app
 
   // The three response generators may never be active at the same time because otherwise responses
   // would collide.
-  `ASSERT(AppOnlyOneRspSourceActive_A,
+  `OCAH_OT_ASSERT(AppOnlyOneRspSourceActive_A,
       $onehot0({app_digest_valid, app_finish_rsp_valid, app_error_rsp_valid}))
 
   always_comb begin
@@ -945,7 +945,7 @@ module kmac_app
   end
 
   // Check that dynamic app only states are never entered for a static app.
-  `ASSERT(InvalidStateForStaticApp_A,
+  `OCAH_OT_ASSERT(InvalidStateForStaticApp_A,
           st inside {StErrorPush, StErrorAwaitTermination} |-> (app_cfg.if_type == AppDynamic),
           clk_i, rst_ni)
 
@@ -1167,23 +1167,23 @@ module kmac_app
   end
 
   // Limit the response width to 64 bits because its the GCD for all modes except SHA-224.
-  `ASSERT_INIT(DynAppDigestWIs64Bit_A, DynAppDigestW == 64)
+  `OCAH_OT_ASSERT_INIT(DynAppDigestWIs64Bit_A, DynAppDigestW == 64)
   // Ensure all counter top computations divide properly as the response channel does not carry any
   // valid-strobe information.
-  `ASSERT_INIT(DigestTopDividesSha3L128_A, 128 % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesSha3L128_A, 128 % DynAppDigestW == 0)
   // An exception is SHA3-224, where we fix the number of digest parts to 4, so the full hash and
   // some additional rate bits are sent.
-  `ASSERT_INIT(DigestTopDividesSha3L256_A, 256 % DynAppDigestW == 0)
-  `ASSERT_INIT(DigestTopDividesSha3L384_A, 384 % DynAppDigestW == 0)
-  `ASSERT_INIT(DigestTopDividesSha3L512_A, 512 % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesSha3L256_A, 256 % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesSha3L384_A, 384 % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesSha3L512_A, 512 % DynAppDigestW == 0)
 
-  `ASSERT_INIT(DigestTopDividesKmacAppDigestW_A, AppDigestW % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesKmacAppDigestW_A, AppDigestW % DynAppDigestW == 0)
 
-  `ASSERT_INIT(DigestTopDividesShakeL128_A, (sha3_pkg::StateW - 2 * 128) % DynAppDigestW == 0)
-  `ASSERT_INIT(DigestTopDividesShakeL224_A, (sha3_pkg::StateW - 2 * 224) % DynAppDigestW == 0)
-  `ASSERT_INIT(DigestTopDividesShakeL256_A, (sha3_pkg::StateW - 2 * 256) % DynAppDigestW == 0)
-  `ASSERT_INIT(DigestTopDividesShakeL384_A, (sha3_pkg::StateW - 2 * 384) % DynAppDigestW == 0)
-  `ASSERT_INIT(DigestTopDividesShakeL512_A, (sha3_pkg::StateW - 2 * 512) % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesShakeL128_A, (sha3_pkg::StateW - 2 * 128) % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesShakeL224_A, (sha3_pkg::StateW - 2 * 224) % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesShakeL256_A, (sha3_pkg::StateW - 2 * 256) % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesShakeL384_A, (sha3_pkg::StateW - 2 * 384) % DynAppDigestW == 0)
+  `OCAH_OT_ASSERT_INIT(DigestTopDividesShakeL512_A, (sha3_pkg::StateW - 2 * 512) % DynAppDigestW == 0)
 
   assign digest_parts_available = current_digest_idx < digest_top;
 
@@ -1379,12 +1379,12 @@ module kmac_app
   ////////////////
 
   // KeyMgr sideload key and the digest should be in the Key Length value
-  `ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW <= AppDigestW)
-  `ASSERT_INIT(AppIntfInRange_A, AppDigestW inside {128, 192, 256, 384, 512})
+  `OCAH_OT_ASSERT_INIT(SideloadKeySameToDigest_A, KeyMgrKeyW <= AppDigestW)
+  `OCAH_OT_ASSERT_INIT(AppIntfInRange_A, AppDigestW inside {128, 192, 256, 384, 512})
 
   // Issue(#13655): Having a coverage that sideload keylen and CSR keylen are
   // different.
-  `COVER(AppIntfUseDifferentSizeKey_C,
+  `OCAH_OT_COVER(AppIntfUseDifferentSizeKey_C,
     (st == StAppCfg && kmac_en_q) |-> reg_key_len_i != SideloadedKey)
 
 endmodule

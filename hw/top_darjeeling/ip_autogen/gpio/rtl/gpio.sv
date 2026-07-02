@@ -411,13 +411,13 @@ module gpio
   );
 
   // Assert Known: Outputs
-  `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
-  `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
-  `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
+  `OCAH_OT_ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
+  `OCAH_OT_ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 
 endmodule

@@ -98,7 +98,7 @@ module rv_dm
   import prim_mubi_pkg::mubi32_test_true_strict;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
 
-  `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
+  `OCAH_OT_ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
 
   // static debug hartinfo
   localparam dm::hartinfo_t DebugHartInfo = '{
@@ -206,7 +206,7 @@ module rv_dm
     LcEnLastPos
   } rv_dm_lc_en_e;
   // These must be equal so that the difference between LcEnResetReq and LcEnDebugReq is NrHarts.
-  `ASSERT(RvDmLcEnDebugVal_A, int'(LcEnDebugReq) == LcEnDebugReqVal)
+  `OCAH_OT_ASSERT(RvDmLcEnDebugVal_A, int'(LcEnDebugReq) == LcEnDebugReqVal)
 
   lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
   prim_lc_sync #(
@@ -745,39 +745,39 @@ module rv_dm
   // Assertions //
   ////////////////
 
-  `ASSERT_KNOWN(TlRegsDValidKnown_A, regs_tl_d_o.d_valid)
-  `ASSERT_KNOWN(TlRegsAReadyKnown_A, regs_tl_d_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlRegsDValidKnown_A, regs_tl_d_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlRegsAReadyKnown_A, regs_tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(TlMemDValidKnown_A, mem_tl_d_o.d_valid)
-  `ASSERT_KNOWN(TlMemAReadyKnown_A, mem_tl_d_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlMemDValidKnown_A, mem_tl_d_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlMemAReadyKnown_A, mem_tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
-  `ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)
 
-  `ASSERT_KNOWN(TlDmiDValidKnown_A, dbg_tl_d_o.d_valid)
-  `ASSERT_KNOWN(TlDmiAReadyKnown_A, dbg_tl_d_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlDmiDValidKnown_A, dbg_tl_d_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlDmiAReadyKnown_A, dbg_tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
-  `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
-  `ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
-  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
+  `OCAH_OT_ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
+  `OCAH_OT_ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
 
   if (UseDmiInterface) begin : gen_dmi_assertions
-    `ASSERT(DmiRspOneCycleAfterReq_A, dmi_req_valid |=> dmi_rsp_valid)
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DbgTlLcGateFsm_A,
+    `OCAH_OT_ASSERT(DmiRspOneCycleAfterReq_A, dmi_req_valid |=> dmi_rsp_valid)
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DbgTlLcGateFsm_A,
       gen_dmi_gating.u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg.u_state_regs, alert_tx_o[0])
   end else begin : gen_jtag_assertions
     // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
-    `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
-    `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_o.tdo_oe, !jtag_i.tck, !jtag_i.trst_n)
+    `OCAH_OT_ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
+    `OCAH_OT_ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_o.tdo_oe, !jtag_i.tck, !jtag_i.trst_n)
   end
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SbaTlLcGateFsm_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SbaTlLcGateFsm_A,
     u_tlul_lc_gate_sba.u_state_regs, alert_tx_o[0])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RomTlLcGateFsm_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RomTlLcGateFsm_A,
     u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[0])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
 endmodule

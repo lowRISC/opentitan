@@ -53,12 +53,12 @@ interface pwrmgr_rstreqs_sva_if
 
   // Reset ins to outs.
   for (genvar rst = 0; rst < NumRstReqs; ++rst) begin : gen_hw_resets
-    `ASSERT(HwResetOn_A,
+    `OCAH_OT_ASSERT(HwResetOn_A,
             $rose(
                 rstreqs_i[rst] && reset_en[rst]
             ) |-> `MAIN_RST_CYCLES rstreqs[rst] && reset_cause == HwReq, clk_slow_i,
             reset_or_disable)
-    `ASSERT(HwResetOff_A,
+    `OCAH_OT_ASSERT(HwResetOff_A,
             $fell(
                 rstreqs_i[rst] && reset_en[rst]
             ) |-> `MAIN_RST_CYCLES !rstreqs[rst] && reset_cause != HwReq, clk_slow_i,
@@ -78,12 +78,12 @@ interface pwrmgr_rstreqs_sva_if
     end
   end
 
-  `ASSERT(MainPwrRstOn_A,
+  `OCAH_OT_ASSERT(MainPwrRstOn_A,
           $rose(
               main_rst_req_i && !rst_main_n_ignored_for_main_pwr_rst
           ) |-> `MAIN_RST_CYCLES rstreqs[ResetMainPwrIdx], clk_slow_i,
           reset_or_disable)
-  `ASSERT(MainPwrRstOff_A,
+  `OCAH_OT_ASSERT(MainPwrRstOff_A,
           $fell(
               main_rst_req_i
           ) |-> `MAIN_RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
@@ -92,17 +92,17 @@ interface pwrmgr_rstreqs_sva_if
    // Signals in EscRstOn_A and EscRstOff_A are sampled with slow and fast clock.
    // Since fast clock can be gated, use fast clock to evaluate cycle delay
    // to avoid spurious failure.
-  `ASSERT(EscRstOn_A,
+  `OCAH_OT_ASSERT(EscRstOn_A,
           $rose(
               esc_rst_req_i
           ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_i, reset_or_disable)
-  `ASSERT(EscRstOff_A,
+  `OCAH_OT_ASSERT(EscRstOff_A,
           $fell(
               esc_rst_req_i
           ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i, reset_or_disable)
 
   // Software initiated resets do not affect rstreqs since rstmgr generates them.
-  `ASSERT(SwResetSetCause_A,
+  `OCAH_OT_ASSERT(SwResetSetCause_A,
           $rose(sw_rst_req_i) |-> `MAIN_RST_CYCLES (reset_cause == HwReq), clk_i,
           reset_or_disable)
 

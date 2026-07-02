@@ -309,21 +309,21 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
   ////////////////
 
   // a clear should always bring us back to idle
-  `ASSERT(CheckClr_A,
+  `OCAH_OT_ASSERT(CheckClr_A,
       !accu_fail_i &&
       clr_i &&
       !(state_q inside {IdleSt, TimeoutSt, FsmErrorSt})
       |=>
       state_q == IdleSt)
   // if currently in idle and not enabled, must remain here
-  `ASSERT(CheckEn_A,
+  `OCAH_OT_ASSERT(CheckEn_A,
       !accu_fail_i &&
       state_q == IdleSt &&
       !en_i
       |=>
       state_q == IdleSt)
   // Check if accumulation trigger correctly captured
-  `ASSERT(CheckAccumTrig0_A,
+  `OCAH_OT_ASSERT(CheckAccumTrig0_A,
       !accu_fail_i &&
       accu_trig_i &&
       state_q == IdleSt &&
@@ -331,7 +331,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
       !clr_i
       |=>
       state_q == Phase0St)
-  `ASSERT(CheckAccumTrig1_A,
+  `OCAH_OT_ASSERT(CheckAccumTrig1_A,
       !accu_fail_i &&
       accu_trig_i &&
       state_q == TimeoutSt &&
@@ -340,7 +340,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
       |=>
       state_q == Phase0St)
   // Check if timeout correctly captured
-  `ASSERT(CheckTimeout0_A,
+  `OCAH_OT_ASSERT(CheckTimeout0_A,
       !accu_fail_i &&
       state_q == IdleSt &&
       timeout_en_i &&
@@ -349,7 +349,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
       !accu_trig_i
       |=>
       state_q == TimeoutSt)
-  `ASSERT(CheckTimeoutSt1_A,
+  `OCAH_OT_ASSERT(CheckTimeoutSt1_A,
       !accu_fail_i &&
       state_q == TimeoutSt &&
       timeout_en_i &&
@@ -357,7 +357,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
       !accu_trig_i
       |=>
       state_q == TimeoutSt)
-  `ASSERT(CheckTimeoutSt2_A,
+  `OCAH_OT_ASSERT(CheckTimeoutSt2_A,
       !accu_fail_i &&
       state_q == TimeoutSt &&
       !timeout_en_i &&
@@ -365,7 +365,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
       |=>
       state_q == IdleSt)
   // Check if timeout correctly triggers escalation
-  `ASSERT(CheckTimeoutStTrig_A,
+  `OCAH_OT_ASSERT(CheckTimeoutStTrig_A,
       !accu_fail_i &&
       state_q == TimeoutSt &&
       timeout_en_i &&
@@ -373,48 +373,48 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
       |=>
       state_q == Phase0St)
   // Check whether escalation phases are correctly switched
-  `ASSERT(CheckPhase0_A,
+  `OCAH_OT_ASSERT(CheckPhase0_A,
       !accu_fail_i &&
       state_q == Phase0St &&
       !clr_i &&
       esc_cnt_o >= phase_cyc_i[0]
       |=>
       state_q == Phase1St)
-  `ASSERT(CheckPhase1_A,
+  `OCAH_OT_ASSERT(CheckPhase1_A,
       !accu_fail_i &&
       state_q == Phase1St &&
       !clr_i &&
       esc_cnt_o >= phase_cyc_i[1]
       |=>
       state_q == Phase2St)
-  `ASSERT(CheckPhase2_A,
+  `OCAH_OT_ASSERT(CheckPhase2_A,
       !accu_fail_i &&
       state_q == Phase2St &&
       !clr_i &&
       esc_cnt_o >= phase_cyc_i[2]
       |=>
       state_q == Phase3St)
-  `ASSERT(CheckPhase3_A,
+  `OCAH_OT_ASSERT(CheckPhase3_A,
       !accu_fail_i &&
       state_q == Phase3St &&
       !clr_i &&
       esc_cnt_o >= phase_cyc_i[3]
       |=>
       state_q == TerminalSt)
-  `ASSERT(AccuFailToFsmError_A,
+  `OCAH_OT_ASSERT(AccuFailToFsmError_A,
       accu_fail_i
       |=>
       state_q == FsmErrorSt)
-  `ASSERT(ErrorStIsTerminal_A,
+  `OCAH_OT_ASSERT(ErrorStIsTerminal_A,
       state_q == FsmErrorSt
       |=>
       state_q == FsmErrorSt)
-  `ASSERT(ErrorStAllEscAsserted_A,
+  `OCAH_OT_ASSERT(ErrorStAllEscAsserted_A,
       state_q == FsmErrorSt
       |->
       esc_sig_req_o == '1)
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   // Check that our internal FSM matches the state index that we're exposing with esc_state_o. The
   // StateEncodings parameter does the mapping to match. (Practically speaking, this is just adding
   // "St" to each name so e.g. Idle gets mapped to IdleSt).
@@ -426,7 +426,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
                                                           Phase1St,
                                                           Phase2St,
                                                           Phase3St};
-  `ASSERT(EscStateOut_A, state_q == StateEncodings[esc_state_o])
+  `OCAH_OT_ASSERT(EscStateOut_A, state_q == StateEncodings[esc_state_o])
 `endif
 
 endmodule : alert_handler_esc_timer

@@ -170,12 +170,12 @@ module rv_timer import rv_timer_reg_pkg::*;
   ////////////////
   // Assertions //
   ////////////////
-  `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
-  `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
-  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
-  `ASSERT_KNOWN(IntrTimerExpiredHart0Timer0Known, intr_timer_expired_hart0_timer0_o)
+  `OCAH_OT_ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(IntrTimerExpiredHart0Timer0Known, intr_timer_expired_hart0_timer0_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

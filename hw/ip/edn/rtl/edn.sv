@@ -113,64 +113,64 @@ module edn
 
   // Assertions
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 
   // Endpoint Asserts
   for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_if_asserts
-    `ASSERT_KNOWN(EdnEndPointOut_A, edn_o[i])
+    `OCAH_OT_ASSERT_KNOWN(EdnEndPointOut_A, edn_o[i])
 
     // Check that EDN data stays stable from edn_ack until the next EDN request or until EDN
     // disablement.
-    `ASSERT(EdnDataStable_A,
+    `OCAH_OT_ASSERT(EdnDataStable_A,
         ($rose(edn_o[i].edn_ack) && $past(|u_edn_core.edn_enable_fo)) |=>
             $stable(edn_o[i].edn_bus) throughout
             (edn_i[i].edn_req || !(|u_edn_core.edn_enable_fo))[->1])
 
     // Check that EDN data stays stable while EDN is disabled.
-    `ASSERT(EdnDataStableDisable_A,
+    `OCAH_OT_ASSERT(EdnDataStableDisable_A,
         !(|u_edn_core.edn_enable_fo) |=> ##1 $stable(edn_o[i].edn_bus))
 
-    `ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
+    `OCAH_OT_ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
   end : gen_edn_if_asserts
 
   // CSRNG Asserts
-  `ASSERT_KNOWN(CsrngAppIfOut_A, csrng_cmd_o)
+  `OCAH_OT_ASSERT_KNOWN(CsrngAppIfOut_A, csrng_cmd_o)
 
   // Alerts
-  `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)
 
   // Interrupt Asserts
-  `ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
+  `OCAH_OT_ASSERT_KNOWN(IntrEdnCmdReqDoneKnownO_A, intr_edn_cmd_req_done_o)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
     u_edn_core.u_prim_count_max_reqs_cntr,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(MainFsmCheck_A,
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(MainFsmCheck_A,
     u_edn_core.u_edn_main_sm.u_state_regs,
     alert_tx_o[1])
 
   for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_fsm_asserts
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AckFsmCheck_A,
+    `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AckFsmCheck_A,
       u_edn_core.gen_ep_blk[i].u_edn_ack_sm_ep.u_state_regs,
       alert_tx_o[1])
   end
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoWptrCheck_A,
     u_edn_core.u_prim_fifo_sync_rescmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoRptrCheck_A,
     u_edn_core.u_prim_fifo_sync_rescmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
     alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoWptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoWptrCheck_A,
     u_edn_core.u_prim_fifo_sync_gencmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
     alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoRptrCheck_A,
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoRptrCheck_A,
     u_edn_core.u_prim_fifo_sync_gencmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
     alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule

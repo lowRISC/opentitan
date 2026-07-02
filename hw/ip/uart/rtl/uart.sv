@@ -120,25 +120,25 @@ module uart
   assign cio_tx_en_o = 1'b1;
 
   // Assert Known for outputs
-  `ASSERT(TxEnIsOne_A, cio_tx_en_o === 1'b1)
-  `ASSERT_KNOWN(TxKnown_A, cio_tx_o, clk_i, !rst_ni || !cio_tx_en_o)
+  `OCAH_OT_ASSERT(TxEnIsOne_A, cio_tx_en_o === 1'b1)
+  `OCAH_OT_ASSERT_KNOWN(TxKnown_A, cio_tx_o, clk_i, !rst_ni || !cio_tx_en_o)
 
   // Assert Known for alerts
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
   // Assert Known for interrupts
-  `ASSERT_KNOWN(TxWatermarkKnown_A, intr_tx_watermark_o)
-  `ASSERT_KNOWN(TxEmptyKnown_A, intr_tx_empty_o)
-  `ASSERT_KNOWN(RxWatermarkKnown_A, intr_rx_watermark_o)
-  `ASSERT_KNOWN(TxDoneKnown_A, intr_tx_done_o)
-  `ASSERT_KNOWN(RxOverflowKnown_A, intr_rx_overflow_o)
-  `ASSERT_KNOWN(RxFrameErrKnown_A, intr_rx_frame_err_o)
-  `ASSERT_KNOWN(RxBreakErrKnown_A, intr_rx_break_err_o)
-  `ASSERT_KNOWN(RxTimeoutKnown_A, intr_rx_timeout_o)
-  `ASSERT_KNOWN(RxParityErrKnown_A, intr_rx_parity_err_o)
-  `ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o.valid)
+  `OCAH_OT_ASSERT_KNOWN(TxWatermarkKnown_A, intr_tx_watermark_o)
+  `OCAH_OT_ASSERT_KNOWN(TxEmptyKnown_A, intr_tx_empty_o)
+  `OCAH_OT_ASSERT_KNOWN(RxWatermarkKnown_A, intr_rx_watermark_o)
+  `OCAH_OT_ASSERT_KNOWN(TxDoneKnown_A, intr_tx_done_o)
+  `OCAH_OT_ASSERT_KNOWN(RxOverflowKnown_A, intr_rx_overflow_o)
+  `OCAH_OT_ASSERT_KNOWN(RxFrameErrKnown_A, intr_rx_frame_err_o)
+  `OCAH_OT_ASSERT_KNOWN(RxBreakErrKnown_A, intr_rx_break_err_o)
+  `OCAH_OT_ASSERT_KNOWN(RxTimeoutKnown_A, intr_rx_timeout_o)
+  `OCAH_OT_ASSERT_KNOWN(RxParityErrKnown_A, intr_rx_parity_err_o)
+  `OCAH_OT_ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
+  `OCAH_OT_ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule

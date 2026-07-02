@@ -26,6 +26,6 @@ module prim_slicer #(
 
   assign data_o = unrolled_data[sel_i*OutW+:OutW];
 
-  `ASSERT_INIT(ValidWidth_A, InW <= OutW*(2**IndexW))
+  `OCAH_OT_ASSERT_INIT(ValidWidth_A, InW <= OutW*(2**IndexW))
 
 endmodule

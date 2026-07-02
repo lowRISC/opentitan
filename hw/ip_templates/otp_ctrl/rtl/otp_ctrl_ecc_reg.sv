@@ -27,7 +27,7 @@ module otp_ctrl_ecc_reg #(
 );
 
   // Integration checks for parameters.
-  `ASSERT_INIT(WidthMustBe64bit_A, Width == 64)
+  `OCAH_OT_ASSERT_INIT(WidthMustBe64bit_A, Width == 64)
 
   localparam int EccWidth = 8;
 
@@ -96,10 +96,10 @@ module otp_ctrl_ecc_reg #(
     end
   end
 
-  `ASSERT_KNOWN(EccKnown_A,      ecc_q)
-  `ASSERT_KNOWN(DataKnown_A,     data_q)
-  `ASSERT_KNOWN(RDataOutKnown_A, rdata_o)
-  `ASSERT_KNOWN(DataOutKnown_A,  data_o)
-  `ASSERT_KNOWN(EccErrKnown_A,   ecc_err_o)
+  `OCAH_OT_ASSERT_KNOWN(EccKnown_A,      ecc_q)
+  `OCAH_OT_ASSERT_KNOWN(DataKnown_A,     data_q)
+  `OCAH_OT_ASSERT_KNOWN(RDataOutKnown_A, rdata_o)
+  `OCAH_OT_ASSERT_KNOWN(DataOutKnown_A,  data_o)
+  `OCAH_OT_ASSERT_KNOWN(EccErrKnown_A,   ecc_err_o)
 
 endmodule : otp_ctrl_ecc_reg

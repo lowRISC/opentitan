@@ -906,7 +906,7 @@ module spi_passthrough
       end
     endcase
   end
-  `ASSERT_KNOWN(PassThroughStKnown_A, st)
+  `OCAH_OT_ASSERT_KNOWN(PassThroughStKnown_A, st)
 
   ///////////////
   // Assertion //
@@ -914,7 +914,7 @@ module spi_passthrough
 
   // Assume when payload_swap_en is set, the direction is PayloadIn & only
   // Single mode is used
-  `ASSUME(PayloadSwapConstraint_M,
+  `OCAH_OT_ASSUME(PayloadSwapConstraint_M,
     cmd_info.payload_swap_en |-> (cmd_info.payload_en == 4'b 0001)
                               && (cmd_info.payload_dir == PayloadIn))
 

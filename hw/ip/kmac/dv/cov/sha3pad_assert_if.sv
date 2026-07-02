@@ -17,12 +17,12 @@ interface sha3pad_assert_if # (
   localparam int Share = (EnMasking) ? 2 : 1;
 
   // If `process_i` is asserted, eventually sha3pad trigger run signal
-  `ASSERT(ProcessToRun_A, process_i |-> strong(##[2:$] keccak_run_o),
+  `OCAH_OT_ASSERT(ProcessToRun_A, process_i |-> strong(##[2:$] keccak_run_o),
     clk_i, !rst_ni || lc_escalate_en_i != lc_ctrl_pkg::Off)
 
   // Keccak control interface
   // Keccak run triggered -> completion should come
-  `ASSUME(RunThenComplete_M,
+  `OCAH_OT_ASSUME(RunThenComplete_M,
     keccak_run_o |-> strong(##[24*Share:$] keccak_complete_i),
     clk_i, !rst_ni || lc_escalate_en_i != lc_ctrl_pkg::Off)
 endinterface

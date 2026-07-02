@@ -117,14 +117,14 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Parameter Checks //
   //////////////////////
 
-  `ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
-  `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
+  `OCAH_OT_ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
+  `OCAH_OT_ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
 
   // Trigger an SVA and further a lint error to reduce the risk of accidentally going below the
   // minimum ChunkDepth.
-  `ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
+  `OCAH_OT_ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
       NumAddrScrRounds <= '0 || DepthPow2 || Depth % MinChunkDepth == 0)
-  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
+  `OCAH_OT_ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
       NumAddrScrRounds <= '0 || DepthPow2 || Depth % MinChunkDepth == 0)
 
   /////////////////////////////////////////

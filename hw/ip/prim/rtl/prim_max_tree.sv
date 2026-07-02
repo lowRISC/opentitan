@@ -37,7 +37,7 @@ module prim_max_tree #(
   ///////////////////////
 
   // This only works with 2 or more sources.
-  `ASSERT_INIT(NumSources_A, NumSrc >= 2)
+  `OCAH_OT_ASSERT_INIT(NumSources_A, NumSrc >= 2)
 
   // Align to powers of 2 for simplicity.
   // A full binary tree with N levels has 2**N + 2**N-1 nodes.
@@ -104,7 +104,7 @@ module prim_max_tree #(
   // Assertions //
   ////////////////
 
-`ifdef INC_ASSERT
+`ifdef OCAH_OT_INC_ASSERT
   //VCS coverage off
   // pragma coverage off
 
@@ -141,12 +141,12 @@ module prim_max_tree #(
   // pragma coverage on
 
   // TODO(10588): Below syntax is not supported in xcelium, track xcelium cases #46591452.
-  // `ASSERT(ValidInImpliesValidOut_A, |valid_i <-> max_valid_o)
-  `ASSERT(ValidInImpliesValidOut_A, |valid_i === max_valid_o)
-  `ASSERT(MaxComputation_A, max_valid_o |-> max_value_o == max_value_exp)
-  `ASSERT(MaxComputationInvalid_A, !max_valid_o |-> max_value_o == values_i[0])
-  `ASSERT(MaxIndexComputation_A, max_valid_o |-> max_idx_o == max_idx_exp)
-  `ASSERT(MaxIndexComputationInvalid_A, !max_valid_o |-> max_idx_o == '0)
+  // `OCAH_OT_ASSERT(ValidInImpliesValidOut_A, |valid_i <-> max_valid_o)
+  `OCAH_OT_ASSERT(ValidInImpliesValidOut_A, |valid_i === max_valid_o)
+  `OCAH_OT_ASSERT(MaxComputation_A, max_valid_o |-> max_value_o == max_value_exp)
+  `OCAH_OT_ASSERT(MaxComputationInvalid_A, !max_valid_o |-> max_value_o == values_i[0])
+  `OCAH_OT_ASSERT(MaxIndexComputation_A, max_valid_o |-> max_idx_o == max_idx_exp)
+  `OCAH_OT_ASSERT(MaxIndexComputationInvalid_A, !max_valid_o |-> max_idx_o == '0)
 `endif
 
 endmodule : prim_max_tree

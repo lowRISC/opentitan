@@ -114,20 +114,20 @@ module tb;
     run_test();
   end
   // Only get one KMAC response
-  `ASSERT(JustOneKmacResponse_A, kmac_data_in.rsp_valid |=> always !kmac_data_in.rsp_valid,
+  `OCAH_OT_ASSERT(JustOneKmacResponse_A, kmac_data_in.rsp_valid |=> always !kmac_data_in.rsp_valid,
           clk, rst_n)
   // Once we signal done to pwrmgr, the done signal stays high and the good signal stays stable.
-  `ASSERT(PwrmgrDoneOneWay_A, $rose(pwrmgr_data.done == prim_mubi_pkg::MuBi4True) |=>
+  `OCAH_OT_ASSERT(PwrmgrDoneOneWay_A, $rose(pwrmgr_data.done == prim_mubi_pkg::MuBi4True) |=>
           always $stable(pwrmgr_data), clk, rst_n)
   // Don't send any KMAC requests once we've had the response
-  `ASSERT(KmacNotOutAfterIn_A, kmac_data_in.rsp_valid |=> always !kmac_data_out.req_valid,
+  `OCAH_OT_ASSERT(KmacNotOutAfterIn_A, kmac_data_in.rsp_valid |=> always !kmac_data_out.req_valid,
           clk, rst_n)
   always_comb begin
     if (!rst_n) kmac_digest_handshake_occured = 0;
     else if (kmac_data_in.rsp_valid) kmac_digest_handshake_occured = 1;
   end
   // We see a response from KMAC before we assert that we're done to pwrmgr
-  `ASSERT(KmacResponseBeforePwmgrDone_A,
+  `OCAH_OT_ASSERT(KmacResponseBeforePwmgrDone_A,
           pwrmgr_data.done != prim_mubi_pkg::MuBi4False |-> kmac_digest_handshake_occured,
           clk, rst_n)
   `undef ROM_CTRL_MEM_HIER

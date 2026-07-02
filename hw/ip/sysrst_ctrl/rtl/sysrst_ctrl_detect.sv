@@ -229,88 +229,88 @@ module sysrst_ctrl_detect
   // Assertions //
   ////////////////
 
-  `ASSERT(DisabledIdleSt_A, !cfg_enable_i |=> state_q == IdleSt)
-  `ASSERT(DisabledNoDetection_A, !cfg_enable_i |-> !event_detected_o && !event_detected_pulse_o)
+  `OCAH_OT_ASSERT(DisabledIdleSt_A, !cfg_enable_i |=> state_q == IdleSt)
+  `OCAH_OT_ASSERT(DisabledNoDetection_A, !cfg_enable_i |-> !event_detected_o && !event_detected_pulse_o)
 
   if ((EventType == LowLevel) || (EventType == EdgeToLow)) begin : gen_low_level_sva
-    `ASSERT(LowLevelEvent_A, !trigger_i === trigger_active)
+    `OCAH_OT_ASSERT(LowLevelEvent_A, !trigger_i === trigger_active)
   end else begin: gen_high_level_sva
-    `ASSERT(HighLevelEvent_A, trigger_i === trigger_active)
+    `OCAH_OT_ASSERT(HighLevelEvent_A, trigger_i === trigger_active)
   end
 
   if (EventType == LowLevel) begin : gen_low_event_sva
-    `ASSERT(LowLevelEvent_A, !trigger_i === trigger_event)
+    `OCAH_OT_ASSERT(LowLevelEvent_A, !trigger_i === trigger_event)
   end else if (EventType == HighLevel) begin : gen_high_event_sva
-    `ASSERT(HighLevelEvent_A, trigger_i === trigger_event)
+    `OCAH_OT_ASSERT(HighLevelEvent_A, trigger_i === trigger_event)
   end else if (EventType == EdgeToLow) begin : gen_edge_to_low_event_sva
-    `ASSERT(EdgeToLowEvent_A, !trigger_i && $past(trigger_i) |-> trigger_event)
+    `OCAH_OT_ASSERT(EdgeToLowEvent_A, !trigger_i && $past(trigger_i) |-> trigger_event)
   end else if (EventType == EdgeToLow) begin : gen_edge_to_high_event_sva
-    `ASSERT(EdgeToHighEvent_A, trigger_i && !$past(trigger_i) |-> trigger_event)
+    `OCAH_OT_ASSERT(EdgeToHighEvent_A, trigger_i && !$past(trigger_i) |-> trigger_event)
   end
 
-  `ASSERT(EnterDebounceSt_A,
+  `OCAH_OT_ASSERT(EnterDebounceSt_A,
       state_q == IdleSt && cfg_enable_i && trigger_event
       |=>
       state_q == DebounceSt)
 
-  `ASSERT(EnterDetectSt_A,
+  `OCAH_OT_ASSERT(EnterDetectSt_A,
       state_q == DebounceSt && cnt_q >= cfg_debounce_timer_i && trigger_active && cfg_enable_i
       |=>
       state_q == DetectSt)
 
-  `ASSERT(DetectStDropOut_A,
+  `OCAH_OT_ASSERT(DetectStDropOut_A,
       state_q == DetectSt && !trigger_active && cfg_enable_i
       |=>
       state_q == IdleSt)
 
-  `ASSERT(EnterStableSt_A,
+  `OCAH_OT_ASSERT(EnterStableSt_A,
       state_q == DetectSt && cnt_q >= cfg_detect_timer_i && trigger_active && cfg_enable_i
       |=>
       state_q == StableSt)
 
-  `ASSERT(StayInStableSt,
+  `OCAH_OT_ASSERT(StayInStableSt,
       state_q == StableSt && trigger_active && cfg_enable_i
       |=>
       state_q == StableSt)
 
   if (Sticky) begin : gen_sticky_sva
-    `ASSERT(StableStDropOut_A,
+    `OCAH_OT_ASSERT(StableStDropOut_A,
         state_q == StableSt && cfg_enable_i && !trigger_active
         |=>
         state_q == StableSt)
   end else begin : gen_not_sticky_sva
-    `ASSERT(StableStDropOut_A,
+    `OCAH_OT_ASSERT(StableStDropOut_A,
         state_q == StableSt && cfg_enable_i && !trigger_active
         |=>
         state_q == IdleSt)
   end
 
-  `ASSERT(DetectedOut_A,
+  `OCAH_OT_ASSERT(DetectedOut_A,
       state_q == StableSt && trigger_active && cfg_enable_i ||
       state_q == DetectSt && cnt_q >= cfg_detect_timer_i && trigger_active && cfg_enable_i
       |->
       event_detected_o)
 
-  `ASSERT(DetectedPulseOut_A,
+  `OCAH_OT_ASSERT(DetectedPulseOut_A,
       state_q == DetectSt && cnt_q >= cfg_detect_timer_i && trigger_active && cfg_enable_i
       |->
       event_detected_pulse_o)
 
-  `ASSERT(PulseIsPulse_A,
+  `OCAH_OT_ASSERT(PulseIsPulse_A,
       event_detected_pulse_o |=> !event_detected_pulse_o)
 
   // Counter does not wrap around unless it is explicitly cleared
-  `ASSERT(CntNoWrap_A,
+  `OCAH_OT_ASSERT(CntNoWrap_A,
       !cnt_clr
       |=>
       cnt_q >= $past(cnt_q))
 
-  `ASSERT(CntClr_A,
+  `OCAH_OT_ASSERT(CntClr_A,
       cnt_clr
       |=>
       cnt_q == '0)
 
-  `ASSERT(CntIncr_A,
+  `OCAH_OT_ASSERT(CntIncr_A,
       cnt_en && !cnt_clr
       |=>
       cnt_q == $past(cnt_q) + 1)

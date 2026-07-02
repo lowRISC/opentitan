@@ -52,7 +52,7 @@ module tb;
     .cio_pwm_en_o  (cio_pwm_en)
   );
 
-  `ASSERT(PwmEnTiedHigh_A, cio_pwm_en == '1, clk, rst_n)
+  `OCAH_OT_ASSERT(PwmEnTiedHigh_A, cio_pwm_en == '1, clk, rst_n)
 
   for (genvar n = 0; n < PWM_NUM_CHANNELS; n++) begin: gen_pwm_if_conn
     // Unfortunately we need to know when the internal phase counter starts because a channel

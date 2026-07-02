@@ -115,7 +115,7 @@ module prim_sram_arbiter #(
       .ready_i   ( 1'b1        )
     );
   end else begin : gen_unknown
-    `ASSERT_INIT(UnknownArbImpl_A, 0)
+    `OCAH_OT_ASSERT_INIT(UnknownArbImpl_A, 0)
   end
 
 

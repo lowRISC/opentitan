@@ -341,7 +341,7 @@ module rstmgr
 
   % if names[0]!=rst_ni:
   if (SecCheck) begin : gen_d${domain.lower()}_${name}_assert
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+  `OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D${domain.capitalize()}${rst_name_camel}FsmCheck_A,
     u_d${domain.lower()}_${name}.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
@@ -465,21 +465,21 @@ module rstmgr
   // Assertions                                     //
   ////////////////////////////////////////////////////
 
-  `ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::HwResetWidth)
+  `OCAH_OT_ASSERT_INIT(ParameterMatch_A, NumHwResets == pwrmgr_pkg::HwResetWidth)
 
   // when upstream resets, downstream must also reset
 
   // output known asserts
-  `ASSERT_KNOWN(TlDValidKnownO_A,    tl_o.d_valid  )
-  `ASSERT_KNOWN(TlAReadyKnownO_A,    tl_o.a_ready  )
-  `ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
-  `ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
-  `ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
-  `ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
+  `OCAH_OT_ASSERT_KNOWN(TlDValidKnownO_A,    tl_o.d_valid  )
+  `OCAH_OT_ASSERT_KNOWN(TlAReadyKnownO_A,    tl_o.a_ready  )
+  `OCAH_OT_ASSERT_KNOWN(AlertsKnownO_A,      alert_tx_o    )
+  `OCAH_OT_ASSERT_KNOWN(PwrKnownO_A,         pwr_o         )
+  `OCAH_OT_ASSERT_KNOWN(ResetsKnownO_A,      resets_o      )
+  `OCAH_OT_ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
 % for intf in export_rsts:
-  `ASSERT_KNOWN(${intf.capitalize()}ResetsKnownO_A, resets_${intf}_o )
+  `OCAH_OT_ASSERT_KNOWN(${intf.capitalize()}ResetsKnownO_A, resets_${intf}_o )
 % endfor
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule // rstmgr
