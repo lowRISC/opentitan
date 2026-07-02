@@ -1224,10 +1224,12 @@
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
       // KeyMgr Sideload & KDF function
-      'otp_ctrl.otp_keymgr_key' : ['keymgr_dpe.otp_key'],
-      'keymgr_dpe.aes_key'      : ['aes.keymgr_key'],
-      'keymgr_dpe.kmac_key'     : ['kmac.keymgr_key'],
-      'keymgr_dpe.otbn_key'     : ['otbn.keymgr_key'],
+      'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
+      'otp_ctrl.keymgr_creator_seed'      : ['keymgr_dpe.creator_seed'],
+      'otp_ctrl.keymgr_owner_seed'        : ['keymgr_dpe.owner_seed'],
+      'keymgr_dpe.aes_key'                : ['aes.keymgr_key'],
+      'keymgr_dpe.kmac_key'               : ['kmac.keymgr_key'],
+      'keymgr_dpe.otbn_key'               : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
       // Note that arbitration is fixed priority top to bottom.
@@ -1362,7 +1364,7 @@
         'soc_dbg_ctrl.soc_dbg_state',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
-        'keymgr_dpe.otp_device_id',
+        'keymgr_dpe.device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
         # Unconditionally disable the late debug feature and enable early debug
         'rv_dm.otp_dis_rv_dm_late_debug'

@@ -18,8 +18,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // it so that status is changed to SideLoadNotAvail, then we may set it to SideLoadAvail again
   lc_ctrl_pkg::lc_tx_t                                keymgr_dpe_en;
   lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_dpe_div;
-  otp_ctrl_pkg::otp_device_id_t                       otp_device_id;
-  otp_ctrl_pkg::otp_keymgr_key_t                      otp_key;
+  keymgr_dpe_pkg::keymgr_dpe_device_id_t              otp_device_id;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t           creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t             owner_seed;
   rom_ctrl_pkg::keymgr_data_t[NumRomDigestInputs-1:0] rom_digests;
 
   keymgr_pkg::hw_key_req_t kmac_key;
