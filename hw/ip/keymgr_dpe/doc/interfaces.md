@@ -10,20 +10,22 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name       | Package::Struct              | Type    | Act   |   Width | Description   |
-|:----------------|:-----------------------------|:--------|:------|--------:|:--------------|
-| edn             | edn_pkg::edn                 | req_rsp | req   |       1 |               |
-| aes_key         | keymgr_pkg::hw_key_req       | uni     | req   |       1 |               |
-| kmac_key        | keymgr_pkg::hw_key_req       | uni     | req   |       1 |               |
-| otbn_key        | keymgr_pkg::otbn_key_req     | uni     | req   |       1 |               |
-| kmac_data       | kmac_pkg::app                | req_rsp | req   |       1 |               |
-| otp_key         | otp_ctrl_pkg::otp_keymgr_key | uni     | rcv   |       1 |               |
-| otp_device_id   | otp_ctrl_pkg::otp_device_id  | uni     | rcv   |       1 |               |
-| lc_keymgr_en    | lc_ctrl_pkg::lc_tx           | uni     | rcv   |       1 |               |
-| lc_keymgr_div   | lc_ctrl_pkg::lc_keymgr_div   | uni     | rcv   |       1 |               |
-| rom_digest      | rom_ctrl_pkg::keymgr_data    | uni     | rcv   |       2 |               |
-| kmac_en_masking | logic                        | uni     | rcv   |       1 |               |
-| tl              | tlul_pkg::tl                 | req_rsp | rsp   |       1 |               |
+| Port Name        | Package::Struct                             | Type    | Act   |   Width | Description   |
+|:-----------------|:--------------------------------------------|:--------|:------|--------:|:--------------|
+| edn              | edn_pkg::edn                                | req_rsp | req   |       1 |               |
+| aes_key          | keymgr_pkg::hw_key_req                      | uni     | req   |       1 |               |
+| kmac_key         | keymgr_pkg::hw_key_req                      | uni     | req   |       1 |               |
+| otbn_key         | keymgr_pkg::otbn_key_req                    | uni     | req   |       1 |               |
+| kmac_data        | kmac_pkg::app                               | req_rsp | req   |       1 |               |
+| creator_root_key | keymgr_dpe_pkg::keymgr_dpe_creator_root_key | uni     | rcv   |       1 |               |
+| creator_seed     | keymgr_dpe_pkg::keymgr_dpe_creator_seed     | uni     | rcv   |       1 |               |
+| owner_seed       | keymgr_dpe_pkg::keymgr_dpe_owner_seed       | uni     | rcv   |       1 |               |
+| device_id        | keymgr_dpe_pkg::keymgr_dpe_device_id        | uni     | rcv   |       1 |               |
+| lc_keymgr_en     | lc_ctrl_pkg::lc_tx                          | uni     | rcv   |       1 |               |
+| lc_keymgr_div    | lc_ctrl_pkg::lc_keymgr_div                  | uni     | rcv   |       1 |               |
+| rom_digest       | rom_ctrl_pkg::keymgr_data                   | uni     | rcv   |       2 |               |
+| kmac_en_masking  | logic                                       | uni     | rcv   |       1 |               |
+| tl               | tlul_pkg::tl                                | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 

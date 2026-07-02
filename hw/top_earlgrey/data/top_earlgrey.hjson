@@ -1194,7 +1194,6 @@
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
       // KeyMgr Sideload & KDF function
-      'otp_ctrl.otp_keymgr_key' : ['keymgr.otp_key'],
       'keymgr.aes_key'          : ['aes.keymgr_key'],
       'keymgr.kmac_key'         : ['kmac.keymgr_key'],
       'keymgr.otbn_key'         : ['otbn.keymgr_key'],
@@ -1339,6 +1338,13 @@
         'keymgr.otp_device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
         'rv_dm.otp_dis_rv_dm_late_debug',
+
+        // Connect the keymaterial from the OTP manually
+        // TODO: resolve this manual fix
+        'keymgr.otp_key',
+        'otp_ctrl.keymgr_creator_root_key',
+        'otp_ctrl.keymgr_creator_seed',
+        'otp_ctrl.keymgr_owner_seed',
     ],
 
     // ext is to create port in the top.

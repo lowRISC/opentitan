@@ -1948,18 +1948,42 @@
           index: -1
         }
         {
-          name: otp_keymgr_key
+          name: keymgr_creator_root_key
           desc: Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-          struct: otp_keymgr_key
-          package: otp_ctrl_pkg
+          struct: keymgr_dpe_creator_root_key
+          package: keymgr_dpe_pkg
           type: uni
           act: req
           width: 1
           default: "'0"
           inst_name: otp_ctrl
-          end_idx: -1
-          top_type: broadcast
-          top_signame: otp_ctrl_otp_keymgr_key
+          top_signame: otp_ctrl_keymgr_creator_root_key
+          index: -1
+        }
+        {
+          name: keymgr_creator_seed
+          desc: Creator seed output to the key manager
+          struct: keymgr_dpe_creator_seed
+          package: keymgr_dpe_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          top_signame: otp_ctrl_keymgr_creator_seed
+          index: -1
+        }
+        {
+          name: keymgr_owner_seed
+          desc: Owner seed output to the key manager
+          struct: keymgr_dpe_owner_seed
+          package: keymgr_dpe_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          top_signame: otp_ctrl_keymgr_owner_seed
           index: -1
         }
         {
@@ -7951,8 +7975,7 @@
           width: 1
           inst_name: keymgr
           default: ""
-          domain: Main
-          top_signame: otp_ctrl_otp_keymgr_key
+          top_signame: keymgr_otp_key
           index: -1
         }
         {
@@ -10238,10 +10261,6 @@
       [
         otbn.otbn_otp_key
       ]
-      otp_ctrl.otp_keymgr_key:
-      [
-        keymgr.otp_key
-      ]
       keymgr.aes_key:
       [
         aes.keymgr_key
@@ -10665,6 +10684,10 @@
       keymgr.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
       rv_dm.otp_dis_rv_dm_late_debug
+      keymgr.otp_key
+      otp_ctrl.keymgr_creator_root_key
+      otp_ctrl.keymgr_creator_seed
+      otp_ctrl.keymgr_owner_seed
     ]
     external:
     {
@@ -20977,18 +21000,42 @@
         index: -1
       }
       {
-        name: otp_keymgr_key
+        name: keymgr_creator_root_key
         desc: Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-        struct: otp_keymgr_key
-        package: otp_ctrl_pkg
+        struct: keymgr_dpe_creator_root_key
+        package: keymgr_dpe_pkg
         type: uni
         act: req
         width: 1
         default: "'0"
         inst_name: otp_ctrl
-        end_idx: -1
-        top_type: broadcast
-        top_signame: otp_ctrl_otp_keymgr_key
+        top_signame: otp_ctrl_keymgr_creator_root_key
+        index: -1
+      }
+      {
+        name: keymgr_creator_seed
+        desc: Creator seed output to the key manager
+        struct: keymgr_dpe_creator_seed
+        package: keymgr_dpe_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        top_signame: otp_ctrl_keymgr_creator_seed
+        index: -1
+      }
+      {
+        name: keymgr_owner_seed
+        desc: Owner seed output to the key manager
+        struct: keymgr_dpe_owner_seed
+        package: keymgr_dpe_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        top_signame: otp_ctrl_keymgr_owner_seed
         index: -1
       }
       {
@@ -24999,8 +25046,7 @@
         width: 1
         inst_name: keymgr
         default: ""
-        domain: Main
-        top_signame: otp_ctrl_otp_keymgr_key
+        top_signame: keymgr_otp_key
         index: -1
       }
       {
@@ -31259,18 +31305,6 @@
         default: ""
       }
       {
-        package: otp_ctrl_pkg
-        struct: otp_keymgr_key
-        domain: Main
-        signame: otp_ctrl_otp_keymgr_key
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
         package: keymgr_pkg
         struct: hw_key_req
         domain: Main
@@ -32973,6 +33007,46 @@
         type: uni
         end_idx: -1
         default: prim_mubi_pkg::MuBi8False
+      }
+      {
+        package: otp_ctrl_pkg
+        struct: otp_keymgr_key
+        signame: keymgr_otp_key
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_creator_root_key
+        signame: otp_ctrl_keymgr_creator_root_key
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
+      }
+      {
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_creator_seed
+        signame: otp_ctrl_keymgr_creator_seed
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
+      }
+      {
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_owner_seed
+        signame: otp_ctrl_keymgr_owner_seed
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: "'0"
       }
     ]
   }
