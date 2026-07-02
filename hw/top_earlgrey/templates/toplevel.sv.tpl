@@ -59,6 +59,15 @@ module top_${top["name"]} #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
+
+  // Connect the keymaterial from the OTP manually
+  // TODO: resolve this manual fix
+  assign keymgr_otp_key = {
+    otp_ctrl_keymgr_creator_root_key,
+    otp_ctrl_keymgr_creator_seed,
+    otp_ctrl_keymgr_owner_seed
+  };
+
   % endif
 % endfor
 

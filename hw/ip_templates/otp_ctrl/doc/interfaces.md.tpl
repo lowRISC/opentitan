@@ -115,10 +115,10 @@ In all other life cycle states this signal will be clamped to zero.
 
 ${"###"} Interface to Key Manager
 
-The interface to the key manager is a simple struct that outputs the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1 keys via `otp_keymgr_key_o` if these secrets have been provisioned and locked (via CREATOR_KEY_LOCK).
-Otherwise, this signal is tied to a random netlist constant.
+Each individual secret key material (CREATOR_ROOT_KEY, OWNER_SEED, CREATOR_SEED) gets its own connection to the keymgr.
+These secrets are provided to the keymgr if they have been provisioned and locked (via CREATOR_KEY_LOCK), otherwise these signals are tied to random netlist constants.
 
-Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
+Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o` signals.
 
 ${"###"} Interfaces to SRAM and OTBN Scramblers
 

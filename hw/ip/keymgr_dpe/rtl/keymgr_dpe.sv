@@ -56,8 +56,10 @@ module keymgr_dpe
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
-  input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
-  input otp_ctrl_pkg::otp_device_id_t otp_device_id_i,
+  input keymgr_dpe_creator_root_key_t creator_root_key_i,
+  input keymgr_dpe_creator_seed_t creator_seed_i,
+  input keymgr_dpe_owner_seed_t owner_seed_i,
+  input keymgr_dpe_device_id_t device_id_i,
 
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
@@ -259,16 +261,16 @@ module keymgr_dpe
   end
 
   hw_key_req_t root_key;
-  assign root_key.key = '{otp_key_i.creator_root_key_share1,
-                          otp_key_i.creator_root_key_share0};
+  assign root_key.key = '{creator_root_key_i.share1,
+                          creator_root_key_i.share0};
 
   prim_flop_2sync # (
     .Width(1)
   ) u_key_valid_sync (
     .clk_i,
     .rst_ni,
-    .d_i(otp_key_i.creator_root_key_share0_valid &
-         otp_key_i.creator_root_key_share1_valid),
+    .d_i(creator_root_key_i.share0_valid &
+         creator_root_key_i.share1_valid),
     .q_o(root_key.valid)
   );
 
@@ -449,14 +451,14 @@ module keymgr_dpe
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   logic unused_creator_seed;
-  assign unused_creator_seed = ^{otp_key_i.creator_seed_valid};
-  assign creator_seed = otp_key_i.creator_seed;
+  assign unused_creator_seed = ^{creator_seed_i.seed_valid};
+  assign creator_seed = creator_seed_i.seed;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   logic unused_owner_seed;
-  assign unused_owner_seed = ^{otp_key_i.owner_seed_valid};
-  assign owner_seed = otp_key_i.owner_seed;
+  assign unused_owner_seed = ^{owner_seed_i.seed_valid};
+  assign owner_seed = owner_seed_i.seed;
 
   always_comb begin : gen_adv_matrix_all
     // One default only use SW binding
@@ -467,7 +469,7 @@ module keymgr_dpe
       // For (0 = Creator) and (1 = OwnerInt), check seed validity
       adv_matrix[BootStageCreator] = DpeAdvDataWidth'({sw_binding,
                                                       revision_seed,
-                                                      otp_device_id_i,
+                                                      device_id_i,
                                                       lc_keymgr_div_i,
                                                       rom_digests,
                                                       creator_seed});
@@ -516,7 +518,7 @@ module keymgr_dpe
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
     .key_i(curr_active_key),
-    .devid_i(otp_device_id_i),
+    .devid_i(device_id_i),
     .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
     .creator_seed_vld_o(creator_seed_vld),
     .owner_seed_vld_o(owner_seed_vld),
@@ -816,7 +818,7 @@ module keymgr_dpe
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
 
-  `ASSERT_INIT(KeyWidthEqualityCheck_A, otp_ctrl_pkg::KeyMgrKeyWidth == KeyWidth)
+  `ASSERT_INIT(KeyWidthEqualityCheck_A, KeyMgrKeyWidth == KeyWidth)
 
   `ASSERT_INIT_NET(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
 

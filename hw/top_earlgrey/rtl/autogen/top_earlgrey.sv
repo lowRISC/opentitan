@@ -642,7 +642,6 @@ module top_earlgrey #(
   edn_pkg::edn_rsp_t [Edn1NumEndPoints-1:0] edn1_edn_rsp;
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
-  otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
   keymgr_pkg::otbn_key_req_t       keymgr_otbn_key;
@@ -779,6 +778,10 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
+  otp_ctrl_pkg::otp_keymgr_key_t       keymgr_otp_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       otp_ctrl_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       otp_ctrl_keymgr_owner_seed;
 
   // Create mixed connections to ports
   assign alert_handler_esc_rx[3] = alert_handler_esc_rx_i;
@@ -825,6 +828,15 @@ module top_earlgrey #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
+
+  // Connect the keymaterial from the OTP manually
+  // TODO: resolve this manual fix
+  assign keymgr_otp_key = {
+    otp_ctrl_keymgr_creator_root_key,
+    otp_ctrl_keymgr_creator_seed,
+    otp_ctrl_keymgr_owner_seed
+  };
+
 
   // Ibex-specific assignments
   // TODO: This should be further automated in the future.
@@ -1491,7 +1503,9 @@ module top_earlgrey #(
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_rma_state_i(lc_ctrl_lc_rma_state),
     .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
-    .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
+    .keymgr_creator_root_key_o(otp_ctrl_keymgr_creator_root_key),
+    .keymgr_creator_seed_o(otp_ctrl_keymgr_creator_seed),
+    .keymgr_owner_seed_o(otp_ctrl_keymgr_owner_seed),
     .nvm_otp_key_i(flash_ctrl_otp_req),
     .nvm_otp_key_o(flash_ctrl_otp_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -2242,7 +2256,7 @@ module top_earlgrey #(
     .otbn_key_o(keymgr_otbn_key),
     .kmac_data_o(kmac_app_req[0]),
     .kmac_data_i(kmac_app_rsp[0]),
-    .otp_key_i(otp_ctrl_otp_keymgr_key),
+    .otp_key_i(keymgr_otp_key),
     .otp_device_id_i(keymgr_otp_device_id),
     .flash_i(flash_ctrl_keymgr),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
