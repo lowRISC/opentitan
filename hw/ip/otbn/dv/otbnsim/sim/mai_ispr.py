@@ -117,7 +117,7 @@ class MaiStatusCSR(DumbISPR):
     '''Models the MAI STATUS CSR'''
     def __init__(self) -> None:
         self.BUSY_BIT_OFFSET = 0
-        self.READY_BIT_OFFSET = 1
+        self.INPUT_READY_BIT_OFFSET = 1
         super().__init__("MAI_STATUS", 32)
         self.on_start()
 
@@ -125,7 +125,7 @@ class MaiStatusCSR(DumbISPR):
         super().on_start()
         # On start, the MAI is not busy and is ready for new inputs.
         self._is_busy = False
-        self._is_ready = True
+        self._is_input_ready = True
         self._value = self._get_value()
 
     def write_unsigned(self, value: int) -> None:
@@ -136,27 +136,30 @@ class MaiStatusCSR(DumbISPR):
         return
 
     def _get_value(self) -> int:
-        '''Construct the register value based on the current busy and ready bits.'''
-        return ((self._is_busy << self.BUSY_BIT_OFFSET) | (self._is_ready << self.READY_BIT_OFFSET))
+        '''Construct the register value based on the current busy and input-ready bits.'''
+        return ((self._is_busy << self.BUSY_BIT_OFFSET) |
+                (self._is_input_ready << self.INPUT_READY_BIT_OFFSET))
 
-    def _update_bits(self, busy: Optional[bool] = None, ready: Optional[bool] = None) -> None:
-        '''Set or clear the busy and ready bits in the CSR based on the provided values.
+    def _update_bits(self,
+                     busy: Optional[bool] = None,
+                     input_ready: Optional[bool] = None) -> None:
+        '''Set or clear the busy and input-ready bits in the CSR based on the provided values.
 
         This takes effect immediately. Note that we still report the change to generate a proper
         trace.'''
         if busy is not None:
             self._is_busy = busy
-        if ready is not None:
-            self._is_ready = ready
+        if input_ready is not None:
+            self._is_input_ready = input_ready
         self._value = self._get_value()
         self._next_value = self._get_value()
         self._pending_write = False
 
-    def is_ready(self) -> bool:
-        return self._is_ready
+    def is_input_ready(self) -> bool:
+        return self._is_input_ready
 
-    def update_ready_bit(self, ready: bool) -> None:
-        self._update_bits(ready=ready)
+    def update_input_ready_bit(self, input_ready: bool) -> None:
+        self._update_bits(input_ready=input_ready)
 
     def is_busy(self) -> bool:
         return self._is_busy

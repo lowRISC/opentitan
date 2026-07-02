@@ -242,5 +242,5 @@
       BUSY: This bit is set to 1 when an MAI operation is in progress.
       If reset, the MAI accepts new configuration values and a new execution can be started by writing to the START bit in MAI_CTRL.
     1: |
-      READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+      INPUT_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
     31-2: Reserved. Always reads as 0.
