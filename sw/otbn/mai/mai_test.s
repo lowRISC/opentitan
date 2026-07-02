@@ -47,11 +47,12 @@ _test_b2a_a2b:
   bn.xor w1, w0, w2
 
   /* Write the Boolean masked shares to the WSRs. */
+  jal x1, _poll_ready
   bn.wsrw MAI_IN0_S0, w1
   bn.wsrw MAI_IN0_S1, w2
 
   /* Start the B2A conversion. */
-  jal x1, _poll_ready
+  jal x1, _poll_busy
   li x10, 0x21
   csrrw x0, MAI_CTRL, x10
   jal x1, _poll_busy
@@ -60,11 +61,13 @@ _test_b2a_a2b:
   bn.wsrr w20, MAI_RES_S0
   bn.wsrr w21, MAI_RES_S1
 
-  /* Start the A2B conversion. */
+  /* Write the arithmetically-masked shares to the WSRs. */
+  jal x1, _poll_ready
   bn.wsrw MAI_IN0_S0, w20
   bn.wsrw MAI_IN0_S1, w21
 
-  jal x1, _poll_ready
+  /* Start the A2B conversion. */
+  jal x1, _poll_busy
   li x10, 0x17
   csrrw x0, MAI_CTRL, x10
   jal x1, _poll_busy
@@ -103,13 +106,14 @@ _test_secadd:
   bn.xor w7, w3, w6
 
   /* Write the masked shares to the IN0 and IN1 WSRs. */
+  jal x1, _poll_ready
   bn.wsrw MAI_IN0_S0, w5
   bn.wsrw MAI_IN0_S1, w4
   bn.wsrw MAI_IN1_S0, w7
   bn.wsrw MAI_IN1_S1, w6
 
   /* Start the operation and wait for it to complete. */
-  jal x1, _poll_ready
+  jal x1, _poll_busy
   csrrw x0, MAI_CTRL, x10
   jal x1, _poll_busy
 
