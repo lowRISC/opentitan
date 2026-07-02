@@ -47,7 +47,7 @@ _test_b2a_a2b:
   bn.xor w1, w0, w2
 
   /* Write the Boolean masked shares to the WSRs. */
-  jal x1, _poll_ready
+  jal x1, _poll_ready_for_inputs
   bn.wsrw MAI_IN0_S0, w1
   bn.wsrw MAI_IN0_S1, w2
 
@@ -62,7 +62,7 @@ _test_b2a_a2b:
   bn.wsrr w21, MAI_RES_S1
 
   /* Write the arithmetically-masked shares to the WSRs. */
-  jal x1, _poll_ready
+  jal x1, _poll_ready_for_inputs
   bn.wsrw MAI_IN0_S0, w20
   bn.wsrw MAI_IN0_S1, w21
 
@@ -106,7 +106,7 @@ _test_secadd:
   bn.xor w7, w3, w6
 
   /* Write the masked shares to the IN0 and IN1 WSRs. */
-  jal x1, _poll_ready
+  jal x1, _poll_ready_for_inputs
   bn.wsrw MAI_IN0_S0, w5
   bn.wsrw MAI_IN0_S1, w4
   bn.wsrw MAI_IN1_S0, w7
@@ -130,7 +130,7 @@ _test_secadd:
   ret
 
 /**
- * Polls the MAI_STATUS busy bit until the MAI is no longer busy.
+ * Polls the MAI_STATUS BUSY bit until the MAI is no longer busy.
  * Clobbers: x2
  */
 _poll_busy:
@@ -140,13 +140,13 @@ _poll_busy:
   ret
 
 /**
- * Polls the MAI_STATUS ready bit until the MAI is ready for inputs.
+ * Polls the MAI_STATUS INPUT_READY bit until the MAI is ready for inputs.
  * Clobbers: x2
  */
-_poll_ready:
+_poll_ready_for_inputs:
   csrrs x2, MAI_STATUS, x0
   andi x2, x2, 0x2
-  beq x2, x0, _poll_ready
+  beq x2, x0, _poll_ready_for_inputs
   ret
 
 .section .data

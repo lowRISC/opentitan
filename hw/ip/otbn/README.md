@@ -648,7 +648,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>1</td>
               <td>
-                READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
+                INPUT_READY: This bit is set to 1 when the MAI_INx_Sx WSRs are ready to accept new values for the next execution.
               </td>
             </tr>
             <tr>

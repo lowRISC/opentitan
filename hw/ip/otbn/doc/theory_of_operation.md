@@ -864,8 +864,8 @@ OTBN SW can perform a masking operation by following these steps (see also illus
 
 This sequence can be optimized, because:
 - The input WSRs can be overwritten with the next data as soon as the MAI pushed all elements into the accelerator.
-  - This is the case as soon as `MAI_STATUS.READY = 1`.
-  - Note that `MAI_STATUS.READY = 1` does not signal that the MAI is ready to start the next execution.
+  - This is the case as soon as `MAI_STATUS.INPUT_READY = 1`.
+  - Note that `MAI_STATUS.INPUT_READY = 1` does not signal that the MAI is ready to start the next execution.
     It just indicates that it is ready to receive new data.
 - The START command of the next execution can be issued before the results are read back.
   - This is possible because the accelerator latency delays the update to the result WSRs.
@@ -876,12 +876,12 @@ This allows overlapping data transfers with the accelerator latency.
 The overlapping execution software flow is:
 - Setup the MAI as described above.
 - Start the first execution by issuing the `MAI_CTRL.START` command.
-- Poll until `MAI_STATUS.READY = 1`.
+- Poll until `MAI_STATUS.INPUT_READY = 1`.
 - Update the `MAI_INx_Sy` with the next data.
 - Poll until `MAI_STATUS.BUSY = 0`.
 - Issue the `MAI_CTRL.START` command for the next execution.
 - Read back the result of the first execution.
-- Repeat the steps starting with "Poll until `MAI_STATUS.READY = 1`".
+- Repeat the steps starting with "Poll until `MAI_STATUS.INPUT_READY = 1`".
 
 This procedure can be even further optimized for secAdd, secAddMod, and A2B because their latency is deterministic and thus the polling can be replaced with the correct number of other instructions.
 It is only possible to overlap executions of the same type / configuration as `MAI_CTRL.OPERATION` must remain constant as long as `MAI_STATUS.BUSY = 1`.
@@ -902,7 +902,7 @@ This will trigger an abortion of the OTBN execution with a secure wipe.
 The `MAI_SOFTWARE_ERROR` is triggered when:
 - `MAI_CTRL.OPERATION` contains an invalid selection when the `MAI_CTRL.START` bit is set.
 - The `MAI_CTRL.START` bit is set or `MAI_CTRL.OPERATION` is written to whilst `MAI_STATUS.BUSY = 1`.
-- A write to input WSRs is detected whilst `MAI_STATUS.READY = 0`.
+- A write to input WSRs is detected whilst `MAI_STATUS.INPUT_READY = 0`.
   - The `MAI_INx_Sy` registers are used as input buffers.
     Modifying the register content can lead to unexpected results.
 - A write to the reserved section of `MAI_CTRL` is detected.

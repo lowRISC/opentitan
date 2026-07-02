@@ -253,9 +253,9 @@ class MaskingAcceleratorInterface:
             # Immediately set the busy bit so the current instruction is not allowed to start the
             # next execution.
             self.csrs.MAI_STATUS.update_busy_bit(True)
-            # Immediately reset the ready bit such that any configuration change check does not
-            # allow changing the operation type.
-            self.csrs.MAI_STATUS.update_ready_bit(False)
+            # Immediately reset the input-ready bit such that any configuration change check does
+            # not allow changing the operation type.
+            self.csrs.MAI_STATUS.update_input_ready_bit(False)
             # Immediately reset the start bit such that it always reads zero.
             self.csrs.MAI_CTRL.update_start_bit(False)
 
@@ -270,19 +270,20 @@ class MaskingAcceleratorInterface:
         if self._dispatch_idx >= 8:
             self._dispatch_idx = 0
             self.is_dispatching = False
-            # Immediately set the ready bit as the input WSRs can be overwritten in this cycle.
-            self.csrs.MAI_STATUS.update_ready_bit(True)
+            # Immediately set the input-ready bit as the input WSRs can be overwritten in this
+            # cycle.
+            self.csrs.MAI_STATUS.update_input_ready_bit(True)
 
     def is_busy(self) -> bool:
         '''Returns whether the MAI is currently busy processing an operation.'''
         return self.csrs.MAI_STATUS.is_busy()
 
-    def is_ready(self) -> bool:
+    def is_input_ready(self) -> bool:
         '''Returns whether the MAI is ready to accept new inputs.'''
-        return self.csrs.MAI_STATUS.is_ready()
+        return self.csrs.MAI_STATUS.is_input_ready()
 
     def ready_for_inputs(self) -> bool:
-        return self.is_ready()
+        return self.is_input_ready()
 
     def ready_to_start(self) -> bool:
         return not self.is_busy()

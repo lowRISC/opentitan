@@ -78,7 +78,7 @@ module otbn_mai
 
   typedef struct packed {
     logic [31-2:0] rsvd;
-    logic          ready;
+    logic          input_ready;
     logic          busy;
   } ispr_mai_status_t;
 
@@ -417,10 +417,10 @@ module otbn_mai
   assign ma_start        = ispr_mai_ctrl_wr_i & ispr_mai_ctrl_w.start;
 
   // Status read
-  assign ispr_mai_status.rsvd    = '0;
-  assign ispr_mai_status.ready   = !ma_in_valid_q;
-  assign ispr_mai_status.busy    = ma_busy_q;
-  assign ispr_mai_status_rdata_o = ispr_mai_status;
+  assign ispr_mai_status.rsvd        = '0;
+  assign ispr_mai_status.input_ready = !ma_in_valid_q;
+  assign ispr_mai_status.busy        = ma_busy_q;
+  assign ispr_mai_status_rdata_o     = ispr_mai_status;
 
   // Control read
   assign ispr_mai_ctrl_r.rsvd  = '0;
