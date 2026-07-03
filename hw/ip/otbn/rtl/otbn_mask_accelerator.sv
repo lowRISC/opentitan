@@ -423,32 +423,8 @@ module otbn_mask_accelerator
     assign wready_o = wready;
   end
 
-`ifdef INC_ASSERT
-  // High from the first wvalid_i of a batch until adder_batch_complete fires (all VecSize
-  // inputs accepted). Bridges intra-batch gaps where wvalid_i may deassert between individual
-  // element handshakes.
-  logic batch_in_progress_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_batch_in_progress
-    if (!rst_ni) begin
-      batch_in_progress_q <= 1'b0;
-    end else if (wvalid_i) begin
-      batch_in_progress_q <= 1'b1;
-    end else if (adder_batch_complete) begin
-      batch_in_progress_q <= 1'b0;
-    end
-  end
-
-  // mod_i and mask_op_i must remain stable for the full batch lifetime: while batch inputs are
-  // being inserted (batch_in_progress_q), while the adder is busy with pass-2 (!wready_o), and
-  // while results drain out (rvalid_o).
-  `ASSERT(ModIStableDuringBatch_A,
-          !sec_wipe_running_i && (batch_in_progress_q || !wready_o || rvalid_o) |-> $stable(mod_i))
-  `ASSERT(MaskOpStableDuringBatch_A,
-          (batch_in_progress_q || !wready_o || rvalid_o) |-> $stable(mask_op_i))
-
   // wvalid_i follows the 'valid locked-in' principle: once asserted it must not fall until
   // wready_o is sampled high.
   `ASSERT(WvalidLockedIn_A, wvalid_i && !wready_o |=> wvalid_i)
-`endif
 
 endmodule

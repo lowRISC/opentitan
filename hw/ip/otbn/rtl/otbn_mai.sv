@@ -291,7 +291,7 @@ module otbn_mai
   );
 
   assign in_cnt_tgt      = (in_cnt_load_val_q - mai_cnt_t'('d1));
-  assign in_cnt_done     = ispr_mai_in_mux_sel == in_cnt_tgt;
+  assign in_cnt_done     = (ispr_mai_in_mux_sel == in_cnt_tgt) && ma_in_consume;
   assign in_cnt_overflow = ispr_mai_in_mux_sel == '1;
   assign in_cnt_set      = in_cnt_done || sec_wipe_mai_i;
 
@@ -372,7 +372,7 @@ module otbn_mai
 
   assign out_cnt_load_val_d = sec_wipe_mai_i ? cnt_load_val : in_cnt_load_val_q;
   assign out_cnt_tgt        = (out_cnt_load_val_q - mai_cnt_t'('d1));
-  assign out_cnt_done       = ispr_mai_out_demux_sel == out_cnt_tgt;
+  assign out_cnt_done       = (ispr_mai_out_demux_sel == out_cnt_tgt) && ma_out_ready;
   assign out_cnt_overflow   = ispr_mai_out_demux_sel == '1;
   assign out_cnt_set        = out_cnt_done || sec_wipe_mai_i;
 
@@ -587,5 +587,11 @@ module otbn_mai
   assign mai_state_err_o              = |mai_state_err;
   // Sw error
   assign mai_software_error_o         = |ispr_mai_sw_err;
+
+  // The masking accelerator requires mod and operation to be stable during an execution. This
+  // check is much simpler when we base it on the busy flag instead of recreating the information
+  // inside the MA. These must remain stable also during a secure wipe.
+  `ASSERT(ModStableDuringExecution_A, ma_busy_q && !$rose(ma_busy_q) |-> $stable(ma_mod_lsw))
+  `ASSERT(MaskOpStableDuringExecution_A, ma_busy_q && !$rose(ma_busy_q) |-> $stable(ma_mask_op_q))
 
 endmodule
