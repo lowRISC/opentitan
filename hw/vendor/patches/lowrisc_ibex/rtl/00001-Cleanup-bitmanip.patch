@@ -1,5 +1,5 @@
 diff --git a/ibex_alu.sv b/ibex_alu.sv
-index 563f571cf4..85fec665e1 100644
+index 563f571..8aaa9e7 100644
 --- a/ibex_alu.sv
 +++ b/ibex_alu.sv
 @@ -20,9 +20,9 @@ module ibex_alu #(
@@ -103,7 +103,8 @@ index 563f571cf4..85fec665e1 100644
 -  // bit shift_amt[5]: word swap bit: only considered for FSL/FSR.
 -  // if set, reverse operations in first and second cycle.
 -  assign shift_amt[5] = operand_b_i[5] & shift_funnel;
-   assign shift_amt_compl = 32 - operand_b_i[4:0];
+-  assign shift_amt_compl = 32 - operand_b_i[4:0];
++  assign shift_amt_compl = 5'd0 - operand_b_i[4:0];
  
    always_comb begin
 -    if (bfp_op) begin
@@ -791,7 +792,8 @@ index 563f571cf4..85fec665e1 100644
 -            end else begin
 -              imd_val_we_o = 2'b00;
 -            end
--          end else begin
++            imd_val_we_o = 1'b1;
+           end else begin
 -            imd_val_d_o = '{operand_a_i, 32'h0};
 -            imd_val_we_o = 2'b00;
 -            multicycle_result = '0;
@@ -808,8 +810,7 @@ index 563f571cf4..85fec665e1 100644
 -            end else begin
 -              imd_val_we_o = 2'b00;
 -            end
-+            imd_val_we_o = 1'b1;
-           end else begin
+-          end else begin
 -            imd_val_d_o = '{operand_a_i, 32'h0};
 -            imd_val_we_o = 2'b00;
 -            multicycle_result = '0;
@@ -913,6 +914,14 @@ index 563f571cf4..85fec665e1 100644
  
        // Carry-less Multiply Operations (RV32B)
        ALU_CLMUL, ALU_CLMULR,
+@@ -1394,7 +926,4 @@ module ibex_alu #(
+     endcase
+   end
+ 
+-  logic unused_shift_amt_compl;
+-  assign unused_shift_amt_compl = shift_amt_compl[5];
+-
+ endmodule
 diff --git a/ibex_cs_registers.sv b/ibex_cs_registers.sv
 index 641db2208b..ce9f5a3d0e 100644
 --- a/ibex_cs_registers.sv
@@ -945,10 +954,61 @@ index 641db2208b..ce9f5a3d0e 100644
  
    typedef struct packed {
 diff --git a/ibex_decoder.sv b/ibex_decoder.sv
-index 843eb05f05..e043f7a017 100644
+index 843eb05..bef3947 100644
 --- a/ibex_decoder.sv
 +++ b/ibex_decoder.sv
-@@ -365,15 +365,13 @@ module ibex_decoder #(
+@@ -111,12 +111,8 @@ module ibex_decoder #(
+   // Source/Destination register instruction index
+   logic [4:0] instr_rs1;
+   logic [4:0] instr_rs2;
+-  logic [4:0] instr_rs3;
+   logic [4:0] instr_rd;
+ 
+-  logic        use_rs3_d;
+-  logic        use_rs3_q;
+-
+   csr_op_e     csr_op;
+ 
+   opcode_e     opcode;
+@@ -144,32 +140,15 @@ module ibex_decoder #(
+   // immediate for CSR manipulation (zero extended)
+   assign zimm_rs1_type_o = { 27'b0, instr_rs1 }; // rs1
+ 
+-  if (RV32B != RV32BNone) begin : gen_rs3_flop
+-    // the use of rs3 is known one cycle ahead.
+-    always_ff  @(posedge clk_i or negedge rst_ni) begin
+-      if (!rst_ni) begin
+-        use_rs3_q <= 1'b0;
+-      end else begin
+-        use_rs3_q <= use_rs3_d;
+-      end
+-    end
+-  end else begin : gen_no_rs3_flop
+-    logic unused_clk;
+-    logic unused_rst_n;
+-
+-    // Clock and reset unused when there's no rs3 flop
+-    assign unused_clk = clk_i;
+-    assign unused_rst_n = rst_ni;
+-
+-    // always zero
+-    assign use_rs3_q = use_rs3_d;
+-  end
++  logic unused_clk;
++  logic unused_rst_n;
++  assign unused_clk = clk_i;
++  assign unused_rst_n = rst_ni;
+ 
+   // source registers
+   assign instr_rs1 = instr[19:15];
+   assign instr_rs2 = instr[24:20];
+-  assign instr_rs3 = instr[31:27];
+-  assign rf_raddr_a_o = (use_rs3_q & ~instr_first_cycle_i) ? instr_rs3 : instr_rs1; // rs3 / rs1
++  assign rf_raddr_a_o = instr_rs1; // rs1
+   assign rf_raddr_b_o = instr_rs2; // rs2
+ 
+   // destination register
+@@ -365,15 +344,13 @@ module ibex_decoder #(
            3'b001: begin
              unique case (instr[31:27])
                5'b0_0000: illegal_insn = (instr[26:25] == 2'b00) ? 1'b0 : 1'b1;        // slli
@@ -967,7 +1027,7 @@ index 843eb05f05..e043f7a017 100644
                  end else begin
                    illegal_insn = 1'b1;
                  end
-@@ -385,14 +383,6 @@ module ibex_decoder #(
+@@ -385,14 +362,6 @@ module ibex_decoder #(
                    7'b000_0010,                                                         // cpop
                    7'b000_0100,                                                         // sext.b
                    7'b000_0101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;      // sext.h
@@ -982,7 +1042,7 @@ index 843eb05f05..e043f7a017 100644
                    default: illegal_insn = 1'b1;
                  endcase
                end
-@@ -402,41 +392,34 @@ module ibex_decoder #(
+@@ -402,41 +371,34 @@ module ibex_decoder #(
  
            3'b101: begin
              if (instr[26]) begin
@@ -1036,7 +1096,7 @@ index 843eb05f05..e043f7a017 100644
                  end
  
                  default: illegal_insn = 1'b1;
-@@ -453,7 +436,7 @@ module ibex_decoder #(
+@@ -453,7 +415,7 @@ module ibex_decoder #(
          rf_ren_b_o      = 1'b1;
          rf_we           = 1'b1;
          if ({instr[26], instr[13:12]} == {1'b1, 2'b01}) begin
@@ -1045,7 +1105,7 @@ index 843eb05f05..e043f7a017 100644
          end else begin
            unique case ({instr[31:25], instr[14:12]})
              // RV32I ALU operations
-@@ -482,35 +465,30 @@ module ibex_decoder #(
+@@ -482,35 +444,30 @@ module ibex_decoder #(
              {7'b000_0101, 3'b110}, // max
              {7'b000_0101, 3'b101}, // minu
              {7'b000_0101, 3'b111}, // maxu
@@ -1096,7 +1156,15 @@ index 843eb05f05..e043f7a017 100644
  
              // RV32M instructions
              {7'b000_0001, 3'b000}: begin // mul
-@@ -834,15 +812,11 @@ module ibex_decoder #(
+@@ -684,7 +641,6 @@ module ibex_decoder #(
+ 
+     opcode_alu         = opcode_e'(instr_alu[6:0]);
+ 
+-    use_rs3_d          = 1'b0;
+     alu_multicycle_o   = 1'b0;
+     mult_sel_o         = 1'b0;
+     div_sel_o          = 1'b0;
+@@ -834,15 +790,11 @@ module ibex_decoder #(
              if (RV32B != RV32BNone) begin
                unique case (instr_alu[31:27])
                  5'b0_0000: alu_operator_o = ALU_SLL;    // Shift Left Logical by Immediate
@@ -1114,7 +1182,7 @@ index 843eb05f05..e043f7a017 100644
                  5'b0_1100: begin
                    unique case (instr_alu[26:20])
                      7'b000_0000: alu_operator_o = ALU_CLZ;   // clz
-@@ -850,42 +824,6 @@ module ibex_decoder #(
+@@ -850,42 +802,6 @@ module ibex_decoder #(
                      7'b000_0010: alu_operator_o = ALU_CPOP;  // cpop
                      7'b000_0100: alu_operator_o = ALU_SEXTB; // sext.b
                      7'b000_0101: alu_operator_o = ALU_SEXTH; // sext.h
@@ -1157,7 +1225,7 @@ index 843eb05f05..e043f7a017 100644
                      default: ;
                    endcase
                  end
-@@ -900,32 +838,31 @@ module ibex_decoder #(
+@@ -900,32 +816,31 @@ module ibex_decoder #(
            3'b101: begin
              if (RV32B != RV32BNone) begin
                if (instr_alu[26] == 1'b1) begin
@@ -1206,7 +1274,7 @@ index 843eb05f05..e043f7a017 100644
                      end
                    end
                    default: ;
-@@ -950,47 +887,7 @@ module ibex_decoder #(
+@@ -950,47 +865,7 @@ module ibex_decoder #(
          alu_op_b_mux_sel_o = OP_B_REG_B;
  
          if (instr_alu[26]) begin
@@ -1255,7 +1323,7 @@ index 843eb05f05..e043f7a017 100644
          end else begin
            unique case ({instr_alu[31:25], instr_alu[14:12]})
              // RV32I ALU operations
-@@ -1006,6 +903,7 @@ module ibex_decoder #(
+@@ -1006,6 +881,7 @@ module ibex_decoder #(
              {7'b010_0000, 3'b101}: alu_operator_o = ALU_SRA;   // Shift Right Arithmetic
  
              // RV32B ALU Operations
@@ -1263,7 +1331,7 @@ index 843eb05f05..e043f7a017 100644
              {7'b011_0000, 3'b001}: begin
                if (RV32B != RV32BNone) begin
                  alu_operator_o = ALU_ROL;
-@@ -1024,9 +922,15 @@ module ibex_decoder #(
+@@ -1024,9 +900,15 @@ module ibex_decoder #(
              {7'b000_0101, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_MINU;
              {7'b000_0101, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_MAXU;
  
@@ -1282,7 +1350,7 @@ index 843eb05f05..e043f7a017 100644
  
              {7'b010_0000, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_XNOR;
              {7'b010_0000, 3'b110}: if (RV32B != RV32BNone) alu_operator_o = ALU_ORN;
-@@ -1043,57 +947,23 @@ module ibex_decoder #(
+@@ -1043,57 +925,23 @@ module ibex_decoder #(
              {7'b011_0100, 3'b001}: if (RV32B != RV32BNone) alu_operator_o = ALU_BINV;
              {7'b010_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_BEXT;
  

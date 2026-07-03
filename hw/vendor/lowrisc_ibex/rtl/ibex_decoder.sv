@@ -111,11 +111,7 @@ module ibex_decoder #(
   // Source/Destination register instruction index
   logic [4:0] instr_rs1;
   logic [4:0] instr_rs2;
-  logic [4:0] instr_rs3;
   logic [4:0] instr_rd;
-
-  logic        use_rs3_d;
-  logic        use_rs3_q;
 
   csr_op_e     csr_op;
 
@@ -144,32 +140,15 @@ module ibex_decoder #(
   // immediate for CSR manipulation (zero extended)
   assign zimm_rs1_type_o = { 27'b0, instr_rs1 }; // rs1
 
-  if (RV32B != RV32BNone) begin : gen_rs3_flop
-    // the use of rs3 is known one cycle ahead.
-    always_ff  @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        use_rs3_q <= 1'b0;
-      end else begin
-        use_rs3_q <= use_rs3_d;
-      end
-    end
-  end else begin : gen_no_rs3_flop
-    logic unused_clk;
-    logic unused_rst_n;
-
-    // Clock and reset unused when there's no rs3 flop
-    assign unused_clk = clk_i;
-    assign unused_rst_n = rst_ni;
-
-    // always zero
-    assign use_rs3_q = use_rs3_d;
-  end
+  logic unused_clk;
+  logic unused_rst_n;
+  assign unused_clk = clk_i;
+  assign unused_rst_n = rst_ni;
 
   // source registers
   assign instr_rs1 = instr[19:15];
   assign instr_rs2 = instr[24:20];
-  assign instr_rs3 = instr[31:27];
-  assign rf_raddr_a_o = (use_rs3_q & ~instr_first_cycle_i) ? instr_rs3 : instr_rs1; // rs3 / rs1
+  assign rf_raddr_a_o = instr_rs1; // rs1
   assign rf_raddr_b_o = instr_rs2; // rs2
 
   // destination register
@@ -662,7 +641,6 @@ module ibex_decoder #(
 
     opcode_alu         = opcode_e'(instr_alu[6:0]);
 
-    use_rs3_d          = 1'b0;
     alu_multicycle_o   = 1'b0;
     mult_sel_o         = 1'b0;
     div_sel_o          = 1'b0;

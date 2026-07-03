@@ -226,7 +226,7 @@ module ibex_alu #(
   logic        [31:0] shift_result;
   logic        [31:0] shift_result_rev;
 
-  assign shift_amt_compl = 32 - operand_b_i[4:0];
+  assign shift_amt_compl = 5'd0 - operand_b_i[4:0];
 
   always_comb begin
     shift_amt[4:0] = instr_first_cycle_i ? operand_b_i[4:0] : shift_amt_compl[4:0];
@@ -925,8 +925,5 @@ module ibex_alu #(
       default: ;
     endcase
   end
-
-  logic unused_shift_amt_compl;
-  assign unused_shift_amt_compl = shift_amt_compl[5];
 
 endmodule
