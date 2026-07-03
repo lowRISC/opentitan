@@ -141,7 +141,9 @@ module tb;
     .lc_check_byp_en_i          (otp_ctrl_if.lc_check_byp_en_i),
     .otp_lc_data_o              (otp_ctrl_if.lc_data_o),
     // keymgr
-    .otp_keymgr_key_o           (otp_ctrl_if.keymgr_key_o),
+    .keymgr_creator_root_key_o  (otp_ctrl_if.keymgr_creator_root_key_o),
+    .keymgr_creator_seed_o      (otp_ctrl_if.keymgr_creator_seed_o),
+    .keymgr_owner_seed_o        (otp_ctrl_if.keymgr_owner_seed_o),
   % if enable_nvm_key:
     // nvm
     .nvm_otp_key_i              (nvm_req),
