@@ -151,9 +151,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
           otp_ctrl_part_pkg::otp_hw_cfg0_data_t  exp_hw_cfg0_data;
           otp_ctrl_part_pkg::otp_hw_cfg1_data_t  exp_hw_cfg1_data;
-          otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
-          bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
+          keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t exp_creator_root_key;
+          keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     exp_creator_seed;
+          keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       exp_owner_seed;
 
           if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
@@ -229,7 +230,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // ---------------------- Check keymgr_key_o output ---------------------------------
             // Otp_keymgr outputs creator and owner keys from secret partitions.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-            exp_keymgr_data = '0;
+            exp_creator_root_key = '0;
+            exp_creator_seed = '0;
+            exp_owner_seed = '0;
+
 % for part in otp_mmap["partitions"]:
 <%
   part_name_camel = Name.to_camel_case(part["name"])
@@ -240,29 +244,43 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   item_name = Name.from_snake_case(item["name"])
   item_name_camel = item_name.as_camel_case()
 %>\
-      % if item["iskeymgr_creator"] or item["iskeymgr_owner"]:
-            exp_keymgr_data.${item["name"].lower()}_valid = get_otp_digest_val(${part_name_camel}Idx) != 0;
+      ## Generate the verification for both shares of the creator root key
+      % if item["name"] == 'CREATOR_ROOT_KEY_SHARE0' or item["name"] == 'CREATOR_ROOT_KEY_SHARE1':
+            // Fetch and verify the ${item["name"]} secret
+            exp_creator_root_key.${item["name"][-6:].lower()}_valid = get_otp_digest_val(${part_name_camel}Idx) != 0;
             if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-              exp_keymgr_data.${item["name"].lower()} =
+              exp_creator_root_key.${item["name"][-6:].lower()} =
                   {<<32 {otp_a[${item_name_camel}Offset/4 +: ${item_name_camel}Size/4]}};
             end else begin
-              exp_keymgr_data.${item["name"].lower()} =
+              exp_creator_root_key.${item["name"][-6:].lower()} =
                   top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[${item_name_camel}Offset*8 +: ${item_name_camel}Size*8];
             end
-            // Check otp_keymgr_key_t struct by item is easier to debug.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.${item["name"].lower()}_valid,
-                         exp_keymgr_data.${item["name"].lower()}_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.${item["name"][-6:].lower()}_valid,
+                         exp_creator_root_key.${item["name"][-6:].lower()}_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.${item["name"][-6:].lower()},
+                         exp_creator_root_key.${item["name"][-6:].lower()})
+
+      % endif
+      ## Generate the verification for the creator / owner seed
+      % if item["name"] == 'CREATOR_SEED' or item["name"] == 'OWNER_SEED':
+            // Fetch and verify the ${item["name"]} seed
+            exp_${item["name"].lower()}.seed_valid = get_otp_digest_val(${part_name_camel}Idx) != 0;
+            if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
+              exp_${item["name"].lower()}.seed =
+                  {<<32 {otp_a[${item_name_camel}Offset/4 +: ${item_name_camel}Size/4]}};
+            end else begin
+              exp_${item["name"].lower()}.seed =
+                  top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[${item_name_camel}Offset*8 +: ${item_name_camel}Size*8];
+            end
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_${item["name"].lower()}_o, exp_${item["name"].lower()})
+
       % endif
     % endfor
   % endif
 % endfor
-
-            // Check otp_keymgr_key_t struct all together in case there is any missed item.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
-
             if (cfg.en_cov) begin
               cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
-                                     exp_keymgr_data.creator_root_key_share0_valid);
+                                     exp_creator_root_key.share0_valid);
             end
           end
         end else if (cfg.otp_ctrl_vif.alert_reqs) begin
