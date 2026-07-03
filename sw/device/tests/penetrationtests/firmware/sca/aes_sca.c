@@ -1029,7 +1029,8 @@ status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
     const dif_edn_t edn0 = {
         .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
 
-    status_t res = aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0);
+    status_t res =
+        aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0, true);
     if (res.value != 0) {
       return ABORTED();
     }
