@@ -11,12 +11,10 @@ set -euo pipefail
 : "${BAZEL_VERSION:=$(cat "${REPO_TOP}/.bazelversion")}"
 
 : "${BAZEL_AIRGAPPED_DIR:=${REPO_TOP}/bazel-airgapped}"
-: "${BAZEL_DISTDIR:=${BAZEL_AIRGAPPED_DIR}/bazel-distdir}"
 : "${BAZEL_CACHEDIR:=${BAZEL_AIRGAPPED_DIR}/bazel-cache}"
 : "${BAZEL_VENDORDIR:=${BAZEL_AIRGAPPED_DIR}/bazel-vendor}"
 : "${BAZEL_BITSTREAMS_CACHE:=${BAZEL_AIRGAPPED_DIR}/bitstreams-cache}"
 : "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
-: "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
 LINE_SEP="====================================================================="
 
@@ -28,15 +26,15 @@ usage() {
 Utility script to prepare a directory with all bazel dependencies needed to
 build project artifacts with bazel in an airgapped environment.
 
-Usage: $0 [-c ALL | DISTDIR | CACHE]
+Usage: $0 [-c ALL | BAZEL | VENDOR]
 
-  - c: airgapped directory contents, set to either ALL or DISTDIR or CACHE.
+  - c: airgapped directory contents, set to either ALL, BAZEL, or VENDOR.
   - f: force rebuild of airgapped directory, overwriting any existing one.
 
-Airgapped directory contents (-b):
-  - ALL: both the distdir and cache will be added. (Default)
-  - DISTDIR: only the distdir, containing bazel and its dependencies will be added.
-  - CACHE: only the OpenTitan bazel workspace dependencies will be added.
+Airgapped directory contents (-c):
+  - ALL: both the bazel binary and vendor dir will be added. (Default)
+  - BAZEL: only the bazel binary will be added.
+  - VENDOR: only the OpenTitan bazel mod dependencies will be added.
 
 USAGE
 }
@@ -70,10 +68,10 @@ if [[ "$#" -gt 0 ]]; then
 fi
 
 if [[ ${AIRGAPPED_DIR_CONTENTS} != "ALL" && \
-      ${AIRGAPPED_DIR_CONTENTS} != "DISTDIR" && \
-      ${AIRGAPPED_DIR_CONTENTS} != "CACHE" ]]; then
+      ${AIRGAPPED_DIR_CONTENTS} != "BAZEL" && \
+      ${AIRGAPPED_DIR_CONTENTS} != "VENDOR" ]]; then
   echo "Invalid -c option: ${AIRGAPPED_DIR_CONTENTS}." >&2
-  echo "Expected ALL, DISTDIR, or CACHE." >&2
+  echo "Expected ALL, BAZEL, or VENDOR." >&2
   exit 1
 fi
 
@@ -103,13 +101,12 @@ fi
 mkdir -p ${BAZEL_AIRGAPPED_DIR}
 
 ################################################################################
-# Prepare the distdir.
+# Download bazel.
 ################################################################################
 if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
-      ${AIRGAPPED_DIR_CONTENTS} == "DISTDIR" ]]; then
+      ${AIRGAPPED_DIR_CONTENTS} == "BAZEL" ]]; then
   echo $LINE_SEP
-  echo "Preparing bazel offline distdir ..."
-  mkdir -p ${BAZEL_DISTDIR}
+  echo "Downloading bazel ..."
   pushd ${BAZEL_AIRGAPPED_DIR}
   curl --silent --location \
     https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 \
@@ -122,9 +119,9 @@ fi
 # Prepare the cache.
 ################################################################################
 if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
-      ${AIRGAPPED_DIR_CONTENTS} == "CACHE" ]]; then
+      ${AIRGAPPED_DIR_CONTENTS} == "VENDOR" ]]; then
   echo $LINE_SEP
-  echo "Preparing bazel offline cachedir ..."
+  echo "Preparing bazel offline vendor_dir ..."
   cd ${REPO_TOP}
   mkdir -p ${BAZEL_CACHEDIR}
   # Make bazel forget everything it knows, then download everything.
@@ -163,5 +160,5 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" ]]; then
   echo $LINE_SEP
   echo "To perform an airgapped build, ship the contents of ${BAZEL_AIRGAPPED_DIR} to your airgapped environment and then:"
   echo ""
-  echo "bazel build --distdir=${BAZEL_DISTDIR} --vendor_dir=${BAZEL_VENDORDIR} <label>"
+  echo "bazel build --vendor_dir=${BAZEL_VENDORDIR} <target>"
 fi
