@@ -23,6 +23,23 @@
         box-shadow: 0px 0px 20px 30px white;
         border-radius: 15px;
     }
+    /* When the search bar is open we intentionally DO NOT change the
+       sidetoc's sticky `top`. The search-wrapper is not sticky itself —
+       it takes 55px of flow space above the shared .content-wrapper and
+       then scrolls away with the page. Both sidetoc and .content are
+       flex siblings in .content-wrapper, so both are displaced by that
+       same 55px automatically. Once scrolled past, the search-wrapper
+       disappears and the sidetoc should return to its normal sticky
+       landing, which it does with no override.
+
+       However, the sidetoc's `box-shadow` feathering halo extends ~50px
+       above its top edge and would overlap the search bar. Add flow
+       space below the search-wrapper so the halo has room. Applied to
+       the search-wrapper itself so that content and sidetoc are
+       displaced together (preserving their alignment). */
+    .page > #search-wrapper:not(.hidden) {
+        margin-block-end: 30px;
+    }
     .pagetoc {
         position: relative;
         font-family: 'Recursive', sans-serif;
