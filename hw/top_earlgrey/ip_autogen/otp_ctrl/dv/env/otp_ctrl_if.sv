@@ -44,7 +44,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // Output from DUT
   otp_broadcast_t    otp_broadcast_o;
-  otp_keymgr_key_t   keymgr_key_o;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_creator_root_key_o;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     keymgr_creator_seed_o;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o;
   otp_lc_data_t      lc_data_o;
   logic              pwr_otp_done_o, pwr_otp_idle_o;
 
@@ -316,13 +318,13 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   // Otp_keymgr valid is related to part_digest, should not be changed after otp_pwr_init
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable0_A, pwr_otp_done_o |->
-                        $stable(keymgr_key_o.creator_root_key_share0_valid))
+                        $stable(keymgr_creator_root_key_o.share0_valid))
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable1_A, pwr_otp_done_o |->
-                        $stable(keymgr_key_o.creator_root_key_share1_valid))
+                        $stable(keymgr_creator_root_key_o.share1_valid))
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable2_A, pwr_otp_done_o |->
-                        $stable(keymgr_key_o.creator_seed_valid))
+                        $stable(keymgr_creator_seed_o.seed_valid))
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable3_A, pwr_otp_done_o |->
-                        $stable(keymgr_key_o.owner_seed_valid))
+                        $stable(keymgr_owner_seed_o.seed_valid))
 
   // During lc_prog_req, either otp_idle will be reset or lc_error is set
   `OTP_ASSERT_WO_LC_ESC(LcProgReq_A, $rose(lc_prog_req) |=>
@@ -345,9 +347,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   `OTP_FATAL_ERR_ASSERT(LcDataRmaToken_A, lc_data_o.rma_token ==
     RndCnstOtpCtrlPartInvDefault[RmaTokenOffset*8+:RmaTokenSize*8])
 
-  `OTP_FATAL_ERR_ASSERT(KeymgrKeyData_A, keymgr_key_o.creator_root_key_share0 ==
+  `OTP_FATAL_ERR_ASSERT(KeymgrKeyData_A, keymgr_creator_root_key_o.share0 ==
     RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare0Offset*8+:CreatorRootKeyShare0Size*8] &&
-    keymgr_key_o.creator_root_key_share1 ==
+    keymgr_creator_root_key_o.share1 ==
     RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
 
   `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
