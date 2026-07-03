@@ -145,14 +145,23 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   mkdir -p ${BAZEL_BITSTREAMS_CACHEDIR}
   readonly SYSTEM_BITSTREAM_CACHE="${HOME}/.cache/opentitan-bitstreams"
   readonly SYSTEM_BITSTREAM_CACHEDIR="${SYSTEM_BITSTREAM_CACHE}/cache"
-  readonly LATEST_BISTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
-  # The revision named in latest.txt is not necessarily on disk. Induce the
-  # cache backend to fetch the latest bitstreams.
-  BITSTREAM="latest" ${BAZELISK} fetch @bitstreams//...
-  cp "${LATEST_BISTREAM_HASH_FILE}" \
+  readonly LATEST_BITSTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
+  # Ensure the system bitstream cache is populated. If latest.txt is missing,
+  # fetch it from GCP. If the bitstream files for the recorded hash are missing,
+  # fetch that specific revision. Skip network access when both are present.
+  if [[ ! -f "${LATEST_BITSTREAM_HASH_FILE}" ]]; then
+    BITSTREAM="latest" ${BAZELISK} fetch @bitstreams//...
+  else
+    _latest_hash=$(cat "${LATEST_BITSTREAM_HASH_FILE}")
+    if [[ ! -d "${SYSTEM_BITSTREAM_CACHEDIR}/${_latest_hash}" ]]; then
+      BITSTREAM="${_latest_hash}" ${BAZELISK} fetch @bitstreams//...
+    fi
+    unset _latest_hash
+  fi
+  cp "${LATEST_BITSTREAM_HASH_FILE}" \
     "${BAZEL_BITSTREAMS_CACHE}/"
-  LATEST_BISTREAM_HASH=$(cat "${LATEST_BISTREAM_HASH_FILE}")
-  cp -r "${SYSTEM_BITSTREAM_CACHEDIR}/${LATEST_BISTREAM_HASH}" \
+  LATEST_BITSTREAM_HASH=$(cat "${LATEST_BITSTREAM_HASH_FILE}")
+  cp -r "${SYSTEM_BITSTREAM_CACHEDIR}/${LATEST_BITSTREAM_HASH}" \
     "${BAZEL_BITSTREAMS_CACHEDIR}"
   echo "Done."
 fi
