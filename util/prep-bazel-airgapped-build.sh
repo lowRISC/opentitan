@@ -135,7 +135,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   readonly LATEST_BITSTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
   # The revision named in latest.txt is not necessarily on disk. Induce the
   # cache backend to fetch the latest bitstreams.
-  BITSTREAM="latest" ${BAZELISK} fetch @bitstreams//...
+  BITSTREAM="latest" ${BAZELISK} fetch --force @bitstreams//...
   cp "${LATEST_BITSTREAM_HASH_FILE}" \
     "${BAZEL_BITSTREAMS_CACHE}/"
   LATEST_BITSTREAM_HASH=$(cat "${LATEST_BITSTREAM_HASH_FILE}")
