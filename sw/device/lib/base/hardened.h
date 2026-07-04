@@ -504,17 +504,6 @@ inline ct_bool32_t ct_seq32(uint32_t a, uint32_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline uint32_t ct_cmov32(ct_bool32_t c, uint32_t a, uint32_t b) {
-#if defined(OT_PLATFORM_RV32) && defined(OT_PLATFORM_RV32_SUPPORTS_ZBT0P93)
-  uint32_t res;
-  asm volatile(
-      ".option push;"
-      ".option arch, +zbt0p93;"
-      "cmov %[res], %[c], %[a], %[b];"
-      ".option pop;"
-      : [res] "=r"(res)
-      : [c] "r"(c), [a] "r"(a), [b] "r"(b));
-  return res;
-#else
   // Proof. See Hacker's Delight page 46. HD gives this as a branchless swap;
   // branchless select is a special case of that.
 
@@ -522,7 +511,6 @@ inline uint32_t ct_cmov32(ct_bool32_t c, uint32_t a, uint32_t b) {
   // exact pattern, but lacking a cmov instruction, it will almost certainly
   // select a branch instruction here.
   return (launder32(c) & a) | (launder32(~c) & b);
-#endif
 }
 
 /**
@@ -633,19 +621,7 @@ inline ct_boolw_t ct_seqw(uintptr_t a, uintptr_t b) {
  */
 OT_WARN_UNUSED_RESULT
 inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
-#if defined(OT_PLATFORM_RV32) && defined(OT_PLATFORM_RV32_SUPPORTS_ZBT0P93)
-  uintptr_t res;
-  asm volatile(
-      ".option push;"
-      ".option arch, +zbt0p93;"
-      "cmov %[res], %[c], %[a], %[b];"
-      ".option pop;"
-      : [res] "=r"(res)
-      : [c] "r"(c), [a] "r"(a), [b] "r"(b));
-  return res;
-#else
   return (launderw(c) & a) | (launderw(~c) & b);
-#endif
 }
 
 // Implementation details shared across shutdown macros.
