@@ -296,6 +296,16 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "lz4",
+    srcs = ["lz4.c"],
+    hdrs = ["lz4.h"],
+    deps = [
+        ":memory",
+        "//sw/device/lib/base:macros",
+    ],
+)
+
 cc_test(
     name = "random_order_unittest",
     srcs = ["random_order_unittest.cc"],
