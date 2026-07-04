@@ -346,6 +346,10 @@ def main() -> int:
 
         call_rv32_objcopy(uncomp_args + [str(out_elf), str(uncomp_obj)])
 
+        with open(uncomp_obj, 'r+b') as emb_file:
+            emb_file.seek(0x10)
+            emb_file.write(b'\1\0')
+
         # Generate the compressed object using LZ4
         imem_bin = out_dir / f"{app_name}_imem.bin"
         dmem_bin = out_dir / f"{app_name}_dmem.bin"
