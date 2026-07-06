@@ -5,7 +5,6 @@
 
 # fix_trailing_whitespace.py script ensures that all files passed into it satisfy
 # various requirements in terms of whitespace:
-# - There is no leading whitespace in the file.
 # - Lines do not have trailing non-newline whitespace and have UNIX-style line endings.
 # - The file ends in a single newline.
 
@@ -87,7 +86,7 @@ def main():
         except UnicodeDecodeError:
             print(f'Binary file: "{path}"')
             continue
-        new_text = "\n".join([line.rstrip() for line in old_text.strip().split("\n")]) + "\n"
+        new_text = "\n".join([line.rstrip() for line in old_text.rstrip().split("\n")]) + "\n"
 
         if old_text != new_text:
             print(f'Fixing file: "{path}"', file=sys.stdout)
