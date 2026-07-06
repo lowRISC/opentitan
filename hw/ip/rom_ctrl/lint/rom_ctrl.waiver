@@ -8,3 +8,6 @@
 waive -rules {CONST_FF} -location {rom_ctrl_counter.sv} \
       -regexp {Flip-flop 'req_q' is driven by constant one} \
       -comment "This is intentional: the signal should be true from one cycle after reset."
+waive -rules {VAR_INDEX_RANGE} -location {rom_ctrl_compare.sv} \
+      -regexp {'digest_idx -: 32' minimum value -31 is too small for '.*digest_i' range '.*} \
+      -comment "The 5 LSBs of digest_idx are fixed to 5'd31, i.e., the minimum value is actually 0 and the index is always valid"
