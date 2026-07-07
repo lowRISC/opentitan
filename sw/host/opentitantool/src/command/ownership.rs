@@ -12,6 +12,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequest};
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
@@ -19,6 +20,7 @@ use opentitanlib::ownership::{
     DetachedSignature, DetachedSignatureCommand, GlobalFlags, KeyMaterial, OwnerBlock,
     OwnershipKeyAlg, TlvHeader,
 };
+use sphincsplus::{DecodeKey, SpxSecretKey};
 
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq)]
 enum Format {
@@ -312,6 +314,15 @@ pub struct OwnershipDetachedSignatureCommand {
     key_alg: OwnershipKeyAlg,
     #[arg(short, long)]
     nonce: u64,
+    /// Raw block data to sign (if generating signatures on-the-fly)
+    #[arg(long)]
+    input: Option<PathBuf>,
+    /// ECDSA private key file in DER format.
+    #[arg(long)]
+    ecdsa_key: Option<PathBuf>,
+    /// SPHINCS+ private key file in PEM format.
+    #[arg(long)]
+    spx_key: Option<PathBuf>,
     #[arg(long)]
     ecdsa_sig: Option<PathBuf>,
     #[arg(long)]
@@ -326,13 +337,60 @@ impl CommandDispatch for OwnershipDetachedSignatureCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let detatch_sig = DetachedSignature::from_raw_signatures(
-            self.command.into(),
-            self.key_alg,
-            self.nonce,
-            self.ecdsa_sig.as_deref(),
-            self.spx_sig.as_deref(),
-        )?;
+        let detatch_sig = if let Some(input_path) = &self.input {
+            let data = std::fs::read(input_path)?;
+            let ecdsa_key = self
+                .ecdsa_key
+                .as_ref()
+                .map(EcdsaPrivateKey::load)
+                .transpose()?;
+            let spx_key = self
+                .spx_key
+                .as_ref()
+                .map(SpxSecretKey::read_pem_file)
+                .transpose()?;
+            let mut sig = match self.command {
+                DetachedSignatureCommand::Owner => {
+                    let mut cursor = std::io::Cursor::new(&data);
+                    let header = TlvHeader::read(&mut cursor)?;
+                    let mut owner = OwnerBlock::read(&mut cursor, header)?;
+                    ensure!(
+                        owner.ownership_key_alg == self.key_alg,
+                        "Ownership algorithm specified in the command ({:?}) does not match the algorithm in the owner block ({:?})",
+                        self.key_alg,
+                        owner.ownership_key_alg
+                    );
+                    owner.detached_sign(self.nonce, ecdsa_key.as_ref(), spx_key.as_ref())?
+                }
+                DetachedSignatureCommand::Unlock => {
+                    let mut unlock = OwnershipUnlockRequest::try_from(data.as_slice())?;
+                    unlock.detached_sign(self.key_alg, ecdsa_key.as_ref(), spx_key.as_ref())?
+                }
+                DetachedSignatureCommand::Activate => {
+                    let mut activate = OwnershipActivateRequest::try_from(data.as_slice())?;
+                    activate.detached_sign(self.key_alg, ecdsa_key.as_ref(), spx_key.as_ref())?
+                }
+                _ => anyhow::bail!(
+                    "Unsupported command for on-the-fly signing: {:?}",
+                    self.command
+                ),
+            };
+            if let Some(path) = &self.ecdsa_sig {
+                sig.ecdsa = Some(EcdsaRawSignature::read_from_file(path)?);
+            }
+            if let Some(path) = &self.spx_sig {
+                sig.spx = Some(std::fs::read(path)?);
+            }
+            sig
+        } else {
+            DetachedSignature::from_raw_signatures(
+                self.command.into(),
+                self.key_alg,
+                self.nonce,
+                self.ecdsa_sig.as_deref(),
+                self.spx_sig.as_deref(),
+            )?
+        };
 
         let mut file = File::create(&self.output)?;
         detatch_sig.write(&mut file)?;
