@@ -33,15 +33,16 @@ package bkdr_loader_pkg;
 
   // Target indices
   typedef enum logic [TargetIdxWidth-1:0] {
-    BkdrAon       = 'd11,
-    BkdrFlashB1I2 = 'd10,
-    BkdrFlashB1I1 = 'd9,
-    BkdrFlashB1I0 = 'd8,
-    BkdrFlashB1   = 'd7,
-    BkdrFlashB0I2 = 'd6,
-    BkdrFlashB0I1 = 'd5,
-    BkdrFlashB0I0 = 'd4,
-    BkdrFlashB0   = 'd3,
+    BkdrAon       = 'd12,
+    BkdrFlashB1I2 = 'd11,
+    BkdrFlashB1I1 = 'd10,
+    BkdrFlashB1I0 = 'd9,
+    BkdrFlashB1   = 'd8,
+    BkdrFlashB0I2 = 'd7,
+    BkdrFlashB0I1 = 'd6,
+    BkdrFlashB0I0 = 'd5,
+    BkdrFlashB0   = 'd4,
+    BkdrSramSec   = 'd3,
     BkdrSram      = 'd2,
     BkdrRom       = 'd1,
     BkdrOtp       = 'd0
@@ -58,6 +59,7 @@ package bkdr_loader_pkg;
     BkdrFlashB0I1,
     BkdrFlashB0I0,
     BkdrFlashB0,
+    BkdrSramSec,
     BkdrSram,
     BkdrRom,
     BkdrOtp
@@ -74,6 +76,7 @@ package bkdr_loader_pkg;
     "FI01",
     "FI00",
     "FB0 ",
+    "SRM2",
     "SRAM",
     "ROM ",
     "OTP "

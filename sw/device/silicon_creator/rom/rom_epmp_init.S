@@ -100,13 +100,18 @@ rom_epmp_init:
   li   t0, NAPOT(TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR, TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES)
   csrw pmpaddr15, t0
 
+  // Secondary RAM
+  li   t0, NAPOT(TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR, TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES)
+  csrw pmpaddr12, t0
+
   // Set the remaining PMP configuration registers (pmpcfg0 was already set
   // above).
   li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
-  li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
-           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
-           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
+  li   t3, CFG_INDEX(12 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW) | /* Secondary RAM */ \
+           CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM     */ \
+           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard   */ \
+           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM           */
   csrw pmpcfg1, t1
   csrw pmpcfg2, t2
   csrw pmpcfg3, t3

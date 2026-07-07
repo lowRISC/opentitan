@@ -44,6 +44,12 @@ static const epmp_region_t kImmTextRegion = {
     .end = (uintptr_t)_text_end,
 };
 
+static const epmp_region_t kSramSecRegion = {
+    .start = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR,
+    .end = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR +
+           TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES,
+};
+
 rom_error_t imm_section_epmp_reconfigure(void) {
   // ePMP region 15 gives read/write access to RAM.
   // Leave it unchanged.
@@ -84,12 +90,14 @@ rom_error_t imm_section_epmp_reconfigure(void) {
   // Immutable ROM_EXT TOR (6 & 7).
   epmp_set_tor(6, kImmTextRegion, kEpmpPermLockedReadExecute);
 
-  // Clear entries from 5 ~ 3.
-  epmp_clear(5);
+  // Secondary SRAM
+  epmp_set_napot(5, kSramSecRegion, kEpmpPermLockedReadWrite);
+
+  // Clear entries 4 & 3.
   epmp_clear(4);
   epmp_clear(3);
 
-  // 3 ~ 0 are ROM ePMP entries.
+  // 2 ~ 0 are ROM ePMP entries.
   // Leave them unchanged.
 
   HARDENED_RETURN_IF_ERROR(epmp_state_check());

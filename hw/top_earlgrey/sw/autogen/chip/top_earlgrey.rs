@@ -609,6 +609,20 @@ pub const SRAM_CTRL_MAIN_REGS_BASE_ADDR: usize = 0x411C0000;
 /// `SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
 pub const SRAM_CTRL_MAIN_REGS_SIZE_BYTES: usize = 0x40;
 
+/// Peripheral base address for regs device on sram_ctrl_sec in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const SRAM_CTRL_SEC_REGS_BASE_ADDR: usize = 0x411D0000;
+
+/// Peripheral size for regs device on sram_ctrl_sec in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #SRAM_CTRL_SEC_REGS_BASE_ADDR and
+/// `SRAM_CTRL_SEC_REGS_BASE_ADDR + SRAM_CTRL_SEC_REGS_SIZE_BYTES`.
+pub const SRAM_CTRL_SEC_REGS_SIZE_BYTES: usize = 0x40;
+
 /// Peripheral base address for regs device on rom_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -654,6 +668,12 @@ pub const SRAM_CTRL_MAIN_RAM_BASE_ADDR: usize = 0x10000000;
 
 /// Memory size for ram memory on sram_ctrl_main in top earlgrey.
 pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
+
+/// Memory base address for ram memory on sram_ctrl_sec in top earlgrey.
+pub const SRAM_CTRL_SEC_RAM_BASE_ADDR: usize = 0x10020000;
+
+/// Memory size for ram memory on sram_ctrl_sec in top earlgrey.
+pub const SRAM_CTRL_SEC_RAM_SIZE_BYTES: usize = 0x10000;
 
 /// Memory base address for rom memory on rom_ctrl in top earlgrey.
 pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x40000;
@@ -1808,10 +1828,12 @@ pub enum AlertPeripheral {
     Edn1 = 36,
     /// sram_ctrl_main
     SramCtrlMain = 37,
+    /// sram_ctrl_sec
+    SramCtrlSec = 38,
     /// rom_ctrl
-    RomCtrl = 38,
+    RomCtrl = 39,
     /// rv_core_ibex
-    RvCoreIbex = 39,
+    RvCoreIbex = 40,
 }
 
 /// Alert Handler Alert Source.
@@ -1937,16 +1959,18 @@ pub enum AlertId {
     Edn1FatalAlert = 56,
     /// sram_ctrl_main_fatal_error
     SramCtrlMainFatalError = 57,
+    /// sram_ctrl_sec_fatal_error
+    SramCtrlSecFatalError = 58,
     /// rom_ctrl_fatal
-    RomCtrlFatal = 58,
+    RomCtrlFatal = 59,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 59,
+    RvCoreIbexFatalSwErr = 60,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 60,
+    RvCoreIbexRecovSwErr = 61,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 61,
+    RvCoreIbexFatalHwErr = 62,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 62,
+    RvCoreIbexRecovHwErr = 63,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2011,11 +2035,12 @@ impl TryFrom<u32> for AlertId {
             55 => Ok(Self::Edn1RecovAlert),
             56 => Ok(Self::Edn1FatalAlert),
             57 => Ok(Self::SramCtrlMainFatalError),
-            58 => Ok(Self::RomCtrlFatal),
-            59 => Ok(Self::RvCoreIbexFatalSwErr),
-            60 => Ok(Self::RvCoreIbexRecovSwErr),
-            61 => Ok(Self::RvCoreIbexFatalHwErr),
-            62 => Ok(Self::RvCoreIbexRecovHwErr),
+            58 => Ok(Self::SramCtrlSecFatalError),
+            59 => Ok(Self::RomCtrlFatal),
+            60 => Ok(Self::RvCoreIbexFatalSwErr),
+            61 => Ok(Self::RvCoreIbexRecovSwErr),
+            62 => Ok(Self::RvCoreIbexFatalHwErr),
+            63 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2025,7 +2050,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 63] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 64] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // Uart1FatalFault -> AlertPeripheral::Uart1
@@ -2142,6 +2167,8 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 63] = [
     AlertPeripheral::Edn1,
     // SramCtrlMainFatalError -> AlertPeripheral::SramCtrlMain
     AlertPeripheral::SramCtrlMain,
+    // SramCtrlSecFatalError -> AlertPeripheral::SramCtrlSec
+    AlertPeripheral::SramCtrlSec,
     // RomCtrlFatal -> AlertPeripheral::RomCtrl
     AlertPeripheral::RomCtrl,
     // RvCoreIbexFatalSwErr -> AlertPeripheral::RvCoreIbex

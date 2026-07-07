@@ -54,6 +54,10 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t ram = {.start = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
                              .end = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
                                     TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES};
+  const epmp_region_t ram_sec = {
+      .start = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR,
+      .end = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR +
+             TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES};
 
   epmp_perm_t debug_rom_access = kEpmpPermLockedNoAccess;
   switch (launder32(lc_state)) {
@@ -94,6 +98,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   epmp_state_configure_napot(13, debug_rom, debug_rom_access);
   epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);
   epmp_state_configure_napot(15, ram, kEpmpPermLockedReadWrite);
+  epmp_state_configure_napot(12, ram_sec, kEpmpPermLockedReadWrite);
   epmp_state.mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
 }
 

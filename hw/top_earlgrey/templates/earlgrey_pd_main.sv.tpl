@@ -43,6 +43,8 @@ module ${top["name"]}_pd_${domain.lower()} #(
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
   assign sram_ctrl_main_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
+  assign sram_ctrl_sec_otp_en_sram_ifetch =
+      otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
   assign rv_dm_otp_dis_rv_dm_late_debug =
       otp_ctrl_otp_broadcast.hw_cfg1_data.dis_rv_dm_late_debug;
   assign lc_ctrl_otp_device_id =

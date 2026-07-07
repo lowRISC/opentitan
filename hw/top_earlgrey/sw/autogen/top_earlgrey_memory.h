@@ -56,6 +56,16 @@
 #define TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES 0x20000
 
 /**
+ * Memory base for ram memory on sram_ctrl_sec in top earlgrey.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR 0x10020000
+
+/**
+ * Memory size for ram memory on sram_ctrl_sec in top earlgrey.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES 0x10000
+
+/**
  * Memory base for rom memory on rom_ctrl in top earlgrey.
  */
 #define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x40000
@@ -780,6 +790,23 @@
  * `TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x40
+/**
+ * Peripheral base address for regs device on sram_ctrl_sec in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_SRAM_CTRL_SEC_REGS_BASE_ADDR 0x411D0000
+
+/**
+ * Peripheral size for regs device on sram_ctrl_sec in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_SRAM_CTRL_SEC_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_SRAM_CTRL_SEC_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_SEC_REGS_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_SRAM_CTRL_SEC_REGS_SIZE_BYTES 0x40
 /**
  * Peripheral base address for regs device on rom_ctrl in top earlgrey.
  *
