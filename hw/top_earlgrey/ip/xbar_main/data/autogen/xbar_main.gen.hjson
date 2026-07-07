@@ -64,7 +64,7 @@
       sram_ctrl_main.ram
       flash_ctrl.mem
     ]
-    rv_core_ibex.cored:
+    cheriot.cored:
     [
       rom_ctrl.rom
       rom_ctrl.regs
@@ -90,6 +90,8 @@
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
+      sram_ctrl_meta.regs
+      cheriot.revbm
     ]
     rv_dm.sba:
     [
@@ -117,6 +119,8 @@
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
+      sram_ctrl_meta.regs
+      cheriot.revbm
     ]
   }
   nodes:
@@ -135,7 +139,7 @@
       rsp_fifo_pass: true
     }
     {
-      name: rv_core_ibex.cored
+      name: cheriot.cored
       type: host
       addr_space: hart
       clock: clk_main_i
@@ -694,6 +698,50 @@
       stub: false
       req_fifo_pass: true
     }
+    {
+      name: sram_ctrl_meta.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x411d0000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: cheriot.revbm
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: cheriot
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x11000000
+          }
+          size_byte: 0x800
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
   ]
   addr_spaces:
   [
@@ -718,7 +766,7 @@
       index: -1
     }
     {
-      name: tl_rv_core_ibex__cored
+      name: tl_cheriot__cored
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -728,7 +776,7 @@
       default: ""
       end_idx: -1
       top_type: one-to-one
-      top_signame: main_tl_rv_core_ibex__cored
+      top_signame: main_tl_cheriot__cored
       index: -1
     }
     {
@@ -1056,6 +1104,32 @@
       default: ""
       domain: Main
       top_signame: sram_ctrl_main_ram_tl
+      index: -1
+    }
+    {
+      name: tl_sram_ctrl_meta__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: sram_ctrl_meta_regs_tl
+      index: -1
+    }
+    {
+      name: tl_cheriot__revbm
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: cheriot_revbm_tl_d
       index: -1
     }
   ]

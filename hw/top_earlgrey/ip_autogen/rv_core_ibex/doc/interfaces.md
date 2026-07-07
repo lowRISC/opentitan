@@ -6,38 +6,42 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_edn_i`**, **`clk_esc_i`**, **`clk_otp_i`**
 - Bus Device Interfaces (TL-UL): **`cfg_tl_d`**
-- Bus Host Interfaces (TL-UL): **`corei_tl_h`**, **`cored_tl_h`**
+- Bus Host Interfaces (TL-UL): **`corei_tl_h`**
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name               | Package::Struct                  | Type    | Act   | Width       | Description   |
-|:------------------------|:---------------------------------|:--------|:------|:------------|:--------------|
-| rst_cpu_n               | logic                            | uni     | req   | 1           |               |
-| ram_cfg_icache_tag      | prim_ram_1p_pkg::ram_1p_cfg      | uni     | rcv   | 1           |               |
-| ram_cfg_rsp_icache_tag  | prim_ram_1p_pkg::ram_1p_cfg_rsp  | uni     | req   | ICacheNWays |               |
-| ram_cfg_icache_data     | prim_ram_1p_pkg::ram_1p_cfg      | uni     | rcv   | 1           |               |
-| ram_cfg_rsp_icache_data | prim_ram_1p_pkg::ram_1p_cfg_rsp  | uni     | req   | ICacheNWays |               |
-| hart_id                 | logic                            | uni     | rcv   | 32          |               |
-| boot_addr               | logic                            | uni     | rcv   | 32          |               |
-| irq_software            | logic                            | uni     | rcv   | 1           |               |
-| irq_timer               | logic                            | uni     | rcv   | 1           |               |
-| irq_external            | logic                            | uni     | rcv   | 1           |               |
-| esc_tx                  | prim_esc_pkg::esc_tx             | uni     | rcv   | 1           |               |
-| esc_rx                  | prim_esc_pkg::esc_rx             | uni     | req   | 1           |               |
-| debug_req               | logic                            | uni     | rcv   | 1           |               |
-| crash_dump              | rv_core_ibex_pkg::cpu_crash_dump | uni     | req   | 1           |               |
-| lc_cpu_en               | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |               |
-| pwrmgr_cpu_en           | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |               |
-| pwrmgr                  | rv_core_ibex_pkg::cpu_pwrmgr     | uni     | req   | 1           |               |
-| nmi_wdog                | logic                            | uni     | rcv   | 1           |               |
-| edn                     | edn_pkg::edn                     | req_rsp | req   | 1           |               |
-| icache_otp_key          | otp_ctrl_pkg::sram_otp_key       | req_rsp | req   | 1           |               |
-| fpga_info               | logic                            | uni     | rcv   | 32          |               |
-| corei_tl_h              | tlul_pkg::tl                     | req_rsp | req   | 1           |               |
-| cored_tl_h              | tlul_pkg::tl                     | req_rsp | req   | 1           |               |
-| cfg_tl_d                | tlul_pkg::tl                     | req_rsp | rsp   | 1           |               |
+| Port Name               | Package::Struct                  | Type    | Act   | Width       | Description                                                   |
+|:------------------------|:---------------------------------|:--------|:------|:------------|:--------------------------------------------------------------|
+| rst_cpu_n               | logic                            | uni     | req   | 1           |                                                               |
+| cheriot_ena             | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable.                                          |
+| cored_tl_h              | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to CHERIoT subsystem                      |
+| cored_tag_h2d           | logic                            | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_h. |
+| cored_tag_d2h           | logic                            | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_h.          |
+| corerevbm_tl            | tlul_pkg::tl                     | req_rsp | req   | 1           | Core revocation bitmap host port                              |
+| ram_cfg_icache_tag      | prim_ram_1p_pkg::ram_1p_cfg      | uni     | rcv   | 1           |                                                               |
+| ram_cfg_rsp_icache_tag  | prim_ram_1p_pkg::ram_1p_cfg_rsp  | uni     | req   | ICacheNWays |                                                               |
+| ram_cfg_icache_data     | prim_ram_1p_pkg::ram_1p_cfg      | uni     | rcv   | 1           |                                                               |
+| ram_cfg_rsp_icache_data | prim_ram_1p_pkg::ram_1p_cfg_rsp  | uni     | req   | ICacheNWays |                                                               |
+| hart_id                 | logic                            | uni     | rcv   | 32          |                                                               |
+| boot_addr               | logic                            | uni     | rcv   | 32          |                                                               |
+| irq_software            | logic                            | uni     | rcv   | 1           |                                                               |
+| irq_timer               | logic                            | uni     | rcv   | 1           |                                                               |
+| irq_external            | logic                            | uni     | rcv   | 1           |                                                               |
+| esc_tx                  | prim_esc_pkg::esc_tx             | uni     | rcv   | 1           |                                                               |
+| esc_rx                  | prim_esc_pkg::esc_rx             | uni     | req   | 1           |                                                               |
+| debug_req               | logic                            | uni     | rcv   | 1           |                                                               |
+| crash_dump              | rv_core_ibex_pkg::cpu_crash_dump | uni     | req   | 1           |                                                               |
+| lc_cpu_en               | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |                                                               |
+| pwrmgr_cpu_en           | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |                                                               |
+| pwrmgr                  | rv_core_ibex_pkg::cpu_pwrmgr     | uni     | req   | 1           |                                                               |
+| nmi_wdog                | logic                            | uni     | rcv   | 1           |                                                               |
+| edn                     | edn_pkg::edn                     | req_rsp | req   | 1           |                                                               |
+| icache_otp_key          | otp_ctrl_pkg::sram_otp_key       | req_rsp | req   | 1           |                                                               |
+| fpga_info               | logic                            | uni     | rcv   | 32          |                                                               |
+| corei_tl_h              | tlul_pkg::tl                     | req_rsp | req   | 1           |                                                               |
+| cfg_tl_d                | tlul_pkg::tl                     | req_rsp | rsp   | 1           |                                                               |
 
 ## Security Alerts
 

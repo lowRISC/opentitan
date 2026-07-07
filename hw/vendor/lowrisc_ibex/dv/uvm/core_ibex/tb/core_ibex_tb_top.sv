@@ -132,6 +132,7 @@ module core_ibex_tb_top;
 
     .hart_id_i                 (32'b0                      ),
     .boot_addr_i               (BootAddr                   ),
+    .trvk_heap_base_addr_i     (32'b0                      ),
 
     .instr_req_o               (instr_mem_vif.request      ),
     .instr_gnt_i               (instr_mem_vif.grant        ),
@@ -149,9 +150,19 @@ module core_ibex_tb_top;
     .data_be_o                 (data_mem_vif.be            ),
     .data_rdata_i              (data_mem_vif.rdata         ),
     .data_rdata_intg_i         (data_mem_vif.rintg         ),
+    .data_tag_i                (1'b0                       ),
     .data_wdata_o              (data_mem_vif.wdata         ),
     .data_wdata_intg_o         (data_mem_vif.wintg         ),
+    .data_tag_o                (                           ),
     .data_err_i                (data_mem_vif.error         ),
+
+    .trvk_revbm_req_o          (                           ),
+    .trvk_revbm_gnt_i          (1'b0                       ),
+    .trvk_revbm_rvalid_i       (1'b0                       ),
+    .trvk_revbm_addr_o         (                           ),
+    .trvk_revbm_rdata_i        ('b0                        ),
+    .trvk_revbm_rdata_intg_i   ('b0                        ),
+    .trvk_revbm_err_i          (                           ),
 
     .irq_software_i            (irq_vif.irq_software       ),
     .irq_timer_i               (irq_vif.irq_timer          ),

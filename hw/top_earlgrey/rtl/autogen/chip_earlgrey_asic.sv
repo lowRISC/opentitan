@@ -1410,6 +1410,7 @@ module chip_earlgrey_asic #(
     .obs_ctrl_i               (obs_ctrl           ),
     .ram_1p_cfg_i             (ram_1p_cfg         ),
     .sram_ctrl_main_cfg_i     ('{ram_1p_cfg}      ),
+    .sram_ctrl_meta_cfg_i     ('{ram_1p_cfg}      ),
     .spi_ram_2p_cfg_i         (spi_ram_2p_cfg     ),
     .usb_ram_1p_cfg_i         (usb_ram_1p_cfg     ),
     .rom_cfg_i                (rom_cfg            ),

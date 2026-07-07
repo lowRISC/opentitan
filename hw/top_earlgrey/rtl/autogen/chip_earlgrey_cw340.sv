@@ -1328,6 +1328,7 @@ module chip_earlgrey_cw340 #(
     .obs_ctrl_i               (obs_ctrl           ),
     .ram_1p_cfg_i             (prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
     .sram_ctrl_main_cfg_i     ('{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}),
+    .sram_ctrl_meta_cfg_i     ('{prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT}),
     .spi_ram_2p_cfg_i         (prim_ram_2p_pkg::RAM_2P_CFG_DEFAULT),
     .usb_ram_1p_cfg_i         (prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
     .rom_cfg_i                (prim_rom_pkg::ROM_CFG_DEFAULT),

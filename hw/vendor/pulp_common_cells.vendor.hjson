@@ -1,0 +1,28 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "pulp_common_cells",
+    target_dir: "pulp_common_cells",
+    patch_dir: "patches/pulp_common_cells",
+
+    upstream: {
+        url: "https://github.com/pulp-platform/common_cells.git"
+        rev: "master"
+    },
+
+    mapping: [
+        {
+            from: "src/stream_fork.sv",
+            to: "rtl/stream_fork.sv",
+            patch_dir: "stream_fork_sv"},
+        {
+            from: "src/stream_fork_dynamic.sv",
+            to: "rtl/stream_fork_dynamic.sv",
+            patch_dir: "stream_fork_dynamic_sv"},
+        {
+            from: "src/stream_join_dynamic.sv",
+            to: "rtl/stream_join_dynamic.sv",
+            patch_dir: "stream_join_dynamic_sv"},
+    ]
+}

@@ -58,6 +58,7 @@ The main address space, shared between the CPU and DM
 | sram_ctrl_main    | regs        | `0x411C0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_main    |
 | rom_ctrl          | regs        | `0x411E0000`   | `0x80`         | `0x20`         | regs device on rom_ctrl          |
 | rv_core_ibex      | cfg         | `0x411F0000`   | `0x100`        | `0x40`         | cfg device on rv_core_ibex       |
+| sram_ctrl_meta    | regs        | `0x411D0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_meta    |
 
 ### Memory Blocks
 
@@ -67,3 +68,5 @@ The main address space, shared between the CPU and DM
 | flash_ctrl        | mem         | `0x20000000`   | `0x100000`     | `0x40000`      |
 | sram_ctrl_main    | ram         | `0x10000000`   | `0x20000`      | `0x8000`       |
 | rom_ctrl          | rom         | `0x8000`       | `0x8000`       | `0x2000`       |
+| cheriot           | revbm       | `0x11000000`   | `0x800`        | `0x200`        |
+| sram_ctrl_meta    | ram         | `0x11000000`   | `0x9000`       | `0x2400`       |

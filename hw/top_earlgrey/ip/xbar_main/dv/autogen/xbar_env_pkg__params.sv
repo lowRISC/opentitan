@@ -79,6 +79,12 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sram_ctrl_main__ram", '{
         '{32'h10000000, 32'h1001ffff}
+    }},
+    '{"sram_ctrl_meta__regs", '{
+        '{32'h411d0000, 32'h411d003f}
+    }},
+    '{"cheriot__revbm", '{
+        '{32'h11000000, 32'h110007ff}
 }}};
 
   // List of Xbar hosts
@@ -89,7 +95,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "flash_ctrl__mem"}}
     ,
-    '{"rv_core_ibex__cored", 1, '{
+    '{"cheriot__cored", 1, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
         "rv_dm__mem",
@@ -113,7 +119,9 @@ tl_host_t xbar_hosts[$] = '{
         "keymgr",
         "kmac",
         "sram_ctrl_main__regs",
-        "rv_core_ibex__cfg"}}
+        "rv_core_ibex__cfg",
+        "sram_ctrl_meta__regs",
+        "cheriot__revbm"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rom_ctrl__rom",
@@ -139,5 +147,7 @@ tl_host_t xbar_hosts[$] = '{
         "keymgr",
         "kmac",
         "sram_ctrl_main__regs",
-        "rv_core_ibex__cfg"}}
+        "rv_core_ibex__cfg",
+        "sram_ctrl_meta__regs",
+        "cheriot__revbm"}}
 };

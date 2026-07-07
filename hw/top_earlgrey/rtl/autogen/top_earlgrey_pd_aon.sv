@@ -29,6 +29,7 @@ module top_earlgrey_pd_aon #(
   parameter int SramCtrlRetAonNumRamInst = 1,
   parameter bit SramCtrlRetAonInstrExec = 0,
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
+  parameter int SramCtrlRetAonNumAddrScrRounds = 2,
   parameter bit SramCtrlRetAonEccCorrection = 0
 ) (
   // Inter-module Signal External type
@@ -496,6 +497,7 @@ module top_earlgrey_pd_aon #(
     .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
+    .NumAddrScrRounds(SramCtrlRetAonNumAddrScrRounds),
     .Outstanding(SramCtrlRetAonOutstanding),
     .EccCorrection(SramCtrlRetAonEccCorrection)
   ) u_sram_ctrl_ret_aon (
