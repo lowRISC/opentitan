@@ -48,6 +48,12 @@
       }
     },
     {
+      owner_transfer_blob: {
+        owner_block: "owner_block.bin",
+        detached_signature: "signature.bin"
+      }
+    },
+    {
       mldsa87_key: {
         mldsa87_key: "test_mldsa87.pem"
       }
