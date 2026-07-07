@@ -109,23 +109,6 @@ rom_error_t dice_cdi_1_cert_build(
     ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size);
 
 /**
- * Check if a subject pubkey ID (serial number) or subject pubkey match the
- * contents of the provided certificate.
- *
- * @param cert_obj Pointer to the TLV cert object from the flash.
- * @param pubkey_id Pointer to the subject pubkey ID (serial number).
- * @param pubkey Pointer to the subject pubkey contents.
- * @param[out] cert_valid_output If unmatched, set `cert_valid_output` to
- * kHardenedBoolFalse for triggering cert regeneration.
- * @return errors encountered during the check.
- */
-OT_WARN_UNUSED_RESULT
-rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
-                                  const hmac_digest_t *pubkey_id,
-                                  const ecdsa_p256_public_key_t *pubkey,
-                                  hardened_bool_t *cert_valid_output);
-
-/**
  * Perform attestation for CDI_0.
  */
 OT_WARN_UNUSED_RESULT

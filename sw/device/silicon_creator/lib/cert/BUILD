@@ -232,26 +232,6 @@ cc_library(
     ],
 )
 
-opentitan_test(
-    name = "dice_cwt_functest",
-    srcs = ["dice_cwt_functest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
-    },
-    fpga = fpga_params(tags = ["coverage"]),
-    deps = [
-        ":dice_cwt",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-    ],
-)
-
 cc_library(
     name = "dice_keys",
     srcs = ["dice_keys.c"],
