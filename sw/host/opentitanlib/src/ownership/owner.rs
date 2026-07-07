@@ -37,6 +37,7 @@ with_unknown! {
         UnlockSelf = u32::from_le_bytes(*b"SELF"),
         SelfVersion = u32::from_le_bytes(*b"SELV"),
         NewVersion = u32::from_le_bytes(*b"NEWV"),
+        AnyVersion = u32::from_le_bytes(*b"_ANY"),
     }
 }
 

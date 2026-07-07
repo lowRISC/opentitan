@@ -6,6 +6,14 @@ load("//rules:signing.bzl", "keyset")
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "all_keys",
+    srcs = glob([
+        "*.der",
+        "*.pem",
+    ]),
+)
+
+filegroup(
     name = "owner_key",
     srcs = ["owner_ecdsa_p256.der"],
 )
