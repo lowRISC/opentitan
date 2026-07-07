@@ -193,6 +193,8 @@ typedef enum otcrypto_key_type {
   kOtcryptoKeyTypeEcc = 0x15b,
   // Key type KDF.
   kOtcryptoKeyTypeKdf = 0xb87,
+  // Key type PQC.
+  kOtcryptoKeyTypePqc = 0xabc,
 } otcrypto_key_type_t;
 
 /**
@@ -312,6 +314,19 @@ typedef enum otcrypto_kdf_key_mode {
 } otcrypto_kdf_key_mode_t;
 
 /**
+ * Enum to specify the PQC modes that use a key.
+ *
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
+ *
+ * Values are hardened.
+ */
+typedef enum otcrypto_pqc_key_mode {
+  // Mode PQC-ML-DSA-87.
+  kOtcryptoPqcKeyModeMldsa87 = 0xcee,
+} otcrypto_pqc_key_mode_t;
+
+/**
  * Enum for opentitan crypto modes that use a key.
  *
  * Denotes the crypto mode for which the provided key is to be used.
@@ -388,6 +403,8 @@ typedef enum otcrypto_key_mode {
   // Key is intended for KDF with KMAC256 as PRF.
   kOtcryptoKeyModeKdfKmac256 =
       kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac256,
+  kOtcryptoKeyModePqcMldsa87 =
+      kOtcryptoKeyTypePqc << 16 | kOtcryptoPqcKeyModeMldsa87,
 } otcrypto_key_mode_t;
 
 /**
