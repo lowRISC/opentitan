@@ -160,29 +160,49 @@ def _manifest_impl(ctx):
 
     mf["usage_constraints"] = uc
 
-    if ctx.attr.extensions:
-        extensions = [e or None for e in ctx.attr.extensions]
-        mf["extensions"] = extensions
-    else:
-        mf["extensions"] = [
-            "spx_key",
-            "spx_signature",
-            "secver_write",
-            "isfb",
-            "isfb_erase",
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-        ]
+    extensions = [e or None for e in ctx.attr.extensions] if ctx.attr.extensions else [
+        "spx_key",
+        "spx_signature",
+        "secver_write",
+        "isfb",
+        "isfb_erase",
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+    ]
 
+    manifest_dependent_files = []
+    if ctx.file.owner_transfer_block:
+        manifest_dependent_files.append(ctx.file.owner_transfer_block)
+        if ctx.file.owner_transfer_detached_signature:
+            manifest_dependent_files.append(ctx.file.owner_transfer_detached_signature)
+
+        # Inject owner_transfer_blob into extensions array if not already present
+        if "owner_transfer_blob" not in extensions:
+            if None not in extensions:
+                fail("No free slot in extensions table for owner_transfer_blob.")
+            extensions[extensions.index(None)] = "owner_transfer_blob"
+
+    mf["extensions"] = extensions
     mf["extension_params"] = []
+
+    if ctx.file.owner_transfer_block:
+        params = {
+            "owner_block": ctx.file.owner_transfer_block.path,
+        }
+        if ctx.file.owner_transfer_detached_signature:
+            params["detached_signature"] = ctx.file.owner_transfer_detached_signature.path
+        mf["extension_params"].append({
+            "owner_transfer_blob": params,
+        })
+
     if ctx.attr.integrator_specific_firmware_binding:
         mf["extension_params"].append(
             {
@@ -214,10 +234,12 @@ def _manifest_impl(ctx):
 
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(mf))
-    return DefaultInfo(
-        files = depset([file]),
-        data_runfiles = ctx.runfiles(files = [file]),
-    )
+    return [
+        DefaultInfo(
+            files = depset([file]),
+            data_runfiles = ctx.runfiles(files = [file] + manifest_dependent_files),
+        ),
+    ]
 
 _manifest = rule(
     implementation = _manifest_impl,
@@ -250,6 +272,8 @@ _manifest = rule(
         "integrator_specific_firmware_binding": attr.string(doc = "Create an Integrator Specific Firmware Block (ISFB) JSON object"),
         "isfb_erase_allowed_policy": attr.string(doc = "Create an ISFB Erase Allowed Policy JSON object"),
         "secver_write": attr.string(default = "none", values = ["none", "false", "true"], doc = "Add the secver_write extension with the specified value"),
+        "owner_transfer_block": attr.label(allow_single_file = True, doc = "The owner block file to include for transfer"),
+        "owner_transfer_detached_signature": attr.label(allow_single_file = True, doc = "The detached signature of the owner block"),
     },
 )
 

@@ -107,7 +107,7 @@ def key_ext(ecdsa, rsa, spx):
     else:
         return ".{}".format(name)
 
-def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key, spx_key, basename = None, keyname_in_filenames = False):
+def _presigning_artifacts(ctx, opentitantool, src, manifest_attr, ecdsa_key, rsa_key, spx_key, basename = None, keyname_in_filenames = False):
     """Create the pre-signing artifacts for a given input binary.
 
     Applies the manifest and public components of the keys.  Creates the
@@ -117,7 +117,7 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
         ctx: The rule context.
         opentitantool: file; The opentitantool binary.
         src: file; The source binary
-        manifest: file; The manifest file.
+        manifest_attr: Target; The manifest target.
         ecdsa_key: struct; The ECDSA public key.
         rsa_key: struct; The RSA public key.
         spx_key: struct; The SPX+ public key.
@@ -139,12 +139,24 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
     else:
         basename = paths.replace_extension(basename, "")
 
+    manifest_dependent_files = []
+    manifest_file = None
+    if manifest_attr:
+        if type(manifest_attr) == "Target":
+            if DefaultInfo in manifest_attr:
+                manifest_dependent_files = manifest_attr[DefaultInfo].data_runfiles.files.to_list()
+            manifest_file = manifest_attr.files.to_list()[0]
+        else:
+            manifest_file = manifest_attr
+
     signing_directives = []
     pre = ctx.actions.declare_file("{}.pre-signing".format(basename))
     inputs = [
         src,
-        manifest,
-    ]
+    ] + manifest_dependent_files
+
+    if manifest_file:
+        inputs.append(manifest_file)
 
     ecdsa_or_rsa_args = []
     if ecdsa_key:
@@ -162,20 +174,25 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
         selected_spx_key = getattr(spx_key, "file", None)
         spx_args.append("--spx-key={}".format(selected_spx_key.path))
         inputs.append(selected_spx_key)
+    args = [
+        "--rcfile=",
+        "--quiet",
+        "image",
+        "manifest",
+        "update",
+    ]
+    if manifest_file:
+        args.append("--manifest={}".format(manifest_file.path))
+    args.extend([
+        "--domain={}".format(spx_domain),
+        "--output={}".format(pre.path),
+        src.path,
+    ])
+
     ctx.actions.run(
         outputs = [pre],
         inputs = inputs,
-        arguments = [
-            "--rcfile=",
-            "--quiet",
-            "image",
-            "manifest",
-            "update",
-            "--manifest={}".format(manifest.path),
-            "--domain={}".format(spx_domain),
-            "--output={}".format(pre.path),
-            src.path,
-        ] + ecdsa_or_rsa_args + spx_args,
+        arguments = args + ecdsa_or_rsa_args + spx_args,
         executable = opentitantool,
         mnemonic = "PreSigningArtifacts",
     )
@@ -506,7 +523,7 @@ def _offline_presigning_artifacts(ctx):
             ctx,
             tc.tools.opentitantool,
             src,
-            ctx.file.manifest,
+            ctx.attr.manifest,
             ecdsa_key,
             rsa_key,
             spx_key,
@@ -728,11 +745,13 @@ def sign_binary(ctx, opentitantool, **kwargs):
     rsa_key = key_from_dict(rsa_attr, "rsa_key")
     spx_key = key_from_dict(get_override(ctx, "attr.spx_key", kwargs), "spx_key")
 
+    manifest = get_override(ctx, "attr.manifest", kwargs)
+
     artifacts = _presigning_artifacts(
         ctx,
         opentitantool,
         get_override(ctx, "file.bin", kwargs),
-        get_override(ctx, "file.manifest", kwargs),
+        manifest,
         ecdsa_key,
         rsa_key,
         spx_key,

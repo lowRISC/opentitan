@@ -414,6 +414,10 @@ enum {
    */
   kManifestExtIdIsfbErase = 0x45465349,
   /**
+   * ASCII "OWTB".
+   */
+  kManifestExtIdOwnerTransferBlob = 0x4254574f,
+  /**
    * ASCII "EXT0.
    */
   kManifestExtNameSpxKey = 0x30545845,
@@ -549,6 +553,31 @@ typedef struct manifest_ext_isfb_erase {
 } manifest_ext_isfb_erase_t;
 
 /**
+ * Manifest extension: Owner Transfer Blob.
+ */
+typedef struct manifest_ext_owner_transfer_blob {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * Owner block configuration.
+   *
+   * Note: The detached signature is a variable-sized struct and has an
+   * independent scanning function, so it is included as a flexible array
+   * member below to document its possible existence. Omitting a fixed-size
+   * signature from this struct does not affect manifest extension access,
+   * since the offset for subsequent extensions is calculated by the host tool
+   * and explicitly listed in the manifest extension table.
+   */
+  uint8_t owner_block[2048];
+  /**
+   * Detached signature.
+   */
+  uint8_t detached_signature[];
+} manifest_ext_owner_transfer_blob_t;
+
+/**
  * Table of manifest extensions.
  *
  * Columns: Table index, type name, extenstion name, identifier, signed or not.
@@ -559,7 +588,8 @@ typedef struct manifest_ext_isfb_erase {
   X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false) \
   X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)  \
   X(3, manifest_ext_isfb_t,          isfb,          kManifestExtIdIsfb,         true)  \
-  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)
+  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)  \
+  X(5, manifest_ext_owner_transfer_blob_t, owner_transfer_blob, kManifestExtIdOwnerTransferBlob, false)
 // clang-format on
 
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)

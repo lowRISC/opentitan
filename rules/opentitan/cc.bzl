@@ -197,8 +197,8 @@ def _build_binary(ctx, exec_env, name, deps, kind):
         src = elf,
     )
 
-    manifest = get_fallback(ctx, "file.manifest", exec_env)
-    if manifest and str(manifest.owner).endswith("@//hw/top_earlgrey:none_manifest"):
+    manifest = get_fallback(ctx, "attr.manifest", exec_env)
+    if manifest and str(manifest.label).endswith("@//hw/top_earlgrey:none_manifest"):
         manifest = None
 
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)

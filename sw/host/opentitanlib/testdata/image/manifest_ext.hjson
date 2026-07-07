@@ -46,6 +46,12 @@
       spx_signature: {
         spx_signature: "test_signature.bin"
       }
+    },
+    {
+      owner_transfer_blob: {
+        owner_block: "owner_block.bin",
+        detached_signature: "signature.bin"
+      }
     }
   ],
 }
