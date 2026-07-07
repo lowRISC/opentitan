@@ -133,11 +133,20 @@ rust.repository_set(
 )
 use_repo(rust, "rust_toolchains")
 
-register_toolchains("@rust_toolchains//:all")
+register_toolchains(
+    "@rust_toolchains//:all",
+    "@rules_foreign_cc//toolchains:preinstalled_make_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_cmake_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_ninja_toolchain",
+    "@rules_foreign_cc//toolchains:preinstalled_pkgconfig_toolchain",
+)
 
 host_libs = use_repo_rule("//rules:host_libs.bzl", "host_libs")
 
 host_libs(name = "host_libs")
+
+host_libs_local_repos = use_extension("//third_party/host_libs:extensions.bzl", "host_libs_local_repos")
+use_repo(host_libs_local_repos, "libusb_src", "libftdi_src", "libudev_zero_src")
 
 # Rust crates:
 crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
@@ -152,10 +161,14 @@ crate.from_cargo(
     ],
 )
 crate.annotation(
-    build_script_data = ["@@lowrisc_opentitan+//third_party/host_libs:pc_files"],
+    build_script_data = [
+        "@@lowrisc_opentitan+//third_party/host_libs:pkgconfig_wrapper.sh",
+        "@@lowrisc_opentitan+//third_party/host_libs:pkgconfig/libudev.pc",
+    ],
     build_script_env = {
-        "PKG_CONFIG_PATH": "$${pwd}/external/lowrisc_opentitan++_repo_rules+host_libs",
-        "DUMMY_VAR": "force_rebuild_udev1",
+        "PKG_CONFIG": "$${pwd}/external/lowrisc_opentitan+/third_party/host_libs/pkgconfig_wrapper.sh",
+        "PKG_CONFIG_PATH_FILE": "$(location @@lowrisc_opentitan+//third_party/host_libs:pkgconfig/libudev.pc)",
+        "DUMMY_VAR": "force_rebuild_udev3",
     },
     crate = "libudev-sys",
     patch_args = ["-p1"],
@@ -193,20 +206,28 @@ crate.annotation(
     repositories = ["crate_index"],
 )
 crate.annotation(
-    build_script_data = ["@@lowrisc_opentitan+//third_party/host_libs:pc_files"],
+    build_script_data = [
+        "@@lowrisc_opentitan+//third_party/host_libs:pkgconfig_wrapper.sh",
+        "@@lowrisc_opentitan+//third_party/host_libs:pkgconfig/libusb-1.0.pc",
+    ],
     build_script_env = {
-        "PKG_CONFIG_PATH": "$${pwd}/external/lowrisc_opentitan++_repo_rules+host_libs",
-        "DUMMY_VAR": "force_rebuild_usb4",
+        "PKG_CONFIG": "$${pwd}/external/lowrisc_opentitan+/third_party/host_libs/pkgconfig_wrapper.sh",
+        "PKG_CONFIG_PATH_FILE": "$(location @@lowrisc_opentitan+//third_party/host_libs:pkgconfig/libusb-1.0.pc)",
+        "DUMMY_VAR": "force_rebuild_usb7",
     },
     crate = "libusb1-sys",
     repositories = ["crate_index"],
     deps = ["@@lowrisc_opentitan+//third_party/host_libs:usb"],
 )
 crate.annotation(
-    build_script_data = ["@@lowrisc_opentitan+//third_party/host_libs:pc_files"],
+    build_script_data = [
+        "@@lowrisc_opentitan+//third_party/host_libs:pkgconfig_wrapper.sh",
+        "@@lowrisc_opentitan+//third_party/host_libs:pkgconfig/libftdi1.pc",
+    ],
     build_script_env = {
-        "PKG_CONFIG_PATH": "$${pwd}/external/lowrisc_opentitan++_repo_rules+host_libs",
-        "DUMMY_VAR": "force_rebuild_ftdi4",
+        "PKG_CONFIG": "$${pwd}/external/lowrisc_opentitan+/third_party/host_libs/pkgconfig_wrapper.sh",
+        "PKG_CONFIG_PATH_FILE": "$(location @@lowrisc_opentitan+//third_party/host_libs:pkgconfig/libftdi1.pc)",
+        "DUMMY_VAR": "force_rebuild_ftdi6",
     },
     crate = "libftdi1-sys",
     repositories = ["crate_index"],

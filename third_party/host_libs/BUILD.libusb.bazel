@@ -1,0 +1,37 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "libusb",
+    args = [
+        "-j",
+        "4",
+    ],
+    configure_options = [
+        "--enable-static",
+        "--disable-shared",
+    ],
+    copts = [
+        "-fPIC",
+        "-Wno-error",
+    ],
+    env = {
+        "UDEV_CFLAGS": " ",
+        "UDEV_LIBS": "-ludev",
+    },
+    lib_source = ":all_srcs",
+    out_static_libs = ["libusb-1.0.a"],
+    deps = [
+        "@lowrisc_opentitan//third_party/host_libs:udev",
+    ],
+)

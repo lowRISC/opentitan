@@ -1,0 +1,87 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "copy_header",
+    srcs = ["udev.h"],
+    outs = ["libudev.h"],
+    cmd = "cp $< $@",
+)
+
+cc_library(
+    name = "udev",
+    srcs = [
+        "udev.c",
+        "udev.h",
+        "udev_device.c",
+        "udev_enumerate.c",
+        "udev_list.c",
+        "udev_list.h",
+        "udev_monitor.c",
+    ],
+    hdrs = [":copy_header"],
+    copts = [
+        "-std=c99",
+        "-D_XOPEN_SOURCE=700",
+        "-DUSB_IDS_PATH=\\\"/usr/share/hwdata/usb.ids\\\"",
+    ],
+    includes = ["."],
+)
+
+genrule(
+    name = "libudev_install",
+    srcs = [
+        ":udev",
+        ":copy_header",
+    ],
+    outs = [
+        "install/lib/libudev.a",
+        "install/include/libudev.h",
+        "install/lib/pkgconfig/libudev.pc",
+    ],
+    cmd = """
+    mkdir -p $$(dirname $(location install/lib/pkgconfig/libudev.pc))
+    mkdir -p $$(dirname $(location install/include/libudev.h))
+
+    # Find and copy libudev.a
+    found=0
+    for f in $(locations :udev); do
+        if [[ $$f == *.a ]]; then
+            cp $$f $(location install/lib/libudev.a)
+            found=1
+            break
+        fi
+    done
+    if [ $$found -eq 0 ]; then
+        echo "Error: libudev.a not found in outputs of :udev" >&2
+        exit 1
+    fi
+
+    # Copy header
+    cp $(location :copy_header) $(location install/include/libudev.h)
+
+    # Generate .pc
+    cat << 'EOF' > $(location install/lib/pkgconfig/libudev.pc)
+prefix=$${pcfiledir}/../..
+exec_prefix=$${prefix}
+libdir=$${exec_prefix}/lib
+includedir=$${prefix}/include
+
+Name: libudev
+Description: Minimal libudev replacement
+Version: 1.0.4
+Libs: -L$${libdir} -ludev
+Cflags: -I$${includedir}
+EOF
+    """,
+)
+
+filegroup(
+    name = "install_files",
+    srcs = [":libudev_install"],
+)
