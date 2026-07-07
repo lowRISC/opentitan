@@ -70,6 +70,7 @@ rust_library(
         # is merged.
         "@crate_index//:openssl-sys",
         "@crate_index//:foreign-types",
+        "//third_party/host_libs:openssl",
     ],
 )
 

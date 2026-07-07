@@ -12,3 +12,16 @@ index 20cf4a0..3b6adc5 100644
          arg(&test_file_name).
          arg("--out-dir").arg(&out_dir).
          arg("-l").arg("udev").
+@@ -38,6 +39,12 @@ fn check_func(function_name: &str) -> bool {
+ }
+ 
+ fn main() {
++    if env::var_os("LIBUDEV_NO_PKG_CONFIG").is_some() {
++        println!("cargo:rustc-link-lib=udev");
++        println!("cargo:rustc-cfg=hwdb");
++        println!("cargo:hwdb=true");
++        return;
++    }
+     pkg_config::find_library("libudev").unwrap();
+ 
+     if check_func("udev_hwdb_new") {

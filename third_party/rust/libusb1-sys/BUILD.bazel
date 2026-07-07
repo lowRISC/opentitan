@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "libusb1_sys",
+    srcs = [
+        "src/constants.rs",
+        "src/lib.rs",
+    ],
+    crate_name = "libusb1_sys",
+    edition = "2018",
+    deps = [
+        "@crate_index//:libc",
+        "@lowrisc_opentitan//third_party/host_libs:usb",
+    ],
+)

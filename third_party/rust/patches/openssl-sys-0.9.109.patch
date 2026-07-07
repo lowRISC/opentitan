@@ -1,0 +1,15 @@
+diff --git a/build/main.rs b/build/main.rs
+--- a/build/main.rs
++++ b/build/main.rs
+@@ -122,1 +122,11 @@
+ fn main() {
++    if env::var("OPENSSL_NO_HEADER_CHECK").is_ok() {
++        println!("cargo:rustc-cfg=openssl");
++        println!("cargo:version_number=30000000");
++        for cfg in cfgs::get(Some(0x30000000), None) {
++            println!("cargo:rustc-cfg={}", cfg);
++        }
++        println!("cargo:rustc-link-lib=dylib=ssl");
++        println!("cargo:rustc-link-lib=dylib=crypto");
++        return;
++    }

@@ -2,32 +2,107 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_foreign_cc//foreign_cc:cmake.bzl", "cmake")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "all_srcs",
-    srcs = glob(["**"]),
+genrule(
+    name = "gen_version_h",
+    outs = ["src/ftdi_version_i.h"],
+    cmd = """
+    cat << 'EOF' > $@
+#ifndef FTDI_VERSION_INTERNAL_H
+#define FTDI_VERSION_INTERNAL_H
+
+#define FTDI_MAJOR_VERSION 1
+#define FTDI_MINOR_VERSION 5
+#define FTDI_MICRO_VERSION 0
+
+const char FTDI_VERSION_STRING[] = "1.5";
+const char FTDI_SNAPSHOT_VERSION[] = "unknown";
+
+#endif
+EOF
+    """,
 )
 
-cmake(
+cc_library(
     name = "libftdi",
-    cache_entries = {
-        "STATICLIBS": "ON",
-        "SHAREDLIBS": "OFF",
-        "FTDI_EEPROM": "OFF",
-        "EXAMPLES": "OFF",
-        "DOCUMENTATION": "OFF",
-        "PYTHON_BINDINGS": "OFF",
-    },
-    copts = [
-        "-fPIC",
-        "-Wno-error",
+    srcs = [
+        "src/ftdi.c",
+        "src/ftdi_stream.c",
+        "src/ftdi_i.h",
+        ":gen_version_h",
     ],
-    lib_source = ":all_srcs",
-    out_static_libs = ["libftdi1.a"],
+    hdrs = [
+        "src/ftdi.h",
+    ],
+    copts = [
+        "-Wno-error",
+        "-fPIC",
+    ],
+    includes = [
+        "src",
+    ],
     deps = [
         "@lowrisc_opentitan//third_party/host_libs:usb",
     ],
+)
+
+genrule(
+    name = "gen_pc",
+    outs = ["libftdi1.pc"],
+    cmd = """
+    cat << 'EOF' > $@
+prefix=$${pcfiledir}/../..
+exec_prefix=$${prefix}
+libdir=$${exec_prefix}/lib
+includedir=$${prefix}/include
+
+Name: libftdi1
+Description: Library to talk to FTDI chips
+Version: 1.5
+Libs: -L$${libdir} -lftdi1
+Cflags: -I$${includedir}/libftdi1
+EOF
+    """,
+)
+
+genrule(
+    name = "libftdi_install",
+    srcs = [
+        ":libftdi",
+        "src/ftdi.h",
+        ":gen_pc",
+    ],
+    outs = [
+        "install/lib/libftdi1.a",
+        "install/include/libftdi1/ftdi.h",
+        "install/lib/pkgconfig/libftdi1.pc",
+    ],
+    cmd = """
+    mkdir -p $$(dirname $(location install/lib/pkgconfig/libftdi1.pc))
+    mkdir -p $$(dirname $(location install/include/libftdi1/ftdi.h))
+
+    found=0
+    for f in $(locations :libftdi); do
+        if [[ $$f == *.a ]]; then
+            cp $$f $(location install/lib/libftdi1.a)
+            found=1
+            break
+        fi
+    done
+    if [ $$found -eq 0 ]; then
+        echo "Error: libftdi.a not found" >&2
+        exit 1
+    fi
+
+    cp $(location src/ftdi.h) $(location install/include/libftdi1/ftdi.h)
+    cp $(location :gen_pc) $(location install/lib/pkgconfig/libftdi1.pc)
+    """,
+)
+
+filegroup(
+    name = "install_files",
+    srcs = [":libftdi_install"],
 )

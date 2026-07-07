@@ -1,0 +1,1 @@
+# Empty pkg-config file for OpenSSL local fallback placeholder.

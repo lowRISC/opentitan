@@ -37,9 +37,26 @@ def _extract_l_flags(libs_flags):
             kept.append(t)
     return " ".join(kept)
 
+LOCAL_MAP = {
+    "usb": "@libusb_src//:libusb",
+    "ftdi": "@libftdi_src//:libftdi",
+    "udev": "@libudev_zero_src//:udev",
+    "ssl": "@lowrisc_opentitan//third_party/host_libs:openssl_local_fallback_fail",
+    "crypto": "@lowrisc_opentitan//third_party/host_libs:openssl_local_fallback_fail",
+}
+
 def _generate_build_file(repository_ctx, status, config, pc_files):
     """Generates the BUILD file for the external repository."""
+    unique_pc_files = []
+    for pc in pc_files:
+        if pc not in unique_pc_files:
+            unique_pc_files.append(pc)
+    pc_files = unique_pc_files
+
     build_content = "package(default_visibility = [\"//visibility:public\"])\n\n"
+
+    # Export wrapper script
+    build_content += "exports_files([\"pkgconfig_wrapper.sh\"])\n\n"
 
     # pc_files filegroup
     build_content += "filegroup(\n"
@@ -54,41 +71,88 @@ def _generate_build_file(repository_ctx, status, config, pc_files):
         build_content += "exports_files([\"{}\"])\n\n".format(pc)
 
     for name, lib_config in config.items():
-        if not status[name]:
-            continue
+        if status[name]:
+            main_lib = None
+            data_libs = []
+            for lib in lib_config["libs"]:
+                if lib.endswith(".so"):
+                    main_lib = lib
+                else:
+                    data_libs.append(lib)
 
-        main_lib = None
-        data_libs = []
-        for lib in lib_config["libs"]:
-            if lib.endswith(".so"):
-                main_lib = lib
-            else:
-                data_libs.append(lib)
+            if not main_lib:
+                main_lib = lib_config["libs"][0]
+                data_libs = lib_config["libs"][1:]
 
-        if not main_lib:
-            main_lib = lib_config["libs"][0]
-            data_libs = lib_config["libs"][1:]
+            import_name = name + "_import"
+            build_content += "cc_import(\n"
+            build_content += "    name = \"{}\",\n".format(import_name)
+            build_content += "    shared_library = \"{}\",\n".format(main_lib)
+            build_content += ")\n\n"
 
-        import_name = name + "_import"
-        build_content += "cc_import(\n"
-        build_content += "    name = \"{}\",\n".format(import_name)
-        build_content += "    shared_library = \"{}\",\n".format(main_lib)
-        build_content += ")\n\n"
-
-        build_content += "cc_library(\n"
-        build_content += "    name = \"{}\",\n".format(name)
-        build_content += "    deps = [\n"
-        build_content += "        \":{}\",\n".format(import_name)
-        for dep in lib_config.get("deps", []):
-            if status.get(dep, False):
+            host_lib_name = name + "_host"
+            build_content += "cc_library(\n"
+            build_content += "    name = \"{}\",\n".format(host_lib_name)
+            build_content += "    deps = [\n"
+            build_content += "        \":{}\",\n".format(import_name)
+            for dep in lib_config.get("deps", []):
+                # Note: host libs depend on public aliases of deps so they can
+                # resolve to local fallbacks if needed (e.g. host usb depends
+                # on public udev alias, which might resolve to local udev-zero).
                 build_content += "        \":{}\",\n".format(dep)
-        build_content += "    ],\n"
-        if data_libs:
-            build_content += "    data = [\n"
-            for lib in data_libs:
-                build_content += "        \"{}\",\n".format(lib)
             build_content += "    ],\n"
-        build_content += ")\n\n"
+            if data_libs:
+                build_content += "    data = [\n"
+                for lib in data_libs:
+                    build_content += "        \"{}\",\n".format(lib)
+                build_content += "    ],\n"
+            build_content += ")\n\n"
+
+        # Generate the public alias with selector
+        local_target = LOCAL_MAP.get(name)
+        if not local_target:
+            fail("No local fallback target defined for " + name)
+
+        if status[name]:
+            # Has host lib, so select between host and local
+            build_content += "alias(\n"
+            build_content += "    name = \"{}\",\n".format(name)
+            build_content += "    actual = select({\n"
+            build_content += "        \"@lowrisc_opentitan//third_party/host_libs:local_{}_requested\": \"{}\",\n".format(name, local_target)
+            build_content += "        \"//conditions:default\": \":{}_host\",\n".format(name)
+            build_content += "    }),\n"
+            build_content += ")\n\n"
+        else:
+            # No host lib, always use local fallback
+            build_content += "alias(\n"
+            build_content += "    name = \"{}\",\n".format(name)
+            build_content += "    actual = \"{}\",\n".format(local_target)
+            build_content += ")\n\n"
+
+        # Generate the PC alias
+        pc_local_target = None
+        if name == "usb":
+            pc_local_target = "@libusb_src//:install/lib/pkgconfig/libusb-1.0.pc"
+        elif name == "ftdi":
+            pc_local_target = "@libftdi_src//:install/lib/pkgconfig/libftdi1.pc"
+        elif name == "udev":
+            pc_local_target = "@libudev_zero_src//:install/lib/pkgconfig/libudev.pc"
+        elif name in ["ssl", "crypto"]:
+            pc_local_target = "@lowrisc_opentitan//third_party/host_libs:empty.pc"
+
+        if status[name]:
+            build_content += "alias(\n"
+            build_content += "    name = \"{}_pc\",\n".format(name)
+            build_content += "    actual = select({\n"
+            build_content += "        \"@lowrisc_opentitan//third_party/host_libs:local_{}_requested\": \"{}\",\n".format(name, pc_local_target)
+            build_content += "        \"//conditions:default\": \":{}.pc\",\n".format(lib_config["pkg_name"])
+            build_content += "    }),\n"
+            build_content += ")\n\n"
+        else:
+            build_content += "alias(\n"
+            build_content += "    name = \"{}_pc\",\n".format(name)
+            build_content += "    actual = \"{}\",\n".format(pc_local_target)
+            build_content += ")\n\n"
 
     repository_ctx.file("BUILD", build_content)
 
@@ -97,14 +161,36 @@ def _host_libs_impl(repository_ctx):
     config_str = repository_ctx.attr.config
     config = json.decode(config_str)
 
+    # Write wrapper script
+    repository_ctx.file("pkgconfig_wrapper.sh", """#!/bin/bash
+if [ -n "$PKG_CONFIG_PATH_FILES" ]; then
+    paths=""
+    for f in $PKG_CONFIG_PATH_FILES; do
+        dir=$(dirname "$f")
+        if [ -z "$paths" ]; then
+            paths="$dir"
+        else
+            paths="$paths:$dir"
+        fi
+    done
+    export PKG_CONFIG_PATH="$paths"
+    unset PKG_CONFIG_PATH_FILES
+fi
+exec pkg-config "$@"
+""", executable = True)
+
     pkg_config = repository_ctx.which("pkg-config")
     if not pkg_config:
-        # Write all false status
+        status = {name: False for name in config.keys()}
+
+        # Write status.bzl
         status_content = ""
         for name in config.keys():
             status_content += "HAS_{} = False\n".format(name.upper())
         repository_ctx.file("status.bzl", status_content)
-        repository_ctx.file("BUILD", "package(default_visibility = [\"//visibility:public\"])\nfilegroup(name = \"pc_files\", srcs = [])\n")
+
+        # Generate BUILD file with aliases
+        _generate_build_file(repository_ctx, status, config, [])
         return
 
     status = {}
@@ -189,6 +275,18 @@ DEFAULT_CONFIG = {
         "pkg_name": "libudev",
         "headers": ["libudev.h"],
         "libs": ["libudev.so", "libudev.so.1"],
+        "deps": [],
+    },
+    "ssl": {
+        "pkg_name": "openssl",
+        "headers": [],
+        "libs": ["libssl.so"],
+        "deps": ["crypto"],
+    },
+    "crypto": {
+        "pkg_name": "openssl",
+        "headers": [],
+        "libs": ["libcrypto.so"],
         "deps": [],
     },
 }
