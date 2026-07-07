@@ -23,9 +23,9 @@ enum {
   kOtcryptoMldsa87PkBytes = 2592,
   kOtcryptoMldsa87PkWords = kOtcryptoMldsa87PkBytes / sizeof(uint32_t),
   /**
-   * Size of a ML-DSA-87 secret key.
+   * Size of a Boolean-masked ML-DSA-87 secret key.
    */
-  kOtcryptoMldsa87SkBytes = 4896,
+  kOtcryptoMldsa87SkBytes = 6368,
   kOtcryptoMldsa87SkWords = kOtcryptoMldsa87SkBytes / sizeof(uint32_t),
   /**
    * Size of a ML-DSA-87 signature with 1-byte zero-padding.
@@ -80,6 +80,27 @@ typedef enum otcrypto_mldsa_hash_mode {
 } otcrypto_mldsa_hash_mode_t;
 
 /**
+ * ML-DSA signing modes.
+ *
+ * The standard specifies two signing modes, random (hedged) and deterministic.
+ * In the random mode, the application samples fresh randomness for every new
+ * signature generation, while in deterministic mode the randomness is the zero
+ * string.
+ *
+ * Although allowed by the standard, the deterministic mode *MUST NEVER* be
+ * used in security-relevant applications, preferably only testing should make
+ * use of it.
+ */
+typedef enum otcrypto_mldsa_sign_mode {
+  // Magic constants generated with:
+  // ./util/design/sparse-fsm-encode.py --avoid-zero --seed 123456789
+  //    --distance 16 --states 2 --bits 32
+
+  kOtcryptoMldsaSignModeRnd = 0x7138777c,
+  kOtcryptoMldsaSignModeDet = 0x8accea7f,
+} otcrypto_mldsa_sign_mode_t;
+
+/**
  * Generates a key pair for ML-DSA-87 (WIP not yet finalized).
  *
  * The caller should allocate and partially populate the blinded key struct,
@@ -113,31 +134,40 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
     otcrypto_unblinded_key_t *public_key);
 
 /**
- * Generates a ML-DSA-87 digital signature (WIP not yet finalized).
+ * Generates a ML-DSA-87 digital signature.
  *
- * The signature (4627 bytes) consists of the following fields starting from
+ * The signature (4627+ 1 bytes) consists of the following fields starting from
  * the least significant byte:
  *
  *   - c_tilde: 64 bytes
- *   - z: 4480 bytes
- *   - hint: 83 bytes
+ *   - z: 6368 bytes (rho (32B), K (32B, bool share 0), K (32B, bool share 1),
+ *       tr (64B), s1 (672B, bool share 0), s1, (672B, bool share 1), s2
+ *       (768B, bool share 0), s2 (768B, bool share 1), t0 (3328B))
+ *   - hint: 83 + 1 bytes
+ *
+ * For protection against FI attacks, the ML-DSA sign OTBN app is executed
+ * twice and the two resulting signatures are checked for equality.
+ *
+ * Do not use the deterministic signing mode for anything other than testing.
  *
  * @param private_key Pointer to the partially shared private key struct.
  * @param message Message to be signed.
  * @param context Context string (must be at most 255 bytes).
  * @param hash_mode ML-DSA hashing mode (pure or pre-hash).
+ * @param sign_mode ML-DSA signing mode (random or deterministic).
  * @param[out] signature Pointer to the ML-DSA-87 signature.
  * @return Result of the ML-DSA-87 signature.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mldsa87_sign(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_const_byte_buf_t message,
-    const otcrypto_const_byte_buf_t context,
-    otcrypto_mldsa_hash_mode_t hash_mode, otcrypto_word32_buf_t signature);
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *context,
+    otcrypto_mldsa_hash_mode_t hash_mode, otcrypto_mldsa_sign_mode_t sign_mode,
+    otcrypto_word32_buf_t *signature);
 
 /**
- * Verifies a ML-DSA-87 signature (WIP not yet finalized).
+ * Verifies a ML-DSA-87 signature.
  *
  * The caller must check the `verification_result` parameter, NOT only the
  * returned status code, to know if the signature passed verification. The
@@ -211,50 +241,58 @@ otcrypto_status_t otcrypto_mldsa87_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key);
 
 /**
- * Starts asynchronous signature generation for ML-DSA-87 (WIP not yet
- * finalized).
+ * Starts asynchronous signature generation for ML-DSA-87.
  *
- * See `otcrypto_mldsa87_sign` for requirements on input values.
+ * Do not use the deterministic signing mode for anything other than testing.
+ *
+ * See `otcrypto_mldsa87_sign` for requirements on the input values.
  *
  * @param private_key Pointer to the partially shared private key struct.
  * @param message Message to be signed.
  * @param context Context string (must be at most 255 bytes).
  * @param hash_mode ML-DSA hashing mode (pure or pre-hash).
- * @param[out] signature Pointer to the ML-DSA-87 signature.
+ * @param sign_mode ML-DSA signing mode (random or deterministic).
  * @return Result of the ML-DSA-87 signature generation start operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mldsa87_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_const_byte_buf_t message,
-    const otcrypto_const_byte_buf_t context,
-    otcrypto_mldsa_hash_mode_t hash_mode, otcrypto_word32_buf_t signature);
+    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_const_byte_buf_t *context,
+    otcrypto_mldsa_hash_mode_t hash_mode, otcrypto_mldsa_sign_mode_t sign_mode);
 
 /**
- * Finalizes asynchronous signature generation for ML-DSA-87 (WIP not yet
- * finalized).
+ * Finalizes asynchronous signature generation for ML-DSA-87.
  *
- * See `otcrypto_mldsa87_sign` for requirements on input values.
+ * See `otcrypto_mldsa87_sign` for requirements on the input values.
  *
  * May block until the operation is complete.
  *
- * @param private_key Pointer to the partially shared private key struct.
- * @param message Message to be signed.
- * @param context Context string (must be at most 255 bytes).
- * @param hash_mode ML-DSA hashing mode (pure or pre-hash).
  * @param[out] signature Pointer to the ML-DSA-87 signature.
  * @return Result of the ML-DSA-87 signature generation finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mldsa87_sign_async_finalize(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_const_byte_buf_t message,
-    const otcrypto_const_byte_buf_t context,
-    otcrypto_mldsa_hash_mode_t hash_mode, otcrypto_word32_buf_t signature);
+    otcrypto_word32_buf_t *signature);
 
 /**
- * Starts asynchronous signature verification for ML-DSA-87 (WIP not yet
- * finalized).
+ * Finalizes asynchronous signature generation for ML-DSA-87.
+ *
+ * A second redundant sign is executed following the completion of the first
+ * one for FI protection. See `otcrypto_mldsa87_sign` for requirements on the
+ * input values.
+ *
+ * May block until the operation is complete.
+ *
+ * @param[out] signature Pointer to the ML-DSA-87 signature.
+ * @return Result of the ML-DSA-87 signature generation finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_mldsa87_double_sign_async_finalize(
+    otcrypto_word32_buf_t *signature);
+
+/**
+ * Starts asynchronous signature verification for ML-DSA-87.
  *
  * See `otcrypto_mldsa87_verify` for requirements on input values.
  *
@@ -275,8 +313,7 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
     otcrypto_mldsa_hash_mode_t hash_mode);
 
 /**
- * Finalizes asynchronous signature verification for ML-DSA-87 (WIP not yet
- * finalized).
+ * Finalizes asynchronous signature verification for ML-DSA-87.
  *
  * See `otcrypto_mldsa87_verify` for requirements on input values.
  *
