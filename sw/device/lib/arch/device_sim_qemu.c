@@ -69,9 +69,17 @@ const uintptr_t kDeviceLogBypassUartAddress = 0;
 // Although QEMU isn't an FPGA, there's no harm in us printing the version here.
 void device_fpga_version_print(void) {
   uint32_t version = ibex_fpga_version();
-  //                       : M O R
-  const uint32_t kRom = 0x3a4d4f52;
-  uart_write_imm(kRom);
+
+#ifdef OT_COVERAGE_INSTRUMENTED
+  // print("InsROM:")
+  //                  : M O R s n I
+  uart_write_imm(0x003a4d4f52736e49);
+#else
+  // print("ROM:")
+  //                        : M O R
+  uart_write_imm(0x000000003a4d4f52);
+#endif
+
   // The cast to unsigned int stops GCC from complaining about uint32_t
   // being a `long unsigned int` while the %x specifier takes `unsigned int`.
   const uint32_t kNewline = 0x0a0d;
