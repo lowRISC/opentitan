@@ -82,19 +82,25 @@ module bkdr_loader
 
   logic [31:0] mission_mode_dly_d, mission_mode_dly_q;
 
+  logic bkdr_en_q, bkdr_en_d;
+
   //////////////
   // Bkdr FSM //
   //////////////
 
-  always_comb begin : proc_bkdr_fsm
+  // If bkdr_en_q is set, the JTAG is muxed to the bkdr_loader,
+  // otherwise it is forwarded to the system JTAG.
+  assign jtag_bkdr_req = bkdr_en_q ? jtag_req_i    : '0;
+  assign jtag_req_o    = bkdr_en_q ? '0            : jtag_req_i;
+  assign jtag_rsp_o    = bkdr_en_q ? jtag_bkdr_rsp : jtag_rsp_i;
 
-    // JTAG tied-off
-    jtag_rsp_o    = '0;
-    jtag_req_o    = '0;
-    jtag_bkdr_req = '0;
+  always_comb begin : proc_bkdr_fsm
 
     // Keep d/s logic in reset
     bkdr_rst_nd = 1'b0;
+
+    // Keep JTAG bkdr enable
+    bkdr_en_d = bkdr_en_q;
 
     // Keep state
     state_d = state_q;
@@ -106,10 +112,6 @@ module bkdr_loader
 
     unique case (state_q)
       PRELOAD : begin
-        // Route upstream JTAG port to internal bkdr debug module
-        jtag_bkdr_req = jtag_req_i;
-        jtag_rsp_o    = jtag_bkdr_rsp;
-
         // We can only switch from PRELOAD mode to mission mode
         // This either happens in the first cycle after reset when the bkdr_ena_i signal
         // is sampled or on command through the done register.
@@ -121,21 +123,15 @@ module bkdr_loader
       end
 
       SWITCHING : begin
-        // Route upstream JTAG port to internal bkdr debug module
-        jtag_bkdr_req = jtag_req_i;
-        jtag_rsp_o    = jtag_bkdr_rsp;
-
         if (mission_mode_dly_q == '0) begin
-          state_d = MISSION;
+          state_d   = MISSION;
+          bkdr_en_d = 1'b0;
         end else begin
           mission_mode_dly_d = mission_mode_dly_q - 'd1;
         end
       end
 
       MISSION : begin
-        // Route upstream JTAG to downstream JTAG
-        jtag_req_o  = jtag_req_i;
-        jtag_rsp_o  = jtag_rsp_i;
         // Bring downstream system out of reset
         bkdr_rst_nd = 1'b1;
         bkdr_active = 1'b0;
@@ -205,6 +201,14 @@ module bkdr_loader
       mission_mode_dly_q <= '0;
     end else begin
       mission_mode_dly_q <= mission_mode_dly_d;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_jtag_bkdr_en
+    if(!rst_ni) begin
+      bkdr_en_q <= 1'b1;
+    end else begin
+      bkdr_en_q <= bkdr_en_d;
     end
   end
 
