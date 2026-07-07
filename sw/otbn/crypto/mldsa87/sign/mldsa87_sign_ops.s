@@ -4,6 +4,7 @@
 
 /* High-level operations for ML-DSA-87 sign. */
 
+.globl compute_rho_prime
 .globl compute_w
 .globl decompose_w
 .globl compute_z
@@ -14,6 +15,55 @@
 .globl compress_hint
 
 .text
+
+/**
+ * Compute the Boolean-shared mask seed RHO_PRIME = H(K || RND || MU).
+ *
+ * @param[in] x2: DMEM address of the first Boolean share of K.
+ * @param[in] x3: DMEM address of the second Boolean share of K.
+ * @param[in] x4: DMEM address of the randomness string RND.
+ * @param[in] x5: DMEM address of MU.
+ * @param[in] x6: DMEM address of the first Boolean share of RHO_PRIME.
+ * @param[in] x7: DMEM address of the second Boolean share of RHO_PRIME.
+ */
+compute_rho_prime:
+  jal x1, xof_shake256_init
+
+  /* Absorb both shares of K. */
+  addi x20, x0, 32
+  addi x21, x2, 0
+  addi x22, x3, 0
+  jal x1, xof_absorb
+
+  /* Absorb RND. */
+  addi x20, x0, 32
+  addi x21, x4, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+
+  /* Absorb MU. */
+  addi x20, x0, 64
+  addi x21, x5, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+
+  jal x1, xof_process
+
+  /* Squeeze both shares of RHO_PRIME. */
+  addi x8, x0, 29
+  addi x9, x0, 30
+
+  loopi 2, 4
+    jal x1, xof_squeeze32
+
+    bn.sid x8, 0(x6++)
+    bn.xor w31, w31, w31 /* dummy */
+    bn.sid x9, 0(x7++)
+    /* End of loop */
+
+  jal x1, xof_finish
+
+  ret
 
 /**
  * Compute the commitment vector W = A * Y.

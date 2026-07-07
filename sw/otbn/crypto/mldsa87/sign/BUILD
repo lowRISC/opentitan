@@ -7,7 +7,7 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
 package(default_visibility = ["//visibility:public"])
 
 otbn_binary(
-    name = "run_mldsa87_sign",
+    name = "mldsa87_sign",
     srcs = [
         # do not sort
         "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",

@@ -9,6 +9,8 @@
   "entrypoint": "main",
   "input": {
     "dmem": {
+      // MODE (deterministic)
+      "mldsa87_sign_mode": "0x000000000000000000000000000000000000000000000000000000008accea7f",
       // RND
       "mldsa87_sign_rnd": "0x0000000000000000000000000000000000000000000000000000000000000000",
       // KAPPA
@@ -30,7 +32,7 @@
       // RHO
       "mldsa87_sign_sk_rho": "0x8c92f45521023d9a179af71dbae8f3d3b982360b71f872878c6cbdb87405ddfe",
       // MU
-      "mldsa87_sign_msg_mu": "0x1738a6a865911521c16e817a7ec6d173f2c445211241cab84caf2da953bcd91d0d3996b95b1bb92daa05b7b829e46b4f66c44890615334f53c0731feedd55062",
+      "mldsa87_sign_mu": "0x1738a6a865911521c16e817a7ec6d173f2c445211241cab84caf2da953bcd91d0d3996b95b1bb92daa05b7b829e46b4f66c44890615334f53c0731feedd55062",
     }
   },
   "output": {
