@@ -5,6 +5,7 @@
 load("@lowrisc_opentitan//rules:manuf.bzl", "device_id_header")
 load("@lowrisc_opentitan//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load("//rules:linker.bzl", "ld_library")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
@@ -438,6 +439,98 @@ manifest(d = {
     )
     for sku, config in EARLGREY_SKUS.items()
 ]
+
+ld_library(
+    name = "ft_personalize_stage1_linker_script",
+    non_page_aligned_segments = True,
+    script = "ft_personalize_stage1.ld",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+    ],
+)
+
+opentitan_binary(
+    name = "ft_personalize_stage1",
+    testonly = True,
+    srcs = [
+        "ft_personalize_stage1.c",
+        "ft_personalize_stage1_start.S",
+    ],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
+    linker_script = ":ft_personalize_stage1_linker_script",
+
+    manifest = ":manifest_perso",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+    deps = [
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
+
+opentitan_binary(
+    name = "ft_personalize_freestanding",
+    testonly = True,
+    srcs = [
+        "cp_device_id.h",
+        "flash_info_permissions.h",
+        "ft_device_id.h",
+        "ft_personalize_freestanding.c",
+        "ft_personalize_production.h",
+        "ft_personalize_stage1_start.S",
+        "perso_tlv_data.h",
+        "personalize_ext.h",
+    ],
+    copts = [
+        "-Os",
+        "-ffunction-sections",
+        "-fdata-sections",
+    ],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
+    linker_script = ":ft_personalize_stage1_linker_script",
+
+    manifest = ":manifest_perso",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
+        "//sw/device/silicon_creator/lib/cert:dice",
+        "//sw/device/silicon_creator/lib/cert:dice_chain",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
+        "//sw/device/silicon_creator/lib/ownership:ownership_key",
+        "//sw/device/silicon_creator/manuf/extensions/repo:default_perso_fw_ext",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_em00",
+        "//sw/device/silicon_creator/manuf/lib:personalize",
+    ],
+)
 
 filegroup(
     name = "ft_fw_bundle_all",
