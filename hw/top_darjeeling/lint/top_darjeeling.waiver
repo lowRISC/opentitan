@@ -2,21 +2,21 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# waiver file for top_darjeeling
+# waiver file for top_darjeeling (and the darjeeling power domain submodules)
 
 # dedicated reset drivers / muxes
 set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_darjeeling.sv top_darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 waive -rules RESET_MUX -location {rstmgr.sv} -msg {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
-# scan reset is a legal asynchronous reset
-waive -rules RESET_USE -location {top_darjeeling.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
+# Scan reset is a legal asynchronous reset.
+waive -rules RESET_USE -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
       -comment "Scan reset is a legal asynchronous reset"
 
 waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
@@ -26,14 +26,32 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
 waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port 'scanmode_i' is not read from} \
       -comment "scanmode_i is not used in the Darjeeling pad configuration"
 
-waive -rules CLOCK_MUX -location {top_darjeeling.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
+waive -rules CLOCK_MUX -location {darjeeling_pd_main.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
       -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
 
-waive -rules CLOCK_MUX -location {top_darjeeling_pd_aon.sv} -regexp {Clock 'clk_io_i' reaches a multiplexer here, used as a clock 'clk_i' at} \
+waive -rules CLOCK_MUX -location {darjeeling_pd_aon.sv} -regexp {Clock 'clk_io_i' reaches a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules {CLOCK_USE} -location {pinmux.sv}  -regexp {'dio_wkup_mux\[(42|43)\]' is used for some other purpose, and as clock} \
-      -comment "DioSpiDeviceSck and DioSpiDeviceCsb at indices 42 and 43 both can act as clocks"
+# Clock and reset feedthrough across the top_darjeeling wrapper. It distributes the
+# clkmgr_aon_clocks / rstmgr_aon_resets structs (which originate inside darjeeling_pd_aon)
+# to the AST (in chip_darjeeling_asic) and the darjeeling_pd_main wrapper.
+waive -rules {CLOCK_USE} -location {top_darjeeling.sv} -regexp {'clkmgr_aon_clocks..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_clks_i..*|clkmgr_aon_clocks_(i|o)..*)', and used as a clock} \
+      -comment "Clock struct feedthrough across the wrapper into AST and the power domains."
+
+waive -rules {RESET_USE} -location {top_darjeeling.sv} -regexp {'rstmgr_aon_resets..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_rsts_i..*|rstmgr_aon_resets_(i|o)..*)', and used as an asynchronous reset or set} \
+      -comment "Reset struct feedthrough across the wrapper into AST and the power domains."
+
+waive -rules {CLOCK_MUX} -location {top_darjeeling.sv} -regexp {Clock 'ast_base_clks\.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "ast_base_clks.clk_io is fed into the clkmgr's clock dividers / scan bypass mux."
+
+# Dedicated I/O signals (SPI sck, etc.) can act as clocks and traverse the
+# pinmux's wakeup mux on their way into IPs.
+waive -rules {CLOCK_MUX} -location {top_darjeeling.sv darjeeling_pd_main.sv} -regexp {Clock 'dio_in_i\[[0-9]+\]' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "DioSpiDeviceSck and similar dedicated inputs can act as a clock; pinmux mux is legitimate."
+
+# Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down.
+waive -rules CLOCK_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
+      -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
 # Most SAME_NAME_TYPE issues have been fixed. There are however some that overlap due to similar terminology.
 # Since these functions / parameters / signals live in different scopes, this is acceptable, and we can waive them.
@@ -49,10 +67,10 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv mbx.sv} -regexp {'mbx' is u
       -comment {This is acceptable, since these are used in different hierarchies.}
 
 # intentionally unused
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
-      -comment "otp test bus made deliberately larger on purpose"
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv darjeeling_pd_main.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
+      -comment "OTP test bus made deliberately larger on purpose"
 
-waive -rules {LINE_LENGTH} -location {top_darjeeling.sv top_darjeeling_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+waive -rules {LINE_LENGTH} -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "Darjeeling toplevels are auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
 
 waive -rules LINE_LENGTH -location {top_darjeeling_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
@@ -60,3 +78,8 @@ waive -rules LINE_LENGTH -location {top_darjeeling_rnd_cnst_pkg.sv} -regexp {Lin
 
 waive -rules {LINE_LENGTH} -location {xbar_main.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "xbar_main is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+
+# See https://github.com/lowRISC/opentitan/issues/15674
+waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
+      -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'AesSecAllowForcingMasksNonDefault'\(1'b1\)' length 2} \
+      -comment "We want to be able to switch off the masking inside AES, see https://github.com/lowRISC/opentitan/issues/14240."

@@ -4,6 +4,10 @@
 #
 # waiver file for chip_darjeeling_asic
 
+waive -rules {COMBO_LOOP} -location {chip_darjeeling_asic.sv} \
+      -regexp {port 'u_passthrough.host_s_i.*' driven in module 'spi_device'} \
+      -comment "In the passthrough mode, SPI 4 lines are connected from pads to pads."
+
 waive -rules {RESET_DRIVER} -location {chip_darjeeling_asic.sv} \
       -msg {'scan_rst_n' is driven by instance 'u_ast' of module 'ast', and used as an asynchronous reset} \
       -comment "This is a valid reset signal."
@@ -13,11 +17,11 @@ waive -rules {RESET_USE} -location {chip_darjeeling_asic.sv} \
       -comment "This is a valid reset signal."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
-      -msg {'dio_in\[42\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -msg {'dio_in[42]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
       -comment "This is the SPI SCK."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
-      -msg {'dio_in\[43\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -msg {'dio_in[43]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
       -comment "The SPI CSB acts as a clock in some cases."
 
 waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
@@ -59,13 +63,25 @@ waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv}  -msg {'mio_in_raw[
       -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
 
 # Unused power OK signals
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_darjeeling_asic'} \
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) 'ast_pwst\.(vcc_pok|io_pok)' is not read from in module 'chip_darjeeling_asic'} \
       -comment "Not all POK signals are used inside top_darjeeling"
 
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) 'ast_ram_2p_fcfg(\.[a-z_]+)?' (in module 'chip_darjeeling_asic' )?is not read from( in module 'chip_darjeeling_asic')?} \
+      -comment "ast_ram_2p_fcfg is unused in Darjeeling (no flash macro)."
+
+# CTN tlul nets: the misc h2d port is tied off (default), the d2h side is left
+# unused, and ctn_tl_d2h[1] is the unused second host of the CTN socket.
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) '(ctn_misc_tl_d2h_o|ctn_tl_d2h\[1\]).*' is not read from in module 'chip_darjeeling_asic'} \
+      -comment "CTN second host and misc d2h are intentionally left unused."
+
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'sck_monitor' is connected to 'ast' port 'sns_spi_ext_clk_i', and used as a clock} \
+      -comment "sck_monitor is the SPI sck observed by AST for clock detection."
+
+# Clock / reset connections going back into AST
 waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'dio_in[42]' reaches a multiplexer here, used as a clock 'clk_src_i'} \
+waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'dio_in[42]' reaches a multiplexer here, used as a clock} \
       -comment "This is the SPI device clock input."
 
 waive -rules {RESET_USE} -location {chip_darjeeling_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \

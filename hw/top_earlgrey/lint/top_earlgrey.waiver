@@ -2,14 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# waiver file for top_earlgrey
+# waiver file for top_earlgrey (and the earlgrey power domain submodules)
 
 # dedicated reset drivers / muxes
 set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_earlgrey.sv top_earlgrey_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_aon_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regexp {Asynchronous reset '(resets_o\.)?rst_[A-Za-z_0-9]+_n(\[[0-9:]+\])?' is driven by a multiplexer} \
@@ -21,34 +21,49 @@ waive -rules RESET_MUX -location {rstmgr.sv} -regexp {Asynchronous reset 'scan_r
 waive -rules RESET_MUX -location {spi_device.sv} -regexp {Asynchronous reset '(rst_ni|rst_spi_n)' reaches a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
-waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div2_peri' is connected to 'spi_device' port 'scan_clk_i', and used as a clock} \
+waive -rules CLOCK_USE -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {'clkmgr_aon_clocks.clk_io_div2_peri' is connected to 'spi_device' port 'scan_clk_i', and used as a clock} \
       -comment "This connection is a scan clock connection."
 
-waive -rules CLOCK_MUX -location {top_earlgrey.sv top_earlgrey_pd_aon.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
+# Clock and reset feedthrough across the top_earlgrey wrapper. It distributes the
+# clkmgr_aon_clocks / rstmgr_aon_resets structs (which originate inside earlgrey_pd_aon)
+# to the AST (in chip_earlgrey_asic) and the earlgrey_pd_main wrapper.
+waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks..*' is connected to '(earlgrey_pd_main|earlgrey_pd_aon)' port '(clkmgr_aon_clocks_(i|o)..*)', and used as a clock} \
+      -comment "Clock struct feedthrough across the wrapper into AST and the power domains."
+
+waive -rules {RESET_USE} -location {top_earlgrey.sv} -regexp {'rstmgr_aon_resets..*' is connected to '(earlgrey_pd_main|earlgrey_pd_aon)' port '(rstmgr_aon_resets_(i|o)..*)', and used as an asynchronous reset or set} \
+      -comment "Reset struct feedthrough across the wrapper into AST and the power domains."
+
+waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
-waive -rules CLOCK_MUX -location {top_earlgrey_pd_aon.sv} -regexp {Clock 'clk_io_i' reaches a multiplexer here, used as a clock 'clk_i' at} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_aon.sv} -regexp {Clock 'clk_io_i' reaches a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'ast_base_clks_i.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {Clock 'spi_device_passthrough_req.sck' reaches a multiplexer here, used as a clock} \
       -comment "In passthrough mode, spi_host muxes 'spi_device_passthrough_req.sck' to the `cio_sck_o` output."
 
-waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'pinmux_aon_(lc|rv)_jtag_req.tck' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {Clock 'pinmux_aon_(lc|rv)_jtag_req.tck' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "Inside lc_ctrl/rv_dm, either the JTAG clock is muxed and forward to the DMI JTAG TAP depending on the scanmode/testmode signals."
 
 waive -rules CLOCK_DRIVER -location {top_earlgrey.sv} -regexp {'pinmux_aon_(lc|rv)_jtag_req.tck' is driven by instance 'u_pinmux_aon' of module 'pinmux', and used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "TCK is gated per TAP inside pinmux's JTAG Selection Mux; at this hierarchy level the submodule instance itself is reported as the driver."
 
-waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'mio_in_i\[38\]' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {Clock 'mio_in_i\[38\]' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "Inside pinmux_strap_sampling.sv, 'mio_in_i[TckPadIdx]' is connected to 'jtag_req' which is then muxed in the JTAG Selection Mux."
 
-# scan reset is a legal asynchronous reset
-waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'dio_in_i\[12\]' reaches a multiplexer here, used as a clock} \
+      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's fed into a clock mux."
+
+# Scan reset is a legal asynchronous reset.
+waive -rules RESET_USE -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {'scan_rst_ni?' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
       -comment "Scan reset is a legal asynchronous reset"
 
 # intentionally unused
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
-      -comment "otp test bus made deliberately larger on purpose"
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
+      -comment "OTP test bus made deliberately larger on purpose"
 
 ## xbar
 #waive -rules HIER_NET_NOT_READ -location {tlul_xbar.sv} -regexp {a_source.* is not read from} \
@@ -58,10 +73,10 @@ waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.
 
 # Possible tool shortcomings
 
-waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_secure' is connected to 'pwrmgr' port 'clk_esc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
+waive -rules CLOCK_USE -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_secure' is connected to 'pwrmgr' port 'clk_esc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
       -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."
 
-waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_powerup' is connected to 'pwrmgr' port 'clk_lc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
+waive -rules CLOCK_USE -location {top_earlgrey.sv earlgrey_pd_main.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_powerup' is connected to 'pwrmgr' port 'clk_lc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
       -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."
 
 # Most SAME_NAME_TYPE issues have been fixed. There are however some that overlap due to similar terminology.
@@ -75,7 +90,7 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv rstmgr_pkg.sv} -regexp {'sp
 waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv otbn_pkg.sv} -regexp {'M' is used as a (parameter|reg) here, and as a (reg|parameter) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
 
-waive -rules {LINE_LENGTH} -location {top_earlgrey.sv top_earlgrey_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+waive -rules {LINE_LENGTH} -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "Earlgrey toplevels are auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
 
 waive -rules LINE_LENGTH -location {top_earlgrey_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
