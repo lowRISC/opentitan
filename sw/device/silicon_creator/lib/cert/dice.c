@@ -239,23 +239,6 @@ rom_error_t dice_cdi_1_cert_build(
   return kErrorOk;
 }
 
-rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
-                                  const hmac_digest_t *pubkey_id,
-                                  const ecdsa_p256_public_key_t *pubkey,
-                                  hardened_bool_t *cert_valid_output) {
-  // The function prototype is shared across X.509 and CWT cert formats.
-  // For X.509, we only check the serial_number but not public key contents.
-  OT_DISCARD(pubkey);
-
-  // Assert the digest is not shorter then the key id before truncation.
-  static_assert(sizeof(pubkey_id->digest) >= sizeof(cert_key_id_t),
-                "Pubkey Id is too short.");
-
-  return cert_x509_asn1_check_serial_number(
-      cert_obj->cert_body_p, cert_obj->cert_body_size,
-      (cert_key_id_t *)pubkey_id->digest, cert_valid_output);
-}
-
 rom_error_t dice_attest_cdi_0(keymgr_binding_value_t *rom_ext_measurement,
                               const manifest_t *rom_ext_manifest) {
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
