@@ -51,6 +51,9 @@ build:ot_coverage --experimental_use_llvm_covmap
 build:ot_coverage --experimental_generate_llvm_lcov
 build:ot_coverage --combined_report=lcov
 
+# Aspect to collect all source files into the coverage_sources output group.
+build:ot_coverage --aspects=rules/coverage/info.bzl%coverage_sources_aspect
+
 # Set coverage mode indicators
 build:ot_coverage --define='ot_coverage_enabled=true'
 build:ot_coverage --@rules_rust//:extra_rustc_flag='--cfg=feature="ot_coverage_enabled"'
