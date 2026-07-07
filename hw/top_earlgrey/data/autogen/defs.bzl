@@ -20,7 +20,7 @@ load("//hw/top_earlgrey/ip_autogen/flash_ctrl:defs.bzl", "FLASH_CTRL")
 load("//hw/top_earlgrey/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/ip/hmac:defs.bzl", "HMAC")
 load("//hw/ip/i2c:defs.bzl", "I2C")
-load("//hw/ip/keymgr:defs.bzl", "KEYMGR")
+load("//hw/ip/keymgr_dpe:defs.bzl", "KEYMGR_DPE")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/otbn:defs.bzl", "OTBN")
@@ -56,7 +56,7 @@ EARLGREY_IPS = [
     GPIO,
     HMAC,
     I2C,
-    KEYMGR,
+    KEYMGR_DPE,
     KMAC,
     LC_CTRL,
     OTBN,
@@ -127,8 +127,8 @@ EARLGREY_ALERTS = [
     "kmac_fatal_fault_err",
     "otbn_fatal",
     "otbn_recov",
-    "keymgr_recov_operation_err",
-    "keymgr_fatal_fault_err",
+    "keymgr_dpe_recov_operation_err",
+    "keymgr_dpe_fatal_fault_err",
     "csrng_recov_alert",
     "csrng_fatal_alert",
     "entropy_src_recov_alert",

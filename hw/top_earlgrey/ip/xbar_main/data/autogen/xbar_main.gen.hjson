@@ -86,7 +86,7 @@
       hmac
       rv_plic
       otbn
-      keymgr
+      keymgr_dpe
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
@@ -113,7 +113,7 @@
       hmac
       rv_plic
       otbn
-      keymgr
+      keymgr_dpe
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
@@ -608,13 +608,13 @@
       pipeline: true
     }
     {
-      name: keymgr
+      name: keymgr_dpe
       type: device
       clock: clk_main_i
       reset: rst_main_ni
       req_fifo_pass: false
       rsp_fifo_pass: false
-      inst_type: keymgr
+      inst_type: keymgr_dpe
       addr_range:
       [
         {
@@ -1007,7 +1007,7 @@
       index: -1
     }
     {
-      name: tl_keymgr
+      name: tl_keymgr_dpe
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -1016,7 +1016,7 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: keymgr_tl
+      top_signame: keymgr_dpe_tl
       index: -1
     }
     {
