@@ -1,0 +1,44 @@
+[
+    {
+        "name": "AscentLint",
+        "vendor": "RealIntent",
+        "version": "2022.A.P23.1.2026_01_29",
+        "comment": "RTL lint (Real Intent Ascent Lint)."
+    },
+    {
+        "name": "Jasper",
+        "vendor": "Cadence",
+        "version": "2025.09",
+        "comment": "Formal verification."
+    },
+    {
+        "name": "MeridianCDC",
+        "vendor": "RealIntent",
+        "version": "2022.A.P24.3.2025_12_16",
+        "comment": "Clock-domain-crossing (CDC) analysis."
+    },
+    {
+        "name": "MeridianRDC",
+        "vendor": "RealIntent",
+        "version": "2022.A.P14.4.RDC_.2025_12_16",
+        "comment": "Reset-domain-crossing (RDC) analysis."
+    },
+    {
+        "name": "VCS",
+        "vendor": "Synopsys",
+        "version": "X-2025.06-SP2-1",
+        "comment": "RTL simulator."
+    },
+    {
+        "name": "Vivado",
+        "vendor": "Xilinx",
+        "version": "2025.1",
+        "comment": "Used to build FPGA bitstreams."
+    },
+    {
+        "name": "Xcelium",
+        "vendor": "Cadence",
+        "version": "24.03-s007",
+        "comment": "Provides xrun for simulations and is used to run our full UVM verification environment."
+    }
+]
