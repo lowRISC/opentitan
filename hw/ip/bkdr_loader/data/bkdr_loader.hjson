@@ -48,6 +48,11 @@
       type:      "int unsigned",
       default:   "8",
     }
+    { name:      "TargetIdxWidth",
+      desc:      "Maximum width of targets",
+      type:      "int unsigned",
+      default:   "8",
+    }
   ]
 
   regwidth: "32",
@@ -122,6 +127,7 @@
             hwaccess: "hro",
             desc: '''
                   The bkdr memory index to write to.
+                  The size of this field must match the parameter TargetIdxWidth.
                   ''',
           },
         ]

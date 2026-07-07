@@ -31,7 +31,7 @@ package bkdr_loader_pkg;
   typedef logic [MaxWordWidth-1:0] word_t;
 
   // Target indices
-  typedef enum logic [$clog2(NumBkdrTgts)-1:0] {
+  typedef enum logic [TargetIdxWidth-1:0] {
     BkdrAon       = 'd11,
     BkdrFlashB1I2 = 'd10,
     BkdrFlashB1I1 = 'd9,

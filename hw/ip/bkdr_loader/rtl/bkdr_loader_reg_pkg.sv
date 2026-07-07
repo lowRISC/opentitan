@@ -9,6 +9,7 @@ package bkdr_loader_reg_pkg;
   // Param list
   parameter int unsigned NumBkdrTgts = 12;
   parameter int unsigned MaxWordWidthDiv32 = 8;
+  parameter int unsigned TargetIdxWidth = 8;
 
   // Address widths within the block
   parameter int RegsAw = 11;

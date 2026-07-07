@@ -105,6 +105,7 @@ Control register
 
 ### CONTROL . TARGET_IDX
 The bkdr memory index to write to.
+The size of this field must match the parameter TargetIdxWidth.
 
 ### CONTROL . CLEAR_START
 Write 1 to trigger the bkdr_loader to clear the entire target memory
