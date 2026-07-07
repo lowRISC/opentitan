@@ -1,0 +1,38 @@
+{
+  config_version: 1,
+  update_mode: "NewVersion",
+  sram_exec: "DisabledLocked",
+  min_security_version_bl0: "NoChange",
+
+  ownership_key_alg: "HybridSpxPrehash",
+  owner_key: {
+    Hybrid: {
+      ecdsa: "sw/device/silicon_creator/lib/ownership/keys/dummy/owner_ecdsa_p256.pub.der",
+      spx: "sw/device/silicon_creator/lib/ownership/keys/dummy/owner_spx.pub.pem"
+    }
+  },
+  activate_key: {
+    Hybrid: {
+      ecdsa: "sw/device/silicon_creator/lib/ownership/keys/dummy/activate_ecdsa_p256.pub.der",
+      spx: "sw/device/silicon_creator/lib/ownership/keys/dummy/activate_spx.pub.pem"
+    }
+  },
+  unlock_key: {
+    Hybrid: {
+      ecdsa: "sw/device/silicon_creator/lib/ownership/keys/dummy/unlock_ecdsa_p256.pub.der",
+      spx: "sw/device/silicon_creator/lib/ownership/keys/dummy/unlock_spx.pub.pem"
+    }
+  },
+  data: [
+    {
+      ApplicationKey: {
+        key_alg: "EcdsaP256",
+        key_domain: "Prod",
+        usage_constraint: 0,
+        key: {
+          Ecdsa: "sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der",
+        }
+      }
+    }
+  ]
+}

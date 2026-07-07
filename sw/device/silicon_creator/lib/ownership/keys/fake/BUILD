@@ -7,6 +7,14 @@ load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "all_keys",
+    srcs = glob([
+        "*.der",
+        "*.pem",
+    ]),
+)
+
 cc_library(
     name = "includes",
     testonly = True,
