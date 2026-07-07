@@ -1,0 +1,10 @@
+{
+  "name": "usbdev",
+  "sim": [
+    {
+      "cfg": "dv/usbdev_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

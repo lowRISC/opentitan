@@ -1,0 +1,10 @@
+{
+  "name": "dma",
+  "sim": [
+    {
+      "cfg": "dv/dma_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

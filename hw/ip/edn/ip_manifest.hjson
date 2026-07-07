@@ -1,0 +1,19 @@
+{
+  "name": "edn",
+  "sim": [
+    {
+      "variant": "base",
+      "cfg": "dv/edn_base_sim_cfg.hjson"
+    },
+    {
+      "variant": "edn0",
+      "cfg": "dv/edn_edn0_sim_cfg.hjson"
+    },
+    {
+      "variant": "edn1",
+      "cfg": "dv/edn_edn1_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
