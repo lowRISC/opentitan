@@ -8,15 +8,6 @@
 .globl sec_decompose
 .globl sec_mod5_8x32
 
-/*
- * Configuration values for the MAI_CTRL register.
- */
-.set MAI_CTRL_A2B, 0x17
-.set MAI_CTRL_B2A, 0x21
-.set MAI_CTRL_ADD, 0x2F
-
-.text
-
 /**
  * Calculate a secure bound check on the arithmetically shared coefficients of
  * a polynomial.
