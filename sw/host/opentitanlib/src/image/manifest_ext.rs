@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -31,6 +31,7 @@ with_unknown! {
         isfb = MANIFEST_EXT_ID_ISFB,
         isfb_erase = MANIFEST_EXT_ID_ISFB_ERASE,
         image_type = MANIFEST_EXT_ID_IMAGE_TYPE,
+        owner_transfer_blob = MANIFEST_EXT_ID_OWNER_TRANSFER_BLOB,
     }
 }
 
@@ -79,12 +80,24 @@ pub enum ManifestExtEntrySpec {
     #[serde(alias = "image_type")]
     ImageType { image_type: u32 },
 
+    #[serde(alias = "owner_transfer_blob")]
+    OwnerTransferBlob {
+        owner_block: PathBuf,
+        #[serde(default)]
+        detached_signature: Option<PathBuf>,
+    },
+
     #[serde(alias = "raw")]
     Raw {
         name: HexEncoded<u32>,
         identifier: HexEncoded<u32>,
         signed: bool,
-        value: Vec<HexEncoded<u8>>,
+        #[serde(default)]
+        alignment: Option<HexEncoded<u32>>,
+        #[serde(default)]
+        value: Option<Vec<HexEncoded<u8>>>,
+        #[serde(default)]
+        file: Option<PathBuf>,
     },
 }
 
@@ -96,8 +109,14 @@ pub enum ManifestExtEntry {
     Isfb(ManifestExtIsfb),
     IsfbErasePolicy(ManifestExtIsfbErasePolicy),
     ImageType(ManifestExtImageType),
+    OwnerTransferBlob {
+        header: ManifestExtHeader,
+        owner_block: Vec<u8>,
+        detached_signature: Option<Vec<u8>>,
+    },
     Raw {
         header: ManifestExtHeader,
+        alignment: u32,
         data: Vec<u8>,
     },
 }
@@ -130,6 +149,7 @@ impl ManifestExtEntrySpec {
             ManifestExtEntrySpec::Isfb { .. } => MANIFEST_EXT_ID_ISFB,
             ManifestExtEntrySpec::IsfbErasePolicy { .. } => MANIFEST_EXT_ID_ISFB_ERASE,
             ManifestExtEntrySpec::ImageType { image_type: _ } => MANIFEST_EXT_ID_IMAGE_TYPE,
+            ManifestExtEntrySpec::OwnerTransferBlob { .. } => MANIFEST_EXT_ID_OWNER_TRANSFER_BLOB,
             ManifestExtEntrySpec::Raw { identifier, .. } => **identifier,
         }
     }
@@ -141,7 +161,8 @@ impl ManifestExtEntrySpec {
             | ManifestExtEntrySpec::Isfb { .. }
             | ManifestExtEntrySpec::IsfbErasePolicy { .. }
             | ManifestExtEntrySpec::ImageType { .. } => true,
-            ManifestExtEntrySpec::SpxSignature { .. } => false,
+            ManifestExtEntrySpec::SpxSignature { .. }
+            | ManifestExtEntrySpec::OwnerTransferBlob { .. } => false,
             ManifestExtEntrySpec::Raw { signed, .. } => *signed,
         }
     }
@@ -264,19 +285,77 @@ impl ManifestExtEntry {
             ManifestExtEntrySpec::ImageType { image_type } => {
                 ManifestExtEntry::new_image_type_entry(*image_type)?
             }
+            ManifestExtEntrySpec::OwnerTransferBlob {
+                owner_block,
+                detached_signature,
+            } => {
+                let owner_data = std::fs::read(owner_block).with_context(|| {
+                    format!("Failed to read owner block file {:?}", owner_block)
+                })?;
+                anyhow::ensure!(
+                    owner_data.len() == 2048,
+                    "Owner block must be exactly 2048 bytes (got {})",
+                    owner_data.len()
+                );
+                let sig_data = match detached_signature {
+                    Some(path) => {
+                        let mut data = std::fs::read(path).with_context(|| {
+                            format!("Failed to read detached signature file {:?}", path)
+                        })?;
+                        anyhow::ensure!(
+                            data.len() <= 8192,
+                            "Detached signature size ({}) exceeds maximum limit (8192 bytes)",
+                            data.len()
+                        );
+                        data.resize(8192, 0xff);
+                        Some(data)
+                    }
+                    None => None,
+                };
+                ManifestExtEntry::OwnerTransferBlob {
+                    header: ManifestExtHeader {
+                        identifier: MANIFEST_EXT_ID_OWNER_TRANSFER_BLOB,
+                        name: MANIFEST_EXT_NAME_OWNER_TRANSFER_BLOB,
+                    },
+                    owner_block: owner_data,
+                    detached_signature: sig_data,
+                }
+            }
             ManifestExtEntrySpec::Raw {
                 name,
                 identifier,
+                alignment,
                 value,
+                file,
                 ..
-            } => ManifestExtEntry::Raw {
-                header: ManifestExtHeader {
-                    identifier: **identifier,
-                    name: **name,
-                },
-                data: value.iter().map(|v| **v).collect(),
-            },
+            } => {
+                let data = if let Some(path) = file {
+                    std::fs::read(path)
+                        .with_context(|| format!("Failed to read raw extension file {:?}", path))?
+                } else if let Some(val) = value {
+                    val.iter().map(|v| **v).collect()
+                } else {
+                    anyhow::bail!("Raw extension must specify either value or file");
+                };
+                ManifestExtEntry::Raw {
+                    header: ManifestExtHeader {
+                        identifier: **identifier,
+                        name: **name,
+                    },
+                    alignment: alignment.as_ref().map(|v| **v).unwrap_or(4),
+                    data,
+                }
+            }
         })
+    }
+
+    /// Returns the required alignment of this extension in bytes.
+    pub fn alignment(&self) -> u32 {
+        match self {
+            ManifestExtEntry::OwnerTransferBlob { .. } => 2048,
+            ManifestExtEntry::Raw { alignment, .. } => *alignment,
+            _ => 4,
+        }
     }
 
     /// Returns the header portion of this extension.
@@ -288,7 +367,12 @@ impl ManifestExtEntry {
             ManifestExtEntry::Isfb(isfb) => &isfb.header,
             ManifestExtEntry::IsfbErasePolicy(erase) => &erase.header,
             ManifestExtEntry::ImageType(image_type) => &image_type.header,
-            ManifestExtEntry::Raw { header, data: _ } => header,
+            ManifestExtEntry::OwnerTransferBlob { header, .. } => header,
+            ManifestExtEntry::Raw {
+                header,
+                alignment: _,
+                data: _,
+            } => header,
         }
     }
 
@@ -301,9 +385,23 @@ impl ManifestExtEntry {
             ManifestExtEntry::Isfb(isfb) => isfb.to_vec().unwrap(),
             ManifestExtEntry::IsfbErasePolicy(erase) => erase.as_bytes().to_vec(),
             ManifestExtEntry::ImageType(image_type) => image_type.as_bytes().to_vec(),
-            ManifestExtEntry::Raw { header, data } => {
-                header.as_bytes().iter().chain(data).copied().collect()
+            ManifestExtEntry::OwnerTransferBlob {
+                header,
+                owner_block,
+                detached_signature,
+            } => {
+                let mut v = header.as_bytes().to_vec();
+                v.extend_from_slice(owner_block);
+                if let Some(sig) = detached_signature {
+                    v.extend_from_slice(sig);
+                }
+                v
             }
+            ManifestExtEntry::Raw {
+                header,
+                alignment: _,
+                data,
+            } => header.as_bytes().iter().chain(data).copied().collect(),
         }
     }
 }
@@ -319,7 +417,7 @@ mod tests {
     fn test_manifest_ext_from_hjson() {
         let spec = ManifestExtSpec::read_from_file(&testdata("image/manifest_ext.hjson")).unwrap();
         assert_eq!(spec.source_path(), Some(testdata("image").as_path()));
-        assert_eq!(spec.extension_params.len(), 6);
+        assert_eq!(spec.extension_params.len(), 7);
         assert_eq!(
             spec.extension_params[0],
             ManifestExtEntrySpec::SpxKey {
@@ -362,7 +460,9 @@ mod tests {
                 name: HexEncoded(0xbeef),
                 identifier: HexEncoded(0xabcd),
                 signed: true,
-                value: [0x01, 0x23, 0x45, 0x67].map(HexEncoded).to_vec()
+                alignment: None,
+                value: Some([0x01, 0x23, 0x45, 0x67].map(HexEncoded).to_vec()),
+                file: None,
             }
         );
         assert_eq!(spec.extension_params[4].is_signed(), true);
@@ -373,6 +473,14 @@ mod tests {
             }
         );
         assert_eq!(spec.extension_params[5].is_signed(), false);
+        assert_eq!(
+            spec.extension_params[6],
+            ManifestExtEntrySpec::OwnerTransferBlob {
+                owner_block: "owner_block.bin".into(),
+                detached_signature: Some("signature.bin".into()),
+            }
+        );
+        assert_eq!(spec.extension_params[6].is_signed(), false);
     }
 
     const MAN_EXT_ISFB_CONF: &str = "\

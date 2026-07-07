@@ -19,8 +19,8 @@ use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature}
 use crate::crypto::sha256::Sha256Digest;
 use crate::image::manifest::{
     CHIP_MANIFEST_VERSION_MAJOR2, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
-    MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestKind,
-    SigverifySpxSignature,
+    MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestExtHeader,
+    ManifestKind, SigverifySpxSignature,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec};
@@ -320,6 +320,20 @@ impl Image {
         let offset = if ext_table_entry.offset != 0 {
             ext_table_entry.offset
         } else {
+            let alignment = entry.alignment() as usize;
+            let header_size = size_of::<ManifestExtHeader>();
+            // Align the offset so that the first data element inside the extension (following the
+            // manifest header) starts on a boundary aligned to `alignment` (typically a 2KB page boundary).
+            let aligned_size = if alignment > header_size {
+                ((self.size + header_size + alignment - 1) & !(alignment - 1)) - header_size
+            } else {
+                (self.size + alignment - 1) & !(alignment - 1)
+            };
+            ensure!(
+                aligned_size <= Image::MAX_SIZE,
+                ImageError::ExtensionOverflow
+            );
+            self.size = aligned_size;
             ensure!(
                 self.size % align_of::<u32>() == 0,
                 ImageError::BadExtensionAlignment(entry_id)
@@ -353,6 +367,12 @@ impl Image {
     /// extension. This is necessary to properly set the `length` field of the manifest and the
     /// `offset` field of the manifest extension entry for signing.
     pub fn allocate_manifest_extension(&mut self, id: u32, len: usize) -> Result<()> {
+        let aligned_size = (self.size + 3) & !3;
+        ensure!(
+            aligned_size + len <= Image::MAX_SIZE,
+            ImageError::ExtensionOverflow
+        );
+        self.size = aligned_size;
         let offset = self.size as u32;
         self.borrow_manifest_mut()?
             .extensions

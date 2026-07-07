@@ -16,7 +16,7 @@ _FIELDS = {
     "ecdsa_key": ("attr.ecdsa_key", False),
     "rsa_key": ("attr.rsa_key", False),
     "spx_key": ("attr.spx_key", False),
-    "manifest": ("file.manifest", False),
+    "manifest": ("attr.manifest", False),
     "rom": ("attr.rom", False),
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
