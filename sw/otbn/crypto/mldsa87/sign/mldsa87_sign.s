@@ -6,7 +6,7 @@
 
 .globl mldsa87_sign
 
-.text
+.section .text.start
 
 /*
  * Direct implementation of the `ML-DSA.sign_internal` function (Algorithm 7)
@@ -22,57 +22,92 @@ mldsa87_sign:
   bn.lid x0, 0(x2)
   bn.wsrw MOD, w0
 
+  /* Copy RHO. */
+  la x2, mldsa87_sign_sk_rho
+  la x3, mldsa87_sign_var_rho
+  bn.lid x0, 0(x2)
+  bn.sid x0, 0(x3)
+
   /*
-   * Calculate RHO_PRIME = H(K || RND || MU).
+   * The sign function can be run in three modes:
+   *
+   *  - Abridged mode: Skips the computation of the mask seed RHO_PRIME and
+   *    does not set the randomness string RND. The current purpose of this
+   *    mode is the recalculation of a prior last rejection loop. This mode
+   *    assumes that the memory (specifically secret key, RND and KAPPA) are
+   *    not cleared between invocations of the app.
+   *
+   *  - Random mode: Full execution of the sign function with a randomly
+   *    sampled RND string from EDN1.
+   *
+   *  - Deterministic mode: Full execution of the sign function with RND set to
+   *    0. This mode should only be used for testing purposes.
    */
 
-  jal x1, xof_shake256_init
+  /* Mode identifiers, see `include/mldsa.h` and `mldsa/mldsa.h`. */
+  li x2, 0x29d8e5c9 /* Abridged */
+  li x3, 0x7138777c /* Random */
+  li x4, 0x8accea7f /* Deterministic */
 
-  /* Absorb both shares of K. */
-  addi x20, x0, 32
-  la x21, mldsa87_sign_sk_k_share0
-  la x22, mldsa87_sign_sk_k_share1
-  jal x1, xof_absorb
+  /* Load the addresses of the mode and RND string. */
+  la x5, mldsa87_sign_mode
+  la x6, mldsa87_sign_rnd
 
-  /* Absorb RND. */
-  addi x20, x0, 32
-  la x21, mldsa87_sign_rnd
-  addi x22, x0, 0
-  jal x1, xof_absorb
+  /* Check if the abridged mode is selected and jump directly into the
+     rejection loop. */
+  lw x7, 0(x5)
+  beq x2, x7, _rej_loop
 
-  /* Absorb MU. */
-  addi x20, x0, 64
-  la x21, mldsa87_sign_msg_mu
-  addi x22, x0, 0
-  jal x1, xof_absorb
+  /* Save the instruction count and set the expected number of instructions
+     for the random mode branch. */
+  csrrs x8, INSN_CNT, x0
+  addi x9, x0, 5
 
-  jal x1, xof_process
+  /* Sample 32 byte of EDN1 randomness and store it to DMEM. Regardless of
+     the selected mode (random or deterministic) this is always executed. */
+  bn.wsrr w0, RND
+  bn.sid x0, 0(x6)
 
-  /* Squeeze both shares of RHO_PRIME. */
-  la x2, mldsa87_sign_var_rho_prime_share0
-  la x3, mldsa87_sign_var_rho_prime_share1
-  addi x4, x0, 29
-  addi x5, x0, 30
+  /* If the selected mode is random, jump to the computation of RHO_PRIME,
+     otherwise set the RND string to 0. */
+  beq x3, x7, _compute_rho_prime
+  bne x4, x7, _fault /* sanity check */
 
-  loopi 2, 4
-    jal x1, xof_squeeze32
+  /* Set RND to 0 in DMEM. */
+  bn.xor w0, w0, w0
+  bn.sid x0, 0(x6)
 
-    bn.sid x4, 0(x2++)
-    bn.xor w31, w31, w31 /* dummy */
-    bn.sid x5, 0(x3++)
-    /* End of loop */
+  /* Set the expected number of instructions for the deterministic branch. */
+  addi x9, x0, 9
 
-  jal x1, xof_finish
+_compute_rho_prime:
 
-  /* Set the nonce to 0 (after the previous loop x2 points to the nonce). */
-  sw x0, 0(x2)
+  /* Verify that the random or deterministic branch has run for the correct
+     number of instructions. */
+  csrrs x2, INSN_CNT, x0
+  sub x2, x2, x8
+  bne x2, x9, _fault
+
+  /* Calculate RHO_PRIME = H(K || RND || MU). */
+  la x2, mldsa87_sign_sk_k_share0
+  la x3, mldsa87_sign_sk_k_share1
+  la x4, mldsa87_sign_rnd
+  la x5, mldsa87_sign_mu
+  la x6, mldsa87_sign_var_rho_prime_share0
+  la x7, mldsa87_sign_var_rho_prime_share1
+  jal x1, compute_rho_prime
+
+  /* Set KAPPA to 0. */
+  bn.xor w0, w0, w0
+  la x2, mldsa87_sign_kappa
+  bn.sid x0, 0(x2)
 
 _rej_loop:
 
   /* Compute W and place in the vector slots. */
   la x2, mldsa87_sign_vector_slot0
   la x3, mldsa87_sign_vector_slot1
-  la x4, mldsa87_sign_sk_rho
+  la x4, mldsa87_sign_var_rho
   la x5, mldsa87_sign_var_rho_prime_share0
   la x6, mldsa87_sign_var_rho_prime_share1
   la x7, mldsa87_sign_kappa
@@ -87,7 +122,7 @@ _rej_loop:
   jal x1, decompose_w
 
   /* Compute C_TILDE. */
-  la x2, mldsa87_sign_msg_mu
+  la x2, mldsa87_sign_mu
   la x3, mldsa87_sign_var_w1_enc
   la x4, mldsa87_sign_sig_c_tilde
   jal x1, challenge_hash
@@ -179,3 +214,7 @@ _rejection_check_increment_kappa:
   sw x3, 0(x2)
   xor x0, x0, x1 /* Pop address from call stack */
   jal x0, _rej_loop
+_fault:
+  unimp
+  unimp
+  unimp

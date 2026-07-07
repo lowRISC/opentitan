@@ -8,6 +8,16 @@
 .balign 32
 
 /*
+ * Mode
+ */
+
+.globl mldsa87_sign_mode
+
+mldsa87_sign_mode:
+.zero 4
+.zero 28 /* Padding */
+
+/*
  * Randomness
  */
 
@@ -30,20 +40,26 @@ mldsa87_sign_kappa:
  * Secret key
  */
 
+.globl mldsa87_sign_sk
+.globl mldsa87_sign_sk_rho
 .globl mldsa87_sign_sk_k_share0
 .globl mldsa87_sign_sk_k_share1
+.globl mldsa87_sign_sk_tr
 .globl mldsa87_sign_sk_s1_share0
 .globl mldsa87_sign_sk_s1_share1
 .globl mldsa87_sign_sk_s2_share0
 .globl mldsa87_sign_sk_s2_share1
 .globl mldsa87_sign_sk_t0
-.globl mldsa87_sign_sk_rho
 
-mldsa87_sign_sig_z:
+mldsa87_sign_sk:
+mldsa87_sign_sk_rho:
+.zero 32
 mldsa87_sign_sk_k_share0:
 .zero 32
 mldsa87_sign_sk_k_share1:
 .zero 32
+mldsa87_sign_sk_tr:
+.zero 64
 mldsa87_sign_sk_s1_share0:
 .zero 672
 mldsa87_sign_sk_s1_share1:
@@ -54,17 +70,14 @@ mldsa87_sign_sk_s2_share1:
 .zero 768
 mldsa87_sign_sk_t0:
 .zero 3328
-mldsa87_sign_sk_rho:
-.zero 32
-.zero 32 /* Padding */
 
 /*
  * Message
  */
 
-.globl mldsa87_sign_msg_mu
+.globl mldsa87_sign_mu
 
-mldsa87_sign_msg_mu:
+mldsa87_sign_mu:
 .zero 64
 
 /*
@@ -73,7 +86,6 @@ mldsa87_sign_msg_mu:
 
 .globl mldsa87_sign_sig_c_tilde
 .globl mldsa87_sign_sig_h
-.globl mldsa87_sign_sig_z
 
 mldsa87_sign_sig_c_tilde:
 .zero 64
@@ -88,20 +100,28 @@ mldsa87_sign_sig_h:
  * Intermediate variables
  */
 
-.globl mldsa87_sign_var_w1_enc
-.globl mldsa87_sign_var_c
+
 .globl mldsa87_sign_var_rho_prime_share0
 .globl mldsa87_sign_var_rho_prime_share1
+.globl mldsa87_sign_sig_z
+.globl mldsa87_sign_var_w1_enc
+.globl mldsa87_sign_var_c
+.globl mldsa87_sign_var_rho
 
-mldsa87_sign_var_w1_enc:
-.zero 1024
-mldsa87_sign_var_c:
-.zero 1024
 mldsa87_sign_var_rho_prime_share0:
 .zero 66
 .zero 30 /* Padding */
 mldsa87_sign_var_rho_prime_share1:
 .zero 66
+.zero 30 /* Padding */
+mldsa87_sign_sig_z:
+mldsa87_sign_var_w1_enc:
+.zero 1024
+mldsa87_sign_var_c:
+.zero 1024
+mldsa87_sign_var_rho:
+.zero 32
+.zero 2
 .zero 30 /* Padding */
 
 /*
