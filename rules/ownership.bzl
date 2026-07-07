@@ -106,3 +106,66 @@ bin2c = rule(
         ),
     },
 )
+
+def _ownership_detached_signature_impl(ctx):
+    out_sig = ctx.actions.declare_file(ctx.attr.output or (ctx.attr.name + ".bin"))
+
+    inputs = []
+    args = [
+        "--rcfile=",
+        "--quiet",
+        "ownership",
+        "detached-signature",
+        "--command={}".format(ctx.attr.command),
+        "--key-alg={}".format(ctx.attr.key_alg),
+        "--nonce={}".format(ctx.attr.nonce),
+    ]
+
+    if ctx.file.src:
+        inputs.append(ctx.file.src)
+        args.append("--input={}".format(ctx.file.src.path))
+    if ctx.file.ecdsa_key:
+        inputs.append(ctx.file.ecdsa_key)
+        args.append("--ecdsa-key={}".format(ctx.file.ecdsa_key.path))
+    if ctx.file.spx_key:
+        inputs.append(ctx.file.spx_key)
+        args.append("--spx-key={}".format(ctx.file.spx_key.path))
+    if ctx.file.ecdsa_sig:
+        inputs.append(ctx.file.ecdsa_sig)
+        args.append("--ecdsa-sig={}".format(ctx.file.ecdsa_sig.path))
+    if ctx.file.spx_sig:
+        inputs.append(ctx.file.spx_sig)
+        args.append("--spx-sig={}".format(ctx.file.spx_sig.path))
+
+    args.append(out_sig.path)
+
+    ctx.actions.run(
+        outputs = [out_sig],
+        inputs = inputs,
+        arguments = args,
+        executable = ctx.executable.opentitantool,
+        mnemonic = "OwnershipDetachedSignatureGen",
+        progress_message = "Generating ownership detached signature %s" % ctx.attr.name,
+    )
+
+    return [DefaultInfo(files = depset([out_sig]))]
+
+ownership_detached_signature = rule(
+    implementation = _ownership_detached_signature_impl,
+    attrs = {
+        "command": attr.string(mandatory = True, doc = "Command: Owner, Unlock, Activate"),
+        "key_alg": attr.string(mandatory = True, doc = "Key algorithm: EcdsaP256, SpxPure, SpxPrehash, HybridSpxPure, HybridSpxPrehash"),
+        "nonce": attr.string(default = "0", doc = "Nonce value as string (due to int limits)"),
+        "src": attr.label(allow_single_file = True, doc = "Raw data block to sign (e.g. owner_block_binary)"),
+        "ecdsa_key": attr.label(allow_single_file = True, doc = "ECDSA private key file in DER format"),
+        "spx_key": attr.label(allow_single_file = True, doc = "SPHINCS+ private key file in PEM format"),
+        "ecdsa_sig": attr.label(allow_single_file = True, doc = "Raw ECDSA signature file"),
+        "spx_sig": attr.label(allow_single_file = True, doc = "Raw SPX signature file"),
+        "output": attr.string(doc = "Optional output signature filename"),
+        "opentitantool": attr.label(
+            default = Label("//sw/host/opentitantool"),
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
