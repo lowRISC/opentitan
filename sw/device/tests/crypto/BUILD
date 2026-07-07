@@ -725,6 +725,32 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "mldsa87_sign_testvectors",
+    srcs = ["mldsa87_sign_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:mldsa",
+    ],
+)
+
+opentitan_test(
+    name = "mldsa87_sign_functest",
+    srcs = ["mldsa87_sign_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":mldsa87_sign_testvectors",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mldsa",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_test(
     name = "mldsa87_verify_functest",
     srcs = ["mldsa87_verify_functest.c"],
