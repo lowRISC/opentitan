@@ -30,9 +30,12 @@
 #define UART_WDATA_REG_OFFSET 0x1c
 
 static void uart_putchar(char c) {
-  while (*((volatile uint32_t *)(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET)) & (1 << UART_STATUS_TXFULL_BIT)) {
+  while (*((volatile uint32_t *)(TOP_EARLGREY_UART0_BASE_ADDR +
+                                 UART_STATUS_REG_OFFSET)) &
+         (1 << UART_STATUS_TXFULL_BIT)) {
   }
-  *((volatile uint32_t *)(TOP_EARLGREY_UART0_BASE_ADDR + UART_WDATA_REG_OFFSET)) = (uint32_t)c;
+  *((volatile uint32_t *)(TOP_EARLGREY_UART0_BASE_ADDR +
+                          UART_WDATA_REG_OFFSET)) = (uint32_t)c;
 }
 
 static void uart_write_imm(const char *str) {
@@ -41,9 +44,7 @@ static void uart_write_imm(const char *str) {
   }
 }
 
-static inline void wait_for_interrupt(void) {
-  __asm__ volatile("wfi");
-}
+static inline void wait_for_interrupt(void) { __asm__ volatile("wfi"); }
 
 // Helper function to read/write registers directly
 static inline uint32_t reg_read(uint32_t offset) {

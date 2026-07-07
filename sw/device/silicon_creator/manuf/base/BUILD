@@ -466,7 +466,7 @@ opentitan_binary(
     linker_script = ":ft_personalize_stage1_linker_script",
 
     manifest = ":manifest_perso",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+    spx_key = {},
     deps = [
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
@@ -499,7 +499,7 @@ opentitan_binary(
     linker_script = ":ft_personalize_stage1_linker_script",
 
     manifest = ":manifest_perso",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+    spx_key = {},
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
