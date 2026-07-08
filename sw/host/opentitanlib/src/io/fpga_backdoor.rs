@@ -363,8 +363,13 @@ impl Backdoor {
         )
         .context("cannot write FPGA bkdr_loader mission_mode_switch_delay register")?;
 
-        self.dmi_write(regs::CONTROL_REG_OFFSET, 0b1 << regs::CONTROL_DONE_BIT)
-            .context("cannot write done to FPGA bkdr_loader control reg")?;
+        if let Err(e) = self
+            .dmi_write(regs::CONTROL_REG_OFFSET, 0b1 << regs::CONTROL_DONE_BIT)
+            .context("cannot write done to FPGA bkdr_loader control reg")
+        {
+            log::error!("Error received when writing to `CONTROL.DONE`: {:?}", e);
+            log::error!("Trying to continue anyway...");
+        }
 
         // Wait until the transition to mission mode is complete and the system exits reset
         // before continuing. For most sensible JTAG speeds this should be basically instant;
