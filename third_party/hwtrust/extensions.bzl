@@ -13,7 +13,7 @@ def _hwtrust_repos():
         name = "hwtrust",
         urls = [
             # Use lowrisc cache due to rate limiting on the original URL
-            "https://storage.googleapis.com/lowrisc-ci-longterm-cache/security-da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz"
+            "https://storage.googleapis.com/lowrisc-ci-longterm-cache/security-da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz",
             # "https://android.googlesource.com/platform/tools/security/+archive/da7738aaf3ece666272adab6b3091f72ce027e9c.tar.gz"
         ],
         strip_prefix = "remote_provisioning/hwtrust",
