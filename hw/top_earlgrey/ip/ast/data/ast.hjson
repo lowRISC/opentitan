@@ -12,9 +12,9 @@
   dv_doc:             "",
   hw_checklist:       "",
   sw_checklist:       "",
-  version:            "1.0.0",
+  version:            "2.0.0",
   life_stage:         "L1",
-  design_stage:       "D2",
+  design_stage:       "D1",
   verification_stage: "V2S",
   dif_stage:          "",
   clocking: [
