@@ -33,16 +33,16 @@ case "$TARGET_TYPE" in
 esac
 export TOP_MODULE
 
-echo "Verifying ${TOP_MODULE} using Alma"
+echo "Verifying ${TOP_MODULE} using CocoAlma"
 
-# Pre-process alma.v: flatten all sub-module instances first so that parse.py's
-# own 'flatten' step has nothing left to inline (preventing it from creating new
-# long hierarchical signal names at that stage).  Then shorten every escaped
-# identifier whose C++ length exceeds Verilator's ~128-char limit in one pass.
+# Pre-process alma.v: shorten escaped identifiers whose C++ length exceeds
+# VERILATOR_LIMIT - 11.  The 11-char reserve accounts for the longest port
+# suffix that parse.py's internal flatten appends to kept prim_* instance names
+# ('.out_o_n' from prim_xnor2: 4 cpp-chars for the dot + 7 chars = 11).
 ALMA_V="${REPO_TOP}/hw/ip/otbn/pre_syn/syn_out/latest/generated/${TOP_MODULE}.alma.v"
 ALMA_FLAT="${REPO_TOP}/hw/ip/otbn/pre_syn/syn_out/latest/generated/${TOP_MODULE}.alma.flat.v"
-yosys -q -p "read_verilog ${ALMA_V}; proc; flatten; clean; write_verilog -noattr ${ALMA_FLAT}"
-python3 ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/shorten_alma_identifiers.py "${ALMA_FLAT}"
+cp "${ALMA_V}" "${ALMA_FLAT}"
+python3 ${REPO_TOP}/hw/ip/otbn/pre_sca/alma/shorten_alma_identifiers.py --reserve 11 "${ALMA_FLAT}"
 
 # Parse
 ./parse.py --top-module ${TOP_MODULE} \
