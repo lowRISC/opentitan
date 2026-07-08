@@ -1562,28 +1562,29 @@
       sw_images: ["//sw/device/tests/crypto:hmac_multistream_functest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-//    {
-//      name: chip_sw_keymgr_key_derivation
-//      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-//      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:1:new_rules"]
-//      en_run_modes: ["sw_test_mode_test_rom"]
-//      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-//    }
-//    {
-//      name: chip_sw_keymgr_key_derivation_prod
-//      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-//      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:1:new_rules"]
-//      en_run_modes: ["sw_test_mode_test_rom"]
-//      run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
-//    }
-//    {
-//      name: chip_sw_keymgr_key_derivation_jitter_en
-//      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-//      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:1:new_rules"]
-//      en_run_modes: ["sw_test_mode_test_rom"]
-//      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
-//      run_timeout_mins: 90
-//    }
+    {
+      name: chip_sw_keymgr_dpe_key_derivation
+      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000"]
+      run_timeout_mins: 120
+    }
+    {
+      name: chip_sw_keymgr_dpe_key_derivation_prod
+      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
+    }
+    {
+      name: chip_sw_keymgr_dpe_key_derivation_jitter_en
+      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1"]
+      run_timeout_mins: 90
+    }
 //    {
 //      name: chip_sw_keymgr_sideload_kmac
 //      uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
@@ -2114,14 +2115,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_jitter=1", "+cal_sys_clk_70mhz=1"]
     }
-    // TODO(rroth): enable all test after the keymgr_dpe migration is done successfully
-//    {
-//      name: chip_sw_keymgr_key_derivation_jitter_en_reduced_freq
-//      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
-//      sw_images: ["//sw/device/tests:keymgr_key_derivation_test:1:new_rules"]
-//      en_run_modes: ["sw_test_mode_test_rom"]
-//      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
-//    }
+    {
+      name: chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_keymgr_dpe_key_derivation_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_key_derivation_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
     {
       name: chip_sw_kmac_mode_kmac_jitter_en_reduced_freq
       uvm_test_seq: chip_sw_base_vseq
@@ -2244,8 +2244,7 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
-              // TODO(rroth): enable after keymgr_dpe migration
-              //"chip_sw_keymgr_key_derivation_jitter_en",
+              "chip_sw_keymgr_dpe_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }
@@ -2257,8 +2256,7 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
               "chip_sw_aes_enc_jitter_en_reduced_freq",
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
-              // TODO(rroth): enable after keymgr_dpe migration
-              //"chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
+              "chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq",
               "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
               "chip_sw_flash_init_reduced_freq",
