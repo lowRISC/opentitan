@@ -30,6 +30,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -41,7 +42,6 @@
 #include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
@@ -771,8 +771,8 @@ bool test_main(void) {
     // storing the Creator and Owner secrets to avoid getting the flash
     // controller into a fatal error state.
     if (kBootStage != kBootStageOwner) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
+      CHECK_STATUS_OK(keymgr_dpe_testutils_flash_init(
+          &flash_ctrl, &kCreatorSecret, &kOwnerSecret));
     }
     CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
 #endif  // OPENTITAN_IS_EARLGREY
