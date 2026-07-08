@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_sw_keymgr_sideload_aes_vseq extends chip_sw_keymgr_key_derivation_vseq;
-  `uvm_object_utils(chip_sw_keymgr_sideload_aes_vseq)
+class chip_sw_keymgr_dpe_sideload_aes_vseq extends chip_sw_keymgr_dpe_key_derivation_vseq;
+  `uvm_object_utils(chip_sw_keymgr_dpe_sideload_aes_vseq)
 
   `uvm_object_new
 
@@ -17,7 +17,7 @@ class chip_sw_keymgr_sideload_aes_vseq extends chip_sw_keymgr_key_derivation_vse
   };
 
 
-  virtual task check_op_in_owner_int_state(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
+  virtual task run_test_sequence(key_shares_t creator_key);
 
     bit [3:0][3:0][7:0] ciphertext;
     bit [3:0][3:0][7:0] ciphertext_transposed;
@@ -26,8 +26,17 @@ class chip_sw_keymgr_sideload_aes_vseq extends chip_sw_keymgr_key_derivation_vse
     bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key;
     bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key_rev;
 
-    // Only need to fetch the AES sideload key from keymgr and test it with AES and not check key generation.
-    check_aes_sideload(unmasked_key, sideload_aes_key);
+    // Wait until the sideloaded key is generated
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "KeymgrDpe generated HW output for Aes from the CreatorRootKey")
+
+    // Check if the generated key matches the expected key
+    check_generated_output(.key_shares(creator_key),
+                           .dest(keymgr_pkg::Aes),
+                           .version(kVersionVersionedKey),
+                           .salt(kSaltVersionedKey));
+
+    // Fetch the generated key via backdoor from the HW!
+    sideload_aes_key = get_unmasked_key(get_output(keymgr_pkg::Aes));
 
     // Compute AES block encryption (C model) with above unmasked key.
     aes_model_dpi_pkg::c_dpi_aes_crypt_block(1'b0, 1'b0, 6'b00_0001, 128'h0, 3'b100,
@@ -48,8 +57,8 @@ class chip_sw_keymgr_sideload_aes_vseq extends chip_sw_keymgr_key_derivation_vse
 
     `uvm_info(`gfn, $sformatf("AES Plaintext (C model): 0x%0h", PlainText), UVM_LOW)
     `uvm_info(`gfn, $sformatf("AES Ciphertext (C model): 0x%0h", ciphertext_transposed), UVM_LOW)
-    `uvm_info(`gfn, $sformatf("AES Sideload Key0x%0h", sideload_aes_key_rev), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("AES Sideload Key: 0x%0h", sideload_aes_key_rev), UVM_LOW)
 
   endtask
 
-endclass : chip_sw_keymgr_sideload_aes_vseq
+endclass : chip_sw_keymgr_dpe_sideload_aes_vseq
