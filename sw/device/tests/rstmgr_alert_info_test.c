@@ -30,6 +30,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -38,7 +39,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #ifdef OPENTITAN_IS_EARLGREY
-#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/nvm_testutils.h"
 #endif  // OPENTITAN_IS_EARLGREY
 
@@ -764,7 +764,7 @@ bool test_main(void) {
     // controller into a fatal error state.
     if (kBootStage != kBootStageOwner) {
       CHECK_STATUS_OK(
-          keymgr_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
+          keymgr_dpe_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
     }
     CHECK_STATUS_OK(nvm_testutils_show_faults());
 #endif  // OPENTITAN_IS_EARLGREY
