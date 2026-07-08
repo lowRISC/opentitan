@@ -45,12 +45,13 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/ascon/lint/{tool}"
              },
-             {    name: ast
-                  fusesoc_core: lowrisc:dv:top_earlgrey_ast_top
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/top_earlgrey/ip/ast/lint/{tool}"
-             },
+             //AST is TEMPORARILY waived until properly split into Main and Aon domain
+             //{    name: ast
+             //     fusesoc_core: lowrisc:dv:top_earlgrey_ast_top
+             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+             //     additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+             //     rel_path: "hw/top_earlgrey/ip/ast/lint/{tool}"
+             //},
              {    name: entropy_src
                   fusesoc_core: lowrisc:ip:entropy_src
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
