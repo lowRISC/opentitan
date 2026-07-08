@@ -6,7 +6,7 @@
 #ifndef OPENTITAN_HW_IP_OTBN_PRE_SCA_ALMA_CPP_VERILATOR_TB_HPC_GADGET_IMPL_H_
 #define OPENTITAN_HW_IP_OTBN_PRE_SCA_ALMA_CPP_VERILATOR_TB_HPC_GADGET_IMPL_H_
 
-// Shared testbench implementation for HPC gadget Alma verification.
+// Shared testbench implementation for HPC gadget CocoAlma verification.
 // Include this file after defining HPC_RAND_MASK.
 
 #define HPC_SHARE0 0x2

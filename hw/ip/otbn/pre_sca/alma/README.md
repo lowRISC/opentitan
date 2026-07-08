@@ -1,7 +1,7 @@
-# OTBN Formal Masking Verification Using Alma
+# OTBN Formal Masking Verification Using CocoAlma
 
 This directory contains support files to formally verify the OTBN core using the
-tool [Alma:
+tool [CocoAlma:
 Execution-aware Masking Verification](https://github.com/IAIK/coco-alma).
 
 ## Prerequisites
@@ -11,7 +11,7 @@ Note that this flow is experimental. It has been developed using Yosys v0.15
 Verilator 4.106 (2020-12-02 rev v4.106). Other tool versions might not be
 compatible.
 
-1. Download the Alma tool from this specific repo and check out to the
+1. Download the CocoAlma tool from this specific repo and check out to the
    `coco-otbn-latest` branch of the tool
    ```sh
    git clone git@github.com:abdullahvarici/coco-alma.git -b coco-otbn-latest
@@ -47,10 +47,10 @@ compatible.
 
 ## Formally verifying the masking of the OTBN core
 
-After downloading the Alma tool, installing dependencies and synthesizing OTBN,
+After downloading the CocoAlma tool, installing dependencies and synthesizing OTBN,
 the masking can finally be formally verified.
 
-1. Enter the directory where you have downloaded Alma and load the virtual
+1. Enter the directory where you have downloaded CocoAlma and load the virtual
    Python environment.
    ```sh
    source dev/bin/activate
@@ -62,7 +62,7 @@ the masking can finally be formally verified.
    source ../opentitan/util/build_consts.sh
    ```
 
-1. Launch the Alma tool to parse, assemble, trace (simulate) and formally verify
+1. Launch the CocoAlma tool to parse, assemble, trace (simulate) and formally verify
    the netlist. For simplicity, a single script is provided to launch all the
    required steps with a single command. Simply run:
    ```sh
@@ -70,7 +70,7 @@ the masking can finally be formally verified.
    ```
    This should produce output similar to the one below:
    ```sh
-   Verifying OTBN using Alma
+   Verifying OTBN using CocoAlma
    Starting yosys synthesis...
    | CircuitGraph | Total: 234238 | Linear: 22351 | Non-linear: 107502 | Registers: 21338 | Mux: 41352 |
    parse.py successful (755.32s)
@@ -138,7 +138,7 @@ the masking can finally be formally verified.
 Below we outline the individual steps performed by the `verify_otbn.sh` script.
 This is useful if you, e.g., want to verify the masking of your own module.
 
-For more details, please refer to the [Alma
+For more details, please refer to the [CocoAlma
 tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
 
 1. Make sure to source the `build_consts.sh` script from the OpenTitan
@@ -177,7 +177,7 @@ tutorial](https://github.com/IAIK/coco-alma/tree/hw-verif#usage)
    and save some time.
 
 1. Next, the automatically generated labeling file `tmp/labels.txt` needs to be
-   adapted. This file tells Alma which inputs of the DUT correspond to the
+   adapted. This file tells CocoAlma which inputs of the DUT correspond to the
    secret shares and which ones are used to provide randomness for (re-)masking.
    It is pretty tedious to compute the actual indices for bignum register file
    labels. Generate it with the following command:
@@ -216,7 +216,7 @@ Run the following command to see the circuit diagramm if there is a leakage:
 
 ## Formally verifying the mask accelerator interface modules
 
-After completing the prerequisites above, source the build constants, activate the Alma virtual
+After completing the prerequisites above, source the build constants, activate the CocoAlma virtual
 environment and run `verify_mai.sh` with the desired target:
 
 ```sh
@@ -245,7 +245,7 @@ netlist from `syn_out/latest/generated/`.
 A passing verification produces output similar to the following (shown for `hpc3`):
 
 ```sh
-Verifying prim_hpc3_sca_wrapper using Alma
+Verifying prim_hpc3_sca_wrapper using CocoAlma
 Starting yosys synthesis...
 | CircuitGraph | Total:   35 | Linear:    6 | Non-linear:    4 | Registers:    6 | Mux:    6 |
 parse.py successful (1.62s)
@@ -267,13 +267,13 @@ Finished in 0.01
 The execution is secure
 ```
 
-For `hpc2`, Alma reports a leak due to false positives.
-Alma's verification approach based on approximated Fourier coefficients is sound but not complete,
+For `hpc2`, CocoAlma reports a leak due to false positives.
+CocoAlma's verification approach based on approximated Fourier coefficients is sound but not complete,
 meaning it can report leaks that do not exist in practice (see [Gigerl et al.](https://tugraz.elsevierpure.com/ws/portalfiles/portal/50728519/camera_ready.pdf)).
 The output looks as follows:
 
 ```sh
-Verifying prim_hpc2_sca_wrapper using Alma
+Verifying prim_hpc2_sca_wrapper using CocoAlma
 Starting yosys synthesis...
 | CircuitGraph | Total:   51 | Linear:    6 | Non-linear:    6 | Registers:   14 | Mux:   11 |
 parse.py successful (1.40s)

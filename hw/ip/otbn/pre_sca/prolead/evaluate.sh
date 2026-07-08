@@ -9,7 +9,7 @@ set -e
 
 CONFIG_SUFFIX=""
 # NETLIST_MODULE: the synthesized top module name (determines netlist filename).
-# CONFIG_MODULE: the module name embedded in the ProLEAD config filename.
+# CONFIG_MODULE: the module name embedded in the PROLEAD config filename.
 # For most targets these are the same; for mask_acc_* the DUT is synthesized
 # directly (no SCA wrapper) so the netlist module differs from the config name.
 case "$1" in

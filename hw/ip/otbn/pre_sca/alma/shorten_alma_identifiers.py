@@ -7,7 +7,7 @@
 
 Verilator maps '.' -> '__02E' (+4 chars) and '[N]' -> '__05BN__05D' (+8 chars)
 when converting escaped Verilog identifiers to C++ names.  Names whose mangled
-form reaches 128+ characters get hashed in VCD tracing, breaking Alma's signal
+form reaches 128+ characters get hashed in VCD tracing, breaking CocoAlma's signal
 lookup.
 
 For each escaped identifier whose C++ length exceeds the limit, this script

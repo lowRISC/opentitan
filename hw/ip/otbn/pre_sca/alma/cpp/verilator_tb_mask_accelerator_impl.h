@@ -6,7 +6,7 @@
 #ifndef OPENTITAN_HW_IP_OTBN_PRE_SCA_ALMA_CPP_VERILATOR_TB_MASK_ACCELERATOR_IMPL_H_
 #define OPENTITAN_HW_IP_OTBN_PRE_SCA_ALMA_CPP_VERILATOR_TB_MASK_ACCELERATOR_IMPL_H_
 
-// Shared testbench implementation for otbn_mask_accelerator_sca_wrapper Alma
+// Shared testbench implementation for otbn_mask_accelerator_sca_wrapper CocoAlma
 // verification.  Include this file after defining:
 //
 //   MASK_OP      — mask_op_e encoding (uint8_t literal)
