@@ -371,6 +371,10 @@ impl Backdoor {
             log::error!("Trying to continue anyway...");
         }
 
+        // Explicitly shut down all JTAG state before the transition happens, to avoid
+        // putting the next TAP(s) into some bad state across the transition.
+        drop(self);
+
         // Wait until the transition to mission mode is complete and the system exits reset
         // before continuing. For most sensible JTAG speeds this should be basically instant;
         // for very slow speeds (e.g. <= 50 kHz) we need to add some special casing.
