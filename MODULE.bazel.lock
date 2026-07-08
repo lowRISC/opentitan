@@ -367,7 +367,7 @@
     },
     "//third_party/hwtrust:extensions.bzl%hwtrust": {
       "general": {
-        "bzlTransitiveDigest": "cciXhcLDGOwivozYt3JH8bKolxUrGA1k1QZuwfbNbwE=",
+        "bzlTransitiveDigest": "ewDK8ELEctl3A0jD7iQRW6iYA8oe4RXUynlejBzIlEg=",
         "usagesDigest": "E7yErwZF7b/bpM+r5XyMZeprKVdzGd+ET8BdGKkLXmE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
