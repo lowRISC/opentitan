@@ -45,7 +45,7 @@ static status_t shares_check(uint64_t *share0, uint64_t *share1, size_t len) {
   for (size_t i = 0; i < len; ++i) {
     found_error |= share0[i] == share1[i];
     found_error |= share0[i] == UINT64_MAX || share0[i] == 0;
-    found_error |= share1[i] == UINT64_MAX || share1[0] == 0;
+    found_error |= share1[i] == UINT64_MAX || share1[i] == 0;
   }
   return found_error ? INTERNAL() : OK_STATUS();
 }
