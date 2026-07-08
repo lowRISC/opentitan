@@ -2,31 +2,28 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/otp_ctrl.h"  // Generated
-#include "hw/top/dt/pinmux.h"    // Generated
+#include "hw/top/dt/keymgr_dpe.h"  // Generated
+#include "hw/top/dt/otp_ctrl.h"    // Generated
+#include "hw/top/dt/pinmux.h"      // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
 
 #if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top/dt/adc_ctrl.h"     // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
-#include "hw/top/dt/keymgr.h"       // Generated
 #include "hw/top/dt/sysrst_ctrl.h"  // Generated
 
 #include "hw/top/adc_ctrl_regs.h"
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top/keymgr_regs.h"
 #include "hw/top/sysrst_ctrl_regs.h"
 #elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top/dt/keymgr_dpe.h"  // Generated
-
-#include "hw/top/keymgr_dpe_regs.h"
 #else
 #error Unsupported top
 #endif
@@ -50,15 +47,14 @@
        OTP_CTRL.DIRECT_ACCESS_WDATA0      0x0      0x0609_2022
        PINMUX.WKUP_DETECTOR_CNT_TH_1      0X0      0X44 --> move to LC
        SRAM RET ADDRESS(8)                ?        0xDDAA_55BB
+    Group3:
+                                          RESET    PRGM (ARBITRARY VALUE)
+       KEYMGR_DPE.MAX_KEY_VER_SHADOWED    0x0      0x1600_ABBA
     Group3 (earlgrey):
                                           RESET    PRGM (ARBITRARY VALUE)
        ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        SYSRST_CTRL.EC_RST_CTL             0x7D0    0x567
-       KEYMGR.MAX_OWNER_KEY_VER_SHADOWED  0x0      0x1600_ABBA
        FLASH_CTRL.SCRATCH                 0x0      0x3927
-    Group3 (darjeeling):
-                                          RESET    PRGM (ARBITRARY VALUE)
-       KEYMGR_DPE.MAX_KEY_VER_SHADOWED    0x0      0x1600_ABBA
 
    After programming csrs, the test assert NDM reset from RV_DM and de-assert.
    Read programmed csr to check all Group2 keep programmed value while group 3
@@ -132,6 +128,13 @@ bool test_main(void) {
           .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
 
       },
+      {
+          .name = "KEYMGR_DPE",
+          .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
+          .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
+          .write_val = 0x1600ABBA,
+          .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
+      },
 #if defined(OPENTITAN_IS_EARLGREY)
       {
           .name = "ADC_CTRL",
@@ -150,14 +153,6 @@ bool test_main(void) {
 
       },
       {
-          .name = "KEYMGR",
-          .base = dt_keymgr_primary_reg_block(kDtKeymgr),
-          .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
-          .write_val = 0x1600ABBA,
-          .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
-
-      },
-      {
           .name = "FLASH_CTRL",
           .base = dt_flash_ctrl_primary_reg_block(kDtFlashCtrl),
           .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
@@ -165,13 +160,6 @@ bool test_main(void) {
           .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
       },
 #elif defined(OPENTITAN_IS_DARJEELING)
-      {
-          .name = "KEYMGR_DPE",
-          .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
-          .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
-          .write_val = 0x1600ABBA,
-          .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
-      },
 #else
 #error Unsupported top
 #endif
