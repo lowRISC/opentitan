@@ -2632,8 +2632,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "keymgr_sideload_otbn_test",
-    srcs = ["keymgr_sideload_otbn_test.c"],
+    name = "keymgr_dpe_sideload_otbn_test",
+    srcs = ["keymgr_dpe_sideload_otbn_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2673,8 +2673,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "keymgr_sideload_otbn_simple_test",
-    srcs = ["keymgr_sideload_otbn_test.c"],
+    name = "keymgr_dpe_sideload_otbn_simple_test",
+    srcs = ["keymgr_dpe_sideload_otbn_test.c"],
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
