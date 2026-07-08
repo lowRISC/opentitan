@@ -20,7 +20,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -213,8 +213,8 @@ bool test_main(void) {
   if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
     dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
     if (rst_info & kDifRstmgrResetInfoPor) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
+      CHECK_STATUS_OK(keymgr_dpe_testutils_flash_init(
+          &flash_ctrl, &kCreatorSecret, &kOwnerSecret));
       chip_sw_reset();
     }
   }
