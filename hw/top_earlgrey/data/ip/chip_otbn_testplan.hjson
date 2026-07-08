@@ -140,9 +140,9 @@
     }
     {
       name: chip_sw_otbn_keymgr
-      desc: '''Check the OTBN keymgr connection is functional.
+      desc: '''Check the OTBN keymgr dpe connection is functional.
 
-            Setup the keymgr and any other blocks required to provide OTBN with a valid sideload
+            Setup the keymgr dpe and any other blocks required to provide OTBN with a valid sideload
             key. Run an OTBN program to read the key via the KEY_S[0|1]_[H|L] WSRs and write it to
             dmem. Sanity check the returned value (e.g. != 0) and check OTBN completed successfully
             with no errors.
@@ -151,10 +151,10 @@
       si_stage: SV2
       tests: []
       bazel: [
-        "//sw/device/tests:keymgr_sideload_otbn_simple_test",
+        "//sw/device/tests:keymgr_dpe_sideload_otbn_simple_test",
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
-        "//sw/device/tests:keymgr_sideload_otbn_test"
+        "//sw/device/tests:keymgr_dpe_sideload_otbn_test"
       ]
       lc_states: ["PROD"]
       features: [
