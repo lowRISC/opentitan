@@ -24,14 +24,6 @@ logic p_alert_src, n_alert_src;
 assign p_alert_src = alert_src_i.p;
 assign n_alert_src = alert_src_i.n;
 
-logic p_alert_ack, n_alert_ack;
-assign p_alert_ack = alert_ack_i.p;
-assign n_alert_ack = alert_ack_i.n;
-
-logic p_alert_trig, n_alert_trig;
-assign p_alert_trig = alert_trig_i.p;
-assign n_alert_trig = alert_trig_i.n;
-
 // Pack outputs
 logic p_alert_req, n_alert_req;
 
@@ -41,8 +33,8 @@ assign alert_req_o.n = n_alert_req;
 // P Alert
 logic p_alert, set_p_alert, clr_p_alert;
 
-assign set_p_alert =  p_alert_src || p_alert_trig;
-assign clr_p_alert = !set_p_alert && p_alert_ack;
+assign set_p_alert =  p_alert_src || alert_trig_i.p;
+assign clr_p_alert = !set_p_alert && alert_ack_i.p;
 
 always_ff @( posedge clk_i, negedge rst_ni ) begin
   if ( !rst_ni ) begin
@@ -59,8 +51,8 @@ assign p_alert_req = p_alert;
 // N Alert
 logic n_alert, set_n_alert, clr_n_alert;
 
-assign set_n_alert = !(n_alert_src && n_alert_trig);
-assign clr_n_alert = !(set_n_alert || n_alert_ack);
+assign set_n_alert = !(n_alert_src && alert_trig_i.n);
+assign clr_n_alert = !(set_n_alert || alert_ack_i.n);
 
 always_ff @( posedge clk_i, negedge rst_ni ) begin
   if ( !rst_ni ) begin

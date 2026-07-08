@@ -152,7 +152,7 @@ prim_clock_buf #(
 // Unused Signals
 /////////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ sys_osc_cal_i, sys_jen_i };
+assign unused_sigs = ^{ sys_osc_cal_i, sys_jen_i, en_osc, en_osc_fe };
 `endif
 
 endmodule : sys_osc

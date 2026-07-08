@@ -177,7 +177,7 @@ prim_clock_buf #(
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_pulse_i, usb_ref_val_i };
+assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_pulse_i, usb_ref_val_i, en_osc, en_osc_fe };
 `endif
 
 endmodule : usb_osc

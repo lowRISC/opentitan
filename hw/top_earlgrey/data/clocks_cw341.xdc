@@ -17,13 +17,13 @@ create_generated_clock -name clk_aon [get_pin clkgen/pll/CLKOUT4]
 # invalid combinations.
 # The 48 MHz ext clocks all have a _lc suffix.
 create_generated_clock -name clk_io -divide_by 1 \
-    -source [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/I] \
-    [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/O]
+    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/I] \
+    [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_stepdown/O]
 
 set u_div2 top_*/u_clkmgr_aon/u_no_scan_io_div2_div
 create_generated_clock -name clk_io_div2 -divide_by 2 \
     -add -master_clock clk_io \
-    -source [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div2}/gen_div_bufg.u_bufg_div_full/O]
 set_clock_sense -stop_propagation -clocks clk_io \
     [get_pins ${u_div2}/gen_div_bufg.u_bufg_div_stepdown/I]
@@ -32,19 +32,19 @@ set_clock_sense -stop_propagation -clocks clk_io \
 set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -divide_by 4 \
     -add -master_clock clk_io \
-    -source [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div4}/gen_div_bufg.u_bufg_div_full/O]
 set_clock_sense -stop_propagation -clocks clk_io \
     [get_pins ${u_div4}/gen_div_bufg.u_bufg_div_stepdown/I]
 
 
 create_generated_clock -name clk_io_ext_lc -divide_by 2 \
-    -source [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/I] \
-    [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/O]
+    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/I] \
+    [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_full/O]
 
 create_generated_clock -name clk_io_div2_ext_lc -divide_by 1 \
     -add -master_clock clk_io_ext_lc \
-    -source [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div2}/gen_div_bufg.u_bufg_div_stepdown/O]
 
 set_clock_sense -stop_propagation -clocks clk_io_ext_lc \
@@ -52,7 +52,7 @@ set_clock_sense -stop_propagation -clocks clk_io_ext_lc \
 
 create_generated_clock -name clk_io_div4_ext_lc -divide_by 2 \
     -add -master_clock clk_io_ext_lc \
-    -source [get_pins u_ast/u_ast_clks_byp/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
+    -source [get_pins u_ast/u_ast_main/u_ast_clks_byp_main/u_no_scan_clk_src_io_d1ord2/gen_div_bufg.u_bufg_div_mux/O] \
     [get_pins ${u_div4}/gen_div_bufg.u_bufg_div_stepdown/O]
 
 set_clock_sense -stop_propagation -clocks clk_io_ext_lc \
@@ -350,4 +350,4 @@ set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
-set_false_path -from [get_clocks clk_usb_48] -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/q_o_reg[0]/D]
+set_false_path -from [get_clocks clk_usb_48] -to [get_pins u_ast/u_ast_main/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/q_o_reg[0]/D]
