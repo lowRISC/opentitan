@@ -1592,13 +1592,13 @@
 //      en_run_modes: ["sw_test_mode_test_rom"]
 //      run_opts: ["+sw_test_timeout_ns=20_000_000"]
 //    }
-//    {
-//      name: chip_sw_keymgr_sideload_aes
-//      uvm_test_seq: chip_sw_keymgr_sideload_aes_vseq
-//      sw_images: ["//sw/device/tests:keymgr_sideload_aes_test:1:new_rules"]
-//      en_run_modes: ["sw_test_mode_test_rom"]
-//      run_opts: ["+sw_test_timeout_ns=20_000_000"]
-//    }
+    {
+      name: chip_sw_keymgr_dpe_sideload_aes
+      uvm_test_seq: chip_sw_keymgr_dpe_sideload_aes_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_sideload_aes_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000"]
+    }
 //    {
 //      name: chip_sw_keymgr_sideload_otbn
 //      uvm_test_seq: chip_sw_base_vseq
