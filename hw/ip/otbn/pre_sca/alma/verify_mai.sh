@@ -3,11 +3,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Script to formally verify the masking of the mask accelerator using Alma.
+# Script to formally verify the masking of the mask accelerator using CocoAlma.
 
 set -e
 
-# Ensure the Alma virtualenv's packages are found regardless of PYTHONPATH
+# Ensure the CocoAlma virtualenv's packages are found regardless of PYTHONPATH
 # overrides from the calling environment (e.g. nix develop).
 ALMA_SITE_PACKAGES="${HOME}/alma/dev/lib/python3.10/site-packages"
 export PYTHONPATH="${ALMA_SITE_PACKAGES}${PYTHONPATH:+:${PYTHONPATH}}"

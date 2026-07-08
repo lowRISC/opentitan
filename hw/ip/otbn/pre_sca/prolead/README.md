@@ -72,7 +72,7 @@ After building PROLEAD and synthesizing the target gadget:
    | `mask_acc_a2b`             | `otbn_mask_accelerator`    | Arith-to-Boolean conversion, uses `otbn_mask_accelerator_sca_wrapper_prolead` config |
    | `mask_acc_b2a` *(default)* | `otbn_mask_accelerator`    | Boolean-to-Arith conversion, uses `otbn_mask_accelerator_sca_wrapper_prolead` config |
 
-   The four `mask_acc_*` targets synthesize the DUT directly (no SCA wrapper in the netlist); the SCA wrapper is referenced only by the ProLEAD config file.
+   The four `mask_acc_*` targets synthesize the DUT directly (no SCA wrapper in the netlist); the SCA wrapper is referenced only by the PROLEAD config file.
 
    Results are written to `out/<gadget>_<timestamp>/` and a symlink `out/latest` points to the most recent run.
 

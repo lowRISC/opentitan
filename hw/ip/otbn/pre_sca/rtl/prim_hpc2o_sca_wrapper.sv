@@ -5,7 +5,7 @@
 // Wrapper around the HPC2o gadget (prim_hpc2 with EnW=1) for side-channel
 // analysis. Exposes a 3-bit combined input interface: bit 0 carries input A,
 // bit 1 carries input B, bit 2 carries input W. Used as the top-level module
-// for Alma and PROLEAD leakage verification flows.
+// for CocoAlma and PROLEAD leakage verification flows.
 
 module prim_hpc2o_sca_wrapper #(
   localparam int Width     = 3,
