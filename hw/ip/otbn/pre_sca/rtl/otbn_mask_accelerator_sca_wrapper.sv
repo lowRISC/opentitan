@@ -30,6 +30,8 @@ module otbn_mask_accelerator_sca_wrapper
   input  logic [FlatShareWidth-1:0]        share0_i,
   input  logic [FlatShareWidth-1:0]        share1_i,
   input  logic                             en_i,
+  input  logic                             sec_wipe_running_i,
+  input  logic                             rready_i,
 
   output logic [NumShares-1:0][Width-1:0]  result_o,
   output logic                             rvalid_o
@@ -45,11 +47,12 @@ module otbn_mask_accelerator_sca_wrapper
       ctr_q  <= '0;
       done_q <= 1'b0;
     end else if (en_i && !done_q && wready) begin
-      if (ctr_q == CtrWidth'(SecAddVecSize - 1))
+      if (ctr_q == CtrWidth'(SecAddVecSize - 1)) begin
         ctr_q  <= '0;
         done_q <= 1'b1;
-      else
+      end else begin
         ctr_q <= ctr_q + 1'b1;
+      end
     end
   end
 
@@ -76,7 +79,7 @@ module otbn_mask_accelerator_sca_wrapper
   ) u_otbn_mask_accelerator (
     .clk_i,
     .rst_ni,
-    .sec_wipe_running_i(1'b0),
+    .sec_wipe_running_i,
     .wvalid_i          (wvalid),
     .wready_o          (wready),
     .in0_i             (in0_shares),
@@ -86,7 +89,7 @@ module otbn_mask_accelerator_sca_wrapper
     .mod_i,
     .mask_op_i,
     .rvalid_o,
-    .rready_i          (1'b1),
+    .rready_i,
     .result_o,
     .mask_fifo_err_o   (),
     .ctr_err_o         ()

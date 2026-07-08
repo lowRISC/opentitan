@@ -15,6 +15,8 @@ module otbn_mask_accelerator_sca_wrapper_prolead
 
   input  logic wvalid_i,
   output logic rvalid_o,
+  input  logic sec_wipe_running_i,
+  input  logic rready_i,
 
   // rand_i = {mask1, mask0, adder_rand}:
   //    [RandWidth-1:0]              adder randomness,
@@ -45,23 +47,20 @@ module otbn_mask_accelerator_sca_wrapper_prolead
   assign in1_shares[0] = share0_i[DoubleWidth-1:Width];
   assign in1_shares[1] = share1_i[DoubleWidth-1:Width];
 
-  otbn_mask_accelerator #(
-    .Width        (Width),
-    .EnRejSampling(1'b0)
-  ) u_otbn_mask_accelerator (
+  otbn_mask_accelerator u_otbn_mask_accelerator (
     .clk_i,
     .rst_ni,
-    .sec_wipe_running_i(1'b0),
+    .sec_wipe_running_i,
     .wvalid_i,
-    .wready_o          (),
-    .in0_i             (in0_shares),
-    .in1_i             (in1_shares),
-    .rand_i            (rand_i[RandWidth-1:0]),
-    .remask_rand_i     (remask_rand),
+    .wready_o     (),
+    .in0_i        (in0_shares),
+    .in1_i        (in1_shares),
+    .rand_i       (rand_i[RandWidth-1:0]),
+    .remask_rand_i(remask_rand),
     .mod_i,
     .mask_op_i,
     .rvalid_o,
-    .rready_i          (1'b1),
+    .rready_i,
     .result_o,
     .mask_fifo_err_o,
     .ctr_err_o
