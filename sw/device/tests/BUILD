@@ -2594,8 +2594,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "keymgr_sideload_kmac_test",
-    srcs = ["keymgr_sideload_kmac_test.c"],
+    name = "keymgr_dpe_sideload_kmac_test",
+    srcs = ["keymgr_dpe_sideload_kmac_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,

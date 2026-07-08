@@ -129,7 +129,7 @@ test_suite(
         "//sw/device/tests:i2c_target_test",
         "//sw/device/tests:keymgr_dpe_key_derivation_test",
         "//sw/device/tests:keymgr_dpe_sideload_aes_test",
-        "//sw/device/tests:keymgr_sideload_kmac_test",
+        "//sw/device/tests:keymgr_dpe_sideload_kmac_test",
         "//sw/device/tests:kmac_endianess_test",
         "//sw/device/tests:kmac_idle_test",
         # "//sw/device/tests:kmac_kmac_key_sideload_test",

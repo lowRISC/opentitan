@@ -59,7 +59,7 @@
 `include "chip_sw_sleep_pin_wake_vseq.sv"
 `include "chip_sw_sleep_pin_retention_vseq.sv"
 `include "chip_sw_keymgr_dpe_key_derivation_vseq.sv"
-//`include "chip_sw_keymgr_sideload_kmac_vseq.sv"
+`include "chip_sw_keymgr_dpe_sideload_kmac_vseq.sv"
 `include "chip_sw_keymgr_dpe_sideload_aes_vseq.sv"
 `include "chip_sw_ast_clk_outputs_vseq.sv"
 `include "chip_sw_sensor_ctrl_status_intr_vseq.sv"
