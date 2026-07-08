@@ -324,7 +324,7 @@
               "chip_sw_otbn_ecdsa_op_irq_jitter_en",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_hmac_enc_jitter_en",
-              "chip_sw_keymgr_key_derivation_jitter_en",
+              "chip_sw_keymgr_dpe_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en",
               "chip_sw_edn_entropy_reqs_jitter"]

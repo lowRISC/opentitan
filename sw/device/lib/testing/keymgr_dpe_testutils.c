@@ -399,6 +399,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
     TRY(keymgr_dpe_testutils_initial_load_uds(keymgr_dpe, &kInitialParams));
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe,
                                          kDifKeymgrDpeStateAvailable));
+    // DV sync message (keymgr_dpe_key_derivation_vseq)
     LOG_INFO("Keymgr DPE loaded the UDS and entered Available state.");
 
     // Generate the creator root key

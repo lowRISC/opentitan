@@ -146,7 +146,7 @@
             '''
       stage: V2
       si_stage: NA
-      tests: ["chip_sw_keymgr_key_derivation_prod"]
+      tests: ["chip_sw_keymgr_dpe_key_derivation_prod"]
     }
     {
       name: chip_sw_lc_ctrl_broadcast
@@ -195,7 +195,7 @@
         "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
         "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
         "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
+        "chip_sw_keymgr_dpe_key_derivation",           // lc_keymgr_en_o: keymgr_dpe
         "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
         "chip_sw_flash_rma_unlocked",                  // lc_nvm_rma_req_o, lc_nvm_rma_seed_o: flash_ctrl
         "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl

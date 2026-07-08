@@ -37,7 +37,7 @@
             '''
       stage: V2
       si_stage: NA
-      tests: ["chip_sw_keymgr_key_derivation"]
+      tests: ["chip_sw_keymgr_dpe_key_derivation"]
     }
     {
       name: chip_sw_kmac_app_lc

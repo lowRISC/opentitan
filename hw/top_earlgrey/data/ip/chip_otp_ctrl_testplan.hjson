@@ -32,7 +32,7 @@
             X-ref'ed with the following IP tests that consume these signals:
             - chip_sw_sram_scrambled_access
             - chip_sw_flash_scramble
-            - chip_sw_keymgr_key_derivation
+            - chip_sw_keymgr_dpe_key_derivation
             - chip_sw_otbn_mem_scramble
             For sival, this test can be done by
             - manuf_ft_sku_individualization
@@ -45,7 +45,7 @@
       tests: [// Verifies both, main and retention SRAM scrambling.
               "chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
+              "chip_sw_keymgr_dpe_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
       bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_functest"]
@@ -66,7 +66,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
+              "chip_sw_keymgr_dpe_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
       bazel: ["//sw/device/silicon_creator/manuf/base:ft_provision_sival"]
