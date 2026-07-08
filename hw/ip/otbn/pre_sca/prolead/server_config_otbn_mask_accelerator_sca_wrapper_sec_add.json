@@ -18,7 +18,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b0"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -30,7 +30,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b0"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b0"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -42,7 +42,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b0"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -54,7 +54,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -68,7 +68,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -82,7 +82,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -96,7 +96,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -110,7 +110,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -124,7 +124,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -138,7 +138,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -152,7 +152,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b1"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },
@@ -166,7 +166,7 @@
       {
         "signals": [
           { "name": "rst_ni",             "value": "1'b1"                 },
-          { "name": "sec_wipe_running_i", "value": "1'b0"                 },
+          { "name": "sec_wipe_running_i", "value": "1'b1"                 },
           { "name": "rready_i",           "value": "1'b1"                 },
           { "name": "wvalid_i",           "value": "1'b0"                 },
           { "name": "mask_op_i[4:0]",     "value": "5'h17"                },

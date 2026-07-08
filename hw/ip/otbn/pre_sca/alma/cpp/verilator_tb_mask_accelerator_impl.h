@@ -6,8 +6,8 @@
 #ifndef OPENTITAN_HW_IP_OTBN_PRE_SCA_ALMA_CPP_VERILATOR_TB_MASK_ACCELERATOR_IMPL_H_
 #define OPENTITAN_HW_IP_OTBN_PRE_SCA_ALMA_CPP_VERILATOR_TB_MASK_ACCELERATOR_IMPL_H_
 
-// Shared testbench implementation for otbn_mask_accelerator_sca_wrapper CocoAlma
-// verification.  Include this file after defining:
+// Shared testbench implementation for otbn_mask_accelerator_sca_wrapper
+// CocoAlma verification.  Include this file after defining:
 //
 //   MASK_OP      — mask_op_e encoding (uint8_t literal)
 //   ARITH_INPUT  — 0 for boolean XOR sharing, 1 for arithmetic additive sharing
@@ -53,6 +53,8 @@ int main(int argc, char **argv) {
   tb.m_core.mod_i = MODULUS;
   tb.m_core.mask_op_i = MASK_OP;
   tb.m_core.en_i = 0;
+  tb.m_core.sec_wipe_running_i = 1;
+  tb.m_core.rready_i = 1;
 
 #if ARITH_INPUT
   // Arithmetic masking: share0[k] + share1[k] = secret[k] (mod 2^32)
@@ -79,8 +81,8 @@ int main(int argc, char **argv) {
   refresh_rand();
   tb.tick();
 
-  tb.m_core.en_i = 1;
   for (int i = 0; i < NUM_CYCLES; i++) {
+    tb.m_core.en_i = (i < VEC_SIZE) ? 1 : 0;
     refresh_rand();
     tb.tick();
   }
