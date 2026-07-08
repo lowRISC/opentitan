@@ -464,7 +464,6 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = ":ft_personalize_stage1_linker_script",
-
     manifest = ":manifest_perso",
     spx_key = {},
     deps = [
@@ -497,7 +496,6 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = ":ft_personalize_stage1_linker_script",
-
     manifest = ":manifest_perso",
     spx_key = {},
     deps = [
