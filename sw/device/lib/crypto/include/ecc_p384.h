@@ -91,7 +91,6 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
  * details.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
- * @param secret_scalar Pointer to the blinded secret scalar (k) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
@@ -266,6 +265,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
  * status code, as for other operations, only indicates whether errors were
  * encountered, and may return OK even when the signature is invalid.
  *
+ * @param signature Pointer to the signature being verified.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async ECDSA verify finalize operation.
  */
@@ -460,6 +460,7 @@ otcrypto_status_t otcrypto_ecc_p384_public_key_export(
  *
  * @param point Point in the affine coordinates representation that should be
  * checked.
+ * @param[out] check_result True if point is valid, false otherwise.
  * @return Result of the point valid check operation.
  */
 otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
@@ -497,7 +498,7 @@ status_t otcrypto_ecc_p384_base_point_mult(
  *
  * @param bool_private_key_share0 First Boolean share of the private key.
  * @param bool_private_key_share1 Second Boolean share of the private key.
- * @param arith_shared_private_key The resulting arithmetically shared key.
+ * @param[out] arith_private_key The resulting arithmetically shared key.
  * @return Result of the sharing operation.
  */
 otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(

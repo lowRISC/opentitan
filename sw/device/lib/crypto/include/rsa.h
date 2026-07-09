@@ -110,7 +110,6 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
- * @param exponent RSA public exponent (e).
  * @param[out] public_key Destination public key struct.
  * @return Result of the RSA key construction.
  */
@@ -399,7 +398,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
  * See `otcrypto_rsa_encrypt` for details on the length requirements for
  * `message`.
  *
- * @param private_key Pointer to public key struct.
+ * @param public_key Pointer to public key struct.
  * @param hash_mode Hash function to use for OAEP encoding.
  * @param message Message to encrypt.
  * @param label Label for OAEP encoding.
