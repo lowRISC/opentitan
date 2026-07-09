@@ -25,6 +25,7 @@ These tests must be run on a specific hardware target, such as an FPGA or a sili
 -   **Cryptolib Functional Tests** (`//sw/device/tests/crypto:cryptolib_test_suite`): These are functional, end-to-end tests for the cryptolib.
 -   **RSA Key Generation Tests** (`//sw/device/tests/crypto:cryptolib_keygen_test_suite`): These tests specifically target the functionality of RSA key generation which are slow tests.
 -   **Known Answer Tests (KATs)** (`//sw/device/tests/crypto/cryptotest:crypto_kat_test_suite`): These tests run a suite of Known Answer Tests (KATs) against the cryptolib primitives to ensure correctness. The skip-stride option can be used to test faster, e.g., `--test_arg=--skip-stride=40`.
+-   **ACVP Tests** (`//sw/device/tests/crypto/cryptotest:crypto_acvp_test_suite`): These tests run Algorithm Validation Program (ACVP) test vectors against the cryptolib primitives.
 -   **Base Library Functional Tests** (`//sw/device/lib/base:base_functest_suite`): These are functional tests for the base libraries.
 
 ## Coverage Generation
