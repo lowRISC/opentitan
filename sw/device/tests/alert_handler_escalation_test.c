@@ -6,14 +6,14 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -26,7 +26,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_clkmgr_t clkmgr;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -89,8 +89,8 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
 
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR), &keymgr_dpe));
 }
 
 /**
@@ -165,8 +165,9 @@ bool test_main(void) {
   if (rst_info & kDifRstmgrResetInfoPor) {
     config_alert_handler();
 
-    // Initialize keymgr with otp contents
-    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
+    // Initialize keymgr dpe with otp contents
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntKeyParams));
 
     // DO NOT REMOVE, DV sync message
     LOG_INFO("Keymgr entered Init State");
