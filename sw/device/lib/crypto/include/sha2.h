@@ -32,6 +32,7 @@ enum {
  * with #otcrypto_sha2_init.
  */
 typedef struct otcrypto_sha2_context {
+  /// SHA-2 hash internal context.
   uint32_t data[kOtcryptoSha2CtxStructWords];
 } otcrypto_sha2_context_t;
 

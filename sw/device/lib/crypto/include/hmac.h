@@ -37,6 +37,7 @@ enum {
  * with #otcrypto_hmac_init.
  */
 typedef struct otcrypto_hmac_context {
+  /// hmac internal context.
   uint32_t data[kOtcryptoHmacCtxStructWords];
 } otcrypto_hmac_context_t;
 
