@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "api_config.h"
 #ifdef OTCRYPTO_IN_REPO
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/status.h"

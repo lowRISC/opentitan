@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "api_config.h"
 #include "datatypes.h"
 
 #ifdef __cplusplus
