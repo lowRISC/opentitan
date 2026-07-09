@@ -266,6 +266,10 @@ def autogen_cryptolib_build_info(name):
         name = name,
         srcs = [cryptolib_build_info_src_target],
         hdrs = ["//sw/device/lib/crypto/drivers:cryptolib_build_info.h"],
+        defines = select({
+            "//rules:stamp_flag_config": ["CRYPTOLIB_IS_RELEASED=true"],
+            "//conditions:default": ["CRYPTOLIB_IS_RELEASED=false"],
+        }),
         deps = [
             "//sw/device/lib/crypto/include:datatypes",
         ],
