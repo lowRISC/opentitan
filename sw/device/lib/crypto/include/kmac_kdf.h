@@ -35,7 +35,6 @@ extern "C" {
  * populated by the key derivation function.
  *
  * @param key_derivation_key Blinded key derivation key.
- * @param kmac_mode Either KMAC128 or KMAC256 as PRF.
  * @param label Label string (optional, may be empty).
  * @param context Context string (optional, may be empty).
  * @param[out] output_key_material Blinded output key material.
