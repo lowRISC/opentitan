@@ -32,8 +32,8 @@ extern "C" {
  * must indicate a symmetric mode. The allocated keyblob length for the output
  * key should be twice the unmasked key length indicated in its key
  * configuration, rounded up to the nearest 32-bit word. This unmasked key
- * length must not be longer than 255*<length of digest for the chosen hash
- * mode>, as per the RFC. The value in the `checksum` field of the blinded key
+ * length must not be longer than 255*[length of digest for the chosen hash
+ * mode], as per the RFC. The value in the `checksum` field of the blinded key
  * struct will be populated by the key derivation function.
  *
  * @param ikm Blinded input key material.
