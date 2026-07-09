@@ -7,7 +7,7 @@
 #include "hw/top/dt/csrng.h"
 #include "hw/top/dt/edn.h"
 #include "hw/top/dt/entropy_src.h"
-#include "hw/top/dt/keymgr.h"
+#include "hw/top/dt/keymgr_dpe.h"
 #include "hw/top/dt/kmac.h"
 #include "hw/top/dt/otbn.h"
 #include "hw/top/dt/otp_ctrl.h"
@@ -19,7 +19,7 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -30,12 +30,13 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/tests/otbn_randomness_impl.h"
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
@@ -46,7 +47,7 @@ static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_kmac_t kmac;
-static dif_keymgr_t kmgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp;
 static dif_pwrmgr_t pwrmgr;
@@ -120,27 +121,60 @@ static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
 
 /**
  * Configure the reseed interval to a short period and
- * advance to the `kDifKeymgrStateInitialized` to request entropy from the edn.
+ * advance to the `kDifKeymgrDpeStateAvailable` to request entropy from the edn.
  */
-static void keymgr_test(const dif_keymgr_t *kmgr) {
-  /**
-   * Key manager can only be tested once per boot.
-   */
+static void keymgr_dpe_test(const dif_keymgr_dpe_t *keymgr_dpe) {
+  // keymgr dpe can only be tested once per boot.
   static bool tested = false;
-  dif_keymgr_state_t expected_stage_before = kBootStage == kBootStageOwner
-                                                 ? kDifKeymgrStateOwnerRootKey
-                                                 : kDifKeymgrStateReset;
-  dif_keymgr_state_t expected_stage_after = kBootStage == kBootStageOwner
-                                                ? kDifKeymgrStateDisabled
-                                                : kDifKeymgrStateInitialized;
+
   if (!tested) {
     LOG_INFO("%s", __func__);
-    dif_keymgr_config_t config = {.entropy_reseed_interval = 4};
-    CHECK_DIF_OK(dif_keymgr_configure(kmgr, config));
-    CHECK_STATUS_OK(keymgr_testutils_check_state(kmgr, expected_stage_before));
-    CHECK_DIF_OK(dif_keymgr_advance_state(kmgr, NULL));
-    CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(kmgr));
-    CHECK_STATUS_OK(keymgr_testutils_check_state(kmgr, expected_stage_after));
+
+    // Setup reseed interval
+    dif_keymgr_dpe_config_t config = {.entropy_reseed_interval = 4};
+    CHECK_DIF_OK(dif_keymgr_dpe_configure(keymgr_dpe, config));
+
+    // Exclude some part when using the real ROM!
+    if (retention_sram_get()
+            ->creator
+            .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+        TEST_ROM_IDENTIFIER) {
+      LOG_INFO(
+          "TEST ROM identified - keymgr dpe is in `kDifKeymgrDpeStateReset`");
+      // Verify the keymgr dpe is in the reset state
+      CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+          keymgr_dpe, kDifKeymgrDpeStateReset));
+      // Initialize the keymgr dpe with the UDS
+      CHECK_STATUS_OK(
+          keymgr_dpe_testutils_initial_load_uds(keymgr_dpe, &kInitialParams));
+      // Verify the keymgr dpe loaded the UDS
+      CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+          keymgr_dpe, kDifKeymgrDpeStateAvailable));
+
+      // Derive the first DPE context from the UDS
+      CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(
+          keymgr_dpe, &kCreatorRootKeyParams));
+      // TODO(#30759): Verify the kCreatorRootKeyParams.slot_dst_sel
+      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
+      // Current bootstage + 1)
+    } else {
+      LOG_INFO(
+          "ROM identified - keymgr_dpe is in `kDifKeymgrDpeStateAvailable `"
+          "and has derived the `OwnerIntKey`");
+      // Verify the keymgr dpe is in the reset state
+      CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+          keymgr_dpe, kDifKeymgrDpeStateAvailable));
+      // TODO(#30759): Verify the kCreatorRootKeyParams.slot_dst_sel
+      // hold keys with boot stage set to BootStageOwner (2). (Note:
+      // Current bootstage + 1)
+    }
+
+    // TODO(#30777): This key generation only works because the slot number
+    // defined by the `kKeyVersionedParams` matches the `kKeymgrDPEAttestSlot`
+    // defined in rom.c
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_generate_key(keymgr_dpe, &kKeyVersionedParams));
+
     tested = true;
   }
 }
@@ -217,7 +251,7 @@ void test_initialize(void) {
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &ibex));
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgr, &pwrmgr));
-  CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &kmgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init_from_dt(kDtKeymgrDpe, &keymgr_dpe));
   CHECK_DIF_OK(dif_otbn_init_from_dt(kDtOtbn, &otbn));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
@@ -238,9 +272,12 @@ status_t execute_test(void) {
     alert_handler_test(&pwrmgr);
     aes_test(&aes);
     otbn_randomness_test_start(&otbn, /*iters=*/0);
-    keymgr_test(&kmgr);
     otp_ctrl_test(&otp);
     kmac_test(&kmac);
+    // This function needs to be called after the kmac test as otherwise a
+    // recoverable fault arises. The reason is the "keymgr_dpe_test" requires
+    // a fully configured kmac unit including the entropy mode.
+    keymgr_dpe_test(&keymgr_dpe);
     ibex_test(&ibex);
 
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
@@ -258,7 +295,7 @@ bool test_main(void) {
   // The keymgr cannot be initialized after ROM_EXT because the flash controller
   // is locked out with the ePMP.
   if (kBootStage != kBootStageOwner) {
-    CHECK_STATUS_OK(keymgr_testutils_init_nvm_then_reset());
+    CHECK_STATUS_OK(keymgr_dpe_testutils_init_nvm_then_reset());
   }
 
   alert_handler_configure(&alert_handler);
