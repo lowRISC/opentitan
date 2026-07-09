@@ -15,7 +15,7 @@
 `define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
 `define EFLASH_HIER           `CHIP_HIER.u_flash_ctrl.u_eflash.u_flash
 `define GPIO_HIER             `CHIP_HIER.u_gpio
-`define KEYMGR_HIER           `CHIP_HIER.u_keymgr
+`define KEYMGR_DPE_HIER       `CHIP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER          `CHIP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER         `CHIP_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER        `CHIP_HIER.u_otp_macro

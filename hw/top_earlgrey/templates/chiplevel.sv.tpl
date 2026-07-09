@@ -1186,12 +1186,12 @@ module chip_${top["name"]}_${target["name"]} #(
 % if target["name"] == "cw340":
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
-    .KeymgrKmacEnMasking(1),
+    .KeymgrDpeKmacEnMasking(1),
     .RvCoreIbexSecureIbex(1),
 % elif target["name"] == "cw310":
     .KmacEnMasking(0),
     .KmacSwKeyMasked(1),
-    .KeymgrKmacEnMasking(0),
+    .KeymgrDpeKmacEnMasking(0),
     .SecKmacCmdDelay(0),
     .SecKmacIdleAcceptSwMsg(1'b0),
     .RvCoreIbexSecureIbex(0),

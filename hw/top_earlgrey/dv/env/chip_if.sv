@@ -57,7 +57,7 @@ interface chip_if;
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
 `define IBEX_CSRS_HIER      `IBEX_HIER.cs_registers_i
 `define KMAC_HIER           `TOP_HIER.u_kmac
-`define KEYMGR_HIER         `TOP_HIER.u_keymgr
+`define KEYMGR_DPE_HIER     `TOP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
@@ -1094,14 +1094,20 @@ interface chip_if;
       `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
 
   // Signal probe function for keymgr key state.
-`ifdef GATE_LEVEL
-  bit dummy_signal_probe_keymgr_key_state;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
-      dummy_signal_probe_keymgr_key_state)
-`else
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
-      `KEYMGR_HIER.u_ctrl.key_state_q)
-`endif
+  // TODO(rroth): The keymgr_dpe does not have a single key_state_q anymore,
+  //              it has several keys in parallel. Linking old integrated issue.
+  // TODO(#462): Decide if we need this probing function (only used in alert handler escalation
+  //              sequence)
+  /*
+  `ifdef GATE_LEVEL
+    bit dummy_signal_probe_keymgr_key_state;
+    `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+        dummy_signal_probe_keymgr_key_state)
+  `else
+    `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+        `KEYMGR_DPE_HIER.u_ctrl.key_state_q)
+  `endif
+*/
   // Signal probe function for RX idle detection in usbdev.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_rx_idle_det_o,
       `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_rx.rx_idle_det_o)
@@ -1291,7 +1297,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef HMAC_HIER
 `undef I2C_HIER
 `undef KMAC_HIER
-`undef KEYMGR_HIER
+`undef KEYMGR_DPE_HIER
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
 `undef OTP_MACRO_HIER

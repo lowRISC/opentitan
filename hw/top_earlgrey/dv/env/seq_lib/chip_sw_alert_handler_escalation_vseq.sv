@@ -57,11 +57,16 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
       {DecLcStateNumRep{DecLcStEscalate}},
       cfg.sw_test_timeout_ns);
 
+    // TODO(rroth): Decide on how this feature needs to be adapted (matches issue in chip_if.sv:L1197)
+    // TODO(#462): The following code was removed because keymgr_dpe does not have prev_key,
+    // curr_key, so a similar check might be necessary for keymgr_dpe.
+    /*
     prev_key = curr_key;
     curr_key = cfg.chip_vif.signal_probe_keymgr_key_state(SignalProbeSample);
     if (curr_key == prev_key) begin
       `uvm_fatal(`gfn, $sformatf("something is very wrong"))
     end
+    */
 
     // once in scrap, probe and check for broadcasts
     lc_ctrl_signals_expected_values = '0;
