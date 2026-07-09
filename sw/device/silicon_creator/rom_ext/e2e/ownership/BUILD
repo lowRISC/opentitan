@@ -777,12 +777,12 @@ ownership_transfer_test(
 )
 
 opentitan_binary(
-    name = "keymgr_test",
+    name = "keymgr_dpe_test",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     defines = [
         "WITH_OWNERSHIP_INFO=1",
-        "WITH_KEYMGR=1",
+        "WITH_KEYMGR_DPE=1",
     ],
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
@@ -793,7 +793,7 @@ opentitan_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
@@ -804,18 +804,18 @@ opentitan_binary(
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_transfer_any_test
 ownership_transfer_test(
-    name = "transfer_keymgr_test",
+    name = "transfer_keymgr_dpe_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     defines = [
         "WITH_OWNERSHIP_INFO=1",
-        "WITH_KEYMGR=1",
+        "WITH_KEYMGR_DPE=1",
     ],
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
     },
     fpga = {
         "binaries": {
-            ":keymgr_test": "keymgr_test",
+            ":keymgr_dpe_test": "keymgr_dpe_test",
         },
         "test_cmd": """
             --pre-transfer-boot-check=true
@@ -825,7 +825,7 @@ ownership_transfer_test(
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
             --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
-            --rescue-after-activate={keymgr_test}
+            --rescue-after-activate={keymgr_dpe_test}
             --keygen-check=true
         """,
         "test_harness": "//sw/host/tests/ownership:transfer_test",
@@ -833,7 +833,7 @@ ownership_transfer_test(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:nvm_ctrl",

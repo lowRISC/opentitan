@@ -81,7 +81,7 @@ dual_cc_library(
             "//sw/device/lib/base:hardened_memory",
             "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:rnd",
-            "//sw/device/silicon_creator/lib/drivers:keymgr",
+            "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
             "//sw/device/silicon_creator/lib/drivers:kmac",
         ],
         host = [
