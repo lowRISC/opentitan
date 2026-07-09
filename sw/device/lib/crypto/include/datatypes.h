@@ -85,9 +85,13 @@ typedef enum otcrypto_status_value {
  * Made to generalize the structures defined below.
  */
 typedef struct otcrypto_generic_buf {
+  /// Pointer to the data.
   const void *data;
+  /// Length of the data in bytes.
   size_t len;
 #ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+  /// Integrity of the buffer which is over the address and the length but not
+  /// the contents.
   uint32_t ptr_checksum;
 #endif
 } otcrypto_generic_buf_t;
@@ -535,6 +539,7 @@ typedef struct otcrypto_hash_digest {
  * State structure for the crypto library.
  */
 typedef struct otcrypto_state {
+  /// Internal state of the crypto library.
   uint32_t data[24];
 } otcrypto_state_t;
 

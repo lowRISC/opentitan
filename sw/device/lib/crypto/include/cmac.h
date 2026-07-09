@@ -46,6 +46,7 @@ enum {
  * with #otcrypto_cmac_init.
  */
 typedef struct otcrypto_cmac_context {
+  /// CMAC internal context.
   uint32_t data[kOtcryptoCmacCtxStructWords];
 } otcrypto_cmac_context_t;
 
