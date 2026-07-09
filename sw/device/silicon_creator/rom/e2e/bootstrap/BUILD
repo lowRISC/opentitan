@@ -95,7 +95,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        # Since the bitstream disables bootstrap, there is no firmware to
+        # Since the OTP configuration disables bootstrap, there is no firmware to
         # load into the chip.  However, opentitan_test wants to build a
         # binary target.  We'll build an unsigned do-nothing binary.
         binaries = {

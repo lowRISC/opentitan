@@ -67,7 +67,7 @@ ROM_EXT_FEATURES = [
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
             # as it is typically used to test FPGA flows and the FPGA doesn't
-            # retain ownership information across bitstream reloads.
+            # retain ownership information across test runs.
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",

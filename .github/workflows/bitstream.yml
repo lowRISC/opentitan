@@ -56,7 +56,7 @@ jobs:
           bitstream_archive=$(./bazelisk.sh outquery "${cached_archive}")
           cp -Lv ${bitstream_archive} build-bin.tar
 
-      - name: Build and splice bitstream with Vivado
+      - name: Build base bitstream with Vivado
         if: steps.strategy.outputs.bitstreamStrategy != 'cached'
         run: |
           bazel_package=//hw/bitstream/vivado

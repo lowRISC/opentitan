@@ -31,8 +31,8 @@ export BITSTREAM="--offline --list ci_bitstreams"
 # Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
 trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
 
-# In case tests update OTP or otherwise leave state on the FPGA we should start
-# by clearing the bitstream.
+# Running tests will clear all non-volatile memory on the FPGA, but we start by
+# clearing the bitstream to be cautious in case tests leave behind some state.
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
 # anyway).

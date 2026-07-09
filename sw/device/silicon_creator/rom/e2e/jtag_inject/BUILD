@@ -32,10 +32,10 @@ package(default_visibility = ["//visibility:public"])
 ]
 
 [
-    # We are using a bitstream with disabled execution so the content of the flash
-    # does not matter but opentitan_test() is unhappy if we don't provide one.
+    # We are using an OTP configuration with disabled execution so the content of the
+    # flash does not matter, but opentitan_test() is unhappy if we don't provide one.
     # Since execution in the ROM is disabled, bootstrap is not possible so we need
-    # to make sure that the test does not try to bootstrap
+    # to make sure that the test does not try to bootstrap.
     opentitan_test(
         name = "sram_program_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],

@@ -119,11 +119,12 @@ We maintain or use the following tags to support this:
 * `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
 * `cw340`, `cw340_test_rom`, and `cw340_rom_with_fake_keys` are used to tag tests that depend on a correctly setup cw340 "Luna Board" to emulate OpenTitan.
   The `cw340` tag may be used in `--test_tag_filters` to enable concise filtering to select tests that run on this board and include or exclude them.
-  Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests tagged `cw340_test_rom`.
+  Historically these tests were grouped by execution environment, because this corresponded to a new "spliced" bitstream in the old FPGA testing flow.
+  Loading the bitstream is the slowest part of the test, but this should only need to be done once for the FPGA.
+  These tags are currently retained as a convenient mechanism for grouping tests, but are somewhat arbitrary.
 * `verilator` is used to tag tests that depend on a verilated model of OpenTitan that can take a significant time to build.
   Verilated tests can still be built with `--define DISABLE_VERILATOR_BUILD`, but they will skip the invocation of Verilator and cannot be run.
 * `vivado` is used to tag tests that critically depend on Vivado.
-* `jtag` is used to tag tests that rely on a USB JTAG adapter connected like we have in CI.
 * `manual` is a Bazel builtin that prevents targets from matching wildcards.
   Test suites are typically tagged manual so their contents match, but test suites don't get built or run unless they're intentionally invoked.
   Intermediate build artifacts may also be tagged with manual to prevent them from being unintentionally built if they cause other problems.
