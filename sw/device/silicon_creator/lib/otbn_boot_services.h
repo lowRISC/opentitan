@@ -10,7 +10,7 @@
 
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
@@ -58,15 +58,14 @@ rom_error_t otbn_boot_app_load(void);
  * @param additional_seed_idx The attestation key generation seed index to load.
  *                            The index corresponds to the seed offset in flash
  *                            info page `kFlashCtrlInfoPageAttestationKeySeeds`.
- * @param key_type Keymgr key type to generate, attestation or sealing.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification,
+    uint32_t additional_seed_idx,
+    sc_keymgr_dpe_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
 
 /**
@@ -83,7 +82,7 @@ rom_error_t otbn_boot_attestation_keygen(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_dpe_ecc_key_t key,
                                            hmac_digest_t *pubkey_id,
                                            ecdsa_p256_public_key_t *pubkey);
 
@@ -98,16 +97,13 @@ rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
  * `otbn_boot_app_load`.
  *
  * @param additional_seed The attestation key generation seed to load.
- * @param key_type OTBN attestation key type to generate. "DICE" attestation
- *                 keys are based on "attestation" keys from the keymgr; "TPM"
- *                 attestation keys are based on "sealing keys from the keymgr.
- * @param diversification Salt and version information for key manager.
+ * @param diversification Salt, Slot and version information for key manager
+ * dpe.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
-    uint32_t additional_seed, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification);
+    uint32_t additional_seed, sc_keymgr_dpe_diversification_t diversification);
 
 /**
  * Clears any saved attestation key from OTBN's scratchpad.
