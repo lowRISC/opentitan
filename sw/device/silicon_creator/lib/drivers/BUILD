@@ -328,26 +328,27 @@ cc_test(
 )
 
 cc_library(
-    name = "keymgr",
-    srcs = ["keymgr.c"],
-    hdrs = ["keymgr.h"],
+    name = "keymgr_dpe",
+    srcs = ["keymgr_dpe.c"],
+    hdrs = ["keymgr_dpe.h"],
     deps = [
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top/dt",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
 
 cc_test(
-    name = "keymgr_unittest",
-    srcs = ["keymgr_unittest.cc"],
+    name = "keymgr_dpe_unittest",
+    srcs = ["keymgr_dpe_unittest.cc"],
     deps = [
-        ":keymgr",
+        ":keymgr_dpe",
         "//hw/top/dt",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -355,8 +356,8 @@ cc_test(
 )
 
 opentitan_test(
-    name = "keymgr_functest",
-    srcs = ["keymgr_functest.c"],
+    name = "keymgr_dpe_functest",
+    srcs = ["keymgr_dpe_functest.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
@@ -377,7 +378,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        ":keymgr",
+        ":keymgr_dpe",
         ":kmac",
         ":lifecycle",
         ":retention_sram",
@@ -388,13 +389,13 @@ opentitan_test(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],

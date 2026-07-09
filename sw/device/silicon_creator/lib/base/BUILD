@@ -67,7 +67,7 @@ cc_library(
     hdrs = ["boot_measurements.h"],
     deps = [
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
     ],
 )
 
