@@ -59,7 +59,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
  * a non SCA hardened fallback is used.
  *
  * @param entropy Pointer to the user defined entropy value.
- * @param personalization_string Pointer to personalization bitstring.
+ * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
  */
 otcrypto_status_t otcrypto_drbg_manual_instantiate(

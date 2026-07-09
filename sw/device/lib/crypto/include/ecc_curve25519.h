@@ -149,7 +149,6 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
  * @param[out] s1 Pointer to the second arithmetic share of s.
  * @param[out] r0 Pointer to the first arithmetic share of r.
  * @param[out] r1 Pointer to the second arithmetic share of r.
- * @param msg_digest[out] Pointer to the msg digest.
  * @return Result of async Ed25519 start operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -169,7 +168,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
  * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @param input_message_ph Pre-hashed input message to be signed.
  * @param sign_mode EdDSA signature hashing mode.
- * @param signature[out] Pointer to the EdDSA signature to get (R) value.
+ * @param[out] signature Pointer to the EdDSA signature to get (R) value.
  * @param s0 Pointer to the first arithmetic share of s.
  * @param s1 Pointer to the second arithmetic share of s.
  * @param r0 Pointer to the first arithmetic share of r.

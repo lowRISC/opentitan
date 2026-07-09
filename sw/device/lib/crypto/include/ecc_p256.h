@@ -354,6 +354,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
  * status code, as for other operations, only indicates whether errors were
  * encountered, and may return OK even when the signature is invalid.
  *
+ * @param signature Pointer to the signature being verified.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async ECDSA verify finalize operation.
  */
@@ -548,6 +549,7 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
  *
  * @param point Point in the affine coordinates representation that should be
  * checked.
+ * @param[out] check_result True if point is valid, false otherwise.
  * @return Result of the point valid check operation.
  */
 otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
@@ -585,7 +587,7 @@ status_t otcrypto_ecc_p256_base_point_mult(
  *
  * @param bool_private_key_share0 First Boolean share of the private key.
  * @param bool_private_key_share1 Second Boolean share of the private key.
- * @param arith_shared_private_key The resulting arithmetically shared key.
+ * @param[out] arith_private_key The resulting arithmetically shared key.
  * @return Result of the sharing operation.
  */
 otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
