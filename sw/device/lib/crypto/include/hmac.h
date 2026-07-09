@@ -79,7 +79,6 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
- * @param hash_mode Hash function to use.
  * @return Result of the HMAC init operation.
  */
 OT_WARN_UNUSED_RESULT
