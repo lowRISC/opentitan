@@ -127,10 +127,12 @@ static rom_error_t unlock_update(boot_svc_msg_t *msg, boot_data_t *bootdata) {
       case kOwnershipUpdateModeSelfVersion:
       case kOwnershipUpdateModeOpen:
       case kOwnershipUpdateModeAnyVersion:
+        // The `unlock_update` function services UnlockUpdate requests,
+        // which are valid for the `Open`, `Self`, `SelfVersion`, and
+        // `AnyVersion` modes.
+        break;
       default:
-          // The `unlock_update` funciton services UnlockUpdate update requests,
-          // which are valid for the `Open` and `Self` modes.
-          ;
+        return kErrorOwnershipInvalidMode;
     }
     // Check the signature against the unlock key.
     HARDENED_RETURN_IF_ERROR(ownership_key_validate(
