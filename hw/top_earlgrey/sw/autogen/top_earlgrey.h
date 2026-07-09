@@ -697,22 +697,22 @@ extern "C" {
 #define TOP_EARLGREY_OTBN_SIZE_BYTES 0x10000u
 
 /**
- * Peripheral base address for keymgr in top earlgrey.
+ * Peripheral base address for keymgr_dpe in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_KEYMGR_BASE_ADDR 0x41140000u
+#define TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR 0x41140000u
 
 /**
- * Peripheral size for keymgr in top earlgrey.
+ * Peripheral size for keymgr_dpe in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_KEYMGR_BASE_ADDR and
- * `TOP_EARLGREY_KEYMGR_BASE_ADDR + TOP_EARLGREY_KEYMGR_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR and
+ * `TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR + TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x100u
+#define TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES 0x100u
 
 /**
  * Peripheral base address for csrng in top earlgrey.
@@ -953,7 +953,7 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralHmac = 23, /**< hmac */
   kTopEarlgreyPlicPeripheralKmac = 24, /**< kmac */
   kTopEarlgreyPlicPeripheralOtbn = 25, /**< otbn */
-  kTopEarlgreyPlicPeripheralKeymgr = 26, /**< keymgr */
+  kTopEarlgreyPlicPeripheralKeymgrDpe = 26, /**< keymgr_dpe */
   kTopEarlgreyPlicPeripheralCsrng = 27, /**< csrng */
   kTopEarlgreyPlicPeripheralEntropySrc = 28, /**< entropy_src */
   kTopEarlgreyPlicPeripheralEdn0 = 29, /**< edn0 */
@@ -1145,7 +1145,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdKmacFifoEmpty = 174, /**< kmac_fifo_empty */
   kTopEarlgreyPlicIrqIdKmacKmacErr = 175, /**< kmac_kmac_err */
   kTopEarlgreyPlicIrqIdOtbnDone = 176, /**< otbn_done */
-  kTopEarlgreyPlicIrqIdKeymgrOpDone = 177, /**< keymgr_op_done */
+  kTopEarlgreyPlicIrqIdKeymgrDpeOpDone = 177, /**< keymgr_dpe_op_done */
   kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 178, /**< csrng_cs_cmd_req_done */
   kTopEarlgreyPlicIrqIdCsrngCsEntropyReq = 179, /**< csrng_cs_entropy_req */
   kTopEarlgreyPlicIrqIdCsrngCsHwInstExc = 180, /**< csrng_cs_hw_inst_exc */
@@ -1222,7 +1222,7 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralHmac = 30, /**< hmac */
   kTopEarlgreyAlertPeripheralKmac = 31, /**< kmac */
   kTopEarlgreyAlertPeripheralOtbn = 32, /**< otbn */
-  kTopEarlgreyAlertPeripheralKeymgr = 33, /**< keymgr */
+  kTopEarlgreyAlertPeripheralKeymgrDpe = 33, /**< keymgr_dpe */
   kTopEarlgreyAlertPeripheralCsrng = 34, /**< csrng */
   kTopEarlgreyAlertPeripheralEntropySrc = 35, /**< entropy_src */
   kTopEarlgreyAlertPeripheralEdn0 = 36, /**< edn0 */
@@ -1293,8 +1293,8 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdKmacFatalFaultErr = 49, /**< kmac_fatal_fault_err */
   kTopEarlgreyAlertIdOtbnFatal = 50, /**< otbn_fatal */
   kTopEarlgreyAlertIdOtbnRecov = 51, /**< otbn_recov */
-  kTopEarlgreyAlertIdKeymgrRecovOperationErr = 52, /**< keymgr_recov_operation_err */
-  kTopEarlgreyAlertIdKeymgrFatalFaultErr = 53, /**< keymgr_fatal_fault_err */
+  kTopEarlgreyAlertIdKeymgrDpeRecovOperationErr = 52, /**< keymgr_dpe_recov_operation_err */
+  kTopEarlgreyAlertIdKeymgrDpeFatalFaultErr = 53, /**< keymgr_dpe_fatal_fault_err */
   kTopEarlgreyAlertIdCsrngRecovAlert = 54, /**< csrng_recov_alert */
   kTopEarlgreyAlertIdCsrngFatalAlert = 55, /**< csrng_fatal_alert */
   kTopEarlgreyAlertIdEntropySrcRecovAlert = 56, /**< entropy_src_recov_alert */

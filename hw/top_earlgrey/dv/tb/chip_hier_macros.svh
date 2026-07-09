@@ -16,7 +16,7 @@
 `define EFLASH_HIER           `PD_MAIN_HIER.u_flash_ctrl.u_eflash.u_flash
 `define RRAM_MACRO_HIER       `PD_MAIN_HIER.u_rram_macro
 `define GPIO_HIER             `PD_MAIN_HIER.u_gpio
-`define KEYMGR_HIER           `PD_MAIN_HIER.u_keymgr
+`define KEYMGR_DPE_HIER       `PD_MAIN_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER          `PD_MAIN_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER         `PD_MAIN_HIER.u_otp_ctrl
 `define RAM_MAIN_HIER         `PD_MAIN_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
