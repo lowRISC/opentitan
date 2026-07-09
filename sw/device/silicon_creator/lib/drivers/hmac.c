@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
+#include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hmac_regs.h"  // Generated.
@@ -152,6 +153,19 @@ void hmac_hmac_sha256(const void *data, size_t len, hmac_key_t key,
   hmac_sha256_update(data, len);
   hmac_sha256_process();
   hmac_sha256_final(digest);
+  hmac_wipe();
+}
+
+void hmac_wipe(void) {
+  // Do not clear the config yet, we just need to deassert sha_en, see #23014.
+  uint32_t cfg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
+
+  // Use a random value from rnd_uint32() to wipe HMAC.
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_WIPE_SECRET_REG_OFFSET,
+                   rnd_uint32());
 }
 
 void hmac_sha256_save(hmac_context_t *ctx) {
