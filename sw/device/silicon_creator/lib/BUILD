@@ -250,8 +250,8 @@ opentitan_test(
 )
 
 cc_library(
-    name = "keymgr_binding",
-    hdrs = ["keymgr_binding_value.h"],
+    name = "keymgr_dpe_binding",
+    hdrs = ["keymgr_dpe_binding_value.h"],
 )
 
 cc_library(
@@ -322,7 +322,7 @@ dual_cc_library(
         shared = [
             ":epmp_state",
             ":error",
-            ":keymgr_binding",
+            ":keymgr_dpe_binding",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
@@ -388,8 +388,8 @@ dual_cc_library(
         shared = ["shutdown.h"],
     ),
     defines = opentitan_if_ip(
-        "keymgr",
-        ["HAS_KEYMGR"],
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
         [],
     ),
     deps = dual_inputs(
@@ -437,8 +437,8 @@ dual_cc_library(
             ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
             [],
         ) + opentitan_if_ip(
-            "keymgr",
-            ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+            "keymgr_dpe",
+            ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
             [],
         ),
     ),
@@ -609,7 +609,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
         "//sw/device/silicon_creator/lib/drivers:otbn",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
@@ -638,7 +638,7 @@ opentitan_test(
         "//hw/top/dt",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
