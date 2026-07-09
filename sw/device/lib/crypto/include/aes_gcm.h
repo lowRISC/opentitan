@@ -40,6 +40,7 @@ typedef enum otcrypto_aes_gcm_tag_len {
  */
 typedef struct otcrypto_aes_gcm_context {
   // TODO: update the size and the restore and save context functions.
+  /// AES-GCM internal context.
   uint32_t data[194];
 } otcrypto_aes_gcm_context_t;
 
