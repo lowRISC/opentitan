@@ -36,6 +36,9 @@ waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'spi_device_pa
 waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'pinmux_aon_(lc|rv)_jtag_req.tck' is driven by a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "Inside lc_ctrl/rv_dm, either the JTAG clock is muxed and forward to the DMI JTAG TAP depending on the scanmode/testmode signals."
 
+waive -rules CLOCK_DRIVER -location {top_earlgrey.sv} -regexp {'pinmux_aon_(lc|rv)_jtag_req.tck' is driven by instance 'u_pinmux_aon' of module 'pinmux', and used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "TCK is gated per TAP inside pinmux's JTAG Selection Mux; at this hierarchy level the submodule instance itself is reported as the driver."
+
 waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {Clock 'mio_in_i\[38\]' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "Inside pinmux_strap_sampling.sv, 'mio_in_i[TckPadIdx]' is connected to 'jtag_req' which is then muxed in the JTAG Selection Mux."
 

@@ -22,6 +22,9 @@ waive -rules RESET_MUX -location {pinmux_strap_sampling.sv} -regexp {Asynchronou
 waive -rules {CLOCK_DRIVER CLOCK_MUX} -location {pinmux_strap_sampling.sv} -regexp {'(lc|rv)_jtag_req.tck' is driven( by a multiplexer)? here,( and)? used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "These signals are muxed using the JTAG Selection Mux."
 
+waive -rules {CLOCK_DRIVER CLOCK_MUX} -location {pinmux_jtag_buf.sv} -regexp {'tck_gated' is driven by instance 'u_prim_and2_tck' of module 'prim_and2', and used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "TCK is gated per TAP by a hand-instantiated prim_and2 cell inside pinmux_jtag_buf, enabled by the TAP Selection Mux, before being re-buffered onto req_o.tck by prim_clock_buf."
+
 waive -rules CLOCK_MUX -location {pinmux_strap_sampling.sv pinmux.sv} -regexp {Clock '(in_padring_i\[38\]|mio_in_i\[38\]|jtag_req.tck)' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "The 'mio_in_i[TckPadIdx]' input signal is connected to 'jtag_req.tck' which eventually feeds into the JTAG Selection Mux."
 
