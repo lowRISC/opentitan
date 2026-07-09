@@ -70,6 +70,41 @@ pkg_filegroup(
     tags = ["manual"],
 )
 
+# Build up a cryptolib package with a conventional 'include/lib/*.h` and `lib/*.a` structure
+pkg_files(
+    name = "cryptolib_headers_pkg",
+    srcs = [
+        "//sw/device/lib/crypto/include:package",
+    ],
+    prefix = "include/libotcrypto",
+)
+
+pkg_files(
+    name = "cryptolib_freestanding_headers_pkg",
+    srcs = [
+        "//sw/device/lib/crypto/include/freestanding:package",
+    ],
+    prefix = "include/libotcrypto/freestanding",
+)
+
+pkg_files(
+    name = "cryptolib_archive_pkg",
+    srcs = [
+        "//sw/device/lib/crypto:package",
+    ],
+    prefix = "lib",
+)
+
+pkg_filegroup(
+    name = "cryptolib_pkg",
+    srcs = [
+        ":cryptolib_archive_pkg",
+        ":cryptolib_freestanding_headers_pkg",
+        ":cryptolib_headers_pkg",
+    ],
+    prefix = "libotcrypto",
+)
+
 pkg_files(
     name = "bazel",
     srcs = [
@@ -88,6 +123,7 @@ pkg_tar(
     srcs = [
         ":bazel",
         ":bitstreams_pkg",
+        ":cryptolib_pkg",
         ":memories_pkg",
         "//hw:package",
         "//hw/top_earlgrey/data/otp:package",
