@@ -86,6 +86,11 @@ void hmac_hmac_sha256(const void *data, size_t len, hmac_key_t key,
                       bool big_endian_digest, hmac_digest_t *digest);
 
 /**
+ * Wipes the HMAC block using randomness from EDN/rnd.
+ */
+void hmac_wipe(void);
+
+/**
  * Configure the HMAC block in SHA256 mode.
  *
  * This function resets the HMAC module to clear the digest register.

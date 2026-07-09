@@ -28,6 +28,7 @@ class MockHmac : public global_mock::GlobalMock<MockHmac> {
   MOCK_METHOD(void, sha256, (const void *, size_t, hmac_digest_t *));
   MOCK_METHOD(void, sha256_save, (hmac_context_t *));
   MOCK_METHOD(void, sha256_restore, (const hmac_context_t *));
+  MOCK_METHOD(void, wipe, ());
 };
 
 }  // namespace internal

@@ -222,6 +222,7 @@ dual_cc_library(
         ],
         shared = [
             ":ibex",
+            ":rnd",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",

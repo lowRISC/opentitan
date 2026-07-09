@@ -43,5 +43,7 @@ void hmac_sha256_save(hmac_context_t *ctx) {
 void hmac_sha256_restore(const hmac_context_t *ctx) {
   MockHmac::Instance().sha256_restore(ctx);
 }
+
+void hmac_wipe(void) { MockHmac::Instance().wipe(); }
 }  // extern "C"
 }  // namespace rom_test
