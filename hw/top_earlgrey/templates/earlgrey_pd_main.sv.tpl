@@ -51,7 +51,7 @@ module ${top["name"]}_pd_${domain.lower()} #(
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
-  assign keymgr_otp_device_id =
+  assign keymgr_dpe_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
   logic unused_otp_broadcast_bits;
@@ -61,15 +61,6 @@ module ${top["name"]}_pd_${domain.lower()} #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
-
-  // Connect the keymaterial from the OTP manually
-  // TODO: resolve this manual fix
-  assign keymgr_otp_key = {
-    otp_ctrl_keymgr_creator_root_key,
-    otp_ctrl_keymgr_creator_seed,
-    otp_ctrl_keymgr_owner_seed
-  };
-
   % endif
   % if m.get("name") == "rram_ctrl":
   // TODO: remove once RRAM is connected to OTP
