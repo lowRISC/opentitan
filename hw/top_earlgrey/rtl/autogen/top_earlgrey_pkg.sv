@@ -380,14 +380,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_OTBN_SIZE_BYTES = 32'h10000;
 
   /**
-   * Peripheral base address for keymgr in top earlgrey.
+   * Peripheral base address for keymgr_dpe in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_KEYMGR_BASE_ADDR = 32'h41140000;
+  parameter int unsigned TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR = 32'h41140000;
 
   /**
-   * Peripheral size in bytes for keymgr in top earlgrey.
+   * Peripheral size in bytes for keymgr_dpe in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_KEYMGR_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_EARLGREY_KEYMGR_DPE_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for csrng in top earlgrey.
@@ -564,7 +564,7 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertPeripheralHmac = 29,
     TopEarlgreyAlertPeripheralKmac = 30,
     TopEarlgreyAlertPeripheralOtbn = 31,
-    TopEarlgreyAlertPeripheralKeymgr = 32,
+    TopEarlgreyAlertPeripheralKeymgrDpe = 32,
     TopEarlgreyAlertPeripheralCsrng = 33,
     TopEarlgreyAlertPeripheralEntropySrc = 34,
     TopEarlgreyAlertPeripheralEdn0 = 35,
@@ -630,8 +630,8 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdKmacFatalFaultErr = 49,
     TopEarlgreyAlertIdOtbnFatal = 50,
     TopEarlgreyAlertIdOtbnRecov = 51,
-    TopEarlgreyAlertIdKeymgrRecovOperationErr = 52,
-    TopEarlgreyAlertIdKeymgrFatalFaultErr = 53,
+    TopEarlgreyAlertIdKeymgrDpeRecovOperationErr = 52,
+    TopEarlgreyAlertIdKeymgrDpeFatalFaultErr = 53,
     TopEarlgreyAlertIdCsrngRecovAlert = 54,
     TopEarlgreyAlertIdCsrngFatalAlert = 55,
     TopEarlgreyAlertIdEntropySrcRecovAlert = 56,
@@ -829,7 +829,7 @@ package top_earlgrey_pkg;
     TopEarlgreyPlicIrqIdKmacFifoEmpty = 174,
     TopEarlgreyPlicIrqIdKmacKmacErr = 175,
     TopEarlgreyPlicIrqIdOtbnDone = 176,
-    TopEarlgreyPlicIrqIdKeymgrOpDone = 177,
+    TopEarlgreyPlicIrqIdKeymgrDpeOpDone = 177,
     TopEarlgreyPlicIrqIdCsrngCsCmdReqDone = 178,
     TopEarlgreyPlicIrqIdCsrngCsEntropyReq = 179,
     TopEarlgreyPlicIrqIdCsrngCsHwInstExc = 180,
@@ -1116,7 +1116,7 @@ package top_earlgrey_pkg;
     PeripheralI2c0,
     PeripheralI2c1,
     PeripheralI2c2,
-    PeripheralKeymgr,
+    PeripheralKeymgrDpe,
     PeripheralKmac,
     PeripheralLcCtrl,
     PeripheralOtbn,

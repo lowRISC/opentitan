@@ -237,7 +237,7 @@
             "hmac",
             "kmac",
             "otbn",
-            "keymgr",
+            "keymgr_dpe",
             "csrng",
             "entropy_src",
             "edn0"
@@ -905,13 +905,18 @@
         hart: "0x41130000",
       },
     },
-    { name: "keymgr",
-      type: "keymgr",
+    { name: "keymgr_dpe",
+      type: "keymgr_dpe",
       clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       base_addr: {
         hart: "0x41140000",
+      },
+      param_decl: {
+        NumInstHwSlot: "4",
+        NumBootStages: "3",
+        NumRomDigestInputs: "1",
       },
     },
     { name: "csrng",
@@ -1171,7 +1176,7 @@
                                    'aon_timer.sleep_mode'],
       'pwrmgr.fetch_en'         : ['rv_core_ibex.pwrmgr_cpu_en'],
       'rom_ctrl.pwrmgr_data'    : ['pwrmgr.rom_ctrl'],
-      'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
+      'rom_ctrl.keymgr_data'    : ['keymgr_dpe.rom_digest'],
       'alert_handler.crashdump' : ['rstmgr.alert_dump'],
 
       // LC RMA req/ack interface: LC --> Flash -> LC
@@ -1190,7 +1195,7 @@
       'pinmux.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // Edn connections
-      'edn0.edn'              : ['keymgr.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
+      'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
                                  'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
                                  'rv_core_ibex.edn'],
       'edn1.edn'              : ['otbn.edn_rnd'],
@@ -1198,17 +1203,22 @@
       // OTBN OTP scramble key
       'otp_ctrl.otbn_otp_key' : ['otbn.otbn_otp_key'],
 
-      // KeyMgr Sideload & KDF function
-      'keymgr.aes_key'          : ['aes.keymgr_key'],
-      'keymgr.kmac_key'         : ['kmac.keymgr_key'],
-      'keymgr.otbn_key'         : ['otbn.keymgr_key'],
+      // KeyMgr DPE Sideload & KDF function
+      'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
+      // TODO: Temporary seed connection; will be replaced by configuration parameter
+      // in this top description in the future.
+      'otp_ctrl.keymgr_creator_seed'      : ['keymgr_dpe.creator_seed'],
+      'otp_ctrl.keymgr_owner_seed'        : ['keymgr_dpe.owner_seed'],
+      'keymgr_dpe.aes_key'                : ['aes.keymgr_key'],
+      'keymgr_dpe.kmac_key'               : ['kmac.keymgr_key'],
+      'keymgr_dpe.otbn_key'               : ['otbn.keymgr_key'],
 
       // KMAC Application Interface
-      'kmac.app'                : ['keymgr.kmac_data',   // Keymgr needs to be at index 0
+      'kmac.app'                : ['keymgr_dpe.kmac_data',   // Keymgr needs to be at index 0
                                    'lc_ctrl.kmac_data',  // LC needs to be at index 1
                                    'rom_ctrl.kmac_data', // ROM needs to be at index 2
                                    'otbn.kmac_data'],    // OTBN needs to be at index 3
-      'kmac.en_masking'         : ['keymgr.kmac_en_masking'],
+      'kmac.en_masking'         : ['keymgr_dpe.kmac_en_masking'],
 
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
@@ -1226,7 +1236,7 @@
       'lc_ctrl.lc_otp_program'     : ['otp_ctrl.lc_otp_program'],
 
       // Diversification constant coming from life cycle
-      'lc_ctrl.lc_keymgr_div'  : ['keymgr.lc_keymgr_div'],
+      'lc_ctrl.lc_keymgr_div'  : ['keymgr_dpe.lc_keymgr_div'],
 
       // Strap enable override signal, only used when SecVolatileRawUnlockEn = 1.
       'lc_ctrl.strap_en_override'  : ['pinmux.strap_en_override'],
@@ -1250,7 +1260,7 @@
                                       'clkmgr.lc_hw_debug_en',
                                       'pwrmgr.lc_hw_debug_en',],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en'],
-      'lc_ctrl.lc_keymgr_en'       : ['keymgr.lc_keymgr_en'],
+      'lc_ctrl.lc_keymgr_en'       : ['keymgr_dpe.lc_keymgr_en'],
       'lc_ctrl.lc_escalate_en'     : ['aes.lc_escalate_en',
                                       'kmac.lc_escalate_en',
                                       'otbn.lc_escalate_en',
@@ -1339,8 +1349,6 @@
 
         // Temporary RRAM helpers
         'flash_ctrl.otp',
-        'rram_ctrl.keymgr',
-        'keymgr.flash',
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
         'pinmux.dft_jtag',
@@ -1352,17 +1360,10 @@
         'csrng.otp_en_csrng_sw_app_read',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
-        'keymgr.otp_device_id',
+        'keymgr_dpe.device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
         'sram_ctrl_sec.otp_en_sram_ifetch',
         'rv_dm.otp_dis_rv_dm_late_debug',
-
-        // Connect the keymaterial from the OTP manually
-        // TODO: resolve this manual fix
-        'keymgr.otp_key',
-        'otp_ctrl.keymgr_creator_root_key',
-        'otp_ctrl.keymgr_creator_seed',
-        'otp_ctrl.keymgr_owner_seed',
     ],
 
     // ext is to create port in the top.

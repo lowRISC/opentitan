@@ -84,9 +84,8 @@ module top_earlgrey #(
   parameter bit SecOtbnFixMacOpSeq = 0,
   parameter bit SecOtbnSkipUrndReseedAtStart = 0,
   parameter bit OtbnFeatStubMai = 0,
-  // parameters for keymgr
-  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
-  parameter bit KeymgrKmacEnMasking = 1,
+  // parameters for keymgr_dpe
+  parameter bit KeymgrDpeKmacEnMasking = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
@@ -381,8 +380,7 @@ module top_earlgrey #(
   .SecOtbnFixMacOpSeq(SecOtbnFixMacOpSeq),
   .SecOtbnSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
   .OtbnFeatStubMai(OtbnFeatStubMai),
-  .KeymgrUseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
-  .KeymgrKmacEnMasking(KeymgrKmacEnMasking),
+  .KeymgrDpeKmacEnMasking(KeymgrDpeKmacEnMasking),
   .CsrngSBoxImpl(CsrngSBoxImpl),
   .EntropySrcRngBusWidth(EntropySrcRngBusWidth),
   .EntropySrcRngBusBitSelWidth(EntropySrcRngBusBitSelWidth),

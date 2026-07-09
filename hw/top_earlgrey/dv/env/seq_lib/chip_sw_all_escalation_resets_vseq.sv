@@ -42,7 +42,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"i2c0", "", TopEarlgreyAlertIdI2c0FatalFault},
     '{"i2c1", "", TopEarlgreyAlertIdI2c1FatalFault},
     '{"i2c2", "", TopEarlgreyAlertIdI2c2FatalFault},
-    '{"keymgr", "", TopEarlgreyAlertIdKeymgrFatalFaultErr},
+    '{"keymgr_dpe", "", TopEarlgreyAlertIdKeymgrDpeFatalFaultErr},
     '{"kmac", "", TopEarlgreyAlertIdKmacFatalFaultErr},
     // TODO TopEarlgreyAlertIdLcCtrlFatalProgError: done in .../sim_dv/lc_ctrl_program_error.c?
     '{"lc_ctrl", "state_regs", TopEarlgreyAlertIdLcCtrlFatalStateError},
