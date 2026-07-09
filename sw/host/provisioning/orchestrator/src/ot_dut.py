@@ -200,8 +200,12 @@ class OtDut():
         ate_suffix = "_ate" if self.ate_mode else ""
         # Emulation perso bins are signed online with fake keys, and therefore
         # have different file naming patterns than production SKUs.
-        # For our dual-stage flow, we use the compact stage 1 personalizer as the first bootstrap binary.
-        perso_bin = "bazel-bin/sw/device/silicon_creator/manuf/base/ft_personalize_stage1_{target}.prod_key_0.signed.bin"
+        # For our dual-stage flow, we use the compact stage 1
+        # personalizer as the first bootstrap binary.
+        perso_bin = (
+            "bazel-bin/sw/device/silicon_creator/manuf/base/"
+            "ft_personalize_stage1_{target}.prod_key_0.signed.bin"
+        )
         fw_bundle_bin = _FT_FW_BUNDLE_BIN
         if self.fpga:
             # Set host flags and device binaries for FPGA DUT.
