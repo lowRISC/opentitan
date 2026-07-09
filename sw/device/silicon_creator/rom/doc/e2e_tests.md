@@ -5,7 +5,7 @@ This guide will help you to setup an environment to run the ROM E2E tests in an 
 The [ROM](../README.md) is the first boot stage of secure boot flow and by nature, it cannot be updated after manufacturing.
 The ROM E2E (End-to-End) tests validates the ROM features and can be used for regression tests.
 Each test is divided into components:
- - **ROM Image**, a C program built by `bazel` and spliced with the bitstream. The ROM is the DUT (Device Under Test) of the ROM E2E tests.
+ - **ROM Image**, a C program built by `bazel` and loaded onto the FPGA. The ROM is the DUT (Device Under Test) of the ROM E2E tests.
  - **OTP image**, contains HW and SW configurations, some of which control execution paths in the ROM, such as the lifecycle stage.
    As a result, we run some tests with several different OTP images to increase coverage of ROM execution paths.
    There is more information in the documentation for the OTP layout.
@@ -13,7 +13,8 @@ Each test is divided into components:
    For an example, see earlgrey's [OTP memory map](../../../../../hw/top_earlgrey/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
  - **FPGA bitstream**, Opentitan Hardware implementation synthesized for the FPGA built by `bazel` and `vivado`.
  - **Device test firmware**, a C program (built by bazel to run on an OpenTitan device) that is loaded into flash, and booted by the ROM stage. It checks the HW registers and/or memory configurations performed by the ROM and relays information to the Host test software.
- - **opentitantool**, a Rust program that provides a common interface to interact with an OpenTitan device. `opentitantool` uses `opentitanlib` which provides the abstractions to communicate with an OpenTitan device.
+ - **opentitantool**, a Rust program that provides a common interface to interact with an OpenTitan device.
+   `opentitantool` uses `opentitanlib` which provides the abstractions to communicate with an OpenTitan device.
  - **Host test software**, any Rust program (built by `bazel` to run on the host platform , e.g. a x86 binary, and linked with `opentitanlib`) that actively interacts with an OpenTitan device over any hardware interface (e.x., UART, SPI or JTAG) to perform the test functions and check their results.
 
 ![Architecture](ROM_E2E_Tests.svg)
@@ -21,6 +22,7 @@ Each test is divided into components:
 All the existing tests are documented in the [ROM E2E Testplan](https://github.com/lowRISC/OpenTitan/blob/master/sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson).
 ## Hardware setup
 ### FPGA
+<!--FIXME: The below docs should be updated to reference the CW340, since the CW310 is no longer supported.-->
 The E2E ROM tests run on the CW310 FPGA board with the following configuration:
  - The power supply connected to the J11 connector.
  - A USB cable connecting the Host PC to the USB-C Data (J8) connector which is connected to the SAM3U microcontroller on the CW310 FPGA board.
@@ -37,7 +39,6 @@ Some tests will use the JTAG interface to interact with OpenTitan, as the CW310 
 The software dependencies are covered by other guides in this book and are linked below.
 - Clone the OpenTitan repository and install the software dependencies: [Get started](../../../../../doc/getting_started/README.md).
 - Setup the FPGA: [FPGA guide](../../../../../doc/getting_started/setup_fpga.md).
-- Install Vivado to be able to splice bitstreams: [Installing Vivado](../../../../../doc/getting_started/install_vivado).
 
 **Note**: Make sure that you added the udev rules for the [FPGA](../../../../../doc/getting_started/install_vivado#device-permissions-udev-rules) board and the [JTAG](../../../../../doc/getting_started/setup_fpga.md#device-permissions-udev-rules) adapter.
 
@@ -51,6 +52,7 @@ Once the hardware setup is done and the FPGA is connected to the USB, the full s
 cd ${REPO_TOP}
 bazel test --define DISABLE_VERILATOR_BUILD=true --define bitstream=gcp --test_tag_filters=-verilator,-dv,-broken --build_tests_only //sw/device/silicon_creator/rom/e2e/...
 ```
-This bazel command will download a bitstream associated with the HEAD commit of the repository, splice it with the different OTP configurations (RMA, DEV, PROD*, TEST*), load the FPGA and run all the tests suites under `sw/device/silicon_creator/rom/e2e`.
+This bazel command will download a bitstream associated with the HEAD commit of the repository, load the FPGA with the bitstream and program it with various different OTP configurations (RMA, DEV, PROD*, TEST*), and run all the tests suites under `sw/device/silicon_creator/rom/e2e`.
 
-**Note**: If you have hardware changes then you can build the bitstream locally by changing the tag `bitstream=` from `gcp` to `vivado`. Although this will take much longer.
+**Note**: If you have hardware changes then you can build the bitstream locally by changing the tag `bitstream=` from `gcp` to `vivado`.
+Although this will take much longer.

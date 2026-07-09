@@ -234,10 +234,10 @@ In practice, we have not seen problems (e.g., due to missing constraints) yet, a
 So you can ignore this warning, but it's worth keeping in mind *if* you should see any problems (e.g., due to timing violations).
 
 
-## Building and splicing bitstreams that include an ILA
+## Building bitstreams that include an ILA
 
 With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as following the [corresponding guide](../../getting_started/setup_fpga.md#build-an-fpga-bitstream).
-The generated and spliced bitstream will include the defined ILAs.
+The generated bitstream will include the defined ILAs.
 
 
 ## Programming the FPGA, controlling the ILA, and running a test

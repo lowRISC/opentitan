@@ -245,9 +245,9 @@ bazel run //quality:license_check --test_output=streamed
 Note, to run (software) tests on these OpenTitan hardware platforms **does not** require these Bazel commands be invoked before the test commands above.
 Bazel is aware of all dependency relationships, and knows what prerequisites to build to run a test.
 
-- Build FPGA bitstream with (test) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
-- Build FPGA bitstream with (production) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
-- Build Verilator simulation binary:
+- Build a base FPGA bitstream with a (test) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
+- Build a production ROM and OTP image for the FPGA, see [here](../getting_started/setup_fpga.md#programming-the-fpga-with-rom--otp-images).
+- Build a Verilator simulation binary:
   ```sh
   bazel build //hw:verilator
   ```

@@ -5,6 +5,7 @@ The OpenTitanTool is a CLI tool for interacting with an OpenTitan device via the
 Operations supported by OpenTitanTool include:
 
 * Flashing an OpenTitan bitstream to an FPGA board.
+* Loading images (e.g. ROM, OTP) onto an FPGA with a loaded bitstream.
 * Bootstrapping (flashing) software onto a device.
 * Connecting to a device's console.
 * Manipulating a device's GPIO pins, particularly for "[strapping][]".

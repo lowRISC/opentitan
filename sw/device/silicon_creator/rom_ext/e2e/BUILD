@@ -28,7 +28,7 @@ otp_json(
             name = "SECRET2",
             items = {
                 # We aren't testing keymgr for ROM_EXT tests and we want
-                # reproducible bitstreams for all tests.
+                # reproducible OTP images for all tests.
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",

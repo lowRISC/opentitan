@@ -99,7 +99,7 @@ otp_json(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
@@ -137,7 +137,7 @@ otp_json(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP Images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
@@ -175,7 +175,7 @@ otp_json(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP Images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
@@ -213,7 +213,7 @@ otp_json_immutable_rom_ext(
         otp_partition(
             name = "SECRET2",
             items = {
-                # We set reproducible bitstreams for the tests
+                # We set reproducible OTP Images for the tests
                 "RMA_TOKEN": "0000000000000005",
                 "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
                 "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
