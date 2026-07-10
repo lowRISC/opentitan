@@ -138,6 +138,80 @@ bitstreams_repo = repository_rule(
     configure = True,
 )
 
+# An unqualified "//hw/bitstream/universal:none" label embedded in a generated
+# BUILD file resolves relative to whichever repo that BUILD file lives in - not
+# the main workspace. Resolving it here, in the main repo's own .bzl file, and
+# stringifying the result gives a canonical label that stays correct wherever
+# it's later interpolated into text.
+_NONE_BITSTREAM_LABEL = str(Label("//hw/bitstream/universal:none"))
+
+def _local_bitstream_repo_impl(rctx):
+    bitstream_path = rctx.getenv(rctx.attr.bitstream_env_var)
+    if not bitstream_path:
+        # Don't fail unconditionally here: this repo is only actually fetched
+        # when a target selects it (e.g. `--define bitstream=local`). Failing
+        # at repo-creation time would break `bazel fetch --configure` / any
+        # build that merely registers this repo without using it. Instead,
+        # make the targets themselves fail with a helpful message, but only
+        # if something actually tries to build them.
+        rctx.file(
+            "BUILD.bazel",
+            content = """
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "missing_bitstream_file",
+    outs = ["MISSING_BITSTREAM_FILE_ENV_VAR.bit"],
+    cmd = "echo 'Set the {env} environment variable to the absolute path of your bitstream before using --define bitstream=local.' >&2; exit 1",
+)
+
+filegroup(name = "bitstream", srcs = [":missing_bitstream_file"])
+filegroup(name = "mmi", srcs = ["{none}"])
+""".format(env = rctx.attr.bitstream_env_var, none = _NONE_BITSTREAM_LABEL).lstrip(),
+        )
+        return
+
+    rctx.watch(bitstream_path)
+    rctx.symlink(bitstream_path, "bitstream.bit")
+
+    mmi_path = rctx.getenv(rctx.attr.mmi_env_var)
+    if mmi_path:
+        rctx.watch(mmi_path)
+        rctx.symlink(mmi_path, "bitstream.mmi")
+        mmi_content = 'filegroup(name = "mmi", srcs = ["bitstream.mmi"])\n'
+    else:
+        mmi_content = 'filegroup(name = "mmi", srcs = ["{none}"])\n'.format(none = _NONE_BITSTREAM_LABEL)
+
+    rctx.file(
+        "BUILD.bazel",
+        content = 'package(default_visibility = ["//visibility:public"])\n\n' +
+                   'filegroup(name = "bitstream", srcs = ["bitstream.bit"])\n' + mmi_content,
+    )
+
+# Lets you point `--define bitstream=local` at an arbitrary, locally-built
+# bitstream file, without having to declare it as a source in this workspace.
+#
+# Pass the absolute path of your `.bit` file via `--repo_env=BITSTREAM_FILE=...`
+# on the bazel command line (and optionally `--repo_env=BITSTREAM_MMI_FILE=...`
+# for a corresponding `.mmi`). Using `--repo_env` rather than an ambient shell
+# environment variable ensures Bazel actually notices when the path changes.
+# e.g.:
+#
+#   bazel test <label> --define bitstream=local \
+#     --repo_env=BITSTREAM_FILE=/path/to/your.bit
+#
+# This mirrors `bitstreams_repo` above, but symlinks in a single local file
+# instead of talking to the GCP cache.
+local_bitstream_repo = repository_rule(
+    implementation = _local_bitstream_repo_impl,
+    environ = ["BITSTREAM_FILE", "BITSTREAM_MMI_FILE"],
+    attrs = {
+        "bitstream_env_var": attr.string(default = "BITSTREAM_FILE"),
+        "mmi_env_var": attr.string(default = "BITSTREAM_MMI_FILE"),
+    },
+    configure = True,
+)
+
 # Bitstream manifests follow a schema written in the JSON Schema language, and
 # all file paths in the manifest are relative to the manifest's directory.
 # The tools provided to operate on bitstream cache entries currently create

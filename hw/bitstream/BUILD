@@ -34,6 +34,13 @@ filegroup(
 #
 # * `--define bitstream=gcp` causes these targets to use a cached bitstream.
 #
+# * `--define bitstream=local` points these targets at an arbitrary, locally-
+#   built bitstream file, given via `--repo_env=BITSTREAM_FILE=...` on the
+#   bazel command line (and optionally `--repo_env=BITSTREAM_MMI_FILE=...`),
+#   e.g.:
+#     bazel test <label> --define bitstream=local \
+#       --repo_env=BITSTREAM_FILE=/path/to/your.bit
+#
 # Downstream targets will see the effects of this caching logic. For example,
 # specifying `--define bitstream=vivado` when testing
 # //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw* will turn
@@ -57,6 +64,17 @@ config_setting(
     name = "bitstream_gcp",
     define_values = {
         "bitstream": "gcp",
+    },
+)
+
+# `--define bitstream=local` points these targets at an arbitrary, locally-
+# built bitstream file via the BITSTREAM_FILE environment variable (and
+# optionally BITSTREAM_MMI_FILE). See local_bitstream_repo in
+# //rules:bitstreams.bzl for details.
+config_setting(
+    name = "bitstream_local",
+    define_values = {
+        "bitstream": "local",
     },
 )
 

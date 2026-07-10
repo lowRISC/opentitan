@@ -277,6 +277,10 @@ bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
 
 bitstreams_repo(name = "bitstreams")
 
+local_bitstream_repo = use_repo_rule("//rules:bitstreams.bzl", "local_bitstream_repo")
+
+local_bitstream_repo(name = "local_bitstream")
+
 nonhermetic_repo = use_repo_rule("//rules:nonhermetic.bzl", "nonhermetic_repo")
 
 nonhermetic_repo(name = "nonhermetic")
