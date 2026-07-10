@@ -142,11 +142,11 @@ mod tests {
     // This particular set of PMPCFG / PMPADDR values was captured from the ROM
     // and manually modified to encompass all of the decode options.
     // The modifications are:
-    // - Addition of entry 6: a duplicate of entry 2 with the perms set to RWX.
-    const PMPCFG: [u32; 4] = [0x998d00, 0x1f998d, 0x8b000000, 0x9b909f00];
+    // - Addition of entry 6: a duplicate of entry 13 with the perms set to RWX.
+    const PMPCFG: [u32; 4] = [0x898d00, 0x1f998d, 0x8b000000, 0x9b909f00];
     const PMPADDR: [u32; 16] = [
-        0x2000, 0x3411, 0x2fff, 0x8000100, 0x8001203, 0x801ffff, 0x2fff, 0x0, 0x0, 0x0, 0x10000000,
-        0x14000000, 0x0, 0x41ff, 0x4007000, 0x4003fff,
+        0x10000, 0x11411, 0x13000, 0x8000100, 0x8001203, 0x801ffff, 0x41ff, 0x0, 0x0, 0x0,
+        0x10000000, 0x14000000, 0x0, 0x41ff, 0x4007000, 0x4003fff,
     ];
 
     #[test]
@@ -169,26 +169,27 @@ mod tests {
             EpmpEntry {
                 cfg: EPMP_CFG_LRX,
                 kind: EpmpRegionKind::Tor,
-                range: EpmpAddressRange(0x8000, 0xd044)
+                range: EpmpAddressRange(0x40000, 0x45044)
             }
         ));
-        // The second entry is a Napot region representing the entire 32K of ROM.
+        // The second entry is a Tor region representing the rest of the 48k ROM beyond the
+        // .text section decoded in entry 1.
         assert!(matches!(
             epmp.entry[2],
             EpmpEntry {
                 cfg: EPMP_CFG_LRO,
-                kind: EpmpRegionKind::Napot,
-                range: EpmpAddressRange(0x8000, 0x10000)
+                kind: EpmpRegionKind::Tor,
+                range: EpmpAddressRange(0x45044, 0x4c000)
             }
         ));
-        // The sixth entry is a Napot region representing the entire 32K of ROM, but is set to
+        // The sixth entry is a Napot region representing the debug RVDM RAM, but is set to
         // RWX (tests the decode of the `cfg` field with lock bit clear).
         assert!(matches!(
             epmp.entry[6],
             EpmpEntry {
                 cfg: EPMP_CFG_RWX,
                 kind: EpmpRegionKind::Napot,
-                range: EpmpAddressRange(0x8000, 0x10000)
+                range: EpmpAddressRange(0x10000, 0x11000)
             }
         ));
 

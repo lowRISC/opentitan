@@ -38,7 +38,7 @@ package ibex_pmp_reset_pkg;
   localparam logic [33:0] PmpAddrRst[16] = '{
     34'h00000000, // rgn 0
     34'h00000000, // rgn 1
-    34'h000083fc, // rgn 2  [ROM: base=0x0000_8000 size=0x800 (2KiB)]
+    34'h000403fc, // rgn 2  [ROM: base=0x0004_0000 size=0x800 (2KiB)]
     34'h00000000, // rgn 3
     34'h00000000, // rgn 4
     34'h00000000, // rgn 5

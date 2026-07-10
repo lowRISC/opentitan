@@ -856,12 +856,12 @@ extern "C" {
 /**
  * Memory base address for rom memory on rom_ctrl in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x40000u
 
 /**
  * Memory size for rom memory on rom_ctrl in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0xC000u
 
 
 /**

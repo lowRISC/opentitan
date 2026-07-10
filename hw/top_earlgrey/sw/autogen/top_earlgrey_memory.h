@@ -58,12 +58,12 @@
 /**
  * Memory base for rom memory on rom_ctrl in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x40000
 
 /**
  * Memory size for rom memory on rom_ctrl in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x8000
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0xC000
 
 
 /**

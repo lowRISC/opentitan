@@ -61,8 +61,17 @@ rom_epmp_init:
   la   t0, _epmp_text_tor_hi
   csrw pmpaddr1, t0
 
-  // ROM
-  li   t0, NAPOT(TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR, TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES)
+  // At chip reset entry 2 of the epmp register was responsible for read /
+  // executable permissions for the first 2KiB of ROM (see ibex_pmp_reset_pkg.sv).
+  // To avoid a deadlock, entry 1 must cover the initial section of the ROM before
+  // entry 2 is modified. Otherwise the executable permission for this file will
+  // be lost.
+  li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) | /* ROM TEXT    */ \
+           CFG_INDEX(2  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LR)    /* ROM         */
+  csrw pmpcfg0, t0
+
+  // ROM the lower bound for TOR is pmpaddr1, already set above to the end of ROM TEXT.
+  li   t0, TOR(TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES)
   csrw pmpaddr2, t0
 
   // ROM_EXT TEXT (configured after signature verification)
@@ -91,15 +100,13 @@ rom_epmp_init:
   li   t0, NAPOT(TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR, TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES)
   csrw pmpaddr15, t0
 
-  // Set PMP configuration registers.
-  li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) | /* ROM TEXT    */ \
-           CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
+  // Set the remaining PMP configuration registers (pmpcfg0 was already set
+  // above).
   li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
   li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
            CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
            CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
-  csrw pmpcfg0, t0
   csrw pmpcfg1, t1
   csrw pmpcfg2, t2
   csrw pmpcfg3, t3

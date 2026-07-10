@@ -2426,7 +2426,7 @@ module top_earlgrey #(
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),
-    .MemSizeRom(32768)
+    .MemSizeRom(49152)
   ) u_rom_ctrl (
     // Clock and reset connections
     .clk_i(clkmgr_aon_clocks_i.clk_main_infra),
