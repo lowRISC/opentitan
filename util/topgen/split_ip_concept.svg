@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 1260 900"
+   font-family="Helvetica, Arial, sans-serif"
+   version="1.1"
+   id="svg44"
+   sodipodi:docname="split_ip_concept.svg"
+   inkscape:version="1.4.4 (1:1.4.4+202605061436+dcaf3e7d9e)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview44"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="0.87759808"
+     inkscape:cx="799.34086"
+     inkscape:cy="480.2882"
+     inkscape:window-width="2057"
+     inkscape:window-height="1286"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg44" />
+  <defs
+     id="defs1">
+    <marker
+       id="arrow"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       markerUnits="strokeWidth"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M0,0 L10,5 L0,10 z"
+         fill="#333"
+         id="path1" />
+    </marker>
+    <style
+       id="style1">
+      .domain { fill:none; stroke:#333; stroke-width:2.5; }
+      .box    { fill:none; stroke:#333; stroke-width:2; }
+      .wire   { stroke:#333; stroke-width:1.8; fill:none; }
+      .title  { font-size:20px; font-weight:bold; fill:#111; }
+      .hdr    { font-size:16px; font-weight:bold; fill:#111; }
+      .lbl    { font-size:14px; fill:#222; }
+      .sm     { font-size:13px; fill:#222; }
+    </style>
+    <marker
+       id="arrow-6"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       markerUnits="strokeWidth"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#333333"
+         id="path1-7" />
+    </marker>
+    <marker
+       id="marker2"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       markerUnits="strokeWidth"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#333333"
+         id="path2" />
+    </marker>
+    <marker
+       id="arrow-1"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       markerUnits="strokeWidth"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#333333"
+         id="path1-2" />
+    </marker>
+    <marker
+       id="marker2-7"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       markerUnits="strokeWidth"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#333333"
+         id="path2-0" />
+    </marker>
+    <marker
+       id="arrow-0"
+       viewBox="0 0 10 10"
+       refX="9"
+       refY="5"
+       markerWidth="7"
+       markerHeight="7"
+       orient="auto-start-reverse"
+       markerUnits="strokeWidth"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 10,5 0,10 Z"
+         fill="#333333"
+         id="path1-6" />
+    </marker>
+  </defs>
+  <!-- ============ top-level module ============ -->
+  <rect
+     class="domain"
+     x="20"
+     y="20"
+     width="1220"
+     height="850"
+     rx="6"
+     id="rect1"
+     style="fill:#ffffff"
+     sodipodi:insensitive="true" />
+  <text
+     class="title"
+     x="40"
+     y="55"
+     id="text1">top_&lt;topname&gt;</text>
+  <!-- ============ existing connections / serializers ============ -->
+  <text
+     class="lbl"
+     x="731.37872"
+     y="105.47449"
+     text-anchor="middle"
+     id="text2">(existing connections)</text>
+  <text
+     class="lbl"
+     x="613.33929"
+     y="182.21487"
+     text-anchor="middle"
+     id="text3">&lt;ip_name&gt;_{p2s, s2p}</text>
+  <!-- ============ power domain 0 (main) ============ -->
+  <rect
+     class="domain"
+     x="40"
+     y="230"
+     width="560"
+     height="610"
+     rx="4"
+     id="rect4"
+     style="fill:#f2f2f2;fill-opacity:1" />
+  <text
+     class="hdr"
+     x="49.525517"
+     y="827.62219"
+     id="text4">&lt;topname&gt;_pd_0</text>
+  <text
+     class="lbl"
+     x="191.33392"
+     y="827.06177"
+     id="text5">(Main)</text>
+  <rect
+     class="box"
+     x="300"
+     y="360"
+     width="260"
+     height="400"
+     id="rect8"
+     style="fill:#cccccc" />
+  <text
+     class="lbl"
+     x="549.9776"
+     y="380.21664"
+     text-anchor="end"
+     id="text10">intra_ip</text>
+  <text
+     class="lbl"
+     x="333.29453"
+     y="465.52371"
+     id="text11"
+     style="white-space:pre;inline-size:113.38;display:inline"
+     transform="translate(-24.171889,5.2372431)"
+     xml:space="preserve"><tspan
+       x="333.29453"
+       y="465.52371"
+       id="tspan1">primary
+</tspan><tspan
+       x="333.29453"
+       y="483.02372"
+       id="tspan2">alerts, irqs, CIO</tspan></text>
+  <text
+     class="lbl"
+     x="307.91406"
+     y="551.61145"
+     id="text13"><tspan
+       sodipodi:role="line"
+       id="tspan48"
+       x="307.91406"
+       y="551.61145">primary</tspan><tspan
+       sodipodi:role="line"
+       id="tspan49"
+       x="307.91406"
+       y="569.11145">inter_signals</tspan></text>
+  <text
+     class="hdr"
+     x="411.46823"
+     y="749.66876"
+     text-anchor="middle"
+     font-size="15"
+     id="text15">u_&lt;ip_name&gt;_part_primary</text>
+  <!-- ============ power domain 1 (aon) ============ -->
+  <rect
+     class="domain"
+     x="620"
+     y="230"
+     width="600"
+     height="610"
+     rx="4"
+     id="rect15"
+     style="fill:#f2f2f2" />
+  <text
+     class="hdr"
+     x="630.33124"
+     y="828.42792"
+     id="text16">&lt;topname&gt;_pd_1</text>
+  <text
+     class="lbl"
+     x="767.3053"
+     y="827.86749"
+     id="text17">(Aon)</text>
+  <rect
+     class="box"
+     x="1020"
+     y="290"
+     width="150"
+     height="80"
+     id="rect17"
+     style="fill:#cccccc" />
+  <text
+     class="lbl"
+     x="1094.1895"
+     y="342.74161"
+     text-anchor="middle"
+     id="text18">clk / rst managers</text>
+  <rect
+     class="box"
+     x="660"
+     y="380"
+     width="330"
+     height="370"
+     id="rect19"
+     style="fill:#cccccc" />
+  <text
+     class="lbl"
+     x="700.80573"
+     y="399.46823"
+     text-anchor="middle"
+     id="text20">intra_ip</text>
+  <text
+     class="lbl"
+     x="975"
+     y="458"
+     text-anchor="end"
+     id="text21">secondary alerts,</text>
+  <text
+     class="lbl"
+     x="975"
+     y="476"
+     text-anchor="end"
+     id="text22">irq, CIO</text>
+  <text
+     class="lbl"
+     x="979.02863"
+     y="556.13074"
+     text-anchor="end"
+     id="text23"><tspan
+       sodipodi:role="line"
+       id="tspan50"
+       x="979.02863"
+       y="556.13074">secondary</tspan><tspan
+       sodipodi:role="line"
+       id="tspan51"
+       x="979.02863"
+       y="573.63074">inter_signals</tspan></text>
+  <text
+     class="hdr"
+     x="783.10205"
+     y="740.05731"
+     text-anchor="middle"
+     font-size="15"
+     id="text25">u_&lt;ip_name&gt;_part_secondary</text>
+  <text
+     class="lbl"
+     x="1163.6527"
+     y="462.74844"
+     id="text26"><tspan
+       sodipodi:role="line"
+       id="tspan52"
+       x="1163.6527"
+       y="462.74844">to other</tspan><tspan
+       sodipodi:role="line"
+       id="tspan53"
+       x="1163.6527"
+       y="480.24844">pd1 IPs</tspan></text>
+  <!-- ============ clock / reset distribution ============ -->
+  <text
+     class="lbl"
+     x="275.70087"
+     y="291.8421"
+     text-anchor="end"
+     id="text27"><tspan
+       sodipodi:role="line"
+       id="tspan54"
+       x="275.70087"
+       y="291.8421">to other</tspan><tspan
+       sodipodi:role="line"
+       id="tspan55"
+       x="275.70087"
+       y="309.3421">pd0 IPs</tspan></text>
+  <text
+     class="lbl"
+     x="1096.6876"
+     y="307.32767"
+     text-anchor="middle"
+     id="text28">clocks_o / resets_o</text>
+  <circle
+     cx="1093.2894"
+     cy="257.01459"
+     r="4"
+     fill="#333333"
+     id="circle28"
+     style="fill:#000000;fill-opacity:1" />
+  <circle
+     cx="343.96088"
+     cy="297.96503"
+     r="4"
+     fill="#333333"
+     id="circle28-7"
+     style="fill:#000000;fill-opacity:1" />
+  <text
+     class="sm"
+     x="318.57657"
+     y="377.10474"
+     id="text29">primary</text>
+  <text
+     class="sm"
+     x="318.57657"
+     y="395.10474"
+     id="text30">clks/resets</text>
+  <text
+     class="sm"
+     x="907.72607"
+     y="400.38495"
+     id="text31">secondary</text>
+  <text
+     class="sm"
+     x="907.72607"
+     y="418.38495"
+     id="text32">clks/rsts</text>
+  <!-- ============ intra-IP links through p2s/s2p ============ -->
+  <!-- ============ primary-side interfaces ============ -->
+  <line
+     class="wire"
+     x1="300"
+     y1="447.77405"
+     x2="245"
+     y2="447.77405"
+     marker-end="url(#arrow)"
+     id="line35"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="343.96088"
+     y1="298.14209"
+     x2="288.96088"
+     y2="298.14209"
+     marker-end="url(#arrow-0)"
+     id="line35-6"
+     style="fill:none;stroke:#000000;stroke-width:1.8;marker-end:url(#arrow-0);fill-opacity:1;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="300"
+     y1="472.34378"
+     x2="245"
+     y2="472.34378"
+     marker-end="url(#arrow)"
+     id="line36"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="300"
+     y1="496.34378"
+     x2="245"
+     y2="496.34378"
+     marker-end="url(#arrow)"
+     id="line37"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="300"
+     y1="548"
+     x2="160"
+     y2="548"
+     marker-end="url(#arrow)"
+     id="line38"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="160"
+     y1="566.33124"
+     x2="300"
+     y2="566.33124"
+     marker-end="url(#arrow)"
+     id="line39"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <!-- ============ secondary-side interfaces ============ -->
+  <line
+     class="wire"
+     x1="990"
+     y1="444"
+     x2="1052"
+     y2="444"
+     marker-end="url(#arrow)"
+     id="line40"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="990"
+     y1="466"
+     x2="1052"
+     y2="466"
+     marker-end="url(#arrow)"
+     id="line41"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="990"
+     y1="488"
+     x2="1052"
+     y2="488"
+     marker-end="url(#arrow)"
+     id="line42"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="990"
+     y1="550.10205"
+     x2="1125"
+     y2="550.10205"
+     marker-end="url(#arrow)"
+     id="line43"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <line
+     class="wire"
+     x1="1125"
+     y1="569.2677"
+     x2="990"
+     y2="569.2677"
+     marker-end="url(#arrow)"
+     id="line44"
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-opacity:1" />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.8;stroke-linecap:butt;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#arrow);marker-end:url(#arrow)"
+     d="m 526.14145,358.85133 0,-169.50487 h 173.23187 v 188.87448"
+     id="path3"
+     sodipodi:nodetypes="cccc" />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.8;stroke-linecap:butt;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#arrow-1);marker-end:url(#arrow-1)"
+     d="M 937.50592,379.78715 V 257.01459 l 253.80488,0 v 188.87448"
+     id="path3-3"
+     sodipodi:nodetypes="cccc" />
+  <path
+     style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:1.8;stroke-linecap:butt;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#arrow-6)"
+     d="m 343.96088,358.32346 0,-244.94181 749.32852,0 0,176.45479"
+     id="path3-2"
+     sodipodi:nodetypes="cccc" />
+</svg>
