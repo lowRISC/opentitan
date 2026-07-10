@@ -180,15 +180,35 @@ sudo udevadm control --reload-rules && sudo service udev restart && sudo udevadm
 
 The CW340 board should be powered via the included DC power adapter.
 To this end:
-1. Set the *Control Power* switch (top left corner, *SW7*) to the right (towards the OpenTitan logo).
+1. Turn off the board by setting the *Control Power* switch (top left corner, *SW7*) to the right (towards the OpenTitan logo).
 2. Ensure the *Tgt Power* switch (center of the board) is set to the right, towards the *Auto* option.
 3. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
 4. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
 5. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
    1. If set to FTDI the UART0 will (likely) be routed to `/dev/ttyUSB2`.
    2. If set to SAM the UART0 will be routed to `/dev/ttyACM0`.
-6a. If you are connecting a HyperDebug board to your CW340 base board, follow the below instruction.
-6b. Otherwise, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
+6. Make sure the DIP switch SW4 on the top side of the board has all switches (1-8) in the ON position.
+7. Make sure the DIP switches on the bottom side of the board are set up as follows:
+   - SW1, SW2: all switches (1 to 8) in the OFF position
+   - SW3: switch 1 in the ON position, switch 2, 3 in the OFF position.
+   - SW10, SW11: all switches (1 to 3) in the ON position
+   - SW12: all switches (1 to 6) in the ON position
+   - DIP switch connected to IOB0 - IOB7: all switches (1 to 8) in the ON position
+   - DIP switch connected to IOB8 - IOB12: switch 1 to 7 in the ON position, switch 8 in the OFF position.
+8. Depending on your use case, do one of the following:
+   1. If you are connecting a HyperDebug board to your CW340 base board, follow instructions in the [HyperDebug Board](#hyperdebug-board) section.
+   2. Otherwise, move the *Control Power* switch (top left corner, *SW7*) to the left (towards the barrel jack) to power on the board.
+
+After completing the rest of the FPGA setup process, you can confirm that these DIP switches are configured correctly by running the following test targets:
+
+```sh
+bazel test --test_output=streamed \
+  //sw/device/tests:gpio_intr_test_fpga_cw340_sival_rom_ext \
+  //sw/device/tests:sysrst_ctrl_in_irq_test_fpga_cw340_sival_rom_ext \
+  //sw/device/tests:sysrst_ctrl_inputs_test_fpga_cw340_sival_rom_ext \
+  //sw/device/tests:sysrst_ctrl_outputs_test_fpga_cw340_sival_rom_ext \
+  //sw/device/tests:sysrst_ctrl_ulp_z3_wakeup_test_fpga_cw340_sival_rom_ext
+```
 
 #### HyperDebug Board
 
@@ -252,14 +272,14 @@ bazel test --test_output=streamed //sw/device/tests:spi_device_tpm_tx_rx_test_fp
 
 ### Detecting the PC Connections to the Board(s)
 
-To detect if you PC has successfully connected to you FPGA and/or HyperDebug boards, you can use the following command to monitor output from dmesg:
+To detect if your PC has successfully connected to your FPGA and/or HyperDebug boards, you can use the following command to monitor output from dmesg:
 ```sh
 sudo dmesg -Hw
 ```
 This should show which serial ports have been assigned, or if the boards are having trouble connecting to USB.
 If `dmesg` reports a problem you can:
-2. trigger a reset of your CW340 with *Control Power* on *SW7*, and/or
-3. trigger a reset of your HyperDebug with the black *RESET* button on *B2*.
+1. trigger a reset of your CW340 with *Control Power* on *SW7*, and/or
+2. trigger a reset of your HyperDebug with the black *RESET* button on *B2*.
 When properly connected, `dmesg` should identify each board, not show any errors.
 The serial ports identified should be named `/dev/ttyACM*` + `/dev/ttyUSB*` + for CW340 depending on the jumpers *JP1* and *JP2* described above.
  >e.g. `/dev/ttyACM1`.
