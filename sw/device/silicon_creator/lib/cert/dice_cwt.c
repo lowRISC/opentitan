@@ -277,10 +277,6 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_build(
       &cwt_dice_chain_entry_params, cert, cert_size));
 
-  // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
-      *kDiceKeyCdi0.keymgr_diversifier));
   return kErrorOk;
 }
 
@@ -382,11 +378,6 @@ rom_error_t dice_cdi_1_cert_build(
       .signature_size = sizeof(ecdsa_p256_signature_t)};
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_build(
       &cwt_dice_chain_entry_params, cert, cert_size));
-
-  // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
-      *kDiceKeyCdi1.keymgr_diversifier));
 
   return kErrorOk;
 }
