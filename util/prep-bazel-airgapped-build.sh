@@ -7,7 +7,7 @@ set -euo pipefail
 
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
 
-: "${BAZELISK:=${REPO_TOP}/bazelisk.sh}"
+: "${BAZELISK:=${REPO_TOP}/bazelisk.sh --host_jvm_args=-Xmx8g}"
 : "${BAZEL_VERSION:=$(cat "${REPO_TOP}/.bazelversion")}"
 
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
