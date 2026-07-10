@@ -13,12 +13,6 @@ config_setting(
     values = {"define": "SPECIFY_BINDGEN_LIBSTDCXX=true"},
 )
 
-string_flag(
-    name = "openssl_pkg_config_path",
-    build_setting_default = "",
-    make_variable = "OPENSSL_PKG_CONFIG_PATH",
-)
-
 # Since rules_rust 0.23.0, bindgen depends on the llvm project and builds the
 # llvm libaries from source. Building llvm from source has a huge impact on
 # build times. Instead, we depend on a pre-built llvm release and instantiate
