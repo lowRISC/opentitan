@@ -107,19 +107,22 @@ task rom_ctrl_scoreboard::process_kmac_req_fifo();
   end
 endtask
 
-// Read data sent to the kmac block and check it against memory data
+// Read data sent to the kmac block and check it against memory data.
+// Only the 32-bit data portion of each ROM word is hashed; ECC bits are excluded.
+// See https://github.com/lowRISC/opentitan/issues/30485.
 function void rom_ctrl_scoreboard::check_kmac_data(const ref byte byte_data_q[$]);
   int word = 0;
   int addr = 0;
-  // Check that we received the expected amount of data
+  // Check that we received the expected amount of data (4 bytes per ROM word, data only)
   `DV_CHECK_EQ(byte_data_q.size(), KMAC_DATA_SIZE, "Unexpected kmac data size")
-  // Read out the data 5 bytes at a time (one word is 39bit packed into 5 byte)
+  // Read out the data 4 bytes at a time (one word is 32-bit data, ECC bits excluded)
   while (word < byte_data_q.size()) begin
     bit [KMAC_DATA_WORD_SIZE*8-1:0] exp, act;
     bit [ROM_MEM_W-1:0]             mem_data;
     mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(
         addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
-    exp = {{KMAC_DATA_WORD_SIZE*8-ROM_MEM_W{1'b0}}, mem_data};
+    // Only compare the lower 32 data bits; ECC bits [38:32] are not sent to KMAC
+    exp = mem_data[31:0];
     for (int i = 0; i < KMAC_DATA_WORD_SIZE; i++) begin
       act[i*8+:8] = byte_data_q[word+i];
     end

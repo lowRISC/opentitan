@@ -179,6 +179,9 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     rom_encrypt_write8(addr, data, m_key, m_nonce);
   endfunction
 
+  // Recompute the ROM digest and write it into the top 8 words of ROM.
+  // Only the 32-bit data portion of each word is hashed (ECC bits excluded).
+  // See https://github.com/lowRISC/opentitan/issues/30485.
   virtual function void update_rom_digest(logic [SRAM_KEY_WIDTH-1:0]   key,
                                           logic [SRAM_BLOCK_WIDTH-1:0] nonce);
     bit [63:0] kmac_data[$];
@@ -188,25 +191,20 @@ class rom_ctrl_bkdr_util extends mem_bkdr_util;
     int digest_start_addr = kmac_data_bytes;
     bit scramble_data = 0; // digest and kmac data aren't scrambled
 
-    // Each 4 byte of data is transferred as 5 bytes
-    int xfer_bytes = kmac_data_bytes * 5 / 4;
+    // Only the 32-bit data portion of each ROM word is hashed; ECC bits [38:32] are excluded.
+    // Each 4-byte ROM word is transferred as exactly 4 bytes to KMAC (no ECC padding).
+    // See https://github.com/lowRISC/opentitan/issues/30485.
+    int xfer_bytes = kmac_data_bytes;  // 4 bytes per word, data only
     kmac_data_arr = new[xfer_bytes];
     `uvm_info(`gfn, $sformatf("Actual bytes: %d, xfer'd: %d", kmac_data_bytes, xfer_bytes),
               UVM_DEBUG)
 
     for (int i = 0; i < kmac_data_bytes; i += 4) begin
-      bit [39:0] data40;
-
-      // it returns 39 bits, including integrity. and the 39 bits data will be sent to 40 bits bus
-      // to the kmac. The kmac bus has byte strobes that are used to indicate 5 bytes instead of the
-      // full 8.
-      data40 = 40'(rom_encrypt_read32(i, key, nonce, scramble_data));
-      for (int j = 0; j < 5; j++) begin
-        // At byte position 0, we want bytes 0, 1, 2, 3, 4
-        // At byte position 4, we want bytes 5, 6, 7, 8, 9
-        // At byte position 8, we want bytes 10, 11, 12, 13, 14
-        int idx = i + (i / 4) + j;
-        kmac_data_arr[idx] = data40[j * 8 +: 8];
+      bit [38:0] mem_data;
+      // Read the 39-bit ROM word (32-bit data + 7-bit ECC) but only hash the lower 32 data bits.
+      mem_data = rom_encrypt_read32(i, key, nonce, scramble_data);
+      for (int j = 0; j < 4; j++) begin
+        kmac_data_arr[i + j] = mem_data[j * 8 +: 8];
       end
     end
     digestpp_dpi_pkg::c_dpi_cshake256(kmac_data_arr, "", "ROM_CTRL", kmac_data_arr.size,

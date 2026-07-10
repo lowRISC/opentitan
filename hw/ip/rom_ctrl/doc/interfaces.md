@@ -136,7 +136,7 @@ The table below lists other ROM controller inter-module signals.
       </p><p>
         The <code>app_req_t</code> format supports up to 64 bits in a cycle but the ROM will only send one word.
         This word gets sent as the low bytes of <code>data</code> and the <code>strb</code> field is set to a constant value showing them.
-        That strobe value will enable just the bytes used: 5 bytes per word if scrambling is enabled; 4 bytes per word if not.
+        That strobe value will enable just the bytes used: 4 bytes per word in all cases (only the 32-bit data portion is hashed; ECC check bits are excluded).
         When sending the top word of the ROM image, the ROM controller will set the <code>last</code> field to true.
       </p>
     </td>

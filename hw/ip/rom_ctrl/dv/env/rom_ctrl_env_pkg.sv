@@ -46,11 +46,12 @@ package rom_ctrl_env_pkg;
   parameter uint ROM_WORD_ADDR_WIDTH = ROM_BYTE_ADDR_WIDTH - $clog2(TL_DW / 8);
   parameter uint ROM_SIZE_WORDS = ROM_SIZE_BYTES / (TL_DW / 8);
   parameter uint MAX_CHECK_ADDR = ROM_SIZE_BYTES - (DIGEST_SIZE / 8);
-  // The data for each line in rom up to the digest padded to the next byte boundary
-  parameter uint KMAC_DATA_WORD_SIZE = (39 + 7) / 8;
+  // Only the 32-bit data portion of each ROM word is hashed (ECC bits are excluded).
+  // See https://github.com/lowRISC/opentitan/issues/30485.
+  parameter uint KMAC_DATA_WORD_SIZE = 32 / 8;  // = 4 bytes (data only, no ECC)
   parameter uint KMAC_DATA_NUM_WORDS = MAX_CHECK_ADDR / (TL_DW / 8);
   parameter uint KMAC_DATA_SIZE = KMAC_DATA_NUM_WORDS * KMAC_DATA_WORD_SIZE;
-  // The rom width in bits
+  // The rom width in bits (full word including ECC, used for backdoor reads)
   parameter uint ROM_MEM_W = 39;
 
   // types

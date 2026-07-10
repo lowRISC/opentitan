@@ -511,9 +511,12 @@ class Scrambler:
             phy_addr = self.addr_sp_enc(log_addr)
             scr_word = scr_chunk.words[phy_addr]
             # Note that a scrambled word with ECC amounts to 39bit. The
-            # expression (39 + 7) // 8 calculates the amount of bytes that are
+        # Only the 32-bit data portion of each ROM word is hashed; ECC bits [38:32] are excluded.
+        # This matches the RTL which sets a 4-byte strobe on the KMAC interface.
+        # See https://github.com/lowRISC/opentitan/issues/30485.
+        # expression 32 // 8 = 4 calculates the amount of bytes that are
             # required to store these bits.
-            to_hash += scr_word.to_bytes((39 + 7) // 8, byteorder='little')
+        to_hash += (scr_word & 0xFFFFFFFF).to_bytes(32 // 8, byteorder='little')
 
         # Hash it
         hash_obj = cSHAKE256.new(data=to_hash,
