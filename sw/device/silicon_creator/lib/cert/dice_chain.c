@@ -60,17 +60,17 @@ rom_error_t dice_chain_attestation_silicon(void) {
       kDiceKeyUds, &static_dice_cdi_0.uds_pubkey_id,
       &static_dice_cdi_0.uds_pubkey));
 
-  // Save UDS key for signing next stage cert.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
-      *kDiceKeyUds.keymgr_diversifier));
-
   return kErrorOk;
 }
 
 rom_error_t dice_chain_attestation_creator(
     keymgr_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest) {
+  // Save UDS key for signing next stage cert.
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
+      *kDiceKeyUds.keymgr_diversifier));
+
   // Generate CDI_0 attestation keys and (potentially) update certificate.
   keymgr_binding_value_t seal_binding_value = {
       .data = {rom_ext_manifest->identifier, 0}};
@@ -100,11 +100,6 @@ rom_error_t dice_chain_attestation_creator(
         rom_ext_manifest->security_version, &dice_chain_cdi_0_key_ids,
         &static_dice_cdi_0.uds_pubkey, &static_dice_cdi_0.cdi_0_pubkey,
         static_dice_cdi_0.cert_data, &static_dice_cdi_0.cert_size));
-  } else {
-    // Replace UDS with CDI_0 key for endorsing next stage cert.
-    HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-        kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
-        *kDiceKeyCdi0.keymgr_diversifier));
   }
 
   sc_keymgr_sw_binding_unlock_wait();
@@ -135,6 +130,11 @@ rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
     keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain) {
+  // Save CDI_0 key for signing next stage cert.
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
+      *kDiceKeyCdi0.keymgr_diversifier));
+
   // Local variables for CDI_1 key generation and cert building
   hmac_digest_t subject_pubkey_id;
   ecdsa_p256_public_key_t subject_pubkey;
@@ -209,14 +209,16 @@ rom_error_t dice_chain_attestation_owner(
 
     // Flush page to flash.
     RETURN_IF_ERROR(dice_storage_flush_page(&dice_page));
-  } else {
-    // Replace CDI_0 with CDI_1 key for endorsing next stage cert.
-    HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-        kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
-        *kDiceKeyCdi1.keymgr_diversifier));
   }
 
   sc_keymgr_sw_binding_unlock_wait();
+
+  // Save CDI_1 key for endorsing next stage cert.
+  // TODO: Remove this save once all ownersw are migrated to derive the key
+  // on their own. This save is added only for compatibility.
+  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
+      *kDiceKeyCdi1.keymgr_diversifier));
   return kErrorOk;
 }
 
