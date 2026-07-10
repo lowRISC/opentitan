@@ -79,6 +79,12 @@ enum {
       ((kAttestationSeedWords + kScOtbnWideWordNumWords - 1) /
        kScOtbnWideWordNumWords) *
       kScOtbnWideWordNumWords,
+  /**
+   * Size of the OTBN boot app DMEM data section in 32-bit words.
+   *
+   * This is the size in the Earlgrey-PROD-A2-M6-ROM-RC1 taped-out ROM.
+   */
+  kOtbnBootDmemDataWords = 224 / sizeof(uint32_t),
 };
 
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
@@ -211,23 +217,27 @@ rom_error_t otbn_boot_attestation_key_save(
 }
 
 rom_error_t otbn_boot_attestation_key_clear(void) {
+  const size_t data_num_words =
+      (size_t)(kOtbnAppBoot.dmem_data_end - kOtbnAppBoot.dmem_data_start);
+  if (data_num_words != kOtbnBootDmemDataWords) {
+    return kErrorOtbnInvalidArgument;
+  }
+
+  // Backup the app read-only data from OTBN before wiping.
+  // The data is embedded in and loaded by ROM. It is not embedded in ROM_EXT
+  // to save firmware size, so we need to back it up from DMEM first.
+  static uint32_t dmem_backup[kOtbnBootDmemDataWords];
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(
+      kOtbnBootDmemDataWords, kOtbnAppBoot.dmem_data_start_addr, dmem_backup));
+
   // Trigger a full DMEM wipe.
   RETURN_IF_ERROR(sc_otbn_dmem_sec_wipe());
   HARDENED_RETURN_IF_ERROR(sc_otbn_busy_wait_for_done());
 
-  // Re-load the data portion of the boot services app. This is like a
-  // stripped-down version of `sc_otbn_load_app`, where we skip the IMEM.
-  if (kOtbnAppBoot.dmem_data_end < kOtbnAppBoot.dmem_data_start) {
-    return kErrorOtbnInvalidArgument;
-  }
-  HARDENED_CHECK_GE(kOtbnAppBoot.dmem_data_end, kOtbnAppBoot.dmem_data_start);
-  const size_t data_num_words =
-      (size_t)(kOtbnAppBoot.dmem_data_end - kOtbnAppBoot.dmem_data_start);
-  if (data_num_words > 0) {
-    HARDENED_RETURN_IF_ERROR(
-        sc_otbn_dmem_write(data_num_words, kOtbnAppBoot.dmem_data_start,
-                           kOtbnAppBoot.dmem_data_start_addr));
-  }
+  // Re-load the read-only data portion of the boot services app from the
+  // backup.
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
+      kOtbnBootDmemDataWords, dmem_backup, kOtbnAppBoot.dmem_data_start_addr));
   return kErrorOk;
 }
 

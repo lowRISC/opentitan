@@ -132,10 +132,15 @@ rom_error_t otbn_boot_attestation_key_save(
     sc_keymgr_diversification_t diversification);
 
 /**
- * Clears any saved attestation key from OTBN's scratchpad.
+ * Clears all secrets and states from OTBN's DMEM.
  *
- * This routine clears OTBN's DMEM. If called after
- * `otbn_boot_attestation_key_save`, it will clear the saved key.
+ * This routine clears OTBN's DMEM except the app's read-only .data section.
+ * (e.g. wipes .bss and .scratchpad)
+ *
+ * To prevent firmware size expansion in ROM_EXT, the read-only data is
+ * backed up from DMEM first and reloaded after wiping.
+ *
+ * If called after `otbn_boot_attestation_key_save`, it clears the saved key.
  *
  * @return The result of the operation.
  */
