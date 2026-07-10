@@ -157,12 +157,18 @@ crate.annotation(
     },
     repositories = ["crate_index"],
 )
+
+inject_repo(
+    crate,
+    ot_openssl = "openssl",
+)
+
 crate.annotation(
+    build_script_data = ["@ot_openssl//:gen_dir"],
     build_script_env = {
-        "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
+        "OPENSSL_DIR": "$(execpath @ot_openssl//:gen_dir)",
         "OPENSSL_STATIC": "1",
     },
-    build_script_toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
     crate = "openssl-sys",
     repositories = ["crate_index"],
 )
