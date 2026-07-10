@@ -178,15 +178,15 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
         EpmpEntry {
             cfg: EPMP_CFG_LRX,
             kind: EpmpRegionKind::Tor,
-            range: EpmpAddressRange(0x8000, _)
+            range: EpmpAddressRange(0x40000, _)
         }
     ));
     assert!(matches!(
         epmp.entry[2],
         EpmpEntry {
             cfg: EPMP_CFG_LRO,
-            kind: EpmpRegionKind::Napot,
-            range: EpmpAddressRange(0x8000, 0x10000)
+            kind: EpmpRegionKind::Tor,
+            range: EpmpAddressRange(_, 0x4c000)
         }
     ));
     assert!(matches!(

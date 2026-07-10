@@ -964,8 +964,10 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
+      // The ROM section is PMP protected. If either base addr or size is changed then
+      // the reset values for the PMP migth changes too (ibex_pmp_reset_pkg.sv).
       base_addrs: {
-        rom:  {hart: "0x00008000"},
+        rom:  {hart: "0x00040000"},
         regs: {hart: "0x411e0000"}
       }
       memory: {
@@ -975,7 +977,7 @@
           data_intg_passthru: "true",
           exec:               "True",
           byte_write:         "False",
-          size:               "0x8000",
+          size:               "0xc000",
           data_intg_passthru: "True"
         }
       },

@@ -37,7 +37,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // grows downward from _stack_end.
   const epmp_region_t rom_text = {.start = (uintptr_t)_text_start,
                                   .end = (uintptr_t)_text_end};
-  const epmp_region_t rom = {.start = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
+  const epmp_region_t rom = {.start = (uintptr_t)_text_end,
                              .end = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
                                     TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES};
   const epmp_region_t eflash = {.start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
@@ -88,7 +88,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // to the hardware configuration.
   memset(&epmp_state, 0, sizeof(epmp_state));
   epmp_state_configure_tor(1, rom_text, kEpmpPermLockedReadExecute);
-  epmp_state_configure_napot(2, rom, kEpmpPermLockedReadOnly);
+  epmp_state_configure_tor(2, rom, kEpmpPermLockedReadOnly);
   epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);
   epmp_state_configure_tor(11, mmio, kEpmpPermLockedReadWrite);
   epmp_state_configure_napot(13, debug_rom, debug_rom_access);
