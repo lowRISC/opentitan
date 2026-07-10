@@ -239,7 +239,10 @@ DEBUG_MODE_TESTCASES = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/cert:ram_msg",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
             "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         ],
     )
