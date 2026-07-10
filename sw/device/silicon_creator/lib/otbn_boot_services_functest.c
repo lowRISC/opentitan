@@ -168,11 +168,6 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   ecdsa_p256_signature_t sig;
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig, &pk));
 
-  // Run endorsement again (should not return an error, but should produce an
-  // invalid signature).
-  CHECK(otbn_boot_attestation_endorse(&digest, &sig, &pk) ==
-        kErrorSigverifyBadEcdsaSignature);
-
   // Check that generating a new key with the same diversification as before
   // now gets a different public key because keymgr has advanced.
   ecdsa_p256_public_key_t pk_adv;
@@ -207,10 +202,10 @@ rom_error_t attestation_save_clear_key_test(void) {
   ecdsa_p256_signature_t sig;
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig, &pk));
 
-  // Clear the key and check that endorsing now fails (it should even lock
-  // OTBN). We cannot recover from the fatal alert so must ignore it.
+  // Previous otbn_boot_attestation_endorse clears the key. Check that endorsing
+  // now fails (it should even lock OTBN). We cannot recover from the fatal
+  // alert so must ignore it.
   CHECK_STATUS_OK(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdOtbnFatal));
-  RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   CHECK(otbn_boot_attestation_endorse(&digest, &sig, &pk) ==
         kErrorOtbnExecutionFailed);

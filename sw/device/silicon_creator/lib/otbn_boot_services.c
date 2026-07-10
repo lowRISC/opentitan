@@ -271,6 +271,9 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(kEcdsaP256SignatureComponentWords,
                                              kOtbnVarBootS, sig->s));
 
+  // Clear all secrets in the scratchpad.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
+
   // Verify the signature.
   uint32_t recovered_r[kEcdsaP256SignatureComponentWords];
   HARDENED_RETURN_IF_ERROR(otbn_boot_sigverify(key, sig, digest, recovered_r));
