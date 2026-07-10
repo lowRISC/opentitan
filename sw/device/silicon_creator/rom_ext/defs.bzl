@@ -36,9 +36,9 @@ ROM_EXT_VARIATIONS = {
             "//sw/device/silicon_creator/lib/cert:dice",
         ],
         slot_spec = {
-            "owner_slot_a": "0x20000",
-            "owner_slot_b": "0xa0000",
-            "rom_ext_size": "0x20000",
+            "owner_slot_a": "0x16000",
+            "owner_slot_b": "0x96000",
+            "rom_ext_size": "0x16000",
         },
     ),
 }
