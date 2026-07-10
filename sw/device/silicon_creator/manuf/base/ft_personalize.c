@@ -617,6 +617,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   ownership_seal_init();
 
   // Generate CDI_0 keys and cert.
+  TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
+                                     kDiceKeyUds.type,
+                                     *kDiceKeyUds.keymgr_diversifier));
   curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_owner_int_binding();
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
@@ -626,7 +629,6 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                      &curr_pubkey));
 
   memcpy(&cdi_0_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
-
   TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &uds_pubkey,
                             &curr_pubkey, all_certs, &curr_cert_size));
   cdi_0_offset = perso_blob_to_host.next_free;
@@ -637,6 +639,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                         curr_cert_size, &perso_blob_to_host));
 
   // Generate CDI_1 keys and cert.
+  TRY(otbn_boot_attestation_key_save(kDiceKeyCdi0.keygen_seed_idx,
+                                     kDiceKeyCdi0.type,
+                                     *kDiceKeyCdi0.keymgr_diversifier));
   curr_cert_size = kCdi1MaxCertSizeBytes;
   compute_keymgr_owner_binding();
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
