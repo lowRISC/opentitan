@@ -41,7 +41,8 @@ static status_t get_stored_certificate(const char *cert_name, size_t name_size,
   size_t len = sizeof(data);
 
   while (len > 0) {
-    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len, out_cert_obj);
+    rom_error_t err = perso_tlv_get_cert_obj(data + offset, len,
+                                             kPersoBlobVersionV0, out_cert_obj);
     if (err != kErrorOk) {
       break;
     }
