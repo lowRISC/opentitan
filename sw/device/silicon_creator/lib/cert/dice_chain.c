@@ -21,6 +21,7 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
@@ -123,10 +124,10 @@ rom_error_t dice_chain_rom_ext_check(void) {
 
   rom_error_t status = dice_storage_check_digest(&dice_page);
   if (status != kErrorOk) {
-    dbg_printf("warning: corrupted page; erasing\r\n");
+    dbg_printf("warning: corrupted DICE page; erasing\r\n");
     RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
                                           kFlashCtrlEraseTypePage));
-    return status;
+    rstmgr_reset();
   }
   return kErrorOk;
 }

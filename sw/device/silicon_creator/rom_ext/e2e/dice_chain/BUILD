@@ -190,7 +190,7 @@ CORRUPTED_DIGEST_TEST_CMDS = """
     --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
     --exec="bootstrap --clear-uart=true {firmware}"
     --exec="no-op --info='##### Corruption should be detected and reboot'"
-    --exec="console --non-interactive --exit-success='BFV:03444303' --exit-failure='{exit_success}' --timeout=10s"
+    --exec="console --non-interactive --exit-success='corrupted DICE page' --exit-failure='{exit_success}' --timeout=10s"
     --exec="no-op --info='##### Corruption fixed in the second boot'"
     --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
     no-op
