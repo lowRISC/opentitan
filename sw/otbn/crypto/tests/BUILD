@@ -1228,3 +1228,80 @@ otbn_sim_test_suite(
         "boot_sigverify_valid.hjson",
     ],
 )
+
+otbn_sim_test(
+    name = "xof_shake128_test",
+    srcs = [
+        "xof_shake128_test.s",
+    ],
+    testcase = "xof_shake128_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:xof",
+    ],
+)
+
+otbn_sim_test(
+    name = "xof_shake256_test",
+    srcs = [
+        "xof_shake256_test.s",
+    ],
+    testcase = "xof_shake256_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:xof",
+    ],
+)
+
+otbn_sim_test(
+    name = "sec_a2b_test",
+    srcs = [
+        "sec_a2b_test.s",
+    ],
+    testcase = "sec_a2b_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:mai_gadgets",
+    ],
+)
+
+otbn_sim_test(
+    name = "sec_b2a_test",
+    srcs = [
+        "sec_b2a_test.s",
+    ],
+    testcase = "sec_b2a_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:mai_gadgets",
+    ],
+)
+
+otbn_sim_test(
+    name = "sec_add_test",
+    srcs = [
+        "sec_add_test.s",
+    ],
+    testcase = "sec_add_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:mai_gadgets",
+    ],
+)
+
+otbn_sim_test(
+    name = "sec_unmask_test",
+    srcs = [
+        "sec_unmask_test.s",
+    ],
+    testcase = "sec_unmask_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:mai_gadgets",
+    ],
+)
+
+otbn_sim_test(
+    name = "sec_leq_test",
+    srcs = [
+        "sec_leq_test.s",
+    ],
+    testcase = "sec_leq_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:mai_gadgets",
+    ],
+)
