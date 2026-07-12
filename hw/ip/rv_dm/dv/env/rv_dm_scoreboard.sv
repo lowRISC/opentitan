@@ -304,94 +304,158 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    // We only track D channel items (responses to reads or writes)
+    if (channel != DataChannel) return;
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
-
-    // Scoreboard only takes csr address, so filter out memory address.
-    if (is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) return;
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
-    end
-
-    // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-    end
-
-    // process the csr req
-    // for write, update local variable and fifo at address phase
-    // for read, update prediction at address phase and compare at data phase
     case (ral_name)
-      "rv_dm_regs_reg_block": begin
-        case (csr.get_name())
-          "alert_test": begin
-          end
-          "late_debug_enable": begin
-          end
-          "late_debug_enable_regwen": begin
-          end
-          default: `uvm_fatal(`gfn, $sformatf("Unknown regs CSR: %0s", csr.get_name()))
-        endcase
-      end
-      "rv_dm_mem_reg_block": begin
-        case (1)
-          (!uvm_re_match("halted", csr.get_name())): begin
-          end
-          (!uvm_re_match("halted", csr.get_name())): begin
-          end
-          (!uvm_re_match("going", csr.get_name())): begin
-          end
-          (!uvm_re_match("resuming", csr.get_name())): begin
-          end
-          (!uvm_re_match("exception", csr.get_name())): begin
-          end
-          (!uvm_re_match("whereto", csr.get_name())): begin
-            do_read_check = 0;
-          end
-          (!uvm_re_match("abstractcmd_*", csr.get_name())): begin
-            // Disable the read check. We don't model the contents of abstractcmd registers.
-            do_read_check = 0;
-          end
-          (!uvm_re_match("program_buffer_*", csr.get_name())): begin
-            // RO registers. Write on DM progbuf registers and read data
-            // from these registers manually.
-            do_read_check = 0;
-          end
-          (!uvm_re_match("dataaddr_*", csr.get_name())): begin
-          end
-          (!uvm_re_match("flags_*", csr.get_name())): begin
-            // hw can update this value. So check manually.
-            do_read_check = 0;
-          end
-          default: `uvm_fatal(`gfn, $sformatf("Unknown debug mem CSR: %0s", csr.get_name()))
-        endcase
-      end
+      "rv_dm_regs_reg_block": on_regs_access_d(item);
+      "rv_dm_mem_reg_block":  on_mem_access_d(item);
       default: begin
-        `uvm_fatal(`gfn, $sformatf("Invalid RAL: %0s", ral_name))
+        `uvm_fatal(get_full_name(), $sformatf("Unknown RAL name: %0s", ral_name))
       end
     endcase
-
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (data_phase_read) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-    end
   endtask
+
+  // A function called by process_tl_access when we see a D-channel item which is a response on the
+  // regs interface.
+  local function void on_regs_access_d(tl_seq_item item);
+    dv_base_reg_block    ral_model = cfg.ral_models["rv_dm_regs_reg_block"];
+    rv_dm_regs_reg_block blk;
+    uvm_reg_addr_t       csr_addr;
+    uvm_reg              csr;
+    bit                  is_write = item.is_write();
+
+    if (!$cast(blk, ral_model)) `uvm_fatal(get_full_name(), "Wrong type for regs reg block")
+
+    csr_addr = ral_model.get_word_aligned_addr(item.a_addr);
+    csr      = ral_model.get_default_map().get_root_map().get_reg_by_offset(csr_addr);
+
+    // If csr is null, the access must have been to an invalid address. We expect an error response
+    // and d_data = '1. After checking that this has happened, return: the access should not have
+    // had any other effect.
+    if (csr == null) begin
+      if (!item.d_error || ~&item.d_data) begin
+        `uvm_error(get_full_name(),
+                   $sformatf({"Access to non-existant register at address 0x%0h should have got ",
+                              "a d_error response and d_data = '1. We actually got ",
+                              "d_error=%0d; d_data=0x%0h."},
+                             item.a_addr, item.d_error, item.d_data))
+      end
+      return;
+    end
+
+    if (csr == blk.alert_test) begin
+    end else if (csr == blk.late_debug_enable) begin
+    end else if (csr == blk.late_debug_enable_regwen) begin
+    end else begin
+      `uvm_error(get_full_name(), $sformatf("Unsupported register: %0s", csr.get_name()))
+    end
+
+    // We know that csr is not null. If this transaction is a read, check that our manual register
+    // prediction is still up to date.
+    if (!is_write && csr.get_mirrored_value() != item.d_data) begin
+      `uvm_error(get_full_name(),
+                 $sformatf({"CSR read mismatch for register %0s. ",
+                            "Mirrored value is 0x%0h, but transaction saw 0x%0h."},
+                           csr.get_name(),
+                           csr.get_mirrored_value(),
+                           item.d_data))
+    end
+
+    // Update prediction of register contents based on the access we just saw
+    if (!item.d_error) begin
+      if (!csr.predict(.value(is_write ? item.a_data : item.d_data),
+                       .kind(is_write ? UVM_PREDICT_WRITE : UVM_PREDICT_READ))) begin
+        `uvm_error(get_full_name(),
+                   $sformatf("Failed to update prediction for %0s from an observed %0s.",
+                             csr.get_name(),
+                             is_write ? "write" : "read"))
+      end
+    end
+  endfunction
+
+  local function void on_mem_access_d(tl_seq_item item);
+    dv_base_reg_block   ral_model = cfg.ral_models["rv_dm_mem_reg_block"];
+    rv_dm_mem_reg_block blk;
+    uvm_reg_addr_t      csr_addr;
+    uvm_reg             csr;
+    bit                 is_write = item.is_write();
+    bit                 do_read_check = 1;
+
+    if (!$cast(blk, ral_model)) `uvm_fatal(get_full_name(), "Wrong type for mem reg block")
+
+    csr_addr = ral_model.get_word_aligned_addr(item.a_addr);
+    csr      = ral_model.get_default_map().get_reg_by_offset(csr_addr);
+
+    if (csr == null) begin
+      // An unknown CSR for the mem reg block might be absolutely fine: it just means we're
+      // accessing an address that lies above the top of our model of the debug memory. The
+      // dm_mem implementation ignores that sort of access.
+      //
+      // Check that the response is not an error and a read has a d_data response of 0
+      if (item.d_error || (!is_write && item.d_data != 0)) begin
+        string problems[$];
+        if (item.d_error) problems.push_back("Expected d_error=0 but it was 1.");
+        if (!is_write && item.d_data != 0) begin
+          problems.push_back($sformatf("Expected read d_data=0, but it was 0x%0h", item.d_data));
+        end
+
+        `uvm_error(get_full_name(),
+                   $sformatf({"Unexpected response to %0s address 0x%0h in mem reg block. ",
+                              "Problems: %0p. Item: (%0s)."},
+                             is_write ? "write to" : "read from", csr_addr, problems,
+                             item.sprint(uvm_default_line_printer)))
+      end
+
+      // Nothing else to do: we don't have any model that needs updating.
+      return;
+    end
+
+    if (csr == blk.halted) begin
+    end else if (csr == blk.going) begin
+    end else if (csr == blk.resuming) begin
+    end else if (csr == blk.exception) begin
+    end else if (csr == blk.whereto) begin
+      do_read_check = 0;
+    end else if (csr inside {blk.abstractcmd}) begin
+      // Disable the read check. We don't model the contents of abstractcmd registers.
+      do_read_check = 0;
+    end else if (csr inside {blk.program_buffer}) begin
+      // RO registers. Write on DM progbuf registers and read data from these registers manually.
+      do_read_check = 0;
+    end else if (csr inside {blk.dataaddr}) begin
+    end else if (csr inside {blk.flags}) begin
+      // HW can update this value and we don't currently expect the scoreboard to keep track of what
+      // it should contain in cfg.ral.
+      do_read_check = 0;
+    end else begin
+      `uvm_error(get_full_name(), $sformatf("Unsupported register: %0s", csr.get_name()))
+      return;
+    end
+
+    // If this is a read of a register whose value is predicted, we expect d_data to match the
+    // mirrored value of the register.
+    if (!is_write && do_read_check && (item.d_data != csr.get_mirrored_value())) begin
+      `uvm_error(get_full_name(),
+                 $sformatf({"Debug mem read mismatch at register %0s. ",
+                            "Mirrored value is 0x%0h, but transaction saw 0x%0h."},
+                           csr.get_name(),
+                           csr.get_mirrored_value(),
+                           item.d_data))
+    end
+
+    // Finally (if no error), update the register prediction with the value that was just read or
+    // written
+    if (!item.d_error) begin
+      if (!csr.predict(.value(is_write ? item.a_data : item.d_data),
+                       .kind(is_write ? UVM_PREDICT_WRITE : UVM_PREDICT_READ))) begin
+        `uvm_error(get_full_name(),
+                   $sformatf("Failed to update prediction for %0s from an observed %0s.",
+                             csr.get_name(),
+                             is_write ? "write" : "read"))
+      end
+    end
+  endfunction
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
