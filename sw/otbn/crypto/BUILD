@@ -489,3 +489,17 @@ otbn_binary(
         ":x25519",
     ],
 )
+
+otbn_library(
+    name = "mai_gadgets",
+    srcs = [
+        "mai_gadgets.s",
+    ],
+)
+
+otbn_library(
+    name = "xof",
+    srcs = [
+        "xof.s",
+    ],
+)
