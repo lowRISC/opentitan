@@ -6,6 +6,11 @@ load("//rules:otbn.bzl", "otbn_binary", "otbn_library")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files([
+    "xof.s",
+    "mai_gadgets.s",
+])
+
 otbn_binary(
     name = "boot",
     srcs = [
