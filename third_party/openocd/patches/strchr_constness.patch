@@ -1,0 +1,81 @@
+commit 1bf1ac444a96d9151ae53a1ccf5adf16f8e25e75
+Author: Christoph Seitz <christoph.seitz@infineon.com>
+Date:   Tue May 5 13:41:17 2026 +0000
+
+    Fix const correctness for strchr and strrchr
+    
+    Recent compiler and libc updates have generic signature
+    for certain libc functions. The return type these functions
+    is the same as the argument type. This causes compilation
+    errors. The patch fixes the types and usage of the return
+    values to be const correct.
+    
+    Change-Id: I20a769cdc82675938f64fb47cd77ff84c0980d51
+    Signed-off-by: Christoph Seitz <christoph.seitz@infineon.com>
+    Reviewed-on: https://review.openocd.org/c/openocd/+/9529
+    Tested-by: jenkins
+    Reviewed-by: Antonio Borneo <borneo.antonio@gmail.com>
+
+diff --git a/src/helper/log.c b/src/helper/log.c
+index ce21a907d..8263cfc60 100644
+--- a/src/helper/log.c
++++ b/src/helper/log.c
+@@ -104,7 +104,7 @@ static void log_puts(enum log_levels level,
+ 	const char *function,
+ 	const char *string)
+ {
+-	char *f;
++	const char *f;
+ 
+ 	if (!log_output) {
+ 		/* log_init() not called yet; print on stderr */
+diff --git a/src/helper/options.c b/src/helper/options.c
+index 28e222171..9eb26a476 100644
+--- a/src/helper/options.c
++++ b/src/helper/options.c
+@@ -151,7 +151,7 @@ static char *find_relative_path(const char *from, const char *to)
+ 	while (from[0] != '\0') {
+ 		if (from[0] != '/')
+ 			i++;
+-		char *next = strchr(from, '/');
++		const char *next = strchr(from, '/');
+ 		if (!next)
+ 			break;
+ 		from = next + 1;
+diff --git a/src/jtag/drivers/vdebug.c b/src/jtag/drivers/vdebug.c
+index 29bfa8360..e1687a534 100644
+--- a/src/jtag/drivers/vdebug.c
++++ b/src/jtag/drivers/vdebug.c
+@@ -1215,12 +1215,14 @@ static int vdebug_dap_run(struct adiv5_dap *dap)
+ 
+ COMMAND_HANDLER(vdebug_set_server)
+ {
+-	if ((CMD_ARGC != 1) || !strchr(CMD_ARGV[0], ':'))
++	if (CMD_ARGC != 1)
+ 		return ERROR_COMMAND_SYNTAX_ERROR;
+-
+-	char *pchar = strchr(CMD_ARGV[0], ':');
+-	*pchar = '\0';
+-	strncpy(vdc.server_name, CMD_ARGV[0], sizeof(vdc.server_name) - 1);
++	const char *pchar = strchr(CMD_ARGV[0], ':');
++	if (!pchar)
++		return ERROR_COMMAND_SYNTAX_ERROR;
++	size_t len = MIN((uintptr_t)pchar - (uintptr_t)CMD_ARGV[0], sizeof(vdc.server_name) - 1);
++	memcpy(vdc.server_name, CMD_ARGV[0], len);
++	vdc.server_name[len] = '\0';
+ 	int port = atoi(++pchar);
+ 	if (port < 0 || port > UINT16_MAX) {
+ 		LOG_ERROR("invalid port number %d specified", port);
+diff --git a/src/server/telnet_server.c b/src/server/telnet_server.c
+index 83d50c2d0..52115a529 100644
+--- a/src/server/telnet_server.c
++++ b/src/server/telnet_server.c
+@@ -68,7 +68,7 @@ static int telnet_outputline(struct connection *connection, const char *line)
+ 
+ 	/* process lines in buffer */
+ 	while (*line) {
+-		char *line_end = strchr(line, '\n');
++		const char *line_end = strchr(line, '\n');
+ 
+ 		if (line_end)
+ 			len = line_end-line;
