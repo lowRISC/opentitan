@@ -6,4 +6,5 @@
 
 MLDSA_CALLER_WITH_STACK(mldsa44_tiny_pub_from_seed, a2)
 MLDSA_CALLER_WITH_STACK(mldsa44_tiny_sign_deterministic, a4)
+MLDSA_CALLER_WITH_STACK(mldsa44_tiny_sign, a5)
 MLDSA_CALLER_WITH_STACK(mldsa44_tiny_verify, a4)
