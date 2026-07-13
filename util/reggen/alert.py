@@ -6,22 +6,26 @@ from typing import Dict, List
 
 from reggen.bits import Bits
 from reggen.signal import Signal
-from reggen.lib import check_keys, check_name, check_str, check_list
+from reggen.lib import (check_keys, check_name, check_str, check_list,
+                        check_partition)
 
 
 class Alert(Signal):
 
-    def __init__(self, name: str, desc: str, bit: int, fatal: bool):
-        super().__init__(name, desc, Bits(bit, bit))
+    def __init__(self, name: str, desc: str, bit: int, fatal: bool,
+                 partition: str = 'primary'):
+        super().__init__(name, desc, Bits(bit, bit), partition=partition)
         self.bit = bit
         self.fatal = fatal
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Alert':
-        rd = check_keys(raw, what, ['name', 'desc'], [])
+        rd = check_keys(raw, what, ['name', 'desc'], ['partition'])
 
         name = check_name(rd['name'], 'name field of ' + what)
         desc = check_str(rd['desc'], 'desc field of ' + what)
+        partition = check_partition(rd.get('partition', 'primary'),
+                                    'partition field of ' + what)
 
         # Make sense of the alert name, which should be prefixed with recov_ or
         # fatal_.
@@ -35,7 +39,7 @@ class Alert(Signal):
                 f'Invalid name field of {what}: alert names must be prefixed '
                 f'with "recov_" or "fatal_". Saw {name!r}.')
 
-        return Alert(name, desc, lsb, fatal)
+        return Alert(name, desc, lsb, fatal, partition)
 
     @staticmethod
     def from_raw_list(what: str, raw: object) -> List['Alert']:

@@ -118,6 +118,8 @@ available_output_list | optional | name list+ | list of available peripheral out
 expose_reg_if | optional | python Bool | if set, expose reg interface in reg2hw signal
 interrupt_list | optional | name list+ | list of peripheral interrupts
 inter_signal_list | optional | list | list of inter-module signals
+is_split_ip | optional | python Bool | if set, this IP is split into a primary and secondary partition across two power domains (default false)
+clocking_secondary | optional | list | clocking for the secondary partition of a split IP
 no_auto_alert_regs | optional | string | Set to true to suppress automatic generation of alert test registers. Defaults to true if no alert_list is present. Otherwise this defaults to false.
 no_auto_intr_regs | optional | string | Set to true to suppress automatic generation of interrupt registers. Defaults to true if no interrupt_list is present. Otherwise this defaults to false.
 param_list | optional | parameter list | list of parameters of the IP
