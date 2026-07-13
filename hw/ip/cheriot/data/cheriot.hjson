@@ -1,0 +1,166 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "cheriot",
+  human_name:         "CHERIoT Memory Subsystem",
+  one_line_desc:      "CHERIoT-aware memory subsystem",
+  one_paragraph_desc: '''
+    The CHERIoT memory subsystem sits between a CHERIoT-capable Ibex core and the system
+    interconnect.  It enforces capability tag semantics on data-memory accesses, transparently
+    remapping capability accesses and revocation bitmap reads into a dedicated meta SRAM.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "47",
+  version:            "1.0.0",
+  life_stage:         "L1",
+  design_stage:       "D1",
+  verification_stage: "V0",
+
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true}
+  ],
+
+  bus_interfaces: [
+    {protocol: "tlul", direction: "device", name: "revbm"},
+    {protocol: "tlul", direction: "host", name: "cored"}
+  ],
+
+  ///////////////////////////
+  // Interrupts and Alerts //
+  ///////////////////////////
+
+  alert_list: [
+  ],
+
+  ////////////////
+  // Parameters //
+  ////////////////
+
+  param_list: [
+
+    /////////////////////
+    // Address map     //
+    /////////////////////
+
+    { name:    "MainSramBaseAddr",
+      desc:    "Base address of the main SRAM region (inclusive)",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h1000_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "MainSramTopAddr",
+      desc:    "Top address of the main SRAM region (exclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h1002_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "NvmBaseAddr",
+      desc:    "Base address of the NVM region (inclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h2000_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "NvmTopAddr",
+      desc:    "Top address of the NVM region (exclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h2020_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "MetaSramBaseAddr",
+      desc:    '''
+               Base address of the CHERIoT meta SRAM region.
+               ''',
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h0000_0000",
+      local:   "false",
+      expose:  "true"
+    },
+  ],
+
+  //////////////
+  // Features //
+  //////////////
+
+  features: [
+  ],
+
+  /////////////////////////////
+  // Intermodule Connections //
+  /////////////////////////////
+
+  inter_signal_list: [
+    // CHERIoT mode enable
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable."
+    },
+    // Data TL-UL interface from the core
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "cored_tl_d",
+      act:     "rsp",
+      package: "tlul_pkg",
+      desc:    "Data port from the core."
+    },
+    // Capability tag sideband - write direction (from core to subsystem)
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_h2d",
+      act:     "rcv",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_h."
+    },
+    // Capability tag sideband - read response direction (from subsystem to core)
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_d2h",
+      act:     "req",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "Capability tag returned on the D-channel of cored_h."
+    },
+    // TRVK revocation bitmap TL-UL host port
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "corerevbm_tl",
+      act:     "rsp",
+      package: "tlul_pkg",
+      desc:    "TRVK (tag revocation) revocation bitmap port from the core."
+    },
+    // Meta SRAM host TL-UL port (to external sram_ctrl RAM interface)
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "meta_sram_tl",
+      act:     "req",
+      package: "tlul_pkg",
+      desc:    "Host TL-UL port to the external meta SRAM controller's RAM interface."
+    },
+  ],
+
+  /////////////////////
+  // Countermeasures //
+  /////////////////////
+
+  countermeasures: [
+  ],
+
+  ///////////
+  // Memory //
+  ///////////
+
+  memory: {
+    revbm: {}
+  }
+}

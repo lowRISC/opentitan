@@ -1,0 +1,23 @@
+diff --git a/stream_fork_dynamic.sv b/stream_fork_dynamic.sv
+index 8da5313d..1aa546b4 100644
+--- a/stream_fork_dynamic.sv
++++ b/stream_fork_dynamic.sv
+@@ -11,7 +11,7 @@
+ // Authors:
+ // - Andreas Kurth <akurth@iis.ee.ethz.ch>
+ 
+-`include "common_cells/assertions.svh"
++`include "prim_assert.sv"
+ 
+ /// Dynamic stream fork: Connects the input stream (ready-valid) handshake to a combination of output
+ /// stream handshake.  The combination is determined dynamically through another stream, which
+@@ -87,7 +87,6 @@ module stream_fork_dynamic #(
+     .ready_i ( int_oup_ready )
+   );
+ 
+-`ifndef COMMON_CELLS_ASSERTS_OFF
+-  `ASSERT_INIT(n_oup_0, N_OUP >= 1, "N_OUP must be at least 1!")
+-`endif
++  `ASSERT_INIT(NumOutputLargerZero_A, N_OUP >= 1)
++
+ endmodule

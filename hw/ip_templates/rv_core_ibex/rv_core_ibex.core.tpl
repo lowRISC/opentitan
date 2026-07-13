@@ -20,6 +20,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:rv_core_ibex_pkg
+      - lowrisc:ip:cheriot
     % if racl_support:
       - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
     % endif

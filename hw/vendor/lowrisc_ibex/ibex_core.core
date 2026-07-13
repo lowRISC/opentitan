@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:clock_gating
       - lowrisc:prim:lfsr
       - lowrisc:prim:mubi
+      - lowrisc:prim:fifo
       - lowrisc:ibex:ibex_pkg
       - lowrisc:ibex:ibex_icache
       - lowrisc:dv:dv_fcov_macros

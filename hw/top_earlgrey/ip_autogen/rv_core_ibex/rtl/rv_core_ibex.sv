@@ -14,6 +14,7 @@ module rv_core_ibex
   import rv_core_ibex_pkg::*;
   import rv_core_ibex_reg_pkg::*;
 #(
+  parameter ibex_pkg::base_isa_e    BaseIsa             = ibex_pkg::BaseIsaRV32IorCHERIoT,
   parameter logic [NumAlerts-1:0]   AlertAsyncOn        = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert and escalation signal
   parameter int unsigned            AlertSkewCycles     = 1,
@@ -57,7 +58,9 @@ module rv_core_ibex
   parameter int unsigned                    WidthPingCounter      = 16,
   parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0,
   parameter logic [31:0]            CsrMvendorId                   = 32'b0,
-  parameter logic [31:0]            CsrMimpId                      = 32'b0
+  parameter logic [31:0]            CsrMimpId                      = 32'b0,
+  parameter int unsigned            CheriotRevBitmapAddrWidth      = 32'd9,
+  parameter int unsigned            CheriotRevBitmapBaseAddr       = 32'h0
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -235,6 +238,11 @@ module rv_core_ibex
 
   // core sleeping
   logic core_sleep;
+
+  // CHERIoT signals
+  prim_mubi_pkg::mubi4_t cheriot_ena;
+  logic                  cheriot_switch_error;
+  logic                  unused_cheriot;
 
   // The following intermediate signals are created to aid in simulations.
   //
@@ -431,6 +439,7 @@ module rv_core_ibex
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
+    .BaseIsa                     ( BaseIsa                  ),
     .PMPEnable                   ( PMPEnable                ),
     .PMPGranularity              ( PMPGranularity           ),
     .PMPNumRegions               ( PMPNumRegions            ),
@@ -439,6 +448,8 @@ module rv_core_ibex
     .PMPRstCfg                   ( PMPRstCfg                ),
     .PMPRstAddr                  ( PMPRstAddr               ),
     .PMPRstMsecCfg               ( PMPRstMsecCfg            ),
+    .CheriotRevBitmapAddrWidth   ( CheriotRevBitmapAddrWidth),
+    .CheriotRevBitmapBaseAddr    ( CheriotRevBitmapBaseAddr ),
     .RV32E                       ( RV32E                    ),
     .RV32M                       ( RV32M                    ),
     .RV32B                       ( RV32B                    ),
@@ -493,6 +504,8 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
+    .trvk_heap_base_addr_i('0), // SRAM base address
+
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
     .instr_rvalid_i     (main_core_instr_rvalid),
@@ -509,9 +522,19 @@ module rv_core_ibex
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
+    .data_tag_o         (),
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
+    .data_tag_i         ('0),
     .data_err_i         (main_core_data_err),
+
+    .trvk_revbm_req_o       (),
+    .trvk_revbm_gnt_i       ('0),
+    .trvk_revbm_rvalid_i    ('0),
+    .trvk_revbm_addr_o      (),
+    .trvk_revbm_rdata_i     ('0),
+    .trvk_revbm_rdata_intg_i('0),
+    .trvk_revbm_err_i       ('0),
 
     .irq_software_i     ( irq_software     ),
     .irq_timer_i        ( irq_timer        ),
@@ -1012,6 +1035,29 @@ module rv_core_ibex
   assign hw2reg.rnd_status.rnd_data_valid.d = rnd_valid_q;
   assign hw2reg.rnd_status.rnd_data_fips.d  = rnd_fips_q;
 
+  ////////////////////
+  // CHERIoT switch
+  ////////////////////
+
+  if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : gen_cheriot_switch
+    cheriot_switch u_cheriot_switch (
+      .clk_i,
+      .rst_ni,
+      .ena_i        (reg2hw.cheriot_ena.q),
+      .lock_i       (reg2hw.cheriot_lock.q),
+      .lock_access_i(reg2hw.cheriot_lock.qe),
+      .ena_o        (cheriot_ena),
+      .error_o      (cheriot_switch_error)
+    );
+    // For now, tie off all signals
+    assign unused_cheriot = ^{cheriot_ena, cheriot_switch_error};
+
+  end else begin : gen_no_cheriot_switch
+    assign cheriot_ena          = prim_mubi_pkg::MuBi4False;
+    assign cheriot_switch_error = 1'b0;
+    assign unused_cheriot       = ^{cheriot_ena, cheriot_switch_error};
+  end
+
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
 
@@ -1102,7 +1148,8 @@ module rv_core_ibex
     assign unused_reg2hw_shadow = ^{reg2hw_shadow.alert_test, reg2hw_shadow.nmi_enable,
                                     reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
                                     reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
-                                    reg2hw_shadow.mcounteren_writable};
+                                    reg2hw_shadow.mcounteren_writable,
+                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_lock};
 
     /////////////////////////////////////////////////////////////////
     // Shadow Core Data Address Translation Unit and TL-UL Adapter //

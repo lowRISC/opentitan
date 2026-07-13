@@ -5,36 +5,38 @@ A number of memory-mapped registers are available to control Ibex-related functi
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_englishbreakfast/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
 ## Summary
 
-| Name                                                                     | Offset   |   Length | Description                                                                   |
-|:-------------------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------|
-| rv_core_ibex.[`ALERT_TEST`](#alert_test)                                 | 0x0      |        4 | Alert Test Register                                                           |
-| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)                             | 0x4      |        4 | Software recoverable error                                                    |
-| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)                             | 0x8      |        4 | Software fatal error                                                          |
-| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)                             | 0xc      |        4 | Ibus address control regwen.                                                  |
-| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)                             | 0x10     |        4 | Ibus address control regwen.                                                  |
-| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)                           | 0x14     |        4 | Enable Ibus address matching                                                  |
-| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)                           | 0x18     |        4 | Enable Ibus address matching                                                  |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching)               | 0x1c     |        4 | Matching region programming for ibus.                                         |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching)               | 0x20     |        4 | Matching region programming for ibus.                                         |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)                     | 0x24     |        4 | The remap address after a match has been made.                                |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)                     | 0x28     |        4 | The remap address after a match has been made.                                |
-| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)                             | 0x2c     |        4 | Dbus address control regwen.                                                  |
-| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)                             | 0x30     |        4 | Dbus address control regwen.                                                  |
-| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)                           | 0x34     |        4 | Enable dbus address matching                                                  |
-| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)                           | 0x38     |        4 | Enable dbus address matching                                                  |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching)               | 0x3c     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching)               | 0x40     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)                     | 0x44     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)                     | 0x48     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
-| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                                 | 0x4c     |        4 | Enable mask for NMI.                                                          |
-| rv_core_ibex.[`NMI_STATE`](#nmi_state)                                   | 0x50     |        4 | Current NMI state                                                             |
-| rv_core_ibex.[`ERR_STATUS`](#err_status)                                 | 0x54     |        4 | error status                                                                  |
-| rv_core_ibex.[`RND_DATA`](#rnd_data)                                     | 0x58     |        4 | Random data from EDN                                                          |
-| rv_core_ibex.[`RND_STATUS`](#rnd_status)                                 | 0x5c     |        4 | Status of random data in [`RND_DATA`](#rnd_data)                              |
-| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                                   | 0x60     |        4 | FPGA build timestamp info.                                                    |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x64     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)      |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x68     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                 |
-| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x80     |       32 | Exposed tlul window for DV only purposes.                                     |
+| Name                                                                     | Offset   |   Length | Description                                                                     |
+|:-------------------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------------------|
+| rv_core_ibex.[`ALERT_TEST`](#alert_test)                                 | 0x0      |        4 | Alert Test Register                                                             |
+| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)                             | 0x4      |        4 | Software recoverable error                                                      |
+| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)                             | 0x8      |        4 | Software fatal error                                                            |
+| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)                             | 0xc      |        4 | Ibus address control regwen.                                                    |
+| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)                             | 0x10     |        4 | Ibus address control regwen.                                                    |
+| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)                           | 0x14     |        4 | Enable Ibus address matching                                                    |
+| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)                           | 0x18     |        4 | Enable Ibus address matching                                                    |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching)               | 0x1c     |        4 | Matching region programming for ibus.                                           |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching)               | 0x20     |        4 | Matching region programming for ibus.                                           |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)                     | 0x24     |        4 | The remap address after a match has been made.                                  |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)                     | 0x28     |        4 | The remap address after a match has been made.                                  |
+| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)                             | 0x2c     |        4 | Dbus address control regwen.                                                    |
+| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)                             | 0x30     |        4 | Dbus address control regwen.                                                    |
+| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)                           | 0x34     |        4 | Enable dbus address matching                                                    |
+| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)                           | 0x38     |        4 | Enable dbus address matching                                                    |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching)               | 0x3c     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.   |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching)               | 0x40     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.   |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)                     | 0x44     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.       |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)                     | 0x48     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.       |
+| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                                 | 0x4c     |        4 | Enable mask for NMI.                                                            |
+| rv_core_ibex.[`NMI_STATE`](#nmi_state)                                   | 0x50     |        4 | Current NMI state                                                               |
+| rv_core_ibex.[`ERR_STATUS`](#err_status)                                 | 0x54     |        4 | error status                                                                    |
+| rv_core_ibex.[`RND_DATA`](#rnd_data)                                     | 0x58     |        4 | Random data from EDN                                                            |
+| rv_core_ibex.[`RND_STATUS`](#rnd_status)                                 | 0x5c     |        4 | Status of random data in [`RND_DATA`](#rnd_data)                                |
+| rv_core_ibex.[`CHERIOT_ENA`](#cheriot_ena)                               | 0x60     |        4 | Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False). |
+| rv_core_ibex.[`CHERIOT_LOCK`](#cheriot_lock)                             | 0x64     |        4 | Locks the CHERIoT/ePMP mode.                                                    |
+| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                                   | 0x68     |        4 | FPGA build timestamp info.                                                      |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x6c     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)        |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x70     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                   |
+| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x80     |       32 | Exposed tlul window for DV only purposes.                                       |
 
 ## ALERT_TEST
 Alert Test Register
@@ -421,10 +423,45 @@ Status of random data in [`RND_DATA`](#rnd_data)
 |   1    |   ro   |   0x0   | RND_DATA_FIPS  | When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 1, this bit indicates whether [`RND_DATA`](#rnd_data) is fips quality. When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 0, this bit has no meaning. |
 |   0    |   ro   |   0x0   | RND_DATA_VALID | When set, the data in [`RND_DATA`](#rnd_data) is valid. When clear an EDN request for new data for [`RND_DATA`](#rnd_data) is pending.                                                                   |
 
+## CHERIOT_ENA
+Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
+- Offset: `0x60`
+- Reset default: `0x0`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 4, "attr": ["wo"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:4  |        |         |        | Reserved      |
+|  3:0   |   wo   |   0x0   | VAL    |               |
+
+## CHERIOT_LOCK
+Locks the CHERIoT/ePMP mode.
+If CHERIOT_ENA is set to MuBi4True, CHERIoT mode is enabled on write to this register.
+- Offset: `0x64`
+- Reset default: `0x0`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 4, "attr": ["wo"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:4  |        |         |        | Reserved      |
+|  3:0   |   wo   |    x    | VAL    |               |
+
 ## FPGA_INFO
 FPGA build timestamp info.
 This register only contains valid data for fpga, for all other variants it is simply 0.
-- Offset: `0x60`
+- Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -440,7 +477,7 @@ This register only contains valid data for fpga, for all other variants it is si
 
 ## MCOUNTEREN_WRITABLE_REGWEN
 Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)
-- Offset: `0x64`
+- Offset: `0x6c`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -466,7 +503,7 @@ Write enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable) Once set to 0, i
 
 ## MCOUNTEREN_WRITABLE
 Controls whether Ibex mcounteren CSR is writable by software.
-- Offset: `0x68`
+- Offset: `0x70`
 - Reset default: `0x6`
 - Reset mask: `0xf`
 - Register enable: [`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen)

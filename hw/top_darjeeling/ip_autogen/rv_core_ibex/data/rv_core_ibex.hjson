@@ -1079,6 +1079,40 @@
         ]
       },
 
+      { name: "CHERIOT_ENA",
+        desc: '''
+          Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
+        ''',
+        swaccess: "wo",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            resval: "0x0"
+            desc: '''
+            '''
+          },
+        ]
+      },
+
+      { name: "CHERIOT_LOCK",
+        desc: '''
+          Locks the CHERIoT/ePMP mode.
+          If CHERIOT_ENA is set to MuBi4True, CHERIoT mode is enabled on write to this register.
+        ''',
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            desc: '''
+            '''
+          },
+        ]
+      },
+
       { name: "FPGA_INFO",
         desc: '''
           FPGA build timestamp info.

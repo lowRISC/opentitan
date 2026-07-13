@@ -50,10 +50,18 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_dec.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_fifo_sync_cnt.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_fifo_sync.sv
+
+// Vendored PULP common cells (used by the TRVK filter)
+${PRJ_DIR}/vendor/pulp_common_cells/rtl/stream_fork.sv
+${PRJ_DIR}/vendor/pulp_common_cells/rtl/stream_fork_dynamic.sv
+${PRJ_DIR}/vendor/pulp_common_cells/rtl/stream_join_dynamic.sv
 
 // ibex CORE RTL files
 +incdir+${PRJ_DIR}/rtl
 ${PRJ_DIR}/rtl/ibex_pkg.sv
+${PRJ_DIR}/rtl/ibex_cheriot_pkg.sv
 ${PRJ_DIR}/rtl/ibex_tracer_pkg.sv
 ${PRJ_DIR}/rtl/ibex_tracer.sv
 ${PRJ_DIR}/rtl/ibex_alu.sv
@@ -81,6 +89,7 @@ ${PRJ_DIR}/rtl/ibex_register_file_fpga.sv
 ${PRJ_DIR}/rtl/ibex_register_file_latch.sv
 ${PRJ_DIR}/rtl/ibex_pmp.sv
 ${PRJ_DIR}/rtl/ibex_core.sv
+${PRJ_DIR}/rtl/ibex_trvk.sv
 ${PRJ_DIR}/rtl/ibex_top.sv
 ${PRJ_DIR}/rtl/ibex_top_tracing.sv
 
