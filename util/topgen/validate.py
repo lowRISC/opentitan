@@ -272,6 +272,14 @@ module_optional = {
         's', 'power domain of the module, defaults to the domain specified '
         'in top["power"]["default"]'
     ],
+    'domain_secondary': [
+        's', 'for a split IP, the power domain of its secondary partition '
+        '(must differ from "domain")'
+    ],
+    'is_split_ip': [
+        'pb', 'whether this IP is split into a primary and secondary '
+        'partition across two power domains (forwarded from the IP block)'
+    ],
     'clock_reset_export': [
         'l', 'optional list with prefixes for exported '
         'clocks and resets at the chip level'
@@ -334,6 +342,12 @@ module_added = {
     'inter_signal_list': ['l', 'generated signal information'],
     'param_list': ['l', 'list of parameters'],
     "otp_mmap": ["g", "Full OTP memory map configuration with secret parameters"],
+    # Secondary-partition connections of a split IP, split out of the nested
+    # top-hjson form by normalize_partition_connections().
+    'clock_srcs_secondary': ['g', 'split IP secondary-partition clock sources'],
+    'reset_connections_secondary':
+    ['g', 'split IP secondary-partition reset connections'],
+    'clock_group_secondary': ['s', 'split IP secondary-partition clock group'],
 }
 
 memory_required = {
@@ -450,6 +464,10 @@ param_optional = {
     'randtype': ['s', 'whether it is for "data" or "perm"issions'],
     'randwidth': ['d', 'the number of bits'],
     'unpacked_dimensions': ['s', 'the unpacked dimensions for arrays'],
+    'partition': [
+        's', "for a split IP, the partition ('primary', 'secondary' or "
+        "'both') whose module header(s) this parameter is emitted into"
+    ],
 }
 param_added = {}
 
@@ -472,6 +490,10 @@ inter_sig_optional = {
     'default': ['s', 'TODO'],
     'end_idx': ['d', 'TODO'],
     'top_signame': ['s', 'TODO'],
+    'partition': [
+        's', "for a split IP, the partition ('primary'/'secondary') that owns "
+        "this inter-module signal"
+    ],
 }
 inter_sig_added = {}
 
@@ -1217,6 +1239,22 @@ def check_power_domains(top: ConfigT):
         if end_point['domain'] not in top['power']['domains']:
             raise ValueError(
                 f"{end_point['name']} defines invalid domain {end_point['domain']}")
+
+        # Split IPs additionally place their secondary partition into a
+        # 'domain_secondary'. A split IP must specify it; a non-split IP must
+        # not. It must be a valid domain, but may equal the primary domain (a
+        # split IP can be instantiated with both partitions in a single PD, in
+        # which case the intra-IP connections stay within that PD's wrapper).
+        domain_secondary = end_point.get('domain_secondary')
+        if end_point.get('is_split_ip') and domain_secondary is None:
+            raise ValueError(
+                f"{end_point['name']} is a split IP but does not specify "
+                "domain_secondary")
+        if domain_secondary is not None:
+            if domain_secondary not in top['power']['domains']:
+                raise ValueError(
+                    f"{end_point['name']} defines invalid domain_secondary "
+                    f"{domain_secondary}")
 
 
 def check_modules(top: ConfigT, prefix: str) -> int:

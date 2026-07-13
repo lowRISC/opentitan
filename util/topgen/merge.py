@@ -656,6 +656,54 @@ def is_unmanaged_reset(top: ConfigT, reset: str):
     return reset in top['unmanaged_resets']
 
 
+# Per-instance connection keys that a split IP may specify per partition, using
+# a nested {'primary': ..., 'secondary': ...} form in the top hjson.
+_PARTITIONED_CONN_KEYS = ['clock_srcs', 'reset_connections', 'clock_group']
+
+
+def _is_nested_partition_value(val: object) -> bool:
+    '''Return True if val uses the nested {primary[, secondary]} partition form.
+
+    The nested form is a non-empty dict whose keys are a subset of
+    {'primary', 'secondary'} and that contains at least 'primary'. This
+    distinguishes it from the flat form (a clock/reset connection map keyed by
+    port name, or a bare clock_group string).
+    '''
+    return (isinstance(val, dict) and bool(val) and
+            set(val.keys()) <= {'primary', 'secondary'} and 'primary' in val)
+
+
+def normalize_partition_connections(topcfg: ConfigT) -> None:
+    '''Split the per-partition connection keys of split-IP instances.
+
+    For split IPs the top hjson specifies clock_srcs / reset_connections /
+    clock_group in a nested {'primary': ..., 'secondary': ...} form. This
+    rewrites each such instance so that the canonical key holds the *primary*
+    partition's (flat) value -- exactly what every existing, partition-unaware
+    consumer already expects -- and stores the secondary partition's value in a
+    '<key>_secondary' companion key for the split-IP-aware code paths.
+
+    Only split-IP instances (identified by the presence of a 'domain_secondary'
+    key) are touched, so this is a guaranteed no-op for every non-split IP. It
+    is idempotent: once the nested form has been split out, the canonical key
+    is flat and re-running (e.g. across the convergence loop) does nothing.
+    '''
+    for module in topcfg['module']:
+        # Only split-IP instances carry a secondary domain; leave every other
+        # instance (i.e. all of today's IPs) completely untouched.
+        if 'domain_secondary' not in module:
+            continue
+
+        for key in _PARTITIONED_CONN_KEYS:
+            val = module.get(key)
+            if not _is_nested_partition_value(val):
+                # Either absent, or already normalized to the flat primary form.
+                continue
+            module[key] = val['primary']
+            if 'secondary' in val:
+                module[f'{key}_secondary'] = val['secondary']
+
+
 def extract_clocks(top: ConfigT):
     '''Add clock exports to top and connections to endpoints
 

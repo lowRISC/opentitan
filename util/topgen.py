@@ -49,7 +49,7 @@ from topgen.merge import (
     commit_interrupt_modules, commit_outgoing_alert_modules,
     commit_outgoing_interrupt_modules, connect_clocks,
     create_alert_lpgs, elaborate_instance, extract_clocks,
-    commit_alert_connections)
+    commit_alert_connections, normalize_partition_connections)
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
@@ -1416,6 +1416,10 @@ def _process_top(
     errors found in the process.
     """
     # Prepare the topcfg.
+    # Split-IP instances specify their clock/reset/clock_group connections in a
+    # nested per-partition form; fold this into the flat primary form (plus
+    # '<key>_secondary' companions) before any consumer looks at them.
+    normalize_partition_connections(topcfg)
     extract_clocks(topcfg)
     ip_attrs = create_generic_ip_blocks(topcfg, alias_cfgs, cfg_path,
                                         args.hjson_path)
