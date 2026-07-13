@@ -21,6 +21,10 @@ void mldsa44_tiny_sign_deterministic_with_stack(uint8_t *sig,
                                                 size_t msg_len,
                                                 void *stack_top);
 
+void mldsa44_tiny_sign_with_stack(uint8_t *sig, const uint8_t *seed,
+                                  const uint8_t *randomizer, const uint8_t *msg,
+                                  size_t msg_len, void *stack_top);
+
 int mldsa44_tiny_verify_with_stack(const uint8_t *pk, const uint8_t *sig,
                                    const uint8_t *msg, size_t msg_len,
                                    void *stack_top);
