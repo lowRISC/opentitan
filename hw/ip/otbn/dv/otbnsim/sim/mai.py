@@ -422,6 +422,8 @@ class _MaskingAccelerator:
         self._pass1_buf: List[Tuple[int, int]] = []
         # B2A only: mask_mod values pushed alongside each input element.
         self._mask_fifo: List[int] = []
+        # Expected unmasked result per element.
+        self._check_fifo: List[Optional[int]] = []
         # How many pass-1 inputs have been pushed from the register into the adder.
         self._pass1_adder_count: int = 0
         # How many pass-2 inputs have been pushed to the adder.
@@ -440,6 +442,8 @@ class _MaskingAccelerator:
         self._inp_reg = (inp1, inp2)
         if self._mode == MaiOperation.B2A:
             self._mask_fifo.append(mask_0 & _mod_smear(mod))
+        self._check_fifo.append(
+            self._calc_expected_unmasked(in0_s0, in0_s1, in1_s0, in1_s1, mod))
 
     def step(self, rand: int, stall: bool = False) -> None:
         """Advance the pipeline one cycle."""
@@ -450,22 +454,20 @@ class _MaskingAccelerator:
         raw = self._adder.peek()
         if raw is not None:
             self._adder_outputs += 1
-            if self._enable_mod():
-                if self._adder_outputs <= self.VEC_SIZE:
-                    self._pass1_buf.append(raw)  # pass-1 -> buffer
-                else:
-                    self._emit_result(raw)  # pass-2 -> output
+            if self._enable_mod() and self._adder_outputs <= self.VEC_SIZE:
+                self._pass1_buf.append(raw)  # pass-1 -> buffer
             else:
-                s0, s1 = raw
-                self._output_queue.append((s0 & _MASK32, s1 & _MASK32))
+                self._emit_result(raw)  # pass-2 or direct -> output
 
             # Once the last expected output is collected, reset input-tracking so the
             # next batch starts clean. _output_queue is left intact, writeback may
             # still be draining it.
             total_outputs = 2 * self.VEC_SIZE if self._enable_mod() else self.VEC_SIZE
             if self._adder_outputs == total_outputs:
-                assert not self._mask_fifo, \
-                    "B2A mask_fifo not empty at batch end, push/emit count mismatch"
+                if self._mask_fifo:
+                    raise RuntimeError("mask_fifo not empty at batch end")
+                if self._check_fifo:
+                    raise RuntimeError("check_fifo not empty at batch end")
                 self._reset_batch()
 
         # 2. Advance adder pipeline.
@@ -538,6 +540,56 @@ class _MaskingAccelerator:
             inp2 = (in1_s0, in1_s1)
         return inp1, inp2
 
+    def _calc_expected_unmasked(self, in0_s0: int, in0_s1: int, in1_s0: int, in1_s1: int,
+                                mod: int) -> Optional[int]:
+        """Compute the expected unmasked result for one element, per the MAI spec.
+
+        Returns None if the modulus makes the operation's result undefined (mod == 0
+        for the modes that use the modulus).
+
+        Input form and target value per mode:
+          SECADD:    in0, in1 are Boolean shares of a, b. Computes (a + b) mod 2^32.
+          SECADDMOD: in0, in1 are Boolean shares of a, b, pre-encoded with -mod baked
+                     in, i.e. a + b = true_a + true_b - mod. Computes (true_a + true_b)
+                     mod mod, i.e. (a + b + mod) mod mod.
+          A2B:       in0 is an arithmetic share of a (in1 unused). Computes a mod mod.
+          B2A:       in0 is a Boolean share of a (in1 unused). Computes a mod mod.
+        """
+        a = in0_s0 ^ in0_s1
+        b = in1_s0 ^ in1_s1
+        if self._mode == MaiOperation.SECADD:
+            return (a + b) & _MASK32
+        if mod == 0:
+            return None
+        if self._mode == MaiOperation.SECADDMOD:
+            true_sum = a + b
+            if true_sum >> 32:
+                return true_sum & _MASK32
+            return (true_sum + mod) & _MASK32
+        if self._mode == MaiOperation.A2B:
+            return (in0_s0 + in0_s1) % mod
+        if self._mode == MaiOperation.B2A:
+            return a % mod
+        raise ValueError(f'Unhandled MAI mode: {self._mode}')
+
+    def _check_unmasked_result(self, result: Tuple[int, int]) -> None:
+        """Pop the expected value queued at push time and check it against `result`."""
+        expected = self._check_fifo.pop(0)
+        if expected is None:
+            # _calc_expected_unmasked() returns None when mod == 0 makes the result
+            # undefined for this mode. There's nothing to check in that case.
+            return
+        s0, s1 = result
+        if self._mode == MaiOperation.B2A:
+            mod = self._modulus()
+            actual = (s0 + s1) % mod
+        else:
+            actual = (s0 & _MASK32) ^ (s1 & _MASK32)
+        if actual != expected:
+            raise ValueError(
+                f"MAI {self._mode!r} unmasked output mismatch: "
+                f"got {actual:#x}, expected {expected:#x}")
+
     def _pass2_inputs(
             self, p1: Tuple[int, int]
     ) -> Tuple[Tuple[int, int], Tuple[int, int]]:
@@ -563,9 +615,11 @@ class _MaskingAccelerator:
             mask_mod = self._mask_fifo.pop(0)
             mod = self._modulus()
             diff = (s0 & _MASK32) ^ (s1 & _MASK32)
-            self._output_queue.append((mask_mod, diff & _mod_smear(mod)))
+            result = (mask_mod, diff & _mod_smear(mod))
         else:
-            self._output_queue.append((s0 & _MASK32, s1 & _MASK32))
+            result = (s0 & _MASK32, s1 & _MASK32)
+        self._check_unmasked_result(result)
+        self._output_queue.append(result)
 
 
 class MaskingAcceleratorInterface:
