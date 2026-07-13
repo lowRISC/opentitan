@@ -152,15 +152,16 @@ package rram_ctrl_pkg;
   };
 
   // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 32 --seed 1294753918 --prefix ""
-  parameter int LfsrWidth = 32;
+  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 1294753918 --prefix ""
+  parameter int LfsrWidth = 64;
   typedef logic [LfsrWidth-1:0] lfsr_seed_t;
   typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
   parameter lfsr_seed_t RndCnstLfsrSeedDefault = {
-    32'h72570dd9
+    64'hccc56895_72570dd9
   };
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
-    160'h3d303bb0_990bca04_6f8275be_6ecfd586_9728a92d
+    128'h932b3ca2_bdf53b97_f1d80e85_0a364f7b,
+    256'h0633d293_07409b51_b8aeff77_820318bf_4186611c_f9abcd52_74aa8165_e58954db
   };
 
   // Design time constants
