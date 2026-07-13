@@ -23,9 +23,10 @@ See that document for integration overview within the broader top level system.
 
 ## Features
 
-* Processor optimized for wide integer arithmetic
-* 32b wide control path with 32 32b wide registers
-* 256b wide data path with 32 256b wide registers
+* Processor optimized for wide integer arithmetic.
+* 32b wide control path with 32 32b wide registers.
+* 256b wide data path with 32 256b wide registers.
+  Full-width and 32-bit SIMD instructions are available.
 * Full control-flow support with conditional branch and unconditional jump instructions, hardware loops, and hardware-managed call/return stacks.
 * Reduced, security-focused instruction set architecture for easier verification and the prevention of data leaks.
 * Built-in access to random numbers.
@@ -36,11 +37,13 @@ See that document for integration overview within the broader top level system.
 
 OTBN is a processor, specialized for the execution of security-sensitive asymmetric (public-key) cryptography code, such as RSA or ECC.
 Such algorithms are dominated by wide integer arithmetic, which are supported by OTBN's 256b wide data path, registers, and instructions which operate these wide data words.
+OTBN also supports post-quantum cryptography (PQC) algorithms.
+These operate on smaller numbers, but by making use of the 32-bit SIMD instructions the 256b wide registers can be used to efficiently vectorize the computations.
 On the other hand, the control flow is clearly separated from the data, and reduced to a minimum to avoid data leakage.
 
 The data OTBN processes is security-sensitive, and the processor design centers around that.
 The design is kept as simple as possible to reduce the attack surface and aid verification and testing.
-For example, no interrupts or exceptions are included in the design, and all instructions are designed to be executable within a single cycle.
+For example, no interrupts or exceptions are included in the design, and most instructions are designed to be executable within a single cycle.
 
 OTBN is designed as a self-contained co-processor with its own instruction and data memory, which is accessible as a bus device.
 
@@ -61,6 +64,7 @@ The instruction set is split into two groups:
   The base instructions are inspired by RISC-V's RV32I instruction set, but not compatible with it.
 * The **big number instruction subset** operates on 256b Wide Data Registers (WDRs).
   Its instructions are used for data processing.
+  There are instructions operating on all 256 bits as well as 32-bit SIMD instruction.
 
 ## Processor State
 
@@ -699,7 +703,8 @@ OTBN has 256b Wide Special purpose Registers (WSRs).
 These are analogous to the 32b CSRs, but are used by big number instructions.
 They can be accessed with the {{#otbn-insn-ref BN.WSRR}} and {{#otbn-insn-ref BN.WSRW}} instructions.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
-All read-write (RW) WSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
+The `MOD` and `ACC` WSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
+The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations starts and thus have no deterministic reset value.
 
 <!-- This list of WSRs is replicated in otbn_env_cov.sv, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other four as well. -->
