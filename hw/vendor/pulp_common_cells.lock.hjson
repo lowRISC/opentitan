@@ -8,7 +8,7 @@
 {
   upstream:
   {
-    url: https://github.com/thommythomaso/ibex-tbenz-pub.git
-    rev: 8348e15c8e6458e858c3f98601366d6880e8455f
+    url: https://github.com/pulp-platform/common_cells.git
+    rev: 63e1b679a70eca3a1d60d686bc1fa170ec08e1ab
   }
 }

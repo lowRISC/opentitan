@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     files:
       - rtl/ibex_pkg.sv
+      - rtl/ibex_cheriot_pkg.sv
     file_type: systemVerilogSource
 
 targets:
