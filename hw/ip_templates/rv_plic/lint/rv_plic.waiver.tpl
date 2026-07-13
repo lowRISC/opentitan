@@ -12,11 +12,3 @@ waive -rules VAR_INDEX_RANGE -location {${module_instance_name}.sv} -regexp {(cl
 
 waive -rules HIER_NET_NOT_READ -location {${module_instance_name}.sv} -regexp {[Nn]et 'tl_[io]\.[ad]_(address|param|user)} ${"\\"}
       -comment "Register interface doesn't use upper address and param, user filed"
-
-waive -rules EXPLICIT_BITLEN -location {${module_instance_name}_target.sv} -regexp {Bit length .* '1'} ${"\\"}
-      -comment "i + 1 is assumed as constant and guarded by SRCW"
-waive -rules INTEGER -location {${module_instance_name}_target.sv} -regexp {'i' of type int used as} ${"\\"}
-      -comment "int i is static and only assigned to irq_id_next when it hits condition"
-
-waive -rules TWOS_COMP -location {${module_instance_name}_target.sv} -regexp {Explicit two's complement with terms} ${"\\"}
-      -comment "This is permissible in this context"
