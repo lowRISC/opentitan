@@ -8,6 +8,8 @@
   one_paragraph_desc: '''
   OpenTitan Big Number Accelerator (OTBN) is a programmable coprocessor for asymmetric cryptographic algorithms such as RSA or elliptic curve cryptography (ECC).
   Such algorithms are dominated by wide integer arithmetic, which are executed on OTBN's 256-bit-wide data path.
+  OTBN also supports post-quantum cryptography (PQC) algorithms.
+  These operate on smaller numbers, but by making use of the 32-bit SIMD instructions the 256b wide registers can be used to efficiently vectorize the computations.
   The data OTBN processes is often security sensitive, and OTBN is designed to reduce the attack surface by
   (1) keeping the instruction set and the processor design as simple as possible to aid verification,
   (2) minimizing control flow and clearly separating it from data flow,
