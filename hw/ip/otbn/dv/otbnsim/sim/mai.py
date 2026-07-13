@@ -797,7 +797,7 @@ class MaskingAcceleratorInterface:
         if self.csrs.MAI_CTRL.would_set_start_bit(value):
             if not self.ready_to_start():
                 return False
-            if not self.csrs.MAI_CTRL.is_raw_op_valid():
+            if not self.csrs.MAI_CTRL.is_raw_op_valid(value):
                 return False
 
         return True

@@ -95,12 +95,10 @@ class MaiCtrlCSR(DumbISPR):
         valid_mask = (self.OPERATION_MASK << self.OPERATION_OFFSET) | self.START_BIT_MASK
         return bool(value & ~valid_mask & 0xFFFFFFFF)
 
-    def is_raw_op_valid(self) -> bool:
-        '''Return True if the currently registered op field is a valid MaiOperation.
-
-        Mirrors RTL ma_mask_op_q validity check used by invalid_op detection.
+    def is_raw_op_valid(self, value: int) -> bool:
+        '''Return True if the op field of `value` is a valid MAI operation.
         '''
-        return self.is_valid_operation(self._raw_op << self.OPERATION_OFFSET)
+        return self.is_valid_operation(value)
 
     def is_start_bit_set(self) -> bool:
         '''Get the start bit from the CSR.'''
