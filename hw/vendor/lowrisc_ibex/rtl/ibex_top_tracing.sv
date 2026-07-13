@@ -7,6 +7,7 @@
  */
 
 module ibex_top_tracing import ibex_pkg::*; #(
+  parameter base_isa_e   BaseIsa              = BaseIsaRV32IorCHERIoT,
   parameter bit          PMPEnable            = 1'b0,
   parameter int unsigned PMPGranularity       = 0,
   parameter int unsigned PMPNumRegions        = 4,
@@ -49,6 +50,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
   input  prim_ram_1p_pkg::ram_1p_cfg_t                                 ram_cfg_icache_data_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_rsp_icache_data_o,
 
+  input  logic [31:0]                                                  trvk_heap_base_addr_i,
 
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
@@ -71,9 +73,20 @@ module ibex_top_tracing import ibex_pkg::*; #(
   output logic [31:0]                                                  data_addr_o,
   output logic [31:0]                                                  data_wdata_o,
   output logic [6:0]                                                   data_wdata_intg_o,
+  output logic                                                         data_tag_o,
   input  logic [31:0]                                                  data_rdata_i,
   input  logic [6:0]                                                   data_rdata_intg_i,
+  input  logic                                                         data_tag_i,
   input  logic                                                         data_err_i,
+
+  // TRVK revocation bitmap read interface
+  output logic                                                         trvk_revbm_req_o,
+  input  logic                                                         trvk_revbm_gnt_i,
+  input  logic                                                         trvk_revbm_rvalid_i,
+  output logic [31:0]                                                  trvk_revbm_addr_o,
+  input  logic [31:0]                                                  trvk_revbm_rdata_i,
+  input  logic [6:0]                                                   trvk_revbm_rdata_intg_i,
+  input  logic                                                         trvk_revbm_err_i,
 
   // Interrupt inputs
   input  logic                                                         irq_software_i,
@@ -196,6 +209,7 @@ module ibex_top_tracing import ibex_pkg::*; #(
   assign unused_rvfi_ext_expanded_insn_last = rvfi_ext_expanded_insn_last;
 
   ibex_top #(
+    .BaseIsa              ( BaseIsa              ),
     .PMPEnable            ( PMPEnable            ),
     .PMPGranularity       ( PMPGranularity       ),
     .PMPNumRegions        ( PMPNumRegions        ),
@@ -258,6 +272,17 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .data_rdata_i,
     .data_rdata_intg_i,
     .data_err_i,
+
+    .trvk_heap_base_addr_i,
+    .data_tag_o,
+    .data_tag_i,
+    .trvk_revbm_req_o,
+    .trvk_revbm_gnt_i,
+    .trvk_revbm_rvalid_i,
+    .trvk_revbm_addr_o,
+    .trvk_revbm_rdata_i,
+    .trvk_revbm_rdata_intg_i,
+    .trvk_revbm_err_i,
 
     .irq_software_i,
     .irq_timer_i,

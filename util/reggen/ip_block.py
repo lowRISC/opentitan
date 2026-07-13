@@ -70,7 +70,8 @@ KNOWN_CIP_IDS = {
     43: 'racl_ctrl',
     44: 'otp_macro',
     45: 'rram_ctrl',
-    46: 'rram_macro'
+    46: 'rram_macro',
+    47: 'cheriot',
 }
 
 REQUIRED_ALIAS_FIELDS = {

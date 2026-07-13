@@ -33,6 +33,11 @@ package ibex_pkg;
   /////////////////////
 
   typedef enum integer {
+    BaseIsaRV32I          = 0, // only RV32I
+    BaseIsaRV32IorCHERIoT = 1  // dual base ISA: RV32I/CHERIoT runtime switchable
+  } base_isa_e;
+
+  typedef enum integer {
     RegFileFF    = 0,
     RegFileFPGA  = 1,
     RegFileLatch = 2

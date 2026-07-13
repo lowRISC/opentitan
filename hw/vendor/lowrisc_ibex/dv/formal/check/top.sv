@@ -142,7 +142,33 @@ localparam logic [31:0] CSR_MIMPID_VALUE = 32'b0;
 
 default clocking @(posedge clk_i); endclocking
 
+// The TRVK (CHERIoT revocation) filter is only instantiated when BaseIsa is
+// BaseIsaRV32IorCHERIoT. The core has no CHERIoT support yet and the formal spec
+// is the plain RISC-V Sail model, so select BaseIsaRV32I to bypass the filter
+// (a combinational pass-through of the data interface). The filter's ports still
+// exist on ibex_top, so provide nets for the `.*` connection below: drive the
+// inputs to their inactive values and leave the outputs as sinks.
+logic [31:0] trvk_heap_base_addr_i;
+logic        data_tag_o;
+logic        data_tag_i;
+logic        trvk_revbm_req_o;
+logic        trvk_revbm_gnt_i;
+logic        trvk_revbm_rvalid_i;
+logic [31:0] trvk_revbm_addr_o;
+logic [31:0] trvk_revbm_rdata_i;
+logic [ 6:0] trvk_revbm_rdata_intg_i;
+logic        trvk_revbm_err_i;
+
+assign trvk_heap_base_addr_i   = 32'b0;
+assign data_tag_i              = 1'b0;
+assign trvk_revbm_gnt_i        = 1'b0;
+assign trvk_revbm_rvalid_i     = 1'b0;
+assign trvk_revbm_rdata_i      = 32'b0;
+assign trvk_revbm_rdata_intg_i = 7'b0;
+assign trvk_revbm_err_i        = 1'b0;
+
 ibex_top #(
+    .BaseIsa(ibex_pkg::BaseIsaRV32I),
     .DmHaltAddr(DmHaltAddr),
     .DmExceptionAddr(DmExceptionAddr),
     .SecureIbex(SecureIbex),

@@ -19,10 +19,12 @@ filesets:
       - lowrisc:prim:onehot_check
       - lowrisc:prim:onehot
       - lowrisc:prim:util
+      - pulp-platform:common_cells:common_cells
     files:
       - rtl/ibex_register_file_ff.sv # generic FF-based
       - rtl/ibex_register_file_fpga.sv # FPGA
       - rtl/ibex_register_file_latch.sv # ASIC
+      - rtl/ibex_trvk.sv
       - rtl/ibex_lockstep.sv
       - rtl/ibex_top.sv
     file_type: systemVerilogSource
