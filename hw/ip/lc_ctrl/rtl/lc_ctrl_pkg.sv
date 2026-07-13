@@ -63,7 +63,7 @@ package lc_ctrl_pkg;
   } lc_tx_t;
   parameter lc_tx_t LC_TX_DEFAULT = lc_tx_t'(Off);
 
-  parameter int RmaSeedWidth = 32;
+  parameter int RmaSeedWidth = 64;
   typedef logic [RmaSeedWidth-1:0] lc_nvm_rma_seed_t;
   parameter lc_nvm_rma_seed_t LC_NVM_RMA_SEED_DEFAULT = '0;
 

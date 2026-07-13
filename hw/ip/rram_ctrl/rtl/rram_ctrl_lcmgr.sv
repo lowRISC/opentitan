@@ -930,7 +930,7 @@ module rram_ctrl_lcmgr
 
   prim_lfsr #(
     .LfsrDw(LfsrWidth),
-    .StateOutDw(LfsrWidth),
+    .StateOutDw(32),
     .DefaultSeed(RndCnstLfsrSeed),
     .StatePermEn(1),
     .StatePerm(RndCnstLfsrPerm)
