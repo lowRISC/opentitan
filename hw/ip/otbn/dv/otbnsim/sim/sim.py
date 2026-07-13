@@ -7,7 +7,7 @@ from typing import Dict, Iterator, List, Optional, Tuple
 from .constants import ErrBits, LcTx, Status, read_lc_tx_t
 from .decode import EmptyInsn
 from .isa import OTBNInsn
-from .state import OTBNState, FsmState, WIPE_CYCLES
+from .state import OTBNState, FsmState
 from .stats import ExecutionStats
 from .trace import Trace
 
@@ -473,24 +473,10 @@ class OTBNSim:
         else:
             self._delayed_insn_cnt_zero(1)
 
-        if self.state.wipe_cycles == WIPE_CYCLES - 97:
+        if self.state.wipe_cycles == 3:
             # Corresponds to the RTL cycle where sec_wipe_mai_i (= sec_wipe_zero_o)
             # fires, which is when the FSM enters OtbnStartStopSecureWipeAllZero after
-            # completing the three register-overwriting phases:
-            #
-            #   OtbnStartStopSecureWipeWdrUrnd:        33 cycles (32 WDRs + 1 ACC timing)
-            #   OtbnStartStopSecureWipeAccModBaseUrnd: 32 cycles (ACC, MOD, base regs)
-            #   OtbnStartStopSecureWipeExtIsprsUrnd:   32 cycles (MAI ISPRs + reserved)
-            #                                        = 97 URND-advancing cycles total
-            #
-            # The URND value seen by the MAI at that moment is not the raw prim_trivium
-            # output but the registered copy one cycle behind it (otbn_rnd.sv:
-            # urnd_data_q <= key_o, registered each posedge). So in_cnt_load_val_q
-            # captures the Bivium output from step 97, not step 98.
-            #
-            # In the ISS, _WIPE_CYCLES = 100 and wipe_cycles decrements once per step, so
-            # after 97 steps wipe_cycles = 3. At that point _next_value holds the step-97
-            # Bivium output, matching what the RTL latches into in_cnt_load_val_q.
+            # completing the three register-overwriting phases.
             final_wipe_round_cnt = (self.state.wipe_rounds_done ==
                                     (self.state.wipe_rounds_to_do - 1))
             if final_wipe_round_cnt:
