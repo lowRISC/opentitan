@@ -6,6 +6,8 @@
 
 .globl xof_shake128_init
 .globl xof_shake256_init
+.globl xof_sha3_256_init
+.globl xof_sha3_512_init
 .globl xof_absorb
 .globl xof_process
 .globl xof_squeeze24
@@ -61,6 +63,8 @@ interface.
    the XOF output is squeezed. */
 .set KMAC_SHAKE128_RATE, 21
 .set KMAC_SHAKE256_RATE, 17
+.set KMAC_SHA3_256_RATE, 4
+.set KMAC_SHA3_512_RATE, 8
 
 /*
  * Register configuration values to instrument the KMAC interface.
@@ -93,6 +97,29 @@ xof_shake128_init:
   addi x28, x0, KMAC_SHAKE128_RATE
   addi x29, x0, KMAC_SHAKE128_RATE
   jal x0, _xof_shake_init
+
+xof_sha3_256_init:
+  /*
+   * Configure SHA3-256 with EN_XOF=0, STRENGTH=L256(3'b010) and
+   * MODE=AppSha3(2'b00). The upper fields hold the bitwise inverted values:
+   * EN_XOF_INV=1, STRENGTH_INV=3'b101, MODE_INV=2'b11.
+   */
+  li x24, 0x3b0004
+  addi x28, x0, KMAC_SHA3_256_RATE
+  addi x29, x0, KMAC_SHA3_256_RATE
+  jal x0, _xof_shake_init
+
+xof_sha3_512_init:
+  /*
+   * Configure SHA3-512 with EN_XOF=0, STRENGTH=L512(3'b100) and
+   * MODE=AppSha3(2'b00). The upper fields hold the bitwise inverted values:
+   * EN_XOF_INV=1, STRENGTH_INV=3'b011, MODE_INV=2'b11.
+   */
+  li x24, 0x370008
+  addi x28, x0, KMAC_SHA3_512_RATE
+  addi x29, x0, KMAC_SHA3_512_RATE
+  jal x0, _xof_shake_init
+
 xof_shake256_init:
   /*
    * Configure SHAKE256 with EN_XOF=1, STRENGTH=L256(3'b010) and
@@ -245,7 +272,7 @@ _xof_absorb_masked_end:
   csrrw x0, KMAC_CTRL, x24
 
   /* Absorb the next chunk of <= 32 message bytes. */
-  jal x0, xof_absorb
+  jal  x0, xof_absorb
 
 _xof_absorb_end:
   ret

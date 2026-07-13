@@ -1252,6 +1252,28 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "xof_sha3_256_test",
+    srcs = [
+        "xof_sha3_256_test.s",
+    ],
+    testcase = "xof_sha3_256_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:xof",
+    ],
+)
+
+otbn_sim_test(
+    name = "xof_sha3_512_test",
+    srcs = [
+        "xof_sha3_512_test.s",
+    ],
+    testcase = "xof_sha3_512_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:xof",
+    ],
+)
+
+otbn_sim_test(
     name = "sec_a2b_test",
     srcs = [
         "sec_a2b_test.s",
