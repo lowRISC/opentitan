@@ -373,7 +373,7 @@ Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), be
 
 ## Message Authentication
 
-OpenTitan supports two kinds of message authentication codes (MACs):
+OpenTitan supports three kinds of message authentication codes (MACs):
 - HMAC, a simple construction based on cryptographic hash functions
 - KMAC, a Keccak-based MAC
 - AES-CMAC, a block cipher-based MAC
