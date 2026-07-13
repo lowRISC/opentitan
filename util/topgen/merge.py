@@ -79,6 +79,12 @@ def elaborate_instance(instance, block: IpBlock):
     if "param_decl" not in instance:
         instance["param_decl"] = {}
 
+    # Forward the block-level split flag onto the instance so topgen/validate
+    # can treat it as a split instance. Set only when true, to avoid perturbing
+    # the generated config of non-split IPs.
+    if block.is_split_ip:
+        instance["is_split_ip"] = True
+
     mod_name = instance["name"]
     cc_mod_name = lib.Name.from_snake_case(mod_name).as_camel_case()
 
@@ -704,6 +710,20 @@ def normalize_partition_connections(topcfg: ConfigT) -> None:
                 module[f'{key}_secondary'] = val['secondary']
 
 
+def partition_domain(module: ConfigT, partition: str, default: str = None) -> str:
+    '''Return the power domain of the given partition of a module instance.
+
+    'primary' maps to the instance's 'domain', 'secondary' to its
+    'domain_secondary'. For non-split IPs every object is in the 'primary'
+    partition, so this simply returns the ordinary 'domain'. The default is
+    used only for the primary domain when the instance omits 'domain'
+    (defensive; check_power_domains normally populates it beforehand).
+    '''
+    if partition == 'secondary':
+        return module['domain_secondary']
+    return module.get('domain', default)
+
+
 def extract_clocks(top: ConfigT):
     '''Add clock exports to top and connections to endpoints
 
@@ -1213,9 +1233,11 @@ def amend_interrupt(top: ConfigT,
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
             qual["incoming"] = False
-            # Add power domain info
+            # Add power domain info. For split IPs the interrupt is emitted
+            # from the power domain of its owning partition.
             module_dict = lib.get_module_by_name(top, m)
-            qual["domain"] = module_dict.get("domain", top["power"]["default"])
+            qual["domain"] = partition_domain(module_dict, signal.partition,
+                                              top["power"]["default"])
             plic = ip.get("plic", default_plic)
             if plic is not None:
                 qual["plic"] = plic
@@ -1818,16 +1840,25 @@ def amend_pinmux_io(top: ConfigT,
         chiplevel_sigs.append(chip_sig)
 
     for m in top["module"]:
-        # Skip all modules that are in the same PD as the pinmux
-        pd_mod = m.get("domain", pd_default)
-        if pd_mod == pd_pinmux:
-            continue
-
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
             continue
 
+        # Fast path: a non-split module entirely in the pinmux's PD needs no
+        # inter-PD plumbing. Split modules are handled per-signal below, as
+        # their two partitions can live in different PDs.
+        if 'domain_secondary' not in m and \
+                m.get("domain", pd_default) == pd_pinmux:
+            continue
+
         for sig in block.get_signals_as_list_of_dicts():
+            # Each CIO belongs to the power domain of its owning partition.
+            pd_mod = partition_domain(m, sig.get('partition', 'primary'),
+                                      pd_default)
+            # Skip IO already in the same PD as the pinmux.
+            if pd_mod == pd_pinmux:
+                continue
+
             sig_name = f"cio_{m['name']}_{sig['name']}"
 
             # Required objects to be created:
@@ -1861,8 +1892,6 @@ def amend_pinmux_io(top: ConfigT,
 
         if m is None:
             raise SystemExit("Module {} is not searchable.".format(mod_name))
-
-        pd_mod = m.get("domain", pd_default)
 
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
@@ -1899,7 +1928,8 @@ def amend_pinmux_io(top: ConfigT,
                 'desc': sig['desc']
             })
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
-            sig_inst['domain'] = pd_mod
+            sig_inst['domain'] = partition_domain(
+                m, sig_inst.get('partition', 'primary'), pd_default)
             append_io_signal(temp, sig_inst)
 
         # Otherwise the name is a wildcard for selecting all available IO
@@ -1923,7 +1953,9 @@ def amend_pinmux_io(top: ConfigT,
                         })
                         sig_inst_copy['name'] = sig[
                             'instance'] + '_' + sig_inst_copy['name']
-                        sig_inst_copy['domain'] = pd_mod
+                        sig_inst_copy['domain'] = partition_domain(
+                            m, sig_inst_copy.get('partition', 'primary'),
+                            pd_default)
                         append_io_signal(temp, sig_inst_copy)
                 else:
                     sig_inst.update({
@@ -1934,7 +1966,8 @@ def amend_pinmux_io(top: ConfigT,
                         'desc': sig['desc']
                     })
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
-                    sig_inst['domain'] = pd_mod
+                    sig_inst['domain'] = partition_domain(
+                m, sig_inst.get('partition', 'primary'), pd_default)
                     append_io_signal(temp, sig_inst)
 
     # Now that we've collected all input and output signals,
