@@ -55,11 +55,11 @@ class ${module_instance_name}_env extends cip_base_env #(
     super.connect_phase(phase);
     if (cfg.en_scb) begin
       foreach (alert_host_agent[i]) begin
-        alert_host_agent[i].monitor.alert_esc_port.connect(
+        alert_host_agent[i].monitor.m_alert_port.connect(
             scoreboard.alert_fifo[i].analysis_export);
       end
       foreach (esc_device_agent[i]) begin
-        esc_device_agent[i].monitor.alert_esc_port.connect(
+        esc_device_agent[i].monitor.m_esc_port.connect(
             scoreboard.esc_fifo[i].analysis_export);
       end
     end

@@ -17,8 +17,7 @@ class alert_sender_ping_rsp_seq extends alert_sender_base_seq;
 endclass : alert_sender_ping_rsp_seq
 
 constraint alert_sender_ping_rsp_seq::alert_sender_ping_rsp_seq_c {
-  s_alert_send     == 0;
-  s_alert_ping_rsp == 1;
+  m_txn_type == alert_seq_item::PingTxn;
 }
 
 function alert_sender_ping_rsp_seq::new (string name = "");
@@ -34,11 +33,17 @@ task alert_sender_ping_rsp_seq::body();
 endtask : body
 
 task alert_sender_ping_rsp_seq::default_rsp_thread();
-  alert_esc_seq_item req_q[$];
+  alert_seq_item req_q[$];
   fork
     forever begin : get_req
-      p_sequencer.req_analysis_fifo.get(req);
-      if (req.alert_esc_type == AlertEscPingTrans) req_q.push_back(req);
+      alert_esc_seq_item base_item;
+      p_sequencer.req_analysis_fifo.get(base_item);
+
+      if (!$cast(req, base_item)) begin
+        `uvm_fatal(get_full_name(), "Failed to cast item to alert_seq_item.")
+      end
+
+      if (req.m_trans_type == AlertEscPingTrans) req_q.push_back(req);
     end : get_req
     forever begin : send_rsp
       if (cfg.in_reset) begin
@@ -48,12 +53,15 @@ task alert_sender_ping_rsp_seq::default_rsp_thread();
       wait (req_q.size());
       rsp = req_q.pop_front();
       start_item(rsp);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
-                                     s_alert_send     == local::s_alert_send;
-                                     s_alert_ping_rsp == local::s_alert_ping_rsp;
-                                     int_err          == 0;
-                                     ping_timeout     == 0;
-                                     )
+      if (!rsp.randomize() with {
+            m_txn_type     == m_txn_type;
+            int_err        == 0;
+            m_ping_timeout == 0;
+            cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+            cfg.alert_delay_min <= m_alert_delay && m_alert_delay <= cfg.alert_delay_max;
+          }) begin
+        `uvm_error(get_full_name(), "Failed to randomize rsp")
+      end
       finish_item(rsp);
       get_response(rsp);
     end : send_rsp

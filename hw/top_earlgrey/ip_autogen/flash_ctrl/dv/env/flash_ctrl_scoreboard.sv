@@ -911,20 +911,20 @@ class flash_ctrl_scoreboard #(
 
   endfunction : get_flash_instr_type_err
 
-  function void process_alert(string alert_name, alert_esc_seq_item item);
+  function void process_alert(string alert_name, alert_seq_item item);
     bit pop_out;
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
-    hs_state = item.alert_handshake_sta;
+    hs_state = item.m_alert_handshake_sta;
 
     `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s exp:%0d contd:%0d",
                               alert_name,
-                              item.alert_handshake_sta,
+                              item.m_alert_handshake_sta,
                               expected_alert[alert_name].expected,
                               exp_alert_contd[alert_name]
                               ), UVM_MEDIUM)
-    if (item.alert_handshake_sta == AlertReceived) begin
+    if (item.m_alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
       if (exp_alert_ff[alert_name].size > 0) expected_alert[alert_name].expected = 1;
       on_alert(alert_name, item);
@@ -943,7 +943,7 @@ class flash_ctrl_scoreboard #(
     end
   endfunction
 
-  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void on_alert(string alert_name, alert_seq_item item);
     if(!skip_alert_chk[alert_name]) begin
       super.on_alert(alert_name, item);
     end

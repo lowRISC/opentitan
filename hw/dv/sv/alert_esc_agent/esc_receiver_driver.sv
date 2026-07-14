@@ -4,7 +4,7 @@
 
 // Escalation receiver driver
 
-class esc_receiver_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_agent_cfg);
+class esc_receiver_driver extends alert_esc_base_driver;
 
   `uvm_component_utils(esc_receiver_driver)
 
@@ -36,7 +36,7 @@ class esc_receiver_driver extends dv_base_driver#(alert_esc_seq_item, alert_esc_
   // if esc_p/n is esc signal, will toggle resp_p/n until esc_p is reset back to 0
   // if esc_p/n is ping, then will toggle resp_p/n for two clk cycles
   // if req is "sig_int_err", will random toggle, then reset back to resp_p/n = {0/1}
-  extern virtual task drive_esc_resp(alert_esc_seq_item req);
+  extern virtual task drive_esc_resp(esc_seq_item req);
   // If do not request int_err: Toggle resp_p/n for two cycles,
   // first cycle drives resp_p = 1, resp_n = 0; second cycle drives resp_p = 0, resp_n = 1
   // If request int_err: random drives resp_p/n for two cycles
@@ -98,34 +98,40 @@ endtask : esc_ping_detector
 
 task esc_receiver_driver::rsp_escalator();
   forever begin
-    alert_esc_seq_item rsp;
+    esc_seq_item esc_req, rsp;
 
     seq_item_port.get(req);
-    `downcast(rsp, req.clone());
-    rsp.set_id_info(req);
+    if (!$cast(esc_req, req)) begin
+      `uvm_fatal(get_full_name(), "Cannot handle alert_esc_seq_item that is not an esc_seq_item.")
+    end
 
-    `uvm_info(`gfn, $sformatf("starting to send receiver item, esc_rsp=%0b int_fail=%0b",
-                              req.r_esc_rsp, req.int_err), UVM_HIGH)
+    `downcast(rsp, esc_req.clone());
+    rsp.set_id_info(esc_req);
+
+    `uvm_info(`gfn,
+              $sformatf("starting to send receiver item, int_fail=%0b", esc_req.m_int_err_cyc != 0),
+              UVM_HIGH)
     fork
       begin : non_blocking_fork
         fork
-          drive_esc_resp(req);
+          drive_esc_resp(esc_req);
           wait (cfg.in_reset);
         join_any
         disable fork;
-        `uvm_info(`gfn, $sformatf("finished sending receiver item esc_rsp=%0b int_fail=%0b",
-                                  req.r_esc_rsp, req.int_err), UVM_HIGH)
+        `uvm_info(`gfn,
+                  $sformatf("have sent receiver item int_fail=%0b", esc_req.m_int_err_cyc != 0),
+                  UVM_HIGH)
         seq_item_port.put_response(rsp);
       end
     join_none
   end // end forever
 endtask : rsp_escalator
 
-task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
-  if (req.standalone_int_err) begin
+task esc_receiver_driver::drive_esc_resp(esc_seq_item req);
+  if (req.m_standalone_int_err) begin
     wait_esc_complete();
     @(cfg.vif.receiver_cb); // wait one clock cycle to ensure is_ping is set
-    repeat (req.int_err_cyc) begin
+    repeat (req.m_int_err_cyc) begin
       if (is_ping || cfg.vif.esc_tx.esc_p !== 1'b0) break;
       random_drive_resp_signal();
       @(cfg.vif.receiver_cb);
@@ -135,7 +141,7 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
   end else begin
     wait_esc();
     @(cfg.vif.receiver_cb);
-    while (get_esc() === 1'b1) toggle_resp_signal(req.int_err);
+    while (get_esc() === 1'b1) toggle_resp_signal(req.m_int_err_cyc != 0);
 
     // drives escalation ping request response according to the above scenarios:
     // if no sig_int_err: the driver will toggle resp_p/n as design required
@@ -144,10 +150,10 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
     // immediately and response to the real escalation signal without sig_int_err
     if (is_ping) begin
       // `ping_timeout_cycle` is divided by 2 because `toggle_resp_signal` task contains two cycles
-      int toggle_cycle = req.int_err ? cfg.ping_timeout_cycle / 2 : 1;
+      int toggle_cycle = (req.m_int_err_cyc != 0) ? cfg.ping_timeout_cycle / 2 : 1;
       fork begin : isolation_fork
         fork
-          repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
+          repeat (toggle_cycle) toggle_resp_signal(req.m_ping_timeout);
           cfg.probe_vif.wait_esc_en();
         join_any
         disable fork;
@@ -157,7 +163,7 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
         while (get_esc() === 1'b1) toggle_resp_signal(0);
       end
     end
-    if (req.ping_timeout || req.int_err) reset_resp();
+    if (req.m_ping_timeout || (req.m_int_err_cyc != 0)) reset_resp();
   end
 endtask : drive_esc_resp
 

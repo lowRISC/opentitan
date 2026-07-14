@@ -35,13 +35,13 @@ class alert_sender_driver extends alert_base_driver;
   // been driven, mark it done in seq_item_port.
   //
   // This exits immediately on a reset.
-  extern local task send_item(bit is_ping_rsp, alert_esc_seq_item item);
+  extern local task send_item(bit is_ping_rsp, alert_seq_item item);
 
   // Drive the alert_p/alert_n pins for the sequence item. There may be a delay before asserting the
   // alert or before de-asserting it (once an ack has been seen).
   //
   // This is safe to kill.
-  extern local task drive_alert_pins(alert_esc_seq_item req);
+  extern local task drive_alert_pins(alert_seq_item req);
 
   // Assert an alert (alert_p=1; alert_n=0) after alert_delay cycles.
   //
@@ -112,10 +112,10 @@ task alert_sender_driver::drive_req();
       // that come in.
       while (cfg.in_reset) begin
         fork : isolation_fork begin
-          alert_esc_seq_item item;
+          alert_seq_item item;
           fork
             wait(!cfg.in_reset);
-            m_sender_requests.get(item);
+            m_requests.get(item);
           join_any
           disable fork;
           if (item != null) seq_item_port.put_response(item);
@@ -140,15 +140,14 @@ endtask
 
 task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
   forever begin
-    alert_esc_seq_item item;
-    bit is_alert, is_ping;
+    alert_seq_item item;
 
     // Pick an item to drive, but keep track of resets and any change to the LPG flag.
     fork : isolation_fork begin
       fork
         wait(cfg.en_alert_lpg != en_alert_lpg);
         wait(cfg.in_reset);
-        m_sender_requests.get(item);
+        m_requests.get(item);
       join_any
       disable fork;
     end join
@@ -157,22 +156,25 @@ task alert_sender_driver::drive_reqs_with_lpg_mode(bit en_alert_lpg);
     // task.
     if (item == null) return;
 
-    // Handle the alert request or ping response. If the item requests both, send the ping response
-    // first and then the real alert.
-    if (item.s_alert_ping_rsp) send_item(1'b1, item);
-    if (item.s_alert_send) send_item(1'b0, item);
+    // Handle the alert request or ping response.
+    case (item.m_txn_type)
+      alert_seq_item::AlertTxn: send_item(1'b0, item);
+      alert_seq_item::PingTxn:  send_item(1'b1, item);
+      default: `uvm_fatal(get_full_name(), "Unknown txn type.")
+    endcase
+
     seq_item_port.put_response(item);
   end
 endtask
 
-task alert_sender_driver::send_item(bit is_ping_rsp, alert_esc_seq_item item);
-  alert_esc_seq_item rsp;
+task alert_sender_driver::send_item(bit is_ping_rsp, alert_seq_item item);
+  alert_seq_item rsp;
   `downcast(rsp, item.clone());
   rsp.set_id_info(item);
 
   `uvm_info(`gfn,
-            $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
-                      item.s_alert_send, item.s_alert_ping_rsp, item.int_err), UVM_HIGH)
+            $sformatf("starting to send sender item: %0s, int_err_cyc=%0b",
+                      item.m_txn_type.name(), item.m_int_err_cyc), UVM_HIGH)
   fork : isolation_fork begin
     fork
       wait (cfg.in_reset);
@@ -185,26 +187,19 @@ task alert_sender_driver::send_item(bit is_ping_rsp, alert_esc_seq_item item);
     disable fork;
   end join
   `uvm_info(`gfn,
-            $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
-                      item.s_alert_send, item.s_alert_ping_rsp, item.int_err), UVM_HIGH)
+            $sformatf("finished sending sender item: %0s, int_err_cyc=%0b",
+                      item.m_txn_type.name(), item.m_int_err_cyc), UVM_HIGH)
 
   seq_item_port.put_response(rsp);
 endtask
 
-task alert_sender_driver::drive_alert_pins(alert_esc_seq_item req);
-  int unsigned alert_delay, ack_delay;
-  alert_delay = (cfg.use_seq_item_alert_delay) ? req.alert_delay :
-                $urandom_range(cfg.alert_delay_max, cfg.alert_delay_min);
-  ack_delay = (cfg.use_seq_item_ack_delay) ? req.ack_delay :
-              $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
-
-  if (!req.int_err) begin
-    set_alert_pins(alert_delay);
-    reset_alert_pins(ack_delay);
-  end else begin
-    // Because req.int_err is true, cause the alert signal integrity check to fail.
-    random_drive_int_fail(req.int_err_cyc);
+task alert_sender_driver::drive_alert_pins(alert_seq_item req);
+  if (req.m_int_err_cyc) begin
+    random_drive_int_fail(req.m_int_err_cyc);
     set_alert(1'b0);
+  end else begin
+    set_alert_pins(req.m_alert_delay);
+    reset_alert_pins(req.m_ack_delay);
   end
 
   // There must be at least two sender clock delays before next alert_handshake

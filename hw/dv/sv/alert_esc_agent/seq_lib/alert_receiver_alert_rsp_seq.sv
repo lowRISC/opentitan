@@ -17,8 +17,7 @@ class alert_receiver_alert_rsp_seq extends alert_receiver_base_seq;
 endclass : alert_receiver_alert_rsp_seq
 
 constraint alert_receiver_alert_rsp_seq::alert_receiver_alert_rsp_seq_c {
-  r_alert_ping_send == 0;
-  r_alert_rsp       == 1;
+  m_txn_type == alert_seq_item::AlertTxn;
 }
 
 function alert_receiver_alert_rsp_seq::new (string name = "");
@@ -34,11 +33,17 @@ task alert_receiver_alert_rsp_seq::body();
 endtask : body
 
 task alert_receiver_alert_rsp_seq::default_rsp_thread();
-  alert_esc_seq_item req_q[$];
+  alert_seq_item req_q[$];
   fork
     forever begin : get_req
-      p_sequencer.req_analysis_fifo.get(req);
-      if (req.alert_esc_type == AlertEscSigTrans) req_q.push_back(req);
+      alert_esc_seq_item base_item;
+      p_sequencer.req_analysis_fifo.get(base_item);
+
+      if (!$cast(req, base_item)) begin
+        `uvm_fatal(get_full_name(), "Failed to cast item to alert_seq_item.")
+      end
+
+      if (req.m_trans_type == AlertEscSigTrans) req_q.push_back(req);
     end : get_req
     forever begin : send_rsp
       if (cfg.in_reset) begin
@@ -48,11 +53,13 @@ task alert_receiver_alert_rsp_seq::default_rsp_thread();
       wait (req_q.size());
       rsp = req_q.pop_front();
       start_item(rsp);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
-                                     r_alert_ping_send == 0;
-                                     r_alert_rsp       == 1;
-                                     int_err           == 0;
-                                     )
+      if (!rsp.randomize() with {
+            m_txn_type == local::m_txn_type;
+            cfg.ack_delay_min <= m_ack_delay && m_ack_delay <= cfg.ack_delay_max;
+            cfg.ack_stable_min <= m_ack_stable && m_ack_stable <= cfg.ack_stable_max;
+          }) begin
+        `uvm_error(get_full_name(), "Failed to randomize rsp")
+      end
       finish_item(rsp);
       get_response(rsp);
     end : send_rsp
