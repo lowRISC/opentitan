@@ -575,7 +575,11 @@ def idx_of_last_module_with_params(top: ConfigT, domain: str = "") -> int:
 
     if domain != "":
         default_domain = top["power"]["default"]
-        modlist = [m for m in top["module"] if m.get("domain", default_domain) == domain]
+        modlist = [
+            m for m in top["module"]
+            if m.get("domain", default_domain) == domain
+            or m.get("domain_secondary") == domain
+        ]
     else:
         modlist = top["module"]
 
@@ -588,9 +592,29 @@ def idx_of_last_module_with_params(top: ConfigT, domain: str = "") -> int:
 
 def get_all_modules(top: ConfigT, domain: str = ""):
     if domain != "":
-        return [m for m in top["module"] if m.get("domain") == domain]
+        # A split IP has a partition in both its primary ('domain') and
+        # secondary ('domain_secondary') power domains, so it is returned for
+        # both passes; get_module_partition() then selects which partition to
+        # emit for the given domain.
+        return [
+            m for m in top["module"]
+            if m.get("domain") == domain or m.get("domain_secondary") == domain
+        ]
     else:
         return top["module"]
+
+
+def get_module_partition(module: ConfigT, domain: str) -> str:
+    '''Return which partition of `module` is emitted for `domain`.
+
+    Returns 'secondary' when `domain` matches the module's 'domain_secondary'
+    (and not its primary 'domain'); otherwise 'primary'. Non-split modules and
+    the primary-domain pass always return 'primary'.
+    '''
+    if module.get("domain") != domain and \
+            module.get("domain_secondary") == domain:
+        return "secondary"
+    return "primary"
 
 
 # Template functions
