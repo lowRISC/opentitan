@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rv_dm_mode_agent"
+description: "Agent that drives 'mode' signals (dft, LC etc.) for rv_dm"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:all:0.1
+      - lowrisc:dv:dv_lib
+      - lowrisc:prim:mubi_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+    files:
+      - rv_dm_mode_if.sv
+      - rv_dm_mode_agent_pkg.sv
+      - rv_dm_mode_agent_cfg.svh: {is_include_file: true}
+      - rv_dm_mode_driver.svh: {is_include_file: true}
+      - rv_dm_mode_monitor.svh: {is_include_file: true}
+      - rv_dm_mode_agent.svh: {is_include_file: true}
+      - rv_dm_mode_seq_item.svh: {is_include_file: true}
+      - seq/rv_dm_mode_seq.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
