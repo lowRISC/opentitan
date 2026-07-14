@@ -33,7 +33,7 @@ Firstly, define a macro in the countermeasure primitive and declare a logic “a
 If the macro isn’t used for any instance of countermeasure primitive, the assertion will fail.
 
 ```systemverilog
-`define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 5) \
+`define OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, PRIM_HIER_, ALERT_, MAX_CYCLES_ = 5) \
   NAME_: assert property (@(posedge clk)) disable iff(!rst_n) \
                 ($rose(PRIM_HIER_.err_o) |-> ##[1:MAX_CYCLES_] $rose(ALERT_.alert_p)) \
   `ifdef SIM_OR_FPV \
@@ -43,7 +43,7 @@ If the macro isn’t used for any instance of countermeasure primitive, the asse
 module prim_count();
   ...
   // This logic that will be assign to one, when user adds macro
-  // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
+  // OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
   // is used in design without adding this assertion check.
   `ifdef SIM_OR_FPV \
   logic assert_connected;
@@ -59,9 +59,9 @@ Secondly, invoke the assertion macro for each instance of the countermeasure pri
 module a_ip_top();
   ...
   // Invoke the assertion macro for each instance of the countermeasure primitive
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[0])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FsmCntAlertCheck_A, u_fsm.u_cnt, alert_tx_o[0])
+  `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FsmCntAlertCheck_A, u_fsm.u_cnt, alert_tx_o[0])
 
 endmodule
 
