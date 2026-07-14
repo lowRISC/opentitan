@@ -11,6 +11,7 @@ This document specifies the FPGA-only memory Backdoor Loader which is used to pr
 - Up to 64 memory r/w targets supported
 - Automatic discovery of available targets by presenting a 32-bit target ID as well as width and depth
 - Access to raw BRAM data allowing to set both data and ECC arbitrarily for each target
+- Auto-increment mode for reading and writing
 
 ## Description
 
