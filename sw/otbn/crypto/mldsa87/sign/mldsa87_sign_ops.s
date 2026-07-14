@@ -21,10 +21,11 @@
  *
  * @param[in] x2: DMEM address of the first Boolean share of K.
  * @param[in] x3: DMEM address of the second Boolean share of K.
- * @param[in] x4: DMEM address of the randomness string RND.
- * @param[in] x5: DMEM address of MU.
- * @param[in] x6: DMEM address of the first Boolean share of RHO_PRIME.
- * @param[in] x7: DMEM address of the second Boolean share of RHO_PRIME.
+ * @param[in] x4: DMEM address of the first Boolean share of RND.
+ * @param[in] x5: DMEM address of the second Boolean share of RND.
+ * @param[in] x6: DMEM address of MU.
+ * @param[in] x7: DMEM address of the first Boolean share of RHO_PRIME.
+ * @param[in] x8: DMEM address of the second Boolean share of RHO_PRIME.
  */
 compute_rho_prime:
   jal x1, xof_shake256_init
@@ -38,27 +39,27 @@ compute_rho_prime:
   /* Absorb RND. */
   addi x20, x0, 32
   addi x21, x4, 0
-  addi x22, x0, 0
+  addi x22, x5, 0
   jal x1, xof_absorb
 
   /* Absorb MU. */
   addi x20, x0, 64
-  addi x21, x5, 0
+  addi x21, x6, 0
   addi x22, x0, 0
   jal x1, xof_absorb
 
   jal x1, xof_process
 
   /* Squeeze both shares of RHO_PRIME. */
-  addi x8, x0, 29
-  addi x9, x0, 30
+  addi x9, x0, 29
+  addi x10, x0, 30
 
   loopi 2, 4
     jal x1, xof_squeeze32
 
-    bn.sid x8, 0(x6++)
-    bn.xor w31, w31, w31 /* dummy */
     bn.sid x9, 0(x7++)
+    bn.xor w31, w31, w31 /* dummy */
+    bn.sid x10, 0(x8++)
     /* End of loop */
 
   jal x1, xof_finish
