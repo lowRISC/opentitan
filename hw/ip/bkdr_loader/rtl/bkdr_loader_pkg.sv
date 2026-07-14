@@ -8,9 +8,9 @@ package bkdr_loader_pkg;
 
   import bkdr_loader_reg_pkg::*;
 
-  localparam int unsigned MaxWordWidth = 32'd32 * MaxWordWidthDiv32;
-  localparam int unsigned AddrWidth    = 32'd32;
-  localparam int unsigned RegWidth     = 32'd32;
+  localparam int unsigned AddrWidth            = 32'd32;
+  localparam int unsigned RegWidth             = 32'd32;
+  localparam int unsigned MaxWordWidthIdxWidth = $clog2(MaxWordWidthDiv32);
 
   typedef struct packed {
     bit [ 3:0]  version;
@@ -26,9 +26,10 @@ package bkdr_loader_pkg;
     version:       4'h0                 /* 1st Version */
   };
 
-  typedef logic [AddrWidth-1:0]    addr_t;
-  typedef logic [RegWidth-1:0]     reg_t;
-  typedef logic [MaxWordWidth-1:0] word_t;
+  typedef logic [AddrWidth-1:0]               addr_t;
+  typedef logic [RegWidth-1:0]                reg_t;
+  typedef logic [MaxWordWidthDiv32-1:0][31:0] word_t;
+  typedef logic [TargetIdxWidth-1:0]          tgt_idx_t;
 
   // Target indices
   typedef enum logic [TargetIdxWidth-1:0] {

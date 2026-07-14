@@ -29,6 +29,10 @@ package bkdr_loader_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } auto_incr;
+    struct packed {
+      logic        q;
+      logic        qe;
     } clear_start;
     struct packed {
       logic        q;
@@ -46,6 +50,12 @@ package bkdr_loader_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
+    logic        re;
+  } bkdr_loader_reg2hw_read_data_mreg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
   } bkdr_loader_reg2hw_write_data_mreg_t;
 
   typedef struct packed {
@@ -93,24 +103,31 @@ package bkdr_loader_reg_pkg;
     logic [31:0] d;
   } bkdr_loader_hw2reg_read_data_mreg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } bkdr_loader_hw2reg_index_reg_t;
+
   // Register -> HW type for regs interface
   typedef struct packed {
-    bkdr_loader_reg2hw_control_reg_t control; // [335:321]
-    bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t mission_mode_switch_delay; // [320:289]
-    bkdr_loader_reg2hw_write_data_mreg_t [7:0] write_data; // [288:33]
+    bkdr_loader_reg2hw_control_reg_t control; // [609:593]
+    bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t mission_mode_switch_delay; // [592:561]
+    bkdr_loader_reg2hw_read_data_mreg_t [7:0] read_data; // [560:297]
+    bkdr_loader_reg2hw_write_data_mreg_t [7:0] write_data; // [296:33]
     bkdr_loader_reg2hw_index_reg_t index; // [32:0]
   } bkdr_loader_regs_reg2hw_t;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    bkdr_loader_hw2reg_status_reg_t status; // [1475:1474]
-    bkdr_loader_hw2reg_control_reg_t control; // [1473:1472]
-    bkdr_loader_hw2reg_num_bkdr_targets_reg_t num_bkdr_targets; // [1471:1440]
-    bkdr_loader_hw2reg_usr_access_timestamp_reg_t usr_access_timestamp; // [1439:1408]
-    bkdr_loader_hw2reg_target_info_mreg_t [11:0] target_info; // [1407:1024]
-    bkdr_loader_hw2reg_width_info_mreg_t [11:0] width_info; // [1023:640]
-    bkdr_loader_hw2reg_depth_info_mreg_t [11:0] depth_info; // [639:256]
-    bkdr_loader_hw2reg_read_data_mreg_t [7:0] read_data; // [255:0]
+    bkdr_loader_hw2reg_status_reg_t status; // [1508:1507]
+    bkdr_loader_hw2reg_control_reg_t control; // [1506:1505]
+    bkdr_loader_hw2reg_num_bkdr_targets_reg_t num_bkdr_targets; // [1504:1473]
+    bkdr_loader_hw2reg_usr_access_timestamp_reg_t usr_access_timestamp; // [1472:1441]
+    bkdr_loader_hw2reg_target_info_mreg_t [11:0] target_info; // [1440:1057]
+    bkdr_loader_hw2reg_width_info_mreg_t [11:0] width_info; // [1056:673]
+    bkdr_loader_hw2reg_depth_info_mreg_t [11:0] depth_info; // [672:289]
+    bkdr_loader_hw2reg_read_data_mreg_t [7:0] read_data; // [288:33]
+    bkdr_loader_hw2reg_index_reg_t index; // [32:0]
   } bkdr_loader_regs_hw2reg_t;
 
   // Register offsets for regs interface
