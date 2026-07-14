@@ -617,6 +617,26 @@ def get_module_partition(module: ConfigT, domain: str) -> str:
     return "primary"
 
 
+def get_module_partitions(module: ConfigT, domain: str) -> list:
+    '''Return the list of partitions of `module` emitted in `domain`.
+
+    For a non-split module this is always ['primary'] (get_all_modules has
+    already filtered by domain). For a split IP it is the partitions whose power
+    domain matches `domain`: 'primary' when its 'domain' matches, 'secondary'
+    when its 'domain_secondary' matches. When both partitions share a power
+    domain, both are returned so that they are emitted in the same pass.
+    '''
+    if not module.get("is_split_ip"):
+        return ["primary"]
+
+    partitions = []
+    if module.get("domain") == domain:
+        partitions.append("primary")
+    if module.get("domain_secondary") == domain:
+        partitions.append("secondary")
+    return partitions
+
+
 # Template functions
 def ljust(x, width):
     return "{:<{width}}".format(x, width=width)
@@ -929,18 +949,32 @@ def get_io_enum_literal(sig: Dict, prefix: str) -> str:
     return name.as_camel_case()
 
 
-def get_params(top: ConfigT, module: ConfigT) -> List[str]:
+def get_params(top: ConfigT, module: ConfigT,
+               partition: str = "primary") -> List[str]:
     """Return the parameters for a given module including implicit parameters
        but excluding RACL parameters, which are handled in a separate template.
+
+    For split IPs, `partition` selects which partition's parameters and alert
+    async configuration are emitted: a parameter is included when its own
+    'partition' is 'both' or matches `partition`, and the alert async_expr is
+    taken from that partition's alert connection.
     """
     param_items = []
-    alert_info = top["alert_connections"].get("module_" + module["name"], {})
+    alert_key = "module_" + module["name"]
+    if partition != "primary":
+        alert_key += "_" + partition
+    alert_info = top["alert_connections"].get(alert_key, {})
     has_racl_params = bool(module.get("racl_mappings"))
     if alert_info:
         param_items.append((".AlertAsyncOn", alert_info["async_expr"]))
     if alert_info or module.get("template_type") == "alert_handler":
         param_items.append((".AlertSkewCycles", "top_pkg::AlertSkewCycles"))
     for param in module["param_list"]:
+        p_part = param.get("partition", "primary")
+        # 'both' parameters are emitted into every partition; others only into
+        # their own partition.
+        if p_part != "both" and p_part != partition:
+            continue
         is_exposed = check_bool(param.get("expose", False), f"expose field of {param['name']}")
         has_random_type = param.get("randtype")
         param_key = "name_top" if (is_exposed or has_random_type) else "default"
