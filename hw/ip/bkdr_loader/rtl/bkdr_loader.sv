@@ -80,6 +80,19 @@ module bkdr_loader
   addr_t clear_addr_d, clear_addr_q;
   logic  clear_idle;
 
+  // Data reorganization
+  word_t                           write_data;
+  logic [MaxWordWidthDiv32-1:0]    write_data_qe;
+  logic [MaxWordWidthDiv32-1:0]    read_data_de;
+
+  // Auto increment signals
+  logic [MaxWordWidthIdxWidth-1:0] max_word_idx_tgt;
+  logic                            auto_incr_read;
+  logic                            auto_incr_write;
+
+  // Currently selected target index
+  tgt_idx_t tgt_idx_sel;
+
   logic [31:0] mission_mode_dly_d, mission_mode_dly_q;
 
   logic bkdr_en_q, bkdr_en_d;
@@ -172,7 +185,7 @@ module bkdr_loader
       CLEAR : begin
         clear_idle   = 1'b0;
         clear_addr_d = clear_addr_q + 'd1;
-        if (bkdr_rsp_i[reg2hw.control.target_idx.q].param_depth - 'd1 == clear_addr_q) begin
+        if (bkdr_rsp_i[tgt_idx_sel].param_depth - 'd1 == clear_addr_q) begin
           clear_state_d = IDLE;
         end
       end
@@ -280,12 +293,14 @@ module bkdr_loader
     .intg_err_o()
   );
 
+  assign tgt_idx_sel = reg2hw.control.target_idx.q;
+
   // Throw error if we address a non-existing target
-  assign tgt_idx_err = !(bkdr_idx_e'(reg2hw.control.target_idx.q) inside {BkdrValidTgts});
+  assign tgt_idx_err = !(bkdr_idx_e'(tgt_idx_sel) inside {BkdrValidTgts});
 
   assign hw2reg.usr_access_timestamp.d = fpga_info_i;
   assign hw2reg.status.target_error.d  = tgt_idx_err;
-  assign hw2reg.read_data              = bkdr_rsp_i[reg2hw.control.target_idx.q].rdata;
+  assign hw2reg.read_data              = bkdr_rsp_i[tgt_idx_sel].rdata;
 
   // assign target info registers
   assign hw2reg.num_bkdr_targets = NumBkdrTgts;
@@ -295,6 +310,31 @@ module bkdr_loader
     assign hw2reg.depth_info[i].d  = bkdr_rsp_i[i].param_depth;
   end
 
+  // The auto increment feature needs to know the index of the highest 32-bit word required to
+  // write a single line in the target. Writing on this word triggers the write and increment.
+  assign max_word_idx_tgt = (bkdr_rsp_i[tgt_idx_sel].param_width - 'd1) >> 'd5;
+
+  // Auto increment write is triggered iff, the feature is enabled, and a write to the highest
+  // 32-bit word describing the line width of the selected target happens. Write has to be enabled.
+  assign auto_incr_write = reg2hw.control.auto_incr.q && write_data_qe[max_word_idx_tgt] &&
+                           reg2hw.control.write_ena.q;
+
+  // Auto increment read is triggered iff, the feature is enabled, and a read to the highest
+  // 32-bit word describing the line width of the selected target happens. Write has to be disabled.
+  assign auto_incr_read = reg2hw.control.auto_incr.q && read_data_de[max_word_idx_tgt] &&
+                          !reg2hw.control.write_ena.q;
+
+  // Auto increment increments the index
+  assign hw2reg.index.d  = reg2hw.index.q + 'd1;
+  assign hw2reg.index.de = auto_incr_read || auto_incr_write;
+
+  // Assemble write_data
+  for (genvar i = 0; i < MaxWordWidthDiv32; i++) begin : gen_write_data_reorg
+    assign write_data[i]    = reg2hw.write_data[i].q;
+    assign write_data_qe[i] = reg2hw.write_data[i].qe;
+    assign read_data_de[i]  = reg2hw.read_data[i].re;
+   end
+
   always_comb begin : proc_format_req
     // Default: forward all data
     for (int unsigned i = 0; i < NumBkdrTgts; i++) begin
@@ -303,15 +343,17 @@ module bkdr_loader
         write:  1'b0,
         active: bkdr_active,
         addr:   !clear_idle ? clear_addr_q : reg2hw.index.q,
-        wdata:  reg2hw.write_data
+        wdata:  write_data
       };
     end
 
     // Strobe endpoint to be written
-    bkdr_req_o[reg2hw.control.target_idx.q].write = !clear_idle ||
-                                                    (reg2hw.control.write_ena.q &&
-                                                     reg2hw.index.qe            &&
-                                                     !tgt_idx_err);
+    bkdr_req_o[tgt_idx_sel].write = !tgt_idx_err     && // We have a valid index
+                                    (auto_incr_write || // Auto increment active
+                                    !clear_idle      || // Clearing active
+                                    (reg2hw.control.write_ena.q && // A manual write happens
+                                     reg2hw.index.qe            && // by writing the index register
+                                     !reg2hw.control.auto_incr.q));// while auto_incr is deactivated
   end
 
 

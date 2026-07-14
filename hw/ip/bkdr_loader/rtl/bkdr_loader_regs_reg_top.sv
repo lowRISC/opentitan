@@ -131,6 +131,8 @@ module bkdr_loader_regs_reg_top (
   logic control_write_ena_wd;
   logic control_clear_start_qs;
   logic control_clear_start_wd;
+  logic control_auto_incr_qs;
+  logic control_auto_incr_wd;
   logic [7:0] control_target_idx_qs;
   logic [7:0] control_target_idx_wd;
   logic num_bkdr_targets_re;
@@ -295,7 +297,7 @@ module bkdr_loader_regs_reg_top (
 
   // R[control]: V(False)
   logic control_qe;
-  logic [3:0] control_flds_we;
+  logic [4:0] control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -389,6 +391,34 @@ module bkdr_loader_regs_reg_top (
   );
   assign reg2hw.control.clear_start.qe = control_qe;
 
+  //   F[auto_incr]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_control_auto_incr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_auto_incr_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (control_flds_we[3]),
+    .q      (reg2hw.control.auto_incr.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_auto_incr_qs)
+  );
+  assign reg2hw.control.auto_incr.qe = control_qe;
+
   //   F[target_idx]: 15:8
   prim_subreg #(
     .DW      (8),
@@ -408,7 +438,7 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (control_flds_we[3]),
+    .qe     (control_flds_we[4]),
     .q      (reg2hw.control.target_idx.q),
     .ds     (),
 
@@ -1099,9 +1129,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[0].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[0].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[0].q),
     .ds     (),
     .qs     (read_data_0_qs)
   );
@@ -1116,9 +1146,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[1].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[1].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[1].q),
     .ds     (),
     .qs     (read_data_1_qs)
   );
@@ -1133,9 +1163,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[2].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[2].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[2].q),
     .ds     (),
     .qs     (read_data_2_qs)
   );
@@ -1150,9 +1180,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[3].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[3].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[3].q),
     .ds     (),
     .qs     (read_data_3_qs)
   );
@@ -1167,9 +1197,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[4].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[4].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[4].q),
     .ds     (),
     .qs     (read_data_4_qs)
   );
@@ -1184,9 +1214,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[5].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[5].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[5].q),
     .ds     (),
     .qs     (read_data_5_qs)
   );
@@ -1201,9 +1231,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[6].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[6].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[6].q),
     .ds     (),
     .qs     (read_data_6_qs)
   );
@@ -1218,9 +1248,9 @@ module bkdr_loader_regs_reg_top (
     .we     (1'b0),
     .wd     ('0),
     .d      (hw2reg.read_data[7].d),
-    .qre    (),
+    .qre    (reg2hw.read_data[7].re),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.read_data[7].q),
     .ds     (),
     .qs     (read_data_7_qs)
   );
@@ -1228,6 +1258,17 @@ module bkdr_loader_regs_reg_top (
 
   // Subregister 0 of Multireg write_data
   // R[write_data_0]: V(False)
+  logic write_data_0_qe;
+  logic [0:0] write_data_0_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_0_flds_we),
+    .q_o(write_data_0_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1246,17 +1287,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_0_flds_we[0]),
     .q      (reg2hw.write_data[0].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_0_qs)
   );
+  assign reg2hw.write_data[0].qe = write_data_0_qe;
 
 
   // Subregister 1 of Multireg write_data
   // R[write_data_1]: V(False)
+  logic write_data_1_qe;
+  logic [0:0] write_data_1_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data1_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_1_flds_we),
+    .q_o(write_data_1_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1275,17 +1328,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_1_flds_we[0]),
     .q      (reg2hw.write_data[1].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_1_qs)
   );
+  assign reg2hw.write_data[1].qe = write_data_1_qe;
 
 
   // Subregister 2 of Multireg write_data
   // R[write_data_2]: V(False)
+  logic write_data_2_qe;
+  logic [0:0] write_data_2_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data2_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_2_flds_we),
+    .q_o(write_data_2_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1304,17 +1369,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_2_flds_we[0]),
     .q      (reg2hw.write_data[2].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_2_qs)
   );
+  assign reg2hw.write_data[2].qe = write_data_2_qe;
 
 
   // Subregister 3 of Multireg write_data
   // R[write_data_3]: V(False)
+  logic write_data_3_qe;
+  logic [0:0] write_data_3_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data3_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_3_flds_we),
+    .q_o(write_data_3_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1333,17 +1410,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_3_flds_we[0]),
     .q      (reg2hw.write_data[3].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_3_qs)
   );
+  assign reg2hw.write_data[3].qe = write_data_3_qe;
 
 
   // Subregister 4 of Multireg write_data
   // R[write_data_4]: V(False)
+  logic write_data_4_qe;
+  logic [0:0] write_data_4_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data4_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_4_flds_we),
+    .q_o(write_data_4_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1362,17 +1451,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_4_flds_we[0]),
     .q      (reg2hw.write_data[4].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_4_qs)
   );
+  assign reg2hw.write_data[4].qe = write_data_4_qe;
 
 
   // Subregister 5 of Multireg write_data
   // R[write_data_5]: V(False)
+  logic write_data_5_qe;
+  logic [0:0] write_data_5_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data5_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_5_flds_we),
+    .q_o(write_data_5_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1391,17 +1492,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_5_flds_we[0]),
     .q      (reg2hw.write_data[5].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_5_qs)
   );
+  assign reg2hw.write_data[5].qe = write_data_5_qe;
 
 
   // Subregister 6 of Multireg write_data
   // R[write_data_6]: V(False)
+  logic write_data_6_qe;
+  logic [0:0] write_data_6_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data6_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_6_flds_we),
+    .q_o(write_data_6_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1420,17 +1533,29 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_6_flds_we[0]),
     .q      (reg2hw.write_data[6].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_6_qs)
   );
+  assign reg2hw.write_data[6].qe = write_data_6_qe;
 
 
   // Subregister 7 of Multireg write_data
   // R[write_data_7]: V(False)
+  logic write_data_7_qe;
+  logic [0:0] write_data_7_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_write_data7_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&write_data_7_flds_we),
+    .q_o(write_data_7_qe)
+  );
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1449,13 +1574,14 @@ module bkdr_loader_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (write_data_7_flds_we[0]),
     .q      (reg2hw.write_data[7].q),
     .ds     (),
 
     // to register interface (read)
     .qs     (write_data_7_qs)
   );
+  assign reg2hw.write_data[7].qe = write_data_7_qe;
 
 
   // R[index]: V(False)
@@ -1484,8 +1610,8 @@ module bkdr_loader_regs_reg_top (
     .wd     (index_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.index.de),
+    .d      (hw2reg.index.d),
 
     // to internal hardware
     .qe     (index_flds_we[0]),
@@ -1635,6 +1761,8 @@ module bkdr_loader_regs_reg_top (
   assign control_write_ena_wd = reg_wdata[1];
 
   assign control_clear_start_wd = reg_wdata[2];
+
+  assign control_auto_incr_wd = reg_wdata[3];
 
   assign control_target_idx_wd = reg_wdata[15:8];
   assign num_bkdr_targets_re = addr_hit[2] & reg_re & !reg_error;
@@ -1789,6 +1917,7 @@ module bkdr_loader_regs_reg_top (
         reg_rdata_next[0] = control_done_qs;
         reg_rdata_next[1] = control_write_ena_qs;
         reg_rdata_next[2] = control_clear_start_qs;
+        reg_rdata_next[3] = control_auto_incr_qs;
         reg_rdata_next[15:8] = control_target_idx_qs;
       end
 

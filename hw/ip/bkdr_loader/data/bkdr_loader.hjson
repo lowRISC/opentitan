@@ -99,6 +99,7 @@
             desc: '''
                   Write 1 to trigger the bkdr_loader to switch to mission mode.
                   After this, the bkdr_loader cannot be used until the next reset.
+                  Takes only effect if no clearing operation is running (STATUS.CLEAR_IDLE == 1).
                   ''',
           },
           { bits: "1"
@@ -106,7 +107,12 @@
             swaccess: "rw",
             hwaccess: "hro",
             desc: '''
-                  If set, a bkdr write is launched when writing to the index register.
+                  While `AUTO_INCR` is deasserted, setting this launches a bkdr write when
+                  writing to the `INDEX` register. While `AUTO_INCR` is asserted, this field
+                  instead selects which auto-increment trigger is active: set to 1, a write to
+                  the highest 32-bit field of `WRITE_DATA` launches a bkdr write and advances
+                  `INDEX`; set to 0, a read of the highest 32-bit field of `READ_DATA` advances
+                  `INDEX` without a bkdr write, see `AUTO_INCR`.
                   ''',
           },
           { bits: "2"
@@ -115,10 +121,28 @@
             hwaccess: "hrw"
             desc: '''
                   Write 1 to trigger the bkdr_loader to clear the entire target memory
-                  that is currently selected by `TARGET_IDX`.
-                  The word that is cleared with is selected by `WRITE_DATA`.
+                  that is currently selected by `TARGET_IDX`. Register self-clears and always reads
+                  back 0. The word that is cleared with is selected by `WRITE_DATA`.
                   Clear operation is completed if `STATUS.CLEAR_IDLE` becomes 1.
                   bkdr writes will not have any effects during an active clear operation.
+                  ''',
+          },
+          { bits: "3"
+            name: "AUTO_INCR"
+            swaccess: "rw",
+            hwaccess: "hro"
+            desc: '''
+                  If `AUTO_INCR` is set to 1, `INDEX` will automatically be increased by 1 on
+                  accessing the highest 32-bit field of `READ_DATA`/`WRITE_DATA` corresponding to
+                  a full line of the target selected by `TARGET_IDX`; `WRITE_ENA` selects which of
+                  `READ_DATA`/`WRITE_DATA` is the active trigger. To set up an auto increment
+                  write sequence; first `WRITE_ENA` and
+                  `AUTO_INCR` are set to 1, `INDEX` is written with the start index of the block to
+                  be written. For e.g., a 37-bit-wide target, writing `WRITE_DATA[0]` has no side
+                  effect, whereas writing `WRITE_DATA[1]` launches the bkdr write and `INDEX`
+                  increment. Writing to `WRITE_DATA[0]` and `WRITE_DATA[1]` can be repeated until
+                  the memory block has been written. Deasserting `AUTO_INCR` returns to the manual
+                  mode.
                   ''',
           },
           { bits: "15:8"
@@ -126,7 +150,7 @@
             swaccess: "rw",
             hwaccess: "hro",
             desc: '''
-                  The bkdr memory index to write to.
+                  The bkdr memory index to access.
                   The size of this field must match the parameter TargetIdxWidth.
                   ''',
           },
@@ -234,12 +258,18 @@
       { skipto: "0x400" }
       { multireg: {
         name: "READ_DATA",
-        desc: "Value to be read from the target memory.",
+        desc: '''
+              Value to be read from the target memory at the current `INDEX`. If
+              `CONTROL.AUTO_INCR` is asserted, reading from the highest 32-bit field corresponding
+              to the line length of the selected target issues an `INDEX` increment, but only
+              while `CONTROL.WRITE_ENA` is set to 0, see `WRITE_ENA`.
+              ''',
         count: "MaxWordWidthDiv32",
         cname: "VAL",
         swaccess: "ro",
-        hwaccess: "hwo",
+        hwaccess: "hrw",
         hwext:    "true",
+        hwre:     "true",
         fields: [
           { bits: "31:0",
             name: "VAL",
@@ -252,11 +282,18 @@
       { skipto: "0x500" }
       { multireg: {
         name: "WRITE_DATA",
-        desc: "Value to be written to the target memory.",
+        desc: '''
+              Value to be written to the target memory at the current `INDEX`. If
+              `CONTROL.AUTO_INCR` is asserted, writing to the highest 32-bit field corresponding to
+              the line length of the selected target issues an `INDEX` increment and a bkdr write
+              to the current value of `INDEX`, but only while `CONTROL.WRITE_ENA` is set to 1, see
+              `WRITE_ENA`.
+              ''',
         count: "MaxWordWidthDiv32",
         cname: "VAL",
         swaccess: "rw",
         hwaccess: "hro",
+        hwqe:     "true",
         fields: [
           { bits: "31:0",
             name: "VAL",
@@ -268,9 +305,15 @@
       } },
       { skipto: "0x600" }
       { name: "INDEX",
-        desc: "Index address of the SRAM word to be accessed.",
+        desc: '''
+              Index address of the SRAM word to be accessed. When `CONTROL.WRITE_ENA` is asserted
+              and `AUTO_INCR` is deasserted, writing an index value commands a bkdr write to the
+              target selected by `CONTROL.TARGET_IDX`.
+              While `AUTO_INCR` is asserted, this register is incremented by hardware by 1 after
+              each auto-triggered access, see `AUTO_INCR`.
+              ''',
         swaccess: "rw",
-        hwaccess: "hro",
+        hwaccess: "hrw",
         hwqe:     "true",
         fields: [
           { bits: "31:0",
