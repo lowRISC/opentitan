@@ -65,11 +65,16 @@ enum {
       (kOtbnWideWordNumWords -
        (kP256MaskedScalarShareWords % kOtbnWideWordNumWords)) %
       kOtbnWideWordNumWords,
-  /*
-   * The expected instruction counts for constant time functions.
-   */
+/*
+ * The expected instruction counts for constant time functions.
+ */
+#ifdef FIPS_MODE
+  kModeKeygenInsCnt = 1147657,
+  kModeKeygenSideloadInsCnt = 1147549,
+#else
   kModeKeygenInsCnt = 573915,
   kModeKeygenSideloadInsCnt = 573807,
+#endif
   kModeEcdhInsCnt = 581600,
   kModeEcdhSideloadInsCnt = 581665,
   kModeEcdsaSignConfigKInsCnt = 606939,

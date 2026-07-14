@@ -174,6 +174,11 @@ random_keygen:
        dmem[y] <= (d*G).y */
   jal      x1, p256_base_mult
 
+.ifdef FIPS_MODE
+  /* Perform Pairwise Consistency Test (PCT) in FIPS mode: d*G == Q */
+  jal      x1, p256_pct_verify
+.endif
+
   /* Copy the secret key shares into Ibex-visible memory.
        dmem[d0_io] <= dmem[d0]
        dmem[d1_io] <= dmem[d1] */
@@ -309,7 +314,67 @@ sideload_keygen:
        dmem[y] <= (d*G).y */
   jal      x1, p256_base_mult
 
+.ifdef FIPS_MODE
+  /* Perform Pairwise Consistency Test (PCT) in FIPS mode: d*G == Q */
+  jal      x1, p256_pct_verify
+.endif
+
   ecall
+
+.ifdef FIPS_MODE
+/**
+ * Perform Pairwise Consistency Test (PCT) on OTBN for P-256.
+ * Re-computes d*G and verifies it matches original (x, y).
+ */
+p256_pct_verify:
+  /* Save the first-pass computed public key from DMEM (x, y) into DMEM scratch space (pct_x, pct_y). */
+  la       x13, x
+  la       x14, pct_x
+  li       x10, 20
+  bn.lid   x10, 0(x13)
+  bn.sid   x10, 0(x14)
+
+  la       x13, y
+  la       x14, pct_y
+  li       x10, 20
+  bn.lid   x10, 0(x13)
+  bn.sid   x10, 0(x14)
+
+  /* Re-run base point multiplication: computes (d*G).x -> dmem[x], (d*G).y -> dmem[y] */
+  jal      x1, p256_base_mult
+
+  /* Load the original public key from DMEM scratch space (pct_x, pct_y) into w20, w21. */
+  la       x13, pct_x
+  la       x14, pct_y
+  li       x10, 20
+  bn.lid   x10, 0(x13)
+  li       x11, 21
+  bn.lid   x11, 0(x14)
+
+  /* Load the second-pass computed public key from dmem[x], dmem[y] into w22, w23. */
+  la       x13, x
+  la       x14, y
+  li       x12, 22
+  bn.lid   x12, 0(x13)
+  li       x15, 23
+  bn.lid   x15, 0(x14)
+
+  /* Compare original (w20, w21) vs re-computed (w22, w23). */
+  bn.xor   w24, w20, w22
+  bn.xor   w25, w21, w23
+  bn.or    w24, w24, w25
+
+  /* Check that difference w24 is zero. */
+  bn.cmp   w24, w31
+  /* Flag Z in FG0 is bit 3 (value 8). If Z == 0, PCT failed -> unimp. */
+  csrrs    x10, 0x7c0, x0
+  andi     x10, x10, 8
+  bne      x10, x0, .L_p256_pct_ok
+  unimp
+
+.L_p256_pct_ok:
+  ret
+.endif
 
 /**
  * Generate a signature using a private key from a sideloaded seed.
@@ -595,3 +660,13 @@ d0:
 .balign 32
 d1:
   .zero 64
+
+/* Scratch space for FIPS PCT verification of public key coordinates. */
+.globl pct_x
+.balign 32
+pct_x:
+  .zero 32
+.globl pct_y
+.balign 32
+pct_y:
+  .zero 32
