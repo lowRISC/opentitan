@@ -24,6 +24,7 @@
 #include "sw/device/silicon_creator/lib/cert/dice_storage.h"
 #include "sw/device/silicon_creator/lib/cert/seeds.h"
 #include "sw/device/silicon_creator/lib/cert/template.h"
+#include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
@@ -563,6 +564,8 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
 
   // Handover results to OwnerSw
   if (regenerate) {
+    dbg_puts("info: DICE cert cache miss; updating\r\n");
+
     // Populating ECDSA certs to flash info page.
     RETURN_IF_ERROR(dice_storage_load_page(&dice_page));
 

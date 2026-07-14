@@ -203,6 +203,7 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib/base:static_dice_cdi_0",
         "//sw/device/silicon_creator/lib/base:static_dice_mldsa_cdi",
         "//sw/device/silicon_creator/lib/base:util",
