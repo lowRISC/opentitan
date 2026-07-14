@@ -245,11 +245,12 @@ otcrypto_status_t compute_mu(const otcrypto_hash_digest_t *tr,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_mldsa87_keygen(
-    const otcrypto_unblinded_key_t *private_key,
-    otcrypto_unblinded_key_t *public_key) {
-  // TODO: Connect ML-DSA operations to API.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+otcrypto_status_t otcrypto_mldsa87_keygen(otcrypto_unblinded_key_t *public_key,
+                                          otcrypto_blinded_key_t *private_key) {
+  HARDENED_TRY(otcrypto_mldsa87_keygen_async_start());
+  HARDENED_TRY(otcrypto_mldsa87_keygen_async_finalize(public_key, private_key));
+
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_mldsa87_sign(
@@ -285,18 +286,25 @@ otcrypto_status_t otcrypto_mldsa87_keycheck(
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
-otcrypto_status_t otcrypto_mldsa87_keygen_async_start(
-    const otcrypto_unblinded_key_t *private_key,
-    otcrypto_unblinded_key_t *public_key) {
-  // TODO: Connect ML-DSA operations to API.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+otcrypto_status_t otcrypto_mldsa87_keygen_async_start(void) {
+  HARDENED_TRY_WIPE_DMEM(mldsa87_keygen_internal_start());
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_mldsa87_keygen_async_finalize(
-    const otcrypto_unblinded_key_t *private_key,
-    otcrypto_unblinded_key_t *public_key) {
-  // TODO: Connect ML-DSA operations to API.
-  return OTCRYPTO_NOT_IMPLEMENTED;
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  HARDENED_TRY_WIPE_DMEM(
+      mldsa87_keygen_internal_finalize(public_key, private_key));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_mldsa87_sign_async_start(

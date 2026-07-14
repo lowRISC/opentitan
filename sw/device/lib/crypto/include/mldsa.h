@@ -101,7 +101,7 @@ typedef enum otcrypto_mldsa_sign_mode {
 } otcrypto_mldsa_sign_mode_t;
 
 /**
- * Generates a key pair for ML-DSA-87 (WIP not yet finalized).
+ * Generates a key pair for ML-DSA-87.
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and allocating space for the
@@ -124,14 +124,13 @@ typedef enum otcrypto_mldsa_sign_mode {
  *   - rho: 32 bytes
  *   - t1: 2560 bytes
  *
- * @param[out] private_key Pointer to the partially shared private key struct.
  * @param[out] public_key Pointer to the unshared public key struct.
+ * @param[out] private_key Pointer to the partially shared private key struct.
  * @param Result of the ML-DSA-87 key generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_mldsa87_keygen(
-    const otcrypto_unblinded_key_t *private_key,
-    otcrypto_unblinded_key_t *public_key);
+otcrypto_status_t otcrypto_mldsa87_keygen(otcrypto_unblinded_key_t *public_key,
+                                          otcrypto_blinded_key_t *private_key);
 
 /**
  * Generates a ML-DSA-87 digital signature.
@@ -140,9 +139,7 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
  * the least significant byte:
  *
  *   - c_tilde: 64 bytes
- *   - z: 6368 bytes (rho (32B), K (32B, bool share 0), K (32B, bool share 1),
- *       tr (64B), s1 (672B, bool share 0), s1, (672B, bool share 1), s2
- *       (768B, bool share 0), s2 (768B, bool share 1), t0 (3328B))
+ *   - z: 4480 bytes
  *   - hint: 83 + 1 bytes
  *
  * For protection against FI attacks, the ML-DSA sign OTBN app is executed
@@ -211,7 +208,7 @@ otcrypto_status_t otcrypto_mldsa87_keycheck(
     hardened_bool_t *keycheck_result);
 
 /**
- * Starts asynchronous key generation for ML-DSA-87 (WIP not yet finalized).
+ * Starts asynchronous key generation for ML-DSA-87.
  *
  * See `otcrypto_mldsa87_keygen` for requirements on input values.
  *
@@ -220,12 +217,10 @@ otcrypto_status_t otcrypto_mldsa87_keycheck(
  * @param Result of the ML-DSA-87 key generation start operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_mldsa87_keygen_async_start(
-    const otcrypto_unblinded_key_t *private_key,
-    otcrypto_unblinded_key_t *public_key);
+otcrypto_status_t otcrypto_mldsa87_keygen_async_start(void);
 
 /**
- * Finalizes asynchronous key generation for ML-DSA-87 (WIP not yet finalized).
+ * Finalizes asynchronous key generation for ML-DSA-87.
  *
  * See `otcrypto_mldsa87_keygen` for requirements on input values.
  *
@@ -237,8 +232,7 @@ otcrypto_status_t otcrypto_mldsa87_keygen_async_start(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_mldsa87_keygen_async_finalize(
-    const otcrypto_unblinded_key_t *private_key,
-    otcrypto_unblinded_key_t *public_key);
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
 
 /**
  * Starts asynchronous signature generation for ML-DSA-87.
