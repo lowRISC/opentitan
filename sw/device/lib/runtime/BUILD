@@ -14,6 +14,15 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
 )
 
+cc_library(
+    name = "entropy_health",
+    srcs = ["entropy_health.c"],
+    hdrs = ["entropy_health.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+)
+
 dual_cc_library(
     name = "hart",
     srcs = dual_inputs(
@@ -112,6 +121,15 @@ cc_test(
     deps = [
         ":print",
         "@abseil-cpp//absl/strings:str_format",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "entropy_health_unittest",
+    srcs = ["entropy_health_unittest.cc"],
+    deps = [
+        ":entropy_health",
         "@googletest//:gtest_main",
     ],
 )
