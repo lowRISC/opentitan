@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "datatypes.h"
 #include "otcrypto.h"
-#include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 // This test checks that the static-linked `otcrypto` library is usable and that
