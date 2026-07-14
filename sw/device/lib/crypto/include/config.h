@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/crypto/include/datatypes.h"
+#include "datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
