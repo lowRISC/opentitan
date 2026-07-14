@@ -13,6 +13,8 @@
 // - Arbitration occurs amongst those requests, with accesses performed by the IP block hardware
 //   being treated as higher priority than processor accesses, oweing to the hard real-time nature
 //   of the I3C traffic.
+// - Whilst the buffer supports byte write enables these are required only for the direct software
+//   interface. All read/write operations within the IP block are performed as full words.
 // - The direction of each FIFO is specified, so that hardware access may be prioritized.
 
 module i3c_buffer
@@ -46,23 +48,25 @@ module i3c_buffer
   input                     sw_buf_we_i,
   input      [BufAddrW-1:0] sw_buf_addr_i,
   input     [DataWidth-1:0] sw_buf_wdata_i,
+  input   [DataWidth/8-1:0] sw_buf_wmask_i,
   output                    sw_buf_rvalid_o,
   output              [1:0] sw_buf_rerror_o,
   output    [DataWidth-1:0] sw_buf_rdata_o,
 
   // DFT-related signals.
-  input  ram_1p_cfg_t       ram_cfg_i,
-  output ram_1p_cfg_rsp_t   ram_cfg_rsp_o
+  input  ram_1p_cfg_req_t   ram_cfg_i,
+  output ram_1p_cfg_rsp_t   ram_cfg_o
 );
 
   // Use the arbiter to steer the appropriate inputs.
   typedef struct packed {
-    logic                 write;
-    logic  [BufAddrW-1:0] addr;
-    logic [DataWidth-1:0] wdata;
+    logic                   write;
+    logic    [BufAddrW-1:0] addr;
+    logic   [DataWidth-1:0] wdata;
+    logic [DataWidth/8-1:0] wmask;
     // FIFO configuration used in address updating.
-    logic  [BufAddrW-1:0] min;
-    logic  [BufAddrW-1:0] max;
+    logic    [BufAddrW-1:0] min;
+    logic    [BufAddrW-1:0] max;
   } arb_data_t;
   localparam int unsigned ArbDataWidth = $bits(arb_data_t);
 
@@ -91,6 +95,7 @@ module i3c_buffer
     arb[NumFifos].max   = '1;
     arb[NumFifos].addr  = sw_buf_addr_i;
     arb[NumFifos].wdata = sw_buf_wdata_i;
+    arb[NumFifos].wmask = sw_buf_wmask_i;
   end
   assign sw_buf_gnt_o    = gnt[NumFifos];
   assign sw_buf_rvalid_o = mem_rvalid & (IdxW'(NumFifos) == mem_ridx);
@@ -223,6 +228,8 @@ module i3c_buffer
       arb[f].max   = cfg_i[f].max;
       arb[f].addr  = wreq ? wptr : pptr;
       arb[f].wdata = in_i[f].wdata;
+      // Only full word transfers are required, set all write enables.
+      arb[f].wmask = '1;
     end
     // Only one operation may be granted per clock cycle.
     assign wgnt = gnt[f] & wreq;
@@ -241,17 +248,17 @@ module i3c_buffer
     .N    (N),
     .DW   (ArbDataWidth)
   ) u_arbiter (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
+    .clk_i,
+    .rst_ni,
 
-    .req_i      (req),
-    .data_i     (arb),
-    .gnt_o      (gnt),
-    .idx_o      (idx),
+    .req_i  (req),
+    .data_i (arb),
+    .gnt_o  (gnt),
+    .idx_o  (idx),
 
-    .valid_o    (mem_req),
-    .data_o     (mem_data),
-    .ready_i    (1'b1)
+    .valid_o(mem_req),
+    .data_o (mem_data),
+    .ready_i(1'b1)
   );
 
   // Address advancement.
@@ -267,11 +274,18 @@ module i3c_buffer
     end
   end
 
+  // The SRAM wrapper requires bit-level write strobes but we opt to export an interface with the
+  // more conventional byte write enables for portability.
+  logic [DataWidth-1:0] mem_wmask_full;
+  for (genvar b = 0; b < DataWidth / 8; b++) begin
+    assign mem_wmask_full[b*8 +: 8] = {8{mem_data.wmask[b]}};
+  end
+
   // SRAM Wrapper
   prim_ram_1p_adv #(
     .Depth                (BufWords),
     .Width                (DataWidth),
-    .DataBitsPerMask      (DataWidth),
+    .DataBitsPerMask      (8),
     .EnableECC            (0), // No Protection
     .EnableParity         (0),
     .EnableInputPipeline  (0),
@@ -280,17 +294,17 @@ module i3c_buffer
     .clk_i,
     .rst_ni,
 
-    .req_i    (mem_req),
-    .write_i  (mem_data.write),
-    .addr_i   (mem_data.addr),
-    .wdata_i  (mem_data.wdata),
-    .wmask_i  ('1),
-    .rdata_o  (mem_rdata),
-    .rvalid_o (mem_rvalid),
-    .rerror_o (mem_rerror),
-    .cfg_i    (ram_cfg_i),
-    .cfg_rsp_o(ram_cfg_rsp_o),
-    .alert_o  ()
+    .req_i   (mem_req),
+    .write_i (mem_data.write),
+    .addr_i  (mem_data.addr),
+    .wdata_i (mem_data.wdata),
+    .wmask_i (mem_wmask_full),
+    .rdata_o (mem_rdata),
+    .rvalid_o(mem_rvalid),
+    .rerror_o(mem_rerror),
+    .cfg_i   (ram_cfg_i),
+    .cfg_o   (ram_cfg_o),
+    .alert_o ()
   );
 
 endmodule
