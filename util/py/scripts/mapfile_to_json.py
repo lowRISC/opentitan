@@ -364,6 +364,38 @@ class Mapfile(object):
                     ))
         self.sections = sections
 
+    def _process_symbol_sizes_and_children(self):
+        """Compute individual symbol sizes."""
+        for sec in self.sections:
+            for obj in sec.get('children', []):
+                syms = obj.get('symbols', [])
+                if syms:
+                    # Sort symbols by memory address to compute size deltas.
+                    syms.sort(key=lambda s: s['addr'])
+                    obj_end = obj['addr'] + obj['size']
+                    for i in range(len(syms)):
+                        if i + 1 < len(syms):
+                            syms[i]['size'] = syms[i + 1]['addr'] - syms[i]['addr']
+                        else:
+                            syms[i]['size'] = max(0, obj_end - syms[i]['addr'])
+
+                    # If the section object lacks sub-section children (e.g., in a
+                    # partially-linked blob), promote each symbol to a child node
+                    # so that treemap rendering can partition the section.
+                    if not obj.get('children'):
+                        for sym in syms:
+                            if sym.get('size', 0) > 0:
+                                obj['children'].append({
+                                    'name': sym['name'],
+                                    'addr': sym['addr'],
+                                    'size': sym['size'],
+                                    'path': obj.get('path'),
+                                    'archive': obj.get('archive'),
+                                    'filename': obj.get('filename'),
+                                    'children': [],
+                                    'symbols': [sym],
+                                })
+
     def parse(self, filename):
         """Parse the given mapfile."""
         with open(filename) as f:
@@ -375,6 +407,7 @@ class Mapfile(object):
             else:
                 raise Exception(
                     'Failed to detect type of mapfile (clang or gnu)')
+        self._process_symbol_sizes_and_children()
 
     def by_memory_region(self):
         """Return the mapfile arranged by memory region."""
