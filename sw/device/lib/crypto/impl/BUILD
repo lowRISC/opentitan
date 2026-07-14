@@ -347,6 +347,12 @@ cc_library(
     name = "rsa",
     srcs = ["rsa.c"],
     hdrs = ["//sw/device/lib/crypto/include:rsa.h"],
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": [
+            "FIPS_MODE",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         ":config",
         ":integrity",

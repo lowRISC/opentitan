@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -175,6 +176,44 @@ static status_t x25519_pct_keygen_test(void) {
   return OK_STATUS();
 }
 
+static status_t rsa2048_pct_keygen_test(void) {
+  LOG_INFO("Starting RSA-2048 FIPS PCT Keygen test...");
+
+  otcrypto_key_config_t rsa_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  static uint32_t
+      public_key_data[kOtcryptoRsa2048PublicKeyBytes / sizeof(uint32_t)];
+  memset(public_key_data, 0, sizeof(public_key_data));
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+
+  static uint32_t
+      keyblob[kOtcryptoRsa2048PrivateKeyblobBytes / sizeof(uint32_t)];
+  memset(keyblob, 0, sizeof(keyblob));
+  otcrypto_blinded_key_t private_key = {
+      .config = rsa_config,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Generate keypair with Ibex/OTBN FIPS PCT active.
+  CHECK_STATUS_OK(
+      otcrypto_rsa_keygen(kOtcryptoRsaSize2048, &public_key, &private_key));
+
+  LOG_INFO("RSA-2048 FIPS PCT Keygen test passed.");
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
 
@@ -185,6 +224,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, p384_pct_keygen_test);
   EXECUTE_TEST(result, ed25519_pct_keygen_test);
   EXECUTE_TEST(result, x25519_pct_keygen_test);
+  EXECUTE_TEST(result, rsa2048_pct_keygen_test);
 
   return status_ok(result);
 }

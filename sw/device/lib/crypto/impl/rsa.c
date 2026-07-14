@@ -476,6 +476,57 @@ otcrypto_status_t otcrypto_rsa_decrypt(
                                              plaintext_bytelen);
 }
 
+#ifdef FIPS_MODE
+/**
+ * Perform Pairwise Consistency Test (PCT) for RSA key generation.
+ * Signs a dummy digest with the generated private key and verifies the
+ * signature with the generated public key.
+ */
+static otcrypto_status_t rsa_pct_verify(
+    otcrypto_rsa_size_t size, const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_blinded_key_t *private_key) {
+  uint32_t dummy_digest_data[8] = {0};
+  otcrypto_hash_digest_t digest = {
+      .data = dummy_digest_data,
+      .len = ARRAYSIZE(dummy_digest_data),
+      .mode = kOtcryptoHashModeSha256,
+  };
+
+  uint32_t sig_data[128];
+  size_t sig_words = 0;
+  switch (launder32(size)) {
+    case kOtcryptoRsaSize2048:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
+      sig_words = 2048 / 32;
+      break;
+    case kOtcryptoRsaSize3072:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
+      sig_words = 3072 / 32;
+      break;
+    case kOtcryptoRsaSize4096:
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
+      sig_words = 4096 / 32;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  otcrypto_word32_buf_t sig = otcrypto_make_word32_buf(sig_data, sig_words);
+
+  HARDENED_TRY(
+      otcrypto_rsa_sign(private_key, digest, kOtcryptoRsaPaddingPkcs, &sig));
+
+  otcrypto_const_word32_buf_t sig_const =
+      otcrypto_make_const_word32_buf(sig_data, sig_words);
+  hardened_bool_t result;
+  HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, kOtcryptoRsaPaddingPkcs,
+                                   &sig_const, &result));
+
+  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+#endif
+
 otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
@@ -554,6 +605,11 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   // Construct checksums for the new keys.
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
+
+#ifdef FIPS_MODE
+  // Perform FIPS Pairwise Consistency Test (PCT).
+  HARDENED_TRY(rsa_pct_verify(size, public_key, private_key));
+#endif
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
