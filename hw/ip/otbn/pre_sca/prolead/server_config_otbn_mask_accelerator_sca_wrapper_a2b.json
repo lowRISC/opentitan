@@ -2,7 +2,8 @@
   "_comment": "Copyright lowRISC contributors (OpenTitan project). Licensed under the Apache License, Version 2.0, see LICENSE for details. SPDX-License-Identifier: Apache-2.0",
   "performance": {
     "max_number_of_threads": "all",
-    "minimize_probing_sets": "aggressive"
+    "minimize_probing_sets": "aggressive",
+    "number_of_probing_sets_per_step": 10000
   },
   "simulation": {
     "groups": [
@@ -169,7 +170,7 @@
       }
     ],
     "number_of_simulations": 1600000,
-    "number_of_simulations_per_step": 8000
+    "number_of_simulations_per_step": 64000
   },
   "hardware": {
     "clock_signal_name": "clk_i"
