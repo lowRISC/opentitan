@@ -37,8 +37,8 @@ module i3c_dct
   output  [DataWidth-1:0] sw_dct_rdata_o,
 
   // DFT-related signals.
-  input  ram_1p_cfg_t     dct_cfg_i,
-  output ram_1p_cfg_rsp_t dct_cfg_rsp_o
+  input  ram_1p_cfg_req_t dct_cfg_i,
+  output ram_1p_cfg_rsp_t dct_cfg_o
 );
 
   // The CPU cannot access the full DCT Entry in a single access; its bus is narrower.
@@ -118,7 +118,7 @@ module i3c_dct
     .b_oob_o    (sw_dct_rdata_sel),
 
     .cfg_i      (dct_cfg_i),
-    .cfg_rsp_o  (dct_cfg_rsp_o)
+    .cfg_o      (dct_cfg_o)
   );
 
 endmodule

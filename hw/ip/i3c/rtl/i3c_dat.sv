@@ -36,8 +36,8 @@ module i3c_dat
   output  [DataWidth-1:0] sw_dat_rdata_o,
 
   // DFT-related signals.
-  input  ram_1p_cfg_t     dat_cfg_i,
-  output ram_1p_cfg_rsp_t dat_cfg_rsp_o
+  input  ram_1p_cfg_req_t dat_cfg_i,
+  output ram_1p_cfg_rsp_t dat_cfg_o
 );
 
   // The CPU cannot access the full DAT Entry in a single access; its bus is narrower.
@@ -169,7 +169,7 @@ module i3c_dat
     .b_oob_o    (sw_dat_rdata_sel),
 
     .cfg_i      (dat_cfg_i),
-    .cfg_rsp_o  (dat_cfg_rsp_o)
+    .cfg_o      (dat_cfg_o)
   );
 
 endmodule
