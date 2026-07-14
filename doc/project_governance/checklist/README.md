@@ -51,7 +51,7 @@ The mainline functional path is implemented to allow for a basic functionality t
 
 ### ASSERT_KNOWN_ADDED
 
-All the outputs of the IP have `ASSERT_KNOWN` assertions.
+All the outputs of the IP have `OCAH_OT_ASSERT_KNOWN` assertions.
 
 ### LINT_SETUP
 

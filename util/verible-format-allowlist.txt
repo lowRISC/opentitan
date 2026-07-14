@@ -126,7 +126,6 @@ hw/ip/pattgen/dv/tests/pattgen_test_pkg.sv
 hw/top_earlgrey/ip_autogen/pinmux/rtl/pinmux_jtag_breakout.sv
 hw/top_earlgrey/ip_autogen/pinmux/rtl/pinmux_jtag_buf.sv
 hw/ip/prim/fpv/tb/prim_fifo_sync_bind_fpv.sv
-hw/ip/prim/rtl/prim_assert_dummy_macros.svh
 hw/ip/prim/rtl/prim_assert_standard_macros.svh
 hw/ip/prim/rtl/prim_assert_yosys_macros.svh
 hw/ip/prim/rtl/prim_clock_gating_sync.sv

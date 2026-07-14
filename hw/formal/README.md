@@ -6,14 +6,14 @@
 ## What Are Assertions?
 Assertions are statements about your design that are expected to be always true.
 Here are two examples:
-*   <code>`ASSERT(grantOneHot, $onehot0(grant), clk, !rst_n)</code>
+*   <code>`OCAH_OT_ASSERT(grantOneHot, $onehot0(grant), clk, !rst_n)</code>
     <br />This asserts that signal <code>grant</code> will be either
     one-hot encoded or all-zero.
-*   <code>`ASSERT(ackTwoClocksAfterReq, req |-> ##2 ack, clk, !rst_n)</code>
+*   <code>`OCAH_OT_ASSERT(ackTwoClocksAfterReq, req |-> ##2 ack, clk, !rst_n)</code>
     <br />Every time <code>req</code> goes high, <code>ack</code> must be
     high exactly 2 clock cycles later.
 
-Above examples are using the <code>`ASSERT</code> macro defined in [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv),
+Above examples are using the <code>`OCAH_OT_ASSERT</code> macro defined in [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv),
 whose four arguments are assertion name, property, clock, and reset (active-high reset).
 
 Assertions are usually added by the designer in the RTL file.
@@ -38,7 +38,7 @@ end
 The file [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert_standard_macros.svh) define many useful shortcuts that you can use in your RTL code.
 Some of them are detailed below:
 
-### ASSERT(__name, __prop, __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+### OCAH_OT_ASSERT(__name, __prop, __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST)
 *   This is a shortcut macro for a generic concurrent assignment.
 *   The first argument is the assertion name.
     It is recommended to follow the [naming conventions](#naming-conventions).
@@ -48,7 +48,7 @@ Some of them are detailed below:
 *   Note that this macro doesn't support a custom error message (such as the $error message in the previous section).
     However, the macro will print out the property name and the entire property code such as `req |-> ack`.
 
-For example, <code>`ASSERT(myAssertion, req |-> ack, clk, !rst_n)</code>
+For example, <code>`OCAH_OT_ASSERT(myAssertion, req |-> ack, clk, !rst_n)</code>
 is expanded as follows:
 ```
 myAssertion: assert property (
@@ -59,31 +59,31 @@ myAssertion: assert property (
       `STRINGIFY(myAssertion), `STRINGIFY(req |-> ack));
 end
 ```
-### `ASSERT_INIT(__name, __prop)
+### `OCAH_OT_ASSERT_INIT(__name, __prop)
 Concurrent assertion inside an initial block. It can be used for checking parameters.
 
-### `ASSERT_FINAL(__name, __prop)
+### `OCAH_OT_ASSERT_FINAL(__name, __prop)
 Concurrent assertion inside a final block. It can be used e.g. for making sure that a FIFO is empty at the end of each sim.
 
-### `ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+### `OCAH_OT_ASSERT_AT_RESET(__name, __prop, __rst = `OCAH_OT_ASSERT_DEFAULT_RST)
 Assertion just before reset. Can be used to check sum-like properties that get cleared at reset.
 Note that unless your simulation ends with a reset, the property does not get checked at end of
-simulation; use `ASSERT_AT_RESET_AND_FINAL` if the property should also get checked at end of
+simulation; use `OCAH_OT_ASSERT_AT_RESET_AND_FINAL` if the property should also get checked at end of
 simulation.
 
-### `ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `ASSERT_DEFAULT_RST)
+### `OCAH_OT_ASSERT_AT_RESET_AND_FINAL(__name, __prop, __rst = `OCAH_OT_ASSERT_DEFAULT_RST)
 Assertion just before reset and in final block. Can be used to check sum-like properties before
 every reset and at the end of simulation.
 
-### `ASSERT_NEVER(__name, __prop,  __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+### `OCAH_OT_ASSERT_NEVER(__name, __prop,  __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST)
 Assert that a concurrent property never happens.
 
-### `ASSERT_KNOWN(__name, __signal,  __clk = `ASSERT_DEFAULT_CLK, __rst = `ASSERT_DEFAULT_RST)
+### `OCAH_OT_ASSERT_KNOWN(__name, __signal,  __clk = `OCAH_OT_ASSERT_DEFAULT_CLK, __rst = `OCAH_OT_ASSERT_DEFAULT_RST)
 Assert that `signal` has a known value after reset, where "known" refers to a value that is not X.
 
 ### More Macros and Examples
 *   For more macros see file [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) and [prim_assert_standard_macros.svh](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert_standard_macros.svh).
-*   For more examples, search the repository for ASSERT by typing `grep -r ASSERT .`
+*   For more examples, search the repository for OCAH_OT_ASSERT by typing `grep -r OCAH_OT_ASSERT .`
 *   Also see [tlul_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/tlul/rtl/tlul_assert.sv) and its [documentation](../ip/tlul/doc/TlulProtocolChecker.md).
 
 ## Useful SVA System Functions
@@ -206,7 +206,7 @@ Without symbolic variables, the above assertions can be implemented as below:
 ```systemverilog
   genvar i;
   generate for (i = 0; i < N_SOURCE; i++) begin : gen_rv_plic_fpv
-    `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[i]) |->
+    `OCAH_OT_ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[i]) |->
             $past(rv_plic.le[i]) || $past(intr_src_i[i]), clk_i, !rst_ni)
   end
 ```
@@ -217,9 +217,9 @@ To ensure the symbolic variable performs the expected behaviors, two assumptions
 * Randomize the variable at the beginning of the simulation, then keep it stable throughout the rest of the simulation.
 ```systemverilog
   logic [$clog2(N_SOURCE)-1:0] src_sel;
-  `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
-  `ASSUME_FPV(IsrcStable_M, ##1 $stable(src_sel), clk_i, !rst_ni)
-  `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
+  `OCAH_OT_ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
+  `OCAH_OT_ASSUME_FPV(IsrcStable_M, ##1 $stable(src_sel), clk_i, !rst_ni)
+  `OCAH_OT_ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
           $past(rv_plic.le[src_sel]) || $past(intr_src_i[src_sel]), clk_i, !rst_ni)
 ```
 
@@ -227,7 +227,7 @@ To ensure the symbolic variable performs the expected behaviors, two assumptions
 Coverpoints are used for properties and corner cases that the designer wants to make sure are being exercised by the testbench (e.g. FIFO-full checks).
 The code coverage tool then reports the coverage percentage of these coverpoints together with the other cover metrics (such as line coverage and branch coverage).
 
-The macro <code>`COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) can be used to add coverpoints to your design, where the cover property uses the same SVA syntax, operators, and system functions as the assert properties.
+The macro <code>`OCAH_OT_COVER(name, prop, clk, rst)</code> of [prim_assert.sv](https://github.com/lowRISC/opentitan/blob/master/hw/ip/prim/rtl/prim_assert.sv) can be used to add coverpoints to your design, where the cover property uses the same SVA syntax, operators, and system functions as the assert properties.
 
 ## Running FPV on DVSim
 
@@ -324,8 +324,8 @@ Here is an example on csrng module:
 For assertions, it is preferred to use postfix `_A` for assertions, `_M` for assumptions, `_P` for properties, and `_S` for sequences.
 For example:
 ```systemverilog
-  `ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
-  `ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
+  `OCAH_OT_ASSUME_FPV(IsrcRange_M, src_sel >= 0 && src_sel < N_SOURCE, clk_i, !rst_ni)
+  `OCAH_OT_ASSERT(LevelTriggeredIp_A, $rose(rv_plic.ip[src_sel]) |->
           $past(rv_plic.le[src_sel]) || $past(intr_src_i[src_sel]), clk_i, !rst_ni)
 ```
 

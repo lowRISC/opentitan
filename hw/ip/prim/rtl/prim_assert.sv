@@ -99,16 +99,17 @@
 //
 //  ASSUME_I:     Assume an immediate property
 
-`ifdef VERILATOR
- `include "prim_assert_dummy_macros.svh"
-`elsif SYNTHESIS
- `include "prim_assert_dummy_macros.svh"
-`elsif YOSYS
+`ifdef YOSYS
  `include "prim_assert_yosys_macros.svh"
  `define OCAH_OT_INC_ASSERT
 `else
+ // Enable assertions for every flow except synthesis and Verilator
+ `ifndef VERILATOR
+ `ifndef SYNTHESIS
+   `define OCAH_OT_INC_ASSERT
+ `endif
+ `endif
  `include "prim_assert_standard_macros.svh"
- `define OCAH_OT_INC_ASSERT
 `endif
 
 //////////////////////////////
