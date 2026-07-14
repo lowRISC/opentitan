@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
@@ -68,6 +69,7 @@ enum {
   kInfoSize = 16,
   kDataSize = 32,
   kPageSize = 2048,
+  kDataRegions = FLASH_CTRL_PARAM_NUM_REGIONS
 };
 
 const uint32_t kRandomData1[kInfoSize] = {
@@ -266,6 +268,8 @@ static void do_bank0_data_partition_test(void) {
       .prog_en = kMultiBitBool4True,
       .rd_en = kMultiBitBool4True};
 
+  CHECK_STATUS_OK(flash_ctrl_testutils_find_unlocked_region(
+      &flash_state, 0, kDataRegions - 1, &flash_bank_0_data_region));
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
       &flash_state, kRegionBaseBank0Page0Index, flash_bank_0_data_region,
       kRegionSize, region_properties, &address));
@@ -309,6 +313,8 @@ static void do_bank1_data_partition_test(void) {
     uint32_t page_index =
         (i == 0) ? flash_bank_1_page_index : flash_bank_1_page_index_scr;
     const uint32_t *test_data = (i == 0) ? kRandomData4 : kRandomData5;
+    CHECK_STATUS_OK(flash_ctrl_testutils_find_unlocked_region(
+        &flash_state, 0, kDataRegions - 1, &flash_bank_1_data_region));
 
     if (i == 0) {
       // Set region1 for non-scrambled ecc enabled.
@@ -316,6 +322,10 @@ static void do_bank1_data_partition_test(void) {
           &flash_state, page_index, flash_bank_1_data_region, kRegionSize,
           &address));
     } else {
+      CHECK_STATUS_OK(flash_ctrl_testutils_find_unlocked_region(
+          &flash_state, flash_bank_1_data_region + 1, kDataRegions - 1,
+          &flash_bank_1_data_region_scr));
+
       // Set region2 for scrambled ecc enabled.
       CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
           &flash_state, page_index, flash_bank_1_data_region_scr, kRegionSize,
@@ -423,22 +433,9 @@ static void do_bank1_data_partition_test(void) {
 bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
 
-  // Determine the region index and page index to use for tests.
-  // Test data page used for flash bank 1 should be the lowest and highest
-  // usable page.
-  if (kBootStage != kBootStageOwner) {
-    flash_bank_0_data_region = 0;
-    flash_bank_1_page_index = flash_info.data_pages;
-  } else {
-    // If we boot up in owner stage, the first 2 regions will be used by
-    // ROM_EXT.
-    flash_bank_0_data_region = 2;
-    // First 0x20 pages are configured by ROM_EXT. To avoid conflicts, skip over
-    // these pages.
-    flash_bank_1_page_index = flash_info.data_pages + 0x20;
-  }
-  flash_bank_1_data_region = flash_bank_0_data_region + 1;
-  flash_bank_1_data_region_scr = flash_bank_0_data_region + 2;
+  // First 0x20 pages are configured by ROM_EXT. To avoid conflicts, skip over
+  // these pages.
+  flash_bank_1_page_index = flash_info.data_pages + 0x20;
   flash_bank_1_page_index_scr = flash_info.data_pages * 2 - 1;
 
   CHECK_DIF_OK(dif_rv_plic_init(
