@@ -27,6 +27,21 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+_NO_REFRESH_VARIATIONS = {
+    name: {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(name),
+        "slot_spec": variation.slot_spec,
+    }
+    for name, variation in ROM_EXT_VARIATIONS.items()
+}
+
+_NO_REFRESH_VARIATIONS |= {
+    "on_change_dice_mldsa": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_on_change_dice_mldsa",
+        "slot_spec": ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    },
+}
+
 [
     opentitan_test(
         name = "no_refresh_{}_test".format(variation_name),
@@ -39,14 +54,14 @@ package(default_visibility = ["//visibility:public"])
         fpga = fpga_params(
             exit_failure = "Rebooting[\\s\\S]*DICE cert cache miss[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
+            rom_ext = variation["rom_ext"],
         ),
         qemu = qemu_params(
             exit_failure = "Rebooting[\\s\\S]*DICE cert cache miss[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(variation_name),
+            rom_ext = variation["rom_ext"],
         ),
-        slot_spec = variation.slot_spec,
+        slot_spec = variation["slot_spec"],
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/runtime:log",
@@ -56,7 +71,7 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/silicon_creator/lib/drivers:rstmgr",
         ],
     )
-    for variation_name, variation in ROM_EXT_VARIATIONS.items()
+    for variation_name, variation in _NO_REFRESH_VARIATIONS.items()
 ]
 
 _VARIATION_INTEROP_TEST_CASES = [
@@ -249,3 +264,28 @@ DEBUG_MODE_TESTCASES = [
     for testcase in DEBUG_MODE_TESTCASES
     for variation_name, variation in ROM_EXT_VARIATIONS.items()
 ]
+
+opentitan_test(
+    name = "on_demand_refresh_test",
+    srcs = ["on_demand_refresh_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    fpga = fpga_params(
+        testopt_clear_before_test = "True",
+    ),
+    qemu = qemu_params(
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_on_demand_dice_mldsa",
+    ),
+    slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/cert:ram_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)

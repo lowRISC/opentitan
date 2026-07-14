@@ -380,14 +380,17 @@ ROM_EXT_LABELS.extend([
             "use_lld",
         ],
         linker_script = ":ld_slot_virtual",
-        manifest = ":manifest",
+        manifest = param.get("manifest", ":manifest"),
+        slot_spec = ROM_EXT_VARIATIONS[param.get("dice_variation", "dice_x509")].slot_spec,
         deps = [
-            ":rom_ext_dice_x509",
+            ":rom_ext_{}".format(param.get("dice_variation", "dice_x509")),
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:test_owner_{}".format(name),
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
-            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_virtual",
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_virtual".format(
+                param.get("dice_variation", "dice_x509"),
+            ),
         ] + param.get(
             "isfb_module",
             ["//sw/device/silicon_creator/lib/ownership:isfb_null"],
@@ -480,3 +483,13 @@ pkg_filegroup(
     )
     for label in ROM_EXT_LABELS
 ]
+
+manifest(d = {
+    "name": "manifest_on_demand",
+    "identifier": hex(CONST.ROM_EXT),
+    "visibility": ["//visibility:public"],
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
+    "on_demand_dice": "0x739",
+})
