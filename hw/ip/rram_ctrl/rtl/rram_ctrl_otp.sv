@@ -105,8 +105,8 @@ module rram_ctrl_otp
   logic [BusAddrByteW-1:0]    intg_addr_d, intg_addr_q;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 14 -n 12 \
-  //     -s 12309347837 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py --language=sv \
+  //     --seed 99887766 --distance 5 --states 15 --bits 12
   //
   // Hamming distance histogram:
   //
@@ -115,36 +115,37 @@ module rram_ctrl_otp
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||| (29.67%)
-  //  6: |||||||||||||||||||| (32.97%)
-  //  7: ||||||||||| (18.68%)
-  //  8: |||||| (9.89%)
-  //  9: ||| (5.49%)
-  // 10: || (3.30%)
-  // 11: --
+  //  5: |||||||||||||||||| (31.43%)
+  //  6: |||||||||||||||||||| (33.33%)
+  //  7: ||||||||| (16.19%)
+  //  8: |||||| (11.43%)
+  //  9: || (4.76%)
+  // 10: | (1.90%)
+  // 11:  (0.95%)
   // 12: --
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 10
+  // Maximum Hamming distance: 11
   // Minimum Hamming weight: 3
-  // Maximum Hamming weight: 10
+  // Maximum Hamming weight: 9
 
   localparam int StateWidth = 12;
   typedef enum logic [StateWidth-1:0] {
-    StReset        = 12'b010110000111,
-    StInit         = 12'b101111001110,
-    StIdle         = 12'b100001111100,
-    StReadIntg     = 12'b001110110101,
-    StRead         = 12'b111101111011,
-    StIntgCheck    = 12'b100100001001,
-    StReqWords     = 12'b111011010010,
-    StReqIntgWords = 12'b010100010000,
-    StWriteMod     = 12'b010011110001,
-    StIntgMod      = 12'b011001101101,
-    StWrite        = 12'b100000000110,
-    StWriteIntg    = 12'b111100100100,
-    StWaitWrite    = 12'b001100101010,
-    StError        = 12'b110010011101
+    StReset        = 12'b011100001001,
+    StInit         = 12'b010110100100,
+    StIdle         = 12'b111001110010,
+    StReadIntg     = 12'b000011000001,
+    StRead         = 12'b101110111100,
+    StIntgCheck    = 12'b101000011111,
+    StReqWords     = 12'b001011101110,
+    StReqIntgWords = 12'b110011010100,
+    StWriteMod     = 12'b010111111010,
+    StIntgMod      = 12'b000101001100,
+    StWrite        = 12'b100111110111,
+    StWriteIntg    = 12'b110001101111,
+    StWaitWrite    = 12'b001000110001,
+    StReadBack     = 12'b101111001011,
+    StError        = 12'b001110010010
   } state_e;
 
   state_e state_d, state_q;
@@ -476,6 +477,24 @@ module rram_ctrl_otp
         end
       end
 
+      // Read back data word just written and compare its recomputed integrity against intg_q
+      // (the ECC of the written data captured in StWrite) to verify the write succeeded.
+      StReadBack: begin
+        req_o = 1'b1;
+        start = 1'b1;
+        op    = RramOpRead;
+        if (rvalid_i) begin
+          bus_cnt_en = 1'b1;
+          if (done_i) begin
+            state_d     = StIntgCheck;
+            bus_cnt_clr = 1'b1;
+            if ((err_i != '0) && (err_q == NoError)) begin
+              err_d = MacroError;
+            end
+          end
+        end
+      end
+
       // Write rram_word_q back to the RRAM and goto StRead in case of zer_en_q or to StWaitWrite
       // to wait for the RRAM write to have completed.
       StWriteIntg: begin
@@ -503,11 +522,10 @@ module rram_ctrl_otp
         end
       end
 
-      // Wait for the RRAM to finish the current write operation.
+      // Wait for the RRAM to finish the current write operation, then read back to verify.
       StWaitWrite: begin
         if (rram_wr_busy_i == 1'b0) begin
-          state_d = StIdle;
-          valid_d = 1'b1;
+          state_d = StReadBack;
         end
       end
 
@@ -552,7 +570,7 @@ module rram_ctrl_otp
         end
       end
 
-      // Compare intgrity from RRAM (intg_q) with recomputed intgerity from RRAM word (intg_ecc).
+      // Compare integrity from RRAM (intg_q) with recomputed integrity from RRAM word (intg_ecc).
       StIntgCheck: begin
         state_d = StIdle;
         valid_d = 1'b1;
