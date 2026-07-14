@@ -22,7 +22,7 @@
              {
                name: pinmux_fpv
                dut: pinmux_tb
-               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               fusesoc_core: lowrisc:darjeeling_fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
@@ -34,7 +34,7 @@
              {
                name: pinmux_chip_fpv
                dut: pinmux_tb
-               fusesoc_core: lowrisc:systems:pinmux_chip_fpv
+               fusesoc_core: lowrisc:darjeeling_systems:pinmux_chip_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/{top_chip}/ip/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
@@ -45,7 +45,7 @@
              {
                name: rv_plic_fpv
                dut: rv_plic_tb
-               fusesoc_core: lowrisc:darjeeling_fpv:rv_plic_fpv
+               fusesoc_core: lowrisc:darjeeling_ip:rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/{top_chip}/ip_autogen/rv_plic/{sub_flow}/{tool}"
                cov: true
