@@ -53,6 +53,18 @@ SLOTS = [
 USBDFU_RESCUE_TIMEOUT_SECS = 20
 
 TEST_OWNER_CONFIGS = {
+    "on_change_dice_mldsa": {
+        "dice_variation": "dice_mldsa",
+        "manifest": ":manifest",
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+        "owner_defines": [],
+    },
+    "on_demand_dice_mldsa": {
+        "dice_variation": "dice_mldsa",
+        "manifest": ":manifest_on_demand",
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+        "owner_defines": [],
+    },
     "boot_svc_after_wakeup": {
         "owner_defines": ["TEST_OWNER_BOOT_SVC_AFTER_WAKEUP=kHardenedBoolTrue"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
