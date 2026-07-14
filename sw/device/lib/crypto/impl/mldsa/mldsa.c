@@ -13,6 +13,14 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('m', 'l', 'd')
 
+// Keygen app.
+OTBN_DECLARE_APP_SYMBOLS(mldsa87_keygen);
+// Inputs.
+OTBN_DECLARE_SYMBOL_ADDR(mldsa87_keygen, mldsa87_keygen_xi_share0);
+// Outputs.
+OTBN_DECLARE_SYMBOL_ADDR(mldsa87_keygen, mldsa87_keygen_pk);
+OTBN_DECLARE_SYMBOL_ADDR(mldsa87_keygen, mldsa87_keygen_sk);
+
 // Sign app.
 OTBN_DECLARE_APP_SYMBOLS(mldsa87_sign);
 // Inputs.
@@ -34,8 +42,43 @@ OTBN_DECLARE_SYMBOL_ADDR(mldsa87_verify, mldsa87_verify_mu);
 OTBN_DECLARE_SYMBOL_ADDR(mldsa87_verify, mldsa87_verify_res_ok);
 OTBN_DECLARE_SYMBOL_ADDR(mldsa87_verify, mldsa87_verify_res_c_tilde_prime);
 
+/**
+ * Internal modes.
+ */
 enum {
-  kMldsa87AbridgedMode = 0x29d8e5c9,
+  // Keygen.
+  kMldsa87KeygenRndMode = 0x5514edb7,
+  kMldsa87KeygenDetMode = 0xfaacd725,
+  // Sign.
+  kMldsa87SignAbridgedMode = 0x29d8e5c9,
+};
+
+/**
+ * Variable sizes.
+ */
+enum {
+  kMldsa87CTildePrimeBytes = 64,
+  kMldsa87CTildePrimeWords = kMldsa87CTildePrimeBytes / sizeof(uint32_t),
+
+  kMldsa87CTildeBytes = 64,
+  kMldsa87CTildeWords = kMldsa87CTildeBytes / sizeof(uint32_t),
+
+  kMldsa87ZBytes = 4480,
+  kMldsa87ZWords = kMldsa87ZBytes / sizeof(uint32_t),
+
+  kMldsa87HBytes = 83 + 1,
+  kMldsa87HWords = kMldsa87HBytes / sizeof(uint32_t),
+
+  kMldsa87SigBytes = 4627 + 1,
+  kMldsa87SigWords = kMldsa87SigBytes / sizeof(uint32_t),
+};
+
+/**
+ * Verification status codes.
+ */
+enum {
+  kMldsa87StatusOk = 0x7baf73d2,
+  kMldsa87StatusFail = 0xadf1aebd,
 };
 
 static status_t read_signature(uint32_t *sig) {
@@ -56,6 +99,58 @@ static status_t read_signature(uint32_t *sig) {
 
   // Clear the Z vector.
   HARDENED_TRY(otbn_dmem_set(kMldsa87ZWords, 0, kOtbnZ));
+
+  return OTCRYPTO_OK;
+}
+
+status_t mldsa87_keygen_internal_start(void) {
+  // Load the ML-DSA-87 keygen app.
+  const otbn_app_t kOtbnAppMldsa87Keygen = OTBN_APP_T_INIT(mldsa87_keygen);
+  HARDENED_TRY(otbn_load_app(kOtbnAppMldsa87Keygen));
+
+  // Write the random mode flag to DMEM.
+  uint32_t mode = kMldsa87KeygenRndMode;
+  const otbn_addr_t kOtbnMode =
+      OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_mode);
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+
+  return otbn_execute();
+}
+
+status_t mldsa87_det_keygen_internal_start(const otcrypto_blinded_key_t *xi) {
+  // Load the ML-DSA-87 keygen app and write the seed.
+  const otbn_app_t kOtbnAppMldsa87Keygen = OTBN_APP_T_INIT(mldsa87_keygen);
+  HARDENED_TRY(otbn_load_app(kOtbnAppMldsa87Keygen));
+
+  // Write the deterministic mode flag to DMEM.
+  uint32_t mode = kMldsa87KeygenDetMode;
+  const otbn_addr_t kOtbnMode =
+      OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_mode);
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));
+
+  // Write both shares of the seed to DMEM.
+  const otbn_addr_t kOtbnXi =
+      OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_xi_share0);
+  HARDENED_TRY(otbn_dmem_write(xi->keyblob_length / sizeof(uint32_t),
+                               xi->keyblob, kOtbnXi));
+
+  return otbn_execute();
+}
+
+status_t mldsa87_keygen_internal_finalize(otcrypto_unblinded_key_t *public_key,
+                                          otcrypto_blinded_key_t *secret_key) {
+  // Stall until the OTBN finishes.
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read out public and secret key.
+  const otbn_addr_t kOtbnPk =
+      OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_pk);
+  HARDENED_TRY(otbn_dmem_read(public_key->key_length / sizeof(uint32_t),
+                              kOtbnPk, public_key->key));
+  const otbn_addr_t kOtbnSk =
+      OTBN_ADDR_T_INIT(mldsa87_keygen, mldsa87_keygen_sk);
+  HARDENED_TRY(otbn_dmem_read(secret_key->keyblob_length / sizeof(uint32_t),
+                              kOtbnSk, secret_key->keyblob));
 
   return OTCRYPTO_OK;
 }
@@ -102,7 +197,7 @@ status_t mldsa87_sign_internal_finalize(otcrypto_word32_buf_t *signature,
    * the completion of the second sign the entire DMEM is wiped.
    */
 
-  uint32_t mode = kMldsa87AbridgedMode;
+  uint32_t mode = kMldsa87SignAbridgedMode;
   const otbn_addr_t kOtbnMode =
       OTBN_ADDR_T_INIT(mldsa87_sign, mldsa87_sign_mode);
   HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnMode));

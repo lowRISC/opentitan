@@ -16,6 +16,7 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:status",
+        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen",
         "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign",
         "//sw/otbn/crypto/mldsa87/verify:mldsa87_verify",
     ],

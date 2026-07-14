@@ -15,31 +15,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * Size of c_tilde_prime, signature equality check value (in 32-bit words).
-   */
-  kMldsa87CTildePrimeWords = 16,
-
-  kMldsa87CTildeBytes = 64,
-  kMldsa87CTildeWords = kMldsa87CTildeBytes / sizeof(uint32_t),
-
-  kMldsa87ZBytes = 4480,
-  kMldsa87ZWords = kMldsa87ZBytes / sizeof(uint32_t),
-
-  kMldsa87HBytes = 83 + 1,
-  kMldsa87HWords = kMldsa87HBytes / sizeof(uint32_t),
-
-  kMldsa87SigBytes = 4627 + 1,
-  kMldsa87SigWords = kMldsa87SigBytes / sizeof(uint32_t),
-
-  /**
-   * 32-bit success and error indicators.
-   */
-  kMldsa87StatusOk = 0x7baf73d2,
-  kMldsa87StatusFail = 0xadf1aebd,
-};
-
 /**
  * Redundancy modes for ML-DSA sign.
  */
@@ -53,6 +28,34 @@ typedef enum mldsa_sign_redundancy {
    */
   kMldsa87DoubleSign = 0xfaacd725,
 } mldsa_sign_redundancy_t;
+
+/**
+ * Start an async ML-DSA-87 keygen generation on the OTBN.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t mldsa87_keygen_internal_start(void);
+
+/**
+ * Start an async ML-DSA-87 keygen generation (deterministic seed) on the OTBN.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t mldsa87_det_keygen_internal_start(const otcrypto_blinded_key_t *xi);
+
+/**
+ * Finish an async ML-DSA-87 keygen generation on the OTBN.
+ *
+ * Blocks until OTBN is idle.
+ *
+ * @return Result of the operation (OK or error).
+ */
+status_t mldsa87_keygen_internal_finalize(otcrypto_unblinded_key_t *public_key,
+                                          otcrypto_blinded_key_t *secret_key);
 
 /**
  * Start an async ML-DSA-87 signature generation on the OTBN.
