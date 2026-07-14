@@ -36,10 +36,12 @@ rom_error_t dice_storage_flush_page(const dice_storage_page_t *page) {
                                page);
 }
 
-rom_error_t dice_storage_get_cdi_0_id(uint64_t *cdi_0_id) {
+rom_error_t dice_storage_get_key_id(dice_key_id_index_t index,
+                                    uint64_t *key_id) {
   return flash_ctrl_info_read_zeros_on_read_error(
-      &kFlashCtrlInfoPageDiceCerts, offsetof(dice_storage_page_t, cdi_0_key_id),
-      sizeof(uint64_t) / sizeof(uint32_t), cdi_0_id);
+      &kFlashCtrlInfoPageDiceCerts,
+      offsetof(dice_storage_page_t, cdi_key_ids) + index * sizeof(uint64_t),
+      sizeof(uint64_t) / sizeof(uint32_t), key_id);
 }
 
 void dice_storage_slot_init(const dice_storage_slot_t *layout,

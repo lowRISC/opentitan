@@ -56,18 +56,27 @@ typedef struct dice_storage_slot {
   }
 
 /**
+ * DICE key ID indexes.
+ *
+ * Note that the CDI_0 index is at index 1, which is physically closer to the
+ * digest at the bottom.
+ */
+typedef enum dice_key_id_index {
+  kDicePageKeyIdxCdi1 = 0,
+  kDicePageKeyIdxCdi0 = 1,
+} dice_key_id_index_t;
+
+/**
  * The flash page schema for holding DICE certificates.
  */
 typedef struct dice_storage_page {
   uint8_t data[kDiceStoragePageDataSize];
-  uint64_t cdi_1_key_id;
-  uint64_t cdi_0_key_id;
+  uint64_t cdi_key_ids[2];
   hmac_digest_t digest;
 } dice_storage_page_t;
 
 OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, data, 0);
-OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, cdi_1_key_id, 2000);
-OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, cdi_0_key_id, 2008);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, cdi_key_ids, 2000);
 OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, digest, 2016);
 OT_ASSERT_SIZE(dice_storage_page_t, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
 
@@ -175,13 +184,15 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_storage_flush_page(const dice_storage_page_t *page);
 
 /**
- * Read the CDI_0 key ID from flash.
+ * Read a DICE key ID from flash.
  *
- * @param cdi_0_id Destination buffer.
+ * @param index Key ID index (CDI_0 or CDI_1).
+ * @param key_id Destination buffer.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_storage_get_cdi_0_id(uint64_t *cdi_0_id);
+rom_error_t dice_storage_get_key_id(dice_key_id_index_t index,
+                                    uint64_t *key_id);
 
 /**
  * Initialize a slot in the page buffer with its default header.

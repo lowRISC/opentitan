@@ -88,7 +88,8 @@ rom_error_t dice_chain_attestation_creator(
   uint64_t expected_cdi0_id = read_64(static_dice_cdi_0.cdi_0_pubkey_id.digest);
 
   uint64_t cached_cdi0_id;
-  RETURN_IF_ERROR(dice_storage_get_cdi_0_id(&cached_cdi0_id));
+  RETURN_IF_ERROR(
+      dice_storage_get_key_id(kDicePageKeyIdxCdi0, &cached_cdi0_id));
 
   bool cache_valid = cached_cdi0_id == expected_cdi0_id;
 
@@ -173,8 +174,8 @@ rom_error_t dice_chain_attestation_owner(
 
   uint64_t expected_cdi1_id = read_64(subject_pubkey_id.digest);
 
-  bool cache_valid = (static_dice_cdi_0.cert_size == 0 &&
-                      dice_page.cdi_1_key_id == expected_cdi1_id);
+  bool cache_valid =
+      dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] == expected_cdi1_id;
 
   if (!cache_valid) {
     dbg_puts("info: DICE cert cache miss; updating\r\n");
@@ -186,7 +187,7 @@ rom_error_t dice_chain_attestation_owner(
              static_dice_cdi_0.cert_data, static_dice_cdi_0.cert_size);
       dice_storage_set_cert_size(&kDiceStorageCdi0Ecdsa,
                                  static_dice_cdi_0.cert_size, &dice_page);
-      dice_page.cdi_0_key_id =
+      dice_page.cdi_key_ids[kDicePageKeyIdxCdi0] =
           read_64(static_dice_cdi_0.cdi_0_pubkey_id.digest);
     }
 
@@ -202,7 +203,7 @@ rom_error_t dice_chain_attestation_owner(
         &generated_cdi1_size));
     dice_storage_set_cert_size(&kDiceStorageCdi1Ecdsa, generated_cdi1_size,
                                &dice_page);
-    dice_page.cdi_1_key_id = expected_cdi1_id;
+    dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] = expected_cdi1_id;
 
     // Calculate and update digest.
     dice_storage_digest_page(&dice_page, &dice_page.digest);

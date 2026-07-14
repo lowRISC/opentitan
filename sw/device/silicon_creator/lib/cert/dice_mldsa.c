@@ -572,7 +572,7 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
              static_dice_cdi_0.cert_data, static_dice_cdi_0.cert_size);
       dice_storage_set_cert_size(&kDiceStorageCdi0Ecdsa,
                                  static_dice_cdi_0.cert_size, &dice_page);
-      dice_page.cdi_0_key_id =
+      dice_page.cdi_key_ids[kDicePageKeyIdxCdi0] =
           read_64(static_dice_cdi_0.cdi_0_pubkey_id.digest);
     }
 
@@ -581,7 +581,7 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
            cdi1_ecdsa_cert_buf, cdi1_ecdsa_size);
     dice_storage_set_cert_size(&kDiceStorageCdi1Ecdsa, cdi1_ecdsa_size,
                                &dice_page);
-    dice_page.cdi_1_key_id = read_64(cdi1_ecdsa_id.digest);
+    dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] = read_64(cdi1_ecdsa_id.digest);
 
     dice_storage_digest_page(&dice_page, &dice_page.digest);
     HARDENED_RETURN_IF_ERROR(dice_storage_flush_page(&dice_page));
