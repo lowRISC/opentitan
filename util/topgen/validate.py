@@ -338,6 +338,8 @@ module_optional = {
 
 module_added = {
     'clock_connections': ['g', 'generated clock connections'],
+    'clock_connections_secondary':
+    ['g', 'generated split IP secondary-partition clock connections'],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
     'inter_signal_list': ['l', 'generated signal information'],
     'param_list': ['l', 'list of parameters'],
@@ -430,6 +432,7 @@ alert_optional = {
     'lpg_name': ['s', 'the low power group of the alert'],
     'lpg_idx': ['d', 'the index in the lpg group'],
     'type': ['s', 'should contain "alert"'],
+    'partition': ['s', "for a split IP, the owning partition of this alert"],
 }
 alert_added = {}
 
@@ -447,6 +450,7 @@ interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
     'type': ['s', 'should contain "interrupt"'],
     'plic': ['s', 'controller for this interrupt'],
+    'partition': ['s', "for a split IP, the owning partition of this interrupt"],
 }
 interrupt_added = {}
 
@@ -1085,52 +1089,68 @@ def validate_reset(top: ConfigT,
     # If value is a string, the module can only have ONE domain
     # If value is a dict, it must have the keys name / domain, and the
     # value of domain must match that defined for the module.
-    for port, reset in module['reset_connections'].items():
-        if isinstance(reset, str):
-            module['reset_connections'][port] = {}
-            module['reset_connections'][port]['name'] = reset
-            module['reset_connections'][port]['domain'] = top['power']['default']
+    def check_reset_connections(reset_connections, reset_signals):
+        err = 0
+        for port, reset in reset_connections.items():
+            if isinstance(reset, str):
+                reset_connections[port] = {}
+                reset_connections[port]['name'] = reset
+                reset_connections[port]['domain'] = top['power']['default']
 
-        elif isinstance(reset, dict):
-            error += check_keys(reset, reset_connection_required,
-                                reset_connection_optional,
-                                reset_connection_added,
-                                'dict structure for reset connections')
+            elif isinstance(reset, dict):
+                err += check_keys(reset, reset_connection_required,
+                                  reset_connection_optional,
+                                  reset_connection_added,
+                                  'dict structure for reset connections')
 
-            if reset['domain'] not in top['power']['domains']:
-                error += 1
-                log.error(f"domain {reset['domain']} defined for reset "
-                          f"{reset['name']} is not a domain of {top['name']}")
+                if reset['domain'] not in top['power']['domains']:
+                    err += 1
+                    log.error(f"domain {reset['domain']} defined for reset "
+                              f"{reset['name']} is not a domain of {top['name']}")
 
-        else:
-            log.error(f"specified connection for reset port {port} of module "
-                      f"{module['name']} is of type {type(reset)}, but must be "
-                      f"of type string or dict")
+            else:
+                log.error(f"specified connection for reset port {port} of "
+                          f"module {module['name']} is of type {type(reset)}, "
+                          "but must be of type string or dict")
 
-    # Check if the reset connections are fully populated
-    if len(module['reset_connections']) != len(reset_signals):
-        error += 1
-        log.error(f"{prefix} {name} mismatched number of reset ports and nets")
+        # Check if the reset connections are fully populated
+        if len(reset_connections) != len(reset_signals):
+            err += 1
+            log.error(f"{prefix} {name} mismatched number of reset ports "
+                      "and nets")
 
-    missing_port = [
-        port for port in module['reset_connections'].keys()
-        if port not in reset_signals
-    ]
+        missing_port = [
+            port for port in reset_connections.keys()
+            if port not in reset_signals
+        ]
 
-    if missing_port:
-        error += 1
-        log.error(f"{prefix} {name} Following reset ports do not exist:")
-        [log.error(f"{port}") for port in missing_port]
+        if missing_port:
+            err += 1
+            log.error(f"{prefix} {name} Following reset ports do not exist:")
+            [log.error(f"{port}") for port in missing_port]
 
-    missing_net = [
-        net['name'] for net in module['reset_connections'].values()
-        if net['name'] not in reset_nets + unmanaged_reset_nets
-    ]
+        missing_net = [
+            net['name'] for net in reset_connections.values()
+            if net['name'] not in reset_nets + unmanaged_reset_nets
+        ]
 
-    if missing_net:
-        error += 1
-        log.error(f"{prefix} {name} Following reset nets do not exist:")
-        [log.error(f"{net}") for net in missing_net]
+        if missing_net:
+            err += 1
+            log.error(f"{prefix} {name} Following reset nets do not exist:")
+            [log.error(f"{net}") for net in missing_net]
+
+        return err
+
+    error += check_reset_connections(module['reset_connections'],
+                                     reset_signals)
+
+    # For split IPs, also validate the secondary partition's reset
+    # connections against the secondary clocking's reset signals.
+    if isinstance(inst, IpBlock) and inst.clocking_secondary is not None and \
+            'reset_connections_secondary' in module:
+        error += check_reset_connections(
+            module['reset_connections_secondary'],
+            inst.clocking_secondary.reset_signals())
 
     return error
 
@@ -1147,6 +1167,9 @@ def validate_clock(top: ConfigT,
     # Gather inst port list
     error = 0
 
+    # Note: `top` here is actually the module instance dict (see call site).
+    module = top
+
     # Handle either an IpBlock (generated by reggen) or an OrderedDict
     # (generated by topgen for a crossbar)
     if isinstance(inst, IpBlock):
@@ -1157,30 +1180,46 @@ def validate_clock(top: ConfigT,
         clock_signals = ([inst.get('clock_primary', 'rst_ni')] +
                          inst.get('other_clock_list', []))
 
-    if len(top['clock_srcs']) != len(clock_signals):
-        error += 1
-        log.error(f"{prefix} {name} mismatched number of clock ports and nets")
+    def check_clock_srcs(clock_srcs_map, clock_signals):
+        err = 0
+        if len(clock_srcs_map) != len(clock_signals):
+            err += 1
+            log.error(f"{prefix} {name} mismatched number of clock ports "
+                      "and nets")
 
-    missing_port = [
-        port for port in top['clock_srcs'].keys() if port not in clock_signals
-    ]
+        missing_port = [
+            port for port in clock_srcs_map.keys()
+            if port not in clock_signals
+        ]
 
-    if missing_port:
-        error += 1
-        log.error(f"{prefix} {name} Following clock ports do not exist:")
-        [log.error(f"{port}") for port in missing_port]
+        if missing_port:
+            err += 1
+            log.error(f"{prefix} {name} Following clock ports do not exist:")
+            [log.error(f"{port}") for port in missing_port]
 
-    missing_net = []
-    for port, net in top['clock_srcs'].items():
-        net_name = net['clock'] if isinstance(net, Dict) else net
+        missing_net = []
+        for port, net in clock_srcs_map.items():
+            net_name = net['clock'] if isinstance(net, Dict) else net
 
-        if net_name not in clock_srcs and net_name not in unmanaged_clock_srcs:
-            missing_net.append(net)
+            if net_name not in clock_srcs and \
+                    net_name not in unmanaged_clock_srcs:
+                missing_net.append(net)
 
-    if missing_net:
-        error += 1
-        log.error(f"{prefix} {name} Following clock nets do not exist:")
-        [log.error(f"{net}") for net in missing_net]
+        if missing_net:
+            err += 1
+            log.error(f"{prefix} {name} Following clock nets do not exist:")
+            [log.error(f"{net}") for net in missing_net]
+
+        return err
+
+    error += check_clock_srcs(module['clock_srcs'], clock_signals)
+
+    # For split IPs, also validate the secondary partition's clock sources
+    # against the secondary clocking's clock signals.
+    if isinstance(inst, IpBlock) and inst.clocking_secondary is not None and \
+            'clock_srcs_secondary' in module:
+        error += check_clock_srcs(module['clock_srcs_secondary'],
+                                  inst.clocking_secondary.clock_signals(False))
 
     return error
 

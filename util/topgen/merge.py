@@ -743,33 +743,21 @@ def extract_clocks(top: ConfigT):
 
     exported_clks = OrderedDict()
 
-    for ep in top['module'] + top['xbar']:
+    def elaborate_clock_srcs(ep_name, clock_srcs, ep_grp, ep_domain,
+                             export_if):
+        '''Build the clock connections for one partition of an endpoint.
+
+        Adds the endpoint's clocks to their groups, records exported clocks,
+        and returns the {port: net} clock_connections dict. Used once per
+        (non-split) endpoint and, for split IPs, once per partition with that
+        partition's clock_srcs / clock_group / power domain.
+        '''
         clock_connections = OrderedDict()
 
-        # Ensure each module has a default case
-        export_if = ep.get('clock_reset_export', [])
-
-        # The clock group attribute in an end point sets the default
-        # group for every clock in that end point.
-        #
-        # However, the end point can also override specific clocks to
-        # different groups inside clock_srcs.  This is generally not
-        # recommended as it is better to stay consistent.  However
-        # if needed, the method is available.
-        ep_grp = ep.get('clock_group', 'secure')
-        # Write value to dict in case it was unset before
-        ep['clock_group'] = ep_grp
-
-        # end point names and clocks
-        ep_name = ep['name']
-
-        # end point power domain
-        ep_domain = ep.get('domain', top['power']['default'])
-
-        # prefixes for all clocks of this endpoint
+        # prefixes for all clocks of this endpoint partition
         prefixes = lib.get_clock_prefixes(top, ep_domain)
 
-        for port, clk in ep['clock_srcs'].items():
+        for port, clk in clock_srcs.items():
             group_name, src_name = _get_clock_group_name(clk, ep_grp)
 
             if is_unmanaged_clock(top, src_name):
@@ -819,8 +807,42 @@ def extract_clocks(top: ConfigT):
                     # append clocks
                     exported_clks[intf][ep_name].append(name)
 
+        return clock_connections
+
+    for ep in top['module'] + top['xbar']:
+        # Ensure each module has a default case
+        export_if = ep.get('clock_reset_export', [])
+
+        # The clock group attribute in an end point sets the default
+        # group for every clock in that end point.
+        #
+        # However, the end point can also override specific clocks to
+        # different groups inside clock_srcs.  This is generally not
+        # recommended as it is better to stay consistent.  However
+        # if needed, the method is available.
+        ep_grp = ep.get('clock_group', 'secure')
+        # Write value to dict in case it was unset before
+        ep['clock_group'] = ep_grp
+
+        # end point names and clocks
+        ep_name = ep['name']
+
+        # end point power domain
+        ep_domain = ep.get('domain', top['power']['default'])
+
         # Add to endpoint structure
-        ep['clock_connections'] = clock_connections
+        ep['clock_connections'] = elaborate_clock_srcs(
+            ep_name, ep['clock_srcs'], ep_grp, ep_domain, export_if)
+
+        # Split IP: elaborate the secondary partition's clocks into its own
+        # power domain. normalize_partition_connections only sets
+        # clock_srcs_secondary when the secondary partition is clocked.
+        if 'clock_srcs_secondary' in ep:
+            ep_grp_sec = ep.get('clock_group_secondary', 'secure')
+            ep['clock_group_secondary'] = ep_grp_sec
+            ep['clock_connections_secondary'] = elaborate_clock_srcs(
+                ep_name, ep['clock_srcs_secondary'], ep_grp_sec,
+                ep['domain_secondary'], export_if)
 
     # add entry to top level json
     top['exported_clks'] = exported_clks
@@ -873,9 +895,14 @@ def connect_clocks(top: ConfigT, name_to_block: IpBlocksT):
         # Walk through the clocking items for the block to find the one that
         # defines each of the ports.
         idle_signal = None
+        # For split IPs a hint clock may belong to the secondary partition, so
+        # search both partitions' clocking items.
+        clocking_items = list(ip_block.clocking.items)
+        if ip_block.clocking_secondary is not None:
+            clocking_items += list(ip_block.clocking_secondary.items)
         for ep_name, ep_port in sig.endpoints:
             ep_idle = None
-            for item in ip_block.clocking.items:
+            for item in clocking_items:
                 if item.clock != ep_port:
                     continue
                 if item.idle is None:
@@ -958,6 +985,17 @@ def amend_resets(top: ConfigT,
                 if is_unmanaged_reset(top, reset['name']):
                     continue
                 top_resets.add_reset_domain(reset['name'], reset['domain'])
+
+        # Split IP: register the reset domains of the secondary partition,
+        # whose resets ride on its clocking_secondary items.
+        if block.clocking_secondary is not None and \
+                'reset_connections_secondary' in module:
+            for r in block.clocking_secondary.items:
+                if r.reset:
+                    reset = module['reset_connections_secondary'][r.reset]
+                    if is_unmanaged_reset(top, reset['name']):
+                        continue
+                    top_resets.add_reset_domain(reset['name'], reset['domain'])
 
         # This code is here to ensure if amend_clocks/resets switched order
         # everything would still work

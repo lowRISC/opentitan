@@ -606,9 +606,12 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     # sw controlled resets: dict indexed by device containing the clock
     sw_rsts = OrderedDict([(r.name, r.clock.name)
                            for r in reset_obj.get_sw_resets()])
-    # rst_ni
+    # rst_ni (from the primary partition; a connection may be a bare net-name
+    # string or a {name, domain} dict).
     rstmgr = find_module(top["module"], "rstmgr")
-    rst_ni = rstmgr["reset_connections"]
+    rst_ni_conn = rstmgr["reset_connections"]["rst_ni"]
+    rst_ni_name = (rst_ni_conn["name"]
+                   if isinstance(rst_ni_conn, dict) else rst_ni_conn)
 
     # leaf resets
     leaf_rsts = reset_obj.get_generated_resets()
@@ -629,7 +632,7 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "sw_rsts": sw_rsts,
         "output_rsts": output_rsts,
         "leaf_rsts": leaf_rsts,
-        "rst_ni": rst_ni['rst_ni']['name'],
+        "rst_ni": rst_ni_name,
         "export_rsts": top["exported_rsts"],
         "with_alert_handler": with_alert_handler,
     })
