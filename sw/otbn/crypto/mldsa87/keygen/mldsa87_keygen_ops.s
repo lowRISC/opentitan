@@ -343,10 +343,6 @@ encode_t:
  * @param[in] x8: DMEM address of the second Boolean share of K.
  */
 hash_seed:
-  /* Xi[32] = K = 8, Xi[33] = L = 7. */
-  li x9, 0x00000708
-  sw x9, 32(x2)
-
   /* Squeeze buffer WDR pointers. */
   addi x9, x0, 29
   addi x10, x0, 30
