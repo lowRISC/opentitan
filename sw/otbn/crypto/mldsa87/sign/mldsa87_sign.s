@@ -51,50 +51,57 @@ mldsa87_sign:
 
   /* Load the addresses of the mode and RND string. */
   la x5, mldsa87_sign_mode
-  la x6, mldsa87_sign_rnd
+  la x6, mldsa87_sign_rnd_share0
+  la x7, mldsa87_sign_rnd_share1
 
   /* Check if the abridged mode is selected and jump directly into the
      rejection loop. */
-  lw x7, 0(x5)
-  beq x2, x7, _rej_loop
+  lw x8, 0(x5)
+  beq x2, x8, _rej_loop
 
   /* Save the instruction count and set the expected number of instructions
      for the random mode branch. */
-  csrrs x8, INSN_CNT, x0
-  addi x9, x0, 5
+  csrrs x9, INSN_CNT, x0
+  addi x10, x0, 8
 
-  /* Sample 32 byte of EDN1 randomness and store it to DMEM. Regardless of
-     the selected mode (random or deterministic) this is always executed. */
+  /* Sample 32 bytes (two shares) of EDN1 randomness and store it to DMEM.
+     Regardless of the selected mode (random or deterministic) this is always
+     executed. */
   bn.wsrr w0, RND
   bn.sid x0, 0(x6)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.wsrr w0, RND
+  bn.sid x0, 0(x7)
 
   /* If the selected mode is random, jump to the computation of RHO_PRIME,
      otherwise set the RND string to 0. */
-  beq x3, x7, _compute_rho_prime
-  bne x4, x7, _fault /* sanity check */
+  beq x3, x8, _compute_rho_prime
+  bne x4, x8, _fault /* sanity check */
 
   /* Set RND to 0 in DMEM. */
   bn.xor w0, w0, w0
   bn.sid x0, 0(x6)
+  bn.sid x0, 0(x7)
 
   /* Set the expected number of instructions for the deterministic branch. */
-  addi x9, x0, 9
+  addi x10, x0, 13
 
 _compute_rho_prime:
 
   /* Verify that the random or deterministic branch has run for the correct
      number of instructions. */
   csrrs x2, INSN_CNT, x0
-  sub x2, x2, x8
-  bne x2, x9, _fault
+  sub x2, x2, x9
+  bne x2, x10, _fault
 
   /* Calculate RHO_PRIME = H(K || RND || MU). */
   la x2, mldsa87_sign_sk_k_share0
   la x3, mldsa87_sign_sk_k_share1
-  la x4, mldsa87_sign_rnd
-  la x5, mldsa87_sign_mu
-  la x6, mldsa87_sign_var_rho_prime_share0
-  la x7, mldsa87_sign_var_rho_prime_share1
+  la x4, mldsa87_sign_rnd_share0
+  la x5, mldsa87_sign_rnd_share1
+  la x6, mldsa87_sign_mu
+  la x7, mldsa87_sign_var_rho_prime_share0
+  la x8, mldsa87_sign_var_rho_prime_share1
   jal x1, compute_rho_prime
 
   /* Set KAPPA to 0. */
@@ -214,6 +221,7 @@ _rejection_check_increment_kappa:
   sw x3, 0(x2)
   xor x0, x0, x1 /* Pop address from call stack */
   jal x0, _rej_loop
+  unimp
 _fault:
   unimp
   unimp

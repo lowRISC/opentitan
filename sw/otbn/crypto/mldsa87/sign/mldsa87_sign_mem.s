@@ -21,9 +21,12 @@ mldsa87_sign_mode:
  * Randomness
  */
 
-.globl mldsa87_sign_rnd
+.globl mldsa87_sign_rnd_share0
+.globl mldsa87_sign_rnd_share1
 
-mldsa87_sign_rnd:
+mldsa87_sign_rnd_share0:
+.zero 32
+mldsa87_sign_rnd_share1:
 .zero 32
 
 /*
