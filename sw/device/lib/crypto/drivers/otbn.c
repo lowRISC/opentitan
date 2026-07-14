@@ -272,6 +272,17 @@ status_t otbn_busy_wait_for_done(void) {
   // If OTBN is idle (not locked), then return a recoverable error.
   if (launder32(status) == kOtbnStatusIdle) {
     HARDENED_CHECK_EQ(status, kOtbnStatusIdle);
+#ifdef FIPS_MODE
+    // If unimp (ILLEGAL_INSN) executed (such as for PCT), lock cryptolib state.
+    if ((err_bits & (1u << 3)) != 0) {
+      crypto_state_t state;
+      if (status_ok(read_state(&state))) {
+        state.locked_state = kHardenedBoolTrue;
+        HARDENED_TRY(store_state(&state));
+      }
+      return OTCRYPTO_FATAL_ERR;
+    }
+#endif
     return OTCRYPTO_RECOV_ERR;
   }
 
