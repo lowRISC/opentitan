@@ -106,6 +106,9 @@ def _manifest_impl(ctx):
     if ctx.attr.manifest_base_address:
         mf["manifest_base_address"] = ctx.attr.manifest_base_address
 
+    if ctx.attr.on_demand_dice:
+        mf["on_demand_dice"] = ctx.attr.on_demand_dice
+
     # The binding_value, if provided, must be exactly 8 words.
     if ctx.attr.binding_value:
         if len(ctx.attr.binding_value) != 8:
@@ -255,6 +258,7 @@ _manifest = rule(
         "life_cycle_state": attr.string(doc = "Usage constraint for life cycle status as a 0x-prefixed hex-encoded string"),
         "address_translation": attr.string(doc = "Whether this image uses address translation as a 0x-prefixed hex-encoded string"),
         "manifest_base_address": attr.string(doc = "Manifest base address as a 0x-prefixed hex-encoded string"),
+        "on_demand_dice": attr.string(doc = "Whether to use on-demand DICE, only effective for ROM_EXT's manifest"),
         "identifier": attr.string(doc = "Manifest identifier as a 0x-prefixed hex-encoded string"),
         "manifest_version_major": attr.string(doc = "Manifest major version as a 0x-prefixed hex-encoded string"),
         "manifest_version_minor": attr.string(doc = "Manifest minor version as a 0x-prefixed hex-encoded string"),

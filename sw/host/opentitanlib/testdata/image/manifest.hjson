@@ -102,6 +102,10 @@
    */
   pub_key: "0xA54D06061A27A2F6AE70F6A1FA51A840F62B64864E20DD713F633420802359DA7AD61881B2B7A6C4B57D4BBD84966168CA1F1C2FC843940BA18EAA436A12E3E1"
   /**
+   * DICE certificate refresh mode.
+   */
+  on_demand_dice: "0xa5a5a5a5"
+  /**
    * Address translation (hardened boolean).
    */
   address_translation: "0x00000739"

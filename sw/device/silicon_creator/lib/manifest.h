@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -245,7 +246,17 @@ typedef struct manifest {
    * When allocating reserved bytes, please allocate from the end of this field
    * to allow for the potential size expansion of the public key field above.
    */
-  uint32_t reserved[39];
+  uint32_t reserved[38];
+  /**
+   * DICE certificate refresh mode.
+   *
+   * If this field is `kHardenedBoolTrue`, DICE operates in On-Demand mode.
+   * Otherwise (including default `kHardenedBoolFalse` or legacy `0xa5a5a5a5`),
+   * the stage operates in On-Change mode.
+   *
+   * The field is only effective in ROM_EXT's manifest.
+   */
+  hardened_bool_t on_demand_dice;
   /**
    * Address where the manifest is expected to be loaded.
    */
@@ -337,6 +348,7 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_public_key, 496);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved, 656);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, on_demand_dice, 808);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_base_address, 812);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
