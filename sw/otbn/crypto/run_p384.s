@@ -189,6 +189,11 @@ keypair_random:
        dmem[y] <= (d*G).y */
   jal       x1, p384_base_mult_checked
 
+.ifdef FIPS_MODE
+  /* Perform Pairwise Consistency Test (PCT) in FIPS mode: d*G == Q */
+  jal       x1, p384_pct_verify
+.endif
+
   /* Copy the secret key shares into Ibex-visible memory.
        dmem[d0_io] <= dmem[d0]
        dmem[d1_io] <= dmem[d1] */
@@ -404,7 +409,81 @@ keypair_from_seed:
        dmem[y] <= (d*G).y */
   jal       x1, p384_base_mult_checked
 
+.ifdef FIPS_MODE
+  /* Perform Pairwise Consistency Test (PCT) in FIPS mode: d*G == Q */
+  jal       x1, p384_pct_verify
+.endif
+
   ecall
+
+.ifdef FIPS_MODE
+/**
+ * Perform Pairwise Consistency Test (PCT) on OTBN for P-384.
+ * Re-computes d*G and verifies it matches original (x, y).
+ */
+p384_pct_verify:
+  /* Save the first-pass computed public key from DMEM (x, y) into DMEM scratch space (pct_x, pct_y). */
+  la       x13, x
+  la       x14, pct_x
+  li       x10, 20
+  bn.lid   x10++, 0(x13)
+  bn.lid   x10, 32(x13)
+  li       x10, 20
+  bn.sid   x10++, 0(x14)
+  bn.sid   x10, 32(x14)
+
+  la       x13, y
+  la       x14, pct_y
+  li       x10, 22
+  bn.lid   x10++, 0(x13)
+  bn.lid   x10, 32(x13)
+  li       x10, 22
+  bn.sid   x10++, 0(x14)
+  bn.sid   x10, 32(x14)
+
+  /* Re-run base point multiplication: computes (d*G).x -> dmem[x], (d*G).y -> dmem[y] */
+  jal      x1, p384_base_mult_checked
+
+  /* Load original public key from DMEM scratch space (pct_x, pct_y) into w20..w23. */
+  la       x13, pct_x
+  la       x14, pct_y
+  li       x10, 20
+  bn.lid   x10++, 0(x13)
+  bn.lid   x10, 32(x13)
+  li       x10, 22
+  bn.lid   x10++, 0(x14)
+  bn.lid   x10, 32(x14)
+
+  /* Load second-pass computed public key from dmem[x], dmem[y] into w24..w27. */
+  la       x13, x
+  la       x14, y
+  li       x10, 24
+  bn.lid   x10++, 0(x13)
+  bn.lid   x10, 32(x13)
+  li       x10, 26
+  bn.lid   x10++, 0(x14)
+  bn.lid   x10, 32(x14)
+
+  /* Compare original (w20-w23) vs re-computed (w24-w27). */
+  bn.xor   w20, w20, w24
+  bn.xor   w21, w21, w25
+  bn.xor   w22, w22, w26
+  bn.xor   w23, w23, w27
+  bn.or    w20, w20, w21
+  bn.or    w22, w22, w23
+  bn.or    w20, w20, w22
+
+  /* Check that difference w20 is zero. */
+  bn.cmp   w20, w31
+  /* Flag Z in FG0 is bit 3 (value 8). If Z == 0, PCT failed -> unimp. */
+  csrrs    x10, 0x7c0, x0
+  andi     x10, x10, 8
+  bne      x10, x0, .L_p384_pct_ok
+  unimp
+
+.L_p384_pct_ok:
+  ret
+.endif
 
 /**
  * Generate a shared key from a fresh secret key with sideloaded seed
@@ -533,3 +612,15 @@ arith_share_secret_key:
   jal      x1, copy_share
 
   ecall
+
+.section .scratchpad
+
+/* Scratch space for FIPS PCT verification of public key coordinates. */
+.globl pct_x
+.balign 32
+pct_x:
+  .zero 64
+.globl pct_y
+.balign 32
+pct_y:
+  .zero 64

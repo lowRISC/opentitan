@@ -676,6 +676,35 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "pct_functest",
+    srcs = ["pct_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    fpga = fpga_params(
+        timeout = "long",
+        tags = ["manual"],
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+fips_wrap_opentitan_test(
+    name = "pct_functest",
+    exec_env = CRYPTOTEST_FIPS_EXEC_ENVS,
+)
+
+opentitan_test(
     name = "ecdh_p256_sideload_functest",
     srcs = ["ecdh_p256_sideload_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1753,6 +1782,7 @@ test_suite(
 test_suite(
     name = "cryptolib_keygen_test_suite",
     tests = [
+        ":pct_functest",
         ":rsa_2048_keygen_functest",
         ":rsa_3072_keygen_functest",
         ":rsa_4096_keygen_functest",

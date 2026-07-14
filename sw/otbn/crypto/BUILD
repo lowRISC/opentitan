@@ -159,6 +159,13 @@ otbn_binary(
     srcs = [
         "run_p256.s",
     ],
+    args = select({
+        "//sw/device/lib/crypto/configs:hashed": [
+            "--defsym",
+            "FIPS_MODE=1",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         ":p256_base",
         ":p256_isoncurve",
@@ -411,6 +418,13 @@ otbn_binary(
     srcs = [
         "run_p384.s",
     ],
+    args = select({
+        "//sw/device/lib/crypto/configs:hashed": [
+            "--defsym",
+            "FIPS_MODE=1",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         ":p384_a2b",
         ":p384_b2a",
