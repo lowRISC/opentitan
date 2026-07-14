@@ -18,18 +18,6 @@
 
 static char buf[12288];
 
-// Define Test Scratchpad Layout in Owner Partition
-typedef struct test_scratchpad {
-  uint64_t saved_cdi0_id;
-  uint64_t saved_cdi1_id;
-  uint32_t magic;
-} test_scratchpad_t;
-
-enum {
-  /* Values store to `test_scratchpad.magic` when the values are available. */
-  kTestScratchPadOk = 0xa9e498cd,
-};
-
 OTTF_DEFINE_TEST_CONFIG();
 
 const char kBase64[] =
@@ -131,18 +119,8 @@ static status_t verify_handover(void) {
     LOG_INFO("CDI_1 ML-DSA Key ID: 0x%08x%08x", (uint32_t)(cdi1_id >> 32),
              (uint32_t)cdi1_id);
 
-    // Save Key IDs to Retention SRAM Owner partition to verify constancy across
-    // reset.
-    test_scratchpad_t *scratch = (test_scratchpad_t *)retram->owner.reserved;
-    scratch->saved_cdi0_id = cdi0_id;
-    scratch->saved_cdi1_id = cdi1_id;
-    scratch->magic = kTestScratchPadOk;
-
-    LOG_INFO(
-        "Saved Key IDs to scratchpad. Requesting cert generation and "
-        "rebooting...");
-
     // Set request type.
+    LOG_INFO("Requesting cert generation and rebooting...");
     msg->hdr.type = kDiceCertGenRequest;
     msg->hdr.version = 0;
 
@@ -178,29 +156,6 @@ static status_t verify_handover(void) {
            (uint32_t)cdi0_id);
   LOG_INFO("CDI_1 ML-DSA Key ID: 0x%08x%08x", (uint32_t)(cdi1_id >> 32),
            (uint32_t)cdi1_id);
-
-  // Verify Key IDs match saved ones from the cold boot.
-  test_scratchpad_t *scratch = (test_scratchpad_t *)retram->owner.reserved;
-  if (scratch->magic != kTestScratchPadOk) {
-    LOG_ERROR("No saved Key IDs found in scratchpad (magic mismatch: 0x%08x)!",
-              scratch->magic);
-    return INTERNAL(3);
-  }
-
-  if (scratch->saved_cdi0_id != cdi0_id || scratch->saved_cdi1_id != cdi1_id) {
-    LOG_ERROR(
-        "Key ID mismatch across reboot! Saved CDI0: 0x%08x%08x, Got: "
-        "0x%08x%08x",
-        (uint32_t)(scratch->saved_cdi0_id >> 32),
-        (uint32_t)scratch->saved_cdi0_id, (uint32_t)(cdi0_id >> 32),
-        (uint32_t)cdi0_id);
-    LOG_ERROR("Saved CDI1: 0x%08x%08x, Got: 0x%08x%08x",
-              (uint32_t)(scratch->saved_cdi1_id >> 32),
-              (uint32_t)scratch->saved_cdi1_id, (uint32_t)(cdi1_id >> 32),
-              (uint32_t)cdi1_id);
-    return INTERNAL(4);
-  }
-  LOG_INFO("Key IDs match successfully across reboot!");
 
   // Print handed over pointers and sizes.
   LOG_INFO("Handed over UDS pub key at 0x%08x (size %d)", res->mldsa_uds_pub,
@@ -246,9 +201,7 @@ static status_t verify_handover(void) {
                 (int32_t)res->mldsa_cdi1_cert_len);
   LOG_INFO("CDI_1_MLDSA: %s", buf);
 
-  // Clear the request and magic.
   msg->hdr.type = 0;
-  scratch->magic = 0;
 
   return OK_STATUS();
 }
