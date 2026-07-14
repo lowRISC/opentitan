@@ -12,6 +12,7 @@
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa_key_from_cofactor.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -521,6 +522,14 @@ static otcrypto_status_t rsa_pct_verify(
   hardened_bool_t result;
   HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, kOtcryptoRsaPaddingPkcs,
                                    &sig_const, &result));
+
+  if (result != kHardenedBoolTrue) {
+    crypto_state_t *state = NULL;
+    if (status_ok(read_state_pointer(&state)) && state != NULL) {
+      state->locked_state = kHardenedBoolTrue;
+    }
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
   return OTCRYPTO_OK;
