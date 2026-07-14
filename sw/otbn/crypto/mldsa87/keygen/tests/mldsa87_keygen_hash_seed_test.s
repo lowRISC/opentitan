@@ -39,11 +39,13 @@ main:
 .balign 32
 
 _hash_seed_xi_share0:
-.zero 34
-.zero 30 /* Padding */
+.zero 32
+.word 0x00000708
+.zero 28 /* Padding */
 _hash_seed_xi_share1:
-.zero 34
-.zero 30 /* Padding */
+.zero 32
+.zero 4
+.zero 28 /* Padding */
 
 _hash_seed_rho:
 .zero 32

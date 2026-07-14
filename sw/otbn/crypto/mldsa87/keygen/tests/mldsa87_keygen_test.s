@@ -13,11 +13,6 @@ main:
    * Unmask shared values.
    */
 
-  la x20, mldsa87_keygen_sk_rho_prime_share0
-  la x21, mldsa87_keygen_sk_rho_prime_share1
-  li x22, 2
-  jal x1, unmask_boolean
-
   la x20, mldsa87_keygen_sk_k_share0
   la x21, mldsa87_keygen_sk_k_share1
   li x22, 1
