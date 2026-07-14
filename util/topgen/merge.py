@@ -1055,90 +1055,96 @@ def create_alert_lpgs(top: ConfigT, name_to_block: IpBlocksT):
     # ensure the object is already generated before we attempt to use it
     assert isinstance(top['clocks'], Clocks)
     clock_groups = top['clocks'].make_clock_to_group()
-    for module in top["module"]:
-        # the alert senders are attached to the primary clock of this block,
-        # so let's start by getting that primary clock port of an IP (we need
-        # that to look up the clock connection at the top-level).
-        block = name_to_block[module['type']]
-        block_clock = block.get_primary_clock()
-        primary_reset = module['reset_connections'][block_clock.reset]
 
-        # for the purposes of alert handler LPGs, we need to know:
-        #   1) the clock group of the primary clock
-        #   2) the primary reset name
-        #   3) the domain of the primary reset
-        #
-        # 1) figure out the clock group assignment of the primary clock
-        # Get the full clock name and split the hierarchy path, getting the
-        # last element
-        clk = module['clock_connections'][block_clock.clock]
+    def compute_lpg(module, block_clock, clock_connections, reset_connections):
+        '''Compute the LPG descriptor for one partition of a module.
+
+        The alert senders of a (partition of a) block are attached to that
+        partition's primary clock/reset, so we derive the LPG name from the
+        primary clock's clock group together with the primary reset's name and
+        domain. Returns (lpg_name, lpg_entry).
+        '''
+        primary_reset = reset_connections[block_clock.reset]
+        clk = clock_connections[block_clock.clock]
         # Unmanaged clocks are not part of the LPGs. Unmanaged clocks have the
-        # input signal identifier ('_i') directly in the signal name. Determine
-        # if that clock name is an
-        # unmanaged clock
+        # input signal identifier ('_i') directly in the signal name.
         unmanaged_clock = False
         for clock in top['unmanaged_clocks']._asdict().values():
             if clock.signal_name == clk:
                 unmanaged_clock = True
                 break
 
-        # 2-3) get reset info
         reset_name = primary_reset['name']
         reset_domain = primary_reset['domain']
 
         if unmanaged_clock:
             lpg_name = '_'.join([clk, reset_name, reset_domain])
-            unique_cg = False
+            clock_group = None
         else:
-            clk = clk.split(".")[-1]
-
-            # Discover what clock group we are related to
-            clock_group = clock_groups[clk]
-
-            # using this info, we can create an LPG identifier
-            # and uniquify it via a dict.
+            # Discover what clock group we are related to (last hierarchy
+            # element of the clock connection name).
+            clock_group = clock_groups[clk.split(".")[-1]]
             lpg_name = '_'.join([clock_group.name, reset_name, reset_domain])
-            unique_cg = clock_group.unique and clock_group.sw_cg != "no"
+            # if clock group is "unique", add some uniquification to the tag
+            if clock_group.unique and clock_group.sw_cg != "no":
+                lpg_name = f"{module['name']}_{lpg_name}"
 
-        # if clock group is "unique", add some uniquification to the tag
-        lpg_name = f"{module['name']}_{lpg_name}" if unique_cg else lpg_name
+        # since the alert handler can tolerate timing delays on LPG indication
+        # signals, we can just use the clock / reset signals of the first block
+        # that belongs to a new unique LPG.
+        lpg_entry = {
+            'name': lpg_name,
+            'clock_group': None if unmanaged_clock else clock_group,
+            'clock_connection': clk,
+            'unmanaged_clock': unmanaged_clock,
+            'unmanaged_reset': is_unmanaged_reset(top, reset_name),
+            'reset_connection': primary_reset,
+        }
+        return lpg_name, lpg_entry
 
-        def append_to_lpg_dict(lpg_dict):
-            # since the alert handler can tolerate timing delays on LPG
-            # indication signals, we can just use the clock / reset signals
-            # of the first block that belongs to a new unique LPG.
-            clock = module['clock_connections'][block_clock.clock]
-            lpg_dict.append({
-                'name':
-                lpg_name,
-                'clock_group':
-                None if unmanaged_clock else clock_group,
-                'clock_connection':
-                clock,
-                'unmanaged_clock':
-                unmanaged_clock,
-                'unmanaged_reset':
-                is_unmanaged_reset(top, reset_name),
-                'reset_connection':
-                primary_reset
-            })
+    for module in top["module"]:
+        block = name_to_block[module['type']]
+
+        # Compute the LPG for the primary partition, and -- for split IPs -- an
+        # additional LPG for the secondary partition (which lives in a
+        # potentially different clock group and reset domain). Each alert then
+        # joins the LPG of its owning partition.
+        lpg_name, lpg_entry = compute_lpg(module, block.get_primary_clock(),
+                                          module['clock_connections'],
+                                          module['reset_connections'])
+
+        sec_lpg_name = None
+        if block.clocking_secondary is not None and \
+                'reset_connections_secondary' in module:
+            sec_lpg_name, sec_lpg_entry = compute_lpg(
+                module, block.get_secondary_clock(),
+                module['clock_connections_secondary'],
+                module['reset_connections_secondary'])
 
         alert_group = module.get('outgoing_alert')
         if alert_group is not None:
             if lpg_name not in outgoing_lpg_dict[alert_group]:
                 outgoing_lpg_dict[alert_group][lpg_name] = len(
                     outgoing_lpg_dict[alert_group])
-                append_to_lpg_dict(top['outgoing_alert_lpgs'][alert_group])
+                top['outgoing_alert_lpgs'][alert_group].append(lpg_entry)
         else:
             if lpg_name not in lpg_dict:
                 lpg_dict[lpg_name] = len(lpg_dict)
-                append_to_lpg_dict(top['alert_lpgs'])
+                top['alert_lpgs'].append(lpg_entry)
+            if sec_lpg_name is not None and sec_lpg_name not in lpg_dict:
+                lpg_dict[sec_lpg_name] = len(lpg_dict)
+                top['alert_lpgs'].append(sec_lpg_entry)
 
-        # annotate all alerts of this module to use this LPG
+        # annotate all alerts of this module to use the LPG of their partition
         for alert in top['alert']:
             if alert['module_name'] == module['name']:
-                alert['lpg_name'] = lpg_name
-                alert['lpg_idx'] = lpg_dict[lpg_name]
+                if sec_lpg_name is not None and \
+                        alert.get('partition') == 'secondary':
+                    alert['lpg_name'] = sec_lpg_name
+                    alert['lpg_idx'] = lpg_dict[sec_lpg_name]
+                else:
+                    alert['lpg_name'] = lpg_name
+                    alert['lpg_idx'] = lpg_dict[lpg_name]
         for alert_group, alerts in top['outgoing_alert'].items():
             for alert in alerts:
                 if alert['module_name'] == module['name']:
@@ -1425,7 +1431,12 @@ def commit_alert_connections(top: ConfigT,
         # Add schaffold to dict
         alert_handler_info[ah] = ah_info
 
-    # Construct the connection information here
+    # Construct the connection information here. For split IPs a module's
+    # alerts are grouped by partition (partitions are contiguous within the
+    # block's alert list) and each partition connects from its own power
+    # domain. The primary partition keeps the "module_<name>" key; a secondary
+    # partition is stored under "module_<name>_secondary" so the template can
+    # wire each partition instance separately.
     alert_idx = defaultdict(int)
     outgoing_alert_idx = defaultdict(int)
     for module in top["module"]:
@@ -1433,21 +1444,23 @@ def commit_alert_connections(top: ConfigT,
         block = name_to_block.get(module["type"])
         if block is None and allow_missing_blocks:
             continue
-        if block.alerts:
+        if not block.alerts:
+            continue
+
+        handler = module.get("alert_handler", default_handler)
+        if handler is not None:
+            a_domain = alert_handler_info[handler]["domain"]
+        else:
+            a_domain = top["power"]["default"]
+
+        # Checking whether there is a handler is done in validation
+        if not outgoing and not handler:
+            continue
+
+        def emit_alert_group(alerts_group, m_domain, conn_key):
             alert_comments = []
-            handler = module.get("alert_handler", default_handler)
-            m_domain = module.get("domain", top["power"]["default"])
-            if handler is not None:
-                a_domain = alert_handler_info[handler]["domain"]
-            else:
-                a_domain = top["power"]["default"]
-
-            # Checking whether there is a handler is done in validation
-            if not outgoing and not handler:
-                continue
-
             # Generate slices
-            w = len(block.alerts)
+            w = len(alerts_group)
             if outgoing:
                 outgoing_group = module["outgoing_alert"]
                 lo_async = outgoing_alert_idx[outgoing_group]
@@ -1498,7 +1511,7 @@ def commit_alert_connections(top: ConfigT,
                 alert_handler_info[handler]["count_pd"][m_domain] += w
 
             # Generate comments, and increment the applicable alert indices
-            for a in block.alerts:
+            for a in alerts_group:
                 if outgoing:
                     alert_comments.append(f"External alert group \"{module['outgoing_alert']}\" "
                                           f"[{outgoing_alert_idx[module['outgoing_alert']]}]: "
@@ -1508,13 +1521,30 @@ def commit_alert_connections(top: ConfigT,
                     alert_comments.append(f"{handler}[{alert_idx[handler]}]: {a.name}")
                     alert_idx[handler] += 1
 
-            alert_info = {
+            connections[conn_key] = {
                 "tx_expr": alert_tx_expr,
                 "rx_expr": alert_rx_expr,
                 "async_expr": async_expr,
-                "comments": alert_comments
+                "comments": alert_comments,
             }
-            connections["module_" + module["name"]] = alert_info
+
+        # Group the module's alerts into contiguous runs by partition. For a
+        # non-split IP this is a single 'primary' group covering all alerts,
+        # reproducing the original behaviour exactly.
+        alert_groups = []
+        for a in block.alerts:
+            part = getattr(a, "partition", "primary")
+            if alert_groups and alert_groups[-1][0] == part:
+                alert_groups[-1][1].append(a)
+            else:
+                alert_groups.append((part, [a]))
+
+        for part, alerts_group in alert_groups:
+            pd = partition_domain(module, part, top["power"]["default"])
+            conn_key = "module_" + module["name"]
+            if part != "primary":
+                conn_key += "_" + part
+            emit_alert_group(alerts_group, pd, conn_key)
 
     # Process incoming alerts
     for alert_group, alerts in top.get("incoming_alert", {}).items():
