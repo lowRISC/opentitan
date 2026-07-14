@@ -173,16 +173,25 @@ class otbn_common_vseq extends otbn_base_vseq;
     return 1'b0;
   endfunction
 
-  // Return 1 if path is a pointer for a prim_count associated with an sram adapter.
+  // Return 1 if path is a pointer for a prim_count associated with an sram adapter or the MAI.
   //
   // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
   // request fifo.
   function bit is_ptr_in_fifo(string path, output bit in_req_fifo);
     string adapter_paths[] = {{"tb.dut.u_tlul_adapter_sram_dmem"},
                               {"tb.dut.u_tlul_adapter_sram_imem"}};
+    string mask_fifo_path =
+        "tb.dut.u_otbn_core.gen_mai.u_otbn_mai.u_otbn_mask_accelerator.u_prim_fifo_sync_mask";
 
     foreach (adapter_paths[i]) begin
       if (is_ptr_in_adapters_fifo(path, adapter_paths[i], in_req_fifo)) return 1'b1;
+    end
+
+    // The mask accelerator holds a standalone prim_fifo_sync. Its prim_count pointers need the
+    // same assertion handling, but it is not a request fifo.
+    if (is_ptr_in_prim_counts_fifo(path, mask_fifo_path)) begin
+      in_req_fifo = 1'b0;
+      return 1'b1;
     end
 
     return 1'b0;
