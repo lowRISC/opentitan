@@ -309,6 +309,27 @@ run_x25519:
  * clobbered flag groups: FG0
  */
 run_x25519_keygen:
+  jal      x1, x25519_keygen_core
+
+.ifdef FIPS_MODE
+  /* Perform Pairwise Consistency Test (PCT) in FIPS mode */
+  la       x15, x25519_keygen_core
+  jal      x1, curve25519_pct_verify
+.endif
+
+  ecall
+
+/**
+ * Core computation for X25519 public key generation.
+ *
+ * @param[in]  dmem[ed25519_s0]: private key share 0, 256 bits
+ * @param[in]  dmem[ed25519_s1]: private key share 1, 256 bits
+ * @param[out] dmem[x25519_public_key]: generated public key (u-coordinate), 256 bits
+ *
+ * clobbered registers: x2 to x3, x5, w2, w7 to w9, w19, w22, w31
+ * clobbered flag groups: FG0
+ */
+x25519_keygen_core:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -346,7 +367,7 @@ run_x25519_keygen:
   la       x3, x25519_public_key
   bn.sid   x2, 0(x3)
 
-  ecall
+  ret
 
 /**
  * X25519 shared secret generation operation (sideloaded key).
@@ -423,6 +444,27 @@ run_x25519_sideload:
  * clobbered flag groups: FG0
  */
 run_x25519_keygen_sideload:
+  jal      x1, x25519_keygen_sideload_core
+
+.ifdef FIPS_MODE
+  /* Perform Pairwise Consistency Test (PCT) in FIPS mode */
+  la       x15, x25519_keygen_sideload_core
+  jal      x1, curve25519_pct_verify
+.endif
+
+  ecall
+
+/**
+ * Core computation for X25519 sideloaded public key generation.
+ *
+ * @param[in]  KEY_S0_L: hardware-sideloaded private key share 0, 256 bits
+ * @param[in]  KEY_S1_L: hardware-sideloaded private key share 1, 256 bits
+ * @param[out] dmem[x25519_public_key]: generated public key (u-coordinate), 256 bits
+ *
+ * clobbered registers: x2 to x3, x5, w2, w7 to w9, w19, w22, w31
+ * clobbered flag groups: FG0
+ */
+x25519_keygen_sideload_core:
   /* Zeroize w31 */
   bn.xor   w31, w31, w31
 
@@ -452,7 +494,56 @@ run_x25519_keygen_sideload:
   la x3, x25519_public_key
   bn.sid x2, 0(x3)
 
-  ecall
+  ret
+
+.ifdef FIPS_MODE
+/**
+ * Pairwise Consistency Test (PCT) for X25519 key generation.
+ *
+ * Re-computes the X25519 public key using the keygen subroutine at x15 and
+ * verifies that it matches the 1st-pass public key saved in DMEM.
+ *
+ * @param[in]  x15: Subroutine address to re-run key generation
+ * @param[out] dmem[pct_pubkey]: 1st-pass public key scratchpad
+ *
+ * clobbered registers: x10, x12 to x14, x15, w20, w21
+ * clobbered flag groups: FG0
+ */
+curve25519_pct_verify:
+  /* Save return address x1 to x12 */
+  addi     x12, x1, 0
+
+  /* Save 1st-pass public key from DMEM[x25519_public_key] to DMEM[pct_pubkey] */
+  la       x13, x25519_public_key
+  la       x14, pct_pubkey
+  li       x10, 20
+  bn.lid   x10, 0(x13)
+  bn.sid   x10, 0(x14)
+
+  /* Re-run keygen computation */
+  jalr     x1, x15, 0
+
+  /* Compare first-pass (pct_pubkey) and second-pass (DMEM[x25519_public_key]) public keys. */
+  la       x14, pct_pubkey
+  li       x10, 20
+  bn.lid   x10, 0(x14)
+  la       x13, x25519_public_key
+  li       x10, 21
+  bn.lid   x10, 0(x13)
+
+  bn.cmp   w20, w21
+  csrrs    x10, 0x7c0, x0
+  andi     x10, x10, 8
+  bne      x10, x0, .L_pct_verify_pass
+
+  /* Mismatch */
+  unimp
+
+.L_pct_verify_pass:
+  addi     x1, x12, 0
+  ret
+
+.endif
 
 .bss
 
@@ -537,3 +628,10 @@ x25519_public_key:
 .globl x25519_shared_key
 x25519_shared_key:
   .zero 32
+
+.ifdef FIPS_MODE
+/* Scratchpad buffer for PCT first-pass public key (256 bits) */
+.balign 32
+pct_pubkey:
+  .zero 32
+.endif

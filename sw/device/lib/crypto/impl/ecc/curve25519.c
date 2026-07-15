@@ -57,16 +57,21 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_SIDELOAD);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
 
 enum {
-  /*
-   * The expected instruction counts for constant time functions.
-   */
-  kModeKeygenInsCnt = 342100,
+/*
+ * The expected instruction counts for constant time functions.
+ */
+#ifdef FIPS_MODE
+  kModeX25519KeygenInsCnt = 718617,
+  kModeX25519KeygenSideloadInsCnt = 711347,
+#else
+  kModeX25519KeygenInsCnt = 359304,
+  kModeX25519KeygenSideloadInsCnt = 355669,
+#endif
   kModeSignStage1InsCnt = 685169,
   kModeSignStage2InsCnt = 662,
   kModeX25519InsCnt = 366575,
   kModeX25519SideloadInsCnt = 362940,
-  kModeX25519KeygenInsCnt = 359302,
-  kModeX25519KeygenSideloadInsCnt = 355667,
+  kModeKeygenInsCnt = 342100,
   kModeEd25519VerifyInsCnt = 332987,
 };
 
