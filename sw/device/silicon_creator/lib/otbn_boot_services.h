@@ -35,9 +35,9 @@ enum {
 
 // Instruction counts for current version.
 enum {
-  kOtbnInsnCountKeygen = 0x8c110,
+  kOtbnInsnCountKeygen = 0x8c117,
   kOtbnInsnCountKeySave = 0x69,
-  kOtbnInsnCountEndorse = 0x9435e,
+  kOtbnInsnCountEndorse = 0x94365,
 };
 
 /**

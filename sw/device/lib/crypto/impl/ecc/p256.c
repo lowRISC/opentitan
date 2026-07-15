@@ -69,19 +69,19 @@ enum {
  * The expected instruction counts for constant time functions.
  */
 #ifdef FIPS_MODE
-  kModeKeygenInsCnt = 1147657,
-  kModeKeygenSideloadInsCnt = 1147549,
+  kModeKeygenInsCnt = 1147671,
+  kModeKeygenSideloadInsCnt = 1147563,
 #else
-  kModeKeygenInsCnt = 573915,
-  kModeKeygenSideloadInsCnt = 573807,
+  kModeKeygenInsCnt = 573922,
+  kModeKeygenSideloadInsCnt = 573814,
 #endif
-  kModeEcdhInsCnt = 581600,
-  kModeEcdhSideloadInsCnt = 581665,
-  kModeEcdsaSignConfigKInsCnt = 606939,
-  kModeEcdsaSignInsCnt = 607089,
-  kModeEcdsaSignSideloadInsCnt = 607154,
+  kModeEcdhInsCnt = 581607,
+  kModeEcdhSideloadInsCnt = 581672,
+  kModeEcdsaSignConfigKInsCnt = 606946,
+  kModeEcdsaSignInsCnt = 607096,
+  kModeEcdsaSignSideloadInsCnt = 607161,
   kModePointOnCurveCheckInsCnt = 224,
-  kModeBasePointMultInsCnt = 573749,
+  kModeBasePointMultInsCnt = 573756,
   kModeArithShareSecretKeyInsCnt = 147,
 };
 
