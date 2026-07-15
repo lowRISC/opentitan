@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
@@ -21,13 +22,9 @@ namespace {
 #include "sw/device/silicon_creator/lib/ownership/testdata/basic_owner_testdata.h"
 
 using rom_test::FlashCfg;
-using rom_test::FlashInfoPage;
 using rom_test::FlashPerms;
 using rom_test::MockFlashCtrl;
-using ::testing::_;
-using ::testing::DoAll;
 using ::testing::Return;
-using ::testing::SetArgPointee;
 using ::testutil::BinaryBlob;
 
 class OwnerBlockTest : public rom_test::RomTest {
@@ -337,26 +334,25 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
 }
 
 TEST_F(OwnerBlockTest, FlashInfoApply) {
-  EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 6, _))
-      .WillOnce(Return(kErrorOk));
+  // bank=0, page=6 resolves (via nvm_ctrl_info_page_lookup, which runs for
+  // real -- it's pure computation, not a flash_ctrl call) to
+  // kFlashCtrlInfoPageOwnerReserved1.
   EXPECT_CALL(flash_ctrl_,
-              InfoCfgSet(_, FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
-                                     kMultiBitBool4True)));
+              InfoCfgSet(&kFlashCtrlInfoPageOwnerReserved1,
+                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
+                                  kMultiBitBool4True)));
   EXPECT_CALL(flash_ctrl_,
-              InfoPermsSet(_, FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
-                                         kMultiBitBool4True)));
+              InfoPermsSet(&kFlashCtrlInfoPageOwnerReserved1,
+                           FlashPerms(kMultiBitBool4True, kMultiBitBool4True,
+                                      kMultiBitBool4True)));
 
   rom_error_t error = owner_block_info_apply(&info_config);
   EXPECT_EQ(error, kErrorOk);
 }
 
 TEST_F(OwnerBlockTest, FlashInfoLock) {
-  flash_ctrl_info_page_t info_page{
-      .base_addr = 999,
-  };
-  EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 6, _))
-      .WillOnce(DoAll(SetArgPointee<2>(info_page), Return(kErrorOk)));
-  EXPECT_CALL(flash_ctrl_, InfoCfgLock(FlashInfoPage(info_page)));
+  // bank=0, page=6 resolves to kFlashCtrlInfoPageOwnerReserved1, as above.
+  EXPECT_CALL(flash_ctrl_, InfoCfgLock(&kFlashCtrlInfoPageOwnerReserved1));
 
   rom_error_t error = owner_block_info_lockdown(&info_config);
   EXPECT_EQ(error, kErrorOk);
@@ -1031,7 +1027,7 @@ TEST_P(RomExtFlashConfigTest, BadFlashConfig) {
   const owner_nvm_config_t *param;
   rom_error_t expected;
   std::tie(param, expected) = GetParam();
-  rom_error_t error = owner_block_flash_check(param);
+  rom_error_t error = owner_block_nvm_check(param);
   EXPECT_EQ(error, expected);
 }
 
