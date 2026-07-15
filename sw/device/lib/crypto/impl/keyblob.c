@@ -110,30 +110,34 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   return OTCRYPTO_OK;
 }
 
-status_t keyblob_buffer_to_keymgr_diversification(
-    const uint32_t *keyblob, otcrypto_key_mode_t mode,
-    keymgr_diversification_t *diversification) {
+status_t keyblob_buffer_to_keymgr_dpe_diversification(
+    const uint32_t *keyblob, uint32_t keymgr_dpe_src_slot,
+    otcrypto_key_mode_t mode, keymgr_dpe_diversification_t *diversification) {
   // Set the version to the first word of the keyblob.
   diversification->version = launder32(keyblob[0]);
 
+  // Store the underlying source DPE context for the key
+  diversification->slot_src_sel = launder32(keymgr_dpe_src_slot);
+
   // Copy the remainder of the keyblob into the salt.
   HARDENED_TRY(hardened_memcpy(diversification->salt, &keyblob[1],
-                               kKeymgrSaltNumWords - 1));
+                               kKeymgrDPESaltNumWords - 1));
 
   // Set the key mode as the last word of the salt.
-  diversification->salt[kKeymgrSaltNumWords - 1] = launder32(mode);
+  diversification->salt[kKeymgrDPESaltNumWords - 1] = launder32(mode);
 
   HARDENED_CHECK_EQ(diversification->version, keyblob[0]);
   HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &keyblob[1],
-                                   kKeymgrSaltNumWords - 1),
+                                   kKeymgrDPESaltNumWords - 1),
                     kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(diversification->salt[kKeymgrSaltNumWords - 1], mode);
+  HARDENED_CHECK_EQ(diversification->salt[kKeymgrDPESaltNumWords - 1], mode);
+  HARDENED_CHECK_EQ(diversification->slot_src_sel, keymgr_dpe_src_slot);
   return OTCRYPTO_OK;
 }
 
-status_t keyblob_to_keymgr_diversification(
+status_t keyblob_to_keymgr_dpe_diversification(
     const otcrypto_blinded_key_t *key,
-    keymgr_diversification_t *diversification) {
+    keymgr_dpe_diversification_t *diversification) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -148,13 +152,14 @@ status_t keyblob_to_keymgr_diversification(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  return keyblob_buffer_to_keymgr_diversification(
-      key->keyblob, key->config.key_mode, diversification);
+  return keyblob_buffer_to_keymgr_dpe_diversification(
+      key->keyblob, key->config.keymgr_dpe_slot_idx, key->config.key_mode,
+      diversification);
 }
 
-status_t keyblob_to_keymgr_attestation_diversification(
+status_t keyblob_to_keymgr_dpe_attestation_diversification(
     const otcrypto_blinded_key_t *key,
-    keymgr_diversification_t *diversification) {
+    keymgr_dpe_diversification_t *diversification) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -171,13 +176,18 @@ status_t keyblob_to_keymgr_attestation_diversification(
 
   diversification->version = launder32(key->keyblob[0]);
 
+  // Store the underlying source DPE context for the key
+  diversification->slot_src_sel = launder32(key->config.keymgr_dpe_slot_idx);
+
   HARDENED_TRY(hardened_memcpy(diversification->salt, &key->keyblob[1],
-                               kKeymgrSaltNumWords));
+                               kKeymgrDPESaltNumWords));
 
   HARDENED_CHECK_EQ(diversification->version, key->keyblob[0]);
   HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &key->keyblob[1],
-                                   kKeymgrSaltNumWords),
+                                   kKeymgrDPESaltNumWords),
                     kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(diversification->slot_src_sel,
+                    key->config.keymgr_dpe_slot_idx);
 
   return OTCRYPTO_OK;
 }
@@ -301,7 +311,7 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
 }
 
 status_t keyblob_sideload_key_otbn(const otcrypto_blinded_key_t *key) {
-  keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-  return keymgr_generate_key_otbn(diversification, kHardenedBoolFalse);
+  keymgr_dpe_diversification_t diversification;
+  HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
+  return keymgr_dpe_generate_key_otbn(diversification);
 }

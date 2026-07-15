@@ -49,10 +49,10 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t load_private_scalar(
  */
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t
 load_attestation_diversification(const otcrypto_blinded_key_t *private_key) {
-  keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
-                                                             &diversification));
-  return keymgr_generate_key_otbn(diversification, kHardenedBoolTrue);
+  keymgr_dpe_diversification_t diversification;
+  HARDENED_TRY(keyblob_to_keymgr_dpe_attestation_diversification(
+      private_key, &diversification));
+  return keymgr_dpe_generate_key_otbn(diversification);
 }
 
 /**
@@ -173,7 +173,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
+  return keymgr_dpe_sideload_clear_otbn();
 }
 
 /**
@@ -566,7 +566,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
   HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sign_finalize(sig_p256));
 
   // Clear the OTBN sideload slot (in case the key was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
@@ -592,10 +592,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
   }
   HARDENED_CHECK_EQ(message_digest.len, kP256ScalarWords);
 
-  keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
-                                                             &diversification));
-  HARDENED_TRY(keymgr_generate_key_otbn(diversification, kHardenedBoolTrue));
+  keymgr_dpe_diversification_t diversification;
+  HARDENED_TRY(keyblob_to_keymgr_dpe_attestation_diversification(
+      private_key, &diversification));
+  HARDENED_TRY(keymgr_dpe_generate_key_otbn(diversification));
 
   HARDENED_TRY_WIPE_DMEM(p256_sideload_attestation_sign_start(
       message_digest.data, attestation_seed));
@@ -826,7 +826,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }
 
 otcrypto_status_t otcrypto_ecc_p256_public_key_import(

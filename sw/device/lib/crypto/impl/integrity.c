@@ -27,6 +27,7 @@ uint32_t otcrypto_integrity_blinded_checksum(
   crc32_add32(&ctx, key->config.key_mode);
   crc32_add32(&ctx, key->config.key_length);
   crc32_add32(&ctx, key->config.hw_backed);
+  crc32_add32(&ctx, key->config.keymgr_dpe_slot_idx);
   crc32_add32(&ctx, key->config.exportable);
   crc32_add32(&ctx, key->config.security_level);
   crc32_add32(&ctx, key->keyblob_length);

@@ -774,7 +774,7 @@ otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }
 
 otcrypto_status_t otcrypto_x25519_async_start(
@@ -815,5 +815,5 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shared_secret->keyblob));
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
+  return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }

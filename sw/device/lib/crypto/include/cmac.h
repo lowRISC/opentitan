@@ -24,10 +24,10 @@ enum {
   /**
    * Size of the base CMAC internal context in words.
    *
-   * Holds key shares (0 and 1), lengths, sideload configuration, K1/K2 subkeys,
-   * IV, and partial block states.
+   * Holds key shares (0 and 1), lengths, sideload configuration (including
+   * the keymgr dpe slot index), K1/K2 subkeys, IV, and partial block states.
    */
-  kOtcryptoCmacBaseCtxWords = 35,
+  kOtcryptoCmacBaseCtxWords = 36,
 
   /**
    * Size of the exported CMAC context in words.

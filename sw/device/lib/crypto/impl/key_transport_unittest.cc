@@ -16,7 +16,7 @@
 #include "sw/device/lib/crypto/include/integrity.h"
 
 #include "hw/top/aes_regs.h"
-#include "hw/top/keymgr_regs.h"
+#include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 namespace key_transport_unittest {
@@ -26,12 +26,16 @@ using ::testing::ElementsAreArray;
 #define EXPECT_OK(status_) EXPECT_EQ(status_.value, OTCRYPTO_OK.value)
 #define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
 
+// Define a keymgr_dpe source slot common for all tests
+const uint32_t kKeymgrDpeSrcSlot = 3;
+
 // Key configuration for testing (128-bit AES-CTR hardware-backed key).
 const otcrypto_key_config_t kConfigHwBackedAesCtr128 = {
     .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolTrue,
+    .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .exportable = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
@@ -42,6 +46,7 @@ const otcrypto_key_config_t kConfigRsaInvalid = {
     .key_mode = kOtcryptoKeyModeRsaSignPkcs,
     .key_length = 2048 / 8,
     .hw_backed = kHardenedBoolTrue,
+    .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .exportable = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
@@ -93,18 +98,19 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
       status_ok(otcrypto_hw_backed_key(test_version, test_salt.data(), &key)),
       true);
 
-  // Expect that converting to keymgr diversification data generates the same
-  // version and salt.
-  keymgr_diversification_t diversification;
+  // Expect that converting to keymgr dpe diversification data generates the
+  // same version and salt.
+  keymgr_dpe_diversification_t diversification;
   EXPECT_EQ(
-      status_ok(keyblob_to_keymgr_diversification(&key, &diversification)),
+      status_ok(keyblob_to_keymgr_dpe_diversification(&key, &diversification)),
       true);
   EXPECT_EQ(diversification.version, test_version);
-  for (size_t i = 0; i < kKeymgrSaltNumWords - 1; i++) {
+  for (size_t i = 0; i < kKeymgrDPESaltNumWords - 1; i++) {
     EXPECT_EQ(diversification.salt[i], test_salt[i]);
   }
-  EXPECT_EQ(diversification.salt[kKeymgrSaltNumWords - 1],
+  EXPECT_EQ(diversification.salt[kKeymgrDPESaltNumWords - 1],
             kConfigHwBackedAesCtr128.key_mode);
+  EXPECT_EQ(diversification.slot_src_sel, kKeymgrDpeSrcSlot);
 }
 
 TEST(KeyTransport, HwBackedRsaKeyFails) {
@@ -304,9 +310,9 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   rom_test::NiceMockAbsMmio mmio;
   ON_CALL(mmio, Read32(TOP_EARLGREY_AES_BASE_ADDR + AES_STATUS_REG_OFFSET))
       .WillByDefault(testing::Return(1 << AES_STATUS_IDLE_BIT));
-  ON_CALL(mmio, Read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
-                       KEYMGR_SIDELOAD_CLEAR_REG_OFFSET))
-      .WillByDefault(testing::Return(KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES));
+  ON_CALL(mmio, Read32(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR +
+                       KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET))
+      .WillByDefault(testing::Return(KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_AES));
   uint32_t target_keyblob[8] = {0};
   otcrypto_blinded_key_t target_key = {
       .config = kConfigNonExportableAesCtr128,
