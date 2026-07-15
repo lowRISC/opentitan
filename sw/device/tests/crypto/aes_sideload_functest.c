@@ -4,7 +4,6 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -12,7 +11,7 @@
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -21,6 +20,10 @@
 
 // Key version data for testing.
 static const uint32_t kKeyVersion = 0x0;
+
+// DPE context slot for testing, must match the slot defined in the
+// keymgr_dpe_testutils.
+static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
 
 // Two distinct key salts for testing.
 static const uint32_t kKeySalt1[7] = {
@@ -38,6 +41,7 @@ static const otcrypto_key_config_t kAesKeyConfig = {
     .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolTrue,
+    .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
@@ -127,31 +131,26 @@ static status_t decrypt(const uint32_t *salt, const uint32_t *ciphertext,
 }
 
 /**
- * Setup keymgr and entropy complex.
+ * Setup keymgr_dpe and entropy complex.
  *
  * Run this test before any others.
  */
 status_t test_setup(void) {
-  // Initialize the key manager and advance to OwnerRootKey state.  Note: the
-  // keymgr testutils set this up using software entropy, so there is no need
-  // to initialize the entropy complex first. However, this is of course not
-  // the expected setup in production.
-  dif_keymgr_t keymgr;
+  // Initialize the key manager dpe, which derives the CreatorRootKey.
+  // Note: the keymgr_dpe testutils set this up using software entropy, so there
+  // is no need to initialize the entropy complex first. However, this is of
+  // course not the expected setup in production.
+  dif_keymgr_dpe_t keymgr_dpe;
   dif_kmac_t kmac;
-  dif_keymgr_state_t keymgr_state;
-  TRY(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
+  TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac));
+  TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                       kDifKeymgrDpeStateAvailable));
 
-  if (keymgr_state == kDifKeymgrStateCreatorRootKey) {
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  } else if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  }
-
-  TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+  // TODO(#30759): Verify the kKeymgrDpeSrcSlot contains a key with boot_stage
+  // set to CreatorRootKey!
 
   // Initialize entropy complex for cryptolib, which the key manager uses to
-  // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
+  // clear sideloaded keys. The `keymgr_dpe_testutils_startup` function restarts
   // the device, so this should happen afterwards.
   return otcrypto_init(kOtcryptoKeySecurityLevelLow);
 }
@@ -221,6 +220,7 @@ status_t sideload_clear_test(void) {
   aes_key_t key = {
       .mode = kAesCipherModeCtr,
       .sideload = kHardenedBoolTrue,
+      .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
       .key_len = kAesKeyConfig.key_length,
       .key_shares = {share0, share1},
   };
