@@ -59,6 +59,13 @@ otbn_binary(
     srcs = [
         "run_curve25519.s",
     ],
+    args = select({
+        "//sw/device/lib/crypto/configs:hashed": [
+            "--defsym",
+            "FIPS_MODE=1",
+        ],
+        "//conditions:default": [],
+    }),
     deps = [
         ":25519",
         ":25519_scalar",
