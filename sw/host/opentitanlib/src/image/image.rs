@@ -479,8 +479,8 @@ impl Image {
                     data: &self.data.bytes[offset..offset + size],
                 });
             }
-            // Round up to next 64K offset.
-            offset += (size + 65535) & !65535;
+            // Round up to next 2K offset.
+            offset += (size + 2047) & !2047;
         }
         Ok(result)
     }
