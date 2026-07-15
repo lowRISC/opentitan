@@ -116,21 +116,20 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-
   // Extract the diversification data.
-  keymgr_diversification_t diversification;
+  keymgr_dpe_diversification_t diversification;
   if (attestation == kHardenedBoolTrue) {
-    HARDENED_TRY(
-        keyblob_to_keymgr_attestation_diversification(key, &diversification));
+    HARDENED_TRY(keyblob_to_keymgr_dpe_attestation_diversification(
+        key, &diversification));
   } else if (attestation == kHardenedBoolFalse) {
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
+    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Generate the key.
-  keymgr_output_t output;
-  HARDENED_TRY(keymgr_generate_key_sw(diversification, attestation, &output));
+  keymgr_dpe_output_t output;
+  HARDENED_TRY(keymgr_dpe_generate_key_sw(diversification, &output));
 
   // Morph the key into a software-backed key.
   otcrypto_key_config_t *config_mut = (otcrypto_key_config_t *)&key->config;
@@ -147,7 +146,7 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
 
   // Ensure the allocated share size perfectly matches the key manager output.
   size_t share_words = launder32(keyblob_share_num_words(key->config));
-  if (share_words != kKeymgrOutputShareNumWords) {
+  if (share_words != kKeymgrDPEOutputShareNumWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -222,14 +221,16 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   aes_key->mode = kAesCipherModeEcb;
 
   if (key_kek->config.hw_backed == kHardenedBoolTrue) {
-    // Call keymgr to sideload the key into AES.
-    keymgr_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key_kek, &diversification));
-    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+    // Call keymgr dpe to sideload the key into AES.
+    keymgr_dpe_diversification_t diversification;
+    HARDENED_TRY(
+        keyblob_to_keymgr_dpe_diversification(key_kek, &diversification));
+    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   } else if (key_kek->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
   aes_key->sideload = key_kek->config.hw_backed;
+  aes_key->keymgr_dpe_slot_idx = key_kek->config.keymgr_dpe_slot_idx;
 
   // Set the AES key length (in words).
   aes_key->key_len = keyblob_share_num_words(key_kek->config);
@@ -253,7 +254,7 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
 static void hw_wipe_guard(uint32_t *dummy) {
   (void)dummy;
   (void)aes_clear();
-  (void)keymgr_sideload_clear_aes();
+  (void)keymgr_dpe_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,

@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
@@ -52,7 +52,7 @@ static void aes_wipe_guard(uint32_t *dummy) { (void)aes_clear(); }
  */
 static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
-    (void)keymgr_sideload_clear_aes();
+    (void)keymgr_dpe_sideload_clear_aes();
   }
 }
 
@@ -174,7 +174,11 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
   }
   HARDENED_CHECK_EQ(aes_key->sideload, blinded_key->config.hw_backed);
 
-  // Create the checksum of the key and store it in the key structure.
+  // Copy the keymgr dpe slot number
+  aes_key->keymgr_dpe_slot_idx = blinded_key->config.keymgr_dpe_slot_idx;
+
+  // Create the checksum of the key and
+  // store it in the key structure.
   aes_key->checksum = aes_key_integrity_checksum(aes_key);
 
   // Second integrity check of the key we got passed into the cryptolib.
@@ -258,10 +262,11 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
     return OTCRYPTO_OK;
   }
   HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
-  keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
-      key.key_shares[0], kOtcryptoKeyModeAesGcm, &diversification));
-  return keymgr_generate_key_aes(diversification);
+  keymgr_dpe_diversification_t diversification;
+  HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
+      key.key_shares[0], key.keymgr_dpe_slot_idx, kOtcryptoKeyModeAesGcm,
+      &diversification));
+  return keymgr_dpe_generate_key_aes(diversification);
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt(

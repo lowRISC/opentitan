@@ -37,7 +37,7 @@ enum {
  */
 static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
-    (void)keymgr_sideload_clear_kmac();
+    (void)keymgr_dpe_sideload_clear_kmac();
   }
 }
 
@@ -78,13 +78,13 @@ static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
       return OTCRYPTO_BAD_ARGS;
     }
 
-    // Configure keymgr with diversification input and then generate the
+    // Configure keymgr dpe with diversification input and then generate the
     // sideload key.
-    keymgr_diversification_t diversification;
+    keymgr_dpe_diversification_t diversification;
     // Diversification call also checks that `key->keyblob_length` is 8 words
     // long.
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
+    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
+    HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
     // Remask the key.
     HARDENED_TRY(keyblob_remask(key));

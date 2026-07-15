@@ -62,7 +62,7 @@ typedef struct aes_key {
   /**
    * Determines which keymgr DPE slot (see `slot_src_sel` in
    * `keymgr_dpe_diversification_t`) is used as the parent for key generation.
-   * Only applicable if `hw_backed` is `kHardenedBoolTrue`.
+   * Only applicable if `sideload` is `kHardenedBoolTrue`.
    */
   uint32_t keymgr_dpe_slot_idx;
 

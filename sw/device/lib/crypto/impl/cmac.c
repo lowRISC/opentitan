@@ -7,7 +7,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -24,6 +24,7 @@ typedef struct {
   uint32_t key_share1[8];
   uint32_t key_len_words;
   hardened_bool_t sideload;
+  uint32_t keymgr_dpe_slot_idx;
   aes_block_t k1;
   aes_block_t k2;
   aes_block_t iv;
@@ -70,7 +71,7 @@ static void aes_wipe_guard(uint32_t *dummy) { (void)aes_clear(); }
  */
 static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
-    (void)keymgr_sideload_clear_aes();
+    (void)keymgr_dpe_sideload_clear_aes();
   }
 }
 
@@ -99,6 +100,7 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
 static status_t build_aes_key(const cmac_ctx_t *ctx, aes_key_t *aes_key) {
   aes_key->mode = kAesCipherModeCbc;
   aes_key->sideload = ctx->sideload;
+  aes_key->keymgr_dpe_slot_idx = ctx->keymgr_dpe_slot_idx;
   aes_key->key_len = ctx->key_len_words;
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
@@ -122,6 +124,7 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
                                    cmac_ctx_t *ctx) {
   ctx->sideload = key->config.hw_backed;
   ctx->key_len_words = keyblob_share_num_words(key->config);
+  ctx->keymgr_dpe_slot_idx = key->config.keymgr_dpe_slot_idx;
 
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
@@ -357,9 +360,9 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
     is_sideloaded = kHardenedBoolTrue;
-    keymgr_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+    keymgr_dpe_diversification_t diversification;
+    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
+    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
   cmac_ctx_t primary_ctx;
@@ -441,9 +444,9 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
-    keymgr_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+    keymgr_dpe_diversification_t diversification;
+    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
+    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
   cmac_ctx_t primary_ctx;
