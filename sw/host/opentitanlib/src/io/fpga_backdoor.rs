@@ -28,6 +28,7 @@ pub mod regs {
     pub const CONTROL_DONE_BIT: u32 = 0;
     pub const CONTROL_WRITE_ENA_BIT: u32 = 1;
     pub const CONTROL_CLEAR_START_BIT: u32 = 2;
+    pub const CONTROL_AUTO_INCR_BIT: u32 = 3;
     pub const CONTROL_TARGET_IDX_MASK: u32 = 0xff;
     pub const CONTROL_TARGET_IDX_OFFSET: usize = 8;
 
@@ -247,7 +248,7 @@ impl<'a> BackdoorTarget<'a> {
     /// Read a sequence of words at a given offset (word index) from the target's memory.
     ///
     /// The `check_status` parameter is used to control whether the status bit is polled
-    /// after each word read, to check for any errors.
+    /// after all words are read, to check for any errors.
     pub fn read(&mut self, start: u32, count: u32, check_status: bool) -> Result<Vec<Word>> {
         ensure!(
             start + count <= self.info.depth,
@@ -259,6 +260,34 @@ impl<'a> BackdoorTarget<'a> {
         );
         self.backdoor
             .read_target(self.index, start, count, check_status)
+    }
+
+    /// Write a single word at a given word index in the target's memory, without disturbing any
+    /// auto-increment cursor. See [`Backdoor::write_target_word`].
+    pub fn write_word(&mut self, index: u32, word: &Word, check_status: bool) -> Result<()> {
+        ensure!(
+            index < self.info.depth,
+            "fpga bkdr_loader write to word {:#x} of {} is out of bounds (depth: {:#x})",
+            index,
+            self.info.id_str(),
+            self.info.depth,
+        );
+        self.backdoor
+            .write_target_word(self.index, index, word, check_status)
+    }
+
+    /// Read a single word at a given word index from the target's memory, without disturbing any
+    /// auto-increment cursor. See [`Backdoor::read_target_word`].
+    pub fn read_word(&mut self, index: u32, check_status: bool) -> Result<Word> {
+        ensure!(
+            index < self.info.depth,
+            "fpga bkdr_loader read from word {:#x} of {} is out of bounds (depth: {:#x})",
+            index,
+            self.info.id_str(),
+            self.info.depth,
+        );
+        self.backdoor
+            .read_target_word(self.index, index, check_status)
     }
 
     /// Clear the entire memory of the target with a given word.
@@ -408,12 +437,19 @@ impl Backdoor {
         Ok(self.target_by_id(encoded_id))
     }
 
-    /// Write a sequence of words at a given offset (word index) to a specified target's memory.
+    /// Write a sequence of words at a given offset (word index) to a specified target's memory,
+    /// using the bkdr_loader's `AUTO_INCR` write mode.
     ///
-    /// The `write_all` parameter is used to control whether writes can be optimized by
-    /// maintaining shadow CSRs to determine when register contents have actually changed.
+    /// With `AUTO_INCR` set, writing the highest-indexed `WRITE_DATA` register needed for the
+    /// target's line width both commits a bkdr write at the current `INDEX` and advances `INDEX`
+    /// by one, so a full sequential range can be streamed without an `INDEX` write per word.
+    /// That top-word write must always happen (it's what fires the commit), but writes to any
+    /// lower-indexed `WRITE_DATA` registers can still be elided by the `write_all` parameter,
+    /// using shadow CSRs to determine when register contents have genuinely changed since the
+    /// previous word.
     /// The `check_status` parameter is used to control whether the status bit is polled
-    /// after all words are written, to check for any errors.
+    /// after all words are written, to check for any errors; it also reads back `INDEX` to
+    /// verify the cursor advanced exactly once per word (i.e. no commit was lost).
     pub fn write_target(
         &mut self,
         target_index: u8,
@@ -439,27 +475,41 @@ impl Backdoor {
             DATA_REGS_PER_WORD
         );
 
-        // Cache previous written values in Shadow CSRs
-        let mut prev_regs = [0u32; DATA_REGS_PER_WORD];
-        let mut word_idx = start;
-        let mut first = true;
+        if words.is_empty() {
+            return Ok(());
+        }
+
+        // The top `WRITE_DATA` register (i.e. `bkdr_loader`'s `max_word_idx_tgt`) is the one
+        // whose write commits the line and advances `INDEX`; it must be written every time.
+        let top_reg_idx = regs_used - 1;
 
         let mut control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
         control |= 0b1 << regs::CONTROL_WRITE_ENA_BIT;
-        self.dmi_write(regs::CONTROL_REG_OFFSET, control)
-            .context("cannot write to control register")?;
+        control |= 0b1 << regs::CONTROL_AUTO_INCR_BIT;
 
-        // We batch together all the necessary writes so that we can perform a single
-        // batched write operation at the end, which is optimized for throughput.
-        let mut writes = Vec::new();
+        // Cache previous written values in Shadow CSRs
+        let mut prev_regs = [0u32; DATA_REGS_PER_WORD];
+        let mut first = true;
+
+        // We batch together all the necessary writes - including the CONTROL setup and the
+        // single INDEX seed - so that we can perform a single batched write operation at the
+        // end, which is optimized for throughput. Batched writes execute strictly in order,
+        // so CONTROL (selecting the target and enabling AUTO_INCR) and the INDEX seed land
+        // before any data; with AUTO_INCR already set, the INDEX write cannot trigger a
+        // manual write. From the seed on, INDEX auto-increments in hardware.
+        let mut writes = vec![
+            ((regs::CONTROL_REG_OFFSET >> 2) as u32, control),
+            ((regs::INDEX_REG_OFFSET >> 2) as u32, start),
+        ];
 
         for word in words {
             let regs = word.to_u32_chunks()?;
             for idx in 0..regs_used {
                 // Optimization - maintain shadow CSRs in software, and only write the
                 // data if there is a diff in that CSR from the previous contents. Vastly
-                // minimizes required operations for repetitive payloads.
-                if write_all || first || regs[idx] != prev_regs[idx] {
+                // minimizes required operations for repetitive payloads. The top register
+                // is exempted since its write is what commits the line and advances INDEX.
+                if idx == top_reg_idx || write_all || first || regs[idx] != prev_regs[idx] {
                     let addr_offset = idx * 4;
                     writes.push((
                         ((regs::WRITE_DATA_0_REG_OFFSET + addr_offset) >> 2) as u32,
@@ -468,10 +518,95 @@ impl Backdoor {
                     prev_regs[idx] = regs[idx];
                 }
             }
-            writes.push(((regs::INDEX_REG_OFFSET >> 2) as u32, word_idx));
             first = false;
-            word_idx += 1;
         }
+
+        self.dmi
+            .batched_dmi_writes(&writes)
+            .context("failed to perform DMI writes")?;
+
+        if check_status {
+            // The auto-increment cursor must have advanced exactly once per word; a mismatch
+            // means a commit (top-word write) was lost somewhere in the stream, which would
+            // shift every subsequent word by one address.
+            let end_index = self
+                .dmi_read(regs::INDEX_REG_OFFSET)
+                .context("cannot read back index")?;
+            ensure!(
+                end_index == start + words.len() as u32,
+                "fpga bkdr_loader index is {:#x} after writing {:#x} words at {:#x} of target {} (expected {:#x})",
+                end_index,
+                words.len(),
+                start,
+                info.id_str(),
+                start + words.len() as u32
+            );
+
+            let status = self
+                .dmi_read(regs::STATUS_REG_OFFSET)
+                .context("cannot read status")?;
+            ensure!(
+                status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
+                "fpga bkdr_loader reported an error writing to target {}",
+                info.id_str()
+            );
+        }
+
+        Ok(())
+    }
+
+    /// Write a single word at a given word index to a specified target's memory, using the
+    /// bkdr_loader's manual (non-`AUTO_INCR`) write mode: `WRITE_DATA` is loaded, then writing
+    /// `INDEX` itself commands the write to that exact address.
+    ///
+    /// Unlike [`Backdoor::write_target`], this does not move any auto-increment cursor and can
+    /// address any word directly, which is handy for one-off single-word pokes that don't want
+    /// to reason about a running `INDEX`. The `check_status` parameter is used to control whether
+    /// the status bit is polled afterwards, to check for any errors.
+    pub fn write_target_word(
+        &mut self,
+        target_index: u8,
+        index: u32,
+        word: &Word,
+        check_status: bool,
+    ) -> Result<()> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        let info = self.targets[target_index as usize];
+        let width = info.width as usize;
+        let regs_used = width.div_ceil(u32::BITS as usize);
+        ensure!(
+            regs_used <= DATA_REGS_PER_WORD,
+            "Advertised target width {:#x} is too wide for the data registers (needs: {:#x}, has: {:#x})",
+            width,
+            regs_used,
+            DATA_REGS_PER_WORD
+        );
+
+        let mut control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
+        control |= 0b1 << regs::CONTROL_WRITE_ENA_BIT;
+
+        // Batch everything into one round trip: CONTROL setup, the data registers, and the
+        // final INDEX write whose qe strobe (with AUTO_INCR clear) triggers the actual write.
+        let regs = word.to_u32_chunks()?;
+        let writes: Vec<(u32, u32)> =
+            std::iter::once(((regs::CONTROL_REG_OFFSET >> 2) as u32, control))
+                .chain(regs[..regs_used].iter().enumerate().map(|(idx, &reg)| {
+                    let addr_offset = idx * 4;
+                    (
+                        ((regs::WRITE_DATA_0_REG_OFFSET + addr_offset) >> 2) as u32,
+                        reg,
+                    )
+                }))
+                .chain(std::iter::once((
+                    (regs::INDEX_REG_OFFSET >> 2) as u32,
+                    index,
+                )))
+                .collect();
 
         self.dmi
             .batched_dmi_writes(&writes)
@@ -491,10 +626,18 @@ impl Backdoor {
         Ok(())
     }
 
-    /// Read a sequence of words at a given offset (word index) from a specified target's memory.
+    /// Read a sequence of words at a given offset (word index) from a specified target's memory,
+    /// using the bkdr_loader's `AUTO_INCR` read mode.
     ///
+    /// With `AUTO_INCR` set and `WRITE_ENA` clear, reading the highest-indexed `READ_DATA`
+    /// register needed for the target's line width advances `INDEX` by one (no bkdr write is
+    /// ever triggered on the read side), so a full sequential range can be streamed with a single
+    /// `INDEX` write up front rather than one per word. Because that top-word read is what
+    /// advances `INDEX`, each line's registers must be read in ascending order (topmost last),
+    /// reading it out of order would advance past data that hasn't been collected yet.
     /// The `check_status` parameter is used to control whether the status bit is polled
-    /// after each word read, to check for any errors.
+    /// after all words are read, to check for any errors; it also reads back `INDEX` to
+    /// verify the cursor advanced exactly once per word.
     pub fn read_target(
         &mut self,
         target_index: u8,
@@ -520,41 +663,141 @@ impl Backdoor {
             DATA_REGS_PER_WORD
         );
 
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+
         let mut control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
-        control &= !(0b1 << regs::CONTROL_WRITE_ENA_BIT);
-        self.dmi_write(regs::CONTROL_REG_OFFSET, control)
-            .context("cannot write to control register")?;
+        control |= 0b1 << regs::CONTROL_AUTO_INCR_BIT;
+        // WRITE_ENA is left clear: with AUTO_INCR set, this selects the read-side trigger.
+        // Batch the CONTROL setup and the single INDEX seed into one round trip; the writes
+        // execute strictly in order, and with WRITE_ENA clear the INDEX write cannot trigger
+        // a write. From the seed on, INDEX auto-increments in hardware.
+        self.dmi
+            .batched_dmi_writes(&[
+                ((regs::CONTROL_REG_OFFSET >> 2) as u32, control),
+                ((regs::INDEX_REG_OFFSET >> 2) as u32, start),
+            ])
+            .context("cannot set up control and index registers")?;
 
-        let mut words = Vec::new();
+        // Reading the top register advances INDEX, so within each word the registers must be
+        // read in ascending order (topmost last). The flattened address sequence preserves
+        // that order, and batched reads keep operation order, across chunks too.
+        let addrs: Vec<u32> = (0..count)
+            .flat_map(|_| {
+                (0..regs_used).map(|idx| ((regs::READ_DATA_0_REG_OFFSET + idx * 4) >> 2) as u32)
+            })
+            .collect();
+        let values = self
+            .dmi
+            .batched_dmi_reads(&addrs)
+            .context("cannot read from read_data registers")?;
 
-        for word_idx in start..(start + count) {
-            self.dmi_write(regs::INDEX_REG_OFFSET, word_idx)
-                .context("cannot write word index")?;
+        let words = values
+            .chunks_exact(regs_used)
+            .map(|chunk| {
+                let mut regs = [0u32; DATA_REGS_PER_WORD];
+                regs[..regs_used].copy_from_slice(chunk);
+                Word::from_u32_chunks(&regs, bytes_per_word)
+            })
+            .collect::<Vec<_>>();
 
-            if check_status {
-                let status = self
-                    .dmi_read(regs::STATUS_REG_OFFSET)
-                    .context("cannot read status")?;
-                ensure!(
-                    status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
-                    "fpga bkdr_loader reported an error reading from word idx {} of target {}",
-                    word_idx,
-                    info.id_str()
-                );
-            }
+        if check_status {
+            // The auto-increment cursor must have advanced exactly once per word read; a
+            // mismatch means a top-word read strobe was lost or fired more than expected.
+            let end_index = self
+                .dmi_read(regs::INDEX_REG_OFFSET)
+                .context("cannot read back index")?;
+            ensure!(
+                end_index == start + count,
+                "fpga bkdr_loader index is {:#x} after reading {:#x} words at {:#x} of target {} (expected {:#x})",
+                end_index,
+                count,
+                start,
+                info.id_str(),
+                start + count
+            );
 
-            let mut regs = [0u32; DATA_REGS_PER_WORD];
-            for (idx, reg) in regs.iter_mut().enumerate().take(regs_used) {
-                let addr_offset = idx * 4;
-                *reg = self
-                    .dmi_read(regs::READ_DATA_0_REG_OFFSET + addr_offset)
-                    .context("cannot read from read_data register")?;
-            }
-
-            words.push(Word::from_u32_chunks(&regs, bytes_per_word));
+            let status = self
+                .dmi_read(regs::STATUS_REG_OFFSET)
+                .context("cannot read status")?;
+            ensure!(
+                status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
+                "fpga bkdr_loader reported an error reading from target {} starting at word {}",
+                info.id_str(),
+                start
+            );
         }
 
         Ok(words)
+    }
+
+    /// Read a single word at a given word index from a specified target's memory, using the
+    /// bkdr_loader's manual (non-`AUTO_INCR`) read mode: writing `INDEX` addresses the word, then
+    /// `READ_DATA` is read back.
+    ///
+    /// Unlike [`Backdoor::read_target`], this does not move any auto-increment cursor and can
+    /// address any word directly, which is handy for one-off single-word peeks. The
+    /// `check_status` parameter is used to control whether the status bit is polled afterwards,
+    /// to check for any errors.
+    pub fn read_target_word(
+        &mut self,
+        target_index: u8,
+        index: u32,
+        check_status: bool,
+    ) -> Result<Word> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        let info = self.targets[target_index as usize];
+        let width = info.width as usize;
+        let bytes_per_word = width.div_ceil(u8::BITS as usize);
+        let regs_used = width.div_ceil(u32::BITS as usize);
+        ensure!(
+            regs_used <= DATA_REGS_PER_WORD,
+            "Advertised target width {:#x} is too wide for the data registers (needs: {:#x}, has: {:#x})",
+            width,
+            regs_used,
+            DATA_REGS_PER_WORD
+        );
+
+        // Batch the CONTROL setup (WRITE_ENA and AUTO_INCR both clear: manual read mode, no
+        // side effects on READ_DATA reads) and the INDEX write into one round trip.
+        let control = (target_index as u32) << regs::CONTROL_TARGET_IDX_OFFSET;
+        self.dmi
+            .batched_dmi_writes(&[
+                ((regs::CONTROL_REG_OFFSET >> 2) as u32, control),
+                ((regs::INDEX_REG_OFFSET >> 2) as u32, index),
+            ])
+            .context("cannot set up control and index registers")?;
+
+        if check_status {
+            let status = self
+                .dmi_read(regs::STATUS_REG_OFFSET)
+                .context("cannot read status")?;
+            ensure!(
+                status & (0b1 << regs::STATUS_ERROR_BIT) == 0,
+                "fpga bkdr_loader reported an error reading from word idx {} of target {}",
+                index,
+                info.id_str()
+            );
+        }
+
+        let addrs: Vec<u32> = (0..regs_used)
+            .map(|idx| ((regs::READ_DATA_0_REG_OFFSET + idx * 4) >> 2) as u32)
+            .collect();
+        let values = self
+            .dmi
+            .batched_dmi_reads(&addrs)
+            .context("cannot read from read_data registers")?;
+
+        let mut regs = [0u32; DATA_REGS_PER_WORD];
+        regs[..regs_used].copy_from_slice(&values);
+
+        Ok(Word::from_u32_chunks(&regs, bytes_per_word))
     }
 
     /// Clear the entire memory of a specified target with a given word.
