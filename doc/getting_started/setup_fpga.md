@@ -353,6 +353,81 @@ Alternatively, if you would like to instruct Bazel to skip loading any bitstream
 bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
+### Configuring Bazel to load a custom bitstream
+
+Alternatively, you can instruct Bazel to load a custom bitstream, either one built yourself and saved locally, or downloaded from the internet.
+This is a multi-step process described below.
+
+#### 1. Creating a bitstream cache directory
+
+This step only needs to be done once.
+Select a directory which will contain an alternative bitstream cache and create it if it does not exists.
+You also need to create a `cache` sub-directory.
+For example,
+```sh
+export CUSTOM_BITSTREAM_CACHE=~/custom_bitstreams
+mkdir -p "$CUSTOM_BITSTREAM_CACHE/cache"
+```
+
+#### 2. Populating the cache
+
+Whenever you want to add a bitstream to this custom cache, the recommended way is to use the script in `util/py/scripts/bitstream_cache_extract.py`.
+Each cache entry is identified by a **name** which can be almost arbitrary (technically it needs to be a valid directory name).
+The cache can contain an arbitrary number of entries.
+In order to add a cache entry, you first need to obtain a bitstream archive (see below).
+The general command to add a cache entry named `<entry_name>` from a bitstream archive `<archive>` is the following:
+```sh
+util/py/scripts/bitstream_cache_extract.py --cache "$CUSTOM_BITSTREAM_CACHE" <entry_name> <archive>
+```
+
+The typical ways to populate the cache are:
+- Copying a Vivado-built bitstream to the cache. Example:
+```sh
+./bazelisk.sh build //hw/bitstream/vivado:earlgrey_cw340_archive
+util/py/scripts/bitstream_cache_extract.py --cache "$CUSTOM_BITSTREAM_CACHE" feature_a \
+  $(./bazelisk.sh outquery //hw/bitstream/vivado:earlgrey_cw340_archive)
+```
+- Obtaining the latest public bitstream. This can be useful for offline usage. Example:
+```sh
+curl https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz -o bitstream-latest.tar.gz
+util/py/scripts/bitstream_cache_extract.py --cache "$CUSTOM_BITSTREAM_CACHE" standard bitstream-latest.tar.gz
+```
+- Obtaining a bitstream from a PR: open the Github Action `Checks` panel, lookup the `CI` workflow,
+find the `Earl Grey for CW340 / Build bitstream` job and open the `Upload step outputs` step and
+click on the `Artifact download URL` link.
+This will download a ZIP file, you need to extract it to obtain the bitstream archive (a TAR file) to pass to the extraction script.
+![CI Output](ci_fpga_bistream_archive_artifact.png)
+
+#### 3. Using the cache
+
+Now that the cache is created and has been populated, it can be used when running any bazel command as follows:
+```sh
+BITSTREAM="--cache $CUSTOM_BITSTREAM_CACHE --offline <entry_name>" ./bazelisk.sh ...
+```
+Example:
+```sh
+BITSTREAM="--cache $CUSTOM_BITSTREAM_CACHE --offline feature_a" ./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw340_sival_rom_ext
+```
+Alternatively, you can use `--define bitstream=<entry_name>` to quickly switch between entries of the cache.
+**Note** that even if you use `--define bitstream=...`, you must provide a default entry name in the `BITSTREAM` environment variable, otherwise it will not initialize correctly.
+```sh
+BITSTREAM="--cache $CUSTOM_BITSTREAM_CACHE --offline feature_a" ./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw340_sival_rom_ext --define bitstream=super_feature_b
+BITSTREAM="--cache $CUSTOM_BITSTREAM_CACHE --offline feature_a" ./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw340_sival_rom_ext --define bitstream=other_feature_c
+```
+
+#### 4. More advanced usage
+
+The bitstream cache supports several modes of operations.
+To get more information about it, you can run:
+```sh
+BITSTREAM="--help" ./bazelisk.sh query @bitstreams//...
+```
+A usual command for debugging problems is printing the list of bitstreams:
+```sh
+BITSTREAM="--cache $CUSTOM_BITSTREAM_CACHE --offline --list" ./bazelisk.sh query @bitstreams//...
+```
+
+
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
 
 Some on-device software targets are defined using the custom `opentitan_binary` Bazel macro.
@@ -375,7 +450,7 @@ To flash the bitstream onto the FPGA using `opentitantool`, use the following co
 cd $REPO_TOP
 bazel run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
 ```
-##### if you built the bitstream yourself:
+##### If you built the bitstream yourself:
 ```sh
 cd $REPO_TOP
 bazel run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
