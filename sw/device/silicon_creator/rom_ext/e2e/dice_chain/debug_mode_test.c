@@ -6,7 +6,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -64,8 +64,8 @@ const char kCwtCdi1DebugOn[] = {
 
 static status_t test_debug_mode(void) {
   uint8_t data[2048];
-  TRY(flash_ctrl_info_read(&kFlashCtrlInfoPageDiceCerts, 0,
-                           sizeof(data) / sizeof(uint32_t), data));
+  TRY(nvm_ctrl_info_read(kNvmInfoPageDiceCerts, 0,
+                         sizeof(data) / sizeof(uint32_t), data));
 
   uint32_t offset = 0;
   size_t len = sizeof(data);
