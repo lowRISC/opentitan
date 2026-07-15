@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top_earlgrey:defs.bzl", "EARLGREY_MLDSA_SLOTS")
+
 def secver_write_selection():
     """Return the secver_write value based on the configuration setting."""
     return select({
@@ -35,11 +37,7 @@ ROM_EXT_VARIATIONS = {
         deps = [
             "//sw/device/silicon_creator/lib/cert:dice_mldsa",
         ],
-        slot_spec = {
-            "owner_slot_a": "0x16000",
-            "owner_slot_b": "0x96000",
-            "rom_ext_size": "0x16000",
-        },
+        slot_spec = EARLGREY_MLDSA_SLOTS,
     ),
 }
 

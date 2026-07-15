@@ -22,3 +22,24 @@ EARLGREY_SLOTS = select({
     "@lowrisc_opentitan//rules/coverage:enabled": EARLGREY_SLOTS_COVERAGE,
     "//conditions:default": EARLGREY_SLOTS_NORMAL,
 })
+
+EARLGREY_MLDSA_SLOTS_NORMAL = {
+    "rom_ext_slot_a": "0x0",
+    "rom_ext_slot_b": "0x80000",
+    "owner_slot_a": "0x16000",
+    "owner_slot_b": "0x96000",
+    "rom_ext_size": "0x16000",
+}
+
+EARLGREY_MLDSA_SLOTS_COVERAGE = {
+    "rom_ext_slot_a": "0x0",
+    "rom_ext_slot_b": "0x80000",
+    "owner_slot_a": "0x2a000",
+    "owner_slot_b": "0xaa000",
+    "rom_ext_size": "0x2a000",
+}
+
+EARLGREY_MLDSA_SLOTS = select({
+    "@lowrisc_opentitan//rules/coverage:enabled": EARLGREY_MLDSA_SLOTS_COVERAGE,
+    "//conditions:default": EARLGREY_MLDSA_SLOTS_NORMAL,
+})

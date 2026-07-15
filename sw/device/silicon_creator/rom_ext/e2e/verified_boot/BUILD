@@ -317,26 +317,24 @@ opentitan_test(
         "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     fpga = fpga_params(
-        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        assemble = "{romext}@{romext_offset} {firmware}@{owner_slot_a}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a": "romext",
         },
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
         # BFV:064d410d corresponds to kErrorManifestBadBaseAddress
         exit_success = "BFV:064d410d",
-        owner_offset = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec["owner_slot_a"],
         romext_offset = "0x0",
     ),
     manifest = ":manifest_base_address_default",
     qemu = qemu_params(
-        assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+        assemble = "{romext}@{romext_offset} {firmware}@{owner_slot_a}",
         binaries = {
             "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a": "romext",
         },
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
         # BFV:064d410d corresponds to kErrorManifestBadBaseAddress
         exit_success = "BFV:064d410d",
-        owner_offset = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec["owner_slot_a"],
         romext_offset = "0x0",
     ),
     slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
