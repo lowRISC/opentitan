@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -51,11 +51,11 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   }
 
   if (blinded_key->config.hw_backed == kHardenedBoolTrue) {
-    // Call keymgr to sideload the key into AES.
-    keymgr_diversification_t diversification;
+    // Call keymgr dpe to sideload the key into AES.
+    keymgr_dpe_diversification_t diversification;
     HARDENED_TRY(
-        keyblob_to_keymgr_diversification(blinded_key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+        keyblob_to_keymgr_dpe_diversification(blinded_key, &diversification));
+    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
     aes_key->key_shares[0] = NULL;
     aes_key->key_shares[1] = NULL;
   } else if (blinded_key->config.hw_backed == kHardenedBoolFalse) {
@@ -72,6 +72,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
     return OTCRYPTO_BAD_ARGS;
   }
   aes_key->sideload = blinded_key->config.hw_backed;
+  aes_key->keymgr_dpe_slot_idx = blinded_key->config.keymgr_dpe_slot_idx;
 
   // Set the block cipher mode based on the key mode.
   otcrypto_key_mode_t blinded_key_mode_used = launder32(0);
@@ -284,7 +285,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
  */
 static void hw_wipe_guard(uint32_t *dummy) {
   (void)aes_clear();
-  (void)keymgr_sideload_clear_aes();
+  (void)keymgr_dpe_sideload_clear_aes();
 }
 
 /**

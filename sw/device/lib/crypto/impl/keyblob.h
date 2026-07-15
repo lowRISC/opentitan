@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
 
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -17,7 +17,7 @@ enum {
   /**
    * Number of 32-bit words in a hardware-backed key's keyblob.
    */
-  kKeyblobHwBackedWords = kKeymgrSaltNumWords,
+  kKeyblobHwBackedWords = kKeymgrDPESaltNumWords,
   /**
    * Number of bytes in a hardware-backed key's keyblob.
    */
@@ -25,7 +25,7 @@ enum {
   /**
    * Number of 32-bit words in an attestation key's keyblob.
    */
-  kCdiKeyblobHwBackedWords = kKeymgrSaltNumWords + 1,
+  kCdiKeyblobHwBackedWords = kKeymgrDPESaltNumWords + 1,
   /**
    * Number of bytes in an attestation key's keyblob.
    */
@@ -87,53 +87,54 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              uint32_t *keyblob);
 
 /**
- * Construct key manager diversification data from a raw keyblob.
+ * Construct key manager dpe diversification data from a raw keyblob.
  *
  * The keyblob must be exactly 8 32-bit words long. The first word is the
  * version and subsequent words are the salt. The key mode is appended to the
- * salt to prevent key manager keys being used for different modes.
+ * salt to prevent key manager dpe keys being used for different modes.
  *
  * @param keyblob Pointer to the keyblob.
+ * @param keymgr_dpe_src_slot Source DPE context for the key
  * @param mode Key mode to use in the diversification.
  * @param[out] Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_buffer_to_keymgr_diversification(
-    const uint32_t *keyblob, otcrypto_key_mode_t mode,
-    keymgr_diversification_t *diversification);
+status_t keyblob_buffer_to_keymgr_dpe_diversification(
+    const uint32_t *keyblob, uint32_t keymgr_dpe_src_slot,
+    otcrypto_key_mode_t mode, keymgr_dpe_diversification_t *diversification);
 
 /**
- * Construct key manager diversification data from a blinded key.
+ * Construct key manager dpe diversification data from a blinded key.
  *
  * The keyblob for a hardware-backed key must be exactly 8 32-bit words long.
  * The first word is the version and subsequent words are the salt. The key
- * mode is appended to the salt to prevent key manager keys being used for
+ * mode is appended to the salt to prevent key manager dpe keys being used for
  * different modes.
  *
  * If the key configuration states that the key is not hardware-backed, or if
  * the keyblob is the wrong length, this function will return an error.
  *
  * @param key Blinded key to use.
- * @param[out] Destination key manager diversification struct.
+ * @param[out] Destination key manager dpe diversification struct.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_to_keymgr_diversification(
+status_t keyblob_to_keymgr_dpe_diversification(
     const otcrypto_blinded_key_t *key,
-    keymgr_diversification_t *diversification);
+    keymgr_dpe_diversification_t *diversification);
 
 /**
- * Construct key manager diversification data from a blinded key.
+ * Construct key manager dpe diversification data from a blinded key.
  *
- * Similar to keyblob_to_keymgr_diversification but using the specific salt for
- * attestation keys.
+ * Similar to keyblob_to_keymgr_dpe_diversification but using the specific salt
+ * for attestation keys.
  *
  * @param key Blinded key to use.
  * @param[out] Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_to_keymgr_attestation_diversification(
+status_t keyblob_to_keymgr_dpe_attestation_diversification(
     const otcrypto_blinded_key_t *key,
-    keymgr_diversification_t *diversification);
+    keymgr_dpe_diversification_t *diversification);
 
 /**
  * Checks that the configuration represents a key masked with XOR.
@@ -210,7 +211,7 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
                             size_t unmasked_key_len, uint32_t *unmasked_key);
 
 /**
- * Calls keymgr to sideload key material into OTBN.
+ * Calls keymgr dpe to sideload key material into OTBN.
  *
  * This routine should only ever be called on hardware-backed keys.
  *

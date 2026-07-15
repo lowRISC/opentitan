@@ -6,7 +6,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -22,7 +22,7 @@
  */
 static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
-    (void)keymgr_sideload_clear_kmac();
+    (void)keymgr_dpe_sideload_clear_kmac();
   }
 }
 
@@ -92,14 +92,14 @@ otcrypto_status_t otcrypto_kmac_kdf(
 
     is_sideloaded = kHardenedBoolTrue;
 
-    // Configure keymgr with diversification input and then generate the
+    // Configure keymgr dpe with diversification input and then generate the
     // sideload key.
-    keymgr_diversification_t diversification;
+    keymgr_dpe_diversification_t diversification;
     // Diversification call also checks that
     // `key_derivation_key->keyblob_length` is 8 words long.
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key_derivation_key,
-                                                   &diversification));
-    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
+    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key_derivation_key,
+                                                       &diversification));
+    HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
   } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
     // Remask the key.
     HARDENED_TRY(keyblob_remask(key_derivation_key));
