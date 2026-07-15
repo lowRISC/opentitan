@@ -520,20 +520,31 @@ cc_library(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "nvm_ctrl",
-    srcs = ["nvm_ctrl.c"],
-    hdrs = ["nvm_ctrl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":error",
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-    ],
+    srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
+    hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
+    deps = dual_inputs(
+        # The device variant always links the real flash_ctrl driver, even
+        # when force-included in a host build (e.g. a future shutdown_unittest
+        # FlashKill-style test verifying real register-level behavior).
+        device = [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
+        # The host variant links the plain flash_ctrl alias, which resolves to
+        # mock_flash_ctrl on host builds. This lets tests that mock at the
+        # flash_ctrl layer (boot_data_unittest, owner_block_unittest, etc.)
+        # keep working unchanged, since nvm_ctrl.c's page_ptr() maps each
+        # nvm_info_page_t back to the same flash_ctrl_info_page_t pointers
+        # those tests already expect.
+        host = ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        shared = [
+            ":error",
+            "//hw/top:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:multibits",
+        ],
+    ),
 )
 
 cc_library(

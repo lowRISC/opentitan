@@ -14,11 +14,8 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace {
-using rom_test::FlashCfg;
-using rom_test::FlashPerms;
 using rom_test::MockFlashCtrl;
 using ::testing::_;
-using ::testing::Return;
 
 enum {
   kStrikeCntMax = 128,
@@ -136,9 +133,6 @@ TEST_F(IsfbTest, InvalidManifestProductExpressionCount) {
 }
 
 TEST_F(IsfbTest, BootRequestProcess) {
-  EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 5, _))
-      .WillOnce(Return(kErrorOk));
-
   // This matches the number of strikes present in the manifest extension
   // `strike_mask` field value.
   ExpectInfoRead(StrikeFlashWords(/*strike_count=*/1), /*offset=*/0, kErrorOk);
@@ -156,8 +150,6 @@ TEST_F(IsfbTest, BootRequestProcess) {
 
 // This test checks the anti-rollback mechanism in the ISFB strike mask.
 TEST_F(IsfbTest, AntiRollbackBootFailure) {
-  EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 5, _))
-      .WillOnce(Return(kErrorOk));
   enum {
     // this value is derived from the strike mask in the manifest extension to
     // be larger than the expected number of 0s in the strike mask. See
@@ -185,8 +177,6 @@ TEST_F(IsfbTest, AntiRollbackBootFailure) {
 // This test checks that an invalid product association detected at boot time
 // results in an error.
 TEST_F(IsfbTest, ProductAssociationError) {
-  EXPECT_CALL(flash_ctrl_, InfoType0ParamsBuild(0, 5, _))
-      .WillOnce(Return(kErrorOk));
   ExpectInfoRead(StrikeFlashWords(/*strike_count=*/1), /*offset=*/0, kErrorOk);
 
   // The following manifest extension is used to generate an invalid product
