@@ -114,6 +114,12 @@ cc_library(
     name = "ecc_curve25519",
     srcs = ["ecc_curve25519.c"],
     hdrs = ["//sw/device/lib/crypto/include:ecc_curve25519.h"],
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": [
+            "FIPS_MODE",
+        ],
+        "//conditions:default": [],
+    }),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":config",

@@ -7,6 +7,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -26,6 +27,11 @@ enum {
   kP384PublicKeyWords = 768 / 32,
   /* Number of bytes in a P-384 private key. */
   kP384PrivateKeyBytes = 384 / 8,
+
+  /* Number of 32-bit words in a Curve25519 public key. */
+  kCurve25519PublicKeyWords = 256 / 32,
+  /* Number of bytes in a Curve25519 private key. */
+  kCurve25519PrivateKeyBytes = 256 / 8,
 };
 
 static const otcrypto_key_config_t kP256PrivateKeyConfig = {
@@ -40,6 +46,22 @@ static const otcrypto_key_config_t kP384PrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdsaP384,
     .key_length = kP384PrivateKeyBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+static const otcrypto_key_config_t kEd25519PrivateKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEd25519,
+    .key_length = kCurve25519PrivateKeyBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
+static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeX25519,
+    .key_length = kCurve25519PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
@@ -98,6 +120,61 @@ static status_t p384_pct_keygen_test(void) {
   return OK_STATUS();
 }
 
+static status_t ed25519_pct_keygen_test(void) {
+  LOG_INFO("Starting Ed25519 FIPS PCT Keygen test...");
+
+  // Allocate space for a masked private key.
+  uint32_t keyblob[keyblob_num_words(kEd25519PrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key = {
+      .config = kEd25519PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Allocate space for a public key.
+  uint32_t pk[kCurve25519PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // Generate keypair with OTBN FIPS PCT active.
+  CHECK_STATUS_OK(
+      otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+
+  LOG_INFO("Ed25519 FIPS PCT Keygen test passed.");
+  return OK_STATUS();
+}
+
+static status_t x25519_pct_keygen_test(void) {
+  LOG_INFO("Starting X25519 FIPS PCT Keygen test...");
+
+  // Allocate space for a masked private key.
+  uint32_t keyblob[keyblob_num_words(kX25519PrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key = {
+      .config = kX25519PrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  // Allocate space for a public key.
+  uint32_t pk[kCurve25519PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // Generate keypair with OTBN FIPS PCT active.
+  CHECK_STATUS_OK(otcrypto_x25519_keygen(&private_key, &public_key));
+
+  LOG_INFO("X25519 FIPS PCT Keygen test passed.");
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
 
@@ -106,6 +183,8 @@ bool test_main(void) {
 
   EXECUTE_TEST(result, p256_pct_keygen_test);
   EXECUTE_TEST(result, p384_pct_keygen_test);
+  EXECUTE_TEST(result, ed25519_pct_keygen_test);
+  EXECUTE_TEST(result, x25519_pct_keygen_test);
 
   return status_ok(result);
 }

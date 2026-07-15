@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/curve25519.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -371,6 +372,53 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
   return OTCRYPTO_OK;
 }
 
+#ifdef FIPS_MODE
+/**
+ * Perform FIPS Pairwise Consistency Test (PCT) for Ed25519 via sign & verify.
+ *
+ * @param private_key Blinded private key.
+ * @param public_key Unblinded public key.
+ * @return OK or error.
+ */
+static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
+                                   const otcrypto_unblinded_key_t *public_key) {
+  // Use a zero-initialized dummy message for sign and verify.
+  uint8_t dummy_msg_data[32] = {0};
+  otcrypto_const_byte_buf_t dummy_msg = {
+      .data = dummy_msg_data,
+      .len = sizeof(dummy_msg_data),
+  };
+
+  enum {
+    kEd25519SigWords = sizeof(curve25519_signature_t) / sizeof(uint32_t),
+  };
+  uint32_t sig_data[kEd25519SigWords];
+  otcrypto_word32_buf_t sig =
+      otcrypto_make_word32_buf(sig_data, kEd25519SigWords);
+
+  HARDENED_TRY(otcrypto_ed25519_sign(private_key, &dummy_msg,
+                                     kOtcryptoEddsaSignModeEddsa, &sig));
+
+  otcrypto_const_word32_buf_t sig_const =
+      otcrypto_make_const_word32_buf(sig_data, kEd25519SigWords);
+  hardened_bool_t result;
+  HARDENED_TRY(otcrypto_ed25519_verify(public_key, &dummy_msg,
+                                       kOtcryptoEddsaSignModeEddsa, &sig_const,
+                                       &result));
+
+  if (result != kHardenedBoolTrue) {
+    crypto_state_t *state = NULL;
+    if (status_ok(read_state_pointer(&state)) && state != NULL) {
+      state->locked_state = kHardenedBoolTrue;
+    }
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+#endif
+
 otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
@@ -383,7 +431,15 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
   HARDENED_TRY(
       otcrypto_ed25519_public_key_from_private_async_start(private_key));
   // Finish the keygen operation and get the public key.
-  return otcrypto_ed25519_public_key_from_private_async_finalize(public_key);
+  HARDENED_TRY(
+      otcrypto_ed25519_public_key_from_private_async_finalize(public_key));
+
+#ifdef FIPS_MODE
+  // Perform FIPS Pairwise Consistency Test (PCT).
+  HARDENED_TRY(ed25519_pct_verify(private_key, public_key));
+#endif
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ed25519_sign(
