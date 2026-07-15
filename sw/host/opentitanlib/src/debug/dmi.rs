@@ -5,7 +5,7 @@
 use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
-use anyhow::{Result, bail, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use thiserror::Error;
 
 use super::openocd::OpenOcd;
@@ -84,6 +84,13 @@ pub trait Dmi {
             .iter()
             .try_for_each(|&(addr, data)| self.dmi_write(addr, data))
     }
+
+    /// Perform a batch of sequential reads from DMI registers, returning the read values
+    /// in the same order as the given addresses.
+    /// May or may not be more optimized depending on the underlying implementation.
+    fn batched_dmi_reads(&mut self, addrs: &[u32]) -> Result<Vec<u32>> {
+        addrs.iter().map(|&addr| self.dmi_read(addr)).collect()
+    }
 }
 
 impl<T: Dmi> Dmi for &mut T {
@@ -97,6 +104,10 @@ impl<T: Dmi> Dmi for &mut T {
 
     fn batched_dmi_writes(&mut self, writes: &[(u32, u32)]) -> Result<()> {
         T::batched_dmi_writes(self, writes)
+    }
+
+    fn batched_dmi_reads(&mut self, addrs: &[u32]) -> Result<Vec<u32>> {
+        T::batched_dmi_reads(self, addrs)
     }
 }
 
@@ -222,8 +233,81 @@ impl Dmi for OpenOcdDmi {
             )
             .as_str(),
         );
-        self.openocd.execute(&cmd)?;
+        let result = self.openocd.execute(&cmd)?;
+
+        // The final NOP scan's captured value carries the DMI status of the whole batch:
+        // failed or dropped-while-busy operations leave a sticky nonzero op field, so a
+        // clean status here means every write in the batch was accepted.
+        let res = u64::from_str_radix(result.trim(), 16)
+            .with_context(|| format!("unexpected DMI batched write response '{result}'"))?;
+        ensure!(
+            res & 3 == 0,
+            "DMI batched write failed with sticky status {res:#x}; at least one write was \
+             dropped (is the JTAG clock too fast for the DMI to keep up?)"
+        );
         Ok(())
+    }
+
+    fn batched_dmi_reads(&mut self, addrs: &[u32]) -> Result<Vec<u32>> {
+        // Pipelined DMI reads: each `drscan` shifts in the next read operation while shifting
+        // out the response of the previous one, so a chunk of N reads costs N+1 scans and a
+        // single TCL round trip instead of 3 round trips per read via `dmi_read`. Operations
+        // execute strictly in order at the DTM; the per-entry checks below turn any sticky
+        // busy/error status or response reordering into a hard error.
+        const CHUNK_SIZE: usize = 512;
+
+        let mut values = Vec::with_capacity(addrs.len());
+        for chunk in addrs.chunks(CHUNK_SIZE) {
+            let mut cmd = String::from("set _r {}");
+            for &addr in chunk {
+                let op = (addr as u64) << DMI_ADDRESS_SHIFT | DMI_OP_READ;
+                cmd.push_str(&format!(
+                    "\nlappend _r [{}]",
+                    self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), op)
+                ));
+            }
+            // A trailing NOP scan collects the final read's response.
+            cmd.push_str(&format!(
+                "\nlappend _r [{}]\nset _r",
+                self.openocd.drscan_cmd(&self.tap, self.drscan_bits(), 0)
+            ));
+
+            let result = self.openocd.execute(&cmd)?;
+            let entries = result
+                .split_whitespace()
+                .map(|s| {
+                    u64::from_str_radix(s, 16)
+                        .with_context(|| format!("unexpected DMI batched read response '{s}'"))
+                })
+                .collect::<Result<Vec<u64>>>()?;
+            ensure!(
+                entries.len() == chunk.len() + 1,
+                "DMI batched read returned {} entries, expected {}",
+                entries.len(),
+                chunk.len() + 1
+            );
+
+            // Entry k is captured while scanning in operation k and holds the response of
+            // operation k-1: entry 0 belongs to whatever preceded this chunk (only its status
+            // matters), entries 1..=N are the responses of this chunk's reads, in order.
+            for (idx, &res) in entries.iter().enumerate() {
+                ensure!(
+                    res & 3 == 0,
+                    "DMI batched read failed with sticky status {res:#x} at entry {idx} \
+                     (is the JTAG clock too fast for the DMI to keep up?)"
+                );
+                if idx > 0 {
+                    let addr = chunk[idx - 1];
+                    ensure!(
+                        res >> DMI_ADDRESS_SHIFT == addr as u64,
+                        "DMI batched read address mismatch: expected {addr:#x}, response {res:#x}"
+                    );
+                    values.push((res >> DMI_DATA_SHIFT) as u32);
+                }
+            }
+        }
+
+        Ok(values)
     }
 }
 
