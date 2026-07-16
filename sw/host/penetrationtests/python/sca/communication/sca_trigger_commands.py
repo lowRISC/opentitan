@@ -29,3 +29,4 @@ class OTTRIGGER:
         # Source payload.
         src = {"source": trigger_source}
         self.target.write(json.dumps(src).encode("ascii"))
+        time.sleep(0.05)

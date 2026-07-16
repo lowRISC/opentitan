@@ -252,6 +252,19 @@ class HyperDebug:
         return decoded_response.strip()
 
     def find_target_port(self):
+        if self.tool_args:
+            for idx, arg in enumerate(self.tool_args):
+                if arg.startswith("--uarts="):
+                    uarts_val = arg.split("=", 1)[1]
+                    first_uart = uarts_val.split(",")[0].strip()
+                    if first_uart:
+                        return first_uart
+                elif arg == "--uarts" and idx + 1 < len(self.tool_args):
+                    uarts_val = self.tool_args[idx + 1]
+                    first_uart = uarts_val.split(",")[0].strip()
+                    if first_uart:
+                        return first_uart
+
         for port in comports():
             if "UART2" in port.description and "HyperDebug" in port.description:
                 return port.device

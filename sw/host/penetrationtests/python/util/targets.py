@@ -65,8 +65,17 @@ class Target:
         self.com_interface = self.target.init_communication(target_cfg.port, self.baudrate)
 
     def initialize_target(self, print_output=True):
+        if self.com_interface:
+            try:
+                self.com_interface.close()
+            except Exception:
+                pass
+            self.com_interface = None
         self.target.initialize_target(print_output=print_output)
-        # Clear the UART
+        self.com_interface = self.target.init_communication(self.target_cfg.port, self.baudrate)
+        # Wait for device to finish booting up
+        self.wait_for_boot()
+        # Clear any remaining output from UART
         self.dump_all()
 
     def clear_bitstream(self, delay=2):
@@ -92,38 +101,48 @@ class Target:
 
     def print_all(self, max_tries=50):
         it = 0
-        while it != max_tries:
+        while it < max_tries:
             try:
-                read_line = str(self.readline().decode().strip())
+                read_line = self.readline().decode("utf-8", errors="ignore").strip()
                 if len(read_line) > 0:
                     print(read_line, flush=True)
                 else:
                     break
-            except UnicodeDecodeError:
+            except Exception:
                 pass
             it += 1
 
     def read_all(self, max_tries=50):
         it = 0
         response = ""
-        while it != max_tries:
+        while it < max_tries:
             try:
-                read_line = str(self.readline().decode().strip())
+                read_line = self.readline().decode("utf-8", errors="ignore").strip()
                 if len(read_line) > 0:
                     response += read_line
                 else:
                     return response
-            except UnicodeDecodeError:
+            except Exception:
                 pass
             it += 1
+        return response
 
     def dump_all(self, max_tries=50):
         it = 0
-        while it != max_tries:
-            read_line = str(self.readline())
-            if len(read_line) <= 5:
+        while it < max_tries:
+            line_bytes = self.readline()
+            if not line_bytes:
                 break
             it += 1
+
+    def wait_for_boot(self, timeout=10):
+        """Wait until target device outputs boot confirmation ('Running ...')."""
+        end_time = time.time() + timeout
+        while time.time() < end_time:
+            line = self.readline().decode("utf-8", errors="ignore")
+            if "Running" in line:
+                return True
+        return False
 
     def check_fault_or_read_reponse(self, max_tries=50):
         """
@@ -135,15 +154,21 @@ class Target:
             - True if the chip gave a response, False if it ran into a fault.
         """
         it = 0
-        while it != max_tries:
+        while it < max_tries:
             try:
-                read_line = str(self.readline())
+                line_bytes = self.readline()
+                if not line_bytes:
+                    it += 1
+                    continue
+                read_line = line_bytes.decode("utf-8", errors="ignore")
                 if "FAULT" in read_line:
                     return read_line, False
                 if "RESP_OK" in read_line:
                     return read_line.split("RESP_OK:")[1].split(" CRC:")[0], True
+                if "RESP_ERR" in read_line:
+                    return read_line.split("RESP_ERR:")[1].split(" CRC:")[0], False
                 it += 1
-            except UnicodeDecodeError:
+            except Exception:
                 it += 1
                 continue
         return "", False
@@ -158,39 +183,51 @@ class Target:
             - True if the chip gave a response, False if the chip resetted.
         """
         it = 0
-        while it != max_tries:
+        while it < max_tries:
             try:
-                read_line = str(self.readline())
+                line_bytes = self.readline()
+                if not line_bytes:
+                    it += 1
+                    continue
+                read_line = line_bytes.decode("utf-8", errors="ignore")
                 if "Chip flashed" in read_line:
                     return read_line, False
                 if "RESP_OK" in read_line:
                     return read_line.split("RESP_OK:")[1].split(" CRC:")[0], True
+                if "RESP_ERR" in read_line:
+                    return read_line.split("RESP_ERR:")[1].split(" CRC:")[0], False
                 it += 1
-            except UnicodeDecodeError:
+            except Exception:
                 it += 1
                 continue
         return "", False
 
-    def read_response(self, init_timeout: Optional[int] = 0, max_tries: Optional[int] = 250):
+    def read_response(self, init_timeout: Optional[int] = 0, max_tries: Optional[int] = 15):
         """
         Args:
+            init_timeout: Time to sleep before reading response.
             max_tries: Maximum number of attempts to read from UART.
 
         Returns:
             The JSON response of OpenTitan.
         """
-        time.sleep(init_timeout)
+        if init_timeout:
+            time.sleep(init_timeout)
         it = 0
         while it < max_tries:
             try:
-                read_line = str(self.readline().decode().strip())
-            except UnicodeDecodeError:
-                break
-            if len(read_line) > 0:
-                if "RESP_OK" in read_line:
-                    return read_line.split("RESP_OK:")[1].split(" CRC:")[0]
-            else:
-                break
+                line_bytes = self.readline()
+                if not line_bytes:
+                    it += 1
+                    continue
+                read_line = line_bytes.decode("utf-8", errors="ignore").strip()
+            except Exception:
+                it += 1
+                continue
+            if "RESP_OK" in read_line:
+                return read_line.split("RESP_OK:")[1].split(" CRC:")[0]
+            if "RESP_ERR" in read_line:
+                return read_line.split("RESP_ERR:")[1].split(" CRC:")[0]
             it += 1
         return ""
 

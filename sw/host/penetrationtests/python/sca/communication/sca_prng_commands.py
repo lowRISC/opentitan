@@ -32,3 +32,4 @@ class OTPRNG:
         seed_int = [x for x in seed]
         seed_data = {"seed": seed_int, "seed_length": seed_length}
         self.target.write(json.dumps(seed_data).encode("ascii"))
+        time.sleep(0.05)
