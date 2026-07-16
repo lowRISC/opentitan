@@ -52,7 +52,7 @@ module top_${top["name"]} #(
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
   % for mod in top["module"]:
     % if mod["type"] in ["keymgr", "keymgr_dpe"]:
-  assign ${mod["name"]}_otp_device_id =
+  assign ${mod["name"]}_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
     % endif
   % endfor

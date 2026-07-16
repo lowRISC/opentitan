@@ -18,7 +18,7 @@ filegroup(
         "//hw/top/tock:gpio_regs",
         "//hw/top/tock:hmac_regs",
         "//hw/top/tock:i2c_regs",
-        "//hw/top/tock:keymgr_regs",
+        "//hw/top/tock:keymgr_dpe_regs",
         "//hw/top/tock:kmac_regs",
         "//hw/top/tock:lc_ctrl_regs",
         "//hw/top/tock:otbn_regs",

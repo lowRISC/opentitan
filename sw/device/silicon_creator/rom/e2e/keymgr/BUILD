@@ -96,10 +96,10 @@ rom_e2e_keymgr_init_configs = [
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [
-            "//sw/device/lib/dif:keymgr",
+            "//sw/device/lib/dif:keymgr_dpe",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:rstmgr",
-            "//sw/device/lib/testing:keymgr_testutils",
+            "//sw/device/lib/testing:keymgr_dpe_testutils",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",

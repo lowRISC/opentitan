@@ -31,7 +31,7 @@
 #include "hw/top/dt/adc_ctrl.h"     // Generated
 #include "hw/top/dt/entropy_src.h"  // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
-#include "hw/top/dt/keymgr.h"       // Generated
+#include "hw/top/dt/keymgr_dpe.h"   // Generated
 #include "hw/top/dt/sensor_ctrl.h"  // Generated
 #include "hw/top/dt/sysrst_ctrl.h"  // Generated
 #include "hw/top/dt/usbdev.h"       // Generated
@@ -280,7 +280,6 @@ static const char *entropy_src_inst_name = "entropy_src";
 static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *i2c1_inst_name = "i2c1";
 static const char *i2c2_inst_name = "i2c2";
-static const char *keymgr_inst_name = "keymgr";
 static const char *rom_ctrl_inst_name = "rom_ctrl";
 static const char *sensor_ctrl_inst_name = "sensor_ctrl";
 static const char *spi_host1_inst_name = "spi_host1";
@@ -290,7 +289,6 @@ static const char *uart2_inst_name = "uart2";
 static const char *uart3_inst_name = "uart3";
 static const char *usbdev_inst_name = "usbdev";
 #elif defined(OPENTITAN_IS_DARJEELING)
-static const char *keymgr_dpe_inst_name = "keymgr_dpe";
 static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
 static const char *rom_ctrl0_inst_name = "rom_ctrl0";
 static const char *rom_ctrl1_inst_name = "rom_ctrl1";
@@ -298,6 +296,7 @@ static const char *rom_ctrl1_inst_name = "rom_ctrl1";
 #error "all_escalation_resets_test does not support this top"
 #endif
 
+static const char *keymgr_dpe_inst_name = "keymgr_dpe";
 static const char *aes_inst_name = "aes";
 static const char *aon_timer_inst_name = "aon_timer";
 static const char *clkmgr_inst_name = "clkmgr";
@@ -358,6 +357,28 @@ static void generic_sram_ctrl_fault_checker(const dif_sram_ctrl_t *sram_ctrl,
         ip_inst, codes, expected_codes);
 }
 
+/*
+// TODO(#14518) keymgr cannot read fault_status register.
+static void keymgr_fault_checker(bool enable) {
+  // Check the keymgr integrity fatal error code.
+  dif_kmac_status_t status;
+  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
+  if (enable) {
+    CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
+  } else {
+    CHECK(status.faults == 0, "Got codes 0x%x", status.faults);
+  }
+}
+*/
+
+static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
+                                     const char *type) {
+  // TODO(#14518)
+  LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
+           kDtKeymgrDpeAlertFatalFaultErr);
+  trivial_fault_checker(enable, ip_inst, type);
+}
+
 // Fault checkers for Top-specific IP
 #if defined(OPENTITAN_IS_EARLGREY)
 static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
@@ -393,40 +414,11 @@ static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
         "For flash shadow_storage err exp 1 get 0");
 }
 
-/*
-// TODO(#14518) keymgr cannot read fault_status register.
-static void keymgr_fault_checker(bool enable) {
-  // Check the keymgr integrity fatal error code.
-  dif_kmac_status_t status;
-  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
-  if (enable) {
-    CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
-  } else {
-    CHECK(status.faults == 0, "Got codes 0x%x", status.faults);
-  }
-}
-*/
-
-static void keymgr_fault_checker(bool enable, const char *ip_inst,
-                                 const char *type) {
-  // TODO(#14518)
-  LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
-           kDtKeymgrAlertFatalFaultErr);
-  trivial_fault_checker(enable, ip_inst, type);
-}
-
 static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
                                    const char *type) {
   return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl);
 }
 #elif defined(OPENTITAN_IS_DARJEELING)
-static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
-                                     const char *type) {
-  // TODO(#14518)
-  LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
-           kDtKeymgrDpeAlertFatalFaultErr);
-  trivial_fault_checker(enable, ip_inst, type);
-}
 
 static void rom_ctrl0_fault_checker(bool enable, const char *ip_inst,
                                     const char *type) {
@@ -910,11 +902,6 @@ static void init_fault_checkers(fault_checker_t *checkers) {
       (fault_checker_t){trivial_fault_checker, i2c2_inst_name, we_check};
   static_assert(kDtI2cCount >= 3, "This test needs 3 I2C instances");
 
-  checkers[dt_keymgr_alert_to_alert_id((dt_keymgr_t)0,
-                                       kDtKeymgrAlertFatalFaultErr)] =
-      (fault_checker_t){keymgr_fault_checker, keymgr_inst_name, we_check};
-  static_assert(kDtKeymgrCount >= 1, "This test needs a keymgr");
-
   checkers[dt_rom_ctrl_alert_to_alert_id(kRomCtrlDt, kDtRomCtrlAlertFatal)] =
       (fault_checker_t){rom_ctrl_fault_checker, rom_ctrl_inst_name, we_check};
 
@@ -944,10 +931,6 @@ static void init_fault_checkers(fault_checker_t *checkers) {
       (fault_checker_t){trivial_fault_checker, usbdev_inst_name, we_check};
   static_assert(kDtUsbdevCount >= 1, "This test needs a USB Device");
 #elif defined(OPENTITAN_IS_DARJEELING)
-  checkers[dt_keymgr_dpe_alert_to_alert_id(
-      (dt_keymgr_dpe_t)0, kDtKeymgrDpeAlertFatalFaultErr)] = (fault_checker_t){
-      keymgr_dpe_fault_checker, keymgr_dpe_inst_name, we_check};
-  static_assert(kDtKeymgrDpeCount >= 1, "This test needs a keymgr_dpe");
 
   checkers[dt_sram_ctrl_alert_to_alert_id(
       kDtSramCtrlMbox, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
@@ -960,6 +943,11 @@ static void init_fault_checkers(fault_checker_t *checkers) {
 #else
 #error "all_escalation_resets_test does not support this top"
 #endif
+
+  checkers[dt_keymgr_dpe_alert_to_alert_id(
+      (dt_keymgr_dpe_t)0, kDtKeymgrDpeAlertFatalFaultErr)] = (fault_checker_t){
+      keymgr_dpe_fault_checker, keymgr_dpe_inst_name, we_check};
+  static_assert(kDtKeymgrDpeCount >= 1, "This test needs a keymgr_dpe");
 
   checkers[dt_aes_alert_to_alert_id(kAesDt, kDtAesAlertFatalFault)] =
       (fault_checker_t){aes_fault_checker, aes_inst_name, we_check};

@@ -77,17 +77,29 @@
       act:     "req",
       package: "kmac_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "otp_keymgr_key",
+    { struct:  "keymgr_dpe_creator_root_key",
       type:    "uni",
-      name:    "otp_key",
+      name:    "creator_root_key",
       act:     "rcv",
-      package: "otp_ctrl_pkg",
+      package: "keymgr_dpe_pkg",
     },
-    { struct:  "otp_device_id",
+    { struct:  "keymgr_dpe_creator_seed",
       type:    "uni",
-      name:    "otp_device_id",
+      name:    "creator_seed",
       act:     "rcv",
-      package: "otp_ctrl_pkg",
+      package: "keymgr_dpe_pkg",
+    },
+    { struct:  "keymgr_dpe_owner_seed",
+      type:    "uni",
+      name:    "owner_seed",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
+    },
+    { struct:  "keymgr_dpe_device_id",
+      type:    "uni",
+      name:    "device_id",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
     },
     { struct:  "lc_tx",
       type:    "uni",
@@ -216,11 +228,33 @@
       default: "1",
       local: "true"
     },
+    { name: "NumMaxHwSlot",
+      desc: '''
+        Number of maximum supported HW slots. If this value is changed then the
+        bit width in SLOT_SRC_SEL / SLOT_DST_SEL in the
+        "CONTROL_SHADOWED" register needs to be updated too.
+      ''',
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumInstHwSlot",
+      desc: "Number of instantiated HW slots",
+      type: "int",
+      default: "4",
+      expose:  "true"
+    },
+    { name: "NumBootStages",
+      desc: "Number of available boot stage",
+      type: "int",
+      default: "3",
+      expose:  "true"
+    },
     { name: "NumRomDigestInputs",
       desc: "Number of digest inputs from ROM_CTRL",
       type: "int",
-      default: "2",
-      local: "true"
+      default: "1",
+      expose:  "true"
     },
   ],
 
@@ -297,11 +331,13 @@ countermeasures: [
         Main control fsm is sparsely encoded.
       '''
     }
-    { name: "DATA.FSM.SPARSE",
-      desc: '''
-        Control data fsm (for redundant data control) is sparsely encoded.
-      '''
-    }
+    // TODO(#30721): reenable countermeasures after integrating all keymgr
+    // modules into the keymgr_dpe
+    //{ name: "DATA.FSM.SPARSE",
+    //  desc: '''
+    //    Control data fsm (for redundant data control) is sparsely encoded.
+    //  '''
+    //}
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
         Main control fsm locally escalates based on any detected fault in keymgr.
@@ -309,11 +345,13 @@ countermeasures: [
         further legal operations from executing.
       '''
     }
-    { name: "CTRL.FSM.CONSISTENCY",
-      desc: '''
-        Main and operational fsm transitions are consistent with software commands.
-      '''
-    }
+    // TODO(#30721): reenable countermeasures after integrating all keymgr
+    // modules into the keymgr_dpe
+    //{ name: "CTRL.FSM.CONSISTENCY",
+    //  desc: '''
+    //    Main and operational fsm transitions are consistent with software commands.
+    //  '''
+    //}
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
         When the system globally escalates, the main control fsm also transitions to invalid state
@@ -325,46 +363,48 @@ countermeasures: [
         Primary count is duplicated.
       '''
     }
-    { name: "KMAC_IF.FSM.SPARSE",
-      desc: '''
-        kmac interface fsm is sparsely encoded.
-      '''
-    }
-    { name: "KMAC_IF.CTR.REDUN",
-      desc: '''
-        Primary count uses cross count.
-      '''
-    }
-    { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
-      desc: '''
-        One hot check for kmac interface commands.
-        Also, command enable (adv_en, id_en, gen_en) is checked for consistency
-        throughout the operation.
-      '''
-    }
-    { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
-      desc: '''
-        Spurious kmac done check.
-      '''
-    }
-    { name: "RESEED.CTR.REDUN",
-      desc: '''
-        Primary count is duplicated.
-      '''
-    }
-    { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
-      desc: '''
-        Sideload key slot select is checked for consistency.
-        When a key slot is valid when it should not be, an error is triggered.
-        The reverse case is not checked, since an invalid key cannot be used
-        anyways.
-      '''
-    }
-    { name: "SIDELOAD_CTRL.FSM.SPARSE",
-      desc: '''
-        Sideload control fsm is sparsely encoded.
-      '''
-    }
+    // TODO(#30721): reenable countermeasures after integrating all keymgr
+    // modules into the keymgr_dpe
+    //{ name: "KMAC_IF.FSM.SPARSE",
+    //  desc: '''
+    //    kmac interface fsm is sparsely encoded.
+    //  '''
+    //}
+    //{ name: "KMAC_IF.CTR.REDUN",
+    //  desc: '''
+    //    Primary count uses cross count.
+    //  '''
+    //}
+    //{ name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
+    //  desc: '''
+    //    One hot check for kmac interface commands.
+    //    Also, command enable (adv_en, id_en, gen_en) is checked for consistency
+    //    throughout the operation.
+    //  '''
+    //}
+    //{ name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
+    //  desc: '''
+    //    Spurious kmac done check.
+    //  '''
+    //}
+    //{ name: "RESEED.CTR.REDUN",
+    //  desc: '''
+    //    Primary count is duplicated.
+    //  '''
+    //}
+    //{ name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
+    //  desc: '''
+    //    Sideload key slot select is checked for consistency.
+    //    When a key slot is valid when it should not be, an error is triggered.
+    //    The reverse case is not checked, since an invalid key cannot be used
+    //    anyways.
+    //  '''
+    //}
+    //{ name: "SIDELOAD_CTRL.FSM.SPARSE",
+    //  desc: '''
+    //    Sideload control fsm is sparsely encoded.
+    //  '''
+    //}
     { name: "CTRL.KEY.INTEGRITY",
       desc: '''
         Internal secret key is protected with ECC.
@@ -539,6 +579,9 @@ countermeasures: [
           '''
         }
       ],
+      // TODO(#30682): Remove this label as soon as the RTL raises an
+      // error instead of a assertion.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "SIDELOAD_CLEAR",

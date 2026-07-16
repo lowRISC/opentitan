@@ -25,7 +25,13 @@ module keymgr_dpe
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
-  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault
+  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
+  // Number of instantiated HW slots
+  parameter int unsigned NumInstHwSlot         = 4,
+  // Number of available boot stages
+  parameter int unsigned NumBootStages         = 3,
+  // Number of ROM digest inputs
+  parameter int unsigned NumRomDigestInputs    = 1
 ) (
   input clk_i,
   input rst_ni,
@@ -56,8 +62,10 @@ module keymgr_dpe
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
-  input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
-  input otp_ctrl_pkg::otp_device_id_t otp_device_id_i,
+  input keymgr_dpe_creator_root_key_t creator_root_key_i,
+  input keymgr_dpe_creator_seed_t creator_seed_i,
+  input keymgr_dpe_owner_seed_t owner_seed_i,
+  input keymgr_dpe_device_id_t device_id_i,
 
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
@@ -72,9 +80,28 @@ module keymgr_dpe
   output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
+  // Advance width calculation
+  // When deriving from the UDS the following data are consumed (Not ordered):
+  //   - Software binding
+  //   - Revision seed
+  //   - OTP device ID
+  //   - LC keymgr diversification value
+  //   - ROM digests
+  //   - Creator seed (only if boot stage equals two)
+  localparam int DpeAdvDataWidth = SwBindingWidth + KeyWidth + DeviceIdWidth +
+      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth * NumRomDigestInputs +
+      KeyWidth * (NumBootStages == 2);
+
+  // Determine the width of the data consumed by the KMAC IF during the inital
+  // derivation of the CreatorRootKey.
   `ASSERT_INIT(DpeAdvDataWidth_A, DpeAdvDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
+
+  // Determine the actual signal width to address all the hw slots
+  localparam int NumInstHwSlotWidth = prim_util_pkg::vbits(NumInstHwSlot);
+  localparam int NumMaxHwSlotWidth = prim_util_pkg::vbits(NumMaxHwSlot);
+  typedef logic [NumInstHwSlotWidth-1:0] keymgr_dpe_slot_idx_e;
 
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_false_strict;
@@ -259,16 +286,16 @@ module keymgr_dpe
   end
 
   hw_key_req_t root_key;
-  assign root_key.key = '{otp_key_i.creator_root_key_share1,
-                          otp_key_i.creator_root_key_share0};
+  assign root_key.key = '{creator_root_key_i.share1,
+                          creator_root_key_i.share0};
 
   prim_flop_2sync # (
     .Width(1)
   ) u_key_valid_sync (
     .clk_i,
     .rst_ni,
-    .d_i(otp_key_i.creator_root_key_share0_valid &
-         otp_key_i.creator_root_key_share1_valid),
+    .d_i(creator_root_key_i.share0_valid &
+         creator_root_key_i.share1_valid),
     .q_o(root_key.valid)
   );
 
@@ -276,7 +303,34 @@ module keymgr_dpe
   logic op_start;
   assign op_start = reg2hw.start.q;
   logic invalid_advance;
-  keymgr_dpe_ctrl u_ctrl (
+
+  // TODO(#30682): Remove this assertion
+  // Raise an assertion if the source / destination field provided by the
+  // sw register is out of bounds.
+  `ASSERT(SrcSelInRange_A, reg2hw.control_shadowed.slot_src_sel.q < NumInstHwSlot)
+  `ASSERT(DstSelInRange_A, reg2hw.control_shadowed.slot_dst_sel.q < NumInstHwSlot)
+  keymgr_dpe_slot_idx_e slot_src_sel_trunc, slot_dst_sel_trunc;
+  assign slot_src_sel_trunc =
+      keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q);
+  assign slot_dst_sel_trunc =
+      keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_dst_sel.q);
+
+  // AscentLint: Tie off upper bits of the slot selection register field if not the
+  // full register width is used.
+  if (NumInstHwSlotWidth < prim_util_pkg::vbits(NumMaxHwSlot)) begin : gen_unused_slot_sel_bits
+    logic unused_dst_slot_sel;
+    logic unused_src_slot_sel;
+    assign unused_dst_slot_sel = ^reg2hw.control_shadowed.slot_dst_sel.q[
+      NumMaxHwSlotWidth-1:NumInstHwSlotWidth];
+    assign unused_src_slot_sel = ^reg2hw.control_shadowed.slot_src_sel.q[
+      NumMaxHwSlotWidth-1:NumInstHwSlotWidth];
+  end
+
+  keymgr_dpe_ctrl # (
+    .NumInstHwSlot(NumInstHwSlot),
+    .NumInstHwSlotWidth(NumInstHwSlotWidth),
+    .NumBootStages(NumBootStages)
+  ) u_ctrl (
     .clk_i,
     .rst_ni,
     .en_i(lc_tx_test_true_strict(lc_keymgr_en[KeymgrDpeEnCtrl])),
@@ -295,8 +349,8 @@ module keymgr_dpe
     .load_key_lock_i(reg2hw.load_key_lock.q),
     // TODO(#384): Add assertions to check that we are not losing some bits by casting
     // slot_src/dst_sel bits to enum type
-    .slot_src_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q)),
-    .slot_dst_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_dst_sel.q)),
+    .slot_src_sel_i(slot_src_sel_trunc),
+    .slot_dst_sel_i(slot_dst_sel_trunc),
     .slot_policy_i(keymgr_dpe_policy_t'(reg2hw.slot_policy)),
     .max_key_version_i(reg2hw.max_key_ver_shadowed),
     .key_version_i(reg2hw.key_version),
@@ -449,14 +503,47 @@ module keymgr_dpe
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
   logic unused_creator_seed;
-  assign unused_creator_seed = ^{otp_key_i.creator_seed_valid};
-  assign creator_seed = otp_key_i.creator_seed;
+  assign unused_creator_seed = ^{creator_seed_i.seed_valid};
+  assign creator_seed = creator_seed_i.seed;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   logic unused_owner_seed;
-  assign unused_owner_seed = ^{otp_key_i.owner_seed_valid};
-  assign owner_seed = otp_key_i.owner_seed;
+  assign unused_owner_seed = ^{owner_seed_i.seed_valid};
+  assign owner_seed = owner_seed_i.seed;
+
+  // If the system support only two boot stages then the creator seed is
+  // consumed in BootStageCreator.
+  logic [DpeAdvDataWidth-1:0] adv_data_creator;
+  logic adv_data_creator_valid;
+  logic [DpeAdvDataWidth-1:0] adv_data_owner_int;
+  logic adv_data_owner_int_valid;
+  if (NumBootStages == 2) begin : gen_adv_matrix_for_two_boot_stages
+    assign adv_data_creator = DpeAdvDataWidth'({sw_binding,
+                                                revision_seed,
+                                                device_id_i,
+                                                lc_keymgr_div_i,
+                                                rom_digests,
+                                                creator_seed});
+    assign adv_data_creator_valid = devid_vld &
+                                    health_state_vld &
+                                    rom_digest_vld &
+                                    creator_seed_vld;
+    assign adv_data_owner_int = '0;
+    assign adv_data_owner_int_valid = '0;
+  end else begin : gen_adv_matrix_for_three_boot_stages
+    assign adv_data_creator = DpeAdvDataWidth'({sw_binding,
+                                                device_id_i,
+                                                lc_keymgr_div_i,
+                                                rom_digests,
+                                                revision_seed});
+    assign adv_data_creator_valid = devid_vld &
+                                    health_state_vld &
+                                    rom_digest_vld;
+    assign adv_data_owner_int = DpeAdvDataWidth'({sw_binding,
+                                                  creator_seed});
+    assign adv_data_owner_int_valid = creator_seed_vld;
+  end
 
   always_comb begin : gen_adv_matrix_all
     // One default only use SW binding
@@ -464,18 +551,12 @@ module keymgr_dpe
     adv_dvalid = {(2 ** DpeBootStagesWidth){1'b1}};
 
     if (reg2hw.control_shadowed.sw_binding_only.q == 1'b0) begin
-      // For (0 = Creator) and (1 = OwnerInt), check seed validity
-      adv_matrix[BootStageCreator] = DpeAdvDataWidth'({sw_binding,
-                                                      revision_seed,
-                                                      otp_device_id_i,
-                                                      lc_keymgr_div_i,
-                                                      rom_digests,
-                                                      creator_seed});
-      adv_dvalid[BootStageCreator] = creator_seed_vld &
-                                    devid_vld         &
-                                    health_state_vld  &
-                                    rom_digest_vld;
-      adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding,owner_seed});
+      // For (0 = Creator) / (1 = OwnerInt) / (2 = Owner), check seed validity
+      adv_matrix[BootStageCreator] = adv_data_creator;
+      adv_dvalid[BootStageCreator] = adv_data_creator_valid;
+      adv_matrix[BootStageOwnerInt] = adv_data_owner_int;
+      adv_dvalid[BootStageOwnerInt] = adv_data_owner_int_valid;
+      adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding, owner_seed});
       adv_dvalid[BootStageOwner] = owner_seed_vld;
     end
   end
@@ -516,7 +597,7 @@ module keymgr_dpe
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
     .key_i(curr_active_key),
-    .devid_i(otp_device_id_i),
+    .devid_i(device_id_i),
     .health_state_i(HealthStateWidth'(lc_keymgr_div_i)),
     .creator_seed_vld_o(creator_seed_vld),
     .owner_seed_vld_o(owner_seed_vld),
@@ -539,18 +620,29 @@ module keymgr_dpe
   assign hw2reg.debug.inactive_lc_en.d        = lc_tx_test_false_loose(
                                                   lc_keymgr_en[KeymgrDpeEnDebug]);
 
-  // creator_seed, dev_id, health_state and rom digest are used when boot_stage is incremented from
-  // 0 (= Creator) to 1 (= OwnerInt), so only latch them during consumption.
+  // Only latch required signals to advance the bootstage during consumption.
   logic is_creator_boot_stage, is_owner_boot_stage;
-  assign is_creator_boot_stage = active_key_slot.boot_stage == BootStageCreator;
-  assign is_owner_boot_stage   = active_key_slot.boot_stage == BootStageOwner;
+  assign is_creator_boot_stage   = active_key_slot.boot_stage == BootStageCreator;
+  assign is_owner_boot_stage     = active_key_slot.boot_stage == BootStageOwner;
 
-  assign hw2reg.debug.invalid_creator_seed.de = adv_en & is_creator_boot_stage;
+  // dev_id, health_state and rom digest is used when boot_stage is incremented
+  // from 0 (= Creator) to 1 (= OwnerInt)
   assign hw2reg.debug.invalid_dev_id.de       = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_health_state.de = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_digest.de       = adv_en & is_creator_boot_stage;
 
-  // owner_seed is used when boot_stage is incremented from 1 (= OwnerInt) to 2 (= Owner).
+  // creator_seed is used when boot_stage is incremented from 1 (= OwnerInt) to
+  // 2 (= Owner) or from 0 (= Creator) to 1 (= OwnerInt) depending on the
+  // NumBootStages parameter
+  if (NumBootStages == 2) begin : gen_invalid_creator_seed_for_2_boot_stages
+    assign hw2reg.debug.invalid_creator_seed.de =
+        adv_en & is_owner_boot_stage;
+  end else begin : gen_invalid_creator_seed_for_3_boot_stages
+    assign hw2reg.debug.invalid_creator_seed.de =
+        adv_en & (active_key_slot.boot_stage == BootStageOwnerInt);
+  end
+
+  // owner_seed is used when boot_stage is incremented from 2 (= Owner) to 3 (= Runtime).
   assign hw2reg.debug.invalid_owner_seed.de    = adv_en & is_owner_boot_stage;
 
   // key validity and versions are checked regardless of the boot stage, when there is an ongoing
@@ -816,7 +908,15 @@ module keymgr_dpe
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
 
-  `ASSERT_INIT(KeyWidthEqualityCheck_A, otp_ctrl_pkg::KeyMgrKeyWidth == KeyWidth)
+  `ASSERT_INIT(KeyWidthEqualityCheck_A, KeyMgrKeyWidth == KeyWidth)
+
+  // Verify supported number of boot stage
+  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+
+  // Verify the number of instanciated HW slots
+  `ASSERT_INIT(InvalidNumHwSlot_A, NumInstHwSlot <= NumMaxHwSlot)
+  // Only a power-of-two for the NumInstHwSlot is supported
+  `ASSERT_INIT(NumInstHwSlotPowerOfTwo_A, (NumInstHwSlot & (NumInstHwSlot - 1)) == 0)
 
   `ASSERT_INIT_NET(KmacMaskCheck_A, KmacEnMasking == kmac_en_masking_i)
 

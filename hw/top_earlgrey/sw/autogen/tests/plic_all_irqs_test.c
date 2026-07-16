@@ -38,7 +38,7 @@
 #include "sw/device/lib/dif/autogen/dif_gpio_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_keymgr_dpe_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
@@ -114,7 +114,7 @@ static dif_i2c_t i2c2;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
@@ -247,8 +247,8 @@ static volatile dif_i2c_irq_t i2c_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-static volatile dif_keymgr_irq_t keymgr_irq_expected;
-static volatile dif_keymgr_irq_t keymgr_irq_serviced;
+static volatile dif_keymgr_dpe_irq_t keymgr_dpe_irq_expected;
+static volatile dif_keymgr_dpe_irq_t keymgr_dpe_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
@@ -708,24 +708,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralKeymgr: {
-      dif_keymgr_irq_t irq =
-          (dif_keymgr_irq_t)(plic_irq_id -
-                             (dif_rv_plic_irq_id_t)
-                                 kTopEarlgreyPlicIrqIdKeymgrOpDone);
-      CHECK(irq == keymgr_irq_expected,
-            "Incorrect keymgr IRQ triggered: exp = %d, obs = %d",
-            keymgr_irq_expected, irq);
-      keymgr_irq_serviced = irq;
+    case kTopEarlgreyPlicPeripheralKeymgrDpe: {
+      dif_keymgr_dpe_irq_t irq =
+          (dif_keymgr_dpe_irq_t)(plic_irq_id -
+                                 (dif_rv_plic_irq_id_t)
+                                     kTopEarlgreyPlicIrqIdKeymgrDpeOpDone);
+      CHECK(irq == keymgr_dpe_irq_expected,
+            "Incorrect keymgr_dpe IRQ triggered: exp = %d, obs = %d",
+            keymgr_dpe_irq_expected, irq);
+      keymgr_dpe_irq_serviced = irq;
 
-      dif_keymgr_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_keymgr_irq_get_state(&keymgr, &snapshot));
-      CHECK(snapshot == (dif_keymgr_irq_state_snapshot_t)(1 << irq),
-            "Only keymgr IRQ %d expected to fire. Actual interrupt "
+      dif_keymgr_dpe_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_keymgr_dpe_irq_get_state(&keymgr_dpe, &snapshot));
+      CHECK(snapshot == (dif_keymgr_dpe_irq_state_snapshot_t)(1 << irq),
+            "Only keymgr_dpe IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_keymgr_irq_acknowledge(&keymgr, irq));
+      CHECK_DIF_OK(dif_keymgr_dpe_irq_acknowledge(&keymgr_dpe, irq));
       break;
     }
 #endif
@@ -1285,8 +1285,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR);
+  CHECK_DIF_OK(dif_keymgr_dpe_init(base_addr, &keymgr_dpe));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
@@ -1425,7 +1425,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_keymgr_irq_acknowledge_all(&keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_irq_acknowledge_all(&keymgr_dpe));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
@@ -1545,8 +1545,8 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-  dif_keymgr_irq_state_snapshot_t keymgr_irqs =
-      (dif_keymgr_irq_state_snapshot_t)0xffffffff;
+  dif_keymgr_dpe_irq_state_snapshot_t keymgr_dpe_irqs =
+      (dif_keymgr_dpe_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
@@ -1657,7 +1657,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_keymgr_irq_restore_all(&keymgr, &keymgr_irqs));
+  CHECK_DIF_OK(dif_keymgr_dpe_irq_restore_all(&keymgr_dpe, &keymgr_dpe_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
@@ -1999,17 +1999,17 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
-  for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone; irq <= kDifKeymgrIrqOpDone;
+  peripheral_expected = kTopEarlgreyPlicPeripheralKeymgrDpe;
+  for (dif_keymgr_dpe_irq_t irq = kDifKeymgrDpeIrqOpDone; irq <= kDifKeymgrDpeIrqOpDone;
        ++irq) {
-    keymgr_irq_expected = irq;
-    LOG_INFO("Triggering keymgr IRQ %d.", irq);
-    CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, true));
+    keymgr_dpe_irq_expected = irq;
+    LOG_INFO("Triggering keymgr_dpe IRQ %d.", irq);
+    CHECK_DIF_OK(dif_keymgr_dpe_irq_force(&keymgr_dpe, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
-    IBEX_SPIN_FOR(keymgr_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from keymgr is serviced.", irq);
+    IBEX_SPIN_FOR(keymgr_dpe_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from keymgr_dpe is serviced.", irq);
   }
 #endif
 

@@ -4,18 +4,19 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -26,7 +27,7 @@
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
 static dif_rstmgr_t rstmgr;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_flash_ctrl_state_t flash;
 
@@ -79,9 +80,9 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_STATUS_OK(kmac_testutils_config(&kmac, true));
-  // Keymgr
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  // Keymgr DPE
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR), &keymgr_dpe));
   // Flash
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
@@ -183,11 +184,30 @@ static void run_otp_access_tests(test_mode_t test_mode,
 }
 
 /**
- * Try to initialize and advance to kDifKeymgrStateCreatorRootKey state.
+ * Waits until one keymgr_dpe function has finished. Unlike the testutils
+ * implementation, this function return an bool value instead of raising
+ * an error. Some function need to raise an OP_DONE_ERROR error.
+ */
+static status_t keymgr_dpe_wait_for_operation_done(
+    const dif_keymgr_dpe_t *keymgr_dpe, bool *success) {
+  dif_keymgr_dpe_status_codes_t status;
+  do {
+    TRY(dif_keymgr_dpe_get_status_codes(keymgr_dpe, &status));
+  } while (status == 0);
+  // Fail if we receive an idle code without any error bit set!
+  *success = (status == kDifKeymgrDpeStatusCodeIdle);
+  return OK_STATUS();
+}
+
+/**
+ * Try to initialize and derive the creator root key.
+ *
+ * This function only supports the TestRom. When using the real ROM then
+ * the CreatorRootKey is already generated before this test is invoked.
  *
  * @param expect_init_fail Whether initialization is expected to fail.
  */
-static void keymgr_advance_to_creator_root_key(bool expect_init_fail) {
+static void keymgr_dpe_advance_to_creator_root_key(bool expect_init_fail) {
   // Check the last word of the retention SRAM creator area to determine the
   // type of the ROM.
   bool is_using_test_rom =
@@ -196,58 +216,78 @@ static void keymgr_advance_to_creator_root_key(bool expect_init_fail) {
           .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
       TEST_ROM_IDENTIFIER;
 
-  // Advance from Reset to Initialized state (or expect it to fail).
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
-  const dif_keymgr_state_t exp_state =
-      expect_init_fail ? kDifKeymgrStateInvalid : kDifKeymgrStateInitialized;
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, exp_state));
-
-  // Advance to Creator Root Key state (or expect it to fail as well).
   if (is_using_test_rom) {
-    LOG_INFO("Using test_rom, setting inputs and advancing state...");
-    CHECK((kDifOk == dif_keymgr_advance_state(&keymgr, &kCreatorParams)) ^
-          expect_init_fail);
+    // Verify the reset state
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
+    // The HW does not raise any OP_DONE_ERROR when the root key (from otp) is
+    // not valid. The state is silently changed to "kDifKeymgrDpeStateInvalid"
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_initial_load_uds(&keymgr_dpe, &kInitialParams));
+    const dif_keymgr_dpe_state_t exp_state = expect_init_fail
+                                                 ? kDifKeymgrDpeStateInvalid
+                                                 : kDifKeymgrDpeStateAvailable;
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(&keymgr_dpe, exp_state));
+    // This advance call should trigger a OP_DONE_ERROR if the keymgr dpe is
+    // in the invalid state. The corresponding alert needs to be flagged in
+    // the alert framework otherwise the simulation crashes immediately.
+    if (expect_init_fail) {
+      CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
+          kTopEarlgreyAlertIdKeymgrDpeRecovOperationErr));
+    }
+    // Try to advance the DPE context
+    CHECK(kDifOk ==
+          dif_keymgr_dpe_advance_state(&keymgr_dpe, &kCreatorRootKeyParams));
+    // Wait until the operation finishs and check if any error was raised
+    bool operation_succ_done;
+    CHECK_STATUS_OK(
+        keymgr_dpe_wait_for_operation_done(&keymgr_dpe, &operation_succ_done));
+    CHECK(expect_init_fail ^ operation_succ_done);
+    // Verify if the alert was raised if the function is expected to fail
+    if (expect_init_fail) {
+      CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
+          kTopEarlgreyAlertIdKeymgrDpeRecovOperationErr));
+    }
   } else {
-    LOG_INFO("Using rom, only advancing state...");
-    CHECK((kDifOk == dif_keymgr_advance_state_raw(&keymgr)) ^ expect_init_fail);
+    CHECK(false, "ROM not implemented yet");
   }
 }
 
 /**
  * Checks that the first advance command does not complete.
  */
-static void keymgr_check_cannot_advance(void) {
-  LOG_INFO("Check that the Keymgr cannot advance...");
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
-  // Try to initialize the key manager. We expect this call to fail with
+static void keymgr_dpe_check_cannot_advance(void) {
+  LOG_INFO("Check that the keymgr dpe cannot advance...");
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
+  // Try to initialize the key manager dpe. We expect this call to fail with
   // a "kDifLocked" code, since the key manager is not enabled.
-  CHECK(kDifLocked == dif_keymgr_advance_state(&keymgr, NULL),
-        "Keymgr is not expected to be available in this LC state.");
+  // Use dif_*** function instead of testutils wrapper to avoid a cast error
+  CHECK(kDifLocked ==
+            dif_keymgr_dpe_initialize(&keymgr_dpe, kInitialParams.slot_dst_sel),
+        "Keymgr dpe is not expected to be available in this LC state.");
+  CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(&keymgr_dpe));
 }
 
 /**
- * Check that the key manager flags the KMAC inputs as invalid. This happens
+ * Check that the key manager dpe flags the KMAC inputs as invalid. This happens
  * when the root keys are not valid and hence tied to all-zero inside the key
  * manager.
  */
-static void keymgr_check_root_key_is_invalid(void) {
-  LOG_INFO("Trying to advance to Creator Root Key and expecting failure...");
-  keymgr_advance_to_creator_root_key(/*expect_init_fail=*/true);
+static void keymgr_dpe_check_root_key_is_invalid(void) {
+  LOG_INFO("Trying to advance to CreatorRootKey and expecting failure...");
+  keymgr_dpe_advance_to_creator_root_key(/*expect_init_fail=*/true);
 }
 
 /**
  * Generate a SW key and store it within the retention SRAM.
  */
-static void keymgr_check_can_generate_key(void) {
-  LOG_INFO("Trying to advance to Creator Root Key and expecting success...");
-  keymgr_advance_to_creator_root_key(/*expect_init_fail=*/false);
-  LOG_INFO("Check that the Keymgr can generate a key...");
-  CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&keymgr));
+static void keymgr_dpe_check_can_generate_key(void) {
+  LOG_INFO("Trying to advance to CreatorRootKey and expecting success...");
+  keymgr_dpe_advance_to_creator_root_key(/*expect_init_fail=*/false);
+  LOG_INFO("Check that the Keymgr dpe can generate a key...");
   CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
-  CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams));
+      keymgr_dpe_testutils_generate_key(&keymgr_dpe, &kKeyVersionedParams));
 }
 
 /**
@@ -309,12 +349,12 @@ bool test_main(void) {
       if (rst_info & kDifRstmgrResetInfoPor) {
         LOG_INFO("First access test iteration...");
         // Make sure the secrets in flash are non-zero.
-        CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash, &kCreatorSecret,
-                                                    &kOwnerSecret));
+        CHECK_STATUS_OK(keymgr_dpe_testutils_flash_init(&flash, &kCreatorSecret,
+                                                        &kOwnerSecret));
         // Program the SECRET2 partition and perform read back test.
         run_otp_access_tests(kWriteReadMode, kExpectPassed);
         // We expect the root key to be invalid at this point.
-        keymgr_check_root_key_is_invalid();
+        keymgr_dpe_check_root_key_is_invalid();
         reset_chip();
 
       } else if (rst_info == kDifRstmgrResetInfoSw) {
@@ -327,7 +367,7 @@ bool test_main(void) {
           run_otp_access_tests(kReadMode, kExpectPassed);
           // We expect the root key to still be invalid at this point, since
           // SECRET2 has not been locked yet.
-          keymgr_check_root_key_is_invalid();
+          keymgr_dpe_check_root_key_is_invalid();
           // Lock the SECRET2 partition.
           CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
               &otp, kDifOtpCtrlPartitionSecret2, 0));
@@ -336,9 +376,9 @@ bool test_main(void) {
           LOG_INFO("Third access test iteration...");
           // All accesses are disallowed.
           run_otp_access_tests(kWriteReadMode, kExpectFailed);
-          // At this point we expect that the key manager can generate keys
+          // At this point we expect that the keymgr dpe can generate keys
           // without errors.
-          keymgr_check_can_generate_key();
+          keymgr_dpe_check_can_generate_key();
           // Test passed.
           return true;
         }
@@ -350,8 +390,8 @@ bool test_main(void) {
     default:  // this covers all TEST_UNLOCKED* states.
       // Accesses to the SECRET2 partition should error out.
       run_otp_access_tests(kWriteReadMode, kExpectFailed);
-      // Keymgr initialization should not work in this state.
-      keymgr_check_cannot_advance();
+      // Keymgr dpe initialization should not work in this state.
+      keymgr_dpe_check_cannot_advance();
       // Test passed.
       return true;
   }

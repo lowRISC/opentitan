@@ -33,7 +33,7 @@ _EARLGREY_DEPS = [
     "//sw/device/lib/dif:gpio",
     "//sw/device/lib/dif:hmac",
     "//sw/device/lib/dif:i2c",
-    "//sw/device/lib/dif:keymgr",
+    "//sw/device/lib/dif:keymgr_dpe",
     "//sw/device/lib/dif:kmac",
     "//sw/device/lib/dif:lc_ctrl",
     "//sw/device/lib/dif:otbn",

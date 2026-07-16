@@ -244,30 +244,36 @@ cc_library(
 )
 
 cc_library(
-    name = "keymgr_testutils",
-    srcs = ["keymgr_testutils.c"],
-    hdrs = ["keymgr_testutils.h"],
+    name = "keymgr_dpe_testutils",
+    srcs = ["keymgr_dpe_testutils.c"],
+    hdrs = ["keymgr_dpe_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":entropy_testutils",
-        ":flash_ctrl_testutils",
         ":kmac_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top/dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": [
+                ":flash_ctrl_testutils",
+                "//sw/device/lib/dif:flash_ctrl",
+                "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+                "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            ],
+        },
+        [],
+    ),
 )
 
 cc_library(
@@ -619,29 +625,6 @@ cc_library(
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
-    ],
-)
-
-cc_library(
-    name = "keymgr_dpe_testutils",
-    srcs = ["keymgr_dpe_testutils.c"],
-    hdrs = ["keymgr_dpe_testutils.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":entropy_testutils",
-        ":kmac_testutils",
-        ":otp_ctrl_testutils",
-        ":rstmgr_testutils",
-        "//hw/top:keymgr_dpe_c_regs",
-        "//hw/top/dt",
-        "//sw/device/lib/arch:boot_stage",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:keymgr_dpe",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
 

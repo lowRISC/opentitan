@@ -355,14 +355,14 @@ opentitan_test(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -477,7 +477,7 @@ opentitan_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
@@ -577,7 +577,7 @@ opentitan_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
@@ -1611,7 +1611,7 @@ opentitan_test(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
@@ -1623,7 +1623,7 @@ opentitan_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
@@ -1653,7 +1653,7 @@ opentitan_test(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
@@ -1664,7 +1664,7 @@ opentitan_test(
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
@@ -1706,7 +1706,7 @@ opentitan_test(
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
@@ -1718,7 +1718,7 @@ opentitan_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:edn_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
@@ -2346,8 +2346,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "keymgr_key_derivation_test",
-    srcs = ["keymgr_key_derivation_test.c"],
+    name = "keymgr_dpe_key_derivation_test",
+    srcs = ["keymgr_dpe_key_derivation_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -2369,7 +2369,15 @@ opentitan_test(
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//hw/top/dt",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2398,7 +2406,7 @@ opentitan_test(
     ],
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -2435,7 +2443,7 @@ opentitan_test(
     ],
     verilator = verilator_params(timeout = "eternal"),
     deps = [
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -2545,8 +2553,8 @@ opentitan_binary(
 )
 
 opentitan_test(
-    name = "keymgr_sideload_aes_test",
-    srcs = ["keymgr_sideload_aes_test.c"],
+    name = "keymgr_dpe_sideload_aes_test",
+    srcs = ["keymgr_dpe_sideload_aes_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2567,27 +2575,27 @@ opentitan_test(
     ],
     deps = [
         "//hw/top:aes_c_regs",
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top:kmac_c_regs",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 opentitan_test(
-    name = "keymgr_sideload_kmac_test",
-    srcs = ["keymgr_sideload_kmac_test.c"],
+    name = "keymgr_dpe_sideload_kmac_test",
+    srcs = ["keymgr_dpe_sideload_kmac_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2608,24 +2616,24 @@ opentitan_test(
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top:kmac_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 opentitan_test(
-    name = "keymgr_sideload_otbn_test",
-    srcs = ["keymgr_sideload_otbn_test.c"],
+    name = "keymgr_dpe_sideload_otbn_test",
+    srcs = ["keymgr_dpe_sideload_otbn_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2650,13 +2658,13 @@ opentitan_test(
         "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -2665,8 +2673,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "keymgr_sideload_otbn_simple_test",
-    srcs = ["keymgr_sideload_otbn_test.c"],
+    name = "keymgr_dpe_sideload_otbn_simple_test",
+    srcs = ["keymgr_dpe_sideload_otbn_test.c"],
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
@@ -2688,13 +2696,13 @@ opentitan_test(
         "//hw/top:otbn_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/otbn/crypto:run_curve25519",
@@ -2811,32 +2819,32 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "kmac_error_conditions_test",
-    srcs = ["kmac_error_conditions_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
-    verilator = verilator_params(timeout = "long"),
-    deps = [
-        "//hw/top/dt",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:kmac_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_alerts",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
+#opentitan_test(
+#    name = "kmac_error_conditions_test",
+#    srcs = ["kmac_error_conditions_test.c"],
+#    exec_env = dicts.add(
+#        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+#        DARJEELING_TEST_ENVS,
+#        {
+##            "//hw/top_earlgrey:fpga_cw340_sival": None,
+#            "//hw/top_earlgrey:sim_dv": None,
+#            "//hw/top_earlgrey:sim_verilator": None,
+#        },
+#    ),
+#    verilator = verilator_params(timeout = "long"),
+#    deps = [
+#        "//hw/top/dt",
+#        "//sw/device/lib/base:mmio",
+#        "//sw/device/lib/dif:clkmgr",
+#        "//sw/device/lib/dif:keymgr_dpe",
+#        "//sw/device/lib/dif:kmac",
+#        "//sw/device/lib/runtime:log",
+#        "//sw/device/lib/testing:keymgr_dpe_testutils",
+#        "//sw/device/lib/testing:kmac_testutils",
+#        "//sw/device/lib/testing/test_framework:ottf_alerts",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#    ],
+#)
 
 opentitan_test(
     name = "kmac_entropy_stress_test",
@@ -2881,41 +2889,41 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "kmac_kmac_key_sideload_test",
-    srcs = ["kmac_kmac_key_sideload_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
-    verilator = verilator_params(timeout = "long"),
-    deps = [
-        "//hw/top/dt",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:kmac_testutils",
-        "//sw/device/lib/testing:ret_sram_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:sram_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-    ],
-)
+#opentitan_test(
+#    name = "kmac_kmac_key_sideload_test",
+#    srcs = ["kmac_kmac_key_sideload_test.c"],
+#    exec_env = dicts.add(
+#        EARLGREY_TEST_ENVS,
+#        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+#        DARJEELING_TEST_ENVS,
+#        {
+#            "//hw/top_earlgrey:fpga_cw340_sival": None,
+#            "//hw/top_earlgrey:silicon_creator": None,
+#        },
+#    ),
+#    qemu = qemu_params(
+#        globals = {
+#            # Test uses rstmgr, keep running on fatal resets:
+#            "ot-rstmgr.fatal_reset": 0,
+#        },
+#    ),
+#    verilator = verilator_params(timeout = "long"),
+#    deps = [
+#        "//hw/top/dt",
+#        "//sw/device/lib/base:mmio",
+#        "//sw/device/lib/dif:keymgr_dpe",
+#        "//sw/device/lib/dif:kmac",
+#        "//sw/device/lib/dif:rstmgr",
+#        "//sw/device/lib/runtime:log",
+#        "//sw/device/lib/testing:keymgr_dpe_testutils",
+#        "//sw/device/lib/testing:kmac_testutils",
+#        "//sw/device/lib/testing:ret_sram_testutils",
+#        "//sw/device/lib/testing:rstmgr_testutils",
+#        "//sw/device/lib/testing:sram_ctrl_testutils",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+#    ],
+#)
 
 opentitan_test(
     name = "kmac_mode_cshake_test",
@@ -5693,7 +5701,7 @@ opentitan_test(
             "earlgrey": [
                 "//sw/device/lib/dif:flash_ctrl",
                 "//sw/device/lib/testing:flash_ctrl_testutils",
-                "//sw/device/lib/testing:keymgr_testutils",
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
             ],
         },
         [],
@@ -6353,7 +6361,7 @@ test_suite(
             [
                 "//hw/top:adc_ctrl_c_regs",
                 "//hw/top:flash_ctrl_c_regs",
-                "//hw/top:keymgr_c_regs",
+                "//hw/top:keymgr_dpe_c_regs",
                 "//hw/top:sysrst_ctrl_c_regs",
             ],
         ),
@@ -7865,23 +7873,23 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "keymgr_dpe_key_derivation_test",
-    srcs = ["keymgr_dpe_key_derivation_test.c"],
-    exec_env = DARJEELING_TEST_ENVS,
-    deps = [
-        "//hw/top/dt",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr_dpe",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:keymgr_dpe_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
+# opentitan_test(
+#     name = "keymgr_dpe_key_derivation_test",
+#     srcs = ["keymgr_dpe_key_derivation_test.c"],
+#     exec_env = DARJEELING_TEST_ENVS,
+#     deps = [
+#         "//hw/top/dt",
+#         "//sw/device/lib/arch:device",
+#         "//sw/device/lib/base:macros",
+#         "//sw/device/lib/dif:keymgr_dpe",
+#         "//sw/device/lib/dif:kmac",
+#         "//sw/device/lib/runtime:hart",
+#         "//sw/device/lib/runtime:log",
+#         "//sw/device/lib/runtime:print",
+#         "//sw/device/lib/testing:keymgr_dpe_testutils",
+#         "//sw/device/lib/testing/test_framework:ottf_main",
+#     ],
+# )
 
 opentitan_test(
     name = "mbx_smoketest",

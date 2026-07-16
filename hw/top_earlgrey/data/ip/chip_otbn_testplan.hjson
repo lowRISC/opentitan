@@ -151,10 +151,10 @@
       si_stage: SV2
       tests: []
       bazel: [
-        "//sw/device/tests:keymgr_sideload_otbn_simple_test",
+        "//sw/device/tests:keymgr_dpe_sideload_otbn_simple_test",
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
-        "//sw/device/tests:keymgr_sideload_otbn_test"
+        "//sw/device/tests:keymgr_dpe_sideload_otbn_test"
       ]
       lc_states: ["PROD"]
       features: [

@@ -20,6 +20,39 @@ package keymgr_dpe_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // Define default values for all blocklevel dv parameter
+  `ifndef DEF_DV_BOOT_STAGES
+   `define DEF_DV_BOOT_STAGES 3
+  `endif
+  `ifndef DEF_DV_DPE_NUM_SLOT
+   `define DEF_DV_DPE_NUM_SLOT 4
+  `endif
+  `ifndef DEF_DV_NUM_ROM_DIGEST
+   `define DEF_DV_NUM_ROM_DIGEST 1
+  `endif
+
+  // Avoid using defines throughout the DV code by introducing the following
+  // parameters.
+  parameter int DvBootStages = `DEF_DV_BOOT_STAGES;
+  parameter int DvNumInstHwSlot = `DEF_DV_DPE_NUM_SLOT;
+  parameter int DvNumRomDigestInputs = `DEF_DV_NUM_ROM_DIGEST;
+
+  // Advance width calculation
+  // When deriving from the UDS the following data are consumed (Not ordered):
+  //   - Software binding
+  //   - Revision seed
+  //   - OTP device ID
+  //   - LC keymgr diversification value
+  //   - ROM digests
+  //   - Creator seed (only if boot stage equals two)
+  parameter int DvDpeAdvDataWidth = keymgr_pkg::SwBindingWidth +
+      keymgr_pkg::KeyWidth + keymgr_pkg::KeyWidth * (DvBootStages == 2) +
+      lc_ctrl_pkg::LcKeymgrDivWidth + keymgr_dpe_pkg::DeviceIdWidth +
+      keymgr_pkg::KeyWidth * DvNumRomDigestInputs;
+
+  localparam int DvNumInstHwSlotWidth = prim_util_pkg::vbits(DvNumInstHwSlot);
+  typedef logic [DvNumInstHwSlotWidth-1:0] dv_keymgr_dpe_slot_idx_e;
+
   // parameters and types
   parameter uint NUM_ALERTS = 2;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_operation_err", "fatal_fault_err"};
@@ -64,8 +97,8 @@ package keymgr_dpe_env_pkg;
   } keymgr_dpe_fault_inject_type_e;
 
   typedef struct{
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e src_slot;
-    keymgr_dpe_pkg::keymgr_dpe_slot_idx_e dst_slot;
+    dv_keymgr_dpe_slot_idx_e src_slot;
+    dv_keymgr_dpe_slot_idx_e dst_slot;
   } keymgr_dpe_key_slot_t;
 
   string msg_id = "keymgr_dpe_env_pkg";

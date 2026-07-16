@@ -10,7 +10,7 @@
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/otbn.h"
 
 #include "hw/top/otbn_regs.h"  // Generated.
@@ -82,12 +82,11 @@ enum {
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
 
 rom_error_t otbn_boot_attestation_keygen(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification,
+    uint32_t additional_seed_idx,
+    sc_keymgr_dpe_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into OTBN.
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_otbn(key_type, diversification));
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_generate_key_otbn(diversification));
 
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeygen;
@@ -134,14 +133,15 @@ static void pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
   util_reverse_bytes(pubkey->y, kEcdsaP256PublicKeyCoordBytes);
 }
 
-rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_dpe_ecc_key_t key,
                                            hmac_digest_t *pubkey_id,
                                            ecdsa_p256_public_key_t *pubkey) {
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_dpe_state_check(key.required_keymgr_dpe_state));
 
   // Generate / sideload key material into OTBN, and generate the ECC keypair.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      key.keygen_seed_idx, key.type, *key.keymgr_diversifier, pubkey));
+      key.keygen_seed_idx, *key.keymgr_dpe_diversifier, pubkey));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from OTBN in little endian format, so we convert the key to
@@ -160,11 +160,10 @@ rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
 }
 
 rom_error_t otbn_boot_attestation_key_save(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification) {
-  // Trigger key manager to sideload the attestation key into OTBN.
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_otbn(key_type, diversification));
+    uint32_t additional_seed_idx,
+    sc_keymgr_dpe_diversification_t diversification) {
+  // Trigger key manager dpe to sideload the attestation key into OTBN.
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_generate_key_otbn(diversification));
 
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeySave;

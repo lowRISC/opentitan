@@ -76,7 +76,10 @@ top_optional = {
     'unmanaged_resets': ['l', 'List of unmanaged external resets'],
     'default_alert_handler': ['s', 'Modules not defining alert_handler have alerts sent here'],
     'default_plic': ['s', 'Modules not defining plic have interrupts sent here'],
-    'inter_pd': ['g', 'auto-generated struct containing multi-pd data objects']
+    'inter_pd': ['g', 'auto-generated struct containing multi-pd data objects'],
+    'keymgr_dpe_seed_selector':
+    ['s', 'Source for creator / owner seed for the keymgr_dpe, '
+        'legal values are either flash_ctrl or otp_ctrl']
 }
 
 top_added = {
@@ -670,6 +673,16 @@ def check_outgoing_alerts(top: ConfigT, prefix: str) -> int:
         return 0
     error = 0
     # TODO
+    return error
+
+
+def check_keymgr_dpe_seed_selector(top: ConfigT, prefix: str) -> int:
+    error = 0
+    if 'keymgr_dpe_seed_selector' not in top:
+        return 0
+    # check if keymgr_dpe_seed_selector contains one of the legal values
+    if top['keymgr_dpe_seed_selector'] not in ['flash_ctrl', 'otp_ctrl']:
+        error += 1
     return error
 
 
@@ -1335,5 +1348,7 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_outgoing_interrupts(top, component)
     error += check_interrupts(top, component)
     error += check_incoming_interrupts(top, component)
+
+    error += check_keymgr_dpe_seed_selector(top, component)
 
     return top, error

@@ -1210,7 +1210,7 @@ module chip_earlgrey_cw340 #(
     .UsbdevRcvrWakeTimeUs(10000),
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
-    .KeymgrKmacEnMasking(1),
+    .KeymgrDpeKmacEnMasking(1),
     .RvCoreIbexSecureIbex(1),
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
