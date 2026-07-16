@@ -57,9 +57,9 @@ module rram_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [65:0] reg_we_check;
+  logic [64:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(66)
+    .OneHotWidth(65)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -130,8 +130,8 @@ module rram_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[264:267]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[268:271]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[260:263]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[264:267]} ? 2'd1 :
         // Default set to register
         2'd2;
 
@@ -566,11 +566,6 @@ module rram_ctrl_core_reg_top (
   logic [7:0] corr_err_cnt_wd;
   logic [20:0] corr_err_loc_addr_qs;
   logic corr_err_loc_part_qs;
-  logic phy_alert_cfg_we;
-  logic phy_alert_cfg_alert_ack_qs;
-  logic phy_alert_cfg_alert_ack_wd;
-  logic phy_alert_cfg_alert_trig_qs;
-  logic phy_alert_cfg_alert_trig_wd;
   logic phy_status_wr_busy_qs;
   logic phy_status_init_done_qs;
   logic scratch_we;
@@ -5916,62 +5911,6 @@ module rram_ctrl_core_reg_top (
   );
 
 
-  // R[phy_alert_cfg]: V(False)
-  //   F[alert_ack]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_phy_alert_cfg_alert_ack (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (phy_alert_cfg_we),
-    .wd     (phy_alert_cfg_alert_ack_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.phy_alert_cfg.alert_ack.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (phy_alert_cfg_alert_ack_qs)
-  );
-
-  //   F[alert_trig]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_phy_alert_cfg_alert_trig (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (phy_alert_cfg_we),
-    .wd     (phy_alert_cfg_alert_trig_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.phy_alert_cfg.alert_trig.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (phy_alert_cfg_alert_trig_qs)
-  );
-
-
   // R[phy_status]: V(False)
   //   F[wr_busy]: 0:0
   prim_subreg #(
@@ -6182,7 +6121,7 @@ module rram_ctrl_core_reg_top (
 
 
 
-  logic [65:0] addr_hit;
+  logic [64:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == RRAM_CTRL_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == RRAM_CTRL_INTR_ENABLE_OFFSET);
@@ -6244,12 +6183,11 @@ module rram_ctrl_core_reg_top (
     addr_hit[57] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
     addr_hit[58] = (reg_addr == RRAM_CTRL_CORR_ERR_CNT_OFFSET);
     addr_hit[59] = (reg_addr == RRAM_CTRL_CORR_ERR_LOC_OFFSET);
-    addr_hit[60] = (reg_addr == RRAM_CTRL_PHY_ALERT_CFG_OFFSET);
-    addr_hit[61] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[62] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
-    addr_hit[63] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[64] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
-    addr_hit[65] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[60] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[61] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
+    addr_hit[62] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[63] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
+    addr_hit[64] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -6321,8 +6259,7 @@ module rram_ctrl_core_reg_top (
                (addr_hit[61] & (|(RRAM_CTRL_CORE_PERMIT[61] & ~reg_be))) |
                (addr_hit[62] & (|(RRAM_CTRL_CORE_PERMIT[62] & ~reg_be))) |
                (addr_hit[63] & (|(RRAM_CTRL_CORE_PERMIT[63] & ~reg_be))) |
-               (addr_hit[64] & (|(RRAM_CTRL_CORE_PERMIT[64] & ~reg_be))) |
-               (addr_hit[65] & (|(RRAM_CTRL_CORE_PERMIT[65] & ~reg_be)))));
+               (addr_hit[64] & (|(RRAM_CTRL_CORE_PERMIT[64] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -6690,25 +6627,20 @@ module rram_ctrl_core_reg_top (
   assign corr_err_cnt_we = addr_hit[58] & reg_we & !reg_error;
 
   assign corr_err_cnt_wd = reg_wdata[7:0];
-  assign phy_alert_cfg_we = addr_hit[60] & reg_we & !reg_error;
-
-  assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
-
-  assign phy_alert_cfg_alert_trig_wd = reg_wdata[1];
-  assign scratch_we = addr_hit[62] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[61] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[63] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[62] & reg_we & !reg_error;
 
   assign fifo_lvl_wr_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_clr_we = addr_hit[64] & reg_we & !reg_error;
+  assign fifo_clr_we = addr_hit[63] & reg_we & !reg_error;
 
   assign fifo_clr_wr_wd = reg_wdata[0];
 
   assign fifo_clr_rd_wd = reg_wdata[1];
-  assign curr_fifo_lvl_re = addr_hit[65] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[64] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -6772,12 +6704,11 @@ module rram_ctrl_core_reg_top (
     reg_we_check[57] = 1'b0;
     reg_we_check[58] = corr_err_cnt_we;
     reg_we_check[59] = 1'b0;
-    reg_we_check[60] = phy_alert_cfg_we;
-    reg_we_check[61] = 1'b0;
-    reg_we_check[62] = scratch_we;
-    reg_we_check[63] = fifo_lvl_we;
-    reg_we_check[64] = fifo_clr_we;
-    reg_we_check[65] = 1'b0;
+    reg_we_check[60] = 1'b0;
+    reg_we_check[61] = scratch_we;
+    reg_we_check[62] = fifo_lvl_we;
+    reg_we_check[63] = fifo_clr_we;
+    reg_we_check[64] = 1'b0;
   end
 
   // Read data return
@@ -7159,30 +7090,25 @@ module rram_ctrl_core_reg_top (
       end
 
       addr_hit[60]: begin
-        reg_rdata_next[0] = phy_alert_cfg_alert_ack_qs;
-        reg_rdata_next[1] = phy_alert_cfg_alert_trig_qs;
-      end
-
-      addr_hit[61]: begin
         reg_rdata_next[0] = phy_status_wr_busy_qs;
         reg_rdata_next[1] = phy_status_init_done_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[61]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[62]: begin
         reg_rdata_next[4:0] = fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[63]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[65]: begin
+      addr_hit[64]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

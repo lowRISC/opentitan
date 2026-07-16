@@ -92,7 +92,6 @@ module rram_ctrl
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
-  import lc_ctrl_pkg::lc_tx_test_true_strict;
 
   ////////////////////////////
   // Localparam definitions //
@@ -203,6 +202,8 @@ module rram_ctrl
   logic                          hw_otp_rready;
   logic                          hw_otp_rvalid;
   logic [BusFullWidth-1:0]       hw_otp_rdata;
+  logic                          otp_err;
+  logic                          otp_intg_err;
 
   // Arbiter signals
   rram_sel_e                if_sel;
@@ -232,6 +233,7 @@ module rram_ctrl
   logic                    phy_ctrl_wr;
   logic                    phy_ctrl_ecc_en;
   logic                    phy_ctrl_scramble_en;
+  logic                    phy_ctrl_addr_xor_en;
   logic                    phy_ctrl_wr_done;
   logic                    phy_ctrl_rd_err;
   logic                    phy_ctrl_rd_done;
@@ -294,8 +296,12 @@ module rram_ctrl
     .hw2reg    (hw2reg),
     .intg_err_o(intg_err)
   );
+  // Unused bits
+  logic [top_pkg::TL_DW-1:0] unused_scratch;
 
-  // todo connect in future commits:
+  // Unused signals
+  assign unused_scratch = reg2hw.scratch.q;
+
   assign hw2reg.ctrl_regwen.d = (sw_sel | hw_loopback_sel) ? ~reg2hw.control.start.q : 1'b1;
 
   assign hw2reg.control.start.d  = 1'b0;
@@ -346,13 +352,13 @@ module rram_ctrl
   assign hw2reg.fault_status.lcmgr_wr_err.d     = 1'b1;
   assign hw2reg.fault_status.lcmgr_wr_err.de    = hw_lcmgr_err.wr_err;
   assign hw2reg.fault_status.otp_op_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_op_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_op_err.de      = hw_otp_err.invalid_op_err;
   assign hw2reg.fault_status.otp_mp_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_mp_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_mp_err.de      = hw_otp_err.mp_err;
   assign hw2reg.fault_status.otp_rd_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_rd_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_rd_err.de      = hw_otp_err.rd_err;
   assign hw2reg.fault_status.otp_wr_err.d       = 1'b1;
-  assign hw2reg.fault_status.otp_wr_err.de      = 1'b0;
+  assign hw2reg.fault_status.otp_wr_err.de      = hw_otp_err.wr_err;
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.seed_err.de        = lcmgr_seed_err;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
@@ -369,16 +375,16 @@ module rram_ctrl
   // Standard faults - things like FSM / counter / tlul integrity
   assign hw2reg.std_fault_status.reg_intg_err.d     = 1'b1;
   assign hw2reg.std_fault_status.reg_intg_err.de    = intg_err | host_intg_err |
-                                                     tl_gate_intg_err | tl_wr_gate_intg_err |
-                                                     rd_fifo_adapter_intg_err;
+                                                      tl_gate_intg_err | tl_wr_gate_intg_err |
+                                                      rd_fifo_adapter_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.d        = 1'b1;
   assign hw2reg.std_fault_status.lcmgr_err.de       = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.d   = 1'b1;
   assign hw2reg.std_fault_status.lcmgr_intg_err.de  = lcmgr_intg_err;
   assign hw2reg.std_fault_status.otp_err.d          = 1'b1;
-  assign hw2reg.std_fault_status.otp_err.de         = 1'b0;
+  assign hw2reg.std_fault_status.otp_err.de         = otp_err;
   assign hw2reg.std_fault_status.otp_intg_err.d     = 1'b1;
-  assign hw2reg.std_fault_status.otp_intg_err.de    = 1'b0;
+  assign hw2reg.std_fault_status.otp_intg_err.de    = otp_intg_err;
   assign hw2reg.std_fault_status.phy_wr_intg_err.d  = 1'b1;
   assign hw2reg.std_fault_status.phy_wr_intg_err.de = phy_wr_intg_err;
   assign hw2reg.std_fault_status.phy_fifo_err.d     = 1'b1;
@@ -402,8 +408,8 @@ module rram_ctrl
   assign hw2reg.corr_err_loc.part.d  = logic'(phy_ecc_corr_part);
   assign hw2reg.corr_err_loc.part.de = phy_ecc_corr_err;
   // corr_err_cnt is saturating
-  assign hw2reg.corr_err_cnt.d       =  &reg2hw.corr_err_cnt.q ? reg2hw.corr_err_cnt.q :
-                                                                 reg2hw.corr_err_cnt.q + 1'b1;
+  assign hw2reg.corr_err_cnt.d       = &reg2hw.corr_err_cnt.q ? reg2hw.corr_err_cnt.q :
+                                                                reg2hw.corr_err_cnt.q + 1'b1;
   assign hw2reg.corr_err_cnt.de = phy_ecc_corr_err;
 
   // Phy status
@@ -642,21 +648,38 @@ module rram_ctrl
   ///////////////////
   // OTP_HW_ACCESS //
   ///////////////////
-  // todo add rram_ctrl_otp
-  assign otp_macro_o.ready  = 1'b0;
-  assign otp_macro_o.rvalid = 1'b0;
-  assign otp_macro_o.rdata  = '0;
-  assign otp_macro_o.err    = otp_ctrl_macro_pkg::NoError;
+  // OTP reads raw data without address infection
+  assign hw_otp_rdata = phy_ctrl_rd_data;
 
-  assign hw_otp_req              = 1'b0;
-  assign hw_otp_ctrl.start.q     = 1'b0;
-  assign hw_otp_ctrl.op.q        = RramOpRead;
-  assign hw_otp_ctrl.partition.q = RramPartData;
-  assign hw_otp_ctrl.num.q       = 0;
-  assign hw_otp_addr             = '0;
-  assign hw_otp_rready           = 1'b0;
-  assign hw_otp_wvalid           = 1'b0;
-  assign hw_otp_wdata            = '0;
+  rram_ctrl_otp u_rram_ctrl_otp (
+    .clk_i,
+    .rst_ni,
+    .clk_otp_i,
+    .rst_otp_ni,
+    // OTP macro interface (otp clock)
+    .otp_macro_req_i (otp_macro_i),
+    .otp_macro_rsp_o (otp_macro_o),
+    // Control arbiter interface
+    .ctrl_o          (hw_otp_ctrl),
+    .req_o           (hw_otp_req),
+    .addr_o          (hw_otp_addr),
+    .done_i          (hw_otp_done),
+    .err_i           (hw_otp_err),
+    // Read interface
+    .rready_o        (hw_otp_rready),
+    .rvalid_i        (hw_otp_rvalid),
+    .rdata_i         (hw_otp_rdata),
+    // Write interface
+    .wvalid_o        (hw_otp_wvalid),
+    .wready_i        (hw_otp_wready),
+    .wdata_o         (hw_otp_wdata),
+    // Error and status
+    .fatal_err_o     (otp_err),
+    .intg_err_o      (otp_intg_err),
+    .rram_init_done_i(phy_init_done),
+    .rram_wr_busy_i  (phy_wr_busy)
+
+  );
 
   ///////////////////////
   // SW/HW ARBITRATION //
@@ -706,7 +729,6 @@ module rram_ctrl
     // hw-otp read interface
     .hw_otp_rready_i  (hw_otp_rready),
     .hw_otp_rvalid_o  (hw_otp_rvalid),
-    .hw_otp_rdata_o   (hw_otp_rdata),
     // Arbiter interface to wr/rd handler
     .ctrl_part_o      (ctrl_part),
     .ctrl_num_words_o (ctrl_num_words),
@@ -948,6 +970,7 @@ module rram_ctrl
     .ctrl_wr_o          (phy_ctrl_wr),
     .ctrl_scramble_en_o (phy_ctrl_scramble_en),
     .ctrl_ecc_en_o      (phy_ctrl_ecc_en),
+    .ctrl_addr_xor_en_o (phy_ctrl_addr_xor_en),
     .ctrl_rd_done_i     (phy_ctrl_rd_done),
     .ctrl_wr_done_i     (phy_ctrl_wr_done),
     // Interface signals to/from rram_phy (host)
@@ -981,6 +1004,7 @@ module rram_ctrl
     .ctrl_req_i        (phy_ctrl_req),
     .ctrl_scramble_en_i(phy_ctrl_scramble_en),
     .ctrl_ecc_en_i     (phy_ctrl_ecc_en),
+    .ctrl_addr_xor_en_i(phy_ctrl_addr_xor_en),
     .ctrl_rd_i         (phy_ctrl_rd),
     .ctrl_wr_i         (phy_ctrl_wr),
     .ctrl_part_i       (ctrl_part),
@@ -1324,6 +1348,12 @@ module rram_ctrl
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A, u_rram_ctrl_lcmgr.u_state_regs,
                                        alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A, u_rram_ctrl_lcmgr.u_rma_state_regs,
+                                       alert_tx_o[1])
+
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(OtpCntBusWordCheck_A, u_rram_ctrl_otp.u_bus_wcnt,
+                                         alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(OtpFsmCheck_A, u_rram_ctrl_otp.u_state_regs,
                                        alert_tx_o[1])
 
   // rram_phy assertions

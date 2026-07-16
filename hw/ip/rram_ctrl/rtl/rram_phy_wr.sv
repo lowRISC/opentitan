@@ -27,6 +27,7 @@ module rram_phy_wr import rram_ctrl_pkg::*; (
   input  prim_mubi_pkg::mubi4_t   disable_i,
   input  logic                    scramble_en_i,
   input  logic                    ecc_en_i,
+  input  logic                    addr_xor_en_i,
   input  logic                    rd_idle_i,
   input  logic                    req_i,
   output logic                    ack_o,
@@ -54,10 +55,10 @@ module rram_phy_wr import rram_ctrl_pkg::*; (
   output logic                    intg_err_o
 );
 
-  // SEC_CM: CTR.REDUN
   logic             word_cnt_en, word_cnt_clr;
   logic [WordW-1:0] word_cnt_q;
 
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(WordW),
     .PossibleActions(prim_count_pkg::Clr |
@@ -155,13 +156,14 @@ module rram_phy_wr import rram_ctrl_pkg::*; (
 
   logic last_q;
 
-  // SEC_CM: PHY_PROG.FSM.SPARSE
+  // SEC_CM: PHY_WR.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StIdle)
 
   assign word_sel = addr_i[WordSelW-1:0];
 
+  // SEC_CM: MEM.ADDR_INFECTION
   // address infection. It will be removed during read in u_tl_adapter_host or u_rram_ctrl_rd
-  assign addr_xor = {{(BusWidth-BusAddrW){1'b0}}, addr_i[BusAddrW-1:0]};
+  assign addr_xor = addr_xor_en_i ? {{(BusWidth-BusAddrW){1'b0}}, addr_i[BusAddrW-1:0]} : '0;
   // in case of data integrity issues, simply fill with 0
   assign data_xor = (data_intg_err_d ? '0 : data_i[BusWidth-1:0]) ^ addr_xor;
 

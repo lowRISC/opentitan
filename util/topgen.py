@@ -1884,6 +1884,7 @@ def main():
             "otbn": ["lowrisc:ip:otbn_pkg"],
             "keymgr": ["lowrisc:ip:keymgr_pkg"],
             "csrng": ["lowrisc:ip:csrng_pkg"],
+            "rram_ctrl": ["lowrisc:ip:rram_ctrl_pkg"],
         }
 
         for m in completecfg["module"]:

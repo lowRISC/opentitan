@@ -29,6 +29,7 @@ module rram_phy
   input  logic                    ctrl_req_i,
   input  logic                    ctrl_scramble_en_i,
   input  logic                    ctrl_ecc_en_i,
+  input  logic                    ctrl_addr_xor_en_i,
   input  logic                    ctrl_rd_i,
   input  logic                    ctrl_wr_i,
   input  rram_part_e              ctrl_part_i,
@@ -108,6 +109,7 @@ module rram_phy
   logic rd_ecc_en;
   logic muxed_scramble_en;
   logic muxed_ecc_en;
+  logic muxed_addr_xor_en;
 
   // scrambling module signals
   scramble_req_t [1:0] scramble_req;
@@ -239,6 +241,8 @@ module rram_phy
   assign muxed_part        = host_gnt ? RramPartData       : ctrl_part_i;
   assign muxed_scramble_en = host_gnt ? host_scramble_en_i : ctrl_scramble_en_i;
   assign muxed_ecc_en      = host_gnt ? host_ecc_en_i      : ctrl_ecc_en_i;
+  // Host TL accesses never go to OTP pages, so addr_xor is always enabled for host
+  assign muxed_addr_xor_en = host_gnt ? 1'b1               : ctrl_addr_xor_en_i;
 
   // without this buffer host_gnt_err will get optimized away
   prim_buf #(
@@ -271,6 +275,7 @@ module rram_phy
     .ack_o          (rd_ack),
     .descramble_en_i(muxed_scramble_en),
     .ecc_en_i       (muxed_ecc_en),
+    .addr_xor_en_i  (muxed_addr_xor_en),
     .wr_req_i       (rram_wr_req),
     .wr_page_addr_i (wr_page_addr),
     .wr_part_i      (rram_macro_req_o.part),
@@ -329,6 +334,7 @@ module rram_phy
     .disable_i     (rram_disable[WrFsmDisableIdx]),
     .scramble_en_i (muxed_scramble_en),
     .ecc_en_i      (muxed_ecc_en),
+    .addr_xor_en_i (ctrl_addr_xor_en_i),
     .rd_idle_i     (rd_idle),
     .req_i         (wr_req),
     .ack_o         (wr_ack),
@@ -387,6 +393,7 @@ module rram_phy
   //////////////////////////////
   // Shared scrambling module //
   //////////////////////////////
+  // SEC_CM: MEM.SCRAMBLE
   rram_scramble #(
     .RndCnstAddrKey(RndCnstAddrKey),
     .RndCnstDataKey(RndCnstDataKey),
@@ -421,7 +428,9 @@ module rram_phy
   assign spurious_rd_done      = ctrl_rd_done_o & host_rsp;
   assign spurious_rd_host_done = host_rd_done_o & ctrl_rsp;
 
+  // SEC_CM: PHY_RSP.CTRL.CONSISTENCY
   assign spurious_done_o = spurious_rd_done | spurious_rd_host_done;
+  // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
   assign host_gnt_err_o  = host_gnt & ((muxed_part_buf != RramPartData) | ~host_req_i);
 
   /////////////////////////////////////////////////

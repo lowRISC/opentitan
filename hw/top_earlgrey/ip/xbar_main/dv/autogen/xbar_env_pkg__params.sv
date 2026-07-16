@@ -41,6 +41,15 @@ tl_device_t xbar_devices[$] = '{
     '{"flash_ctrl__mem", '{
         '{32'h20000000, 32'h200fffff}
     }},
+    '{"rram_ctrl__core", '{
+        '{32'h41010000, 32'h410101ff}
+    }},
+    '{"rram_macro__prim", '{
+        '{32'h41018000, 32'h4101800f}
+    }},
+    '{"rram_ctrl__host", '{
+        '{32'h30000000, 32'h301fffff}
+    }},
     '{"hmac", '{
         '{32'h41110000, 32'h41111fff}
     }},
@@ -87,7 +96,8 @@ tl_host_t xbar_hosts[$] = '{
         "rom_ctrl__rom",
         "rv_dm__mem",
         "sram_ctrl_main__ram",
-        "flash_ctrl__mem"}}
+        "flash_ctrl__mem",
+        "rram_ctrl__host"}}
     ,
     '{"rv_core_ibex__cored", 1, '{
         "rom_ctrl__rom",
@@ -100,8 +110,11 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host1",
         "usbdev",
         "flash_ctrl__core",
-        "flash_ctrl__prim",
         "flash_ctrl__mem",
+        "flash_ctrl__prim",
+        "rram_ctrl__core",
+        "rram_ctrl__host",
+        "rram_macro__prim",
         "aes",
         "entropy_src",
         "csrng",
@@ -126,8 +139,11 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host1",
         "usbdev",
         "flash_ctrl__core",
-        "flash_ctrl__prim",
         "flash_ctrl__mem",
+        "flash_ctrl__prim",
+        "rram_ctrl__core",
+        "rram_ctrl__host",
+        "rram_macro__prim",
         "aes",
         "entropy_src",
         "csrng",
