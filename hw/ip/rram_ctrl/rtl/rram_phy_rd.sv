@@ -22,6 +22,7 @@ module rram_phy_rd
   output logic                    ack_o,
   input  logic                    ecc_en_i,
   input  logic                    descramble_en_i,
+  input  logic                    addr_xor_en_i,
   input  logic                    wr_req_i,
   input  logic [PageW-1:0]        wr_page_addr_i,
   input  rram_part_e              wr_part_i,
@@ -114,6 +115,7 @@ module rram_phy_rd
   rd_buf_t rd_buf [NumRdBuf];
   logic    rd_buf_descramble_en;
   logic    rd_buf_ecc_en;
+  logic    rd_buf_addr_xor_en;
   logic    rd_buf_miss;
   logic    rd_buf_hit;
   logic    rd_buf_update;
@@ -206,17 +208,19 @@ module rram_phy_rd
   for (genvar i = 0; i < NumRdBuf; i++) begin: gen_buf_match
     logic part_match;
     logic descramble_match;
+    logic addr_xor_match;
 
     assign part_match = rd_buf[i].part == part_i;
-
     assign descramble_match = rd_buf[i].descramble_en == descramble_en_i;
+    assign addr_xor_match  = rd_buf[i].addr_xor_en  == addr_xor_en_i;
 
     assign buf_match[i] = req_i &
                           (buf_wip[i] | buf_valid[i] | buf_verified[i]) &
                           (rd_buf[i].addr == rram_word_addr) &
                           ~rd_buf[i].err &
                           part_match &
-                          descramble_match;
+                          descramble_match &
+                          addr_xor_match;
 
     // The content of the rd_buffer must be cleared if a write operation to the same page and
     // partition has been observed
@@ -249,6 +253,7 @@ module rram_phy_rd
       .part_i         (part_i),
       .descramble_en_i(descramble_en_i),
       .ecc_en_i       (ecc_en_i),
+      .addr_xor_en_i  (addr_xor_en_i),
       .data_i         (rram_data_packed_intg),
       .err_i          (rd_fifo_q.err),
       .rd_buf_o       (rd_buf[i]),
@@ -448,9 +453,9 @@ module rram_phy_rd
   assign meta_d.word_sel = shadow_sel ? '0 : addr_i[WordSelW-1:0];
 
   // Command integrity of incoming requests (stored in meta fifo and checked with response)
-  logic [21:0] unused_cmd_data0;
-  prim_secded_inv_28_22_enc u_cmd_intg_req_gen (
-    .data_i({ecc_en_i, descramble_en_i, addr_i, part_i}),
+  logic [31:0] unused_cmd_data0;
+  prim_secded_inv_39_32_enc u_cmd_intg_req_gen (
+    .data_i(32'({ecc_en_i, descramble_en_i, addr_xor_en_i, addr_i, part_i})),
     .data_o({meta_d.cmd_intg, unused_cmd_data0})
   );
 
@@ -553,13 +558,14 @@ module rram_phy_rd
     logic [BusWidth-1:0] unused_data;
     logic [WordSelW-1:0] offset;
     // 1. convert RRAM word to packed bus words
-    // 2. remove addr-xor
+    // 2. remove addr-xor (skip if addr_xor_en == 0)
     // 3. compute integrity per bus word (without addr-xor)
     // 4. combine integrity with address-infected data (xor on data will be removed in controller)
     assign offset = WordSelW'(unsigned'(i));
 
     assign rram_data_packed[i]     = rram_data[i*BusWidth +: BusWidth];
-    assign rram_addr_packed[i]     = {{(BusWidth-BusAddrW){1'b0}}, rd_buf_addr, offset};
+    assign rram_addr_packed[i]     = rd_buf_addr_xor_en ?
+                                      {{(BusWidth-BusAddrW){1'b0}}, rd_buf_addr, offset} : '0;
     assign rram_data_packed_xor[i] = rram_data_packed[i] ^ rram_addr_packed[i];
     // SEC_CM: MEM.BUS.INTEGRITY
     tlul_data_integ_enc u_rram_bus_intg (
@@ -575,6 +581,7 @@ module rram_phy_rd
     rd_buf_part          = RramPartData;
     rd_buf_descramble_en = 1'b0;
     rd_buf_ecc_en        = 1'b1;
+    rd_buf_addr_xor_en   = 1'b1;
     rd_buf_data          = '0;
     rd_buf_err           = '0;
     for (int i = 0; i < NumRdBuf; i++) begin
@@ -584,12 +591,13 @@ module rram_phy_rd
           rd_buf_data = rd_buf[i].data;
           rd_buf_err  = rd_buf[i].err;
         end
-        // Addr, part, descramble ecc_en if entry is alloc, valid or verified (not invalid)
+        // Addr, part, descramble_en, ecc_en, addr_xor_en if entry is alloc, valid or verified
         if (~buf_invalid[i]) begin
           rd_buf_addr          = rd_buf[i].addr;
           rd_buf_part          = rd_buf[i].part;
           rd_buf_descramble_en = rd_buf[i].descramble_en;
           rd_buf_ecc_en        = rd_buf[i].ecc_en;
+          rd_buf_addr_xor_en   = rd_buf[i].addr_xor_en;
         end
       end
     end
@@ -607,6 +615,7 @@ module rram_phy_rd
   // Output response selection //
   ///////////////////////////////
   logic [BusFullWidth-1:0] inv_data;
+  // SEC_CM: MEM.BUS.INTEGRITY
   tlul_data_integ_enc u_bus_intg (
     .data_i     ({BusWidth{1'b1}}),
     .data_intg_o(inv_data)
@@ -654,23 +663,26 @@ module rram_phy_rd
   assign req_err = rd_req_o & (~(req_i | shadow_rd_req));
 
   // Command integrity must match for all valid data responses
-  logic [21:0] unused_cmd_data1;
-  logic [5:0]  cmd_rsp_intg;
+  logic [31:0] unused_cmd_data1;
+  logic [6:0]  cmd_rsp_intg;
 
   // Command integrity of response
-  prim_secded_inv_28_22_enc u_cmd_intg_rsp_gen (
-    .data_i({rd_buf_ecc_en, rd_buf_descramble_en, rd_buf_addr, meta_q_buf.word_sel, rd_buf_part}),
+  prim_secded_inv_39_32_enc u_cmd_intg_rsp_gen (
+    .data_i(32'({rd_buf_ecc_en, rd_buf_descramble_en, rd_buf_addr_xor_en,
+                 rd_buf_addr, meta_q_buf.word_sel, rd_buf_part})),
     .data_o({cmd_rsp_intg, unused_cmd_data1})
   );
 
   assign cmd_intg_err = data_valid_o ? (cmd_rsp_intg != meta_q_buf.cmd_intg) : 1'b0;
 
+  // SEC_CM: PHY_RD_RSP.CTRL.INTEGRITY
   // Control flow error if any of the above errors is set
   assign ctrl_err_o = valid_err | req_err | cmd_intg_err;
 
   // If any fifo shows an integrity error
   assign fifo_err_o = |{meta_fifo_err, rd_fifo_err, mask_fifo_err};
 
+  // SEC_CM: PHY_RD_BUF.CTRL.INTEGRITY
   // Integrity error if a verify operation found a mismatch
   assign intg_err_o = |buf_intg_err;
 

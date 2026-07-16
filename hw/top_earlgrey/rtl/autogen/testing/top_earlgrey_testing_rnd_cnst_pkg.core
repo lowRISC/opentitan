@@ -22,6 +22,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otbn_pkg
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:rram_ctrl_pkg
       - lowrisc:ip:sram_ctrl_pkg
     files:
       - top_earlgrey_rnd_cnst_pkg.sv
