@@ -15,7 +15,7 @@ package bkdr_loader_reg_pkg;
   parameter int RegsAw = 11;
 
   // Number of registers for every interface
-  parameter int NumRegsRegs = 58;
+  parameter int NumRegsRegs = 70;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
@@ -64,6 +64,11 @@ package bkdr_loader_reg_pkg;
   } bkdr_loader_reg2hw_index_reg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } bkdr_loader_reg2hw_hash_last_loaded_mreg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
     } clear_idle;
@@ -108,26 +113,32 @@ package bkdr_loader_reg_pkg;
     logic        de;
   } bkdr_loader_hw2reg_index_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+  } bkdr_loader_hw2reg_hash_last_loaded_mreg_t;
+
   // Register -> HW type for regs interface
   typedef struct packed {
-    bkdr_loader_reg2hw_control_reg_t control; // [609:593]
-    bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t mission_mode_switch_delay; // [592:561]
-    bkdr_loader_reg2hw_read_data_mreg_t [7:0] read_data; // [560:297]
-    bkdr_loader_reg2hw_write_data_mreg_t [7:0] write_data; // [296:33]
-    bkdr_loader_reg2hw_index_reg_t index; // [32:0]
+    bkdr_loader_reg2hw_control_reg_t control; // [1005:989]
+    bkdr_loader_reg2hw_mission_mode_switch_delay_reg_t mission_mode_switch_delay; // [988:957]
+    bkdr_loader_reg2hw_read_data_mreg_t [7:0] read_data; // [956:693]
+    bkdr_loader_reg2hw_write_data_mreg_t [7:0] write_data; // [692:429]
+    bkdr_loader_reg2hw_index_reg_t index; // [428:396]
+    bkdr_loader_reg2hw_hash_last_loaded_mreg_t [11:0] hash_last_loaded; // [395:0]
   } bkdr_loader_regs_reg2hw_t;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    bkdr_loader_hw2reg_status_reg_t status; // [1508:1507]
-    bkdr_loader_hw2reg_control_reg_t control; // [1506:1505]
-    bkdr_loader_hw2reg_num_bkdr_targets_reg_t num_bkdr_targets; // [1504:1473]
-    bkdr_loader_hw2reg_usr_access_timestamp_reg_t usr_access_timestamp; // [1472:1441]
-    bkdr_loader_hw2reg_target_info_mreg_t [11:0] target_info; // [1440:1057]
-    bkdr_loader_hw2reg_width_info_mreg_t [11:0] width_info; // [1056:673]
-    bkdr_loader_hw2reg_depth_info_mreg_t [11:0] depth_info; // [672:289]
-    bkdr_loader_hw2reg_read_data_mreg_t [7:0] read_data; // [288:33]
-    bkdr_loader_hw2reg_index_reg_t index; // [32:0]
+    bkdr_loader_hw2reg_status_reg_t status; // [1892:1891]
+    bkdr_loader_hw2reg_control_reg_t control; // [1890:1889]
+    bkdr_loader_hw2reg_num_bkdr_targets_reg_t num_bkdr_targets; // [1888:1857]
+    bkdr_loader_hw2reg_usr_access_timestamp_reg_t usr_access_timestamp; // [1856:1825]
+    bkdr_loader_hw2reg_target_info_mreg_t [11:0] target_info; // [1824:1441]
+    bkdr_loader_hw2reg_width_info_mreg_t [11:0] width_info; // [1440:1057]
+    bkdr_loader_hw2reg_depth_info_mreg_t [11:0] depth_info; // [1056:673]
+    bkdr_loader_hw2reg_read_data_mreg_t [7:0] read_data; // [672:417]
+    bkdr_loader_hw2reg_index_reg_t index; // [416:384]
+    bkdr_loader_hw2reg_hash_last_loaded_mreg_t [11:0] hash_last_loaded; // [383:0]
   } bkdr_loader_regs_hw2reg_t;
 
   // Register offsets for regs interface
@@ -189,6 +200,18 @@ package bkdr_loader_reg_pkg;
   parameter logic [RegsAw-1:0] BKDR_LOADER_WRITE_DATA_6_OFFSET = 11'h 518;
   parameter logic [RegsAw-1:0] BKDR_LOADER_WRITE_DATA_7_OFFSET = 11'h 51c;
   parameter logic [RegsAw-1:0] BKDR_LOADER_INDEX_OFFSET = 11'h 600;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_0_OFFSET = 11'h 700;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_1_OFFSET = 11'h 704;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_2_OFFSET = 11'h 708;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_3_OFFSET = 11'h 70c;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_4_OFFSET = 11'h 710;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_5_OFFSET = 11'h 714;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_6_OFFSET = 11'h 718;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_7_OFFSET = 11'h 71c;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_8_OFFSET = 11'h 720;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_9_OFFSET = 11'h 724;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_10_OFFSET = 11'h 728;
+  parameter logic [RegsAw-1:0] BKDR_LOADER_HASH_LAST_LOADED_11_OFFSET = 11'h 72c;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [1:0] BKDR_LOADER_STATUS_RESVAL = 2'h 0;
@@ -246,6 +269,18 @@ package bkdr_loader_reg_pkg;
   parameter logic [31:0] BKDR_LOADER_READ_DATA_6_VAL_6_RESVAL = 32'h 0;
   parameter logic [31:0] BKDR_LOADER_READ_DATA_7_RESVAL = 32'h 0;
   parameter logic [31:0] BKDR_LOADER_READ_DATA_7_VAL_7_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_0_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_1_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_2_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_3_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_4_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_5_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_6_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_7_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_8_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_9_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_10_RESVAL = 32'h 0;
+  parameter logic [31:0] BKDR_LOADER_HASH_LAST_LOADED_11_RESVAL = 32'h 0;
 
   // Register index for regs interface
   typedef enum int {
@@ -306,11 +341,23 @@ package bkdr_loader_reg_pkg;
     BKDR_LOADER_WRITE_DATA_5,
     BKDR_LOADER_WRITE_DATA_6,
     BKDR_LOADER_WRITE_DATA_7,
-    BKDR_LOADER_INDEX
+    BKDR_LOADER_INDEX,
+    BKDR_LOADER_HASH_LAST_LOADED_0,
+    BKDR_LOADER_HASH_LAST_LOADED_1,
+    BKDR_LOADER_HASH_LAST_LOADED_2,
+    BKDR_LOADER_HASH_LAST_LOADED_3,
+    BKDR_LOADER_HASH_LAST_LOADED_4,
+    BKDR_LOADER_HASH_LAST_LOADED_5,
+    BKDR_LOADER_HASH_LAST_LOADED_6,
+    BKDR_LOADER_HASH_LAST_LOADED_7,
+    BKDR_LOADER_HASH_LAST_LOADED_8,
+    BKDR_LOADER_HASH_LAST_LOADED_9,
+    BKDR_LOADER_HASH_LAST_LOADED_10,
+    BKDR_LOADER_HASH_LAST_LOADED_11
   } bkdr_loader_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] BKDR_LOADER_REGS_PERMIT [58] = '{
+  parameter logic [3:0] BKDR_LOADER_REGS_PERMIT [70] = '{
     4'b 0001, // index[ 0] BKDR_LOADER_STATUS
     4'b 0011, // index[ 1] BKDR_LOADER_CONTROL
     4'b 1111, // index[ 2] BKDR_LOADER_NUM_BKDR_TARGETS
@@ -368,7 +415,19 @@ package bkdr_loader_reg_pkg;
     4'b 1111, // index[54] BKDR_LOADER_WRITE_DATA_5
     4'b 1111, // index[55] BKDR_LOADER_WRITE_DATA_6
     4'b 1111, // index[56] BKDR_LOADER_WRITE_DATA_7
-    4'b 1111  // index[57] BKDR_LOADER_INDEX
+    4'b 1111, // index[57] BKDR_LOADER_INDEX
+    4'b 1111, // index[58] BKDR_LOADER_HASH_LAST_LOADED_0
+    4'b 1111, // index[59] BKDR_LOADER_HASH_LAST_LOADED_1
+    4'b 1111, // index[60] BKDR_LOADER_HASH_LAST_LOADED_2
+    4'b 1111, // index[61] BKDR_LOADER_HASH_LAST_LOADED_3
+    4'b 1111, // index[62] BKDR_LOADER_HASH_LAST_LOADED_4
+    4'b 1111, // index[63] BKDR_LOADER_HASH_LAST_LOADED_5
+    4'b 1111, // index[64] BKDR_LOADER_HASH_LAST_LOADED_6
+    4'b 1111, // index[65] BKDR_LOADER_HASH_LAST_LOADED_7
+    4'b 1111, // index[66] BKDR_LOADER_HASH_LAST_LOADED_8
+    4'b 1111, // index[67] BKDR_LOADER_HASH_LAST_LOADED_9
+    4'b 1111, // index[68] BKDR_LOADER_HASH_LAST_LOADED_10
+    4'b 1111  // index[69] BKDR_LOADER_HASH_LAST_LOADED_11
   };
 
 endpackage

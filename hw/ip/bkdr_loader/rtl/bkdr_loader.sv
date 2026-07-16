@@ -93,6 +93,9 @@ module bkdr_loader
   // Currently selected target index
   tgt_idx_t tgt_idx_sel;
 
+  // Hash store
+  reg_t [NumBkdrTgts-1:0] hash_q;
+
   logic [31:0] mission_mode_dly_d, mission_mode_dly_q;
 
   logic bkdr_en_q, bkdr_en_d;
@@ -355,6 +358,20 @@ module bkdr_loader
                                      reg2hw.index.qe            && // by writing the index register
                                      !reg2hw.control.auto_incr.q));// while auto_incr is deactivated
   end
+
+  // Have a non-reset enable register for each target holding a hash of the memory file last loaded.
+  // Non-resettable FFs should only be cleared on global reset, power cycle, or bitstream
+  // flashing, but not on assertion of the button reset (same behavior as block RAMs).
+  for (genvar i = 0; i < NumBkdrTgts; i++) begin : gen_per_target_hash_handling
+    always_ff @(posedge clk_i) begin : proc_store_hash
+      if (reg2hw.hash_last_loaded[i].qe) begin
+        hash_q[i] <= reg2hw.hash_last_loaded[i].q;
+      end
+    end
+  end
+
+  // read-back
+  assign hw2reg.hash_last_loaded = hash_q;
 
 
   ////////////////
