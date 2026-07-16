@@ -185,8 +185,9 @@ To this end:
 3. Plug the DC power adapter into the barrel jack (*J11*) in the top left corner of the board.
 4. Use a USB-C cable to connect your PC (*host*) with the *USB-C* connector (*J28*) in the lower left corner on the board.
 5. Set the jumpers *JP1* and *JP2* to select the UART0 routing:
-   1. If set to FTDI the UART0 will (likely) be routed to `/dev/ttyUSB2`.
-   2. If set to SAM the UART0 will be routed to `/dev/ttyACM0`.
+   1. Set to `HD` if you are using the HyperDebug board, as also explained in section [Before Connecting HyperDebug to the CW340 Base Board](#before-connecting-hyperdebug-to-the-cw340-base-board).
+   2. Set to `FTDI` to (likely) route the UART0 to `/dev/ttyUSB2`.
+   3. Set to `SAM` to route the UART0 to `/dev/ttyACM0`.
 6. Make sure the DIP switch SW4 on the top side of the board has all switches (1-8) in the ON position.
 7. Make sure the DIP switches on the bottom side of the board are set up as follows:
    - SW1, SW2: all switches (1 to 8) in the OFF position
