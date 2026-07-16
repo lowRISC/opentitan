@@ -23,13 +23,19 @@ the manifest is 1024 bytes.
 
 | Field                 | Size (bytes) | Alignment (bytes) | Offset (bytes) | C Data Type    |
 | --------------------- | ------------ | ----------------- | -------------- | -------------- |
-| `signature`           | 384          | 4                 | 0              | `uint32_t[96]` |
+| `ecdsa_signature`     | 64           | 4                 | 0              | `uint32_t[16]` |
+| `reserved_signature`  | 160          | 4                 | 64             | `uint32_t[40]` |
+| `reserved_unsigned`   | 160          | 4                 | 224            | `uint32_t[40]` |
 | `selector_bits`       | 4            | 4                 | 384            | `uint32_t`     |
 | `device_id`           | 32           | 4                 | 388            | `uint32_t[8]`  |
 | `manuf_state_creator` | 4            | 4                 | 420            | `uint32_t`     |
 | `manuf_state_owner`   | 4            | 4                 | 424            | `uint32_t`     |
 | `life_cycle_state`    | 4            | 4                 | 428            | `uint32_t`     |
-| `public_key`          | 384          | 4                 | 432            | `uint32_t[96]` |
+| `ecdsa_public_key`    | 64           | 4                 | 432            | `uint32_t[16]` |
+| `reserved_public_key` | 160          | 4                 | 496            | `uint32_t[40]` |
+| `reserved`            | 152          | 4                 | 656            | `uint32_t[38]` |
+| `on_demand_dice`      | 4            | 4                 | 808            | `uint32_t`     |
+| `manifest_base_address` | 4          | 4                 | 812            | `uint32_t`     |
 | `address_translation` | 4            | 4                 | 816            | `uint32_t`     |
 | `identifier`          | 4            | 4                 | 820            | `uint32_t`     |
 | `manifest_version`    | 4            | 4                 | 824            | `uint32_t`     |
@@ -49,18 +55,14 @@ the manifest is 1024 bytes.
 
 # Field Descriptions
 
-Some fields like `signature` and `public_key` depend on the version of the manifest.
+*   `ecdsa_signature`: ECDSA P256 signature of the image generated using a NIST
+    P256 ECC key and the SHA-256 hash function.
 
-*   `signature` (v1): [`RSASSA-PKCS1-v1_5`][rsassa_pkcs1_v1_5] signature of the
-    image generated using a 3072-bit RSA private key and the SHA-256 hash
-    function. The signed region of an image starts immediately after this
-    field and extends to the end of the image.
+*   `reserved_signature`: Reserved bytes for signature.
 
-*   `signature` (v2): ECDSA P256 signature of the image generated using a NIST
-    P256 ECC key and the SHA-256 hash function. The signed region of an image
-    starts immediately after the end of the union encapsulating this field and
-    ends at the end of the image. Only the first 64 bytes of this field contain
-    the signature. The following 320 bytes are `0xa5` padding bytes.
+*   `reserved_unsigned`: Reserved bytes. These bytes are not signed by the signature.
+    The signed region of an image starts immediately after this field and ends
+    at the end of the image.
 
 *   `selector_bits`: This field, along with the following four fields, is used
     to constrain a boot stage image to a set of devices based on their device
@@ -88,11 +90,22 @@ Some fields like `signature` and `public_key` depend on the version of the manif
 *   `life_cycle_state`: Device life cycle state compared against the state
     reported by the life cycle controller. Mapped to bit 10 of `selector_bits`.
 
-*   `public_key` (v1): Modulus of the signer's 3072-bit RSA public key.
+*   `ecdsa_public_key`: Signer's ECDSA NIST P256 ECC public key.
 
-*   `public_key` (v2): Signer's ECDSA NIST P256 ECC public key. Only the first
-    64 bytes of this field contain the public key. The following 320 bytes are
-    `0xa5` padding bytes.
+*   `reserved_public_key`: Reserved bytes for public key.
+
+*   `reserved`: Reserved bytes. When allocating reserved bytes, please allocate from
+    the end of this field to allow for the potential size expansion of the public key
+    field above.
+
+*   `on_demand_dice`: DICE certificate refresh mode. If this field is `kHardenedBoolTrue`,
+    DICE operates in On-Demand mode. Otherwise (including default `kHardenedBoolFalse`
+    or legacy `0xa5a5a5a5`), the stage operates in On-Change mode. The field is only
+    effective in ROM_EXT's manifest.
+
+*   `manifest_base_address`: Absolute MMIO address where the manifest is expected
+    to be placed. When set to the legacy unset value (`0xa5a5a5a5`), it is treated
+    as bank base + 64 KiB.
 
 *   `address_translation`: A hardened boolean representing whether address
     translation should be used for the `ROM_EXT` (see the [Ibex wrapper
@@ -106,7 +119,7 @@ Some fields like `signature` and `public_key` depend on the version of the manif
 *   `manifest_version`: Manifest format major and minor version. These version
     values can be used to maintain or break forward compatibility in ROM while
     preserving backward compatibility in ROM_EXT. ROM requires the major version
-    to be `kManifestFormatVersionMajor1`.
+    to be `kManifestVersionMajor2`.
 
 *   `signed_region_end`: Offset of the end of the signed region relative to the
     start of the manifest.
@@ -144,5 +157,4 @@ Some fields like `signature` and `public_key` depend on the version of the manif
 
 *   `extensions`: Extensions.
 
-[rsassa_pkcs1_v1_5]: https://datatracker.ietf.org/doc/html/rfc8017#section-8.2
 [key_manager]: https://opentitan.org/book/hw/ip/keymgr
