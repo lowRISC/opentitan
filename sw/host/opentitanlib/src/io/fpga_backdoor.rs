@@ -42,6 +42,7 @@ pub mod regs {
     pub const READ_DATA_0_REG_OFFSET: usize = 0x400;
     pub const WRITE_DATA_0_REG_OFFSET: usize = 0x500;
     pub const INDEX_REG_OFFSET: usize = 0x600;
+    pub const HASH_LAST_LOADED_0_REG_OFFSET: usize = 0x700;
 }
 
 pub mod consts {
@@ -297,6 +298,18 @@ impl<'a> BackdoorTarget<'a> {
     /// whether the status bit is polled after clearing, to check for any errors.
     pub fn clear(&mut self, word: &Word, check_status: bool) -> Result<()> {
         self.backdoor.clear_target(self.index, word, check_status)
+    }
+
+    /// Read this target's `HASH_LAST_LOADED` register: a non-resettable, software-managed
+    /// hash of the content that was last preloaded into this target, see
+    /// [`Backdoor::read_target_hash`].
+    pub fn read_hash(&mut self) -> Result<u32> {
+        self.backdoor.read_target_hash(self.index)
+    }
+
+    /// Write this target's `HASH_LAST_LOADED` register, see [`Backdoor::write_target_hash`].
+    pub fn write_hash(&mut self, hash: u32) -> Result<()> {
+        self.backdoor.write_target_hash(self.index, hash)
     }
 }
 
@@ -871,6 +884,39 @@ impl Backdoor {
         }
 
         Ok(())
+    }
+
+    /// Read a specified target's `HASH_LAST_LOADED` register.
+    ///
+    /// This is a plain `rw` register with no side effects of its own: hardware only stores
+    /// whatever value software last wrote to it, and never clears it on the button/`rst_ni`
+    /// reset used to re-enter the backdoor loader. It exists so a caller can stash a hash
+    /// of a target's memory content across preloads, and skip re-writing that content if
+    /// the hash of what it's about to write hasn't changed.
+    pub fn read_target_hash(&mut self, target_index: u8) -> Result<u32> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        self.dmi_read(regs::HASH_LAST_LOADED_0_REG_OFFSET + (target_index as usize) * 4)
+            .context("cannot read target hash register")
+    }
+
+    /// Write a specified target's `HASH_LAST_LOADED` register. See [`Backdoor::read_target_hash`].
+    pub fn write_target_hash(&mut self, target_index: u8, hash: u32) -> Result<()> {
+        ensure!(
+            usize::from(target_index) < self.targets.len(),
+            "Target index {} is out of range for {} targets",
+            target_index,
+            self.targets.len()
+        );
+        self.dmi_write(
+            regs::HASH_LAST_LOADED_0_REG_OFFSET + (target_index as usize) * 4,
+            hash,
+        )
+        .context("cannot write target hash register")
     }
 }
 
