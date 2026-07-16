@@ -835,7 +835,7 @@ def is_inst(module: ConfigT) -> bool:
         raise ValueError('Attribute {} in {} is not valid'.format(
             module['attr'], module['name']))
 
-    if module['type'] in ['rom', 'ram_1p_scr', 'eflash']:
+    if module['type'] in ['rom', 'ram_1p_scr', 'eflash', 'rram']:
         top_level_mem = True
 
     return top_level_mem or top_level_module

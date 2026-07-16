@@ -60,6 +60,14 @@ module top_${top["name"]} #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
   % endif
+  % if m.get("name") == "rram_ctrl":
+  // TODO: remove once RRAM is connected to OTP
+  assign rram_ctrl_otp_key_rsp.data_ack = rram_ctrl_otp_key_req.data_req;
+  assign rram_ctrl_otp_key_rsp.addr_ack = rram_ctrl_otp_key_req.addr_req;
+  assign rram_ctrl_otp_key_rsp.key = '0;
+  assign rram_ctrl_otp_key_rsp.rand_key = '0;
+  assign rram_ctrl_otp_key_rsp.seed_valid = 1'b0;
+  % endif
 % endfor
 
   // Ibex-specific assignments

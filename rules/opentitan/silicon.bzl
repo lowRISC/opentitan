@@ -12,6 +12,7 @@ load(
     "convert_to_vmem",
     "extract_software_logs",
     "scramble_flash",
+    "scramble_rram",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
@@ -93,6 +94,28 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             top_secret_cfg = exec_env.top_secret_cfg,
             otp_data_perm = exec_env.otp_data_perm,
             _tool = exec_env.flash_scramble_tool.files_to_run,
+        )
+    elif ctx.attr.kind == "rram":
+        default = signed_bin if signed_bin else binary
+        rom = None
+
+        # Build VMEM images to enable GLS testing.
+        vmem_base = convert_to_vmem(
+            ctx,
+            name = name,
+            src = default,
+            word_size = 128,
+        )
+        vmem = scramble_rram(
+            ctx,
+            name = name,
+            suffix = "128.scr.vmem",
+            src = vmem_base,
+            otp = get_fallback(ctx, "file.otp", exec_env),
+            otp_mmap = exec_env.otp_mmap,
+            top_secret_cfg = exec_env.top_secret_cfg,
+            otp_data_perm = exec_env.otp_data_perm,
+            _tool = exec_env.rram_scramble_tool.files_to_run,
         )
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)

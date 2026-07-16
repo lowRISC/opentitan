@@ -1293,24 +1293,6 @@
         ]
       }
 
-      { name: "PHY_ALERT_CFG",
-        desc: "Phy alert configuration",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-          { bits: "0",
-            name: "alert_ack",
-            desc: "Acknowledge RRAM phy alert"
-          },
-          { bits: "1",
-            name: "alert_trig",
-            desc: "Trigger RRAM phy alert"
-          }
-        ]
-        tags: [ // alert triggers should be tested by directed tests
-               "excl:CsrAllTests:CsrExclWrite"]
-      },
-
       { name: "PHY_STATUS",
         desc: "RRAM Phy Status",
         swaccess: "ro",

@@ -310,7 +310,7 @@ def opentitan_test(
       name: The base name of the test.  The name will be extended with the name
             of the execution environment.
       srcs: The source files for this test.
-      kind: The kind of test (flash, ram, rom).
+      kind: The kind of test (flash, rram, ram, rom).
       deps: Dependecies for this test.
       copts: Compiler options for this test.
       defines: Compiler defines for this test.

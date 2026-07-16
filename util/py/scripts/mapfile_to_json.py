@@ -21,7 +21,7 @@ parser.add_argument('--html',
                     default='',
                     help='Emit a mapfile visualization to the named file')
 parser.add_argument('--regions',
-                    default='rom,ram_main,eflash',
+                    default='rom,ram_main,eflash,rram',
                     help='Which memory regions to analyze')
 parser.add_argument('--target',
                     default='',
@@ -178,6 +178,7 @@ class Mapfile(object):
             # Punt and supply the earlgrey layout.
             'ram_ret_aon': (0x40600000, 0x40601000),
             'eflash': (0x20000000, 0x20100000),
+            'rram': (0x30000000, 0x30200000),
             'ram_main': (0x10000000, 0x10020000),
             'rom': (0x00008000, 0x00010000),
             'rom_ext_virtual': (0x90000000, 0x90080000),

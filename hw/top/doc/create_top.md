@@ -143,6 +143,7 @@ sim_dv(
     exec_env = "sim_dv",
     extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
     flash_scramble_tool = "//util/design:gen-flash-img",
+    rram_scramble_tool = "//util/design:gen-rram-img",
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",

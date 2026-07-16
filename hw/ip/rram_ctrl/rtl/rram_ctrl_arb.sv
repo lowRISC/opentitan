@@ -55,7 +55,6 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
   output logic                          hw_otp_wready_o,
   // hw-otp read interface
   input  logic                          hw_otp_rready_i,
-  output logic [BusFullWidth-1:0]       hw_otp_rdata_o,
   output logic                          hw_otp_rvalid_o,
   // Control to wr/rd handler
   output rram_part_e                    ctrl_part_o,
@@ -290,7 +289,6 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
 
     hw_otp_done_o   = '0;
     hw_otp_err_o    = '0;
-    hw_otp_rdata_o  = '0;
     hw_otp_rvalid_o = '0;
 
     hw_lcmgr_done_o   = '0;
@@ -314,7 +312,6 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
         hw_otp_done_o   = ctrl_done;
         hw_otp_err_o    = ctrl_err;
         hw_otp_rvalid_o = rd_ctrl_rvalid_i;
-        hw_otp_rdata_o  = rd_ctrl_rdata_i;
 
         // fifo related muxing
         hw_otp_wready_o  = wr_fifo_wready_i;

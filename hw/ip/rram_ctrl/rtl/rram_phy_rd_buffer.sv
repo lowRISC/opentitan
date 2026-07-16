@@ -29,6 +29,7 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
   input  rram_part_e                                 part_i,
   input  logic                                       descramble_en_i,
   input  logic                                       ecc_en_i,
+  input  logic                                       addr_xor_en_i,
   input  logic [WidthMultiple-1:0][BusFullWidth-1:0] data_i,
   input  logic                                       err_i,
   output rd_buf_t                                    rd_buf_o,
@@ -53,6 +54,7 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
       rd_buf_d.err           = 1'b0;
       rd_buf_d.descramble_en = 1'b0;
       rd_buf_d.ecc_en        = 1'b1;
+      rd_buf_d.addr_xor_en   = 1'b1;
       rd_buf_d.attr          = Invalid;
     end else if (alloc_i) begin
       rd_buf_d.data          = '0;
@@ -61,6 +63,7 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
       rd_buf_d.err           = 1'b0;
       rd_buf_d.descramble_en = descramble_en_i;
       rd_buf_d.ecc_en        = ecc_en_i;
+      rd_buf_d.addr_xor_en   = addr_xor_en_i;
       rd_buf_d.attr          = Alloc;
     end else if (update_i) begin
       rd_buf_d.data = data_i;
@@ -86,6 +89,7 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
       rd_buf_q.part          <= RramPartData;
       rd_buf_q.descramble_en <= 1'b0;
       rd_buf_q.ecc_en        <= 1'b1;
+      rd_buf_q.addr_xor_en   <= 1'b1;
       rd_buf_q.attr          <= Invalid;
       rd_buf_q.err           <= 1'b0;
     end else begin

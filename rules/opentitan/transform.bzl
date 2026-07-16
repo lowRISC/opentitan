@@ -202,6 +202,12 @@ def convert_to_vmem(ctx, **kwargs):
     output = ctx.actions.declare_file(output)
     src = get_override(ctx, "file.src", kwargs)
 
+    # srec_cat for vmem128 does not work with byte_swap=16. We actually need to pass 128
+    byte_swap = 128 if word_size == 128 else word_size // 8
+
+    # for RRAM we fill with 0x00 as this is the default state
+    fill_str = "0x00" if word_size == 128 else "0xff"
+
     ctx.actions.run(
         outputs = [output],
         inputs = [src],
@@ -212,10 +218,10 @@ def convert_to_vmem(ctx, **kwargs):
             "--offset",
             "0x0",
             "--byte-swap",
-            str(word_size // 8),
+            str(byte_swap),
             # Pad to word alignment
             "--fill",
-            "0xff",
+            fill_str,
             "-within",
             src.path,
             "-binary",
@@ -269,6 +275,69 @@ def scramble_flash(ctx, **kwargs):
         "--in-flash-vmem",
         src.path,
         "--out-flash-vmem",
+        output.path,
+    ]
+
+    # Always get top_secret_cfg since the tool requires it
+    top_secret_cfg = get_override(ctx, "file.top_secret_cfg", kwargs)
+    arguments.extend(["--top-secret-cfg", top_secret_cfg.path])
+    inputs.append(top_secret_cfg)
+
+    if otp:
+        arguments.extend([
+            "--in-otp-vmem",
+            otp.path,
+        ])
+        inputs.extend([otp])
+
+        otp_data_perm = get_override(ctx, "attr.otp_data_perm", kwargs)
+        if otp_data_perm:
+            arguments.extend(["--otp-data-perm", str(otp_data_perm[BuildSettingInfo].value)])
+
+    tool = get_override(ctx, "executable._tool", kwargs)
+    ctx.actions.run(
+        outputs = [output],
+        inputs = inputs,
+        arguments = arguments,
+        executable = tool,
+    )
+    return output
+
+def scramble_rram(ctx, **kwargs):
+    """Scramble a VMEM file according to a RRAM scrambling configuration.
+
+    Args:
+      ctx: The context object for this rule.
+      kwargs: Overrides of values normally retrived from the context object.
+        output: The name of the output file.  Constructed from `name` and `suffix`
+                 if not specified.
+        suffix: The suffix to give the file if the output isn't specified.
+        src: The src File object.
+        otp: The OTP settings.
+        otp_mmap: The OTP memory mapping file.
+
+        top_secret_cfg: The secret configuration file.
+        otp_data_perm: The OTP data permutation configuration.
+        _tool: The rram scrambling script.
+
+    Returns:
+      The transformed File.
+    """
+    output = kwargs.get("output")
+    if not output:
+        name = get_override(ctx, "attr.name", kwargs)
+        suffix = get_override(ctx, "attr.suffix", kwargs)
+        output = "{}.{}".format(name, suffix)
+
+    output = ctx.actions.declare_file(output)
+    src = get_override(ctx, "file.src", kwargs)
+    otp = get_override(ctx, "file.otp", kwargs)
+
+    inputs = [src]
+    arguments = [
+        "--in-rram-vmem",
+        src.path,
+        "--out-rram-vmem",
         output.path,
     ]
 
