@@ -6,12 +6,11 @@
 
 ## Design Details
 
-### Serial interface (both directions)
+### Serial interface (both directions) 
 
-The TX/RX serial lines are high when idle. Data starts with a START bit (high
+The TX/RX serial lines are high when idle. Data starts with a START bit (high 
 idle state deasserts, **1**-->**0**) followed by 8 data bits. The least
-significant bit is sent first. If the parity feature is turned on then an odd or
-even parity bit follows after the data bits. Finally a STOP (**1**) bit
+significant bit is sent first.If the parity feature is turned on then an odd or even parity bit follows after the data bits. Finally a STOP (**1**) bit
 completes one byte of data transfer.
 
 ```wavejson
@@ -54,7 +53,7 @@ If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
 
 When the FIFO becomes empty as part of transmission, a TX FIFO done interrupt will be raised when the final byte has finished transmitting.
-This is separate from the TX FIFO water mark interrupt.
+This is separate from the TX FIFO watermark interrupt.
 
 
 ### Reception
@@ -107,7 +106,7 @@ the stop bit will be a bit time later, so this becomes 8/160 or about
 
 In practice, the transmitter and receiver will both differ from the
 ideal baud rate. Since the worst case difference for reception is 5%,
-the uart can be expected to work if both sides are within +/- 2.5% of
+the UART can be expected to work if both sides are within +/- 2.5% of
 the ideal baud rate.
 
 ### Setting the baud rate
@@ -166,9 +165,9 @@ UART module has a few interrupts including general data flow interrupts
 and unexpected event interrupts.
 
 #### tx_watermark / tx_empty / rx_watermark
-If the TX FIFO level becomes smaller than the TX water mark level (configurable via [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl--txilvl)), the `tx_watermark` interrupt is raised to inform SW.
+If the TX FIFO level becomes smaller than the TX watermark level (configurable via [`FIFO_CTRL.TXILVL`](registers.md#fifo_ctrl--txilvl)), the `tx_watermark` interrupt is raised to inform SW.
 If the TX FIFO is empty, the `tx_empty` interrupt is raised to inform SW.
-If the RX FIFO level becomes greater than or equal to RX water mark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl--rxilvl)), the `rx_watermark` interrupt is raised to inform SW.
+If the RX FIFO level becomes greater than or equal to RX watermark level (configurable via [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl--rxilvl)), the `rx_watermark` interrupt is raised to inform SW.
 
 Note that the watermark interrupts and the empty interrupt are level-based status interrupts.
 They will stay asserted for as long as the FIFO levels are in violation of the configured level and cannot be cleared by writing to the status register.
