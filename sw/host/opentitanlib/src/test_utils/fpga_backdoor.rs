@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result, bail};
 use clap::Args;
+use crc::{CRC_32_ISO_HDLC, Crc};
 use std::convert::From;
 use std::fs;
 use std::path::PathBuf;
@@ -168,13 +169,61 @@ impl TargetWrite {
         Ok(sections)
     }
 
-    pub fn backdoor_write(&self, backdoor: &mut Backdoor, verify: bool) -> Result<()> {
+    /// CRC32 (ISO-HDLC, the same variant used elsewhere in this crate, e.g.
+    /// `util::usr_access`/`test_utils::load_sram_program`) of the raw VMEM file content, used
+    /// to decide whether this exact content is already preloaded on the target (see
+    /// `backdoor_write` and the target's `HASH_LAST_LOADED` register).
+    fn file_hash(&self) -> Result<u32> {
+        let bytes = fs::read(&self.path)
+            .with_context(|| format!("failed to read VMEM file: {}", self.path.display()))?;
+        Ok(Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(&bytes))
+    }
+
+    /// Write this file to `backdoor`'s target.
+    ///
+    /// If `check_hash` is set, the preload is skipped entirely when the target's
+    /// `HASH_LAST_LOADED` register already reports a hash matching this file's content --
+    /// `HASH_LAST_LOADED` survives the backdoor loader's own resets (see
+    /// `Backdoor::read_target_hash`), so this holds across consecutive tool invocations as
+    /// long as the FPGA itself isn't power-cycled/reflashed. When `check_hash` is clear, the
+    /// hash register is left untouched and the preload always happens unconditionally, as
+    /// before this check existed.
+    pub fn backdoor_write(
+        &self,
+        backdoor: &mut Backdoor,
+        verify: bool,
+        check_hash: bool,
+    ) -> Result<()> {
         let mut target = backdoor
             .target_by_id_str(&self.target)?
             .context(format!("FPGA target '{}' not found", &self.target))?;
 
+        let new_hash = if check_hash {
+            let new_hash = self.file_hash()?;
+            let old_hash = target.read_hash()?;
+            if old_hash == new_hash {
+                log::info!(
+                    "Skipping preload of target {}: content hash unchanged (0x{new_hash:08x})",
+                    self.target,
+                );
+                return Ok(());
+            }
+            log::info!(
+                "Preloading target {}: content hash changed (old=0x{old_hash:08x}, new=0x{new_hash:08x})",
+                self.target,
+            );
+            Some(new_hash)
+        } else {
+            None
+        };
+
         let data = self.load_data()?;
-        write_to_target(&mut target, &self.target, data, verify)
+        write_to_target(&mut target, &self.target, data, verify)?;
+        if let Some(new_hash) = new_hash {
+            target.write_hash(new_hash)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -249,6 +298,14 @@ pub struct LoadMemories {
     /// Memories to be written, mapping VMEM files to FPGA target memories.
     #[arg(long = "load-memory", value_name = "TARGET=FILE[@OFFSET]")]
     pub target_writes: Vec<TargetWrite>,
+
+    /// Targets (matching a name given to `--load-memory`) for which the memory file's hash is
+    /// checked against the target's HASH_LAST_LOADED register before writing, skipping the
+    /// preload if it's unchanged since the last time this target was written. Only targets
+    /// named here are checked; any other `--load-memory` target is always preloaded
+    /// unconditionally.
+    #[arg(long = "check-memory-hash", value_name = "TARGET")]
+    pub check_memory_hash: Vec<String>,
 }
 
 impl LoadMemories {
@@ -261,11 +318,55 @@ impl LoadMemories {
         self.target_clears
             .iter()
             .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
-        self.target_writes
-            .iter()
-            .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
+        self.target_writes.iter().try_for_each(|t| {
+            let check_hash = self.check_memory_hash.contains(&t.target);
+            t.backdoor_write(&mut backdoor, false, check_hash)
+        })?;
         backdoor.set_done()?;
 
         Ok(())
+    }
+}
+
+// Unit tests for `TargetWrite::file_hash`, the VMEM-file content hashing used by the
+// `--check-memory-hash` skip-preload feature. These only exercise the pure hashing logic
+// against local temp files, so they don't require real hardware/JTAG.
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{Seek, SeekFrom, Write};
+
+    #[test]
+    fn file_hash_matches_known_crc32_iso_hdlc_check_value() {
+        // "123456789" is the standard CRC-32/ISO-HDLC ("check") test vector; its checksum is
+        // published as 0xcbf43926, independent of this crate's implementation.
+        let mut file = tempfile::NamedTempFile::new().unwrap();
+        file.write_all(b"123456789").unwrap();
+
+        let target_write = TargetWrite {
+            target: "TEST".to_string(),
+            path: file.path().to_path_buf(),
+            offset: None,
+        };
+        assert_eq!(target_write.file_hash().unwrap(), 0xcbf43926);
+    }
+
+    #[test]
+    fn file_hash_changes_with_content() {
+        let mut file = tempfile::NamedTempFile::new().unwrap();
+        file.write_all(b"hello").unwrap();
+        let target_write = TargetWrite {
+            target: "TEST".to_string(),
+            path: file.path().to_path_buf(),
+            offset: None,
+        };
+        let hash_a = target_write.file_hash().unwrap();
+
+        file.as_file_mut().set_len(0).unwrap();
+        file.seek(SeekFrom::Start(0)).unwrap();
+        file.write_all(b"world").unwrap();
+        let hash_b = target_write.file_hash().unwrap();
+
+        assert_ne!(hash_a, hash_b);
     }
 }

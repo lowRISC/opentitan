@@ -423,6 +423,14 @@ pub struct BackdoorBatch {
     #[arg(long = "write", value_name = "TARGET=FILE[@OFFSET]")]
     pub target_writes: Vec<TargetWrite>,
 
+    /// Targets (matching a name given to `--write`) for which the memory file's hash is
+    /// checked against the target's HASH_LAST_LOADED register before writing, skipping the
+    /// preload if it's unchanged since the last time this target was written. Only targets
+    /// named here are checked; any other `--write` target is always preloaded
+    /// unconditionally.
+    #[arg(long = "check-memory-hash", value_name = "TARGET")]
+    pub check_memory_hash: Vec<String>,
+
     /// After completing all writes, enter "mission mode" & start the chip.
     #[arg(long)]
     pub start: bool,
@@ -445,9 +453,10 @@ impl CommandDispatch for BackdoorBatch {
         self.target_clears
             .iter()
             .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
-        self.target_writes
-            .iter()
-            .try_for_each(|t| t.backdoor_write(&mut backdoor, false))?;
+        self.target_writes.iter().try_for_each(|t| {
+            let check_hash = self.check_memory_hash.contains(&t.target);
+            t.backdoor_write(&mut backdoor, false, check_hash)
+        })?;
 
         if self.start {
             backdoor.set_done()?;

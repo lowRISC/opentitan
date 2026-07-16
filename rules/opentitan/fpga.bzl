@@ -201,9 +201,12 @@ def _get_test_commands(ctx, param, exec_env):
     backdoor_writes += " --clear FB0=ALL --clear FI00=ALL --clear FI01=ALL --clear FI02=ALL"
     backdoor_writes += " --clear FB1=ALL --clear FI10=ALL --clear FI11=ALL --clear FI12=ALL"
 
-    # Load the ROM & OTP over the backdoor loader
+    # Load the ROM & OTP over the backdoor loader. ROM is read-only once mission mode is
+    # entered, so its content can't have changed since the last time this FPGA was preloaded
+    # with the same image; check its hash first and skip the (slow) preload when unchanged.
     if "rom" in param:
         backdoor_writes += " --write ROM={rom}"
+        backdoor_writes += " --check-memory-hash ROM"
     if "otp" in param:
         backdoor_writes += " --write OTP={otp}"
     test_setup_cmd.append('--exec="fpga backdoor {{jtag_test_cmd}} batch {backdoor_writes} --start"'.format(backdoor_writes = backdoor_writes))
