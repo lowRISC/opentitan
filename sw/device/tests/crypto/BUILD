@@ -1536,6 +1536,9 @@ opentitan_test(
     name = "symmetric_keygen_functest",
     srcs = ["symmetric_keygen_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/impl:config",
