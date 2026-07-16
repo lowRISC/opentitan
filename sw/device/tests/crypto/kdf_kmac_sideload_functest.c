@@ -12,11 +12,15 @@
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
+
+// DPE context slot for testing, must match the slot defined in the
+// keymgr_dpe_testutils.
+static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
 
 // Most fields of the following structs are not used during sideload testing
 // but they are copied over from KDF-KMAC testing for consistency. Later, we can
@@ -74,6 +78,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
+                        .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .security_level = kOtcryptoKeySecurityLevelLow,
                         .exportable = kHardenedBoolFalse,
                     },
@@ -133,6 +138,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
+                        .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .security_level = kOtcryptoKeySecurityLevelHigh,
                         .exportable = kHardenedBoolFalse,
                     },
@@ -216,6 +222,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .key_mode = kOtcryptoKeyModeKdfKmac256,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
+                        .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .security_level = kOtcryptoKeySecurityLevelHigh,
                         .exportable = kHardenedBoolFalse,
                     },
@@ -429,15 +436,16 @@ static status_t run_test_vector(void) {
 
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
-  // Initialize keymgr and advance to CreatorRootKey state.
-  dif_keymgr_t keymgr;
+  // Initialize keymgr dpe and advance to CreatorRootKey state.
+  dif_keymgr_dpe_t keymgr_dpe;
   dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe, &kmac));
 
   const char *state_name;
-  CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_state_string_get(&keymgr_dpe, &state_name));
 
-  LOG_INFO("Keymgr entered %s State", state_name);
+  LOG_INFO("Keymgr DPE entered %s State", state_name);
   LOG_INFO("Testing cryptolib KDF-KMAC driver with sideloaded key.");
 
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
