@@ -220,9 +220,8 @@ class BitstreamCache(object):
             load_latest_update: bool; whether to load the latest_update file
         """
         if not refresh:
-            for (_, dirnames, _) in os.walk('cache'):
-                for d in dirnames:
-                    self.available[d] = 'local'
+            for direntry in os.scandir('cache'):
+                self.available[direntry.name] = 'local'
             if load_latest_update:
                 try:
                     with open(self.latest_update, 'rt') as f:
