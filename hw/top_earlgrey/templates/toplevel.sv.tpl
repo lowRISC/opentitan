@@ -60,6 +60,17 @@ module top_${top["name"]} #(
     otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
   % endif
+  % if m.get("name") == "rram_ctrl":
+  // TODO: remove once flash_ctrl is removed
+  assign flash_ctrl_otp_rsp.data_ack = flash_ctrl_otp_req.data_req;
+  assign flash_ctrl_otp_rsp.addr_ack = flash_ctrl_otp_req.addr_req;
+  assign flash_ctrl_otp_rsp.key = '0;
+  assign flash_ctrl_otp_rsp.rand_key = '0;
+  assign flash_ctrl_otp_rsp.seed_valid = 1'b0;
+
+  // TODO: remove once keymgr has been updated
+  assign keymgr_flash.seeds = rram_ctrl_keymgr.seeds;
+  % endif
 % endfor
 
   // Ibex-specific assignments

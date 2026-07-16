@@ -38,6 +38,8 @@ filegroup(
         "//hw/ip/prim_xilinx:rtl_files",
         "//hw/ip/prim_xilinx_ultrascale:rtl_files",
         "//hw/ip/rom_ctrl:rtl_files",
+        "//hw/ip/rram_ctrl:rtl_files",
+        "//hw/ip/rram_macro:rtl_files",
         "//hw/ip/rv_dm:rtl_files",
         "//hw/ip/rv_timer:rtl_files",
         "//hw/ip/soc_dbg_ctrl:rtl_files",

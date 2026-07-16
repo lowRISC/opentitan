@@ -15,6 +15,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "scramble_rram",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -94,6 +95,30 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
                 src = signed_bin if signed_bin else binary,
                 word_size = 64,
             )
+        default = vmem
+        rom = None
+        rom32 = None
+    elif ctx.attr.kind == "rram":
+        vmem_base = convert_to_vmem(
+            ctx,
+            name = name,
+            src = signed_bin if signed_bin else binary,
+            word_size = 128,
+        )
+        if exec_env.rram_scramble_tool != None:
+            vmem = scramble_rram(
+                ctx,
+                name = name,
+                suffix = "128.scr.vmem",
+                src = vmem_base,
+                otp = get_fallback(ctx, "file.otp", exec_env),
+                otp_mmap = exec_env.otp_mmap,
+                top_secret_cfg = exec_env.top_secret_cfg,
+                otp_data_perm = exec_env.otp_data_perm,
+                _tool = exec_env.rram_scramble_tool.files_to_run,
+            )
+        else:
+            vmem = vmem_base
         default = vmem
         rom = None
         rom32 = None

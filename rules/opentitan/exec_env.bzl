@@ -32,6 +32,7 @@ _FIELDS = {
     "top_secret_cfg": ("file.top_secret_cfg", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
+    "rram_scramble_tool": ("attr.rram_scramble_tool", False),
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
     "slot_spec": ("attr.slot_spec", False),
@@ -224,6 +225,11 @@ def exec_env_common_attrs(**kwargs):
         ),
         "flash_scramble_tool": attr.label(
             default = kwargs.get("flash_scramble_tool"),
+            executable = True,
+            cfg = "exec",
+        ),
+        "rram_scramble_tool": attr.label(
+            default = kwargs.get("rram_scramble_tool"),
             executable = True,
             cfg = "exec",
         ),
