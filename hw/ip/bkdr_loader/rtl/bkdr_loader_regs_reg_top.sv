@@ -52,9 +52,9 @@ module bkdr_loader_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [57:0] reg_we_check;
+  logic [69:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(58)
+    .OneHotWidth(70)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -257,6 +257,54 @@ module bkdr_loader_regs_reg_top (
   logic index_we;
   logic [31:0] index_qs;
   logic [31:0] index_wd;
+  logic hash_last_loaded_0_re;
+  logic hash_last_loaded_0_we;
+  logic [31:0] hash_last_loaded_0_qs;
+  logic [31:0] hash_last_loaded_0_wd;
+  logic hash_last_loaded_1_re;
+  logic hash_last_loaded_1_we;
+  logic [31:0] hash_last_loaded_1_qs;
+  logic [31:0] hash_last_loaded_1_wd;
+  logic hash_last_loaded_2_re;
+  logic hash_last_loaded_2_we;
+  logic [31:0] hash_last_loaded_2_qs;
+  logic [31:0] hash_last_loaded_2_wd;
+  logic hash_last_loaded_3_re;
+  logic hash_last_loaded_3_we;
+  logic [31:0] hash_last_loaded_3_qs;
+  logic [31:0] hash_last_loaded_3_wd;
+  logic hash_last_loaded_4_re;
+  logic hash_last_loaded_4_we;
+  logic [31:0] hash_last_loaded_4_qs;
+  logic [31:0] hash_last_loaded_4_wd;
+  logic hash_last_loaded_5_re;
+  logic hash_last_loaded_5_we;
+  logic [31:0] hash_last_loaded_5_qs;
+  logic [31:0] hash_last_loaded_5_wd;
+  logic hash_last_loaded_6_re;
+  logic hash_last_loaded_6_we;
+  logic [31:0] hash_last_loaded_6_qs;
+  logic [31:0] hash_last_loaded_6_wd;
+  logic hash_last_loaded_7_re;
+  logic hash_last_loaded_7_we;
+  logic [31:0] hash_last_loaded_7_qs;
+  logic [31:0] hash_last_loaded_7_wd;
+  logic hash_last_loaded_8_re;
+  logic hash_last_loaded_8_we;
+  logic [31:0] hash_last_loaded_8_qs;
+  logic [31:0] hash_last_loaded_8_wd;
+  logic hash_last_loaded_9_re;
+  logic hash_last_loaded_9_we;
+  logic [31:0] hash_last_loaded_9_qs;
+  logic [31:0] hash_last_loaded_9_wd;
+  logic hash_last_loaded_10_re;
+  logic hash_last_loaded_10_we;
+  logic [31:0] hash_last_loaded_10_qs;
+  logic [31:0] hash_last_loaded_10_wd;
+  logic hash_last_loaded_11_re;
+  logic hash_last_loaded_11_we;
+  logic [31:0] hash_last_loaded_11_qs;
+  logic [31:0] hash_last_loaded_11_wd;
 
   // Register instances
   // R[status]: V(True)
@@ -1624,8 +1672,260 @@ module bkdr_loader_regs_reg_top (
   assign reg2hw.index.qe = index_qe;
 
 
+  // Subregister 0 of Multireg hash_last_loaded
+  // R[hash_last_loaded_0]: V(True)
+  logic hash_last_loaded_0_qe;
+  logic [0:0] hash_last_loaded_0_flds_we;
+  assign hash_last_loaded_0_qe = &hash_last_loaded_0_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_0 (
+    .re     (hash_last_loaded_0_re),
+    .we     (hash_last_loaded_0_we),
+    .wd     (hash_last_loaded_0_wd),
+    .d      (hw2reg.hash_last_loaded[0].d),
+    .qre    (),
+    .qe     (hash_last_loaded_0_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[0].q),
+    .ds     (),
+    .qs     (hash_last_loaded_0_qs)
+  );
+  assign reg2hw.hash_last_loaded[0].qe = hash_last_loaded_0_qe;
 
-  logic [57:0] addr_hit;
+
+  // Subregister 1 of Multireg hash_last_loaded
+  // R[hash_last_loaded_1]: V(True)
+  logic hash_last_loaded_1_qe;
+  logic [0:0] hash_last_loaded_1_flds_we;
+  assign hash_last_loaded_1_qe = &hash_last_loaded_1_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_1 (
+    .re     (hash_last_loaded_1_re),
+    .we     (hash_last_loaded_1_we),
+    .wd     (hash_last_loaded_1_wd),
+    .d      (hw2reg.hash_last_loaded[1].d),
+    .qre    (),
+    .qe     (hash_last_loaded_1_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[1].q),
+    .ds     (),
+    .qs     (hash_last_loaded_1_qs)
+  );
+  assign reg2hw.hash_last_loaded[1].qe = hash_last_loaded_1_qe;
+
+
+  // Subregister 2 of Multireg hash_last_loaded
+  // R[hash_last_loaded_2]: V(True)
+  logic hash_last_loaded_2_qe;
+  logic [0:0] hash_last_loaded_2_flds_we;
+  assign hash_last_loaded_2_qe = &hash_last_loaded_2_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_2 (
+    .re     (hash_last_loaded_2_re),
+    .we     (hash_last_loaded_2_we),
+    .wd     (hash_last_loaded_2_wd),
+    .d      (hw2reg.hash_last_loaded[2].d),
+    .qre    (),
+    .qe     (hash_last_loaded_2_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[2].q),
+    .ds     (),
+    .qs     (hash_last_loaded_2_qs)
+  );
+  assign reg2hw.hash_last_loaded[2].qe = hash_last_loaded_2_qe;
+
+
+  // Subregister 3 of Multireg hash_last_loaded
+  // R[hash_last_loaded_3]: V(True)
+  logic hash_last_loaded_3_qe;
+  logic [0:0] hash_last_loaded_3_flds_we;
+  assign hash_last_loaded_3_qe = &hash_last_loaded_3_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_3 (
+    .re     (hash_last_loaded_3_re),
+    .we     (hash_last_loaded_3_we),
+    .wd     (hash_last_loaded_3_wd),
+    .d      (hw2reg.hash_last_loaded[3].d),
+    .qre    (),
+    .qe     (hash_last_loaded_3_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[3].q),
+    .ds     (),
+    .qs     (hash_last_loaded_3_qs)
+  );
+  assign reg2hw.hash_last_loaded[3].qe = hash_last_loaded_3_qe;
+
+
+  // Subregister 4 of Multireg hash_last_loaded
+  // R[hash_last_loaded_4]: V(True)
+  logic hash_last_loaded_4_qe;
+  logic [0:0] hash_last_loaded_4_flds_we;
+  assign hash_last_loaded_4_qe = &hash_last_loaded_4_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_4 (
+    .re     (hash_last_loaded_4_re),
+    .we     (hash_last_loaded_4_we),
+    .wd     (hash_last_loaded_4_wd),
+    .d      (hw2reg.hash_last_loaded[4].d),
+    .qre    (),
+    .qe     (hash_last_loaded_4_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[4].q),
+    .ds     (),
+    .qs     (hash_last_loaded_4_qs)
+  );
+  assign reg2hw.hash_last_loaded[4].qe = hash_last_loaded_4_qe;
+
+
+  // Subregister 5 of Multireg hash_last_loaded
+  // R[hash_last_loaded_5]: V(True)
+  logic hash_last_loaded_5_qe;
+  logic [0:0] hash_last_loaded_5_flds_we;
+  assign hash_last_loaded_5_qe = &hash_last_loaded_5_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_5 (
+    .re     (hash_last_loaded_5_re),
+    .we     (hash_last_loaded_5_we),
+    .wd     (hash_last_loaded_5_wd),
+    .d      (hw2reg.hash_last_loaded[5].d),
+    .qre    (),
+    .qe     (hash_last_loaded_5_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[5].q),
+    .ds     (),
+    .qs     (hash_last_loaded_5_qs)
+  );
+  assign reg2hw.hash_last_loaded[5].qe = hash_last_loaded_5_qe;
+
+
+  // Subregister 6 of Multireg hash_last_loaded
+  // R[hash_last_loaded_6]: V(True)
+  logic hash_last_loaded_6_qe;
+  logic [0:0] hash_last_loaded_6_flds_we;
+  assign hash_last_loaded_6_qe = &hash_last_loaded_6_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_6 (
+    .re     (hash_last_loaded_6_re),
+    .we     (hash_last_loaded_6_we),
+    .wd     (hash_last_loaded_6_wd),
+    .d      (hw2reg.hash_last_loaded[6].d),
+    .qre    (),
+    .qe     (hash_last_loaded_6_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[6].q),
+    .ds     (),
+    .qs     (hash_last_loaded_6_qs)
+  );
+  assign reg2hw.hash_last_loaded[6].qe = hash_last_loaded_6_qe;
+
+
+  // Subregister 7 of Multireg hash_last_loaded
+  // R[hash_last_loaded_7]: V(True)
+  logic hash_last_loaded_7_qe;
+  logic [0:0] hash_last_loaded_7_flds_we;
+  assign hash_last_loaded_7_qe = &hash_last_loaded_7_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_7 (
+    .re     (hash_last_loaded_7_re),
+    .we     (hash_last_loaded_7_we),
+    .wd     (hash_last_loaded_7_wd),
+    .d      (hw2reg.hash_last_loaded[7].d),
+    .qre    (),
+    .qe     (hash_last_loaded_7_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[7].q),
+    .ds     (),
+    .qs     (hash_last_loaded_7_qs)
+  );
+  assign reg2hw.hash_last_loaded[7].qe = hash_last_loaded_7_qe;
+
+
+  // Subregister 8 of Multireg hash_last_loaded
+  // R[hash_last_loaded_8]: V(True)
+  logic hash_last_loaded_8_qe;
+  logic [0:0] hash_last_loaded_8_flds_we;
+  assign hash_last_loaded_8_qe = &hash_last_loaded_8_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_8 (
+    .re     (hash_last_loaded_8_re),
+    .we     (hash_last_loaded_8_we),
+    .wd     (hash_last_loaded_8_wd),
+    .d      (hw2reg.hash_last_loaded[8].d),
+    .qre    (),
+    .qe     (hash_last_loaded_8_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[8].q),
+    .ds     (),
+    .qs     (hash_last_loaded_8_qs)
+  );
+  assign reg2hw.hash_last_loaded[8].qe = hash_last_loaded_8_qe;
+
+
+  // Subregister 9 of Multireg hash_last_loaded
+  // R[hash_last_loaded_9]: V(True)
+  logic hash_last_loaded_9_qe;
+  logic [0:0] hash_last_loaded_9_flds_we;
+  assign hash_last_loaded_9_qe = &hash_last_loaded_9_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_9 (
+    .re     (hash_last_loaded_9_re),
+    .we     (hash_last_loaded_9_we),
+    .wd     (hash_last_loaded_9_wd),
+    .d      (hw2reg.hash_last_loaded[9].d),
+    .qre    (),
+    .qe     (hash_last_loaded_9_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[9].q),
+    .ds     (),
+    .qs     (hash_last_loaded_9_qs)
+  );
+  assign reg2hw.hash_last_loaded[9].qe = hash_last_loaded_9_qe;
+
+
+  // Subregister 10 of Multireg hash_last_loaded
+  // R[hash_last_loaded_10]: V(True)
+  logic hash_last_loaded_10_qe;
+  logic [0:0] hash_last_loaded_10_flds_we;
+  assign hash_last_loaded_10_qe = &hash_last_loaded_10_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_10 (
+    .re     (hash_last_loaded_10_re),
+    .we     (hash_last_loaded_10_we),
+    .wd     (hash_last_loaded_10_wd),
+    .d      (hw2reg.hash_last_loaded[10].d),
+    .qre    (),
+    .qe     (hash_last_loaded_10_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[10].q),
+    .ds     (),
+    .qs     (hash_last_loaded_10_qs)
+  );
+  assign reg2hw.hash_last_loaded[10].qe = hash_last_loaded_10_qe;
+
+
+  // Subregister 11 of Multireg hash_last_loaded
+  // R[hash_last_loaded_11]: V(True)
+  logic hash_last_loaded_11_qe;
+  logic [0:0] hash_last_loaded_11_flds_we;
+  assign hash_last_loaded_11_qe = &hash_last_loaded_11_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_hash_last_loaded_11 (
+    .re     (hash_last_loaded_11_re),
+    .we     (hash_last_loaded_11_we),
+    .wd     (hash_last_loaded_11_wd),
+    .d      (hw2reg.hash_last_loaded[11].d),
+    .qre    (),
+    .qe     (hash_last_loaded_11_flds_we[0]),
+    .q      (reg2hw.hash_last_loaded[11].q),
+    .ds     (),
+    .qs     (hash_last_loaded_11_qs)
+  );
+  assign reg2hw.hash_last_loaded[11].qe = hash_last_loaded_11_qe;
+
+
+
+  logic [69:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == BKDR_LOADER_STATUS_OFFSET);
     addr_hit[ 1] = (reg_addr == BKDR_LOADER_CONTROL_OFFSET);
@@ -1685,6 +1985,18 @@ module bkdr_loader_regs_reg_top (
     addr_hit[55] = (reg_addr == BKDR_LOADER_WRITE_DATA_6_OFFSET);
     addr_hit[56] = (reg_addr == BKDR_LOADER_WRITE_DATA_7_OFFSET);
     addr_hit[57] = (reg_addr == BKDR_LOADER_INDEX_OFFSET);
+    addr_hit[58] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_0_OFFSET);
+    addr_hit[59] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_1_OFFSET);
+    addr_hit[60] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_2_OFFSET);
+    addr_hit[61] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_3_OFFSET);
+    addr_hit[62] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_4_OFFSET);
+    addr_hit[63] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_5_OFFSET);
+    addr_hit[64] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_6_OFFSET);
+    addr_hit[65] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_7_OFFSET);
+    addr_hit[66] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_8_OFFSET);
+    addr_hit[67] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_9_OFFSET);
+    addr_hit[68] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_10_OFFSET);
+    addr_hit[69] = (reg_addr == BKDR_LOADER_HASH_LAST_LOADED_11_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1749,7 +2061,19 @@ module bkdr_loader_regs_reg_top (
                (addr_hit[54] & (|(BKDR_LOADER_REGS_PERMIT[54] & ~reg_be))) |
                (addr_hit[55] & (|(BKDR_LOADER_REGS_PERMIT[55] & ~reg_be))) |
                (addr_hit[56] & (|(BKDR_LOADER_REGS_PERMIT[56] & ~reg_be))) |
-               (addr_hit[57] & (|(BKDR_LOADER_REGS_PERMIT[57] & ~reg_be)))));
+               (addr_hit[57] & (|(BKDR_LOADER_REGS_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(BKDR_LOADER_REGS_PERMIT[58] & ~reg_be))) |
+               (addr_hit[59] & (|(BKDR_LOADER_REGS_PERMIT[59] & ~reg_be))) |
+               (addr_hit[60] & (|(BKDR_LOADER_REGS_PERMIT[60] & ~reg_be))) |
+               (addr_hit[61] & (|(BKDR_LOADER_REGS_PERMIT[61] & ~reg_be))) |
+               (addr_hit[62] & (|(BKDR_LOADER_REGS_PERMIT[62] & ~reg_be))) |
+               (addr_hit[63] & (|(BKDR_LOADER_REGS_PERMIT[63] & ~reg_be))) |
+               (addr_hit[64] & (|(BKDR_LOADER_REGS_PERMIT[64] & ~reg_be))) |
+               (addr_hit[65] & (|(BKDR_LOADER_REGS_PERMIT[65] & ~reg_be))) |
+               (addr_hit[66] & (|(BKDR_LOADER_REGS_PERMIT[66] & ~reg_be))) |
+               (addr_hit[67] & (|(BKDR_LOADER_REGS_PERMIT[67] & ~reg_be))) |
+               (addr_hit[68] & (|(BKDR_LOADER_REGS_PERMIT[68] & ~reg_be))) |
+               (addr_hit[69] & (|(BKDR_LOADER_REGS_PERMIT[69] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1841,6 +2165,54 @@ module bkdr_loader_regs_reg_top (
   assign index_we = addr_hit[57] & reg_we & !reg_error;
 
   assign index_wd = reg_wdata[31:0];
+  assign hash_last_loaded_0_re = addr_hit[58] & reg_re & !reg_error;
+  assign hash_last_loaded_0_we = addr_hit[58] & reg_we & !reg_error;
+
+  assign hash_last_loaded_0_wd = reg_wdata[31:0];
+  assign hash_last_loaded_1_re = addr_hit[59] & reg_re & !reg_error;
+  assign hash_last_loaded_1_we = addr_hit[59] & reg_we & !reg_error;
+
+  assign hash_last_loaded_1_wd = reg_wdata[31:0];
+  assign hash_last_loaded_2_re = addr_hit[60] & reg_re & !reg_error;
+  assign hash_last_loaded_2_we = addr_hit[60] & reg_we & !reg_error;
+
+  assign hash_last_loaded_2_wd = reg_wdata[31:0];
+  assign hash_last_loaded_3_re = addr_hit[61] & reg_re & !reg_error;
+  assign hash_last_loaded_3_we = addr_hit[61] & reg_we & !reg_error;
+
+  assign hash_last_loaded_3_wd = reg_wdata[31:0];
+  assign hash_last_loaded_4_re = addr_hit[62] & reg_re & !reg_error;
+  assign hash_last_loaded_4_we = addr_hit[62] & reg_we & !reg_error;
+
+  assign hash_last_loaded_4_wd = reg_wdata[31:0];
+  assign hash_last_loaded_5_re = addr_hit[63] & reg_re & !reg_error;
+  assign hash_last_loaded_5_we = addr_hit[63] & reg_we & !reg_error;
+
+  assign hash_last_loaded_5_wd = reg_wdata[31:0];
+  assign hash_last_loaded_6_re = addr_hit[64] & reg_re & !reg_error;
+  assign hash_last_loaded_6_we = addr_hit[64] & reg_we & !reg_error;
+
+  assign hash_last_loaded_6_wd = reg_wdata[31:0];
+  assign hash_last_loaded_7_re = addr_hit[65] & reg_re & !reg_error;
+  assign hash_last_loaded_7_we = addr_hit[65] & reg_we & !reg_error;
+
+  assign hash_last_loaded_7_wd = reg_wdata[31:0];
+  assign hash_last_loaded_8_re = addr_hit[66] & reg_re & !reg_error;
+  assign hash_last_loaded_8_we = addr_hit[66] & reg_we & !reg_error;
+
+  assign hash_last_loaded_8_wd = reg_wdata[31:0];
+  assign hash_last_loaded_9_re = addr_hit[67] & reg_re & !reg_error;
+  assign hash_last_loaded_9_we = addr_hit[67] & reg_we & !reg_error;
+
+  assign hash_last_loaded_9_wd = reg_wdata[31:0];
+  assign hash_last_loaded_10_re = addr_hit[68] & reg_re & !reg_error;
+  assign hash_last_loaded_10_we = addr_hit[68] & reg_we & !reg_error;
+
+  assign hash_last_loaded_10_wd = reg_wdata[31:0];
+  assign hash_last_loaded_11_re = addr_hit[69] & reg_re & !reg_error;
+  assign hash_last_loaded_11_we = addr_hit[69] & reg_we & !reg_error;
+
+  assign hash_last_loaded_11_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1902,6 +2274,18 @@ module bkdr_loader_regs_reg_top (
     reg_we_check[55] = write_data_6_we;
     reg_we_check[56] = write_data_7_we;
     reg_we_check[57] = index_we;
+    reg_we_check[58] = hash_last_loaded_0_we;
+    reg_we_check[59] = hash_last_loaded_1_we;
+    reg_we_check[60] = hash_last_loaded_2_we;
+    reg_we_check[61] = hash_last_loaded_3_we;
+    reg_we_check[62] = hash_last_loaded_4_we;
+    reg_we_check[63] = hash_last_loaded_5_we;
+    reg_we_check[64] = hash_last_loaded_6_we;
+    reg_we_check[65] = hash_last_loaded_7_we;
+    reg_we_check[66] = hash_last_loaded_8_we;
+    reg_we_check[67] = hash_last_loaded_9_we;
+    reg_we_check[68] = hash_last_loaded_10_we;
+    reg_we_check[69] = hash_last_loaded_11_we;
   end
 
   // Read data return
@@ -2143,6 +2527,54 @@ module bkdr_loader_regs_reg_top (
 
       addr_hit[57]: begin
         reg_rdata_next[31:0] = index_qs;
+      end
+
+      addr_hit[58]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_0_qs;
+      end
+
+      addr_hit[59]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_1_qs;
+      end
+
+      addr_hit[60]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_2_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_3_qs;
+      end
+
+      addr_hit[62]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_4_qs;
+      end
+
+      addr_hit[63]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_5_qs;
+      end
+
+      addr_hit[64]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_6_qs;
+      end
+
+      addr_hit[65]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_7_qs;
+      end
+
+      addr_hit[66]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_8_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_9_qs;
+      end
+
+      addr_hit[68]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_10_qs;
+      end
+
+      addr_hit[69]: begin
+        reg_rdata_next[31:0] = hash_last_loaded_11_qs;
       end
 
       default: begin

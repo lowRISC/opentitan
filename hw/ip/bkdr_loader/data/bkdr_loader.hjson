@@ -324,6 +324,29 @@
           },
         ]
       },
+      { skipto: "0x700" }
+      { multireg: {
+        name: "HASH_LAST_LOADED",
+        desc: '''
+              Non-reset register to store a hash digest of the memory file loaded most recently.
+              When loading a r/o target, such as the ROM, this register can be first probed and
+              its content compared to a hash of the memory file to be written. Should they match,
+              the same memory file is already loaded and a preload can be skipped.
+              ''',
+        count: "NumBkdrTgts",
+        cname: "VAL",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext:    "true",
+        hwqe:     "true",
+        fields: [
+          { bits: "31:0"
+            name: "VAL"
+            desc: '''
+                  ''',
+          }
+        ]
+      } },
     ],
   }
 }

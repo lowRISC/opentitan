@@ -63,6 +63,18 @@
 | bkdr_loader.[`WRITE_DATA_6`](#write_data)                             | 0x518    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
 | bkdr_loader.[`WRITE_DATA_7`](#write_data)                             | 0x51c    |        4 | Value to be written to the target memory at the current `INDEX`. If                 |
 | bkdr_loader.[`INDEX`](#index)                                         | 0x600    |        4 | Index address of the SRAM word to be accessed. When `CONTROL.WRITE_ENA` is asserted |
+| bkdr_loader.[`HASH_LAST_LOADED_0`](#hash_last_loaded)                 | 0x700    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_1`](#hash_last_loaded)                 | 0x704    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_2`](#hash_last_loaded)                 | 0x708    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_3`](#hash_last_loaded)                 | 0x70c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_4`](#hash_last_loaded)                 | 0x710    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_5`](#hash_last_loaded)                 | 0x714    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_6`](#hash_last_loaded)                 | 0x718    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_7`](#hash_last_loaded)                 | 0x71c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_8`](#hash_last_loaded)                 | 0x720    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_9`](#hash_last_loaded)                 | 0x724    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_10`](#hash_last_loaded)                | 0x728    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
+| bkdr_loader.[`HASH_LAST_LOADED_11`](#hash_last_loaded)                | 0x72c    |        4 | Non-reset register to store a hash digest of the memory file loaded most recently.  |
 
 ## STATUS
 Status register
@@ -373,6 +385,42 @@ each auto-triggered access, see `AUTO_INCR`.
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:0  |   rw   |   0x0   | VAL    |               |
+
+## HASH_LAST_LOADED
+Non-reset register to store a hash digest of the memory file loaded most recently.
+When loading a r/o target, such as the ROM, this register can be first probed and
+its content compared to a hash of the memory file to be written. Should they match,
+the same memory file is already loaded and a preload can be skipped.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                | Offset   |
+|:--------------------|:---------|
+| HASH_LAST_LOADED_0  | 0x700    |
+| HASH_LAST_LOADED_1  | 0x704    |
+| HASH_LAST_LOADED_2  | 0x708    |
+| HASH_LAST_LOADED_3  | 0x70c    |
+| HASH_LAST_LOADED_4  | 0x710    |
+| HASH_LAST_LOADED_5  | 0x714    |
+| HASH_LAST_LOADED_6  | 0x718    |
+| HASH_LAST_LOADED_7  | 0x71c    |
+| HASH_LAST_LOADED_8  | 0x720    |
+| HASH_LAST_LOADED_9  | 0x724    |
+| HASH_LAST_LOADED_10 | 0x728    |
+| HASH_LAST_LOADED_11 | 0x72c    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | VAL    |               |
 
 
 <!-- END CMDGEN -->
