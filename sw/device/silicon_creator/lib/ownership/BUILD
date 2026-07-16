@@ -74,6 +74,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
+            ":owner_block",
             ":owner_verify",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:memory",
@@ -91,6 +92,7 @@ dual_cc_library(
         shared = [
             ":datatypes",
             "//sw/device/lib/base:hardened",
+            "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib:error",
         ],
@@ -216,6 +218,7 @@ cc_library(
         ":datatypes",
         ":owner_block",
         ":ownership_key",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",

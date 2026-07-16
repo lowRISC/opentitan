@@ -11,13 +11,11 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
 
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-// RAM copy of the owner INFO pages from flash.
-extern owner_block_t owner_page[2];
 
 OT_WEAK const owner_keydata_t *const kNoOwnerRecoveryKey;
 
@@ -35,13 +33,18 @@ const owner_detached_signature_t *ownership_signature_scan(
     return NULL;
   length -= sizeof(owner_detached_signature_t);
   uintptr_t end = start + length;
+  // The nonce in the detached signature is not cryptographically bound. It is
+  // merely a token to uniquely identify a detached signature block and not
+  // confuse it with any other block that may be left over in flash. We'll
+  // allow a nonce of zero as a wildcard to match any detached signature block.
+  const nonce_t zero = {0};
   while (start < end) {
     const owner_detached_signature_t *sig =
         (const owner_detached_signature_t *)start;
     if (sig->header.tag == kTlvTagDetachedSignature &&
         sig->header.length == sizeof(owner_detached_signature_t) &&
         sig->header.version.major == 0 && sig->command == command &&
-        nonce_equal(&sig->nonce, nonce)) {
+        (nonce_equal(&sig->nonce, &zero) || nonce_equal(&sig->nonce, nonce))) {
       return sig;
     }
     start += FLASH_CTRL_PARAM_BYTES_PER_PAGE;
@@ -89,29 +92,22 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
   hmac_digest_t digest;
   hmac_sha256(message, len, &digest);
 
-  if ((key & kOwnershipKeyUnlock) == kOwnershipKeyUnlock) {
-    if (owner_verify(key_alg, &owner_page[page].unlock_key, ecdsa, spx, NULL, 0,
-                     NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
-      return kErrorOk;
+  const struct {
+    ownership_key_t mask;
+    const owner_keydata_t *key;
+  } keys[] = {
+      {kOwnershipKeyUnlock, &owner_page[page].unlock_key},
+      {kOwnershipKeyActivate, &owner_page[page].activate_key},
+      {kOwnershipKeyRecovery, kNoOwnerRecoveryKey},
+      {0, &owner_page[page].owner_key},
+  };
+  for (size_t i = 0; i < ARRAYSIZE(keys); ++i) {
+    if (keys[i].key != NULL && (key & keys[i].mask) == keys[i].mask) {
+      if (owner_verify(key_alg, keys[i].key, ecdsa, spx, NULL, 0, NULL, 0,
+                       message, len, &digest, flash_exec) == kErrorOk) {
+        return kErrorOk;
+      }
     }
-  }
-  if ((key & kOwnershipKeyActivate) == kOwnershipKeyActivate) {
-    if (owner_verify(key_alg, &owner_page[page].activate_key, ecdsa, spx, NULL,
-                     0, NULL, 0, message, len, &digest,
-                     flash_exec) == kErrorOk) {
-      return kErrorOk;
-    }
-  }
-  if (kNoOwnerRecoveryKey &&
-      (key & kOwnershipKeyRecovery) == kOwnershipKeyRecovery) {
-    if (owner_verify(key_alg, kNoOwnerRecoveryKey, ecdsa, spx, NULL, 0, NULL, 0,
-                     message, len, &digest, flash_exec) == kErrorOk) {
-      return kErrorOk;
-    }
-  }
-  if (owner_verify(key_alg, &owner_page[page].owner_key, ecdsa, spx, NULL, 0,
-                   NULL, 0, message, len, &digest, flash_exec) == kErrorOk) {
-    return kErrorOk;
   }
   return kErrorOwnershipInvalidSignature;
 }
@@ -265,4 +261,14 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
   secret_page_enable(/*read=*/kMultiBitBool4False,
                      /*write=*/kMultiBitBool4False);
   return error;
+}
+
+rom_error_t ownership_secret_update(boot_data_t *bootdata) {
+  uint32_t prior_key_alg = owner_page[0].ownership_key_alg;
+  const owner_keydata_t *prior_owner_key = &owner_page[0].owner_key;
+  HARDENED_RETURN_IF_ERROR(
+      ownership_secret_new(prior_key_alg, prior_owner_key));
+  bootdata->ownership_transfers += 1;
+
+  return kErrorOk;
 }

@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
@@ -111,5 +112,14 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
  * @return Success or error code.
  */
 rom_error_t ownership_history_get(hmac_digest_t *history);
+
+/**
+ * Update the owner secret and transfer counter in bootdata if a transfer has
+ * occurred.
+ *
+ * @param bootdata The current bootdata.
+ * @return Success or error code.
+ */
+rom_error_t ownership_secret_update(boot_data_t *bootdata);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_
