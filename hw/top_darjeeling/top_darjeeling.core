@@ -63,6 +63,7 @@ filesets:
       - lowrisc:systems:ast_pkg
     files:
       - rtl/autogen/top_darjeeling_racl_pkg.sv
+      - rtl/autogen/top_darjeeling.sv
       - rtl/autogen/darjeeling_pd_main.sv
       - rtl/autogen/darjeeling_pd_aon.sv
     file_type: systemVerilogSource

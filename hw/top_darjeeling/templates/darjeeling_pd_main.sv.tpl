@@ -14,9 +14,9 @@ cio_info = {}
 `include "prim_assert.sv"
 
 module ${top["name"]}_pd_${domain.lower()} #(
-<%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=domain" />\
+<%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=domain, feedthrough=False" />\
 ) (
-<%include file="/toplevel_snippets/port_intermodule_signals.tpl" args="top=top, domain=domain" />\
+<%include file="/toplevel_snippets/port_intermodule_signals.tpl" args="top=top, domain=domain, last_snippet=False" />\
 <%include file="/toplevel_snippets/port_special_signals.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, domain=domain" />\
 );
 
