@@ -210,6 +210,13 @@ bazel test --test_output=streamed \
   //sw/device/tests:sysrst_ctrl_ulp_z3_wakeup_test_fpga_cw340_sival_rom_ext
 ```
 
+Find below the top view and a bottom view photos of a fully configured CW340 board.
+
+[![top view of the CW340 board](cw340-top-lowres.webp)](cw340-top.webp)
+
+[![bottom view of the CW340 board](cw340-bottom-lowres.webp)](cw340-bottom.webp)
+
+
 #### HyperDebug Board
 
 To be able to run OpenTitan tests, you need to have a HyperDebug board that is connected to your CW340 board.
@@ -217,7 +224,7 @@ Below we describe how to:
 1. flash firmware onto your HyperDebug board, and
 2. connect it to you CW340 board
 
-![HyperDebug Setup](hyperdebug_setup.png)
+![HyperDebug Setup](hyperdebug_setup.webp)
 
 ##### Flashing HyperDebug Firmware for the First Time
 
