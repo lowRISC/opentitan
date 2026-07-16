@@ -171,6 +171,8 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   // TODO(#30665): changed this towards abs_mmio_read32(...) instead of
   // sec_mmio_read32(...) as otherwise several test fail.
   // The test currently investigating is: 0.rom_e2e_asm_init_test_unlocked0!
+  // When fixing this issue the keymgr_dpe_unittest.cc must reflect the
+  // changes too!
   uint32_t got_state = abs_mmio_read32(sc_keymgr_dpe_base() +
                                        KEYMGR_DPE_WORKING_STATE_REG_OFFSET);
   if (op_status_field == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE &&
@@ -262,6 +264,8 @@ void sc_keymgr_dpe_sw_binding_set(keymgr_dpe_binding_value_t *binding_value) {
   // auto reset register. The reason is if we start an advance operation
   // then the HW will set this register afterwards. However, the
   // sec_mmio_check_value() function still expects the written value of 0!
+  // When fixing this issue the keymgr_dpe_unittest.cc must reflect the changes
+  // too!
   abs_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET, 0);
 }
@@ -292,7 +296,8 @@ void sc_keymgr_dpe_max_ver_set(uint32_t max_key_ver) {
   // TODO(#30665): sec_mmio_writes currently does not work > The reason is if
   // we start an advance operation then the HW will set this register
   // afterwards. However the sec_mmio_check_value() function still expects the
-  // written 0 value!
+  // written 0 value! When fixing this issue the keymgr_dpe_unittest.cc must
+  // reflect the changes too!
   abs_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_MAX_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
@@ -323,7 +328,8 @@ void sc_keymgr_dpe_policy_set(sc_keymgr_dpe_policies_t policy) {
   // TODO(#30665): sec_mmio_writes currently does not work > The reason is if
   // we start an advance operation then the HW will set this register
   // afterwards. However the sec_mmio_check_value() function still expects the
-  // written 0 value!
+  // written 0 value! When fixing this issue the keymgr_dpe_unittest.cc must
+  // reflect the changes too!
   abs_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_SLOT_POLICY_REGWEN_REG_OFFSET, 0);
 }
