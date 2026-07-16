@@ -499,6 +499,16 @@ void ISSWrapper::set_software_errs_fatal(bool new_val) {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::set_wfi_enabled(bool new_val) {
+  std::ostringstream oss;
+
+  oss << "set_wfi_enabled " << new_val << "\n";
+
+  run_command(oss.str(), nullptr);
+}
+
+void ISSWrapper::wfi_resume() { run_command("wfi_resume\n", nullptr); }
+
 void ISSWrapper::initial_secure_wipe() {
   run_command("initial_secure_wipe\n", nullptr);
 }

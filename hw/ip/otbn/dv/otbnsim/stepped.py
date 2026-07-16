@@ -74,6 +74,11 @@ prefixed with "0x" if they are hexadecimal.
                             stall request is ignored except if it is enforced.
 
     set_software_errs_fatal Set software_errs_fatal bit.
+
+    set_wfi_enabled         Set the wfi_enabled bit.
+
+    wfi_resume              Resume a wfi instruction that is paused (the host
+                            has issued the RESUME command).
 '''
 
 import binascii
@@ -356,6 +361,22 @@ def on_set_software_errs_fatal(sim: OTBNSim,
     return None
 
 
+def on_set_wfi_enabled(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('set_wfi_enabled', 1, args)
+    new_val = read_word('enabled', args[0], 1)
+    assert new_val in [0, 1]
+    sim.state.wfi_enabled = new_val != 0
+
+    return None
+
+
+def on_wfi_resume(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
+    check_arg_count('wfi_resume', 0, args)
+    sim.state.request_wfi_resume()
+
+    return None
+
+
 def on_set_keymgr_value(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     check_arg_count('set_keymgr_value', 3, args)
     key0 = read_word('key0', args[0], 384)
@@ -440,7 +461,9 @@ _HANDLERS = {
     'send_stall_request': on_send_stall_request,
     'set_rma_req': on_set_rma_req,
     'initial_secure_wipe': on_initial_secure_wipe,
-    'set_software_errs_fatal': on_set_software_errs_fatal
+    'set_software_errs_fatal': on_set_software_errs_fatal,
+    'set_wfi_enabled': on_set_wfi_enabled,
+    'wfi_resume': on_wfi_resume,
 }
 
 
