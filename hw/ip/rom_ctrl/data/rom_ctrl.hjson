@@ -93,7 +93,7 @@
     { name:      "MemSizeRom",
       desc:      "Memory size of the ROM (in bytes).",
       type:      "int",
-      default:   "0xc000"
+      default:   "0x30000"
     },
   ]
   alert_list: [
