@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
   MemArea rom0(top_scope + (".u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom."
                             "u_prim_rom"),
-               0xc000 / 4, 4);
+               0x30000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   MemArea rram(top_scope + ".u_rram_macro.u_data_array", 0x200000 / 16, 16);

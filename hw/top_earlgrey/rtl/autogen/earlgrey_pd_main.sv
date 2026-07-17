@@ -2511,7 +2511,7 @@ module earlgrey_pd_main #(
     .RndCnstScrNonce(RndCnstRomCtrlScrNonce),
     .RndCnstScrKey(RndCnstRomCtrlScrKey),
     .SecDisableScrambling(SecRomCtrlDisableScrambling),
-    .MemSizeRom(49152)
+    .MemSizeRom(196608)
   ) u_rom_ctrl (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
