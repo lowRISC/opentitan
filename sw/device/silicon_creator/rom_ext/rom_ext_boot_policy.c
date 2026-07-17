@@ -4,31 +4,7 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 
-#include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/manifest.h"
-#include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
-
-rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
-    const boot_data_t *boot_data) {
-  const manifest_t *slot_a = rom_ext_boot_policy_manifest_a_get();
-  const manifest_t *slot_b = rom_ext_boot_policy_manifest_b_get();
-  uint32_t slot = boot_data->primary_bl0_slot;
-  switch (launder32(slot)) {
-    case kBootSlotB:
-      HARDENED_CHECK_EQ(slot, kBootSlotB);
-      return (rom_ext_boot_policy_manifests_t){
-          .ordered = {slot_b, slot_a},
-      };
-    case kBootSlotA:
-      OT_FALLTHROUGH_INTENDED;
-    default:
-      return (rom_ext_boot_policy_manifests_t){
-          .ordered = {slot_a, slot_b},
-      };
-  }
-}
 
 // TODO(#21204): Refactor to use `manifest_check` from `lib/manifest.h`.
 OT_WARN_UNUSED_RESULT
@@ -65,13 +41,19 @@ static inline rom_error_t manifest_check_rom_ext(const manifest_t *manifest) {
 static rom_error_t manifest_base_address_check(const manifest_t *manifest) {
   uintptr_t actual_base = (uintptr_t)manifest;
   uintptr_t expected_base = (uintptr_t)manifest->manifest_base_address;
+
   // For backward compatibility, skip the check if the expected base address
-  // is the default unset value (0xa5a5a5a5) and the ROM_EXT size is 64KB.
-  if (expected_base == 0xa5a5a5a5 && (uintptr_t)_rom_ext_size == 0x10000) {
-    return kErrorOk;
+  // is the default unset value (0xa5a5a5a5) and the remapped address is virtual
+  // base + 64K.
+  if (expected_base == 0xa5a5a5a5) {
+    uintptr_t virtual_base = owner_vma_get((uintptr_t)manifest);
+    if (virtual_base == (uintptr_t)_owner_virtual_start_address + 64 * 1024) {
+      return kErrorOk;
+    }
   }
+
   if (manifest->address_translation == kHardenedBoolTrue) {
-    actual_base = owner_vma_get(manifest, (uintptr_t)manifest);
+    actual_base = owner_vma_get((uintptr_t)manifest);
   }
   if (expected_base != actual_base) {
     return kErrorManifestBadBaseAddress;
@@ -103,6 +85,3 @@ rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
   RETURN_IF_ERROR(manifest_base_address_check(manifest));
   return kErrorOk;
 }
-
-extern const manifest_t *rom_ext_boot_policy_manifest_a_get(void);
-extern const manifest_t *rom_ext_boot_policy_manifest_b_get(void);
