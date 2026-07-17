@@ -12,6 +12,7 @@ on:
     tags:
       - "*"
   pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       # We should only run Private CI on `master` currently.
       - "master"
@@ -23,6 +24,7 @@ jobs:
   trigger:
     name: Trigger Private CI
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request_target' || github.event.pull_request.draft == false }}
     steps:
       - name: Trigger Private CI
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0

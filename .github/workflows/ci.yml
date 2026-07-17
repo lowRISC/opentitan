@@ -5,6 +5,7 @@
 name: CI
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches-ignore:
       - "backport-*"
@@ -83,6 +84,17 @@ jobs:
       - name: Lock files
         run: ./ci/scripts/check-lock-files.sh
 
+  # Single source of truth for whether the rest of the pipeline (everything
+  # except the lint jobs) should run. While a PR is a draft, only lint runs.
+  gate:
+    name: Draft PR gate
+    runs-on: ubuntu-latest
+    outputs:
+      run_full: ${{ steps.check.outputs.run_full }}
+    steps:
+      - id: check
+        run: echo "run_full=${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}" >> "$GITHUB_OUTPUT"
+
   slow_lint:
     name: Lint (slow)
     runs-on: ubuntu-22.04
@@ -143,8 +155,8 @@ jobs:
   build_docs:
     name: Build documentation
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     env:
       BUCKET: gold-hybrid-255313-prod
     steps:
@@ -192,8 +204,8 @@ jobs:
   airgapped_build:
     name: Airgapped build
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -252,9 +264,9 @@ jobs:
 
   otbn_standalone_tests:
     name: Run OTBN smoke Test
-    needs: quick_lint
+    needs: [quick_lint, gate]
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v6
@@ -286,9 +298,9 @@ jobs:
 
   otbn_crypto_tests:
     name: Run OTBN crypto tests
-    needs: quick_lint
+    needs: [quick_lint, gate]
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v6
@@ -304,8 +316,8 @@ jobs:
   verilator_englishbreakfast:
     name: Verilated English Breakfast
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     steps:
       - uses: actions/checkout@v6
       - name: Prepare environment
@@ -335,8 +347,8 @@ jobs:
   verilator_earlgrey:
     name: Verilated Earl Grey
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     timeout-minutes: 240
     steps:
       - uses: actions/checkout@v6
@@ -354,7 +366,8 @@ jobs:
 
   chip_earlgrey_cw340:
     name: Earl Grey for CW340
-    needs: quick_lint
+    needs: [quick_lint, gate]
+    if: ${{ needs.gate.outputs.run_full == 'true' }}
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
     with:
@@ -406,7 +419,8 @@ jobs:
   schedule_fpga_jobs:
     name: Schedule FPGA jobs
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: gate
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     outputs:
       jobs_cw340: ${{ steps.schedule.outputs.jobs_cw340 }}
     steps:
@@ -442,12 +456,13 @@ jobs:
       - schedule_fpga_jobs
       - quick_lint
       - chip_earlgrey_cw340
+      - gate
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJSON(needs.schedule_fpga_jobs.outputs.jobs_cw340) }}
     uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     secrets: inherit
     with:
       job_name: ${{ matrix.id }}
@@ -460,8 +475,8 @@ jobs:
   build_docker_containers:
     name: Build Docker Containers
     runs-on: ubuntu-22.04
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     steps:
       - uses: actions/checkout@v6
       - name: Build Developer Utility Container
@@ -477,8 +492,8 @@ jobs:
     name: Build and test software
     runs-on: ubuntu-22.04-vivado
     timeout-minutes: 120
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -550,8 +565,8 @@ jobs:
     name: Build and test Darjeeling software
     runs-on: ubuntu-22.04-vivado
     timeout-minutes: 120
-    needs: quick_lint
-    if: ${{ github.event_name != 'merge_group' }}
+    needs: [quick_lint, gate]
+    if: ${{ github.event_name != 'merge_group' && needs.gate.outputs.run_full == 'true' }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -578,8 +593,8 @@ jobs:
   merge_blocker:
     name: Merge blocker
     runs-on: ubuntu-latest
-    needs: cache_bitstreams
-    if: ${{ !cancelled() }}
+    needs: [cache_bitstreams, gate]
+    if: ${{ !cancelled() && needs.gate.outputs.run_full == 'true' }}
     steps:
       - name: Complete
         run: ${{ needs.cache_bitstreams.result == 'success' }}
