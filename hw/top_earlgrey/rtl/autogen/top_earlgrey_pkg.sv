@@ -517,7 +517,7 @@ package top_earlgrey_pkg;
   /**
    * Memory size for rom memory on rom_ctrl in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'hc000;
+  parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h30000;
 
   /**
    * Memory base address for revbm memory on cheriot in top earlgrey.

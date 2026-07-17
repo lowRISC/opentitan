@@ -907,7 +907,7 @@ extern "C" {
 /**
  * Memory size for rom memory on rom_ctrl in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0xC000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x30000u
 
 /**
  * Memory base address for revbm memory on cheriot in top earlgrey.
