@@ -7,7 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/nonce.h"
 #include "sw/device/silicon_creator/lib/nvm_ctrl.h"
@@ -112,19 +112,23 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
 }
 
 rom_error_t ownership_seal_init(void) {
-  const sc_keymgr_diversification_t diversifier = {
+  // Note: The sealing key src slot has to match the value in the
+  // dice_chain.c file, otherwise the key is derived from the wrong context.
+  // TODO(#30777): Replace the hard-coded slot number
+  const sc_keymgr_dpe_diversification_t diversifier = {
       .salt = {4004, 8008, 8080, 1802, 6800, 6502, 6809, 8088},
       .version = 0,
+      .sel_src_slot = 0,
   };
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_generate_key(
-      kScKeymgrDestKmac, kScKeymgrKeyTypeSealing, diversifier));
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_dpe_generate_key(kScKeymgrDPEDestKmac, diversifier));
   HARDENED_RETURN_IF_ERROR(kmac_kmac256_hw_configure());
   kmac_kmac256_set_prefix("Ownership", 9);
   return kErrorOk;
 }
 
 rom_error_t ownership_seal_clear(void) {
-  return sc_keymgr_sideload_clear(kScKeymgrDestKmac);
+  return sc_keymgr_dpe_clear_key(kScKeymgrDPEDestKmac);
 }
 
 static rom_error_t seal_generate(const owner_block_t *page, uint32_t *seal) {
