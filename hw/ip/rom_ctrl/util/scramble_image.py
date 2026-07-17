@@ -430,8 +430,10 @@ class Scrambler:
             # offset.
             off_addr = phy_addr >> sp_width
             off_nonce = addr_scr_nonce >> sp_width
-            # Compute the offset and wrap around if necessary.
-            off_decrypted = (off_addr + off_nonce) % num_chunks
+            # Compute the offset and wrap around if necessary. This must be the inverse of the
+            # addition performed in addr_sp_enc, i.e. subtraction, so that addr_sp_dec is the
+            # true inverse of addr_sp_enc for every nonce value.
+            off_decrypted = (off_addr - off_nonce) % num_chunks
             # Stitch the decrypted address together.
             decrypted_addr = (off_decrypted << sp_width) + sp_decrypted_addr
         return decrypted_addr
