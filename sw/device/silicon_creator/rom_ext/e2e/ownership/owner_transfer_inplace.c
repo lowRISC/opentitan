@@ -5,9 +5,11 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
@@ -26,7 +28,10 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static status_t trigger_inplace_transfer(void) {
   LOG_INFO("Slot A firmware started: Locating Slot B manifest...");
-  const manifest_t *manifest_b = rom_ext_boot_policy_manifest_b_get();
+  boot_data_t boot_data = {
+      .identifier = kBootDataIdentifier,
+  };
+  const manifest_t *manifest_b = rom_ext_boot_policy_manifest_b_get(&boot_data);
 
   LOG_INFO("Reading owner_transfer_blob extension...");
   const manifest_ext_owner_transfer_blob_t *blob = NULL;
