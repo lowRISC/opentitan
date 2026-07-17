@@ -34,6 +34,15 @@ class kmac_env extends cip_base_env #(
     if (!uvm_config_db#(kmac_vif)::get(this, "", "kmac_vif", cfg.kmac_vif)) begin
       `uvm_fatal(`gfn, "failed to get kmac_vif from uvm_config_db")
     end
+
+    // If masking is enabled, there should be an instance of reqack_data_if available
+    if (cfg.kmac_vif.en_masking_o) begin
+      if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "reqack_data_pins_vif",
+                                                     cfg.disable_reqack_assertions_vif)) begin
+        `uvm_fatal(get_full_name(), "Failed to get reqack_data_pins_vif from uvm_config_db.")
+      end
+    end
+
   endfunction
 
   function void connect_phase(uvm_phase phase);

@@ -7,6 +7,10 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   // ext interfaces
   kmac_vif kmac_vif;
 
+  // If masking is enabled, this is a reqack_data_if instance that has been bound into an instance
+  // of u_prim_sync_reqack_data in the design. This is null if masking is disabled.
+  virtual pins_if #(1) disable_reqack_assertions_vif;
+
   rand kmac_app_agent_cfg m_kmac_app_agent_cfg[kmac_env_pkg::NUM_APP_INTF];
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
 
