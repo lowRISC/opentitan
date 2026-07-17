@@ -12,6 +12,7 @@ enum {
   kFlashHalf = TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2,
 };
 
+#if defined(OT_PLATFORM_RV32)
 const manifest_t *rom_ext_manifest(void) {
   uintptr_t pc = 0;
   asm("auipc %[pc], 0;" : [pc] "=r"(pc));
@@ -21,6 +22,17 @@ const manifest_t *rom_ext_manifest(void) {
   pc &= ~((uintptr_t)kFlashHalf - 1);
   return (const manifest_t *)pc;
 }
+#else
+// Host-side unit test stub: RISC-V assembly instructions (auipc) are
+// unavailable during C++ unit testing on host. Host tests configure
+// `mock_rom_ext_manifest_test_value` to supply a mock manifest pointer for
+// `rom_ext_manifest()`.
+const manifest_t *mock_rom_ext_manifest_test_value = NULL;
+
+const manifest_t *rom_ext_manifest(void) {
+  return mock_rom_ext_manifest_test_value;
+}
+#endif
 
 // Extern declarations for the inline functions in the header.
-extern uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr);
+extern uintptr_t owner_vma_get(uintptr_t lma_addr);

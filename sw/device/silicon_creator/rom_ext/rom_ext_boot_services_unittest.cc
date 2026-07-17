@@ -4,6 +4,8 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_services.h"
 
+#include <sys/mman.h>
+
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
@@ -21,6 +23,10 @@
 #include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
+
+extern "C" {
+char _owner_virtual_start_address[1] = {0};
+}
 
 namespace boot_services_unittest {
 namespace {
@@ -98,6 +104,28 @@ class RomExtBootServicesTest : public rom_test::RomTest {
         break;
     }
   }
+
+  void SetUp() override {
+    rom_test::RomTest::SetUp();
+    // Allocate buffer using mmap with MAP_32BIT rather than standard heap
+    // allocators (such as malloc/new) to guarantee the buffer resides within
+    // the 32-bit address space required by 32-bit target manifest pointers
+    // (such as manifest_base_address).
+    manifest_mem_ = mmap(NULL, 4096, PROT_READ | PROT_WRITE,
+                         MAP_PRIVATE | MAP_ANONYMOUS | MAP_32BIT, -1, 0);
+    ASSERT_NE(manifest_mem_, MAP_FAILED);
+    manifest_a_ = (manifest_t *)manifest_mem_;
+    manifest_b_ = (manifest_t *)((uintptr_t)manifest_mem_ + sizeof(manifest_t));
+  }
+
+  void TearDown() override {
+    munmap(manifest_mem_, 4096);
+    rom_test::RomTest::TearDown();
+  }
+
+  void *manifest_mem_ = nullptr;
+  manifest_t *manifest_a_ = nullptr;
+  manifest_t *manifest_b_ = nullptr;
 };
 
 TEST_F(RomExtBootServicesTest, BootSvcDefault) {
@@ -216,36 +244,38 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
   keyring.length = 1;
   keyring.key[0] = &key;
 
-  manifest_t manifest_a{};
-  manifest_t manifest_b{};
+  *manifest_a_ = manifest_t{};
+  *manifest_b_ = manifest_t{};
+  manifest_a_->manifest_base_address = (uint32_t)(uintptr_t)manifest_a_;
+  manifest_b_->manifest_base_address = (uint32_t)(uintptr_t)manifest_b_;
 
-  manifest_a.identifier = CHIP_BL0_IDENTIFIER;
-  manifest_a.length = CHIP_BL0_SIZE_MIN;
-  manifest_a.security_version = 2;
-  manifest_a.manifest_version.major = kManifestVersionMajor2;
-  manifest_a.length = sizeof(manifest_t) + 0x1000;
-  manifest_a.signed_region_end = sizeof(manifest_t) + 0x900;
-  manifest_a.code_start = sizeof(manifest_t);
-  manifest_a.code_end = sizeof(manifest_t) + 0x800;
-  manifest_a.entry_point = 0x500;
-  manifest_a.ecdsa_public_key.x[0] = 0;
+  manifest_a_->identifier = CHIP_BL0_IDENTIFIER;
+  manifest_a_->length = CHIP_BL0_SIZE_MIN;
+  manifest_a_->security_version = 2;
+  manifest_a_->manifest_version.major = kManifestVersionMajor2;
+  manifest_a_->length = sizeof(manifest_t) + 0x1000;
+  manifest_a_->signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest_a_->code_start = sizeof(manifest_t);
+  manifest_a_->code_end = sizeof(manifest_t) + 0x800;
+  manifest_a_->entry_point = 0x500;
+  manifest_a_->ecdsa_public_key.x[0] = 0;
 
-  manifest_b.identifier = CHIP_BL0_IDENTIFIER;
-  manifest_b.length = CHIP_BL0_SIZE_MIN;
-  manifest_b.security_version = 3;
-  manifest_b.manifest_version.major = kManifestVersionMajor2;
-  manifest_b.length = sizeof(manifest_t) + 0x1000;
-  manifest_b.signed_region_end = sizeof(manifest_t) + 0x900;
-  manifest_b.code_start = sizeof(manifest_t);
-  manifest_b.code_end = sizeof(manifest_t) + 0x800;
-  manifest_b.entry_point = 0x500;
-  manifest_b.ecdsa_public_key.x[0] = 0;
+  manifest_b_->identifier = CHIP_BL0_IDENTIFIER;
+  manifest_b_->length = CHIP_BL0_SIZE_MIN;
+  manifest_b_->security_version = 3;
+  manifest_b_->manifest_version.major = kManifestVersionMajor2;
+  manifest_b_->length = sizeof(manifest_t) + 0x1000;
+  manifest_b_->signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest_b_->code_start = sizeof(manifest_t);
+  manifest_b_->code_end = sizeof(manifest_t) + 0x800;
+  manifest_b_->entry_point = 0x500;
+  manifest_b_->ecdsa_public_key.x[0] = 0;
 
   EXPECT_CALL(mock_hmac_, sha256)
       .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
 
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA)
-      .WillOnce(Return(&manifest_a));
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA(_))
+      .WillOnce(Return(manifest_a_));
   EXPECT_CALL(mock_manifest_, SpxKey)
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
@@ -265,8 +295,8 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerValid) {
 
   EXPECT_CALL(mock_owner_verify_, verify).WillOnce(Return(kErrorOk));
 
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB)
-      .WillOnce(Return(&manifest_b));
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB(_))
+      .WillOnce(Return(manifest_b_));
   EXPECT_CALL(mock_manifest_, SpxKey)
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
@@ -372,36 +402,38 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
   keyring.length = 1;
   keyring.key[0] = &key;
 
-  manifest_t manifest_a{};
-  manifest_t manifest_b{};
+  *manifest_a_ = manifest_t{};
+  *manifest_b_ = manifest_t{};
+  manifest_a_->manifest_base_address = (uint32_t)(uintptr_t)manifest_a_;
+  manifest_b_->manifest_base_address = (uint32_t)(uintptr_t)manifest_b_;
 
-  manifest_a.identifier = CHIP_BL0_IDENTIFIER;
-  manifest_a.length = CHIP_BL0_SIZE_MIN;
-  manifest_a.security_version = 2;
-  manifest_a.manifest_version.major = kManifestVersionMajor2;
-  manifest_a.length = sizeof(manifest_t) + 0x1000;
-  manifest_a.signed_region_end = sizeof(manifest_t) + 0x900;
-  manifest_a.code_start = sizeof(manifest_t);
-  manifest_a.code_end = sizeof(manifest_t) + 0x800;
-  manifest_a.entry_point = 0x500;
-  manifest_a.ecdsa_public_key.x[0] = 0;
+  manifest_a_->identifier = CHIP_BL0_IDENTIFIER;
+  manifest_a_->length = CHIP_BL0_SIZE_MIN;
+  manifest_a_->security_version = 2;
+  manifest_a_->manifest_version.major = kManifestVersionMajor2;
+  manifest_a_->length = sizeof(manifest_t) + 0x1000;
+  manifest_a_->signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest_a_->code_start = sizeof(manifest_t);
+  manifest_a_->code_end = sizeof(manifest_t) + 0x800;
+  manifest_a_->entry_point = 0x500;
+  manifest_a_->ecdsa_public_key.x[0] = 0;
 
-  manifest_b.identifier = CHIP_BL0_IDENTIFIER;
-  manifest_b.length = CHIP_BL0_SIZE_MIN;
-  manifest_b.security_version = 3;
-  manifest_b.manifest_version.major = kManifestVersionMajor2;
-  manifest_b.length = sizeof(manifest_t) + 0x1000;
-  manifest_b.signed_region_end = sizeof(manifest_t) + 0x900;
-  manifest_b.code_start = sizeof(manifest_t);
-  manifest_b.code_end = sizeof(manifest_t) + 0x800;
-  manifest_b.entry_point = 0x500;
-  manifest_b.ecdsa_public_key.x[0] = 0;
+  manifest_b_->identifier = CHIP_BL0_IDENTIFIER;
+  manifest_b_->length = CHIP_BL0_SIZE_MIN;
+  manifest_b_->security_version = 3;
+  manifest_b_->manifest_version.major = kManifestVersionMajor2;
+  manifest_b_->length = sizeof(manifest_t) + 0x1000;
+  manifest_b_->signed_region_end = sizeof(manifest_t) + 0x900;
+  manifest_b_->code_start = sizeof(manifest_t);
+  manifest_b_->code_end = sizeof(manifest_t) + 0x800;
+  manifest_b_->entry_point = 0x500;
+  manifest_b_->ecdsa_public_key.x[0] = 0;
 
   EXPECT_CALL(mock_hmac_, sha256)
       .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
 
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA)
-      .WillOnce(Return(&manifest_a));
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA(_))
+      .WillOnce(Return(manifest_a_));
   EXPECT_CALL(mock_manifest_, SpxKey)
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)
@@ -421,8 +453,8 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVerInvalidHigh) {
 
   EXPECT_CALL(mock_owner_verify_, verify).WillOnce(Return(kErrorOk));
 
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB)
-      .WillOnce(Return(&manifest_b));
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB(_))
+      .WillOnce(Return(manifest_b_));
   EXPECT_CALL(mock_manifest_, SpxKey)
       .WillOnce(Return(kErrorManifestBadExtension));
   EXPECT_CALL(mock_manifest_, SpxSignature)

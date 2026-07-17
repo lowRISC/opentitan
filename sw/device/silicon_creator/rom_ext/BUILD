@@ -60,7 +60,6 @@ cc_library(
     name = "rom_ext_manifest",
     srcs = ["rom_ext_manifest.c"],
     hdrs = ["rom_ext_manifest.h"],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -72,6 +71,7 @@ dual_cc_library(
     name = "rom_ext_boot_policy_ptrs",
     srcs = dual_inputs(
         host = ["mock_rom_ext_boot_policy_ptrs.cc"],
+        shared = ["rom_ext_boot_policy_ptrs.c"],
     ),
     hdrs = dual_inputs(
         host = ["mock_rom_ext_boot_policy_ptrs.h"],
@@ -84,10 +84,12 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//sw/device/silicon_creator/lib/base:chip",
-            "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib:manifest",
+            ":rom_ext_boot_policy",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib:manifest",
+            "//sw/device/silicon_creator/lib/base:chip",
         ],
     ),
 )
@@ -97,7 +99,6 @@ cc_library(
     srcs = ["rom_ext_boot_policy.c"],
     hdrs = ["rom_ext_boot_policy.h"],
     deps = [
-        ":rom_ext_boot_policy_ptrs",
         ":rom_ext_manifest",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -113,6 +114,7 @@ cc_test(
     srcs = ["rom_ext_boot_policy_unittest.cc"],
     deps = [
         ":rom_ext_boot_policy",
+        ":rom_ext_boot_policy_ptrs",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -124,6 +126,7 @@ cc_library(
     hdrs = ["rom_ext_boot_services.h"],
     deps = [
         ":rom_ext_boot_policy",
+        ":rom_ext_boot_policy_ptrs",
         ":rom_ext_verify",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
