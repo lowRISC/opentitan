@@ -74,9 +74,14 @@ pub fn write_to_target(
     target_id: &str,
     data: Vec<Section>,
     verify: bool,
+    clearing: bool,
 ) -> Result<()> {
     // Perform the write(s)
-    log::info!("Writing to the {}...", target_id);
+    if clearing {
+        log::info!("Clearing the {}...", target_id);
+    } else {
+        log::info!("Writing to the {}...", target_id);
+    }
     for mut section in data {
         log::debug!(
             "Writing section of size {} to word {} of target {}",
@@ -218,7 +223,7 @@ impl TargetWrite {
         };
 
         let data = self.load_data()?;
-        write_to_target(&mut target, &self.target, data, verify)?;
+        write_to_target(&mut target, &self.target, data, verify, false)?;
         if let Some(new_hash) = new_hash {
             target.write_hash(new_hash)?;
         }
@@ -284,7 +289,7 @@ impl TargetClear {
             .context(format!("FPGA target '{}' not found", &self.target))?;
 
         let data = self.as_sections(&target.info);
-        write_to_target(&mut target, &self.target, data, verify)
+        write_to_target(&mut target, &self.target, data, verify, true)
     }
 }
 

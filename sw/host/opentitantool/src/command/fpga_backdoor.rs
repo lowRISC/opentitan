@@ -352,7 +352,8 @@ impl CommandDispatch for BackdoorWrite {
 
         // Parse the input & write it to the target memory.
         let sections: Vec<Section> = self.input.load_input(&target.info, self.offset)?;
-        write_to_target(&mut target, &self.target, sections, self.verify)?;
+        let clearing = matches!(self.input, WriteInput::Clear(_));
+        write_to_target(&mut target, &self.target, sections, self.verify, clearing)?;
 
         Ok(None)
     }
