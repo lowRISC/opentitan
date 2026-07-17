@@ -17,11 +17,9 @@ class kmac_common_vseq extends kmac_base_vseq;
 
     if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
       csr_excl_item csr_excl = ral.get_excl_item();
-      // Shadow storage fatal error might cause req to drop without ack.
-      $assertoff(0,
-      "tb.dut.gen_entropy.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckHoldReq");
-      $assertoff(0,
-      "tb.dut.gen_entropy.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckAckNeedsReq");
+
+      // When masking is enabled, shadow storage fatal error might cause req to drop without ack.
+      if (cfg.disable_reqack_assertions_vif != null) cfg.disable_reqack_assertions_vif.drive(1);
       $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
       $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
     end
@@ -29,6 +27,10 @@ class kmac_common_vseq extends kmac_base_vseq;
 
   virtual task body();
     run_common_vseq_wrapper(num_trans);
+
+    // If masking is enabled, re-enable any assertions that disable_reqack_assertions_vif is
+    // disabling. This will have no effect if they were not disabled.
+    if (cfg.disable_reqack_assertions_vif != null) cfg.disable_reqack_assertions_vif.drive(0);
   endtask : body
 
   virtual function void predict_shadow_reg_status(bit predict_update_err  = 0,
