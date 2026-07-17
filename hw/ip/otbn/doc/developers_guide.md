@@ -428,6 +428,104 @@ These instructions reorder the vector elements as illustrated in the image below
 
 <img src="./bn_trn_illustration.svg" width="780">
 
+### URND context saving and restoring
+The URND values are produced by a PRNG which can be stopped to save and restore its state.
+This allows OTBN software to produce the same stream of pseudo random numbers multiple times.
+
+The following is an example how to save and restore the URND context.
+```armasm
+/* Check that URND_CTRL is enabled */
+addi x2, x0, URND_CTRL_ENABLED /* URND_CTRL_ENABLED is a bit mask */
+csrrw x3, URND_STATUS, x0
+andi x3, x3, x2
+bne x0, x3, _urnd_ctrl_enabled
+unimp /* Crash or handle error. */
+
+_urnd_ctrl_enabled:
+/* Prepare addresses and registers to set the control bits.
+ * Here URND_STOP etc represent the bit index for these commands.
+ */
+addi x3, x0, URND_STOP
+addi x4, x0, URND_START
+addi x5, x0, URND_RESTORE
+
+/* Stop the PRNG and extract the current state. Then restart it to do some work. */
+csrrs x0, URND_CTRL, x3
+bn.wsrr w0, URND_STATE
+csrrs x0, URND_CTRL, x4
+
+/* Do some work using the URND stream */
+bn.wsrr w10, URND
+...
+
+/* To restore the stream do:
+ * - First stop the PRNG and save the current state. For security reasons it is
+ *   recommended that the SW part afterwards does not use the same stream of
+ *   URND values as the code above. Note that the PRNG output is also used for
+ *   masking of certain secure operations like the MAI.
+ * - Restore the PRNG with the saved state.
+ * - Reuse the URND stream.
+ * - Restore the PRNG again.
+ */
+bn.lid x0, 0(x10)
+csrrs x0, URND_CTRL, x3
+bn.wsrr w1, URND_STATE
+
+/* Restoring happens in 32-bit chunks. Request a restore operation whilst the
+ * PRNG is stopped. */
+csrrs x0, URND_CTRL, x5
+
+/* Then write the `roundup(BiviumStateWdith / 32) = roundup(177 / 32) = 6`
+ * 32-bit state words to the lowest 32 bits of URND_STATE. The upper bits are
+ * ignored when writing to URND_STATE. So are the unused bits of the last state
+ * word.
+ */
+loopi, 6, 2
+  bn.wsrw URND_STATE, w0
+  bn.rshi w0, w31, w0 >> 32
+
+/* The PRNG can now resume. */
+csrrs x0, URND_CTRL, x4
+
+/* Do some work using the same URND stream */
+bn.wsrr w10, URND
+...
+
+/* Restore the URND state again */
+<The same as above just with the 2nd saved state.>
+```
+
+### Compressing shared variables with URND context restoration
+How this works is as follows: Assume there are two boolean shares `s0` and `s1` of a 256-bit secret secret such that
+```
+secret = s_0 ^ s_1
+```
+
+Now we want to a new `s` such that:
+```
+secret = s_0 ^ s_1 = s ^ urnd
+```
+i.e., the URND output is equal to one of the shares.
+
+This means
+```
+s = (s_0 ^ urnd) ^ s_1
+```
+i.e., one can compute the new `s` by remasking `s_0` with urnd and then adding `s_1`.
+This will not leak the secret.
+
+Now only `s` (256 bits) and `urnd_state` (179 bits) must be stored instead of `s_0` and `s_1`.
+And of course, this can be applied to secrets which are much wider than 256 bits.
+Say,
+```
+secret = [s0 s1 s2 s3 s4 s5 s6] ^ [urnd0 rund1 urnd2 urnd3 urnd4 urnd5 urnd6]
+```
+And because subsequent urnd outputs are fully defined by the original `urnd_state` and the order in which they are drawn, all that needs to be stored is the original `urnd_state` and the different `s0` to `s6`.
+So in this example only `7 * 256 + 179` bits must be stored instead of `14 * 256` bits.
+
+For large secrets, this can can effectively half the number of bits required for storage.
+Note that the same approach can be used to go from 3 to 2 shares.
+
 ### An example program
 
 This is an entire, standalone OTBN program that computes `(a + b << 16) mod m`, where `a`, `b` and `m` are all up to 256 bits (and `a, b < m`):

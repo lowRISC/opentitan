@@ -99,6 +99,28 @@
     Write to this CSR to begin a request to fill the RND cache.
     Always reads as 0.
 
+- name: urnd_ctrl
+  address: 0x7d9
+  doc: |
+    This CSR is used to control the URND PRNG.
+    Any write is ignored if the `urnd_ctrl_enabled` bit in the CTRL register is not set.
+    Always reads as 0.
+  bits:
+    0: |
+      STOP: Writing 1 to this bit stops the URND PRNG.
+      Once stopped, the URND PRNG does not update its state except URND is read by an instruction or any accelerator like the MAI uses bits for its masking.
+      Has no effect if the URND PRNG is already stopped.
+    1: |
+      START: Writing 1 to this bit resumes the URND PRNG.
+      Takes priority over a STOP command (if both are issued at the same time).
+      Has no effect if the URND PRNG is already running.
+    2: |
+      RESTORE: Writing 1 to this bit starts the restore process.
+      The restore can be performed while the URND PRNG is running or stopped.
+      See URND_STATE on how to provide the restore words.
+      Has no effect if a restore has already been started.
+    31-3: Reserved. Any write is ignored. Always reads as 0.
+
 - name: kmac_status
   address: 0x7db
   doc: |
@@ -229,8 +251,37 @@
     Intended for use in masking and blinding schemes.
     Use RND for high-quality randomness.
 
-    The number is sourced from an local PRNG.
+    The number is sourced from a local PRNG.
     Reads never stall.
+
+- name: urnd_status
+  address: 0xfc2
+  read-only: true
+  doc: |
+    The URND status register.
+  bits:
+    0: |
+      URND_CTRL_ENABLED: This bit exposes the `urnd_ctrl_enabled` bit in the CTRL register to OTBN SW.
+      Writes to URND_CTRL are ignored if this bit is not set.
+    1: |
+      STOPPED: This bit is set to 1 when the URND PRNG is stopped.
+    2: |
+      RESTORING: This bit is set to 1 after a RESTORE command once the URND PRNG is ready to accept restore words via URND_STATE.
+      This bit is cleared once the restore process has completed.
+    3: |
+      USED_WHILE_STOPPED: This bit is set and kept to 1 if the URND PRNG state was forced to update while it was stopped.
+      It is cleared when a STOP command is issued.
+    4-15: Reserved. Always reads as 0.
+    16-25: |
+      URND_STATE_WIDTH:
+      Exposes the URND PRNG state width.
+      This is fixed to 177 bits for Bivium.
+      Can be used together with the URND restore word width to determine how many URND_STATE writes are required to fully restore the URND PRNG.
+    26-31: |
+      URND_RESTORE_WIDTH:
+      Exposes the URND PRNG restore word width.
+      This is fixed to 32 for Bivium.
+      Can be used together with the URND PRNG state width to determine how many URND_STATE writes are required to fully restore the URND PRNG.
 
 - name: insn_cnt
   address: 0xfc3
