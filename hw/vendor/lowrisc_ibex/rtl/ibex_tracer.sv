@@ -448,18 +448,6 @@ module ibex_tracer (
     decoded_str = $sformatf("%s\tx%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr);
   endfunction
 
-  function automatic void decode_r_cmixcmov_insn(input string mnemonic);
-    data_accessed = RS1 | RS2 | RS3 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs2_addr,
-        rvfi_rs1_addr, rvfi_rs3_addr);
-  endfunction
-
-  function automatic void decode_r_funnelshift_insn(input string mnemonic);
-    data_accessed = RS1 | RS2 | RS3 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
-        rvfi_rs3_addr, rvfi_rs2_addr);
-  endfunction
-
   function automatic void decode_i_insn(input string mnemonic);
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
@@ -467,20 +455,11 @@ module ibex_tracer (
   endfunction
 
   function automatic void decode_i_shift_insn(input string mnemonic);
-    // SLLI, SRLI, SRAI, SROI, SLOI, RORI
+    // SLLI, SRLI, SRAI, RORI
     logic [4:0] shamt;
     shamt = {rvfi_insn[24:20]};
     data_accessed = RS1 | RD;
     decoded_str = $sformatf("%s\tx%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, shamt);
-  endfunction
-
-  function automatic void decode_i_funnelshift_insn( input string mnemonic);
-    // fsri
-    logic [5:0] shamt;
-    shamt = {rvfi_insn[25:20]};
-    data_accessed = RS1 | RS3 | RD;
-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
-        rvfi_rs3_addr, shamt);
   endfunction
 
   function automatic void decode_i_jalr_insn(input string mnemonic);
@@ -1067,20 +1046,14 @@ module ibex_tracer (
         INSN_XNOR:       decode_r_insn("xnor");
         INSN_ORN:        decode_r_insn("orn");
         INSN_ANDN:       decode_r_insn("andn");
-        // The ratified v.1.0.0 bitmanip extension defines the pseudo-instruction
-        //   zext.h rd rs = pack rd, rs, zero.
-        // However, for now the tracer doesn't emit this due to a lack of support in the LLVM and
-        // GCC toolchains. Enabling this functionality when the time is right is tracked in
-        // https://github.com/lowRISC/ibex/issues/1228
-        INSN_PACK:       decode_r_insn("pack");
-        // INSN_PACK: begin
-          // casez (rvfi_insn)
-            // INSN_ZEXTH:  decode_r1_insn("zext.h");
-            // default:     decode_r_insn("pack");
-          // endcase
-        // end
+        // zext.h (Zbb) is the pseudo-instruction `pack rd, rs, x0`
+        INSN_PACK: begin
+          unique casez (rvfi_insn)
+            INSN_ZEXTH:  decode_r1_insn("zext.h");
+            default:     decode_r_insn("pack");
+          endcase
+        end
         INSN_PACKH:      decode_r_insn("packh");
-        INSN_PACKU:      decode_r_insn("packu");
         INSN_CLZ:        decode_r1_insn("clz");
         INSN_CTZ:        decode_r1_insn("ctz");
         INSN_CPOP:       decode_r1_insn("cpop");
@@ -1095,114 +1068,19 @@ module ibex_tracer (
         INSN_BSET:      decode_r_insn("bset");
         INSN_BINV:      decode_r_insn("binv");
         INSN_BEXT:      decode_r_insn("bext");
-        // RV32B - ZBE
-        INSN_BDECOMPRESS: decode_r_insn("bdecompress");
-        INSN_BCOMPRESS:   decode_r_insn("bcompress");
-        // RV32B - ZBP
-        INSN_GREV:       decode_r_insn("grev");
-        INSN_GREVI: begin
-          unique casez (rvfi_insn)
-            INSN_REV_P:  decode_r1_insn("rev.p");
-            INSN_REV2_N: decode_r1_insn("rev2.n");
-            INSN_REV_N:  decode_r1_insn("rev.n");
-            INSN_REV4_B: decode_r1_insn("rev4.b");
-            INSN_REV2_B: decode_r1_insn("rev2.b");
-            INSN_REV_B:  decode_r1_insn("rev.b");
-            INSN_REV8_H: decode_r1_insn("rev8.h");
-            INSN_REV4_H: decode_r1_insn("rev4.h");
-            INSN_REV2_H: decode_r1_insn("rev2.h");
-            INSN_REV_H:  decode_r1_insn("rev.h");
-            INSN_REV16:  decode_r1_insn("rev16");
-            INSN_REV8:   decode_r1_insn("rev8");
-            INSN_REV4:   decode_r1_insn("rev4");
-            INSN_REV2:   decode_r1_insn("rev2");
-            INSN_REV:    decode_r1_insn("rev");
-            default:     decode_i_insn("grevi");
-          endcase
-        end
-        INSN_GORC:       decode_r_insn("gorc");
-        INSN_GORCI: begin
-          unique casez (rvfi_insn)
-            INSN_ORC_P:  decode_r1_insn("orc.p");
-            INSN_ORC2_N: decode_r1_insn("orc2.n");
-            INSN_ORC_N:  decode_r1_insn("orc.n");
-            INSN_ORC4_B: decode_r1_insn("orc4.b");
-            INSN_ORC2_B: decode_r1_insn("orc2.b");
-            INSN_ORC_B:  decode_r1_insn("orc.b");
-            INSN_ORC8_H: decode_r1_insn("orc8.h");
-            INSN_ORC4_H: decode_r1_insn("orc4.h");
-            INSN_ORC2_H: decode_r1_insn("orc2.h");
-            INSN_ORC_H:  decode_r1_insn("orc.h");
-            INSN_ORC16:  decode_r1_insn("orc16");
-            INSN_ORC8:   decode_r1_insn("orc8");
-            INSN_ORC4:   decode_r1_insn("orc4");
-            INSN_ORC2:   decode_r1_insn("orc2");
-            INSN_ORC:    decode_r1_insn("orc");
-            default:     decode_i_insn("gorci");
-          endcase
-        end
-        INSN_SHFL:       decode_r_insn("shfl");
-        INSN_SHFLI: begin
-          unique casez (rvfi_insn)
-            INSN_ZIP_N:  decode_r1_insn("zip.n");
-            INSN_ZIP2_B: decode_r1_insn("zip2.b");
-            INSN_ZIP_B:  decode_r1_insn("zip.b");
-            INSN_ZIP4_H: decode_r1_insn("zip4.h");
-            INSN_ZIP2_H: decode_r1_insn("zip2.h");
-            INSN_ZIP_H:  decode_r1_insn("zip.h");
-            INSN_ZIP8:   decode_r1_insn("zip8");
-            INSN_ZIP4:   decode_r1_insn("zip4");
-            INSN_ZIP2:   decode_r1_insn("zip2");
-            INSN_ZIP:    decode_r1_insn("zip");
-            default:     decode_i_insn("shfli");
-          endcase
-        end
-        INSN_UNSHFL:       decode_r_insn("unshfl");
-        INSN_UNSHFLI: begin
-          unique casez (rvfi_insn)
-            INSN_UNZIP_N:  decode_r1_insn("unzip.n");
-            INSN_UNZIP2_B: decode_r1_insn("unzip2.b");
-            INSN_UNZIP_B:  decode_r1_insn("unzip.b");
-            INSN_UNZIP4_H: decode_r1_insn("unzip4.h");
-            INSN_UNZIP2_H: decode_r1_insn("unzip2.h");
-            INSN_UNZIP_H:  decode_r1_insn("unzip.h");
-            INSN_UNZIP8:   decode_r1_insn("unzip8");
-            INSN_UNZIP4:   decode_r1_insn("unzip4");
-            INSN_UNZIP2:   decode_r1_insn("unzip2");
-            INSN_UNZIP:    decode_r1_insn("unzip");
-            default:       decode_i_insn("unshfli");
-          endcase
-        end
-        INSN_XPERM_N:    decode_r_insn("xperm_n");
-        INSN_XPERM_B:    decode_r_insn("xperm_b");
-        INSN_XPERM_H:    decode_r_insn("xperm_h");
-        INSN_SLO:        decode_r_insn("slo");
-        INSN_SRO:        decode_r_insn("sro");
-        INSN_SLOI:       decode_i_shift_insn("sloi");
-        INSN_SROI:       decode_i_shift_insn("sroi");
-
-        // RV32B - ZBT
-        INSN_CMIX:       decode_r_cmixcmov_insn("cmix");
-        INSN_CMOV:       decode_r_cmixcmov_insn("cmov");
-        INSN_FSR:        decode_r_funnelshift_insn("fsr");
-        INSN_FSL:        decode_r_funnelshift_insn("fsl");
-        INSN_FSRI:       decode_i_funnelshift_insn("fsri");
-
-        // RV32B - ZBF
-        INSN_BFP:        decode_r_insn("bfp");
+        // RV32B - Zbb / Zbkb
+        INSN_BREV8:      decode_r1_insn("brev8");
+        INSN_REV8:       decode_r1_insn("rev8");
+        INSN_ORC_B:      decode_r1_insn("orc.b");
+        INSN_ZIP:        decode_r1_insn("zip");
+        INSN_UNZIP:      decode_r1_insn("unzip");
+        INSN_XPERM4:     decode_r_insn("xperm4");
+        INSN_XPERM8:     decode_r_insn("xperm8");
 
         // RV32B - ZBC
         INSN_CLMUL:      decode_r_insn("clmul");
         INSN_CLMULR:     decode_r_insn("clmulr");
         INSN_CLMULH:     decode_r_insn("clmulh");
-
-        // RV32B - ZBR
-        INSN_CRC32_B:    decode_r1_insn("crc32.b");
-        INSN_CRC32_H:    decode_r1_insn("crc32.h");
-        INSN_CRC32_W:    decode_r1_insn("crc32.w");
-        INSN_CRC32C_B:   decode_r1_insn("crc32c.b");
-        INSN_CRC32C_H:   decode_r1_insn("crc32c.h");
-        INSN_CRC32C_W:   decode_r1_insn("crc32c.w");
 
         default:         decode_mnemonic("INVALID");
       endcase

@@ -42,12 +42,8 @@ test_main:
   jal smoke_alu_zba
   jal smoke_alu_zbb
   jal smoke_alu_zbc
-  jal smoke_alu_zbf
   jal smoke_alu_zbp
-  jal smoke_alu_zbr
   jal smoke_alu_zbs
-  jal smoke_alu_b_misc
-  jal smoke_alu_zbt
   jal smoke_alu_b_imm
   jal smoke_csr
   jal smoke_fence
@@ -207,9 +203,8 @@ smoke_alu_zba:
 /**
  * Checks the instructions from the zbb extension
  *
- * Note: rev8, orc.b, and zext.h are pseudo instructions
- * for grevi, gorci, and pack respectively,
- * which are tested in `smoke_alu_b_imm` and `smoke_alu_zbp`.
+ * Note: the immediate Zbb permutation ops rev8 and orc.b (and brev8) are checked
+ * in `smoke_alu_b_imm`; zext.h is checked in `smoke_alu_zbp`.
  */
 smoke_alu_zbb:
   li   t0, 3
@@ -259,73 +254,44 @@ smoke_alu_zbc:
   ret
 
 /**
- * Checks the instructions from the zbf extension
- *
- * Note: pack and packh are not checked here
- * but in covered in `smoke_alu_zbp`.
- */
-smoke_alu_zbf:
-  li t0, 0x0e0a47f3
-  li t1, 0x0e1fcff3
-  .option push
-  .option arch, +zbf0p93
-  bfp t0, t0, t0
-  .option pop
-  check t0, t1
-  ret
-
-/**
- * Checks the instructions from the zbp extension
+ * Checks the ratified Zbkb / Zbkx instructions: pack, packh, zext.h (Zbb pseudo),
+ * xperm4, xperm8, zip, unzip.
  *
  * Note: andn, orn, xnor, rol, and ror are not checked here
  * but in `smoke_alu_zbb`.
  */
 smoke_alu_zbp:
   .option push
-  .option arch, +zbp0p93
+  .option arch, +zbkb, +zbkx
   li t0, 0xcc9fd6b6
   li t1, 0x7ce71003
+  li t3, 0x7ce7cc9f
   pack    t2, t0, t1
-  packu   t3, t0, t1
   packh   t2, t2, t3
 
   li t0, 0x00009fb6
   check t0, t2
 
+  // zext.h (Zbb): pack rd, rs, x0 -> zero-extend the low halfword.
+  zext.h t2, t3
+  li t0, 0x0000cc9f
+  check t0, t2
+
+  li t0, 0x00f7f9ff
   li t2, 0x04030001
-  xperm.n t3, t3, t2
-  xperm.b t3, t3, t2
-  xperm.h t3, t3, t2
-  li t0, 0x000000f7
+  xperm4  t3, t3, t2
+  xperm8  t3, t3, t2
   check t3, t0
 
-  li t0, 4
-  grev    t1, t1, t0
-  shfl    t1, t1, t0
-  gorc    t1, t1, t0
-  unshfl  t1, t1, t0
-  .option pop
-
-  li t0, 0xffff3131
+  // zip/unzip (Zbkb): zip interleaves the low/high halfwords bit-by-bit; unzip
+  // is its inverse. zip(0x0000ffff) = 0x55555555, unzip(0x55555555) = 0x0000ffff.
+  li t0, 0x0000ffff
+  zip   t1, t0
+  li t2, 0x55555555
+  check t2, t1
+  unzip t1, t1
   check t0, t1
-  ret
-
-/**
- * Checks the instructions from the zbr extension
- */
-smoke_alu_zbr:
-  li t0, 0xabdca651
-  li t1, 0xac605e47
-  .option push
-  .option arch, +zbr0p93
-  crc32.b  t0, t0
-  crc32.h  t0, t0
-  crc32.w  t0, t0
-  crc32c.b t0, t0
-  crc32c.h t0, t0
-  crc32c.w t0, t0
   .option pop
-  check t1, t0
   ret
 
 /**
@@ -345,78 +311,35 @@ smoke_alu_zbs:
   ret
 
 /**
- * Checks the instructions from the zbt extension
- */
-smoke_alu_zbt:
-  .option push
-  .option arch, +zbt0p93
-  li t0, 7
-  li t1, 4
-  li t2, 0x5d76fb6b
-  li t3, 0xe5693902
-  fsl t2, t2, t3, t0
-  fsr t2, t2, t3, t1
-  cmix t2, t0, t2, t3
-
-  li   t1, 0xe5693907
-  check  t1, t2
-
-  cmov t2, t0, t3, t2
-  check  t2, t3
-  .option pop
-
-  ret
-
-/**
- * Checks the `slo` and `sro` instructions
- */
-smoke_alu_b_misc:
-  li t0, 0x9bfae1bb
-  li t1, 8
-  li t2, 4
-  //slo t0, t0, t1
-  .insn r OP, 0b001, 0b0010000, t0, t0, t1
-  //sro t0, t0, t2
-  .insn r OP, 0b101, 0b0010000, t0, t0, t2
-
-  li t1, 0xffae1bbf
-  check t0, t1
-  ret
-
-/**
  * Checks the immediate bitmanip instructions.
- *
- * This is a superset of RV32B's immediate instructions.
  */
 smoke_alu_b_imm:
   li    t0, 0xfcec24cf
-  //sloi  t0, t0, 7
-  .insn i OP_IMM, 0b001, t0, t0, 0x207
   // zbs
   bclri t0, t0, 3
   bseti t0, t0, 31
   binvi t0, t0, 19
   bexti t1, t0, 8
-  // zbt
-  .option push
-  .option arch, +zbt0p93
-  fsri  t0, t0, t1, 4
-  .option pop
-  //sroi  t0, t0, 5
-  .insn i OP_IMM, 0b101, t0, t0, 0x205
   // zbb
   rori  t0, t0, 16
-  // zbp
-  .option push
-  .option arch, +zbp0p93
-  grevi   t0, t0, 4
-  shfli   t0, t0, 4
-  gorci   t0, t0, 2
-  unshfli t0, t0, 4
-  .option pop
-
-  li t1, 0xf0ffafff
+  li    t1, 0x24c7fce4
   check t0, t1
+
+  // zbb/zbkb immediate permutations
+  .option push
+  .option arch, +zbb, +zbkb
+  li    t0, 0x12345678
+  brev8 t0, t0
+  li    t1, 0x482c6a1e
+  check t0, t1
+  rev8  t0, t0
+  li    t1, 0x1e6a2c48
+  check t0, t1
+  li    t0, 0x12000034
+  orc.b t0, t0
+  li    t1, 0xff0000ff
+  check t0, t1
+  .option pop
   ret
 
 /**

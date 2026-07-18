@@ -1,0 +1,1972 @@
+diff --git a/ibex_alu.sv b/ibex_alu.sv
+index 563f571..8aaa9e7 100644
+--- a/ibex_alu.sv
++++ b/ibex_alu.sv
+@@ -20,9 +20,9 @@ module ibex_alu #(
+ 
+   input  logic              multdiv_sel_i,
+ 
+-  input  logic [31:0]       imd_val_q_i[2],
+-  output logic [31:0]       imd_val_d_o[2],
+-  output logic [1:0]        imd_val_we_o,
++  input  logic [31:0]       imd_val_q_i,
++  output logic [31:0]       imd_val_d_o,
++  output logic              imd_val_we_o,
+ 
+   output logic [31:0]       adder_result_o,
+   output logic [33:0]       adder_result_ext_o,
+@@ -178,8 +178,8 @@ module ibex_alu #(
+ 
+   // The shifter structure consists of a 33-bit shifter: 32-bit operand + 1 bit extension for
+   // arithmetic shifts and one-shift support.
+-  // Rotations and funnel shifts are implemented as multi-cycle instructions.
+-  // The shifter is also used for single-bit instructions and bit-field place as detailed below.
++  // Rotations are implemented as multi-cycle instructions.
++  // The shifter is also used for single-bit instructions as detailed below.
+   //
+   // Standard Shifts
+   // ===============
+@@ -201,28 +201,6 @@ module ibex_alu #(
+   //   multicycle_result = (rs1 >> shift_amt) | (rs1 << (32 - shift_amt));
+   //                       ^-- cycle 0 -----^ ^-- cycle 1 --------------^
+   //
+-  // Funnel Shifts
+-  // -------------
+-  // For funnel shifts, operand_a_i is tied to rs1 in the first cycle and rs3 in the
+-  // second cycle. operand_b_i is always tied to rs2. The order of applying the shift amount or
+-  // its complement is determined by bit [5] of shift_amt.
+-  //
+-  // Funnel shift Pseudocode: (fsl)
+-  //  shift_amt = rs2 & 63;
+-  //  shift_amt_compl = 32 - shift_amt[4:0]
+-  //  if (shift_amt >=33):
+-  //     multicycle_result = (rs1 >> shift_amt_compl[4:0]) | (rs3 << shift_amt[4:0]);
+-  //                         ^-- cycle 0 ----------------^ ^-- cycle 1 ------------^
+-  //  else if (shift_amt <= 31 && shift_amt > 0):
+-  //     multicycle_result = (rs1 << shift_amt[4:0]) | (rs3 >> shift_amt_compl[4:0]);
+-  //                         ^-- cycle 0 ----------^ ^-- cycle 1 -------------------^
+-  //  For shift_amt == 0, 32, both shift_amt[4:0] and shift_amt_compl[4:0] == '0.
+-  //  these cases need to be handled separately outside the shifting structure:
+-  //  else if (shift_amt == 32):
+-  //     multicycle_result = rs3
+-  //  else if (shift_amt == 0):
+-  //     multicycle_result = rs1.
+-  //
+   // Single-Bit Instructions
+   // =======================
+   // Single bit instructions operate on bit operand_b_i[4:0] of operand_a_i.
+@@ -234,18 +212,12 @@ module ibex_alu #(
+   //
+   // For bext, the bit defined by operand_b_i[4:0] is to be returned. This is done by simply
+   // shifting operand_a_i to the right by the required amount and returning bit [0] of the result.
+-  //
+-  // Bit-Field Place
+-  // ===============
+-  // The shifter structure is shared to compute bfp_mask << bfp_off.
+ 
+   logic       shift_left;
+-  logic       shift_ones;
+   logic       shift_arith;
+-  logic       shift_funnel;
+   logic       shift_sbmode;
+-  logic [5:0] shift_amt;
+-  logic [5:0] shift_amt_compl; // complementary shift amount (32 - shift_amt)
++  logic [4:0] shift_amt;
++  logic [4:0] shift_amt_compl; // complementary shift amount (32 - shift_amt)
+ 
+   logic        [31:0] shift_operand;
+   logic signed [32:0] shift_result_ext_signed;
+@@ -254,39 +226,10 @@ module ibex_alu #(
+   logic        [31:0] shift_result;
+   logic        [31:0] shift_result_rev;
+ 
+-  // zbf
+-  logic bfp_op;
+-  logic [4:0]  bfp_len;
+-  logic [4:0]  bfp_off;
+-  logic [31:0] bfp_mask;
+-  logic [31:0] bfp_mask_rev;
+-  logic [31:0] bfp_result;
+-
+-  // bfp: shares the shifter structure to compute bfp_mask << bfp_off
+-  assign bfp_op = (RV32B != RV32BNone) ? (operator_i == ALU_BFP) : 1'b0;
+-  assign bfp_len = {~(|operand_b_i[27:24]), operand_b_i[27:24]}; // len = 0 encodes for len = 16
+-  assign bfp_off = operand_b_i[20:16];
+-  assign bfp_mask = (RV32B != RV32BNone) ? ~(32'hffff_ffff << bfp_len) : '0;
+-  for (genvar i = 0; i < 32; i++) begin : gen_rev_bfp_mask
+-    assign bfp_mask_rev[i] = bfp_mask[31-i];
+-  end
+-
+-  assign bfp_result =(RV32B != RV32BNone) ?
+-      (~shift_result & operand_a_i) | ((operand_b_i & bfp_mask) << bfp_off) : '0;
+-
+-  // bit shift_amt[5]: word swap bit: only considered for FSL/FSR.
+-  // if set, reverse operations in first and second cycle.
+-  assign shift_amt[5] = operand_b_i[5] & shift_funnel;
+-  assign shift_amt_compl = 32 - operand_b_i[4:0];
++  assign shift_amt_compl = 5'd0 - operand_b_i[4:0];
+ 
+   always_comb begin
+-    if (bfp_op) begin
+-      shift_amt[4:0] = bfp_off;  // length field of bfp control word
+-    end else begin
+-      shift_amt[4:0] = instr_first_cycle_i ?
+-          (operand_b_i[5] && shift_funnel ? shift_amt_compl[4:0] : operand_b_i[4:0]) :
+-          (operand_b_i[5] && shift_funnel ? operand_b_i[4:0] : shift_amt_compl[4:0]);
+-    end
++    shift_amt[4:0] = instr_first_cycle_i ? operand_b_i[4:0] : shift_amt_compl[4:0];
+   end
+ 
+   // single-bit mode: shift
+@@ -294,24 +237,15 @@ module ibex_alu #(
+       (operator_i == ALU_BSET) | (operator_i == ALU_BCLR) | (operator_i == ALU_BINV) : 1'b0;
+ 
+   // left shift if this is:
+-  // * a standard left shift (slo, sll)
++  // * a standard left shift (sll)
+   // * a rol in the first cycle
+   // * a ror in the second cycle
+-  // * fsl: without word-swap bit: first cycle, else: second cycle
+-  // * fsr: without word-swap bit: second cycle, else: first cycle
+   // * a single-bit instruction: bclr, bset, binv (excluding bext)
+-  // * bfp: bfp_mask << bfp_off
+   always_comb begin
+     unique case (operator_i)
+       ALU_SLL: shift_left = 1'b1;
+-      ALU_SLO: shift_left = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b1 : 1'b0;
+-      ALU_BFP: shift_left = (RV32B != RV32BNone) ? 1'b1 : 1'b0;
+       ALU_ROL: shift_left = (RV32B != RV32BNone) ? instr_first_cycle_i : 0;
+       ALU_ROR: shift_left = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 0;
+-      ALU_FSL: shift_left = (RV32B != RV32BNone) ?
+-        (shift_amt[5] ? ~instr_first_cycle_i : instr_first_cycle_i) : 1'b0;
+-      ALU_FSR: shift_left = (RV32B != RV32BNone) ?
+-          (shift_amt[5] ? instr_first_cycle_i : ~instr_first_cycle_i) : 1'b0;
+       default: shift_left = 1'b0;
+     endcase
+     if (shift_sbmode) begin
+@@ -320,27 +254,22 @@ module ibex_alu #(
+   end
+ 
+   assign shift_arith  = (operator_i == ALU_SRA);
+-  assign shift_ones   = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ?
+-      (operator_i == ALU_SLO) | (operator_i == ALU_SRO) : 1'b0;
+-  assign shift_funnel = (RV32B != RV32BNone) ?
+-      (operator_i == ALU_FSL) | (operator_i == ALU_FSR) : 1'b0;
+ 
+   // shifter structure.
+   always_comb begin
+     // select shifter input
+-    // for bfp, sbmode and shift_left the corresponding bit-reversed input is chosen.
++    // for sbmode and shift_left the corresponding bit-reversed input is chosen.
+     if (RV32B == RV32BNone) begin
+       shift_operand = shift_left ? operand_a_rev : operand_a_i;
+     end else begin
+       unique case (1'b1)
+-        bfp_op:       shift_operand = bfp_mask_rev;
+         shift_sbmode: shift_operand = 32'h8000_0000;
+         default:      shift_operand = shift_left ? operand_a_rev : operand_a_i;
+       endcase
+     end
+ 
+     shift_result_ext_signed =
+-        $signed({shift_ones | (shift_arith & shift_operand[31]), shift_operand}) >>> shift_amt[4:0];
++        $signed({shift_arith & shift_operand[31], shift_operand}) >>> shift_amt[4:0];
+     shift_result_ext = $unsigned(shift_result_ext_signed);
+ 
+     shift_result            = shift_result_ext[31:0];
+@@ -374,7 +303,6 @@ module ibex_alu #(
+       ALU_XNOR,
+       ALU_ORN,
+       ALU_ANDN: bwlogic_op_b_negate = (RV32B != RV32BNone) ? 1'b1 : 1'b0;
+-      ALU_CMIX: bwlogic_op_b_negate = (RV32B != RV32BNone) ? ~instr_first_cycle_i : 1'b0;
+       default:  bwlogic_op_b_negate = 1'b0;
+     endcase
+   end
+@@ -404,8 +332,6 @@ module ibex_alu #(
+   logic [31:0] rev_result;
+   logic [31:0] shuffle_result;
+   logic [31:0] xperm_result;
+-  logic [31:0] butterfly_result;
+-  logic [31:0] invbutterfly_result;
+   logic [31:0] clmul_result;
+   logic [31:0] multicycle_result;
+ 
+@@ -415,12 +341,9 @@ module ibex_alu #(
+     // Bitcounting //
+     /////////////////
+ 
+-    // The bit-counter structure computes the number of set bits in its operand. Partial results
+-    // (from left to right) are needed to compute the control masks for computation of
+-    // bcompress/bdecompress by the butterfly network, if implemented.
++    // The bit-counter structure computes the number of set bits in its operand.
+     // For cpop, clz and ctz, only the end result is used.
+ 
+-    logic        zbe_op;
+     logic        bitcnt_ctz;
+     logic        bitcnt_clz;
+     logic        bitcnt_cz;
+@@ -428,8 +351,6 @@ module ibex_alu #(
+     logic [31:0] bitcnt_mask_op;
+     logic [31:0] bitcnt_bit_mask;
+     logic [ 5:0] bitcnt_partial [32];
+-    logic [31:0] bitcnt_partial_lsb_d;
+-    logic [31:0] bitcnt_partial_msb_d;
+ 
+ 
+     assign bitcnt_ctz    = operator_i == ALU_CTZ;
+@@ -453,11 +374,8 @@ module ibex_alu #(
+       bitcnt_bit_mask = ~bitcnt_bit_mask;
+     end
+ 
+-    assign zbe_op = (operator_i == ALU_BCOMPRESS) | (operator_i == ALU_BDECOMPRESS);
+-
+     always_comb begin
+       unique case (1'b1)
+-        zbe_op:      bitcnt_bits = operand_b_i;
+         bitcnt_cz:   bitcnt_bits = bitcnt_bit_mask & ~bitcnt_mask_op; // clz / ctz
+         default:     bitcnt_bits = operand_a_i; // cpop
+       endcase
+@@ -555,16 +473,13 @@ module ibex_alu #(
+     // Pack //
+     //////////
+ 
+-    logic packu;
+     logic packh;
+-    assign packu = operator_i == ALU_PACKU;
+     assign packh = operator_i == ALU_PACKH;
+ 
+     always_comb begin
+       unique case (1'b1)
+-        packu:   pack_result = {operand_b_i[31:16], operand_a_i[31:16]};
+         packh:   pack_result = {16'h0, operand_b_i[7:0], operand_a_i[7:0]};
+-        default: pack_result = {operand_b_i[15:0], operand_a_i[15:0]};
++        default: pack_result = {operand_b_i[15:0], operand_a_i[15:0]}; // pack
+       endcase
+     end
+ 
+@@ -588,68 +503,67 @@ module ibex_alu #(
+       endcase
+     end
+ 
+-    ////////////////////////////////////
+-    // General Reverse and Or-combine //
+-    ////////////////////////////////////
++    ////////////////////////////////
++    // rev8 / brev8 / orc.b        //
++    ////////////////////////////////
+ 
+-    // Only a subset of the general reverse and or-combine instructions are implemented in the
+-    // balanced version of the B extension. Currently rev8 (shift_amt = 5'b11000) and orc.b
+-    // (shift_amt = 5'b00111) are supported in the base extension.
++    // The generalized-reverse / or-combine butterfly below implements the ratified
++    // subset only: rev8  and orc.b.
+ 
+     logic [4:0] zbp_shift_amt;
+-    logic gorc_op;
++    logic orcb_op;
+ 
+-    assign gorc_op = (operator_i == ALU_GORC);
++    assign orcb_op = (operator_i == ALU_ORCB);
+     assign zbp_shift_amt[2:0] =
+-        (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? shift_amt[2:0] : {3{shift_amt[0]}};
++        (RV32B == RV32BFull) ? shift_amt[2:0] : {3{shift_amt[0]}};
+     assign zbp_shift_amt[4:3] =
+-        (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? shift_amt[4:3] : {2{shift_amt[3]}};
++        (RV32B == RV32BFull) ? shift_amt[4:3] : {2{shift_amt[3]}};
+ 
+     always_comb begin
+       rev_result = operand_a_i;
+ 
+       if (zbp_shift_amt[0]) begin
+-        rev_result = (gorc_op ? rev_result : 32'h0)       |
++        rev_result = (orcb_op ? rev_result : 32'h0)       |
+                      ((rev_result & 32'h5555_5555) <<  1) |
+                      ((rev_result & 32'haaaa_aaaa) >>  1);
+       end
+ 
+       if (zbp_shift_amt[1]) begin
+-        rev_result = (gorc_op ? rev_result : 32'h0)       |
++        rev_result = (orcb_op ? rev_result : 32'h0)       |
+                      ((rev_result & 32'h3333_3333) <<  2) |
+                      ((rev_result & 32'hcccc_cccc) >>  2);
+       end
+ 
+       if (zbp_shift_amt[2]) begin
+-        rev_result = (gorc_op ? rev_result : 32'h0)       |
++        rev_result = (orcb_op ? rev_result : 32'h0)       |
+                      ((rev_result & 32'h0f0f_0f0f) <<  4) |
+                      ((rev_result & 32'hf0f0_f0f0) >>  4);
+       end
+ 
+       if (zbp_shift_amt[3]) begin
+-        rev_result = ((RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) &&
+-                      gorc_op ? rev_result : 32'h0) |
++        rev_result = ((RV32B == RV32BFull) &&
++                      orcb_op ? rev_result : 32'h0) |
+                      ((rev_result & 32'h00ff_00ff) <<  8) |
+                      ((rev_result & 32'hff00_ff00) >>  8);
+       end
+ 
+       if (zbp_shift_amt[4]) begin
+-        rev_result = ((RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) &&
+-                      gorc_op ? rev_result : 32'h0) |
++        rev_result = ((RV32B == RV32BFull) &&
++                      orcb_op ? rev_result : 32'h0) |
+                      ((rev_result & 32'h0000_ffff) << 16) |
+                      ((rev_result & 32'hffff_0000) >> 16);
+       end
+     end
+ 
+-    logic crc_hmode;
+-    logic crc_bmode;
+     logic [31:0] clmul_result_rev;
+ 
+-    if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin : gen_alu_rvb_otearlgrey_full
++    if (RV32B == RV32BFull) begin : gen_alu_rvb_full
+ 
+-      /////////////////////////
+-      // Shuffle / Unshuffle //
+-      /////////////////////////
++      /////////////////
++      // Zip / Unzip //
++      /////////////////
++      // zip/unzip (Zbkb) are the shfli/unshfli shuffle network restricted to the
++      // shamt=0x0F (full) control value.
+ 
+       localparam logic [31:0] SHUFFLE_MASK_L [4] =
+           '{32'h00ff_0000, 32'h0f00_0f00, 32'h3030_3030, 32'h4444_4444};
+@@ -667,7 +581,7 @@ module ibex_alu #(
+       end
+ 
+       logic shuffle_flip;
+-      assign shuffle_flip = operator_i == ALU_UNSHFL;
++      assign shuffle_flip = operator_i == ALU_UNZIP;
+ 
+       logic [3:0] shuffle_mode;
+ 
+@@ -732,7 +646,7 @@ module ibex_alu #(
+       //////////////
+       // Crossbar //
+       //////////////
+-      // The crossbar permutation instructions xperm.[nbh] (Zbp) can be implemented using 8
++      // The crossbar permutation instructions xperm4/xperm8 (Zbkx) can be implemented using 8
+       // parallel 4-bit-wide, 8-input crossbars. Basically, we permute the 8 nibbles of operand_a_i
+       // based on operand_b_i.
+ 
+@@ -743,8 +657,6 @@ module ibex_alu #(
+       logic  [7:0]      vld_n; // nibbles
+       logic  [3:0][1:0] sel_b; // bytes
+       logic  [3:0]      vld_b; // bytes
+-      logic  [1:0][0:0] sel_h; // half words
+-      logic  [1:0]      vld_h; // half words
+ 
+       // Per nibble, 3 bits are needed for the selection. Other bits must be zero.
+       // sel_n bit mask: 32'b0111_0111_0111_0111_0111_0111_0111_0111
+@@ -762,27 +674,19 @@ module ibex_alu #(
+         assign vld_b[i] = ~|operand_b_i[i*8 + 2 +: 6];
+       end
+ 
+-      // Per half word, 1 bit is needed for the selection only. All other bits must be zero.
+-      // sel_h bit mask: 32'b0000_0000_0000_0001_0000_0000_0000_0001
+-      // vld_h bit mask: 32'b1111_1111_1111_1110_1111_1111_1111_1110
+-      for (genvar i = 0; i < 2; i++) begin : gen_sel_vld_h
+-        assign sel_h[i] =   operand_b_i[i*16     +: 1];
+-        assign vld_h[i] = ~|operand_b_i[i*16 + 1 +: 15];
+-      end
+-
+       // Convert selector indices and valid signals to control the nibble-based
+       // crossbar logic.
+       logic [7:0][2:0] sel;
+       logic [7:0]      vld;
+       always_comb begin
+         unique case (operator_i)
+-          ALU_XPERM_N: begin
++          ALU_XPERM4: begin
+             // No conversion needed.
+             sel = sel_n;
+             vld = vld_n;
+           end
+ 
+-          ALU_XPERM_B: begin
++          ALU_XPERM8: begin
+             // Convert byte to nibble indices.
+             for (int b = 0; b < 4; b++) begin
+               sel[b*2 +  0] =   {sel_b[b], 1'b0};
+@@ -791,17 +695,6 @@ module ibex_alu #(
+             end
+           end
+ 
+-          ALU_XPERM_H: begin
+-            // Convert half-word to nibble indices.
+-            for (int h = 0; h < 2; h++) begin
+-              sel[h*4 +  0] =   {sel_h[h], 2'b00};
+-              sel[h*4 +  1] =   {sel_h[h], 2'b01};
+-              sel[h*4 +  2] =   {sel_h[h], 2'b10};
+-              sel[h*4 +  3] =   {sel_h[h], 2'b11};
+-              vld[h*4 +: 4] = {4{vld_h[h]}};
+-            end
+-          end
+-
+           default: begin
+             // Tie valid to zero to disable the crossbar unless we need it.
+             sel = sel_n;
+@@ -819,9 +712,9 @@ module ibex_alu #(
+       end
+       assign xperm_result = xperm_n;
+ 
+-      ///////////////////////////////////////////////////
+-      // Carry-less Multiply + Cyclic Redundancy Check //
+-      ///////////////////////////////////////////////////
++      /////////////////////////
++      // Carry-less Multiply //
++      /////////////////////////
+ 
+       // Carry-less multiplication can be understood as multiplication based on
+       // the addition interpreted as the bit-wise xor operation.
+@@ -846,39 +739,6 @@ module ibex_alu #(
+       //         [ operand_b[i] ? (operand_a << i) : '0 for i in 0 ... 31 ]
+       //         is generated. The entries of the array are pairwise 'xor-ed'
+       //         together in a 5-stage binary tree.
+-      //
+-      //
+-      // Cyclic Redundancy Check:
+-      //
+-      // CRC-32 (CRC-32/ISO-HDLC) and CRC-32C (CRC-32/ISCSI) are directly implemented. For
+-      // documentation of the crc configuration (crc-polynomials, initialization, reflection, etc.)
+-      // see http://reveng.sourceforge.net/crc-catalogue/all.htm
+-      // A useful guide to crc arithmetic and algorithms is given here:
+-      // http://www.piclist.com/techref/method/math/crcguide.html.
+-      //
+-      // The CRC operation solves the following equation using binary polynomial arithmetic:
+-      //
+-      // rev(rd)(x) = rev(rs1)(x) * x**n mod {1, P}(x)
+-      //
+-      // where P denotes lower 32 bits of the corresponding CRC polynomial, rev(a) the bit reversal
+-      // of a, n = 8,16, or 32 for .b, .h, .w -variants. {a, b} denotes bit concatenation.
+-      //
+-      // Using Barrett reduction, one can show that
+-      //
+-      // M(x) mod P(x) = R(x) =
+-      //          (M(x) * x**n) & {deg(P(x)'{1'b1}}) ^ (M(x) x**-(deg(P(x) - n)) cx mu(x) cx P(x),
+-      //
+-      // Where mu(x) = polydiv(x**64, {1,P}) & 0xffffffff. Here, 'cx' refers to carry-less
+-      // multiplication. Substituting rev(rd)(x) for R(x) and rev(rs1)(x) for M(x) and solving for
+-      // rd(x) with P(x) a crc32 polynomial (deg(P(x)) = 32), we get
+-      //
+-      // rd = rev( (rev(rs1) << n)  ^ ((rev(rs1) >> (32-n)) cx mu cx P)
+-      //    = (rs1 >> n) ^ rev(rev( (rs1 << (32-n)) cx rev(mu)) cx P)
+-      //                       ^-- cycle 0--------------------^
+-      //      ^- cycle 1 -------------------------------------------^
+-      //
+-      // In the last step we used the fact that carry-less multiplication is bit-order agnostic:
+-      // rev(a cx b) = rev(a) cx rev(b).
+ 
+       logic clmul_rmode;
+       logic clmul_hmode;
+@@ -900,52 +760,10 @@ module ibex_alu #(
+       assign clmul_rmode = operator_i == ALU_CLMULR;
+       assign clmul_hmode = operator_i == ALU_CLMULH;
+ 
+-      // CRC
+-      localparam logic [31:0] CRC32_POLYNOMIAL = 32'h04c1_1db7;
+-      localparam logic [31:0] CRC32_MU_REV = 32'hf701_1641;
+-
+-      localparam logic [31:0] CRC32C_POLYNOMIAL = 32'h1edc_6f41;
+-      localparam logic [31:0] CRC32C_MU_REV = 32'hdea7_13f1;
+-
+-      logic crc_op;
+-
+-      logic crc_cpoly;
+-
+-      logic [31:0] crc_operand;
+-      logic [31:0] crc_poly;
+-      logic [31:0] crc_mu_rev;
+-
+-      assign crc_op = (operator_i == ALU_CRC32C_W) | (operator_i == ALU_CRC32_W) |
+-                      (operator_i == ALU_CRC32C_H) | (operator_i == ALU_CRC32_H) |
+-                      (operator_i == ALU_CRC32C_B) | (operator_i == ALU_CRC32_B);
+-
+-      assign crc_cpoly = (operator_i == ALU_CRC32C_W) |
+-                         (operator_i == ALU_CRC32C_H) |
+-                         (operator_i == ALU_CRC32C_B);
+-
+-      assign crc_hmode = (operator_i == ALU_CRC32_H) | (operator_i == ALU_CRC32C_H);
+-      assign crc_bmode = (operator_i == ALU_CRC32_B) | (operator_i == ALU_CRC32C_B);
+-
+-      assign crc_poly   = crc_cpoly ? CRC32C_POLYNOMIAL : CRC32_POLYNOMIAL;
+-      assign crc_mu_rev = crc_cpoly ? CRC32C_MU_REV : CRC32_MU_REV;
+-
+-      always_comb begin
+-        unique case (1'b1)
+-          crc_bmode: crc_operand = {operand_a_i[7:0], 24'h0};
+-          crc_hmode: crc_operand = {operand_a_i[15:0], 16'h0};
+-          default:   crc_operand = operand_a_i;
+-        endcase
+-      end
+-
+       // Select clmul input
+       always_comb begin
+-        if (crc_op) begin
+-          clmul_op_a = instr_first_cycle_i ? crc_operand : imd_val_q_i[0];
+-          clmul_op_b = instr_first_cycle_i ? crc_mu_rev : crc_poly;
+-        end else begin
+-          clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
+-          clmul_op_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
+-        end
++        clmul_op_a = clmul_rmode | clmul_hmode ? operand_a_rev : operand_a_i;
++        clmul_op_b = clmul_rmode | clmul_hmode ? operand_b_rev : operand_b_i;
+       end
+ 
+       for (genvar i = 0; i < 32; i++) begin : gen_clmul_and_op
+@@ -989,298 +807,33 @@ module ibex_alu #(
+       assign clmul_result         = '0;
+       // support signals
+       assign clmul_result_rev     = '0;
+-      assign crc_bmode            = '0;
+-      assign crc_hmode            = '0;
+-    end
+-
+-    if (RV32B == RV32BFull) begin : gen_alu_rvb_full
+-
+-      ///////////////
+-      // Butterfly //
+-      ///////////////
+-
+-      // The butterfly / inverse butterfly network executing bcompress/bdecompress (zbe)
+-      // instructions. For bdecompress, the control bits mask of a local left region is generated
+-      // by the inverse of a n-bit left rotate and complement upon wrap (LROTC) operation by the
+-      // number of ones in the deposit bitmask to the right of the segment. n hereby denotes the
+-      // width of the according segment. The bitmask for a pertaining local right region is equal
+-      // to the corresponding local left region. Bcompress uses an analogue inverse process.
+-      // Consider the following 8-bit example.  For details, see Hilewitz et al. "Fast Bit Gather,
+-      // Bit Scatter and Bit Permuation Instructions for Commodity Microprocessors", (2008).
+-      //
+-      // The bcompress/bdecompress instructions are completed in 2 cycles. In the first cycle, the
+-      // control bitmask is prepared by executing the parallel prefix bit count. In the second
+-      // cycle, the bit swapping is executed according to the control masks.
+-
+-      // 8-bit example:  (Hilewitz et al.)
+-      // Consider the instruction bdecompress operand_a_i deposit_mask
+-      // Let operand_a_i = 8'babcd_efgh
+-      //    deposit_mask = 8'b1010_1101
+-      //
+-      // control bitmask for stage 1:
+-      //  - number of ones in the right half of the deposit bitmask: 3
+-      //  - width of the segment: 4
+-      //  - control bitmask = ~LROTC(4'b0, 3)[3:0] = 4'b1000
+-      //
+-      // control bitmask:   c3 c2  c1 c0  c3 c2  c1 c0
+-      //                    1  0   0  0   1  0   0  0
+-      //                    <- L ----->   <- R ----->
+-      // operand_a_i        a  b   c  d   e  f   g  h
+-      //                    :\ |   |  |  /:  |   |  |
+-      //                    : +|---|--|-+ :  |   |  |
+-      //                    :/ |   |  |  \:  |   |  |
+-      // stage 1            e  b   c  d   a  f   g  h
+-      //                    <L->   <R->   <L->   <R->
+-      // control bitmask:   c3 c2  c3 c2  c1 c0  c1 c0
+-      //                    1  1   1  1   1  0   1  0
+-      //                    :\ :\ /: /:   :\ |  /:  |
+-      //                    : +:-+-:+ :   : +|-+ :  |
+-      //                    :/ :/ \: \:   :/ |  \:  |
+-      // stage 2            c  d   e  b   g  f   a  h
+-      //                    L  R   L  R   L  R   L  R
+-      // control bitmask:   c3 c3  c2 c2  c1 c1  c0 c0
+-      //                    1  1   0  0   1  1   0  0
+-      //                    :\/:   |  |   :\/:   |  |
+-      //                    :  :   |  |   :  :   |  |
+-      //                    :/\:   |  |   :/\:   |  |
+-      // stage 3            d  c   e  b   f  g   a  h
+-      // & deposit bitmask: 1  0   1  0   1  1   0  1
+-      // result:            d  0   e  0   f  g   0  h
+-
+-      logic [ 5:0] bitcnt_partial_q [32];
+-
+-      // first cycle
+-      // Store partial bitcnts
+-      for (genvar i = 0; i < 32; i++) begin : gen_bitcnt_reg_in_lsb
+-        assign bitcnt_partial_lsb_d[i] = bitcnt_partial[i][0];
+-      end
+-
+-      for (genvar i = 0; i < 16; i++) begin : gen_bitcnt_reg_in_b1
+-        assign bitcnt_partial_msb_d[i] = bitcnt_partial[2*i+1][1];
+-      end
+-
+-      for (genvar i = 0; i < 8; i++) begin : gen_bitcnt_reg_in_b2
+-        assign bitcnt_partial_msb_d[16+i] = bitcnt_partial[4*i+3][2];
+-      end
+-
+-      for (genvar i = 0; i < 4; i++) begin : gen_bitcnt_reg_in_b3
+-        assign bitcnt_partial_msb_d[24+i] = bitcnt_partial[8*i+7][3];
+-      end
+-
+-      for (genvar i = 0; i < 2; i++) begin : gen_bitcnt_reg_in_b4
+-        assign bitcnt_partial_msb_d[28+i] = bitcnt_partial[16*i+15][4];
+-      end
+-
+-      assign bitcnt_partial_msb_d[30] = bitcnt_partial[31][5];
+-      assign bitcnt_partial_msb_d[31] = 1'b0; // unused
+-
+-      // Second cycle
+-      // Load partial bitcnts
+-      always_comb begin
+-        bitcnt_partial_q = '{default: '0};
+-
+-        for (int unsigned i = 0; i < 32; i++) begin : gen_bitcnt_reg_out_lsb
+-          bitcnt_partial_q[i][0] = imd_val_q_i[0][i];
+-        end
+-
+-        for (int unsigned i = 0; i < 16; i++) begin : gen_bitcnt_reg_out_b1
+-          bitcnt_partial_q[2*i+1][1] = imd_val_q_i[1][i];
+-        end
+-
+-        for (int unsigned i = 0; i < 8; i++) begin : gen_bitcnt_reg_out_b2
+-          bitcnt_partial_q[4*i+3][2] = imd_val_q_i[1][16+i];
+-        end
+-
+-        for (int unsigned i = 0; i < 4; i++) begin : gen_bitcnt_reg_out_b3
+-          bitcnt_partial_q[8*i+7][3] = imd_val_q_i[1][24+i];
+-        end
+-
+-        for (int unsigned i = 0; i < 2; i++) begin : gen_bitcnt_reg_out_b4
+-          bitcnt_partial_q[16*i+15][4] = imd_val_q_i[1][28+i];
+-        end
+-
+-        bitcnt_partial_q[31][5] = imd_val_q_i[1][30];
+-      end
+-
+-      logic [31:0] butterfly_mask_l[5];
+-      logic [31:0] butterfly_mask_r[5];
+-      logic [31:0] butterfly_mask_not[5];
+-      logic [31:0] lrotc_stage [5]; // left rotate and complement upon wrap
+-
+-      // number of bits in local r = 32 / 2**(stage + 1) = 16/2**stage
+-      `define _N(stg) (16 >> stg)
+-
+-      // bcompress / bdecompress control bit generation
+-      for (genvar stg = 0; stg < 5; stg++) begin : gen_butterfly_ctrl_stage
+-        // number of segs: 2** stg
+-        for (genvar seg=0; seg<2**stg; seg++) begin : gen_butterfly_ctrl
+-
+-          assign lrotc_stage[stg][2*`_N(stg)*(seg+1)-1 : 2*`_N(stg)*seg] =
+-              {{`_N(stg){1'b0}},{`_N(stg){1'b1}}} <<
+-                bitcnt_partial_q[`_N(stg)*(2*seg+1)-1][$clog2(`_N(stg)):0];
+-
+-          assign butterfly_mask_l[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)]
+-                   = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
+-
+-          assign butterfly_mask_r[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]
+-                   = ~lrotc_stage[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)];
+-
+-          assign butterfly_mask_l[stg][`_N(stg)*(2*seg+1)-1 : `_N(stg)*(2*seg)]   = '0;
+-          assign butterfly_mask_r[stg][`_N(stg)*(2*seg+2)-1 : `_N(stg)*(2*seg+1)] = '0;
+-        end
+-      end
+-      `undef _N
+-
+-      for (genvar stg = 0; stg < 5; stg++) begin : gen_butterfly_not
+-        assign butterfly_mask_not[stg] =
+-            ~(butterfly_mask_l[stg] | butterfly_mask_r[stg]);
+-      end
+-
+-      always_comb begin
+-        butterfly_result = operand_a_i;
+-
+-        butterfly_result = butterfly_result & butterfly_mask_not[0] |
+-            ((butterfly_result & butterfly_mask_l[0]) >> 16)|
+-            ((butterfly_result & butterfly_mask_r[0]) << 16);
+-
+-        butterfly_result = butterfly_result & butterfly_mask_not[1] |
+-            ((butterfly_result & butterfly_mask_l[1]) >> 8)|
+-            ((butterfly_result & butterfly_mask_r[1]) << 8);
+-
+-        butterfly_result = butterfly_result & butterfly_mask_not[2] |
+-            ((butterfly_result & butterfly_mask_l[2]) >> 4)|
+-            ((butterfly_result & butterfly_mask_r[2]) << 4);
+-
+-        butterfly_result = butterfly_result & butterfly_mask_not[3] |
+-            ((butterfly_result & butterfly_mask_l[3]) >> 2)|
+-            ((butterfly_result & butterfly_mask_r[3]) << 2);
+-
+-        butterfly_result = butterfly_result & butterfly_mask_not[4] |
+-            ((butterfly_result & butterfly_mask_l[4]) >> 1)|
+-            ((butterfly_result & butterfly_mask_r[4]) << 1);
+-
+-        butterfly_result = butterfly_result & operand_b_i;
+-      end
+-
+-      always_comb begin
+-        invbutterfly_result = operand_a_i & operand_b_i;
+-
+-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[4] |
+-            ((invbutterfly_result & butterfly_mask_l[4]) >> 1)|
+-            ((invbutterfly_result & butterfly_mask_r[4]) << 1);
+-
+-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[3] |
+-            ((invbutterfly_result & butterfly_mask_l[3]) >> 2)|
+-            ((invbutterfly_result & butterfly_mask_r[3]) << 2);
+-
+-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[2] |
+-            ((invbutterfly_result & butterfly_mask_l[2]) >> 4)|
+-            ((invbutterfly_result & butterfly_mask_r[2]) << 4);
+-
+-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[1] |
+-            ((invbutterfly_result & butterfly_mask_l[1]) >> 8)|
+-            ((invbutterfly_result & butterfly_mask_r[1]) << 8);
+-
+-        invbutterfly_result = invbutterfly_result & butterfly_mask_not[0] |
+-            ((invbutterfly_result & butterfly_mask_l[0]) >> 16)|
+-            ((invbutterfly_result & butterfly_mask_r[0]) << 16);
+-      end
+-    end else begin : gen_alu_rvb_not_full
+-      logic [31:0] unused_imd_val_q_1;
+-      assign unused_imd_val_q_1   = imd_val_q_i[1];
+-      assign butterfly_result     = '0;
+-      assign invbutterfly_result  = '0;
+-      // support signals
+-      assign bitcnt_partial_lsb_d = '0;
+-      assign bitcnt_partial_msb_d = '0;
+     end
+ 
+     //////////////////////////////////////
+     // Multicycle Bitmanip Instructions //
+     //////////////////////////////////////
+-    // Ternary instructions + Shift Rotations + Bit Compress/Decompress + CRC
+-    // For ternary instructions (zbt), operand_a_i is tied to rs1 in the first cycle and rs3 in the
+-    // second cycle. operand_b_i is always tied to rs2.
++    // Shift Rotations
++    // operand_a_i is tied to rs1, operand_b_i is tied to rs2.
+ 
+     always_comb begin
+       unique case (operator_i)
+-        ALU_CMOV: begin
+-          multicycle_result = (operand_b_i == 32'h0) ? operand_a_i : imd_val_q_i[0];
+-          imd_val_d_o = '{operand_a_i, 32'h0};
+-          if (instr_first_cycle_i) begin
+-            imd_val_we_o = 2'b01;
+-          end else begin
+-            imd_val_we_o = 2'b00;
+-          end
+-        end
+-
+-        ALU_CMIX: begin
+-          multicycle_result = imd_val_q_i[0] | bwlogic_and_result;
+-          imd_val_d_o = '{bwlogic_and_result, 32'h0};
+-          if (instr_first_cycle_i) begin
+-            imd_val_we_o = 2'b01;
+-          end else begin
+-            imd_val_we_o = 2'b00;
+-          end
+-        end
+-
+-        ALU_FSR, ALU_FSL,
+         ALU_ROL, ALU_ROR: begin
+           if (shift_amt[4:0] == 5'h0) begin
+-            multicycle_result = shift_amt[5] ? operand_a_i : imd_val_q_i[0];
++            multicycle_result = imd_val_q_i;
+           end else begin
+-            multicycle_result = imd_val_q_i[0] | shift_result;
++            multicycle_result = imd_val_q_i | shift_result;
+           end
+-          imd_val_d_o = '{shift_result, 32'h0};
++          imd_val_d_o = shift_result;
+           if (instr_first_cycle_i) begin
+-            imd_val_we_o = 2'b01;
+-          end else begin
+-            imd_val_we_o = 2'b00;
+-          end
+-        end
+-
+-        ALU_CRC32_W, ALU_CRC32C_W,
+-        ALU_CRC32_H, ALU_CRC32C_H,
+-        ALU_CRC32_B, ALU_CRC32C_B: begin
+-          if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-            unique case (1'b1)
+-              crc_bmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 8);
+-              crc_hmode: multicycle_result = clmul_result_rev ^ (operand_a_i >> 16);
+-              default:   multicycle_result = clmul_result_rev;
+-            endcase
+-            imd_val_d_o = '{clmul_result_rev, 32'h0};
+-            if (instr_first_cycle_i) begin
+-              imd_val_we_o = 2'b01;
+-            end else begin
+-              imd_val_we_o = 2'b00;
+-            end
++            imd_val_we_o = 1'b1;
+           end else begin
+-            imd_val_d_o = '{operand_a_i, 32'h0};
+-            imd_val_we_o = 2'b00;
+-            multicycle_result = '0;
+-          end
+-        end
+-
+-        ALU_BCOMPRESS, ALU_BDECOMPRESS: begin
+-          if (RV32B == RV32BFull) begin
+-            multicycle_result = (operator_i == ALU_BDECOMPRESS) ? butterfly_result :
+-                                                                  invbutterfly_result;
+-            imd_val_d_o = '{bitcnt_partial_lsb_d, bitcnt_partial_msb_d};
+-            if (instr_first_cycle_i) begin
+-              imd_val_we_o = 2'b11;
+-            end else begin
+-              imd_val_we_o = 2'b00;
+-            end
+-          end else begin
+-            imd_val_d_o = '{operand_a_i, 32'h0};
+-            imd_val_we_o = 2'b00;
+-            multicycle_result = '0;
++            imd_val_we_o = 1'b0;
+           end
+         end
+ 
+         default: begin
+-          imd_val_d_o = '{operand_a_i, 32'h0};
+-          imd_val_we_o = 2'b00;
++          imd_val_d_o = operand_a_i;
++          imd_val_we_o = 1'b0;
+           multicycle_result = '0;
+         end
+       endcase
+@@ -1288,12 +841,8 @@ module ibex_alu #(
+ 
+ 
+   end else begin : g_no_alu_rvb
+-    logic [31:0] unused_imd_val_q[2];
+-    assign unused_imd_val_q           = imd_val_q_i;
+-    logic [31:0] unused_butterfly_result;
+-    assign unused_butterfly_result    = butterfly_result;
+-    logic [31:0] unused_invbutterfly_result;
+-    assign unused_invbutterfly_result = invbutterfly_result;
++    logic [31:0] unused_imd_val_q;
++    assign unused_imd_val_q    = imd_val_q_i;
+     // RV32B result signals
+     assign bitcnt_result       = '0;
+     assign minmax_result       = '0;
+@@ -1303,13 +852,11 @@ module ibex_alu #(
+     assign rev_result          = '0;
+     assign shuffle_result      = '0;
+     assign xperm_result        = '0;
+-    assign butterfly_result    = '0;
+-    assign invbutterfly_result = '0;
+     assign clmul_result        = '0;
+     assign multicycle_result   = '0;
+     // RV32B support signals
+-    assign imd_val_d_o         = '{default: '0};
+-    assign imd_val_we_o        = '{default: '0};
++    assign imd_val_d_o         = '0;
++    assign imd_val_we_o        = '0;
+   end
+ 
+   ////////////////
+@@ -1333,15 +880,13 @@ module ibex_alu #(
+ 
+       // Shift Operations
+       ALU_SLL,  ALU_SRL,
+-      ALU_SRA,
+-      // RV32B
+-      ALU_SLO,  ALU_SRO: result_o = shift_result;
++      ALU_SRA: result_o = shift_result;
+ 
+       // Shuffle Operations (RV32B)
+-      ALU_SHFL, ALU_UNSHFL: result_o = shuffle_result;
++      ALU_ZIP, ALU_UNZIP: result_o = shuffle_result;
+ 
+       // Crossbar Permutation Operations (RV32B)
+-      ALU_XPERM_N, ALU_XPERM_B, ALU_XPERM_H: result_o = xperm_result;
++      ALU_XPERM4, ALU_XPERM8: result_o = xperm_result;
+ 
+       // Comparison Operations
+       ALU_EQ,   ALU_NE,
+@@ -1358,33 +903,20 @@ module ibex_alu #(
+       ALU_CPOP: result_o = {26'h0, bitcnt_result};
+ 
+       // Pack Operations (RV32B)
+-      ALU_PACK, ALU_PACKH,
+-      ALU_PACKU: result_o = pack_result;
++      ALU_PACK, ALU_PACKH: result_o = pack_result;
+ 
+       // Sign-Extend (RV32B)
+       ALU_SEXTB, ALU_SEXTH: result_o = sext_result;
+ 
+-      // Ternary Bitmanip Operations (RV32B)
+-      ALU_CMIX, ALU_CMOV,
+-      ALU_FSL,  ALU_FSR,
+       // Rotate Shift (RV32B)
+-      ALU_ROL, ALU_ROR,
+-      // Cyclic Redundancy Checks (RV32B)
+-      ALU_CRC32_W, ALU_CRC32C_W,
+-      ALU_CRC32_H, ALU_CRC32C_H,
+-      ALU_CRC32_B, ALU_CRC32C_B,
+-      // Bit Compress / Decompress (RV32B)
+-      ALU_BCOMPRESS, ALU_BDECOMPRESS: result_o = multicycle_result;
++      ALU_ROL, ALU_ROR: result_o = multicycle_result;
+ 
+       // Single-Bit Bitmanip Operations (RV32B)
+       ALU_BSET, ALU_BCLR,
+       ALU_BINV, ALU_BEXT: result_o = singlebit_result;
+ 
+-      // General Reverse / Or-combine (RV32B)
+-      ALU_GREV, ALU_GORC: result_o = rev_result;
+-
+-      // Bit Field Place (RV32B)
+-      ALU_BFP: result_o = bfp_result;
++      // rev8 / brev8 / orc.b use shared reverse/or-combine datapath (RV32B)
++      ALU_REV8, ALU_BREV8, ALU_ORCB: result_o = rev_result;
+ 
+       // Carry-less Multiply Operations (RV32B)
+       ALU_CLMUL, ALU_CLMULR,
+@@ -1394,7 +926,4 @@ module ibex_alu #(
+     endcase
+   end
+ 
+-  logic unused_shift_amt_compl;
+-  assign unused_shift_amt_compl = shift_amt_compl[5];
+-
+ endmodule
+diff --git a/ibex_cs_registers.sv b/ibex_cs_registers.sv
+index 641db2208b..ce9f5a3d0e 100644
+--- a/ibex_cs_registers.sv
++++ b/ibex_cs_registers.sv
+@@ -146,7 +146,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
+   endfunction
+ 
+   // All bitmanip configs enable non-ratified sub-extensions
+-  localparam int unsigned RV32BExtra   = (RV32B != RV32BNone) ? 1 : 0;
++  localparam int unsigned RV32BEnabled = (RV32B != RV32BNone) ? 1 : 0;
+   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
+   localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? PMP_ADDR_MSB - PMPGranularity : 32;
+   // Base index of the first HPM counter (0=cycle, 1=time, 2=instret)
+@@ -155,7 +155,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
+   // misa
+   localparam logic [31:0] MISA_VALUE =
+       (0                 <<  0)  // A - Atomic Instructions extension
+-    | (0                 <<  1)  // B - Bit-Manipulation extension
++    | (RV32BEnabled      <<  1)  // B - Bit-Manipulation extension
+     | (1                 <<  2)  // C - Compressed extension
+     | (0                 <<  3)  // D - Double precision floating-point extension
+     | (32'(RV32E)        <<  4)  // E - RV32E base ISA
+@@ -165,7 +165,7 @@ module ibex_cs_registers import ibex_pkg::*; #(
+     | (0                 << 13)  // N - User level interrupts supported
+     | (0                 << 18)  // S - Supervisor mode implemented
+     | (1                 << 20)  // U - User mode implemented
+-    | (RV32BExtra        << 23)  // X - Non-standard extensions present
++    | (0                 << 23)  // X - Non-standard extensions present
+     | (32'(CSR_MISA_MXL) << 30); // M-XLEN
+ 
+   typedef struct packed {
+diff --git a/ibex_decoder.sv b/ibex_decoder.sv
+index 843eb05..bef3947 100644
+--- a/ibex_decoder.sv
++++ b/ibex_decoder.sv
+@@ -111,12 +111,8 @@ module ibex_decoder #(
+   // Source/Destination register instruction index
+   logic [4:0] instr_rs1;
+   logic [4:0] instr_rs2;
+-  logic [4:0] instr_rs3;
+   logic [4:0] instr_rd;
+ 
+-  logic        use_rs3_d;
+-  logic        use_rs3_q;
+-
+   csr_op_e     csr_op;
+ 
+   opcode_e     opcode;
+@@ -144,32 +140,15 @@ module ibex_decoder #(
+   // immediate for CSR manipulation (zero extended)
+   assign zimm_rs1_type_o = { 27'b0, instr_rs1 }; // rs1
+ 
+-  if (RV32B != RV32BNone) begin : gen_rs3_flop
+-    // the use of rs3 is known one cycle ahead.
+-    always_ff  @(posedge clk_i or negedge rst_ni) begin
+-      if (!rst_ni) begin
+-        use_rs3_q <= 1'b0;
+-      end else begin
+-        use_rs3_q <= use_rs3_d;
+-      end
+-    end
+-  end else begin : gen_no_rs3_flop
+-    logic unused_clk;
+-    logic unused_rst_n;
+-
+-    // Clock and reset unused when there's no rs3 flop
+-    assign unused_clk = clk_i;
+-    assign unused_rst_n = rst_ni;
+-
+-    // always zero
+-    assign use_rs3_q = use_rs3_d;
+-  end
++  logic unused_clk;
++  logic unused_rst_n;
++  assign unused_clk = clk_i;
++  assign unused_rst_n = rst_ni;
+ 
+   // source registers
+   assign instr_rs1 = instr[19:15];
+   assign instr_rs2 = instr[24:20];
+-  assign instr_rs3 = instr[31:27];
+-  assign rf_raddr_a_o = (use_rs3_q & ~instr_first_cycle_i) ? instr_rs3 : instr_rs1; // rs3 / rs1
++  assign rf_raddr_a_o = instr_rs1; // rs1
+   assign rf_raddr_b_o = instr_rs2; // rs2
+ 
+   // destination register
+@@ -365,15 +344,13 @@ module ibex_decoder #(
+           3'b001: begin
+             unique case (instr[31:27])
+               5'b0_0000: illegal_insn = (instr[26:25] == 2'b00) ? 1'b0 : 1'b1;        // slli
+-              5'b0_0100: begin                                                        // sloi
+-                illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
+-              end
+               5'b0_1001,                                                              // bclri
+               5'b0_0101,                                                              // bseti
+               5'b0_1101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;           // binvi
+               5'b0_0001: begin
+-                if (instr[26] == 1'b0) begin                                          // shfl
+-                  illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
++                // zip (Zbkb): shfli with shamt fixed to 0x0F
++                if (instr[26:20] == 7'b000_1111) begin                                // zip
++                  illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
+                 end else begin
+                   illegal_insn = 1'b1;
+                 end
+@@ -385,14 +362,6 @@ module ibex_decoder #(
+                   7'b000_0010,                                                         // cpop
+                   7'b000_0100,                                                         // sext.b
+                   7'b000_0101: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;      // sext.h
+-                  7'b001_0000,                                                         // crc32.b
+-                  7'b001_0001,                                                         // crc32.h
+-                  7'b001_0010,                                                         // crc32.w
+-                  7'b001_1000,                                                         // crc32c.b
+-                  7'b001_1001,                                                         // crc32c.h
+-                  7'b001_1010: begin                                                   // crc32c.w
+-                    illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
+-                  end
+                   default: illegal_insn = 1'b1;
+                 endcase
+               end
+@@ -402,41 +371,34 @@ module ibex_decoder #(
+ 
+           3'b101: begin
+             if (instr[26]) begin
+-              illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;                       // fsri
++              illegal_insn = 1'b1;
+             end else begin
+               unique case (instr[31:27])
+                 5'b0_0000,                                                             // srli
+                 5'b0_1000: illegal_insn = (instr[26:25] == 2'b00) ? 1'b0 : 1'b1;       // srai
+ 
+-                5'b0_0100: begin                                                       // sroi
+-                  illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
+-                end
+                 5'b0_1100,                                                             // rori
+                 5'b0_1001: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;          // bexti
+ 
+                 5'b0_1101: begin
+-                  if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                    illegal_insn = 1'b0;                                               // grevi
+-                  end else if (RV32B == RV32BBalanced) begin
+-                    illegal_insn = (instr[24:20] == 5'b11000) ? 1'b0 : 1'b1;           // rev8
++                  // rev8 (Zbb, shamt 0x18) and brev8 (Zbkb, shamt 0x07)
++                  if (instr[24:20] == 5'b11000) begin
++                    illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;                // rev8
++                  end else if (instr[24:20] == 5'b00111) begin
++                    illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;                // brev8
+                   end else begin
+                     illegal_insn = 1'b1;
+                   end
+                 end
+                 5'b0_0101: begin
+-                  if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                    illegal_insn = 1'b0;                                              // gorci
+-                  end else if (instr[24:20] == 5'b00111) begin
+-                    illegal_insn = (RV32B == RV32BBalanced) ? 1'b0 : 1'b1;            // orc.b
+-                  end else begin
+-                    illegal_insn = 1'b1;
+-                  end
++                  // orc.b (Zbb): gorci restricted to shamt 0x07
++                  illegal_insn = (instr[24:20] == 5'b00111 && RV32B != RV32BNone) ?
++                                 1'b0 : 1'b1;                                         // orc.b
+                 end
+                 5'b0_0001: begin
+-                  // Since instr[26] is known to be 0, this must be the "unshfl" instruction, which
+-                  // is part of the RISC-V bitmanip extension. This is supported for the
+-                  // RV32BOTEarlGrey and RV32BFull bitmanip configurations.
+-                  illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
++                  // unzip (Zbkb): unshfli with shamt fixed to 0x0F
++                  illegal_insn = (instr[26:20] == 7'b000_1111 && RV32B == RV32BFull) ?
++                                 1'b0 : 1'b1;
+                 end
+ 
+                 default: illegal_insn = 1'b1;
+@@ -453,7 +415,7 @@ module ibex_decoder #(
+         rf_ren_b_o      = 1'b1;
+         rf_we           = 1'b1;
+         if ({instr[26], instr[13:12]} == {1'b1, 2'b01}) begin
+-          illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // cmix / cmov / fsl / fsr
++          illegal_insn = 1'b1; // cmix / cmov / fsl / fsr removed
+         end else begin
+           unique case ({instr[31:25], instr[14:12]})
+             // RV32I ALU operations
+@@ -482,35 +444,30 @@ module ibex_decoder #(
+             {7'b000_0101, 3'b110}, // max
+             {7'b000_0101, 3'b101}, // minu
+             {7'b000_0101, 3'b111}, // maxu
+-            {7'b000_0100, 3'b100}, // pack
+-            {7'b010_0100, 3'b100}, // packu
+-            {7'b000_0100, 3'b111}, // packh
+             // RV32B zbs
+             {7'b010_0100, 3'b001}, // bclr
+             {7'b001_0100, 3'b001}, // bset
+             {7'b011_0100, 3'b001}, // binv
+-            {7'b010_0100, 3'b101}, // bext
+-            // RV32B zbf
+-            {7'b010_0100, 3'b111}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bfp
+-            // RV32B zbp
+-            {7'b011_0100, 3'b101}, // grev
+-            {7'b001_0100, 3'b101}, // gorc
+-            {7'b000_0100, 3'b001}, // shfl
+-            {7'b000_0100, 3'b101}, // unshfl
+-            {7'b001_0100, 3'b010}, // xperm.n
+-            {7'b001_0100, 3'b100}, // xperm.b
+-            {7'b001_0100, 3'b110}, // xperm.h
+-            {7'b001_0000, 3'b001}, // slo
+-            {7'b001_0000, 3'b101}, // sro
++            {7'b010_0100, 3'b101}: illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1; // bext
++            // RV32B zbb / zbkb
++            {7'b000_0100, 3'b100}: begin // pack / zext.h
++              // zext.h (Zbb) = pack rd, rs1, x0; general pack is Zbkb (RV32BFull only).
++              if (instr[24:20] == 5'b00000) begin
++                illegal_insn = (RV32B != RV32BNone) ? 1'b0 : 1'b1;                    // zext.h
++              end else begin
++                illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;                    // pack
++              end
++            end
++            {7'b000_0100, 3'b111}: illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1; // packh
++            // RV32B zbkx
++            {7'b001_0100, 3'b010}, // xperm4
++            {7'b001_0100, 3'b100}, // xperm8
+             // RV32B zbc
+             {7'b000_0101, 3'b001}, // clmul
+             {7'b000_0101, 3'b010}, // clmulr
+             {7'b000_0101, 3'b011}: begin // clmulh
+-              illegal_insn = (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) ? 1'b0 : 1'b1;
++              illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1;
+             end
+-            // RV32B zbe
+-            {7'b010_0100, 3'b110}, // bdecompress
+-            {7'b000_0100, 3'b110}: illegal_insn = (RV32B == RV32BFull) ? 1'b0 : 1'b1; // bcompress
+ 
+             // RV32M instructions
+             {7'b000_0001, 3'b000}: begin // mul
+@@ -684,7 +641,6 @@ module ibex_decoder #(
+ 
+     opcode_alu         = opcode_e'(instr_alu[6:0]);
+ 
+-    use_rs3_d          = 1'b0;
+     alu_multicycle_o   = 1'b0;
+     mult_sel_o         = 1'b0;
+     div_sel_o          = 1'b0;
+@@ -834,15 +790,11 @@ module ibex_decoder #(
+             if (RV32B != RV32BNone) begin
+               unique case (instr_alu[31:27])
+                 5'b0_0000: alu_operator_o = ALU_SLL;    // Shift Left Logical by Immediate
+-                // Shift Left Ones by Immediate
+-                5'b0_0100: begin
+-                  if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SLO;
+-                end
+                 5'b0_1001: alu_operator_o = ALU_BCLR; // Clear bit specified by immediate
+                 5'b0_0101: alu_operator_o = ALU_BSET; // Set bit specified by immediate
+                 5'b0_1101: alu_operator_o = ALU_BINV; // Invert bit specified by immediate.
+-                // Shuffle with Immediate Control Value
+-                5'b0_0001: if (instr_alu[26] == 0) alu_operator_o = ALU_SHFL;
++                // zip (Zbkb): shfli with shamt fixed to 0x0F
++                5'b0_0001: if (instr_alu[26:20] == 7'b000_1111) alu_operator_o = ALU_ZIP;
+                 5'b0_1100: begin
+                   unique case (instr_alu[26:20])
+                     7'b000_0000: alu_operator_o = ALU_CLZ;   // clz
+@@ -850,42 +802,6 @@ module ibex_decoder #(
+                     7'b000_0010: alu_operator_o = ALU_CPOP;  // cpop
+                     7'b000_0100: alu_operator_o = ALU_SEXTB; // sext.b
+                     7'b000_0101: alu_operator_o = ALU_SEXTH; // sext.h
+-                    7'b001_0000: begin
+-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                        alu_operator_o = ALU_CRC32_B;  // crc32.b
+-                        alu_multicycle_o = 1'b1;
+-                      end
+-                    end
+-                    7'b001_0001: begin
+-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                        alu_operator_o = ALU_CRC32_H;  // crc32.h
+-                        alu_multicycle_o = 1'b1;
+-                      end
+-                    end
+-                    7'b001_0010: begin
+-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                        alu_operator_o = ALU_CRC32_W;  // crc32.w
+-                        alu_multicycle_o = 1'b1;
+-                      end
+-                    end
+-                    7'b001_1000: begin
+-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                        alu_operator_o = ALU_CRC32C_B; // crc32c.b
+-                        alu_multicycle_o = 1'b1;
+-                      end
+-                    end
+-                    7'b001_1001: begin
+-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                        alu_operator_o = ALU_CRC32C_H; // crc32c.h
+-                        alu_multicycle_o = 1'b1;
+-                      end
+-                    end
+-                    7'b001_1010: begin
+-                      if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                        alu_operator_o = ALU_CRC32C_W; // crc32c.w
+-                        alu_multicycle_o = 1'b1;
+-                      end
+-                    end
+                     default: ;
+                   endcase
+                 end
+@@ -900,32 +816,31 @@ module ibex_decoder #(
+           3'b101: begin
+             if (RV32B != RV32BNone) begin
+               if (instr_alu[26] == 1'b1) begin
+-                alu_operator_o = ALU_FSR;
+-                alu_multicycle_o = 1'b1;
+-                if (instr_first_cycle_i) begin
+-                  use_rs3_d = 1'b1;
+-                end else begin
+-                  use_rs3_d = 1'b0;
+-                end
++                // fsri removed; illegal encoding.
+               end else begin
+                 unique case (instr_alu[31:27])
+                   5'b0_0000: alu_operator_o = ALU_SRL;   // Shift Right Logical by Immediate
+                   5'b0_1000: alu_operator_o = ALU_SRA;   // Shift Right Arithmetically by Immediate
+-                  // Shift Right Ones by Immediate
+-                  5'b0_0100: begin
+-                    if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SRO;
+-                  end
+                   5'b0_1001: alu_operator_o = ALU_BEXT;  // Extract bit specified by immediate.
++                  // rori (Zbb, also imported by Zbkb): rotate right by immediate
+                   5'b0_1100: begin
+-                    alu_operator_o = ALU_ROR;            // Rotate Right by Immediate
++                    alu_operator_o = ALU_ROR;
+                     alu_multicycle_o = 1'b1;
+                   end
+-                  5'b0_1101: alu_operator_o = ALU_GREV;  // General Reverse with Imm Control Val
+-                  5'b0_0101: alu_operator_o = ALU_GORC;  // General Or-combine with Imm Control Val
+-                  // Unshuffle with Immediate Control Value
++                  // rev8 (Zbb, shamt 0x18) and brev8 (Zbkb, shamt 0x07)
++                  5'b0_1101: begin
++                    if (instr_alu[24:20] == 5'b11000) begin
++                      alu_operator_o = ALU_REV8;
++                    end else if (instr_alu[24:20] == 5'b00111 && RV32B == RV32BFull) begin
++                      alu_operator_o = ALU_BREV8;
++                    end
++                  end
++                  // orc.b (Zbb): gorci with shamt fixed to 0x07
++                  5'b0_0101: if (instr_alu[24:20] == 5'b00111) alu_operator_o = ALU_ORCB;
++                  // unzip (Zbkb): unshfli with shamt fixed to 0x0F
+                   5'b0_0001: begin
+-                    if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) begin
+-                      if (instr_alu[26] == 1'b0) alu_operator_o = ALU_UNSHFL;
++                    if (RV32B == RV32BFull) begin
++                      if (instr_alu[26:20] == 7'b000_1111) alu_operator_o = ALU_UNZIP;
+                     end
+                   end
+                   default: ;
+@@ -950,47 +865,7 @@ module ibex_decoder #(
+         alu_op_b_mux_sel_o = OP_B_REG_B;
+ 
+         if (instr_alu[26]) begin
+-          if (RV32B != RV32BNone) begin
+-            unique case ({instr_alu[26:25], instr_alu[14:12]})
+-              {2'b11, 3'b001}: begin
+-                alu_operator_o   = ALU_CMIX; // cmix
+-                alu_multicycle_o = 1'b1;
+-                if (instr_first_cycle_i) begin
+-                  use_rs3_d = 1'b1;
+-                end else begin
+-                  use_rs3_d = 1'b0;
+-                end
+-              end
+-              {2'b11, 3'b101}: begin
+-                alu_operator_o   = ALU_CMOV; // cmov
+-                alu_multicycle_o = 1'b1;
+-                if (instr_first_cycle_i) begin
+-                  use_rs3_d = 1'b1;
+-                end else begin
+-                  use_rs3_d = 1'b0;
+-                end
+-              end
+-              {2'b10, 3'b001}: begin
+-                alu_operator_o   = ALU_FSL;  // fsl
+-                alu_multicycle_o = 1'b1;
+-                if (instr_first_cycle_i) begin
+-                  use_rs3_d = 1'b1;
+-                end else begin
+-                  use_rs3_d = 1'b0;
+-                end
+-              end
+-              {2'b10, 3'b101}: begin
+-                alu_operator_o   = ALU_FSR;  // fsr
+-                alu_multicycle_o = 1'b1;
+-                if (instr_first_cycle_i) begin
+-                  use_rs3_d = 1'b1;
+-                end else begin
+-                  use_rs3_d = 1'b0;
+-                end
+-              end
+-              default: ;
+-            endcase
+-          end
++          // Ternary bitmanip ops (cmix/cmov/fsl/fsr) removed; these encodings are illegal.
+         end else begin
+           unique case ({instr_alu[31:25], instr_alu[14:12]})
+             // RV32I ALU operations
+@@ -1006,6 +881,7 @@ module ibex_decoder #(
+             {7'b010_0000, 3'b101}: alu_operator_o = ALU_SRA;   // Shift Right Arithmetic
+ 
+             // RV32B ALU Operations
++            // rol / ror (Zbb, also imported by Zbkb): rotate by register amount
+             {7'b011_0000, 3'b001}: begin
+               if (RV32B != RV32BNone) begin
+                 alu_operator_o = ALU_ROL;
+@@ -1024,9 +900,15 @@ module ibex_decoder #(
+             {7'b000_0101, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_MINU;
+             {7'b000_0101, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_MAXU;
+ 
+-            {7'b000_0100, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACK;
+-            {7'b010_0100, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACKU;
+-            {7'b000_0100, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_PACKH;
++            {7'b000_0100, 3'b100}: begin
++              // zext.h (Zbb, rs2=x0) reuses the pack datapath; general pack is Zbkb.
++              if (instr_alu[24:20] == 5'b00000) begin
++                if (RV32B != RV32BNone) alu_operator_o = ALU_PACK; // zext.h
++              end else begin
++                if (RV32B == RV32BFull) alu_operator_o = ALU_PACK; // pack
++              end
++            end
++            {7'b000_0100, 3'b111}: if (RV32B == RV32BFull) alu_operator_o = ALU_PACKH;
+ 
+             {7'b010_0000, 3'b100}: if (RV32B != RV32BNone) alu_operator_o = ALU_XNOR;
+             {7'b010_0000, 3'b110}: if (RV32B != RV32BNone) alu_operator_o = ALU_ORN;
+@@ -1043,57 +925,23 @@ module ibex_decoder #(
+             {7'b011_0100, 3'b001}: if (RV32B != RV32BNone) alu_operator_o = ALU_BINV;
+             {7'b010_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_BEXT;
+ 
+-            // RV32B zbf
+-            {7'b010_0100, 3'b111}: if (RV32B != RV32BNone) alu_operator_o = ALU_BFP;
+-
+-            // RV32B zbp
+-            {7'b011_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_GREV;
+-            {7'b001_0100, 3'b101}: if (RV32B != RV32BNone) alu_operator_o = ALU_GORC;
+-            {7'b000_0100, 3'b001}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SHFL;
+-            end
+-            {7'b000_0100, 3'b101}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_UNSHFL;
+-            end
++            // RV32B zbkx
+             {7'b001_0100, 3'b010}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_N;
++              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM4;
+             end
+             {7'b001_0100, 3'b100}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_B;
+-            end
+-            {7'b001_0100, 3'b110}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_XPERM_H;
+-            end
+-            {7'b001_0000, 3'b001}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SLO;
+-            end
+-            {7'b001_0000, 3'b101}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_SRO;
++              if (RV32B == RV32BFull) alu_operator_o = ALU_XPERM8;
+             end
+ 
+             // RV32B zbc
+             {7'b000_0101, 3'b001}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_CLMUL;
++              if (RV32B == RV32BFull) alu_operator_o = ALU_CLMUL;
+             end
+             {7'b000_0101, 3'b010}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_CLMULR;
++              if (RV32B == RV32BFull) alu_operator_o = ALU_CLMULR;
+             end
+             {7'b000_0101, 3'b011}: begin
+-              if (RV32B == RV32BOTEarlGrey || RV32B == RV32BFull) alu_operator_o = ALU_CLMULH;
+-            end
+-
+-            // RV32B zbe
+-            {7'b010_0100, 3'b110}: begin
+-              if (RV32B == RV32BFull) begin
+-                alu_operator_o = ALU_BDECOMPRESS;
+-                alu_multicycle_o = 1'b1;
+-              end
+-            end
+-            {7'b000_0100, 3'b110}: begin
+-              if (RV32B == RV32BFull) begin
+-                alu_operator_o = ALU_BCOMPRESS;
+-                alu_multicycle_o = 1'b1;
+-              end
++              if (RV32B == RV32BFull) alu_operator_o = ALU_CLMULH;
+             end
+ 
+             // RV32M instructions, all use the same ALU operation
+diff --git a/ibex_ex_block.sv b/ibex_ex_block.sv
+index 462f2fcfdc..1916e9a2d3 100644
+--- a/ibex_ex_block.sv
++++ b/ibex_ex_block.sv
+@@ -62,9 +62,9 @@ module ibex_ex_block #(
+   logic        alu_cmp_result, alu_is_equal_result;
+   logic        multdiv_valid;
+   logic        multdiv_sel;
+-  logic [31:0] alu_imd_val_q[2];
+-  logic [31:0] alu_imd_val_d[2];
+-  logic [ 1:0] alu_imd_val_we;
++  logic [31:0] alu_imd_val_q;
++  logic [31:0] alu_imd_val_d;
++  logic        alu_imd_val_we;
+   logic [33:0] multdiv_imd_val_d[2];
+   logic [ 1:0] multdiv_imd_val_we;
+ 
+@@ -80,11 +80,11 @@ module ibex_ex_block #(
+   end
+ 
+   // Intermediate Value Register Mux
+-  assign imd_val_d_o[0] = multdiv_sel ? multdiv_imd_val_d[0] : {2'b0, alu_imd_val_d[0]};
+-  assign imd_val_d_o[1] = multdiv_sel ? multdiv_imd_val_d[1] : {2'b0, alu_imd_val_d[1]};
+-  assign imd_val_we_o   = multdiv_sel ? multdiv_imd_val_we : alu_imd_val_we;
++  assign imd_val_d_o[0] = multdiv_sel ? multdiv_imd_val_d[0] : {2'b0, alu_imd_val_d};
++  assign imd_val_d_o[1] = multdiv_sel ? multdiv_imd_val_d[1] : 34'd0;
++  assign imd_val_we_o   = multdiv_sel ? multdiv_imd_val_we   : {1'b0, alu_imd_val_we};
+ 
+-  assign alu_imd_val_q = '{imd_val_q_i[0][31:0], imd_val_q_i[1][31:0]};
++  assign alu_imd_val_q = imd_val_q_i[0][31:0];
+ 
+   assign result_ex_o  = multdiv_sel ? multdiv_result : alu_result;
+ 
+diff --git a/ibex_pkg.sv b/ibex_pkg.sv
+index 45b406444c..ae3cd1372a 100644
+--- a/ibex_pkg.sv
++++ b/ibex_pkg.sv
+@@ -46,10 +46,9 @@ package ibex_pkg;
+   } rv32m_e;
+ 
+   typedef enum integer {
+-    RV32BNone       = 0,
+-    RV32BBalanced   = 1,
+-    RV32BOTEarlGrey = 2,
+-    RV32BFull       = 3
++    RV32BNone     = 0,
++    RV32BBalanced = 1,
++    RV32BFull     = 2
+   } rv32b_e;
+ 
+   typedef enum integer {
+@@ -101,17 +100,15 @@ package ibex_pkg;
+     ALU_SRL,
+     ALU_SLL,
+     // RV32B
+-    ALU_SRO,
+-    ALU_SLO,
+     ALU_ROR,
+     ALU_ROL,
+-    ALU_GREV,
+-    ALU_GORC,
+-    ALU_SHFL,
+-    ALU_UNSHFL,
+-    ALU_XPERM_N,
+-    ALU_XPERM_B,
+-    ALU_XPERM_H,
++    ALU_REV8,
++    ALU_BREV8,
++    ALU_ORCB,
++    ALU_ZIP,
++    ALU_UNZIP,
++    ALU_XPERM4,
++    ALU_XPERM8,
+ 
+     // Address Calculations
+     // RV32B
+@@ -135,7 +132,6 @@ package ibex_pkg;
+     // Pack
+     // RV32B
+     ALU_PACK,
+-    ALU_PACKU,
+     ALU_PACKH,
+ 
+     // Sign-Extend
+@@ -153,13 +149,6 @@ package ibex_pkg;
+     ALU_SLT,
+     ALU_SLTU,
+ 
+-    // Ternary Bitmanip Operations
+-    // RV32B
+-    ALU_CMOV,
+-    ALU_CMIX,
+-    ALU_FSL,
+-    ALU_FSR,
+-
+     // Single-Bit Operations
+     // RV32B
+     ALU_BSET,
+@@ -167,28 +156,11 @@ package ibex_pkg;
+     ALU_BINV,
+     ALU_BEXT,
+ 
+-    // Bit Compress / Decompress
+-    // RV32B
+-    ALU_BCOMPRESS,
+-    ALU_BDECOMPRESS,
+-
+-    // Bit Field Place
+-    // RV32B
+-    ALU_BFP,
+-
+     // Carry-less Multiply
+     // RV32B
+     ALU_CLMUL,
+     ALU_CLMULR,
+-    ALU_CLMULH,
+-
+-    // Cyclic Redundancy Check
+-    ALU_CRC32_B,
+-    ALU_CRC32C_B,
+-    ALU_CRC32_H,
+-    ALU_CRC32C_H,
+-    ALU_CRC32_W,
+-    ALU_CRC32C_W
++    ALU_CLMULH
+   } alu_op_e;
+ 
+   typedef enum logic [1:0] {
+diff --git a/ibex_tracer.sv b/ibex_tracer.sv
+index 3c55b7161c..8e454f8189 100644
+--- a/ibex_tracer.sv
++++ b/ibex_tracer.sv
+@@ -448,18 +448,6 @@ module ibex_tracer (
+     decoded_str = $sformatf("%s\tx%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr);
+   endfunction
+ 
+-  function automatic void decode_r_cmixcmov_insn(input string mnemonic);
+-    data_accessed = RS1 | RS2 | RS3 | RD;
+-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs2_addr,
+-        rvfi_rs1_addr, rvfi_rs3_addr);
+-  endfunction
+-
+-  function automatic void decode_r_funnelshift_insn(input string mnemonic);
+-    data_accessed = RS1 | RS2 | RS3 | RD;
+-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,x%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
+-        rvfi_rs3_addr, rvfi_rs2_addr);
+-  endfunction
+-
+   function automatic void decode_i_insn(input string mnemonic);
+     data_accessed = RS1 | RD;
+     decoded_str = $sformatf("%s\tx%0d,x%0d,%0d", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
+@@ -467,22 +455,13 @@ module ibex_tracer (
+   endfunction
+ 
+   function automatic void decode_i_shift_insn(input string mnemonic);
+-    // SLLI, SRLI, SRAI, SROI, SLOI, RORI
++    // SLLI, SRLI, SRAI, RORI
+     logic [4:0] shamt;
+     shamt = {rvfi_insn[24:20]};
+     data_accessed = RS1 | RD;
+     decoded_str = $sformatf("%s\tx%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr, shamt);
+   endfunction
+ 
+-  function automatic void decode_i_funnelshift_insn( input string mnemonic);
+-    // fsri
+-    logic [5:0] shamt;
+-    shamt = {rvfi_insn[25:20]};
+-    data_accessed = RS1 | RS3 | RD;
+-    decoded_str = $sformatf("%s\tx%0d,x%0d,x%0d,0x%0x", mnemonic, rvfi_rd_addr, rvfi_rs1_addr,
+-        rvfi_rs3_addr, shamt);
+-  endfunction
+-
+   function automatic void decode_i_jalr_insn(input string mnemonic);
+     // JALR
+     data_accessed = RS1 | RD;
+@@ -1067,20 +1046,14 @@ module ibex_tracer (
+         INSN_XNOR:       decode_r_insn("xnor");
+         INSN_ORN:        decode_r_insn("orn");
+         INSN_ANDN:       decode_r_insn("andn");
+-        // The ratified v.1.0.0 bitmanip extension defines the pseudo-instruction
+-        //   zext.h rd rs = pack rd, rs, zero.
+-        // However, for now the tracer doesn't emit this due to a lack of support in the LLVM and
+-        // GCC toolchains. Enabling this functionality when the time is right is tracked in
+-        // https://github.com/lowRISC/ibex/issues/1228
+-        INSN_PACK:       decode_r_insn("pack");
+-        // INSN_PACK: begin
+-          // casez (rvfi_insn)
+-            // INSN_ZEXTH:  decode_r1_insn("zext.h");
+-            // default:     decode_r_insn("pack");
+-          // endcase
+-        // end
++        // zext.h (Zbb) is the pseudo-instruction `pack rd, rs, x0`
++        INSN_PACK: begin
++          unique casez (rvfi_insn)
++            INSN_ZEXTH:  decode_r1_insn("zext.h");
++            default:     decode_r_insn("pack");
++          endcase
++        end
+         INSN_PACKH:      decode_r_insn("packh");
+-        INSN_PACKU:      decode_r_insn("packu");
+         INSN_CLZ:        decode_r1_insn("clz");
+         INSN_CTZ:        decode_r1_insn("ctz");
+         INSN_CPOP:       decode_r1_insn("cpop");
+@@ -1095,115 +1068,20 @@ module ibex_tracer (
+         INSN_BSET:      decode_r_insn("bset");
+         INSN_BINV:      decode_r_insn("binv");
+         INSN_BEXT:      decode_r_insn("bext");
+-        // RV32B - ZBE
+-        INSN_BDECOMPRESS: decode_r_insn("bdecompress");
+-        INSN_BCOMPRESS:   decode_r_insn("bcompress");
+-        // RV32B - ZBP
+-        INSN_GREV:       decode_r_insn("grev");
+-        INSN_GREVI: begin
+-          unique casez (rvfi_insn)
+-            INSN_REV_P:  decode_r1_insn("rev.p");
+-            INSN_REV2_N: decode_r1_insn("rev2.n");
+-            INSN_REV_N:  decode_r1_insn("rev.n");
+-            INSN_REV4_B: decode_r1_insn("rev4.b");
+-            INSN_REV2_B: decode_r1_insn("rev2.b");
+-            INSN_REV_B:  decode_r1_insn("rev.b");
+-            INSN_REV8_H: decode_r1_insn("rev8.h");
+-            INSN_REV4_H: decode_r1_insn("rev4.h");
+-            INSN_REV2_H: decode_r1_insn("rev2.h");
+-            INSN_REV_H:  decode_r1_insn("rev.h");
+-            INSN_REV16:  decode_r1_insn("rev16");
+-            INSN_REV8:   decode_r1_insn("rev8");
+-            INSN_REV4:   decode_r1_insn("rev4");
+-            INSN_REV2:   decode_r1_insn("rev2");
+-            INSN_REV:    decode_r1_insn("rev");
+-            default:     decode_i_insn("grevi");
+-          endcase
+-        end
+-        INSN_GORC:       decode_r_insn("gorc");
+-        INSN_GORCI: begin
+-          unique casez (rvfi_insn)
+-            INSN_ORC_P:  decode_r1_insn("orc.p");
+-            INSN_ORC2_N: decode_r1_insn("orc2.n");
+-            INSN_ORC_N:  decode_r1_insn("orc.n");
+-            INSN_ORC4_B: decode_r1_insn("orc4.b");
+-            INSN_ORC2_B: decode_r1_insn("orc2.b");
+-            INSN_ORC_B:  decode_r1_insn("orc.b");
+-            INSN_ORC8_H: decode_r1_insn("orc8.h");
+-            INSN_ORC4_H: decode_r1_insn("orc4.h");
+-            INSN_ORC2_H: decode_r1_insn("orc2.h");
+-            INSN_ORC_H:  decode_r1_insn("orc.h");
+-            INSN_ORC16:  decode_r1_insn("orc16");
+-            INSN_ORC8:   decode_r1_insn("orc8");
+-            INSN_ORC4:   decode_r1_insn("orc4");
+-            INSN_ORC2:   decode_r1_insn("orc2");
+-            INSN_ORC:    decode_r1_insn("orc");
+-            default:     decode_i_insn("gorci");
+-          endcase
+-        end
+-        INSN_SHFL:       decode_r_insn("shfl");
+-        INSN_SHFLI: begin
+-          unique casez (rvfi_insn)
+-            INSN_ZIP_N:  decode_r1_insn("zip.n");
+-            INSN_ZIP2_B: decode_r1_insn("zip2.b");
+-            INSN_ZIP_B:  decode_r1_insn("zip.b");
+-            INSN_ZIP4_H: decode_r1_insn("zip4.h");
+-            INSN_ZIP2_H: decode_r1_insn("zip2.h");
+-            INSN_ZIP_H:  decode_r1_insn("zip.h");
+-            INSN_ZIP8:   decode_r1_insn("zip8");
+-            INSN_ZIP4:   decode_r1_insn("zip4");
+-            INSN_ZIP2:   decode_r1_insn("zip2");
+-            INSN_ZIP:    decode_r1_insn("zip");
+-            default:     decode_i_insn("shfli");
+-          endcase
+-        end
+-        INSN_UNSHFL:       decode_r_insn("unshfl");
+-        INSN_UNSHFLI: begin
+-          unique casez (rvfi_insn)
+-            INSN_UNZIP_N:  decode_r1_insn("unzip.n");
+-            INSN_UNZIP2_B: decode_r1_insn("unzip2.b");
+-            INSN_UNZIP_B:  decode_r1_insn("unzip.b");
+-            INSN_UNZIP4_H: decode_r1_insn("unzip4.h");
+-            INSN_UNZIP2_H: decode_r1_insn("unzip2.h");
+-            INSN_UNZIP_H:  decode_r1_insn("unzip.h");
+-            INSN_UNZIP8:   decode_r1_insn("unzip8");
+-            INSN_UNZIP4:   decode_r1_insn("unzip4");
+-            INSN_UNZIP2:   decode_r1_insn("unzip2");
+-            INSN_UNZIP:    decode_r1_insn("unzip");
+-            default:       decode_i_insn("unshfli");
+-          endcase
+-        end
+-        INSN_XPERM_N:    decode_r_insn("xperm_n");
+-        INSN_XPERM_B:    decode_r_insn("xperm_b");
+-        INSN_XPERM_H:    decode_r_insn("xperm_h");
+-        INSN_SLO:        decode_r_insn("slo");
+-        INSN_SRO:        decode_r_insn("sro");
+-        INSN_SLOI:       decode_i_shift_insn("sloi");
+-        INSN_SROI:       decode_i_shift_insn("sroi");
+-
+-        // RV32B - ZBT
+-        INSN_CMIX:       decode_r_cmixcmov_insn("cmix");
+-        INSN_CMOV:       decode_r_cmixcmov_insn("cmov");
+-        INSN_FSR:        decode_r_funnelshift_insn("fsr");
+-        INSN_FSL:        decode_r_funnelshift_insn("fsl");
+-        INSN_FSRI:       decode_i_funnelshift_insn("fsri");
+-
+-        // RV32B - ZBF
+-        INSN_BFP:        decode_r_insn("bfp");
++        // RV32B - Zbb / Zbkb
++        INSN_BREV8:      decode_r1_insn("brev8");
++        INSN_REV8:       decode_r1_insn("rev8");
++        INSN_ORC_B:      decode_r1_insn("orc.b");
++        INSN_ZIP:        decode_r1_insn("zip");
++        INSN_UNZIP:      decode_r1_insn("unzip");
++        INSN_XPERM4:     decode_r_insn("xperm4");
++        INSN_XPERM8:     decode_r_insn("xperm8");
+ 
+         // RV32B - ZBC
+         INSN_CLMUL:      decode_r_insn("clmul");
+         INSN_CLMULR:     decode_r_insn("clmulr");
+         INSN_CLMULH:     decode_r_insn("clmulh");
+ 
+-        // RV32B - ZBR
+-        INSN_CRC32_B:    decode_r1_insn("crc32.b");
+-        INSN_CRC32_H:    decode_r1_insn("crc32.h");
+-        INSN_CRC32_W:    decode_r1_insn("crc32.w");
+-        INSN_CRC32C_B:   decode_r1_insn("crc32c.b");
+-        INSN_CRC32C_H:   decode_r1_insn("crc32c.h");
+-        INSN_CRC32C_W:   decode_r1_insn("crc32c.w");
+-
+         default:         decode_mnemonic("INVALID");
+       endcase
+     end
+diff --git a/ibex_tracer_pkg.sv b/ibex_tracer_pkg.sv
+index b1f975e8f4..616467afb3 100644
+--- a/ibex_tracer_pkg.sv
++++ b/ibex_tracer_pkg.sv
+@@ -78,8 +78,8 @@ package ibex_tracer_pkg;
+ 
+   // ZBB
+   // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
+-  // instr[24:20] are effectively used. Whenever instr[26] is set, sroi/rori is instead decoded as
+-  // fsri.
++  // instr[24:20] are effectively used. instr[26] is constrained to 0 ([26]=1 encodings are
++  // illegal).
+   parameter logic [31:0] INSN_RORI = { 5'b01100  , 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+   parameter logic [31:0] INSN_CLZ  = { 12'b011000000000, 5'h?,  3'b001, 5'h?, {OPCODE_OP_IMM} };
+   parameter logic [31:0] INSN_CTZ  = { 12'b011000000001, 5'h?,  3'b001, 5'h?, {OPCODE_OP_IMM} };
+@@ -87,15 +87,8 @@ package ibex_tracer_pkg;
+   parameter logic [31:0] INSN_SEXTB = { 12'b011000000100, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+   parameter logic [31:0] INSN_SEXTH = { 12'b011000000101, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+ 
+-  // The zext.h and zext.b pseudo-instructions are defined in the ratified v.1.0.0 and draft v.0.94
+-  // specifications of the bitmanip extension, respectively. They are currently not emitted by the
+-  // tracer due to a lack of support in the LLVM and GCC toolchains. Enabling this functionality
+-  // when the time is right is tracked in https://github.com/lowRISC/ibex/issues/1228
+-  // zext.b -- pseudo-instruction: andi rd, rs 255
+-  // parameter logic [31:0] INSN_ZEXTB =
+-  //     { 4'b0000, 8'b11111111, 5'h?, 3'b111, 5'h?, {OPCODE_OP_IMM} };
+-  // zext.h -- pseudo-instruction: pack rd, rs zero
+-  // parameter logic [31:0] INSN_ZEXTH = { 7'b0000100, 5'b00000, 5'h?, 3'b100, 5'h?, {OPCODE_OP} };
++  // zext.h (Zbb) is the pseudo-instruction `pack rd, rs, x0`.
++  parameter logic [31:0] INSN_ZEXTH = { 7'b0000100, 5'b00000, 5'h?, 3'b100, 5'h?, {OPCODE_OP} };
+ 
+   parameter logic [31:0] INSN_ROL   = { 7'b0110000, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
+   parameter logic [31:0] INSN_ROR   = { 7'b0110000, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+@@ -107,7 +100,6 @@ package ibex_tracer_pkg;
+   parameter logic [31:0] INSN_ORN   = { 7'b0100000, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
+   parameter logic [31:0] INSN_ANDN  = { 7'b0100000, 10'h?, 3'b111, 5'h?, {OPCODE_OP} };
+   parameter logic [31:0] INSN_PACK  = { 7'b0000100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_PACKU = { 7'b0100100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
+   parameter logic [31:0] INSN_PACKH = { 7'b0000100, 10'h?, 3'b111, 5'h?, {OPCODE_OP} };
+ 
+   // ZBS
+@@ -124,174 +116,30 @@ package ibex_tracer_pkg;
+   parameter logic [31:0] INSN_BEXT = { 7'b0100100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+ 
+   // ZBP
+-  // grevi
+-  // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
+-  // instr[24:20] are effectively used. Whenever instr[26] is set, grevi is instead decoded as fsri.
+-  parameter logic [31:0] INSN_GREVI = { 5'b01101, 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  // grevi -- pseudo-instructions
+-  parameter logic [31:0] INSN_REV_P =
+-      { 5'b01101, 1'b0, 1'b?, 5'b00001, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV2_N =
+-      { 5'b01101, 1'b0, 1'b?, 5'b00010, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV_N =
+-      { 5'b01101, 1'b0, 1'b?, 5'b00011, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV4_B =
+-      { 5'b01101, 1'b0, 1'b?, 5'b00100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV2_B =
+-      { 5'b01101, 1'b0, 1'b?, 5'b00110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV_B =
+-      { 5'b01101, 1'b0, 1'b?, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV8_H =
+-      { 5'b01101, 1'b0, 1'b?, 5'b01000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV4_H =
+-      { 5'b01101, 1'b0, 1'b?, 5'b01100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV2_H =
+-      { 5'b01101, 1'b0, 1'b?, 5'b01110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV_H =
+-      { 5'b01101, 1'b0, 1'b?, 5'b01111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV16 =
+-      { 5'b01101, 1'b0, 1'b?, 5'b10000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++  // rev8 (Zbb, shamt 0x18: reverse byte order) and brev8 (Zbkb, shamt 0x07:
++  // reverse bits within each byte). grevi restricted to these two control values.
+   parameter logic [31:0] INSN_REV8 =
+-      { 5'b01101, 1'b0, 1'b?, 5'b11000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV4 =
+-      { 5'b01101, 1'b0, 1'b?, 5'b11100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV2 =
+-      { 5'b01101, 1'b0, 1'b?, 5'b11110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_REV =
+-      { 5'b01101, 1'b0, 1'b?, 5'b11111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  // gorci
+-  // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
+-  // instr[24:20] are effectively used. Whenever instr[26] is set, gorci is instead decoded as fsri.
+-  parameter logic [31:0] INSN_GORCI = { 5'b00101, 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  // gorci -- pseudo-instructions
+-  parameter logic [31:0] INSN_ORC_P =
+-      { 5'b00101, 1'b0, 1'b?, 5'b00001, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC2_N =
+-      { 5'b00101, 1'b0, 1'b?, 5'b00010, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC_N =
+-      { 5'b00101, 1'b0, 1'b?, 5'b00011, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC4_B =
+-      { 5'b00101, 1'b0, 1'b?, 5'b00100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC2_B =
+-      { 5'b00101, 1'b0, 1'b?, 5'b00110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++      { 5'b01101, 1'b0, 1'b0, 5'b11000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++  parameter logic [31:0] INSN_BREV8 =
++      { 5'b01101, 1'b0, 1'b0, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++  // orc.b (Zbb): gorci restricted to shamt 0x07 (bitwise OR-combine within each byte).
+   parameter logic [31:0] INSN_ORC_B =
+-      { 5'b00101, 1'b0, 1'b?, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC8_H =
+-      { 5'b00101, 1'b0, 1'b?, 5'b01000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC4_H =
+-      { 5'b00101, 1'b0, 1'b?, 5'b01100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC2_H =
+-      { 5'b00101, 1'b0, 1'b?, 5'b01110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC_H =
+-      { 5'b00101, 1'b0, 1'b?, 5'b01111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC16 =
+-      { 5'b00101, 1'b0, 1'b?, 5'b10000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC8 =
+-      { 5'b00101, 1'b0, 1'b?, 5'b11000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC4 =
+-      { 5'b00101, 1'b0, 1'b?, 5'b11100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC2 =
+-      { 5'b00101, 1'b0, 1'b?, 5'b11110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ORC =
+-      { 5'b00101, 1'b0, 1'b?, 5'b11111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  // shfli
+-  parameter logic [31:0] INSN_SHFLI = { 6'b000010, 11'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  // shfli -- pseudo-instructions
+-  parameter logic [31:0] INSN_ZIP_N =
+-      { 6'b000010, 2'h?, 4'b0001, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP2_B =
+-      { 6'b000010, 2'h?, 4'b0010, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP_B =
+-      { 6'b000010, 2'h?, 4'b0011, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP4_H =
+-      { 6'b000010, 2'h?, 4'b0100, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP2_H =
+-      { 6'b000010, 2'h?, 4'b0110, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP_H =
+-      { 6'b000010, 2'h?, 4'b0111, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP8 =
+-      { 6'b000010, 2'h?, 4'b1000, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP4 =
+-      { 6'b000010, 2'h?, 4'b1100, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_ZIP2 =
+-      { 6'b000010, 2'h?, 4'b1110, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
++      { 5'b00101, 1'b0, 1'b0, 5'b00111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++  // zip / unzip (Zbkb, rv32): the shfli/unshfli shuffle restricted to the
++  // shamt=0x0F (full zip) control value. No other control and no reg-reg form.
+   parameter logic [31:0] INSN_ZIP =
+-      { 6'b000010, 2'h?, 4'b1111, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  // unshfli
+-  parameter logic [31:0] INSN_UNSHFLI = { 6'b000010, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  // unshfli -- pseudo-instructions
+-  parameter logic [31:0] INSN_UNZIP_N =
+-      { 6'b000010, 2'h?, 4'b0001, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP2_B =
+-      { 6'b000010, 2'h?, 4'b0010, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP_B =
+-      { 6'b000010, 2'h?, 4'b0011, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP4_H =
+-      { 6'b000010, 2'h?, 4'b0100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP2_H =
+-      { 6'b000010, 2'h?, 4'b0110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP_H =
+-      { 6'b000010, 2'h?, 4'b0111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP8 =
+-      { 6'b000010, 2'h?, 4'b1000, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP4 =
+-      { 6'b000010, 2'h?, 4'b1100, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_UNZIP2 =
+-      { 6'b000010, 2'h?, 4'b1110, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++      { 7'b0000100, 5'b01111, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+   parameter logic [31:0] INSN_UNZIP =
+-      { 6'b000010, 2'h?, 4'b1111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-
+-  parameter logic [31:0] INSN_GREV   = { 7'b0110100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_GORC   = { 7'b0010100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_SHFL   = { 7'b0000100, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_UNSHFL = { 7'b0000100, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+-
+-  parameter logic [31:0] INSN_XPERM_N = { 7'b0010100, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_XPERM_B = { 7'b0010100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_XPERM_H = { 7'b0010100, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
+-
+-  parameter logic [31:0] INSN_SLO    = { 7'b0010000, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_SRO    = { 7'b0010000, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_SLOI   = { 5'b00100        , 12'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  // Only log2(XLEN) bits of the immediate are used. For RV32, this means only the bits in
+-  // instr[24:20] are effectively used. Whenever instr[26] is set, sroi/rori is instead decoded as
+-  // fsri.
+-  parameter logic [31:0] INSN_SROI   = { 5'b00100  , 1'b0, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+-
+-  // ZBE
+-  parameter logic [31:0] INSN_BDECOMPRESS = {7'b0100100, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_BCOMPRESS   = {7'b0000100, 10'h?, 3'b110, 5'h?, {OPCODE_OP} };
+-
+-  // ZBT
+-  parameter logic [31:0] INSN_FSRI = { 5'h?, 1'b1, 11'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
++      { 7'b0000100, 5'b01111, 5'h?, 3'b101, 5'h?, {OPCODE_OP_IMM} };
+ 
+-  parameter logic [31:0] INSN_CMIX = {5'h?, 2'b11, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_CMOV = {5'h?, 2'b11, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_FSL  = {5'h?, 2'b10, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
+-  parameter logic [31:0] INSN_FSR  = {5'h?, 2'b10, 10'h?, 3'b101, 5'h?, {OPCODE_OP} };
+-
+-  // ZBF
+-  parameter logic [31:0] INSN_BFP  = {7'b0100100, 10'h?, 3'b111, 5'h?, {OPCODE_OP} };
++  parameter logic [31:0] INSN_XPERM4 = { 7'b0010100, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
++  parameter logic [31:0] INSN_XPERM8 = { 7'b0010100, 10'h?, 3'b100, 5'h?, {OPCODE_OP} };
+ 
+   // ZBC
+   parameter logic [31:0] INSN_CLMUL  = {7'b0000101, 10'h?, 3'b001, 5'h?, {OPCODE_OP} };
+   parameter logic [31:0] INSN_CLMULR = {7'b0000101, 10'h?, 3'b010, 5'h?, {OPCODE_OP} };
+   parameter logic [31:0] INSN_CLMULH = {7'b0000101, 10'h?, 3'b011, 5'h?, {OPCODE_OP} };
+ 
+-  // ZBR
+-  parameter logic [31:0] INSN_CRC32_B  =
+-      {7'b0110000, 5'b10000, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_CRC32_H  =
+-      {7'b0110000, 5'b10001, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_CRC32_W  =
+-      {7'b0110000, 5'b10010, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_CRC32C_B =
+-      {7'b0110000, 5'b11000, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_CRC32C_H =
+-      {7'b0110000, 5'b11001, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-  parameter logic [31:0] INSN_CRC32C_W =
+-      {7'b0110000, 5'b11010, 5'h?, 3'b001, 5'h?, {OPCODE_OP_IMM} };
+-
+   // LOAD & STORE
+   parameter logic [31:0] INSN_LOAD    = {25'h?,                            {OPCODE_LOAD } };
+   parameter logic [31:0] INSN_STORE   = {25'h?,                            {OPCODE_STORE} };
