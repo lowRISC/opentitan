@@ -10,11 +10,18 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(rom_ctrl_base_vseq)
 
+  // A sequencer for a driver that can be used to force the counter in the FSM's u_counter. This may
+  // be null. (It will only be created in the environment if cfg.get_skip_middle() is true.)
+  rom_ctrl_addr_force_sequencer_t m_addr_force_sequencer;
+
   // various knobs to enable certain routines
   bit do_rom_error_req = 1'b0;
 
-  `uvm_object_new
+  // A flag to show that skip_middle is currently running (to make it easier to catch mistakes where
+  // we accidentally call it twice)
+  local bit m_skip_middle_running;
 
+  extern function new(string name="");
   extern virtual task dut_init(string reset_kind = "HARD");
   extern virtual task apply_reset(string kind = "HARD");
   extern virtual task rom_ctrl_mem_init();
@@ -27,7 +34,15 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                                    int max_delay = 10000,
                                    int max_wait_cycle = 1000);
 
+  // Run a rom_ctrl_skip_middle_seq to skip the middle part of reading the ROM.
+  //
+  // This task will run until the skip has finished, or return early if reset is asserted.
+  extern local task skip_middle();
 endclass : rom_ctrl_base_vseq
+
+function rom_ctrl_base_vseq::new(string name="");
+  super.new(name);
+endfunction
 
 task rom_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
   super.dut_init(reset_kind);
@@ -40,6 +55,22 @@ task rom_ctrl_base_vseq::apply_reset(string kind = "HARD");
   // task completes (due to the second RAL clk_rst_if)
   rom_ctrl_mem_init();
   super.apply_reset(kind);
+
+  // If cfg.get_skip_middle() is true, run a rom_ctrl_skip_middle_seq so that rom_ctrl skips over
+  // the middle of the ROM.
+  //
+  // This runs with fork / join_none because we don't want to wait for it as part of apply_reset.
+  // The skip_middle task checks for multiple instances.
+  if (cfg.get_skip_middle()) begin
+    fork begin
+      // Delay very slightly: super.apply_reset ends on the posedge of rst_n and the driver that
+      // forces the address will drop out immediately if it sees rst_n=0. Make sure that the value
+      // has actually become nonzero.
+      #1ps;
+
+      skip_middle();
+    end join_none
+  end
 endtask
 
 // Task to build a random rom in memory
@@ -197,3 +228,32 @@ task rom_ctrl_base_vseq::wait_for_fatal_alert(bit check_fsm_state = 1'b1,
     `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
   end
 endtask: wait_for_fatal_alert
+
+task rom_ctrl_base_vseq::skip_middle();
+  rom_ctrl_skip_middle_seq seq = rom_ctrl_skip_middle_seq::type_id::create("seq");
+
+  if (m_skip_middle_running) begin
+    `uvm_fatal(get_full_name(), "skip_middle is already running.")
+  end
+  if (m_addr_force_sequencer == null) begin
+    `uvm_fatal(get_full_name(), "skip_middle cannot run: m_addr_force_sequencer is null.")
+  end
+
+  // The address to jump to needs to be chosen to land before the end of the ROM data that will be
+  // sent to KMAC. There are ROM_SIZE_WORDS - 8 of those words (because there are 8 32-bit words of
+  // expected digest data at the top of ROM).
+  //
+  // The logic in rom_ctrl_counter sets a flag when it reads the last word of ROM data, which has
+  // address one less than the last of the words, giving ROM_SIZE_WORDS - 10, so we need the forced
+  // signal value to be less than that to avoid things coming unstuck.
+  if (!seq.randomize() with {
+        seq.m_item.m_start_addr == 10;
+        seq.m_item.m_desired_addr == ROM_SIZE_WORDS - 20;
+      }) begin
+    `uvm_fatal(get_full_name(), "Failed to randomise skip_middle seq")
+  end
+
+  m_skip_middle_running = 1;
+  seq.start(m_addr_force_sequencer);
+  m_skip_middle_running = 0;
+endtask

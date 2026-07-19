@@ -20,6 +20,7 @@ filesets:
       - tb/rom_ctrl_if.sv
       - tb/rom_ctrl_compare_if.sv
       - tb/rom_ctrl_fsm_if.sv
+      - tb/rom_ctrl_fsm_bound_if.sv
     file_type: systemVerilogSource
 
 targets:
