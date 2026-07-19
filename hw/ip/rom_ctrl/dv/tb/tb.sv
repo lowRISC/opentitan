@@ -65,7 +65,9 @@ module tb;
 
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
-  bind dut.gen_fsm_scramble_enabled.u_checker_fsm rom_ctrl_fsm_if u_fsm_if ();
+  bind dut.gen_fsm_scramble_enabled.u_checker_fsm
+     rom_ctrl_fsm_bound_if #(.Bound(1))
+     u_bound_if (.clk_i, .rst_ni);
 
   // Bind a rom_ctrl_compare_if into the compare module (allowing DV to easily get hold of internal
   // values and parameters)
@@ -102,7 +104,7 @@ module tb;
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", dut.rom_ctrl_if);
     uvm_config_db#(virtual rom_ctrl_fsm_if)::set(
         null, "*.env", "rom_ctrl_fsm_vif",
-        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_fsm_if);
+        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_bound_if.gen_bound.u_fsm_if);
     uvm_config_db#(virtual rom_ctrl_compare_if)::set(
         null, "*.env", "rom_ctrl_compare_vif",
         dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_compare_if);

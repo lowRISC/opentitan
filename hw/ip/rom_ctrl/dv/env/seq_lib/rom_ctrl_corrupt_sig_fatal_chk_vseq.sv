@@ -226,7 +226,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
 
   // Set the silly address value for a cycle. This should be picked up by the counter suddenly
   // deciding it's not done and the code in rom_ctrl_fsm noticing the change.
-  cfg.fsm_vif.force_counter_addr(addr);
+  cfg.fsm_vif.force_addr(addr);
 
   // Wait for a fatal alert to come out, to make sure that the dut notices the corruption
   wait_for_fatal_alert();

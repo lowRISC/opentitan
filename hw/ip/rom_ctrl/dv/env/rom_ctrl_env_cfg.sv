@@ -33,11 +33,22 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // A handle to the scoreboard, used to flag expected errors.
   rom_ctrl_scoreboard scoreboard;
 
+  // A flag that tells the environment to use rom_ctrl_fsm_if to force the value of the ROM address
+  // counter, skipping over the middle of ROM.
+  //
+  // This is set in the rom_ctrl_env_cfg constructor (based on the +skip_middle plusarg) and can be
+  // accessed with get_skip_middle().
+  local bit m_skip_middle;
+
   extern function new (string name="");
   extern function void post_randomize();
 
   extern virtual function void initialize();
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
+
+  // Retrieve the flag that says whether we should skip reading the middle of ROM. If true, this was
+  // set with the +skip_middle plusarg.
+  extern function bit get_skip_middle();
 
   // Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
   // rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
@@ -66,6 +77,17 @@ function rom_ctrl_env_cfg::new (string name="");
   m_kmac_agent_cfg.rsp_delay_max = 'd20;
 
   sec_cm_alert_name = "fatal";
+
+  if ($value$plusargs("skip_middle_of_rom=%0b", m_skip_middle)) begin
+    `uvm_info("skip_middle_mode",
+              $sformatf("Setting m_skip_middle to %d, based on plusarg.", m_skip_middle),
+              UVM_HIGH)
+  end else begin
+    `uvm_info("skip_middle_mode",
+              $sformatf("Leaving m_skip_middle=%d (no +skip_middle_of_rom plusarg).",
+                        m_skip_middle),
+              UVM_HIGH)
+  end
 endfunction
 
 function void rom_ctrl_env_cfg::post_randomize();
@@ -109,6 +131,10 @@ function dv_base_reg_block rom_ctrl_env_cfg::create_ral_by_name(string name);
   end else begin
     `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
   end
+endfunction
+
+function bit rom_ctrl_env_cfg::get_skip_middle();
+  return m_skip_middle;
 endfunction
 
 constraint rom_ctrl_env_cfg::rsp_delay_max_c {
