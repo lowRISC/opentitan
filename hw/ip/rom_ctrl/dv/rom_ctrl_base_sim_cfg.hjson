@@ -39,6 +39,19 @@
 
   en_build_modes: ["{tool}_crypto_dpi_prince_build_opts"]
 
+  run_modes: [
+    {
+      name: skip_middle_mode
+      run_opts: ["+skip_middle_of_rom=1"]
+    }
+  ]
+
+  // By default, skip the middle of the ROM (there's no real reason to
+  // read the whole thing). We will override this in rom_ctrl_smoke to
+  // make sure that there's at least one test that reads the whole of
+  // ROM.
+  en_run_modes: ["skip_middle_mode"]
+
   // Add additional tops for simulation.
   sim_tops: ["rom_ctrl_bind", "rom_ctrl_cov_bind",
              "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind",
@@ -79,6 +92,10 @@
       name: rom_ctrl_smoke
       uvm_test_seq: rom_ctrl_smoke_vseq
       reseed: 2
+      // Don't skip the middle of the ROM. This overrides the setting
+      // from the skip_middle_mode run mode (the plusarg gets
+      // prepended and the end result is skip_middle_of_rom=0)
+      run_opts: ["+skip_middle_of_rom=0"]
     }
     {
       name: rom_ctrl_stress_all
