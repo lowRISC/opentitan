@@ -34,8 +34,9 @@ class kmac_app_agent_cfg extends dv_reactive_agent_cfg;
   // Configuration for the push_pull_agent that is being used to implement the kmac_app_agent.
   rand push_pull_agent_cfg#(`CONNECT_DATA_WIDTH) m_data_push_agent_cfg;
 
-  // KMAC digest share0/1 that can be set from test env.
-  kmac_pkg::rsp_digest_t rsp_digest_hs[$];
+  // A queue of KMAC digests (in two shares). New digests that be supplied by calling
+  // add_user_digest() and consumed by calling pop_user_digest().
+  local kmac_pkg::rsp_digest_t m_rsp_digests[$];
 
   extern function new (string name = "");
 
@@ -66,18 +67,18 @@ function kmac_app_agent_cfg::new (string name = "");
 endfunction : new
 
 function void kmac_app_agent_cfg::add_user_digest(kmac_pkg::rsp_digest_t rsp_digest_h);
-  rsp_digest_hs.push_back(rsp_digest_h);
+  m_rsp_digests.push_back(rsp_digest_h);
 endfunction
 
 function kmac_pkg::rsp_digest_t kmac_app_agent_cfg::pop_user_digest();
   if (!has_user_digest()) begin
     `uvm_fatal(get_name(), "Cannot get a user digest: the queue is empty.")
   end
-  return rsp_digest_hs.pop_front();
+  return m_rsp_digests.pop_front();
 endfunction
 
 function bit kmac_app_agent_cfg::has_user_digest();
-  return (rsp_digest_hs.size() > 0);
+  return (m_rsp_digests.size() > 0);
 endfunction
 
 constraint kmac_app_agent_cfg::zero_delays_c {
