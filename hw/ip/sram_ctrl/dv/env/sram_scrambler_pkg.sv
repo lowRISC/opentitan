@@ -358,11 +358,13 @@ package sram_scrambler_pkg;
         off_nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + sp_width + i];
       end
 
-      // Compute the offset and wrap around if necessary.
-      off_encrypted = off_addr + off_nonce;
-      if (off_encrypted >= num_chunks) begin
-        off_encrypted -= num_chunks;
-      end
+      // Compute the offset and wrap around if necessary. This must invert the addition
+      // performed in encrypt_sram_addr (i.e. subtraction), so that decrypt_sram_addr is the
+      // true inverse of encrypt_sram_addr for every nonce value, not just ones where
+      // off_addr + off_nonce happens to already be below num_chunks. Adding 2*num_chunks
+      // first keeps the intermediate value non-negative (off_nonce < 2*num_chunks and
+      // off_addr < num_chunks always hold here).
+      off_encrypted = (off_addr + 2 * num_chunks - off_nonce) % num_chunks;
 
       // Stitch the encrypted address together.
       for (int i = 0; i < addr_width; i++) begin
