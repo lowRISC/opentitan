@@ -68,6 +68,8 @@ module otbn_top_sim (
   assign keymgr_key.valid  = 1'b1;
 
   logic secure_wipe_running;
+  logic wfi_pending;
+  logic wfi_pending_q;
 
   otbn_core #(
     .ImemSizeByte             ( ImemSizeByte ),
@@ -110,6 +112,10 @@ module otbn_top_sim (
     .edn_urnd_i                  ( urnd_rsp                   ),
     .edn_urnd_o                  ( urnd_req                   ),
 
+    .wfi_enabled_i               ( 1'b1                       ),
+    .wfi_pending_o               ( wfi_pending                ),
+    .wfi_resume_i                ( wfi_pending_q              ),
+
     .insn_cnt_o                  ( insn_cnt                   ),
     .insn_cnt_clear_i            ( 1'b0                       ),
 
@@ -130,6 +136,16 @@ module otbn_top_sim (
     .kmac_app_req_o(    ),
     .kmac_app_rsp_i( '0 )
   );
+
+  // Any WFI pause ends after 1 cycle. Pulse wfi_resume_i once because when unpausing the WFI
+  // instruction it still must retire to deassert wfi_pending_o.
+  always_ff @(posedge IO_CLK, negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      wfi_pending_q <= 1'b0;
+    end else begin
+      wfi_pending_q <= wfi_pending & ~wfi_pending_q;
+    end
+  end
 
   // The values returned by the mock EDN must match those set in `standalonesim.py`.
   localparam logic [1:0][WLEN-1:0] FixedEdnVals = {{4{64'hCCCC_CCCC_BBBB_BBBB}},

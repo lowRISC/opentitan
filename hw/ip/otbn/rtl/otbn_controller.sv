@@ -146,6 +146,10 @@ module otbn_controller
 
   input  logic urnd_reseed_err_i,
 
+  // WFI
+  output logic wfi_pending_o,
+  input  logic wfi_resume_i,
+
   // Secure Wipe
   output logic secure_wipe_req_o,
   input  logic secure_wipe_ack_i,
@@ -209,6 +213,8 @@ module otbn_controller
   logic mem_stall;
   logic rf_indirect_stall;
   logic mac_bignum_stall;
+  logic wfi_stall;
+  logic wfi_pending_d, wfi_pending_q;
   logic jump_or_branch;
   logic branch_taken;
   logic insn_executing;
@@ -388,7 +394,24 @@ module otbn_controller
                             insn_dec_bignum_i.mac_en &
                             (~mac_bignum_operation_valid_i);
 
-  assign stall = mem_stall | ispr_stall | rf_indirect_stall | mac_bignum_stall;
+  // Stall until the resume command arrives.
+  assign wfi_stall     = insn_valid_i && insn_dec_shared_i.wfi_insn && !wfi_resume_i;
+  assign wfi_pending_d = wfi_stall;
+
+  // The resume command should only be issued when we are already waiting.
+  `ASSERT(WfiResumeOnlyIfStalling, !wfi_pending_q |-> !wfi_resume_i)
+
+  // The wfi_pending is registered to avoid long paths into the IMEM/DMEM core/bus mux.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      wfi_pending_q <= 1'b0;
+    end else begin
+      wfi_pending_q <= wfi_pending_d;
+    end
+  end
+  assign wfi_pending_o = wfi_pending_q;
+
+  assign stall = mem_stall | ispr_stall | rf_indirect_stall | mac_bignum_stall | wfi_stall;
 
   // OTBN is done when it was executing something (in state OtbnStateRun or OtbnStateStall)
   // and either it executes an ecall or an error occurs. A pulse on the done signal raises the

@@ -80,6 +80,11 @@ module otbn_core
   output edn_pkg::edn_req_t       edn_urnd_o,
   input  edn_pkg::edn_rsp_t       edn_urnd_i,
 
+  // Wait for Interrupt
+  input  logic wfi_enabled_i,
+  output logic wfi_pending_o,
+  input  logic wfi_resume_i,
+
   output logic [31:0] insn_cnt_o,
   input  logic        insn_cnt_clear_i,
 
@@ -486,6 +491,8 @@ module otbn_core
     .insn_fetch_resp_data_i (insn_fetch_resp_data),
     .insn_fetch_resp_valid_i(insn_fetch_resp_valid),
 
+    .wfi_enabled_i,
+
     // Decoded instruction
     .insn_valid_o     (insn_valid),
     .insn_illegal_o   (insn_illegal),
@@ -642,6 +649,10 @@ module otbn_core
     .rnd_valid_i       (rnd_valid),
 
     .urnd_reseed_err_i(urnd_reseed_err),
+
+    // Wait for Interrupt
+    .wfi_pending_o,
+    .wfi_resume_i,
 
     // Secure wipe
     .secure_wipe_req_o     (secure_wipe_req),
