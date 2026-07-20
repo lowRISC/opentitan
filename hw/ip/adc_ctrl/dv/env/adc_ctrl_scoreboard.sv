@@ -413,7 +413,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     string reg_name;
     uvm_reg csr;
     uvm_reg_field fld;
-    bit en, cond, min_v, max_v;
+    bit en, cond;
+    bit [ADC_CTRL_DATA_WIDTH-1:0] min_v, max_v;
 
     reg_name = $sformatf("adc_chn%0d_filter_ctl_%0d", channel, filter);
     csr = ral.get_reg_by_name(reg_name);
