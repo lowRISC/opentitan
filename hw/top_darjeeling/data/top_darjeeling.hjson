@@ -98,8 +98,6 @@
   // This is the reset data structure of the design.
   // The node key represents all the known resets in the design
   resets: {
-    // Discrete OpenTitan does not need to wait for external resets
-    wait_for_external_reset: false,
 
     // Reset node attributes
     // name: name of reset.
