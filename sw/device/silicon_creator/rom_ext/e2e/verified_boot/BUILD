@@ -79,13 +79,19 @@ _POSITIONS = {
         "otp_img": None,
     },
     "owner_slot_a_absent_base_address": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
-        "romext_offset": "{rom_ext_slot_a}",
+        # Placing rom_ext in slot B while firmware in slot A to avoid overlapping under coverage test.
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "{owner_slot_a}",
         "success": "bl0_slot = AA__\r\n",
         "otp_img": None,
         "manifest": ":manifest_base_address_default",
+        # Force 64K layout even under coverage mode to trigger the base address fallback path.
+        "slot_spec": {
+            "rom_ext_size": "0x10000",
+            "owner_slot_a": "0x10000",
+        },
     },
     "owner_slot_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
