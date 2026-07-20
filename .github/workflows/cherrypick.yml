@@ -51,9 +51,6 @@ jobs:
           git --version
 
       - uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Obtain token to create PR
         id: pr_token
         run: |
