@@ -41,7 +41,7 @@ class kmac_app_agent_cfg extends dv_reactive_agent_cfg;
   extern function new (string name = "");
 
   // Add the given digest to the queue.
-  extern function void add_user_digest(kmac_pkg::rsp_digest_t rsp_digest_h);
+  extern function void add_user_digest(kmac_pkg::rsp_digest_t digest);
 
   // Pop the first digest from the queue. Generate an error if there is none.
   extern function kmac_pkg::rsp_digest_t pop_user_digest();
@@ -66,8 +66,8 @@ function kmac_app_agent_cfg::new (string name = "");
       "m_data_push_agent_cfg");
 endfunction : new
 
-function void kmac_app_agent_cfg::add_user_digest(kmac_pkg::rsp_digest_t rsp_digest_h);
-  m_rsp_digests.push_back(rsp_digest_h);
+function void kmac_app_agent_cfg::add_user_digest(kmac_pkg::rsp_digest_t digest);
+  m_rsp_digests.push_back(digest);
 endfunction
 
 function kmac_pkg::rsp_digest_t kmac_app_agent_cfg::pop_user_digest();
