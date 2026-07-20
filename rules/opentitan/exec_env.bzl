@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "PROVIDER_FIELDS")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "PROVIDER_FIELDS", "SlotSpecInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -347,6 +347,32 @@ def update_file_attr(name, attr, provider, data_files, param, action_param = Non
     else:
         fail("No file providers in", attr)
 
+def collect_slot_spec(ctx, exec_env):
+    """Collects and merges slot specifications for an exec_env and targets.
+
+    Args:
+      ctx: The rule context.
+      exec_env: An ExecEnvInfo provider.
+    Returns:
+      dict: Merged slot_spec dictionary.
+    """
+    slot_spec = dict(exec_env.slot_spec)
+
+    targets_to_check = [
+        get_fallback(ctx, "attr.rom_ext", exec_env),
+        get_fallback(ctx, "attr.rom", exec_env),
+    ]
+
+    if hasattr(ctx.attr, "binaries"):
+        targets_to_check.extend(ctx.attr.binaries.keys())
+
+    for target in targets_to_check:
+        if target and SlotSpecInfo in target:
+            slot_spec.update(target[SlotSpecInfo].spec)
+
+    slot_spec.update(ctx.attr.slot_spec)
+    return slot_spec
+
 def common_test_setup(ctx, exec_env, firmware):
     """Perform the common test setup used by the exec_envs.
 
@@ -416,8 +442,7 @@ def common_test_setup(ctx, exec_env, firmware):
         param["jtag_test_cmd"] = jtag_test_cmd
 
     # Update the actual firmware slot spec
-    slot_spec = dict(exec_env.slot_spec)
-    slot_spec.update(ctx.attr.slot_spec)
+    slot_spec = collect_slot_spec(ctx, exec_env)
     action_param.update(slot_spec)
     param.update(slot_spec)
 

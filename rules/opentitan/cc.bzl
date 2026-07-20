@@ -10,7 +10,7 @@ load(
 )
 load("@rules_cc//cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME", "OBJ_COPY_ACTION_NAME")
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo", "collect_slot_spec")
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SlotSpecInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
@@ -177,8 +177,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     """
     linker_script = get_fallback(ctx, "attr.linker_script", exec_env)
 
-    slot_spec = dict(exec_env.slot_spec)
-    slot_spec.update(ctx.attr.slot_spec)
+    slot_spec = collect_slot_spec(ctx, exec_env)
 
     linkopts = ["-Wl,--defsym=_{}={}".format(key, value) for key, value in slot_spec.items()]
 
