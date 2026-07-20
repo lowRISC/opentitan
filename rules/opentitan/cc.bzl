@@ -11,6 +11,7 @@ load(
 load("@rules_cc//cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME", "OBJ_COPY_ACTION_NAME")
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SlotSpecInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
@@ -500,6 +501,7 @@ def _opentitan_binary_blob(ctx):
                 )]),
             ),
         ),
+        SlotSpecInfo(spec = dict(ctx.attr.slot_spec)),
     ]
 
 def _opentitan_binary(ctx):
@@ -545,6 +547,7 @@ def _opentitan_binary(ctx):
         ctx = ctx,
         metadata_files = [],
     ))
+    providers.append(SlotSpecInfo(spec = dict(ctx.attr.slot_spec)))
     return providers
 
 common_binary_attrs = {
