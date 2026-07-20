@@ -1475,33 +1475,33 @@ module otbn
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
-  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemRspFifo,
     u_tlul_adapter_sram_dmem.u_rspfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemSramReqFifo,
     u_tlul_adapter_sram_dmem.u_sramreqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     DmemReqFifo,
     u_tlul_adapter_sram_dmem.u_reqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 
-  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemRspFifo,
     u_tlul_adapter_sram_imem.u_rspfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemSramReqFifo,
     u_tlul_adapter_sram_imem.u_sramreqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
-  `OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(
     ImemReqFifo,
     u_tlul_adapter_sram_imem.u_reqfifo,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
