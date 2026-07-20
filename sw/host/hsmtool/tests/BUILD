@@ -18,7 +18,7 @@ sh_library(
             "--token=fake_keys -u user -p 123456",
             "slh-dsa",
             "generate",
-            "--label fake",
+            "--label fake-test",
             "--parameter-set {}".format(parameter_set),
         ],
         data = [
