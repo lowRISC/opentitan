@@ -66,7 +66,8 @@ class otbn_base_vseq extends cip_base_vseq #(
       1 :/ 9
     };)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_wipes, num_wipes inside {[0 : 2]};)
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wipe_cmd, wipe_cmd != otbn_pkg::CmdExecute;)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wipe_cmd,
+        wipe_cmd inside {otbn_pkg::CmdSecWipeDmem, otbn_pkg::CmdSecWipeImem};)
     if (bogus_write) begin
       // Write a bogus value while we are in IDLE state for coverage.
       _send_bogus_cmd();
