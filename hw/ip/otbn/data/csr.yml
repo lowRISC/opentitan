@@ -100,7 +100,7 @@
     Always reads as 0.
 
 - name: kmac_status
-  address: 0x7d9
+  address: 0x7db
   doc: |
     KMAC_STATUS exposes status information for the OTBN-KMAC interface.
     All fields are read only except RSP_ERROR, CTRL_ERROR, and MSG_WRITE_ERROR which are W1C.
@@ -125,7 +125,7 @@
     31-5: Reserved. Always reads as 0. Any write is ignored.
 
 - name: kmac_ctrl
-  address: 0x7da
+  address: 0x7dc
   doc: |
     The KMAC control register is used to control the KMAC interface.
     Always reads as 0.
@@ -143,7 +143,7 @@
     31-5: Reserved. Any write is ignored. Always reads as 0.
 
 - name: kmac_cfg
-  address: 0x7db
+  address: 0x7dd
   doc: |
     The KMAC configuration register is used to set the hashing session configuration.
     The three fields EN_XOF, STRENGTH, and MODE are duplicated.
@@ -178,7 +178,7 @@
     31-22: Reserved. Any write is ignored. Always reads as 0.
 
 - name: kmac_strb
-  address: 0x7dc
+  address: 0x7de
   doc: |
     Defines which of the bytes of KMAC_DATA_S0/1 are valid and should be sent towards the KMAC HWIP.
     Each bit corresponds to one byte in KMAC_DATA_S0/1, with bit 0 corresponding to the least significant byte.
@@ -233,7 +233,7 @@
     Reads never stall.
 
 - name: insn_cnt
-  address: 0xfc2
+  address: 0xfc3
   read-only: true
   doc: |
     This CSR exposes the top level `INSN_CNT` register such that it can be used by OTBN software for security related checks.

@@ -76,14 +76,14 @@ class CsrAddrs(IntEnum):
     MOD6 = 0x7d6
     MOD7 = 0x7d7
     RND_PREFETCH = 0x7d8
-    KMAC_STATUS = 0x7d9
-    KMAC_CTRL = 0x7da
-    KMAC_CFG = 0x7db
-    KMAC_STRB = 0x7dc
+    KMAC_STATUS = 0x7db
+    KMAC_CTRL = 0x7dc
+    KMAC_CFG = 0x7dd
+    KMAC_STRB = 0x7de
     MAI_CTRL = 0x7e0
     RND = 0xfc0
     URND = 0xfc1
-    INSN_CNT = 0xfc2
+    INSN_CNT = 0xfc3
     MAI_STATUS = 0xfca
 
 
