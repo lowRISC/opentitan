@@ -66,6 +66,7 @@ rust_library(
         ":bindgen_shake_128s_simple",
         "//sw/host/opentitanlib/util",
         "@crate_index//:asn1",
+        "@crate_index//:cryptoki",
         "@crate_index//:pem-rfc7468",
         "@crate_index//:serde",
         "@crate_index//:strum",
