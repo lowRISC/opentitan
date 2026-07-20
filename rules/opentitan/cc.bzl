@@ -841,6 +841,10 @@ def _opentitan_binary_assemble_impl(ctx):
 
         action_param = {}
         action_param.update(exec_env.slot_spec)
+        for binary in ctx.attr.bins.keys():
+            if SlotSpecInfo in binary:
+                action_param.update(binary[SlotSpecInfo].spec)
+        action_param.update(ctx.attr.slot_spec)
 
         spec = " ".join(spec)
         spec = recursive_format(spec, action_param)
@@ -885,6 +889,10 @@ opentitan_binary_assemble = rule(
         "exec_env": attr.label_list(
             providers = [ExecEnvInfo],
             doc = "List of execution environments for this target.",
+        ),
+        "slot_spec": attr.string_dict(
+            default = {},
+            doc = "Firmware slot spec to use in this environment",
         ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
