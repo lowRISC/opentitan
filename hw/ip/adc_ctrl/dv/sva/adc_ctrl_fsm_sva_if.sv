@@ -47,8 +47,11 @@ interface adc_ctrl_fsm_sva_if
       else `ASSERT_ERROR(LpSampleCntSwReset_A)
 
     // Check connectivity of the state output register (this is used for debug only).
+    //
+    // The hierarchical reference is an upwards hierarchical reference and works because this
+    // interface is bound into an instance of adc_ctrl.
     FsmDebugOut_A:
-      assert property (fsm_state_q === tb.dut.u_reg.hw2reg.adc_fsm_state.d)
+      assert property (fsm_state_q === adc_ctrl.u_reg.hw2reg.adc_fsm_state.d)
       else `ASSERT_ERROR(FsmDebugOut_A)
   end
 
