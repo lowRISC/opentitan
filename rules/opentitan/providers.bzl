@@ -32,6 +32,13 @@ SimQemuBinaryInfo = provider(
     doc = "QEMU Binary Info",
 )
 
+SlotSpecInfo = provider(
+    doc = "Firmware slot spec to use in this environment",
+    fields = {
+        "spec": "Dictionary mapping slot spec symbols to address or offset strings",
+    },
+)
+
 ALL_BINARY_PROVIDERS = [
     Cw310BinaryInfo,
     Cw340BinaryInfo,
