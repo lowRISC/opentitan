@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top_earlgrey:defs.bzl", "EARLGREY_MLDSA_SLOTS")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
@@ -113,6 +114,25 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest",
+    deps = [
+        ":bare_metal",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
+
+opentitan_binary(
+    name = "bare_metal_slot_mldsa_virtual",
+    testonly = True,
+    srcs = ["bare_metal_start.S"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+    ],
+    linker_script = ":ld_slot_virtual",
+    manifest = ":manifest",
+    slot_spec = EARLGREY_MLDSA_SLOTS,
     deps = [
         ":bare_metal",
         "//sw/device/lib/crt",
