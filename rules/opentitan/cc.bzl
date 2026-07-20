@@ -916,6 +916,7 @@ def _exec_env_filegroup(ctx):
     # Also return a DefaultInfo provider so this rule can be consumed by other
     # filegroup or packaging rules.
     result.append(DefaultInfo(files = depset(default_files)))
+    result.append(SlotSpecInfo(spec = dict(ctx.attr.slot_spec)))
     return result
 
 exec_env_filegroup = rule(
@@ -932,5 +933,9 @@ exec_env_filegroup = rule(
             doc = "Dictionary of execution environments for this target.",
         ),
         "kind": attr.string(default = "flash", doc = "The kind of binary"),
+        "slot_spec": attr.string_dict(
+            default = {},
+            doc = "Firmware slot spec to use",
+        ),
     },
 )
