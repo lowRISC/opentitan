@@ -65,7 +65,13 @@ module tb;
   );
 
   // Bind rom_ctrl_if into the rom_ctrl module
-  bind dut rom_ctrl_if rom_ctrl_if ();
+  bind dut rom_ctrl_if rom_ctrl_if (.clk_i, .rst_ni);
+
+  // Bind rom_ctrl_bound_if next to rom_ctrl_if. This is parameterised and able to access more of
+  // the internals of the design (without needing to parameterise the environment).
+  bind dut
+    rom_ctrl_bound_if #(.SecDisableScrambling(SecDisableScrambling))
+    u_bound_if (.clk_i, .rst_ni);
 
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
