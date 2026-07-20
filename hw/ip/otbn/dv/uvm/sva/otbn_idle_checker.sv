@@ -64,7 +64,9 @@ module otbn_idle_checker
   end
 
   // Our model of whether OTBN is running or not. We start on `do_start` once the initial secure
-  // wipe is done, and we stop on `done`.
+  // wipe is done, and we stop on `done` of an ecall instruction. The `done` interrupt also fires
+  // when OTBN pauses on a WFI instruction, but a pause does not end the operation. So we must not
+  // clear on the pause-entry `done`.
   logic running_qq, running_q, running_d;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -76,7 +78,7 @@ module otbn_idle_checker
     end
   end
   assign running_d = do_start & init_sec_wipe_done ? 1'b1 : // set
-                     done ? 1'b0 : // clear
+                     done & (status_q_i != otbn_pkg::StatusPaused) ? 1'b0 : // clear on completion
                      ~init_sec_wipe_done & ~busy_secure_wipe ? 1'b0 : // clear
                      running_q; // keep
 

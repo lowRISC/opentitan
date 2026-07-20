@@ -119,6 +119,8 @@ module otbn
 
   logic start_d, start_q;
   logic busy_execute_d, busy_execute_q;
+  logic wfi_pending;
+  logic wfi_resume_d, wfi_resume_q;
   logic done, done_core, locking, locking_q;
   logic busy_secure_wipe;
   logic init_sec_wipe_done_d, init_sec_wipe_done_q;
@@ -143,6 +145,7 @@ module otbn
   logic err_bits_clear;
 
   logic software_errs_fatal_q, software_errs_fatal_d;
+  logic wfi_enabled_q, wfi_enabled_d;
 
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
@@ -159,11 +162,13 @@ module otbn
 
   // The clock can be gated and some registers can be updated as long as OTBN isn't currently
   // running. Other registers can only be updated when OTBN is in the Idle state (which also implies
-  // we are not locked).
+  // we are not locked). In addition, OTBN may not be gated when it is paused so a RESUME command
+  // can be properly detected.
   logic is_not_running_d, is_not_running_q;
   logic otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy;
 
   assign is_not_running_d = ~|{busy_execute_d,
+                               wfi_pending,
                                otbn_dmem_scramble_key_req_busy,
                                otbn_imem_scramble_key_req_busy,
                                busy_secure_wipe};
@@ -226,7 +231,14 @@ module otbn
 
   // Interrupts ================================================================
 
-  assign done = is_busy_status(status_q) & ~is_busy_status(status_d) & init_sec_wipe_done_q;
+  // Interrupt is set when OTBN is no longer busy. This is the case when it gets paused or ends
+  // execution. The done interrupt is also set when a direct paused to locked transition occurs.
+  // This can happen under some faults where the secure wipe is skipped. These faults raise a fatal
+  // alert but for consistency we still set the interrupt. The faults are:
+  // - An invalid MuBi on lc_escalate_en_i
+  // - Spurious URND reseed ACK
+  assign done = ((is_busy_status(status_q) & ~is_busy_status(status_d)) |
+                 (status_q == StatusPaused) & (status_d == StatusLocked)) & init_sec_wipe_done_q;
 
   prim_intr_hw #(
     .Width(1)
@@ -427,8 +439,9 @@ module otbn
   );
 
 
-  // Mux core and bus access into IMEM
-  assign imem_access_core = busy_execute_q | start_q;
+  // IMEM access is granted to the core (not the bus) if the core is executing, being started, or
+  // is paused by a WFI instruction.
+  assign imem_access_core = busy_execute_q | start_q | wfi_pending;
 
   assign imem_req   = imem_access_core ? imem_req_core        : imem_req_bus;
   assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
@@ -459,9 +472,10 @@ module otbn
 
   // SEC_CM: DATA_REG_SW.SCA
   // Blank bus read data interface during core operation to avoid leaking the currently executed
-  // instruction from IMEM through the bus unintentionally. Also blank when OTBN is returning
-  // a dummy response (responding to an illegal bus access) and when OTBN is locked.
-  assign imem_rdata_bus_en_d = ~(busy_execute_d | start_d) & ~imem_dummy_response_d & ~locking;
+  // instruction from IMEM through the bus unintentionally. Also blank when OTBN is paused, is
+  // returning a dummy response (responding to an illegal bus access), and when OTBN is locked.
+  assign imem_rdata_bus_en_d =
+      ~(busy_execute_d | start_d | wfi_pending) & ~imem_dummy_response_d & ~locking;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -679,7 +693,8 @@ module otbn
     .write_pending_i            (dmem_wpending)
   );
 
-  // Mux core and bus access into dmem
+  // Mux core and bus access into dmem. While paused, busy_execute_q is low so the DMEM is
+  // accessible to the bus.
   assign dmem_access_core = busy_execute_q;
 
   assign dmem_req = dmem_access_core ? dmem_req_core : dmem_req_bus;
@@ -825,8 +840,10 @@ module otbn
 
   // CMD register
   always_comb begin
-    // start is flopped to avoid long timing paths from the TL fabric into OTBN internals.
+    // start and resume are flopped to avoid long timing paths from the TL fabric into OTBN
+    // internals.
     start_d       = 1'b0;
+    wfi_resume_d  = 1'b0;
     dmem_sec_wipe = 1'b0;
     imem_sec_wipe = 1'b0;
 
@@ -840,12 +857,18 @@ module otbn
           default: ;
         endcase
       end
-    end else if (busy_execute_q) begin
+    end else if (busy_execute_q || status_q == StatusPaused) begin
       // OTBN can command a secure wipe of IMEM and DMEM. This occurs when OTBN encounters a fatal
       // error.
       if (mems_sec_wipe) begin
         dmem_sec_wipe = 1'b1;
         imem_sec_wipe = 1'b1;
+      end
+      // Resume execution once the cmd arrives.
+      if (status_q == StatusPaused) begin
+        if (reg2hw.cmd.qe && (reg2hw.cmd.q == CmdResume)) begin
+          wfi_resume_d = 1'b1;
+        end
       end
     end
   end
@@ -884,6 +907,7 @@ module otbn
   // interrupt and any change to the idle signal will be delayed by 2 cycles.
   assign status_d = locking                         ? StatusLocked          :
                     busy_secure_wipe                ? StatusBusySecWipeInt  :
+                    wfi_pending & ~wfi_resume_q     ? StatusPaused          :
                     busy_execute_d                  ? StatusBusyExecute     :
                     otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
                     otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
@@ -912,18 +936,25 @@ module otbn
 
   // CTRL register
   assign software_errs_fatal_d =
-    reg2hw.ctrl.qe && (status_q == StatusIdle) ? reg2hw.ctrl.q :
-                                                 software_errs_fatal_q;
+    reg2hw.ctrl.software_errs_fatal.qe && (status_q == StatusIdle) ?
+        reg2hw.ctrl.software_errs_fatal.q : software_errs_fatal_q;
+
+  assign wfi_enabled_d =
+    reg2hw.ctrl.wfi_enabled.qe && (status_q == StatusIdle) ?
+        reg2hw.ctrl.wfi_enabled.q : wfi_enabled_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       software_errs_fatal_q <= 1'b0;
+      wfi_enabled_q         <= 1'b0;
     end else begin
       software_errs_fatal_q <= software_errs_fatal_d;
+      wfi_enabled_q         <= wfi_enabled_d;
     end
   end
 
-  assign hw2reg.ctrl.d = software_errs_fatal_q;
+  assign hw2reg.ctrl.software_errs_fatal.d = software_errs_fatal_q;
+  assign hw2reg.ctrl.wfi_enabled.d         = wfi_enabled_q;
 
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is
@@ -1110,13 +1141,19 @@ module otbn
   always_ff @(posedge clk_i or negedge rst_n) begin
     if (!rst_n) begin
       busy_execute_q       <= 1'b0;
+      wfi_resume_q         <= 1'b0;
       init_sec_wipe_done_q <= 1'b0;
     end else begin
       busy_execute_q       <= busy_execute_d;
+      wfi_resume_q         <= wfi_resume_d;
       init_sec_wipe_done_q <= init_sec_wipe_done_d;
     end
   end
-  assign busy_execute_d = (busy_execute_q | start_d) & ~done_core;
+  // OTBN is busy executing once started or resumed until it is done or gets paused. The
+  // wfi_pending signal has only effect if we haven't already received the resume command.
+  assign busy_execute_d = wfi_resume_d |
+                          ((busy_execute_q | start_d) &
+                           ~(done_core | (wfi_pending & ~wfi_resume_q)));
   assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~busy_secure_wipe;
 
   otbn_core #(
@@ -1164,6 +1201,10 @@ module otbn
 
     .edn_urnd_o                  (edn_urnd_req),
     .edn_urnd_i                  (edn_urnd_rsp),
+
+    .wfi_enabled_i               (wfi_enabled_q),
+    .wfi_pending_o               (wfi_pending),
+    .wfi_resume_i                (wfi_resume_q),
 
     .insn_cnt_o                  (insn_cnt),
     .insn_cnt_clear_i            (insn_cnt_clear),
@@ -1428,12 +1469,29 @@ module otbn
           (hw2reg.status.d inside {StatusBusyExecute, StatusLocked}) & dmem_rvalid_bus
           |-> dmem_rdata_bus == 'd0)
 
+  // While paused OTBN must not report idle, so the clock keeps running to observe CMD.RESUME.
+  `ASSERT(WfiPendingNotIdle_A, wfi_pending |-> (idle_o == prim_mubi_pkg::MuBi4False))
+
+  // While paused the DMEM is released to the bus until the resume command arrived.
+  `ASSERT(PausedDmemReleased_A, (status_q == StatusPaused) && !wfi_resume_q |-> !dmem_access_core)
+
+  // The paused status and the core's pending WFI cannot drift apart except when a wipe starts on a
+  // WFI instruction.
+  `ASSERT(PausedImpliesWfiPending_A, (status_q == StatusPaused) && !busy_secure_wipe
+          |-> wfi_pending)
+
+  // OTBN can only be paused if the WFI instruction is enabled.
+  `ASSERT(WfiPendingImpliesEnabled_A, wfi_pending |-> wfi_enabled_q)
+
+  // CTRL.wfi_enabled is only writable while idle, so it must not change otherwise.
+  `ASSERT(WfiEnabledStableUnlessIdle_A, (status_q != StatusIdle) |=> $stable(wfi_enabled_q))
+
   // From the cycle the core is told to start to when it is done, it must always be busy executing,
-  // locking, or both -- even if the core is never done.  We use this property to enable blanking
+  // locking, or paused -- even if the core is never done.  We use this property to enable blanking
   // while the core is executing or locking, and this assertion ensures that there is no gap
-  // between execution and locking.
+  // between execution and locking (except a valid pause).
   `ASSERT(BusyOrLockingFromStartToDone_A,
-          $rose(start_q) |-> (busy_execute_d | locking) |-> ##[0:$] $rose(done_core))
+          $rose(start_q) |-> (busy_execute_d | locking | wfi_pending) |-> ##[0:$] $rose(done_core))
 
   // Error handling: if we pass an error signal down to the core then we should also be setting an
   // error flag. Note that this uses err_bits, not err_bits_q, because the latter signal only gets

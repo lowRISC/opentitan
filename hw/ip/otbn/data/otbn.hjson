@@ -439,10 +439,10 @@
 
   regwidth: "32"
   registers: [
-    // The magic values for EXECUTE, SEC_WIPE_DMEM and SEC_WIPE_IMEM in the CMD
-    // register below were generated with the sparse-fsm-encode.py script:
+    // The magic values in the CMD register below were generated with the sparse-fsm-encode.py
+    // script:
     //
-    //   util/design/sparse-fsm-encode.py -d 4 -m 3 -n 8 --avoid-zero -s 1
+    //   util/design/sparse-fsm-encode.py -d 4 -m 4 -n 8 --avoid-zero -s 1
     //
     // and have a hamming distance of at least 4 from one another and the zero
     // word.
@@ -476,6 +476,7 @@
             | 0xd8  | EXECUTE       | Starts the execution of the program stored in the instruction memory, starting at address zero. |
             | 0xc3  | SEC_WIPE_DMEM | Securely removes all contents from the data memory. |
             | 0x1e  | SEC_WIPE_IMEM | Securely removes all contents from the instruction  memory. |
+            | 0xa6  | RESUME        | Resumes execution of a program that was previously paused by a WFI instruction. |
           '''
           tags: [
             // Don't write this field in the automated CSR tests: it would
@@ -500,6 +501,18 @@
 
             When set software errors produce fatal errors, rather than
             recoverable errors.
+
+            Writes are ignored if OTBN is not idle.
+          '''
+        },
+        { bits: "1",
+          name: "wfi_enabled",
+          resval: 0,
+          desc: '''
+            Controls whether the WFI instruction is enabled.
+
+            When set, the WFI instruction can be used to pause execution.
+            When cleared, the WFI instruction is treated as an invalid instruction.
 
             Writes are ignored if OTBN is not idle.
           '''
@@ -535,6 +548,7 @@
             | 0x02  | BUSY_SEC_WIPE_DMEM | OTBN is busy securely wiping the data memory.         |
             | 0x03  | BUSY_SEC_WIPE_IMEM | OTBN is busy securely wiping the instruction memory.  |
             | 0x04  | BUSY_SEC_WIPE_INT  | OTBN is busy securely wiping the internal state.      |
+            | 0x05  | PAUSED             | OTBN is paused due to a WFI instruction.              |
             | 0xFF  | LOCKED             | OTBN is locked as reaction to a fatal error, and must be reset to unlock it again. See also the section "Reaction to Fatal Errors". |
 
           '''

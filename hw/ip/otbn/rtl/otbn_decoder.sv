@@ -18,6 +18,8 @@ module otbn_decoder
   input logic [31:0] insn_fetch_resp_data_i,
   input logic        insn_fetch_resp_valid_i,
 
+  input logic wfi_enabled_i,
+
   // Decoded instruction
   output logic insn_valid_o,
   output logic insn_illegal_o,
@@ -203,6 +205,7 @@ module otbn_decoder
   logic sel_insn_bignum;
 
   logic ecall_insn;
+  logic wfi_insn;
   logic ld_insn;
   logic st_insn;
   logic branch_insn;
@@ -296,6 +299,7 @@ module otbn_decoder
   assign insn_dec_shared_o = '{
     subset:        insn_subset,
     ecall_insn:    ecall_insn,
+    wfi_insn:      wfi_insn,
     ld_insn:       ld_insn,
     st_insn:       st_insn,
     branch_insn:   branch_insn,
@@ -351,6 +355,7 @@ module otbn_decoder
 
     illegal_insn  = 1'b0;
     ecall_insn    = 1'b0;
+    wfi_insn      = 1'b0;
     ld_insn       = 1'b0;
     st_insn       = 1'b0;
     branch_insn   = 1'b0;
@@ -503,6 +508,14 @@ module otbn_decoder
           unique case (insn[31:20])
             12'h000:  // ECALL
               ecall_insn = 1'b1;
+
+            12'h105: begin // WFI
+              if (wfi_enabled_i) begin
+                wfi_insn = 1'b1;
+              end else begin
+                illegal_insn = 1'b1;
+              end
+            end
 
             default:
               illegal_insn = 1'b1;
