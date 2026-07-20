@@ -31,10 +31,10 @@ Interrupt State Register
 {"reg": [{"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------|
-|  31:1  |        |         |        | Reserved                          |
-|   0    |  rw1c  |   0x0   | done   | OTBN has completed the operation. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                              |
+|   0    |  rw1c  |   0x0   | done   | OTBN has completed the operation, encountered a WFI instruction or has locked itself. |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -91,13 +91,14 @@ Alert Test Register
 ## CMD
 Command Register
 
-A command initiates an OTBN operation. While performing the operation,
+Any command except `RESUME` initiates an OTBN operation. While performing the operation,
 OTBN is busy; the [`STATUS`](#status) register reflects that.
 
 All operations signal their completion by raising the done
 interrupt; alternatively, software may poll the [`STATUS`](#status) register.
 
-Writes are ignored if OTBN is not idle.
+The EXECUTE, SEC_WIPE_DMEM, and SEC_WIPE_IMEM commands take only effect if OTBN is idle.
+The RESUME command only takes effect if OTBN is paused.
 Unrecognized commands are ignored.
 - Offset: `0x10`
 - Reset default: `0x0`

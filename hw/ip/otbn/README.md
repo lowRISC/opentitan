@@ -31,6 +31,8 @@ See that document for integration overview within the broader top level system.
 * Built-in access to random numbers.
 * CSR / WSR based interface to KMAC HWIP to offload hashing operations.
 * A CSR / WSR based Masking Accelerator Interface (MAI) for efficient and first-order SCA hardened masking operations.
+* A WFI instruction which pauses an OTBN application and then allows a host to read/write the DMEM whilst paused.
+  The host must command to resume the execution.
 
 ## Description
 

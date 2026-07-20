@@ -152,7 +152,7 @@
   ]
   interrupt_list: [
     { name: "done"
-      desc: "OTBN has completed the operation."
+      desc: "OTBN has completed the operation, encountered a WFI instruction or has locked itself."
     }
   ]
   alert_list: [
@@ -450,13 +450,14 @@
       desc: '''
         Command Register
 
-        A command initiates an OTBN operation. While performing the operation,
+        Any command except `RESUME` initiates an OTBN operation. While performing the operation,
         OTBN is busy; the !!STATUS register reflects that.
 
         All operations signal their completion by raising the done
         interrupt; alternatively, software may poll the !!STATUS register.
 
-        Writes are ignored if OTBN is not idle.
+        The EXECUTE, SEC_WIPE_DMEM, and SEC_WIPE_IMEM commands take only effect if OTBN is idle.
+        The RESUME command only takes effect if OTBN is paused.
         Unrecognized commands are ignored.
       ''',
       swaccess: "wo",
@@ -505,9 +506,9 @@
         }
       ],
       tags: [
-        // Don't write this register in the automated CSR tests, because those
-        // tests are not aware whether OTBN is idle or not. If OTBN is not idle,
-        // it ignores the write and the test would fail.
+        // Don't write this register in the automated CSR tests, because those tests are not aware
+        // whether OTBN is accepting commands or not. If OTBN is not accepting commands, it ignores
+        // the write and the test would fail.
         "excl:CsrAllTests:CsrExclWrite"
       ]
     }

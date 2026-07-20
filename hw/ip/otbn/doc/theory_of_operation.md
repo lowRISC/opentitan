@@ -27,9 +27,12 @@ These access 256b-aligned 256b words.
 Both memories can be accessed through OTBN's register interface ([`DMEM`](registers.md#dmem) and [`IMEM`](registers.md#imem)).
 All memory accesses through the register interface must be word-aligned 32b word accesses.
 
-When OTBN is in any state other than [idle](#operational-states), reads return zero and writes have no effect.
-Furthermore, a memory access when OTBN is neither idle nor locked will cause OTBN to generate a fatal error with code `ILLEGAL_BUS_ACCESS`.
-A host processor can check whether OTBN is busy by reading the [`STATUS`](registers.md#status) register.
+When OTBN is [idle](#operational-states), both memories are accessible through the register interface.
+When OTBN is [paused](#operational-states) by a {{#otbn-insn-ref WFI}} instruction, only the DMEM is unlocked and accessible, while the IMEM remains locked.
+Note that pausing is only possible when the {{#otbn-insn-ref WFI}} instruction is enabled in the [`CTRL`](registers.md#ctrl) register.
+For any memory that is not accessible in the current state, reads return zero and writes have no effect.
+Furthermore, an access to such an inaccessible memory will cause OTBN to generate a fatal error with code `ILLEGAL_BUS_ACCESS`, unless OTBN is locked.
+A host processor can check the current state by reading the [`STATUS`](registers.md#status) register.
 
 The underlying memories used to implement the IMEM and DMEM may not grant all access requests (see [Memory Scrambling](#memory-scrambling) for details).
 A request won't be granted if new scrambling keys have been requested for the memory that aren't yet available.
@@ -97,19 +100,24 @@ Download the SVG from Google Draw, open it in Inkscape once and save it without 
 OTBN can be in different operational states.
 After reset (*init*), OTBN performs a secure wipe of the internal state and then becomes *idle*.
 OTBN is *busy* for as long it is performing an operation.
+While executing an application, OTBN can become *paused* when executing the {{#otbn-insn-ref WFI}} instruction if this instruction is enabled in the [`CTRL`](registers.md#ctrl) register.
+OTBN resumes the execution once the `RESUME` command is issued.
 OTBN is *locked* if a fatal error was observed or after handling an RMA request.
 
 The current operational state is reflected in the [`STATUS`](registers.md#status) register.
 - After reset, OTBN is busy with the internal secure wipe and the [`STATUS`](registers.md#status) register is set to `BUSY_SEC_WIPE_INT`.
 - If OTBN is idle, the [`STATUS`](registers.md#status) register is set to `IDLE`.
 - If OTBN is busy, the [`STATUS`](registers.md#status) register is set to one of the values starting with `BUSY_`.
+- If OTBN gets paused by a {{#otbn-insn-ref WFI}} instruction, the [`STATUS`](registers.md#status) register is set to `PAUSED`.
 - If OTBN is locked, the [`STATUS`](registers.md#status) register is set to `LOCKED`.
 
 OTBN transitions into the busy state as result of host software [issuing a command](#operations-and-commands); OTBN is then said to perform an operation.
-OTBN transitions out of the busy state whenever the operation has completed.
+OTBN transitions out of the busy state whenever the operation has completed or the execution gets paused.
 In the [`STATUS`](registers.md#status) register the different `BUSY_*` values represent the operation that is currently being performed.
 
-A transition out of the busy state is signaled by the `done` interrupt ([`INTR_STATE.done`](registers.md#intr_state)).
+A transition out of the busy state or entering the `PAUSED` state is signaled by the `done` interrupt ([`INTR_STATE.done`](registers.md#intr_state)).
+
+When paused, issuing a `RESUME` command makes the OTBN continue with the next instruction.
 
 The locked state is a terminal state; transitioning out of it requires an OTBN reset.
 
@@ -124,6 +132,8 @@ The `SEC_WIPE_DMEM` command [securely wipes the data memory](#secure-wipe).
 
 The `SEC_WIPE_IMEM` command [securely wipes the instruction memory](#secure-wipe).
 
+The `RESUME` command resumes the execution after a {{#otbn-insn-ref WFI}} instruction.
+
 ### Software Execution
 
 Software execution on OTBN is triggered by host software by [issuing the `EXECUTE` command](#operations-and-commands).
@@ -132,7 +142,13 @@ The software then runs to completion, without the ability for host software to i
 - OTBN transitions into the busy state, and reflects this by setting [`STATUS`](registers.md#status) to `BUSY_EXECUTE`.
 - The internal randomness source, which provides random numbers to the `URND` CSR and WSR, is re-seeded from the EDN.
 - The instruction at address zero is fetched and executed.
-- From this point on, all subsequent instructions are executed according to their semantics until either an {{#otbn-insn-ref ECALL}} instruction is executed, or an error is detected.
+- From this point on, all subsequent instructions are executed according to their semantics until either:
+  - A {{#otbn-insn-ref WFI}} instruction is executed (if enabled).
+    In this case, the execution is paused and the DMEM is unlocked for the host.
+    The execution must be resumed by the host by issuing the `RESUME` command.
+    There can be multiple pauses per execution and each {{#otbn-insn-ref WFI}} instruction issues the `done` interrupt ([`INTR_STATE.done`](registers.md#intr_state)).
+  - An {{#otbn-insn-ref ECALL}} instruction is executed, or an error is detected.
+    This marks the end of the execution.
 - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
 - The [`ERR_BITS`](registers.md#err_bits) register is set to indicate either a successful execution (value `0`), or to indicate the error that was observed (a non-zero value).
 - OTBN transitions into the [idle state](#operational-states) (in case of a successful execution, or a recoverable error) or the locked state (in case of a fatal error).
