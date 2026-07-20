@@ -32,7 +32,8 @@ interface rom_ctrl_bound_if #(
   // ('{data: {128{2'b10}}, valid: 1'b1}).
   rom_ctrl_pkg::keymgr_data_t keymgr_data;
 
-  // This event is triggered by the force_kmac_data_done task and causes
+  // This event is triggered by the force_kmac_data_done task and causes the always block below to
+  // pulse kmac_done_i for a cycle for the checker FSM if that is enabled.
   event pulse_kmac_data_done;
 
   if (!SecDisableScrambling) begin : gen_enable_scrambling
@@ -45,9 +46,11 @@ interface rom_ctrl_bound_if #(
     // used in the IP as the kmac_done signal which, in turn, is only used as the kmac_done_i input
     // to the FSM.
     always @pulse_kmac_data_done begin
-      force gen_fsm_scramble_enabled.u_checker_fsm.kmac_done_i = 1;
-      wait_n_clk_or_rst();
-      release gen_fsm_scramble_enabled.u_checker_fsm.kmac_done_i;
+      if (rst_ni) begin
+        force gen_fsm_scramble_enabled.u_checker_fsm.kmac_done_i = 1;
+        wait_n_clk_or_rst();
+        release gen_fsm_scramble_enabled.u_checker_fsm.kmac_done_i;
+      end
     end
 
   end else begin : gen_disable_scrambling
@@ -64,6 +67,8 @@ interface rom_ctrl_bound_if #(
     // Wait for the valid signal for the A channel being passed from the rom_tl_i input port (ROM
     // read requests from the bus)
     wait(u_tl_adapter_rom.tl_i.a_valid);
+
+    if (!rst_ni) return;
 
     // Override the address coming out of the TL adapter that is being addressed by the A channel
     // we've just seen.

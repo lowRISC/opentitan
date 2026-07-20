@@ -10,7 +10,7 @@
 // that is bound next to this interface.
 
 interface rom_ctrl_if (wire clk_i, wire rst_ni);
-  // The pwmgr_data_o and keymgr_data_o output ports from rom_ctrl.
+  // The pwrmgr_data_o and keymgr_data_o output ports from rom_ctrl.
   rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t keymgr_data;
 

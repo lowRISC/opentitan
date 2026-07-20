@@ -2,9 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// An interface that is designed to be bound into rom_ctrl_compare. This can then look at internal
-// information from the fsm and expose it cleanly. There are no ports: interactions with internal
-// signals all work by upwards name references.
+// An interface that is designed to be bound into a rom_ctrl_compare instance called u_compare. This
+// can then look at internal information from the fsm and expose it cleanly. There are no ports:
+// interactions with internal signals all work by upwards name references.
+//
+// The "u_compare" name below works around parameters: the rom_ctrl_compare module is actually
+// parameterised in the number of words that it will compare, so it's much easier to do an upwards
+// hierarchical reference by the name of the instance.
 
 interface rom_ctrl_compare_if ();
 

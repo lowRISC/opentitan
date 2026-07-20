@@ -64,14 +64,18 @@ module tb;
     .kmac_data_o          (kmac_data_out)
   );
 
-  // Bind rom_ctrl_if into the rom_ctrl module
-  bind dut rom_ctrl_if rom_ctrl_if (.clk_i, .rst_ni);
-
-  // Bind rom_ctrl_bound_if next to rom_ctrl_if. This is parameterised and able to access more of
-  // the internals of the design (without needing to parameterise the environment).
+  // This rom_ctrl_bound_if interface is bound into rom_ctrl. It is parameterised and able to access
+  // the internals of the design. Accessing the interface directly is tricky from a
+  // non-parameterised environment, so this interface will be accessed through a hierarchical
+  // reference from the (non-parameterised) rom_ctrl_if which is bound in next.
   bind dut
     rom_ctrl_bound_if #(.SecDisableScrambling(SecDisableScrambling))
     u_bound_if (.clk_i, .rst_ni);
+
+  // Bind rom_ctrl_if into the rom_ctrl module. This interface is passed to the environment and
+  // accesses the design through u_bound_if, a parameterised rom_ctrl_bound_if that is bound into
+  // the design next to it.
+  bind dut rom_ctrl_if rom_ctrl_if (.clk_i, .rst_ni);
 
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
