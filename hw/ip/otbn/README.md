@@ -384,7 +384,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
-      <td>0x7D9</td>
+      <td>0x7DB</td>
       <td>RW</td>
       <td>KMAC_STATUS</td>
       <td>
@@ -436,7 +436,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
-      <td>0x7DA</td>
+      <td>0x7DC</td>
       <td>RW</td>
       <td>KMAC_CTRL</td>
       <td>
@@ -488,7 +488,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
-      <td>0x7DB</td>
+      <td>0x7DD</td>
       <td>RW</td>
       <td>KMAC_CFG</td>
       <td>
@@ -553,7 +553,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
-      <td>0x7DC</td>
+      <td>0x7DE</td>
       <td>RW</td>
       <td>KMAC_STRB</td>
       <td>
@@ -635,7 +635,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
-      <td>0xFC2</td>
+      <td>0xFC3</td>
       <td>RO</td>
       <td>INSN_CNT</td>
       <td>

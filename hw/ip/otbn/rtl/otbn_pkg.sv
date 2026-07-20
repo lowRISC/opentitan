@@ -414,16 +414,16 @@ package otbn_pkg;
     CsrMod6        = 12'h7D6,
     CsrMod7        = 12'h7D7,
     CsrRndPrefetch = 12'h7D8,
-    CsrKmacStatus  = 12'h7d9,
-    CsrKmacCtrl    = 12'h7da,
-    CsrKmacCfg     = 12'h7db,
-    CsrKmacStrb    = 12'h7dc,
+    CsrKmacStatus  = 12'h7db,
+    CsrKmacCtrl    = 12'h7dc,
+    CsrKmacCfg     = 12'h7dd,
+    CsrKmacStrb    = 12'h7de,
     CsrMaiCtrl     = 12'h7e0,
 
     // 0xFC0-0xFFF Custom read-only
     CsrRnd         = 12'hFC0,
     CsrUrnd        = 12'hFC1,
-    CsrInsnCnt     = 12'hFC2,
+    CsrInsnCnt     = 12'hFC3,
     CsrMaiStatus   = 12'hFCA
   } csr_e;
 
