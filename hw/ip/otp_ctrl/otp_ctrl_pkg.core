@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:keymgr_dpe_pkg
     files:
       - rtl/otp_ctrl_pkg.sv
     file_type: systemVerilogSource

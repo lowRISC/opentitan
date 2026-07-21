@@ -24,14 +24,16 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
   // for initial latch of OTP key src slot does not matter
   // it can be completely random
   constraint initial_slot_vals_c {
-    soft src_slot inside {[0:keymgr_dpe_pkg::DpeNumSlots-1]};
-    (!otp_latched) -> {soft dst_slot == 0;}
+    soft src_slot < keymgr_dpe_env_pkg::DvNumInstHwSlot;
+    soft dst_slot < keymgr_dpe_env_pkg::DvNumInstHwSlot;
+    if (!otp_latched) { soft dst_slot == 0; }
   }
 
   task body();
     // This test does the following:
-    // 1. While in reset state does a keymgr_dpe disable operation.
-    //    - also does a random amount of advances and generations
+    // 0. The keymgr_dpe is in the reset state.
+    // 1. Invoke a disable operation which should not affect the keymgr_dpe
+    //    at all as the disable operation is only valid in the available state!
     // 2. Fill key slots
     //    - latches OTP key and fills all key slots
     //    - each time doing a random amount of generations
@@ -45,40 +47,64 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
     // Checks are done via the scoreboard, but this test does have some additional checks
     // in terms of valid bit for key slots for checking key slots are filled and empty
-    `uvm_info(`gfn, "Key Manager DPE Smoke Start", UVM_HIGH)
+    `uvm_info(`gfn, "Key Manager DPE smoke - disable test", UVM_LOW)
 
     // 1.
-    keymgr_dpe_disable();
+    keymgr_dpe_disable(.num_adv_op(0));
 
     // 2.
-    for (int iter = 0; iter<keymgr_dpe_pkg::DpeNumSlots+1; iter++) begin
-      // retain_parent == 0, for the latched OTP
-      // so src_slot must == dst_slot
-      if (iter == 1) begin
-        otp_latched = 1'b1;
-        src_slot = dst_slot;
-      // retain_parent == 1, for further advances calls
-      // so src_slot must != dst_slot
-      end else if (iter > 1 & iter < keymgr_dpe_pkg::DpeNumSlots)  begin
-        src_slot = dst_slot;
-        dst_slot ++;
-      end
-      // Boot stages 0-3 are used for previous key slots. In the final key slot
-      // src_slot must differ from last iteration's dst slot.
-      // FIXME: Remove this constraint since DpeNumBootStages is removed.
-      else if (iter == keymgr_dpe_pkg::DpeNumSlots) begin
-        src_slot = $urandom_range(0,(keymgr_dpe_pkg::DpeNumSlots-1)-2);
-        dst_slot ++;
-      end
+    // unravel loop to both cover the retain_parent == 0/1 options
+    `uvm_info(`gfn, "Key Manager DPE smoke - advance test", UVM_LOW)
+
+    // load the UDS into dst_slot with an advance call
+    dst_slot = 0;
+    `uvm_info(`gfn,
+              $sformatf("Key Manager DPE smoke load UDS into dst_slot %d",
+                        dst_slot),
+              UVM_LOW)
+
+    // The keymgr_dpe is advanced once (which loads the UDS into the predefined
+    // slot - by the constraint: initial_slot_vals_c). Afterwards the
+    // keymgr_dpe_base_vseq.sv generates between 5 and 10 random key generation
+    // operations for the keymgr_dpe.
+    keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(5,10)),
+        .clr_output(1));
+
+    // Indicate the UDS is latched
+    otp_latched = 1'b1;
+
+    // If the default policy retain_parent is clear then we add an extra
+    // advance call to overwrite the UDS.
+    if (keymgr_dpe_pkg::DEFAULT_UDS_POLICY.retain_parent == 1'b0) begin
+      dst_slot = 0;
+      src_slot = 0;
+      // Indicate which stage is derived
       `uvm_info(`gfn,
-        $sformatf("Key Manager DPE Smoke Iter %0d: src_slot %d dst_slot %d",
-          iter, src_slot ,dst_slot), UVM_HIGH)
-      keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(5,10)), .clr_output(1));
+                $sformatf({"Key Manager DPE smoke overwrite UDS when",
+                          "retain_parent option is cleared:",
+                          "src_slot %d dst_slot %d"}, src_slot, dst_slot),
+                UVM_LOW)
+      keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(5,10)),
+          .clr_output(1));
+    end
+
+    // Iterate through all slots and fill them with DPE context
+    for (int iter = 0; iter<(keymgr_dpe_env_pkg::DvNumInstHwSlot - 1); iter++) begin
+      // set source and destination
+      src_slot = dst_slot;
+      dst_slot ++;
+      // Indicate which slot is derived
+      `uvm_info(`gfn,
+                $sformatf({"Key Manager DPE smoke iter %0d: src_slot %d",
+                          "dst_slot %d"}, iter, src_slot, dst_slot),
+                UVM_MEDIUM)
+      keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(5,10)),
+          .clr_output(1));
     end
 
     // Check to make sure all key slots are valid after the advance operations
     // this is checked via the valid bit being set in the key slot
-    for (int slot = 0; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+    for (int slot = 0; slot < keymgr_dpe_env_pkg::DvNumInstHwSlot; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 1)
     end
 
@@ -88,7 +114,8 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     // key slot that is still valid. The reason for picking slot 0 is that it should
     // only have boot_stage 1, which gives us enough boot_stages to advance and fill
     // key_slots 1-3 again.
-    for (int iter = 1; iter<keymgr_dpe_pkg::DpeNumSlots; iter++) begin
+    `uvm_info(`gfn, "Key Manager DPE smoke - erase test", UVM_LOW)
+    for (int iter = 1; iter<keymgr_dpe_env_pkg::DvNumInstHwSlot; iter++) begin
       dst_slot = iter;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(src_slot)
       keymgr_dpe_erase(.num_adv_op(4));
@@ -96,7 +123,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
     // To verify the erase operation succeeded, check that the valid bits
     // of the erased key slots are not de-asserted.
-    for (int slot = 1; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+    for (int slot = 1; slot < keymgr_dpe_env_pkg::DvNumInstHwSlot; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 0)
     end
 
@@ -109,17 +136,17 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     // set dst_slot to 1, to begin filling slot 1-3 again
     src_slot = 0;
     dst_slot = 1;
-    for (int iter = 0; iter<keymgr_dpe_pkg::DpeNumSlots; iter++) begin
+    for (int iter = 0; iter<keymgr_dpe_env_pkg::DvNumInstHwSlot; iter++) begin
       // The boot_stage for key_slot 2 is expected to be 3.
       // This means we can not use it to derive key_slot 3.
       // We have to use either key_slot 0 or 1. So on the final iteration
       // randomize to use either key_slot 0 or 1
-      if (iter == keymgr_dpe_pkg::DpeNumSlots-2) begin
+      if (iter == keymgr_dpe_env_pkg::DvNumInstHwSlot-2) begin
         src_slot = $urandom_range(0, 1);
         // Set retain_parent to 0. So that an additional advance can be done with the same src and dst slot
         policy.retain_parent = 0;
       end
-      if (iter == keymgr_dpe_pkg::DpeNumSlots-1) begin
+      if (iter == keymgr_dpe_env_pkg::DvNumInstHwSlot-1) begin
         src_slot = 3;
         dst_slot = 3;
       end
@@ -130,7 +157,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
 
     // Check to make sure all key slots are valid after the advance operations
     // this is checked via the valid bit being set in the key slot
-    for (int slot = 1; slot < keymgr_dpe_pkg::DpeNumSlots; slot++) begin
+    for (int slot = 1; slot < keymgr_dpe_env_pkg::DvNumInstHwSlot; slot++) begin
       `DV_CHECK_EQ(cfg.keymgr_dpe_vif.internal_key_slots[slot].valid, 1)
     end
 
@@ -142,10 +169,10 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dst_slot)
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(src_slot)
       `uvm_info(`gfn,
-      $sformatf(
-        {"Random Key Manager DPE Smoke randomize advance and operations:",
-        "src_slot %d dst_slot %d"},
-        src_slot ,dst_slot), UVM_HIGH)
+                $sformatf({"Random Key Manager DPE smoke randomize advance ",
+                          "and operations: src_slot %d dst_slot %d"},
+                          src_slot, dst_slot),
+                UVM_HIGH)
       keymgr_dpe_operations(.advance_state(1), .num_gen_op($urandom_range(5,10)), .clr_output(1));
     end
 

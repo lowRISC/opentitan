@@ -102,6 +102,7 @@ Here's how to run a smoke test:
 ```console
 $ dvsim $REPO_TOP/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson -i keymgr_dpe_smoke
 ```
+With the configurations `keymgr_dpe_earlgrey_sim_cfg.hjson` / `keymgr_dpe_darjeeling_sim_cfg.hjson` it is possible to test the top dependent default configurations.
 
 ## Testplan
 [Testplan](../data/keymgr_dpe_testplan.hjson)
