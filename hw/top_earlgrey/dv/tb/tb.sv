@@ -456,6 +456,116 @@ module tb;
     end
   end
 
+  if (1) begin : gen_rom_ctrl
+       // Note: Splitting out PD_MAIN_PATH separately is to work around a problem with the linting
+       // tool. With Verible 3622 (the version currently used in CI) a bind statement where the
+       // target is just a macro expansion (`ROM_CTRL_PATH) causes an unrelated lint error.
+       // Splitting things like this means that we only have to repeat "u_rom_ctrl".
+`define PD_MAIN_PATH      dut.top_earlgrey.earlgrey_pd_main
+`define ROM_CTRL_PATH     `PD_MAIN_PATH.u_rom_ctrl
+`define ROM_CTRL_MEM_HIER `ROM_CTRL_PATH.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.mem
+
+    localparam string EnvPath = "*.env.m_rom_ctrl_env";
+
+    // The information that we pass to the environment will depend on whether
+    // DISABLE_ROM_INTEGRITY_CHECK is defined. To make it possible to reason about this in the
+    // environment, we define a bit showing whether it is defined and will pass it through
+    // uvm_config_db below.
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+   localparam bit RomIntegrityCheckDisabled = 1;
+`else
+   localparam bit RomIntegrityCheckDisabled = 0;
+`endif
+
+    wire clk, rst_n;
+    assign clk = `ROM_CTRL_PATH.clk_i;
+    assign rst_n = `ROM_CTRL_PATH.rst_ni;
+
+    clk_rst_if  clk_rst_if (.clk(clk), .rst_n(rst_n));
+    tl_if       rom_tl_if (.clk(clk), .rst_n(rst_n));
+    tl_if       regs_tl_if (.clk(clk), .rst_n(rst_n));
+
+    assign rom_tl_if.if_mode = Monitor;
+    assign rom_tl_if.h2d = `ROM_CTRL_PATH.rom_tl_i;
+    assign rom_tl_if.d2h = `ROM_CTRL_PATH.rom_tl_o;
+
+    assign regs_tl_if.if_mode = Monitor;
+    assign regs_tl_if.h2d = `ROM_CTRL_PATH.regs_tl_i;
+    assign regs_tl_if.d2h = `ROM_CTRL_PATH.regs_tl_o;
+
+    wire kmac_pkg::app_rsp_t kmac_data_in;
+    wire kmac_pkg::app_req_t kmac_data_out;
+    assign kmac_data_in  = `ROM_CTRL_PATH.kmac_data_i;
+    assign kmac_data_out = `ROM_CTRL_PATH.kmac_data_o;
+
+    // Note: The req and rsp inout ports get driven with kmac_data_in/kmac_data_out from the design,
+    //       and the interface should be in Monitor mode. We don't assign kmac_app_if.if_mode here:
+    //       this will be set by the build phase of the kmac_app_*_agent that we instantiate.
+    kmac_app_if u_app_if (.clk_i (clk), .rst_ni (rst_n), .req (kmac_data_out), .rsp (kmac_data_in));
+
+    bind `PD_MAIN_PATH.u_rom_ctrl
+      rom_ctrl_bound_if #(.Bound(1), .SecDisableScrambling(SecDisableScrambling))
+      u_bound_if (.clk_i, .rst_ni);
+
+    // We only bind in the FSM interface if scrambling is enabled (otherwise there won't actually be
+    // an FSM module). If DISABLE_ROM_INTEGRITY_CHECK is not defined, the
+    // SecRomCtrlDisableScrambling parameter to dut will not be set, so scrambling will be enabled
+    // and there will be an FSM at `FSM_PATH.
+`ifndef DISABLE_ROM_INTEGRITY_CHECK
+`define FSM_PATH `ROM_CTRL_PATH.gen_fsm_scramble_enabled.u_checker_fsm
+    bind `ROM_CTRL_PATH.gen_fsm_scramble_enabled.u_checker_fsm
+      rom_ctrl_fsm_bound_if #(.Bound(1), .TopCount(TopCount))
+      u_bound_if (.clk_i, .rst_ni);
+
+    initial begin
+      uvm_config_db#(virtual rom_ctrl_fsm_if)::set(null, EnvPath, "rom_ctrl_fsm_vif",
+                                                   `FSM_PATH.u_bound_if.gen_bound.u_fsm_if);
+
+      uvm_config_db#(bit [127:0])::set(null, EnvPath, "scramble_key",
+                                       `ROM_CTRL_PATH.RndCnstScrKey);
+      uvm_config_db#(bit [63:0])::set(null, EnvPath, "scramble_nonce",
+                                      `ROM_CTRL_PATH.RndCnstScrNonce);
+    end
+`undef FSM_PATH
+`endif
+
+    // Register the various interfaces so that they can be picked up by the passive rom_ctrl
+    // environment.
+    //
+    // There will be a rom_ctrl_bkdr_util created in the section that creates backdoor utilities
+    // below, which will pass that to the rom_ctrl environment too.
+    initial begin
+      automatic string rom_reg_block_name = "rom_ctrl_rom_reg_block";
+      automatic string regs_reg_block_name = "rom_ctrl_regs_reg_block";
+
+      uvm_config_db#(virtual clk_rst_if)::set(null, EnvPath, "clk_rst_vif", clk_rst_if);
+      uvm_config_db#(virtual rom_ctrl_if)::set(null, EnvPath, "rom_ctrl_vif",
+                                               `ROM_CTRL_PATH.u_bound_if.gen_bound.u_rom_ctrl_if);
+
+      uvm_config_db#(virtual tl_if)::set(null, {EnvPath, ".m_tl_agent_", rom_reg_block_name},
+                                         "vif", rom_tl_if);
+      uvm_config_db#(virtual tl_if)::set(null, {EnvPath, ".m_tl_agent_", regs_reg_block_name},
+                                         "vif", regs_tl_if);
+      uvm_config_db#(virtual clk_rst_if)::set(null, EnvPath, {"clk_rst_vif_", rom_reg_block_name},
+                                              clk_rst_if);
+
+      uvm_config_db#(virtual kmac_app_if)::set(null, {EnvPath, ".m_kmac_agent"}, "vif", u_app_if);
+
+      // Connect rom_ctrl's alert interface to the passive environment (which will instantiate an
+      // extra alert agent and run it in passive mode).
+      uvm_config_db#(virtual alert_esc_if)::set(null, {EnvPath, ".m_alert_agent_fatal"},
+                                                "vif", alert_if[TopEarlgreyAlertIdRomCtrlFatal]);
+
+      // Pass a flag that tells the environment whether to expect rom_ctrl_fsm_vif.
+      uvm_config_db#(bit)::set(null, EnvPath,
+                               "integrity_check_disabled", RomIntegrityCheckDisabled);
+    end
+
+`undef ROM_CTRL_MEM_HIER
+`undef ROM_CTRL_PATH
+`undef PD_MAIN_PATH
+  end
+
   // Instantiate the memory backdoor util instances.
   if (prim_pkg::PrimTechName == "Generic") begin : gen_generic
     initial begin
@@ -672,6 +782,10 @@ module tb;
             null, "*.env", m_mem_bkdr_util[mem].get_name(), m_mem_bkdr_util[mem]);
         mem = mem.next();
       end while (mem != mem.first());
+
+      // Pass the rom_ctrl_bkdr_util to the bound-in block-level environment
+      uvm_config_db#(rom_ctrl_bkdr_util)::set(null, "*.env.m_rom_ctrl_env",
+                                              "rom_ctrl_bkdr_util", rom);
     end
   end : gen_generic
 

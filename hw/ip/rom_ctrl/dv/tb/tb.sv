@@ -122,6 +122,10 @@ module tb;
         null, "*.env", "rom_ctrl_compare_vif",
         dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_bound_if.gen_bound.u_compare_if);
 
+    // Pass a flag that tells the environment that we haven't built rom_ctrl without its integrity
+    // check FSM.
+    uvm_config_db#(bit)::set(null, "*.env", "integrity_check_disabled", 0);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

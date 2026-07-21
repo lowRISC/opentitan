@@ -34,6 +34,9 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   virtual rom_ctrl_compare_if compare_vif;
 
   // An interface bound into the rom_ctrl_fsm module
+  //
+  // This might be null. If so, the environment won't investigate integrity checks at all (probably
+  // because the FSM doesn't exist in the device).
   virtual rom_ctrl_fsm_if fsm_vif;
 
   // A handle to the scoreboard, used to flag expected errors.
@@ -55,6 +58,11 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   extern function new (string name="");
   extern function void post_randomize();
+
+  // Configure whether the env_cfg is active (configuring the agents too)
+  //
+  // This extends the definition in dv_base_env_cfg.
+  extern function void set_is_active(bit active);
 
   extern virtual function void initialize(bit inherit_ral_models = 1'b0);
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
@@ -116,6 +124,11 @@ endfunction
 function void rom_ctrl_env_cfg::post_randomize();
   super.post_randomize();
   m_kmac_agent_cfg.rsp_delay_max = m_kmac_rsp_delay_max;
+endfunction
+
+function void rom_ctrl_env_cfg::set_is_active(bit active);
+  super.set_is_active(active);
+  m_kmac_agent_cfg.is_active = active;
 endfunction
 
 function void rom_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
