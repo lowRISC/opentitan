@@ -38,6 +38,7 @@ sh_library(
             "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
             "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
         },
+        deps = [":test_lib"],
     )
     for parameter_set in [
         "sha2-128s",
@@ -74,6 +75,7 @@ sh_test(
         "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
     },
+    deps = [":test_lib"],
 )
 
 genrule(
