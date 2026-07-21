@@ -1,0 +1,90 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: OT SKU CI
+on:
+  workflow_dispatch:
+    inputs:
+      # Inputs provided by lowrisc-ci GitHub app
+      repository:
+        description: Repository to check out.
+        default: lowRISC/ot-sku
+        type: string
+      pull_request:
+        description: Pull request that triggers this workflow run (optional)
+        type: string
+      sha:
+        description: SHA to report status on
+        type: string
+      merge_sha:
+        description: SHA to run workflow on
+        type: string
+        default: main
+      # Additional inputs
+      branch:
+        description: Branch name if the workflow is triggered by a push (optional)
+        type: string
+      run_name:
+        description: Name of the triggered workflow run
+        type: string
+
+# Note that this might run untrusted code from PRs on ot-sku so be careful with
+# permissions.
+permissions:
+  contents: read
+
+run-name: ${{ inputs.run_name }}
+
+# For CI triggered by pull requests, cancel the previous run.
+concurrency:
+  group: ot-sku-ci-${{ inputs.pull_request || inputs.branch || inputs.merge_sha }}
+  cancel-in-progress: true
+
+env:
+  VIVADO_VERSION: "2021.1"
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add summary about the job
+        run: |
+          if [[ -n "${{ inputs.pull_request }}" ]]; then
+            echo "Triggered by [#${{ inputs.pull_request }}](${{ github.server_url }}/${{ inputs.repository }}/pull/${{ inputs.pull_request }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [[ -n "${{ inputs.sha }}" ]]; then
+            echo '::notice title=[cross-repo-ci]metadata::{"repository":"${{ inputs.repository }}","sha":"${{ inputs.sha }}"}'
+            echo "Triggered on [${{ inputs.sha }}](${{ github.server_url }}/${{ inputs.repository }}/commit/${{ inputs.sha }})" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "Running on commit [${{ inputs.merge_sha }}](${{ github.server_url }}/${{ inputs.repository }}/commit/${{ inputs.merge_sha }})" >> $GITHUB_STEP_SUMMARY
+
+  execute_ot_sku_tests:
+    name: OT-SKU tests
+    needs: start
+    runs-on: [ubuntu-22.04-fpga, cw340]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+          path: opentitan
+      - name: Prepare environment
+        uses: ./opentitan/.github/actions/prepare-env
+        with:
+          working-directory: opentitan
+      - uses: actions/checkout@v6
+        with:
+          repository: ${{ inputs.repository }}
+          ref: ${{ inputs.merge_sha }}
+          path: ot-sku
+      - name: Execute tests
+        run: |
+          cd opentitan
+          . util/build_consts.sh
+          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+          # TODO: make set of tests configurable?
+          ./bazelisk.sh test \
+            --override_module=ot_provisioning_exts=${{ github.workspace }}/ot-sku \
+            --test_tag_filters="cw340,-manual,-broken,-skip_in_ci" \
+            --build_tests_only \
+            //sw/host/provisioning/orchestrator/tests/...
