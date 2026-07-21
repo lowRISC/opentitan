@@ -54,14 +54,18 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
 
   localparam int KmacDigestBytes = kmac_pkg::AppDigestW / 8;
 
+  int num_hw_slots;
   bit lc_at_prod;
 
   virtual task dut_init(string reset_kind = "HARD");
+    string path = $sformatf("tb.dut.top_darjeeling.u_keymgr_dpe.NumInstHwSlot");
     super.dut_init(reset_kind);
     void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
     if (lc_at_prod) begin
       otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
     end
+    // Backdoor load the number of hw slots available
+    `DV_CHECK_FATAL(uvm_hdl_read(path, num_hw_slots))
   endtask
 
   virtual task body();
@@ -78,7 +82,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // creator root key and be in boot stage 0.  Verify that this holds.
     begin
       bit valid_found = 1'b0;
-      for (int i = 0; i < keymgr_dpe_pkg::DpeNumSlots; i++) begin
+      for (int i = 0; i < num_hw_slots; i++) begin
         keymgr_dpe_pkg::keymgr_dpe_slot_t slot = get_key_slot(i);
         if (slot.valid) begin
           `DV_CHECK_EQ(valid_found, 1'b0, "Expecting only one valid key slot")
@@ -140,7 +144,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // holds.
     begin
       bit key_found = 1'b0;
-      for (int i = 0; i < keymgr_dpe_pkg::DpeNumSlots; i++) begin
+      for (int i = 0; i < num_hw_slots; i++) begin
         keymgr_dpe_pkg::keymgr_dpe_slot_t slot = get_key_slot(i);
         if (slot.valid && slot.boot_stage == keymgr_dpe_pkg::BootStageOwner) begin
           `DV_CHECK_EQ(key_found, 1'b0, "Expecting only one boot stage 1 key")
@@ -189,7 +193,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // holds.
     begin
       bit key_found = 1'b0;
-      for (int i = 0; i < keymgr_dpe_pkg::DpeNumSlots; i++) begin
+      for (int i = 0; i < num_hw_slots; i++) begin
         keymgr_dpe_pkg::keymgr_dpe_slot_t slot = get_key_slot(i);
         if (slot.valid && slot.boot_stage == keymgr_dpe_pkg::BootStageRuntime) begin
           `DV_CHECK_EQ(key_found, 1'b0, "Expecting only one boot stage 2 key")
@@ -237,7 +241,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     // holds.
     begin
      bit key_found = 1'b0;
-     for (int i = 0; i < keymgr_dpe_pkg::DpeNumSlots; i++) begin
+     for (int i = 0; i < num_hw_slots; i++) begin
        keymgr_dpe_pkg::keymgr_dpe_slot_t slot = get_key_slot(i);
        if (slot.valid && slot.boot_stage == keymgr_dpe_pkg::BootStageRuntime) begin
          `DV_CHECK_EQ(key_found, 1'b0, "Expecting only one boot stage 3 key")

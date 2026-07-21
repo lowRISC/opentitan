@@ -7,21 +7,9 @@ package keymgr_dpe_pkg;
   // Most of the parameters are directly reused from keymgr_pkg
   import keymgr_pkg::*;
 
-  parameter int DpeNumSlots = 8;
-  parameter int DpeNumSlotsWidth = prim_util_pkg::vbits(DpeNumSlots);
-
-  // keymgr and keymgr_dpe have different maximum KMAC input widths. The below widths correspond to
-  // the following inputs to advance to the creator root key state:
-  //   - Software binding
-  //   - Revision seed
-  //   - OTP device ID
-  //   - LC keymgr diversification value
-  //   - ROM digests
-  //   - Creator seed
-  parameter int DpeAdvDataWidth = SwBindingWidth + KeyWidth + otp_ctrl_pkg::DeviceIdWidth +
-      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth*keymgr_dpe_reg_pkg::NumRomDigestInputs + KeyWidth;
-
-  typedef logic [DpeNumSlotsWidth-1:0] keymgr_dpe_slot_idx_e;
+  // Chip Device ID
+  parameter int DeviceIdWidth = 256;
+  typedef logic [DeviceIdWidth-1:0] keymgr_dpe_device_id_t;
 
   // Enumeration for operation
   typedef enum logic [2:0] {
@@ -84,13 +72,52 @@ package keymgr_dpe_pkg;
     logic allow_child;
   } keymgr_dpe_policy_t;
 
+  // Parameter Key Width
+  parameter int KeyMgrKeyWidth = 256;
+
+  // Input struct for secrets required by the keymgr dpe.
+  typedef struct packed {
+    logic [KeyMgrKeyWidth-1:0]  share0;
+    logic                       share0_valid;
+    logic [KeyMgrKeyWidth-1:0]  share1;
+    logic                       share1_valid;
+  } keymgr_dpe_creator_root_key_t;
+
+  typedef struct packed {
+    logic [KeyMgrKeyWidth-1:0]  seed;
+    logic                       seed_valid;
+  } keymgr_dpe_creator_seed_t;
+
+  typedef struct packed {
+    logic [KeyMgrKeyWidth-1:0]  seed;
+    logic                       seed_valid;
+  } keymgr_dpe_owner_seed_t;
+
+  parameter keymgr_dpe_creator_root_key_t KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT = '{
+    share0       : 256'hefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a102,
+    share0_valid : 1'b1,
+    share1       : 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37,
+    share1_valid : 1'b1
+  };
+
+  parameter keymgr_dpe_creator_seed_t KEYMGR_DPE_CREATOR_SEED_DEFAULT = '{
+    seed         : 256'hc7c50b38655cc87f821e5b07fed85d2c07e222a9e00bef308b3eccba0ba406fa,
+    seed_valid   : 1'b1
+  };
+
+  parameter keymgr_dpe_owner_seed_t KEYMGR_DPE_OWNER_SEED_DEFAULT = '{
+    seed         : 256'hf5052c0f14782d8b066be9f49c0b2000d3643ff3723ea7db972f69cd3e2e3e68,
+    seed_valid   : 1'b1
+  };
+
   // Enumeration for boot stage. In the BootStageRuntime stage, there is no limit on the number of
   // advance calls.
   parameter int DpeBootStagesWidth = 2;
   typedef enum logic [DpeBootStagesWidth-1:0] {
-    BootStageCreator = 0,
-    BootStageOwner   = 1,
-    BootStageRuntime = 2
+    BootStageCreator  = 0,
+    BootStageOwnerInt = 1,
+    BootStageOwner    = 2,
+    BootStageRuntime  = 3
   } keymgr_dpe_boot_stage_e;
 
   // An internal secret key slot

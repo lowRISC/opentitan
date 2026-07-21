@@ -7,6 +7,7 @@ description: "KEYMGR_DPE DV sim target"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:keymgr_dpe_pkg
       - lowrisc:ip:keymgr_dpe
 
   files_dv:

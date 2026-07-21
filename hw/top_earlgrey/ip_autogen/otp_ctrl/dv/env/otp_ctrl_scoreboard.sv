@@ -142,9 +142,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
           otp_ctrl_part_pkg::otp_hw_cfg0_data_t  exp_hw_cfg0_data;
           otp_ctrl_part_pkg::otp_hw_cfg1_data_t  exp_hw_cfg1_data;
-          otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
-          bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
+          keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t exp_creator_root_key;
+          keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     exp_creator_seed;
+          keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       exp_owner_seed;
 
           if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
@@ -220,36 +221,41 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // ---------------------- Check keymgr_key_o output ---------------------------------
             // Otp_keymgr outputs creator and owner keys from secret partitions.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
-            exp_keymgr_data = '0;
-            exp_keymgr_data.creator_root_key_share0_valid = get_otp_digest_val(Secret2Idx) != 0;
+            exp_creator_root_key = '0;
+            exp_creator_seed = '0;
+            exp_owner_seed = '0;
+
+            // Fetch and verify the CREATOR_ROOT_KEY_SHARE0 secret
+            exp_creator_root_key.share0_valid = get_otp_digest_val(Secret2Idx) != 0;
             if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-              exp_keymgr_data.creator_root_key_share0 =
+              exp_creator_root_key.share0 =
                   {<<32 {otp_a[CreatorRootKeyShare0Offset/4 +: CreatorRootKeyShare0Size/4]}};
             end else begin
-              exp_keymgr_data.creator_root_key_share0 =
+              exp_creator_root_key.share0 =
                   top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare0Offset*8 +: CreatorRootKeyShare0Size*8];
             end
-            // Check otp_keymgr_key_t struct by item is easier to debug.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share0_valid,
-                         exp_keymgr_data.creator_root_key_share0_valid)
-            exp_keymgr_data.creator_root_key_share1_valid = get_otp_digest_val(Secret2Idx) != 0;
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share0_valid,
+                         exp_creator_root_key.share0_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share0,
+                         exp_creator_root_key.share0)
+
+            // Fetch and verify the CREATOR_ROOT_KEY_SHARE1 secret
+            exp_creator_root_key.share1_valid = get_otp_digest_val(Secret2Idx) != 0;
             if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On) begin
-              exp_keymgr_data.creator_root_key_share1 =
+              exp_creator_root_key.share1 =
                   {<<32 {otp_a[CreatorRootKeyShare1Offset/4 +: CreatorRootKeyShare1Size/4]}};
             end else begin
-              exp_keymgr_data.creator_root_key_share1 =
+              exp_creator_root_key.share1 =
                   top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
             end
-            // Check otp_keymgr_key_t struct by item is easier to debug.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o.creator_root_key_share1_valid,
-                         exp_keymgr_data.creator_root_key_share1_valid)
-
-            // Check otp_keymgr_key_t struct all together in case there is any missed item.
-            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_key_o, exp_keymgr_data)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share1_valid,
+                         exp_creator_root_key.share1_valid)
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_creator_root_key_o.share1,
+                         exp_creator_root_key.share1)
 
             if (cfg.en_cov) begin
               cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
-                                     exp_keymgr_data.creator_root_key_share0_valid);
+                                     exp_creator_root_key.share0_valid);
             end
           end
         end else if (cfg.otp_ctrl_vif.alert_reqs) begin
