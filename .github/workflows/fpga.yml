@@ -131,6 +131,19 @@ jobs:
           name: ${{ inputs.job_name }}-targets
           path: target_pattern_file.txt
 
+        # Power cycle all ports of the CW340 USB hub (the only smart hub on this runner) to ensure
+        # a clean state, then power off port 4 (OT USBDEV) -- the USB device test harness powers it
+        # back on itself when the test needs to observe device enumeration.
+        # NOTE: uhubctl segfaults *after* completing the operation
+        # (https://github.com/mvp/uhubctl/issues/539), so a non-zero exit is expected and ignored;
+        # the power cycle itself works.
+      - name: Power cycle USB
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y uhubctl
+          sudo uhubctl -p all -a cycle || echo "::warning::uhubctl exited $? (known segfault: mvp/uhubctl#539)"
+          sudo uhubctl -p 4 -a off || echo "::warning::uhubctl exited $? (known segfault: mvp/uhubctl#539)"
+
       - name: Update hyperdebug firmware
         if: inputs.interface == 'hyper310' || inputs.interface == 'cw340'
         run: |
