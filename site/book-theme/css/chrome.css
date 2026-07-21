@@ -50,6 +50,10 @@ a > .hljs {
     border-block-end-width: 1px;
     border-block-end-style: solid;
 }
+#menu-bar.branch {
+    background-color: #808080;
+    background-image: none;
+}
 #menu-bar.sticky,
 #menu-bar-hover-placeholder:hover + #menu-bar,
 #menu-bar:hover {
@@ -664,4 +668,78 @@ html:not(.sidebar-resizing) .sidebar {
     content: "✓";
     margin-inline-start: -14px;
     width: 14px;
+}
+
+/* Releases Dropdown Menu Styles */
+.releases-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-self: center;
+    margin-inline-start: 15px;
+}
+
+.releases-dropdown .dropbtn {
+    position: relative; /* Crucial for anchoring the invisible bridge */
+    background-color: var(--sidebar-bg);
+    color: #333333;
+    padding: 5px 14px;
+    font-size: 0.875em;
+    font-weight: 400;
+    border: 1px solid var(--table-border-color, #ccc);
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: auto;
+    line-height: normal;
+}
+
+.releases-dropdown .dropbtn::after {
+    content: "";
+    position: absolute;
+    bottom: -6px; /* Extends down 6px to perfectly overlap the 4px margin gap */
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: transparent; /* Remains completely invisible to the user */
+}
+
+#menu-bar .releases-dropdown .fa-angle-down {
+    line-height: calc(var(--menu-bar-height) * 0.6);
+}
+
+.releases-dropdown .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: var(--sidebar-bg);
+    min-width: 130px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    border: 1px solid var(--theme-popup-border, #ccc);
+    border-radius: 4px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.releases-dropdown .dropdown-content a {
+    color: var(--fg, #333333);
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 0.875em;
+    text-align: start;
+}
+
+.releases-dropdown .dropdown-content a:hover {
+    background-color: var(--theme-hover, #f1f1f1);
+    color: var(--icons-hover, #000000);
+}
+
+/* Display menu on hover */
+.releases-dropdown:hover .dropdown-content {
+    display: block;
 }
