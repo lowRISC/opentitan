@@ -343,6 +343,10 @@ module top_darjeeling #(
   localparam int LcCtrlNumRmaAckSigs = 1;
   // local parameters for spi_host0
   localparam int SpiHost0NumCS = 1;
+  // local parameters for keymgr_dpe
+  localparam int KeymgrDpeNumInstHwSlot = 8;
+  localparam int KeymgrDpeNumBootStages = 2;
+  localparam int KeymgrDpeNumRomDigestInputs = 2;
   // local parameters for entropy_src
   localparam int EntropySrcEsFifoDepth = 3;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
@@ -581,7 +585,9 @@ module top_darjeeling #(
   edn_pkg::edn_rsp_t [Edn1NumEndPoints-1:0] edn1_edn_rsp;
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
-  otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       otp_ctrl_keymgr_creator_seed;
+  keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       otp_ctrl_keymgr_owner_seed;
   keymgr_pkg::hw_key_req_t       keymgr_dpe_aes_key;
   keymgr_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
   keymgr_pkg::otbn_key_req_t       keymgr_dpe_otbn_key;
@@ -774,7 +780,7 @@ module top_darjeeling #(
   lc_ctrl_state_pkg::soc_dbg_state_t       soc_dbg_ctrl_soc_dbg_state;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
-  otp_ctrl_pkg::otp_device_id_t       keymgr_dpe_otp_device_id;
+  keymgr_dpe_pkg::keymgr_dpe_device_id_t       keymgr_dpe_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
 
@@ -813,7 +819,7 @@ module top_darjeeling #(
       otp_ctrl_otp_broadcast.hw_cfg1_data.soc_dbg_state;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
-  assign keymgr_dpe_otp_device_id =
+  assign keymgr_dpe_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
   logic unused_otp_broadcast_bits;
@@ -1194,7 +1200,9 @@ module top_darjeeling #(
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_rma_state_i(lc_ctrl_lc_rma_state),
     .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
-    .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
+    .keymgr_creator_root_key_o(otp_ctrl_keymgr_creator_root_key),
+    .keymgr_creator_seed_o(otp_ctrl_keymgr_creator_seed),
+    .keymgr_owner_seed_o(otp_ctrl_keymgr_owner_seed),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
     .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
     .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
@@ -1698,7 +1706,10 @@ module top_darjeeling #(
     .RndCnstAesSeed(RndCnstKeymgrDpeAesSeed),
     .RndCnstKmacSeed(RndCnstKeymgrDpeKmacSeed),
     .RndCnstOtbnSeed(RndCnstKeymgrDpeOtbnSeed),
-    .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed)
+    .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed),
+    .NumInstHwSlot(KeymgrDpeNumInstHwSlot),
+    .NumBootStages(KeymgrDpeNumBootStages),
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs)
   ) u_keymgr_dpe (
     // Clock and reset connections
     .clk_i(clkmgr_aon_clocks_i.clk_main_secure),
@@ -1723,8 +1734,10 @@ module top_darjeeling #(
     .otbn_key_o(keymgr_dpe_otbn_key),
     .kmac_data_o(kmac_app_req[0]),
     .kmac_data_i(kmac_app_rsp[0]),
-    .otp_key_i(otp_ctrl_otp_keymgr_key),
-    .otp_device_id_i(keymgr_dpe_otp_device_id),
+    .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
+    .creator_seed_i(otp_ctrl_keymgr_creator_seed),
+    .owner_seed_i(otp_ctrl_keymgr_owner_seed),
+    .device_id_i(keymgr_dpe_device_id),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
     .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
     .rom_digest_i(keymgr_dpe_rom_digest),

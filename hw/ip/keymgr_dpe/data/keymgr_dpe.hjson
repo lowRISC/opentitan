@@ -77,17 +77,29 @@
       act:     "req",
       package: "kmac_pkg",  // Origin package (only needs for the requester)
     },
-    { struct:  "otp_keymgr_key",
+    { struct:  "keymgr_dpe_creator_root_key",
       type:    "uni",
-      name:    "otp_key",
+      name:    "creator_root_key",
       act:     "rcv",
-      package: "otp_ctrl_pkg",
+      package: "keymgr_dpe_pkg",
     },
-    { struct:  "otp_device_id",
+    { struct:  "keymgr_dpe_creator_seed",
       type:    "uni",
-      name:    "otp_device_id",
+      name:    "creator_seed",
       act:     "rcv",
-      package: "otp_ctrl_pkg",
+      package: "keymgr_dpe_pkg",
+    },
+    { struct:  "keymgr_dpe_owner_seed",
+      type:    "uni",
+      name:    "owner_seed",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
+    },
+    { struct:  "keymgr_dpe_device_id",
+      type:    "uni",
+      name:    "device_id",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
     },
     { struct:  "lc_tx",
       type:    "uni",
@@ -216,11 +228,33 @@
       default: "1",
       local: "true"
     },
+    { name: "NumMaxHwSlot",
+      desc: '''
+        Number of maximum supported HW slots. If this value is changed then the
+        bit width in SLOT_SRC_SEL / SLOT_DST_SEL in the
+        "CONTROL_SHADOWED" register needs to be updated too.
+      ''',
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "NumInstHwSlot",
+      desc: "Number of instantiated HW slots",
+      type: "int",
+      default: "4",
+      expose:  "true"
+    },
+    { name: "NumBootStages",
+      desc: "Number of available boot stage",
+      type: "int",
+      default: "3",
+      expose:  "true"
+    },
     { name: "NumRomDigestInputs",
       desc: "Number of digest inputs from ROM_CTRL",
       type: "int",
-      default: "2",
-      local: "true"
+      default: "1",
+      expose:  "true"
     },
   ],
 
@@ -539,6 +573,9 @@ countermeasures: [
           '''
         }
       ],
+      // TODO(#30682): Remove this label as soon as the RTL raises an
+      // error instead of a assertion.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "SIDELOAD_CLEAR",
