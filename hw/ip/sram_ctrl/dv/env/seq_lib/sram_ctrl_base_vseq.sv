@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class sram_ctrl_base_vseq #(
-    parameter int AddrWidth = `SRAM_WORD_ADDR_WIDTH
+    parameter int MemDepth = `SRAM_SIZE_WORDS
   ) extends cip_base_vseq #(
     .RAL_T               (sram_ctrl_regs_reg_block),
-    .CFG_T               (sram_ctrl_env_cfg#(AddrWidth)),
-    .COV_T               (sram_ctrl_env_cov#(AddrWidth)),
-    .VIRTUAL_SEQUENCER_T (sram_ctrl_virtual_sequencer#(AddrWidth))
+    .CFG_T               (sram_ctrl_env_cfg#(MemDepth)),
+    .COV_T               (sram_ctrl_env_cov#(MemDepth)),
+    .VIRTUAL_SEQUENCER_T (sram_ctrl_virtual_sequencer#(MemDepth))
   );
-  `uvm_object_param_utils(sram_ctrl_base_vseq#(AddrWidth))
+  `uvm_object_param_utils(sram_ctrl_base_vseq#(MemDepth))
   `uvm_object_new
 
   rand mubi4_t readback_en;
@@ -143,6 +143,15 @@ class sram_ctrl_base_vseq #(
     return 75_000;
   endfunction
 
+  // For non-power-of-2 SRAM sizes the address mask covers addresses up to the next power of 2, so
+  // addresses in [MemDepth*BYTES_PER_WORD, mask] are out of range. The tlul_adapter_sram module
+  // returns a d_error for such accesses without forwarding the request to the actual memory
+  // primitive.
+  function bit is_addr_out_of_range(bit [TL_AW-1:0] addr);
+    bit [TL_AW-1:0] sram_addr_mask = cfg.ral_models[cfg.sram_ral_name].get_addr_mask();
+    return (addr & sram_addr_mask) >= (MemDepth * BYTES_PER_WORD);
+  endfunction
+
   // Request a memory init, and  wait for it to complete. This is a problematic task since
   // it would be better to set the in_init and in_key_req in either this place or in
   // process_tl_access, except in cip sequences the will not be called. If the scoreboard
@@ -203,6 +212,7 @@ class sram_ctrl_base_vseq #(
               .data(rdata),
               .mask(mask),
               .write(1'b0),
+              .exp_err_rsp(is_addr_out_of_range(addr)),
               .blocking(blocking),
               .check_exp_data(check_rdata),
               .exp_data(exp_rdata),
@@ -223,6 +233,7 @@ class sram_ctrl_base_vseq #(
               .data(data),
               .mask(mask),
               .write(1'b1),
+              .exp_err_rsp(is_addr_out_of_range(addr)),
               .blocking(blocking),
               .instr_type(instr_type),
               .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
@@ -252,6 +263,7 @@ class sram_ctrl_base_vseq #(
                 .mask(get_rand_mask(write)),
                 .write(write),
                 .check_err_rsp(!en_ifetch),
+                .exp_err_rsp(is_addr_out_of_range(addr)),
                 .blocking(1'b0),
                 .instr_type(instr_type),
                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]));
@@ -267,12 +279,15 @@ class sram_ctrl_base_vseq #(
   // (such as during LC escalations or parity errors), which are expected to not respond at all.
   //
   // not_use_last_addr is used to constrain the address is not equal to max address.
+  // not_use_out_of_range_addr is used to constrain the address to not fall into the range of
+  // unimplemented addresses. This is only relevant in the case of non-power-of-2 SRAM sizes.
   virtual task do_rand_ops(int num_ops,
                            bit blocking  = $urandom_range(0, 1),
                            bit abort     = 0,
                            bit en_ifetch = 0,
                            bit wait_complete = 1,
                            bit not_use_last_addr = 0,
+                           bit not_use_out_of_range_addr = 0,
                            bit exp_err_rsp = 0,
                            bit check_err_rsp = 1);
     bit [TL_DW-1:0] data;
@@ -292,6 +307,9 @@ class sram_ctrl_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
                                          if (not_use_last_addr) {
                                            (addr & sram_addr_mask) < max_offset;
+                                         }
+                                         if (not_use_out_of_range_addr) {
+                                           (addr & sram_addr_mask) < (MemDepth * BYTES_PER_WORD);
                                          })
 
       // never send InstrType transactions unless en_ifetch is enabled
@@ -306,7 +324,7 @@ class sram_ctrl_base_vseq #(
                         .write(write),
                         .blocking(blocking),
                         .check_err_rsp(!en_ifetch & check_err_rsp),
-                        .exp_err_rsp(exp_err_rsp),
+                        .exp_err_rsp(exp_err_rsp | is_addr_out_of_range(addr)),
                         .instr_type(instr_type),
                         .tl_sequencer_h(p_sequencer.tl_sequencer_hs[cfg.sram_ral_name]),
                         .req_abort_pct((abort) ? 100 : 0));

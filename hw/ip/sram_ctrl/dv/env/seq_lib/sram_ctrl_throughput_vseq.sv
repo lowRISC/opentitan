@@ -76,7 +76,11 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
             num_cycles++;
           end,
           // thread 2 to do sram OPs
+          // Don't access unimplemented addressed in the case of non-power-of-2 SRAM sizes as these
+          // behave differently (they're not even forwarded to the scrambling engine and return an
+          // error).
           do_rand_ops(.num_ops(num_ops),
+                      .not_use_out_of_range_addr(1),
                       .blocking(0));)
 
       `uvm_info(`gfn, $sformatf("num_cycles: %0d, num_ops: %0d, num_partial_write: %0d",

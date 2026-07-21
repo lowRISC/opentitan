@@ -43,6 +43,12 @@ package sram_ctrl_env_pkg;
   // a LC escalation request needs 3 cycles to be fully propagated through the DUT
   parameter int LC_ESCALATION_PROPAGATION_CYCLES = 3;
 
+  // Number of bytes per SRAM word
+  parameter uint BYTES_PER_WORD = 4;
+
+  // SRAM size in 32-bit words
+  `define SRAM_SIZE_WORDS (`SRAM_SIZE_BYTES / BYTES_PER_WORD)
+
   // types
   typedef virtual sram_ctrl_lc_if lc_vif;
   typedef virtual sram_ctrl_exec_if exec_vif;

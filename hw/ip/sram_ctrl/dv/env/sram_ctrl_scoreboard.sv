@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scoreboard #(
-    .CFG_T(sram_ctrl_env_cfg#(AddrWidth)),
+class sram_ctrl_scoreboard #(parameter int MemDepth = 1024) extends cip_base_scoreboard #(
+    .CFG_T(sram_ctrl_env_cfg#(MemDepth)),
     .RAL_T(sram_ctrl_regs_reg_block),
-    .COV_T(sram_ctrl_env_cov#(AddrWidth))
+    .COV_T(sram_ctrl_env_cov#(MemDepth))
   );
-  `uvm_component_param_utils(sram_ctrl_scoreboard#(AddrWidth))
+  `uvm_component_param_utils(sram_ctrl_scoreboard#(MemDepth))
   `uvm_component_new
+
+  // Derive the number of bits needed to index MemDepth words.
+  localparam int AddrWidth = $clog2(MemDepth);
 
   // local variables
 
@@ -113,6 +116,15 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     return addr & sram_addr_mask;
   endfunction
 
+  // Returns 1 if the SRAM-relative word address of addr is beyond the implemented memory range.
+  // This is relevant for non-power-of-2 memory sizes: the address mask covers up to the next power
+  // of 2, so accesses to addresses in [MemDepth*BYTES_PER_WORD, 2^AddrWidth*BYTES_PER_WORD) are
+  // out of range. The tlul_adapter_sram module returns a d_error for such accesses without
+  // forwarding the request to the actual memory primitive.
+  function bit is_addr_out_of_range(bit [TL_AW-1:0] addr);
+    return (simplify_addr(addr) / BYTES_PER_WORD) >= MemDepth;
+  endfunction
+
   function bit [AddrWidth-1:0] decrypt_sram_addr(bit [AddrWidth-1:0] addr);
     logic addr_arr         [] = new[AddrWidth];
     logic decrypt_addr_arr [] = new[AddrWidth];
@@ -122,7 +134,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     nonce_arr = {<<{nonce}};
 
     decrypt_addr_arr =
-        sram_scrambler_pkg::decrypt_sram_addr(addr_arr, AddrWidth, 2**AddrWidth, nonce_arr);
+        sram_scrambler_pkg::decrypt_sram_addr(addr_arr, AddrWidth, MemDepth, nonce_arr);
 
     return {<<{decrypt_addr_arr}};
   endfunction
@@ -137,6 +149,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   //       any CSRs or uvm_mems.
   virtual function bit get_sram_predict_tl_err(tl_seq_item item, tl_channels_e channel);
     bit is_tl_err;
+    bit is_out_of_range;
     bit allow_ifetch;
     tlul_pkg::tl_a_user_t a_user       = tlul_pkg::tl_a_user_t'(item.a_user);
     prim_mubi_pkg::mubi8_t sram_ifetch = cfg.exec_vif.otp_en_sram_ifetch;
@@ -166,7 +179,17 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       is_tl_err = !allow_ifetch;
     end
 
-    if (status_lc_esc == EscPending && item.d_error) begin
+    // For non-power-of-2 memory sizes, addresses above MemDepth are out of range. The
+    // tlul_adapter_sram module returns a d_error for such accesses without forwarding the request
+    // to the actual memory primitive.
+    is_out_of_range = is_addr_out_of_range(item.a_addr);
+    if (is_out_of_range) begin
+      is_tl_err |= 1;
+    end
+
+    // Only transition from EscPending to EscFinal when d_error is caused by the LC gate closing,
+    // and not by an out-of-range address (which returns a d_error regardless of LC state).
+    if (status_lc_esc == EscPending && item.d_error && !is_out_of_range) begin
       status_lc_esc = EscFinal;
     end
     if (status_lc_esc == EscFinal) is_tl_err |= 1;
@@ -262,10 +285,10 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         // before entering init, there should be no pending write
         `DV_CHECK_EQ(write_item_q.size, 0)
 
-        // init is to write init value to the sram, which will triggers 1<<AddrWidth write strobes
+        // init is to write init value to the sram, which will trigger MemDepth write strobes
         // Below is to count all the strobe to make sure init is done, so that we know what strobe
         // is for the actual write
-        repeat (1 << AddrWidth) wait_write_strobe();
+        repeat (MemDepth) wait_write_strobe();
 
         // One write may be accepted before init is done
         `DV_CHECK_LE(write_item_q.size, 1)
@@ -437,34 +460,47 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endtask
 
   virtual task process_sram_tl_a_chan_item(tl_seq_item item);
+    bit is_out_of_range = is_addr_out_of_range(item.a_addr);
     `uvm_info(`gfn, $sformatf("Received sram_tl_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-    // when esc occurs, access can be finished immediately with d_error, even if key req or
-    // init is ongoing.
-    if (status_lc_esc == EscNone) begin
+    // When an escalation occurs, accesses finish immediately with a d_error, even if key req or
+    // init is ongoing. Similarly, out-of-range addresses also return a d_error immediately without
+    // waiting for key req or init to complete. (The tlul_adapter_sram module doesn't forward the
+    // request to the memory primitive in this case).
+    if (status_lc_esc == EscNone && !is_out_of_range) begin
       `DV_CHECK_EQ(cfg.in_key_req, 0, "No item is accepted during key req")
       `DV_CHECK_EQ(cfg.in_init, 0, "No item is accepted during init")
       if (cfg.en_cov) cov.subword_access_cg.sample(item.is_write(), item.a_mask);
     end
 
-    if (item.is_write()) begin
-      mem_bkdr_scb.write_start(simplify_addr(item.a_addr), item.a_data, item.a_mask);
+    // For accesses to out-of-range addresses, the tlul_adapter_sram module returns a d_error
+    // immediately and without forwarding the request to the memory primitive. Thus, we don't
+    // have to track them in the memory model.
+    if (!is_out_of_range) begin
+      if (item.is_write()) begin
+        mem_bkdr_scb.write_start(simplify_addr(item.a_addr), item.a_data, item.a_mask);
 
-      write_item_q.push_back(mem_item_t'{simplify_addr(item.a_addr),
-                                         item.a_data, item.a_mask});
-    end else begin
-      mem_bkdr_scb.read_start(simplify_addr(item.a_addr), item.a_mask);
+        write_item_q.push_back(mem_item_t'{simplify_addr(item.a_addr),
+                                           item.a_data, item.a_mask});
+      end else begin
+        mem_bkdr_scb.read_start(simplify_addr(item.a_addr), item.a_mask);
+      end
     end
 
   endtask
 
   virtual task process_sram_tl_d_chan_item(tl_seq_item item);
+    bit is_out_of_range = is_addr_out_of_range(item.a_addr);
     `uvm_info(`gfn, $sformatf("Received sram_tl_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
 
-    `DV_CHECK_EQ(cfg.in_key_req, 0, "No item is accepted during key req")
-    `DV_CHECK_EQ(cfg.in_init, 0, "No item is accepted during init")
+    // Out-of-range addresses return d_error immediately without waiting for key req or init.
+    // We thus skip those checks for such accesses.
+    if (!is_out_of_range) begin
+      `DV_CHECK_EQ(cfg.in_key_req, 0, "No item is accepted during key req")
+      `DV_CHECK_EQ(cfg.in_init, 0, "No item is accepted during init")
+    end
 
-    if (status_lc_esc == EscNone && !item.is_write()) begin
+    if (status_lc_esc == EscNone && !item.is_write() && !is_out_of_range) begin
       mem_bkdr_scb.read_finish(item.d_data, simplify_addr(item.a_addr),
                                item.a_mask, !cfg.is_fi_test, !cfg.is_fi_test);
     end

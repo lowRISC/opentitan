@@ -5792,7 +5792,12 @@
       [
         {
           name: MemSizeRam
-          desc: Memory size of the RAM (in bytes).
+          desc:
+            '''
+            Memory size of the RAM (in bytes).
+            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
+            '''
           type: int
           name_top: MemSizeSramCtrlRetRam
           default: 4096
@@ -9173,7 +9178,12 @@
       [
         {
           name: MemSizeRam
-          desc: Memory size of the RAM (in bytes).
+          desc:
+            '''
+            Memory size of the RAM (in bytes).
+            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
+            '''
           type: int
           name_top: MemSizeSramCtrlMainRam
           default: 131072
@@ -9439,7 +9449,12 @@
       [
         {
           name: MemSizeRam
-          desc: Memory size of the RAM (in bytes).
+          desc:
+            '''
+            Memory size of the RAM (in bytes).
+            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
+            '''
           type: int
           name_top: MemSizeSramCtrlSecRam
           default: 65536

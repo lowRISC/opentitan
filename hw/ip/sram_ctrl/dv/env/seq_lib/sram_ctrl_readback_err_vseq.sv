@@ -80,7 +80,10 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
     bit [TL_AW-1:0] max_offset = {sram_addr_mask[TL_AW-1:2], 2'd0};
     bit [TL_AW-1:0] addr;
 
-    if (!std::randomize(addr) with { (addr & sram_addr_mask) < max_offset; }) begin
+    if (!std::randomize(addr) with {
+        (addr & sram_addr_mask) < max_offset;
+        (addr & sram_addr_mask) < (MemDepth * BYTES_PER_WORD);
+      }) begin
       `uvm_fatal(get_name(), "Failed to randomise address.")
     end
 

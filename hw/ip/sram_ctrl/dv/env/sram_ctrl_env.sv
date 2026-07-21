@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_env #(parameter int AddrWidth = 10) extends cip_base_env #(
-    .CFG_T              (sram_ctrl_env_cfg#(AddrWidth)),
-    .COV_T              (sram_ctrl_env_cov#(AddrWidth)),
-    .VIRTUAL_SEQUENCER_T(sram_ctrl_virtual_sequencer#(AddrWidth)),
-    .SCOREBOARD_T       (sram_ctrl_scoreboard#(AddrWidth))
+class sram_ctrl_env #(parameter int MemDepth = 10) extends cip_base_env #(
+    .CFG_T              (sram_ctrl_env_cfg#(MemDepth)),
+    .COV_T              (sram_ctrl_env_cov#(MemDepth)),
+    .VIRTUAL_SEQUENCER_T(sram_ctrl_virtual_sequencer#(MemDepth)),
+    .SCOREBOARD_T       (sram_ctrl_scoreboard#(MemDepth))
 );
-  `uvm_component_param_utils(sram_ctrl_env#(AddrWidth))
+  `uvm_component_param_utils(sram_ctrl_env#(MemDepth))
 
   `uvm_component_new
 
