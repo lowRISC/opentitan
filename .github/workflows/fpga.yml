@@ -138,6 +138,23 @@ jobs:
               //sw/host/opentitantool:opentitantool -- \
               --interface=hyperdebug_dfu transport update-firmware
 
+        # Power cycle the sam3x port on the CW340 USB hub to ensure a clean state in case
+        # opentitantool encounters a USB error when reading the FW version.
+        # NOTE: uhubctl segfaults *after* completing the operation
+        # (https://github.com/mvp/uhubctl/issues/539), so a non-zero exit is expected and ignored;
+        # the power cycle itself works.
+      - name: Power cycle USB
+        continue-on-error: true
+        run: |
+          if ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw340\
+            fpga get-sam3x-fw-version 2>&1 \
+            | grep -q "Error: Found no USB device. Search criteria was: vid:pid=0x2b3e:0xc340"; then
+
+            sudo apt-get install -y uhubctl
+            echo "USB device not found. Power cycling port..."
+            sudo uhubctl -p 1 -a cycle || echo "::warning::uhubctl exited $? (known segfault: mvp/uhubctl#539)"
+          fi
+
       - name: Execute tests
         run: |
           . util/build_consts.sh
