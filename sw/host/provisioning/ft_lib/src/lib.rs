@@ -22,6 +22,7 @@ use ft_ext_lib::{ft_inject_certs_ext, ft_post_boot_ext};
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
@@ -632,7 +633,58 @@ pub fn run_ft_personalize(
     // Bootstrap personalization + ROM_EXT + Owner FW binaries into flash, since
     // flash scrambling seeds were provisioned in the previous step.
     let t0 = Instant::now();
-    let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
+    let error_pin = transport.gpio_pin("IOA0")?;
+    error_pin.set_mode(PinMode::Input)?;
+    error_pin.set_pull_mode(PullMode::PullDown)?;
+
+    let success_pin = transport.gpio_pin("IOA1")?;
+    success_pin.set_mode(PinMode::Input)?;
+    success_pin.set_pull_mode(PullMode::PullDown)?;
+
+    let start_pin = transport.gpio_pin("IOA4")?;
+    start_pin.set_mode(PinMode::Input)?;
+    start_pin.set_pull_mode(PullMode::PullDown)?;
+
+    // Wait for Stage 1 to boot and assert TestStart (IOA4) HIGH, signaling PINMUX is ready.
+    while !start_pin.read()? {
+        if t0.elapsed() > timeout {
+            return Err(anyhow::anyhow!(
+                "Timed out waiting for TestStart signal (IOA4) from device"
+            ));
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+
+    while !success_pin.read()? {
+        if error_pin.read()? {
+            return Err(anyhow::anyhow!(
+                "Stage 1 execution failed: TestError pin (IOA0) went HIGH!"
+            ));
+        }
+
+        if t0.elapsed() > timeout {
+            return Err(anyhow::anyhow!(
+                "Timed out waiting for bootstrap signal from device"
+            ));
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+
+    let success_asserted = success_pin.read()?;
+    let start_asserted = start_pin.read()?;
+    let error_asserted = error_pin.read()?;
+    log::info!(
+        "Host verified physical GPIOs for Stage 1 handshake: TestStart (IOA4) = {}, TestDone (IOA1) = {}, TestError (IOA0) = {}",
+        start_asserted,
+        success_asserted,
+        error_asserted
+    );
+
+    // Explicitly release the multiplexed STM32 pins back to SPI alternate mode before we call bootstrap.load()!
+    error_pin.set_mode(PinMode::Alternate)?;
+    success_pin.set_mode(PinMode::Alternate)?;
+    start_pin.set_mode(PinMode::Alternate)?;
+
     response.stats.log_elapsed_time("first-bootstrap-done", t0);
     let t0 = Instant::now();
     init.bootstrap.load(transport, &second_bootstrap)?;

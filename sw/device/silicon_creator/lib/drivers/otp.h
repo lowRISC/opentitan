@@ -168,6 +168,44 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t address,
  */
 void otp_creator_sw_cfg_lockdown(void);
 
+/**
+ * Wait until the OTP Direct Access Interface (DAI) is idle.
+ */
+void wait_for_dai_idle(void);
+
+/**
+ * Perform a blocking 32-bit write to the Direct Access Interface (DAI).
+ *
+ * @param partition The OTP partition to write to.
+ * @param relative_address The address to write relative to the start of the
+ *                         OTP partition.
+ * @param value The 32-bit value to write.
+ * @return The status of the operation.
+ */
+rom_error_t otp_dai_write32(otp_partition_t partition, uint32_t address,
+                            uint32_t value);
+
+/**
+ * Perform a blocking raw 64-bit write to the Direct Access Interface (DAI).
+ *
+ * @param address The raw OTP address to write.
+ * @param buffer The input buffer of 64-bit secrets.
+ * @param len The number of 64-bit secrets to write.
+ * @return The status of the operation.
+ */
+rom_error_t otp_dai_write64_raw(uint32_t address, const uint64_t *buffer,
+                                size_t len);
+
+/**
+ * Perform a blocking raw partition digest lock on the Direct Access Interface
+ * (DAI).
+ *
+ * @param digest_reg_addr The raw OTP address of the partition digest register.
+ * @param digest The 64-bit partition digest to write.
+ * @return The status of the operation.
+ */
+rom_error_t otp_dai_digest_lock_raw(uint32_t digest_reg_addr, uint64_t digest);
+
 #ifdef __cplusplus
 }
 #endif

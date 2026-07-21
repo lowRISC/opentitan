@@ -280,6 +280,21 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "personalize_secret1",
+    srcs = ["personalize_secret1.c"],
+    hdrs = ["personalize_secret1.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":otp_fields",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base:status",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
