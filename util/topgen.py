@@ -32,6 +32,7 @@ from raclgen.lib import DEFAULT_RACL_CONFIG
 from reggen import access, gen_rtl, gen_sec_cm_testplan, params, reg_block, window, vendor_specific
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
+from reggen.window import Window
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
@@ -841,7 +842,6 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
     # construct top ral block
     regwidth = int(top["datawidth"])
     assert regwidth % 8 == 0
-    addrsep = regwidth // 8
 
     # Generate a map from instance name to the block that it instantiates,
     # together with a map of interface addresses.
@@ -857,7 +857,70 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
-        for if_name in block.reg_blocks.keys():
+
+    # The top-level might customise modules that it instantiates with a dict
+    # under the "memory" key. If a module gets instantiated twice with
+    # different customisations, we'll need to define a type for each and give
+    # them different names.
+    #
+    # Compute a map from type name to a list of pairs (mod_name, maybe_block)
+    # where mod_name is the name of a module instance and block is either None
+    # (if that instance was not customised) or an IpBlock that describes the
+    # customised version of the type.
+    overrides: dict[str, list[tuple[str, None | IpBlock]]] = {}
+    for mod_instance in top["module"]:
+        mod_name, type_name, maybe_block = \
+            get_overridden_block(mod_instance, name_to_block, regwidth)
+
+        overrides.setdefault(type_name, []).append((mod_name, maybe_block))
+
+    # Now work through the named types in overrides and update the block types
+    # to match.
+    for type_name, overrides_for_type in overrides.items():
+        original_mod_names: list[str] = []
+        other_values: list[tuple[str, IpBlock]] = []
+        for mod_name, maybe_block in overrides_for_type:
+            if maybe_block is None:
+                original_mod_names.append(mod_name)
+            else:
+                other_values.append((mod_name, maybe_block))
+
+        # If other_values is empty, there were no overrides for the block
+        # called type_name and there is nothing to do.
+        if not other_values:
+            continue
+
+        # If original_mod_names is empty and other_values has only one item
+        # then the type was used exactly once and was customised that time. In
+        # which case, we can just override the old type with the customized
+        # one.
+        if len(other_values) == 1 and not original_mod_names:
+            name_to_block[type_name] = other_values[0][1]
+            continue
+
+        # This is the interesting case. There are multiple instances of the
+        # type and at least one of them is customised.
+        std_type_name = f"standard_{type_name}"
+        name_to_block[std_type_name] = name_to_block[type_name]
+        del name_to_block[type_name]
+
+        for mod_name in original_mod_names:
+            inst_to_block[mod_name] = std_type_name
+
+        for mod_name, new_block in other_values:
+            new_type_name = f"{mod_name}_{type_name}"
+            name_to_block[new_type_name] = new_block
+            inst_to_block[mod_name] = new_type_name
+
+    # Now that all the blocks have been adjusted as necessary and given memory
+    # windows, compute an appropriate if_addrs list to pass to the Top
+    # constructor.
+    for module in top["module"]:
+        inst_name = module["name"]
+        type_name = inst_to_block[inst_name]
+        block = name_to_block[type_name]
+
+        for if_name in block.reg_blocks:
             base_addrs = module["base_addrs"].get(if_name)
             if base_addrs is None:
                 continue
@@ -866,106 +929,170 @@ def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
                        for (asid, addr) in base_addrs.items()}
             if_addrs[(inst_name, if_name)] = if_addr
 
-    # Top-level may override the mem setting. Store the new type to
-    # name_to_block. If no other instance uses the original type, delete it
-    original_types = set()
-    for module in top["module"]:
-        if "memory" in module.keys() and len(module["memory"]) > 0:
-            mod_name = module["name"]
-            newtype = "{}_{}".format(module["type"], mod_name)
-            assert newtype not in name_to_block
-
-            # Take a copy of the block-level description of the thing that is
-            # being instantiated as mod_name (so that we can configure it).
-            block = deepcopy(name_to_block[module["type"]])
-
-            # Update name_to_block and inst_to_block so that they point at the
-            # new, more specific, information about the block.
-            name_to_block[newtype] = block
-            inst_to_block[mod_name] = newtype
-
-            original_types.add(module["type"])
-
-            # The instantiation might have requested a specific configuration
-            # for some of the memories of the block. Apply that here.
-            for mem_name, item in module["memory"].items():
-                block_mem = block.memories.get(mem_name)
-                if block_mem is None:
-                    raise ValueError(f"The definition of {block.name} "
-                                     f"(instantiated as {mod_name}) doesn't "
-                                     f"declare a memory called {mem_name}.")
-
-                # We only support memories with at most a single window (if
-                # there are several, we don't know which one to customise)
-                if len(block_mem.windows) > 1:
-                    raise ValueError(f"The block {block.name} declares "
-                                     f"multiple windows for its {mem_name} "
-                                     f"memory, so topgen can't configure that "
-                                     "memory.")
-
-                # This is the new window to use
-                win = create_mem(mem_name, item, addrsep, regwidth)
-
-                # If the block doesn't define a window for this memory, we can
-                # just make one. If it *does* define a window we can overwrite
-                # it, but want to make sure we won't mess things up.
-                if not block_mem.windows:
-                    block_mem.windows = [win]
-                else:
-                    blk_win = block_mem.windows[0]
-
-                    # Check we end up with the same number of "items" in the
-                    # window (the window size divided by addrsep)
-                    if win.items != blk_win.items:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} doesn't match number "
-                                         f"of items for {mem_name}. Instance: "
-                                         f"{win.items}; blk: {blk_win.items}")
-
-                    # Check the byte_write setting matches
-                    if win.byte_write != blk_win.byte_write:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} requests the memory "
-                                         f"{mem_name} with byte_write="
-                                         f"{win.byte_write}, but the block "
-                                         f"declares it {blk_win.byte_write}.")
-
-                    # Check the data_intg_passthru setting matches
-                    if win.data_intg_passthru != blk_win.data_intg_passthru:
-                        raise ValueError(f"The {mod_name} instance of "
-                                         f"{block.name} requests the memory "
-                                         f"{mem_name} with data_intg_passthru="
-                                         f"{win.data_intg_passthru}, but the "
-                                         f"block declares it as "
-                                         f"{blk_win.data_intg_passthru}.")
-
-                    # If we get here, the two definitions matched. Use the new
-                    # one.
-                    block_mem.windows[0] = win
-
-                # At the moment the RAL template does not know about memories
-                # but it knows about windows in memory blocks. Therefoe we
-                # create an empty register block for RAL.
-                if_name = mem_name
-                block.reg_blocks[if_name] = reg_block.RegBlock(regwidth, params.ReggenParams(),
-                                                               windows = block_mem.windows)
-
-                if_addr = {
-                    asid: int(addr, 0)
-                    for (asid, addr) in module["base_addrs"][if_name].items()
-                }
-                if_addrs[(mod_name, if_name)] = if_addr
-
-    for t in original_types:
-        if t not in inst_to_block.values():
-            del name_to_block[t]
-
     addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
+
     chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
                if_addrs, [], attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_names, str(out_path))
+
+
+def get_overridden_block(mod_instance: dict[str, object],
+                         name_to_block: IpBlocksT,
+                         regwidth: int) -> tuple[str, str, None | IpBlock]:
+    """Return an overridden version of the block for an instance if there is one.
+
+    This function returns a triple (mod_name, type_name, maybe_block). Here,
+    mod_name is the name of the module instance and type_name is the name of
+    the block type being instantiated.
+
+    If the instance doesn't define "memory" (which defines a window for the
+    memory on the block) then maybe_block is None. If it *does* define
+    "memory", maybe_block returns a customised version of the block.
+
+    Args:
+
+      mod_instance:  A dictionary describing the instance of the module (parsed
+                     from hjson by topgen).
+
+      name_to_block: A map from type name to IpBlock object.
+
+      regwidth:      The number of bits per register.
+    """
+    mod_name = mod_instance.get("name")
+    if not mod_name:
+        raise TypeError("Module instance does not have a nonempty name.")
+
+    type_name = mod_instance.get("type")
+    if not type_name:
+        msg = f"Module instance called {mod_name} has no type."
+        raise TypeError(msg)
+
+    new_windows = mod_instance.get("memory", {})
+    if not isinstance(new_windows, dict):
+        msg = ("Module instance has a memory field that is not a dict. "
+               f"It is actually: {new_windows}")
+        raise TypeError(msg)
+
+    if not new_windows:
+        return (mod_name, type_name, None)
+
+    # We *do* have a customisation for the memory for this block. Take a copy
+    # of the thing that is being modified, which should be an IpBlock.
+    old_block = name_to_block.get(type_name)
+    if old_block is None:
+        msg = (f"Module instance called {mod_name} specifies a type name of "
+               f"{type_name}, but that is not in name_to_block.")
+        raise ValueError(msg)
+
+    if not isinstance(old_block, IpBlock):
+        msg = f"Block for type name {type_name} is not an IpBlock."
+        raise TypeError(msg)
+
+    where = (f"in the override for the module type {type_name} "
+             f"in module instance {mod_name}")
+
+    new_block = deepcopy(old_block)
+    customize_memories(mod_name, new_block, new_windows, regwidth, where)
+    return (mod_name, type_name, new_block)
+
+
+def customize_memories(mod_name: str,
+                       block: IpBlock,
+                       new_windows: dict[str, dict],
+                       regwidth: int,
+                       where: str) -> None:
+    """Update old_memories with the overridden windows.
+
+    This operates in place on block, modifying it by adding the windows
+    described in new_windows.
+
+    Args:
+
+      mod_name:    The name of the module instance for which the type is being
+                   configured.
+
+      block:       The IpBlock to configure (in place)
+
+      new_windows: A map from memory name to a dictionary defining a window
+                   that should be used for the memory (instead of whatever was
+                   there before).
+
+      regwidth:    The register width in bits (controls the generated windows).
+
+      where:       A description of where the override is being made (for error
+                   messages).
+    """
+    for mem_name, win_desc in new_windows.items():
+        memory = block.memories.get(mem_name)
+        if memory is None:
+            msg = (f"Cannot add window to the memory called {mem_name} "
+                   f"{where}: that block doesn't declare "
+                   "a memory with that name.")
+            raise ValueError(msg)
+
+        # We only support memories with at most a single window (if there are
+        # several, we don't know which one to customise)
+        if len(memory.windows) > 1:
+            msg = (f"Cannot set a window for the memory called {mem_name} "
+                   f"{where}: the block defines multiple windows for that "
+                   f"memory, so topgen doesn't know which to configure.")
+            raise ValueError(msg)
+
+        # This is the new window to use
+        addrsep = (regwidth + 7) // 8
+        new_window: Window = create_mem(mem_name, win_desc, addrsep, regwidth)
+
+        # If there was a window before, check that it is consistent with the
+        # new one.
+        if memory.windows:
+            win_where = f"at the window for memory called {mem_name} {where}"
+            check_consistent(memory.windows[0], new_window, win_where)
+
+        memory.windows = [new_window]
+
+        # The RAL template doesn't currently know about memories, but it *does*
+        # know about windows to memory blocks. To represent the memory, we
+        # create an register block with now registers but with the window we
+        # just defined.
+        if_name = mem_name
+        block.reg_blocks[if_name] = reg_block.RegBlock(regwidth, params.ReggenParams(),
+                                                       windows = memory.windows)
+
+
+def check_consistent(old_window: Window, new_window: Window, where: str) -> None:
+    """Raise an error if the two windows aren't consistent.
+
+    Args:
+
+      old_window: The window that is being overridden.
+
+      new_window: The replacement for old_window.
+
+      where:      A description of where the override is being made (for error
+                  messages).
+    """
+    # Check we end up with the same number of "items" in the window (the window
+    # size divided by addrsep)
+    if new_window.items != old_window.items:
+        msg = (f"Mismatch in number of items in the window (overriding "
+               f"{old_window.items} with {new_window.items}) {where}.")
+        raise ValueError(msg)
+
+    # Check the byte_write setting matches
+    if new_window.byte_write != old_window.byte_write:
+        msg = (f"Mismatch in byte_write setting in the window (overriding "
+               f"{old_window.byte_write} with {new_window.byte_write}) "
+               f"{where}.")
+        raise ValueError(msg)
+
+    # Check the data_intg_passthru setting matches
+    if new_window.data_intg_passthru != old_window.data_intg_passthru:
+        msg = (f"Mismatch in data_intg_passthru setting in the window "
+               f"(overriding {old_window.data_intg_passthru} with "
+               f"{new_window.data_intg_passthru}) {where}.")
+        raise ValueError(msg)
 
 
 def create_mem(name: str, item: dict[str, object], addrsep: int, regwidth: int) -> window.Window:
