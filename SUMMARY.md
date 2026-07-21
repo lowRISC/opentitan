@@ -1,4 +1,4 @@
-# Summary
+# OpenTitan Release 1.0.0
 
 [OpenTitan](./doc/introduction.md)
 
@@ -62,9 +62,6 @@
     - [ASIC Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_asic.md)
     - [CW310 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw310.md)
     - [CW340 Target Pinout and Pinmux Connectivity](./hw/top_earlgrey/ip/pinmux/doc/autogen/pinout_cw340.md)
-
-- [Top Darjeeling](./hw/top_darjeeling/README.md)
-  - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
 
 - [Cores](./hw/doc/cores.md)
   - [Ibex RISC-V Core Wrapper](./hw/ip/rv_core_ibex/README.md)
@@ -513,62 +510,6 @@
 - [vendor: Vendoring In Tool](./util/doc/vendor.md)
 - [i2csvg: Generate SVGs of I2C Commands](./util/i2csvg/README.md)
 
-
-# Contributing
-
-- [Contributing](./doc/contributing/README.md)
-  - [Detailed Contribution Guide](./doc/contributing/detailed_contribution_guide/README.md)
-  - [Directory Structure](./doc/contributing/directory_structure.md)
-  - [Contributing to Documentation](./doc/contributing/doc/README.md)
-    - [An Example IP Block's Documentation](./doc/contributing/doc/example_ip_block.md)
-  - [Continuous Intergration](./doc/contributing/ci/README.md)
-  - [Top-Level Design and Targets](./doc/contributing/system_list.md)
-  - [GitHub Notes](./doc/contributing/github_notes.md)
-  - [Bazel Notes](./doc/contributing/bazel_notes.md)
-  - [Using the Container](./util/container/README.md)
-
-- [Contributing to Hardware](./doc/contributing/hw/README.md)
-  - [Comportability](./doc/contributing/hw/comportability/README.md)
-  - [Hardware Design](./doc/contributing/hw/design.md)
-  - [Design Methodology](./doc/contributing/hw/methodology.md)
-  - [Vendoring in Hardware](./doc/contributing/hw/vendor.md)
-  - [Linting](./hw/lint/README.md)
-  - [Synthesis Flow](./hw/syn/README.md)
-
-- [Contributing to Verification](./doc/contributing/dv/README.md)
-  - [Verification Methodology](./doc/contributing/dv/methodology/README.md)
-  - [Security Countermeasure Verification Framework](./doc/contributing/dv/sec_cm_dv_framework/README.md)
-  - [Assertions](./hw/formal/README.md)
-
-- [Contributing to Software](./doc/contributing/sw/README.md)
-  - [Device Interface Functions](./doc/contributing/sw/device_interface_functions.md)
-  - [Writing and Building Software for OTBN](./doc/contributing/sw/otbn_sw.md)
-
-- [Style Guides](./doc/contributing/style_guides/README.md)
-  - [HJSON](./doc/contributing/style_guides/hjson_usage_style.md)
-  - [Python](./doc/contributing/style_guides/python_coding_style.md)
-  - [C & C++](./doc/contributing/style_guides/c_cpp_coding_style.md)
-  - [Markdown](./doc/contributing/style_guides/markdown_usage_style.md)
-  - [RISC-V Assembly](./doc/contributing/style_guides/asm_coding_style.md)
-  - [OTBN Assembly](./doc/contributing/style_guides/otbn_style_guide.md)
-  - [Guidance for Volatile](./doc/contributing/style_guides/guidance_for_volatile.md)
-
-- [Developing on an FPGA](./doc/contributing/fpga/README.md)
-  - [Get a Board](./doc/contributing/fpga/get_a_board.md)
-  - [FPGA Reference Manual](./doc/contributing/fpga/ref_manual_fpga.md)
-  - [Debugging with an ILA](./doc/contributing/fpga/debugging_with_ila.md)
-
-# Project Governance
-
-- [Introduction](./doc/project_governance/README.md)
-- [Committers](./doc/project_governance/committers.md)
-- [RFC Process](./doc/project_governance/rfc_process.md)
-- [Generalized Priority Definitions](./doc/project_governance/priority_definitions.md)
-- [Generalized Project Milestone Definitions](./doc/project_governance/project_milestone_definitions.md)
-- [OpenTitan Technical Committee](./doc/project_governance/technical_committee.md)
-- [Hardware Development Stages](./doc/project_governance/development_stages.md)
-- [Signoff Checklist](./doc/project_governance/checklist/README.md)
-
 # Security
 
 - [Security](./doc/security/README.md)
@@ -592,18 +533,6 @@
 - [Lightweight Threat Model](./doc/security/threat_model/README.md)
 
 - [Penetrationtest Framework](./doc/security/pentest_framework/README.md)
-
-# Use Cases
-
-- [Use Cases](./doc/use_cases/README.md)
-- [Platform Integrity Module](./doc/use_cases/platform_integrity_module/README.md)
-- [Trusted Platform Module](./doc/use_cases/tpm/README.md)
-- [Universal 2nd-Factor Security Key](./doc/use_cases/u2f/README.md)
-
-
-# Rust for C Developers
-
-- [Rust for Embedded C Programmers](./doc/rust_for_c_devs.md)
 
 # Appendix
 

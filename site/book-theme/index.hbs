@@ -129,7 +129,7 @@
             <div class="page">
                 {{> header}}
                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar" class="menu-bar sticky bordered branch">
                     <div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
@@ -145,6 +145,14 @@
                             <i class="fa fa-search"></i>
                         </button>
                         {{/if}}
+						<div class="releases-dropdown">
+                            <button class="dropbtn" type="button">
+                                earlgrey_1.0.0
+                            </button>
+                            <div class="dropdown-content">
+                                <a href="/book/">master</a>
+                            </div>
+                        </div>                 
                     </div>
 
                     <div class="menu-title">
