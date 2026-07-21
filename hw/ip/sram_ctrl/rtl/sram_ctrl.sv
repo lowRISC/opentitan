@@ -91,6 +91,10 @@ module sram_ctrl
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi8_test_true_strict;
 
+  // The memory can have a non-power-of-2 size (checked inside prim_ram_1p_scr) but the size needs
+  // to be divisible by 4.
+  `ASSERT_INIT(MemSizeRamDivisibleBy4_A, MemSizeRam % 4 == 0)
+
   // This is later on pruned to the correct width at the SRAM wrapper interface.
   localparam int unsigned Depth = MemSizeRam >> 2;
   localparam int unsigned InstDepth = InstSize >> 2;
@@ -529,6 +533,7 @@ module sram_ctrl
   tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
+    .SramDepth(Depth),
     .Outstanding(Outstanding),
     .ByteAccess(1),
     .CmdIntgCheck(1),

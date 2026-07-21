@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
+class sram_ctrl_env_cfg #(parameter int MemDepth = 1024)
     extends cip_base_env_cfg #(.RAL_T(sram_ctrl_regs_reg_block));
 
-  `uvm_object_param_utils_begin(sram_ctrl_env_cfg#(AddrWidth))
+  `uvm_object_param_utils_begin(sram_ctrl_env_cfg#(MemDepth))
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -34,7 +34,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
 
   // Store the scb handle for seq. When seq initializes the mem, we should initialize mem_model in
   // scb as well.
-  sram_ctrl_scoreboard#(AddrWidth) scb;
+  sram_ctrl_scoreboard#(MemDepth) scb;
 
   // otp clk freq
   rand uint otp_freq_mhz;
@@ -100,7 +100,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     if (name == RAL_T::type_name) begin
       return super.create_ral_by_name(name);
     end else if (name == sram_ral_name) begin
-      return sram_ctrl_prim_reg_block#(AddrWidth)::type_id::create(sram_ral_name);
+      return sram_ctrl_prim_reg_block#(MemDepth)::type_id::create(sram_ral_name);
     end else begin
       `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
     end
