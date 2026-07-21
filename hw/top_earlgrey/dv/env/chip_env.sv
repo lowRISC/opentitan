@@ -19,6 +19,9 @@ class chip_env extends cip_base_env #(
   // spi host agent that transmits transactions to dut spi device
   spi_agent              m_spi_host_agent;
 
+  // A passive environment that monitors the rom_ctrl block
+  rom_ctrl_env_pkg::rom_ctrl_env m_rom_ctrl_env;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -88,6 +91,11 @@ class chip_env extends cip_base_env #(
       uvm_config_db#(uart_agent_cfg)::set(this, $sformatf("m_uart_agent%0d*", i), "cfg",
                                           cfg.m_uart_agent_cfgs[i]);
     end
+
+    // Create the passive rom_ctrl_env. This can be given m_cfg.m_rv_dm_env_cfg (which has already
+    // been created and initialised by the test object's build_phase) as a cfg object.
+    m_rom_ctrl_env = rom_ctrl_env_pkg::rom_ctrl_env::type_id::create("m_rom_ctrl_env", this);
+    m_rom_ctrl_env.cfg = cfg.m_rom_ctrl_env_cfg;
 
     // dut spi host, tb spi device
     foreach (m_spi_device_agents[i]) begin

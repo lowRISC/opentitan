@@ -35,17 +35,22 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
   // Get the rom_bkdr interface
   if (!uvm_config_db#(rom_ctrl_bkdr_util)::get(this, "", "rom_ctrl_bkdr_util",
                                                cfg.rom_ctrl_bkdr_util_h))
-    `uvm_fatal(`gfn, "failed to get rom_ctrl_bkdr_util from uvm_config_db")
+    `uvm_fatal("config_db", "Failed to get rom_ctrl_bkdr_util from uvm_config_db")
 
   if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif))
-    `uvm_fatal(`gfn, "failed to get rom_ctrl_vif from uvm_config_db")
+    `uvm_fatal("config_db", "Failed to get rom_ctrl_vif from uvm_config_db")
 
   if (!uvm_config_db#(virtual rom_ctrl_fsm_if)::get(this, "", "rom_ctrl_fsm_vif", cfg.fsm_vif))
-    `uvm_fatal(`gfn, "failed to get rom_ctrl_fsm_vif from uvm_config_db")
+    `uvm_fatal("config_db", "Failed to get rom_ctrl_fsm_vif from uvm_config_db.")
 
-  if (!uvm_config_db#(virtual rom_ctrl_compare_if)::get(this, "",
-                                                        "rom_ctrl_compare_vif", cfg.compare_vif))
-    `uvm_fatal(`gfn, "failed to get rom_ctrl_compare_vif from uvm_config_db")
+  // If the environment is active, get hold of an interface that is bound into the compare module
+  // (because sequences will want to use it to inject faults).
+  if (cfg.is_active) begin
+    if (!uvm_config_db#(virtual rom_ctrl_compare_if)::get(this, "", "rom_ctrl_compare_vif",
+                                                          cfg.compare_vif))
+      `uvm_fatal("config_db",
+                 "Active environment could not get rom_ctrl_compare_vif from uvm_config_db")
+  end
 
   // Consume the ROM scramble key and nonce, which should have been provided by the testbench
   if (!uvm_config_db#(bit [127:0])::get(this, "", "scramble_key", cfg.m_scramble_key)) begin
@@ -82,8 +87,13 @@ function void rom_ctrl_env::connect_phase(uvm_phase phase);
   m_kmac_agent.monitor.m_req_packet_analysis_port.connect(scoreboard.m_kmac_req_imp);
   m_kmac_agent.monitor.analysis_port.connect(scoreboard.m_kmac_txn_imp);
 
-  virtual_sequencer.kmac_sequencer_h = m_kmac_agent.sequencer;
+  if (cfg.is_active) begin
+    virtual_sequencer.kmac_sequencer_h = m_kmac_agent.sequencer;
+  end
 
+  // If there is an address forcing driver (because cfg.get_skip_middle() was true), connect the
+  // address forcing driver whether or not the environment is active: we want to be able to use it
+  // to convince rom_ctrl by the back door to jump over the middle of ROM.
   if (m_addr_force_driver != null) begin
     m_addr_force_driver.set_vif(cfg.fsm_vif);
     m_addr_force_driver.seq_item_port.connect(m_addr_force_sequencer.seq_item_export);
