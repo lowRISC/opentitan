@@ -32,7 +32,7 @@
     {
         "name": "Vivado",
         "vendor": "Xilinx",
-        "version": "2025.1",
+        "version": "2021.1",
         "comment": "Used to build FPGA bitstreams."
     },
     {
