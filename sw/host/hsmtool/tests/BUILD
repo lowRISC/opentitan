@@ -30,6 +30,7 @@ sh_library(
         env = {
             "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
         },
+        deps = [":test_lib"],
     )
     for parameter_set in [
         "sha2-128s",
@@ -65,6 +66,7 @@ sh_test(
     env = {
         "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
     },
+    deps = [":test_lib"],
 )
 
 genrule(
