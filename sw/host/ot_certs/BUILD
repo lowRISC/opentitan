@@ -157,3 +157,8 @@ certificate_template(
     name = "variants_test_template",
     template = "tests/variants.hjson",
 )
+
+certificate_template(
+    name = "extensions_test_template",
+    template = "tests/extensions.hjson",
+)
