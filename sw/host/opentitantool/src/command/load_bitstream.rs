@@ -6,10 +6,10 @@ use anyhow::Result;
 use clap::Args;
 use std::any::Any;
 use std::path::PathBuf;
-use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
+use opentitanlib::io::jtag::JtagParams;
 
 /// Load a bitstream into the FPGA.
 #[derive(Debug, Args)]
@@ -17,17 +17,13 @@ pub struct LoadBitstream {
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 
-    /// Duration of the reset pulse.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "50ms")]
-    pub rom_reset_pulse: Duration,
-
-    /// Duration of ROM detection timeout.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "2s")]
-    pub rom_timeout: Duration,
-
     /// Load the bitstream, regardless of a matching USR_ACCESS.
     #[arg(long)]
     pub force: bool,
+
+    /// JTAG options used to check the FPGA's currently loaded bitstream via the backdoor TAP.
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
 }
 
 impl CommandDispatch for LoadBitstream {
@@ -39,11 +35,9 @@ impl CommandDispatch for LoadBitstream {
         opentitanlib::test_utils::load_bitstream::LoadBitstream {
             clear_bitstream: false,
             bitstream: Some(self.filename.clone()),
-            rom_reset_pulse: self.rom_reset_pulse,
-            rom_timeout: self.rom_timeout,
             force: self.force,
         }
-        .init(transport)?;
+        .init(transport, &self.jtag_params)?;
 
         Ok(None)
     }
