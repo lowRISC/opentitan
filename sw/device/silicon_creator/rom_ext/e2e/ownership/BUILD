@@ -646,6 +646,9 @@ _FLASH_PERMISSION_TESTS = {
     ownership_transfer_test(
         name = "flash_permission_test_slot_{}".format(name),
         srcs = ["flash_regions.c"],
+        qemu = {
+            "timeout": "moderate",
+        },
         shared_params = {
             "assemble": "{rom_ext}@{rom_ext_offset} {firmware}@{owner_slot_a}",
             "binaries": {

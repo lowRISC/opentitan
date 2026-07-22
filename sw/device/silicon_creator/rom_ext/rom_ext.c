@@ -143,6 +143,56 @@ void rom_ext_check_rom_expectations(void) {
   sec_mmio_check_values(rnd_uint32());
 }
 
+static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
+  uint32_t actual_size = (uint32_t)_rom_ext_protected_size;
+  uint32_t pages = (actual_size + kFlashPageSize - 1) / kFlashPageSize;
+
+  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+  static const flash_ctrl_perms_t read = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  };
+  flash_ctrl_data_region_protect(
+      0, rom_ext_slot == kBootSlotA ? kRomExtAStart : kRomExtBStart, pages,
+      read, cfg, kHardenedBoolFalse);
+}
+
+static void rom_ext_flash_lockdown(uint32_t rom_ext_slot,
+                                   const manifest_t *manifest) {
+  uint32_t active_pages =
+      ((uint32_t)_rom_ext_size + kFlashPageSize - 1) / kFlashPageSize;
+
+  uint32_t inactive_size = (uint32_t)_rom_ext_size;
+  if (manifest != NULL) {
+    uint32_t manifest_offset =
+        (uint32_t)((uintptr_t)manifest % (kFlashBankSize * kFlashPageSize));
+    if (manifest_offset < inactive_size) {
+      inactive_size = manifest_offset;
+    }
+  }
+  uint32_t inactive_pages =
+      (inactive_size + kFlashPageSize - 1) / kFlashPageSize;
+
+  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+  static const flash_ctrl_perms_t read = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  };
+  static const flash_ctrl_perms_t write = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4True,
+  };
+  flash_ctrl_data_region_protect(
+      0, rom_ext_slot == kBootSlotA ? kRomExtAStart : kRomExtBStart,
+      active_pages, read, cfg, kHardenedBoolTrue);
+  flash_ctrl_data_region_protect(
+      1, rom_ext_slot == kBootSlotA ? kRomExtBStart : kRomExtAStart,
+      inactive_pages, write, cfg, kHardenedBoolTrue);
+}
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
@@ -232,6 +282,10 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   HARDENED_RETURN_IF_ERROR(dice_attest_cdi_1(
       manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
       &sealing_binding, key->key_domain));
+
+  // Configure and lockdown rom_ext flash settings over the full rom_ext_size
+  // range (or up to manifest offset for the inactive slot).
+  rom_ext_flash_lockdown(boot_log->rom_ext_slot, manifest);
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
@@ -382,30 +436,8 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   return error;
 }
 
-static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
-  uint32_t actual_size = (uint32_t)_rom_ext_size;
-  uint32_t pages = (actual_size + kFlashPageSize - 1) / kFlashPageSize;
-
-  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
-  flash_ctrl_perms_t read = {
-      .read = kMultiBitBool4True,
-      .write = kMultiBitBool4False,
-      .erase = kMultiBitBool4False,
-  };
-  flash_ctrl_perms_t write = {
-      .read = kMultiBitBool4True,
-      .write = kMultiBitBool4True,
-      .erase = kMultiBitBool4True,
-  };
-  flash_ctrl_data_region_protect(0, kRomExtAStart, pages,
-                                 rom_ext_slot == kBootSlotA ? read : write, cfg,
-                                 kHardenedBoolTrue);
-  flash_ctrl_data_region_protect(1, kRomExtBStart, pages,
-                                 rom_ext_slot == kBootSlotB ? read : write, cfg,
-                                 kHardenedBoolTrue);
-}
-
-static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
+static void rom_ext_rescue_lockdown(boot_data_t *boot_data,
+                                    boot_log_t *boot_log) {
   // Forbid SRAM execution.
   rom_ext_sram_exec(kOwnerSramExecModeDisabledLocked);
   // Set the keymgr to disabled and clear all sideloaded keys.
@@ -425,6 +457,9 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   // segments to be writable.  Rescue has no need to access the INFO
   // pages, so we want to lock them for safety.
   owner_block_info_lockdown(owner_config.info);
+  // Configure and lockdown rom_ext flash settings over the full rom_ext_size
+  // range.
+  rom_ext_flash_lockdown(boot_log->rom_ext_slot, /*manifest=*/NULL);
 }
 
 static rom_error_t rom_ext_advance_secver(boot_data_t *boot_data,
@@ -612,7 +647,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // the rescue trigger or by a boot failure), then enter rescue.
   if (want_rescue == kHardenedBoolTrue ||
       rescue_enter_on_fail(owner_config.rescue) == kHardenedBoolTrue) {
-    rom_ext_rescue_lockdown(boot_data);
+    rom_ext_rescue_lockdown(boot_data, boot_log);
     if (error != kErrorOk) {
       dbg_printf("BFV:%x\r\n", error);
     }
