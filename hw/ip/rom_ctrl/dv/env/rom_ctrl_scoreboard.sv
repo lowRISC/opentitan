@@ -396,7 +396,7 @@ endfunction
 task rom_ctrl_scoreboard::process_tl_access(tl_seq_item item,
                                             tl_channels_e channel,
                                             string ral_name);
-  if (ral_name == "rom_ctrl_prim_reg_block") begin
+  if (cfg.is_rom_ral_name(ral_name)) begin
     if (channel == DataChannel && !disable_rom_acc_chk) begin
       check_rom_access(item);
     end
