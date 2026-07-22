@@ -163,10 +163,8 @@ SRAM_EXEC_TESTCASES = [
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
-            changes_otp = True,
             exit_success = test["exit_success"],
             rom_ext = test["rom_ext"],
-            testopt_clear_before_test = "True",
         ),
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         deps = [

@@ -142,8 +142,6 @@ opentitan_test(
             --exec="console --non-interactive --exit-success='{exit_success}' --timeout=10s"
             no-op
         """,
-        testopt_clear_after_test = "True",
-        testopt_clear_before_test = "True",
     ),
 )
 
