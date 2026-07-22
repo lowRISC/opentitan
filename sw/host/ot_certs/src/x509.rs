@@ -20,8 +20,8 @@ use crate::asn1::der;
 use crate::asn1::x509;
 
 use crate::template::{
-    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, Selectable,
-    Signature, SubjectPublicKeyInfo, Value,
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, KeyUsage, Name, RawOr,
+    Selectable, Signature, SubjectPublicKeyInfo, Value,
 };
 
 pub mod extension;
@@ -357,7 +357,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
         basic_constraints,
         key_usage,
         subject_alt_name: get_subject_alt_name(&x509)?,
-        private_extensions,
+        private_extensions: RawOr::Type(private_extensions),
         signature: Selectable::Value(extract_signature(&x509)?),
     })
 }
