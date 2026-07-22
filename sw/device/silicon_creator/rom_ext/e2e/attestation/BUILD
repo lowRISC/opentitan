@@ -20,16 +20,45 @@ exports_files(glob(["**"]))
 
 VARIANTS = {
     "print_certs": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "test_cmd": """
             --bootstrap={firmware}
         """,
         "variation": "dice_x509",
     },
     "print_mldsa_certs": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
         "test_cmd": """
             --bootstrap={firmware}
             --timeout=60s
             --test-mldsa
+        """,
+        "variation": "dice_mldsa",
+    },
+    "print_flash_storage_mldsa_certs": {
+        "manifest": "//sw/device/silicon_owner:manifest_mldsa_on_flash",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_flash_storage_dice_mldsa",
+        "test_cmd": """
+            --bootstrap={firmware}
+            --timeout=60s
+            --test-mldsa
+            --assert-mldsa-flash-storage
+        """,
+        "variation": "dice_mldsa",
+    },
+    "print_flash_storage_mldsa_certs_overlapped": {
+        "manifest": "//sw/device/silicon_owner:manifest_mldsa_on_flash",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_flash_storage_dice_mldsa",
+        "slot_spec": {
+            # force bank B + 64K placement for overlapped slot
+            "owner_slot_b": "0x90000",
+            "rom_ext_size": "0x10000",
+        },
+        "test_cmd": """
+            --bootstrap={firmware}
+            --timeout=60s
+            --test-mldsa
+            --assert-mldsa-overlapped
         """,
         "variation": "dice_mldsa",
     },
@@ -45,8 +74,9 @@ VARIANTS = {
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
             "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
-        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
-        slot_spec = ROM_EXT_VARIATIONS[info["variation"]].slot_spec,
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        manifest = info.get("manifest", None),
+        slot_spec = ROM_EXT_VARIATIONS[info["variation"]].slot_spec | info.get("slot_spec", {}),
         deps = [
             "//sw/device/lib/base:crc32",
             "//sw/device/lib/base:status",
@@ -76,23 +106,24 @@ VARIANTS = {
             "//hw/top_earlgrey:sim_qemu_rom_ext": None,
         },
         fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
             binaries = {
                 ":{}".format(name): "firmware",
             },
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(info["variation"]),
+            rom_ext = info["rom_ext"],
             test_cmd = info["test_cmd"],
             test_harness = "//sw/host/tests/attestation:attestation_test",
             testopt_bootstrap = "False",
         ),
         qemu = qemu_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
             binaries = {
                 ":{}".format(name): "firmware",
             },
-            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_slot_a".format(info["variation"]),
+            rom_ext = info["rom_ext"],
             test_cmd = info["test_cmd"],
             test_harness = "//sw/host/tests/attestation:attestation_test",
         ),
-        slot_spec = ROM_EXT_VARIATIONS[info["variation"]].slot_spec,
     )
     for name, info in VARIANTS.items()
 ]
