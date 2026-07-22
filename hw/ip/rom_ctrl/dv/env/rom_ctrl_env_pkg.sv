@@ -5,19 +5,18 @@
 package rom_ctrl_env_pkg;
   // dep packages
   import uvm_pkg::*;
-  import top_pkg::*;
+
   import dv_utils_pkg::*;
-  import dv_lib_pkg::*;
-  import tl_agent_pkg::*;
-  import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
-  import csr_utils_pkg::*;
+  import cip_base_pkg::*;
+  import tl_agent_pkg::*;
+
+  import rom_ctrl_bkdr_util_pkg::*;
+  import kmac_app_agent_pkg::*;
+
+  import top_pkg::*;
   import rom_ctrl_regs_ral_pkg::*;
   import rom_ctrl_prim_ral_pkg::*;
-  import kmac_app_agent_pkg::*;
-  import rom_ctrl_bkdr_util_pkg::*;
-  import prim_mubi_pkg::*;
-  import sec_cm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -67,6 +66,5 @@ package rom_ctrl_env_pkg;
   `include "rom_ctrl_virtual_sequencer.sv"
   `include "rom_ctrl_scoreboard.sv"
   `include "rom_ctrl_env.sv"
-  `include "rom_ctrl_vseq_list.sv"
 
 endpackage
