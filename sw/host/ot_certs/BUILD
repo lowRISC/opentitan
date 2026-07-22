@@ -143,6 +143,7 @@ rust_test_suite(
         ":uds_ecdsa_endorsed_cert_input_golden_data",
         ":mldsa_certs",
         ":fw_ids_raw_test_files",
+        "tests/extensions.hjson",
         "tests/generic_raw_exts.hjson",
         "tests/variants.hjson",
         "//sw/device/silicon_creator/lib/cert:uds_template_file",
