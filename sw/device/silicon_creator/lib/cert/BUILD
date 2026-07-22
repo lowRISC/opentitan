@@ -45,6 +45,16 @@ certificate_template(
 )
 
 certificate_template(
+    name = "cdi_0_exts_template",
+    template = "cdi_0_exts.hjson",
+)
+
+certificate_template(
+    name = "cdi_1_exts_template",
+    template = "cdi_1_exts.hjson",
+)
+
+certificate_template(
     name = "cwt_cose_key_template",
     cert_format = "cwt",
     template = "cwt_cose_key.hjson",
