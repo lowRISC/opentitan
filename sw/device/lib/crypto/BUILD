@@ -35,6 +35,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:kmac_kdf",
+        "//sw/device/lib/crypto/impl:mlkem",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:self_integrity",
         "//sw/device/lib/crypto/impl:sha2",

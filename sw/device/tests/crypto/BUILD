@@ -761,6 +761,24 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "mlkem1024_functest",
+    srcs = ["mlkem1024_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mlkem",
+        "//sw/device/lib/crypto/impl/mlkem",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "mldsa87_sign_functest",
     srcs = ["mldsa87_sign_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
