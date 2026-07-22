@@ -183,13 +183,12 @@ def _get_test_commands(ctx, param, exec_env):
     # Reset OT and enter the backdoor loader
     test_setup_cmd.append('--exec="fpga backdoor enter"')
 
-    # Zero all flash pages and retention SRAM to replicate a new bitstream.
+    # Zero all flash pages and SRAM to replicate a new bitstream.
     # Eventually, this should be replaced with flash info splicing.
     #
     # This is necessary as tests tend not to be judicious about clearing non-volatile
     # state both before and after running, allowing tests to have side effects and
-    # influence each other. We do not zero SRAM as it would typically start in some
-    # scrambled state, and is unlikely to influence test outcomes.
+    # influence each other.
     #
     # In `sw/device/silicon_creator/lib/ownership/test_owner.c`, we override the weak
     # `sku_creator_owner_init` symbol for FPGA environments. We detect bad ownership states
@@ -197,7 +196,7 @@ def _get_test_commands(ctx, param, exec_env):
     # can be used for testing on FPGA. This is a workaround for the lack of info page
     # splicing, but means that for now we need to make sure that at least the boot data
     # info pages are cleared between each run.
-    backdoor_writes = "--clear AON=ALL"
+    backdoor_writes = "--clear AON=ALL --clear SRAM=ALL"
     backdoor_writes += " --clear FB0=ALL --clear FI00=ALL --clear FI01=ALL --clear FI02=ALL"
     backdoor_writes += " --clear FB1=ALL --clear FI10=ALL --clear FI11=ALL --clear FI12=ALL"
 
@@ -336,7 +335,6 @@ def fpga_params(
         rom_ext = None,
         otp = None,
         bitstream = None,
-        changes_otp = False,
         needs_jtag = False,
         test_cmd = "",
         data = [],
@@ -355,7 +353,6 @@ def fpga_params(
       rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
       bitstream: Use an alternate bitstream for this test.
-      changes_otp: Whether this test may change the OTP. Bitstream will be cleared if True.
       needs_jtag: If this test requires JTAG access, set this to True.
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
@@ -364,13 +361,6 @@ def fpga_params(
       struct of test parameters.
     """
 
-    # Clear bitstream after the test if it changes the OTP.
-    if changes_otp:
-        # FIXME: some tests may still be using `changes_otp` to mean "clear the bitstream"
-        # for unrelated changes, e.g. to clear NVM after running a test. These should be
-        # made more specific and these options more granular - for example, a test option
-        # to wipe only the OTP image or the NVM info pages, instead of the entire bitstream.
-        kwargs["testopt_clear_after_test"] = "True"
     if needs_jtag:
         kwargs["testopt_needs_jtag"] = "True"
     return struct(
@@ -378,7 +368,7 @@ def fpga_params(
         # defined in the execution environment), so we do not know that tag
         # (out of: "cw305", "cw340", ...") to apply. Therefore, we apply the tag
         # via the "_hacky_tags" macro in "rules/opentitan/defs.bzl".
-        tags = ["exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
+        tags = ["exclusive"] + tags,
         timeout = timeout,
         test_harness = test_harness,
         binaries = binaries,

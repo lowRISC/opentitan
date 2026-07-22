@@ -9,6 +9,7 @@ use std::convert::From;
 use std::fs;
 use std::path::PathBuf;
 use std::str::FromStr;
+use thiserror::Error;
 
 use crate::app::TransportWrapper;
 use crate::io::fpga_backdoor::{
@@ -44,6 +45,18 @@ fn normalize_word(word: &mut Word, bits_per_word: usize) {
     }
 }
 
+/// A genuine content mismatch found by `verify_readback`, as opposed to some other failure
+/// (e.g. a JTAG/OpenOCD communication error) that can occur while a write is being verified.
+/// Kept distinct so callers can tell "verification ran and found a real mismatch" apart from
+/// "verification didn't get a conclusive answer at all".
+#[derive(Debug, Error)]
+#[error("Read verification at word {offset} failed. Expected: {expected}, Got: {actual}")]
+pub struct VerifyMismatch {
+    offset: u32,
+    expected: String,
+    actual: String,
+}
+
 // Check that words read from target memory match input words.
 pub fn verify_readback(
     input: &mut [Word],
@@ -55,12 +68,12 @@ pub fn verify_readback(
         normalize_word(write_word, bits_per_word);
         normalize_word(read_word, bits_per_word);
         if write_word != read_word {
-            bail!(
-                "Read verification at word {} failed. Expected: {}, Got: {}",
+            return Err(VerifyMismatch {
                 offset,
-                hex::encode(write_word.bytes.clone()),
-                hex::encode(read_word.bytes.clone()),
-            );
+                expected: hex::encode(write_word.bytes.clone()),
+                actual: hex::encode(read_word.bytes.clone()),
+            }
+            .into());
         }
 
         offset += 1;
@@ -76,6 +89,13 @@ pub fn write_to_target(
     verify: bool,
     clearing: bool,
 ) -> Result<()> {
+    // Zero the hash before writing: if this write is interrupted, or the content ends up
+    // different from what's expected, a stale hash must never survive to let a later
+    // `check_hash` run wrongly skip preloading now-different (or corrupted) content.
+    target
+        .write_hash(0)
+        .context("failed to clear HASH_LAST_LOADED before write")?;
+
     // Perform the write(s)
     if clearing {
         log::info!("Clearing the {}...", target_id);
@@ -102,13 +122,28 @@ pub fn write_to_target(
                 target_id,
                 hex::encode(first_word.unwrap().bytes.clone())
             );
-            target.clear(first_word.unwrap(), verify)?;
+            let start = std::time::Instant::now();
+            target.clear(first_word.unwrap(), true)?;
+            log::info!(
+                "Cleared {} word(s) of target {} in {:?}",
+                section.data.len(),
+                target_id,
+                start.elapsed(),
+            );
         } else {
-            target.write(section.addr, &section.data, false, verify)?;
+            let start = std::time::Instant::now();
+            target.write(section.addr, &section.data, false, true)?;
+            log::info!(
+                "Wrote {} word(s) to target {} in {:?}",
+                section.data.len(),
+                target_id,
+                start.elapsed(),
+            );
         }
 
         // If requested, read back the data and verify against written contents
         if verify {
+            let start = std::time::Instant::now();
             let mut readback = target.read(section.addr, section.data.len() as u32, false)?;
             verify_readback(
                 &mut section.data,
@@ -116,6 +151,12 @@ pub fn write_to_target(
                 target.info.width as usize,
                 section.addr,
             )?;
+            log::info!(
+                "Verified {} word(s) of target {} in {:?}",
+                section.data.len(),
+                target_id,
+                start.elapsed(),
+            );
         }
     }
 
@@ -187,12 +228,12 @@ impl TargetWrite {
     /// Write this file to `backdoor`'s target.
     ///
     /// If `check_hash` is set, the preload is skipped entirely when the target's
-    /// `HASH_LAST_LOADED` register already reports a hash matching this file's content --
-    /// `HASH_LAST_LOADED` survives the backdoor loader's own resets (see
+    /// `HASH_LAST_LOADED` register already reports a (non-zero) hash matching this file's
+    /// content -- `HASH_LAST_LOADED` survives the backdoor loader's own resets (see
     /// `Backdoor::read_target_hash`), so this holds across consecutive tool invocations as
     /// long as the FPGA itself isn't power-cycled/reflashed. When `check_hash` is clear, the
-    /// hash register is left untouched and the preload always happens unconditionally, as
-    /// before this check existed.
+    /// preload always happens unconditionally. Either way, the new hash is only stamped once
+    /// the write itself completes without error.
     pub fn backdoor_write(
         &self,
         backdoor: &mut Backdoor,
@@ -206,7 +247,10 @@ impl TargetWrite {
         let new_hash = if check_hash {
             let new_hash = self.file_hash()?;
             let old_hash = target.read_hash()?;
-            if old_hash == new_hash {
+            // A stored hash of 0 never matches: it is both the register's power-on value
+            // (fresh bitstream) and the "unknown content" marker `write_to_target` stamps
+            // before any unhashed write, so it always forces a preload.
+            if old_hash == new_hash && old_hash != 0 {
                 log::info!(
                     "Skipping preload of target {}: content hash unchanged (0x{new_hash:08x})",
                     self.target,
@@ -223,7 +267,24 @@ impl TargetWrite {
         };
 
         let data = self.load_data()?;
-        write_to_target(&mut target, &self.target, data, verify, false)?;
+        if let Err(err) = write_to_target(&mut target, &self.target, data, verify, false) {
+            // Only a genuine content mismatch from `verify_readback`
+            if verify && err.downcast_ref::<VerifyMismatch>().is_some() {
+                // Re-assert the clear explicitly here, before propagating the error, so it
+                // happens unconditionally regardless of how the caller handles the error: this
+                // target's memory no longer matches what was written, so no future run may
+                // trust a previously-stamped hash and skip re-preloading it.
+                target
+                    .write_hash(0)
+                    .context("failed to clear HASH_LAST_LOADED after integrity error")?;
+                return Err(err.context(format!(
+                    "integrity error: write verification failed for target {} \
+                     (HASH_LAST_LOADED has been cleared)",
+                    self.target
+                )));
+            }
+            return Err(err);
+        }
         if let Some(new_hash) = new_hash {
             target.write_hash(new_hash)?;
         }

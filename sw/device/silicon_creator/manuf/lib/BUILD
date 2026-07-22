@@ -147,7 +147,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
         tags = ["manuf"],
     ),
@@ -214,7 +213,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
         tags = ["manuf"],
         test_cmd = """
@@ -273,7 +271,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_individualized",
         tags = [

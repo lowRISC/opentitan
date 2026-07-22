@@ -77,7 +77,6 @@ opentitan_test(
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
-        testopt_clear_after_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -104,7 +103,6 @@ opentitan_test(
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
-        testopt_clear_after_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest_bad_erase_contraint",
@@ -231,8 +229,6 @@ _ISFB_CONTRAINT_TESTS = {
                 no-op
             """,
             testopt_bootstrap = "False",
-            testopt_clear_after_test = "True",
-            testopt_clear_before_test = "True",
         ),
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         manifest = param["manifest"],
