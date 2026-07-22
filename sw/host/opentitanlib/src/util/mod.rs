@@ -13,7 +13,6 @@ pub mod present;
 pub mod printer;
 pub mod raw_tty;
 mod regex;
-pub mod rom_detect;
 pub mod runtime;
 pub mod serde;
 pub mod serializable_error;

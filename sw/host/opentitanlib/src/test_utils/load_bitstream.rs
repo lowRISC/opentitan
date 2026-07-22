@@ -5,9 +5,9 @@
 use anyhow::Result;
 use clap::Args;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 
 use crate::app::{StagedProgressBar, TransportWrapper};
+use crate::io::jtag::JtagParams;
 use crate::transport::common::fpga::FpgaProgram;
 
 /// Load a bitstream into the FPGA.
@@ -21,21 +21,13 @@ pub struct LoadBitstream {
     #[arg(long)]
     pub bitstream: Option<PathBuf>,
 
-    /// Duration of the reset pulse.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "50ms")]
-    pub rom_reset_pulse: Duration,
-
-    /// Duration of ROM detection timeout.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "2s")]
-    pub rom_timeout: Duration,
-
     /// Load the bitstream, regardless of a matching USR_ACCESS.
     #[arg(long)]
     pub force: bool,
 }
 
 impl LoadBitstream {
-    pub fn init(&self, transport: &TransportWrapper) -> Result<()> {
+    pub fn init(&self, transport: &TransportWrapper, jtag_params: &JtagParams) -> Result<()> {
         // Clear out existing bitstream, if requested.
         if self.clear_bitstream {
             log::info!("Clearing bitstream.");
@@ -43,24 +35,27 @@ impl LoadBitstream {
         }
         // Load the specified bitstream, if provided.
         if let Some(bitstream) = &self.bitstream {
-            self.load(transport, bitstream)?;
+            self.load(transport, bitstream, jtag_params)?;
         }
 
         Ok(())
     }
 
-    pub fn load(&self, transport: &TransportWrapper, file: &Path) -> Result<()> {
+    pub fn load(
+        &self,
+        transport: &TransportWrapper,
+        file: &Path,
+        jtag_params: &JtagParams,
+    ) -> Result<()> {
         log::info!("Loading bitstream: {:?}", file);
         let payload = std::fs::read(file)?;
         let progress = StagedProgressBar::new();
         let operation = FpgaProgram {
             bitstream: payload,
-            rom_reset_pulse: self.rom_reset_pulse,
-            rom_timeout: self.rom_timeout,
             progress: Box::new(progress),
         };
 
-        if !self.force && operation.should_skip(transport)? {
+        if !self.force && operation.should_skip(transport, jtag_params)? {
             return Ok(());
         }
 

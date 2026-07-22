@@ -76,12 +76,17 @@ pub fn enter_backdoor_loader(transport: &TransportWrapper) -> Result<()> {
     let pinmux_tap_backdoor = transport.pin_strapping("PINMUX_TAP_FPGA_BACKDOOR")?;
     let reset = transport.pin_strapping("RESET")?;
 
+    log::info!(
+        "Resetting with PINMUX_TAP_FPGA_BACKDOOR (== DFT) strapping applied to enter the backdoor loader"
+    );
     pinmux_tap_backdoor.apply()?;
     reset.apply()?;
     std::thread::sleep(Duration::from_millis(RESET_PULSE_MS));
     reset.remove()?;
     std::thread::sleep(Duration::from_millis(HOLD_TAP_STRAPS_MS));
-    pinmux_tap_backdoor.remove()
+    pinmux_tap_backdoor.remove()?;
+    log::info!("Reset complete, backdoor TAP strapping released");
+    Ok(())
 }
 
 /// A struct which represents a backdoor loader interface.
@@ -917,6 +922,15 @@ impl Backdoor {
             hash,
         )
         .context("cannot write target hash register")
+    }
+
+    /// Read the FPGA's `USR_ACCESS_TIMESTAMP` register: the same value embedded in the
+    /// bitstream's `USR_ACCESS` primitive at build time (see `util::usr_access::usr_access_get`).
+    /// Unlike that value, this one is read directly from the FPGA fabric's configuration over
+    /// the backdoor TAP, so it identifies the bitstream currently loaded.
+    pub fn read_usr_access_timestamp(&mut self) -> Result<u32> {
+        self.dmi_read(regs::USR_ACCESS_TIMESTAMP_REG_OFFSET)
+            .context("cannot read USR_ACCESS_TIMESTAMP register")
     }
 }
 

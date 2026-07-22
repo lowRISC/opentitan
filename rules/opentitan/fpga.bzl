@@ -178,7 +178,7 @@ def _get_test_commands(ctx, param, exec_env):
     if _get_bool(param, "testopt_clear_before_test"):
         test_setup_cmd.append('--exec="fpga clear-bitstream"')
     if "bitstream" in param:
-        test_setup_cmd.append('--exec="fpga load-bitstream {bitstream}"')
+        test_setup_cmd.append('--exec="fpga load-bitstream {jtag_test_cmd} {bitstream}"')
 
     # Reset OT and enter the backdoor loader
     test_setup_cmd.append('--exec="fpga backdoor enter"')

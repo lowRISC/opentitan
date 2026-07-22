@@ -158,7 +158,9 @@ impl InitializeTest {
         // Load a bitstream.
         Self::print_result(
             "load_bitstream",
-            self.load_bitstream.init(&transport).map(|_| None),
+            self.load_bitstream
+                .init(&transport, &self.jtag_params)
+                .map(|_| None),
         )?;
 
         // Program any memories (e.g. ROM, OTP).
