@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -17,7 +17,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/hexstr.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
@@ -27,6 +27,10 @@
 #include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
 OTTF_DEFINE_TEST_CONFIG();
+
+// DPE context slot for testing, must match the slot defined in the
+// keymgr_dpe_testutils.
+static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
 
 static status_t get_stored_certificate(const char *cert_name, size_t name_size,
                                        nvm_info_page_t info_page,
@@ -116,6 +120,7 @@ status_t dice_test(void) {
       .key_mode = kOtcryptoKeyModeEcdsaP256,
       .key_length = 256 / 8,
       .hw_backed = kHardenedBoolTrue,
+      .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
@@ -128,8 +133,8 @@ status_t dice_test(void) {
 
   // CDI_1 (Owner) attestation key diversifier salt and version from dice_keys.h
   TRY(otcrypto_hw_backed_attestation_key(
-      kDiceKeyCdi1.keymgr_diversifier->version,
-      kDiceKeyCdi1.keymgr_diversifier->salt, &private_key));
+      kDiceKeyCdi1.keymgr_dpe_diversifier->version,
+      kDiceKeyCdi1.keymgr_dpe_diversifier->salt, &private_key));
 
   // Read the attestation seed from NVM.
   uint32_t kAttestationSeedWords = 10;
@@ -212,23 +217,18 @@ status_t dice_test(void) {
 }
 
 static status_t test_setup(void) {
-  // Initialize the key manager and advance to OwnerRootKey state.  Note: the
-  // keymgr testutils set this up using software entropy, so there is no need
-  // to initialize the entropy complex first. However, this is of course not
-  // the expected setup in production.
-  dif_keymgr_t keymgr;
+  // Initialize the key manager dpe, which derives the CreatorRootKey.
+  // Note: the keymgr_dpe testutils set this up using software entropy, so there
+  // is no need to initialize the entropy complex first. However, this is of
+  // course not the expected setup in production.
+  dif_keymgr_dpe_t keymgr_dpe;
   dif_kmac_t kmac;
-  dif_keymgr_state_t keymgr_state;
-  TRY(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
+  TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac));
+  TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                       kDifKeymgrDpeStateAvailable));
 
-  if (keymgr_state == kDifKeymgrStateCreatorRootKey) {
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  } else if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  }
-
-  TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+  // TODO(#30759): Verify the kKeymgrDpeSrcSlot contains a key with boot_stage
+  // set to CreatorRootKey!
 
   // Initialize entropy complex for cryptolib, which the key manager uses to
   // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
