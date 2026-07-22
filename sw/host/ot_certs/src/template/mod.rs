@@ -53,6 +53,9 @@ pub struct Template {
     /// Certificate specification.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub certificate: Option<Box<Certificate>>,
+    /// Standalone private extensions specification.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub private_extensions: Option<Vec<CertificateExtension>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -564,13 +567,24 @@ impl Template {
             .context("Not a certificate template")
     }
 
+    pub fn private_extensions(&self) -> Result<&[CertificateExtension]> {
+        self.private_extensions
+            .as_deref()
+            .context("Not a private_extensions template")
+    }
+
     pub fn validate(&self) -> Result<()> {
-        if self.certificate.is_some() {
-            self.validate_certificate()?;
-            Ok(())
-        } else {
-            bail!("Template must contain 'certificate'")
+        match (&self.certificate, &self.private_extensions) {
+            (Some(_), None) => self.validate_certificate()?,
+            (None, Some(_)) => {}
+            (Some(_), Some(_)) => {
+                bail!("Template cannot contain both 'certificate' and 'private_extensions'")
+            }
+            (None, None) => {
+                bail!("Template must contain either 'certificate' or 'private_extensions'")
+            }
         }
+        Ok(())
     }
 
     fn validate_certificate(&self) -> Result<()> {
@@ -1051,12 +1065,95 @@ mod tests {
             name: "cdi_owner".to_string(),
             variables,
             certificate: Some(Box::new(certificate)),
+            private_extensions: None,
         };
         let actual = Template::from_hjson_str(input).expect("failed to parse template");
         // Manual assertion for pretty-printing the huge output if necessary.
         assert_eq!(
             expected, actual,
             "certificate mismatch: expected {expected:#?} but got {actual:#?}"
+        );
+    }
+
+    #[test]
+    fn template_unknown_top_level_field() {
+        let input = indoc! {r#"
+            {
+                name: "test",
+                certifcate: {},
+            }
+        "#};
+        let err = Template::from_hjson_str(input).unwrap_err().to_string();
+        assert!(
+            err.contains("unknown field `certifcate`"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn template_unknown_certificate_field() {
+        let input = indoc! {r#"
+            {
+                name: "test",
+                variables: {},
+                certificate: {
+                    serial_numbr: 123,
+                }
+            }
+        "#};
+        let err = Template::from_hjson_str(input).unwrap_err().to_string();
+        assert!(
+            err.contains("unknown field `serial_numbr`"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn template_validation_missing_payload() {
+        let input = indoc! {r#"
+            {
+                name: "test",
+                variables: {},
+            }
+        "#};
+        let err = Template::from_hjson_str(input).unwrap_err().to_string();
+        assert!(
+            err.contains("Template must contain either 'certificate' or 'private_extensions'"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn template_validation_duplicate_payload() {
+        let input = indoc! {r#"
+            {
+                name: "test",
+                variables: {
+                    x: { type: "integer", exact-size: 32 },
+                    y: { type: "integer", exact-size: 32 },
+                },
+                certificate: {
+                    serial_number: 1,
+                    not_before: "20230101000000Z",
+                    not_after: "20240101000000Z",
+                    issuer: [],
+                    subject: [],
+                    subject_public_key_info: {
+                        algorithm: "ec-public-key",
+                        curve: "prime256v1",
+                        public_key: { x: { var: "x" }, y: { var: "y" } }
+                    },
+                    signature: {
+                        algorithm: "ecdsa-with-sha256",
+                    }
+                },
+                private_extensions: [],
+            }
+        "#};
+        let err = Template::from_hjson_str(input).unwrap_err().to_string();
+        assert!(
+            err.contains("Template cannot contain both 'certificate' and 'private_extensions'"),
+            "unexpected error: {err}"
         );
     }
 }
