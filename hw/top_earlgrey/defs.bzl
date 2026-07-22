@@ -8,6 +8,7 @@ EARLGREY_SLOTS_NORMAL = {
     "owner_slot_a": "0x10000",
     "owner_slot_b": "0x90000",
     "rom_ext_size": "0x10000",
+    "rom_ext_protected_size": "0x10000",
 }
 
 EARLGREY_SLOTS_COVERAGE = {
@@ -16,6 +17,7 @@ EARLGREY_SLOTS_COVERAGE = {
     "owner_slot_a": "0x20000",
     "owner_slot_b": "0xa0000",
     "rom_ext_size": "0x20000",
+    "rom_ext_protected_size": "0x20000",
 }
 
 EARLGREY_SLOTS = select({
@@ -29,6 +31,7 @@ EARLGREY_MLDSA_SLOTS_NORMAL = {
     "owner_slot_a": "0x16000",
     "owner_slot_b": "0x96000",
     "rom_ext_size": "0x16000",
+    "rom_ext_protected_size": "0x14000",
 }
 
 EARLGREY_MLDSA_SLOTS_COVERAGE = {
@@ -37,6 +40,7 @@ EARLGREY_MLDSA_SLOTS_COVERAGE = {
     "owner_slot_a": "0x2a000",
     "owner_slot_b": "0xaa000",
     "rom_ext_size": "0x2a000",
+    "rom_ext_protected_size": "0x28000",
 }
 
 EARLGREY_MLDSA_SLOTS = select({

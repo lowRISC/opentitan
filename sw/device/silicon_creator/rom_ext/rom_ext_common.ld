@@ -32,6 +32,10 @@ ENTRY(_rom_ext_start_boot)
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x10000;
 
+_rom_ext_trailing_size = _rom_ext_size - _rom_ext_protected_size;
+ASSERT(_rom_ext_trailing_size == 0 || _rom_ext_trailing_size == 8192,
+       "ROM_EXT trailing certificate storage size must be either 0 or 8192 bytes.");
+
 /*
  * The start of the .text section relative to the beginning of the associated
  * slot for use in the manifest.
