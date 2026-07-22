@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, CertificatePayload, Conversion,
     DiceTcbInfoExtension, DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature,
-    FirmwareId, KeyUsage, MldsaPublicKeyInfo, Payload, RawOr, Selectable,
+    FirmwareId, KeyUsage, MldsaPublicKeyInfo, Payload, PrivateExtensionsPayload, RawOr, Selectable,
     SelectableChoice, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable,
     VariableType,
 };
@@ -195,6 +195,14 @@ impl Subst for Payload {
             Self::Certificate(CertificatePayload { certificate }) => {
                 Ok(Self::Certificate(CertificatePayload {
                     certificate: Box::new(certificate.subst(data)?),
+                }))
+            }
+            Self::PrivateExtensions(PrivateExtensionsPayload { private_extensions }) => {
+                Ok(Self::PrivateExtensions(PrivateExtensionsPayload {
+                    private_extensions: private_extensions
+                        .iter()
+                        .map(|ext| ext.subst(data))
+                        .collect::<Result<Vec<_>>>()?,
                 }))
             }
         }

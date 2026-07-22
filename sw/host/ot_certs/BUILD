@@ -120,6 +120,7 @@ rust_test_suite(
         ":mldsa_certs",
         ":fw_ids_raw_test_files",
         "tests/variants.hjson",
+        "tests/extensions.hjson",
         "tests/generic_raw_exts.hjson",
     ],
     edition = "2024",
