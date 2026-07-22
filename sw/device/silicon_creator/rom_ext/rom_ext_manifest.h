@@ -28,6 +28,7 @@ const manifest_t *rom_ext_manifest(void);
 extern char _owner_virtual_start_address[];
 extern char _owner_virtual_size[];
 extern char _rom_ext_size[];
+extern char _rom_ext_protected_size[];
 
 /**
  * Compute the virtual address corresponding to the physical address `lma_addr`.
