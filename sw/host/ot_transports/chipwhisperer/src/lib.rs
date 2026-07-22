@@ -161,8 +161,8 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        if action.downcast_ref::<ResetSam3x>().is_some() {
-            self.device.borrow().reset_sam3x()?;
+        if let Some(reset) = action.downcast_ref::<ResetSam3x>() {
+            self.device.borrow().reset_sam3x(reset.power_cycle)?;
             Ok(None)
         } else if action.downcast_ref::<SetPll>().is_some() {
             const TARGET_FREQ: u32 = 100_000_000;
@@ -205,7 +205,11 @@ impl<B: Board> FpgaOps for ChipWhisperer<B> {
 pub struct SetPll {}
 
 /// Command for Transport::dispatch(). Resets the Chip whisperer board's SAM3X chip.
-pub struct ResetSam3x {}
+pub struct ResetSam3x {
+    /// Power cycle the USB hub port of the SAM3x instead of gently
+    /// asking the SAM3x to reset on its own.
+    pub power_cycle: bool,
+}
 
 /// Command for Transport::dispatch(). Returns the SAM3X firmware version.
 pub struct GetSam3xFwVersion {}
