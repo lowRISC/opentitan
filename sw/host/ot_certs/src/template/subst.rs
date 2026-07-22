@@ -401,10 +401,8 @@ impl Subst for Certificate {
                 .context("cannot substitute key usage")?,
             private_extensions: self
                 .private_extensions
-                .iter()
-                .map(|ext| ext.subst(data))
-                .collect::<Result<Vec<_>>>()
-                .context("cannot substitute in extensions")?,
+                .subst(data)
+                .context("cannot substitute private extensions")?,
             signature: self
                 .signature
                 .subst(data)

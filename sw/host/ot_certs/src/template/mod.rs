@@ -96,7 +96,7 @@ pub struct Certificate {
     pub subject_alt_name: Name,
     /// Non-standard X509 certificate extensions.
     #[serde(default)]
-    pub private_extensions: Vec<CertificateExtension>,
+    pub private_extensions: RawOr<Vec<CertificateExtension>>,
     /// X509 certificate's signature.
     pub signature: Selectable<Signature>,
 }
@@ -154,6 +154,12 @@ pub struct DiceTcbInfoExtension {
 pub enum RawOr<T> {
     Type(T),
     Raw(Value<Vec<u8>>),
+}
+
+impl<T: Default> Default for RawOr<T> {
+    fn default() -> Self {
+        RawOr::Type(T::default())
+    }
 }
 
 impl<T> RawOr<T> {
@@ -986,32 +992,34 @@ mod tests {
                 cert_sign: None,
             }),
             subject_alt_name: vec![],
-            private_extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
-                vendor: Some(Value::literal("OpenTitan")),
-                model: Some(Value::literal("ROM_EXT")),
-                svn: Some(Value::convert(
-                    "rom_ext_security_version",
-                    Conversion::BigEndian,
-                )),
-                layer: Some(Value::variable("layer")),
-                version: Some(Value::literal("ES")),
-                fw_ids: Some(RawOr::Type(Vec::from([
-                    FirmwareId {
-                        hash_algorithm: HashAlgorithm::Sha256,
-                        digest: Value::variable("rom_ext_hash"),
-                    },
-                    FirmwareId {
-                        hash_algorithm: HashAlgorithm::Sha256,
-                        digest: Value::variable("ownership_manifest_hash"),
-                    },
-                ]))),
-                flags: Some(DiceTcbInfoFlags {
-                    not_configured: Value::Literal(true),
-                    not_secure: Value::Literal(false),
-                    recovery: Value::Literal(true),
-                    debug: Value::Literal(false),
-                }),
-            })],
+            private_extensions: RawOr::Type(vec![CertificateExtension::DiceTcbInfo(
+                DiceTcbInfoExtension {
+                    vendor: Some(Value::literal("OpenTitan")),
+                    model: Some(Value::literal("ROM_EXT")),
+                    svn: Some(Value::convert(
+                        "rom_ext_security_version",
+                        Conversion::BigEndian,
+                    )),
+                    layer: Some(Value::variable("layer")),
+                    version: Some(Value::literal("ES")),
+                    fw_ids: Some(RawOr::Type(Vec::from([
+                        FirmwareId {
+                            hash_algorithm: HashAlgorithm::Sha256,
+                            digest: Value::variable("rom_ext_hash"),
+                        },
+                        FirmwareId {
+                            hash_algorithm: HashAlgorithm::Sha256,
+                            digest: Value::variable("ownership_manifest_hash"),
+                        },
+                    ]))),
+                    flags: Some(DiceTcbInfoFlags {
+                        not_configured: Value::Literal(true),
+                        not_secure: Value::Literal(false),
+                        recovery: Value::Literal(true),
+                        debug: Value::Literal(false),
+                    }),
+                },
+            )]),
             signature: Selectable::Value(Signature::EcdsaWithSha256 {
                 value: Some(EcdsaSignature {
                     r: Value::variable("cert_signature_r"),
