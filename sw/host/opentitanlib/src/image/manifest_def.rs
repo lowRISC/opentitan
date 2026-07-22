@@ -252,6 +252,9 @@ pub struct ManifestSpec {
     pub_key: ManifestSigverifyBigInt,
 
     #[serde(default)]
+    dice_cert_storage_mode: ManifestSmallInt<u32>,
+
+    #[serde(default)]
     on_demand_dice: ManifestSmallInt<u32>,
 
     #[serde(default)]
@@ -318,6 +321,11 @@ impl ManifestPacked<Manifest> for ManifestSpec {
             pub_key: self.pub_key.unpack("pub_key")?.try_into()?,
             reserved_public_key: Default::default(),
             reserved: Default::default(),
+            dice_cert_storage_mode: self
+                .dice_cert_storage_mode
+                .0
+                .map(|v| v.0)
+                .unwrap_or(0xa5a5a5a5),
             on_demand_dice: self.on_demand_dice.0.map(|v| v.0).unwrap_or(0xa5a5a5a5),
             manifest_base_address: self
                 .manifest_base_address
@@ -346,6 +354,8 @@ impl ManifestPacked<Manifest> for ManifestSpec {
         self.signature.overwrite(o.signature);
         self.usage_constraints.overwrite(o.usage_constraints);
         self.pub_key.overwrite(o.pub_key);
+        self.dice_cert_storage_mode
+            .overwrite(o.dice_cert_storage_mode);
         self.on_demand_dice.overwrite(o.on_demand_dice);
         self.manifest_base_address
             .overwrite(o.manifest_base_address);
@@ -385,6 +395,7 @@ impl TryFrom<&Manifest> for ManifestSpec {
             signature: (&o.signature).try_into()?,
             usage_constraints: (&o.usage_constraints).try_into()?,
             pub_key: (&o.pub_key).try_into()?,
+            dice_cert_storage_mode: (&o.dice_cert_storage_mode).into(),
             on_demand_dice: (&o.on_demand_dice).into(),
             manifest_base_address: (&o.manifest_base_address).into(),
             address_translation: (&o.address_translation).into(),
