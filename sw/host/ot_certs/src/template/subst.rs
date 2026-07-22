@@ -13,11 +13,10 @@ use num_traits::Num;
 use serde::{Deserialize, Serialize};
 
 use crate::template::{
-    BasicConstraints, Certificate, CertificateExtension, Conversion,
-    DiceTcbInfoExtension, DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature,
-    FirmwareId, KeyUsage, MldsaPublicKeyInfo, RawOr, Selectable,
-    SelectableChoice, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable,
-    VariableType,
+    BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
+    DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
+    MldsaPublicKeyInfo, RawOr, Selectable, SelectableChoice, Signature, SizeRange,
+    SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -233,10 +232,20 @@ impl Subst for Template {
             .as_ref()
             .map(|cert| cert.subst(&new_data).map(Box::new))
             .transpose()?;
+        let private_extensions = self
+            .private_extensions
+            .as_ref()
+            .map(|exts| {
+                exts.iter()
+                    .map(|ext| ext.subst(&new_data))
+                    .collect::<Result<Vec<_>>>()
+            })
+            .transpose()?;
         Ok(Template {
             name: self.name.clone(),
             variables,
             certificate,
+            private_extensions,
         })
     }
 }

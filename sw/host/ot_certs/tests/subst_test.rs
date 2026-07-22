@@ -5,9 +5,8 @@
 use anyhow::{Result, bail};
 use base64ct::Encoding;
 
-use ot_certs::asn1::der::Der;
+use ot_certs::template::Template;
 use ot_certs::template::subst::{Subst, SubstData};
-use ot_certs::template::{RawOr, Template};
 
 const GENERIC_CERT: &str = include_str!("generic.hjson");
 const EXAMPLE_DATA: &str = include_str!("example_data.json");
@@ -16,6 +15,7 @@ const EXAMPLE_CERT: &str = include_str!("example.hjson");
 const GENERIC_FW_IDS_RAW: &str = include_str!("generic_fw_ids_raw.hjson");
 const EXAMPLE_FW_IDS_RAW_DATA: &str = include_str!("example_fw_ids_raw_data.json");
 const GENERIC_RAW_EXTS: &str = include_str!("generic_raw_exts.hjson");
+const GENERIC_EXTS: &str = include_str!("extensions.hjson");
 
 #[test]
 fn subst_generic() -> Result<()> {
@@ -75,16 +75,10 @@ fn subst_private_extensions_raw() -> Result<()> {
     let test_data = SubstData::from_json(EXAMPLE_DATA).expect("failed to parse example data");
     let cert_normal = generic_tmpl.subst(&test_data)?;
 
-    let exts = match &cert_normal.certificate().unwrap().private_extensions {
-        RawOr::Type(exts) => exts.clone(),
-        RawOr::Raw(_) => bail!("expected structured extensions in cert_normal"),
-    };
-    let ext_bytes = Der::generate(|builder| {
-        for ext in &exts {
-            ot_certs::asn1::x509::X509::push_cert_extension(builder, ext)?
-        }
-        Ok(())
-    })?;
+    let generic_exts_tmpl =
+        Template::from_hjson_str(GENERIC_EXTS).expect("failed to parse generic exts template");
+    let exts_tmpl = generic_exts_tmpl.subst(&test_data)?;
+    let ext_bytes = ot_certs::x509::generate_private_extensions(&exts_tmpl)?;
 
     let generic_raw_tmpl = Template::from_hjson_str(GENERIC_RAW_EXTS)
         .expect("failed to parse generic raw exts template");

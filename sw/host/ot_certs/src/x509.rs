@@ -254,6 +254,18 @@ pub fn generate_certificate_from_tbs(tbs: Vec<u8>, signature: &Signature) -> Res
     Ok(cert)
 }
 
+/// Generate the DER representation of the private extension list only.
+pub fn generate_private_extensions(tmpl: &template::Template) -> Result<Vec<u8>> {
+    let private_extensions = tmpl.private_extensions()?;
+    let ext_bytes = der::Der::generate(|builder| {
+        for ext in private_extensions {
+            x509::X509::push_cert_extension(builder, ext)?
+        }
+        Ok(())
+    })?;
+    Ok(ext_bytes)
+}
+
 /// Generate a X509 certificate from a template that specifies all variables.
 /// If the template does not specify the values of the signature, a signature
 /// with "zero" values will be generated.
