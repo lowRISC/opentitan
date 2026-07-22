@@ -87,14 +87,14 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
 
     source_h.push_str("#include \"sw/device/lib/base/status.h\"\n\n");
 
+    let cert = tmpl.certificate()?;
+
     // Partition variables between TBS and signature.
     let mut tbs_var_names = IndexSet::new();
-    tmpl.certificate.list_tbs_variables(&mut tbs_var_names);
+    cert.list_tbs_variables(&mut tbs_var_names);
 
     let mut sig_var_names = IndexSet::new();
-    tmpl.certificate
-        .signature
-        .list_variables(&mut sig_var_names);
+    cert.signature.list_variables(&mut sig_var_names);
 
     let mut tbs_vars = IndexMap::<String, VariableType>::new();
     let mut sig_vars = IndexMap::<String, VariableType>::new();
@@ -130,7 +130,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
         &generate_tbs_fn_name,
         &generate_tbs_fn_params,
         &tbs_vars,
-        |builder| X509::push_tbs_certificate(builder, &tmpl.certificate),
+        |builder| X509::push_tbs_certificate(builder, cert),
     )?;
 
     // Create a special variable to hold the TBS binary.
@@ -164,7 +164,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
         &generate_cert_fn_name,
         &generate_cert_fn_params,
         &sig_vars,
-        |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
+        |builder| X509::push_certificate(builder, &tbs_binary_val, &cert.signature),
     )?;
 
     let tmpl_name = tmpl.name.to_upper_camel_case();
