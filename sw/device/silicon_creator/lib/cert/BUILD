@@ -220,6 +220,8 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:static_dice_cdi_0",
         "//sw/device/silicon_creator/lib/base:static_dice_mldsa_cdi",
         "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/cert:cdi_0_exts_template_library",
+        "//sw/device/silicon_creator/lib/cert:cdi_1_exts_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_hybrid_template_library",
         "//sw/device/silicon_creator/lib/cert:dice_chain",
         "//sw/device/silicon_creator/lib/cert:dice_keys",
