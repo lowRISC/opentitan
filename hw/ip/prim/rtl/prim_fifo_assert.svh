@@ -15,7 +15,7 @@
 // - ALERT_ is the name of the alert that should be generated.
 // - GATE_ is a signal that, if true, will cause an error to be ignored.
 // - MAX_CYCLES_ is the number of cycles allowed until the alert must be generated.
-`define ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+`define OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
   `OCAH_OT_ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(``NAME_``WptrCheck_A,                                                            \
                                          HIER_.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,                         \
                                          ALERT_,                                                                          \
@@ -36,7 +36,7 @@
 // - ALERT_ is the name of the alert that should be generated.
 // - GATE_ is a signal that, if true, will cause an error to be ignored.
 // - MAX_CYCLES_ is the number of cycles allowed until the alert must be generated.
-`define ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+`define OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
   `OCAH_OT_ASSERT_ERROR_TRIGGER_ALERT(``NAME_``FullCheck_A,                                                                        \
                               HIER_,                                                                                       \
                               ALERT_,                                                                                      \
@@ -44,10 +44,10 @@
                               MAX_CYCLES_,                                                                                 \
                               err_o)
 
-// A version of ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1, except that it uses
+// A version of OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1, except that it uses
 // ASSERT_ERROR_TRIGGER_ALERT_IN instead of ASSERT_ERROR_TRIGGER_ALERT. See description in
 // prim_assert_se_cm.svh.
-`define ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+`define OCAH_OT_ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
   `OCAH_OT_ASSERT_ERROR_TRIGGER_ALERT_IN(``NAME_``FullCheck_A,                                                   \
                                  HIER_,                                                                  \
                                  ALERT_,                                                                 \
