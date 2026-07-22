@@ -68,6 +68,7 @@ excl_paths=(
     'signing/softhsm/tokens/.*'
     site/landing/data/partner_quotes.json
     'sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.*'
+    third_party/hsm/patches/0002-slh-dsa.patch
 )
 excl_re=""
 for excl in "${excl_paths[@]}"; do

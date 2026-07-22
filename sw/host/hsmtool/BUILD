@@ -41,6 +41,8 @@ rust_library(
         "src/commands/rsa/mod.rs",
         "src/commands/rsa/sign.rs",
         "src/commands/rsa/verify.rs",
+        "src/commands/slh_dsa/generate.rs",
+        "src/commands/slh_dsa/mod.rs",
         "src/commands/spx/export.rs",
         "src/commands/spx/generate.rs",
         "src/commands/spx/import.rs",

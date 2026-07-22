@@ -145,6 +145,8 @@ pub enum KeyType {
     Sha512256Hmac = CKK_SHA512_256_HMAC,
     #[serde(rename = "CKK_SHA512_T_HMAC")]
     Sha512THmac = CKK_SHA512_T_HMAC,
+    #[serde(rename = "CKK_SLH_DSA")]
+    SlhDsa = CKK_SLH_DSA,
     #[serde(rename = "CKK_VENDOR_DEFINED")]
     VendorDefined = CKK_VENDOR_DEFINED,
     #[num_enum(catch_all)]

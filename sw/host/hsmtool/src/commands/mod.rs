@@ -18,6 +18,7 @@ mod exec;
 mod kdf;
 mod object;
 mod rsa;
+mod slh_dsa;
 mod spx;
 mod token;
 
@@ -54,6 +55,8 @@ pub enum Commands {
     #[command(subcommand)]
     Spx(spx::Spx),
     #[command(subcommand)]
+    SlhDsa(slh_dsa::SlhDsa),
+    #[command(subcommand)]
     Token(token::Token),
 }
 
@@ -73,6 +76,7 @@ impl Dispatch for Commands {
             Commands::Object(x) => x.run(context, hsm, session),
             Commands::Rsa(x) => x.run(context, hsm, session),
             Commands::Spx(x) => x.run(context, hsm, session),
+            Commands::SlhDsa(x) => x.run(context, hsm, session),
             Commands::Token(x) => x.run(context, hsm, session),
         }
     }
@@ -89,6 +93,7 @@ impl Dispatch for Commands {
             Commands::Object(x) => x.leaf(),
             Commands::Rsa(x) => x.leaf(),
             Commands::Spx(x) => x.leaf(),
+            Commands::SlhDsa(x) => x.leaf(),
             Commands::Token(x) => x.leaf(),
         }
     }
