@@ -157,6 +157,9 @@ CONST = struct(
         PERSO_INITIAL = 0x00000000,
         PERSONALIZED = 0x53524550,  # ASCII `PERS`.
     ),
+    DICE = struct(
+        MLDSA_ON_FLASH = 0x35bbf70d,
+    ),
 )
 
 _DEFAULT_LC_STATES = [
