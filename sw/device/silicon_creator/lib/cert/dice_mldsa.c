@@ -55,6 +55,26 @@ const dice_storage_slot_t kDiceStorageCdi1Ecdsa = DICE_STORAGE_SLOT(
     /*offset_val=*/kDiceSlotSize,
     /*slot_size_val=*/kDiceSlotSize, kPersoObjectTypeX509Cert);
 
+const dice_storage_slot_v1_t kDiceStorageSlotPqCdi0 = {
+    .bank_idx = 0,
+    .header =
+        {
+            .object_header = TLV_OBJ_HEADER_V1(kPersoObjectTypeX509Cert, 8192),
+            .cert_header = TLV_CERT_HEADER_V1(8, 0),
+            .name = "PQ_CDI_0",
+        },
+};
+
+const dice_storage_slot_v1_t kDiceStorageSlotPqCdi1 = {
+    .bank_idx = 1,
+    .header =
+        {
+            .object_header = TLV_OBJ_HEADER_V1(kPersoObjectTypeX509Cert, 8192),
+            .cert_header = TLV_CERT_HEADER_V1(8, 0),
+            .name = "PQ_CDI_1",
+        },
+};
+
 // Key algorithm variant orders defined in the cdi_hybrid.hjson template.
 enum {
   kCdiHybridKeyAlgEcdsa = 0,
@@ -649,10 +669,31 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
     msg->res.mldsa_uds_pub = (uint32_t)&static_dice_mldsa_cdi.uds_pub;
     msg->res.mldsa_uds_pub_len = static_dice_mldsa_cdi.uds_pub_size;
 
-    msg->res.mldsa_cdi0_cert = (uint32_t)static_dice_mldsa_cdi.cdi_0_cert;
-    msg->res.mldsa_cdi0_cert_len = static_dice_mldsa_cdi.cdi_0_cert_size;
+    bool flash_storage_mode =
+        rom_ext_manifest()->dice_cert_storage_mode == kDiceCertMldsaOnFlash &&
+        owner_manifest->dice_cert_storage_mode == kDiceCertMldsaOnFlash &&
+        !dice_storage_slot_v1_overlapped(owner_manifest);
 
-    msg->res.mldsa_cdi1_cert = (uint32_t)static_dice_mldsa_cdi.cdi_1_cert;
+    if (flash_storage_mode) {
+      if (static_dice_mldsa_cdi.cdi_0_cert_size != 0) {
+        RETURN_IF_ERROR(dice_storage_write_cert_tlv_v1(
+            &kDiceStorageSlotPqCdi0, static_dice_mldsa_cdi.cdi_0_cert,
+            static_dice_mldsa_cdi.cdi_0_cert_size));
+      }
+      RETURN_IF_ERROR(dice_storage_write_cert_tlv_v1(
+          &kDiceStorageSlotPqCdi1, static_dice_mldsa_cdi.cdi_1_cert,
+          static_dice_mldsa_cdi.cdi_1_cert_size));
+
+      msg->res.mldsa_cdi0_cert =
+          (uint32_t)dice_storage_slot_v1_data(&kDiceStorageSlotPqCdi0);
+      msg->res.mldsa_cdi1_cert =
+          (uint32_t)dice_storage_slot_v1_data(&kDiceStorageSlotPqCdi1);
+    } else {
+      msg->res.mldsa_cdi0_cert = (uint32_t)static_dice_mldsa_cdi.cdi_0_cert;
+      msg->res.mldsa_cdi1_cert = (uint32_t)static_dice_mldsa_cdi.cdi_1_cert;
+    }
+
+    msg->res.mldsa_cdi0_cert_len = static_dice_mldsa_cdi.cdi_0_cert_size;
     msg->res.mldsa_cdi1_cert_len = static_dice_mldsa_cdi.cdi_1_cert_size;
 
     // Update type to response.
