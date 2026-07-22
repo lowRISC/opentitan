@@ -65,16 +65,18 @@ impl Template {
         }
         // We want to make sure that we generate valid dates, otherwise tools like
         // openssl might fail to parse the certificate.
-        if let Value::Variable(Variable { name, .. }) = &self.certificate.not_before {
-            data.values.insert(name.clone(), self.random_time());
-        }
-        if let Value::Variable(Variable { name, .. }) = &self.certificate.not_after {
-            data.values.insert(name.clone(), self.random_time());
-        }
-        // We want to make sure that we generate a valid public key, otherwise
-        // tools like openssl might fail to parse the certificate.
-        for (key, val) in self.random_public_key()?.values {
-            data.values.insert(key, val);
+        if let Ok(cert) = self.certificate() {
+            if let Value::Variable(Variable { name, .. }) = &cert.not_before {
+                data.values.insert(name.clone(), self.random_time());
+            }
+            if let Value::Variable(Variable { name, .. }) = &cert.not_after {
+                data.values.insert(name.clone(), self.random_time());
+            }
+            // We want to make sure that we generate a valid public key, otherwise
+            // tools like openssl might fail to parse the certificate.
+            for (key, val) in self.random_public_key()?.values {
+                data.values.insert(key, val);
+            }
         }
         Ok(data)
     }
@@ -121,7 +123,8 @@ impl Template {
     }
 
     fn random_public_key(&self) -> Result<SubstData> {
-        Self::random_public_key_info(&self.certificate.subject_public_key_info)
+        let cert = self.certificate()?;
+        Self::random_public_key_info(&cert.subject_public_key_info)
     }
 
     fn random_public_key_info(info: &Selectable<SubjectPublicKeyInfo>) -> Result<SubstData> {

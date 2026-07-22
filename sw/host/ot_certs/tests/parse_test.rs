@@ -27,10 +27,10 @@ fn main() -> Result<()> {
     // Use openssl to parse the binary certificate.
     let parsed_cert = x509::parse_certificate(&der_cert)?;
     // Check that this is exactly what we started with.
-    println!("expected: {:#?}", cert.certificate);
+    println!("expected: {:#?}", cert.certificate()?);
     println!("got: {parsed_cert:#?}");
     println!("DER: {}", base64ct::Base64::encode_string(&der_cert));
-    if cert.certificate != parsed_cert {
+    if cert.certificate()? != &parsed_cert {
         bail!("parsed certificate does not match the expected one")
     }
 
