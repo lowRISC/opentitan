@@ -90,11 +90,11 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/i2c/dv/lint/{tool}"
              },
-             {    name: keymgr
-                  fusesoc_core: lowrisc:dv:keymgr_sim
+             {    name: keymgr_dpe
+                  fusesoc_core: lowrisc:dv:keymgr_dpe_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
-                  rel_path: "hw/ip/keymgr/dv/lint/{tool}"
+                  rel_path: "hw/ip/keymgr_dpe/dv/lint/{tool}"
              },
              {
                   name: kmac
