@@ -6,12 +6,15 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_DICE_STORAGE_H_
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -230,6 +233,89 @@ void dice_storage_digest_page(const dice_storage_page_t *page,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_storage_check_digest(const dice_storage_page_t *page);
+
+typedef struct dice_storage_header_v1 {
+  uint32_t object_header;  // Big Endian
+  uint32_t cert_header;    // Big Endian
+  char name[8];            // "PQ_CDI_0" or "PQ_CDI_1" (8 bytes)
+} dice_storage_header_v1_t;
+
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, object_header, 0);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, cert_header, 4);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_header_v1_t, name, 8);
+OT_ASSERT_SIZE(dice_storage_header_v1_t, 16);
+
+/**
+ * Represents the TLV v1 format storage layout on data flash.
+ *
+ * This structure describes the metadata and the header template for storing
+ * certificates (e.g., ML-DSA certificates) in data flash.
+ */
+typedef struct dice_storage_slot_v1 {
+  uint32_t bank_idx;                // The flash bank where the cert is stored.
+  dice_storage_header_v1_t header;  // Template
+} dice_storage_slot_v1_t;
+
+/**
+ * Return the byte offset relative to the flash data region.
+ *
+ * @param slot Slot layout.
+ * @return flash byte offset.
+ */
+inline uint32_t dice_storage_slot_v1_offset(
+    const dice_storage_slot_v1_t *slot) {
+  return slot->bank_idx * FLASH_CTRL_PARAM_BYTES_PER_BANK +
+         (uintptr_t)_rom_ext_protected_size;
+}
+
+/**
+ * Return the mmio pointer to the certificate header.
+ *
+ * @param slot Slot layout.
+ * @return Pointer to the certificate tlv header.
+ */
+inline dice_storage_slot_v1_t *dice_storage_slot_v1_header(
+    const dice_storage_slot_v1_t *slot) {
+  return (dice_storage_slot_v1_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                                    dice_storage_slot_v1_offset(slot));
+}
+
+/**
+ * Return the mmio pointer to the certificate data area.
+ *
+ * @param slot Slot layout.
+ * @return Pointer to the certificate data.
+ */
+inline uint8_t *dice_storage_slot_v1_data(const dice_storage_slot_v1_t *slot) {
+  return (uint8_t *)dice_storage_slot_v1_header(slot) +
+         sizeof(dice_storage_header_v1_t);
+}
+
+/**
+ * Write an ML-DSA certificate with TLV v1 header to data flash.
+ *
+ * @param slot Slot template containing bank offset and header.
+ * @param cert_data Certificate payload bytes.
+ * @param cert_size Certificate payload size in bytes.
+ * @return Result of the flash write operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_storage_write_cert_tlv_v1(const dice_storage_slot_v1_t *slot,
+                                           const uint8_t *cert_data,
+                                           size_t cert_size);
+
+/**
+ * Check if the owner software manifest overlaps with rom_ext_size.
+ *
+ * @param manifest Pointer to the owner software manifest.
+ * @return True if the manifest offset is less than rom_ext_size, false
+ * otherwise.
+ */
+inline bool dice_storage_slot_v1_overlapped(const manifest_t *manifest) {
+  uint32_t manifest_offset =
+      (uint32_t)((uintptr_t)manifest % FLASH_CTRL_PARAM_BYTES_PER_BANK);
+  return manifest_offset < (uint32_t)_rom_ext_size;
+}
 
 #ifdef __cplusplus
 }
