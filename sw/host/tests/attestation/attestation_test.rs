@@ -36,6 +36,14 @@ struct Opts {
     /// Enable verification of ML-DSA certificates.
     #[arg(long)]
     test_mldsa: bool,
+
+    /// Assert that ML-DSA certificates are handed over from Flash storage.
+    #[arg(long)]
+    assert_mldsa_flash_storage: bool,
+
+    /// Assert that ML-DSA flash region is reported as occupied warning.
+    #[arg(long)]
+    assert_mldsa_overlapped: bool,
 }
 
 // A helper trait for extracting data out of the `Value` type.
@@ -135,7 +143,7 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     let uart = transport.uart("console")?;
     let capture = UartConsole::wait_for(
         &*uart,
-        r"(?msR)Running.*PASS!$|FAIL!$|BFV:([0-9A-Fa-f]{8})$",
+        r"(?msR).*PASS!$|FAIL!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
 
@@ -152,6 +160,8 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
 
     if opts.test_mldsa {
         verify_mldsa_certs(&capture[0], &cdi0, &cdi1)?;
+        check_mldsa_storage_mode(&capture[0], opts.assert_mldsa_flash_storage)?;
+        check_mldsa_flash_overlapped(&capture[0], opts.assert_mldsa_overlapped)?;
     }
     // TODO: verify signature chain from CDI_1 to CDI_0 to UDS.
 
@@ -253,6 +263,35 @@ fn compare_certs_except_keys(cert1: &Certificate, cert2: &Certificate) -> Result
             "private_extensions mismatch: {:?} vs {:?}",
             cert1.private_extensions,
             cert2.private_extensions
+        ));
+    }
+    Ok(())
+}
+
+fn check_mldsa_storage_mode(console_output: &str, assert_flash: bool) -> Result<()> {
+    let expected_mode = if assert_flash { "Flash" } else { "RAM" };
+    let rx = Regex::new(&format!(r"DICE cert storage mode: {expected_mode}"))?;
+    if !rx.is_match(console_output) {
+        return Err(anyhow!(
+            "Expected 'DICE cert storage mode: {expected_mode}' log message not found in console output"
+        ));
+    }
+    log::info!("DICE cert storage mode assertion passed ({expected_mode})!");
+    Ok(())
+}
+
+fn check_mldsa_flash_overlapped(console_output: &str, assert_overlapped: bool) -> Result<()> {
+    let rx_overlapped = Regex::new("warning: ML-DSA flash region occupied")?;
+    if assert_overlapped {
+        if !rx_overlapped.is_match(console_output) {
+            return Err(anyhow!(
+                "Expected 'warning: ML-DSA flash region occupied' log message not found in console output"
+            ));
+        }
+        log::info!("ML-DSA flash region occupied warning assertion passed!");
+    } else if rx_overlapped.is_match(console_output) {
+        return Err(anyhow!(
+            "Unexpected 'warning: ML-DSA flash region occupied' log message found in console output"
         ));
     }
     Ok(())
