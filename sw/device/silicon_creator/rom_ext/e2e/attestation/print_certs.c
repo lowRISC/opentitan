@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
 static char buf[12288];
@@ -173,18 +174,34 @@ static status_t verify_handover(void) {
         (uint32_t)static_dice_mldsa_cdi.uds_pub, res->mldsa_uds_pub);
     return INTERNAL(5);
   }
-  if (res->mldsa_cdi0_cert != (uint32_t)static_dice_mldsa_cdi.cdi_0_cert) {
+  bool flash_storage_mode =
+      manifest_def_get()->dice_cert_storage_mode == kDiceCertMldsaOnFlash;
+  LOG_INFO("DICE cert storage mode: %s", flash_storage_mode ? "Flash" : "RAM");
+
+  uint32_t expected_cdi0 = 0;
+  uint32_t expected_cdi1 = 0;
+  if (flash_storage_mode) {
+    dice_storage_slot_v1_t cdi0_slot = {.bank_idx = 0};
+    dice_storage_slot_v1_t cdi1_slot = {.bank_idx = 1};
+    expected_cdi0 = (uint32_t)dice_storage_slot_v1_data(&cdi0_slot);
+    expected_cdi1 = (uint32_t)dice_storage_slot_v1_data(&cdi1_slot);
+  } else {
+    expected_cdi0 = (uint32_t)static_dice_mldsa_cdi.cdi_0_cert;
+    expected_cdi1 = (uint32_t)static_dice_mldsa_cdi.cdi_1_cert;
+  }
+
+  if (res->mldsa_cdi0_cert != expected_cdi0) {
     LOG_ERROR(
         "Handed over CDI_0 cert pointer mismatch! Expected: 0x%08x, Got: "
         "0x%08x",
-        (uint32_t)static_dice_mldsa_cdi.cdi_0_cert, res->mldsa_cdi0_cert);
+        expected_cdi0, res->mldsa_cdi0_cert);
     return INTERNAL(6);
   }
-  if (res->mldsa_cdi1_cert != (uint32_t)static_dice_mldsa_cdi.cdi_1_cert) {
+  if (res->mldsa_cdi1_cert != expected_cdi1) {
     LOG_ERROR(
         "Handed over CDI_1 cert pointer mismatch! Expected: 0x%08x, Got: "
         "0x%08x",
-        (uint32_t)static_dice_mldsa_cdi.cdi_1_cert, res->mldsa_cdi1_cert);
+        expected_cdi1, res->mldsa_cdi1_cert);
     return INTERNAL(7);
   }
 
