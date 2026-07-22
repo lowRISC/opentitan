@@ -65,6 +65,7 @@ cc_library(
         "kmac.h",
         "kmac_kdf.h",
         "mldsa.h",
+        "mlkem.h",
         "otcrypto.h",
         "rsa.h",
         "self_integrity.h",
