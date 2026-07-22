@@ -745,7 +745,26 @@ See the [key data structures](#key-data-structures) section for more details.
 
 ### Package hardware-backed keys
 
+Hardware-backed keys are keys whose material is derived based on hardware entropy using OpenTitan's [key manager block][keymgr].
+
+There are two primary modes for using hardware-backed keys:
+1. **Sideloaded Keys (Hardware-only):** The key manager provides the key directly into hardware registers (e.g. for AES or KMAC operations) without exposing the secret key material to software (Ibex CPU).
+2. **Software-Derived Keys (Ibex Software):** The key manager provides key shares and hands them over to software (Ibex CPU memory) in masked form (two XOR-split shares).
+
+To use hardware-backed keys, the caller first sets up an `otcrypto_blinded_key_t` structure with `config.hw_backed = kHardenedBoolTrue` and initializes the handle with key diversification parameters (version and salt):
+- `otcrypto_hw_backed_key` for the sealing key ladder (uses a 7-word salt).
+- `otcrypto_hw_backed_attestation_key` for the attestation key ladder (uses an 8-word salt).
+
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_attestation_key }}
+
+### Generate hardware-backed keys for software
+
+To generate a hardware-backed key whose shares are retrieved into Ibex software memory, use `ot_crypto_hw_backed_keygen`.
+The key struct must first be initialized with `otcrypto_hw_backed_key` or `otcrypto_hw_backed_attestation_key`.
+When `ot_crypto_hw_backed_keygen` runs, it calls Key Manager to derive the software shares, writes the shares into the keyblob, and morphs the key configuration `hw_backed` flag to `kHardenedBoolFalse`.
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h ot_crypto_hw_backed_keygen }}
 
 ### Wrap and unwrap keys
 
