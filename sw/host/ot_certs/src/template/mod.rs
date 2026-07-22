@@ -51,7 +51,8 @@ pub struct Template {
     /// Variable declarations.
     pub variables: IndexMap<String, VariableType>,
     /// Certificate specification.
-    pub certificate: Certificate,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub certificate: Option<Box<Certificate>>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -557,7 +558,22 @@ impl Template {
         Ok(tmpl)
     }
 
+    pub fn certificate(&self) -> Result<&Certificate> {
+        self.certificate
+            .as_deref()
+            .context("Not a certificate template")
+    }
+
     pub fn validate(&self) -> Result<()> {
+        if self.certificate.is_some() {
+            self.validate_certificate()?;
+            Ok(())
+        } else {
+            bail!("Template must contain 'certificate'")
+        }
+    }
+
+    fn validate_certificate(&self) -> Result<()> {
         self.validate_public_key()?;
         self.validate_signature()?;
         Ok(())
@@ -599,7 +615,8 @@ impl Template {
     }
 
     fn validate_public_key(&self) -> Result<()> {
-        self.validate_selectable(&self.certificate.subject_public_key_info, |val| {
+        let cert = self.certificate()?;
+        self.validate_selectable(&cert.subject_public_key_info, |val| {
             match val {
                 SubjectPublicKeyInfo::EcPublicKey(ec) => {
                     let expected_size = match ec.curve {
@@ -697,7 +714,8 @@ impl Template {
     }
 
     fn validate_signature(&self) -> Result<()> {
-        self.validate_selectable(&self.certificate.signature, |val| {
+        let cert = self.certificate()?;
+        self.validate_selectable(&cert.signature, |val| {
             match val {
                 Signature::EcdsaWithSha256 { value } => {
                     if let Some(sig) = value {
@@ -1032,7 +1050,7 @@ mod tests {
         let expected = Template {
             name: "cdi_owner".to_string(),
             variables,
-            certificate,
+            certificate: Some(Box::new(certificate)),
         };
         let actual = Template::from_hjson_str(input).expect("failed to parse template");
         // Manual assertion for pretty-printing the huge output if necessary.
