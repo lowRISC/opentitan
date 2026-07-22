@@ -190,7 +190,6 @@ rust_library(
         "src/util/printer.rs",
         "src/util/raw_tty.rs",
         "src/util/regex.rs",
-        "src/util/rom_detect.rs",
         "src/util/runtime.rs",
         "src/util/serde.rs",
         "src/util/serializable_error.rs",

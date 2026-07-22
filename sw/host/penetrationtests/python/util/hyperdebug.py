@@ -89,12 +89,19 @@ class HyperDebug:
         if not bitstream:
             return
 
-        load_cmd = f"fpga load-bitstream {bitstream}"
+        openocd_opt = f"--openocd={self.openocd} " if self.openocd else ""
+        load_cmd = f"fpga load-bitstream {openocd_opt}{bitstream}"
         if force:
             load_cmd += " --force"
+        adapter_cfg_opt = (
+            [f"--openocd-adapter-config={self.openocd_chip_config}"]
+            if self.openocd and self.openocd_chip_config
+            else []
+        )
         command = (
             [self.opentitantool]
             + self.tool_args
+            + adapter_cfg_opt
             + ["--exec", "transport init", "--exec", load_cmd, "no-op"]
         )
         try:
@@ -134,15 +141,17 @@ class HyperDebug:
             backdoor_writes += f" --write ROM={rom_vmem}"
         if otp_vmem:
             backdoor_writes += f" --write OTP={otp_vmem}"
-        openocd_opts = f"--openocd={openocd_bin} --openocd-adapter-config={openocd_cfg}"
+        openocd_opt = f"--openocd={openocd_bin}"
+        adapter_cfg_opt = [f"--openocd-adapter-config={openocd_cfg}"] if openocd_cfg else []
 
         command = (
             [self.opentitantool]
             + self.tool_args
+            + adapter_cfg_opt
             + [
                 "--exec", "transport init",
                 "--exec", "fpga backdoor enter",
-                "--exec", f"fpga backdoor {openocd_opts} batch {backdoor_writes} --start",
+                "--exec", f"fpga backdoor {openocd_opt} batch {backdoor_writes} --start",
                 "no-op"
             ]
         )

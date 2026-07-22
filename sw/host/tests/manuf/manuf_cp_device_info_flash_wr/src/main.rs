@@ -139,7 +139,10 @@ fn main() -> Result<()> {
     transport.apply_default_configuration(None)?;
     InitializeTest::print_result(
         "load_bitstream",
-        opts.init.load_bitstream.init(&transport).map(|_| None),
+        opts.init
+            .load_bitstream
+            .init(&transport, &opts.init.jtag_params)
+            .map(|_| None),
     )?;
 
     execute_test!(manuf_cp_device_info_flash_wr, &opts, &transport);
