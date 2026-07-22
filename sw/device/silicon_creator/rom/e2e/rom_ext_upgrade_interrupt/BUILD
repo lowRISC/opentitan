@@ -71,8 +71,6 @@ otp_json(
         fpga = fpga_params(
             otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
-            testopt_clear_after_test = "True",
-            testopt_clear_before_test = "True",
         ),
         manifest = ":manifest_rom_ext_upgrade_interrupt",
         deps = [

@@ -82,7 +82,6 @@ _MANUF_TEST_LOCKED_KEY = None
             "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
-            changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
             otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state.lower()),
@@ -119,7 +118,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
@@ -142,7 +140,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
@@ -180,7 +177,6 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
-            changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
@@ -349,7 +345,6 @@ opentitan_binary(
             binaries = {
                 ":sram_device_info_nvm_wr_functest": "sram_program",
             },
-            changes_otp = True,
             needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(init_lc_state.lower()),
             tags = ["manuf"],
@@ -469,7 +464,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = ":otp_img_otp_ctrl_functest",
         tags = ["manuf"],
@@ -498,7 +492,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = ":otp_img_otp_ctrl_functest",
         tags = ["manuf"],

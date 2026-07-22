@@ -130,8 +130,6 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a}",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_boot_svc_after_wakeup",
-        testopt_clear_after_test = "True",
-        testopt_clear_before_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -168,7 +166,6 @@ NEXT_TEST_SEQUENCES = [
             assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
             exit_failure = "BFV:.*|PASS|FAIL",
             exit_success = "FinalBootLog: 3:{}\r\n".format(test_sequence),
-            testopt_clear_after_test = "True",  # Clear the primary slot settings
         ),
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         deps = [
@@ -197,7 +194,6 @@ opentitan_test(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 5:ABBBA\r\n",
-        testopt_clear_before_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -319,8 +315,6 @@ MIN_SEC_VER_SLOTS = [
             binaries = {
                 ":min_sec_ver_5": "min_sec_ver_5",
             },
-            testopt_clear_after_test = "True",
-            testopt_clear_before_test = "True",
             v0_slot = "{{owner_slot_{}}}".format(slots[0]),
             v5_slot = "{{owner_slot_{}}}".format(slots[1]),
         ),
