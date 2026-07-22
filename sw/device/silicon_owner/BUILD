@@ -12,3 +12,10 @@ manifest({
     "identifier": hex(CONST.OWNER),
     "visibility": ["//visibility:public"],
 })
+
+manifest({
+    "name": "manifest_mldsa_on_flash",
+    "identifier": hex(CONST.OWNER),
+    "dice_cert_storage_mode": hex(CONST.DICE.MLDSA_ON_FLASH),
+    "visibility": ["//visibility:public"],
+})
