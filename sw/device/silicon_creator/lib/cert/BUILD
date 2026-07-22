@@ -222,6 +222,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+        "//sw/device/silicon_creator/rom_ext:rom_ext_boot_policy_ptrs",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
         "//third_party/embedpqc:mldsa44_tiny",
         "//third_party/embedpqc/ports:mldsa44_tiny_caller",
