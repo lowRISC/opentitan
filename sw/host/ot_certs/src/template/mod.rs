@@ -49,9 +49,16 @@ pub struct CertificatePayload {
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct PrivateExtensionsPayload {
+    pub private_extensions: Vec<CertificateExtension>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(untagged)]
 pub enum Payload {
     Certificate(CertificatePayload),
+    PrivateExtensions(PrivateExtensionsPayload),
 }
 
 /// Full template file, including variable declarations and certificate spec.
@@ -570,8 +577,19 @@ impl Template {
     }
 
     pub fn certificate(&self) -> Result<&Certificate> {
-        let Payload::Certificate(CertificatePayload { certificate }) = &self.payload;
-        Ok(&**certificate)
+        match &self.payload {
+            Payload::Certificate(CertificatePayload { certificate }) => Ok(&**certificate),
+            _ => bail!("Not a certificate template"),
+        }
+    }
+
+    pub fn private_extensions(&self) -> Result<&[CertificateExtension]> {
+        match &self.payload {
+            Payload::PrivateExtensions(PrivateExtensionsPayload { private_extensions }) => {
+                Ok(private_extensions)
+            }
+            _ => bail!("Not a private_extensions template"),
+        }
     }
 
     pub fn validate(&self) -> Result<()> {
