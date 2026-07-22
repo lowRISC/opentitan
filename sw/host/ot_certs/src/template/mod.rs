@@ -42,16 +42,28 @@ pub mod vars;
 
 use crate::template::subst::{ConvertValue, SubstValue};
 
-/// Full template file, including variable declarations and certificate spec.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(deny_unknown_fields)]
+pub struct CertificatePayload {
+    pub certificate: Box<Certificate>,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(untagged)]
+pub enum Payload {
+    Certificate(CertificatePayload),
+}
+
+/// Full template file, including variable declarations and certificate spec.
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct Template {
     /// Name of the certificate.
     pub name: String,
     /// Variable declarations.
     pub variables: IndexMap<String, VariableType>,
-    /// Certificate specification.
-    pub certificate: Certificate,
+    /// Template payload.
+    #[serde(flatten)]
+    pub payload: Payload,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -557,7 +569,19 @@ impl Template {
         Ok(tmpl)
     }
 
+    pub fn certificate(&self) -> Result<&Certificate> {
+        let Payload::Certificate(CertificatePayload { certificate }) = &self.payload;
+        Ok(&**certificate)
+    }
+
     pub fn validate(&self) -> Result<()> {
+        if self.certificate().is_ok() {
+            self.validate_certificate()?;
+        }
+        Ok(())
+    }
+
+    fn validate_certificate(&self) -> Result<()> {
         self.validate_public_key()?;
         self.validate_signature()?;
         Ok(())
@@ -599,7 +623,8 @@ impl Template {
     }
 
     fn validate_public_key(&self) -> Result<()> {
-        self.validate_selectable(&self.certificate.subject_public_key_info, |val| {
+        let cert = self.certificate()?;
+        self.validate_selectable(&cert.subject_public_key_info, |val| {
             match val {
                 SubjectPublicKeyInfo::EcPublicKey(ec) => {
                     let expected_size = match ec.curve {
@@ -697,7 +722,8 @@ impl Template {
     }
 
     fn validate_signature(&self) -> Result<()> {
-        self.validate_selectable(&self.certificate.signature, |val| {
+        let cert = self.certificate()?;
+        self.validate_selectable(&cert.signature, |val| {
             match val {
                 Signature::EcdsaWithSha256 { value } => {
                     if let Some(sig) = value {
@@ -1032,7 +1058,9 @@ mod tests {
         let expected = Template {
             name: "cdi_owner".to_string(),
             variables,
-            certificate,
+            payload: Payload::Certificate(CertificatePayload {
+                certificate: Box::new(certificate),
+            }),
         };
         let actual = Template::from_hjson_str(input).expect("failed to parse template");
         // Manual assertion for pretty-printing the huge output if necessary.
