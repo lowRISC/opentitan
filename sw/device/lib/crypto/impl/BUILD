@@ -171,6 +171,23 @@ cc_library(
 )
 
 cc_library(
+    name = "mlkem",
+    srcs = ["mlkem.c"],
+    hdrs = ["//sw/device/lib/crypto/include:mlkem.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":config",
+        ":integrity",
+        ":keyblob",
+        ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/impl/mlkem",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "hkdf",
     srcs = ["hkdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
