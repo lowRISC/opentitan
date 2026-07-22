@@ -258,13 +258,13 @@ pub fn generate_certificate_from_tbs(tbs: Vec<u8>, signature: &Signature) -> Res
 /// If the template does not specify the values of the signature, a signature
 /// with "zero" values will be generated.
 pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
+    let cert_tmpl = tmpl.certificate()?;
     // Generate TBS.
-    let tbs =
-        der::Der::generate(|builder| x509::X509::push_tbs_certificate(builder, &tmpl.certificate))?;
+    let tbs = der::Der::generate(|builder| x509::X509::push_tbs_certificate(builder, cert_tmpl))?;
     let tbs = Value::Literal(tbs);
     // Generate certificate.
     let cert = der::Der::generate(|builder| {
-        x509::X509::push_certificate(builder, &tbs, &tmpl.certificate.signature)
+        x509::X509::push_certificate(builder, &tbs, &cert_tmpl.signature)
     })?;
     Ok(cert)
 }
