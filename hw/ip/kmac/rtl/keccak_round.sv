@@ -48,8 +48,9 @@ module keccak_round
 
   // Feed parameters
   parameter  int DInWidth = 64, // currently only 64bit supported
-  localparam int DInEntry = Width / DInWidth,
-  localparam int DInAddr  = $clog2(DInEntry),
+  localparam int DInEntry     = (Width + DInWidth - 1) / DInWidth,
+  localparam int DInAddr      = $clog2(DInEntry),
+  localparam int DInWidthLast = (Width % DInWidth == 0) ? DInWidth : (Width % DInWidth),
 
   // Control parameters
   parameter  bit EnMasking    = 1'b0,  // Enable SCA hardening, requires Width >= 50
@@ -480,24 +481,52 @@ module keccak_round
   // The incoming message is XORed with the existing storage registers.
   // The logic can accept not a block size incoming message chunk but
   // the size defined in `DInWidth` parameter with its position.
-
-  always_comb begin
-    storage_d = keccak_out;
-    if (xor_message) begin
-      for (int j = 0 ; j < Share ; j++) begin
-        for (int unsigned i = 0 ; i < DInEntry ; i++) begin
-          // ICEBOX(#18029): handle If Width is not integer divisible by DInWidth
-          // Currently it is not allowed to have partial write
-          // Please see the Assertion `WidthDivisableByDInWidth_A`
-          if (addr_i == i[DInAddr-1:0]) begin
-            storage_d[j][i*DInWidth+:DInWidth] =
-              storage[j][i*DInWidth+:DInWidth] ^ data_i[j];
-          end else begin
-            storage_d[j][i*DInWidth+:DInWidth] = storage[j][i*DInWidth+:DInWidth];
-          end
-        end // for i
-      end // for j
-    end // if xor_message
+  if (DInWidthLast != DInWidth) begin : gen_partial_entry
+    // Width is not evenly divisible by DInWidth: the last entry is partial.
+    always_comb begin
+      storage_d = keccak_out;
+      if (xor_message) begin
+        for (int j = 0 ; j < Share ; j++) begin
+          for (int unsigned i = 0 ; i < DInEntry ; i++) begin
+            if (int'(i) == DInEntry - 1) begin
+              // Last entry: partial write.
+              if (addr_i == i[DInAddr-1:0]) begin
+                storage_d[j][i*DInWidth +: DInWidthLast] =
+                  storage[j][i*DInWidth +: DInWidthLast] ^ data_i[j][DInWidthLast-1:0];
+              end else begin
+                storage_d[j][i*DInWidth +: DInWidthLast] =
+                  storage[j][i*DInWidth +: DInWidthLast];
+              end
+            end else begin
+              // Full-width entry.
+              if (addr_i == i[DInAddr-1:0]) begin
+                storage_d[j][i*DInWidth+:DInWidth] =
+                  storage[j][i*DInWidth+:DInWidth] ^ data_i[j];
+              end else begin
+                storage_d[j][i*DInWidth+:DInWidth] = storage[j][i*DInWidth+:DInWidth];
+              end
+            end
+          end // for i
+        end // for j
+      end // if xor_message
+    end
+  end else begin : gen_full_entry
+    // Width is evenly divisible by DInWidth: every entry is full-width.
+    always_comb begin
+      storage_d = keccak_out;
+      if (xor_message) begin
+        for (int j = 0 ; j < Share ; j++) begin
+          for (int unsigned i = 0 ; i < DInEntry ; i++) begin
+            if (addr_i == i[DInAddr-1:0]) begin
+              storage_d[j][i*DInWidth+:DInWidth] =
+                storage[j][i*DInWidth+:DInWidth] ^ data_i[j];
+            end else begin
+              storage_d[j][i*DInWidth+:DInWidth] = storage[j][i*DInWidth+:DInWidth];
+            end
+          end // for i
+        end // for j
+      end // if xor_message
+    end
   end
 
   // Check the rst_storage integrity
@@ -583,8 +612,9 @@ module keccak_round
   // Assertions //
   ////////////////
 
-  // Only allow `DInWidth` that `Width` is integer divisible by `DInWidth`
-  `ASSERT_INIT(WidthDivisableByDInWidth_A, (Width % DInWidth) == 0)
+  // DInWidth must be positive and not exceed Width
+  `ASSERT_INIT(DInWidthPositive_A, DInWidth > 0)
+  `ASSERT_INIT(DInWidthLeWidth_A, DInWidth <= Width)
 
   // If `run_i` triggered, it shall complete
   //`ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
