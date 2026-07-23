@@ -3,45 +3,47 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // An interface that is bound into the top-level of rom_ctrl.
+//
+// Note: This interface is not parameterised (to make it easier to use in a non-parameterised
+// testbench). It communicates with the parameterised rom_ctrl module into which it is bound by an
+// upwards hierarchical reference to the (also parameterised) rom_ctrl_bound_if called u_bound_if
+// that is bound next to this interface.
 
-interface rom_ctrl_if ();
+interface rom_ctrl_if (wire clk_i, wire rst_ni);
+  // The pwrmgr_data_o and keymgr_data_o output ports from rom_ctrl.
   rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t keymgr_data;
 
-  // Use an upwards name reference to connect the pwrmgr_data and keymgr_data signals to match the
-  // output ports from the dut.
-  assign pwrmgr_data = dut.pwrmgr_data_o;
-  assign keymgr_data = dut.keymgr_data_o;
+  assign pwrmgr_data = u_bound_if.pwrmgr_data;
+  assign keymgr_data = u_bound_if.keymgr_data;
 
-  clocking cb @(posedge dut.clk_i);
+  clocking cb @(posedge clk_i);
     input pwrmgr_data;
     input keymgr_data;
   endclocking
 
   // Use the given value to override the next request that comes out of u_tl_adapter_rom. This means
-  // that operation will end up asking for the given word instead of the one it expected. The
-  // override lasts until the A channel valid signal drops again.
+  // that operation will end up asking for the given word instead of the one it expected.
+  //
+  // The override lasts until the A channel valid signal drops again or reset is asserted.
   task static override_bus_rom_index(int unsigned index);
-    wait(dut.rom_tl_i.a_valid);
-    force dut.bus_rom_rom_index = index;
-    wait(!dut.rom_tl_i.a_valid);
-    release dut.bus_rom_rom_index;
+    u_bound_if.override_bus_rom_index(index);
   endtask
 
-  // Override the sel_bus_qq index that is used in the mux (between bus accesses and the FSM),
-  // returning on the next negedge. (This will be one cycle if we start before the posedge)
+  // Override the sel_bus_qq index that is used in the mux (between bus accesses and the FSM).
+  //
+  // Return on the next negedge, giving one cycle if we start before the posedge. Return early on a
+  // reset if one is asserted.
   task static override_sel_bus_qq(prim_mubi_pkg::mubi4_t value);
-    force dut.u_mux.sel_bus_qq = value;
-    @(negedge dut.clk_i);
-    release dut.u_mux.sel_bus_qq;
+    u_bound_if.override_sel_bus_qq(value);
   endtask
 
-  // Override the kmac_data_i.rsp_valid signal to be true for a cycle, returning on the next
-  // negedge. This will be one cycle if we start before the posedge.
+  // Override the kmac_data_i.rsp_valid signal to be true for a cycle.
+  //
+  // Return on the next negedge, giving one cycle if we start before the posedge. Return early on a
+  // reset if one is asserted.
   task static force_kmac_data_done();
-    force dut.kmac_data_i.rsp_valid = 1;
-    @(negedge dut.clk_i);
-    release dut.kmac_data_i.rsp_valid;
+    u_bound_if.force_kmac_data_done();
   endtask
 
 endinterface
