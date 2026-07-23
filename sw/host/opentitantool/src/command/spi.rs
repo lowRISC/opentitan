@@ -15,7 +15,7 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::io::eeprom::{AddressMode, MODE_111, Transaction};
 use opentitanlib::io::spi::{SpiParams, Transfer};
-use opentitanlib::spiflash::{EraseMode, ReadMode, SpiFlash};
+use opentitanlib::spiflash::{EraseMode, FlashMode, SpiFlash};
 use opentitanlib::tpm;
 use opentitanlib::transport::Capability;
 use opentitanlib::transport::ProgressIndicator;
@@ -98,7 +98,7 @@ pub struct SpiRead {
     /// Number of bytes to read.
     #[arg(short = 'n', long, default_value = "4096")]
     length: usize,
-    /// Read mode.
+    /// Flash mode.
     #[arg(
         short,
         long,
@@ -106,7 +106,7 @@ pub struct SpiRead {
         ignore_case = true,
         default_value = "standard"
     )]
-    pub mode: ReadMode,
+    pub mode: FlashMode,
     #[arg(short = '4', long, default_value = "false")]
     pub use_4b_opcodes: bool,
     /// Hexdump the data.
@@ -144,7 +144,7 @@ impl CommandDispatch for SpiRead {
         let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
-        flash.read_mode = self.mode;
+        flash.set_flash_mode(self.mode);
 
         let mut buffer = vec![0u8; self.length];
         let progress = StagedProgressBar::new();
@@ -246,6 +246,15 @@ pub struct SpiProgram {
     start: u32,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
+    /// Flash mode.
+    #[arg(
+        short,
+        long,
+        value_enum,
+        ignore_case = true,
+        default_value = "standard"
+    )]
+    pub mode: FlashMode,
 }
 
 #[derive(Debug, serde::Serialize)]
@@ -265,6 +274,7 @@ impl CommandDispatch for SpiProgram {
         let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
+        flash.set_flash_mode(self.mode);
 
         let buffer = fs::read(&self.filename)?;
         let progress = StagedProgressBar::new();
