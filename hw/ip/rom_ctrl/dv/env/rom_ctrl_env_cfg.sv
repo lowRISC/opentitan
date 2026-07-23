@@ -63,6 +63,12 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // m_block_level_rom_ral_name or the one called m_chip_level_rom_ral_name).
   extern function uvm_mem get_rom_ral();
 
+  // Return the size of ROM in bytes
+  extern function int unsigned get_rom_size_bytes();
+
+  // Read the expected digest from the top DIGEST_SIZE bits of ROM (through a backdoor)
+  extern function bit [DIGEST_SIZE-1:0] get_expected_digest();
+
   // Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
   // rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
   // send to kmac. Randomise this to be small with high probability and occasionally make it 10 (to
@@ -183,6 +189,34 @@ function uvm_mem rom_ctrl_env_cfg::get_rom_ral();
   end
 
   return mems[0];
+endfunction
+
+function int unsigned rom_ctrl_env_cfg::get_rom_size_bytes();
+  uvm_mem mem = get_rom_ral();
+
+  return mem.get_size() * mem.get_n_bits() / 8;
+endfunction
+
+function bit [DIGEST_SIZE-1:0] rom_ctrl_env_cfg::get_expected_digest();
+  bit [DIGEST_SIZE-1:0] digest;
+
+  // Read the size of ROM in bytes and divide by 4 to get the number of 32-bit words. Then subtract
+  // DIGEST_SIZE/32 to get the index of first 32-bit word of the digest. This digest sits in the top
+  // DIGEST_SIZE bits of the ROM.
+  int unsigned dig_addr = get_rom_size_bytes() / 4 - DIGEST_SIZE / 32;
+
+  // Backdoor load the digest in 32-bit words.
+  for (int unsigned i = 0; i < DIGEST_SIZE / 32; i++) begin
+    bit [38:0] raw_word = rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * (dig_addr + i),
+                                                                  RND_CNST_SCR_KEY,
+                                                                  RND_CNST_SCR_NONCE,
+                                                                  1'b0);
+
+    // Ignore the top 6 bits (which contain ECC data) and just accumulate the other 32.
+    digest[32 * i +: 32] = raw_word[31:0];
+  end
+
+  return digest;
 endfunction
 
 constraint rom_ctrl_env_cfg::rsp_delay_max_c {
