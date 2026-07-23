@@ -403,6 +403,14 @@ fn var_appears_in_sig(var_name: &str, sig: &Signature) -> bool {
             };
             r.refers_to(var_name) || s.refers_to(var_name)
         }
+        Signature::Mldsa44 { value }
+        | Signature::Mldsa65 { value }
+        | Signature::Mldsa87 { value } => {
+            let Some(val) = value else {
+                return false;
+            };
+            val.refers_to(var_name)
+        }
     }
 }
 
