@@ -16,3 +16,6 @@ set ri_max_single_range_bits 32768
 # Increase the maximum loop to 3200 (KmacStateW X 2)
 # this is a temporary fix for non-ASCII character in AscentLint log
 set ri_max_loop_unroll 3200
+
+# Limit the maximum memory usage to 16G
+set_option max_memory 16G
