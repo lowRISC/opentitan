@@ -17,11 +17,11 @@ void coverage_transport_init(void) {
 
 void coverage_report(void) {
   if (coverage_is_valid()) {
-    base_printf("== COVERAGE PROFILE START ==\r\n");
+    base_printf("\x10== COVERAGE PROFILE START ==\r\n");
     coverage_printer_run();
-    base_printf("== COVERAGE PROFILE END ==\r\n");
+    base_printf("\x10== COVERAGE PROFILE END ==\r\n");
   } else {
-    base_printf("== COVERAGE PROFILE INVALID ==\r\n");
+    base_printf("\x10== COVERAGE PROFILE INVALID ==\r\n");
   }
 }
 
