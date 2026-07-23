@@ -1534,14 +1534,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit mem_access_allowed = super.is_tl_mem_access_allowed(item, block, mem_byte_access_err,
                                                             mem_wo_err, mem_ro_err, custom_err);
 
+    addr_range_t mem_ranges[$];
+    block.get_mem_ranges(mem_ranges);
+
     if (block.get_name() == "otp_macro_prim_reg_block") return mem_access_allowed;
 
     // Ensure the address is within the memory window range.
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
-    if (addr inside {
-        [block.mem_ranges[0].start_addr :
-         block.mem_ranges[0].end_addr]} &&
-        mem_access_allowed) begin
+    if (mem_access_allowed &&
+        mem_ranges[0].start_addr <= addr && addr <= mem_ranges[0].end_addr) begin
 
       // If sw partition is read locked, then access policy changes from RO to no access
 % for part in read_locked_csr_parts:
@@ -1551,10 +1552,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 %>\
       if (`gmv(ral.${part_name.as_snake_case()}_read_lock) == 0 ||
           cfg.otp_ctrl_vif.under_error_states()) begin
-        if (addr inside {
-            [block.mem_ranges[0].start_addr + ${part_name_camel}Offset :
-             block.mem_ranges[0].start_addr + ${part_name_camel}Offset +
-             ${part_name_camel}Size - 1]}) begin
+        uvm_reg_addr_t partition_start = mem_ranges[0].start_addr + ${part_name_camel}Offset;
+        uvm_reg_addr_t partition_end   = partition_start + ${part_name_camel}Size;
+        if (partition_start <= addr && addr < partition_end) begin
           predict_err(OtpPartitionErrorIdx,
                       OtpPartition${part_name_camel}Idx,
                       OtpAccessError);

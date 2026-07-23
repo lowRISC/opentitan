@@ -94,12 +94,13 @@ endtask
 
 // Task to perform `num_ops` fully randomized memory transactions.
 task rom_ctrl_base_vseq::do_rand_ops(int num_ops, bit read_only = 0);
-  addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
-
+  addr_range_t    loc_mem_range[$];
   bit [TL_DW-1:0] data;
   bit [TL_AW-1:0] addr;
   bit             write;
   int             mem_idx;
+
+  cfg.ral_models["rom_ctrl_prim_reg_block"].get_mem_ranges(loc_mem_range);
 
   repeat (num_ops) begin
     bit completed, saw_err;

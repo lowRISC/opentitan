@@ -1384,19 +1384,21 @@ endtask
 
 task cip_base_vseq::run_mem_partial_access_vseq(int num_times);
   `loop_ral_models_to_create_threads(
-      if (cfg.ral_models[ral_name].mem_ranges.size() > 0) begin
+      if (cfg.ral_models[ral_name].get_num_memories() > 0) begin
         run_mem_partial_access_vseq_sub(num_times, ral_name);
       end)
 endtask
 
 task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_name);
-  addr_range_t loc_mem_range[$] = cfg.ral_models[ral_name].mem_ranges;
+  addr_range_t loc_mem_range[$];
   uint num_accesses;
   // limit to 100k accesses if mem is very big
   uint max_accesses = 100_000;
   // Set a minimal access to avoid memory is too small and very little chance to read memory
   uint min_accesses = 100;
   uvm_reg_block local_ral = cfg.ral_models[ral_name];
+
+  cfg.ral_models[ral_name].get_mem_ranges(loc_mem_range);
 
   void'($value$plusargs("max_accesses_for_partial_mem_access_vseq=%0d", max_accesses));
 
