@@ -294,10 +294,21 @@ task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
 
     // Check data sent to pwrmgr
     if (prim_mubi_pkg::mubi4_test_true_strict(cfg.rom_ctrl_vif.cb.pwrmgr_data.done)) begin
-      `DV_CHECK(!pwrmgr_complete, "Spurious pwrmgr signal")
-      `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.pwrmgr_data.good, digest_good, "Incorrect pwrmgr result")
+      if (pwrmgr_complete) begin
+        `uvm_error("extra_pwrmgr_data", "Data is being sent to pwrmgr for a second time.")
+      end
+      if (cfg.rom_ctrl_vif.cb.pwrmgr_data.good != digest_good) begin
+        `uvm_error("wrong_pwrmgr_good",
+                   $sformatf({"rom_ctrl is reporting good=%0h (%0s) to the pwrmgr, ",
+                              "but we expected %0h (%0s)."},
+                             cfg.rom_ctrl_vif.cb.pwrmgr_data.good,
+                             cfg.rom_ctrl_vif.cb.pwrmgr_data.good.name(),
+                             digest_good,
+                             digest_good.name()))
+      end
       pwrmgr_complete = 1'b1;
     end
+
     // Check data sent to keymgr
     if (cfg.rom_ctrl_vif.cb.keymgr_data.valid) begin
       `DV_CHECK(!keymgr_complete, "Spurious keymgr signal")
