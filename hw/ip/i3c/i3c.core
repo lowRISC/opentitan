@@ -1,0 +1,124 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:i3c:0.1"
+description: "i3c"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:virtual_constants:top_pkg
+      - lowrisc:prim:all
+      - lowrisc:prim:ram_1p_pkg
+      - lowrisc:prim:ram_1p_adv
+      - lowrisc:ip:tlul
+      - lowrisc:ip:i3c_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
+    files:
+      - rtl/i3c_async_event_pkg.sv
+      - rtl/i3c_ctrl_ccc_pkg.sv
+      - rtl/i3c_fifo_pkg.sv
+      - rtl/i3c_targ_ccc_pkg.sv
+      - rtl/i3c_timing_pkg.sv
+      - rtl/i3c_tti_pkg.sv
+      - rtl/buf_en.sv
+      - rtl/buf_inv_en.sv
+      - rtl/i3c_buffer.sv
+      - rtl/i3c_clock_buf_en.sv
+      - rtl/i3c_clock_inv_en.sv
+      - rtl/i3c_cmd_decode.sv
+      - rtl/i3c_controller_ccc.sv
+      - rtl/i3c_controller_fsm.sv
+      - rtl/i3c_controller_ibi.sv
+      - rtl/i3c_controller_state.sv
+      - rtl/i3c_controller.sv
+      - rtl/i3c_controller_trx.sv
+      - rtl/i3c_core.sv
+      - rtl/i3c_counters.sv
+      - rtl/i3c_dat_cache.sv
+      - rtl/i3c_dat.sv
+      - rtl/i3c_data_sink.sv
+      - rtl/i3c_dct.sv
+      - rtl/i3c_dword_collector.sv
+      - rtl/i3c_dword_splitter.sv
+      - rtl/i3c_dxt.sv
+      - rtl/i3c_hci_ibi.sv
+      - rtl/i3c_input_buffers.sv
+      - rtl/i3c_intr.sv
+      - rtl/i3c_patt_detector.sv
+      - rtl/i3c_phy.sv
+      - rtl/i3c_queues.sv
+      - rtl/i3c_reg_top.sv
+      - rtl/i3c_reset_detector.sv
+      - rtl/i3c_stby_cr_regs.sv
+      - rtl/i3c.sv
+      - rtl/i3c_sync_data.sv
+      - rtl/i3c_targ_async_events.sv
+      - rtl/i3c_target_ccc.sv
+      - rtl/i3c_target_fsm.sv
+      - rtl/i3c_target_rst.sv
+      - rtl/i3c_target.sv
+      - rtl/i3c_target_trx.sv
+      - rtl/i3c_targ_start_req.sv
+      - rtl/i3c_timers.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/i3c.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/i3c.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/i3c.vbl
+    file_type: veribleLintWaiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl
+    toplevel: i3c
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: i3c
