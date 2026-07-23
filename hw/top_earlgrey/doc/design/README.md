@@ -1,5 +1,9 @@
 # OpenTitan Earl Grey Chip Specification
 
+**NOTE**: This doc is work in progress.
+It refers to and is still being updated for Earl Grey 2, i.e., the second generation of the discrete OpenTitan chip design currently being developed on the [`master` branch](https://github.com/lowRISC/opentitan).
+For information on the taped out Earl Grey design, i.e., the first production OpenTitan silicon, refer to the documentation for the [`earlgrey_1.0.0` branch](https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0) [available here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/doc/design/index.html).
+
 This document describes the OpenTitan Earl Grey chip functionality in detail.
 For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../datasheet.md).
 
