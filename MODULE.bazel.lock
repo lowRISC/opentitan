@@ -2433,7 +2433,7 @@
         "bzlTransitiveDigest": "Bv3tPRvnnIjOEG6PZmKPuEmlsfFAJLcezoZms14uGvI=",
         "usagesDigest": "tdFxsSLiRUnMAr6sM+iVki4hl8WLIChPzoBKi0CpPXU=",
         "recordedFileInputs": {
-          "@@//python-requirements.txt": "158b02e5002547b1f0a86876e5588cc96d86bc0b79d7aa084014b0fbc20671e7",
+          "@@//python-requirements.txt": "df579d68b2ad918462bf612b02908e2699f625c41c9f6a746f858af547d6e76d",
           "@@lowrisc_misc_linters+//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
           "@@protobuf+//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_fuzzing+//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
@@ -2834,15 +2834,6 @@
               "requirement": "pathspec==1.0.3 --hash=sha256:bac5cf97ae2c2876e2d25ebb15078eb04d76e4b98921ee31c6f85ade8b59444d --hash=sha256:e80767021c1cc524aa3fb14bedda9c34406591343cc42797b386ce7b9354fb6c"
             }
           },
-          "ot_python_deps_310_peakrdl_systemrdl": {
-            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
-            "attributes": {
-              "dep_template": "@ot_python_deps//{name}:{target}",
-              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
-              "repo": "ot_python_deps_310",
-              "requirement": "peakrdl-systemrdl==1.0.1 --hash=sha256:17d72641ade637e5650a20589977a3452316ecb630f500907f4c579c0a8f7ebd --hash=sha256:77fe097d01d252b365f9d603e2712a85b3cf65f32c7ad52aadd1a8dea9635a5e"
-            }
-          },
           "ot_python_deps_310_pluggy": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -3030,6 +3021,15 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "questionary==2.1.1 --hash=sha256:3d7e980292bb0107abaa79c68dd3eee3c561b83a0f89ae482860b181c8bd412d --hash=sha256:a51af13f345f1cdea62347589fbb6df3b290306ab8930713bfae4d475a7d4a59"
+            }
+          },
+          "ot_python_deps_310_rdlexporter": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "rdlexporter==0.4.0 --hash=sha256:52f7208c2949addb981196fce24001f22cb4f8403c564e686510a962dae75592 --hash=sha256:c111eb51989aa1f0818422d88eb0ac54eda75661856e74cafa0721693931e775"
             }
           },
           "ot_python_deps_310_referencing": {
@@ -5821,7 +5821,6 @@
                 "okonomiyaki": "{\"ot_python_deps_310_okonomiyaki\":[{\"version\":\"3.10\"}]}",
                 "packaging": "{\"ot_python_deps_310_packaging\":[{\"version\":\"3.10\"}]}",
                 "pathspec": "{\"ot_python_deps_310_pathspec\":[{\"version\":\"3.10\"}]}",
-                "peakrdl_systemrdl": "{\"ot_python_deps_310_peakrdl_systemrdl\":[{\"version\":\"3.10\"}]}",
                 "pluggy": "{\"ot_python_deps_310_pluggy\":[{\"version\":\"3.10\"}]}",
                 "pluralizer": "{\"ot_python_deps_310_pluralizer\":[{\"version\":\"3.10\"}]}",
                 "prefixed": "{\"ot_python_deps_310_prefixed\":[{\"version\":\"3.10\"}]}",
@@ -5843,6 +5842,7 @@
                 "pytz": "{\"ot_python_deps_310_pytz\":[{\"version\":\"3.10\"}]}",
                 "pyyaml": "{\"ot_python_deps_310_pyyaml\":[{\"version\":\"3.10\"}]}",
                 "questionary": "{\"ot_python_deps_310_questionary\":[{\"version\":\"3.10\"}]}",
+                "rdlexporter": "{\"ot_python_deps_310_rdlexporter\":[{\"version\":\"3.10\"}]}",
                 "referencing": "{\"ot_python_deps_310_referencing\":[{\"version\":\"3.10\"}]}",
                 "rich": "{\"ot_python_deps_310_rich\":[{\"version\":\"3.10\"}]}",
                 "rpds_py": "{\"ot_python_deps_310_rpds_py\":[{\"version\":\"3.10\"}]}",
@@ -5914,7 +5914,6 @@
                 "okonomiyaki",
                 "packaging",
                 "pathspec",
-                "peakrdl_systemrdl",
                 "pluggy",
                 "pluralizer",
                 "prefixed",
@@ -5936,6 +5935,7 @@
                 "pytz",
                 "pyyaml",
                 "questionary",
+                "rdlexporter",
                 "referencing",
                 "rich",
                 "rpds_py",
