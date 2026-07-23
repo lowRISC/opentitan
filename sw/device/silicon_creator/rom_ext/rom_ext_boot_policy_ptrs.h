@@ -19,6 +19,12 @@ static_assert((TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
 
 #ifdef OT_PLATFORM_RV32
+
+/**
+ * ROM_EXT size from Bazel's `slot_spec`.
+ */
+extern char _rom_ext_size[];
+
 /**
  * Returns a pointer to the manifest of the first owner boot stage image stored
  * in flash slot A.
@@ -29,7 +35,7 @@ static_assert((TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES % 2) == 0,
 OT_WARN_UNUSED_RESULT
 inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                              CHIP_ROM_EXT_SIZE_MAX);
+                              (uint32_t)_rom_ext_size);
 }
 
 /**
@@ -43,7 +49,7 @@ OT_WARN_UNUSED_RESULT
 inline const manifest_t *rom_ext_boot_policy_manifest_b_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
                               (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2) +
-                              CHIP_ROM_EXT_SIZE_MAX);
+                              (uint32_t)_rom_ext_size);
 }
 #else
 /**
