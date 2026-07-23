@@ -63,7 +63,7 @@
 /**
  * Memory size for rom memory on rom_ctrl in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0xC000
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x30000
 
 
 /**

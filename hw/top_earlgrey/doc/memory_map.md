@@ -66,4 +66,4 @@ The main address space, shared between the CPU and DM
 | sram_ctrl_ret_aon | ram         | `0x40600000`   | `0x1000`       | `0x400`        |
 | flash_ctrl        | mem         | `0x20000000`   | `0x100000`     | `0x40000`      |
 | sram_ctrl_main    | ram         | `0x10000000`   | `0x20000`      | `0x8000`       |
-| rom_ctrl          | rom         | `0x40000`      | `0xC000`       | `0x3000`       |
+| rom_ctrl          | rom         | `0x40000`      | `0x30000`      | `0xC000`       |

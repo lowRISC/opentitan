@@ -145,7 +145,7 @@ mod tests {
     // - Addition of entry 6: a duplicate of entry 13 with the perms set to RWX.
     const PMPCFG: [u32; 4] = [0x898d00, 0x1f998d, 0x8b000000, 0x9b909f00];
     const PMPADDR: [u32; 16] = [
-        0x10000, 0x11411, 0x13000, 0x8000100, 0x8001203, 0x801ffff, 0x41ff, 0x0, 0x0, 0x0,
+        0x10000, 0x11411, 0x1c000, 0x8000100, 0x8001203, 0x801ffff, 0x41ff, 0x0, 0x0, 0x0,
         0x10000000, 0x14000000, 0x0, 0x41ff, 0x4007000, 0x4003fff,
     ];
 
@@ -172,14 +172,14 @@ mod tests {
                 range: EpmpAddressRange(0x40000, 0x45044)
             }
         ));
-        // The second entry is a Tor region representing the rest of the 48k ROM beyond the
+        // The second entry is a Tor region representing the rest of the 192k ROM beyond the
         // .text section decoded in entry 1.
         assert!(matches!(
             epmp.entry[2],
             EpmpEntry {
                 cfg: EPMP_CFG_LRO,
                 kind: EpmpRegionKind::Tor,
-                range: EpmpAddressRange(0x45044, 0x4c000)
+                range: EpmpAddressRange(0x45044, 0x70000)
             }
         ));
         // The sixth entry is a Napot region representing the debug RVDM RAM, but is set to

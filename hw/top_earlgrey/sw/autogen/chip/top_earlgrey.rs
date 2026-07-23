@@ -659,7 +659,7 @@ pub const SRAM_CTRL_MAIN_RAM_SIZE_BYTES: usize = 0x20000;
 pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x40000;
 
 /// Memory size for rom memory on rom_ctrl in top earlgrey.
-pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0xC000;
+pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x30000;
 
 /// PLIC Interrupt Source Peripheral.
 ///
