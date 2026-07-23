@@ -413,11 +413,51 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!cfg.under_reset)  exp_mem[ral_name].write(addr, item.a_data, item.a_mask);
   endtask
 
-  virtual task process_mem_read(tl_seq_item item, string ral_name);
-    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+  // Return a dv_base_mem for a memory at addr in block (with the default map's root map)
+  //
+  // Note that this doesn't normalise addr (on the basis that the caller probably wants the
+  // normalised address too).
+  //
+  // This function will always return a dv_base_mem handle and only returns null if it has just
+  // generated a uvm_error.
+  protected function dv_base_mem get_mem_at_addr(dv_base_reg_block block, uvm_reg_addr_t addr);
+    uvm_mem     raw_mem = block.default_map.get_root_map().get_mem_by_offset(addr);
+    dv_base_mem mem;
 
-    if (!cfg.under_reset && get_mem_access_by_addr(cfg.ral_models[ral_name], addr) == "RW") begin
-      mem_compare(ral_name, addr, item);
+    if (raw_mem == null) begin
+      `uvm_error("no_mem",
+                 $sformatf("Cannot find memory at offset 0x%0h in register block '%0s'.",
+                           addr, block.get_name()))
+      return null;
+    end
+
+    if (!$cast(mem, raw_mem)) begin
+      `uvm_error("base_mem",
+                 $sformatf({"The memory at offset 0x%0h ",
+                            "in register block '%0s' is not a dv_base_mem."},
+                           addr, block.get_name()))
+      return null;
+    end
+
+    return mem;
+  endfunction
+
+  virtual task process_mem_read(tl_seq_item item, string ral_name);
+    dv_base_reg_block block;
+    uvm_reg_addr_t    norm_addr;
+    dv_base_mem       mem;
+
+    if (cfg.under_reset) return;
+
+    block     = cfg.ral_models[ral_name];
+    norm_addr = block.get_normalized_addr(item.a_addr);
+    mem       = get_mem_at_addr(block, norm_addr);
+
+    // Return gracefully if mem is null. get_mem_at_addr() will have just generated a uvm_error.
+    if (mem == null) return;
+
+    if (mem.get_access() == "RW") begin
+      mem_compare(ral_name, norm_addr, item);
     end
   endtask
 
@@ -650,11 +690,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                                           output bit        custom_err);
     if (is_mem_addr(item.a_addr, block)) begin
       dv_base_mem mem;
-      bit invalid_access;
-      uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
-      string mem_access = get_mem_access_by_addr(block, addr);
+      string      mem_access;
+      bit         invalid_access;
 
-      `downcast(mem, get_mem_by_addr(block, addr))
+      mem = get_mem_at_addr(block, block.get_normalized_addr(item.a_addr));
+
+      // Fail gracefully if get_mem_at_addr returns null: we will have just generated a uvm_error
+      // anyway.
+      if (mem == null) return 1;
+
+      mem_access = mem.get_access();
 
       // Check if write isn't full word for mem that doesn't allow byte access.
       if (!mem.get_mem_partial_write_support() &&
@@ -707,9 +752,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             (item.a_size != 2 || item.a_mask != '1));
   endfunction
 
+  // Return true if item addresses a memory with data_intg_passthru.
+  //
+  // This returns false if the item addresses a memory without data_intg_passthru, but also if it
+  // doesn't address a memory at all.
   local function bit is_data_intg_passthru_mem(tl_seq_item item, dv_base_reg_block block);
     uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
-    uvm_mem mem = block.default_map.get_mem_by_offset(addr);
+    uvm_mem mem = block.default_map.get_root_map().get_mem_by_offset(addr);
 
     if (mem == null) begin
       return 0;
