@@ -37,6 +37,30 @@ module tb;
     .sideload_key (kmac_sideload_key)
   );
 
+  // If EnMasking is true, bind a reqack_data_if into the instance of prim_sync_reqack data at
+  // dut.gen_entropy.u_prim_sync_reqack_data and register it with uvm_config_db to be found by the
+  // environment.
+  //
+  // To ensure that this registration happens before we call run_test below, this sets
+  // all_reqack_vifs_registered to true once it is done.
+  bit all_reqack_vifs_registered;
+
+  if (`EN_MASKING) begin : gen_bind_reqack_data_if
+    bind dut.gen_entropy.u_prim_sync_reqack_data reqack_data_if u_reqack_data_if ();
+
+    initial begin
+      uvm_config_db#(virtual pins_if #(1))
+      ::set(null, "*.env", "reqack_data_pins_vif",
+            dut.gen_entropy.u_prim_sync_reqack_data.u_reqack_data_if.u_pins_if);
+
+      all_reqack_vifs_registered = 1;
+    end
+  end else begin : gen_bind_no_reqack_data_if
+    initial begin
+      all_reqack_vifs_registered = 1;
+    end
+  end
+
   kmac_app_if kmac_app_if[NUM_APP_INTF](.clk(clk), .rst_n(rst_n));
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
@@ -115,6 +139,11 @@ module tb;
     uvm_config_db#(virtual kmac_if)::set(null, "*.env", "kmac_vif", kmac_if);
 
     $timeformat(-12, 0, " ps", 12);
+
+    // Make sure that the initial block in gen_bind_*reqack_data_if has run and registered
+    // reqack_data_if before we start the build phase (which will it up in uvm_config_db).
+    wait (all_reqack_vifs_registered);
+
     run_test();
   end
 

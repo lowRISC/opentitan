@@ -332,6 +332,9 @@ module prim_sync_reqack #(
     //VCS coverage off
     // pragma coverage off
 
+    // A reset signal that is asserted (low) if either the source or destination is in reset. This
+    // is used as a reset signal for chk_flag and also for the SyncReqAckHoldReq /
+    // SyncReqAckAckNeedsReq assertions.
     logic effective_rst_n;
     assign effective_rst_n = rst_src_ni && rst_dst_ni;
 
@@ -347,13 +350,19 @@ module prim_sync_reqack #(
     // pragma coverage on
 
     // SRC domain can only de-assert REQ after receiving ACK.
-    `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) && req_chk_i && chk_flag |->
-        $fell(src_ack_o), clk_src_i, !rst_src_ni || !rst_dst_ni || !req_chk_i || !chk_flag)
-  `endif
+    SyncReqAckHoldReq:
+      assert property (@(posedge clk_src_i)
+                       disable iff (effective_rst_n !== 1)
+                       $fell(src_req_i) && req_chk_i && chk_flag |-> $fell(src_ack_o))
+      else `ASSERT_ERROR(SyncReqAckHoldReq)
 
-  // DST domain cannot assert ACK without REQ.
-  `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |->
-      dst_req_o, clk_dst_i, !rst_src_ni || !rst_dst_ni)
+    // DST domain cannot assert ACK without REQ.
+    SyncReqAckAckNeedsReq:
+      assert property (@(posedge clk_dst_i)
+                       disable iff (effective_rst_n !== 1)
+                       dst_ack_i |-> dst_req_o)
+      else `ASSERT_ERROR(SyncReqAckAckNeedsReq)
+  `endif
 
   if (EnRstChks) begin : gen_assert_en_rst_chks
   `ifdef INC_ASSERT
