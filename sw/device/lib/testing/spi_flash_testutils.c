@@ -389,6 +389,8 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
       // Reserved.
       return INVALID_ARGUMENT();
       break;
+    default:
+      break;
   }
   return OK_STATUS();
 }
