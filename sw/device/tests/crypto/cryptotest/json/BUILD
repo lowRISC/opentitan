@@ -18,6 +18,7 @@ cc_library(
         ":hash_commands",
         ":hmac_commands",
         ":kmac_commands",
+        ":mlkem_commands",
         ":rsa_commands",
         ":x25519_commands",
         "//sw/device/lib/ujson",
@@ -107,6 +108,13 @@ cc_library(
     name = "sphincsplus_commands",
     srcs = ["sphincsplus_commands.c"],
     hdrs = ["sphincsplus_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "mlkem_commands",
+    srcs = ["mlkem_commands.c"],
+    hdrs = ["mlkem_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
