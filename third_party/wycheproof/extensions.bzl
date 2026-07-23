@@ -12,7 +12,7 @@ def _wycheproof_repos():
     http_archive(
         name = "wycheproof",
         build_file = Label("//third_party/wycheproof:BUILD.wycheproof_common.bazel"),
-        sha256 = "a7a4c18d0d5609b26f3341dc7a9dd6829174d542ee6f0434f5fa7319e0811b75",
-        strip_prefix = "wycheproof-snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d",
-        url = "https://github.com/lowRISC/wycheproof/archive/refs/tags/snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d.tar.gz",
+        sha256 = "fb3654761053844cea4766db3fcdd41caf8a64a6700040d2bed1d135552911b3",
+        strip_prefix = "wycheproof-snapshot-b61843a9a5115bb758134b6a1f5d5e502d445342",
+        url = "https://github.com/lowRISC/wycheproof/archive/refs/tags/snapshot-b61843a9a5115bb758134b6a1f5d5e502d445342.tar.gz",
     )

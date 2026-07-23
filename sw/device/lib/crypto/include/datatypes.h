@@ -329,6 +329,8 @@ typedef enum otcrypto_kdf_key_mode {
 typedef enum otcrypto_pqc_key_mode {
   // Mode PQC-ML-DSA-87.
   kOtcryptoPqcKeyModeMldsa87 = 0xcee,
+  // Mode PQC-ML-KEM-1024.
+  kOtcryptoPqcKeyModeMlkem1024 = 0x73a,
 } otcrypto_pqc_key_mode_t;
 
 /**
@@ -410,6 +412,8 @@ typedef enum otcrypto_key_mode {
       kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac256,
   kOtcryptoKeyModePqcMldsa87 =
       kOtcryptoKeyTypePqc << 16 | kOtcryptoPqcKeyModeMldsa87,
+  kOtcryptoKeyModePqcMlkem1024 =
+      kOtcryptoKeyTypePqc << 16 | kOtcryptoPqcKeyModeMlkem1024,
 } otcrypto_key_mode_t;
 
 /**
