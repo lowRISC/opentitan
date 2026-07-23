@@ -30,6 +30,14 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   local string m_block_level_rom_ral_name = "rom_ctrl_prim_reg_block";
   local string m_chip_level_rom_ral_name  = "rom_ctrl_rom_reg_block";
 
+  // The key that is used for scrambling the ROM. If not configured, this will be RND_CNST_SCR_KEY
+  // (a global parameter), but this is unlikely to match the design under test.
+  bit [127:0] m_scramble_key = RND_CNST_SCR_KEY;
+
+  // The nonce that is used for scrambling the ROM. If not configured, this will be
+  // RND_CNST_SCR_NONCE (a global parameter), but this is unlikely to match the design under test.
+  bit [63:0]  m_scramble_nonce = RND_CNST_SCR_NONCE;
+
   // An interface bound into the rom_ctrl_compare module
   virtual rom_ctrl_compare_if compare_vif;
 
@@ -225,8 +233,8 @@ function bit [DIGEST_SIZE-1:0] rom_ctrl_env_cfg::get_expected_digest();
   // Backdoor read the digest in 32-bit words.
   for (int unsigned i = 0; i < DIGEST_SIZE / 32; i++) begin
     bit [38:0] raw_word = rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * (dig_addr + i),
-                                                                  RND_CNST_SCR_KEY,
-                                                                  RND_CNST_SCR_NONCE,
+                                                                  m_scramble_key,
+                                                                  m_scramble_nonce,
                                                                   1'b0);
 
     // Ignore the top 7 bits (which contain ECC data) and just accumulate the other 32.

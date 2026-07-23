@@ -124,6 +124,9 @@ module tb;
         null, "*.env", "rom_ctrl_compare_vif",
         dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_bound_if.gen_bound.u_compare_if);
 
+    uvm_config_db#(bit [127:0])::set(null, "*.env", "scramble_key", dut.RndCnstScrKey);
+    uvm_config_db#(bit [63:0])::set(null, "*.env", "scramble_nonce", dut.RndCnstScrNonce);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

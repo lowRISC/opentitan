@@ -167,8 +167,8 @@ function void rom_ctrl_scoreboard::write_kmac_req(kmac_app_req_packet_item packe
     end
 
     mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * matching_pfx_len,
-                                                           RND_CNST_SCR_KEY,
-                                                           RND_CNST_SCR_NONCE,
+                                                           cfg.m_scramble_key,
+                                                           cfg.m_scramble_nonce,
                                                            1'b0);
 
     seen_word = {req_bytes[matching_pfx_len * 5 + 4],
@@ -206,8 +206,8 @@ function void rom_ctrl_scoreboard::write_kmac_req(kmac_app_req_packet_item packe
     int unsigned        idx_in_req_bytes;
 
     mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * (start_tail_idx + word_idx),
-                                                           RND_CNST_SCR_KEY,
-                                                           RND_CNST_SCR_NONCE,
+                                                           cfg.m_scramble_key,
+                                                           cfg.m_scramble_nonce,
                                                            1'b0);
 
     idx_in_req_bytes = 5 * (matching_pfx_len + word_idx);
@@ -326,7 +326,7 @@ function void rom_ctrl_scoreboard::check_rom_access(tl_seq_item item);
   `DV_CHECK_EQ(item.d_error, item.get_exp_d_error(), "TLUL ROM read error incorrect")
 
   exp_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(
-      item.a_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b1);
+      item.a_addr, cfg.m_scramble_key, cfg.m_scramble_nonce, 1'b1);
 
   for (int i = 0; i < TL_DW / 8; i++) begin
     if (item.a_mask[i]) begin

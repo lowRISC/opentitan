@@ -58,6 +58,14 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
                                                         "rom_ctrl_compare_vif", cfg.compare_vif))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_compare_vif from uvm_config_db")
 
+  // Consume the ROM scramble key and nonce, which should have been provided by the testbench
+  if (!uvm_config_db#(bit [127:0])::get(this, "", "scramble_key", cfg.m_scramble_key)) begin
+    `uvm_fatal("config_db", "Failed to get scramble_key from uvm_config_db.")
+  end
+  if (!uvm_config_db#(bit [63:0])::get(this, "", "scramble_nonce", cfg.m_scramble_nonce)) begin
+    `uvm_fatal("config_db", "Failed to get scramble_nonce from uvm_config_db.")
+  end
+
   // Build the KMAC agent
   m_kmac_agent = kmac_app_device_agent::type_id::create("m_kmac_agent", this);
   uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
