@@ -77,7 +77,9 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     if (!cfg.clk_rst_vifs.exists(ral_name) &&
         !uvm_config_db#(virtual clk_rst_if)::get(this, "",
                                                  if_name, cfg.clk_rst_vifs[ral_name])) begin
-      `uvm_fatal(get_full_name(), $sformatf("No clk_rst_if called %0s in uvm_config_db", ral_name))
+      `uvm_fatal(get_full_name(),
+                 $sformatf("No clk_rst_if for %0s (which would be called %0s) in uvm_config_db",
+                           ral_name, if_name))
     end
 
     cfg.clk_rst_vifs[ral_name].set_freq_mhz(cfg.clk_freqs_mhz[ral_name]);
