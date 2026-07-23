@@ -506,6 +506,23 @@ class ECALL(OTBNInsn):
         state.stop_at_end_of_cycle(err_bits=0)
 
 
+class WFI(OTBNInsn):
+    insn = insn_for_mnemonic('wfi', 0)
+
+    def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
+        # wfi is only legal when CTRL.wfi_enabled is set.
+        if not state.wfi_enabled:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return None
+
+        # Stall until RESUME command is seen.
+        state.enter_wfi_pause()
+        while not state.wfi_should_resume():
+            yield None
+        state.exit_wfi_pause()
+        return None
+
+
 class LOOP(OTBNInsn):
     insn = insn_for_mnemonic('loop', 2)
     affects_control = True
@@ -1780,7 +1797,7 @@ INSN_CLASSES = [
     LW, SW,
     BEQ, BNE, JAL, JALR,
     CSRRS, CSRRW,
-    ECALL,
+    ECALL, WFI,
     LOOP, LOOPI,
 
     BNADD, BNADDC, BNADDI, BNADDM,
