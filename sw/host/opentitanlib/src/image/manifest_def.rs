@@ -105,6 +105,38 @@ impl ManifestSpec {
         self.overwrite(other)
     }
 
+    pub fn set_default_manifest_base_address(&mut self) -> Result<()> {
+        let current_address = self
+            .manifest_base_address
+            .0
+            .as_ref()
+            .map(|v| v.0)
+            .unwrap_or(0xa5a5a5a5);
+
+        let is_reasonable = |addr: u32| -> bool {
+            if addr == 0xa5a5a5a5 {
+                return true;
+            }
+            if addr % 256 != 0 {
+                return false;
+            }
+            let is_physical = (0x20000000..0x20100000).contains(&addr);
+            let is_virtual_rom_ext = (0x90000000..0x90080000).contains(&addr);
+            let is_virtual_owner = (0xa0000000..0xa0080000).contains(&addr);
+            is_physical || is_virtual_rom_ext || is_virtual_owner
+        };
+
+        if !is_reasonable(current_address) {
+            log::info!(
+                "Replacing non-reasonable manifest_base_address {:#x} with {:#x}",
+                current_address,
+                0xa5a5a5a5u32
+            );
+            self.manifest_base_address = ManifestSmallInt(Some(HexEncoded(0xa5a5a5a5)));
+        }
+        Ok(())
+    }
+
     pub fn update_signature(&mut self, signature: ManifestSigverifyBuffer) {
         self.signature.0 = Some(HexEncoded(signature))
     }
@@ -656,5 +688,93 @@ mod tests {
         let redef: ManifestSpec = (&bin1).try_into().unwrap();
         let rebin: Manifest = redef.try_into().unwrap();
         assert_eq!(bin2.as_bytes(), rebin.as_bytes());
+    }
+
+    #[test]
+    fn test_set_default_manifest_base_address() {
+        // 0xa5a5a5a5 is kept
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0xa5a5a5a5").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // Valid physical is kept (inside 1MB range, 256-byte aligned)
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x20008000").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0x20008000);
+
+        // Valid virtual (ROM_EXT) is kept (inside 512KB range, 256-byte aligned)
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x90008000").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0x90008000);
+
+        // Valid virtual (Owner) is kept (inside 512KB range, 256-byte aligned)
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0xa0008000").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa0008000);
+
+        // Invalid (0) is replaced with 0xa5a5a5a5
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x0").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // Invalid (random) is replaced with 0xa5a5a5a5
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x10000000").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // Invalid physical (out of range, e.g. 0x20200000) is replaced
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x20200000").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // Invalid virtual (out of range, e.g. 0x90100000) is replaced
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x90100000").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // Invalid alignment (physical, e.g. 0x20008001) is replaced
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x20008001").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // Invalid alignment (virtual, e.g. 0x90008001) is replaced
+        let mut spec = ManifestSpec {
+            manifest_base_address: from_str("0x90008001").unwrap(),
+            ..Default::default()
+        };
+        spec.set_default_manifest_base_address().unwrap();
+        assert_eq!(spec.manifest_base_address.0.unwrap().0, 0xa5a5a5a5);
+
+        // None is kept None
+        let mut spec = ManifestSpec::default();
+        spec.set_default_manifest_base_address().unwrap();
+        assert!(spec.manifest_base_address.0.is_none());
     }
 }

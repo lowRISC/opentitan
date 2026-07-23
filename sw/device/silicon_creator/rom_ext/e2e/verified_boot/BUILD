@@ -232,7 +232,7 @@ test_suite(
 manifest(d = {
     "name": "manifest_base_address_mismatch",
     "address_translation": hex(CONST.HARDENED_TRUE),
-    "manifest_base_address": "0x10000000",
+    "manifest_base_address": "0xa0008000",
     "identifier": hex(CONST.OWNER),
     "visibility": ["//visibility:public"],
 })
