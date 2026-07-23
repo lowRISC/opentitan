@@ -127,7 +127,8 @@ class HyperDebug:
         # List of FPGA target memories to clear for each test to make sure state does not persist.
         # This encompasses Retention SRAM and Flash (both info & data pages).
         clear_targets = (
-            "AON", "FB0", "FI00", "FI01", "FI02", "FB1", "FI10", "FI11", "FI12"
+            "AON", "FB0", "FI00", "FI01", "FI02", "FB1", "FI10", "FI11", "FI12",
+            "RRDA", "RRIN"
         )
         backdoor_writes = " ".join(f"--clear {target}=ALL" for target in clear_targets)
         if rom_vmem:
