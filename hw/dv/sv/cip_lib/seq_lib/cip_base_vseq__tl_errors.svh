@@ -130,13 +130,16 @@ task tl_write_mem_less_than_word(string            ral_name,
                                  dv_base_reg_block block,
                                  addr_range_t      rel_mem_ranges[$]);
   addr_range_t rel_tgt_ranges[$];
+  addr_range_t block_mem_ranges[$];
+
+  block.get_mem_ranges(block_mem_ranges);
 
   // For each memory range, look up the memory that contains it. Collect ranges where that memory
   // doesn't support partial writes. These track addresses relative to the base address of the
   // block.
   foreach (rel_mem_ranges[i]) begin
     dv_base_mem mem;
-    `downcast(mem, get_mem_by_addr(block, block.mem_ranges[i].start_addr))
+    `downcast(mem, get_mem_by_addr(block, block_mem_ranges[i].start_addr))
     if (!mem.get_mem_partial_write_support()) rel_tgt_ranges.push_back(rel_mem_ranges[i]);
   end
 
@@ -169,11 +172,14 @@ task tl_read_wo_mem_err(string            ral_name,
                         dv_base_reg_block block,
                         addr_range_t      rel_mem_ranges[$]);
   addr_range_t rel_tgt_ranges[$];
+  addr_range_t block_mem_ranges[$];
+
+  block.get_mem_ranges(block_mem_ranges);
 
   // For each memory range, look up the memory that contains it. Collect ranges where that memory is
   // write-only. These track addresses relative to the base address of the block.
   foreach (rel_mem_ranges[i]) begin
-    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "WO") begin
+    if (get_mem_access_by_addr(block, block_mem_ranges[i].start_addr) == "WO") begin
       rel_tgt_ranges.push_back(rel_mem_ranges[i]);
     end
   end
@@ -205,11 +211,14 @@ task tl_write_ro_mem_err(string            ral_name,
                          dv_base_reg_block block,
                          addr_range_t      rel_mem_ranges[$]);
   addr_range_t rel_tgt_ranges[$];
+  addr_range_t block_mem_ranges[$];
+
+  block.get_mem_ranges(block_mem_ranges);
 
   // For each memory range, look up the memory that contains it. Collect ranges where that memory is
   // read-only. These track addresses relative to the base address of the block.
   foreach (rel_mem_ranges[i]) begin
-    if (get_mem_access_by_addr(block, block.mem_ranges[i].start_addr) == "RO") begin
+    if (get_mem_access_by_addr(block, block_mem_ranges[i].start_addr) == "RO") begin
       rel_tgt_ranges.push_back(rel_mem_ranges[i]);
     end
   end
@@ -312,7 +321,8 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   csr_addr_mask[ral_name][1:0] = 0;
 
   if (updated_mem_ranges[ral_name].size == 0) begin
-    addr_range_t loc_mem_range[$] = ral_model.mem_ranges;
+    addr_range_t loc_mem_range[$];
+    ral_model.get_mem_ranges(loc_mem_range);
     foreach (loc_mem_range[i]) begin
       updated_mem_ranges[ral_name].push_back(addr_range_t'{
           loc_mem_range[i].start_addr - csr_base_addr,
@@ -429,7 +439,11 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
   bit [BUS_DW-1:0] data = $urandom;
   bit              write = $urandom_range(0, 1);
   tl_intg_err_e    tl_intg_err_type;
-  bit              has_mem = cfg.ral_models[ral_name].mem_ranges.size > 0;
+  addr_range_t     mem_ranges[$];
+  bit              has_mem;
+
+  cfg.ral_models[ral_name].get_mem_ranges(mem_ranges);
+  has_mem = (mem_ranges.size() > 0);
 
   #($urandom_range(10, 1000) * 1ns);
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tl_intg_err_type,
@@ -439,9 +453,8 @@ virtual task issue_tl_access_w_intg_err(string ral_name);
     1: addr = $urandom;
     // mem address
     has_mem: begin
-      int mem_idx = $urandom_range(0, cfg.ral_models[ral_name].mem_ranges.size - 1);
-      addr = $urandom_range(cfg.ral_models[ral_name].mem_ranges[mem_idx].start_addr,
-                            cfg.ral_models[ral_name].mem_ranges[mem_idx].end_addr);
+      int mem_idx = $urandom_range(0, mem_ranges.size - 1);
+      addr = $urandom_range(mem_ranges[mem_idx].start_addr, mem_ranges[mem_idx].end_addr);
     end
   endcase
   tl_access(.addr(addr), .write(write), .data(data), .tl_intg_err_type(tl_intg_err_type),

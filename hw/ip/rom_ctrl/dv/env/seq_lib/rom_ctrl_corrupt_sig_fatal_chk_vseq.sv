@@ -343,26 +343,27 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_select_from_bus_to_checker();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
-  addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
-  bit [TL_DW-1:0] rdata, rdata_tgt, corr_data;
-  bit [TL_AW-1:0] addr;
-  int             mem_idx = $urandom_range(0, loc_mem_range.size - 1);
-  bit [12:0]      bus_rom_rom_index_val;
-  bit [12:0]      corr_bus_rom_rom_index_val;
-  bit [TL_AW-1:0] tgt_addr;
-  cip_tl_seq_item tl_access_rsp;
-  bit             completed, saw_err;
-  string          path;
+  dv_base_reg_block blk;
+  addr_range_t      mem_ranges[$];
+  addr_range_t      mem_range;
+  bit [TL_AW-1:0]   addr, tgt_addr;
+  bit [TL_DW-1:0]   rdata, rdata_tgt, corr_data;
+  bit [12:0]        bus_rom_rom_index_val;
+  bit [12:0]        corr_bus_rom_rom_index_val;
+  cip_tl_seq_item   tl_access_rsp;
+  bit               completed, saw_err;
+
+  blk = cfg.ral_models["rom_ctrl_prim_reg_block"];
+  blk.get_mem_ranges(mem_ranges);
+  mem_range = mem_ranges[$urandom_range(0, mem_ranges.size() - 1)];
 
   wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == MuBi4True);
   wait_with_bound(10);
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                                     addr inside {[loc_mem_range[mem_idx].start_addr :
-                                     loc_mem_range[mem_idx].end_addr]};)
+                                     addr inside {[mem_range.start_addr : mem_range.end_addr]};)
   bus_rom_rom_index_val = addr[2 +: RomIndexWidth];
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tgt_addr,
-                                     tgt_addr inside {[loc_mem_range[mem_idx].start_addr :
-                                     loc_mem_range[mem_idx].end_addr]};
+                                     tgt_addr inside {[mem_range.start_addr : mem_range.end_addr]};
                                      (tgt_addr != addr);)
   corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
   tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),
