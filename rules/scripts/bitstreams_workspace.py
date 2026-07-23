@@ -145,8 +145,22 @@ class BitstreamCache(object):
 
         self.watch_list.append(path)
 
-        with open(path) as f:
-            content = f.read().strip()
+        try:
+            with open(path) as f:
+                content = f.read().strip()
+        except FileNotFoundError:
+            # The ref may be stored in packed-refs rather than as a loose file.
+            # Add packed-refs to watch list and resolve via git rev-parse.
+            packed_refs = subprocess.check_output(
+                ['git', 'rev-parse', '--path-format=absolute', '--git-path', 'packed-refs'],
+                universal_newlines=True,
+                cwd=repodir).strip()
+            if packed_refs not in self.watch_list:
+                self.watch_list.append(packed_refs)
+            return subprocess.check_output(
+                ['git', 'rev-parse', ref],
+                universal_newlines=True,
+                cwd=repodir).strip()
 
         # For refs, recurse into contents.
         if content.startswith('ref: '):
