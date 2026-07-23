@@ -27,7 +27,6 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   extern virtual task rom_ctrl_mem_init();
   extern virtual task do_rand_ops(int num_ops, bit read_only = 0);
   extern virtual task read_digest_regs();
-  extern virtual function bit [DIGEST_SIZE-1:0] get_expected_digest();
   extern function void set_kmac_digest(bit [DIGEST_SIZE-1:0] value);
   extern function void configure_kmac_digest(bit as_expected);
   extern task wait_for_fatal_alert(bit check_fsm_state = 1'b1,
@@ -146,22 +145,6 @@ task rom_ctrl_base_vseq::read_digest_regs();
   end
 endtask
 
-// Pull the expected digest value from the top of rom
-function bit [DIGEST_SIZE-1:0] rom_ctrl_base_vseq::get_expected_digest();
-  bit [DIGEST_SIZE-1:0]    digest;
-  bit [ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
-  // Get the digest from rom
-  // The digest is the top 8 words in memory (unscrambled)
-  dig_addr = MAX_CHECK_ADDR;
-  for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-    bit [ROM_MEM_W-1:0] mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(
-        dig_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
-    digest[i*TL_DW+:TL_DW] = mem_data[TL_DW-1:0];
-    dig_addr += (TL_DW / 8);
-  end
-  return digest;
-endfunction
-
 // Configure the KMAC agent to respond with a digest matching the given value. This is sent in two
 // shares, which are chosen randomly.
 function void rom_ctrl_base_vseq::set_kmac_digest(bit [DIGEST_SIZE-1:0] value);
@@ -180,7 +163,7 @@ function void rom_ctrl_base_vseq::configure_kmac_digest(bit as_expected);
   bit [DIGEST_SIZE-1:0] digest;
 
   // Read the expected digest from the ROM.
-  digest = get_expected_digest();
+  digest = cfg.get_expected_digest();
 
   if (!as_expected) begin
     // We want to choose a digest that doesn't match. To do so, start with the expected digest and

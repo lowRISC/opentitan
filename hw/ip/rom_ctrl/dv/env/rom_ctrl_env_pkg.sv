@@ -40,15 +40,12 @@ package rom_ctrl_env_pkg;
   // The top bytes in memory hold the digest
   // KMAC's max digest size is larger than what is required, so declare the size here.
   parameter uint DIGEST_SIZE    = 256;
+
+  // These are the sizes for ROM for the block-level testbench. The environment shouldn't consume
+  // them without checking that we are in a block-level context.
   parameter uint ROM_SIZE_BYTES = `ROM_SIZE_BYTES;
-  parameter uint ROM_BYTE_ADDR_WIDTH = $clog2(ROM_SIZE_BYTES);
-  parameter uint ROM_WORD_ADDR_WIDTH = ROM_BYTE_ADDR_WIDTH - $clog2(TL_DW / 8);
   parameter uint ROM_SIZE_WORDS = ROM_SIZE_BYTES / (TL_DW / 8);
-  parameter uint MAX_CHECK_ADDR = ROM_SIZE_BYTES - (DIGEST_SIZE / 8);
-  // The data for each line in rom up to the digest padded to the next byte boundary
-  parameter uint KMAC_DATA_WORD_SIZE = (39 + 7) / 8;
-  parameter uint KMAC_DATA_NUM_WORDS = MAX_CHECK_ADDR / (TL_DW / 8);
-  parameter uint KMAC_DATA_SIZE = KMAC_DATA_NUM_WORDS * KMAC_DATA_WORD_SIZE;
+
   // The rom width in bits
   parameter uint ROM_MEM_W = 39;
 
