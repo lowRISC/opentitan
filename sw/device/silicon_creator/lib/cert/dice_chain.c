@@ -370,9 +370,8 @@ rom_error_t dice_chain_attestation_owner_int(
     keymgr_dpe_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest) {
   // Generate CDI_0 attestation keys and (potentially) update certificate.
-  keymgr_dpe_binding_value_t seal_binding_value;
-  memcpy(&seal_binding_value, &rom_ext_manifest->identifier,
-         sizeof(keymgr_dpe_binding_value_t));
+  keymgr_dpe_binding_value_t seal_binding_value = {
+      .data = {rom_ext_manifest->identifier, 0}};
 
   // Prepare the data to derive the sealing OwnerIntKey.
   sc_keymgr_dpe_advance_data_t adv_sealing_data;

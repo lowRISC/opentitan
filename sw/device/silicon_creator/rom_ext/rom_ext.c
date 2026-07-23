@@ -27,7 +27,7 @@
 #include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -242,16 +242,16 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   const owner_application_key_t *key = keyring.key[verify_key];
   owner_block_measurement(owner_block_key_page(key), &owner_measurement);
 
-  keymgr_binding_value_t sealing_binding;
+  keymgr_dpe_binding_value_t sealing_binding;
   if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
     HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
     // If we're in LockedOwner, initialize the sealing binding with the
     // diversification constant associated with key applicaiton key that
     // validated the owner firmware payload.
     static_assert(
-        sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),
-        "Expect the keymgr binding value to be the same size as an application "
-        "key diversifier");
+        sizeof(key->raw_diversifier) == sizeof(keymgr_dpe_binding_value_t),
+        "Expect the keymgr dpe binding value to be the same size as an "
+        "application key diversifier");
     memcpy(&sealing_binding, key->raw_diversifier, sizeof(sealing_binding));
   } else {
     // If we're not in LockedOwner state, we don't want to derive any valid
@@ -470,7 +470,7 @@ static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
 static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   // Forbid SRAM execution.
   rom_ext_sram_exec(kOwnerSramExecModeDisabledLocked);
-  // Set the keymgr to disabled and clear all sideloaded keys.
+  // Set the keymgr dpe to disabled and clear all sideloaded keys.
   OT_DISCARD(sc_keymgr_dpe_disable());
   // Lock out OTP.
   otp_creator_sw_cfg_lockdown();

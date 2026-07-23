@@ -711,11 +711,11 @@
       run_timeout_mins: 120
     }
     {
-      name: rom_e2e_keymgr_init_rom_ext_meas
+      name: rom_e2e_keymgr_dpe_init_rom_ext_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:6:signed:fake_rsa_test_key_0:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_meas:4",
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_dpe_init_test:6:signed:fake_rsa_test_key_0:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_dpe_rom_ext_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -725,11 +725,11 @@
       run_timeout_mins: 120
     }
     {
-      name: rom_e2e_keymgr_init_rom_ext_no_meas
+      name: rom_e2e_keymgr_dpe_init_rom_ext_no_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:6:signed:fake_rsa_test_key_0:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_no_meas:4",
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_dpe_init_test:6:signed:fake_rsa_test_key_0:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_dpe_rom_ext_no_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -739,11 +739,11 @@
       run_timeout_mins: 120
     }
     {
-      name: rom_e2e_keymgr_init_rom_ext_invalid_meas
+      name: rom_e2e_keymgr_dpe_init_rom_ext_invalid_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init_test:6:signed:fake_rsa_test_key_0:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_rom_ext_invalid_meas:4",
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_dpe_init_test:6:signed:fake_rsa_test_key_0:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_keymgr_dpe_rom_ext_invalid_meas:4",
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
@@ -1045,11 +1045,11 @@
       ]
     }
     {
-      name: rom_e2e_keymgr_init
+      name: rom_e2e_keymgr_dpe_init
       tests: [
-        "rom_e2e_keymgr_init_rom_ext_meas",
-        "rom_e2e_keymgr_init_rom_ext_no_meas",
-        "rom_e2e_keymgr_init_rom_ext_invalid_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_no_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_invalid_meas",
       ]
     }
     {

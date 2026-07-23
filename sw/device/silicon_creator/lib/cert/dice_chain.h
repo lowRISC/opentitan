@@ -101,6 +101,24 @@ rom_error_t dice_chain_attestation_owner(
     keymgr_dpe_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
 
 /**
+ * Derive the UDS keypair from the CreatorRootKey and save it for signing.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_attestation_creator_keygen(void);
+
+/**
+ * Check the factory-provisioned certificate page and the UDS certificate.
+ *
+ * This function needs to be called after `dice_chain_init()`.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_immutable_section_check(void);
+
+/**
  * Write back the certificate chain to flash if changed.
  *
  * @return errors encountered during the operation.
