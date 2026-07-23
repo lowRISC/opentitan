@@ -118,7 +118,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
   virtual function void set_handles();
     super.set_handles();
-    jtag_dtm_ral = cfg.m_jtag_agent_cfg.jtag_dtm_ral;
+    jtag_dtm_ral = cfg.m_jtag_dtm_ral;
     jtag_dmi_ral = cfg.jtag_dmi_ral;
     dv_base_ral = cfg.ral_models["rv_dm_mem_reg_block"];
     `downcast(tl_mem_ral,dv_base_ral);

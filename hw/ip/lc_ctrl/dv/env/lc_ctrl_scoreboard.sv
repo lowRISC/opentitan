@@ -636,6 +636,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // Clear OTP program count
     m_otp_prog_cnt = 0;
     exp_clk_byp_req = lc_ctrl_pkg::Off;
+
+    // Update the JTAG DTM register model with the reset
+    cfg.m_jtag_dtm_ral.reset(kind);
   endfunction
 
   function void check_phase(uvm_phase phase);

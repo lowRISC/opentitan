@@ -24,6 +24,9 @@ package lc_ctrl_env_pkg;
   import prim_mubi_pkg::MuBi8True;
   import sec_cm_pkg::*;
 
+  import jtag_agent_pkg::jtag_dtm_reg_block;
+  import jtag_agent_pkg::create_jtag_dtm_reg_block;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
