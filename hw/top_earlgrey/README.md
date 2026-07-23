@@ -1,8 +1,13 @@
 # Top Earlgrey
 
+**NOTE**: This doc refers to Earl Grey 2, i.e., the second generation of the discrete
+OpenTitan chip design currently being developed on the [`master` branch](https://github.com/lowRISC/opentitan).
+For information on the taped out Earl Grey design, i.e., the
+first production OpenTitan silicon, refer to the documentation for the [`earlgrey_1.0.0` branch](https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0) [available here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/index.html).
+
 ## Specification
 
-The datasheet and specification of Earlgrey is located [here](./doc/datasheet.md).
+The datasheet and specification of Earl Grey is located [here](./doc/datasheet.md).
 
 ## Tool: TopGen
 
