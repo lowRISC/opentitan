@@ -64,8 +64,13 @@ package csr_utils_pkg;
     uvm_mem mem;
     addr[1:0] = 0;
     mem = ral.default_map.get_mem_by_offset(addr);
-    `DV_CHECK_NE_FATAL(mem, null,
-                       $sformatf("Can't find any mem with addr 0x%0h", addr), $sformatf("%m"))
+
+    if (mem == null) begin
+      `uvm_fatal($sformatf("%m"),
+                 $sformatf("Cannot find a memory at offset 0x%0h in reg_block '%0s'.",
+                           addr, ral.get_name()))
+    end
+
     return mem;
   endfunction
 
