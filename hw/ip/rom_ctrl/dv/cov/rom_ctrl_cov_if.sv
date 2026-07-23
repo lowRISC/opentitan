@@ -39,9 +39,9 @@ interface rom_ctrl_cov_if (
     }
 
     // Cover the different delays on the kmac response valid signal
-    cp_kmac_digest_handshake: coverpoint {kmac_data_i.rsp_valid, exp_digest_de} {
+    cp_kmac_rsp_vs_digest_timing: coverpoint {kmac_data_i.rsp_valid, exp_digest_de} {
       bins kmac_first = {2'b11}; // kmac responds while still reading digest
-      bins rom_first  = (2'b00 => 2'b10); // kmac responds after digest read
+      bins rom_first  = (2'b00 => 2'b10); // kmac responds after digest has been read
       bins same_cycle = (2'b01 => 2'b10); // kmac responds as digest read completes
     }
 

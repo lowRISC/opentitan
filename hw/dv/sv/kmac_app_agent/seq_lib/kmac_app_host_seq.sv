@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class kmac_app_host_seq extends kmac_app_base_seq;
-  `uvm_object_utils(kmac_app_host_seq)
+class kmac_app_host_seq extends dv_base_seq #(.REQ         (kmac_app_req_item),
+                                              .CFG_T       (kmac_app_agent_cfg),
+                                              .SEQUENCER_T (kmac_app_host_sequencer));
 
-  `uvm_object_new
+  `uvm_object_utils(kmac_app_host_seq)
 
   // Default to send one data byte, can be overridden at a higher layer.
   // Must be set before this sequence is started.
@@ -13,60 +14,62 @@ class kmac_app_host_seq extends kmac_app_base_seq;
   // This also implicitly controls when the `last` signal is asserted.
   int unsigned msg_size_bytes = 1;
 
-  virtual task body();
+  // Configure whether this sequence is being run on a masked interface. If this is false, all
+  // items are constrained to have m_data_s1 == '0. If this is true, items before the last cannot
+  // have m_num_bytes < MsgWidth/8.
+  bit          m_using_masked_interface = 1'b1;
 
-    `uvm_info(`gfn, $sformatf("msg_size_bytes: %0d", msg_size_bytes), UVM_HIGH)
+  // If true, the last bytes in the sequence will be in an item with m_last == 0, which will be
+  // followed by one last item with m_num_bytes == 0 and m_last == 1.
+  rand bit     m_use_explicit_empty_message;
 
-    cfg.m_data_push_agent_cfg.zero_delays = cfg.zero_delays;
-    cfg.m_data_push_agent_cfg.host_delay_min = 1;
-    cfg.m_data_push_agent_cfg.host_delay_max = 100;
-
-    req = kmac_app_item::type_id::create("req");
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(req, byte_data_q.size() == msg_size_bytes;)
-    `uvm_info(`gfn, $sformatf("Randomized req: %0s", req.sprint()), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("byte_data_q: %0p", req.byte_data_q), UVM_HIGH)
-
-    while (msg_size_bytes > 0) begin
-
-      // We send the data unmasked (share 1 is fixed to '0).
-      bit [KmacDataIfWidth-1:0] req_data_s0 = '0;
-      bit [KmacDataIfWidth-1:0] req_data_s1 = '0;
-      bit [KmacDataIfWidth/8-1:0] req_strb = '1;
-      bit req_last = 0;
-
-      // create push_pull_host_seq
-      push_pull_host_seq#(`CONNECT_DATA_WIDTH) host_seq;
-      `uvm_create_on(host_seq, p_sequencer.m_push_pull_sequencer)
-      `DV_CHECK_RANDOMIZE_FATAL(host_seq)
-
-      // Assemble the message chunk and strb
-      for (int i = 0; i < KmacDataIfWidth / 8; i ++) begin
-        if (msg_size_bytes == 0) break;
-
-        if (cfg.inject_zero_in_host_strb) begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(req_strb,
-              ($countones(req_strb ^ {req_strb[KmacDataIfWidth/8-2:0], 1'b0}) <= 2);)
-        end
-        if (req_strb[i] == 1) begin
-          req_data_s0[i*8 +: 8] = 8'(req.byte_data_q.pop_front());
-          req_strb[i] = 1'b1;
-          msg_size_bytes -= 1;
-        end else begin
-          req_data_s0[i*8 +: 8] = $urandom_range(0, (1'b1<<9)-1);
-          req_strb[i] = 1'b0;
-        end
-      end
-
-      // Set the last bit
-      req_last = (msg_size_bytes == 0);
-
-      // For now, a static app is assumed to be always ready to accept a response.
-      cfg.m_data_push_agent_cfg.add_h_user_data(
-          {req_data_s0, req_data_s1, req_strb, req_last, 1'b1});
-
-      `uvm_send(host_seq)
-
-    end
-  endtask
-
+  extern function new(string name="");
+  extern virtual task body();
 endclass
+
+function kmac_app_host_seq::new(string name="");
+  super.new(name);
+endfunction
+
+task kmac_app_host_seq::body();
+  int unsigned max_bytes_per_word = MsgWidth / 8;
+  int unsigned bytes_remaining = msg_size_bytes;
+
+  forever begin
+    int unsigned num_bytes = ((bytes_remaining >= max_bytes_per_word) ?
+                              max_bytes_per_word :
+                              bytes_remaining);
+
+    req = kmac_app_req_item::type_id::create("req");
+
+    start_item(req);
+
+    // If not using masking, we can drive partial data even when this isn't the last item.
+    if (cfg.inject_zero_in_host_strb && !m_using_masked_interface) begin
+      num_bytes = $urandom_range(0, num_bytes);
+    end
+
+    if (!req.randomize() with {
+          // The second share should be zero unless masking is in use
+          !local::m_using_masked_interface -> ~|m_data_s1;
+
+          m_num_bytes == local::num_bytes;
+
+          // Set the m_last flag on the last item that will be sent. If m_use_explicit_empty_message
+          // is true, this is an extra empty item that is generated after the last one with some
+          // data.
+          m_last      == ((local::num_bytes == local::bytes_remaining) &&
+                          ((local::num_bytes == 0) || !local::m_use_explicit_empty_message));
+
+          cfg.req_delay_min <= m_delay; m_delay <= cfg.req_delay_max;
+        }) begin
+      `uvm_fatal(get_full_name(), "Failed to randomise request.")
+    end
+
+    finish_item(req);
+    bytes_remaining -= num_bytes;
+
+    // If req.m_last was true then we just sent the last item and should stop.
+    if (req.m_last) break;
+  end
+endtask
