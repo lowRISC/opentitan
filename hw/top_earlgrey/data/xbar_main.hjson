@@ -20,7 +20,7 @@
   // For device interfaces, especially configuration registers, latency is
   // not generally a concern, thus use `req/rsp_fifo_pass` false and pipeline
   // true.
-  // For device accesses to memories (ram / rom / flash), performance is a concern,
+  // For device accesses to memories (ram / rom / flash / rram), performance is a concern,
   // so use pipeline false where permissible by timing. If not, find a combination
   // that works.
   nodes: [
@@ -125,6 +125,27 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    { name:      "rram_ctrl.core",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rram_macro.prim",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
+    { name:      "rram_ctrl.host",
+      type:      "device",
+      clock:     "clk_main_i",
+      reset:     "rst_main_ni",
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
     { name:      "hmac",
       type:      "device",
       clock:     "clk_main_i",
@@ -218,11 +239,13 @@
     },
   ],
   connections: {
-    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
+    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem",
+      "rram_ctrl.host"],
     rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
-      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "flash_ctrl.core", "flash_ctrl.mem", "flash_ctrl.prim",
+      "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg"
@@ -230,7 +253,8 @@
     rv_dm.sba: [
       "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "peri", "spi_host0", "spi_host1", "usbdev",
-      "flash_ctrl.core", "flash_ctrl.prim", "flash_ctrl.mem",
+      "flash_ctrl.core", "flash_ctrl.mem", "flash_ctrl.prim",
+      "rram_ctrl.core", "rram_ctrl.host", "rram_macro.prim",
       "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg",

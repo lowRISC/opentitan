@@ -54,6 +54,10 @@ module top_earlgrey #(
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
+  // parameters for rram_ctrl
+  parameter bit SecRramCtrlScrambleEn = 1,
+  parameter int RramCtrlWrFifoDepth = 4,
+  parameter int RramCtrlRdFifoDepth = 16,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -348,6 +352,9 @@ module top_earlgrey #(
   .SecFlashCtrlScrambleEn(SecFlashCtrlScrambleEn),
   .FlashCtrlProgFifoDepth(FlashCtrlProgFifoDepth),
   .FlashCtrlRdFifoDepth(FlashCtrlRdFifoDepth),
+  .SecRramCtrlScrambleEn(SecRramCtrlScrambleEn),
+  .RramCtrlWrFifoDepth(RramCtrlWrFifoDepth),
+  .RramCtrlRdFifoDepth(RramCtrlRdFifoDepth),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
   .SecRvDmVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
