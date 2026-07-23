@@ -88,9 +88,9 @@ class lc_ctrl_env extends cip_base_env #(
       m_kmac_app_agent.monitor.req_analysis_port.connect(
           scoreboard.kmac_app_req_fifo.analysis_export);
       m_kmac_app_agent.monitor.analysis_port.connect(scoreboard.kmac_app_rsp_fifo.analysis_export);
-      m_esc_scrap_state1_agent.monitor.analysis_port.connect(
+      m_esc_scrap_state1_agent.monitor.m_esc_port.connect(
           scoreboard.esc_wipe_secrets_fifo.analysis_export);
-      m_esc_scrap_state0_agent.monitor.analysis_port.connect(
+      m_esc_scrap_state0_agent.monitor.m_esc_port.connect(
           scoreboard.esc_scrap_state_fifo.analysis_export);
       m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_riscv_fifo.analysis_export);
     end

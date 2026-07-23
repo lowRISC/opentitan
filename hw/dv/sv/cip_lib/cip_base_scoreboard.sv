@@ -14,7 +14,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   uvm_tlm_analysis_fifo #(tl_seq_item)   tl_d_chan_fifos[string];
 
   // Alert_fifo to notify scb if DUT sends an alert
-  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
+  uvm_tlm_analysis_fifo #(alert_seq_item) alert_fifos[string];
 
   // EDN fifo
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifos[];
@@ -238,18 +238,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       automatic string alert_name = i;
       fork
         forever begin
-          alert_esc_seq_item item;
+          alert_seq_item item;
           alert_fifos[alert_name].get(item);
           `uvm_info(`gfn, $sformatf("[cfg.en_scb=%0d] - Received alert_esc_item: \n%0s",
                                     cfg.en_scb, item.sprint), UVM_DEBUG)
           if (!cfg.en_scb) continue;
-          if (item.alert_esc_type == AlertEscSigTrans && !item.ping_timeout &&
+          if (item.m_trans_type == AlertEscSigTrans && !item.ping_timeout &&
               item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
             process_alert(alert_name, item);
           // IP level alert protocol does not drive any sig_int_err or ping response.
           // However, `lpg_en` or `alert_init` will trigger signal integrity error, user can
           // disable signal integrity checking via `check_alert_sig_int_err` flag.
-          end else if (check_alert_sig_int_err && item.alert_esc_type == AlertEscIntFail) begin
+          end else if (check_alert_sig_int_err && item.m_trans_type == AlertEscIntFail) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
           end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
@@ -262,7 +262,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   // Called at the start of each alert handshake. The default implementation depends on the
   // do_alert_check flag. If that is set, it checks that an alert is expected (by checking
   // expected_alert[alert_name].expected).
-  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void on_alert(string alert_name, alert_seq_item item);
     if (do_alert_check) begin
       `DV_CHECK_EQ(expected_alert[alert_name].expected, 1,
                    $sformatf("alert %0s triggered unexpectedly", alert_name))
@@ -271,7 +271,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // this function check if the triggered alert is expected
   // to turn off this check, user can set `do_alert_check` to 0
-  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+  virtual function void process_alert(string alert_name, alert_seq_item item);
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
