@@ -10,15 +10,15 @@ module prim_secded_72_64_enc (
 );
 
   always_comb begin : p_encode
-    data_o = 72'(data_i);
-    data_o[64] = ^(data_o & 72'h00B9000000001FFFFF);
-    data_o[65] = ^(data_o & 72'h005E00000FFFE0003F);
-    data_o[66] = ^(data_o & 72'h0067003FF003E007C1);
-    data_o[67] = ^(data_o & 72'h00CD0FC0F03C207842);
-    data_o[68] = ^(data_o & 72'h00B671C711C4438884);
-    data_o[69] = ^(data_o & 72'h00B5B65926488C9108);
-    data_o[70] = ^(data_o & 72'h00CBDAAA4A91152210);
-    data_o[71] = ^(data_o & 72'h007AED348D221A4420);
+    data_o[63:0] = data_i;
+    data_o[64] = ^(data_i & 64'hB9000000001FFFFF);
+    data_o[65] = ^(data_i & 64'h5E00000FFFE0003F);
+    data_o[66] = ^(data_i & 64'h67003FF003E007C1);
+    data_o[67] = ^(data_i & 64'hCD0FC0F03C207842);
+    data_o[68] = ^(data_i & 64'hB671C711C4438884);
+    data_o[69] = ^(data_i & 64'hB5B65926488C9108);
+    data_o[70] = ^(data_i & 64'hCBDAAA4A91152210);
+    data_o[71] = ^(data_i & 64'h7AED348D221A4420);
   end
 
 endmodule : prim_secded_72_64_enc
