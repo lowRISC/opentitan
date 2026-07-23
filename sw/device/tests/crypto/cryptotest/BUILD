@@ -367,6 +367,24 @@ cryptotest(
     test_vectors = X25519_TESTVECTOR_TARGETS,
 )
 
+MLKEM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mlkem_1024_encaps_json",
+    "//sw/host/cryptotest/testvectors/data:wycheproof_mlkem_1024_decaps_json",
+]
+
+MLKEM_TESTVECTOR_ARGS = " ".join([
+    "--mlkem-json=\"$(rootpath {})\"".format(target)
+    for target in MLKEM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "mlkem_kat",
+    slow_test = True,
+    test_args = MLKEM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/mlkem_kat:harness",
+    test_vectors = MLKEM_TESTVECTOR_TARGETS,
+)
+
 cryptotest(
     name = "x25519_acvp",
     slow_test = True,
@@ -889,6 +907,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kmac_kat",
+        ":mlkem_kat",
         ":rsa_kat",
         ":sha256_kat",
         ":sha384_kat",

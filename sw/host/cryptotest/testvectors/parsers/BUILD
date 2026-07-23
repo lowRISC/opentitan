@@ -225,3 +225,12 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "wycheproof_mlkem_parser",
+    srcs = ["wycheproof_mlkem_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
