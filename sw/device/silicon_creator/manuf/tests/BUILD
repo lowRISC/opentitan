@@ -89,6 +89,7 @@ _MANUF_TEST_LOCKED_KEY = None
             test_cmd = "--initial-lc-state={lc_state}",
             test_harness = "//sw/host/tests/manuf/manuf_scrap",
             testopt_bootstrap = str((lc_state, lc_val) not in _TEST_LOCKED_LC_ITEMS),
+            testopt_clear_after_test = "True",
         ),
         deps = [
             "//sw/device/lib/runtime:log",
@@ -123,6 +124,7 @@ opentitan_test(
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
         testopt_bootstrap = "False",
+        testopt_clear_after_test = "True",
     ),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
@@ -145,6 +147,7 @@ opentitan_test(
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
         testopt_bootstrap = "False",
+        testopt_clear_after_test = "True",
     ),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
@@ -184,6 +187,7 @@ opentitan_test(
             test_cmd = "--initial-lc-state={lc_state}",
             test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
             testopt_bootstrap = "False",
+            testopt_clear_after_test = "True",
         ),
         deps = [
             "//hw/top:otp_ctrl_c_regs",
@@ -356,6 +360,7 @@ opentitan_binary(
             """,
             test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
             testopt_bootstrap = "False",
+            testopt_clear_after_test = "True",
         ),
         spx_key = spx_key_for_lc_state(
             ECDSA_SPX_KEY_STRUCTS,
@@ -469,6 +474,7 @@ opentitan_test(
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
         testopt_bootstrap = "False",
+        testopt_clear_after_test = "True",
     ),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
@@ -497,6 +503,7 @@ opentitan_test(
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
         testopt_bootstrap = "False",
+        testopt_clear_after_test = "True",
     ),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
