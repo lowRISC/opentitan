@@ -4,10 +4,19 @@
 
 class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block));
 
+  `uvm_object_utils(rom_ctrl_env_cfg)
+
   string rom_ral_name = "rom_ctrl_prim_reg_block";
 
   // ext component cfgs
   rand kmac_app_agent_cfg m_kmac_agent_cfg;
+
+  // The upper bound to use for response delays in the KMAC app agent
+  //
+  // This is randomised with rom_ctrl_env_cfg, then copied to m_kmac_agent_cfg in post_randomize().
+  // (Doing so works because nothing in the randomisation of m_kmac_agent_cfg depends on its
+  // rsp_delay_max).
+  rand int unsigned m_kmac_rsp_delay_max;
 
   // Memory backdoor util instance for ROM.
   rom_ctrl_bkdr_util rom_ctrl_bkdr_util_h;
@@ -24,25 +33,29 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // A handle to the scoreboard, used to flag expected errors.
   rom_ctrl_scoreboard scoreboard;
 
-  extern constraint kmac_accept_delay_max_c;
+  // A flag that tells the environment to use rom_ctrl_fsm_if to force the value of the ROM address
+  // counter, skipping over the middle of ROM.
+  //
+  // This is set in the rom_ctrl_env_cfg constructor (based on the +skip_middle plusarg) and can be
+  // accessed with get_skip_middle().
+  local bit m_skip_middle;
+
   extern function new (string name="");
+  extern function void post_randomize();
+
   extern virtual function void initialize();
   extern virtual protected function dv_base_reg_block create_ral_by_name(string name);
 
-  `uvm_object_utils_begin(rom_ctrl_env_cfg)
-  `uvm_object_utils_end
+  // Retrieve the flag that says whether we should skip reading the middle of ROM. If true, this was
+  // set with the +skip_middle plusarg.
+  extern function bit get_skip_middle();
 
+  // Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
+  // rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
+  // send to kmac. Randomise this to be small with high probability and occasionally make it 10 (to
+  // check that the interface from rom_ctrl to kmac can be stalled properly).
+  extern constraint rsp_delay_max_c;
 endclass
-
-// Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
-// rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
-// send to kmac. Randomise this to be small with high probability and occasionally make it 10 (to
-// check that the interface from rom_ctrl to kmac can be stalled properly).
-constraint rom_ctrl_env_cfg::kmac_accept_delay_max_c {
-  if (!m_kmac_agent_cfg.m_data_push_agent_cfg.zero_delays) {
-    m_kmac_agent_cfg.m_data_push_agent_cfg.device_delay_max dist { 1 :/ 10, 10 :/ 1 };
-  }
-}
 
 function rom_ctrl_env_cfg::new (string name="");
   super.new(name);
@@ -57,7 +70,6 @@ function rom_ctrl_env_cfg::new (string name="");
 
   m_kmac_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_agent_cfg");
   m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
-  m_kmac_agent_cfg.start_default_device_seq = 1'b1;
   m_kmac_agent_cfg.constant_share_means_error = 1'b0;
   // The checker reads the upper 8 words of ROM which takes 9 cycles. The rsp_delay_max has been
   // rounded off by 9*2=18 cycles along with adding 2 just to give an extra precision.
@@ -65,6 +77,22 @@ function rom_ctrl_env_cfg::new (string name="");
   m_kmac_agent_cfg.rsp_delay_max = 'd20;
 
   sec_cm_alert_name = "fatal";
+
+  if ($value$plusargs("skip_middle_of_rom=%0b", m_skip_middle)) begin
+    `uvm_info("skip_middle_mode",
+              $sformatf("Setting m_skip_middle to %d, based on plusarg.", m_skip_middle),
+              UVM_HIGH)
+  end else begin
+    `uvm_info("skip_middle_mode",
+              $sformatf("Leaving m_skip_middle=%d (no +skip_middle_of_rom plusarg).",
+                        m_skip_middle),
+              UVM_HIGH)
+  end
+endfunction
+
+function void rom_ctrl_env_cfg::post_randomize();
+  super.post_randomize();
+  m_kmac_agent_cfg.rsp_delay_max = m_kmac_rsp_delay_max;
 endfunction
 
 function void rom_ctrl_env_cfg::initialize();
@@ -104,3 +132,14 @@ function dv_base_reg_block rom_ctrl_env_cfg::create_ral_by_name(string name);
     `uvm_error(`gfn, $sformatf("%0s is an illegal RAL model name", name))
   end
 endfunction
+
+function bit rom_ctrl_env_cfg::get_skip_middle();
+  return m_skip_middle;
+endfunction
+
+constraint rom_ctrl_env_cfg::rsp_delay_max_c {
+  // Note that this doesn't involve m_kmac_agent_cfg.zero_delays. If that bit is set, the agent will
+  // ignore its rsp_delay_max field (copied from this value in post_randomize), so this variable
+  // will have no effect.
+  m_kmac_rsp_delay_max dist { 1 :/ 10, 10 :/ 1 };
+}

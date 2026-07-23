@@ -5,33 +5,44 @@
 package kmac_app_agent_pkg;
   // dep packages
   import uvm_pkg::*;
-  import dv_utils_pkg::*;
-  import dv_base_agent_pkg::*;
-  import dv_lib_pkg::*;
-  import keymgr_pkg::*;
-  import push_pull_agent_pkg::*;
+
+  import dv_utils_pkg::Host, dv_utils_pkg::Device, dv_utils_pkg::Monitor;
+
+  import dv_base_agent_pkg::dv_base_agent_cfg;
+  import dv_base_agent_pkg::dv_base_agent_cov;
+  import dv_base_agent_pkg::dv_base_driver;
+  import dv_base_agent_pkg::dv_base_monitor;
+  import dv_base_agent_pkg::dv_base_sequencer;
+  import dv_base_agent_pkg::dv_base_agent;
+  import dv_base_agent_pkg::dv_base_seq;
+
+  import kmac_pkg::MsgStrbW, kmac_pkg::AppDigestW, kmac_pkg::MsgWidth;
+  import kmac_pkg::rsp_digest_t;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // parameters
-  parameter int KMAC_REQ_DATA_WIDTH = 2 * kmac_pkg::MsgWidth   // share0 + share1
-                                      + kmac_pkg::MsgWidth / 8 // strobe
-                                      + 2;                     // req_last + rsp_ready
+  `include "kmac_app_req_item.sv"
+  `include "kmac_app_req_packet_item.sv"
+  `include "kmac_app_rsp_item.sv"
+  `include "kmac_app_mon_item.sv"
 
-  `define CONNECT_DATA_WIDTH .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)
-
-  // package sources
-  `include "kmac_app_item.sv"
   `include "kmac_app_agent_cfg.sv"
-  `include "kmac_app_sequencer.sv"
-  `include "kmac_app_agent_cov.sv"
-  `include "kmac_app_driver.sv"
-  `include "kmac_app_host_driver.sv"
-  `include "kmac_app_device_driver.sv"
+  typedef dv_base_agent_cov #(.CFG_T (kmac_app_agent_cfg)) kmac_app_agent_cov;
   `include "kmac_app_monitor.sv"
-  `include "kmac_app_seq_list.sv"
-  `include "kmac_app_agent.sv"
+
+  `include "kmac_app_device_driver.sv"
+  `include "kmac_app_device_sequencer.sv"
+
+  `include "kmac_app_host_driver.sv"
+  typedef dv_base_sequencer #(.ITEM_T (kmac_app_req_item),
+                              .CFG_T (kmac_app_agent_cfg)) kmac_app_host_sequencer;
+
+  `include "seq_lib/kmac_app_device_seq.sv"
+  `include "seq_lib/kmac_app_host_seq.sv"
+
+  `include "kmac_app_device_agent.sv"
+  `include "kmac_app_host_agent.sv"
 
 endpackage: kmac_app_agent_pkg

@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_kmac_req)
+`uvm_analysis_imp_decl(_kmac_txn)
+
 class rom_ctrl_scoreboard extends cip_base_scoreboard #(
     .CFG_T(rom_ctrl_env_cfg),
     .RAL_T(rom_ctrl_regs_reg_block),
@@ -10,33 +13,36 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(rom_ctrl_scoreboard)
 
   // The digest of ROM contents that has been returned from KMAC. This is valid if
-  // rom_check_complete is true.
-  bit [kmac_pkg::AppDigestW-1:0] kmac_digest;
+  // rom_check_complete is true. It is sized to be DIGEST_SIZE bits long: this might be shorter than
+  // the interface width from KMAC, but rom_ctrl will only look at the bottom bits.
+  bit [DIGEST_SIZE-1:0]  kmac_digest;
 
-  bit                            rom_check_complete;
-  prim_mubi_pkg::mubi4_t         digest_good;
-  bit                            pwrmgr_complete;
-  bit                            keymgr_complete;
-  bit                            disable_rom_acc_chk;
+  bit                    m_kmac_req_sent;
+  bit                    rom_check_complete;
+  prim_mubi_pkg::mubi4_t digest_good;
+  bit                    pwrmgr_complete;
+  bit                    keymgr_complete;
+  bit                    disable_rom_acc_chk;
 
-  // TLM agent fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_req_fifo;
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_rsp_fifo;
+  // An import for request packets sent to KMAC
+  uvm_analysis_imp_kmac_req #(kmac_app_req_packet_item, rom_ctrl_scoreboard) m_kmac_req_imp;
+
+  // An import for complete transactions between rom_ctrl and KMAC
+  uvm_analysis_imp_kmac_txn #(kmac_app_mon_item, rom_ctrl_scoreboard)        m_kmac_txn_imp;
 
   `uvm_component_new
 
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
 
-  // Follow requests sent to KMAC. One of these is sent when rom_ctrl has finished the contents of
-  // ROM. This task checks that rom_ctrl doesn't send more than one request to KMAC after a reset
-  // and uses check_kmac_data to check the request itself looks right.
-  extern task process_kmac_req_fifo();
-
-  // Check the data in a KMAC request. This is what rom_ctrl sent to KMAC and it should be a copy of
-  // the contents of ROM, which we can read through a memory backdoor. This checks that rom_ctrl has
-  // successfully read the contents of ROM.
-  extern function void check_kmac_data(const ref byte unsigned byte_data_q[$]);
+  // React to a request packet sent to KMAC. One of these is sent when rom_ctrl has finished the
+  // contents of ROM.
+  //
+  // Only one such request should be sent per reset (tracked with m_kmac_req_sent). For the request
+  // that is sent, we then check that the data being sent matches the contents of ROM, which we can
+  // read through a memory backdoor. This checks that rom_ctrl has successfully read the contents of
+  // ROM.
+  extern function void write_kmac_req(kmac_app_req_packet_item packet);
 
   // Follow responses sent from KMAC. There will be one after each reset and it will be a response
   // to a request that was seen in process_kmac_req_fifo.
@@ -45,7 +51,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // DIGEST registers and also for a check on the digest sent to keymgr later). It also updates the
   // model of the EXP_DIGEST registers. Finally, it updates the model of whether the two digests
   // agree (to check the GOOD field of the signal that will be sent to pwrmgr).
-  extern task process_kmac_rsp_fifo();
+  extern function void write_kmac_txn(kmac_app_mon_item txn);
 
   // Return the top words of the ROM image, which give an expected digest value
   extern function bit [DIGEST_SIZE-1:0] get_expected_digest();
@@ -80,81 +86,164 @@ endclass
 
 function void rom_ctrl_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
-  kmac_req_fifo = new("kmac_req_fifo", this);
-  kmac_rsp_fifo = new("kmac_rsp_fifo", this);
+  m_kmac_req_imp = new("m_kmac_req_imp", this);
+  m_kmac_txn_imp = new("m_kmac_txn_imp", this);
 endfunction
 
 task rom_ctrl_scoreboard::run_phase(uvm_phase phase);
-  super.run_phase(phase);
   fork
-    process_kmac_req_fifo();
-    process_kmac_rsp_fifo();
+    super.run_phase(phase);
     monitor_rom_ctrl_if();
   join
 endtask
 
-task rom_ctrl_scoreboard::process_kmac_req_fifo();
-  kmac_app_item kmac_req;
-  forever begin
-    kmac_req_fifo.get(kmac_req);
-    if (!cfg.en_scb) continue;
+function void rom_ctrl_scoreboard::write_kmac_req(kmac_app_req_packet_item packet);
+  byte unsigned req_bytes[$];
+  int unsigned  nonzero_share1_indices[$];
+  // The length (in words) of the byte queue that matches with a prefix of the ROM.
+  int unsigned  matching_pfx_len;
+  // The index of the first word in ROM that we expect to match the tail of ROM data (based on the
+  // number of observed KMAC requests and KMAC_DATA_SIZE)
+  int unsigned  start_tail_idx;
 
-    `uvm_info(`gfn, $sformatf("Detected a KMAC req:\n%0s", kmac_req.sprint()), UVM_HIGH)
-    // We shouldn't see any further requests once the check has completed
-    `DV_CHECK(!rom_check_complete, "KMAC request sent after ROM check had already completed.")
-    // Check the data is valid
-    check_kmac_data(kmac_req.byte_data_q);
+  if (!cfg.en_scb) return;
+
+  // Check that we haven't already sent a packet
+  if (m_kmac_req_sent) begin
+    `uvm_error(get_full_name(), "Unexpected extra packet sent to KMAC.")
   end
-endtask
+  m_kmac_req_sent = 1;
 
-// Read data sent to the kmac block and check it against memory data
-function void rom_ctrl_scoreboard::check_kmac_data(const ref byte unsigned byte_data_q[$]);
-  int word = 0;
-  int addr = 0;
-  // Check that we received the expected amount of data
-  `DV_CHECK_EQ(byte_data_q.size(), KMAC_DATA_SIZE, "Unexpected kmac data size")
-  // Read out the data 5 bytes at a time (one word is 39bit packed into 5 byte)
-  while (word < byte_data_q.size()) begin
-    bit [KMAC_DATA_WORD_SIZE*8-1:0] exp, act;
-    bit [ROM_MEM_W-1:0]             mem_data;
-    mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(
-        addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
-    exp = {{KMAC_DATA_WORD_SIZE*8-ROM_MEM_W{1'b0}}, mem_data};
-    for (int i = 0; i < KMAC_DATA_WORD_SIZE; i++) begin
-      act[i*8+:8] = byte_data_q[word+i];
+  packet.get_share_byte_queue(0, req_bytes);
+  if (packet.get_reqs_with_nonzero_share(1, nonzero_share1_indices)) begin
+    `uvm_error(get_full_name(),
+               $sformatf("Packet had %0d requests with a nonzero share1 (indices: %0p).",
+                         nonzero_share1_indices.size(), nonzero_share1_indices))
+  end
+
+  // Check the amount of data sent. We might have forced the hardware to skip over the middle
+  // portion, but it definitely shouldn't have sent more than KMAC_DATA_SIZE. It should also have
+  // sent a multiple of 5 bytes (because it sends 5-byte packets).
+  if (req_bytes.size() > KMAC_DATA_SIZE) begin
+    `uvm_error("data_size_check",
+               $sformatf("rom_ctrl sent %0d bytes to KMAC, but KMAC_DATA_SIZE is just %0d.",
+                         req_bytes.size(), KMAC_DATA_SIZE))
+  end
+  if (req_bytes.size() % 5) begin
+    `uvm_error("data_size_check",
+               $sformatf("rom_ctrl sent %0d bytes to KMAC, but this isn't a multiple of 5.",
+                         req_bytes.size()))
+  end
+
+  // Read ROM through a backdoor in 5-byte words, comparing the values with items in req_bytes. Stop
+  // when we get to the end of the request or end of ROM.
+  for (matching_pfx_len = 0; matching_pfx_len < KMAC_DATA_SIZE / 5; matching_pfx_len++) begin
+    bit [ROM_MEM_W-1:0] mem_data;
+    bit [39:0]          seen_word;
+
+    // If we have got to the end of req_bytes it looks like rom_ctrl just sent some prefix of the
+    // ROM and then stopped.
+    if (req_bytes.size() < 5 * (1 + matching_pfx_len)) begin
+      `uvm_error("just_sent_prefix",
+                 $sformatf({"The first %0d bytes that rom_ctrl sent to KMAC ",
+                            "match the contents of ROM but a total of only %0d ",
+                            "bytes were sent and KMAC_DATA_SIZE = %0d."},
+                           5 * matching_pfx_len, req_bytes.size(), KMAC_DATA_SIZE))
+      return;
     end
-    // Check the data matches
-    `DV_CHECK_EQ(act, exp, $sformatf("Unexpected data at addr: %0x", addr))
-    // Check the address is within range
-    `DV_CHECK_LT(addr, MAX_CHECK_ADDR,
-        $sformatf("Check address out of range: %0x", addr))
-    addr += (TL_DW / 8);
-    word += KMAC_DATA_WORD_SIZE;
+
+    mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * matching_pfx_len,
+                                                           RND_CNST_SCR_KEY,
+                                                           RND_CNST_SCR_NONCE,
+                                                           1'b0);
+
+    seen_word = {req_bytes[matching_pfx_len * 5 + 4],
+                 req_bytes[matching_pfx_len * 5 + 3],
+                 req_bytes[matching_pfx_len * 5 + 2],
+                 req_bytes[matching_pfx_len * 5 + 1],
+                 req_bytes[matching_pfx_len * 5]};
+
+    if (seen_word != mem_data) begin
+      // This is the first word of ROM that doesn't match with something we saw being sent to KMAC.
+      // That's possibly fine: we might have forced rom_ctrl to skip over an internal section. Break
+      // from this loop and we'll check the "tail" next.
+      `uvm_info("end_of_prefix",
+                $sformatf({"Saw a mismatch between ROM and KMAC request on word %0d ",
+                           "(possibly because of an injected skip)."},
+                          matching_pfx_len),
+                UVM_HIGH)
+      break;
+    end
+  end
+
+  // Check the tail of the observed request bytes matches the equivalent-length tail of ROM data.
+  // Each word in the ROM causes rom_ctrl to send 5 bytes to KMAC. As such, the total number of
+  // words sent to KMAC is req_bytes.size()/5 and there are matching_pfx_len words less than that in
+  // the tail that we check.
+  //
+  // There are a total of KMAC_DATA_NUM_WORDS words that will be sent to KMAC. Subtracting the
+  // length of the tail from that count gives the word index in ROM of the start of the tail.
+  start_tail_idx = KMAC_DATA_NUM_WORDS - (req_bytes.size() / 5 - matching_pfx_len);
+
+  for (int unsigned word_idx = 0; word_idx + start_tail_idx < KMAC_DATA_NUM_WORDS; word_idx++) begin
+    bit [ROM_MEM_W-1:0] mem_data;
+    bit [39:0]          seen_word;
+    // The byte index of the word in req_bytes.
+    int unsigned        idx_in_req_bytes;
+
+    mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(4 * (start_tail_idx + word_idx),
+                                                           RND_CNST_SCR_KEY,
+                                                           RND_CNST_SCR_NONCE,
+                                                           1'b0);
+
+    idx_in_req_bytes = 5 * (matching_pfx_len + word_idx);
+
+    // Look up the word in req_bytes. We know the bytes exist because the highest we'll access is
+    // 5*idx_in_req_bytes + 4, which is 5*(matching_pfx_len + word_idx) + 4. The loop bound on
+    // word_idx means that this is strictly less than
+    //
+    //    5*(matching_pfx_len + KMAC_DATA_SIZE/5 - start_tail_idx) + 4 =
+    //
+    // Expanding the definition of start_tail_idx and cancelling the KMAC_DATA_SIZE/5 and
+    // matching_pfx_len terms, this is equal to req_bytes.size().
+    seen_word = {req_bytes[idx_in_req_bytes + 4],
+                 req_bytes[idx_in_req_bytes + 3],
+                 req_bytes[idx_in_req_bytes + 2],
+                 req_bytes[idx_in_req_bytes + 1],
+                 req_bytes[idx_in_req_bytes]};
+
+    if (seen_word != mem_data) begin
+      `uvm_error("rom_data_mismatch",
+                 $sformatf({"Bytes %0d..%0d that rom_ctrl sent to KMAC don't match the ROM. ",
+                            "Observed data: 0x%0h. Expected data: 0x%0h. ",
+                            "Because the first %0d bytes matched (of the %0d bytes sent), ",
+                            "we expect byte %0d to correspond to ROM data at ",
+                            "byte offset 0x%0h (word offset 0x%0h)."},
+                           idx_in_req_bytes,
+                           idx_in_req_bytes+4,
+                           seen_word, mem_data,
+                           5 * matching_pfx_len,
+                           req_bytes.size(),
+                           idx_in_req_bytes,
+                           4 * (start_tail_idx + word_idx),
+                           start_tail_idx + word_idx))
+    end
   end
 endfunction
 
-task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
+function void rom_ctrl_scoreboard::write_kmac_txn(kmac_app_mon_item txn);
   bit [DIGEST_SIZE-1:0] expected_digest;
-  kmac_app_item kmac_rsp;
 
-  forever begin
-    kmac_rsp_fifo.get(kmac_rsp);
-    if (!cfg.en_scb) continue;
+  if (!cfg.en_scb) return;
 
-    `uvm_info(`gfn, $sformatf("Detected a KMAC response:\n%0s", kmac_rsp.sprint()), UVM_HIGH)
+  kmac_digest = DIGEST_SIZE'(txn.m_rsp.m_digest_s0 ^ txn.m_rsp.m_digest_s1);
+  expected_digest = get_expected_digest();
 
-    // Check that we haven't seen one of these responses already since the last reset. If we have,
-    // it's a DV bug: we should already have failed when the KMAC request was sent a few cycles ago.
-    `DV_CHECK_FATAL(!rom_check_complete, "Extra KMAC response seen.")
+  update_ral_digests(kmac_digest, expected_digest);
+  digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(kmac_digest == expected_digest);
 
-    kmac_digest = kmac_rsp.digest_s0 ^ kmac_rsp.digest_s1;
-    expected_digest = get_expected_digest();
-    update_ral_digests(kmac_digest, expected_digest);
-    digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(
-                  kmac_digest[DIGEST_SIZE-1:0] == expected_digest);
-    rom_check_complete = 1'b1;
-  end
-endtask
+  rom_check_complete = 1;
+endfunction
 
 function bit [DIGEST_SIZE-1:0] rom_ctrl_scoreboard::get_expected_digest();
   bit [DIGEST_SIZE-1:0]    digest;
@@ -212,8 +301,7 @@ task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
     // Check data sent to keymgr
     if (cfg.rom_ctrl_vif.cb.keymgr_data.valid) begin
       `DV_CHECK(!keymgr_complete, "Spurious keymgr signal")
-      `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.keymgr_data.data, kmac_digest[DIGEST_SIZE-1:0],
-                   "Incorrect keymgr digest")
+      `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.keymgr_data.data, kmac_digest, "Incorrect keymgr digest")
       keymgr_complete = 1'b1;
     end
   end
@@ -311,6 +399,7 @@ endtask
 function void rom_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   // reset local fifos queues and variables
+  m_kmac_req_sent = 1'b0;
   rom_check_complete = 1'b0;
   pwrmgr_complete = 1'b0;
   keymgr_complete = 1'b0;

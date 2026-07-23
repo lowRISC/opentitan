@@ -46,6 +46,8 @@ task rom_ctrl_stress_all_vseq::body();
     rom_ctrl_vseq.do_apply_reset = (i > 1);
 
     rom_ctrl_vseq.set_sequencer(p_sequencer);
+    rom_ctrl_vseq.m_addr_force_sequencer = m_addr_force_sequencer;
+
     `uvm_info(`gfn, $sformatf("Running %s sequence", seq_names[seq_idx]), UVM_LOW)
     `DV_CHECK_RANDOMIZE_FATAL(rom_ctrl_vseq)
 

@@ -13,11 +13,20 @@ class rom_ctrl_env extends cip_base_env #(
   `uvm_component_new
 
   // KMAC interface agent
-  kmac_app_agent m_kmac_agent;
+  kmac_app_device_agent m_kmac_agent;
+
+  // A sequencer and driver for forcing the count in the FSM's u_counter. Both are created in
+  // build_phase, but only if cfg.get_skip_middle() is true.
+  local rom_ctrl_addr_force_sequencer_t m_addr_force_sequencer;
+  local rom_ctrl_addr_force_driver      m_addr_force_driver;
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 
+  // Get the m_addr_force_sequencer handle.
+  //
+  // This will fail if m_addr_force_sequencer is null (because cfg.get_skip_middle is false)
+  extern function rom_ctrl_addr_force_sequencer_t get_addr_force_sequencer();
 endclass
 
 function void rom_ctrl_env::build_phase(uvm_phase phase);
@@ -31,8 +40,7 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
   if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_vif from uvm_config_db")
 
-  if (!uvm_config_db#(virtual rom_ctrl_fsm_if)::get(this, "",
-                                                        "rom_ctrl_fsm_vif", cfg.fsm_vif))
+  if (!uvm_config_db#(virtual rom_ctrl_fsm_if)::get(this, "", "rom_ctrl_fsm_vif", cfg.fsm_vif))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_fsm_vif from uvm_config_db")
 
   if (!uvm_config_db#(virtual rom_ctrl_compare_if)::get(this, "",
@@ -40,8 +48,21 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
     `uvm_fatal(`gfn, "failed to get rom_ctrl_compare_vif from uvm_config_db")
 
   // Build the KMAC agent
-  m_kmac_agent = kmac_app_agent::type_id::create("m_kmac_agent", this);
+  m_kmac_agent = kmac_app_device_agent::type_id::create("m_kmac_agent", this);
   uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
+
+  // Create a sequencer and driver for forcing the counter in the rom_ctrl FSM, but only if
+  // cfg.get_skip_middle() is true.
+  //
+  // Note that this does *not* depend on cfg.is_active: this "backdoor trickery" works by accessing
+  // internals of rom_ctrl and doesn't interact with outside stimulus. As such, it makes perfect
+  // sense to use when the environment is bound into a higher level testbench.
+  if (cfg.get_skip_middle()) begin
+    m_addr_force_sequencer = (rom_ctrl_addr_force_sequencer_t::type_id::
+                              create("m_addr_force_sequencer", this));
+
+    m_addr_force_driver = rom_ctrl_addr_force_driver::type_id::create("m_addr_force_driver", this);
+  end
 
   cfg.scoreboard = scoreboard;
 
@@ -50,9 +71,20 @@ endfunction
 function void rom_ctrl_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 
-  m_kmac_agent.monitor.analysis_port.connect(scoreboard.kmac_rsp_fifo.analysis_export);
-  m_kmac_agent.monitor.req_analysis_port.connect(scoreboard.kmac_req_fifo.analysis_export);
+  m_kmac_agent.monitor.m_req_packet_analysis_port.connect(scoreboard.m_kmac_req_imp);
+  m_kmac_agent.monitor.analysis_port.connect(scoreboard.m_kmac_txn_imp);
 
   virtual_sequencer.kmac_sequencer_h = m_kmac_agent.sequencer;
 
+  if (m_addr_force_driver != null) begin
+    m_addr_force_driver.set_vif(cfg.fsm_vif);
+    m_addr_force_driver.seq_item_port.connect(m_addr_force_sequencer.seq_item_export);
+  end
+endfunction
+
+function rom_ctrl_addr_force_sequencer_t rom_ctrl_env::get_addr_force_sequencer();
+  if (m_addr_force_sequencer == null) begin
+    `uvm_fatal("no_addr_force_sequencer", "No sequencer to return: was cfg.get_skip_middle false?")
+  end
+  return m_addr_force_sequencer;
 endfunction
