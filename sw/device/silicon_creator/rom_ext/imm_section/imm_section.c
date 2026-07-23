@@ -73,9 +73,6 @@ static rom_error_t imm_section_start(void) {
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
 
-  // Sideload sealing key to KMAC hw keyslot.
-  HARDENED_RETURN_IF_ERROR(ownership_seal_init());
-
   // Lockdown the attestation seed to readonly as soon as possible to prevent
   // key tampering and exfiltration.
   nvm_ctrl_cert_info_page_creator_cfg(kNvmInfoPageAttestationKeySeeds);

@@ -1214,25 +1214,21 @@
     }
 
     {
-      name: rom_e2e_keymgr_init
-      desc: '''Verify that ROM initializes the keymgr correctly.
+      name: rom_e2e_keymgr_dpe_init
+      desc: '''Verify that ROM initializes the keymgr dpe correctly.
 
-            - Verify that keymgr is at the "reset" state.
-            - Verify that
-              - attestation sw binding equals
-                - the digest of the software readable OTP partitions if
-                  `OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN` is `kHardenedBoolTrue`, and
-                - the `binding_value` field of the manifest, otherwise,
-              - sealing sw binding equals the `binding_value` field of the manifest, and
-              - max creator key version equals the `max_key_version` field of the manifest,
+            TODO(#30878): Improve this test
+            Currently the verification lacks real depth! The test derives two
+            sw keys from attestation / sealing DPE context to verify a valid
+            entry is available. Further checks should be added!
             '''
       tags: ["rom", "dv", "verilator", "fpga", "silicon"]
       stage: V2
       si_stage: NA
       tests: [
-        "rom_e2e_keymgr_init_rom_ext_meas",
-        "rom_e2e_keymgr_init_rom_ext_no_meas",
-        "rom_e2e_keymgr_init_rom_ext_invalid_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_no_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_invalid_meas",
       ]
     }
 

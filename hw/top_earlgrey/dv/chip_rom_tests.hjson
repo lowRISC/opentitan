@@ -706,43 +706,43 @@
       run_timeout_mins: 240
     }
     {
-      name: rom_e2e_keymgr_init_rom_ext_meas
+      name: rom_e2e_keymgr_dpe_init_rom_ext_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_otp_meas:1:new_rules",
-        "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_otp_meas:4",
+        "//sw/device/silicon_creator/rom/e2e/keymgr_dpe:rom_e2e_keymgr_dpe_init_otp_meas:1:new_rules",
+        "//sw/device/silicon_creator/rom/e2e/keymgr_dpe:otp_img_keymgr_dpe_otp_meas:4",
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
-        "+sw_test_timeout_ns=40_000_000",
+        "+sw_test_timeout_ns=55_000_000",
         "+use_otp_image=OtpTypeCustom",
       ]
       run_timeout_mins: 240
     }
     {
-      name: rom_e2e_keymgr_init_rom_ext_no_meas
+      name: rom_e2e_keymgr_dpe_init_rom_ext_no_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_otp_no_meas:1:new_rules",
-        "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_otp_no_meas:4",
+        "//sw/device/silicon_creator/rom/e2e/keymgr_dpe:rom_e2e_keymgr_dpe_init_otp_no_meas:1:new_rules",
+        "//sw/device/silicon_creator/rom/e2e/keymgr_dpe:otp_img_keymgr_dpe_otp_no_meas:4",
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
-        "+sw_test_timeout_ns=40_000_000",
+        "+sw_test_timeout_ns=55_000_000",
         "+use_otp_image=OtpTypeCustom",
       ]
       run_timeout_mins: 240
     }
     {
-      name: rom_e2e_keymgr_init_rom_ext_invalid_meas
+      name: rom_e2e_keymgr_dpe_init_rom_ext_invalid_meas
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_otp_invalid_meas:1:new_rules",
-        "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_otp_invalid_meas:4",
+        "//sw/device/silicon_creator/rom/e2e/keymgr_dpe:rom_e2e_keymgr_dpe_init_otp_invalid_meas:1:new_rules",
+        "//sw/device/silicon_creator/rom/e2e/keymgr_dpe:otp_img_keymgr_dpe_otp_invalid_meas:4",
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
-        "+sw_test_timeout_ns=40_000_000",
+        "+sw_test_timeout_ns=55_000_000",
         "+use_otp_image=OtpTypeCustom",
       ]
       run_timeout_mins: 240
@@ -888,11 +888,11 @@
       ]
     }
     {
-      name: rom_e2e_keymgr_init
+      name: rom_e2e_keymgr_dpe_init
       tests: [
-        "rom_e2e_keymgr_init_rom_ext_meas",
-        "rom_e2e_keymgr_init_rom_ext_no_meas",
-        "rom_e2e_keymgr_init_rom_ext_invalid_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_no_meas",
+        "rom_e2e_keymgr_dpe_init_rom_ext_invalid_meas",
       ]
     }
     {
