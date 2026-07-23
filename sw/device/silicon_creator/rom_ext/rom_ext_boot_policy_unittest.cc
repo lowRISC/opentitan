@@ -4,14 +4,29 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 
+#include <cstring>
+#include <sys/mman.h>
+
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/mock_boot_data.h"
 #include "sw/device/silicon_creator/lib/mock_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
+extern "C" {
+char _owner_virtual_start_address[1] = {0};
+#ifdef OT_COVERAGE_ENABLED
+asm(".global _rom_ext_size\n"
+    ".set _rom_ext_size, 128 * 1024\n");
+#else
+asm(".global _rom_ext_size\n"
+    ".set _rom_ext_size, 64 * 1024\n");
+#endif
+}
+
 namespace manifest_unittest {
 namespace {
+using ::testing::_;
 using ::testing::Return;
 
 class RomExtBootPolicyTest : public rom_test::RomTest {
@@ -132,9 +147,9 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
   manifest_a.security_version = 0;
   manifest_b.security_version = 1;
 
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA)
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA(_))
       .WillOnce(Return(&manifest_a));
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB)
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB(_))
       .WillOnce(Return(&manifest_b));
 
   boot_data_t boot_data{};
@@ -164,5 +179,126 @@ INSTANTIATE_TEST_SUITE_P(SecurityVersionCases, ManifestOrderTest,
                              ManifestOrderTestCase{
                                  .primary = kBootSlotB,
                              }));
+
+class RomExtBootPolicySearchTest : public RomExtBootPolicyTest {
+ protected:
+#ifdef OT_COVERAGE_ENABLED
+  static constexpr size_t kLowOffset = 128 * 1024;
+  static constexpr size_t kHighOffset = 168 * 1024;
+#else
+  static constexpr size_t kLowOffset = 64 * 1024;
+  static constexpr size_t kHighOffset = 88 * 1024;
+#endif
+  static constexpr size_t kBufferSize = kHighOffset + sizeof(manifest_t);
+
+  void SetUp() override {
+    RomExtBootPolicyTest::SetUp();
+    buffer_ = (uint8_t *)mmap(NULL, kBufferSize, PROT_READ | PROT_WRITE,
+                              MAP_PRIVATE | MAP_ANONYMOUS | MAP_32BIT, -1, 0);
+    ASSERT_NE(buffer_, MAP_FAILED);
+    std::memset(buffer_, 0x5a, kBufferSize);
+  }
+
+  void TearDown() override {
+    munmap(buffer_, kBufferSize);
+    RomExtBootPolicyTest::TearDown();
+  }
+
+  void InitManifest(manifest_t *manifest) {
+    manifest->identifier = CHIP_BL0_IDENTIFIER;
+    manifest->length = sizeof(manifest_t) + 0x1000;
+    manifest->security_version = 1;
+    manifest->manifest_version.major = kManifestVersionMajor2;
+    manifest->signed_region_end = sizeof(manifest_t) + 0x900;
+    manifest->code_start = sizeof(manifest_t);
+    manifest->code_end = sizeof(manifest_t) + 0x800;
+    manifest->entry_point = sizeof(manifest_t) + 0x100;
+    manifest->manifest_base_address = (uint32_t)(uintptr_t)manifest;
+  }
+
+  uint8_t *buffer_;
+};
+
+TEST_F(RomExtBootPolicySearchTest, NoManifests) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  uintptr_t bank_base = (uintptr_t)buffer_;
+  const manifest_t *result =
+      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+  EXPECT_EQ(result, (const manifest_t *)(bank_base + kLowOffset));
+}
+
+TEST_F(RomExtBootPolicySearchTest, ValidManifestAtLowOffset) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  uintptr_t bank_base = (uintptr_t)buffer_;
+  manifest_t *manifest = (manifest_t *)(buffer_ + kLowOffset);
+  InitManifest(manifest);
+
+  const manifest_t *result =
+      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+  EXPECT_EQ(result, manifest);
+}
+
+TEST_F(RomExtBootPolicySearchTest, ValidManifestAtHighOffset) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  uintptr_t bank_base = (uintptr_t)buffer_;
+  manifest_t *manifest = (manifest_t *)(buffer_ + kHighOffset);
+  InitManifest(manifest);
+
+  const manifest_t *result =
+      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+  EXPECT_EQ(result, manifest);
+}
+
+TEST_F(RomExtBootPolicySearchTest, MultipleValidManifestsPrefersHighestOffset) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  uintptr_t bank_base = (uintptr_t)buffer_;
+  manifest_t *manifest_low = (manifest_t *)(buffer_ + kLowOffset);
+  manifest_t *manifest_high = (manifest_t *)(buffer_ + kHighOffset);
+  InitManifest(manifest_low);
+  InitManifest(manifest_high);
+
+  const manifest_t *result =
+      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+  EXPECT_EQ(result, manifest_high);
+}
+
+TEST_F(RomExtBootPolicySearchTest, InvalidManifestAtHighOffsetValidAtLow) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  uintptr_t bank_base = (uintptr_t)buffer_;
+  manifest_t *manifest_high = (manifest_t *)(buffer_ + kHighOffset);
+  manifest_t *manifest_low = (manifest_t *)(buffer_ + kLowOffset);
+  InitManifest(manifest_high);
+  manifest_high->manifest_base_address = 0;  // Invalid base address
+  InitManifest(manifest_low);
+
+  const manifest_t *result =
+      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+  EXPECT_EQ(result, manifest_low);
+}
+
+TEST_F(RomExtBootPolicySearchTest, InvalidManifestAtHighOffsetOnly) {
+  boot_data_t boot_data{};
+  boot_data.identifier = kBootDataIdentifier;
+
+  uintptr_t bank_base = (uintptr_t)buffer_;
+  manifest_t *manifest = (manifest_t *)(buffer_ + kHighOffset);
+  InitManifest(manifest);
+  manifest->manifest_base_address = 0;  // Invalid base address
+
+  const manifest_t *result =
+      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+  EXPECT_EQ(result, manifest);
+}
+
 }  // namespace
 }  // namespace manifest_unittest

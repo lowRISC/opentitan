@@ -277,9 +277,9 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       // Move the ROM_EXT execution section from the load address to the virtual
       // address.
       // TODO(#13513): Harden these calculations.
-      text_region.start = owner_vma_get(manifest, text_region.start);
-      text_region.end = owner_vma_get(manifest, text_region.end);
-      entry_point = owner_vma_get(manifest, entry_point);
+      text_region.start = owner_vma_get(text_region.start);
+      text_region.end = owner_vma_get(text_region.end);
+      entry_point = owner_vma_get(entry_point);
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
@@ -337,8 +337,9 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     uint32_t flash_exec = 0;
     char slot_id =
-        (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) ? 'A'
-                                                                       : 'B';
+        (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get(boot_data))
+            ? 'A'
+            : 'B';
     error =
         rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &flash_exec,
                        &keyring, &verify_key, &owner_config, &isfb_check_count);
@@ -351,9 +352,10 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     }
     HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
 
-    if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
+    if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get(boot_data)) {
       boot_log->bl0_slot = kBootSlotA;
-    } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
+    } else if (manifests.ordered[i] ==
+               rom_ext_boot_policy_manifest_b_get(boot_data)) {
       boot_log->bl0_slot = kBootSlotB;
     } else {
       return kErrorRomExtBootFailed;
