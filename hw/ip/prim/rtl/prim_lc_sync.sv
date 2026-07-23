@@ -29,9 +29,11 @@ module prim_lc_sync #(
   input  lc_ctrl_pkg::lc_tx_t                 lc_en_i,
   output lc_ctrl_pkg::lc_tx_t [NumCopies-1:0] lc_en_o
 );
-
+`ifdef INC_ASSERT
+  localparam int LcSyncMinDelayCycles = prim_pkg::get_cdc_min_delay_cycles();
+`endif
   localparam lc_ctrl_pkg::lc_tx_t LcResetValue = (ResetValueIsOn) ? lc_ctrl_pkg::On :
-                                                                  lc_ctrl_pkg::Off;
+                                                                    lc_ctrl_pkg::Off;
 
   `ASSERT_INIT(NumCopiesMustBeGreaterZero_A, NumCopies > 0)
 
@@ -67,9 +69,22 @@ module prim_lc_sync #(
       always_ff @(posedge clk_i) begin
         lc_en_in_sva_q <= lc_en_i;
       end
-    `ASSERT(OutputDelay_A,
-            rst_ni |-> ##3 lc_en_o == {NumCopies{$past(lc_en_in_sva_q, 2)}} ||
-                           ($past(lc_en_in_sva_q, 2) != $past(lc_en_in_sva_q, 1)))
+    // This assertion has a 2-stage data path: 2-stage sync.
+    // Delay = LcSyncMinDelayCycles. SVA checks 1 cycle later.
+    if (LcSyncMinDelayCycles == 1) begin : gen_sva_delay_1
+      // Special case for N=1 to avoid illegal $past(..., 0)
+      `ASSERT(OutputDelay_A,
+        rst_ni |-> ##(LcSyncMinDelayCycles + 1)
+                          (lc_en_o == {NumCopies{$past(lc_en_in_sva_q, LcSyncMinDelayCycles)}} ||
+                          // $past(..., N-1) becomes the current value 'lc_en_in_sva_q'
+                          $past(lc_en_in_sva_q, LcSyncMinDelayCycles) != lc_en_in_sva_q))
+    end else begin : gen_sva_delay_gt_1
+      `ASSERT(OutputDelay_A,
+        rst_ni |-> ##(LcSyncMinDelayCycles + 1)
+                          (lc_en_o == {NumCopies{$past(lc_en_in_sva_q, LcSyncMinDelayCycles)}} ||
+                          $past(lc_en_in_sva_q, LcSyncMinDelayCycles) !=
+                          $past(lc_en_in_sva_q, LcSyncMinDelayCycles - 1)))
+    end
 `endif
   end else begin : gen_no_flops
     //VCS coverage off
