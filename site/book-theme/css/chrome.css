@@ -743,3 +743,129 @@ html:not(.sidebar-resizing) .sidebar {
 .releases-dropdown:hover .dropdown-content {
     display: block;
 }
+
+/* ==========================================================================
+   Desktop Styles (601px and up)
+   ========================================================================== */
+@media only screen and (min-width: 601px) {
+    /* Hover works normally on desktop */
+    .releases-dropdown:hover .dropdown-content {
+        display: block;
+    }
+}
+
+/* ==========================================================================
+   2-Line Mobile Menu Layout with Ghost-Click Protection (max-width: 600px)
+   ========================================================================== */
+
+@media only screen and (max-width: 600px) {
+    /* --- 1. CRITICAL: Kill Desktop Hover on Mobile --- */
+
+    /* Prevents touchstart from triggering instant hover expansion */
+    .releases-dropdown:hover .dropdown-content {
+        display: none;
+    }
+
+    /* --- 2. Checkbox State Toggle --- */
+
+    /* Hide the checkbox across iOS Safari and Android */
+    #release-menu-toggle {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Reveal accordion ONLY when checkbox is explicitly checked by label tap */
+    #release-menu-toggle:checked ~ .dropdown-content {
+        display: block;
+    }
+
+    /* --- 3. Header Layout (Line 1 & Line 2) --- */
+
+    #menu-bar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        height: auto;
+    }
+
+    /* Unwrap .left-buttons so icons stay on Line 1 */
+    .left-buttons {
+        display: contents;
+    }
+
+    /* Line 1 Elements */
+    #sidebar-toggle,
+    #theme-toggle,
+    #search-toggle {
+        order: 1;
+    }
+
+    .menu-title {
+        order: 2;
+    }
+
+    .right-buttons {
+        order: 3;
+    }
+
+    /* --- 4. Line 2 Full-Width Release/Branch Row --- */
+
+    .releases-dropdown {
+        order: 4;
+        flex-basis: 100%;
+        width: 100%;
+        margin-inline-start: 0;
+        border-top: 1px solid var(--table-border-color, #e0e0e0);
+        border-bottom: 1px solid var(--table-border-color, #e0e0e0);
+    }
+
+    /* Full-width label styling */
+    .releases-dropdown .dropbtn {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        font-size: 0.9em;
+        color: var(--fg, #333333);
+        cursor: pointer;
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .releases-dropdown .dropbtn i {
+        pointer-events: none;
+    }
+
+    .releases-dropdown .dropbtn::after {
+        display: none;
+    }
+
+    /* --- 5. Accordion Submenu Styles --- */
+
+    .releases-dropdown .dropdown-content {
+        display: none; /* Hidden until checkbox is checked */
+        position: static;
+        width: 100%;
+        box-shadow: none;
+        border: none;
+        border-top: 1px solid var(--table-border-color, #e0e0e0);
+        background-color: var(--theme-hover, #f9f9f9);
+        border-radius: 0;
+        margin-top: 0;
+    }
+
+    .releases-dropdown .dropdown-content a {
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--table-border-color, #e0e0e0);
+    }
+
+    .releases-dropdown .dropdown-content a:last-child {
+        border-bottom: none;
+    }
+}
