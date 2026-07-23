@@ -93,7 +93,7 @@ uint64_t otp_partition_digest_read(otp_partition_t partition) {
   return value;
 }
 
-static void wait_for_dai_idle(void) {
+void wait_for_dai_idle(void) {
   uint32_t status = 0;
   bool idle = false;
   do {
@@ -145,4 +145,71 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t relative_address,
 void otp_creator_sw_cfg_lockdown(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioCreatorSwCfgLockDown, 1);
   sec_mmio_write32(kBase + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
+}
+
+// Exposed for manufacturing-time provisioning.
+rom_error_t otp_dai_write32(otp_partition_t partition,
+                            uint32_t relative_address, uint32_t value) {
+  HARDENED_CHECK_LT(partition, ARRAYSIZE(kOtpPartitions));
+  HARDENED_CHECK_EQ(relative_address & kOtpPartitions[partition].align_mask, 0);
+
+  wait_for_dai_idle();
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                   kOtpPartitions[partition].start_addr + relative_address);
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, value);
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+  wait_for_dai_idle();
+
+  uint32_t status = abs_mmio_read32(kBase + OTP_CTRL_STATUS_REG_OFFSET);
+  if (bitfield_bit32_read(status, OTP_CTRL_STATUS_DAI_ERROR_BIT)) {
+    return kErrorUnknown;
+  }
+  return kErrorOk;
+}
+
+// Exposed for raw manufacturing-time secret provisioning.
+rom_error_t otp_dai_write64_raw(uint32_t address, const uint64_t *buffer,
+                                size_t len) {
+  for (size_t i = 0; i < len; ++i) {
+    wait_for_dai_idle();
+    abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                     address + (i * sizeof(uint64_t)));
+    abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                     (uint32_t)buffer[i]);
+    abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                     (uint32_t)(buffer[i] >> 32));
+    uint32_t cmd =
+        bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
+    abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+    wait_for_dai_idle();
+
+    uint32_t status = abs_mmio_read32(kBase + OTP_CTRL_STATUS_REG_OFFSET);
+    if (bitfield_bit32_read(status, OTP_CTRL_STATUS_DAI_ERROR_BIT)) {
+      return kErrorUnknown;
+    }
+  }
+  return kErrorOk;
+}
+
+// Exposed for raw manufacturing-time partition digest lock.
+rom_error_t otp_dai_digest_lock_raw(uint32_t digest_reg_addr, uint64_t digest) {
+  wait_for_dai_idle();
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                   digest_reg_addr);
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                   (uint32_t)digest);
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                   (uint32_t)(digest >> 32));
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true);
+  abs_mmio_write32(kBase + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, cmd);
+  wait_for_dai_idle();
+
+  uint32_t status = abs_mmio_read32(kBase + OTP_CTRL_STATUS_REG_OFFSET);
+  if (bitfield_bit32_read(status, OTP_CTRL_STATUS_DAI_ERROR_BIT)) {
+    return kErrorUnknown;
+  }
+  return kErrorOk;
 }

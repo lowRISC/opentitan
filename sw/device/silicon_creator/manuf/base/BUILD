@@ -403,6 +403,41 @@ manifest(d = {
     for sku, config in EARLGREY_SKUS.items()
 ]
 
+[
+    opentitan_binary(
+        name = "ft_flash_scramble_{}".format(sku),
+        testonly = True,
+        srcs = ["ft_flash_scramble.c"],
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+        },
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        linkopts = ["-Wl,--allow-multiple-definition"],
+        manifest = ":manifest_perso",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+        deps = [
+            ":flash_info_permissions",
+            ":perso_tlv_data",
+            ":personalize_ext",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/testing/test_framework:ottf_start",
+            "//sw/device/silicon_creator/lib/base:chip",
+            "//sw/device/silicon_creator/lib/base:util",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
+            "//sw/device/silicon_creator/lib/drivers:watchdog",
+            "//sw/device/silicon_creator/manuf/lib:otp_fields",
+            "//sw/device/silicon_creator/manuf/lib:personalize_secret1",
+        ] + config["device_ext_libs"],
+    )
+    for sku, config in EARLGREY_SKUS.items()
+]
+
 # Use a pre-compiled perso binary if the SKU defines it,
 # else use the label of the opentitan_binary for the SKU.
 [
@@ -462,6 +497,15 @@ filegroup(
     testonly = True,
     srcs = [
         ":ft_perso_bin_{}".format(sku)
+        for sku, config in EARLGREY_SKUS.items()
+    ],
+)
+
+filegroup(
+    name = "ft_flash_scramble_bin_all",
+    testonly = True,
+    srcs = [
+        ":ft_flash_scramble_{}".format(sku)
         for sku, config in EARLGREY_SKUS.items()
     ],
 )
