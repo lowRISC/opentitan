@@ -212,15 +212,18 @@ impl TryFrom<&[u8]> for BootSvc {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let header = Header::try_from(buf)?;
         let len = header.length as usize;
-        if buf.len() - Header::SIZE < len {
+        if len < Header::SIZE || len > Header::MAX_SIZE || len > buf.len() {
             return Err(ChipDataError::BadSize(len, buf.len()));
         }
-        let mut digest = Sha256::digest(&buf[Header::HASH_LEN..Header::SIZE]);
+        if header.identifier != Header::IDENTIFIER {
+            return Err(ChipDataError::BadIdentifier(header.identifier));
+        }
+        let mut digest = Sha256::digest(&buf[Header::HASH_LEN..len]);
         digest.reverse();
-        if digest[..] == buf[..Header::HASH_LEN] {
+        if digest[..] != buf[..Header::HASH_LEN] {
             return Err(ChipDataError::InvalidDigest);
         }
-        let buf = &buf[Header::SIZE..];
+        let buf = &buf[Header::SIZE..len];
         let message = match header.kind {
             BootSvcKind::EmptyRequest => Message::Empty(TryFrom::try_from(buf)?),
             BootSvcKind::EmptyResponse => Message::Empty(TryFrom::try_from(buf)?),
@@ -355,6 +358,7 @@ impl TryFrom<&[u8]> for Header {
 }
 impl Header {
     pub const SIZE: usize = 44;
+    pub const MAX_SIZE: usize = 256;
     pub const IDENTIFIER: u32 = 0x43565342;
     const HASH_LEN: usize = 32;
 
@@ -374,15 +378,16 @@ impl TryFrom<&[u8]> for Empty {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         let mut val = Empty::default();
-        val.payload.resize(64, 0);
+        val.payload.resize(Empty::WORD_COUNT, 0);
         reader.read_u32_into::<LittleEndian>(&mut val.payload)?;
         Ok(val)
     }
 }
 impl Empty {
-    pub const SIZE: usize = 256;
+    pub const SIZE: usize = Header::MAX_SIZE - Header::SIZE;
+    const WORD_COUNT: usize = Self::SIZE / std::mem::size_of::<u32>();
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        for i in 0..64 {
+        for i in 0..Self::WORD_COUNT {
             let p = self.payload.get(i).unwrap_or(&0);
             dest.write_u32::<LittleEndian>(*p)?;
         }
