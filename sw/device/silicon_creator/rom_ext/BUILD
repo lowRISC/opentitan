@@ -496,3 +496,13 @@ manifest(d = {
     "security_version": ROM_EXT_VERSION.SECURITY,
     "on_demand_dice": "0x739",
 })
+
+manifest(d = {
+    "name": "manifest_mldsa_on_flash",
+    "identifier": hex(CONST.ROM_EXT),
+    "visibility": ["//visibility:public"],
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
+    "dice_cert_storage_mode": hex(CONST.DICE.MLDSA_ON_FLASH),
+})

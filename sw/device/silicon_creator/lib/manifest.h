@@ -178,6 +178,16 @@ enum {
 };
 
 /**
+ * DICE certificate storage mode constants for `dice_cert_storage_mode`.
+ */
+typedef enum dice_cert_storage_mode {
+  /** Store certificates in RAM (Default / Legacy mode). */
+  kDiceCertMldsaOnRam = 0xa5a5a5a5,
+  /** Store certificates in extended data flash (80KB~88KB). */
+  kDiceCertMldsaOnFlash = 0x35bbf70d,
+} dice_cert_storage_mode_t;
+
+/**
  * Manifest for boot stage images stored in flash.
  *
  * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
@@ -246,7 +256,15 @@ typedef struct manifest {
    * When allocating reserved bytes, please allocate from the end of this field
    * to allow for the potential size expansion of the public key field above.
    */
-  uint32_t reserved[38];
+  uint32_t reserved[37];
+  /**
+   * DICE certificate storage mode.
+   *
+   * Governs whether DICE ML-DSA certificates are written to RAM or extended
+   * Flash. ROM_EXT only writes certificates to Flash if both ROM_EXT and Owner
+   * manifests specify `kDiceCertMldsaOnFlash`.
+   */
+  uint32_t dice_cert_storage_mode;
   /**
    * DICE certificate refresh mode.
    *
@@ -348,6 +366,7 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_public_key, 496);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved, 656);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, dice_cert_storage_mode, 804);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, on_demand_dice, 808);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_base_address, 812);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);

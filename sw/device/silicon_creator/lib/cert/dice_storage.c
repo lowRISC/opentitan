@@ -75,3 +75,48 @@ rom_error_t dice_storage_check_digest(const dice_storage_page_t *page) {
 
   return kErrorOk;
 }
+
+rom_error_t dice_storage_write_cert_tlv_v1(const dice_storage_slot_v1_t *slot,
+                                           const uint8_t *cert_data,
+                                           size_t cert_size) {
+  size_t storage_size =
+      (uintptr_t)_rom_ext_size - (uintptr_t)_rom_ext_protected_size;
+  if (storage_size < sizeof(dice_storage_header_v1_t) + cert_size) {
+    return kErrorCertInvalidArgument;
+  }
+
+  uint32_t flash_offset = dice_storage_slot_v1_offset(slot);
+  uint32_t page_offset = flash_offset / FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  size_t num_pages = storage_size / FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+
+  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+  flash_ctrl_perms_t write_perms = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4True,
+  };
+  flash_ctrl_data_region_protect(1, page_offset, (uint32_t)num_pages,
+                                 write_perms, cfg, kHardenedBoolFalse);
+
+  dice_storage_header_v1_t hdr = slot->header;
+  PERSO_TLV_SET_FIELD_V1(
+      CrthV1, Size, hdr.cert_header,
+      sizeof(dice_storage_header_v1_t) - sizeof(hdr.object_header) + cert_size);
+
+  for (size_t i = 0; i < num_pages; ++i) {
+    RETURN_IF_ERROR(flash_ctrl_data_erase(
+        flash_offset + i * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+        kFlashCtrlEraseTypePage));
+  }
+
+  // Write header.
+  RETURN_IF_ERROR(flash_ctrl_data_write(
+      flash_offset, sizeof(dice_storage_header_v1_t) / sizeof(uint32_t), &hdr));
+
+  // Write certificate payload directly following the header.
+  return flash_ctrl_data_write(flash_offset + sizeof(dice_storage_header_v1_t),
+                               util_size_to_words((uint32_t)cert_size),
+                               cert_data);
+}
+
+extern bool dice_storage_slot_v1_overlapped(const manifest_t *manifest);

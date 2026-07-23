@@ -40,6 +40,10 @@ _NO_REFRESH_VARIATIONS |= {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_on_change_dice_mldsa",
         "slot_spec": ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
     },
+    "flash_storage_dice_mldsa": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_flash_storage_dice_mldsa",
+        "slot_spec": ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    },
 }
 
 [

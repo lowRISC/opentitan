@@ -214,9 +214,11 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     )?;
 
     // The expected_rom_ext_slot is where we expect the ROM_EXT to execute.
+    // 1. First entry is the active ROM_EXT configured as read-only,
+    // 2. Second entry is the inactive ROM_EXT configured as read-write,
     let romext_region = match opts.expected_rom_ext_slot {
-        BootSlot::SlotA => ["RD-xx-xx-uu-uu-uu", "RD-WR-ER-uu-uu-uu"],
-        BootSlot::SlotB => ["RD-WR-ER-uu-uu-uu", "RD-xx-xx-uu-uu-uu"],
+        BootSlot::SlotA => [0, 256],
+        BootSlot::SlotB => [256, 0],
         _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
     };
 
@@ -253,9 +255,9 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             FlashRegion(
                 "data",
                 0,
-                OWNER_FLASH_ROM_EXT_START as u32,
+                romext_region[0] + OWNER_FLASH_ROM_EXT_START as u32,
                 OWNER_FLASH_ROM_EXT_SIZE as u32,
-                romext_region[0],
+                "RD-xx-xx-uu-uu-uu",
                 "LK"
             )
         );
@@ -264,9 +266,9 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             FlashRegion(
                 "data",
                 1,
-                256 + OWNER_FLASH_ROM_EXT_START as u32,
+                romext_region[1] + OWNER_FLASH_ROM_EXT_START as u32,
                 OWNER_FLASH_ROM_EXT_SIZE as u32,
-                romext_region[1],
+                "RD-WR-ER-uu-uu-uu",
                 "LK"
             )
         );
@@ -446,9 +448,9 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         FlashRegion(
             "data",
             0,
-            OWNER_FLASH_ROM_EXT_START as u32,
+            romext_region[0] + OWNER_FLASH_ROM_EXT_START as u32,
             OWNER_FLASH_ROM_EXT_SIZE as u32,
-            romext_region[0],
+            "RD-xx-xx-uu-uu-uu",
             "LK"
         )
     );
@@ -457,9 +459,9 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         FlashRegion(
             "data",
             1,
-            256 + OWNER_FLASH_ROM_EXT_START as u32,
+            romext_region[1] + OWNER_FLASH_ROM_EXT_START as u32,
             OWNER_FLASH_ROM_EXT_SIZE as u32,
-            romext_region[1],
+            "RD-WR-ER-uu-uu-uu",
             "LK"
         )
     );

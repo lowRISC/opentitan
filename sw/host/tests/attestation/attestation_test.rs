@@ -36,6 +36,10 @@ struct Opts {
     /// Enable verification of ML-DSA certificates.
     #[arg(long)]
     test_mldsa: bool,
+
+    /// Assert that ML-DSA certificates are handed over from Flash storage.
+    #[arg(long)]
+    assert_mldsa_flash_storage: bool,
 }
 
 // A helper trait for extracting data out of the `Value` type.
@@ -152,6 +156,7 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
 
     if opts.test_mldsa {
         verify_mldsa_certs(&capture[0], &cdi0, &cdi1)?;
+        check_mldsa_storage_mode(&capture[0], opts.assert_mldsa_flash_storage)?;
     }
     // TODO: verify signature chain from CDI_1 to CDI_0 to UDS.
 
@@ -255,6 +260,18 @@ fn compare_certs_except_keys(cert1: &Certificate, cert2: &Certificate) -> Result
             cert2.private_extensions
         ));
     }
+    Ok(())
+}
+
+fn check_mldsa_storage_mode(console_output: &str, assert_flash: bool) -> Result<()> {
+    let expected_mode = if assert_flash { "Flash" } else { "RAM" };
+    let rx = Regex::new(&format!(r"DICE cert storage mode: {expected_mode}"))?;
+    if !rx.is_match(console_output) {
+        return Err(anyhow!(
+            "Expected 'DICE cert storage mode: {expected_mode}' log message not found in console output"
+        ));
+    }
+    log::info!("DICE cert storage mode assertion passed ({expected_mode})!");
     Ok(())
 }
 
