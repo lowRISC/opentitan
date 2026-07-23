@@ -13,10 +13,11 @@ use num_traits::Num;
 use serde::{Deserialize, Serialize};
 
 use crate::template::{
-    BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
-    DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
-    MldsaPublicKeyInfo, RawOr, Selectable, SelectableChoice, Signature, SizeRange,
-    SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
+    BasicConstraints, Certificate, CertificateExtension, CertificatePayload, Conversion,
+    DiceTcbInfoExtension, DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature,
+    FirmwareId, KeyUsage, MldsaPublicKeyInfo, Payload, PrivateExtensionsPayload, RawOr, Selectable,
+    SelectableChoice, Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable,
+    VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -188,6 +189,26 @@ impl SubstValue {
     }
 }
 
+impl Subst for Payload {
+    fn subst(&self, data: &SubstData) -> Result<Payload> {
+        match self {
+            Self::Certificate(CertificatePayload { certificate }) => {
+                Ok(Self::Certificate(CertificatePayload {
+                    certificate: Box::new(certificate.subst(data)?),
+                }))
+            }
+            Self::PrivateExtensions(PrivateExtensionsPayload { private_extensions }) => {
+                Ok(Self::PrivateExtensions(PrivateExtensionsPayload {
+                    private_extensions: private_extensions
+                        .iter()
+                        .map(|ext| ext.subst(data))
+                        .collect::<Result<Vec<_>>>()?,
+                }))
+            }
+        }
+    }
+}
+
 impl Subst for Template {
     // Substitute data into the template. Variables that are not
     // specified in the data are left untouched. Variables that appear
@@ -218,10 +239,11 @@ impl Subst for Template {
                 || format!("cannot parse content of substitution variable {var_name} according to the type {var_type:?} specified in the template ")
             )?);
         }
+        let payload = self.payload.subst(&new_data)?;
         Ok(Template {
             name: self.name.clone(),
             variables,
-            certificate: self.certificate.subst(&new_data)?,
+            payload,
         })
     }
 }
@@ -401,10 +423,8 @@ impl Subst for Certificate {
                 .context("cannot substitute key usage")?,
             private_extensions: self
                 .private_extensions
-                .iter()
-                .map(|ext| ext.subst(data))
-                .collect::<Result<Vec<_>>>()
-                .context("cannot substitute in extensions")?,
+                .subst(data)
+                .context("cannot substitute private extensions")?,
             signature: self
                 .signature
                 .subst(data)

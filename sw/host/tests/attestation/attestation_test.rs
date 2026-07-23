@@ -168,7 +168,11 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
         Sha256Digest::hash(&owner_page_1[0..OwnerBlock::SIGNATURE_OFFSET]).to_vec(),
     ];
 
-    let CertificateExtension::DiceTcbInfo(dice) = &cdi0.private_extensions[0];
+    let cdi0_exts = cdi0
+        .private_extensions
+        .as_type()
+        .expect("structured extensions");
+    let CertificateExtension::DiceTcbInfo(dice) = &cdi0_exts[0];
     log::info!("Checking CDI_0 (ROM_EXT) DICE certificate: {cdi0:#?}");
     // Check that the subject key and subject key identifiers match.
     log::info!("Subject key:");
@@ -188,7 +192,11 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     assert_eq!(fw_ids.len(), 1);
     assert_eq!(fw_ids[0].digest.get_value(), &measurements[0].as_ref());
 
-    let CertificateExtension::DiceTcbInfo(dice) = &cdi1.private_extensions[0];
+    let cdi1_exts = cdi1
+        .private_extensions
+        .as_type()
+        .expect("structured extensions");
+    let CertificateExtension::DiceTcbInfo(dice) = &cdi1_exts[0];
     log::info!("Checking CDI_1 (Owner) DICE certificate: {cdi1:#?}");
     // Check that the subject key and subject key identifiers match.
     log::info!("Subject key:");
