@@ -93,20 +93,21 @@ Interrupt Test Register
 ## ALERT_TEST
 Alert Test Register
 - Offset: `0xc`
-- Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset default: `0x80000000`
+- Reset mask: `0x80000003`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "recov_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "recov_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 29}, {"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                      |
-|:------:|:------:|:-------:|:------------|:-------------------------------------------------|
-|  31:2  |        |         |             | Reserved                                         |
-|   1    |   wo   |   0x0   | fatal_alert | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | recov_alert | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name        | Description                                            |
+|:------:|:------:|:-------:|:------------|:-------------------------------------------------------|
+|   31   |  rw0c  |   0x1   | regwen      | Write 0 to disable alert testing until the next reset. |
+|  30:2  |        |         |             | Reserved                                               |
+|   1    |   wo   |   0x0   | fatal_alert | Write 1 to trigger one alert event of this kind.       |
+|   0    |   wo   |   0x0   | recov_alert | Write 1 to trigger one alert event of this kind.       |
 
 ## REGWEN
 Register write enable for all control registers

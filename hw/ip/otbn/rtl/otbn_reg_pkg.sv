@@ -302,9 +302,10 @@ package otbn_reg_pkg;
   // Reset values for hwext registers and their fields
   parameter logic [0:0] OTBN_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_INTR_TEST_DONE_RESVAL = 1'h 0;
-  parameter logic [1:0] OTBN_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] OTBN_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] OTBN_ALERT_TEST_FATAL_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ALERT_TEST_RECOV_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [7:0] OTBN_CMD_RESVAL = 8'h 0;
   parameter logic [7:0] OTBN_CMD_CMD_RESVAL = 8'h 0;
   parameter logic [1:0] OTBN_CTRL_RESVAL = 2'h 0;
@@ -361,7 +362,7 @@ package otbn_reg_pkg;
     4'b 0001, // index[ 0] OTBN_INTR_STATE
     4'b 0001, // index[ 1] OTBN_INTR_ENABLE
     4'b 0001, // index[ 2] OTBN_INTR_TEST
-    4'b 0001, // index[ 3] OTBN_ALERT_TEST
+    4'b 1111, // index[ 3] OTBN_ALERT_TEST
     4'b 0001, // index[ 4] OTBN_CMD
     4'b 0001, // index[ 5] OTBN_CTRL
     4'b 0001, // index[ 6] OTBN_STATUS

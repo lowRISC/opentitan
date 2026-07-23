@@ -56,13 +56,16 @@ class RegBase:
         '''
         raise NotImplementedError()
 
-    def is_homogeneous(self) -> bool:
+    def is_homogeneous(self, inregwen: bool = False) -> bool:
         '''True if every field in the block is identical
 
         For a single register, this is true if it only has one field. For a
         multireg, it is true if the generating register has just one field.
         Note that if the compact flag is set, the generated registers might
         have multiple (replicated) fields.
+
+        When inregwen is True, the inregwen control field is ignored so that
+        this bit does not affect the number of fields in a register.
 
         '''
         raise NotImplementedError()

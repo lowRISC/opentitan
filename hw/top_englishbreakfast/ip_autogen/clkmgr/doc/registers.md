@@ -29,20 +29,21 @@
 ## ALERT_TEST
 Alert Test Register
 - Offset: `0x0`
-- Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset default: `0x80000000`
+- Reset mask: `0x80000003`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "recov_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "recov_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 29}, {"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                      |
-|:------:|:------:|:-------:|:------------|:-------------------------------------------------|
-|  31:2  |        |         |             | Reserved                                         |
-|   1    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | recov_fault | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name        | Description                                            |
+|:------:|:------:|:-------:|:------------|:-------------------------------------------------------|
+|   31   |  rw0c  |   0x1   | regwen      | Write 0 to disable alert testing until the next reset. |
+|  30:2  |        |         |             | Reserved                                               |
+|   1    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind.       |
+|   0    |   wo   |   0x0   | recov_fault | Write 1 to trigger one alert event of this kind.       |
 
 ## EXTCLK_CTRL_REGWEN
 External clock control write enable

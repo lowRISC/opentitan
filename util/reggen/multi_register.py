@@ -321,9 +321,9 @@ class MultiRegister(RegBase):
             ret += reg.get_field_list()
         return ret
 
-    def is_homogeneous(self) -> bool:
+    def is_homogeneous(self, inregwen: bool = False) -> bool:
         assert self.pregs
-        return self.pregs[0].is_homogeneous()
+        return self.pregs[0].is_homogeneous(inregwen)
 
     def needs_qe(self) -> bool:
         return self._needs_qe

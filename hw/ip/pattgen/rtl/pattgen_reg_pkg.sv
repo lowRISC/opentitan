@@ -165,8 +165,9 @@ package pattgen_reg_pkg;
   parameter logic [1:0] PATTGEN_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] PATTGEN_INTR_TEST_DONE_CH0_RESVAL = 1'h 0;
   parameter logic [0:0] PATTGEN_INTR_TEST_DONE_CH1_RESVAL = 1'h 0;
-  parameter logic [0:0] PATTGEN_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] PATTGEN_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] PATTGEN_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] PATTGEN_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
 
   // Register index
   typedef enum int {
@@ -189,7 +190,7 @@ package pattgen_reg_pkg;
     4'b 0001, // index[ 0] PATTGEN_INTR_STATE
     4'b 0001, // index[ 1] PATTGEN_INTR_ENABLE
     4'b 0001, // index[ 2] PATTGEN_INTR_TEST
-    4'b 0001, // index[ 3] PATTGEN_ALERT_TEST
+    4'b 1111, // index[ 3] PATTGEN_ALERT_TEST
     4'b 0001, // index[ 4] PATTGEN_CTRL
     4'b 1111, // index[ 5] PATTGEN_PREDIV_CH0
     4'b 1111, // index[ 6] PATTGEN_PREDIV_CH1

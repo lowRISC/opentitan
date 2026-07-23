@@ -119,9 +119,10 @@ package soc_dbg_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] SOC_DBG_CTRL_STATUS_OFFSET = 5'h 18;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [1:0] SOC_DBG_CTRL_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] SOC_DBG_CTRL_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [6:0] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_RESVAL = 7'h 50;
   parameter logic [6:0]
       SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_DEBUG_POLICY_CATEGORY_RESVAL =
@@ -140,7 +141,7 @@ package soc_dbg_ctrl_reg_pkg;
 
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] SOC_DBG_CTRL_CORE_PERMIT [7] = '{
-    4'b 0001, // index[0] SOC_DBG_CTRL_ALERT_TEST
+    4'b 1111, // index[0] SOC_DBG_CTRL_ALERT_TEST
     4'b 0001, // index[1] SOC_DBG_CTRL_DEBUG_POLICY_VALID_SHADOWED
     4'b 0001, // index[2] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED
     4'b 0001, // index[3] SOC_DBG_CTRL_DEBUG_POLICY_RELOCKED

@@ -921,12 +921,13 @@ package flash_ctrl_reg_pkg;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_RD_LVL_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_CORR_ERR_RESVAL = 1'h 0;
-  parameter logic [4:0] FLASH_CTRL_ALERT_TEST_RESVAL = 5'h 0;
+  parameter logic [31:0] FLASH_CTRL_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_STD_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_PRIM_FLASH_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_PRIM_FLASH_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [10:0] FLASH_CTRL_DEBUG_STATE_RESVAL = 11'h 0;
@@ -1059,7 +1060,7 @@ package flash_ctrl_reg_pkg;
     4'b 0001, // index[  0] FLASH_CTRL_INTR_STATE
     4'b 0001, // index[  1] FLASH_CTRL_INTR_ENABLE
     4'b 0001, // index[  2] FLASH_CTRL_INTR_TEST
-    4'b 0001, // index[  3] FLASH_CTRL_ALERT_TEST
+    4'b 1111, // index[  3] FLASH_CTRL_ALERT_TEST
     4'b 0001, // index[  4] FLASH_CTRL_DIS
     4'b 1111, // index[  5] FLASH_CTRL_EXEC
     4'b 0001, // index[  6] FLASH_CTRL_INIT
