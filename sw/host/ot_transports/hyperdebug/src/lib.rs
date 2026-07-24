@@ -65,7 +65,6 @@ pub struct Hyperdebug<T: Flavor> {
     current_firmware_version: Option<String>,
     cmsis_google_capabilities: Cell<Option<u16>>,
     phantom: PhantomData<T>,
-    cw_usb_port_workaround: Option<u8>,
 }
 
 /// Trait allowing slightly different treatment of USB devices that work almost like a
@@ -148,7 +147,7 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
-        cw_usb_port_workaround: Option<u8>,
+        ot_usbdev_port: Option<u8>,
     ) -> Result<Self> {
         let usb_context = RusbContext::new();
         let device = usb_context.device_by_id(
@@ -307,11 +306,12 @@ impl<T: Flavor> Hyperdebug<T> {
                 conn: RefCell::new(None),
                 usb_device: device,
                 selected_spi: Cell::new(0),
+                usb_hub: RefCell::new(None),
+                ot_usbdev_port,
             }),
             current_firmware_version,
             cmsis_google_capabilities: Cell::new(None),
             phantom: PhantomData,
-            cw_usb_port_workaround,
         };
         Ok(result)
     }
@@ -427,6 +427,8 @@ pub struct Inner {
     conn: RefCell<Option<Rc<Conn>>>,
     usb_device: Box<dyn UsbDevice>,
     selected_spi: Cell<u8>,
+    usb_hub: RefCell<Option<Rc<UsbHub>>>,
+    ot_usbdev_port: Option<u8>,
 }
 
 /// Holds cached IO communication instances(gpio, spi, i2c, uart) that the Hyperdebug struct generates.
@@ -551,6 +553,35 @@ impl Inner {
         let conn = self.connect()?;
         // Perform requested command, passing any output to callback.
         conn.execute_command(cmd, callback)
+    }
+
+    // Return the parent hub of the hyperdebug device.
+    fn dut_usb_parent_hub(&self) -> Result<Rc<UsbHub>> {
+        if let Some(ref hub) = *self.usb_hub.borrow() {
+            return Ok(hub.clone());
+        }
+        let hub = Rc::new(
+            UsbHub::from_parent_device(&*self.usb_device)
+                .context("failed to open the parent hub of the hyperdebug device")?,
+        );
+        *self.usb_hub.borrow_mut() = Some(hub.clone());
+        Ok(hub)
+    }
+
+    fn enable_ot_usbdev_port(&self, en: bool, reason: &str) -> Result<()> {
+        if let Some(port) = self.ot_usbdev_port {
+            let (op, msg) = match en {
+                true => (UsbHubOp::PowerOn, "on"),
+                false => (UsbHubOp::PowerOff, "off"),
+            };
+            let hub = self.dut_usb_parent_hub()?;
+            log::info!("Powering {msg} port {port} on hyperdebug parent hub ({reason})");
+            hub.op(op, port, Duration::from_secs(1), true)
+                .context(format!(
+                    "failed to disable port {port} on hyperdebug parent hub ({reason})"
+                ))?;
+        }
+        Ok(())
     }
 }
 
@@ -902,41 +933,19 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 }
 
-impl<T: Flavor> Hyperdebug<T> {
-    // Return the parent hub of the hyperdebug device.
-    fn dut_usb_parent_hub(&self) -> Result<UsbHub> {
-        UsbHub::from_parent_device(&*self.inner.usb_device)
-            .context("failed to open the parent hub of the hyperdebug device")
-    }
-
-    fn enable_dut_usb_port(&self, en: bool) -> Result<()> {
-        if let Some(port) = self.cw_usb_port_workaround {
-            let (op, msg) = match en {
-                true => (UsbHubOp::PowerOn, "on"),
-                false => (UsbHubOp::PowerOff, "off"),
-            };
-            let hub = self.dut_usb_parent_hub()?;
-            log::info!("Powering {msg} port {port} on hyperdebug parent hub (CW USB workaround)");
-            hub.op(op, port, Duration::from_secs(1), true)
-                .context(format!(
-                    "failed to disable port {port} on hyperdebug parent hub (CW USB workaround)"
-                ))?;
-        }
-        Ok(())
-    }
-}
-
 impl<T: Flavor> FpgaOps for Hyperdebug<T> {
     fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
         // device and only re-enable it after loading.
-        self.enable_dut_usb_port(false)?;
+        self.inner
+            .enable_ot_usbdev_port(false, "CW USB workaround")?;
         T::load_bitstream(bitstream, progress)?;
-        self.enable_dut_usb_port(true)
+        self.inner.enable_ot_usbdev_port(true, "CW USB workaround")
     }
 
     fn clear_bitstream(&self) -> Result<()> {
-        self.enable_dut_usb_port(false)?;
+        self.inner
+            .enable_ot_usbdev_port(false, "CW USB workaround")?;
         T::clear_bitstream()
     }
 }
@@ -1044,13 +1053,15 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
 
 #[derive(Debug, Args)]
 pub struct HyperdebugOpts {
-    /// Work around the USB transceiver on the CW boards not being disabled when the FPGA is
-    /// is not loaded. Enabling this option will cause the backend to disable the USB port
-    /// prior to clearing the bitstream and only re-enable it after loading. It assumes that
-    /// the USB port is connected to the same parent hub as the hyperdebug device and this option
-    /// specifies the port number of that hub.
+    /// Provide the location of the OT USBDEV port. Setting this options means that
+    /// that we assuming that OT USBDEV is connected to the same hub as hyperdebug
+    /// on the port indicated by this setting.
+    /// When this value is set, a work around the CW board will automatically be enabled.
+    /// The USB transceiver on the CW boards is not disabled when the FPGA is
+    /// is not loaded. The backend will disable the USB port prior to clearing the bitstream
+    /// and only re-enable it after loading.
     #[arg(long)]
-    pub cw_usb_port_workaround: Option<u8>,
+    pub ot_usbdev_port: Option<u8>,
 }
 
 struct HyperdebugBackend<T>(T);
@@ -1063,7 +1074,7 @@ impl<T: Flavor + 'static> Backend for HyperdebugBackend<T> {
             args.usb_vid,
             args.usb_pid,
             args.usb_serial.as_deref(),
-            opts.cw_usb_port_workaround,
+            opts.ot_usbdev_port,
         )?))
     }
 }
