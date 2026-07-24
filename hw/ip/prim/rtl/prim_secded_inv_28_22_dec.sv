@@ -14,11 +14,11 @@ module prim_secded_inv_28_22_dec (
   always_comb begin : p_encode
     // Syndrome calculation
     syndrome_o[0] = ^((data_i ^ 28'hA800000) & 28'h07003FF);
-    syndrome_o[1] = ^((data_i ^ 28'hA800000) & 28'h090FC0F);
-    syndrome_o[2] = ^((data_i ^ 28'hA800000) & 28'h1271C71);
+    syndrome_o[1] = ^((data_i ^ 28'hA800000) & 28'h0B0FC0F);
+    syndrome_o[2] = ^((data_i ^ 28'hA800000) & 28'h1371C71);
     syndrome_o[3] = ^((data_i ^ 28'hA800000) & 28'h23B6592);
-    syndrome_o[4] = ^((data_i ^ 28'hA800000) & 28'h43DAAA4);
-    syndrome_o[5] = ^((data_i ^ 28'hA800000) & 28'h83ED348);
+    syndrome_o[4] = ^((data_i ^ 28'hA800000) & 28'h41DAAA4);
+    syndrome_o[5] = ^((data_i ^ 28'hA800000) & 28'h82ED348);
 
     // Corrected output calculation
     data_o[0] = (syndrome_o == 6'h7) ^ data_i[0];
@@ -41,8 +41,8 @@ module prim_secded_inv_28_22_dec (
     data_o[17] = (syndrome_o == 6'h2c) ^ data_i[17];
     data_o[18] = (syndrome_o == 6'h34) ^ data_i[18];
     data_o[19] = (syndrome_o == 6'h38) ^ data_i[19];
-    data_o[20] = (syndrome_o == 6'h3b) ^ data_i[20];
-    data_o[21] = (syndrome_o == 6'h3d) ^ data_i[21];
+    data_o[20] = (syndrome_o == 6'h1f) ^ data_i[20];
+    data_o[21] = (syndrome_o == 6'h2f) ^ data_i[21];
 
     // err_o calc. bit0: single error, bit1: double error
     err_o[0] = ^syndrome_o;
