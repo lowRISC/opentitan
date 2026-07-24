@@ -221,7 +221,7 @@ TEST_F(RomExtBootPolicySearchTest, NoManifests) {
 
   uintptr_t bank_base = (uintptr_t)buffer_;
   const manifest_t *result =
-      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+      rom_ext_boot_policy_manifest_bank_search(bank_base, &boot_data);
   EXPECT_EQ(result, (const manifest_t *)(bank_base + kLowOffset));
 }
 
@@ -234,7 +234,7 @@ TEST_F(RomExtBootPolicySearchTest, ValidManifestAtLowOffset) {
   InitManifest(manifest);
 
   const manifest_t *result =
-      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+      rom_ext_boot_policy_manifest_bank_search(bank_base, &boot_data);
   EXPECT_EQ(result, manifest);
 }
 
@@ -247,7 +247,7 @@ TEST_F(RomExtBootPolicySearchTest, ValidManifestAtHighOffset) {
   InitManifest(manifest);
 
   const manifest_t *result =
-      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+      rom_ext_boot_policy_manifest_bank_search(bank_base, &boot_data);
   EXPECT_EQ(result, manifest);
 }
 
@@ -262,7 +262,7 @@ TEST_F(RomExtBootPolicySearchTest, MultipleValidManifestsPrefersHighestOffset) {
   InitManifest(manifest_high);
 
   const manifest_t *result =
-      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+      rom_ext_boot_policy_manifest_bank_search(bank_base, &boot_data);
   EXPECT_EQ(result, manifest_high);
 }
 
@@ -278,7 +278,7 @@ TEST_F(RomExtBootPolicySearchTest, InvalidManifestAtHighOffsetValidAtLow) {
   InitManifest(manifest_low);
 
   const manifest_t *result =
-      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+      rom_ext_boot_policy_manifest_bank_search(bank_base, &boot_data);
   EXPECT_EQ(result, manifest_low);
 }
 
@@ -292,7 +292,7 @@ TEST_F(RomExtBootPolicySearchTest, InvalidManifestAtHighOffsetOnly) {
   manifest->manifest_base_address = 0;  // Invalid base address
 
   const manifest_t *result =
-      rom_ext_boot_policy_manifest_search(bank_base, &boot_data);
+      rom_ext_boot_policy_manifest_bank_search(bank_base, &boot_data);
   EXPECT_EQ(result, manifest);
 }
 

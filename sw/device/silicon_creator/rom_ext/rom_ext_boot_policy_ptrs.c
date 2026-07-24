@@ -4,7 +4,10 @@
 
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
 
-const manifest_t *rom_ext_boot_policy_manifest_search(
+const manifest_t *rom_ext_boot_policy_slot_a_manifest = NULL;
+const manifest_t *rom_ext_boot_policy_slot_b_manifest = NULL;
+
+const manifest_t *rom_ext_boot_policy_manifest_bank_search(
     uintptr_t bank_base, const boot_data_t *boot_data) {
   // Search backward. Searching backward is important because the region before
   // the active firmware (e.g. if active is at the higher offset) might not be
@@ -37,6 +40,16 @@ const manifest_t *rom_ext_boot_policy_manifest_search(
     }
   }
   return candidate;
+}
+
+void rom_ext_boot_policy_manifest_search(const boot_data_t *boot_data) {
+  rom_ext_boot_policy_slot_a_manifest =
+      rom_ext_boot_policy_manifest_bank_search(TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                               boot_data);
+  rom_ext_boot_policy_slot_b_manifest =
+      rom_ext_boot_policy_manifest_bank_search(
+          TOP_EARLGREY_EFLASH_BASE_ADDR + (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2),
+          boot_data);
 }
 
 rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(

@@ -328,6 +328,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
                                           boot_log_t *boot_log) {
+  rom_ext_boot_policy_manifest_search(boot_data);
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get(boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
