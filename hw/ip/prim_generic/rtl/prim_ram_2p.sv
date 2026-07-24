@@ -54,15 +54,8 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
   // to be the full bit mask.
   localparam int MaskWidth = Width / DataBitsPerMask;
 
-  logic [Width-1:0]     mem [Depth];
-  logic [MaskWidth-1:0] a_wmask;
-  logic [MaskWidth-1:0] b_wmask;
-
-  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-    assign a_wmask[k] = &a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-    assign b_wmask[k] = &b_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-
-    // Ensure that all mask bits within a group have the same value for a write
+  // Ensure that all mask bits within a group have the same value for a write.
+  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask_check
     `ASSERT(MaskCheckPortA_A, a_req_i && a_write_i |->
         a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_a_i, '0)
@@ -71,18 +64,23 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
         clk_b_i, '0)
   end
 
-  // Xilinx FPGA specific Dual-port RAM coding style
+  // Single, whole-word array. Masked bit-slice writes disqualify an array from lint tools' RAM
+  // recognition, so wdata_a/wdata_b merge each port's write data with the currently stored word
+  // per its mask, and mem is always written as a whole word.
+  logic [Width-1:0] mem [Depth];
+
+  logic [Width-1:0] wdata_a;
+  assign wdata_a = (a_wdata_i & a_wmask_i) | (mem[a_addr_i] & ~a_wmask_i);
+
+  logic [Width-1:0] wdata_b;
+  assign wdata_b = (b_wdata_i & b_wmask_i) | (mem[b_addr_i] & ~b_wmask_i);
+
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
   // thrown due to 'mem' being driven by two always processes below
   always @(posedge clk_a_i) begin
     if (a_req_i) begin
       if (a_write_i) begin
-        for (int i=0; i < MaskWidth; i = i + 1) begin
-          if (a_wmask[i]) begin
-            mem[a_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              a_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-          end
-        end
+        mem[a_addr_i] <= wdata_a;
       end else begin
         a_rdata_o <= mem[a_addr_i];
       end
@@ -92,12 +90,7 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
   always @(posedge clk_b_i) begin
     if (b_req_i) begin
       if (b_write_i) begin
-        for (int i=0; i < MaskWidth; i = i + 1) begin
-          if (b_wmask[i]) begin
-            mem[b_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-              b_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-          end
-        end
+        mem[b_addr_i] <= wdata_b;
       end else begin
         b_rdata_o <= mem[b_addr_i];
       end

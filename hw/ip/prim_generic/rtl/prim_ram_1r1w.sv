@@ -52,28 +52,26 @@ module prim_ram_1r1w import prim_ram_1r1w_pkg::*; #(
   // to be the full bit mask.
   localparam int MaskWidth = Width / DataBitsPerMask;
 
-  logic [Width-1:0]     mem [Depth];
-  logic [MaskWidth-1:0] a_wmask;
-  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask
-    assign a_wmask[k] = &a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask];
-
-    // Ensure that all mask bits within a group have the same value for a write
+  // Ensure that all mask bits within a group have the same value for a write.
+  for (genvar k = 0; k < MaskWidth; k++) begin : gen_wmask_check
     `ASSERT(MaskCheckPortA_A, a_req_i |->
         a_wmask_i[k*DataBitsPerMask +: DataBitsPerMask] inside {{DataBitsPerMask{1'b1}}, '0},
         clk_a_i, '0)
   end
 
-  // Xilinx FPGA specific Two-port RAM coding style
+  // Single, whole-word array. Masked bit-slice writes disqualify an array from lint tools' RAM
+  // recognition, so wdata merges the write data with the currently stored word per the mask,
+  // and mem is always written as a whole word.
+  logic [Width-1:0] mem [Depth];
+
+  logic [Width-1:0] wdata;
+  assign wdata = (a_wdata_i & a_wmask_i) | (mem[a_addr_i] & ~a_wmask_i);
+
   // using always instead of always_ff to avoid 'ICPD  - illegal combination of drivers' error
   // thrown due to 'mem' being driven by two always processes below
   always @(posedge clk_a_i) begin
     if (a_req_i) begin
-      for (int i=0; i < MaskWidth; i = i + 1) begin
-        if (a_wmask[i]) begin
-          mem[a_addr_i][i*DataBitsPerMask +: DataBitsPerMask] <=
-            a_wdata_i[i*DataBitsPerMask +: DataBitsPerMask];
-        end
-      end
+      mem[a_addr_i] <= wdata;
     end
   end
 
