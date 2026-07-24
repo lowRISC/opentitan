@@ -145,3 +145,10 @@ common --legacy_external_runfiles
 # these when running sandboxed tests.
 test --sandbox_explicit_pseudoterminal
 run --sandbox_explicit_pseudoterminal
+
+# Due to a Chip Whisperer design problem, the test harnesses may need to power on and off some hub ports on
+# the CW340 internal hub. Doing so properly requires writing to some files under /sys, specifically
+# /sys/bus/usb/devices/.../...-port.../disable
+# Therefore we need to make /sys writable, otherwise the code will fallback to directly manipulating the hub
+# using control operations which may confuse the kernel and lead to hard to debug problems.
+test --sandbox_writable_path=/sys/
