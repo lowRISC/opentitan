@@ -146,6 +146,7 @@ module otbn
 
   logic software_errs_fatal_q, software_errs_fatal_d;
   logic wfi_enabled_q, wfi_enabled_d;
+  logic urnd_ctrl_enabled_q, urnd_ctrl_enabled_d;
 
   otbn_reg2hw_t reg2hw;
   otbn_hw2reg_t hw2reg;
@@ -943,18 +944,25 @@ module otbn
     reg2hw.ctrl.wfi_enabled.qe && (status_q == StatusIdle) ?
         reg2hw.ctrl.wfi_enabled.q : wfi_enabled_q;
 
+  assign urnd_ctrl_enabled_d =
+    reg2hw.ctrl.urnd_ctrl_enabled.qe && (status_q == StatusIdle) ?
+        reg2hw.ctrl.urnd_ctrl_enabled.q : urnd_ctrl_enabled_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       software_errs_fatal_q <= 1'b0;
       wfi_enabled_q         <= 1'b0;
+      urnd_ctrl_enabled_q   <= 1'b0;
     end else begin
       software_errs_fatal_q <= software_errs_fatal_d;
       wfi_enabled_q         <= wfi_enabled_d;
+      urnd_ctrl_enabled_q   <= urnd_ctrl_enabled_d;
     end
   end
 
   assign hw2reg.ctrl.software_errs_fatal.d = software_errs_fatal_q;
   assign hw2reg.ctrl.wfi_enabled.d         = wfi_enabled_q;
+  assign hw2reg.ctrl.urnd_ctrl_enabled.d   = urnd_ctrl_enabled_q;
 
   // ERR_BITS register
   // The error bits for an OTBN operation get stored on the cycle that done is

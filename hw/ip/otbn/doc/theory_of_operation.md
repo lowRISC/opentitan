@@ -79,14 +79,120 @@ If the cache is not full, a read from `RND` will block as described above until 
 OTBN discards any data that is in the cache at the start of an operation.
 If there is still a pending prefetch when an OTBN operation starts, the results of the prefetch will also discarded.
 
-`URND` provides bits from a local XoShiRo256++ PRNG within OTBN; reads from it never stall.
+`URND` provides bits from a local Bivium PRNG within OTBN; reads from it never stall.
 This PRNG is seeded once from the EDN connected via `edn_urnd` when OTBN starts execution.
 Each new execution of OTBN will reseed the `URND` PRNG.
-The PRNG state is advanced every cycle when OTBN is running.
+In normal operation, the PRNG state is advanced every cycle when OTBN is running.
+OTBN SW can stop and restore the PRNG via the URND control interface.
+See the section [below](#urnd-control-interface).
 
 The PRNG has a long cycle length but has a fixed point: the sequence of numbers will get stuck if the state ever happens to become zero.
 This will never happen in normal operation.
 If a fault causes the state to become zero, OTBN raises a `BAD_INTERNAL_STATE` fatal error.
+
+### URND control interface
+OTBN SW has the option to control the URND PRNG at runtime via the URND control interface.
+With this interface the state of the PRNG can be saved and restored at runtime which gives an OTBN program the option to generate twice the same stream of random numbers.
+This is especially useful, for example, to compress masked variables.
+See the [developer guide](developers_guide.md#urnd-context-saving-and-restoring) for how to do this.
+
+This interface is based upon the `URND_CTRL` and `URND_STATUS` CSRs and the `URND_STATE` WSR and must be enabled by the host via the `urnd_ctrl_enabled` bit of the [`CTRL`](registers.md#ctrl) register.
+OTBN SW can check if the URND control is enabled by checking `URND_STATUS.URND_CTRL_ENABLED`.
+If the interface is disabled, all commands provided via `URND_CTRL` have no effect and the PRNG state cannot be read via `URND_STATE`.
+If enabled, the PRNG can be manipulated in the following ways:
+- The PRNG can be stopped by writing a 1 to `URND_CTRL.STOP`.
+  This stops the PRNG from updating its state until `URND_CTRL.START` is issued.
+  - Note that if bits from the PRNG are actively used whilst the PRNG is stopped, for security reasons the state is nonetheless advanced in the cycle the randomness is used.
+  This is the case when SW reads from URND or any accelerator like the MAI uses bits for its masking.
+  - If such a forced update happens, `URND_STATUS.USED_WHILE_STOPPED` is set to 1.
+- The current state of the PRNG can be read at any time via the `URND_STATE` WSR.
+- The PRNG can be restored to a state, see explanation below.
+- The PRNG can be resumed by writing a 1 to `URND_CTRL.START`.
+  This is also possible whilst a restore process is ongoing.
+
+To provide URND as a glitch free signal to all its consumers (URND is used for hardware based masking), the URND value is the registered version of the PRNG output.
+Due to this, the URND value lacks one cycle behind the PRNG state.
+This has the implications when issuing a start or stop command or reading URND whilst the PRNG is stopped.
+
+When a stop command is issued, URND is still advance in the cycle immediately afterwards.
+When a start command is issued, URND changes only in the 2nd cycle.
+The following diagram illustrates this:
+
+```wavejson
+{
+  signal: [
+    {name: 'Command',             wave: '0.20.20...', data: ["Stop","Start"]},
+    {name: 'URND_STATUS.stopped', wave: '0.1...0...'},
+    {name: 'PRNG State',          wave: '345...6789'},
+    {name: 'URND',                wave: '2345...678'},
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:1},
+}
+```
+
+If the URND value is used while stopped (SW reads it or MAI is busy), the URND is also updated only in the 2nd cycle afterwards.
+In case two reads happen subsequently, the same URND value is returned.
+This is illustrated in the following diagram (examples with one and three reads).
+
+```wavejson
+{
+  signal: [
+    {name: 'Command',                        wave: '020..........', data: ["Stop","Start"]},
+    {name: 'URND_STATUS.stopped',            wave: '0.1..........'},
+    {name: 'URND_STATUS.used_while_stopped', wave: '0....1.......'},
+    {name: 'Forced URND usage',              wave: '0...10..1..0.'},
+    {name: 'PRNG State',                     wave: '45...6...789.'},
+    {name: 'URND',                           wave: '345...6...789'},
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:1},
+}
+```
+
+#### Restoring a state
+A PRNG restore happens in steps and OTBN SW must:
+- Issue the `URND_CTRL.RESTORE` command.
+  - This starts the restore process and `URND_STATUS.RESTORING` is set to 1.
+  - A restore can be started when the PRNG is stopped or running.
+    However, if it is running each cycle will advance the state.
+- Write the desired state in `URND_STATUS.URND_RESTORE_WIDTH` words to `URND_STATE`.
+  - The restore starts with the least significant word of the state.
+  - Only the lowest `URND_STATUS.URND_RESTORE_WIDTH` bits (or fewer for the last restore word) are used for the restore step.
+    The upper bits of the write are ignored.
+  - The restore process is complete once the last restore word is written to the `URND_STATE`.
+    The `URND_STATUS.RESTORING` is then cleared to 0.
+  - The number of restore words can be determined based upon `URND_STATUS.URND_RESTORE_WIDTH` and `URND_STATUS.URND_STATE_WIDTH`.
+    Note, these values are constant and just provided for SW flexibility.
+
+There is no immediate state validation when restoring a state.
+If an invalid state (e.g., all-zero) is provided, the PRNG will raise a fatal error on the next state update.
+
+The diagram shows a complete save and restore process.
+Note there is no read command but in the diagram this represents reading the `URND_STATE` WSR.
+```wavejson
+{
+  signal: [
+    {name: 'Command',               wave: '02220..220...20.', data: ["Stop","Read","Start","Stop","RST","Start"]},
+    {name: 'URND_STATUS.stopped',   wave: '0.1.0..1......0.'},
+    {name: 'URND_STATUS.restoring', wave: '0........1...0.'},
+    {name: 'Restore word',          wave: '0........22|20..', data: ["1","2","6"]},
+    {name: 'PRNG State',            wave: '45..67|x.....567'},
+    {name: 'URND',                  wave: '345..6|x......56'},
+  ],
+  edge: [],
+  foot:{
+   tock:0
+ },
+ config:{hscale:1},
+}
+```
 
 ### Operational States
 

@@ -518,6 +518,18 @@
 
             Writes are ignored if OTBN is not idle.
           '''
+        },
+        { bits: "2",
+          name: "urnd_ctrl_enabled",
+          resval: 0,
+          desc: '''
+            Controls whether the URND_CTRL CSR is enabled.
+
+            When set, OTBN SW can use the functionality provided by the URND_CTRL CSR.
+            When cleared, writes to URND_CTRL have no effect.
+
+            Writes are ignored if OTBN is not idle.
+          '''
         }
       ],
       tags: [

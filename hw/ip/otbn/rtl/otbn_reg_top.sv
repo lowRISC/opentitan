@@ -192,6 +192,8 @@ module otbn_reg_top (
   logic ctrl_software_errs_fatal_wd;
   logic ctrl_wfi_enabled_qs;
   logic ctrl_wfi_enabled_wd;
+  logic ctrl_urnd_ctrl_enabled_qs;
+  logic ctrl_urnd_ctrl_enabled_wd;
   logic [7:0] status_qs;
   logic err_bits_re;
   logic err_bits_we;
@@ -382,7 +384,7 @@ module otbn_reg_top (
 
   // R[ctrl]: V(True)
   logic ctrl_qe;
-  logic [1:0] ctrl_flds_we;
+  logic [2:0] ctrl_flds_we;
   assign ctrl_qe = &ctrl_flds_we;
   //   F[software_errs_fatal]: 0:0
   prim_subreg_ext #(
@@ -415,6 +417,22 @@ module otbn_reg_top (
     .qs     (ctrl_wfi_enabled_qs)
   );
   assign reg2hw.ctrl.wfi_enabled.qe = ctrl_qe;
+
+  //   F[urnd_ctrl_enabled]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_ctrl_urnd_ctrl_enabled (
+    .re     (ctrl_re),
+    .we     (ctrl_we),
+    .wd     (ctrl_urnd_ctrl_enabled_wd),
+    .d      (hw2reg.ctrl.urnd_ctrl_enabled.d),
+    .qre    (),
+    .qe     (ctrl_flds_we[2]),
+    .q      (reg2hw.ctrl.urnd_ctrl_enabled.q),
+    .ds     (),
+    .qs     (ctrl_urnd_ctrl_enabled_qs)
+  );
+  assign reg2hw.ctrl.urnd_ctrl_enabled.qe = ctrl_qe;
 
 
   // R[status]: V(False)
@@ -1038,6 +1056,8 @@ module otbn_reg_top (
   assign ctrl_software_errs_fatal_wd = reg_wdata[0];
 
   assign ctrl_wfi_enabled_wd = reg_wdata[1];
+
+  assign ctrl_urnd_ctrl_enabled_wd = reg_wdata[2];
   assign err_bits_re = addr_hit[7] & reg_re & !reg_error;
   assign err_bits_we = addr_hit[7] & reg_we & !reg_error;
 
@@ -1126,6 +1146,7 @@ module otbn_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[0] = ctrl_software_errs_fatal_qs;
         reg_rdata_next[1] = ctrl_wfi_enabled_qs;
+        reg_rdata_next[2] = ctrl_urnd_ctrl_enabled_qs;
       end
 
       addr_hit[6]: begin
