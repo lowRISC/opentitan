@@ -11,7 +11,7 @@ sh_library(
 
 [
     sh_test(
-        name = "slh_dsa_test_{}".format(parameter_set),
+        name = "slh_dsa_generate_test_{}".format(parameter_set),
         srcs = ["hsmtool_runner.sh"],
         args = [
             "--module=$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
@@ -47,6 +47,28 @@ sh_library(
         "shake-256f",
     ]
 ]
+
+sh_test(
+    name = "slh_dsa_roundtrip_test",
+    srcs = ["hsmtool_roundtrip_runner.sh"],
+    args = [
+        "slh-dsa",
+        "fake_app_prod_slh_dsa",
+        "$(rootpath :tqbf.txt)",
+    ],
+    data = [
+        "tqbf.txt",
+        "//signing/softhsm",
+        "//signing/softhsm:conf",
+        "//sw/host/hsmtool",
+        "@softhsm2//:gen_dir",
+    ],
+    env = {
+        "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+    },
+    deps = [":test_lib"],
+)
 
 sh_test(
     name = "token_exists_test",

@@ -6,5 +6,4 @@
 set -euo pipefail
 source sw/host/hsmtool/tests/test_lib.sh
 
-readonly HSMTOOL=sw/host/hsmtool/hsmtool
-${HSMTOOL} "$@"
+run ${HSMTOOL} "$@"
