@@ -77,22 +77,32 @@
       );
       pythonEnv = pythonSet.mkVirtualEnv "opentitan-env" workspace.deps.default;
 
-      # Commercial EDA tool shell, built on lowrisc-nix's generic mkEdaShell.
-      # Enter with `nix develop .`. It execs into a hermetic FHS sandbox, so
-      # it is not direnv-loadable and must be entered explicitly.
+      lrPkgs = lowrisc-nix.packages.${system};
+
+      # A single FHS devshell for all local OpenTitan workflows, built on
+      # lowrisc-nix's mkEdaShell. It serves two entry points off the *same*
+      # environment:
+      #   - interactive: `nix develop .` (execs into the hermetic FHS sandbox)
+      #   - non-interactive: `nix run .#eda -- <cmd>` / `nix run .#lint -- <cat>`
+      #     via mkEdaShell's `.app` (its runScript execs argv inside the sandbox).
       #
-      # Tool install paths and license servers are supplied at *runtime* from the
-      # JSON file named by $LOWRISC_EDA_CONFIG (the flake only declares which
-      # vendor tools + versions are wanted); without that config the shell still
-      # works and just warns. See lowrisc-nix lib/README-eda.md.
+      # Commercial EDA tool install paths and license servers are supplied at
+      # *runtime* from the JSON named by $LOWRISC_EDA_CONFIG (the flake only
+      # declares which vendor tools + versions are wanted); without that config
+      # the shell still works and just warns. See lowrisc-nix lib/README-eda.md.
+      #
+      # edaFhsPackages (mkEdaShell's base) already provides the common libraries
+      # and build helpers (glibc/gcc, zlib, systemd->libudev, pkg-config, git,
+      # make, autotools, curl, ncurses, ...). extraPkgs adds the OpenTitan tools
+      # on top, including everything the lint `bazel` category needs to build
+      # host tools such as opentitantool from source.
       eda = lowrisc-nix.lib.mkEdaShell {
         inherit pkgs;
         name = "opentitan-eda";
         tools = builtins.fromJSON (builtins.readFile ./tool_data.json);
-        # OpenTitan Python env (fusesoc, dvsim, ...) plus the open-source tools
-        # that ship in nixpkgs.
+        # OpenTitan Python env: fusesoc, dvsim, topgen, reggen, ruff, mypy, ...
         extraDeps = [pythonEnv];
-        extraPkgs = [
+        extraPkgs = with pkgs; [
           # Pinned via lowrisc-nix rather than nixpkgs directly, so a future
           # nixpkgs bump can't silently drift the devshell's tool versions.
           lowrisc-nix.packages.${system}.verilator_5_048
@@ -122,7 +132,16 @@
           pkgs.pcsclite
           pkgs.dfu-util
           pkgs.lrzsz
+          # check-lock-files regenerates python-requirements.txt via `uv pip compile`.
+          uv
         ];
+        # Point the Bazel bindgen toolchain at a nixpkgs libclang (see
+        # third_party/rust/extensions.bzl): the LLVM release Bazel would download
+        # cannot be dlopen'd under the Nix loader. Set in the FHS profile so
+        # Bazel sees it whether launched from `nix develop` or the lint app.
+        profile = ''
+          export OT_BINDGEN_LLVM=${lrPkgs.libclang_21}
+        '';
       };
     in {
       packages.pythonEnv = pythonEnv;
@@ -132,13 +151,25 @@
         default = eda;
       };
 
-      # `nix run .#eda` drops into the EDA sandbox in your $SHELL; with args,
-      # `nix run .#eda -- <cmd> <args>` execs them inside the sandbox (argv is
-      # passed through directly, so use e.g. `-- bash -c '...'` for a shell
-      # snippet). mkEdaShell exposes the ready-made flake-app payload as `eda.app`.
+      # `nix run .#eda` (or `nix run .`) drops into the EDA sandbox in your
+      # $SHELL; with args, `nix run .#eda -- <cmd> <args>` execs them inside the
+      # sandbox (argv passed through directly, so use e.g. `-- bash -c '...'` for
+      # a shell snippet). mkEdaShell exposes the flake-app payload as `eda.app`.
       apps = {
         eda = eda.app;
         default = eda.app;
+
+        # Lint: run the categorized lint flow (ci/lint/run.sh) in the *same*
+        # devshell, preserving `nix run .#lint -- <category>`. Thin wrapper that
+        # prefixes run.sh onto the devshell app's argv, so CI and local runs
+        # share this one environment.
+        lint = {
+          type = "app";
+          program = "${pkgs.writeShellScript "opentitan-lint" ''
+            repo="$(${pkgs.git}/bin/git rev-parse --show-toplevel)"
+            exec ${eda.app.program} "$repo/ci/lint/run.sh" "$@"
+          ''}";
+        };
       };
 
       formatter = pkgs.alejandra;

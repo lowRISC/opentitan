@@ -910,9 +910,31 @@
         ]
       }
     },
+    "//third_party/rust:extensions.bzl%bindgen_llvm": {
+      "general": {
+        "bzlTransitiveDigest": "NC1Ye+sgXzfttwnAOPNvCsyeE1p4D+8oxi2DXRgxKEY=",
+        "usagesDigest": "D9AnJAeKl6QyryGXuiwVbjvzUymkngAOQsTqNDxZdJA=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "bindgen_llvm": {
+            "repoRuleId": "@@//third_party/rust:extensions.bzl%_bindgen_llvm_repo",
+            "attributes": {}
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/rust:extensions.bzl%serde_annotate": {
       "general": {
-        "bzlTransitiveDigest": "/YYrRJC4tjktlX/3ZnzUeBokj11qaJujJ/3o+yBeWtY=",
+        "bzlTransitiveDigest": "NC1Ye+sgXzfttwnAOPNvCsyeE1p4D+8oxi2DXRgxKEY=",
         "usagesDigest": "Tsf/q9LjKCtQ8nKZW4yKxNPGltd7MZ1oZ54ZaytQHiI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
