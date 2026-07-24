@@ -1122,6 +1122,13 @@ impl TransportWrapper {
             self.pin_strapping("PRERESET_DFT_DISABLE")?.apply()?;
         }
 
+        if self.strapping_conf_map.contains_key("TRST") {
+            log::info!("DIAGVERIFY: asserting TRST strapping");
+            self.pin_strapping("TRST")?.apply()?;
+            log::info!("DIAGVERIFY: TRST strapping applied successfully");
+        } else {
+            log::info!("DIAGVERIFY: TRST strapping NOT FOUND in strapping_conf_map, skipping");
+        }
         self.pin_strapping("RESET")?.apply()?;
         std::thread::sleep(delay);
 
@@ -1131,6 +1138,11 @@ impl TransportWrapper {
         }
 
         log::info!("Deasserting the reset signal");
+        if self.strapping_conf_map.contains_key("TRST") {
+            log::info!("DIAGVERIFY: removing TRST strapping");
+            self.pin_strapping("TRST")?.remove()?;
+            log::info!("DIAGVERIFY: TRST strapping removed successfully");
+        }
         self.pin_strapping("RESET")?.remove()?;
 
         if self.disable_dft_on_reset.get() {
