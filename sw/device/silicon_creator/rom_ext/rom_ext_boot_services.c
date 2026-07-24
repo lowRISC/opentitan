@@ -92,7 +92,7 @@ static rom_error_t boot_svc_min_sec_ver_handler(
     // Check the two flash slots for valid manifests and determine the maximum
     // value of the new minimum_security_version.  This prevents a malicious
     // MinBl0SecVer request from making the chip un-bootable.
-    const manifest_t *manifest = rom_ext_boot_policy_manifest_a_get(boot_data);
+    const manifest_t *manifest = rom_ext_boot_policy_manifest_a_get();
     uint32_t flash_exec = 0;
     rom_error_t error =
         rom_ext_verify(manifest, /*slot_id=*/0, boot_data, &flash_exec, keyring,
@@ -100,7 +100,7 @@ static rom_error_t boot_svc_min_sec_ver_handler(
     if (error == kErrorOk) {
       slot_a_max_sec_ver = manifest->security_version;
     }
-    manifest = rom_ext_boot_policy_manifest_b_get(boot_data);
+    manifest = rom_ext_boot_policy_manifest_b_get();
     error = rom_ext_verify(manifest, /*slot_id=*/0, boot_data, &flash_exec,
                            keyring, verify_key, owner_config, isfb_check_count);
     if (error == kErrorOk) {

@@ -18,8 +18,8 @@ namespace internal {
 class MockRomExtBootPolicyPtrs
     : public global_mock::GlobalMock<MockRomExtBootPolicyPtrs> {
  public:
-  MOCK_METHOD(const manifest_t *, ManifestA, (const boot_data_t *));
-  MOCK_METHOD(const manifest_t *, ManifestB, (const boot_data_t *));
+  MOCK_METHOD(const manifest_t *, ManifestA, ());
+  MOCK_METHOD(const manifest_t *, ManifestB, ());
 };
 
 }  // namespace internal
