@@ -22,8 +22,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
 
   localparam string MAIN_INDEX = "0";
   localparam string MAIN_REQ_INDEX = "3";
-  localparam string RET_INDEX = "1";
-  localparam string RET_REQ_INDEX = "4";
+  localparam string RET_INDEX = "2";
+  localparam string RET_REQ_INDEX = "5";
 
   localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret";
   localparam string SRAM_CTRL_MAIN_HDL_PATH = "tb.dut.top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main";

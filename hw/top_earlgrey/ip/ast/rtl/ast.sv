@@ -295,6 +295,8 @@ assign mem_cfg_req_o.rv_core_ibex_icache_data =
     {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
 assign mem_cfg_req_o.sram_ctrl_main           =
     {ast_pkg::SramCtrlMainNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
+assign mem_cfg_req_o.sram_ctrl_sec            =
+    {ast_pkg::SramCtrlSecNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
 assign mem_cfg_req_o.sram_ctrl_ret            =
     {ast_pkg::SramCtrlRetNumRamInst{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
 assign mem_cfg_req_o.spi_device_sys2spi       = '{req: tpram_rm.cfg};

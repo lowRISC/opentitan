@@ -88,6 +88,12 @@ module earlgrey_pd_main #(
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
+  // parameters for sram_ctrl_sec
+  parameter int SramCtrlSecInstSize = 65536,
+  parameter int SramCtrlSecNumRamInst = 1,
+  parameter bit SramCtrlSecInstrExec = 1,
+  parameter int SramCtrlSecNumPrinceRoundsHalf = 2,
+  parameter bit SramCtrlSecEccCorrection = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -198,6 +204,8 @@ module earlgrey_pd_main #(
   output prim_rom_pkg::rom_cfg_rsp_t       rom_ctrl_rom_cfg_rsp_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_cfg_req_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlSecNumRamInst-1:0] sram_ctrl_sec_ram_cfg_req_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlSecNumRamInst-1:0] sram_ctrl_sec_ram_cfg_rsp_o,
   input  prim_mubi_pkg::mubi4_t       flash_bist_enable_i,
   input  logic       flash_power_down_h_i,
   input  logic       flash_power_ready_h_i,
@@ -309,6 +317,8 @@ module earlgrey_pd_main #(
   localparam int unsigned Edn1NumEndPoints = 1;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
+  // local parameters for sram_ctrl_sec
+  localparam int SramCtrlSecOutstanding = 2;
   // local parameters for rom_ctrl
   localparam bit RomCtrlFlopToKmac = 1'b0;
   // local parameters for rv_core_ibex
@@ -419,6 +429,7 @@ module earlgrey_pd_main #(
   // edn0
   // edn1
   // sram_ctrl_main
+  // sram_ctrl_sec
   // rom_ctrl
   // rv_core_ibex
 
@@ -724,6 +735,10 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       sram_ctrl_main_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_ram_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_main_ram_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_sec_regs_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_sec_regs_tl_rsp;
+  tlul_pkg::tl_h2d_t       sram_ctrl_sec_ram_tl_req;
+  tlul_pkg::tl_d2h_t       sram_ctrl_sec_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
@@ -765,6 +780,7 @@ module earlgrey_pd_main #(
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
+  prim_mubi_pkg::mubi8_t       sram_ctrl_sec_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
   otp_ctrl_pkg::otp_keymgr_key_t       keymgr_otp_key;
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
@@ -774,8 +790,8 @@ module earlgrey_pd_main #(
   // Create mixed connections to ports
   assign alert_handler_esc_rx[3] = alert_handler_esc_rx_i;
   assign alert_handler_esc_tx_o = alert_handler_esc_tx[3];
-  assign otp_ctrl_sram_otp_key_req[1] = otp_ctrl_sram_otp_key_req_i;
-  assign otp_ctrl_sram_otp_key_rsp_o = otp_ctrl_sram_otp_key_rsp[1];
+  assign otp_ctrl_sram_otp_key_req[2] = otp_ctrl_sram_otp_key_req_i;
+  assign otp_ctrl_sram_otp_key_rsp_o = otp_ctrl_sram_otp_key_rsp[2];
   assign lc_ctrl_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign lc_ctrl_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign lc_ctrl_lc_escalate_en_o = lc_ctrl_lc_escalate_en;
@@ -784,14 +800,6 @@ module earlgrey_pd_main #(
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign ast_obs_ctrl = obs_ctrl_i;
 
-  // Dummy signal definitions for unused partial inter-module signals
-  otp_ctrl_pkg::sram_otp_key_rsp_t unused_otp_ctrl_sram_otp_key_rsp3;
-
-  // Assign unused partial inter-module signals
-  assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
-
-  // Assign undriven partial inter-module signals
-  assign otp_ctrl_sram_otp_key_req[3] = '0;
 
   // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
@@ -799,6 +807,8 @@ module earlgrey_pd_main #(
   assign csrng_otp_en_csrng_sw_app_read =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
   assign sram_ctrl_main_otp_en_sram_ifetch =
+      otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
+  assign sram_ctrl_sec_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
   assign rv_dm_otp_dis_rv_dm_late_debug =
       otp_ctrl_otp_broadcast.hw_cfg1_data.dis_rv_dm_late_debug;
@@ -2431,8 +2441,53 @@ module earlgrey_pd_main #(
     .ram_tl_o(sram_ctrl_main_ram_tl_rsp)
   );
 
-  rom_ctrl #(
+  sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58]),
+    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+    .RndCnstSramKey(RndCnstSramCtrlSecSramKey),
+    .RndCnstSramNonce(RndCnstSramCtrlSecSramNonce),
+    .RndCnstLfsrSeed(RndCnstSramCtrlSecLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstSramCtrlSecLfsrPerm),
+    .MemSizeRam(65536),
+    .InstSize(SramCtrlSecInstSize),
+    .NumRamInst(SramCtrlSecNumRamInst),
+    .InstrExec(SramCtrlSecInstrExec),
+    .NumPrinceRoundsHalf(SramCtrlSecNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlSecOutstanding),
+    .EccCorrection(SramCtrlSecEccCorrection)
+  ) u_sram_ctrl_sec (
+    // Clock and reset connections
+    .clk_i(clkmgr_clocks_i.clk_main_infra),
+    .clk_otp_i(clkmgr_clocks_i.clk_io_div4_infra),
+    .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_otp_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+
+    // alert_handler[58]: fatal_error
+    .alert_tx_o(alert_tx[58]),
+    .alert_rx_i(alert_rx[58]),
+
+    // RACL policies
+    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+
+    // Inter-module signals
+    .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
+    .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
+    .ram_cfg_i(sram_ctrl_sec_ram_cfg_req_i),
+    .ram_cfg_o(sram_ctrl_sec_ram_cfg_rsp_o),
+    .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+    .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+    .otp_en_sram_ifetch_i(sram_ctrl_sec_otp_en_sram_ifetch),
+    .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+    .racl_error_o(),
+    .sram_rerror_o(),
+    .regs_tl_i(sram_ctrl_sec_regs_tl_req),
+    .regs_tl_o(sram_ctrl_sec_regs_tl_rsp),
+    .ram_tl_i(sram_ctrl_sec_ram_tl_req),
+    .ram_tl_o(sram_ctrl_sec_ram_tl_rsp)
+  );
+
+  rom_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[59]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .BootRomInitFile(RomCtrlBootRomInitFile),
     .FlopToKmac(RomCtrlFlopToKmac),
@@ -2445,9 +2500,9 @@ module earlgrey_pd_main #(
     .clk_i(clkmgr_clocks_i.clk_main_infra),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[58]: fatal
-    .alert_tx_o(alert_tx[58]),
-    .alert_rx_i(alert_rx[58]),
+    // alert_handler[59]: fatal
+    .alert_tx_o(alert_tx[59]),
+    .alert_rx_i(alert_rx[59]),
 
     // Inter-module signals
     .rom_cfg_i(rom_ctrl_rom_cfg_req_i),
@@ -2463,7 +2518,7 @@ module earlgrey_pd_main #(
   );
 
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:59]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[63:60]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
@@ -2518,12 +2573,12 @@ module earlgrey_pd_main #(
     .scanmode_i,
     .scan_rst_ni,
 
-    // alert_handler[59]: fatal_sw_err
-    // alert_handler[60]: recov_sw_err
-    // alert_handler[61]: fatal_hw_err
-    // alert_handler[62]: recov_hw_err
-    .alert_tx_o(alert_tx[62:59]),
-    .alert_rx_i(alert_rx[62:59]),
+    // alert_handler[60]: fatal_sw_err
+    // alert_handler[61]: recov_sw_err
+    // alert_handler[62]: fatal_hw_err
+    // alert_handler[63]: recov_hw_err
+    .alert_tx_o(alert_tx[63:60]),
+    .alert_rx_i(alert_rx[63:60]),
 
     // Inter-module signals
     .rst_cpu_n_o(),
@@ -2546,8 +2601,8 @@ module earlgrey_pd_main #(
     .nmi_wdog_i(aon_timer_nmi_wdog_timer_bark_i),
     .edn_o(edn0_edn_req[7]),
     .edn_i(edn0_edn_rsp[7]),
-    .icache_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
-    .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
+    .icache_otp_key_o(otp_ctrl_sram_otp_key_req[3]),
+    .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[3]),
     .fpga_info_i(fpga_info_i),
     .corei_tl_h_o(main_tl_rv_core_ibex__corei_req),
     .corei_tl_h_i(main_tl_rv_core_ibex__corei_rsp),
@@ -2835,6 +2890,14 @@ module earlgrey_pd_main #(
     // port: tl_sram_ctrl_main__ram
     .tl_sram_ctrl_main__ram_o(sram_ctrl_main_ram_tl_req),
     .tl_sram_ctrl_main__ram_i(sram_ctrl_main_ram_tl_rsp),
+
+    // port: tl_sram_ctrl_sec__regs
+    .tl_sram_ctrl_sec__regs_o(sram_ctrl_sec_regs_tl_req),
+    .tl_sram_ctrl_sec__regs_i(sram_ctrl_sec_regs_tl_rsp),
+
+    // port: tl_sram_ctrl_sec__ram
+    .tl_sram_ctrl_sec__ram_o(sram_ctrl_sec_ram_tl_req),
+    .tl_sram_ctrl_sec__ram_i(sram_ctrl_sec_ram_tl_rsp),
 
     .scanmode_i
   );

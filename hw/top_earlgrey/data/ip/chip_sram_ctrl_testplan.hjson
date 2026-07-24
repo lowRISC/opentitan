@@ -7,12 +7,12 @@
     // SRAM (pre-verified IP) integration tests:
     {
       name: chip_sw_sram_scrambled_access
-      desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
+      desc: '''Verify scrambled memory accesses to the main, secondary (sec) and retention SRAMs.
 
             - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
               done by the test_rom startup code).
-            - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
-            - Drive the CPU to perform random accesses to both RAMs and verify these operations
+            - Trigger all SRAMs to fetch a new key and nonce from the OTP_CTRL
+            - Drive the CPU to perform random accesses to all RAMs and verify these operations
               complete successfully by using the backdoor interface
             - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be
               read anymore.
@@ -72,7 +72,7 @@
                 hardware debug.
               - The execution CSR programmed to be enabled and disabled.
 
-            - For both, main and the retention SRAM in each of these 8 scenarios:
+            - For the main, secondary and retention SRAM in each of these 8 scenarios:
               - Load instruction data into the SRAMs.
               - If the instruction execution is enabled, verify that the CPU can fetch and execute
                 the instruction from the SRAM correctly.
@@ -80,18 +80,20 @@
                 response via an exception handler.
 
             The following table indicates in which of these scenarios should the instruction
-            execution be enabled, for both, main and the retention SRAM instances.
+            execution be enabled, for the main, secondary and the retention SRAM instances. The
+            secondary SRAM has instruction fetch enabled (InstrExec=1) and therefore behaves
+            identically to the main SRAM.
 
-              | OTP HW_CFG1[IFETCH] | HW_DEBUG_EN via LC state | EXEC CSR | MAIN SRAM | RET SRAM |
-              |:------------------:|:------------------------:|:--------:|:---------:|:--------:|
-              |          0         |             0            |     0    |  disabled | disabled |
-              |          0         |             0            |     1    |  disabled | disabled |
-              |          0         |             1            |     0    |  enabled  | disabled |
-              |          0         |             1            |     1    |  enabled  | disabled |
-              |          1         |             0            |     0    |  disabled | disabled |
-              |          1         |             0            |     1    |  enabled  | disabled |
-              |          1         |             1            |     0    |  disabled | disabled |
-              |          1         |             1            |     1    |  enabled  | disabled |
+              | OTP HW_CFG1[IFETCH] | HW_DEBUG_EN via LC state | EXEC CSR | MAIN SRAM | SECONDARY SRAM | RET SRAM |
+              |:------------------:|:------------------------:|:--------:|:---------:|:--------------:|:--------:|
+              |          0         |             0            |     0    |  disabled |    disabled    | disabled |
+              |          0         |             0            |     1    |  disabled |    disabled    | disabled |
+              |          0         |             1            |     0    |  enabled  |    enabled     | disabled |
+              |          0         |             1            |     1    |  enabled  |    enabled     | disabled |
+              |          1         |             0            |     0    |  disabled |    disabled    | disabled |
+              |          1         |             0            |     1    |  enabled  |    enabled     | disabled |
+              |          1         |             1            |     0    |  disabled |    disabled    | disabled |
+              |          1         |             1            |     1    |  enabled  |    enabled     | disabled |
 
             For the retention SRAM, instruction fetch is completely disabled via design parameter.
 
@@ -139,7 +141,7 @@
              - Use the INIT CSR for the relevant sram_ctrl to request that the memory is filled with
                pseudo-random data.
              - Read the location from the SRAM and check that the data has been wiped.
-             - Repeat the steps above for the retention SRAM.
+             - Repeat the steps above for the secondary and the retention SRAM.
 
              '''
       features: ["SRAM_CTRL.MEMSET"]

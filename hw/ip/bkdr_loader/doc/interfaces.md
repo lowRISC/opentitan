@@ -6,7 +6,7 @@ The following table lists the instantiation parameters of the backdoor loader.
 
 Parameter                   | Default               | Top Earlgrey      | Description
 ----------------------------|-----------------------|-------------------|---------------
-`NumBkdrTgts`               | 12                    | 12                | Number of RAM targets supported.
+`NumBkdrTgts`               | 13                    | 13                | Number of RAM targets supported.
 `MaxWordWidthDiv32`         | 8                     | 8                 | Supports up to 256-bit words.
 
 ## Signals

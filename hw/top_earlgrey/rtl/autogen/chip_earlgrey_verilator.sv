@@ -353,6 +353,10 @@ module chip_earlgrey_verilator (
       sram_ctrl_main_ram_cfg_req;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlMainNumRamInst-1:0]
       sram_ctrl_main_ram_cfg_rsp;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlSecNumRamInst-1:0]
+      sram_ctrl_sec_ram_cfg_req;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlSecNumRamInst-1:0]
+      sram_ctrl_sec_ram_cfg_rsp;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
       sram_ctrl_ret_ram_cfg_req;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ast_pkg::SramCtrlRetNumRamInst-1:0]
@@ -384,6 +388,8 @@ module chip_earlgrey_verilator (
   assign chip_mem_cfg_rsp.rv_core_ibex_icache_data = rv_core_ibex_icache_data_ram_cfg_rsp;
   assign sram_ctrl_main_ram_cfg_req                = chip_mem_cfg_req.sram_ctrl_main;
   assign chip_mem_cfg_rsp.sram_ctrl_main           = sram_ctrl_main_ram_cfg_rsp;
+  assign sram_ctrl_sec_ram_cfg_req                 = chip_mem_cfg_req.sram_ctrl_sec;
+  assign chip_mem_cfg_rsp.sram_ctrl_sec            = sram_ctrl_sec_ram_cfg_rsp;
   assign sram_ctrl_ret_ram_cfg_req                 = chip_mem_cfg_req.sram_ctrl_ret;
   assign chip_mem_cfg_rsp.sram_ctrl_ret            = sram_ctrl_ret_ram_cfg_rsp;
   assign spi_device_sys2spi_ram_cfg_req            = chip_mem_cfg_req.spi_device_sys2spi;
@@ -641,6 +647,8 @@ module chip_earlgrey_verilator (
     .rom_ctrl_rom_cfg_rsp_o                (rom_ctrl_rom_cfg_rsp     ),
     .sram_ctrl_main_ram_cfg_req_i          (sram_ctrl_main_ram_cfg_req),
     .sram_ctrl_main_ram_cfg_rsp_o          (sram_ctrl_main_ram_cfg_rsp),
+    .sram_ctrl_sec_ram_cfg_req_i           (sram_ctrl_sec_ram_cfg_req),
+    .sram_ctrl_sec_ram_cfg_rsp_o           (sram_ctrl_sec_ram_cfg_rsp),
     .sram_ctrl_ret_ram_cfg_req_i           (sram_ctrl_ret_ram_cfg_req),
     .sram_ctrl_ret_ram_cfg_rsp_o           (sram_ctrl_ret_ram_cfg_rsp),
     .clkmgr_clocks_o                       (clkmgr_clocks            ),
