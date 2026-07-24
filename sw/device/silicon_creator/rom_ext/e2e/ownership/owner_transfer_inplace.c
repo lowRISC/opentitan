@@ -32,7 +32,7 @@ static status_t trigger_inplace_transfer(void) {
       .identifier = kBootDataIdentifier,
   };
   rom_ext_boot_policy_manifest_search(&boot_data);
-  const manifest_t *manifest_b = rom_ext_boot_policy_manifest_b_get(&boot_data);
+  const manifest_t *manifest_b = rom_ext_boot_policy_manifest_b_get();
 
   LOG_INFO("Reading owner_transfer_blob extension...");
   const manifest_ext_owner_transfer_blob_t *blob = NULL;

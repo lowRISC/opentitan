@@ -86,14 +86,11 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  * Returns a pointer to the manifest of the first owner boot stage image stored
  * in flash slot A.
  *
- * @param boot_data Boot data struct.
  * @return Pointer to the manifest of the first owner boot stage image in slot
  * A.
  */
 OT_WARN_UNUSED_RESULT
-static inline const manifest_t *rom_ext_boot_policy_manifest_a_get(
-    const boot_data_t *boot_data) {
-  OT_DISCARD(boot_data);
+static inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
   return rom_ext_boot_policy_slot_a_manifest;
 }
 
@@ -101,24 +98,19 @@ static inline const manifest_t *rom_ext_boot_policy_manifest_a_get(
  * Returns a pointer to the manifest of the first owner boot stage image stored
  * in flash slot B.
  *
- * @param boot_data Boot data struct.
  * @return Pointer to the manifest of the first owner boot stage image in slot
  * B.
  */
 OT_WARN_UNUSED_RESULT
-static inline const manifest_t *rom_ext_boot_policy_manifest_b_get(
-    const boot_data_t *boot_data) {
-  OT_DISCARD(boot_data);
+static inline const manifest_t *rom_ext_boot_policy_manifest_b_get(void) {
   return rom_ext_boot_policy_slot_b_manifest;
 }
 #else
 /**
  * Declarations for the functions above that should be defined in tests.
  */
-const manifest_t *rom_ext_boot_policy_manifest_a_get(
-    const boot_data_t *boot_data);
-const manifest_t *rom_ext_boot_policy_manifest_b_get(
-    const boot_data_t *boot_data);
+const manifest_t *rom_ext_boot_policy_manifest_a_get(void);
+const manifest_t *rom_ext_boot_policy_manifest_b_get(void);
 #endif
 
 #ifdef __cplusplus
