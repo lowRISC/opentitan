@@ -21,7 +21,7 @@ use serialport::TTYPort;
 
 use opentitanlib::backend::{Backend, BackendOpts, define_interface};
 use opentitanlib::debug::openocd::OpenOcdJtagChain;
-use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
+use opentitanlib::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
 use opentitanlib::io::i2c::Bus;
 use opentitanlib::io::jtag::{JtagChain, JtagParams};
 use opentitanlib::io::spi::Target;
@@ -933,6 +933,38 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 }
 
+struct FakeUsvBusPin {
+    inner: Rc<Inner>,
+}
+
+impl GpioPin for FakeUsvBusPin {
+    fn read(&self) -> Result<bool> {
+        unimplemented!();
+    }
+
+    /// Sets the value of the GPIO pin `id` to `value`.
+    fn write(&self, value: bool) -> Result<()> {
+        self.inner
+            .enable_ot_usbdev_port(value, &format!("set through {FAKE_VBUS_SENSE_EN}"))
+    }
+
+    fn set_mode(&self, mode: PinMode) -> Result<()> {
+        ensure!(
+            mode == PinMode::PushPull,
+            "the fake VBUS pin can only be used in push-pull mode"
+        );
+        Ok(())
+    }
+
+    fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
+        ensure!(
+            mode == PullMode::None,
+            "the fake VBUS pin does not support a pull mode"
+        );
+        Ok(())
+    }
+}
+
 impl<T: Flavor> FpgaOps for Hyperdebug<T> {
     fn load_bitstream(&self, bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
@@ -956,8 +988,16 @@ pub struct StandardFlavor;
 static SPI_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());
 
+/// Name of the fake pin used to control VBUS using the hub if configured.
+static FAKE_VBUS_SENSE_EN: &str = "FAKE_VBUS_SENSE_EN";
+
 impl Flavor for StandardFlavor {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
+        if pinname == FAKE_VBUS_SENSE_EN {
+            return Ok(Rc::new(FakeUsvBusPin {
+                inner: inner.clone(),
+            }));
+        }
         Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
     }
 
