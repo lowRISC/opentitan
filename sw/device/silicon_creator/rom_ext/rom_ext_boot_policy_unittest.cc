@@ -140,9 +140,9 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
   manifest_a.security_version = 0;
   manifest_b.security_version = 1;
 
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA(_))
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestA())
       .WillOnce(Return(&manifest_a));
-  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB(_))
+  EXPECT_CALL(rom_ext_boot_policy_ptrs_, ManifestB())
       .WillOnce(Return(&manifest_b));
 
   boot_data_t boot_data{};
