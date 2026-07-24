@@ -149,6 +149,7 @@ opentitan_test(
     fpga = fpga_params(
         otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
         tags = ["manuf"],
+        testopt_clear_after_test = "True",
     ),
     deps = [
         ":individualize",
@@ -219,6 +220,7 @@ opentitan_test(
             --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/manuf/individualize_sw_cfg_functest",
+        testopt_clear_after_test = "True",
     ),
     deps = [
         ":nvm_info_field",
@@ -281,6 +283,7 @@ opentitan_test(
             --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
+        testopt_clear_after_test = "True",
     ),
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "dev_key_0"},
     deps = [
