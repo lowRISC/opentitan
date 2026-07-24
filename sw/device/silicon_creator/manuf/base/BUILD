@@ -138,6 +138,7 @@ opentitan_test(
             --test-sram-elf={sram_cp_provision_functest}
         """,
         test_harness = "//sw/host/tests/manuf/cp_provision_functest",
+        testopt_clear_after_test = "True",
     ),
 )
 
