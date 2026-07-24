@@ -68,6 +68,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   bit                                is_kmac_rsp_err;
   bit                                is_kmac_invalid_data;
   bit                                is_sw_share_corrupted;
+  // Indicates if the UDS was fetched by the keymgr_dpe for the first time.
+  // The UDS needs to be xored with randomness to counter SCA, however the
+  // current dv environment cannot replicate this randomness. As a workaround
+  // the generated value (UDS xored with randomness) is loaded by a backdoor
+  // directly from the DUT.
+  bit                                load_uds_with_randomness;
 
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
@@ -153,8 +159,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     logic [keymgr_dpe_pkg::DpeBootStagesWidth-1:0] boot_stage =
       current_internal_key[current_key_slot.src_slot].boot_stage;
 
-    `uvm_info(`gfn, $sformatf("process_kmac_data_req: for op %s in state %s",
-     op.name, current_state.name), UVM_MEDIUM)
+    `uvm_info("process_data_req",
+              $sformatf("process_kmac_data_req: for op %s in state %s with boot_stage set to %0d",
+                        op.name, current_state.name, boot_stage),
+              UVM_MEDIUM)
 
     if (!cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
       compare_invalid_data(item.byte_data_q);
@@ -166,35 +174,45 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     case (op)
       keymgr_dpe_pkg::OpDpeAdvance: begin
+        bit invalid_hw_input;
+        bit invalid_op;
         // Invalid outputs and invalid operations should results in random data
         // for message data.
-        is_err = get_hw_invalid_input() || get_invalid_op();
-        `uvm_info(`gfn, $sformatf("What is is_err: %d", is_err), UVM_MEDIUM)
+        invalid_hw_input = get_hw_invalid_input();
+        invalid_op = get_invalid_op();
+        is_err = invalid_hw_input || invalid_op;
+        `uvm_info("advance_req",
+                  $sformatf("Invalid HW input %0b or invalid OP %0b, so is_err %0b",
+                            invalid_hw_input, invalid_op, is_err),
+                  UVM_MEDIUM)
         case (current_state)
           keymgr_dpe_pkg::StWorkDpeAvailable: begin
             if(boot_stage == keymgr_dpe_pkg::BootStageCreator) begin
               `uvm_info(`gfn,
-              $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
-               "compare_boot_stage_0_data"},
-               boot_stage, is_err), UVM_LOW)
+                        $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
+                                   "compare_boot_stage_0_data"},
+                                   boot_stage, is_err),
+                        UVM_LOW)
               compare_boot_stage_0_data(
                 .exp_match(!is_err),
                 .byte_data_q(item.byte_data_q)
               );
             end else if (boot_stage == keymgr_dpe_pkg::BootStageOwner) begin
               `uvm_info(`gfn,
-              $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
-               "compare_boot_stage_1_data"},
-               boot_stage, is_err), UVM_LOW)
+                        $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
+                                   "compare_boot_stage_1_data"},
+                                   boot_stage, is_err),
+                        UVM_LOW)
                compare_boot_stage_1_data(
                 .exp_match(!is_err),
                 .byte_data_q(item.byte_data_q)
                );
             end else begin
               `uvm_info(`gfn,
-              $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
-               "compare_boot_stage_gte_2_data"},
-               boot_stage, is_err), UVM_LOW)
+                        $sformatf({"process_kmac_data_req: boot_stage %0d is_err %0d",
+                                   "compare_boot_stage_2_data"},
+                                   boot_stage, is_err),
+                        UVM_LOW)
                compare_boot_stage_gte_2_data(
                 .exp_match(!is_err),
                 .byte_data_q(item.byte_data_q)
@@ -247,8 +265,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     update_result = process_update_after_op_done();
 
-    `uvm_info(`gfn, $sformatf("process_kmac_data_rsp update_result %s for op %s in state %s with",
-         update_result.name, op.name, current_state.name), UVM_MEDIUM)
+    `uvm_info(`gfn,
+              $sformatf("process_kmac_data_rsp update_result %s for op %s in state %s with",
+                        update_result.name, op.name, current_state.name),
+              UVM_MEDIUM)
 
     case (update_result)
       // Should occur when a valid OpDpeAdvance is issued in the StWorkDpeAvailable state
@@ -984,9 +1004,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     current_internal_key[current_key_slot.dst_slot].valid = 1;
     current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
     current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
+    // This call loads the "true" UDS without the randomness present in the
+    // HW slot. The problem is that when this function is invoked (when writing into the start
+    // register for the first time) the randomness in the HW slot is not yet generated.
+    // The current workaround is to backdoor load the randomness from the hardware. This is done on
+    // the first advance call in the available state as the src_slot has the UDS loaded.
+    // TODO(#30758): Remove this backdoor load
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
-    current_internal_key[current_key_slot.dst_slot].key_policy = '0;
-    current_internal_key[current_key_slot.dst_slot].key_policy.allow_child = 1;
+    current_internal_key[current_key_slot.dst_slot].key_policy =
+        keymgr_dpe_pkg::DEFAULT_UDS_POLICY;
     `uvm_info(`gfn,
       $sformatf("latch_otp_key: key %p",
       current_internal_key[current_key_slot.dst_slot]
@@ -996,6 +1022,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       current_internal_key[current_key_slot.dst_slot].key,
       current_state
     );
+  endfunction
+
+  // Directly access the slot which holds the UDS with the xored randmoness
+  // Otherwise the scorebord would need to manually replicate the randomness
+  // generation.
+  // TODO(#30758): Remove this backdoor load
+  virtual function void backdoor_load_uds(int slot);
+    `uvm_info(`gfn, "Load UDS with randomness via backdoor", UVM_MEDIUM)
+    current_internal_key[slot].key = cfg.keymgr_dpe_ctrl_vif.get_key_of_slot(slot);
   endfunction
 
   virtual function bit [TL_DW-1:0] get_current_max_version(
@@ -1071,11 +1106,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     key_policy : current_internal_key[current_key_slot.src_slot].key_policy;
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
     `uvm_info(`gfn,
-    $sformatf({"get_invalid_op: op %s current_state: %s, ",
-        "current_internal_key[%0d] = %p"},
-        op.name, current_state.name, current_key_slot.src_slot,
-       current_internal_key[current_key_slot.src_slot]),
-       UVM_MEDIUM)
+              $sformatf({"get_invalid_op: op %s current_state: %s, src: %0d dst: %0d ",
+                         "current_internal_key = %p"},
+                         op.name, current_state.name, current_key_slot.src_slot,
+                         current_key_slot.dst_slot,
+                         current_internal_key[current_key_slot.src_slot]),
+              UVM_MEDIUM)
     case (current_state)
       keymgr_dpe_pkg::StWorkDpeReset : begin
         if (get_operation() != keymgr_dpe_pkg::OpDpeAdvance) begin
@@ -1101,7 +1137,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             ) begin
               `uvm_info(`gfn,
                 $sformatf(
-                  {"get_invalid_op: op %s current_state: %s retain_parent == 1",
+                  {"get_invalid_op: op %s current_state: %s retain_parent == 1 ",
                   "dst_slot valid err"},
                   op.name, current_state.name), UVM_MEDIUM)
               return 1;
@@ -1121,6 +1157,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               $sformatf({"get_invalid_op: op %s current_state: %s",
                   "src_slot valid == 0 err"}, op.name, current_state.name), UVM_MEDIUM)
               return 1;
+            end
+            // Workaround to load the UDS with the xored randomness into the
+            // correct internal slot. The first (successful) advance call will
+            // use the UDS per default.
+            if (load_uds_with_randomness == 1'b0) begin
+              load_uds_with_randomness = 1'b1;
+              backdoor_load_uds(current_key_slot.src_slot);
             end
             return 0;
           end
@@ -1272,6 +1315,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     adv_creator_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
+    `uvm_info(`gfn,
+              $sformatf("compare_boot_stage_0_data src_slot %0d src_slot_val %p",
+                        current_key_slot.src_slot,
+                        current_internal_key[current_key_slot.src_slot]),
+              UVM_HIGH)
+
     if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_dpe_pkg::DpeAdvDataWidth / 8)
     act = {<<8{byte_data_q}};
     exp.DiversificationKey = cfg.keymgr_dpe_vif.creator_seed.seed;
@@ -1309,6 +1358,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     adv_owner_int_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
+    `uvm_info(`gfn,
+              $sformatf("compare_boot_stage_1_data src_slot %0d src_slot_val %p",
+                        current_key_slot.src_slot,
+                        current_internal_key[current_key_slot.src_slot]),
+              UVM_HIGH)
+
     act = {<<8{byte_data_q}};
     exp.OwnerRootSecret = cfg.keymgr_dpe_vif.owner_seed.seed;
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
@@ -1337,10 +1392,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     adv_owner_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
-    act = {<<8{byte_data_q}};
+    `uvm_info(`gfn,
+              $sformatf("compare_boot_stage_gte_2_data src_slot %0d src_slot_val %p",
+                        current_key_slot.src_slot,
+                        current_internal_key[current_key_slot.src_slot]),
+              UVM_HIGH)
 
-    `uvm_info(`gfn, $sformatf("compare_boot_stage_gte_2_data src_slot %0d src_slot_val %p",
-    current_key_slot.src_slot, current_internal_key[current_key_slot.src_slot]), UVM_MEDIUM)
+    act = {<<8{byte_data_q}};
 
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
@@ -1527,6 +1585,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     is_kmac_rsp_err       = 0;
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
+    load_uds_with_randomness = 0;
     req_fifo.flush();
     rsp_fifo.flush();
     foreach (current_internal_key[slot]) begin

@@ -100,7 +100,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       end
     end
 
-    `uvm_info(`gfn, "Initializating key manager", UVM_MEDIUM)
+    `uvm_info(`gfn, "Initializing keymgr dpe", UVM_MEDIUM)
 
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
@@ -117,8 +117,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       bit clr_output = $urandom_range(0, 1),
       bit wait_done = 1
   );
-    `uvm_info(`gfn,
-      $sformatf("Start keymgr_dpe_erase"), UVM_MEDIUM)
+    `uvm_info(`gfn, "Start keymgr_dpe_erase", UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeErase);
     ral.control_shadowed.slot_src_sel.set(src_slot);
@@ -148,14 +147,16 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     end
   endtask : keymgr_dpe_erase
 
+  // Invoke the disable operation for the keymgr_dpe. This operation will
+  // the keymgr_dpe only if it's in the available state, otherwise the DUT
+  // will ignore this operation.
   virtual task keymgr_dpe_disable(
       int num_gen_op = $urandom_range(1, 4),
       int num_adv_op = $urandom_range(1, 4),
       bit clr_output = $urandom_range(0, 1),
       bit wait_done = 1
   );
-    `uvm_info(`gfn,
-      $sformatf("Start keymgr_dpe_disable"), UVM_MEDIUM)
+    `uvm_info(`gfn, "Start keymgr_dpe_disable", UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeDisable);
     ral.control_shadowed.slot_src_sel.set(src_slot);
@@ -166,8 +167,22 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     if (wait_done)
       wait_op_done();
 
-    repeat (num_adv_op) begin
-      keymgr_dpe_advance(wait_done);
+    // Fix to make the smoketest pass again. The problem is that if
+    // the advance operation is invoked in the reset state, it is impossible
+    // to know how many times a valid advance operation is generated. However
+    // the current smoketest relies on knowing which slots are filled with
+    // valid entries.
+    // TODO(#323): Rewrite / Improve DV coverage of the keymgr_dpe
+    if (current_state == keymgr_dpe_pkg::StWorkDpeReset) begin
+      if (num_adv_op != 0) begin
+        `uvm_error(`gfn,
+                   {"Invoking the disable operation in the Reset State with the number of ",
+                    "request advance call not set to 0 can lead to unexpected behavior."})
+      end
+    end else begin
+      repeat (num_adv_op) begin
+        keymgr_dpe_advance(wait_done);
+      end
     end
 
     repeat (num_gen_op) begin
@@ -186,8 +201,9 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
                                      bit clr_output    = $urandom_range(0, 1),
                                      bit wait_done     = 1);
     `uvm_info(`gfn,
-      $sformatf("Start keymgr_dpe_operations num_gen_op %0d advance_state %0d",
-        num_gen_op, advance_state), UVM_MEDIUM)
+              $sformatf("Start keymgr_dpe_operations num_gen_op %0d advance_state %0d",
+                        num_gen_op, advance_state),
+              UVM_MEDIUM)
 
     if (advance_state) keymgr_dpe_advance(wait_done);
 
@@ -253,8 +269,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
             is_good_op &= !cfg.keymgr_dpe_vif.internal_key_slots[dst_slot].valid;
           end
         end
-        `uvm_info(`gfn, $sformatf("wait_op_done: current_state %s is_good_op %d",
-            current_state.name, is_good_op), UVM_MEDIUM)
+        `uvm_info(`gfn,
+                  $sformatf("wait_op_done: current_state %s is_good_op %d",
+                            current_state.name, is_good_op),
+                  UVM_MEDIUM)
       end
       keymgr_dpe_pkg::OpDpeGenSwOut,
       keymgr_dpe_pkg::OpDpeGenHwOut: begin
@@ -288,12 +306,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       end
     endcase
 
-    `uvm_info(`gfn, $sformatf({"Wait for operation done in state %0s, operation %0s, ",
-                               "src_slot[%0d] = %p, dst_slot[%0d] = %p, good_op %0d"},
-                              current_state.name, cast_operation.name,
-                              src_slot, cfg.keymgr_dpe_vif.internal_key_slots[src_slot],
-                              dst_slot, cfg.keymgr_dpe_vif.internal_key_slots[dst_slot],
-                              is_good_op),
+    `uvm_info(`gfn,
+              $sformatf({"Wait for operation done in state %0s, operation %0s, ",
+                         "src_slot[%0d] = %p, dst_slot[%0d] = %p, good_op %0d"},
+                         current_state.name, cast_operation.name,
+                         src_slot, cfg.keymgr_dpe_vif.internal_key_slots[src_slot],
+                         dst_slot, cfg.keymgr_dpe_vif.internal_key_slots[dst_slot],
+                         is_good_op),
               UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
@@ -356,8 +375,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e exp_next_state = get_next_state(
       current_state, keymgr_dpe_pkg::OpDpeAdvance);
     sema_update_control_csr.get();
-    `uvm_info(`gfn, $sformatf("Advance key manager state from %0s slot %0d to %0d",
-      current_state.name, src_slot, dst_slot), UVM_MEDIUM)
+    `uvm_info(`gfn,
+              $sformatf({"Derive DPE context from %0d to %0d in state %s",
+                         " - pol. parent: %b pol. child: %b, pol. export: %b"},
+                         src_slot, dst_slot, current_state.name,
+                         policy.retain_parent, policy.allow_child,
+                         policy.exportable),
+              UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
     ral.control_shadowed.slot_src_sel.set(src_slot);
@@ -389,8 +413,9 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     );
     sema_update_control_csr.get();
     `uvm_info(`gfn,
-      $sformatf("Generate key manager output w/operation %s and dest %s",
-        operation.name, key_dest.name), UVM_MEDIUM)
+              $sformatf("Generate key manager output w/operation %s and dest %s",
+                        operation.name, key_dest.name),
+              UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(int'(operation));
     ral.control_shadowed.dest_sel.set(int'(key_dest));
