@@ -527,6 +527,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Protect the flash pages where the ROM_EXT is located.
   rom_ext_flash_protect_self(boot_log->rom_ext_slot);
 
+  // Initialize the owner sw manifest pointers.
+  rom_ext_boot_policy_manifest_search(boot_data);
+
   // Initialize the chip ownership state.
   rom_error_t error;
   error = ownership_init(boot_data, &owner_config, &keyring);

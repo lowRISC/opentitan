@@ -54,20 +54,28 @@ OT_WARN_UNUSED_RESULT
 rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
     const boot_data_t *boot_data);
 
+extern const manifest_t *rom_ext_boot_policy_slot_a_manifest;
+extern const manifest_t *rom_ext_boot_policy_slot_b_manifest;
+
 /**
- * Searches for a valid manifest within a bank.
+ * Searches for a valid manifest within a single bank.
  *
- * This function checks specific OwnerSW offsets in the bank (88K and 64K
- * by default, or 168K and 128K when coverage is enabled) in descending order.
- *
- * @param bank_base The base address of the bank (Slot A or B base).
- * @param boot_data The boot data for the current lifecycle state.
- * @return Pointer to the first valid manifest found, or the manifest at the
- *         lowest offset as a candidate if none are valid.
+ * @param bank_base Base address of the flash bank.
+ * @param boot_data Boot data struct.
+ * @return Discovered manifest pointer or fallback candidate.
  */
 OT_WARN_UNUSED_RESULT
-const manifest_t *rom_ext_boot_policy_manifest_search(
+const manifest_t *rom_ext_boot_policy_manifest_bank_search(
     uintptr_t bank_base, const boot_data_t *boot_data);
+
+/**
+ * Searches for valid manifests in both flash banks (A and B) and stores
+ * the discovered manifest pointers in `rom_ext_boot_policy_slot_a_manifest`
+ * and `rom_ext_boot_policy_slot_b_manifest`.
+ *
+ * @param boot_data Boot data struct.
+ */
+void rom_ext_boot_policy_manifest_search(const boot_data_t *boot_data);
 
 static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
               "Flash size is not divisible by 2");
@@ -85,8 +93,8 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
 OT_WARN_UNUSED_RESULT
 static inline const manifest_t *rom_ext_boot_policy_manifest_a_get(
     const boot_data_t *boot_data) {
-  return rom_ext_boot_policy_manifest_search(TOP_EARLGREY_EFLASH_BASE_ADDR,
-                                             boot_data);
+  OT_DISCARD(boot_data);
+  return rom_ext_boot_policy_slot_a_manifest;
 }
 
 /**
@@ -100,9 +108,8 @@ static inline const manifest_t *rom_ext_boot_policy_manifest_a_get(
 OT_WARN_UNUSED_RESULT
 static inline const manifest_t *rom_ext_boot_policy_manifest_b_get(
     const boot_data_t *boot_data) {
-  return rom_ext_boot_policy_manifest_search(
-      TOP_EARLGREY_EFLASH_BASE_ADDR + (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2),
-      boot_data);
+  OT_DISCARD(boot_data);
+  return rom_ext_boot_policy_slot_b_manifest;
 }
 #else
 /**
