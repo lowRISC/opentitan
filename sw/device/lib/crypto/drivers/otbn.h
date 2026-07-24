@@ -394,6 +394,20 @@ status_t otbn_dmem_sec_wipe(void);
 status_t otbn_set_ctrl_software_errs_fatal(bool enable);
 
 /**
+ * Sets the WFI (Wait For Interrupt) enable bit in the control register.
+ *
+ * When set, OTBN's WFI instruction is enabled. If cleared, OTBN's WFI
+ * instruction is disabled and will cause a fatal error if executed.
+ * The bit can only be changed when the OTBN status is IDLE.
+ *
+ * This function returns an error if called when OTBN is not idle.
+ *
+ * @param enable Enable or disable the WFI instruction.
+ * @return Result of the operation.
+ */
+status_t otbn_set_ctrl_wfi_enable(bool enable);
+
+/**
  * (Re-)loads the provided application into OTBN.
  *
  * Load the application image with both instruction and data segments into

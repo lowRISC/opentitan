@@ -196,27 +196,35 @@ dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
   return kDifOk;
 }
 
-dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
-                                                   bool enable) {
+static dif_result_t dif_otbn_set_bin_in_ctrl(const dif_otbn_t *otbn,
+                                             bitfield_bit32_index_t bit_index,
+                                             bool enable) {
   if (otbn == NULL) {
     return kDifBadArg;
   }
 
-  // Only one bit in the CTRL register so no need to read current value.
-  uint32_t new_ctrl;
+  // Preserve the other CTRL fields via a read-modify-write.
+  uint32_t ctrl_reg = mmio_region_read32(otbn->base_addr, OTBN_CTRL_REG_OFFSET);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, bit_index, enable);
 
-  if (enable) {
-    new_ctrl = 1;
-  } else {
-    new_ctrl = 0;
-  }
-
-  mmio_region_write32(otbn->base_addr, OTBN_CTRL_REG_OFFSET, new_ctrl);
-  if (mmio_region_read32(otbn->base_addr, OTBN_CTRL_REG_OFFSET) != new_ctrl) {
+  mmio_region_write32(otbn->base_addr, OTBN_CTRL_REG_OFFSET, ctrl_reg);
+  // The write is ignored unless OTBN is idle, so read the value back to make
+  // sure it took effect.
+  if (mmio_region_read32(otbn->base_addr, OTBN_CTRL_REG_OFFSET) != ctrl_reg) {
     return kDifUnavailable;
   }
 
   return kDifOk;
+}
+
+dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
+                                                   bool enable) {
+  return dif_otbn_set_bin_in_ctrl(otbn, OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT,
+                                  enable);
+}
+
+dif_result_t dif_otbn_set_ctrl_wfi_enable(const dif_otbn_t *otbn, bool enable) {
+  return dif_otbn_set_bin_in_ctrl(otbn, OTBN_CTRL_WFI_ENABLED_BIT, enable);
 }
 
 size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn) {

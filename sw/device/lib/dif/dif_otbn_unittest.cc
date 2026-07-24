@@ -376,18 +376,48 @@ TEST_F(ControlSoftwareErrorsFatalTest, NullArgs) {
 }
 
 TEST_F(ControlSoftwareErrorsFatalTest, Success) {
-  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, 0x1);
-  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, 0x1);
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, OTBN_CTRL_REG_RESVAL);
+  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET,
+                 {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, true}});
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET,
+                {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, true}});
 
   EXPECT_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, true));
 }
 
 TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
-  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, 0x0);
-  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, 0x1);
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, OTBN_CTRL_REG_RESVAL);
+  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET,
+                 {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, false}});
+  // Emulate OTBN not being idle by mocking a wrong readback value.
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET,
+                {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, true}});
 
   EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, false),
             kDifUnavailable);
+}
+
+class ControlWfiEnableTest : public OtbnTest {};
+
+TEST_F(ControlWfiEnableTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_otbn_set_ctrl_wfi_enable(nullptr, false));
+}
+
+TEST_F(ControlWfiEnableTest, Success) {
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, OTBN_CTRL_REG_RESVAL);
+  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, {{OTBN_CTRL_WFI_ENABLED_BIT, true}});
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, {{OTBN_CTRL_WFI_ENABLED_BIT, true}});
+
+  EXPECT_DIF_OK(dif_otbn_set_ctrl_wfi_enable(&dif_otbn_, true));
+}
+
+TEST_F(ControlWfiEnableTest, Failure) {
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, OTBN_CTRL_REG_RESVAL);
+  EXPECT_WRITE32(OTBN_CTRL_REG_OFFSET, {{OTBN_CTRL_WFI_ENABLED_BIT, false}});
+  // Emulate OTBN not being idle by mocking a wrong readback value.
+  EXPECT_READ32(OTBN_CTRL_REG_OFFSET, {{OTBN_CTRL_WFI_ENABLED_BIT, true}});
+
+  EXPECT_EQ(dif_otbn_set_ctrl_wfi_enable(&dif_otbn_, false), kDifUnavailable);
 }
 
 }  // namespace
