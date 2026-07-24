@@ -134,19 +134,20 @@ Interrupt Test Register
 ## ALERT_TEST
 Alert Test Register
 - Offset: `0xc`
-- Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset default: `0x80000000`
+- Reset mask: `0x80000001`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}, {"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                      |
-|:------:|:------:|:-------:|:------------|:-------------------------------------------------|
-|  31:1  |        |         |             | Reserved                                         |
-|   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name        | Description                                            |
+|:------:|:------:|:-------:|:------------|:-------------------------------------------------------|
+|   31   |  rw0c  |   0x1   | regwen      | Write 0 to disable alert testing until the next reset. |
+|  30:1  |        |         |             | Reserved                                               |
+|   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind.       |
 
 ## CTRL
 I2C Control Register

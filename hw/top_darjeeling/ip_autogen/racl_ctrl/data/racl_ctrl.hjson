@@ -239,6 +239,7 @@
       hwaccess: "hro",
       hwqe:     "True",
       hwext:    "True",
+      inregwen: "regwen",
       fields: [
         { bits: "0",
           name: "fatal_fault",
@@ -247,6 +248,13 @@
         { bits: "1",
           name: "recov_ctrl_update_err",
           desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+        { bits: "31",
+          name: "regwen",
+          swaccess: "rw0c",
+          hwaccess: "none",
+          resval: "1",
+          desc: "Write 0 to disable alert testing until the next reset.",
         }
       ],
     }

@@ -860,12 +860,13 @@ package otp_ctrl_reg_pkg;
   parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_ERROR_RESVAL = 1'h 0;
-  parameter logic [4:0] OTP_CTRL_ALERT_TEST_RESVAL = 5'h 0;
+  parameter logic [31:0] OTP_CTRL_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_MACRO_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_CHECK_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_PRIM_OTP_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_RECOV_PRIM_OTP_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [9:0] OTP_CTRL_STATUS_RESVAL = 10'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_PARTITION_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_DAI_ERROR_RESVAL = 1'h 0;
@@ -1185,7 +1186,7 @@ package otp_ctrl_reg_pkg;
     4'b 0001, // index[ 0] OTP_CTRL_INTR_STATE
     4'b 0001, // index[ 1] OTP_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] OTP_CTRL_INTR_TEST
-    4'b 0001, // index[ 3] OTP_CTRL_ALERT_TEST
+    4'b 1111, // index[ 3] OTP_CTRL_ALERT_TEST
     4'b 0011, // index[ 4] OTP_CTRL_STATUS
     4'b 0111, // index[ 5] OTP_CTRL_PARTITION_STATUS_0
     4'b 0001, // index[ 6] OTP_CTRL_ERR_CODE_0

@@ -44,21 +44,22 @@
 ## ALERT_TEST
 Alert Test Register
 - Offset: `0x0`
-- Reset default: `0x0`
-- Reset mask: `0x7`
+- Reset default: `0x80000000`
+- Reset mask: `0x80000007`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fatal_prog_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_state_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_bus_integ_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "fatal_prog_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_state_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_bus_integ_error", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 28}, {"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                      |
-|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------|
-|  31:3  |        |         |                       | Reserved                                         |
-|   2    |   wo   |   0x0   | fatal_bus_integ_error | Write 1 to trigger one alert event of this kind. |
-|   1    |   wo   |   0x0   | fatal_state_error     | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | fatal_prog_error      | Write 1 to trigger one alert event of this kind. |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                            |
+|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------------|
+|   31   |  rw0c  |   0x1   | regwen                | Write 0 to disable alert testing until the next reset. |
+|  30:3  |        |         |                       | Reserved                                               |
+|   2    |   wo   |   0x0   | fatal_bus_integ_error | Write 1 to trigger one alert event of this kind.       |
+|   1    |   wo   |   0x0   | fatal_state_error     | Write 1 to trigger one alert event of this kind.       |
+|   0    |   wo   |   0x0   | fatal_prog_error      | Write 1 to trigger one alert event of this kind.       |
 
 ## STATUS
 life cycle status register. Note that all errors are terminal and require a reset cycle.

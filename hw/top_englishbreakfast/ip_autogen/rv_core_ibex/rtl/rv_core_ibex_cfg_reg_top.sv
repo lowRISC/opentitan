@@ -175,6 +175,8 @@ module rv_core_ibex_cfg_reg_top (
   logic alert_test_recov_sw_err_wd;
   logic alert_test_fatal_hw_err_wd;
   logic alert_test_recov_hw_err_wd;
+  logic alert_test_regwen_qs;
+  logic alert_test_regwen_wd;
   logic sw_recov_err_we;
   logic [3:0] sw_recov_err_qs;
   logic [3:0] sw_recov_err_wd;
@@ -265,14 +267,17 @@ module rv_core_ibex_cfg_reg_top (
   // Register instances
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [3:0] alert_test_flds_we;
+  logic [4:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
+  // Create REGWEN-gated WE signal
+  logic alert_test_gated_we;
+  assign alert_test_gated_we = alert_test_we && alert_test_regwen_qs;
   //   F[fatal_sw_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_sw_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_sw_err_wd),
     .d      ('0),
     .qre    (),
@@ -288,7 +293,7 @@ module rv_core_ibex_cfg_reg_top (
     .DW    (1)
   ) u_alert_test_recov_sw_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_recov_sw_err_wd),
     .d      ('0),
     .qre    (),
@@ -304,7 +309,7 @@ module rv_core_ibex_cfg_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_hw_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_hw_err_wd),
     .d      ('0),
     .qre    (),
@@ -320,7 +325,7 @@ module rv_core_ibex_cfg_reg_top (
     .DW    (1)
   ) u_alert_test_recov_hw_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_recov_hw_err_wd),
     .d      ('0),
     .qre    (),
@@ -330,6 +335,33 @@ module rv_core_ibex_cfg_reg_top (
     .qs     ()
   );
   assign reg2hw.alert_test.recov_hw_err.qe = alert_test_qe;
+
+  //   F[regwen]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_alert_test_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_test_we),
+    .wd     (alert_test_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (alert_test_flds_we[4]),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_test_regwen_qs)
+  );
 
 
   // R[sw_recov_err]: V(False)
@@ -1453,6 +1485,8 @@ module rv_core_ibex_cfg_reg_top (
   assign alert_test_fatal_hw_err_wd = reg_wdata[2];
 
   assign alert_test_recov_hw_err_wd = reg_wdata[3];
+
+  assign alert_test_regwen_wd = reg_wdata[31];
   assign sw_recov_err_we = addr_hit[1] & reg_we & !reg_error;
 
   assign sw_recov_err_wd = reg_wdata[3:0];
@@ -1576,6 +1610,7 @@ module rv_core_ibex_cfg_reg_top (
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
+        reg_rdata_next[31] = alert_test_regwen_qs;
       end
 
       addr_hit[1]: begin

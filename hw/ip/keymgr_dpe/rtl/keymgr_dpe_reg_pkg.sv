@@ -433,9 +433,10 @@ package keymgr_dpe_reg_pkg;
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_DPE_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
-  parameter logic [1:0] KEYMGR_DPE_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] KEYMGR_DPE_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] KEYMGR_DPE_ALERT_TEST_RECOV_OPERATION_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KEYMGR_DPE_ALERT_TEST_FATAL_FAULT_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] KEYMGR_DPE_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_DPE_CFG_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_DPE_CFG_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [0:0] KEYMGR_DPE_SLOT_POLICY_REGWEN_RESVAL = 1'h 1;
@@ -508,7 +509,7 @@ package keymgr_dpe_reg_pkg;
     4'b 0001, // index[ 0] KEYMGR_DPE_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_DPE_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_DPE_INTR_TEST
-    4'b 0001, // index[ 3] KEYMGR_DPE_ALERT_TEST
+    4'b 1111, // index[ 3] KEYMGR_DPE_ALERT_TEST
     4'b 0001, // index[ 4] KEYMGR_DPE_CFG_REGWEN
     4'b 0001, // index[ 5] KEYMGR_DPE_START
     4'b 0111, // index[ 6] KEYMGR_DPE_CONTROL_SHADOWED

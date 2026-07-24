@@ -349,9 +349,10 @@ package csrng_reg_pkg;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_ENTROPY_REQ_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_HW_INST_EXC_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_INTR_TEST_CS_FATAL_ERR_RESVAL = 1'h 0;
-  parameter logic [1:0] CSRNG_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] CSRNG_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] CSRNG_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] CSRNG_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] CSRNG_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] CSRNG_RESEED_COUNTER_0_RESVAL = 32'h 0;
   parameter logic [31:0] CSRNG_RESEED_COUNTER_0_RESEED_COUNTER_0_RESVAL = 32'h 0;
   parameter logic [31:0] CSRNG_RESEED_COUNTER_1_RESVAL = 32'h 0;
@@ -395,7 +396,7 @@ package csrng_reg_pkg;
     4'b 0001, // index[ 0] CSRNG_INTR_STATE
     4'b 0001, // index[ 1] CSRNG_INTR_ENABLE
     4'b 0001, // index[ 2] CSRNG_INTR_TEST
-    4'b 0001, // index[ 3] CSRNG_ALERT_TEST
+    4'b 1111, // index[ 3] CSRNG_ALERT_TEST
     4'b 0001, // index[ 4] CSRNG_REGWEN
     4'b 0011, // index[ 5] CSRNG_CTRL
     4'b 1111, // index[ 6] CSRNG_CMD_REQ

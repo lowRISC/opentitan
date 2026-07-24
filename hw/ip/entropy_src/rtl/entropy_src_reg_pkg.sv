@@ -688,9 +688,10 @@ package entropy_src_reg_pkg;
   parameter logic [0:0] ENTROPY_SRC_INTR_TEST_ES_HEALTH_TEST_FAILED_RESVAL = 1'h 0;
   parameter logic [0:0] ENTROPY_SRC_INTR_TEST_ES_OBSERVE_FIFO_READY_RESVAL = 1'h 0;
   parameter logic [0:0] ENTROPY_SRC_INTR_TEST_ES_FATAL_ERR_RESVAL = 1'h 0;
-  parameter logic [1:0] ENTROPY_SRC_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] ENTROPY_SRC_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] ENTROPY_SRC_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] ENTROPY_SRC_ENTROPY_DATA_RESVAL = 32'h 0;
   parameter logic [15:0] ENTROPY_SRC_REPCNT_THRESHOLD_RESVAL = 16'h ffff;
   parameter logic [15:0] ENTROPY_SRC_REPCNT_THRESHOLD_REPCNT_THRESHOLD_RESVAL = 16'h ffff;
@@ -792,7 +793,7 @@ package entropy_src_reg_pkg;
     4'b 0001, // index[ 0] ENTROPY_SRC_INTR_STATE
     4'b 0001, // index[ 1] ENTROPY_SRC_INTR_ENABLE
     4'b 0001, // index[ 2] ENTROPY_SRC_INTR_TEST
-    4'b 0001, // index[ 3] ENTROPY_SRC_ALERT_TEST
+    4'b 1111, // index[ 3] ENTROPY_SRC_ALERT_TEST
     4'b 0001, // index[ 4] ENTROPY_SRC_ME_REGWEN
     4'b 0001, // index[ 5] ENTROPY_SRC_SW_REGUPD
     4'b 0001, // index[ 6] ENTROPY_SRC_REGWEN

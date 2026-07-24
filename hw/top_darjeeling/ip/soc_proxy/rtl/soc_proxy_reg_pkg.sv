@@ -39,8 +39,9 @@ package soc_proxy_reg_pkg;
   parameter logic [CoreAw-1:0] SOC_PROXY_DUMMY_OFFSET = 3'h 4;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] SOC_PROXY_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_INTG_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_PROXY_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
 
   // Register index for core interface
   typedef enum int {
@@ -50,7 +51,7 @@ package soc_proxy_reg_pkg;
 
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] SOC_PROXY_CORE_PERMIT [2] = '{
-    4'b 0001, // index[0] SOC_PROXY_ALERT_TEST
+    4'b 1111, // index[0] SOC_PROXY_ALERT_TEST
     4'b 0001  // index[1] SOC_PROXY_DUMMY
   };
 

@@ -268,10 +268,11 @@ package lc_ctrl_reg_pkg;
   parameter logic [RegsAw-1:0] LC_CTRL_MANUF_STATE_7_OFFSET = 8'h 88;
 
   // Reset values for hwext registers and their fields for regs interface
-  parameter logic [2:0] LC_CTRL_ALERT_TEST_RESVAL = 3'h 0;
+  parameter logic [31:0] LC_CTRL_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [11:0] LC_CTRL_STATUS_RESVAL = 12'h 0;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 69;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_MUTEX_RESVAL = 8'h 69;
@@ -350,7 +351,7 @@ package lc_ctrl_reg_pkg;
 
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] LC_CTRL_REGS_PERMIT [35] = '{
-    4'b 0001, // index[ 0] LC_CTRL_ALERT_TEST
+    4'b 1111, // index[ 0] LC_CTRL_ALERT_TEST
     4'b 0011, // index[ 1] LC_CTRL_STATUS
     4'b 0001, // index[ 2] LC_CTRL_CLAIM_TRANSITION_IF_REGWEN
     4'b 0001, // index[ 3] LC_CTRL_CLAIM_TRANSITION_IF

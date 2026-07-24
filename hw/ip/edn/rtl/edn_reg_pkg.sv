@@ -287,9 +287,10 @@ package edn_reg_pkg;
   parameter logic [1:0] EDN_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] EDN_INTR_TEST_EDN_CMD_REQ_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] EDN_INTR_TEST_EDN_FATAL_ERR_RESVAL = 1'h 0;
-  parameter logic [1:0] EDN_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] EDN_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] EDN_ALERT_TEST_RECOV_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] EDN_ALERT_TEST_FATAL_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] EDN_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [31:0] EDN_SW_CMD_REQ_RESVAL = 32'h 0;
   parameter logic [31:0] EDN_RESEED_CMD_RESVAL = 32'h 0;
   parameter logic [31:0] EDN_GENERATE_CMD_RESVAL = 32'h 0;
@@ -321,7 +322,7 @@ package edn_reg_pkg;
     4'b 0001, // index[ 0] EDN_INTR_STATE
     4'b 0001, // index[ 1] EDN_INTR_ENABLE
     4'b 0001, // index[ 2] EDN_INTR_TEST
-    4'b 0001, // index[ 3] EDN_ALERT_TEST
+    4'b 1111, // index[ 3] EDN_ALERT_TEST
     4'b 0001, // index[ 4] EDN_REGWEN
     4'b 0011, // index[ 5] EDN_CTRL
     4'b 1111, // index[ 6] EDN_BOOT_INS_CMD

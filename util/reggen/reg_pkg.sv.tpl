@@ -45,12 +45,13 @@ ${hdr}
 %>\
 
   typedef struct packed {
-    % if r.is_homogeneous():
+    % if r.is_homogeneous(inregwen=True):
       ## If we have a homogeneous register or multireg, there is just one field
       ## (possibly replicated many times). The typedef is for one copy of that
-      ## field.
+      ## field. An inregwen control field is internal, so it is excluded here.
 <%
-      field = r.get_field_list()[0]
+      field = [f for f in r.get_field_list()
+               if r0.inregwen is None or f.name != r0.inregwen][0]
       field_q_width = field.get_n_bits(r0.hwext, r0.hwre, ['q'])
       field_q_bits = lib.bitarray(field_q_width, 2)
 %>\
@@ -101,12 +102,13 @@ ${hdr}
 %>\
 
   typedef struct packed {
-    % if r.is_homogeneous():
+    % if r.is_homogeneous(inregwen=True):
       ## If we have a homogeneous register or multireg, there is just one field
       ## (possibly replicated many times). The typedef is for one copy of that
-      ## field.
+      ## field. An inregwen control field is internal, so it is excluded here.
 <%
-      field = r.get_field_list()[0]
+      field = [f for f in r.get_field_list()
+               if r0.inregwen is None or f.name != r0.inregwen][0]
       field_d_width = field.get_n_bits(r0.hwext, r0.hwre, ['d'])
       field_d_bits = lib.bitarray(field_d_width, 2)
 %>\

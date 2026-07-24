@@ -139,8 +139,9 @@ package sram_ctrl_reg_pkg;
   parameter logic [RegsAw-1:0] SRAM_CTRL_READBACK_OFFSET = 6'h 20;
 
   // Reset values for hwext registers and their fields for regs interface
-  parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] SRAM_CTRL_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_FATAL_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] SRAM_CTRL_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
 
   // Register index for regs interface
   typedef enum int {
@@ -157,7 +158,7 @@ package sram_ctrl_reg_pkg;
 
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [9] = '{
-    4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST
+    4'b 1111, // index[0] SRAM_CTRL_ALERT_TEST
     4'b 0001, // index[1] SRAM_CTRL_STATUS
     4'b 0001, // index[2] SRAM_CTRL_EXEC_REGWEN
     4'b 0001, // index[3] SRAM_CTRL_EXEC

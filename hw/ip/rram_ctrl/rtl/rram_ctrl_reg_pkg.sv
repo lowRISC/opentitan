@@ -713,12 +713,13 @@ package rram_ctrl_reg_pkg;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_RD_LVL_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_INTR_TEST_CORR_ERR_RESVAL = 1'h 0;
-  parameter logic [4:0] RRAM_CTRL_ALERT_TEST_RESVAL = 5'h 0;
+  parameter logic [31:0] RRAM_CTRL_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_RECOV_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_FATAL_STD_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_FATAL_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_FATAL_MACRO_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] RRAM_CTRL_ALERT_TEST_RECOV_MACRO_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RRAM_CTRL_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] RRAM_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] RRAM_CTRL_CTRL_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [1:0] RRAM_CTRL_FIFO_CLR_RESVAL = 2'h 0;
@@ -810,7 +811,7 @@ package rram_ctrl_reg_pkg;
     4'b 0001, // index[ 0] RRAM_CTRL_INTR_STATE
     4'b 0001, // index[ 1] RRAM_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] RRAM_CTRL_INTR_TEST
-    4'b 0001, // index[ 3] RRAM_CTRL_ALERT_TEST
+    4'b 1111, // index[ 3] RRAM_CTRL_ALERT_TEST
     4'b 0001, // index[ 4] RRAM_CTRL_DIS
     4'b 1111, // index[ 5] RRAM_CTRL_EXEC
     4'b 0001, // index[ 6] RRAM_CTRL_INIT

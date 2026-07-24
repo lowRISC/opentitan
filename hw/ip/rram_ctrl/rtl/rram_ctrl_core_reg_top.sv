@@ -208,6 +208,8 @@ module rram_ctrl_core_reg_top (
   logic alert_test_fatal_err_wd;
   logic alert_test_fatal_macro_err_wd;
   logic alert_test_recov_macro_err_wd;
+  logic alert_test_regwen_qs;
+  logic alert_test_regwen_wd;
   logic dis_we;
   logic [3:0] dis_sw_dis_qs;
   logic [3:0] dis_sw_dis_wd;
@@ -1015,14 +1017,17 @@ module rram_ctrl_core_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [4:0] alert_test_flds_we;
+  logic [5:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
+  // Create REGWEN-gated WE signal
+  logic alert_test_gated_we;
+  assign alert_test_gated_we = alert_test_we && alert_test_regwen_qs;
   //   F[recov_err]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_recov_err_wd),
     .d      ('0),
     .qre    (),
@@ -1038,7 +1043,7 @@ module rram_ctrl_core_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_std_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_std_err_wd),
     .d      ('0),
     .qre    (),
@@ -1054,7 +1059,7 @@ module rram_ctrl_core_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_err_wd),
     .d      ('0),
     .qre    (),
@@ -1070,7 +1075,7 @@ module rram_ctrl_core_reg_top (
     .DW    (1)
   ) u_alert_test_fatal_macro_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_fatal_macro_err_wd),
     .d      ('0),
     .qre    (),
@@ -1086,7 +1091,7 @@ module rram_ctrl_core_reg_top (
     .DW    (1)
   ) u_alert_test_recov_macro_err (
     .re     (1'b0),
-    .we     (alert_test_we),
+    .we     (alert_test_gated_we),
     .wd     (alert_test_recov_macro_err_wd),
     .d      ('0),
     .qre    (),
@@ -1096,6 +1101,33 @@ module rram_ctrl_core_reg_top (
     .qs     ()
   );
   assign reg2hw.alert_test.recov_macro_err.qe = alert_test_qe;
+
+  //   F[regwen]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_alert_test_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (alert_test_we),
+    .wd     (alert_test_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (alert_test_flds_we[5]),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_test_regwen_qs)
+  );
 
 
   // R[dis]: V(False)
@@ -6305,6 +6337,8 @@ module rram_ctrl_core_reg_top (
   assign alert_test_fatal_macro_err_wd = reg_wdata[3];
 
   assign alert_test_recov_macro_err_wd = reg_wdata[4];
+
+  assign alert_test_regwen_wd = reg_wdata[31];
   assign dis_we = addr_hit[4] & reg_we & !reg_error;
 
   assign dis_sw_dis_wd = reg_wdata[3:0];
@@ -6748,6 +6782,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[2] = '0;
         reg_rdata_next[3] = '0;
         reg_rdata_next[4] = '0;
+        reg_rdata_next[31] = alert_test_regwen_qs;
       end
 
       addr_hit[4]: begin

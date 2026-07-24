@@ -51,7 +51,7 @@ class RGField:
                  reset_value: int,
                  swaccess: str):
         # We only support some values of swaccess (the ones we need)
-        assert swaccess in ['rw1c', 'rw', 'wo', 'r0w1c', 'ro']
+        assert swaccess in ['rw1c', 'rw0c', 'rw', 'wo', 'r0w1c', 'ro']
         assert width > 0
         assert lsb >= 0
 
@@ -62,6 +62,7 @@ class RGField:
 
         # swaccess
         self.w1c = swaccess in ['rw1c', 'r0w1c']
+        self.w0c = swaccess == 'rw0c'
         self.read_only = swaccess == 'ro'
         self.read_zero = swaccess in ['wo', 'r0w1c']
 
@@ -98,6 +99,8 @@ class RGField:
             pass
         elif self.w1c and not from_hw:
             self.next_value &= ~masked
+        elif self.w0c and not from_hw:
+            self.next_value &= masked
         else:
             self.next_value = masked
 

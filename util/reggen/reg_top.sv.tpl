@@ -117,6 +117,11 @@
           else:
             fsig_name = '{}.{}'.format(fsig_pfx, fld_name)
 
+        # The inregwen field is internal
+        if (not isinstance(r, MultiRegister) and sr.inregwen is not None
+                and sr.is_homogeneous(inregwen=True)):
+          fsig_name = fsig_pfx
+
         finst_names[(sr, field)] = (fsig_name, finst_name)
 
 %>
@@ -635,6 +640,11 @@ ${reg_hdr}
       if reg.name == sr.regwen and reg.fields[0].mubi:
         we_expr = f'''{we_signal} &
           prim_mubi_pkg::mubi{reg.fields[0].bits.width()}_test_true_strict(prim_mubi_pkg::mubi{reg.fields[0].bits.width()}_t\'({sr.regwen.lower()}_qs))'''
+  elif sr.inregwen:
+    # In-register write-enable: gate by the registered value (qs) of the control
+    # field that lives within this same register.
+    inregwen_qs = f'{sr_name}_{sr.inregwen.lower()}_qs'
+    we_expr = f'{we_signal} && {inregwen_qs}'
   else:
     we_expr = we_signal
 
@@ -645,7 +655,7 @@ ${reg_hdr}
   % endif
   ## Only create this helper signal if there actually is a REGWEN gate.
   ## Otherwise the WE signal is connected directly to the register.
-  % if sr.regwen and sr.needs_we():
+  % if (sr.regwen or sr.inregwen) and sr.needs_we():
   // Create REGWEN-gated WE signal
   logic ${we_expr_regwen_gated};
 <%
@@ -1005,13 +1015,22 @@ ${bits.msb}\
     rst_expr = reg.async_clk[1].reset if reg.async_clk else reg_rst_expr
     re_expr = f'{clk_base_name}{reg_name}_re' if field.swaccess.allows_read() or reg.shadowed else "1'b0"
 
+    # The inregwen control field is stored inside the reg block even for registers marked as `hwext`
+    is_inregwen_ctrl = (reg.inregwen is not None and
+                         field.name == reg.inregwen)
+    field_is_ext = reg.hwext and not is_inregwen_ctrl
+
     # software inputs to field instance, write enable, read enable, write data
     if field.swaccess.allows_write():
       # We usually use the REG_we signal, but use REG_re for RC fields
       # (which get updated on a read, not a write)
       we_suffix = 're' if field.swaccess.swrd() == SwRdAccess.RC else 'we'
-      # If this is a REGWEN gated field, need to use the gated WE signal.
-      gated_suffix = '_gated' if reg.regwen else ''
+      # If this is a REGWEN gated field, need to use the gated WE signal. For
+      # an inregwen register every field is gated EXCEPT the control bit itself
+      # (which must stay writable so software can engage/release the lock).
+      gated = bool(reg.regwen) or (reg.inregwen is not None and
+                                   not is_inregwen_ctrl)
+      gated_suffix = '_gated' if gated else ''
       we_expr = f'{clk_base_name}{reg_name}{gated_suffix}_{we_suffix}'
 
       # when async, pick from the cdc handled data
@@ -1060,7 +1079,7 @@ ${bits.msb}\
     ds_expr = f'{clk_base_name}{finst_name}_ds{async_suffix}' if reg.async_clk and reg.is_hw_writable() else ''
 
 %>\
-  % if reg.hwext:       ## if hwext, instantiate prim_subreg_ext
+  % if field_is_ext:    ## if hwext (and not an inregwen control bit), instantiate prim_subreg_ext
 <%
     subreg_block = "prim_subreg_ext"
 %>\

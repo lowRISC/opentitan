@@ -381,9 +381,10 @@ package ac_range_check_reg_pkg;
   // Reset values for hwext registers and their fields
   parameter logic [0:0] AC_RANGE_CHECK_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] AC_RANGE_CHECK_INTR_TEST_DENY_CNT_REACHED_RESVAL = 1'h 0;
-  parameter logic [1:0] AC_RANGE_CHECK_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] AC_RANGE_CHECK_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] AC_RANGE_CHECK_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] AC_RANGE_CHECK_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] AC_RANGE_CHECK_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [9:0] AC_RANGE_CHECK_LOG_CONFIG_RESVAL = 10'h 0;
   parameter logic [0:0] AC_RANGE_CHECK_LOG_CONFIG_LOG_ENABLE_RESVAL = 1'h 0;
   parameter logic [0:0] AC_RANGE_CHECK_LOG_CONFIG_LOG_CLEAR_RESVAL = 1'h 0;
@@ -566,7 +567,7 @@ package ac_range_check_reg_pkg;
     4'b 0001, // index[  0] AC_RANGE_CHECK_INTR_STATE
     4'b 0001, // index[  1] AC_RANGE_CHECK_INTR_ENABLE
     4'b 0001, // index[  2] AC_RANGE_CHECK_INTR_TEST
-    4'b 0001, // index[  3] AC_RANGE_CHECK_ALERT_TEST
+    4'b 1111, // index[  3] AC_RANGE_CHECK_ALERT_TEST
     4'b 0001, // index[  4] AC_RANGE_CHECK_ALERT_STATUS
     4'b 0011, // index[  5] AC_RANGE_CHECK_LOG_CONFIG
     4'b 1111, // index[  6] AC_RANGE_CHECK_LOG_STATUS

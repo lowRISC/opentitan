@@ -164,6 +164,7 @@ hwext | optional | string | 'true' if the register is stored outside of the regi
 hwqe | optional | string | 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
 hwre | optional | string | 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
 regwen | optional | string | if register is write-protected by another register, that register name should be given here. empty-string for no register write protection
+inregwen | optional | string | if the writable fields of this register are write-protected by a single-bit field *within the same register*, that field name should be given here. The named control field is stored inside the register block (even when the register is hwext) and gates the write-enable (and hence the 'qe' strobe) of all other writable fields. empty-string for no in-register write protection
 resval | optional | int | reset value of full register (default 0)
 tags | optional | string | tags for the register, following the format 'tag_name:item1:item2...'
 shadowed | optional | string | 'true' if the register is shadowed
@@ -359,6 +360,7 @@ hwext | optional | string | 'true' if the register is stored outside of the regi
 hwqe | optional | string | 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
 hwre | optional | string | 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
 regwen | optional | string | if register is write-protected by another register, that register name should be given here. empty-string for no register write protection
+inregwen | optional | string | if the writable fields of this register are write-protected by a single-bit field *within the same register*, that field name should be given here. The named control field is stored inside the register block (even when the register is hwext) and gates the write-enable (and hence the 'qe' strobe) of all other writable fields. empty-string for no in-register write protection
 resval | optional | int | reset value of full register (default 0)
 tags | optional | string | tags for the register, following the format 'tag_name:item1:item2...'
 shadowed | optional | string | 'true' if the register is shadowed

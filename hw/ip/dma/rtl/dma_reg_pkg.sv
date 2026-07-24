@@ -438,8 +438,9 @@ package dma_reg_pkg;
   parameter logic [0:0] DMA_INTR_TEST_DMA_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_INTR_TEST_DMA_CHUNK_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_INTR_TEST_DMA_ERROR_RESVAL = 1'h 0;
-  parameter logic [0:0] DMA_ALERT_TEST_RESVAL = 1'h 0;
+  parameter logic [31:0] DMA_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] DMA_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] DMA_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [3:0] DMA_CFG_REGWEN_RESVAL = 4'h 6;
   parameter logic [3:0] DMA_CFG_REGWEN_REGWEN_RESVAL = 4'h 6;
 
@@ -515,7 +516,7 @@ package dma_reg_pkg;
     4'b 0001, // index[ 0] DMA_INTR_STATE
     4'b 0001, // index[ 1] DMA_INTR_ENABLE
     4'b 0001, // index[ 2] DMA_INTR_TEST
-    4'b 0001, // index[ 3] DMA_ALERT_TEST
+    4'b 1111, // index[ 3] DMA_ALERT_TEST
     4'b 1111, // index[ 4] DMA_SRC_ADDR_LO
     4'b 1111, // index[ 5] DMA_SRC_ADDR_HI
     4'b 1111, // index[ 6] DMA_DST_ADDR_LO

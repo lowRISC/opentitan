@@ -208,9 +208,10 @@ package rstmgr_reg_pkg;
   parameter logic [BlockAw-1:0] RSTMGR_ERR_CODE_OFFSET = 7'h 6c;
 
   // Reset values for hwext registers and their fields
-  parameter logic [1:0] RSTMGR_ALERT_TEST_RESVAL = 2'h 0;
+  parameter logic [31:0] RSTMGR_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] RSTMGR_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] RSTMGR_ALERT_TEST_FATAL_CNSTY_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] RSTMGR_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_RESVAL = 4'h 0;
   parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_RESVAL = 4'h 0;
   parameter logic [31:0] RSTMGR_ALERT_INFO_RESVAL = 32'h 0;
@@ -254,7 +255,7 @@ package rstmgr_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] RSTMGR_PERMIT [28] = '{
-    4'b 0001, // index[ 0] RSTMGR_ALERT_TEST
+    4'b 1111, // index[ 0] RSTMGR_ALERT_TEST
     4'b 0001, // index[ 1] RSTMGR_RESET_REQ
     4'b 0001, // index[ 2] RSTMGR_RESET_INFO
     4'b 0001, // index[ 3] RSTMGR_ALERT_REGWEN
