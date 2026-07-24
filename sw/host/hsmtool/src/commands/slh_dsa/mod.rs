@@ -12,11 +12,13 @@ use crate::module::Module;
 
 pub mod generate;
 pub mod sign;
+pub mod verify;
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum SlhDsa {
     Generate(generate::Generate),
     Sign(sign::Sign),
+    Verify(verify::Verify),
 }
 
 #[typetag::serde(name = "__slh_dsa__")]
@@ -30,6 +32,7 @@ impl Dispatch for SlhDsa {
         match self {
             SlhDsa::Generate(x) => x.run(context, hsm, session),
             SlhDsa::Sign(x) => x.run(context, hsm, session),
+            SlhDsa::Verify(x) => x.run(context, hsm, session),
         }
     }
 
@@ -40,6 +43,7 @@ impl Dispatch for SlhDsa {
         match self {
             SlhDsa::Generate(x) => x.leaf(),
             SlhDsa::Sign(x) => x.leaf(),
+            SlhDsa::Verify(x) => x.leaf(),
         }
     }
 }

@@ -6,4 +6,11 @@
 set -euo pipefail
 source sw/host/hsmtool/tests/test_lib.sh
 
-run ${HSMTOOL} "$@"
+SIGNATURE="$(mktemp)"
+readonly SIGNATURE
+
+run ${HSMTOOL} --module "$HSMTOOL_MODULE" \
+    slh-dsa sign --label fake --output "$SIGNATURE" "$1"
+
+run ${HSMTOOL} --module "$HSMTOOL_MODULE" \
+    slh-dsa verify --label fake "$SIGNATURE" "$1"
