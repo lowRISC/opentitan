@@ -328,6 +328,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
                                           boot_log_t *boot_log) {
+  rom_ext_boot_policy_manifest_search(boot_data);
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get(boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
@@ -337,9 +338,8 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     uint32_t flash_exec = 0;
     char slot_id =
-        (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get(boot_data))
-            ? 'A'
-            : 'B';
+        (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) ? 'A'
+                                                                       : 'B';
     error =
         rom_ext_verify(manifests.ordered[i], slot_id, boot_data, &flash_exec,
                        &keyring, &verify_key, &owner_config, &isfb_check_count);
@@ -352,10 +352,9 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     }
     HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
 
-    if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get(boot_data)) {
+    if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
-    } else if (manifests.ordered[i] ==
-               rom_ext_boot_policy_manifest_b_get(boot_data)) {
+    } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
       boot_log->bl0_slot = kBootSlotB;
     } else {
       return kErrorRomExtBootFailed;
