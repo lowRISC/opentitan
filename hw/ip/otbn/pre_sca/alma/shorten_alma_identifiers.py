@@ -7,7 +7,7 @@
 
 Verilator maps '.' -> '__02E' (+4 chars) and '[N]' -> '__05BN__05D' (+8 chars)
 when converting escaped Verilog identifiers to C++ names.  Names whose mangled
-form reaches 128+ characters get hashed in VCD tracing, breaking Alma's signal
+form reaches 128+ characters get hashed in VCD tracing, breaking CocoAlma's signal
 lookup.
 
 For each escaped identifier whose C++ length exceeds the limit, this script
@@ -30,18 +30,18 @@ def _cpp_len(identifier: str) -> int:
     return n
 
 
-def build_id_map(text: str) -> dict:
+def build_id_map(text: str, *, limit: int = VERILATOR_LIMIT) -> dict:
     """Return a mapping of long identifier -> shortened identifier (no backslashes)."""
     escaped_re = re.compile(r'\\([^ \t\n;,)(]+)')
     all_ids = set(escaped_re.findall(text))
-    long_ids = sorted(i for i in all_ids if _cpp_len(i) >= VERILATOR_LIMIT)
+    long_ids = sorted(i for i in all_ids if _cpp_len(i) >= limit)
 
     if not long_ids:
         return {}
 
     # Pre-populate 'used' with every short identifier already in the file so
     # that trimmed names never collide with pre-existing signals.
-    used = {i for i in all_ids if _cpp_len(i) < VERILATOR_LIMIT}
+    used = {i for i in all_ids if _cpp_len(i) < limit}
 
     id_map = {}
     for ident in long_ids:
@@ -49,7 +49,7 @@ def build_id_map(text: str) -> dict:
         chosen = None
         for start in range(len(segments)):
             base = '.'.join(segments[start:])
-            if _cpp_len(base) >= VERILATOR_LIMIT:
+            if _cpp_len(base) >= limit:
                 continue
             if base not in used:
                 chosen = base
@@ -58,7 +58,7 @@ def build_id_map(text: str) -> dict:
             n = 2
             while True:
                 candidate = f'{base}_{n}'
-                if _cpp_len(candidate) >= VERILATOR_LIMIT:
+                if _cpp_len(candidate) >= limit:
                     break  # suffix too long at this trim depth — drop more segments
                 if candidate not in used:
                     chosen = candidate
@@ -67,14 +67,14 @@ def build_id_map(text: str) -> dict:
             if chosen is not None:
                 break
         if chosen is None:
-            base = segments[-1][:VERILATOR_LIMIT - 1]
+            base = segments[-1][:limit - 1]
             if base not in used:
                 chosen = base
             else:
                 n = 2
                 while True:
                     suffix = f'_{n}'
-                    chosen = base[:VERILATOR_LIMIT - 1 - len(suffix)] + suffix
+                    chosen = base[:limit - 1 - len(suffix)] + suffix
                     if chosen not in used:
                         break
                     n += 1
@@ -84,15 +84,15 @@ def build_id_map(text: str) -> dict:
     return id_map
 
 
-def shorten_verilog(path: str) -> None:
+def shorten_verilog(path: str, *, limit: int = VERILATOR_LIMIT) -> None:
     """Shorten escaped identifiers in a Verilog file in-place."""
     with open(path) as f:
         original = f.read()
 
-    id_map = build_id_map(original)
+    id_map = build_id_map(original, limit=limit)
 
     if not id_map:
-        print(f'No identifiers reach {VERILATOR_LIMIT}-char limit in {path}')
+        print(f'No identifiers reach {limit}-char limit in {path}')
         return
 
     escaped_re = re.compile(r'\\([^ \t\n;,)(]+)')
@@ -126,15 +126,18 @@ def shorten_verilog(path: str) -> None:
 
     with open(path, 'w') as f:
         f.write(shortened)
-    print(f'Shortened {len(id_map)} identifiers in {path} (round-trip OK)')
+    print(f'Shortened {len(id_map)} identifiers in {path} (limit={limit}, round-trip OK)')
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('netlist', help='Verilog netlist to process in-place')
+    parser.add_argument('--reserve', type=int, default=0,
+                        help='Reserve N chars for suffixes appended after shortening '
+                             '(effective limit = VERILATOR_LIMIT - reserve)')
     args = parser.parse_args()
 
-    shorten_verilog(args.netlist)
+    shorten_verilog(args.netlist, limit=VERILATOR_LIMIT - args.reserve)
 
 
 if __name__ == '__main__':

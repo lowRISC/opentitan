@@ -71,7 +71,8 @@
 //
 // Rejection sampling (EnRejSampling=1, BoolToArith only):
 //   wready_o is deasserted whenever mask_mod >= mod_i. The caller must hold wvalid_i high until
-//   wready_o rises. Set EnRejSampling=0 for SCA analysis to avoid trace misalignment.
+//   wready_o rises. Assert sec_wipe_running_i for SCA analysis to avoid trace misalignment, or set
+//   EnRejSampling=0 for CocoAlma verification.
 //
 // Interface:
 //   wvalid_i / wready_o : Input handshake following the 'valid locked-in' principle: once wvalid_i

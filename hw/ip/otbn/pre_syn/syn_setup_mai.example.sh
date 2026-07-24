@@ -16,7 +16,7 @@ case "$TARGET_TYPE" in
   hpc3o)       export LR_SYNTH_TOP_MODULE=prim_hpc3o_sca_wrapper ;;
   sec_add)     export LR_SYNTH_TOP_MODULE=otbn_sec_add_sca_wrapper ;;
   sec_add_mod) export LR_SYNTH_TOP_MODULE=otbn_sec_add_mod_sca_wrapper ;;
-  # Synthesize the DUT directly (no SCA wrapper); used for ProLEAD.
+  # Synthesize the DUT directly (no SCA wrapper); used for PROLEAD.
   mask_accelerator_prolead)
     export LR_SYNTH_TOP_MODULE=otbn_mask_accelerator
     export LR_SYNTH_SCA_WRAPPER=""
