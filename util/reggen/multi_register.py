@@ -193,7 +193,7 @@ class MultiRegister(RegBase):
         # "multireg_idx". Collect up the resulting parsed pseudo-registers into
         # a pregs list.
         pregs = [Register.from_raw(reg_width, offset, params, reg_rd, clocks,
-                                   is_alias, multireg_idx)
+                                   is_alias, (multireg_idx, count))
                  for multireg_idx in range(count)]
 
         alias_target = None
