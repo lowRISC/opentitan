@@ -56,17 +56,20 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
 
 extern const manifest_t *rom_ext_boot_policy_slot_a_manifest;
 extern const manifest_t *rom_ext_boot_policy_slot_b_manifest;
+extern rom_error_t rom_ext_boot_policy_slot_a_manifest_status;
+extern rom_error_t rom_ext_boot_policy_slot_b_manifest_status;
 
 /**
  * Searches for a valid manifest within a single bank.
  *
  * @param bank_base Base address of the flash bank.
  * @param boot_data Boot data struct.
+ * @param[out] status Discovered manifest check status.
  * @return Discovered manifest pointer or fallback candidate.
  */
 OT_WARN_UNUSED_RESULT
 const manifest_t *rom_ext_boot_policy_manifest_bank_search(
-    uintptr_t bank_base, const boot_data_t *boot_data);
+    uintptr_t bank_base, const boot_data_t *boot_data, rom_error_t *status);
 
 /**
  * Searches for valid manifests in both flash banks (A and B) and stores
