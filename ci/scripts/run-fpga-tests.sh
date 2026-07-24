@@ -31,17 +31,26 @@ export BITSTREAM="--offline --list ci_bitstreams"
 # Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
 trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
 
-# Running tests will clear all non-volatile memory on the FPGA, but we start by
-# clearing the bitstream to be cautious in case tests leave behind some state.
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
 # anyway).
 # Note that the hyperdebug backend does not have the set-pll command so this will fail but not trigger an error.
 ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
+
+# Clear the bitstream once before the whole batch starts, in case a previous
+# job left the FPGA in a bad or wedged state.
 ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
 
 # Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
 ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
+
+# Run a minimal, dedicated test before the rest of the batch. Its setup already loads the
+# bitstream and preloads the ROM/OTP like any other FPGA test.
+./bazelisk.sh test \
+    --define DISABLE_VERILATOR_BUILD=true \
+    --define "$fpga"=lowrisc \
+    --test_output=all \
+    //sw/device/tests:fpga_priming_test_fpga_cw340_sival "$@"
 
 ./bazelisk.sh test \
     --run_under=//ci/scripts:run_test \

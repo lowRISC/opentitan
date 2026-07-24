@@ -130,7 +130,6 @@ opentitan_test(
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
         },
-        changes_otp = True,
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
@@ -139,6 +138,7 @@ opentitan_test(
             --test-sram-elf={sram_cp_provision_functest}
         """,
         test_harness = "//sw/host/tests/manuf/cp_provision_functest",
+        testopt_clear_after_test = "True",
     ),
 )
 

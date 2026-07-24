@@ -447,9 +447,6 @@ opentitan_test(
         # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
         exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
         exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
-        # We clear the bitstream to force any subsequent test to load a
-        # fresh bitstream and clear all memories (ie: flash-based boot policy).
-        testopt_clear_after_test = "True",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [

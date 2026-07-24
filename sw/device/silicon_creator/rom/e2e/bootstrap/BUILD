@@ -75,7 +75,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = "otp_img_bootstrap_rma",
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_rma",

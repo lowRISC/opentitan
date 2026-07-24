@@ -157,7 +157,10 @@ fn main() -> Result<()> {
     )?;
     InitializeTest::print_result(
         "load_bitstream",
-        opts.init.load_bitstream.init(&transport).map(|_| None),
+        opts.init
+            .load_bitstream
+            .init(&transport, &opts.init.jtag_params)
+            .map(|_| None),
     )?;
 
     // Parse and format tokens.

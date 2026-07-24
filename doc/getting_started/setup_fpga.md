@@ -376,17 +376,27 @@ For the CW340 running with HyperDebug, its contents would look like:
 --interface=hyper340
 ```
 
-To flash the bitstream onto the FPGA using `opentitantool`, use the following command:
+To flash the bitstream onto the FPGA using `opentitantool`, use the following commands.
+The first command only builds a patched OpenOCD binary -- it does not flash anything by itself.
+You'll pass its path to `--openocd` below, which `opentitantool` uses to optionally check whether a reflash can be skipped; see [USR_ACCESS and Loading Bitstreams](#usr_access-and-loading-bitstreams).
+
+```sh
+bazel build //third_party/openocd:openocd_bin
+```
 
 ##### If you downloaded the bitstream from the Internet:
 ```sh
 cd $REPO_TOP
-bazel run //sw/host/opentitantool -- fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
+bazel run //sw/host/opentitantool -- fpga load-bitstream \
+    --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) \
+    /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
 ```
 ##### if you built the bitstream yourself:
 ```sh
 cd $REPO_TOP
-bazel run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
+bazel run //sw/host/opentitantool -- fpga load-bitstream \
+    --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) \
+    $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
@@ -459,10 +469,15 @@ From this point onwards, you cannot use `opentitantool fpga backdoor ...` withou
 
 ##### USR_ACCESS and Loading Bitstreams
 
-Note that when using `opentitantool fpga load-bitstream`, it uses the `USR_ACCESS` value in the bitstream to determine whether it needs to load a bitstream.
-This is unique per bitstream, however it only tells you the identity of the bistream, and not any memories programmed after the bitstream was loaded.
 
-To be sure that a bitstream is definitely running on the board, without any additional programmed memories, you can either power cycle the board, or use the `--force` flag when loading the bitstream:
+Before writing a bitstream, opentitantool straps into the backdoor TAP to read the `USR_ACCESS_TIMESTAMP` of the bitstream currently running on the FPGA over JTAG (using the `--openocd` binary) and compares it against the `USR_ACCESS` value embedded in the file you're loading.
+If they match, it skips reprogramming.
+If they don't match, or if that check can't be completed at all, it falls back to writing the bitstream anyway.
+
+This check is unique per bitstream, but it only tells you the identity of the bitstream and not whether any memories (ROM, OTP, ...) programmed after the bitstream was loaded are still in the state you expect.
+
+To be sure that a bitstream is definitely running on the board, without any additional programmed memories, you can either power cycle the board, or use the `--force` flag when loading the bitstream.
+`--force` skips the USR_ACCESS check entirely and unconditionally reprograms:
 
 ```sh
 bazel run //sw/host/opentitantool -- fpga load-bitstream --force $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
@@ -679,7 +694,9 @@ The FPGA tests attempt to load the latest bitstream by default, but because we w
 
 ```console
 # Load the bitstream with opentitantool
-bazel run //sw/host/opentitantool -- --interface=hyper340 fpga load-bitstream <path_to_your_bitstream>
+bazel run //sw/host/opentitantool -- --interface=hyper340 fpga load-bitstream \
+    --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) \
+    <path_to_your_bitstream>
 
 # Run the broken test locally, showing all test output and skipping the bitstream loading
 bazel test <broken_test_rule> --define bitstream=skip --test_output=streamed

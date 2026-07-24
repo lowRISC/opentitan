@@ -2096,7 +2096,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_personalized",
         tags = [
@@ -3257,7 +3256,6 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
@@ -3288,7 +3286,6 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     fpga = fpga_params(
-        changes_otp = True,
     ),
     deps = [
         "//hw/top/dt",
@@ -4556,7 +4553,6 @@ opentitan_test(
     fpga = fpga_params(
         test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
-        testopt_clear_before_test = "True",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -5993,6 +5989,24 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
     },
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+# Minimal test with no functional purpose: run first, before a batch of other FPGA tests, as a
+# fast sanity check and to prime the FPGA (bitstream + ROM/OTP preload) for the rest of the
+# batch. See `ci/scripts/run-fpga-tests.sh` and `sw/device/tests/fpga_priming_test.c`.
+opentitan_test(
+    name = "fpga_priming_test",
+    srcs = ["fpga_priming_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+    },
+    # Unlike other FPGA tests (which default to "short"), this one's setup pays for the full
+    # bitstream reprogram and ROM write/verify, which alone can take upwards of 30s; give it
+    # more room.
+    fpga = fpga_params(timeout = "moderate"),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

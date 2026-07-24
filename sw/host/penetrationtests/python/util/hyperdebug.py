@@ -89,7 +89,8 @@ class HyperDebug:
         if not bitstream:
             return
 
-        load_cmd = f"fpga load-bitstream {bitstream}"
+        openocd_opt = f"--openocd={self.openocd} " if self.openocd else ""
+        load_cmd = f"fpga load-bitstream {openocd_opt}{bitstream}"
         if force:
             load_cmd += " --force"
         command = (
