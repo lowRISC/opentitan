@@ -55,6 +55,7 @@ pub use ti50::Ti50Flavor;
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
+    usb_context: Rc<dyn UsbContext>,
     spi_interface: BulkInterface,
     i2c_interface: Option<BulkInterface>,
     cmsis_interface: Option<BulkInterface>,
@@ -285,6 +286,7 @@ impl<T: Flavor> Hyperdebug<T> {
             }
         }
         let result = Hyperdebug::<T> {
+            usb_context: Rc::new(usb_context),
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
@@ -766,7 +768,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 
     fn usb(&self) -> Result<Rc<dyn UsbContext>> {
-        Ok(Rc::new(RusbContext::new()))
+        Ok(self.usb_context.clone())
     }
 
     // Create GpioPin instance, or return one from a cache of previously created instances.
