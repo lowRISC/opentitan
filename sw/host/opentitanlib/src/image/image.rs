@@ -268,6 +268,8 @@ impl Image {
         let manifest = self.borrow_manifest_mut()?;
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
         manifest_def.overwrite_fields(other);
+        manifest_def.set_default_manifest_base_address()?;
+
         *manifest = manifest_def.try_into()?;
         Ok(())
     }
