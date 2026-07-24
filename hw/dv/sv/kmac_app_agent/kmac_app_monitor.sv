@@ -28,7 +28,7 @@ class kmac_app_monitor extends dv_reactive_monitor #(
       begin : isolation_fork
         fork
           process_trans();
-          @(negedge cfg.vif.rst_n);
+          @(negedge cfg.vif.rst_ni);
         join_any
         disable fork;
         process_reset();
@@ -88,7 +88,7 @@ class kmac_app_monitor extends dv_reactive_monitor #(
   virtual protected task process_reset();
     `uvm_info(`gfn, $sformatf("Reset occurs"), UVM_MEDIUM)
     ok_to_end = 1;
-    @(posedge cfg.vif.rst_n);
+    @(posedge cfg.vif.rst_ni);
     data_fifo.flush();
   endtask
 

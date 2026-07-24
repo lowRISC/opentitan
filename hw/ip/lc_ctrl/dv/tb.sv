@@ -85,16 +85,10 @@ module tb;
 
 
   // KMAC App agent hookup
-  kmac_pkg::app_rsp_t kmac_data_in;
-  kmac_pkg::app_req_t kmac_data_out;
-  assign kmac_data_in = kmac_app_if.kmac_data_rsp;
-  assign kmac_app_if.kmac_data_req = kmac_data_out;
+  wire kmac_pkg::app_rsp_t kmac_data_in;
+  wire kmac_pkg::app_req_t kmac_data_out;
 
-  // KMAC vip
-  kmac_app_if kmac_app_if (
-    .clk  (clk),
-    .rst_n(rst_n)
-  );
+  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req(kmac_data_out), .rsp(kmac_data_in));
 
   `DV_ALERT_IF_CONNECT()
 

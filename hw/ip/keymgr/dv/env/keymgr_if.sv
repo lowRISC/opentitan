@@ -387,9 +387,9 @@ interface keymgr_if(input clk, input rst_n);
         `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
         // set `done` to 1, force the other fields to a random value to avoid X propagation
         invalid_kmac_rsp.rsp_valid = 1;
-        force tb.kmac_if.kmac_data_rsp = invalid_kmac_rsp;
+        force tb.kmac_if.rsp = invalid_kmac_rsp;
         @(negedge clk);
-        release tb.kmac_if.kmac_data_rsp;
+        release tb.kmac_if.rsp;
       end
       FaultSideloadNotConsistent: begin
         pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
