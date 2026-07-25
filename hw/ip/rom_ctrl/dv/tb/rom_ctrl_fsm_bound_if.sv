@@ -26,8 +26,8 @@ interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (input wire clk_i, inpu
     // on reset, and then counter_overridden will flip.
     //
     // To make the change easier to see in waves, we expect this task to be called at the negedge of
-    // the clock (so addr_d changes at a surprising time) and will hold the forced signal until the
-    // negedge after addr_q changes.
+    // the clock (so the forced signal changes at a surprising time) and will hold the forced signal
+    // until the negedge after addr_q changes.
     //
     // If reset is applied, release the force and return immediately.
     bit        override_counter;
@@ -39,22 +39,48 @@ interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (input wire clk_i, inpu
       forever begin
         wait(override_counter);
 
-        force u_checker_fsm.u_counter.addr_d = desired_counter;
+        // This implementation would like to work by forcing addr_d. This will only be consumed the
+        // next time "go" is asserted, and the force will redirect the address to which we jump. Of
+        // course, this doesn't work after the ROM read is complete: go will not be asserted.
+        //
+        // In this situation, it's less important that we make the fetched word line up correctly:
+        // nothing will be fetched anyway, and we just want to stimulate a fault injection check.
 
-        fork : isolation_fork begin
-          fork
-            begin
-              @(u_checker_fsm.u_counter.addr_q);
+        if (!u_checker_fsm.u_counter.done_q) begin
+          // This is the standard case, where rom_ctrl is reading through ROM and we want to force
+          // addr_d.
+          force u_checker_fsm.u_counter.addr_d = desired_counter;
+
+          fork : isolation_fork0 begin
+            fork
+              begin
+                @(u_checker_fsm.u_counter.addr_q);
+                @(negedge clk_i);
+              end
+              wait (!rst_ni);
+            join_any
+            disable fork;
+          end join
+
+          release u_checker_fsm.u_counter.addr_d;
+        end else begin
+          // This is the "fault injection case": rom_ctrl has read the contents of ROM at this
+          // point, so we just want addr_q to change.
+
+          force u_checker_fsm.u_counter.addr_q = desired_counter;
+
+          fork : isolation_fork1 begin
+            fork
               @(negedge clk_i);
-            end
-            wait (!rst_ni);
-          join_any
-          disable fork;
-        end join
+              wait (!rst_ni);
+            join_any
+            disable fork;
+          end join
 
-        release u_checker_fsm.u_counter.addr_d;
+          release u_checker_fsm.u_counter.addr_q;
+        end
+
         counter_overridden ^= 1;
-
         wait(!override_counter);
       end
     end

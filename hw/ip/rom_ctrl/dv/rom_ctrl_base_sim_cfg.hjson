@@ -112,6 +112,13 @@
       name: rom_ctrl_corrupt_sig_fatal_chk
       uvm_test_seq: rom_ctrl_corrupt_sig_fatal_chk_vseq
       run_opts: ["+test_timeout_ns=1000000000"]
+      // Don't skip the middle of the ROM. This test might want to
+      // inject a fault when we're half-way through reading the ROM,
+      // which isn't going to work well if we only read a tiny
+      // fraction.
+      //
+      // This uses the same mechanism as was used for rom_ctrl_smoke.
+      run_opts: ["+skip_middle_of_rom=0"]
     }
     {
       name: rom_ctrl_kmac_err_chk
