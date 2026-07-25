@@ -15,6 +15,10 @@ class rom_ctrl_env extends cip_base_env #(
   // KMAC interface agent
   kmac_app_device_agent m_kmac_agent;
 
+  // A passive reset_agent that can be used to watch whether rom_ctrl is in reset. Get this with
+  // get_reset_agent().
+  local reset_agent m_reset_agent;
+
   // A sequencer and driver for forcing the count in the FSM's u_counter. Both are created in
   // build_phase, but only if cfg.get_skip_middle() is true.
   local rom_ctrl_addr_force_sequencer_t m_addr_force_sequencer;
@@ -27,6 +31,9 @@ class rom_ctrl_env extends cip_base_env #(
 
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
+
+  // Get the reset_agent
+  extern function reset_agent get_reset_agent();
 
   // Get the m_addr_force_sequencer handle.
   //
@@ -81,6 +88,10 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
   // Build the KMAC agent
   m_kmac_agent = kmac_app_device_agent::type_id::create("m_kmac_agent", this);
   uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
+
+  // Build the reset agent to track the current reset state
+  m_reset_agent = reset_agent::type_id::create("m_reset_agent", this);
+  uvm_config_db#(virtual clk_rst_if)::set(this, "m_reset_agent", "vif", cfg.clk_rst_vif);
 
   // Create a sequencer and driver for forcing the counter in the rom_ctrl FSM, but only if
   // cfg.get_skip_middle() is true (and fsm_vif is non-null, meaning that rom_ctrl is actually doing
@@ -142,6 +153,10 @@ function void rom_ctrl_env::connect_phase(uvm_phase phase);
     m_kmac_rsp_force_driver.set_vif(cfg.fsm_vif);
     m_kmac_rsp_force_driver.seq_item_port.connect(m_kmac_rsp_force_sequencer.seq_item_export);
   end
+endfunction
+
+function reset_agent rom_ctrl_env::get_reset_agent();
+  return m_reset_agent;
 endfunction
 
 function rom_ctrl_addr_force_sequencer_t rom_ctrl_env::get_addr_force_sequencer();

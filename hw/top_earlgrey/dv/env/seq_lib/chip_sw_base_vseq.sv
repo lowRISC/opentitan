@@ -114,6 +114,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 `else
       cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
+
+      // Update the digest in m_skip_middle_vseq if necessary.
+      update_skip_middle_vseq_digest();
     end
 
     if (cfg.use_spi_load_bootstrap) begin
