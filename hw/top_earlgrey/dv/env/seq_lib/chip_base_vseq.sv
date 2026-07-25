@@ -26,6 +26,29 @@ class chip_base_vseq #(
   // Should the AST actually be programmed?
   bit do_creator_sw_cfg_ast_cfg = 1;
 
+  // An event that is triggered by a reset_agent that tracks the reset line for rom_ctrl. If set,
+  // this can be used by m_skip_middle_vseq (so that it causes rom_ctrl to skip over the middle of
+  // ROM when building the initial digest after each reset).
+  uvm_event m_reset_event;
+
+  // A sequencer that can be used to drive items that cause rom_ctrl to skip over the middle of ROM
+  // when it reads the contents to pass to KMAC for a digest. If this is non-null then m_reset_event
+  // and m_override_digest_sequencer should also be non-null. If so, the values will be used to
+  // configure m_skip_middle_vseq, which avoids reading the middle of ROM when computing the initial
+  // digest.
+  rom_ctrl_env_pkg::rom_ctrl_addr_force_sequencer_t m_addr_force_sequencer;
+
+  // A sequencer that can be used to drive items that override responses from KMAC to rom_ctrl. If
+  // this is non-null then m_reset_event and m_addr_force_sequencer should also be non-null. If so,
+  // the values will be used to configure m_skip_middle_vseq, which avoids reading the middle of ROM
+  // when computing the initial digest.
+  rom_ctrl_env_pkg::rom_ctrl_kmac_rsp_force_sequencer_t m_override_digest_sequencer;
+
+  // A sequence that will be created and run if m_reset_event, m_addr_force_sequencer and
+  // m_override_digest_sequencer are non-null. This will cause rom_ctrl to skip over the middle of
+  // ROM when creating the digest after a reset.
+  local rom_ctrl_env_pkg::rom_ctrl_skip_middle_with_digest_vseq m_skip_middle_vseq;
+
   `uvm_object_new
 
   virtual function void set_handles();
@@ -35,7 +58,18 @@ class chip_base_vseq #(
 
   task post_start();
     do_clear_all_interrupts = 0;
-    super.post_start();
+
+    fork
+      super.post_start();
+
+      // If m_skip_middle_vseq is non-null, it was started at the start of body. That sequence won't
+      // end of its own accord, so we need to tell it to stop before this vseq completes.
+      if (m_skip_middle_vseq != null) begin
+        m_skip_middle_vseq.abort();
+        m_skip_middle_vseq.wait_for_sequence_state(UVM_FINISHED | UVM_STOPPED);
+        m_skip_middle_vseq = null;
+      end
+    join
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -213,9 +247,84 @@ class chip_base_vseq #(
       random_rom_init_with_digest();
     `endif
     do_dut_init = do_dut_init_save;
+
+    // If we are going to skip the middle of ROM, we will also need to override the value that comes
+    // back from KMAC with the value that has been written to ROM itself. Waiting until after
+    // writing random data to ROM means that we'll get the expected digest.
+    maybe_start_skip_middle_vseq();
+
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
   endtask
+
+  // If either m_addr_force_sequencer or m_override_digest_sequencer has been supplied, start a
+  // sequence that causes rom_ctrl to skip over the middle of ROM when it computes its initial
+  // digest.
+  local task maybe_start_skip_middle_vseq();
+    import rom_ctrl_env_pkg::rom_ctrl_skip_middle_with_digest_vseq;
+
+    int unsigned                   desired_addr;
+    bit [kmac_pkg::AppDigestW-1:0] expected_digest;
+
+    if (m_addr_force_sequencer != null) begin
+      if (m_reset_event == null) begin
+        `uvm_fatal(get_full_name(),
+                   "m_addr_force_sequencer is set but m_reset_event is null.")
+      end
+      if (m_override_digest_sequencer == null) begin
+        `uvm_fatal(get_full_name(),
+                   "m_addr_force_sequencer is set but m_override_digest_sequencer is null.")
+      end
+    end
+    if (m_override_digest_sequencer != null) begin
+      if (m_addr_force_sequencer == null) begin
+        `uvm_fatal(get_full_name(),
+                   "m_override_digest_sequencer is set but m_addr_force_sequencer is null.")
+      end
+    end
+
+    // Either both sequencers have been supplied or neither. If neither, there is nothing more for
+    // this task to do.
+    if (m_addr_force_sequencer == null) return;
+
+    m_skip_middle_vseq =
+      rom_ctrl_skip_middle_with_digest_vseq::type_id::create("m_skip_middle_vseq");
+
+    m_skip_middle_vseq.set_reset_event(m_reset_event);
+    m_skip_middle_vseq.set_sequencers(m_addr_force_sequencer, m_override_digest_sequencer);
+
+    // Jump to a destination address that's slightly before the end of the words that will be sent
+    // to KMAC. The last 8 contain an expected digest (which is not sent to kmac) and we want to be
+    // a few earlier than that, in order that a small pipeline gets filled correctly at the end of
+    // the pass through the ROM.
+    desired_addr = (cfg.m_rom_ctrl_env_cfg.get_rom_size_bytes() / 4) - 20;
+    expected_digest = cfg.m_rom_ctrl_env_cfg.get_expected_digest();
+
+    if (!m_skip_middle_vseq.randomize() with {
+          // This (arbitrary) small value controls when the "skip" will happen. Picking 10 ensures
+          // that the first ten words will be read properly before we jump.
+          m_start_addr == 10;
+          m_desired_addr == local::desired_addr;
+          m_digest == local::expected_digest;
+        }) begin
+      `uvm_fatal(get_full_name(), "Failed to randomise m_skip_middle_vseq.")
+    end
+
+    fork
+      m_skip_middle_vseq.start(null);
+    join_none
+  endtask
+
+  // If m_skip_middle_vseq is not null, update that sequence's expected digest (which it will use
+  // when forcing the value of the response from kmac).
+  //
+  // This is needed if ROM has been modified by a backdoor after the initial call to
+  // maybe_start_skip_middle_vseq configured m_skip_middle_vseq.
+  protected function void update_skip_middle_vseq_digest();
+    if (m_skip_middle_vseq != null) begin
+      m_skip_middle_vseq.update_digest(cfg.m_rom_ctrl_env_cfg.get_expected_digest());
+    end
+  endfunction
 
   // Configures and connects the UART agent for driving data over RX and receiving data on TX.
   //

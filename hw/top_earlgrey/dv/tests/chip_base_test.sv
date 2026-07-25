@@ -91,6 +91,26 @@ class chip_base_test extends cip_base_test #(
     end
   endfunction : build_phase
 
+  virtual function void initialize_env_cfg();
+    bit skip_middle;
+
+    super.initialize_env_cfg();
+
+    // Look up the +skip_middle_of_rom plusarg.
+    if ($value$plusargs("skip_middle_of_rom=%0b", skip_middle)) begin
+      `uvm_info("skip_middle_mode",
+                $sformatf("Setting skip_middle to %d in rom_ctrl env cfg, based on plusarg.",
+                          skip_middle),
+                UVM_HIGH)
+      if (skip_middle) begin
+        // Configure the block-level environment to support skipping the middle of the ROM, and also
+        // to support overriding the response that comes back from KMAC.
+        cfg.m_rom_ctrl_env_cfg.set_skip_middle(skip_middle);
+        cfg.m_rom_ctrl_env_cfg.set_force_expected_kmac_rsp(skip_middle);
+      end
+    end
+  endfunction
+
   virtual function void configure_sequence(uvm_sequence seq);
     chip_base_vseq vseq;
 
@@ -100,6 +120,14 @@ class chip_base_test extends cip_base_test #(
       `uvm_fatal(get_full_name(),
                  $sformatf("Cannot configure sequence that isn't a chip_base_vseq: %0s.",
                            seq.sprint()))
+    end
+
+    // If the bound-in rom_ctrl environment has been configured to skip the middle of ROM, we need
+    // to pass vseq the handles that it will need to run a rom_ctrl_skip_middle_with_digest_vseq.
+    if (cfg.m_rom_ctrl_env_cfg.get_skip_middle()) begin
+      vseq.m_reset_event               = env.m_rom_ctrl_env.get_reset_agent().get_event();
+      vseq.m_addr_force_sequencer      = env.m_rom_ctrl_env.get_addr_force_sequencer();
+      vseq.m_override_digest_sequencer = env.m_rom_ctrl_env.get_kmac_rsp_force_sequencer();
     end
 
     // Should the AST actually be programmed in the vseq? By default, it should, but this can be

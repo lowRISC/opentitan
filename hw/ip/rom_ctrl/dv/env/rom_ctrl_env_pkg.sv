@@ -11,6 +11,8 @@ package rom_ctrl_env_pkg;
   import cip_base_pkg::*;
   import tl_agent_pkg::*;
 
+  import reset_agent_pkg::reset_agent;
+
   import rom_ctrl_bkdr_util_pkg::*;
   import kmac_app_agent_pkg::*;
 

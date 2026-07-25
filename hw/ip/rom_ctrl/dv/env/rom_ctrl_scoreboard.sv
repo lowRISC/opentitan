@@ -15,11 +15,22 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // The digest of ROM contents that has been returned from KMAC. This is valid if
   // rom_check_complete is true. It is sized to be DIGEST_SIZE bits long: this might be shorter than
   // the interface width from KMAC, but rom_ctrl will only look at the bottom bits.
+  //
+  // Note that this value should not be trusted if cfg.get_force_expected_kmac_rsp() is true. In
+  // this situation, the environment might have overridden an internal KMAC response port of the FSM
+  // inside rom_ctrl itself (and this override is not visible to the scoreboard).
   bit [DIGEST_SIZE-1:0]  kmac_digest;
 
   bit                    m_kmac_req_sent;
   bit                    rom_check_complete;
+
+  // A mubi value that shows whether the digest that came back from KMAC (and is stored in
+  // kmac_digest) matches expected_digest.
+  //
+  // Note that (as with kmac_digest) this value should not be trusted if
+  // cfg.get_force_expected_kmac_rsp() is true.
   prim_mubi_pkg::mubi4_t digest_good;
+
   bit                    pwrmgr_complete;
   bit                    keymgr_complete;
   bit                    disable_rom_acc_chk;
@@ -290,7 +301,13 @@ task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
       if (pwrmgr_complete) begin
         `uvm_error("extra_pwrmgr_data", "Data is being sent to pwrmgr for a second time.")
       end
-      if (cfg.rom_ctrl_vif.cb.pwrmgr_data.good != digest_good) begin
+
+      // We condition the check on pwrmgr_data.good on whether the environment has forced the value
+      // of the digest inside rom_ctrl. If it has, the scoreboard will have seen the value that
+      // actually came back from KMAC and the dut (quite reasonably) is working with a value that
+      // the environment forced in.
+      if ((cfg.rom_ctrl_vif.cb.pwrmgr_data.good != digest_good) &&
+          !cfg.get_force_expected_kmac_rsp()) begin
         string pwrmgr_good_name = cfg.rom_ctrl_vif.cb.pwrmgr_data.good.name();
         string digest_good_name = digest_good.name();
         `uvm_error("wrong_pwrmgr_good",
@@ -305,7 +322,18 @@ task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
     // Check data sent to keymgr
     if (cfg.rom_ctrl_vif.cb.keymgr_data.valid) begin
       `DV_CHECK(!keymgr_complete, "Spurious keymgr signal")
-      `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.keymgr_data.data, kmac_digest, "Incorrect keymgr digest")
+
+      // Check that the digest sent to keymgr is the one from KMAC. This check is disabled if the
+      // environment has forced the value of the digest inside rom_ctrl. That will have changed the
+      // value that the dut should send to keymgr but the scoreboard can't see the correct value.
+      if (cfg.rom_ctrl_vif.cb.keymgr_data.data != kmac_digest &&
+          !cfg.get_force_expected_kmac_rsp()) begin
+        `uvm_error("wrong_keymgr_digest",
+                   $sformatf({"rom_ctrl is reporting a digest of 0x%0h to keymgr, but kmac ",
+                              "sent a digest of 0x%0h"},
+                             cfg.rom_ctrl_vif.cb.keymgr_data.data, kmac_digest))
+      end
+
       keymgr_complete = 1'b1;
     end
   end
@@ -361,16 +389,32 @@ function void rom_ctrl_scoreboard::check_reg_access(tl_seq_item item, tl_channel
     "alert_test": begin
       if (addr_phase_write && item.a_data[0]) set_exp_alert("fatal", .is_fatal(0));
     end
+
     "fatal_alert_cause": begin
       // do_nothing
     end
-    "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
-        "digest_7", "exp_digest_0", "exp_digest_1", "exp_digest_2", "exp_digest_3",
-        "exp_digest_4", "exp_digest_5", "exp_digest_6", "exp_digest_7": begin
-      if (!rom_check_complete) begin
-        do_read_check = 1'b0;
-      end
+
+    "exp_digest_0", "exp_digest_1", "exp_digest_2", "exp_digest_3",
+      "exp_digest_4", "exp_digest_5", "exp_digest_6", "exp_digest_7": begin
+      // The exp_digest_* registers are populated by reading the ROM itself. As such, the first time
+      // we can be certain that rom_ctrl has got their values is when the rom check completes.
+      do_read_check = rom_check_complete;
     end
+
+    "digest_0", "digest_1", "digest_2", "digest_3",
+      "digest_4", "digest_5", "digest_6", "digest_7": begin
+      // The digest_* registers are populated by the handshake with kmac. As such, both the design
+      // and the environment only get those values when KMAC sends a response. The first time the
+      // environment can be certain that rom_ctrl has got the values is when the rom check
+      // completes.
+      //
+      // If the environment has overridden the response from kmac (which happens if
+      // get_force_expected_kmac_rsp is true), disable this check. This is because the forcing of
+      // the signal happens inside rom_ctrl and is not visible to the monitor. As such, the
+      // scoreboard doesn't know what digest the block was given.
+      do_read_check = rom_check_complete && !cfg.get_force_expected_kmac_rsp();
+    end
+
     default: begin
       `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
     end
