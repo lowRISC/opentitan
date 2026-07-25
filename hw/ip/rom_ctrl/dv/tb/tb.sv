@@ -69,7 +69,7 @@ module tb;
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
   bind dut.gen_fsm_scramble_enabled.u_checker_fsm
-     rom_ctrl_fsm_bound_if #(.Bound(1))
+     rom_ctrl_fsm_bound_if #(.Bound(1), .TopCount(TopCount))
      u_bound_if (.clk_i, .rst_ni);
 
   // Bind a rom_ctrl_compare_bound_if into the compare module, which will be able to access
