@@ -66,6 +66,8 @@ package rom_ctrl_env_pkg;
   typedef uvm_sequencer #(rom_ctrl_kmac_rsp_force_item) rom_ctrl_kmac_rsp_force_sequencer_t;
   `include "seq_lib/rom_ctrl_override_digest_seq.svh"
 
+  `include "seq_lib/rom_ctrl_skip_middle_with_digest_vseq.svh"
+
   `include "rom_ctrl_env_cfg.sv"
   `include "rom_ctrl_env_cov.sv"
   `include "rom_ctrl_virtual_sequencer.sv"
