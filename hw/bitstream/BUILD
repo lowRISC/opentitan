@@ -34,6 +34,13 @@ filegroup(
 #
 # * `--define bitstream=gcp` causes these targets to use a cached bitstream.
 #
+# * `--define bitstream=X` causes the bitstream cache to select entry named X
+#   instead of the cache entry normally selected by the bitstream cache script.
+#   This can be useful when using a custom bitstream cache, see
+#   rules/scripts/bitstreams_workspace.py for more details. The full list of
+#   available bitstream in the cache can be obtained by running bazel using
+#   the environment variable BITSTREAM="--list"
+#
 # Downstream targets will see the effects of this caching logic. For example,
 # specifying `--define bitstream=vivado` when testing
 # //sw/device/silicon_creator/lib/drivers:hmac_functest_fpga_cw* will turn
