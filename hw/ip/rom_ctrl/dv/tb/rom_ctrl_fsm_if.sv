@@ -9,7 +9,9 @@
 // Because this interface is neither parameterised nor contains any upwards references, it is safe
 // to use in an environment.
 
-interface rom_ctrl_fsm_if (
+interface rom_ctrl_fsm_if
+  import kmac_pkg::AppDigestW;
+(
   input logic      clk_i,
   input logic      rst_ni,
 
@@ -27,26 +29,30 @@ interface rom_ctrl_fsm_if (
   // The simpler groups ("force", not "override") are similar but the signal is forced to be true
   // for the period, rather than taking a value from an output port.
 
-  output bit        override_counter_o,
-  output bit [31:0] desired_counter_o,
-  input bit         counter_o_overridden_i,
+  output bit                  override_counter_o,
+  output bit [31:0]           desired_counter_o,
+  input bit                   counter_o_overridden_i,
 
-  output bit        override_addr_q_o,
-  output bit [31:0] desired_addr_q_o,
-  input bit         addr_q_overridden_i,
+  output bit                  override_addr_q_o,
+  output bit [31:0]           desired_addr_q_o,
+  input bit                   addr_q_overridden_i,
 
-  output bit        override_select_bus_o,
-  output bit [3:0]  desired_select_bus_o,
-  input bit         select_bus_o_overridden_i,
+  output bit                  override_select_bus_o,
+  output bit [3:0]            desired_select_bus_o,
+  input bit                   select_bus_o_overridden_i,
 
-  output bit        force_checker_done_o,
-  input bit         checker_done_forced_i,
+  output bit                  override_kmac_digest_o,
+  output bit [AppDigestW-1:0] desired_kmac_digest_o,
+  input bit                   kmac_digest_overridden_i,
 
-  output bit        force_counter_done_o,
-  input bit         counter_done_forced_i,
+  output bit                  force_checker_done_o,
+  input bit                   checker_done_forced_i,
 
-  output bit        force_checker_start_o,
-  input bit         checker_start_forced_i
+  output bit                  force_counter_done_o,
+  input bit                   counter_done_forced_i,
+
+  output bit                  force_checker_start_o,
+  input bit                   checker_start_forced_i
 );
   import uvm_pkg::*;
 
@@ -122,6 +128,35 @@ interface rom_ctrl_fsm_if (
     override_select_bus_o = 1;
     @(select_bus_o_overridden_i);
     override_select_bus_o = 0;
+  endtask
+
+  // Override the next digest that comes back from kmac. Returns on the (positive) edge of the clock
+  // when the override finishes, or on a reset.
+  task static override_kmac_digest(bit [AppDigestW-1:0] digest);
+    if (override_kmac_digest_o) begin
+      `uvm_fatal($sformatf("%m"), "Overlapping calls to override_kmac_digest.")
+    end
+
+    desired_kmac_digest_o = digest;
+    override_kmac_digest_o = 1;
+
+    // Wait until rom_ctrl_fsm_bound_if reports that the digest has been overridden (or it has seen
+    // a reset, or override_kmac_digest_o dropped again because of a call to
+    // abort_kmac_digest_override).
+    @(kmac_digest_overridden_i);
+
+    // Clear the request for the override (a no-op if we are here because of a call to
+    // abort_kmac_digest_override)
+    override_kmac_digest_o = 0;
+  endtask
+
+  // Clear override kmac_digest again to provide an early abort path for override_kmac_digest().
+  // This should only be used when override_kmac_digest() is running.
+  task static abort_kmac_digest_override();
+    if (!override_kmac_digest_o) begin
+      `uvm_fatal($sformatf("%m"), "No call to override_kmac_digest to abort.")
+    end
+    override_kmac_digest_o = 0;
   endtask
 
   // Force the checker_done signal to be true for a cycle. Returns on the next negedge.

@@ -19,7 +19,13 @@
 // depends on it. This avoids elaboration-time errors from the EDA tool if we don't happen to
 // instantiate the interface anywhere.
 
-interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (input wire clk_i, input wire rst_ni);
+interface rom_ctrl_fsm_bound_if #(
+  parameter bit Bound=0,
+  parameter int TopCount=0
+) (
+  input wire clk_i,
+  input wire rst_ni
+);
   if (Bound) begin : gen_bound
     // Override the count in u_counter. This happens when override_counter has a posedge. The addr_d
     // signal will be overriden with (the low bits of) desired_counter for one cycle, stopping early
@@ -111,6 +117,57 @@ interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (input wire clk_i, inpu
       end
     end
 
+    // Override the digest that comes back from KMAC.
+    //
+    //  1. The override is started by a posedge on override_kmac_digest
+    //
+    //  2. The code will then wait until u_checker_fsm.kmac_done_i is high (reporting that the
+    //     digest has been calculated).
+    //
+    //  3. It will then start to force u_checker_fsm.kmac_digest_i.
+    //
+    //  4. The forcing lasts for a cycle, after which the digest has been registered in rom_ctrl's
+    //     CSRs.
+    //
+    //  5. At this point, the code releases u_checker_fsm.kmac_digest_i (if it was forced) and
+    //     changes the value of kmac_digest_overridden.
+    //
+    // If either a reset is asserted or override_kmac_digest drops again during steps 3 or 4, the
+    // code will jump straight to step 5.
+
+    bit                            override_kmac_digest;
+    bit [kmac_pkg::AppDigestW-1:0] desired_kmac_digest;
+    bit                            kmac_digest_overridden;
+
+    initial begin
+      kmac_digest_overridden = 0;
+      forever begin
+        automatic bit is_forcing;
+
+        wait(override_kmac_digest);
+
+        fork : isolation_fork begin
+          fork
+            wait (!rst_ni);
+            wait (!override_kmac_digest);
+            begin
+              wait(u_checker_fsm.kmac_done_i);
+              is_forcing = 1;
+              force u_checker_fsm.kmac_digest_i = (TopCount * 32)'(desired_kmac_digest);
+              @(posedge clk_i);
+            end
+          join_any
+          disable fork;
+        end join
+
+        if (is_forcing) release u_checker_fsm.kmac_digest_i;
+
+        kmac_digest_overridden ^= 1;
+
+        wait(!override_kmac_digest);
+      end
+    end
+
     // If force_checker_done sees a posedge, force the checker_done signal to be true for a cycle
     // (or until reset). Once that has happened, flip the value of checker_done_forced.
     bit force_checker_done;
@@ -196,6 +253,10 @@ interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (input wire clk_i, inpu
       .override_select_bus_o     (override_select_bus),
       .desired_select_bus_o      (desired_select_bus),
       .select_bus_o_overridden_i (select_bus_o_overridden),
+
+      .override_kmac_digest_o   (override_kmac_digest),
+      .desired_kmac_digest_o    (desired_kmac_digest),
+      .kmac_digest_overridden_i (kmac_digest_overridden),
 
       .force_checker_done_o (force_checker_done),
       .checker_done_forced_i (checker_done_forced),

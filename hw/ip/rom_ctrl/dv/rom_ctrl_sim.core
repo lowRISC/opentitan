@@ -8,7 +8,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rom_ctrl
-
   files_dv:
     depend:
       - lowrisc:dv:rom_ctrl_bkdr_util

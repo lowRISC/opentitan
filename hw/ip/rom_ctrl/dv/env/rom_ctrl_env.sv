@@ -20,6 +20,11 @@ class rom_ctrl_env extends cip_base_env #(
   local rom_ctrl_addr_force_sequencer_t m_addr_force_sequencer;
   local rom_ctrl_addr_force_driver      m_addr_force_driver;
 
+  // A sequencer and driver for forcing the digest that comes back from kmac. Both are created in
+  // build_phase.
+  local rom_ctrl_kmac_rsp_force_sequencer_t m_kmac_rsp_force_sequencer;
+  local rom_ctrl_kmac_rsp_force_driver      m_kmac_rsp_force_driver;
+
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
 
@@ -27,6 +32,12 @@ class rom_ctrl_env extends cip_base_env #(
   //
   // This will fail if m_addr_force_sequencer is null (because cfg.get_skip_middle is false)
   extern function rom_ctrl_addr_force_sequencer_t get_addr_force_sequencer();
+
+  // Get the m_kmac_rsp_force_sequencer handle.
+  //
+  // This will fail if m_kmac_rsp_force_sequencer is null (because cfg.get_force_expected_kmac_rsp
+  // returned false)
+  extern function rom_ctrl_kmac_rsp_force_sequencer_t get_kmac_rsp_force_sequencer();
 endclass
 
 function void rom_ctrl_env::build_phase(uvm_phase phase);
@@ -64,6 +75,18 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
     m_addr_force_driver = rom_ctrl_addr_force_driver::type_id::create("m_addr_force_driver", this);
   end
 
+  // Create a sequencer and driver for overriding responses from kmac, but only if
+  // cfg.get_force_expected_kmac_rsp() is true.
+  //
+  // As with m_addr_force_sequencer, this does *not* depend on cfg.is_active: it is similarly
+  // relevant when bound into a higher level testbench.
+  if (cfg.get_force_expected_kmac_rsp()) begin
+    m_kmac_rsp_force_sequencer = (rom_ctrl_kmac_rsp_force_sequencer_t::type_id::
+                                  create("m_kmac_rsp_force_sequencer", this));
+    m_kmac_rsp_force_driver =
+      rom_ctrl_kmac_rsp_force_driver::type_id::create("m_kmac_rsp_force_driver", this);
+  end
+
   cfg.scoreboard = scoreboard;
 
 endfunction
@@ -80,6 +103,15 @@ function void rom_ctrl_env::connect_phase(uvm_phase phase);
     m_addr_force_driver.set_vif(cfg.fsm_vif);
     m_addr_force_driver.seq_item_port.connect(m_addr_force_sequencer.seq_item_export);
   end
+
+  // If there is a KMAC response forcing driver (because cfg.get_force_expected_kmac_rsp() was
+  // true), connect the kmac response forcing driver whether or not the environment is active. As
+  // with m_addr_force_driver, we want to be able to use it to convince rom_ctrl by the back door to
+  // override digests coming back from kmac.
+  if (m_kmac_rsp_force_driver != null) begin
+    m_kmac_rsp_force_driver.set_vif(cfg.fsm_vif);
+    m_kmac_rsp_force_driver.seq_item_port.connect(m_kmac_rsp_force_sequencer.seq_item_export);
+  end
 endfunction
 
 function rom_ctrl_addr_force_sequencer_t rom_ctrl_env::get_addr_force_sequencer();
@@ -87,4 +119,12 @@ function rom_ctrl_addr_force_sequencer_t rom_ctrl_env::get_addr_force_sequencer(
     `uvm_fatal("no_addr_force_sequencer", "No sequencer to return: was cfg.get_skip_middle false?")
   end
   return m_addr_force_sequencer;
+endfunction
+
+function rom_ctrl_kmac_rsp_force_sequencer_t rom_ctrl_env::get_kmac_rsp_force_sequencer();
+  if (m_kmac_rsp_force_sequencer == null) begin
+    `uvm_fatal("no_kmac_rsp_force_sequencer",
+               "No sequencer to return: was cfg.get_force_expected_kmac_rsp false?")
+  end
+  return m_kmac_rsp_force_sequencer;
 endfunction

@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:ip:rom_ctrl_pkg
+      - lowrisc:ip:kmac_pkg
     files:
       - tb/rom_ctrl_if.sv
       - tb/rom_ctrl_bound_if.sv

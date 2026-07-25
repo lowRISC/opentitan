@@ -46,6 +46,14 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // accessed with get_skip_middle().
   local bit m_skip_middle;
 
+  // A flag that tells the environment to create a sequencer that can use rom_ctrl_fsm_if to
+  // override the digest in responses that come back from kmac to match the expected value from the
+  // ROM. This is useful at the chip level if we have set m_skip_middle and only send a small
+  // portion of the ROM to the digest computation.
+  //
+  // Access this with get_force_expected_kmac_rsp / set_force_expected_kmac_rsp.
+  local bit m_force_expected_kmac_rsp;
+
   extern function new (string name="");
   extern function void post_randomize();
 
@@ -62,6 +70,13 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // Return a uvm_mem representing the ROM itself (from either the RAL called
   // m_block_level_rom_ral_name or the one called m_chip_level_rom_ral_name).
   extern function uvm_mem get_rom_ral();
+
+  // Set the flag that says whether to override digests from kmac to match the ROM expected value.
+  extern function void set_force_expected_kmac_rsp(bit force_expected);
+
+  // Retrieve the flag that says whether to override digests from kmac to match the ROM expected
+  // value.
+  extern function bit get_force_expected_kmac_rsp();
 
   // Control the device-side delay for the kmac app agent that talks to the dut. If it is large,
   // rom_ctrl will spend all its time waiting for kmac to accept words that rom_ctrl is trying to
@@ -183,6 +198,14 @@ function uvm_mem rom_ctrl_env_cfg::get_rom_ral();
   end
 
   return mems[0];
+endfunction
+
+function void rom_ctrl_env_cfg::set_force_expected_kmac_rsp(bit force_expected);
+  m_force_expected_kmac_rsp = force_expected;
+endfunction
+
+function bit rom_ctrl_env_cfg::get_force_expected_kmac_rsp();
+  return m_force_expected_kmac_rsp;
 endfunction
 
 constraint rom_ctrl_env_cfg::rsp_delay_max_c {
