@@ -12,12 +12,31 @@ class rom_ctrl_base_test extends cip_base_test #(
   extern function new (string name, uvm_component parent);
   extern virtual task run_phase (uvm_phase phase);
 
+  // Initialize an env_cfg that has been created in build_phase.
+  //
+  // This extends a function from dv_base_test.
+  extern virtual function void initialize_env_cfg();
+
   // This extends a function from dv_base_test which allows us to pass handles to a sequence
   extern virtual function void configure_sequence(uvm_sequence seq);
 endclass : rom_ctrl_base_test
 
 function rom_ctrl_base_test::new (string name, uvm_component parent);
   super.new(name, parent);
+endfunction
+
+function void rom_ctrl_base_test::initialize_env_cfg();
+  bit skip_middle;
+
+  super.initialize_env_cfg();
+
+  // Look up the +skip_middle_of_rom plusarg.
+  if ($value$plusargs("skip_middle_of_rom=%0b", skip_middle)) begin
+    `uvm_info("skip_middle_mode",
+              $sformatf("Setting skip_middle to %d in env cfg, based on plusarg.", skip_middle),
+              UVM_HIGH)
+    cfg.set_skip_middle(skip_middle);
+  end
 endfunction
 
 task rom_ctrl_base_test::run_phase (uvm_phase phase);
