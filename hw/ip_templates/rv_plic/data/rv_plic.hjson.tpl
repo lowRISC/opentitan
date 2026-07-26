@@ -54,7 +54,7 @@
 
   param_list: [
     { name: "NumSrc",
-      desc: "Number of interrupt sources",
+      desc: "Number of interrupt sources (including the 'no interrupt' ID 0)",
       type: "int",
       default: "${src}",
       local: "true"
