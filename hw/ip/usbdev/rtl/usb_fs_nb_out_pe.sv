@@ -260,7 +260,12 @@ module usb_fs_nb_out_pe #(
           tx_pid_o = {UsbPidAck}; // ACK by spec because this is most likely previous ACK was lost
         end else if (invalid_packet_received || non_data_packet_received) begin
           // in these cases eg bad CRC, send no response (not a NAK)
-          out_xact_state_next = StIdle;
+          if (ep_active && (out_token_received || (setup_token_received && ep_is_control))) begin
+            out_xact_state_next = StRcvdOut;
+            out_xact_start = 1'b1;
+          end else begin
+            out_xact_state_next = StIdle;
+          end
           rollback_data = 1'b1;
         end else if (data_packet_received) begin
           out_xact_state_next = StRcvdDataEnd;
