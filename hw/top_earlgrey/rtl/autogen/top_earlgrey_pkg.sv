@@ -430,6 +430,16 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES = 32'h40;
 
   /**
+   * Peripheral base address for regs device on sram_ctrl_sec in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_SEC_REGS_BASE_ADDR = 32'h411D0000;
+
+  /**
+   * Peripheral size in bytes for regs device on sram_ctrl_sec in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_SEC_REGS_SIZE_BYTES = 32'h40;
+
+  /**
    * Peripheral base address for regs device on rom_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR = 32'h411E0000;
@@ -478,6 +488,16 @@ package top_earlgrey_pkg;
    * Memory size for ram memory on sram_ctrl_main in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES = 32'h20000;
+
+  /**
+   * Memory base address for ram memory on sram_ctrl_sec in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR = 32'h10020000;
+
+  /**
+   * Memory size for ram memory on sram_ctrl_sec in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES = 32'h10000;
 
   /**
    * Memory base address for rom memory on rom_ctrl in top earlgrey.
@@ -529,8 +549,9 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertPeripheralEdn0 = 34,
     TopEarlgreyAlertPeripheralEdn1 = 35,
     TopEarlgreyAlertPeripheralSramCtrlMain = 36,
-    TopEarlgreyAlertPeripheralRomCtrl = 37,
-    TopEarlgreyAlertPeripheralRvCoreIbex = 38,
+    TopEarlgreyAlertPeripheralSramCtrlSec = 37,
+    TopEarlgreyAlertPeripheralRomCtrl = 38,
+    TopEarlgreyAlertPeripheralRvCoreIbex = 39,
     TopEarlgreyAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -594,11 +615,12 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdEdn1RecovAlert = 55,
     TopEarlgreyAlertIdEdn1FatalAlert = 56,
     TopEarlgreyAlertIdSramCtrlMainFatalError = 57,
-    TopEarlgreyAlertIdRomCtrlFatal = 58,
-    TopEarlgreyAlertIdRvCoreIbexFatalSwErr = 59,
-    TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 60,
-    TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 61,
-    TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 62,
+    TopEarlgreyAlertIdSramCtrlSecFatalError = 58,
+    TopEarlgreyAlertIdRomCtrlFatal = 59,
+    TopEarlgreyAlertIdRvCoreIbexFatalSwErr = 60,
+    TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 61,
+    TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 62,
+    TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 63,
     TopEarlgreyAlertIdCount
   } alert_id_e;
 
@@ -1079,6 +1101,7 @@ package top_earlgrey_pkg;
     PeripheralSpiHost1,
     PeripheralSramCtrlMain,
     PeripheralSramCtrlRet,
+    PeripheralSramCtrlSec,
     PeripheralSysrstCtrl,
     PeripheralUart0,
     PeripheralUart1,

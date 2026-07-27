@@ -649,6 +649,7 @@ module chip_${top["name"]}_${target["name"]} #(
     ('rv_core_ibex_icache_tag',  'rv_core_ibex_icache_tag_ram_cfg',  '1p',   'ibex_pkg::IC_NUM_WAYS'),
     ('rv_core_ibex_icache_data', 'rv_core_ibex_icache_data_ram_cfg', '1p',   'ibex_pkg::IC_NUM_WAYS'),
     ('sram_ctrl_main',           'sram_ctrl_main_ram_cfg',           '1p',   'ast_pkg::SramCtrlMainNumRamInst'),
+    ('sram_ctrl_sec',            'sram_ctrl_sec_ram_cfg',            '1p',   'ast_pkg::SramCtrlSecNumRamInst'),
     ('sram_ctrl_ret',            'sram_ctrl_ret_ram_cfg',            '1p',   'ast_pkg::SramCtrlRetNumRamInst'),
     ('spi_device_sys2spi',       'spi_device_sys2spi_ram_cfg',       '1r1w', None),
     ('spi_device_spi2sys',       'spi_device_spi2sys_ram_cfg',       '1r1w', None),

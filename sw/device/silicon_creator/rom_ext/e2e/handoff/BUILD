@@ -113,7 +113,7 @@ opentitan_test(
             "2: a....... ----- ---- sz=00000000",  # Application code start.
             "3: a.......   TOR -X-R sz=........",  # Application code end.
             "4: a0000000 NAPOT ---R sz=00080000",  # Application rodata region.
-            "5: 00000000 ----- ---- sz=00000000",
+            "5: 10020000 NAPOT --WR sz=00010000",  # Secondary SRAM region.
             "6: 00000000 ----- ---- sz=00000000",
             "7: 00000000 ----- ---- sz=00000000",
             "8: 2....... ----- ---- sz=00000000",  # ROM_EXT code start.

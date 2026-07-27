@@ -187,6 +187,15 @@ bool test_main(void) {
     dif_pinmux_pad_attr_t in_attr = {0};
     CHECK_DIF_OK(
         dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc3, in_attr, &out_attr));
+    // The JTAG TAP strap pads IOC5 (tap1) and IOC8 (tap0) carry an internal
+    // pull (IOC8 is configured with a pull-down during boot). If the test
+    // happens to select the High-Z retention mode for one of these pads, that
+    // pull weakly drives the pad and the UVM check sees 0/1 instead of the
+    // expected high-Z. Clear their attributes so they are truly high-Z here.
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc5, in_attr, &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc8, in_attr, &out_attr));
 #elif defined(OPENTITAN_IS_DARJEELING)
     // Nothing to be done
 #else

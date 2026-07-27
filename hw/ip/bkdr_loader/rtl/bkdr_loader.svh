@@ -16,6 +16,7 @@
   assign top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[0].u_prim_flash_bank.gen_info_types[0].u_info_mem.bkdr_req = bkdr_req[bkdr_loader_pkg::BkdrFlashB0I0]; \
   assign top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[0].u_prim_flash_bank.u_mem.bkdr_req                        = bkdr_req[bkdr_loader_pkg::BkdrFlashB0];   \
   assign top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req                           = bkdr_req[bkdr_loader_pkg::BkdrSram];      \
+  assign top_earlgrey.earlgrey_pd_main.u_sram_ctrl_sec.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req                            = bkdr_req[bkdr_loader_pkg::BkdrSramSec];   \
   assign top_earlgrey.earlgrey_pd_main.u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.bkdr_req                                           = bkdr_req[bkdr_loader_pkg::BkdrRom];       \
   assign top_earlgrey.earlgrey_pd_main.u_otp_macro.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_req                                                  = bkdr_req[bkdr_loader_pkg::BkdrOtp];
 
@@ -30,6 +31,7 @@
   assign bkdr_rsp[bkdr_loader_pkg::BkdrFlashB0I0] = top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[0].u_prim_flash_bank.gen_info_types[0].u_info_mem.bkdr_rsp; \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrFlashB0]   = top_earlgrey.earlgrey_pd_main.u_flash_ctrl.u_eflash.u_flash.gen_prim_flash_banks[0].u_prim_flash_bank.u_mem.bkdr_rsp;                        \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrSram]      = top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_rsp;                           \
+  assign bkdr_rsp[bkdr_loader_pkg::BkdrSramSec]   = top_earlgrey.earlgrey_pd_main.u_sram_ctrl_sec.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_rsp;                            \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrRom]       = top_earlgrey.earlgrey_pd_main.u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.bkdr_rsp;                                           \
   assign bkdr_rsp[bkdr_loader_pkg::BkdrOtp]       = top_earlgrey.earlgrey_pd_main.u_otp_macro.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.bkdr_rsp;
 

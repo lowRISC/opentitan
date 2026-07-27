@@ -604,6 +604,7 @@
             edn0
             edn1
             sram_ctrl_main.regs
+            sram_ctrl_sec.regs
             rom_ctrl.regs
             rv_core_ibex
           ]
@@ -1965,10 +1966,10 @@
           width: 4
           default: "'0"
           inst_name: otp_ctrl
-          end_idx: 3
-          top_type: partial-one-to-N
+          end_idx: -1
+          top_type: one-to-N
           top_signame: otp_ctrl_sram_otp_key
-          index: 1
+          index: 2
           external: true
           conn_type: true
         }
@@ -8907,6 +8908,272 @@
       domain: Main
     }
     {
+      name: sram_ctrl_sec
+      type: sram_ctrl
+      clock_srcs:
+      {
+        clk_i: main
+        clk_otp_i: io_div4
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: Main
+        }
+        rst_otp_ni:
+        {
+          name: lc_io_div4
+          domain: Main
+        }
+      }
+      param_decl:
+      {
+        InstrExec: "1"
+        NumPrinceRoundsHalf: "2"
+        InstSize: "65536"
+      }
+      base_addrs:
+      {
+        regs:
+        {
+          hart: 0x411D0000
+        }
+        ram:
+        {
+          hart: 0x10020000
+        }
+      }
+      memory:
+      {
+        ram:
+        {
+          label: ram_secondary
+          swaccess: rw
+          data_intg_passthru: "true"
+          exec: True
+          byte_write: True
+          size: 0x10000
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks_i.clk_main_infra
+        clk_otp_i: clkmgr_clocks_i.clk_io_div4_infra
+      }
+      param_list:
+      [
+        {
+          name: MemSizeRam
+          desc: Memory size of the RAM (in bytes).
+          type: int
+          name_top: MemSizeSramCtrlSecRam
+          default: 65536
+        }
+        {
+          name: InstSize
+          desc: Memory size of a single RAM tile (in bytes).
+          type: int
+          default: "65536"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlSecInstSize
+        }
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          type: int
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlSecNumRamInst
+        }
+        {
+          name: InstrExec
+          desc: Support execution from SRAM
+          type: bit
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlSecInstrExec
+        }
+        {
+          name: NumPrinceRoundsHalf
+          desc: Number of PRINCE half rounds for the SRAM scrambling feature
+          type: int
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlSecNumPrinceRoundsHalf
+        }
+        {
+          name: Outstanding
+          desc: Number of outstanding TLUL transactions
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: SramCtrlSecOutstanding
+        }
+        {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlSecEccCorrection
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: sram_otp_key
+          struct: sram_otp_key
+          package: otp_ctrl_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: sram_ctrl_sec
+          default: ""
+          domain: Main
+          top_signame: otp_ctrl_sram_otp_key
+          index: 1
+        }
+        {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width:
+          {
+            name: NumRamInst
+            desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: false
+            expose: true
+            name_top: SramCtrlSecNumRamInst
+          }
+          inst_name: sram_ctrl_sec
+          default: ""
+          external: true
+          conn_type: false
+          index: -1
+          top_signame: sram_ctrl_sec_ram_cfg
+        }
+        {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: sram_ctrl_sec
+          domain: Main
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: sram_ctrl_sec
+          domain: Main
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          name: otp_en_sram_ifetch
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8False
+          inst_name: sram_ctrl_sec
+          top_signame: sram_ctrl_sec_otp_en_sram_ifetch
+          index: -1
+        }
+        {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: sram_ctrl_sec
+          index: -1
+        }
+        {
+          name: racl_error
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_sec
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+          struct: sram_error_t
+          package: sram_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_sec
+          index: -1
+        }
+        {
+          name: regs_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_sec
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: sram_ctrl_sec_regs_tl
+          index: -1
+        }
+        {
+          name: ram_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: sram_ctrl_sec
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: sram_ctrl_sec_ram_tl
+          index: -1
+        }
+      ]
+      generate_dif: true
+      domain: Main
+    }
+    {
       name: rom_ctrl
       type: rom_ctrl
       clock_srcs:
@@ -9760,7 +10027,7 @@
           default: ""
           domain: Main
           top_signame: otp_ctrl_sram_otp_key
-          index: 2
+          index: 3
         }
         {
           name: fpga_info
@@ -9938,6 +10205,7 @@
       otp_ctrl.sram_otp_key:
       [
         sram_ctrl_main.sram_otp_key
+        sram_ctrl_sec.sram_otp_key
         sram_ctrl_ret.sram_otp_key
         rv_core_ibex.icache_otp_key
       ]
@@ -10129,6 +10397,7 @@
       lc_ctrl.lc_hw_debug_en:
       [
         sram_ctrl_main.lc_hw_debug_en
+        sram_ctrl_sec.lc_hw_debug_en
         pinmux.lc_hw_debug_en
         csrng.lc_hw_debug_en
         rv_dm.lc_hw_debug_en
@@ -10150,6 +10419,7 @@
         otbn.lc_escalate_en
         otp_ctrl.lc_escalate_en
         sram_ctrl_main.lc_escalate_en
+        sram_ctrl_sec.lc_escalate_en
         sram_ctrl_ret.lc_escalate_en
         aon_timer.lc_escalate_en
         flash_ctrl.lc_escalate_en
@@ -10352,6 +10622,14 @@
       [
         main.tl_sram_ctrl_main__ram
       ]
+      sram_ctrl_sec.regs_tl:
+      [
+        main.tl_sram_ctrl_sec__regs
+      ]
+      sram_ctrl_sec.ram_tl:
+      [
+        main.tl_sram_ctrl_sec__ram
+      ]
       uart0.tl:
       [
         peri.tl_uart0
@@ -10465,6 +10743,7 @@
       lc_ctrl.otp_manuf_state
       keymgr.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
+      sram_ctrl_sec.otp_en_sram_ifetch
       rv_dm.otp_dis_rv_dm_late_debug
       keymgr.otp_key
       otp_ctrl.keymgr_creator_root_key
@@ -10489,6 +10768,7 @@
       spi_device.ram_cfg_spi2sys: spi_device_spi2sys_ram_cfg
       rom_ctrl.rom_cfg: rom_ctrl_rom_cfg
       sram_ctrl_main.ram_cfg: sram_ctrl_main_ram_cfg
+      sram_ctrl_sec.ram_cfg: sram_ctrl_sec_ram_cfg
       sram_ctrl_ret.ram_cfg: sram_ctrl_ret_ram_cfg
       clkmgr.clocks: ""
       clkmgr.cg_en: ""
@@ -10597,6 +10877,7 @@
           rom_ctrl.rom
           rv_dm.mem
           sram_ctrl_main.ram
+          sram_ctrl_sec.ram
           flash_ctrl.mem
         ]
         rv_core_ibex.cored:
@@ -10606,6 +10887,7 @@
           rv_dm.mem
           rv_dm.regs
           sram_ctrl_main.ram
+          sram_ctrl_sec.ram
           peri
           spi_host0
           spi_host1
@@ -10624,6 +10906,7 @@
           keymgr
           kmac
           sram_ctrl_main.regs
+          sram_ctrl_sec.regs
           rv_core_ibex.cfg
         ]
         rv_dm.sba:
@@ -10633,6 +10916,7 @@
           rv_dm.mem
           rv_dm.regs
           sram_ctrl_main.ram
+          sram_ctrl_sec.ram
           peri
           spi_host0
           spi_host1
@@ -10651,6 +10935,7 @@
           keymgr
           kmac
           sram_ctrl_main.regs
+          sram_ctrl_sec.regs
           rv_core_ibex.cfg
         ]
       }
@@ -11229,6 +11514,49 @@
           stub: false
           req_fifo_pass: true
         }
+        {
+          name: sram_ctrl_sec.regs
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x411d0000
+              }
+              size_byte: 0x40
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
+          name: sram_ctrl_sec.ram
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          inst_type: sram_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x10020000
+              }
+              size_byte: 0x10000
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
       ]
       addr_spaces:
       [
@@ -11591,6 +11919,32 @@
           default: ""
           domain: Main
           top_signame: sram_ctrl_main_ram_tl
+          index: -1
+        }
+        {
+          name: tl_sram_ctrl_sec__regs
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: sram_ctrl_sec_regs_tl
+          index: -1
+        }
+        {
+          name: tl_sram_ctrl_sec__ram
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: sram_ctrl_sec_ram_tl
           index: -1
         }
       ]
@@ -15996,6 +16350,17 @@
       lpg_idx: 17
     }
     {
+      name: sram_ctrl_sec_fatal_error
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: sram_ctrl_sec
+      desc: sram_ctrl_sec fatal_error alert
+      lpg_name: infra_lc_Main
+      lpg_idx: 17
+    }
+    {
       name: rom_ctrl_fatal
       width: 1
       type: alert
@@ -18143,7 +18508,7 @@
         signame: otp_ctrl_sram_otp_key_req
         width: 1
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: req
         default: "'0"
@@ -18155,7 +18520,7 @@
         signame: otp_ctrl_sram_otp_key_rsp
         width: 1
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: rsp
         default: "'0"
@@ -18957,6 +19322,7 @@
     edn0
     edn1
     sram_ctrl_main
+    sram_ctrl_sec
     rom_ctrl
     rv_core_ibex
   ]
@@ -19353,27 +19719,37 @@
         alert_handler[57]: fatal_error
       ]
     }
-    module_rom_ctrl:
+    module_sram_ctrl_sec:
     {
       tx_expr: alert_tx[58]
       rx_expr: alert_rx[58]
       async_expr: alert_handler_reg_pkg::AsyncOn[58]
       comments:
       [
-        alert_handler[58]: fatal
+        alert_handler[58]: fatal_error
+      ]
+    }
+    module_rom_ctrl:
+    {
+      tx_expr: alert_tx[59]
+      rx_expr: alert_rx[59]
+      async_expr: alert_handler_reg_pkg::AsyncOn[59]
+      comments:
+      [
+        alert_handler[59]: fatal
       ]
     }
     module_rv_core_ibex:
     {
-      tx_expr: alert_tx[62:59]
-      rx_expr: alert_rx[62:59]
-      async_expr: alert_handler_reg_pkg::AsyncOn[62:59]
+      tx_expr: alert_tx[63:60]
+      rx_expr: alert_rx[63:60]
+      async_expr: alert_handler_reg_pkg::AsyncOn[63:60]
       comments:
       [
-        alert_handler[59]: fatal_sw_err
-        alert_handler[60]: recov_sw_err
-        alert_handler[61]: fatal_hw_err
-        alert_handler[62]: recov_hw_err
+        alert_handler[60]: fatal_sw_err
+        alert_handler[61]: recov_sw_err
+        alert_handler[62]: fatal_hw_err
+        alert_handler[63]: recov_hw_err
       ]
     }
   }
@@ -19382,11 +19758,11 @@
     alert_handler:
     {
       domain: Main
-      count_tot: 63
+      count_tot: 64
       count_pd:
       {
         Aon: 11
-        Main: 52
+        Main: 53
       }
       connect_pd:
       {
@@ -20964,10 +21340,10 @@
         width: 4
         default: "'0"
         inst_name: otp_ctrl
-        end_idx: 3
-        top_type: partial-one-to-N
+        end_idx: -1
+        top_type: one-to-N
         top_signame: otp_ctrl_sram_otp_key
-        index: 1
+        index: 2
         external: true
         conn_type: true
       }
@@ -25544,6 +25920,146 @@
         index: -1
       }
       {
+        name: sram_otp_key
+        struct: sram_otp_key
+        package: otp_ctrl_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: sram_ctrl_sec
+        default: ""
+        domain: Main
+        top_signame: otp_ctrl_sram_otp_key
+        index: 1
+      }
+      {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlSecNumRamInst
+        }
+        inst_name: sram_ctrl_sec
+        default: ""
+        external: true
+        conn_type: false
+        index: -1
+        top_signame: sram_ctrl_sec_ram_cfg
+      }
+      {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: sram_ctrl_sec
+        domain: Main
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: sram_ctrl_sec
+        domain: Main
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        name: otp_en_sram_ifetch
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8False
+        inst_name: sram_ctrl_sec
+        top_signame: sram_ctrl_sec_otp_en_sram_ifetch
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: sram_ctrl_sec
+        index: -1
+      }
+      {
+        name: racl_error
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_sec
+        index: -1
+      }
+      {
+        name: sram_rerror
+        desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+        struct: sram_error_t
+        package: sram_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_sec
+        index: -1
+      }
+      {
+        name: regs_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_sec
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: sram_ctrl_sec_regs_tl
+        index: -1
+      }
+      {
+        name: ram_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: sram_ctrl_sec
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: sram_ctrl_sec_ram_tl
+        index: -1
+      }
+      {
         name: rom_cfg
         struct: rom_cfg
         package: prim_rom_pkg
@@ -25885,7 +26401,7 @@
         default: ""
         domain: Main
         top_signame: otp_ctrl_sram_otp_key
-        index: 2
+        index: 3
       }
       {
         name: fpga_info
@@ -26294,6 +26810,32 @@
         default: ""
         domain: Main
         top_signame: sram_ctrl_main_ram_tl
+        index: -1
+      }
+      {
+        name: tl_sram_ctrl_sec__regs
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: sram_ctrl_sec_regs_tl
+        index: -1
+      }
+      {
+        name: tl_sram_ctrl_sec__ram
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: sram_ctrl_sec_ram_tl
         index: -1
       }
       {
@@ -26879,7 +27421,7 @@
         default: "'0"
         direction: in
         conn_type: true
-        index: 1
+        index: 2
         netname: otp_ctrl_sram_otp_key_req
       }
       {
@@ -26899,7 +27441,7 @@
         default: "'0"
         direction: out
         conn_type: true
-        index: 1
+        index: 2
         netname: otp_ctrl_sram_otp_key_rsp
       }
       {
@@ -26919,7 +27461,7 @@
         default: "'0"
         direction: out
         conn_type: false
-        index: 1
+        index: 2
         netname: otp_ctrl_sram_otp_key_req
       }
       {
@@ -26939,7 +27481,7 @@
         default: "'0"
         direction: in
         conn_type: false
-        index: 1
+        index: 2
         netname: otp_ctrl_sram_otp_key_rsp
       }
       {
@@ -29089,6 +29631,66 @@
         conn_type: false
         index: -1
         netname: sram_ctrl_main_ram_cfg_rsp
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        inter_pd: false
+        signame: sram_ctrl_sec_ram_cfg_req_i
+        signame_chip:
+        {
+          asic: sram_ctrl_sec_ram_cfg_req
+          verilator: sram_ctrl_sec_ram_cfg_req
+          cw340: sram_ctrl_sec_ram_cfg_req
+        }
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlSecNumRamInst
+        }
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_sec_ram_cfg_req
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        inter_pd: false
+        signame: sram_ctrl_sec_ram_cfg_rsp_o
+        signame_chip:
+        {
+          asic: sram_ctrl_sec_ram_cfg_rsp
+          verilator: sram_ctrl_sec_ram_cfg_rsp
+          cw340: sram_ctrl_sec_ram_cfg_rsp
+        }
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlSecNumRamInst
+        }
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_sec_ram_cfg_rsp
       }
       {
         package: prim_ram_1p_pkg
@@ -31347,7 +31949,7 @@
         signame: otp_ctrl_sram_otp_key_req
         width: 4
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: req
         default: "'0"
@@ -31359,7 +31961,7 @@
         signame: otp_ctrl_sram_otp_key_rsp
         width: 4
         type: req_rsp
-        end_idx: 3
+        end_idx: -1
         act: rsp
         suffix: rsp
         default: "'0"
@@ -32856,6 +33458,54 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
+        signame: sram_ctrl_sec_regs_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: sram_ctrl_sec_regs_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: sram_ctrl_sec_ram_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: sram_ctrl_sec_ram_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
         signame: uart0_tl_req
         width: 1
         type: req_rsp
@@ -33356,6 +34006,16 @@
         package: prim_mubi_pkg
         struct: mubi8
         signame: sram_ctrl_main_otp_en_sram_ifetch
+        domain: Main
+        width: 1
+        type: uni
+        end_idx: -1
+        default: prim_mubi_pkg::MuBi8False
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi8
+        signame: sram_ctrl_sec_otp_en_sram_ifetch
         domain: Main
         width: 1
         type: uni

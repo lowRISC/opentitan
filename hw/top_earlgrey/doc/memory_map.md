@@ -56,6 +56,7 @@ The main address space, shared between the CPU and DM
 | edn0           | default     | `0x41170000`   | `0x80`         | `0x20`         | edn0                          |
 | edn1           | default     | `0x41180000`   | `0x80`         | `0x20`         | edn1                          |
 | sram_ctrl_main | regs        | `0x411C0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_main |
+| sram_ctrl_sec  | regs        | `0x411D0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_sec  |
 | rom_ctrl       | regs        | `0x411E0000`   | `0x80`         | `0x20`         | regs device on rom_ctrl       |
 | rv_core_ibex   | cfg         | `0x411F0000`   | `0x100`        | `0x40`         | cfg device on rv_core_ibex    |
 
@@ -66,4 +67,5 @@ The main address space, shared between the CPU and DM
 | sram_ctrl_ret  | ram         | `0x40600000`   | `0x1000`       | `0x400`        |
 | flash_ctrl     | mem         | `0x20000000`   | `0x100000`     | `0x40000`      |
 | sram_ctrl_main | ram         | `0x10000000`   | `0x20000`      | `0x8000`       |
+| sram_ctrl_sec  | ram         | `0x10020000`   | `0x10000`      | `0x4000`       |
 | rom_ctrl       | rom         | `0x40000`      | `0xC000`       | `0x3000`       |

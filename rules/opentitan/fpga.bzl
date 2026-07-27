@@ -196,7 +196,7 @@ def _get_test_commands(ctx, param, exec_env):
     # can be used for testing on FPGA. This is a workaround for the lack of info page
     # splicing, but means that for now we need to make sure that at least the boot data
     # info pages are cleared between each run.
-    backdoor_writes = "--clear AON=ALL --clear SRAM=ALL"
+    backdoor_writes = "--clear AON=ALL --clear SRAM=ALL --clear SRM2=ALL"
     backdoor_writes += " --clear FB0=ALL --clear FI00=ALL --clear FI01=ALL --clear FI02=ALL"
     backdoor_writes += " --clear FB1=ALL --clear FI10=ALL --clear FI11=ALL --clear FI12=ALL"
 

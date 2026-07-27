@@ -143,6 +143,12 @@ void rom_ext_check_rom_expectations(void) {
   sec_mmio_check_values(rnd_uint32());
 }
 
+static const epmp_region_t kSramSecRegion = {
+    .start = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR,
+    .end = TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR +
+           TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES,
+};
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
@@ -157,6 +163,10 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   for (int8_t i = 7; i >= 0; --i) {
     epmp_clear((uint8_t)i);
   }
+
+  // Access to the secondary RAM.
+  epmp_set_napot(5, kSramSecRegion, kEpmpPermLockedReadWrite);
+
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Check that the retention RAM is initialized.
