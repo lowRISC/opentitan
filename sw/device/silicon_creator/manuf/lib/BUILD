@@ -280,6 +280,22 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "personalize_secret1",
+    srcs = ["personalize_secret1.c"],
+    hdrs = ["personalize_secret1.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":otp_fields",
+        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base:status",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
@@ -289,6 +305,9 @@ opentitan_test(
         "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
+        binaries = {
+            "//sw/device/silicon_creator/manuf/base:ft_flash_scramble_emulation": "scrambling_fw",
+        },
         changes_otp = True,
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_individualized",
@@ -298,15 +317,20 @@ opentitan_test(
         ],
         test_cmd = """
             --bootstrap={firmware}
+            --scrambling-firmware={scrambling_fw}
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
         testopt_bootstrap = "False",
     ),
     qemu = qemu_params(
+        binaries = {
+            "//sw/device/silicon_creator/manuf/base:ft_flash_scramble_emulation": "scrambling_fw",
+        },
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_individualized",
         test_cmd = """
             --bootstrap={firmware}
+            --scrambling-firmware={scrambling_fw}
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),

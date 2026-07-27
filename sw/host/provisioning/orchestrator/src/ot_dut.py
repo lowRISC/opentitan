@@ -200,7 +200,7 @@ class OtDut():
         ate_suffix = "_ate" if self.ate_mode else ""
         # Emulation perso bins are signed online with fake keys, and therefore
         # have different file naming patterns than production SKUs.
-        perso_bin = self.sku_config.perso_bin
+        scrambling_bin = self.sku_config.scrambling_bin
         fw_bundle_bin = _FT_FW_BUNDLE_BIN
         if self.fpga:
             # Set host flags and device binaries for FPGA DUT.
@@ -215,10 +215,11 @@ class OtDut():
                 sku=self.sku_config.name,
                 ate_suffix=ate_suffix,
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
-            perso_bin = perso_bin.format(
-                base_dir=self._base_dev_dir(),
-                sku=self.sku_config.name,
-                target=f"fpga_{self.fpga}_rom_with_fake_keys")
+            if scrambling_bin:
+                scrambling_bin = scrambling_bin.format(
+                    base_dir=self._base_dev_dir(),
+                    sku=self.sku_config.name,
+                    target=f"fpga_{self.fpga}_rom_with_fake_keys")
             fw_bundle_bin = fw_bundle_bin.format(
                 base_dir=self._base_dev_dir(),
                 sku=self.sku_config.name,
@@ -233,15 +234,17 @@ class OtDut():
                                              sku=self.sku_config.name,
                                              ate_suffix=ate_suffix,
                                              target="silicon_creator")
-            perso_bin = perso_bin.format(base_dir=self._base_dev_dir(),
-                                         sku=self.sku_config.name,
-                                         target="silicon_creator")
+            if scrambling_bin:
+                scrambling_bin = scrambling_bin.format(base_dir=self._base_dev_dir(),
+                                                       sku=self.sku_config.name,
+                                                       target="silicon_creator")
             fw_bundle_bin = fw_bundle_bin.format(base_dir=self._base_dev_dir(),
                                                  sku=self.sku_config.name,
                                                  target="silicon_creator")
 
         individ_elf = resolve_runfile(individ_elf)
-        perso_bin = resolve_runfile(perso_bin)
+        if scrambling_bin:
+            scrambling_bin = resolve_runfile(scrambling_bin)
         fw_bundle_bin = resolve_runfile(fw_bundle_bin)
 
         # Write CA configs to a JSON tmpfile.
@@ -263,7 +266,7 @@ class OtDut():
             --logging=info \
             {host_flags} \
             --elf={individ_elf} \
-            --bootstrap={perso_bin} \
+            --bootstrap={scrambling_bin} \
             --second-bootstrap={fw_bundle_bin} \
             --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \

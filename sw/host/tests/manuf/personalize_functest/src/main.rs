@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashSet;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::Result;
@@ -12,6 +13,7 @@ use zerocopy::IntoBytes;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
@@ -31,17 +33,70 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
+
+    /// Path to the scrambling firmware.
+    #[arg(long)]
+    scrambling_firmware: PathBuf,
 }
 
 fn send_rma_unlock_token(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let rma_unlock_token: [u32; 4] = [1, 2, 3, 4];
-    // Wait for the program to complete SECRET1 configuration and apply a ROM
-    // bootstrap operation. This is needed because the flash scrambling key
-    // may cause the flash contents to be garbled after locking the SECRET1
-    // partition.
-    let _ = UartConsole::wait_for(&*uart, r"Provisioning OTP SECRET1 Done ...", opts.timeout)?;
+
+    // Pre-run scrambling firmware and wait for GPIO signals.
+    log::info!(
+        "Pre-running scrambling firmware: {:?}",
+        opts.scrambling_firmware
+    );
+    opts.init
+        .bootstrap
+        .load(transport, &opts.scrambling_firmware)?;
+
+    let error_pin = transport.gpio_pin("IOA0")?;
+    error_pin.set_mode(PinMode::Input)?;
+    error_pin.set_pull_mode(PullMode::PullDown)?;
+
+    let success_pin = transport.gpio_pin("IOA1")?;
+    success_pin.set_mode(PinMode::Input)?;
+    success_pin.set_pull_mode(PullMode::PullDown)?;
+
+    let start_pin = transport.gpio_pin("IOA4")?;
+    start_pin.set_mode(PinMode::Input)?;
+    start_pin.set_pull_mode(PullMode::PullDown)?;
+
+    let t0 = std::time::Instant::now();
+    // Wait for Stage 1 to boot and assert TestStart (IOA4) HIGH
+    while !start_pin.read()? {
+        if t0.elapsed() > opts.timeout {
+            return Err(anyhow::anyhow!(
+                "Timed out waiting for TestStart (IOA4) from scrambling FW"
+            ));
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+
+    // Wait for success_pin (IOA1) or error_pin (IOA0)
+    while !success_pin.read()? {
+        if error_pin.read()? {
+            return Err(anyhow::anyhow!(
+                "Scrambling execution failed: TestError pin (IOA0) went HIGH!"
+            ));
+        }
+        if t0.elapsed() > opts.timeout {
+            return Err(anyhow::anyhow!(
+                "Timed out waiting for Scrambling TestDone (IOA1)"
+            ));
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    log::info!("Scrambling completed successfully!");
+
+    // Explicitly release the multiplexed STM32 pins back to SPI alternate mode before we call bootstrap.init()!
+    error_pin.set_mode(PinMode::Alternate)?;
+    success_pin.set_mode(PinMode::Alternate)?;
+    start_pin.set_mode(PinMode::Alternate)?;
+
     uart.clear_rx_buffer()?;
     opts.init.bootstrap.init(transport)?;
 

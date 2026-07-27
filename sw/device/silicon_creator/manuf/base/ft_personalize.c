@@ -369,19 +369,10 @@ static status_t measure_otp_partition(otp_partition_t partition,
  * scrambling, and reboot.
  */
 static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
-  // Provision OTP Secret1 partition, and complete provisioning of OTP
-  // CreatorSwCfg partition.
-  if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
-    TRY(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
-  }
-  if (!status_ok(
-          manuf_individualize_device_flash_data_default_cfg_check(&otp_ctrl))) {
-    TRY(manuf_individualize_device_field_cfg(
-        &otp_ctrl,
-        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
-    base_printf("Bootstrap requested.\n");
-    wait_for_interrupt();
-  }
+  // Secure-by-Default: SECRET1 must be pre-programmed in OTP.
+  TRY(manuf_personalize_device_secret1_check(&otp_ctrl));
+  // Secure-by-Default: Scrambling configuration must be pre-programmed in OTP.
+  TRY(manuf_individualize_device_flash_data_default_cfg_check(&otp_ctrl));
 
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
   // and DICE keygen seeds).
