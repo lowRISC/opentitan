@@ -138,17 +138,19 @@ status_t nvm_testutils_read_info_page(nvm_info_page_t page,
 /**
  * Initialize the NVM controller at ROM/boot time.
  *
- * Starts the flash controller, waits for initialization to complete,
- * optionally applies default region properties read from OTP, and enables
- * flash access and instruction fetch.  Call this once from test ROM before any
- * other NVM operation.
+ * Starts the flash and/or RRAM controller, waits for initialization to
+ * complete, optionally applies default region scrambling/ECC config read
+ * from OTP, and enables NVM access and instruction fetch.  Call this once
+ * from test ROM before any other NVM operation.
  *
- * @param otp_flash_default_cfg CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG OTP word;
+ * @param otp_nvm_default_cfg CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG OTP word;
  *   pass 0 when HAS_OTP_CTRL is not available or the field reads as zero.
+ *   Applied to both flash and RRAM default region scrambling/ECC config; the
+ *   high-endurance field is ignored for RRAM, which has no such concept.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t nvm_testutils_rom_init(uint32_t otp_flash_default_cfg);
+status_t nvm_testutils_rom_init(uint32_t otp_nvm_default_cfg);
 
 /**
  * Lock the region configuration for an NVM info page.
@@ -195,6 +197,30 @@ OT_WARN_UNUSED_RESULT
 status_t nvm_testutils_data_region_lock(uint32_t region, bool lock);
 
 /**
+ * Write data to an NVM data-partition address.
+ *
+ * @param byte_address The byte address to write to.
+ * @param data The data to write.
+ * @param word_count The number of uint32_t words to write.
+ * @param erase_before_write Whether to erase the containing page before
+ * writing. Required on flash, which cannot program a bit back to `1` without
+ * an erase; ignored on RRAM, which supports direct overwrite.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_data_write(uint32_t byte_address, const uint32_t *data,
+                                  size_t word_count, bool erase_before_write);
+
+/**
+ * Enable or disable code execution from the NVM data partition.
+ *
+ * @param enable Whether execution should be enabled.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_set_exec_enablement(bool enable);
+
+/**
  * Log any outstanding flash controller fault status registers.
  *
  * Initialises the NVM controller internally, reads the fault status registers
@@ -221,5 +247,21 @@ status_t nvm_testutils_show_faults(void);
 OT_WARN_UNUSED_RESULT
 status_t nvm_testutils_default_region_setup(nvm_page_perms_t perms,
                                             nvm_page_cfg_t cfg);
+
+/**
+ * Get the NVM controller's current default data region properties.
+ *
+ * RRAM has no separate erase permission or high-endurance concept; on RRAM
+ * `perms->erase` and `cfg->he` are always reported as `kMultiBitBool4False`.
+ *
+ * @param[out] perms Current permission values (read, write, erase). May be
+ *                    NULL if not needed.
+ * @param[out] cfg   Current configuration values (scrambling, ECC, HE). May
+ *                    be NULL if not needed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_default_region_get(nvm_page_perms_t *perms,
+                                          nvm_page_cfg_t *cfg);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_NVM_TESTUTILS_H_

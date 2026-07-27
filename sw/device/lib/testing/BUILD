@@ -201,15 +201,26 @@ cc_library(
     name = "nvm_testutils",
     srcs = ["nvm_testutils.c"],
     hdrs = ["nvm_testutils.h"],
+    local_defines = opentitan_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        ["HAS_RRAM_CTRL"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
+        ":rram_ctrl_testutils",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:rram_ctrl",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -220,6 +231,11 @@ cc_library(
     name = "nv_counter_testutils",
     srcs = ["nv_counter_testutils.c"],
     hdrs = ["nv_counter_testutils.h"],
+    local_defines = opentitan_if_ip(
+        "rram_ctrl",
+        ["HAS_RRAM_CTRL"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
@@ -228,7 +244,14 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + opentitan_if_ip(
+        "rram_ctrl",
+        [
+            ":rram_ctrl_testutils",
+            "//sw/device/lib/dif:rram_ctrl",
+        ],
+        [],
+    ),
 )
 
 cc_library(
