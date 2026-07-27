@@ -347,3 +347,22 @@ status_t nvm_testutils_default_region_setup(nvm_page_perms_t perms,
   TRY(dif_flash_ctrl_set_default_region_properties(&flash, props));
   return OK_STATUS();
 }
+
+status_t nvm_testutils_default_region_get(nvm_page_perms_t *perms,
+                                          nvm_page_cfg_t *cfg) {
+  dif_flash_ctrl_state_t flash;
+  TRY(dif_flash_state_init(&flash));
+  dif_flash_ctrl_region_properties_t props;
+  TRY(dif_flash_ctrl_get_default_region_properties(&flash, &props));
+  if (perms != NULL) {
+    perms->read = props.rd_en;
+    perms->write = props.prog_en;
+    perms->erase = props.erase_en;
+  }
+  if (cfg != NULL) {
+    cfg->scrambling = props.scramble_en;
+    cfg->ecc = props.ecc_en;
+    cfg->he = props.high_endurance_en;
+  }
+  return OK_STATUS();
+}

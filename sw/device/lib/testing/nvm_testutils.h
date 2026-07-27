@@ -221,5 +221,17 @@ status_t nvm_testutils_show_faults(void);
 OT_WARN_UNUSED_RESULT
 status_t nvm_testutils_default_region_setup(nvm_page_perms_t perms,
                                             nvm_page_cfg_t cfg);
+/**
+ * Get the NVM controller's current default data region properties.
+ *
+ * @param[out] perms Current permission values (read, write, erase). May be
+ *                    NULL if not needed.
+ * @param[out] cfg   Current configuration values (scrambling, ECC, HE). May
+ *                    be NULL if not needed.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_default_region_get(nvm_page_perms_t *perms,
+                                          nvm_page_cfg_t *cfg);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_NVM_TESTUTILS_H_
