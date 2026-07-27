@@ -182,6 +182,22 @@ cc_library(
 )
 
 cc_library(
+    name = "rram_ctrl_testutils",
+    srcs = ["rram_ctrl_testutils.c"],
+    hdrs = ["rram_ctrl_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top:rram_ctrl_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rram_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "nvm_testutils",
     srcs = ["nvm_testutils.c"],
     hdrs = ["nvm_testutils.h"],
