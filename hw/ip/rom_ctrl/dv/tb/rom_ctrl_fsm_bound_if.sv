@@ -19,7 +19,7 @@
 // depends on it. This avoids elaboration-time errors from the EDA tool if we don't happen to
 // instantiate the interface anywhere.
 
-interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (input wire clk_i, input wire rst_ni);
+interface rom_ctrl_fsm_bound_if #(parameter bit Bound=0) (wire clk_i, wire rst_ni);
   if (Bound) begin : gen_bound
     // Override the count in u_counter. This happens when override_counter has a posedge. The addr_d
     // signal will be overriden with (the low bits of) desired_counter for one cycle, stopping early
