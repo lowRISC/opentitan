@@ -34,8 +34,7 @@ class rv_dm_sparse_lc_gate_fsm_vseq extends rv_dm_base_vseq;
 
     // Disable some FSM state assertions that fail if we force the value of the FSM state without
     // the associated flop matching.
-    $assertoff(0, "tb.dut.u_tlul_lc_gate_rom.u_state_regs_A");
-    $assertoff(0, "tb.dut.u_tlul_lc_gate_sba.u_state_regs_A");
+    cfg.rv_dm_vif.disable_assertions(LcGateAssertions);
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
     `DV_CHECK(uvm_hdl_read(path, good_value))
@@ -46,8 +45,7 @@ class rv_dm_sparse_lc_gate_fsm_vseq extends rv_dm_base_vseq;
 
     // Re-enable the FSM state assertions which would have failed when the state FSM and flop didn't
     // match
-    $asserton(0, "tb.dut.u_tlul_lc_gate_sba.u_state_regs_A");
-    $asserton(0, "tb.dut.u_tlul_lc_gate_rom.u_state_regs_A");
+    cfg.rv_dm_vif.enable_assertions(LcGateAssertions);
 
     // Wait a while to make sure the FSM state stays "bad", to make sure there's no internal state
     // in tlul_lc_gate that might cause us to jump back to a good state.
