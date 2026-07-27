@@ -17,21 +17,37 @@
 
 #include "hw/top/otp_ctrl_regs.h"
 
+enum {
+  /**
+   * Number of boot data entries per info page.
+   *
+   * Boot data pages are used as append-only logs where new data is written to
+   * the first empty entry of the active page. If all entries of the currently
+   * active page are used when `boot_data_write()` is called, the other page
+   * will be erased and new data will be written to its first entry, making it
+   * the new active page.
+   *
+   * Not part of `boot_data.h`: unlike the rest of that header, this depends on
+   * `nvm_ctrl.h`, which in turn requires a top with `flash_ctrl` or
+   * `rram_ctrl`. `boot_data.h` is also consumed by `boot_data_header`, a much
+   * more broadly-depended-on target that must stay buildable on tops with
+   * neither.
+   */
+  kBootDataEntriesPerPage = NVM_BYTES_PER_PAGE / sizeof(boot_data_t),
+};
+
 static_assert(kBootDataValidEntry ==
                   ((uint64_t)kNvmErasedWord << 32 | kNvmErasedWord),
               "kBootDataValidEntry words must be kNvmErasedWord");
-static_assert(kBootDataEntriesPerPage ==
-                  NVM_BYTES_PER_PAGE / sizeof(boot_data_t),
-              "Number of boot data entries per page is incorrect");
 static_assert(sizeof(boot_data_t) % NVM_BYTES_PER_WORD == 0,
-              "Size of `boot_data_t` must be a multiple of flash word size.");
+              "Size of `boot_data_t` must be a multiple of nvm word size.");
 static_assert(!(NVM_BYTES_PER_PAGE & (NVM_BYTES_PER_PAGE - 1)),
               "Size of a flash page must be a power of two.");
 static_assert(!(sizeof(boot_data_t) & (sizeof(boot_data_t) - 1)),
               "Size of `boot_data_t` must be a power of two.");
 OT_ASSERT_MEMBER_SIZE(boot_data_t, is_valid, NVM_BYTES_PER_WORD);
 static_assert(offsetof(boot_data_t, is_valid) % NVM_BYTES_PER_WORD == 0,
-              "`is_valid` must be flash word aligned.");
+              "`is_valid` must be nvm word aligned.");
 
 enum {
   /**
@@ -234,7 +250,12 @@ static rom_error_t boot_data_entry_write(nvm_info_page_t page, size_t index,
             });
   rom_error_t error = boot_data_entry_write_impl(page, index, boot_data, erase);
   nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
+#ifdef HAS_RRAM_CTRL
+  // `page` is always BootData0/BootData1, which are always emulated on RRAM,
+  // so `nvm_ctrl_info_perms_set` is a no-op above: no actual writes happen.
+#else
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
+#endif
   return error;
 }
 
@@ -269,7 +290,12 @@ static rom_error_t boot_data_entry_invalidate(nvm_info_page_t page,
                                              .erase = kMultiBitBool4False});
   rom_error_t error = nvm_ctrl_info_write(page, offset, 2, val);
   nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
+#ifdef HAS_RRAM_CTRL
+  // `page` is always BootData0/BootData1, which are always emulated on RRAM,
+  // so `nvm_ctrl_info_perms_set` is a no-op above: no actual writes happen.
+#else
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
+#endif
   return error;
 }
 
@@ -434,7 +460,12 @@ static rom_error_t boot_data_page_info_update(nvm_info_page_t page,
   rom_error_t error =
       boot_data_page_info_update_impl(page, page_info, boot_data);
   nvm_ctrl_info_perms_set(page, kNvmPagePermsNone);
+#ifdef HAS_RRAM_CTRL
+  // `page` is always BootData0/BootData1, which are always emulated on RRAM,
+  // so `nvm_ctrl_info_perms_set` is a no-op above: no actual writes happen.
+#else
   SEC_MMIO_WRITE_INCREMENT(2 * kNvmCtrlSecMmioInfoPermsSet);
+#endif
   return error;
 }
 
