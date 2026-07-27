@@ -1000,7 +1000,7 @@
                    PMPRstMsecCfg: "ibex_pmp_reset_pkg::PmpMseccfgRst",
                    RV32E: "0",
                    RV32M: "ibex_pkg::RV32MSingleCycle",
-                   RV32B: "ibex_pkg::RV32BOTEarlGrey",
+                   RV32B: "ibex_pkg::RV32BFull",
                    RV32ZC: "ibex_pkg::RV32ZcaZcbZcmp",
                    RegFile: "ibex_pkg::RegFileFF",
                    BranchTargetALU: "1",
