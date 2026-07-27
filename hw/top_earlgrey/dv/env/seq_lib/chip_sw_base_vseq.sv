@@ -121,19 +121,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
       if (!cfg.sw_images.exists(SwTypeTestSlotA)) begin
         `uvm_error(get_name(), "Cannot load slot A over SPI: no SW image defined.")
       end
-      spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+      spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".128.vmem"});
       cfg.use_spi_load_bootstrap = 1'b0;
 
       // TODO: support bootstrapping entire flash address space, not just slot A.
 
     end else begin
       if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
-        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"};
-        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(image_path);
+        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".128.scr.vmem"};
+        cfg.mem_bkdr_util_h[RramData].load_mem_from_file(image_path);
       end
       if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
-        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"};
-        cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(image_path);
+        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".128.scr.vmem"};
+        cfg.mem_bkdr_util_h[RramData].load_mem_from_file(image_path);
       end
     end
 
@@ -586,7 +586,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     wait_for_flash_command_load();
 
     `uvm_info(`gfn, $sformatf("Reading SW image frames from %0s ...", sw_image), UVM_LOW)
-    read_sw_frames(sw_image, sw_byte_q);
+    read_sw_frames(sw_image, sw_byte_q, 128);
 
     `uvm_info(`gfn, "Sending SPI flash erase command ...", UVM_LOW)
     erase_flash_over_spi();
@@ -624,27 +624,51 @@ class chip_sw_base_vseq extends chip_base_vseq;
     spi_host_flash_issue_write_cmd(page_seq);
   endtask
 
-  // Read the flash image pointed to by the `sw_image` path, and place the
-  // data into the `sw_byte_q`. The flash image is assumed to consist of
-  // contiguous data starting from the base of flash.
-  virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$]);
-    int num_returns;
+  // Parses a VMEM file (the `@<addr> <word0> [<word1> ...]` format srec_cat
+  // produces) into a flat byte queue, in address order. `word_size_bits` must
+  // match the word size the file was generated with: both the hex-digit width
+  // of each token AND the number of tokens packed per line vary with it (e.g.
+  // flash `.64.vmem` packs 4 64-bit words/line, RRAM `.128.vmem` packs 2
+  // 128-bit words/line) -- a fixed 4-token, 64-bit-wide parse silently
+  // misparses any other word size.
+  virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$],
+                                       input int word_size_bits = 64);
     int mem_fd = $fopen(sw_image, "r");
-    bit [63:0] word_data[4];
-    string addr;
+    string line;
+    int word_size_bytes = word_size_bits / 8;
 
     if (!mem_fd) begin
       `uvm_error(get_name(), $sformatf("Failed to open sw_image file at %0s.", sw_image))
     end
 
-    while (!$feof(mem_fd)) begin
-      num_returns = $fscanf(mem_fd, "%s %h %h %h %h", addr, word_data[0], word_data[1],
-                            word_data[2], word_data[3]);
-      if (num_returns <= 1) continue;
-      for (int i = 0; i < num_returns - 1; i++) begin
-        repeat (8) begin
-          sw_byte_q.push_back(word_data[i][7:0]);
-          word_data[i] = word_data[i] >> 8;
+    while ($fgets(line, mem_fd)) begin
+      string tokens[$];
+      int pos = 0;
+      if (line.len() == 0 || line[0] != "@") continue;
+
+      while (pos < line.len()) begin
+        string tok;
+        while (pos < line.len() &&
+               (line[pos] == " " || line[pos] == "\t" ||
+                line[pos] == "\n" || line[pos] == "\r")) pos++;
+        if (pos >= line.len()) break;
+        tok = "";
+        while (pos < line.len() &&
+               !(line[pos] == " " || line[pos] == "\t" ||
+                 line[pos] == "\n" || line[pos] == "\r")) begin
+          tok = {tok, line[pos]};
+          pos++;
+        end
+        tokens.push_back(tok);
+      end
+
+      // tokens[0] is the "@addr" marker; the rest are data words.
+      for (int i = 1; i < tokens.size(); i++) begin
+        bit [255:0] word_data;
+        void'($sscanf(tokens[i], "%h", word_data));
+        repeat (word_size_bytes) begin
+          sw_byte_q.push_back(word_data[7:0]);
+          word_data = word_data >> 8;
         end
       end
     end
