@@ -86,7 +86,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_CASE_EQ(cfg.chip_vif.pmp_mseccfg.mmwp, 1)
     `DV_CHECK_CASE_EQ(cfg.chip_vif.pmp_mseccfg.rlb, 1)
 
-    // ePMP regions 0, 3, 6 -- 10, and 12 are unused.
+    // ePMP regions 0, 3, 6 -- 10 are unused.
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[0].mode, ibex_pkg::PMP_MODE_OFF)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[3].mode, ibex_pkg::PMP_MODE_OFF)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[6].mode, ibex_pkg::PMP_MODE_OFF)
@@ -94,11 +94,10 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[8].mode, ibex_pkg::PMP_MODE_OFF)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[9].mode, ibex_pkg::PMP_MODE_OFF)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[10].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[12].mode, ibex_pkg::PMP_MODE_OFF)
 
     // ePMP regions for ROM
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1].mode,  ibex_pkg::PMP_MODE_TOR)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2].mode,  ibex_pkg::PMP_MODE_NAPOT)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2].mode,  ibex_pkg::PMP_MODE_TOR)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11].mode, ibex_pkg::PMP_MODE_TOR)
     `DV_CHECK(cfg.chip_vif.pmp_cfg[1].lock)
     `DV_CHECK(cfg.chip_vif.pmp_cfg[2].lock)
@@ -108,10 +107,13 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11][2:0], EPMP_ACCESS_RW)
 
     // ePMP regions for RAM
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[12].mode, ibex_pkg::PMP_MODE_NAPOT)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14].mode, ibex_pkg::PMP_MODE_NA4)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15].mode, ibex_pkg::PMP_MODE_NAPOT)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[12].lock)
     `DV_CHECK(cfg.chip_vif.pmp_cfg[14].lock)
     `DV_CHECK(cfg.chip_vif.pmp_cfg[15].lock)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[12][2:0], EPMP_ACCESS_RW)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14][2:0], EPMP_ACCESS_NONE)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15][2:0], EPMP_ACCESS_RW)
 
@@ -134,13 +136,18 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
                  epmp_addr_tor(top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
-                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
+                 epmp_addr_tor(top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
                                  top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES))
+    `DV_CHECK((cfg.chip_vif.pmp_addr[0] < cfg.chip_vif.pmp_addr[1]) &&
+              (cfg.chip_vif.pmp_addr[1] <= cfg.chip_vif.pmp_addr[2]))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[5],
                  epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
                                  top_earlgrey_pkg::TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[12],
+                 epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_SEC_RAM_BASE_ADDR,
+                                 top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_SEC_RAM_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[13],
                  epmp_addr_napot(top_earlgrey_pkg::TOP_EARLGREY_RV_DM_MEM_BASE_ADDR,
                                  top_earlgrey_pkg::TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES))
