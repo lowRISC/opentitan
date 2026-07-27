@@ -141,33 +141,54 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(intr_state_rg), .value(status));
   endtask
 
-  // poll a intr_status continuously until it reads the expected value.
+  // Wait the given number of nanoseconds, exiting early on reset.
+  task wait_ns_or_reset(int unsigned delay_ns);
+    if (!delay_ns) return;
+    fork : isolation_fork begin
+      fork
+        #(delay_ns * 1ns);
+        wait(cfg.under_reset);
+      join_any
+      disable fork;
+    end join
+  endtask
+
+  // Poll the intr_state register for the given hart until it reads the expected value.
+  //
+  // There is a gap of spinwait_delay_ns between each read and a timeout of timeout_ns.
   virtual task intr_state_spinwait(input int  hart              = 0,
                                    input uint exp_data          = 0,
                                    input uint spinwait_delay_ns = 0,
                                    input uint timeout_ns        = 10_000_000); // 10ms
-    bit [TL_DW-1:0] read_data;
-    uvm_reg intr_state_rg;
-    intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
-    `DV_CHECK_NE_FATAL(intr_state_rg, null)
-    fork
-      begin : isolation_fork
-        fork
-          while (1) begin
-            csr_rd(.ptr(intr_state_rg), .value(read_data));
-            if (read_data == exp_data) break;
-            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
-          end
-          wait (cfg.under_reset);
-          begin
-            `DV_WAIT_TIMEOUT(timeout_ns, "intr_state_spinwait",
-                             $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
-                             intr_state_rg.get_full_name(), intr_state_rg.get_address(), exp_data))
-          end
-        join_any
-        disable fork;
-      end : isolation_fork
-    join
+    uvm_reg intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
+    bit     seen_exp_data = 0;
+
+    if (intr_state_rg == null)
+      `uvm_fatal(get_full_name(),
+                 $sformatf("Cannot find intr_state register for hart %0d", hart))
+
+    fork : isolation_fork begin
+      fork
+        while (!seen_exp_data && !cfg.under_reset) begin
+          bit [TL_DW-1:0] read_data;
+
+          csr_rd(.ptr(intr_state_rg), .value(read_data));
+          seen_exp_data = (read_data == exp_data);
+          if (!seen_exp_data) wait_ns_or_reset(spinwait_delay_ns);
+        end
+        `DV_WAIT_TIMEOUT(timeout_ns, "intr_state_spinwait",
+                         $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
+                                   intr_state_rg.get_full_name(),
+                                   intr_state_rg.get_address(),
+                                   exp_data))
+      join_any
+
+      // If we get here then the spinwait has seen a reset or the value it expected or we have timed
+      // out. In the former case, we should just disable the timeout thread. In the latter case, we
+      // can safely disable the spinwait thread. It doesn't really matter if we mess up a TL driver:
+      // we've reported an error already.
+      disable fork;
+    end join
   endtask
 
   // task to read interrupt status reg for given Hart
