@@ -1,0 +1,10 @@
+{
+  "name": "adc_ctrl",
+  "sim": [
+    {
+      "cfg": "dv/adc_ctrl_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
