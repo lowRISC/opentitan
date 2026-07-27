@@ -14,7 +14,7 @@ class ottf_spi_console extends uvm_component;
     super.new(name, parent);
   endfunction : new
 
-  virtual clk_rst_if clk_rst_vif;
+  virtual clk_rst_if #() clk_rst_vif;
   virtual pins_if #(.Width(2), .PullStrength("Weak")) flow_ctrl_vif;
 
   uvm_sequence seq_h;
