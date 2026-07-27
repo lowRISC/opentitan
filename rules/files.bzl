@@ -67,6 +67,17 @@ def _copy_files(ctx):
             files.append(file)
 
     out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+
+    relative_to_path = ctx.file.relative_to.short_path
+    if relative_to_path.startswith("../"):
+        runfile_path = relative_to_path[3:]
+    else:
+        workspace_name = ctx.workspace_name
+        if workspace_name:
+            runfile_path = workspace_name + "/" + relative_to_path
+        else:
+            runfile_path = relative_to_path
+
     substitutions = {
         # This is maybe a bit naughty: we rely on the fact that the `package`
         # portion of the `relative_to` label looks just like the dirname
@@ -75,6 +86,7 @@ def _copy_files(ctx):
         "__DEST__": ctx.attr.relative_to.label.package,
         "__FILES__": " ".join([f.path for f in files]),
         "__WORKSPACE__": ctx.attr.workspace_env,
+        "__RELATIVE_TO_RUNFILE__": runfile_path,
     }
     ctx.actions.expand_template(
         template = ctx.file._runner,
@@ -84,7 +96,7 @@ def _copy_files(ctx):
     )
 
     return [DefaultInfo(
-        runfiles = ctx.runfiles(files = files),
+        runfiles = ctx.runfiles(files = files + [ctx.file.relative_to]),
         executable = out_file,
     )]
 
