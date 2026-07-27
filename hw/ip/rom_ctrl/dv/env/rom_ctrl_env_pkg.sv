@@ -57,11 +57,9 @@ package rom_ctrl_env_pkg;
   typedef virtual rom_ctrl_if rom_ctrl_vif;
   typedef class rom_ctrl_scoreboard;
 
-  `include "rom_ctrl_addr_force_item.svh"
-  `include "rom_ctrl_addr_force_driver.svh"
-  typedef uvm_sequencer #(rom_ctrl_addr_force_item) rom_ctrl_addr_force_sequencer_t;
-  `include "seq_lib/rom_ctrl_skip_middle_seq.svh"
+  // functions
 
+  // package sources
   `include "rom_ctrl_env_cfg.sv"
   `include "rom_ctrl_env_cov.sv"
   `include "rom_ctrl_virtual_sequencer.sv"
