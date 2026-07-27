@@ -9,12 +9,94 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top/flash_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+#if defined(USE_RRAM)
+#include "sw/device/lib/dif/dif_rram_ctrl.h"
+#include "sw/device/lib/testing/rram_ctrl_testutils.h"
+#else
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+#endif                               // USE_RRAM
+
+#if defined(USE_RRAM)
+
+enum {
+  // One aligned RRAM write granule: {value, valid marker, reserved,
+  // reserved}. The shared linker script (ottf_common.ld) still reserves a
+  // much larger flash-oriented region per counter (256 8-byte words = 2048
+  // bytes); RRAM only needs this single 4-word (16-byte) line and simply
+  // uses the first bytes of that reserved space.
+  kNvRramCounterWords = 4,
+  kNvCounterValid = 0xABBAABBA,
+};
+
+static_assert(kNvRramCounterWords * sizeof(uint32_t) <= 2048,
+              "RRAM counter storage must fit within the non_volatile_counter "
+              "section reserved by ottf_common.ld.");
+
+OT_SET_BSS_SECTION(".non_volatile_counter_0",
+                   uint32_t nv_counter_0[kNvRramCounterWords];)
+OT_SET_BSS_SECTION(".non_volatile_counter_1",
+                   uint32_t nv_counter_1[kNvRramCounterWords];)
+OT_SET_BSS_SECTION(".non_volatile_counter_2",
+                   uint32_t nv_counter_2[kNvRramCounterWords];)
+OT_SET_BSS_SECTION(".non_volatile_counter_3",
+                   uint32_t nv_counter_3[kNvRramCounterWords];)
+
+static uint32_t *const kNvCounters[] = {
+    nv_counter_0,
+    nv_counter_1,
+    nv_counter_2,
+    nv_counter_3,
+};
+
+static status_t nv_counter_rram_init(dif_rram_ctrl_state_t *rram) {
+  TRY(dif_rram_ctrl_init_state(
+      rram, mmio_region_from_addr(TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR)));
+  return rram_ctrl_testutils_default_region_access(rram, /*rd_en=*/true,
+                                                   /*wr_en=*/true,
+                                                   /*scramble_en=*/false,
+                                                   /*ecc_en=*/false);
+}
+
+status_t nv_counter_testutils_counter_get(size_t counter, uint32_t *value) {
+  TRY_CHECK(value != NULL);
+  TRY_CHECK(counter < ARRAYSIZE(kNvCounters));
+
+  *value = 0;
+  if (kNvCounters[counter][1] == kNvCounterValid) {
+    *value = kNvCounters[counter][0];
+  }
+  return OK_STATUS();
+}
+
+status_t nv_counter_testutils_counter_increment(size_t counter) {
+  dif_rram_ctrl_state_t rram;
+  TRY(nv_counter_rram_init(&rram));
+
+  uint32_t before;
+  TRY(nv_counter_testutils_counter_get(counter, &before));
+  // RRAM writes must be a multiple of 4 words; leaving the last two words
+  // unused is simpler than a read-modify-write.
+  uint32_t new_val[kNvRramCounterWords] = {before + 1, kNvCounterValid, 0, 0};
+  TRY(rram_ctrl_testutils_write(&rram,
+                                (uint32_t)&kNvCounters[counter][0] -
+                                    TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR,
+                                new_val, kDifRramCtrlPartitionTypeData,
+                                kNvRramCounterWords));
+
+  uint32_t value;
+  TRY(nv_counter_testutils_counter_get(counter, &value));
+  TRY_CHECK(value == before + 1, "Counter increment failed");
+  return OK_STATUS();
+}
+
+#else  // USE_RRAM
 
 enum {
   kNonVolatileCounterFlashWords = 256,
@@ -100,23 +182,4 @@ status_t nv_counter_testutils_counter_increment(size_t counter) {
   return OK_STATUS();
 }
 
-// At the beginning of the simulation (Verilator, VCS,etc.),
-// the content of the flash might be all-zeros, and thus,
-// the NVM counter's initial value might be 256.
-// In that case, nv_counter_testutils_counter_set_at_least() will not increment.
-// This function can be used to initialize a NVM counter to zero by filling
-// its flash region with non-zero values.
-status_t nv_counter_testutils_counter_init_zero(size_t counter) {
-  dif_flash_ctrl_state_t flash;
-  TRY(nv_counter_flash_init(&flash));
-  uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0xaa,
-                                                                          0xbb};
-  for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
-    TRY(flash_ctrl_testutils_erase_and_write_page(
-        &flash,
-        (uint32_t)&kNvCounters[counter][ii] -
-            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
-  }
-  return OK_STATUS();
-}
+#endif  // USE_RRAM
