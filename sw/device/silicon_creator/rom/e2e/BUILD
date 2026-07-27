@@ -4,7 +4,7 @@
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:const.bzl", "CONST", "hex_digits")
-load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "scramble_rram_vmem", "vmem_file")
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
@@ -207,8 +207,8 @@ opentitan_test(
 # Corrupt binaries
 # Note: the naming of the files is important for dvsim. The code expects file to be named:
 # - binary: <something>.<key_name>.signed.bin
-# - vmem: <something>.<key_name>.signed.64.vmem
-# - flash vmem: <something>.<key_name>.signed.64.scr.vmem
+# - vmem: <something>.<key_name>.signed.64.vmem (flash) or .128.vmem (rram)
+# - scrambled vmem: <something>.<key_name>.signed.64.scr.vmem (flash) or .128.scr.vmem (rram)
 [
     genrule(
         name = "empty_test_slot_{}_{}_corrupted_{}_signed_bin".format(slot, key, group),
@@ -225,8 +225,11 @@ opentitan_test(
     ]
 ]
 
-# The below three rule sets (vmem_file, scramble_flash_vmem, and filegroup)
-# are needed to run `sigverify_always` tests in DV.
+# The below rule sets (vmem_file, scramble_flash_vmem/scramble_rram_vmem, and
+# filegroup) are needed to run `sigverify_always` tests in DV. Tops with
+# rram_ctrl (e.g. top_earlgrey) need 128-bit-word rram-scrambled vmem; other
+# tops keep the pre-existing 64-bit-word flash-scrambled vmem, hence
+# vmem_file/scramble_*_vmem each appearing twice below, once per word size.
 [
     vmem_file(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
@@ -250,9 +253,36 @@ opentitan_test(
     for key in SIGVERIFY_LC_KEYS
 ]
 
+[
+    vmem_file(
+        name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem128_signed".format(slot, key),
+        testonly = True,
+        src = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
+        word_size = 128,  # RRAM backdoor-load VMEM image uses 128-bit words
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+]
+
+[
+    scramble_rram_vmem(
+        name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem128_signed".format(slot, key),
+        testonly = True,
+        src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem128_signed".format(slot, key),
+        # Override the name to match what the dv testbench expects.
+        out = "empty_test_slot_{}_corrupted_sim_dv.{}.signed.128".format(slot, key),
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+]
+
 # This file group is here to simplify the naming of the files in the hjson testplan:
 # the file group contains the files for all possible keys that follow the expected
-# name format specified by the tags.
+# name format specified by the tags. Both the 64-bit-word (flash) and
+# 128-bit-word (rram) variants are always included unconditionally, since
+# dvsim's collateral-deployment script fetches all runfiles from this label
+# regardless of which top is active; the testbench only reads whichever
+# variant it actually needs.
 [
     filegroup(
         name = "empty_test_slot_{}_corrupted_sim_dv".format(slot),
@@ -263,6 +293,8 @@ opentitan_test(
                 "signed_bin",
                 "vmem64_signed",
                 "scr_vmem64_signed",
+                "vmem128_signed",
+                "scr_vmem128_signed",
             ]
             for key in SIGVERIFY_LC_KEYS
         ],
