@@ -17,6 +17,10 @@
 #include "hw/top/flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#ifdef HAS_RRAM_CTRL
+#include "hw/top/rram_ctrl_regs.h"
+#endif  // HAS_RRAM_CTRL
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -25,6 +29,46 @@ extern "C" {
 // NVM layout constants
 // ---------------------------------------------------------------------------
 
+#ifdef HAS_RRAM_CTRL
+/** Byte size of one NVM page. */
+#define NVM_BYTES_PER_PAGE RRAM_CTRL_PARAM_BYTES_PER_PAGE
+/**
+ * Byte size of one NVM program/read word.
+ *
+ * This is a fixed, tech-agnostic value (matching flash's
+ * `FLASH_CTRL_PARAM_BYTES_PER_WORD`), not `RRAM_CTRL_PARAM_BYTES_PER_WORD`
+ * (16): callers like `boot_data.c` use it to size wire-format struct fields
+ * (e.g. `boot_data_t.is_valid`) that must stay identical regardless of NVM
+ * technology. RRAM's actual write granularity (4x this, 16 bytes) is a
+ * separate, driver-internal detail handled by `nvm_ctrl.c`/`rram_ctrl.c`.
+ */
+#define NVM_BYTES_PER_WORD 8
+/**
+ * Number of NVM banks.
+ *
+ * RRAM has no bank-erase concept, so the whole data partition is treated as
+ * a single bank; `NVM_BYTES_PER_BANK`/`NVM_PAGES_PER_BANK` describe the full
+ * data partition. Slot A/B addressing (the only thing that matters for
+ * dual-bank redundancy) is computed from `NVM_DATA_BASE_ADDR`/
+ * `NVM_DATA_SIZE_BYTES` directly and does not depend on this value.
+ */
+#define NVM_NUM_BANKS 1u
+/** Number of data pages per NVM bank. */
+#define NVM_PAGES_PER_BANK RRAM_CTRL_PARAM_NUM_DATA_PAGES
+/** Byte size of one NVM bank. */
+#define NVM_BYTES_PER_BANK (NVM_PAGES_PER_BANK * NVM_BYTES_PER_PAGE)
+/**
+ * Base address of the NVM data partition in the system memory map.
+ *
+ * This is the CPU-visible, memory-mapped execute-in-place window (used e.g.
+ * to determine the current boot slot from the program counter), distinct
+ * from the 0-based byte offsets `rram_ctrl_data_read`/`_write` operate on.
+ */
+#define NVM_DATA_BASE_ADDR TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR
+/** Total byte size of the NVM data partition. */
+#define NVM_DATA_SIZE_BYTES \
+  (RRAM_CTRL_PARAM_NUM_DATA_PAGES * RRAM_CTRL_PARAM_BYTES_PER_PAGE)
+#else
 /** Byte size of one NVM page. */
 #define NVM_BYTES_PER_PAGE FLASH_CTRL_PARAM_BYTES_PER_PAGE
 /** Byte size of one NVM program/read word. */
@@ -39,6 +83,40 @@ extern "C" {
 #define NVM_DATA_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
 /** Total byte size of the NVM data partition. */
 #define NVM_DATA_SIZE_BYTES TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES
+#endif  // HAS_RRAM_CTRL
+
+/**
+ * Page/byte count of one firmware slot (A or B).
+ *
+ * There are always exactly two slots, splitting the NVM data partition in
+ * half regardless of technology: two banks of one slot each for flash, or one
+ * bank of two slots for RRAM.
+ */
+#define NVM_PAGES_PER_SLOT ((NVM_NUM_BANKS * NVM_PAGES_PER_BANK) / 2)
+#define NVM_BYTES_PER_SLOT (NVM_PAGES_PER_SLOT * NVM_BYTES_PER_PAGE)
+
+/**
+ * Byte size of one NVM program transaction / SPI `PAGE_PROGRAM` "page".
+ *
+ * This is the SPI `PAGE_PROGRAM` wrap-around unit `nvm_ctrl_page_program()`
+ * uses internally, and the natural write-transaction size for the
+ * underlying NVM technology. It is NOT the same concept as
+ * `NVM_BYTES_PER_PAGE` (the erase granularity) -- the two happen to coincide
+ * for RRAM (both 512), but differ for flash (2048 erase vs. 256
+ * program/SPI-wrap).
+ *
+ * For RRAM, this matches `rram_phy_wr`'s store-buffer size (`BytesPerPage`
+ * in `rram_ctrl.hjson`): a write up to this size commits to the array as a
+ * single physical operation, and a write that straddles two of these units
+ * costs an extra one. For flash, it's simply the SPI NOR industry-standard
+ * `PAGE_PROGRAM` wrap size, with no known equivalent benefit to writing
+ * more than one at a time.
+ */
+#ifdef HAS_RRAM_CTRL
+#define NVM_PROG_PAGE_SIZE 512
+#else
+#define NVM_PROG_PAGE_SIZE 256
+#endif
 
 /** Value of a word in NVM after erase. */
 enum { kNvmErasedWord = UINT32_MAX };
@@ -131,11 +209,39 @@ typedef enum nvm_info_page {
 // Drop-in replacements for kFlashCtrlSecMmio* — identical numeric values.
 // Callers keep their SEC_MMIO_WRITE_INCREMENT() call sites; only the constant
 // name changes during migration.
+//
+// RRAM caveat: `kNvmCtrlSecMmioInfoPermsSet`, `kNvmCtrlSecMmioInfoCfgSet`,
+// `kNvmCtrlSecMmioInfoCfgLock`, `kNvmCtrlSecMmioCertInfoPageCreatorCfg`, and
+// `kNvmCtrlSecMmioCertInfoPageOwnerRestrict` are single constants shared by
+// call sites that each target a caller-chosen `nvm_info_page_t`. For RRAM,
+// `nvm_ctrl_info_perms_set`/`_cfg_set`/`_cfg_lock` are no-ops on an emulated
+// info page (see the TODO on `rram_ctrl_info_page_t`), so any call site
+// targeting an emulated page (e.g. OwnerSlot0/1, DiceCerts, OwnerReserved4-7)
+// performs fewer actual register writes than these constants assume. This is
+// a known, accepted gap for call sites whose target page varies at runtime:
+// making those fully correct would require auditing every call site
+// (ownership.c, owner_block.c, cert/dice_chain.c, manuf/ft_personalize.c,
+// rom_ext.c, ...) to conditionally increment based on the specific page
+// targeted. Call sites with a FIXED, statically-known page set don't have
+// this excuse and must account for emulated pages precisely:
+// `kNvmCtrlSecMmioCreatorInfoPagesLockdown` (fixed inside nvm_ctrl.c) does so
+// below, and `boot_data.c`'s three call sites (always BootData0/BootData1,
+// always emulated on RRAM) do so with their own `#ifdef HAS_RRAM_CTRL` at
+// each `SEC_MMIO_WRITE_INCREMENT` rather than via this shared constant.
 enum {
   kNvmCtrlSecMmioCertInfoPageCreatorCfg = 2,
   kNvmCtrlSecMmioCertInfoPageOwnerRestrict = 2,
   kNvmCtrlSecMmioCertInfoPagesOwnerRestrict = 5,
+#ifdef HAS_RRAM_CTRL
+  // 2 writes for each of the 4 pages (of the 7 in kNvmPagesNoOwnerAccess)
+  // that are real (non-emulated) RRAM info pages: FactoryId, CreatorSecret,
+  // OwnerSecret, WaferAuthSecret. The other 3 (BootData0, BootData1,
+  // CreatorReserved0) are emulated and are skipped (see the TODO on
+  // `rram_ctrl_info_page_t`).
+  kNvmCtrlSecMmioCreatorInfoPagesLockdown = 8,
+#else
   kNvmCtrlSecMmioCreatorInfoPagesLockdown = 14,
+#endif
   kNvmCtrlSecMmioDataDefaultCfgSet = 1,
   kNvmCtrlSecMmioDataDefaultPermsSet = 1,
   kNvmCtrlSecMmioExecSet = 1,
@@ -144,7 +250,13 @@ enum {
   kNvmCtrlSecMmioInfoPageLockdown = 2,
   kNvmCtrlSecMmioInfoPermsSet = 1,
   kNvmCtrlSecMmioBankErasePermsSet = 1,
+#ifdef HAS_RRAM_CTRL
+  // 1 write from `rram_ctrl_data_default_cfg_set` (via `rram_ctrl_init`) plus
+  // 1 from the `rram_ctrl_data_default_perms_set` call in `nvm_ctrl_init`.
+  kNvmCtrlSecMmioInit = 2,
+#else
   kNvmCtrlSecMmioInit = 3,
+#endif
   kNvmCtrlSecMmioDataRegionProtect = 1,
   kNvmCtrlSecMmioDataRegionProtectLock = 1,
 };
@@ -177,8 +289,10 @@ void nvm_ctrl_disable(void);
  * are read from on-flash owner configuration structs that store raw bank and
  * page integers.  All NVM I/O then proceeds through the enum-based API.
  *
- * @param bank Bank index (must be < NVM_NUM_BANKS).
- * @param page Page index within the info partition type 0.
+ * @param bank Bank index (must be < 2; this is a fixed wire-format constant,
+ *             independent of the number of banks the underlying NVM
+ *             technology actually has).
+ * @param page Page index within the info partition type 0 (must be < 10).
  * @param[out] out Translated info page enum value.
  * @return kErrorOk on success, kErrorNvmCtrlInvalidInfoPage if out of range.
  */

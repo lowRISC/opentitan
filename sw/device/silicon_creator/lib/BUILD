@@ -524,17 +524,35 @@ dual_cc_library(
     name = "nvm_ctrl",
     srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
     hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
+    # HAS_RRAM_CTRL must be a `defines` (not `copts`/`local_defines`): every
+    # other target that includes nvm_ctrl.h (bootstrap, ownership, boot_data,
+    # rom_ext, cert/dice_chain, manuf/ft_personalize, ...) needs to see the
+    # same macro value nvm_ctrl.c itself was compiled with, since the header
+    # branches on it too (NVM_BYTES_PER_PAGE, kNvmCtrlSecMmio*, ...).
+    # Device-only: host-side (unittest) builds always compile the flash
+    # branch, regardless of which NVM technology the device variant uses
+    # below. Existing tests mock at the flash_ctrl layer (boot_data_unittest,
+    # owner_block_unittest, etc.) and nvm_ctrl.c's page_ptr() maps each
+    # nvm_info_page_t back to the same flash_ctrl_info_page_t pointers those
+    # tests already expect.
+    defines = dual_inputs(device = opentitan_if_ip(
+        "rram_ctrl",
+        ["HAS_RRAM_CTRL"],
+        [],
+    )),
     deps = dual_inputs(
-        # The device variant always links the real flash_ctrl driver, even
-        # when force-included in a host build (e.g. a future shutdown_unittest
-        # FlashKill-style test verifying real register-level behavior).
-        device = [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
-        # The host variant links the plain flash_ctrl alias, which resolves to
-        # mock_flash_ctrl on host builds. This lets tests that mock at the
-        # flash_ctrl layer (boot_data_unittest, owner_block_unittest, etc.)
-        # keep working unchanged, since nvm_ctrl.c's page_ptr() maps each
-        # nvm_info_page_t back to the same flash_ctrl_info_page_t pointers
-        # those tests already expect.
+        # The device variant links the real flash_ctrl driver, even when
+        # force-included in a host build (e.g. a future shutdown_unittest
+        # FlashKill-style test verifying real register-level behavior); on
+        # tops with rram_ctrl, it links that driver instead.
+        device = [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")] +
+                 opentitan_if_ip(
+                     "rram_ctrl",
+                     ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+                     [],
+                 ),
+        # The host variant always links the plain flash_ctrl alias (see the
+        # comment above), regardless of the top's actual NVM technology.
         host = ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
         shared = [
             ":error",
@@ -543,7 +561,11 @@ dual_cc_library(
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
-        ],
+        ] + opentitan_if_ip(
+            "rram_ctrl",
+            ["//hw/top:rram_ctrl_c_regs"],
+            [],
+        ),
     ),
 )
 
