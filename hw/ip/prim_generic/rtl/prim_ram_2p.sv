@@ -69,6 +69,17 @@ module prim_ram_2p import prim_ram_2p_pkg::*; #(
   // per its mask, and mem is always written as a whole word.
   logic [Width-1:0] mem [Depth];
 
+  // Both ports writing the same address in the same cycle is undefined behavior.
+  logic same_addr_write;
+  assign same_addr_write = a_req_i && a_write_i && b_req_i && b_write_i && (a_addr_i == b_addr_i);
+
+  `ASSERT_NEVER(NoSameAddrWritePortA_A, same_addr_write, clk_a_i, '0)
+  `ASSERT_NEVER(NoSameAddrWritePortB_A, same_addr_write, clk_b_i, '0)
+
+  // same_addr_write is only read inside the assertions above.
+  logic unused_same_addr_write;
+  assign unused_same_addr_write = same_addr_write;
+
   logic [Width-1:0] wdata_a;
   assign wdata_a = (a_wdata_i & a_wmask_i) | (mem[a_addr_i] & ~a_wmask_i);
 
