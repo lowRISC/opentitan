@@ -280,56 +280,19 @@ cc_library(
     ],
 )
 
-opentitan_test(
-    name = "personalize_functest",
-    srcs = ["personalize_functest.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "dev_key_0"},
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
-    },
-    fpga = fpga_params(
-        changes_otp = True,
-        needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_individualized",
-        tags = [
-            "lc_dev",
-            "manuf",
-        ],
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
-        test_harness = "//sw/host/tests/manuf/personalize_functest",
-        testopt_bootstrap = "False",
-    ),
-    qemu = qemu_params(
-        needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_individualized",
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
-        test_harness = "//sw/host/tests/manuf/personalize_functest",
-    ),
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "dev_key_0"},
+cc_library(
+    name = "personalize_secret1",
+    srcs = ["personalize_secret1.c"],
+    hdrs = ["personalize_secret1.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":flash_info_fields",
-        ":personalize",
-        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ":otp_fields",
+        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:multibits",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/json:command",
-        "//sw/device/lib/testing/json:provisioning_data",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 

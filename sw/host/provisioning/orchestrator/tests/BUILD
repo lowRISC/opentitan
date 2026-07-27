@@ -98,6 +98,7 @@ sh_test(
             ":orchestrator_{}_zip".format(fpga),
             "@python3",
             cfg["orchestrator_cfg"],
+            "//sw/device/silicon_creator/manuf/base:ft_flash_scramble_{}".format(sku),
         ],
         env = {
             "PYTHON": "$(location @python3//:python3)",
