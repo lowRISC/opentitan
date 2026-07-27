@@ -32,6 +32,7 @@ class SkuConfig:
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
     owner_fw_boot_str: str = None  # valid: any string
     resolve_paths: bool = True
+    scrambling_bin: str = ""  # valid: any string
 
     def __post_init__(self):
         # Load CA configs.

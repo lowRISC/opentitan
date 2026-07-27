@@ -333,66 +333,6 @@ status_t manuf_personalize_device_secrets_check(
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
-status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
-                                          const dif_otp_ctrl_t *otp_ctrl) {
-  // Skip provisioning of SECRET1 OTP partition if already done.
-  bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
-                                      &is_locked));
-  if (is_locked) {
-    return OK_STATUS();
-  }
-
-  // Check that the HW_CFG0 OTP partition has been locked (and is activated).
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
-                                      &is_locked));
-  if (!is_locked) {
-    return INTERNAL();
-  }
-
-  // Check that the HW_CFG1 OTP partition has been locked (and is activated).
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
-                                      &is_locked));
-  if (!is_locked) {
-    return INTERNAL();
-  }
-
-  // Check that the CSRNG SW application interface is enabled in the HW_CFG1
-  // partition, as we cannot provision SECRET1 without access to the CSRNG.
-  uint32_t otp_hw_cfg1_settings;
-  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
-                                    kHwCfgEnSramIfetchOffset,
-                                    &otp_hw_cfg1_settings));
-  uint32_t csrng_sw_app_read =
-      bitfield_field32_read(otp_hw_cfg1_settings, kCsrngAppRead);
-  if (csrng_sw_app_read != kMultiBitBool8True) {
-    return INTERNAL();
-  }
-
-  uint32_t dis_rv_dm_late_debug =
-      bitfield_field32_read(otp_hw_cfg1_settings, kDisRvDmLateDebug);
-  if (dis_rv_dm_late_debug != kMultiBitBool8True) {
-    return INTERNAL();
-  }
-
-  TRY(entropy_complex_init(kHardenedBoolFalse));
-  TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
-                                /*seed_material=*/NULL));
-
-  TRY(otp_secret_write(otp_ctrl, kSecret1FlashAddrKeySeedOffset,
-                       kSecret1FlashAddrKeySeed64BitWords));
-  TRY(otp_secret_write(otp_ctrl, kSecret1FlashDataKeySeedOffset,
-                       kSecret1FlashDataKeySeed64BitWords));
-  TRY(otp_secret_write(otp_ctrl, kSecret1SramDataKeySeedOffset,
-                       kSecret1SramDataKeySeed64Bitwords));
-
-  TRY(entropy_csrng_uninstantiate());
-  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret1,
-                                        /*digest=*/0));
-
-  return OK_STATUS();
-}
-
 status_t manuf_personalize_device_secret1_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
