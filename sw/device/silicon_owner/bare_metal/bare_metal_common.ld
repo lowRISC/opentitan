@@ -43,12 +43,12 @@ _manifest_code_end = _text_end - _slot_start_address;
 _manifest_entry_point = _start_boot - _slot_start_address;
 /*
  * The value kHardenedBoolFalse (0x1d4) is selected if the code is linked in
- * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is
+ * the RRAM region.  Otherwise, the value kHardenedBoolTrue (0x739) is
  * selected.
  */
-_manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
-                                 _text_start < (ORIGIN(eflash)
-                                              + LENGTH(eflash))) ? 0x1d4 : 0x739;
+_manifest_address_translation = (_text_start >= ORIGIN(rram) &&
+                                 _text_start < (ORIGIN(rram)
+                                              + LENGTH(rram))) ? 0x1d4 : 0x739;
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -58,7 +58,7 @@ SECTIONS {
   .manifest _slot_start_address : {
     KEEP(*(.manifest))
     . = ALIGN(256);
-  } > owner_flash
+  } > owner_nvm
 
   /**
    * Ibex interrupt vector.
@@ -69,14 +69,14 @@ SECTIONS {
   .vectors : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > owner_flash
+  } > owner_nvm
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > owner_flash
+  } > owner_nvm
 
   /**
    * Standard text section, containing program code.
@@ -88,7 +88,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > owner_flash
+  } > owner_nvm
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -101,7 +101,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > owner_flash
+  } > owner_nvm
 
   /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
@@ -145,7 +145,7 @@ SECTIONS {
      *
      * Using `AT>` means we don't have to keep track of the next free part of
      * flash, as we do in our other linker scripts. */
-  } > ram_main AT> owner_flash
+  } > ram_main AT> owner_nvm
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.

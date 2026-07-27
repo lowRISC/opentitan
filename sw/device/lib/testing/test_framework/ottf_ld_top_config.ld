@@ -11,7 +11,7 @@ MEMORY {
 }
 REGION_ALIAS("ottf_storage", ctn_ram)
 #else
-REGION_ALIAS("ottf_storage", rram)
+REGION_ALIAS("ottf_storage", nvm)
 #endif
 
 #ifdef OPENTITAN_IS_ENGLISHBREAKFAST

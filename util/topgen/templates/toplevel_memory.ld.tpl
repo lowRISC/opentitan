@@ -54,6 +54,12 @@ def get_virtual_memory_size(top):
                     return hex(0x00100000 // 2)
 
     return None
+
+def has_module(top, name):
+    for mod in top["module"]:
+        if mod["name"] == name:
+            return True
+    return False
 %>\
 
 /**
@@ -75,6 +81,19 @@ MEMORY {
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
 }
 
+% if has_module(top, "rram_ctrl") or has_module(top, "flash_ctrl"):
+/**
+ * Alias for the NVM technology this top actually boots from, so downstream
+ * linker scripts can place sections with `> nvm` instead of hardcoding one
+ * technology.
+ */
+  % if has_module(top, "rram_ctrl"):
+REGION_ALIAS("nvm", rram);
+  % else:
+REGION_ALIAS("nvm", eflash);
+  % endif
+
+% endif
 /**
  * Exception frame at the top of main SRAM
  */

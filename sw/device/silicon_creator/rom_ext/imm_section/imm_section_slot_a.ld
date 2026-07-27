@@ -20,7 +20,7 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 
 MEMORY {
-  imm_section_slot_a(rx) : ORIGIN = ORIGIN(eflash) + 0x400, LENGTH = LENGTH(eflash) / 2 - 0x400
+  imm_section_slot_a(rx) : ORIGIN = ORIGIN(nvm) + 0x400, LENGTH = LENGTH(nvm) / 2 - 0x400
 }
 REGION_ALIAS("rom_ext_nvm", imm_section_slot_a);
 

@@ -285,6 +285,7 @@ cc_library(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )

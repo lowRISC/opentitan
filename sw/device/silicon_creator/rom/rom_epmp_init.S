@@ -78,8 +78,8 @@ rom_epmp_init:
   csrw pmpaddr3, zero // ROM_EXT TEXT low
   csrw pmpaddr4, zero // ROM_EXT TEXT high
 
-  // eFLASH
-  li   t0, NAPOT(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES)
+  // RRAM
+  li   t0, NAPOT(TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR, TOP_EARLGREY_RRAM_CTRL_HOST_SIZE_BYTES)
   csrw pmpaddr5, t0
 
   // MMIO
@@ -106,7 +106,7 @@ rom_epmp_init:
 
   // Set the remaining PMP configuration registers (pmpcfg0 was already set
   // above).
-  li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
+  li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* RRAM        */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
   li   t3, CFG_INDEX(12 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW) | /* Secondary RAM */ \
            CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM     */ \

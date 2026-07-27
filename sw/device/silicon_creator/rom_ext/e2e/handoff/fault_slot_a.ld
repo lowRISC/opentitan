@@ -14,11 +14,11 @@
 
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
-/* Slot A starts at the start of the eFlash plus the fixed size of the first
+/* Slot A starts at the start of the NVM plus the fixed size of the first
  * Silicon Owner stage */
  /* TODO(#9045): Move ROM_EXT size to a common location. */
-_slot_start_address = ORIGIN(eflash) + _rom_ext_size;
+_slot_start_address = ORIGIN(nvm) + _rom_ext_size;
 
-REGION_ALIAS("owner_flash", eflash);
+REGION_ALIAS("owner_nvm", nvm);
 
 INCLUDE sw/device/silicon_creator/rom_ext/e2e/handoff/fault_common.ld
