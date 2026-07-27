@@ -45,7 +45,8 @@ typedef enum rescue_request {
 static rescue_request_t rescue_requested;
 
 const uint32_t kNvmPageSize = NVM_BYTES_PER_PAGE;
-const uint32_t kNvmBankSize = NVM_PAGES_PER_BANK * NVM_BYTES_PER_PAGE;
+// Byte size of one firmware slot (A or B); see `NVM_BYTES_PER_SLOT`.
+const uint32_t kNvmSlotSize = NVM_BYTES_PER_SLOT;
 
 static inline bool is_rom_ext(const void *data) {
   const manifest_t *manifest = (const manifest_t *)data;
@@ -63,7 +64,7 @@ static inline bool is_rom_ext_update_allowed(rescue_state_t *state) {
 
 rom_error_t nvm_firmware_block(rescue_state_t *state) {
   uint32_t bank_offset =
-      state->mode == kRescueModeFirmwareSlotB ? kNvmBankSize : 0;
+      state->mode == kRescueModeFirmwareSlotB ? kNvmSlotSize : 0;
   if (state->nvm_offset == 0) {
     // TODO(#24428): Make sure we interact correctly with owner flash region
     // configuration.
@@ -346,7 +347,7 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
     // If there is no rescue config, then the rescue region starts immediately
     // after the ROM_EXT and ends at the end of the flash bank.
     state->nvm_start = CHIP_ROM_EXT_SIZE_MAX;
-    state->nvm_limit = kNvmBankSize;
+    state->nvm_limit = kNvmSlotSize;
     state->inactivity_deadline = 0;
   } else {
     state->nvm_start = (uint32_t)config->start * kNvmPageSize;

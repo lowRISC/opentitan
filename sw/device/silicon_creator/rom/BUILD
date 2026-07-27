@@ -49,6 +49,7 @@ dual_cc_library(
         ],
         shared = [
             "//sw/device/silicon_creator/lib:manifest",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
     ),

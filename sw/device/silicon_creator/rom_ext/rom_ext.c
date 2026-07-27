@@ -66,14 +66,15 @@
 
 // Useful constants for NVM sizes and ROM_EXT locations.
 enum {
-  kNvmBankSize = NVM_PAGES_PER_BANK,
+  // Page count of one firmware slot (A or B); see `NVM_PAGES_PER_SLOT`.
+  kNvmSlotSize = NVM_PAGES_PER_SLOT,
   kNvmPageSize = NVM_BYTES_PER_PAGE,
-  kNvmTotalSize = 2 * kNvmBankSize,
+  kNvmTotalSize = 2 * kNvmSlotSize,
 
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
   kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kNvmBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmSlotSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 };
 
