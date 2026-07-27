@@ -723,6 +723,27 @@ opentitan_test(
     ],
 )
 
+cc_library(
+    name = "rram_ctrl",
+    srcs = ["rram_ctrl.c"],
+    hdrs = ["rram_ctrl.h"],
+    deps = [
+        ":flash_ctrl",
+        ":otp",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:rram_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
 dual_cc_library(
     name = "rstmgr",
     srcs = dual_inputs(
