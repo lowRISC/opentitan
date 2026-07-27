@@ -8,8 +8,8 @@ description: "RISC-V Platform Interrupt Controller (PLIC)"
 filesets:
   files_rtl:
     depend:
-      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_component:0.1")}
       - lowrisc:ip:tlul
+      - lowrisc:ip:rv_plic_component
       - lowrisc:prim:subreg
     % if racl_support:
       - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
