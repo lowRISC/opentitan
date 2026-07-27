@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -75,8 +76,7 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 }
 
 /**
- * Handles access permissions and programs up to 256 bytes of flash memory
- * starting at `addr`.
+ * Handles access permissions and programs flash memory starting at `addr`.
  *
  * If `byte_count` is not a multiple of flash word size, it's rounded up to next
  * flash word and missing bytes in `data` are set to `0xff`.
