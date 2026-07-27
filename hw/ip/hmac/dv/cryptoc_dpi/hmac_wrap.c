@@ -17,7 +17,7 @@ const uint8_t *HMAC_SHA(const void *key, size_t key_len, const void *msg,
   HMAC_SHA_init(&ctx, key, key_len);
   // H(msg)
   HMAC_update(&ctx, msg, msg_len);
-  memcpy(hmac, HMAC_final(&ctx), SHA_DIGEST_SIZE);
+  memcpy(hmac, HMAC_final_LITE(&ctx), SHA_DIGEST_SIZE);
   return hmac;
 }
 
