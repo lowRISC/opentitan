@@ -89,7 +89,7 @@ rom_error_t imm_section_epmp_reconfigure(void) {
   epmp_clear(4);
   epmp_clear(3);
 
-  // 3 ~ 0 are ROM ePMP entries.
+  // 2 ~ 0 are ROM ePMP entries.
   // Leave them unchanged.
 
   HARDENED_RETURN_IF_ERROR(epmp_state_check());

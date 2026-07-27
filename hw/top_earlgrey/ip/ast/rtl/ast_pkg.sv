@@ -54,6 +54,7 @@ parameter int unsigned AstLastRegOffset = (AstRegsNum-1)*4;
 
 // Number of physical RAM macros behind each sram_ctrl instance.
 parameter int unsigned SramCtrlMainNumRamInst = 1;
+parameter int unsigned SramCtrlSecNumRamInst  = 1;
 parameter int unsigned SramCtrlRetNumRamInst  = 1;
 
 // Memories Read-Write Margin Interface
@@ -80,6 +81,7 @@ typedef struct packed {
   prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_tag;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_data;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
+  prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlSecNumRamInst-1:0]  sram_ctrl_sec;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_sys2spi;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t                          spi_device_spi2sys;
@@ -96,6 +98,7 @@ typedef struct packed {
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_tag;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0]  rv_core_ibex_icache_data;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main;
+  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlSecNumRamInst-1:0]  sram_ctrl_sec;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0]  sram_ctrl_ret;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_sys2spi;
   prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t                          spi_device_spi2sys;

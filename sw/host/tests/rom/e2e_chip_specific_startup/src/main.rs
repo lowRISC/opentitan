@@ -163,14 +163,6 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             range: _
         }
     ));
-    assert!(matches!(
-        epmp.entry[12],
-        EpmpEntry {
-            cfg: _,
-            kind: EpmpRegionKind::Off,
-            range: _
-        }
-    ));
 
     // Epmp entries for ROM: .text, all of ROM, peripheral address space.
     assert!(matches!(
@@ -213,6 +205,15 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             cfg: EPMP_CFG_LRW,
             kind: EpmpRegionKind::Napot,
             range: EpmpAddressRange(0x1000_0000, 0x1002_0000)
+        }
+    ));
+    // Secondary SRAM, mapped contiguously after main SRAM.
+    assert!(matches!(
+        epmp.entry[12],
+        EpmpEntry {
+            cfg: EPMP_CFG_LRW,
+            kind: EpmpRegionKind::Napot,
+            range: EpmpAddressRange(0x1002_0000, 0x1003_0000)
         }
     ));
 

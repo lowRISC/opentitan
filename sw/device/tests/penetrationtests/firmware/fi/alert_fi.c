@@ -90,7 +90,7 @@ static dif_uart_t uart2;
 static dif_uart_t uart3;
 static dif_usbdev_t usbdev;
 
-enum { kNumberTestRegisters = 63 };
+enum { kNumberTestRegisters = 64 };
 
 static status_t init_peripherals(void) {
   mmio_region_t base_addr;

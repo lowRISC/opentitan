@@ -41,7 +41,7 @@
     { name:      "NumBkdrTgts",
       desc:      "Number of RAM Targets",
       type:      "int unsigned",
-      default:   "12",
+      default:   "13",
     }
     { name:      "MaxWordWidthDiv32",
       desc:      "Max bit width of a word / 32",
