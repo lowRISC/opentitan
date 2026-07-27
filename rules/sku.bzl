@@ -117,6 +117,27 @@ def _sku_cfg_impl(ctx):
         config["perso_bin"] = perso_bin_path
         runfiles_files.extend(perso_files)
 
+    if ctx.files.scrambling_bins:
+        scrambling_files = ctx.files.scrambling_bins
+
+        def get_scrambling_dir(file):
+            parts = file.short_path.split("/")
+            return "/".join(parts[:-1])
+
+        first_scrambling_dir = get_scrambling_dir(scrambling_files[0])
+        for f in scrambling_files[1:]:
+            d = get_scrambling_dir(f)
+            if d != first_scrambling_dir:
+                fail("All files in scrambling_bins must be in the same directory.")
+
+        if first_scrambling_dir:
+            scrambling_bin_path = first_scrambling_dir + "/" + ctx.attr.scrambling_bin_suffix
+        else:
+            scrambling_bin_path = ctx.attr.scrambling_bin_suffix
+
+        config["scrambling_bin"] = scrambling_bin_path
+        runfiles_files.extend(scrambling_files)
+
     output_json = ctx.actions.declare_file(ctx.label.name + ".json")
 
     ctx.actions.write(
@@ -147,5 +168,7 @@ sku_cfg = rule(
         "token_encrypt_key": attr.label(allow_single_file = True),
         "perso_bins": attr.label_list(allow_files = True),
         "perso_bin_suffix": attr.string(),
+        "scrambling_bins": attr.label_list(allow_files = True),
+        "scrambling_bin_suffix": attr.string(),
     },
 )

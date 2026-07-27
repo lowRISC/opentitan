@@ -33,6 +33,7 @@ class SkuConfig:
     owner_fw_boot_str: str = None  # valid: any string
     resolve_paths: bool = True
     blob_version: int = 0  # valid: any unsigned integer
+    scrambling_bin: str = ""  # valid: any string
 
     def __post_init__(self):
         # Load CA configs.
