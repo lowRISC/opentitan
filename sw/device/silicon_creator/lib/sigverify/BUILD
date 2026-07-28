@@ -112,12 +112,9 @@ opentitan_test(
 opentitan_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-        },
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    },
     fpga = fpga_params(
         timeout = "long",
     ),
@@ -303,13 +300,10 @@ opentitan_test(
 opentitan_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # Test set is too large as ROM_EXT
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-        },
-    ),
+    exec_env = {
+        # Test set is too large as ROM_EXT
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    },
     fpga = fpga_params(
         timeout = "long",
     ),
