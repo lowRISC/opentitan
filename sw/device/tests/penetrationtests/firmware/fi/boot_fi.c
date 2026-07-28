@@ -17,16 +17,15 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/boot_fi_commands.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/rom_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -34,23 +33,20 @@
 static dif_rv_core_ibex_t rv_core_ibex;
 
 static manifest_t *get_rom_ext_manifest_a(void) {
-  return (manifest_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  return (manifest_t *)NVM_DATA_BASE_ADDR;
 }
 
 static manifest_t *get_rom_ext_manifest_b(void) {
-  return (manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                        (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+  return (manifest_t *)(NVM_DATA_BASE_ADDR + NVM_BYTES_PER_SLOT);
 }
 
 static manifest_t *get_firmware_manifest_a(void) {
-  return (manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                        CHIP_ROM_EXT_SIZE_MAX);
+  return (manifest_t *)(NVM_DATA_BASE_ADDR + CHIP_ROM_EXT_SIZE_MAX);
 }
 
 static manifest_t *get_firmware_manifest_b(void) {
-  return (manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                        CHIP_ROM_EXT_SIZE_MAX +
-                        (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+  return (manifest_t *)(NVM_DATA_BASE_ADDR + NVM_BYTES_PER_SLOT +
+                        CHIP_ROM_EXT_SIZE_MAX);
 }
 
 status_t handle_inactive_firmware_invalidation(ujson_t *uj) {
@@ -68,16 +64,16 @@ status_t handle_inactive_firmware_invalidation(ujson_t *uj) {
     manifest = get_firmware_manifest_a();
   }
 
-  flash_ctrl_data_default_perms_set(
-      (flash_ctrl_perms_t){.read = kMultiBitBool4True,
-                           .write = kMultiBitBool4True,
-                           .erase = kMultiBitBool4False});
+  nvm_ctrl_data_default_perms_set(
+      (nvm_page_perms_t){.read = kMultiBitBool4True,
+                         .write = kMultiBitBool4True,
+                         .erase = kMultiBitBool4False});
 
-  uint32_t sig_offset = (uint32_t)&manifest->ecdsa_signature.r[0] -
-                        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  uint32_t sig_offset =
+      (uint32_t)&manifest->ecdsa_signature.r[0] - NVM_DATA_BASE_ADDR;
 
   uint32_t zero_val = 0;
-  rom_error_t err = flash_ctrl_data_write(sig_offset, 1, &zero_val);
+  rom_error_t err = nvm_ctrl_data_write(sig_offset, 1, &zero_val);
 
   if (err != kErrorOk) {
     LOG_ERROR("Failed to corrupt ECDSA signature: 0x%08x", err);
@@ -88,10 +84,9 @@ status_t handle_inactive_firmware_invalidation(ujson_t *uj) {
   err = manifest_ext_get_spx_signature(manifest, &spx_ext);
 
   if (err == kErrorOk && spx_ext != NULL) {
-    uint32_t spx_offset =
-        (uint32_t)&spx_ext->signature - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+    uint32_t spx_offset = (uint32_t)&spx_ext->signature - NVM_DATA_BASE_ADDR;
 
-    err = flash_ctrl_data_write(spx_offset, 1, &zero_val);
+    err = nvm_ctrl_data_write(spx_offset, 1, &zero_val);
 
     if (err != kErrorOk) {
       LOG_ERROR("Failed to corrupt SPX signature: 0x%08x", err);
