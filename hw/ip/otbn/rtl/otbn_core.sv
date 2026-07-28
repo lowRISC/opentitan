@@ -38,6 +38,9 @@ module otbn_core
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
 
+  // Compile-time permutation for URND permutation in MAI
+  parameter mai_urnd_perm_t RndCnstMaiUrndPerm = RndCnstMaiUrndPermDefault,
+
   localparam int ImemAddrWidth = prim_util_pkg::vbits(ImemSizeByte),
   localparam int DmemAddrWidth = prim_util_pkg::vbits(DmemSizeByte)
 ) (
@@ -1165,7 +1168,8 @@ module otbn_core
 
   end else begin : gen_mai
     otbn_mai #(
-      .SecFixMaiOpSeq(SecFixMaiOpSeq)
+      .SecFixMaiOpSeq(SecFixMaiOpSeq),
+      .RndCnstMaiUrndPerm(RndCnstMaiUrndPerm)
     ) u_otbn_mai (
       .clk_i,
       .rst_ni,

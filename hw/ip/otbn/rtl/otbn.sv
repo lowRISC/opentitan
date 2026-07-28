@@ -36,6 +36,9 @@ module otbn
   // Compile-time permutation for URND permutation in BN MAC
   parameter bn_mac_urnd_perm_t RndCnstBnMacUrndPerm = RndCnstBnMacUrndPermDefault,
 
+  // Compile-time permutation for URND permutation in MAI
+  parameter mai_urnd_perm_t RndCnstMaiUrndPerm = RndCnstMaiUrndPermDefault,
+
   // Default seed and nonce for scrambling
   parameter otp_ctrl_pkg::otbn_key_t   RndCnstOtbnKey   = RndCnstOtbnKeyDefault,
   parameter otp_ctrl_pkg::otbn_nonce_t RndCnstOtbnNonce = RndCnstOtbnNonceDefault
@@ -1176,7 +1179,8 @@ module otbn
     .SecFixMacOpSeq(SecFixMacOpSeq),
     .FeatStubMai(FeatStubMai),
     .SecSkipUrndReseedAtStart(SecSkipUrndReseedAtStart),
-    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm)
+    .RndCnstBnMacUrndPerm(RndCnstBnMacUrndPerm),
+    .RndCnstMaiUrndPerm(RndCnstMaiUrndPerm)
   ) u_otbn_core (
     .clk_i,
     .rst_ni                      (rst_n),
