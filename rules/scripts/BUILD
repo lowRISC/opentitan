@@ -29,6 +29,7 @@ py_test(
     srcs = [
         "bitstreams_workspace_test.py",
     ],
+    data = [":bitstreams_manifest_schema"],
     deps = [
         ":bitstreams_workspace",
     ],
