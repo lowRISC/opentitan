@@ -39,6 +39,8 @@ extern "C" {
 #define NVM_DATA_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
 /** Total byte size of the NVM data partition. */
 #define NVM_DATA_SIZE_BYTES TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES
+/** Byte size of one firmware slot (A or B); half of the data partition. */
+#define NVM_BYTES_PER_SLOT (NVM_DATA_SIZE_BYTES / 2)
 
 /** Value of a word in NVM after erase. */
 enum { kNvmErasedWord = UINT32_MAX };

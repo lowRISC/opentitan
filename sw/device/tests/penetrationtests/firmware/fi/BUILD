@@ -303,7 +303,6 @@ cc_library(
     srcs = ["boot_fi.c"],
     hdrs = ["boot_fi.h"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:rom_ctrl_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -318,8 +317,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
