@@ -141,12 +141,12 @@ run_binary(
     name = "wycheproof_ed25519_sign_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
-        "@wycheproof//testvectors:eddsa_test.json",
+        "@wycheproof//testvectors_v1:ed25519_test.json",
     ],
     outs = [":wycheproof_ed25519_sign.json"],
     args = [
         "--src",
-        "$(location @wycheproof//testvectors:eddsa_test.json)",
+        "$(location @wycheproof//testvectors_v1:ed25519_test.json)",
         "--dst",
         "$(location :wycheproof_ed25519_sign.json)",
         "--schema",
