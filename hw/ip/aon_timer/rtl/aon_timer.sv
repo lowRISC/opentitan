@@ -5,9 +5,10 @@
 // AON timer top module which instantiates the registers, the aon_core module
 // and connects up all the inputs and outputs.
 
-`include "prim_assert.sv"
 
 module aon_timer import aon_timer_reg_pkg::*;
+
+    `include "prim_assert.sv"
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
   // Number of cycles a differential skew is tolerated on the alert signal
