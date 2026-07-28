@@ -90,6 +90,27 @@ jobs:
       - name: Run hardware lint
         run: nix run .#lint -- hw ${{ matrix.top }}
 
+  # Whole-tree Verible style check:
+  #
+  # Covers .sv/.v files no per-top lint cfg reaches
+  # (vendored RTL, DV/FPV sources, unintegrated IPs).
+  #
+  # Advisory only, and runs on pull requests alone. The step swallows its
+  # exit status, and sets `continue-on-error` so a crash in the runner
+  # itself can't block merges either. See cat_sv in ci/lint/run.sh for why
+  # it can't be gating.
+  lint_sv_sweep:
+    name: Lint (SV sweep)
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'merge_group' }}
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - name: Prepare Nix
+        uses: ./.github/actions/prepare-nix
+      - name: Run whole-tree Verible sweep
+        run: nix run .#lint -- sv
+
   # Bazel-graph hygiene, link checking and alert classification. Runs in the
   # lint devShell like the other categories (so Bazel comes from the cache and
   # matches local runs), but still uses prepare-env for the system libraries
@@ -227,38 +248,6 @@ jobs:
       - name: Build in the airgapped environment
         continue-on-error: true # See TODO above.
         run: ./ci/scripts/test-airgapped-build.sh
-
-  verible_lint:
-    name: Verible lint
-    runs-on: ubuntu-24.04
-    needs: quick_lint
-    if: ${{ github.event_name == 'pull_request' }}
-    env:
-      verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
-      verible_version: v0.0-3430-g060bde0f
-    steps:
-      - uses: actions/checkout@v6
-      - name: Prepare Verible config
-        run: |
-          echo "Concatenating Verible waivers"
-          find . -type f -name '*.vbl' -exec cat {} \; >> verible_waiver
-
-          echo "::group::Verible config"
-          cat "$verible_config"
-          echo "::endgroup::"
-
-          echo "::group::Verible waiver"
-          cat "verible_waiver"
-          echo "::endgroup::"
-      - name: Run Verible linter action
-        uses: chipsalliance/verible-linter-action@v2.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          verible_version: ${{ env.verible_version }}
-          reviewdog_reporter: 'github-pr-check'
-          suggest_fixes: 'false'
-          config_file: ${{ env.verible_config }}
-          extra_args: "--waiver_files=verible_waiver"
 
   otbn_standalone_tests:
     name: Run OTBN smoke Test
