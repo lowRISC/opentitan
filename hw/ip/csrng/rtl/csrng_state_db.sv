@@ -7,10 +7,11 @@
 // This is the container for accessing the current
 //    working state for a given drbg instance.
 
-`include "prim_assert.sv"
 
 module csrng_state_db
   import csrng_pkg::*;
+
+  `include "prim_assert.sv"
   import csrng_reg_pkg::NumApps;
 #(
   localparam int unsigned RegWidth = top_pkg::TL_DW

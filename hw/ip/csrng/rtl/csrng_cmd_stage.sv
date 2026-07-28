@@ -4,7 +4,6 @@
 //
 // Description: CSRNG command staging module.
 //
-`include "prim_assert.sv"
 
 module csrng_cmd_stage import csrng_pkg::*; (
   input logic                        clk_i,
@@ -48,6 +47,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
   output logic                       cmd_gen_cnt_err_o,
   output logic                       cmd_stage_sm_err_o
 );
+
+  `include "prim_assert.sv"
 
   // Genbits parameters.
   localparam int GenBitsFifoWidth = 1 + BlkLen;

@@ -4,7 +4,6 @@
 //
 // Implementation of the NIST SP800-90A CTR DRBG algorithm, no derivation function.
 
-`include "prim_assert.sv"
 
 module csrng_ctr_drbg import csrng_pkg::*; (
   input  logic               clk_i,
@@ -46,6 +45,8 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   output logic               ctr_err_o,
   output logic               sm_err_o
 );
+
+  `include "prim_assert.sv"
 
   import csrng_reg_pkg::NumApps;
 

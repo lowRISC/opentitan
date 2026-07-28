@@ -6,7 +6,6 @@
 //
 //  - handles all app cmd requests from all requesting interfaces
 
-`include "prim_assert.sv"
 
 module csrng_main_sm import csrng_pkg::*; (
   input  logic                        clk_i,
@@ -33,6 +32,8 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic [MainSmStateWidth-1:0] main_sm_state_o,
   output logic                        main_sm_err_o
 );
+
+  `include "prim_assert.sv"
 
   // SEC_CM: MAIN_SM.FSM.SPARSE
   main_sm_state_e state_d, state_q;

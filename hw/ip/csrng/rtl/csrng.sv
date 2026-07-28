@@ -4,10 +4,11 @@
 //
 // Description: csrng top level wrapper file
 
-`include "prim_assert.sv"
 
 module csrng
  import csrng_pkg::*;
+
+ `include "prim_assert.sv"
  import csrng_reg_pkg::*;
 #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplCanright,
