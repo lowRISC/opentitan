@@ -118,9 +118,18 @@ jobs:
   # matches local runs), but still uses prepare-env for the system libraries
   # the Bazel-built tools link against, the remote-cache config in ~/.bazelrc,
   # and the secure credential handling for cache uploads.
+  #
+  # One leg per group (see cat_bazel in ci/lint/run.sh). `alerts` builds
+  # opentitantool and takes several minutes; running it after the query-only
+  # checks made this category the critical path for the whole lint stage. In
+  # parallel the category costs its slowest leg instead of the sum.
   lint_bazel:
-    name: Lint (bazel)
+    name: Lint bazel (${{ matrix.group }})
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [graph, alerts]
     steps:
       - uses: actions/checkout@v6
         with:
@@ -131,8 +140,8 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run bazel-graph lint
-        run: nix run --quiet --no-warn-dirty .#lint -- bazel
+      - name: Run bazel lint (${{ matrix.group }})
+        run: nix run --quiet --no-warn-dirty .#lint -- bazel ${{ matrix.group }}
         env:
           OT_BASE_REF: ${{ github.base_ref || 'master' }}
           OT_RUN_PR_CHECKS: ${{ github.event_name == 'pull_request' && '1' || '0' }}

@@ -10,6 +10,7 @@
 #   ci/lint/run.sh                 # run every category (all tops)
 #   ci/lint/run.sh <category>...   # run the named categories
 #   ci/lint/run.sh hw <top>        # run hardware lint for a single top
+#   ci/lint/run.sh bazel <group>   # run one group of the bazel category
 #
 # Categories:
 #   hygiene   text/metadata/python hygiene checks   (Nix tools)
@@ -17,6 +18,8 @@
 #   hw        per-top Verible + countermeasure lint  (Nix tools)
 #   sv        whole-tree Verible sweep, advisory only (Nix tools)
 #   bazel     Bazel-graph hygiene + link/alert checks (requires Bazel)
+#             groups: graph (query-only checks), alerts (alert classification,
+#             builds opentitantool)
 #
 # `--warmup` instead of a category realises the environment and exits.
 #
@@ -240,8 +243,19 @@ cat_sv() {
 # ---------------------------------------------------------------------------
 # bazel: checks that query or build the Bazel graph. These require a working
 # Bazel setup (./bazelisk.sh) and so are *not* provided by the lint devShell.
+#
+# Split into two groups that CI runs as separate matrix legs. Everything in
+# `graph` only queries Bazel and finishes in about a minute; `alerts` builds
+# //sw/host/opentitantool, which takes several minutes on its own (the second
+# top then reuses the build). Run back to back they made this category the
+# critical path for the whole lint stage.
+#
+# Keep both alert-classification checks in the same group: split apart, each
+# leg would pay for its own opentitantool build.
 # ---------------------------------------------------------------------------
-cat_bazel() {
+BAZEL_GROUPS=(graph alerts)
+
+cat_bazel_graph() {
     # Formatting (C/C++, Rust, Starlark) and shellcheck, run from the tools
     # //quality pins: the RISC-V toolchain's clang-format, rules_rust's rustfmt,
     # buildifier_prebuilt and @shellcheck. Keeping them on the pinned binaries
@@ -259,6 +273,9 @@ cat_bazel() {
     soft_check "Bazel test suite tags"   ci/scripts/check_bazel_test_suites.py
     soft_check "DV software images"      ci/scripts/check_dv_sw_images.sh
     check      "Broken links"            ci/scripts/check-links.sh
+}
+
+cat_bazel_alerts() {
     check "Alert classification (earlgrey)" \
         ci/scripts/validate_alert_classification.py \
         hw/top_earlgrey/ip_autogen/alert_handler/data/top_earlgrey_alert_handler.ipconfig.hjson \
@@ -267,6 +284,20 @@ cat_bazel() {
         ci/scripts/validate_alert_classification.py \
         hw/top_darjeeling/ip_autogen/alert_handler/data/top_darjeeling_alert_handler.ipconfig.hjson \
         "$(realpath hw/top_darjeeling/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
+}
+
+cat_bazel() {
+    local group="${1:-}"
+    case "$group" in
+        "")      for g in "${BAZEL_GROUPS[@]}"; do cat_bazel "$g"; done ;;
+        graph)   cat_bazel_graph ;;
+        alerts)  cat_bazel_alerts ;;
+        *)
+            echo "::error::unknown bazel lint group: $group" >&2
+            echo "Valid groups: ${BAZEL_GROUPS[*]}" >&2
+            exit 2
+            ;;
+    esac
 }
 
 # ---------------------------------------------------------------------------
@@ -286,7 +317,7 @@ run_category() {
         hygiene) cat_hygiene ;;
         gen)     cat_gen ;;
         sv)      cat_sv ;;
-        bazel)   cat_bazel ;;
+        bazel)   cat_bazel "${2:-}" ;;
         hw)
             if [ -n "${2:-}" ]; then
                 cat_hw "$2"
@@ -321,11 +352,12 @@ main() {
         for top in "${ALL_TOPS[@]}"; do cat_hw "$top"; done
         cat_sv
         cat_bazel
-    elif [ "$#" -eq 2 ] && [ "$1" = hw ] && ! _is_category "$2"; then
-        # The parameterised form `hw <top>`: the second word is an argument to
-        # the category, not another category. Requiring that it not name a
-        # category keeps `run.sh hw gen` reading as two categories, which is
-        # the only sense it can have.
+    elif [ "$#" -eq 2 ] && { [ "$1" = hw ] || [ "$1" = bazel ]; } &&
+         ! _is_category "$2"; then
+        # The parameterised forms `hw <top>` and `bazel <group>`: the second
+        # word is an argument to the category, not another category. Requiring
+        # that it not name a category keeps `run.sh hw gen` reading as two
+        # categories, which is the only sense it can have.
         run_category "$1" "$2"
     else
         # Otherwise every argument is a category, run in the order given.
