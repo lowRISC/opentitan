@@ -1071,7 +1071,7 @@
     },
     "//third_party/wycheproof:extensions.bzl%wycheproof": {
       "general": {
-        "bzlTransitiveDigest": "KaoEAJu0r+dgsWYu8rdAjb35RH1t/9wB22z6RUih/0A=",
+        "bzlTransitiveDigest": "YcFonw6302393Y9NyLsWNQD5rivw2lZkj9yiCxtBFg0=",
         "usagesDigest": "Gdz66kVX6D/N5Ctc5bWOnMAXuhBPCcytmyTtIzqrvIU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1081,9 +1081,9 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/wycheproof:BUILD.wycheproof_common.bazel",
-              "sha256": "a7a4c18d0d5609b26f3341dc7a9dd6829174d542ee6f0434f5fa7319e0811b75",
-              "strip_prefix": "wycheproof-snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d",
-              "url": "https://github.com/lowRISC/wycheproof/archive/refs/tags/snapshot-d9f6ec7d8bd8c96da05368999094e4a75ba5cb3d.tar.gz"
+              "sha256": "a257775fafc432e6226710a3beb7cc78728518586d673be22acad1b562815e7d",
+              "strip_prefix": "wycheproof-1ce52eedab8d4201ff7fddb63fd65b84ff6f12b4",
+              "url": "https://github.com/lowRISC/wycheproof/archive/1ce52eedab8d4201ff7fddb63fd65b84ff6f12b4.tar.gz"
             }
           }
         },

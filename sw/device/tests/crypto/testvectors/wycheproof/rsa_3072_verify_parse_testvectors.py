@@ -33,7 +33,12 @@ def parse_test(raw_data, n, e, t):
     if t['comment']:
         notes.append(t['comment'])
     # Add notes from flags, if any
-    notes.extend([raw_data['notes'][flag] for flag in t['flags']])
+    for flag in t['flags']:
+        note_entry = raw_data['notes'][flag]
+        if isinstance(note_entry, dict):
+            notes.append(note_entry.get('description', str(note_entry)))
+        else:
+            notes.append(note_entry)
 
     # cases for expected result
     if t['result'] == 'valid':
@@ -55,8 +60,10 @@ def parse_test(raw_data, n, e, t):
 
 def parse_test_group(raw_data, group):
     tests = []
-    n = parse_hex_int(group['n'])
-    e = parse_hex_int(group['e'])
+    n_str = group['n'] if 'n' in group else group['publicKey']['modulus']
+    e_str = group['e'] if 'e' in group else group['publicKey']['publicExponent']
+    n = parse_hex_int(n_str)
+    e = parse_hex_int(e_str)
     for t in group['tests']:
         tests.append(parse_test(raw_data, n, e, t))
     return tests
