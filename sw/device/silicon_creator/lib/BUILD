@@ -386,6 +386,10 @@ dual_cc_library(
         ["HAS_FLASH_CTRL"],
         [],
     ) + opentitan_if_ip(
+        "rram_ctrl",
+        ["HAS_RRAM_CTRL"],
+        [],
+    ) + opentitan_if_ip(
         "keymgr",
         ["HAS_KEYMGR"],
         [],
@@ -428,6 +432,10 @@ dual_cc_library(
             [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
             [],
         ) + opentitan_if_ip(
+            "rram_ctrl",
+            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            [],
+        ) + opentitan_if_ip(
             "keymgr",
             ["//sw/device/silicon_creator/lib/drivers:keymgr"],
             [],
@@ -441,8 +449,10 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":shutdown"),
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:rram_ctrl_c_regs",
         "//hw/top/dt",
         "//hw/top/dt:flash_ctrl",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
