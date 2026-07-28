@@ -37,8 +37,8 @@ archive_override(
 ################### originally from //third_party/rust:rust.MODULE.bazel
 
 # Dependencies:
-bazel_dep(name = "rules_rust", version = "0.59.2")
-bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
+bazel_dep(name = "rules_rust", version = "0.71.0")
+bazel_dep(name = "rules_rust_bindgen", version = "0.71.0")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
@@ -46,9 +46,8 @@ single_version_override(
     module_name = "rules_rust",
     patches = [
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.experimental.patch",
     ],
-    version = "0.59.2",
+    version = "0.71.0",
 )
 
 single_version_override(
@@ -57,7 +56,7 @@ single_version_override(
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.transition.patch",
     ],
-    version = "0.59.2",
+    version = "0.71.0",
 )
 
 # Support ChromeOS SDK environment as a Debian variant
@@ -116,7 +115,7 @@ use_repo(rust, "rust_toolchains")
 register_toolchains("@rust_toolchains//:all")
 
 # Rust crates:
-crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
 crate.from_cargo(
     name = "crate_index",
     cargo_lockfile = "//third_party/rust:Cargo.lock",
