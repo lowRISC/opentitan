@@ -56,8 +56,8 @@
 // the same thing in each case (except for the dummy flavour), but in a way that the respective
 // tools support.
 //
-// If the tool supports assertions in some form, we also define INC_ASSERT (which can be used to
-// hide signal definitions that are only used for assertions).
+// If the tool supports assertions in some form, we also define OCAH_OT_INC_ASSERT (which can be
+// used to hide signal definitions that are only used for assertions).
 //
 // The list of basic macros supported is:
 //
