@@ -112,6 +112,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 
+// FEV/synthesis (Formality FMR_VLOG-527) cannot parse the expression-valued default
+// arguments (CLK_ = clk_i, RST_ = !rst_ni) in these macro definitions. They are never
+// invoked anywhere in the tree (only the *_ERROR_TRIGGER_ALERT variants are), so gate
+// their definitions out of SYNTHESIS to keep the FEV read parseable.
+`ifndef SYNTHESIS
 `define OCAH_OT_ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = 2, CLK_ = clk_i, RST_ = !rst_ni) \
   `OCAH_OT_ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, unused_err_o, CLK_, RST_)
 
@@ -127,5 +132,6 @@
 `define OCAH_OT_ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(NAME_, REG_TOP_HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC, CLK_ = clk_i, RST_ = !rst_ni) \
   `OCAH_OT_ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ERR(NAME_, \
     REG_TOP_HIER_.u_prim_reg_we_check.u_prim_onehot_check, ERR_, GATE_, MAX_CYCLES_, CLK_, RST_)
+`endif // SYNTHESIS
 
 `endif // PRIM_ASSERT_SEC_CM_SVH
