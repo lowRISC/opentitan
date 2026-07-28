@@ -57,7 +57,7 @@ jobs:
       - name: Prepare Nix
         uses: ./.github/actions/prepare-nix
       - name: Run hygiene lint
-        run: nix run .#lint -- hygiene
+        run: nix run --quiet --no-warn-dirty .#lint -- hygiene
         env:
           OT_BASE_REF: ${{ github.base_ref || 'master' }}
           OT_RUN_PR_CHECKS: ${{ github.event_name == 'pull_request' && '1' || '0' }}
@@ -73,7 +73,7 @@ jobs:
       - name: Prepare Nix
         uses: ./.github/actions/prepare-nix
       - name: Run generated/vendored lint
-        run: nix run .#lint -- gen
+        run: nix run --quiet --no-warn-dirty .#lint -- gen
 
   # Per-top hardware lint (Verible + countermeasures), one matrix leg per top.
   lint_hw:
@@ -88,7 +88,7 @@ jobs:
       - name: Prepare Nix
         uses: ./.github/actions/prepare-nix
       - name: Run hardware lint
-        run: nix run .#lint -- hw ${{ matrix.top }}
+        run: nix run --quiet --no-warn-dirty .#lint -- hw ${{ matrix.top }}
 
   # Whole-tree Verible style sweep over the .sv/.v files the per-top lint cfgs
   # never reach (vendored RTL, DV/FPV sources, unintegrated IPs). Advisory: the
@@ -111,7 +111,7 @@ jobs:
       - name: Prepare Nix
         uses: ./.github/actions/prepare-nix
       - name: Run whole-tree Verible sweep
-        run: nix run .#lint -- sv
+        run: nix run --quiet --no-warn-dirty .#lint -- sv
 
   # Bazel-graph hygiene, link checking and alert classification. Runs in the
   # lint devShell like the other categories (so Bazel comes from the cache and
@@ -132,7 +132,7 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Run bazel-graph lint
-        run: nix run .#lint -- bazel
+        run: nix run --quiet --no-warn-dirty .#lint -- bazel
         env:
           OT_BASE_REF: ${{ github.base_ref || 'master' }}
           OT_RUN_PR_CHECKS: ${{ github.event_name == 'pull_request' && '1' || '0' }}

@@ -4,8 +4,19 @@
 
 name: Prepare Nix
 description: >
-  Install Nix (flakes enabled) and configure the lowRISC binary cache so the
-  lint devShell can be fetched instead of built.
+  Install Nix (flakes enabled), restore the Nix store from the Actions cache,
+  and realise the lint devShell up front.
+
+inputs:
+  save-store:
+    description: >
+      Whether this job may write the Nix store cache. Set only by the nix-cache
+      workflow, which is the sole writer: every lint job builds the same
+      closure, so letting them all save would upload the same multi-gigabyte
+      entry six times per push for one usable result. Writes only happen on
+      master regardless (see below).
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -19,3 +30,37 @@ runs:
           accept-flake-config = true
           extra-substituters = https://nix-cache.lowrisc.org/public/
           extra-trusted-public-keys = nix-cache.lowrisc.org-public-1:O6JLD0yXzaJDPiQW1meVu32JIDViuaPtGDfjlOopU7o=
+          # The closure is ~7 GiB across ~690 paths and was arriving at roughly
+          # 20 MB/s with the defaults (25 connections, 16 substitution jobs).
+          # Downloads are IO-bound here, so allow more of them in flight.
+          http-connections = 50
+          max-substitution-jobs = 32
+
+    # The lint devShell closure is ~7 GiB and changes only when flake.lock or
+    # flake.nix does, so keep it in the Actions cache instead of re-fetching it
+    # in all six lint jobs of every run.
+    #
+    # Only master writes the cache. GitHub scopes an entry created on a branch
+    # to that branch, so one written by a PR is invisible to every other PR,
+    # whereas default-branch entries are readable by all of them -- writing from
+    # PRs would fill the quota with entries nothing else can use. The single
+    # writer is the nix-cache workflow; every lint job only restores.
+    #
+    # On a miss (a PR that does change the flake) the prefix restores master's
+    # store, leaving Nix to fetch only the delta.
+    - name: Restore the Nix store
+      uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7.0.2
+      with:
+        primary-key: nix-lint-${{ runner.os }}-${{ hashFiles('flake.lock', 'flake.nix') }}
+        restore-prefixes-first-match: nix-lint-${{ runner.os }}-
+        save: ${{ inputs.save-store == 'true' && github.ref == 'refs/heads/master' }}
+
+    # Realise the lint environment here rather than letting the first
+    # `nix run .#lint` do it, so that fetching and building the closure --
+    # hundreds of "copying path" lines, plus any build logs -- stays in this
+    # step instead of burying the tool output of the category that happens to
+    # run first. The category steps then add `--quiet`, leaving them with lint
+    # output only. Everything is one store closure, so this costs no extra work.
+    - name: Build the lint environment
+      shell: bash
+      run: nix run --no-warn-dirty --print-build-logs .#lint -- --warmup

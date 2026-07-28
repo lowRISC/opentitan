@@ -18,6 +18,8 @@
 #   sv        whole-tree Verible sweep, advisory only (Nix tools)
 #   bazel     Bazel-graph hygiene + link/alert checks (requires Bazel)
 #
+# `--warmup` instead of a category realises the environment and exits.
+#
 # Every category runs from the tools provided by the `lint` devShell, so
 # `nix run .#lint` reproduces them exactly. The `bazel` category shells out to
 # ./bazelisk.sh, which picks up the devShell's Bazel from PATH (its version
@@ -301,6 +303,17 @@ run_category() {
 }
 
 main() {
+    # --warmup: do nothing but enter the sandbox, so that Nix realises the
+    # devShell closure. CI calls this once from the prepare-nix action, which
+    # keeps Nix's download and build chatter in that step and leaves the
+    # category steps containing tool output only. Nix has no way to prebuild
+    # this: the FHS devShell derivation is not meant to be built directly, and
+    # flake apps are not installables, so the app has to be run.
+    if [ "${1:-}" = "--warmup" ]; then
+        echo "Lint environment ready ($(bash --version | head -1))."
+        exit 0
+    fi
+
     if [ "$#" -eq 0 ]; then
         # No arguments: run everything.
         cat_hygiene
