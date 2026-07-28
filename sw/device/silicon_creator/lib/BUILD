@@ -307,7 +307,10 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:top_lib",
-        ],
+        ] + opentitan_select_top(
+            {"earlgrey": [":nvm_ctrl"]},
+            [],
+        ),
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",

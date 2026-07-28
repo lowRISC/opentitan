@@ -10,8 +10,8 @@
 #include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
 #define EFLASH_SIZE_BYES TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES
 #elif defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#define EFLASH_SIZE_BYES TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
+#define EFLASH_SIZE_BYES NVM_DATA_SIZE_BYTES
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #define EFLASH_SIZE_BYES TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES

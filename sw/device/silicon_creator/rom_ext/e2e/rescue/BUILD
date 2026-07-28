@@ -95,6 +95,7 @@ _CONFIGS = {
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib:boot_log",
             "//sw/device/silicon_creator/lib:manifest",
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
         ],
     )

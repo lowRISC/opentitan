@@ -95,15 +95,12 @@ status_t keymgr_print(void) { return OK_STATUS(); }
 
 #ifdef WITH_MANIFEST
 #include "sw/device/silicon_creator/lib/manifest.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 status_t manifest_print(void) {
-  const manifest_t *a =
-      (const manifest_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  const manifest_t *a = (const manifest_t *)NVM_DATA_BASE_ADDR;
   const manifest_t *b =
-      (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-                           (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+      (const manifest_t *)(NVM_DATA_BASE_ADDR + (NVM_DATA_SIZE_BYTES / 2));
   LOG_INFO("slot_a rom_ext_id = %C", a->identifier);
   LOG_INFO("slot_a rom_ext_version = %u.%u", a->version_major,
            a->version_minor);
