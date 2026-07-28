@@ -47,66 +47,6 @@ const nvm_page_cfg_t kPagePlainCfg = {.scrambling = kMultiBitBool4False,
 const nvm_page_cfg_t kPageRawCfg = {.scrambling = kMultiBitBool4False,
                                     .ecc = kMultiBitBool4False};
 
-// Physical location of a logical NVM info page on RRAM.
-//
-// RRAM has only 8 physical info pages (`emul` = 0, `page_id` 0-7), too few
-// for the 20 logical nvm_info_page_t entries inherited from flash. The
-// remainder are relocated onto reserved pages of the (much larger) RRAM data
-// partition instead (`emul` = 1).
-typedef struct {
-  uint32_t page_id;
-  uint32_t emul;
-} nvm_page_phys_t;
-
-// TODO(#XXXX): pages relocated onto the data partition (`emul` = 1) all share
-// a single memory-protection region (`kRramRelocatedRegion`), covering
-// `kRramRelocatedPageCount` reserved data pages starting at
-// `kRramEmulPageBase`, with read and write always enabled and never
-// locked — RRAM only has 8 configurable data regions, fewer than the 14
-// relocated pages, so there is no room for per-page permissions yet. Giving
-// relocated pages (or groups of them) their own protection will require
-// hardware changes to add more data regions.
-enum {
-  kRramRelocatedRegion = 0,
-  // First data-partition page reserved for relocated pages. kPageMap's
-  // `page_id` values for `emul` = 1 entries are absolute data-partition page
-  // indices already offset by this base.
-  kRramEmulPageBase = 4064,
-  kRramRelocatedPageCount = 14,
-};
-
-// Mapping from nvm_info_page_t to a physical RRAM location. Only 6 of the 8
-// physical info pages are assigned so far (pages 3-4 are reserved/unused for
-// now); everything else is relocated to reserved data pages starting at
-// kRramEmulPageBase.
-// clang-format off
-static const nvm_page_phys_t kPageMap[] = {
-    // Info partition
-    [kNvmInfoPageFactoryId]            = {.page_id = 0, .emul = 0},
-    [kNvmInfoPageAttestationKeySeeds]  = {.page_id = 1, .emul = 0},
-    [kNvmInfoPageFactoryCerts]         = {.page_id = 2, .emul = 0},
-    // pages 3-4 reserved/unused for now
-    [kNvmInfoPageCreatorSecret]        = {.page_id = 5, .emul = 0}, // fixed in hardware
-    [kNvmInfoPageOwnerSecret]          = {.page_id = 6, .emul = 0}, // fixed in hardware
-    [kNvmInfoPageWaferAuthSecret]      = {.page_id = 7, .emul = 0}, // fixed in hardware
-    // Data partition, reserved pages kRramEmulPageBase + 0-13
-    [kNvmInfoPageOwnerReserved0]       = {.page_id = kRramEmulPageBase + 0,  .emul = 1},
-    [kNvmInfoPageOwnerReserved1]       = {.page_id = kRramEmulPageBase + 1,  .emul = 1},
-    [kNvmInfoPageOwnerReserved2]       = {.page_id = kRramEmulPageBase + 2,  .emul = 1},
-    [kNvmInfoPageOwnerReserved3]       = {.page_id = kRramEmulPageBase + 3,  .emul = 1},
-    [kNvmInfoPageBootData0]            = {.page_id = kRramEmulPageBase + 4,  .emul = 1},
-    [kNvmInfoPageBootData1]            = {.page_id = kRramEmulPageBase + 5,  .emul = 1},
-    [kNvmInfoPageOwnerSlot0]           = {.page_id = kRramEmulPageBase + 6,  .emul = 1},
-    [kNvmInfoPageOwnerSlot1]           = {.page_id = kRramEmulPageBase + 7,  .emul = 1},
-    [kNvmInfoPageCreatorReserved0]     = {.page_id = kRramEmulPageBase + 8,  .emul = 1},
-    [kNvmInfoPageOwnerReserved4]       = {.page_id = kRramEmulPageBase + 9,  .emul = 1},
-    [kNvmInfoPageOwnerReserved5]       = {.page_id = kRramEmulPageBase + 10, .emul = 1},
-    [kNvmInfoPageOwnerReserved6]       = {.page_id = kRramEmulPageBase + 11, .emul = 1},
-    [kNvmInfoPageOwnerReserved7]       = {.page_id = kRramEmulPageBase + 12, .emul = 1},
-    [kNvmInfoPageDiceCerts]            = {.page_id = kRramEmulPageBase + 13, .emul = 1},
-};
-// clang-format on
-
 static status_t dif_rram_state_init(dif_rram_ctrl_state_t *rram) {
   TRY(dif_rram_ctrl_init_state(
       rram, mmio_region_from_addr(TOP_EARLGREY_RRAM_CTRL_CORE_BASE_ADDR)));
@@ -177,18 +117,17 @@ static status_t rram_relocated_region_enable(dif_rram_ctrl_state_t *rram,
       .ecc_en = cfg.ecc,
   };
   return rram_ctrl_testutils_data_region_setup_properties(
-      rram, kRramEmulPageBase, kRramRelocatedRegion, kRramRelocatedPageCount,
+      rram, kRramCtrlEmulPageBase, kRramCtrlEmulRegion, kRramCtrlEmulPageCount,
       properties, /*offset=*/NULL);
 }
 
 status_t nvm_testutils_info_page_setup(nvm_info_page_t page,
                                        nvm_page_perms_t perms,
                                        nvm_page_cfg_t cfg) {
-  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
-  const nvm_page_phys_t p = kPageMap[page];
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
   dif_rram_ctrl_state_t rram;
   TRY(dif_rram_state_init(&rram));
-  if (p.emul != 0) {
+  if (p->emulated) {
     // `perms` is ignored: the shared region is always readable/writable.
     TRY(rram_relocated_region_enable(&rram, cfg));
     return OK_STATUS();
@@ -201,24 +140,23 @@ status_t nvm_testutils_info_page_setup(nvm_info_page_t page,
       .scramble_en = cfg.scrambling,
       .ecc_en = cfg.ecc,
   };
-  TRY(rram_info_page_set_props(&rram, p.page_id, props));
+  TRY(rram_info_page_set_props(&rram, p->page_id, props));
   return OK_STATUS();
 }
 
 status_t nvm_testutils_info_page_set(nvm_info_page_t page,
                                      nvm_page_perms_t perms,
                                      nvm_page_cfg_t cfg) {
-  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
-  const nvm_page_phys_t p = kPageMap[page];
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
   dif_rram_ctrl_state_t rram;
   TRY(dif_rram_state_init(&rram));
-  if (p.emul != 0) {
+  if (p->emulated) {
     // `perms` is ignored: the shared region is always readable/writable.
     TRY(rram_relocated_region_enable(&rram, cfg));
     return OK_STATUS();
   }
   dif_rram_ctrl_region_properties_t props;
-  TRY(rram_info_page_get_props(&rram, p.page_id, &props));
+  TRY(rram_info_page_get_props(&rram, p->page_id, &props));
   if (perms.read == kMultiBitBool4True) {
     props.rd_en = kMultiBitBool4True;
   }
@@ -231,23 +169,22 @@ status_t nvm_testutils_info_page_set(nvm_info_page_t page,
   if (cfg.ecc == kMultiBitBool4True) {
     props.ecc_en = kMultiBitBool4True;
   }
-  TRY(rram_info_page_set_props(&rram, p.page_id, props));
+  TRY(rram_info_page_set_props(&rram, p->page_id, props));
   return OK_STATUS();
 }
 
 status_t nvm_testutils_info_page_clear(nvm_info_page_t page,
                                        nvm_page_perms_t perms,
                                        nvm_page_cfg_t cfg) {
-  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
-  const nvm_page_phys_t p = kPageMap[page];
-  TRY_CHECK(p.emul == 0,
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
+  TRY_CHECK(!p->emulated,
             "page %d shares mp region %d with other relocated pages; "
             "clearing permissions there would affect them too",
-            page, kRramRelocatedRegion);
+            page, kRramCtrlEmulRegion);
   dif_rram_ctrl_state_t rram;
   TRY(dif_rram_state_init(&rram));
   dif_rram_ctrl_region_properties_t props;
-  TRY(rram_info_page_get_props(&rram, p.page_id, &props));
+  TRY(rram_info_page_get_props(&rram, p->page_id, &props));
   if (perms.read == kMultiBitBool4True) {
     props.rd_en = kMultiBitBool4False;
   }
@@ -260,7 +197,7 @@ status_t nvm_testutils_info_page_clear(nvm_info_page_t page,
   if (cfg.ecc == kMultiBitBool4True) {
     props.ecc_en = kMultiBitBool4False;
   }
-  TRY(rram_info_page_set_props(&rram, p.page_id, props));
+  TRY(rram_info_page_set_props(&rram, p->page_id, props));
   return OK_STATUS();
 }
 
@@ -268,8 +205,7 @@ status_t nvm_testutils_write_info_page(nvm_info_page_t page,
                                        uint32_t byte_offset,
                                        const uint32_t *data, size_t word_count,
                                        bool erase_before_write, bool readback) {
-  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
-  const nvm_page_phys_t p = kPageMap[page];
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
   // RRAM has no erase step; writes overwrite in place.
   (void)erase_before_write;
 
@@ -277,9 +213,9 @@ status_t nvm_testutils_write_info_page(nvm_info_page_t page,
   TRY(dif_rram_state_init(&rram));
   dif_rram_ctrl_device_info_t info = dif_rram_ctrl_get_device_info();
   dif_rram_ctrl_partition_type_t partition_type =
-      p.emul == 0 ? kDifRramCtrlPartitionTypeInfo
-                  : kDifRramCtrlPartitionTypeData;
-  uint32_t address = p.page_id * info.bytes_per_page + byte_offset;
+      !p->emulated ? kDifRramCtrlPartitionTypeInfo
+                   : kDifRramCtrlPartitionTypeData;
+  uint32_t address = p->page_id * info.bytes_per_page + byte_offset;
 
   // RRAM writes must start at a 16-byte-aligned address and cover a multiple
   // of 4 32-bit words (see dif_rram_ctrl_start()'s checks); unlike flash,
@@ -333,15 +269,14 @@ status_t nvm_testutils_write_info_page(nvm_info_page_t page,
 status_t nvm_testutils_read_info_page(nvm_info_page_t page,
                                       uint32_t byte_offset, uint32_t *data,
                                       size_t word_count) {
-  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
-  const nvm_page_phys_t p = kPageMap[page];
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
   dif_rram_ctrl_state_t rram;
   TRY(dif_rram_state_init(&rram));
   dif_rram_ctrl_device_info_t info = dif_rram_ctrl_get_device_info();
   dif_rram_ctrl_partition_type_t partition_type =
-      p.emul == 0 ? kDifRramCtrlPartitionTypeInfo
-                  : kDifRramCtrlPartitionTypeData;
-  uint32_t address = p.page_id * info.bytes_per_page + byte_offset;
+      !p->emulated ? kDifRramCtrlPartitionTypeInfo
+                   : kDifRramCtrlPartitionTypeData;
+  uint32_t address = p->page_id * info.bytes_per_page + byte_offset;
   TRY(rram_ctrl_testutils_read(&rram, address, data, partition_type,
                                (uint32_t)word_count, /*delay_micros=*/0));
   return OK_STATUS();
@@ -351,16 +286,15 @@ status_t nvm_testutils_info_page_lock(nvm_info_page_t page, bool lock) {
   if (!lock) {
     return OK_STATUS();
   }
-  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
-  const nvm_page_phys_t p = kPageMap[page];
-  if (p.emul != 0) {
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
+  if (p->emulated) {
     // The shared relocated-page region is intentionally never locked (see
     // TODO above): locking it would freeze every relocated page at once.
     return OK_STATUS();
   }
   dif_rram_ctrl_state_t rram;
   TRY(dif_rram_state_init(&rram));
-  dif_rram_ctrl_info_region_t region = {.page = p.page_id};
+  dif_rram_ctrl_info_region_t region = {.page = p->page_id};
   TRY(dif_rram_ctrl_lock_info_region_properties(&rram, region));
   return OK_STATUS();
 }

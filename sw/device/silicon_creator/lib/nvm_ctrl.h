@@ -203,6 +203,39 @@ typedef enum nvm_info_page {
   kNvmInfoPageDiceCerts = 19,
 } nvm_info_page_t;
 
+/**
+ * Byte size of `DiceCerts`/`FactoryCerts`, the two logical pages whose
+ * on-NVM capacity varies with NVM technology (see `rram_ctrl.h`'s
+ * `RRAM_CTRL_INFO_PAGES_DEFINE`, which is the source of truth these mirror
+ * for RRAM). Every other logical page is exactly one `NVM_BYTES_PER_PAGE`,
+ * on both technologies.
+ */
+#ifdef HAS_RRAM_CTRL
+enum {
+  kNvmInfoPageDiceCertsSize = kRramCtrlInfoPageDiceCertsSize,
+  kNvmInfoPageFactoryCertsSize = kRramCtrlInfoPageFactoryCertsSize,
+};
+
+/**
+ * Returns the physical RRAM info page descriptor for a logical page.
+ *
+ * The single source of truth for the logical-to-physical info page mapping
+ * (built from `RRAM_CTRL_INFO_PAGES_DEFINE` in rram_ctrl.h), exported so
+ * that `nvm_testutils.c` -- which talks to rram_ctrl via DIFs rather than
+ * this driver, for host-injected provisioning/test code -- can share it
+ * instead of maintaining a second, independently hand-written table that
+ * can silently drift out of sync (as happened with `FactoryCerts`,
+ * `OwnerSlot0`/`OwnerSlot1`, and `DiceCerts` growing to span multiple
+ * physical pages here without the other table being updated to match).
+ */
+const rram_ctrl_info_page_t *nvm_ctrl_rram_page_info(nvm_info_page_t page);
+#else
+enum {
+  kNvmInfoPageDiceCertsSize = NVM_BYTES_PER_PAGE,
+  kNvmInfoPageFactoryCertsSize = NVM_BYTES_PER_PAGE,
+};
+#endif  // HAS_RRAM_CTRL
+
 // ---------------------------------------------------------------------------
 // SEC_MMIO write-increment constants
 // ---------------------------------------------------------------------------

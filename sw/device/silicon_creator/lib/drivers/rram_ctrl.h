@@ -63,8 +63,19 @@ enum {
   /**
    * Memory-protection region index (of `RRAM_CTRL_PARAM_NUM_REGIONS`) used
    * for the shared emulated-page region.
+   *
+   * Cannot be 0 or 1: `rom_ext_nvm_protect_self()` (rom_ext.c) unconditionally
+   * reconfigures those two regions for ROM_EXT's own code range, before
+   * `ownership_init()` ever runs -- confirmed by observing `OwnerSlot0`/
+   * `OwnerSlot1` writes still fail with `kErrorRramCtrlDataWrite` even after
+   * this region is granted read/write access at region 0 during
+   * `nvm_ctrl_init()`. Regions 2-7 are claimed on demand by owner-configurable
+   * BL0 slot regions (`owner_block.c`'s `kRomExtRegions + mp_index`, up to 6
+   * of them). `RRAM_CTRL_PARAM_NUM_REGIONS` was grown from 8 to 10 to give
+   * the emulated-page region its own dedicated index (8) without stealing
+   * from that owner-configurable range; region 9 remains spare.
    */
-  kRramCtrlEmulRegion = 0,
+  kRramCtrlEmulRegion = 8,
 };
 
 /**

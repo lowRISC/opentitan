@@ -99,6 +99,10 @@ static const rram_ctrl_info_page_t *page_ptr(nvm_info_page_t page) {
   return kPageTable[(uint32_t)page];
 }
 
+const rram_ctrl_info_page_t *nvm_ctrl_rram_page_info(nvm_info_page_t page) {
+  return page_ptr(page);
+}
+
 static rram_ctrl_perms_t perms_to_rram(nvm_page_perms_t p) {
   return (rram_ctrl_perms_t){
       .read = (uint32_t)p.read,
@@ -270,6 +274,22 @@ void nvm_ctrl_init(void) {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4False,
   });
+  // Emulated info pages (e.g. OwnerSlot0/1, DiceCerts, BootData0/1) don't
+  // get individual permissions like real info pages; they all share this one
+  // memory-protection region instead. Grant it read/write access so they can
+  // be written during boot.
+  rram_ctrl_data_region_protect(
+      kRramCtrlEmulRegion, kRramCtrlEmulPageBase, kRramCtrlEmulPageCount,
+      (rram_ctrl_perms_t){
+          .read = kMultiBitBool4True,
+          .write = kMultiBitBool4True,
+      },
+      rram_ctrl_data_default_cfg_get(), kHardenedBoolFalse);
+  // Unlocked, `rram_ctrl_data_region_protect()` performs 2 sec_mmio-tracked
+  // writes (MP_REGION_${region} and MP_REGION_CFG_${region}), not the 1
+  // implied by `kRramCtrlSecMmioDataRegionProtect` -- that constant appears
+  // to under-count by one; using the literal here instead of relying on it.
+  SEC_MMIO_WRITE_INCREMENT(2);
 }
 
 void nvm_ctrl_disable(void) { rram_ctrl_disable(); }
