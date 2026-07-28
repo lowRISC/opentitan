@@ -27,7 +27,7 @@ package rram_ctrl_pkg;
   parameter int unsigned BusIntgWidth    = tlul_pkg::DataIntgWidth;
   parameter int unsigned BusFullWidth    = BusWidth + BusIntgWidth;
 
-  parameter int unsigned MpRegions       = 8;  // controller protection regions
+  parameter int unsigned MpRegions       = 10;  // controller protection regions
   parameter int unsigned TotalMpRegions  = MpRegions + 2; // + default region and init region
 
   // RRAM phy parameters
