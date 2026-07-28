@@ -1,0 +1,21 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Prepare Nix
+description: >
+  Install Nix (flakes enabled) and configure the lowRISC binary cache so the
+  lint devShell can be fetched instead of built.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Nix
+      uses: DeterminateSystems/nix-installer-action@v16
+      with:
+        # `accept-flake-config` lets the flake's own nixConfig (the lowRISC
+        # substituter + key, declared in flake.nix) apply without prompting.
+        extra-conf: |
+          accept-flake-config = true
+          extra-substituters = https://nix-cache.lowrisc.org/public/
+          extra-trusted-public-keys = nix-cache.lowrisc.org-public-1:O6JLD0yXzaJDPiQW1meVu32JIDViuaPtGDfjlOopU7o=
