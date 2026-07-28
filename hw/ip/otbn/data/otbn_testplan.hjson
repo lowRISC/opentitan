@@ -120,6 +120,31 @@
       tests: ["otbn_stress_all"]
     }
     {
+      name: mai
+      desc: '''
+            Exercise the masking accelerator interface (MAI)
+
+            Drive and read the `MAI_CTRL`/`MAI_STATUS` CSRs and the `MAI_IN0`/`MAI_IN1`/`MAI_RES`
+            WSRs to run secAdd, secAddMod, A2B, and B2A operations through the masking
+            accelerator, comparing results against the reference model across a range of operand
+            values, including edge cases such as zero, all-ones, and operands that exercise the
+            secAddMod modulus reduction.
+
+            Also check `MAI_STATUS` busy/done reporting, and that issuing a new operation or
+            accessing the result WSRs while the accelerator is still busy is correctly flagged as
+            an illegal SW interaction (`MAI_SOFTWARE_ERROR`).
+
+            Additionally, trigger a secure wipe while an operation of each type is in flight,
+            including B2A, whose rejection sampling normally makes its latency nondeterministic
+            but is disabled during a secure wipe to bound its duration. Check that the MAI is
+            allowed to finish dispatching its inputs into the accelerator, that the resulting
+            output is discarded rather than used, and that the wipe still completes within the
+            expected bound (23 cycles, the longest possible operation latency).
+            '''
+      stage: V2
+      tests: ["otbn_mai"]
+    }
+    {
       name: lc_escalation
       desc: '''
             Trigger the life cycle escalation input.
