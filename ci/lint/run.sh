@@ -15,6 +15,7 @@
 #   hygiene   text/metadata/python hygiene checks   (Nix tools)
 #   gen       generated & vendored file freshness    (Nix tools)
 #   hw        per-top Verible + countermeasure lint  (Nix tools)
+#   sv        whole-tree Verible sweep, advisory only (Nix tools)
 #   bazel     Bazel-graph hygiene + link/alert checks (requires Bazel)
 #
 # Every category runs from the tools provided by the `lint` devShell, so
@@ -162,6 +163,79 @@ cat_hw() {
 }
 
 # ---------------------------------------------------------------------------
+# sv: whole-tree Verible style sweep. Advisory only.
+#
+# The `hw` category above lints exactly what the per-top lint cfgs pull in,
+# which is the set that carries correctly scoped waivers and can therefore be
+# gating. This sweep covers the ~800 .sv/.v files those cfgs never reach --
+# vendored RTL, DV/FPV sources, pre_dv/pre_sca testbenches, unintegrated IPs,
+# alternative prim technology variants -- reproducing the whole-tree pass that
+# CI used to get from chipsalliance/verible-linter-action (which also never
+# gated: it left the action's fail_on_error at its 'false' default).
+#
+# It cannot be gating, and is not merely conservatism about turning it on:
+# - Waivers are applied globally here, because the per-core scoping that makes
+#   them precise comes from fusesoc, which by definition isn't involved for
+#   files no core lists. Broad locations such as ".*top_earlgrey.*" therefore
+#   apply tree-wide.
+# - A dozen files legitimately cannot parse standalone -- UVM class files meant
+#   to be `include`d into a package, ibex formal fragments that need macros
+#   defined by their harness. Verible has no notion of a compilation unit here,
+#   so it reports several hundred syntax errors that are artefacts of linting
+#   the files individually rather than defects.
+# ---------------------------------------------------------------------------
+_lint_verible_sweep() {
+    local rules waiver log files rc=0
+    rules=hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
+    waiver="$(mktemp)"
+    log="$(mktemp)"
+    # shellcheck disable=SC2064  # expand paths now, while they're in scope
+    trap "rm -f '$waiver' '$log'" RETURN
+
+    # Every waiver in the tree, since there is no per-core context to scope
+    # them by. Enumerated with git rather than `find`, so that copies fusesoc
+    # leaves in scratch/*/fusesoc-work/src/ after a local dvsim run are not
+    # picked up as duplicates.
+    git ls-files -z '*.vbl' | xargs -0 --no-run-if-empty cat > "$waiver"
+
+    mapfile -t files < <(git ls-files '*.sv' '*.v')
+    if [ "${#files[@]}" -eq 0 ]; then echo "No SystemVerilog files to check."; return 0; fi
+    echo "Sweeping ${#files[@]} .sv/.v file(s) with $(verible-verilog-lint --version |
+        head -1) and $(grep -c '^waive' "$waiver") waiver(s)."
+
+    # No --lint_fatal/--parse_fatal: findings go to stderr and the exit status
+    # is ignored either way, since this check never blocks.
+    verible-verilog-lint --rules_config="$rules" --waiver_files="$waiver" \
+        "${files[@]}" > "$log" 2>&1 || rc=$?
+
+    local parse_errs parse_files style
+    parse_errs="$(grep -cE 'syntax error|preprocessing error' "$log")" || true
+    parse_files="$(grep -E 'syntax error|preprocessing error' "$log" |
+        cut -d: -f1 | sort -u | grep -c .)" || true
+    style=$(($(grep -c '' "$log") - parse_errs))
+    echo
+    echo "${style} style finding(s); ${parse_errs} parse error(s) from" \
+         "${parse_files} file(s) that do not parse standalone."
+    if [ "$style" -gt 0 ]; then
+        echo
+        echo "Style findings by rule:"
+        grep -vE 'syntax error|preprocessing error' "$log" |
+            grep -oE '\[[a-z0-9-]+\]$' | sort | uniq -c | sort -rn
+    fi
+    echo
+    echo "Full output (verible exit ${rc}):"
+    cat "$log"
+
+    # Advisory: never fail, so the section header is the only signal needed and
+    # the permanently-present parse errors don't warn on every run.
+    return 0
+}
+
+cat_sv() {
+    soft_check "Verible whole-tree sweep" _lint_verible_sweep
+}
+
+# ---------------------------------------------------------------------------
 # bazel: checks that query or build the Bazel graph. These require a working
 # Bazel setup (./bazelisk.sh) and so are *not* provided by the lint devShell.
 # ---------------------------------------------------------------------------
@@ -196,7 +270,7 @@ cat_bazel() {
 # ---------------------------------------------------------------------------
 # Dispatch
 # ---------------------------------------------------------------------------
-ALL_CATEGORIES=(hygiene gen hw bazel)
+ALL_CATEGORIES=(hygiene gen hw sv bazel)
 
 # _is_category <word>: true if <word> names a lint category.
 _is_category() {
@@ -209,6 +283,7 @@ run_category() {
     case "$1" in
         hygiene) cat_hygiene ;;
         gen)     cat_gen ;;
+        sv)      cat_sv ;;
         bazel)   cat_bazel ;;
         hw)
             if [ -n "${2:-}" ]; then
@@ -231,6 +306,7 @@ main() {
         cat_hygiene
         cat_gen
         for top in "${ALL_TOPS[@]}"; do cat_hw "$top"; done
+        cat_sv
         cat_bazel
     elif [ "$#" -eq 2 ] && [ "$1" = hw ] && ! _is_category "$2"; then
         # The parameterised form `hw <top>`: the second word is an argument to
