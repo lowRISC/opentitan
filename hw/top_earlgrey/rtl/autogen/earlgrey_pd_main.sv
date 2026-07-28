@@ -2185,6 +2185,7 @@ module earlgrey_pd_main #(
     .SecSkipUrndReseedAtStart(SecOtbnSkipUrndReseedAtStart),
     .FeatStubMai(OtbnFeatStubMai),
     .RndCnstBnMacUrndPerm(RndCnstOtbnBnMacUrndPerm),
+    .RndCnstMaiUrndPerm(RndCnstOtbnMaiUrndPerm),
     .RndCnstOtbnKey(RndCnstOtbnOtbnKey),
     .RndCnstOtbnNonce(RndCnstOtbnOtbnNonce)
   ) u_otbn (
