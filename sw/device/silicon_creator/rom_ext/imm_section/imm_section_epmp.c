@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/nvm_ctrl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
@@ -25,10 +26,9 @@ static const epmp_region_t kMmioRegion = {
     .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES,
 };
 
-static const epmp_region_t kFlashRegion = {
-    .start = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-    .end = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
-           TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES,
+static const epmp_region_t kNvmRegion = {
+    .start = NVM_DATA_BASE_ADDR,
+    .end = NVM_DATA_BASE_ADDR + NVM_DATA_SIZE_BYTES,
 };
 
 static const epmp_region_t kRvDmRegion = {
@@ -56,9 +56,9 @@ rom_error_t imm_section_epmp_reconfigure(void) {
   // This stack guard was in ePMP region 14.
   epmp_set_napot(11, kStackGuard, kEpmpPermLockedNoAccess);
 
-  // ePMP region 12 gives read access to all of flash for both M and U modes.
-  // This flash region was in ePMP region 5.
-  epmp_set_napot(12, kFlashRegion, kEpmpPermLockedReadOnly);
+  // ePMP region 12 gives read access to all of NVM for both M and U modes.
+  // This region was in ePMP region 5.
+  epmp_set_napot(12, kNvmRegion, kEpmpPermLockedReadOnly);
 
   // ePMP region 13 allows RvDM access.
   if (lifecycle_is_prod() == kHardenedBoolTrue) {
