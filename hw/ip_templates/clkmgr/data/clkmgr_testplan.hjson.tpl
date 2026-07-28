@@ -194,14 +194,18 @@
             in the `recov_err_code` CSR. Also, if the counters reach their
             maximum value they don't wrap around.
 
+          % if ext_clk_bypass:
             If clock calibration is lost, indicated by the `calib_rdy_i` input
             being `prim_mubi_pkg::MuBi4False`, the measurements stop, no
             error is triggered, and `measure_ctrl_regwen` is set to 1.
 
+          % endif
             **Stimulus**:
             - Randomly set slow, correct, and fast interval for each counter
               and test.
+          % if ext_clk_bypass:
             - Randomly set the `calib_rdy_i` input.
+          % endif
             - Randomly trigger a clock saturation by forcing its cycle count
               to be near its maximum value while counting.
 
