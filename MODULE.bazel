@@ -198,7 +198,7 @@ use_repo(llvm, "llvm_toolchain_llvm")
 ################### originally from "//third_party/python:python.MODULE.bazel
 
 # Dependencies:
-bazel_dep(name = "rules_python", version = "1.2.0")
+bazel_dep(name = "rules_python", version = "2.2.0")
 
 # Python toolchain:
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
