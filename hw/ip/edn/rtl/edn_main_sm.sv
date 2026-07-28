@@ -6,9 +6,10 @@
 //
 //   does hardware-based csrng app interface command requests
 
-`include "prim_assert.sv"
 
 module edn_main_sm import edn_pkg::*;
+
+    `include "prim_assert.sv"
 (
   input logic                   clk_i,
   input logic                   rst_ni,

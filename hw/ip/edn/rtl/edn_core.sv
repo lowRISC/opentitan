@@ -8,9 +8,10 @@
 //    end points.
 //
 
-`include "prim_assert.sv"
 
 module edn_core import edn_pkg::*;
+
+    `include "prim_assert.sv"
 #(
   parameter int NumEndPoints = 4
 ) (

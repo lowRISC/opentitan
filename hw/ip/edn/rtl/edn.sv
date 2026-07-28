@@ -4,10 +4,11 @@
 //
 // Description: edn top level wrapper file
 
-`include "prim_assert.sv"
 
 module edn
   import edn_pkg::*;
+
+  `include "prim_assert.sv"
   import edn_reg_pkg::*;
 #(
   parameter int NumEndPoints = 8,
@@ -87,7 +88,6 @@ module edn
     .intr_edn_cmd_req_done_o,
     .intr_edn_fatal_err_o
   );
-
 
 
   ///////////////////////////
