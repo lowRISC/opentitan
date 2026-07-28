@@ -100,6 +100,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
         "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
