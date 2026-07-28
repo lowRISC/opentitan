@@ -158,12 +158,6 @@ crate.annotation(
     },
     repositories = ["crate_index"],
 )
-
-inject_repo(
-    crate,
-    ot_openssl = "openssl",
-)
-
 crate.annotation(
     build_script_data = ["@ot_openssl//:gen_dir"],
     build_script_env = {
@@ -171,6 +165,7 @@ crate.annotation(
         "OPENSSL_STATIC": "1",
     },
     crate = "openssl-sys",
+    label_injections = {"@openssl": "@ot_openssl"},
     repositories = ["crate_index"],
 )
 use_repo(crate, "crate_index")
