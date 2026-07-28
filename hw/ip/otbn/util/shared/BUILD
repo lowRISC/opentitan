@@ -55,6 +55,14 @@ py_library(
 )
 
 py_library(
+    name = "dmem_dump",
+    srcs = ["dmem_dump.py"],
+    deps = [
+        ":mem_layout",
+    ],
+)
+
+py_library(
     name = "elf",
     srcs = ["elf.py"],
     deps = [
@@ -208,6 +216,11 @@ py_library(
 py_library(
     name = "testgen",
     srcs = ["testgen.py"],
+)
+
+py_library(
+    name = "testcase",
+    srcs = ["testcase.py"],
 )
 
 py_library(
