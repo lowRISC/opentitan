@@ -230,6 +230,7 @@ module earlgrey_pd_main #(
   input  otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_h_i,
   inout         otp_ext_voltage_h_io,
   output logic [7:0] otp_obs_o,
+  inout         rram_test_analog_io,
   input  logic [31:0] fpga_info_i,
   output logic       sck_monitor_o,
   input  logic       usbdev_usb_rx_d_i,
@@ -2105,6 +2106,7 @@ module earlgrey_pd_main #(
     .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
     .obs_ctrl_i(ast_obs_ctrl),
     .rram_obs_o(),
+    .rram_test_analog_io(rram_test_analog_io),
     .prim_tl_i(rram_macro_prim_tl_req),
     .prim_tl_o(rram_macro_prim_tl_rsp)
   );

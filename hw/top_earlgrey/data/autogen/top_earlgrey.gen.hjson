@@ -6848,6 +6848,20 @@
           index: -1
         }
         {
+          name: rram_test_analog
+          struct: ""
+          type: io
+          act: none
+          width: 1
+          default: "'0"
+          inst_name: rram_macro
+          package: ""
+          external: true
+          conn_type: false
+          index: -1
+          top_signame: rram_test_analog
+        }
+        {
           name: prim_tl
           struct: tl
           package: tlul_pkg
@@ -11274,6 +11288,7 @@
       otp_macro.pwr_seq_h: ""
       otp_macro.ext_voltage_h: otp_ext_voltage_h
       otp_macro.otp_obs: otp_obs
+      rram_macro.rram_test_analog: rram_test_analog
       rstmgr.por_n: por_n
       rstmgr.resets: ""
       rstmgr.rst_en: ""
@@ -13589,16 +13604,16 @@
         port_type: inout
       }
       {
-        name: SPI_HOST_D0
-        type: BidirStd
-        bank: VIOA
-        connection: direct
-        desc: SPI host data
+        name: RRAM_ANALOG
+        type: AnalogIn0
+        bank: VCC
+        connection: manual
+        desc: RRAM analog test signal
         idx: 9
         port_type: inout
       }
       {
-        name: SPI_HOST_D1
+        name: SPI_HOST_D0
         type: BidirStd
         bank: VIOA
         connection: direct
@@ -13607,7 +13622,7 @@
         port_type: inout
       }
       {
-        name: SPI_HOST_D2
+        name: SPI_HOST_D1
         type: BidirStd
         bank: VIOA
         connection: direct
@@ -13616,7 +13631,7 @@
         port_type: inout
       }
       {
-        name: SPI_HOST_D3
+        name: SPI_HOST_D2
         type: BidirStd
         bank: VIOA
         connection: direct
@@ -13625,12 +13640,21 @@
         port_type: inout
       }
       {
+        name: SPI_HOST_D3
+        type: BidirStd
+        bank: VIOA
+        connection: direct
+        desc: SPI host data
+        idx: 13
+        port_type: inout
+      }
+      {
         name: SPI_HOST_CLK
         type: BidirStd
         bank: VIOA
         connection: direct
         desc: SPI host clock
-        idx: 13
+        idx: 14
         port_type: inout
       }
       {
@@ -13639,7 +13663,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host chip select
-        idx: 14
+        idx: 15
         port_type: inout
       }
       {
@@ -13648,7 +13672,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 15
+        idx: 16
         port_type: inout
       }
       {
@@ -13657,7 +13681,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 16
+        idx: 17
         port_type: inout
       }
       {
@@ -13666,7 +13690,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 17
+        idx: 18
         port_type: inout
       }
       {
@@ -13675,7 +13699,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 18
+        idx: 19
         port_type: inout
       }
       {
@@ -13684,7 +13708,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device clock
-        idx: 19
+        idx: 20
         port_type: inout
       }
       {
@@ -13693,7 +13717,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device chip select
-        idx: 20
+        idx: 21
         port_type: inout
       }
       {
@@ -14089,7 +14113,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        idx: 21
+        idx: 22
         port_type: inout
       }
       {
@@ -14098,7 +14122,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
-        idx: 22
+        idx: 23
         port_type: inout
       }
       {
@@ -15702,7 +15726,7 @@
         inouts: 12
         inputs: 2
         outputs: 2
-        pads: 23
+        pads: 24
       }
       muxed:
       {
@@ -15748,6 +15772,10 @@
           otp_macro.ext_voltage_h:
           {
             signal: OTP_EXT_VOLT
+          }
+          rram_macro.rram_test_analog:
+          {
+            signal: RRAM_ANALOG
           }
           sensor_ctrl.ast_alert:
           {
@@ -15903,6 +15931,11 @@
             tie_value: ""
           }
           otp_macro.ext_voltage_h:
+          {
+            unused: true
+            tie_value: ""
+          }
+          rram_macro.rram_test_analog:
           {
             unused: true
             tie_value: ""
@@ -16118,6 +16151,10 @@
           {
             unused: true
           }
+          rram_macro.rram_test_analog:
+          {
+            unused: true
+          }
           flash_ctrl.flash_test_mode_a:
           {
             unused: true
@@ -16146,6 +16183,7 @@
           CC2
           FLASH_TEST_VOLT
           OTP_EXT_VOLT
+          RRAM_ANALOG
           FLASH_TEST_MODE0
           FLASH_TEST_MODE1
           USB_P
@@ -25477,6 +25515,20 @@
         index: -1
       }
       {
+        name: rram_test_analog
+        struct: ""
+        type: io
+        act: none
+        width: 1
+        default: "'0"
+        inst_name: rram_macro
+        package: ""
+        external: true
+        conn_type: false
+        index: -1
+        top_signame: rram_test_analog
+      }
+      {
         name: prim_tl
         struct: tl
         package: tlul_pkg
@@ -31500,6 +31552,26 @@
         conn_type: false
         index: -1
         netname: otp_obs
+      }
+      {
+        package: ""
+        struct: ""
+        domain: Main
+        inter_pd: false
+        signame: rram_test_analog_io
+        signame_chip:
+        {
+          asic: RRAM_ANALOG
+          verilator: ""
+          cw340: "'0"
+        }
+        width: 1
+        type: io
+        default: "'0"
+        direction: inout
+        conn_type: false
+        index: -1
+        netname: rram_test_analog
       }
       {
         package: ""
