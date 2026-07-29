@@ -16,11 +16,11 @@ use opentitanlib::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequ
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
+use opentitanlib::crypto::spx;
 use opentitanlib::ownership::{
     DetachedSignature, DetachedSignatureCommand, GlobalFlags, KeyMaterial, OwnerBlock,
     OwnershipKeyAlg, TlvHeader,
 };
-use sphincsplus::{DecodeKey, SpxSecretKey};
 
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq)]
 enum Format {
@@ -347,7 +347,7 @@ impl CommandDispatch for OwnershipDetachedSignatureCommand {
             let spx_key = self
                 .spx_key
                 .as_ref()
-                .map(SpxSecretKey::read_pem_file)
+                .map(spx::load_spx_secret_key)
                 .transpose()?;
             let mut sig = match self.command {
                 DetachedSignatureCommand::Owner => {
