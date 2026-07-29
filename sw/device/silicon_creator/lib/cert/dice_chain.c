@@ -22,10 +22,6 @@
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
-enum {
-  kNvmPageSize = NVM_BYTES_PER_PAGE,
-};
-
 /**
  * Defines a class for parsing and building the DICE cert chain.
  *
@@ -217,11 +213,10 @@ static rom_error_t dice_chain_load_nvm(nvm_info_page_t info_page) {
   RETURN_IF_ERROR(dice_chain_flush_nvm());
 
   // Read in a DICE certificate(s) page.
-  static_assert(sizeof(dice_chain.page) == kNvmPageSize,
-                "Invalid dice_chain buffer size");
   RETURN_IF_ERROR(nvm_ctrl_info_read_zeros_on_read_error(
       info_page, /*offset=*/0,
-      /*word_count=*/kNvmPageSize / sizeof(uint32_t), &dice_chain.page));
+      /*word_count=*/sizeof(dice_chain.page) / sizeof(uint32_t),
+      &dice_chain.page));
 
   // Resets the flash page status.
   dice_chain.data_dirty = kHardenedBoolFalse;
@@ -512,12 +507,14 @@ rom_error_t dice_chain_flush_nvm(void) {
     RETURN_IF_ERROR(dice_chain_seal_page());
 
     RETURN_IF_ERROR(nvm_ctrl_info_erase(dice_chain.info_page));
-    static_assert(sizeof(dice_chain.page) == kNvmPageSize,
-                  "Invalid dice_chain buffer size");
+    // Only `DiceCerts` is ever flushed (it's the only page `dice_chain_*`
+    // ever builds/pushes certs to); `FactoryCerts` is read-only, provisioned
+    // once during manufacturing (see `ft_personalize.c`).
+    HARDENED_CHECK_EQ(dice_chain.info_page, kNvmInfoPageDiceCerts);
     RETURN_IF_ERROR(nvm_ctrl_info_write(
         dice_chain.info_page,
         /*offset=*/0,
-        /*word_count=*/NVM_BYTES_PER_PAGE / sizeof(uint32_t),
+        /*word_count=*/sizeof(dice_chain.page) / sizeof(uint32_t),
         &dice_chain.page));
     dice_chain.data_dirty = kHardenedBoolFalse;
   }

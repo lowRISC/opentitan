@@ -18,6 +18,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #ifdef HAS_RRAM_CTRL
+#include "sw/device/silicon_creator/lib/drivers/rram_ctrl.h"
+
 #include "hw/top/rram_ctrl_regs.h"
 #endif  // HAS_RRAM_CTRL
 

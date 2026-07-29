@@ -11,6 +11,8 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#include "hw/top/rram_ctrl_regs.h"  // Generated.
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -20,12 +22,20 @@ extern "C" {
  *
  * Unlike flash, RRAM has only `RRAM_CTRL_PARAM_NUM_INFO_PAGES` (8) physical
  * info pages, too few for the 20 logical pages named in `nvm_info_page_t`.
- * The 6 most security-sensitive pages (including the ones
+ * 5 security-sensitive pages (including the ones
  * `nvm_ctrl_creator_info_pages_lockdown()` must revoke creator access to) get
  * a real, individually-protected info page (`emulated` = false). The
- * remaining 14 are "emulated": relocated onto reserved pages of the (much
+ * remaining 15 are "emulated": relocated onto reserved pages of the (much
  * larger) RRAM data partition, all sharing a single memory-protection region
  * with permissions that can't be restricted per-page.
+ *
+ * `FactoryCerts` used to be real, but its content (a UDS cert, ~800 bytes)
+ * doesn't fit in one 512-byte info page, and info pages can't be combined
+ * like data pages can -- so it moved to emulated, spanning 4 pages (matching
+ * `DiceCerts`; see the table below). This means it lost its individual
+ * read-only lockdown; it's now only as protected as the shared emulated-page
+ * region, i.e. as writable as `OwnerSlot0`/`OwnerSlot1`/etc. A known,
+ * accepted tradeoff for now.
  *
  * TODO(#XXXX): because 3 of the 7 pages `nvm_ctrl_creator_info_pages_lockdown`
  * must revoke (`BootData0`, `BootData1`, `CreatorReserved0`) are emulated and
@@ -69,7 +79,7 @@ typedef struct rram_ctrl_info_page {
  */
 enum {
   kRramCtrlEmulPageBase = 4064,
-  kRramCtrlEmulPageCount = 20,
+  kRramCtrlEmulPageCount = 27,
   /**
    * Memory-protection region index (of `RRAM_CTRL_PARAM_NUM_REGIONS`) used
    * for the shared emulated-page region.
@@ -103,11 +113,12 @@ enum {
 // clang-format off
 #define RRAM_CTRL_INFO_PAGES_DEFINE(X) \
   /**
-   * Real, individually-protected info pages.
+   * Real, individually-protected info pages. Always 1 page each -- there's
+   * no way to combine physical info pages, so anything needing more than
+   * 512 bytes must be an emulated page instead (see below).
    */ \
   X(kRramCtrlInfoPageFactoryId,           0, false, 1) \
   X(kRramCtrlInfoPageAttestationKeySeeds, 1, false, 1) \
-  X(kRramCtrlInfoPageFactoryCerts,        2, false, 1) \
   X(kRramCtrlInfoPageCreatorSecret,       5, false, 1) \
   X(kRramCtrlInfoPageOwnerSecret,         6, false, 1) \
   X(kRramCtrlInfoPageWaferAuthSecret,     7, false, 1) \
@@ -117,12 +128,16 @@ enum {
    * `rram_ctrl_info_page_t`.
    *
    * `owner_block_t` (backing OwnerSlot0/1) is 2048 bytes
-   * (`OT_ASSERT_SIZE(owner_block_t, 2048)`) -- 4 pages, not 1. Previously
-   * each only got 1 page, so every write silently overflowed into the next
-   * 3 logical pages' storage. OwnerSlot0/1 below now each reserve 4 pages
-   * (their 2nd-4th pages have no named entry of their own, matching how a
-   * single-page entry's extent is implied by its consumer's read/write size
-   * rather than a field in this table).
+   * (`OT_ASSERT_SIZE(owner_block_t, 2048)`) -- 4 pages, not 1. `DiceCerts`
+   * and `FactoryCerts` are both sized to 4 pages too, deliberately equal
+   * (see the `static_assert` in dice_chain.h) even though their actual
+   * content (~1.3KB and ~800 bytes respectively) would technically fit in
+   * fewer: both share one `dice_page_t` buffer type, which only works
+   * correctly if they're the same size. `FactoryCerts` (moved here from the
+   * real pages above; see the TODO on `rram_ctrl_info_page_t`) previously
+   * didn't need to span pages at all as a real page; all three previously
+   * got only 1 page, so writes silently overflowed into the next logical
+   * page(s)' storage.
    */ \
   X(kRramCtrlInfoPageOwnerReserved0,      kRramCtrlEmulPageBase + 0,  true, 1) \
   X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 1,  true, 1) \
@@ -137,7 +152,8 @@ enum {
   X(kRramCtrlInfoPageOwnerReserved5,      kRramCtrlEmulPageBase + 16, true, 1) \
   X(kRramCtrlInfoPageOwnerReserved6,      kRramCtrlEmulPageBase + 17, true, 1) \
   X(kRramCtrlInfoPageOwnerReserved7,      kRramCtrlEmulPageBase + 18, true, 1) \
-  X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 19, true, 1) \
+  X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 19, true, 4) \
+  X(kRramCtrlInfoPageFactoryCerts,        kRramCtrlEmulPageBase + 23, true, 4) \
 // clang-format on
 
 /**
@@ -156,6 +172,25 @@ enum {
 RRAM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
 
 #undef INFO_PAGE_STRUCT_DECL_
+
+/**
+ * Helper macro for declaring a `<name_>Size` compile-time constant: the
+ * total on-NVM byte size backing a logical page, i.e.
+ * `num_pages_ * RRAM_CTRL_PARAM_BYTES_PER_PAGE`. Callers should use these
+ * instead of re-deriving a page's size from `num_pages` themselves, so the
+ * page table in `RRAM_CTRL_INFO_PAGES_DEFINE` stays the only place page
+ * counts are written down.
+ * @param name_ Name of the enumeration constant.
+ * @param page_id_ Physical page index of the info page.
+ * @param emulated_ Whether the page is emulated on the data partition.
+ * @param num_pages_ Number of contiguous physical pages backing this page.
+ */
+#define INFO_PAGE_SIZE_ENUM_(name_, page_id_, emulated_, num_pages_) \
+  name_##Size = (num_pages_) * RRAM_CTRL_PARAM_BYTES_PER_PAGE,
+
+enum { RRAM_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_SIZE_ENUM_) };
+
+#undef INFO_PAGE_SIZE_ENUM_
 
 /**
  * The following constants represent the expected number of sec_mmio
