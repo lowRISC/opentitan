@@ -4,9 +4,9 @@
 
 #include "hw/top/dt/otbn.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/nvm_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
@@ -19,13 +19,14 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// Keymgr handle for this test.
-static dif_keymgr_t keymgr;
+// Keymgr dpe handle for this test.
+static dif_keymgr_dpe_t keymgr_dpe;
 
 static const dt_otbn_t kOtbnDt = (dt_otbn_t)0;
 
-// Global variable holding the number of times we advanced keymgr after startup.
-size_t num_keymgr_advances = 0;
+// Global variable holding the number of times we advanced keymgr dpe after
+// startup.
+size_t num_keymgr_dpe_advances = 0;
 
 // Message value for signature generation/verification tests.
 const char kTestMessage[] = "Test message.";
@@ -47,10 +48,11 @@ static const ecdsa_p256_signature_t kEcdsaSignature = {
           0x0e200e9b, 0x785690b4, 0xf47efe98}};
 
 // Sample key manager diversification data for testing.
-static const sc_keymgr_diversification_t kDiversification = {
+static const sc_keymgr_dpe_diversification_t kDiversification = {
     .salt = {0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f, 0xf0f1f2f3,
              0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff},
     .version = 0,
+    .sel_src_slot = 0,
 };
 
 // Test values for attestation key seeds.
@@ -93,21 +95,27 @@ rom_error_t sigverify_with_bad_signature_test(void) {
 rom_error_t attestation_keygen_test(void) {
   // Check that key generations with different seeds result in different keys.
   ecdsa_p256_public_key_t pk_uds;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
-                                               kScKeymgrKeyTypeAttestation,
-                                               kDiversification, &pk_uds));
+  sc_keymgr_dpe_diversification_t diversification_modified;
+
+  // TODO(#30777): Replace the hard-coded slot number
+  // Pre-defined slot id for the attestation / sealing key chain
+  memcpy(&diversification_modified, &kDiversification,
+         sizeof(diversification_modified));
+  diversification_modified.sel_src_slot = 1;
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kNvmInfoFieldUdsKeySeedIdx, diversification_modified, &pk_uds));
   ecdsa_p256_public_key_t pk_cdi0;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldCdi0KeySeedIdx,
-                                               kScKeymgrKeyTypeAttestation,
-                                               kDiversification, &pk_cdi0));
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kNvmInfoFieldCdi0KeySeedIdx, diversification_modified, &pk_cdi0));
   ecdsa_p256_public_key_t pk_cdi1;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldCdi1KeySeedIdx,
-                                               kScKeymgrKeyTypeAttestation,
-                                               kDiversification, &pk_cdi1));
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kNvmInfoFieldCdi1KeySeedIdx, diversification_modified, &pk_cdi1));
   ecdsa_p256_public_key_t pk_tpm_ek;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldTpmEkKeySeedIdx,
-                                               kScKeymgrKeyTypeSealing,
-                                               kDiversification, &pk_tpm_ek));
+  // TODO(#30777): Replace the hard-coded slot number
+  // Pre-defined slot id for the attestation / sealing key chain
+  diversification_modified.sel_src_slot = 0;
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kNvmInfoFieldTpmEkKeySeedIdx, diversification_modified, &pk_tpm_ek));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds, (unsigned char *)&pk_cdi0,
                   sizeof(pk_uds));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds, (unsigned char *)&pk_cdi1,
@@ -119,22 +127,20 @@ rom_error_t attestation_keygen_test(void) {
 
   // Check that running the same key generation twice results in the same key.
   ecdsa_p256_public_key_t pk_uds_again;
+  // TODO(#30777): Replace the hard-coded slot number
+  // Pre-defined slot id for the attestation / sealing key chain
+  diversification_modified.sel_src_slot = 1;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kNvmInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation, kDiversification,
-      &pk_uds_again));
+      kNvmInfoFieldUdsKeySeedIdx, diversification_modified, &pk_uds_again));
   CHECK_ARRAYS_EQ((unsigned char *)&pk_uds_again, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
 
   // Check that key generations with different diversification result in
   // different keys.
-  sc_keymgr_diversification_t diversification_modified;
-  memcpy(&diversification_modified, &kDiversification,
-         sizeof(diversification_modified));
   diversification_modified.salt[0] ^= 1;
   ecdsa_p256_public_key_t pk_uds_div;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kNvmInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation,
-      diversification_modified, &pk_uds_div));
+      kNvmInfoFieldUdsKeySeedIdx, diversification_modified, &pk_uds_div));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds_div, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
   return kErrorOk;
@@ -143,26 +149,29 @@ rom_error_t attestation_keygen_test(void) {
 rom_error_t attestation_advance_and_endorse_test(void) {
   // Generate and save the a keypair.
   ecdsa_p256_public_key_t pk;
+  sc_keymgr_dpe_diversification_t diversification_modified;
+  // TODO(#30777): Replace the hard-coded slot number
+  // Pre-defined slot id for the attestation / sealing key chain
+  memcpy(&diversification_modified, &kDiversification,
+         sizeof(diversification_modified));
+  diversification_modified.sel_src_slot = 1;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
-                                               kScKeymgrKeyTypeAttestation,
-                                               kDiversification, &pk));
+                                               diversification_modified, &pk));
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(kNvmInfoFieldUdsKeySeedIdx,
-                                                 kScKeymgrKeyTypeAttestation,
-                                                 kDiversification));
+                                                 diversification_modified));
 
-  // Advance keymgr to the next stage.
-  if (num_keymgr_advances == 0) {
+  // Advance keymgr dpe to the next stage.
+  // Keys are in state CreatorRootKey
+  if (num_keymgr_dpe_advances == 0) {
     CHECK_STATUS_OK(
-        keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
-    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    num_keymgr_advances++;
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntKeyParams));
+    num_keymgr_dpe_advances++;
+    // Keys are in state OwnerIntKey
   } else {
-    CHECK(num_keymgr_advances == 1);
-    CHECK_STATUS_OK(keymgr_testutils_check_state(
-        &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+    CHECK(num_keymgr_dpe_advances == 1);
     CHECK_STATUS_OK(
-        keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-    num_keymgr_advances++;
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerKeyParams));
+    num_keymgr_dpe_advances++;
   }
 
   // Run endorsement (should overwrite the key with randomness when done).
@@ -177,11 +186,10 @@ rom_error_t attestation_advance_and_endorse_test(void) {
         kErrorSigverifyBadEcdsaSignature);
 
   // Check that generating a new key with the same diversification as before
-  // now gets a different public key because keymgr has advanced.
+  // now gets a different public key because keymgr dpe has advanced.
   ecdsa_p256_public_key_t pk_adv;
-  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
-                                               kScKeymgrKeyTypeAttestation,
-                                               kDiversification, &pk_adv));
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      kNvmInfoFieldUdsKeySeedIdx, diversification_modified, &pk_adv));
   CHECK_ARRAYS_NE((unsigned char *)&pk, (unsigned char *)&pk_adv, sizeof(pk));
 
   return kErrorOk;
@@ -191,20 +199,23 @@ rom_error_t attestation_advance_and_endorse_test(void) {
 rom_error_t attestation_save_clear_key_test(void) {
   // We need the public key to pass to the endorse routine's self-test.
   ecdsa_p256_public_key_t pk;
+  sc_keymgr_dpe_diversification_t diversification_modified;
+  // TODO(#30777): Replace the hard-coded slot number
+  // Pre-defined slot id for the attestation / sealing key chain
+  memcpy(&diversification_modified, &kDiversification,
+         sizeof(diversification_modified));
+  diversification_modified.sel_src_slot = 1;
   RETURN_IF_ERROR(otbn_boot_attestation_keygen(kNvmInfoFieldUdsKeySeedIdx,
-                                               kScKeymgrKeyTypeAttestation,
-                                               kDiversification, &pk));
+                                               diversification_modified, &pk));
 
   // Save and then clear a private key.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(kNvmInfoFieldUdsKeySeedIdx,
-                                                 kScKeymgrKeyTypeAttestation,
-                                                 kDiversification));
+                                                 diversification_modified));
   RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
 
   // Save the private key again and check that endorsing succeeds.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(kNvmInfoFieldUdsKeySeedIdx,
-                                                 kScKeymgrKeyTypeAttestation,
-                                                 kDiversification));
+                                                 diversification_modified));
   hmac_digest_t digest;
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   ecdsa_p256_signature_t sig;
@@ -227,9 +238,9 @@ bool test_main(void) {
   // Initialize the entropy complex, KMAC, and the key manager.
   CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
-  CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
 
   // Program the attestation key seeds in flash. The setup step only needs to
   // be done once, since the seeds are on the same page.
