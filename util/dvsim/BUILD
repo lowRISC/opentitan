@@ -46,6 +46,11 @@ py_library(
 )
 
 py_library(
+    name = "job_time",
+    srcs = ["JobTime.py"],
+)
+
+py_library(
     name = "timer",
     srcs = ["Timer.py"],
 )
@@ -65,8 +70,12 @@ py_library(
         "LauncherFactory.py",
         "LocalLauncher.py",
         "LsfLauncher.py",
+        "SGE.py",
+        "SgeLauncher.py",
+        "qsubopts.py",
     ],
     deps = [
+        ":job_time",
         ":utils",
     ],
 )
@@ -75,6 +84,7 @@ py_library(
     name = "deploy",
     srcs = ["Deploy.py"],
     deps = [
+        ":job_time",
         ":launcher",
         ":sim_utils",
         ":utils",
