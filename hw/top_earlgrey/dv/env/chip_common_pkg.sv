@@ -23,7 +23,7 @@ package chip_common_pkg;
   parameter uint ROM_CONSOLE_UART = 0;
 
   // ROM banner values.
-  parameter string ROM_BANNER   = "OpenTitan:4001-0002-01";
+  parameter string ROM_BANNER   = "OpenTitan:4001-0010-01";
 
   // ROM Boot Fault Values, matches definitions in `rules/const.bzl`.
   parameter string ROM_BFV_BAD_IDENTIFIER       = "0142500d";
