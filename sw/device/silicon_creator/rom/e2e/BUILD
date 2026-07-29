@@ -309,6 +309,9 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
     },
+    # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+    # https://github.com/lowRISC/opentitan/issues/30897
+    fpga = fpga_params(tags = ["skip_in_ci"]),
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/testing/test_framework:ottf_main",

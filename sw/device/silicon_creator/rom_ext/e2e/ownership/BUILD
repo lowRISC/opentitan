@@ -609,6 +609,9 @@ _FLASH_PERMISSION_TESTS = {
                 --expected-rom-ext-slot={rom_ext_slot}
             """,
             "test_harness": "//sw/host/tests/ownership:flash_permission_test",
+            # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+            # https://github.com/lowRISC/opentitan/issues/30897
+            "tags": ["skip_in_ci"],
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         deps = [

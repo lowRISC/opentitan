@@ -1842,11 +1842,9 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
-    run_in_ci = [
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
-    ],
+    # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+    # https://github.com/lowRISC/opentitan/issues/30897
+    fpga = fpga_params(tags = ["skip_in_ci"]),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1990,11 +1988,10 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
-    run_in_ci = [
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
-    ],
+    # No longer relevant on RRAM (no flash clock domain to test); exclude all
+    # FPGA variants from CI entirely.
+    # https://github.com/lowRISC/opentitan/issues/30897
+    fpga = fpga_params(tags = ["skip_in_ci"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
@@ -2020,11 +2017,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
-    run_in_ci = [
-        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
-    ],
+    # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
+    # https://github.com/lowRISC/opentitan/issues/30897
+    fpga = fpga_params(tags = ["skip_in_ci"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top/dt",
