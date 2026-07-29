@@ -17,6 +17,8 @@
 #include "sw/device/silicon_creator/lib/base/static_dice_cdi_0.h"
 #include "sw/device/silicon_creator/lib/base/static_dice_mldsa_cdi.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
+#include "sw/device/silicon_creator/lib/cert/cdi_0_exts.h"
+#include "sw/device/silicon_creator/lib/cert/cdi_1_exts.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_hybrid.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
@@ -153,33 +155,6 @@ static const attest_params_t kCdi1AttestParams = {
     .subject_mldsa_key_id_out = &cdi1_mldsa_id,
 };
 
-static const uint8_t kSha256FwIdPrefix[] = {
-    /* SEQUENCE with 45 (0x2d) bytes content */
-    0x30, 0x2d,
-    /* OBJECT IDENTIFIER 2.16.840.1.101.3.4.2.1 (sha-256) */
-    0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01,
-    /* OCTET STRING 32 (0x20) bytes */
-    0x04, 0x20,
-    /* 32 bytes to be appended by encode_sha256_fwid here. */
-};
-
-enum {
-  kSha256FwIdSizeBytes = sizeof(kSha256FwIdPrefix) + sizeof(hmac_digest_t),
-};
-
-/**
- * Encodes the SHA-256 firmware ID list in the DICE TCB.
- *
- * @param dest Buffer to copy the encoded firmware ID list to. Must be at least
- * `kSha256FwIdSizeBytes` bytes.
- * @param digest The SHA-256 digest to append.
- */
-static void encode_sha256_fwid(uint8_t *dest, const hmac_digest_t *digest) {
-  memcpy(dest, kSha256FwIdPrefix, sizeof(kSha256FwIdPrefix));
-  memcpy(dest + sizeof(kSha256FwIdPrefix), digest->digest,
-         sizeof(hmac_digest_t));
-}
-
 /**
  * Returns true if the OwnerSw is booting outside of prod domain.
  */
@@ -207,17 +182,9 @@ static void get_mldsa_id(const hmac_key_t *seed, hmac_digest_t *id) {
  * @param tbs The TBS variable values.
  * @param[out] output Computed attestation binding values.
  */
-static void get_attest_binding(const cdi_hybrid_tbs_values_t *tbs,
+static void get_attest_binding(const uint8_t *exts, size_t exts_size,
                                hmac_digest_t *output) {
-  hmac_sha256_configure(false);
-  hmac_sha256_start();
-  hmac_sha256_update(tbs->tcb_model, tbs->tcb_model_len);
-  hmac_sha256_update(tbs->tcb_svn, kCdiHybridExactTcbSvnSizeBytes);
-  hmac_sha256_update(&tbs->tcb_layer, sizeof(tbs->tcb_layer));
-  hmac_sha256_update(tbs->tcb_fw_ids, tbs->tcb_fw_ids_size);
-  hmac_sha256_update(&tbs->debug_flag, sizeof(tbs->debug_flag));
-  hmac_sha256_process();
-  hmac_sha256_final(output);
+  hmac_sha256(exts, exts_size, output);
 }
 
 /**
@@ -366,7 +333,7 @@ static rom_error_t dice_page_rom_ext_check(void) {
 static rom_error_t dice_attest_next_cdi(
     const attest_params_t *params,
     const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
-    cdi_hybrid_tbs_values_t *tbs_values) {
+    const uint8_t *exts, size_t exts_size) {
   *params->ecdsa_cert_size_out = 0;
   *params->mldsa_cert_size_out = 0;
 
@@ -391,7 +358,7 @@ static rom_error_t dice_attest_next_cdi(
 
   // Keymgr Advancement
   hmac_digest_t attest_measurement;
-  get_attest_binding(tbs_values, &attest_measurement);
+  get_attest_binding(exts, exts_size, &attest_measurement);
 
   if (params->subject_params->ecc_cfg->required_keymgr_state ==
       kScKeymgrStateOwnerKey) {
@@ -432,14 +399,23 @@ static rom_error_t dice_attest_next_cdi(
     uint32_t *stack_top =
         (uint32_t *)((uint8_t *)params->scratch_buf + params->scratch_buf_size);
 
+    cdi_hybrid_tbs_values_t tbs_values;
+    memset(&tbs_values, 0, sizeof(tbs_values));
+
+    if (exts_size > kCdiHybridMaxRawPrivateExtensionsSizeBytes) {
+      return kErrorCertInvalidSize;
+    }
+    tbs_values.raw_private_extensions = (uint8_t *)exts;
+    tbs_values.raw_private_extensions_size = exts_size;
+
     // Build ECDSA Cert
-    tbs_values->key_alg = kCdiHybridKeyAlgEcdsa;
-    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyEcX, subject_ecdsa_pubkey.x);
-    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyEcY, subject_ecdsa_pubkey.y);
-    TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, PubKeyId,
+    tbs_values.key_alg = kCdiHybridKeyAlgEcdsa;
+    TEMPLATE_SET(tbs_values, CdiHybrid, PubKeyEcX, subject_ecdsa_pubkey.x);
+    TEMPLATE_SET(tbs_values, CdiHybrid, PubKeyEcY, subject_ecdsa_pubkey.y);
+    TEMPLATE_SET_TRUNCATED(tbs_values, CdiHybrid, PubKeyId,
                            subject_ecdsa_pubkey_id->digest,
                            kCertKeyIdSizeInBytes);
-    TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, IssuerPubKeyId,
+    TEMPLATE_SET_TRUNCATED(tbs_values, CdiHybrid, IssuerPubKeyId,
                            issuer_ecdsa_pubkey_id.digest,
                            kCertKeyIdSizeInBytes);
 
@@ -451,7 +427,7 @@ static rom_error_t dice_attest_next_cdi(
     // certificate into `ecdsa_cert_out`.
     size_t generated_ecdsa_size = params->mldsa_cert_max_size;
     HARDENED_RETURN_IF_ERROR(dice_cdi_hybrid_cert_build(
-        tbs_values, &issuer_ecdsa_pubkey, /*signer_mldsa_seed=*/NULL,
+        &tbs_values, &issuer_ecdsa_pubkey, /*signer_mldsa_seed=*/NULL,
         params->mldsa_cert_out, &generated_ecdsa_size, stack_top));
 
     if (generated_ecdsa_size > params->ecdsa_cert_max_size) {
@@ -465,16 +441,16 @@ static rom_error_t dice_attest_next_cdi(
     mldsa44_tiny_pub_from_seed_with_stack(
         pubkey_buffer, (const uint8_t *)subject_mldsa_seed.data, stack_top);
 
-    tbs_values->key_alg = kCdiHybridKeyAlgMldsa44;
-    TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyMldsa, pubkey_buffer);
-    TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, PubKeyId,
+    tbs_values.key_alg = kCdiHybridKeyAlgMldsa44;
+    TEMPLATE_SET(tbs_values, CdiHybrid, PubKeyMldsa, pubkey_buffer);
+    TEMPLATE_SET_TRUNCATED(tbs_values, CdiHybrid, PubKeyId,
                            subject_mldsa_id->digest, kCertKeyIdSizeInBytes);
-    TEMPLATE_SET_TRUNCATED(*tbs_values, CdiHybrid, IssuerPubKeyId,
+    TEMPLATE_SET_TRUNCATED(tbs_values, CdiHybrid, IssuerPubKeyId,
                            issuer_mldsa_id.digest, kCertKeyIdSizeInBytes);
 
     size_t generated_mldsa_size = params->mldsa_cert_max_size;
     HARDENED_RETURN_IF_ERROR(dice_cdi_hybrid_cert_build(
-        tbs_values, /*signer_ecdsa_pubkey=*/NULL,
+        &tbs_values, /*signer_ecdsa_pubkey=*/NULL,
         (const uint8_t *)issuer_mldsa_seed.data, params->mldsa_cert_out,
         &generated_mldsa_size, stack_top));
 
@@ -537,27 +513,22 @@ rom_error_t dice_attest_cdi_0(keymgr_binding_value_t *rom_ext_measurement,
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
   HARDENED_RETURN_IF_ERROR(ownership_seal_init());
 
-  cdi_hybrid_tbs_values_t cdi0_tbs_values;
-  memset(&cdi0_tbs_values, 0, sizeof(cdi0_tbs_values));
-
-  cdi0_tbs_values.tcb_model = "ROM_EXT";
-  cdi0_tbs_values.tcb_model_len = sizeof("ROM_EXT") - 1;
-  TEMPLATE_CHECK_SIZE(CdiHybrid, TcbModel, sizeof("ROM_EXT") - 1);
-  cdi0_tbs_values.tcb_layer = 1;
-  cdi0_tbs_values.debug_flag = false;
+  cdi_0_exts_private_ext_values_t cdi0_exts_values;
+  memset(&cdi0_exts_values, 0, sizeof(cdi0_exts_values));
 
   hmac_digest_t rom_ext_hash = *(hmac_digest_t *)rom_ext_measurement->data;
   util_reverse_bytes(&rom_ext_hash, sizeof(rom_ext_hash));
-  uint8_t fwid_buf[kSha256FwIdSizeBytes];
-  encode_sha256_fwid(&fwid_buf[0 * kSha256FwIdSizeBytes], &rom_ext_hash);
-  TEMPLATE_SET(cdi0_tbs_values, CdiHybrid, TcbFwIds, fwid_buf);
-  TEMPLATE_CHECK_SIZE(CdiHybrid, TcbFwIds, sizeof(fwid_buf));
-  cdi0_tbs_values.tcb_fw_ids_size = sizeof(fwid_buf);
+  TEMPLATE_SET(cdi0_exts_values, Cdi0Exts, RomExtDigest, rom_ext_hash.digest);
 
   uint32_t rom_ext_security_version_be =
       bitfield_byteswap32(rom_ext_manifest->security_version);
-  TEMPLATE_SET(cdi0_tbs_values, CdiHybrid, TcbSvn,
+  TEMPLATE_SET(cdi0_exts_values, Cdi0Exts, TcbSvn,
                &rom_ext_security_version_be);
+
+  uint8_t exts_buf[kCdi0ExtsMaxPrivateExtSizeBytes];
+  size_t exts_size = sizeof(exts_buf);
+  HARDENED_RETURN_IF_ERROR(
+      cdi_0_exts_build_private_ext(&cdi0_exts_values, exts_buf, &exts_size));
 
   keymgr_binding_value_t seal_binding_value = {
       .data = {rom_ext_manifest->identifier, 0}};
@@ -566,7 +537,7 @@ rom_error_t dice_attest_cdi_0(keymgr_binding_value_t *rom_ext_measurement,
 
   HARDENED_RETURN_IF_ERROR(dice_attest_next_cdi(
       &kCdi0AttestParams, &seal_binding_value,
-      rom_ext_manifest->max_key_version, &cdi0_tbs_values));
+      rom_ext_manifest->max_key_version, exts_buf, exts_size));
 
   write_64(read_64(cdi0_mldsa_id.digest), msg->ids.mldsa_cdi0_id);
 
@@ -585,36 +556,34 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
   HARDENED_RETURN_IF_ERROR(dice_page_rom_ext_check());
 
-  cdi_hybrid_tbs_values_t cdi1_tbs_values;
-  memset(&cdi1_tbs_values, 0, sizeof(cdi1_tbs_values));
-
-  cdi1_tbs_values.tcb_model = "Owner";
-  cdi1_tbs_values.tcb_model_len = sizeof("Owner") - 1;
-  TEMPLATE_CHECK_SIZE(CdiHybrid, TcbModel, sizeof("Owner") - 1);
-  cdi1_tbs_values.tcb_layer = 2;
-  cdi1_tbs_values.debug_flag = get_debug_mode_cdi1(key_domain);
+  cdi_1_exts_private_ext_values_t cdi1_exts_values;
+  memset(&cdi1_exts_values, 0, sizeof(cdi1_exts_values));
 
   hmac_digest_t bl0_hash = *(hmac_digest_t *)bl0_measurement->data;
   util_reverse_bytes(&bl0_hash, sizeof(bl0_hash));
+  TEMPLATE_SET(cdi1_exts_values, Cdi1Exts, Bl0Digest, bl0_hash.digest);
 
   hmac_digest_t owner_hash = *owner_measurement;
   util_reverse_bytes(&owner_hash, sizeof(owner_hash));
+  TEMPLATE_SET(cdi1_exts_values, Cdi1Exts, OwnerDigest, owner_hash.digest);
 
-  uint8_t fwids_buf[kSha256FwIdSizeBytes * 3];
-  encode_sha256_fwid(&fwids_buf[0 * kSha256FwIdSizeBytes], &bl0_hash);
-  encode_sha256_fwid(&fwids_buf[1 * kSha256FwIdSizeBytes], &owner_hash);
-  encode_sha256_fwid(&fwids_buf[2 * kSha256FwIdSizeBytes], owner_history_hash);
-  TEMPLATE_SET(cdi1_tbs_values, CdiHybrid, TcbFwIds, fwids_buf);
-  TEMPLATE_CHECK_SIZE(CdiHybrid, TcbFwIds, sizeof(fwids_buf));
-  cdi1_tbs_values.tcb_fw_ids_size = sizeof(fwids_buf);
+  TEMPLATE_SET(cdi1_exts_values, Cdi1Exts, OwnerHistoryDigest,
+               owner_history_hash->digest);
 
   uint32_t owner_security_version_be =
       bitfield_byteswap32(owner_manifest->security_version);
-  TEMPLATE_SET(cdi1_tbs_values, CdiHybrid, TcbSvn, &owner_security_version_be);
+  TEMPLATE_SET(cdi1_exts_values, Cdi1Exts, TcbSvn, &owner_security_version_be);
 
+  cdi1_exts_values.debug_flag = get_debug_mode_cdi1(key_domain);
+
+  uint8_t exts_buf[kCdi1ExtsMaxPrivateExtSizeBytes];
+  size_t exts_size = sizeof(exts_buf);
   HARDENED_RETURN_IF_ERROR(
-      dice_attest_next_cdi(&kCdi1AttestParams, sealing_binding,
-                           owner_manifest->max_key_version, &cdi1_tbs_values));
+      cdi_1_exts_build_private_ext(&cdi1_exts_values, exts_buf, &exts_size));
+
+  HARDENED_RETURN_IF_ERROR(dice_attest_next_cdi(
+      &kCdi1AttestParams, sealing_binding, owner_manifest->max_key_version,
+      exts_buf, exts_size));
 
   write_64(read_64(cdi1_mldsa_id.digest), msg->ids.mldsa_cdi1_id);
 

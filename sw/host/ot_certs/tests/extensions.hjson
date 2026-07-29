@@ -1,0 +1,66 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "extensions",
+
+    variables: {
+        vendor: {
+            type: "string",
+            exact-size: 50,
+        },
+        model: {
+            type: "string",
+            exact-size: 50,
+        },
+        layer: {
+            type: "integer",
+            range-size: [0, 4],
+        },
+        hash_1: {
+            type: "byte-array",
+            exact-size: 20,
+        },
+        hash_2: {
+            type: "byte-array",
+            exact-size: 20,
+        },
+        security_version: {
+            type: "byte-array",
+            exact-size: 4,
+            tweak-msb: true,
+        }
+        not_configured: {
+            type: "boolean",
+        }
+        not_secure: {
+            type: "boolean",
+        }
+        recovery: {
+            type: "boolean",
+        }
+        debug: {
+            type: "boolean",
+        }
+    },
+
+    private_extensions: [
+        {
+            type: "dice_tcb_info",
+            vendor: { var: "vendor" },
+            model: { var: "model" },
+            svn: { var: "security_version", convert: "big-endian" },
+            layer: { var: "layer" },
+            fw_ids: [
+                { hash_algorithm: "sha256", digest: { var: "hash_1" } },
+                { hash_algorithm: "sha256", digest: { var: "hash_2" } },
+            ],
+            flags: {
+                not_configured: { var: "not_configured" },
+                not_secure: { var: "not_secure" },
+                recovery: { var: "recovery" },
+                debug: { var: "debug" },
+            }
+        }
+    ]
+}
