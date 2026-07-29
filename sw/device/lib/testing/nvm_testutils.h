@@ -143,6 +143,10 @@ status_t nvm_testutils_read_info_page(nvm_info_page_t page,
  * from OTP, and enables NVM access and instruction fetch.  Call this once
  * from test ROM before any other NVM operation.
  *
+ * Unlike flash, RRAM cannot simply be read once its PHY is ready. The
+ * controller must be initialized before the RRAM can be read/written via
+ * software.
+ *
  * @param otp_nvm_default_cfg CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG OTP word;
  *   pass 0 when HAS_OTP_CTRL is not available or the field reads as zero.
  *   Applied to both flash and RRAM default region scrambling/ECC config; the
