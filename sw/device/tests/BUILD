@@ -1815,6 +1815,16 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            # No longer relevant on RRAM; exclude the FPGA sival_rom_ext and
+            # rom_with_fake_keys variants from CI entirely.
+            # https://github.com/lowRISC/opentitan/issues/30897
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_skip_ci",
+        },
+    ),
+    fpga_skip_ci = fpga_params(
+        tags = ["skip_in_ci"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
