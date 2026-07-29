@@ -1438,6 +1438,7 @@
         'otp_macro.pwr_seq_h'                : '',
         'otp_macro.ext_voltage_h'            : 'otp_ext_voltage_h',
         'otp_macro.otp_obs'                  : 'otp_obs',
+        'rram_macro.rram_test_analog'        : 'rram_test_analog',
         'rstmgr.por_n'                       : 'por_n',
         'rstmgr.resets'                      : '',
         'rstmgr.rst_en'                      : '',
@@ -1523,6 +1524,7 @@
       { name: 'FLASH_TEST_MODE0', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'FLASH_TEST_MODE1', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
+      { name: 'RRAM_ANALOG'     , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'RRAM analog test signal'},
       // Dedicated IOs
       { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
       { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
@@ -1712,6 +1714,7 @@
           'flash_ctrl.flash_test_mode_a'    : { signal: "{FLASH_TEST_MODE1, FLASH_TEST_MODE0}"},
           'flash_ctrl.flash_test_voltage_h' : { signal: 'FLASH_TEST_VOLT' },
           'otp_macro.ext_voltage_h'         : { signal: 'OTP_EXT_VOLT'    },
+          'rram_macro.rram_test_analog'     : { signal: 'RRAM_ANALOG'     },
           'sensor_ctrl.ast_alert'           : { signal: 'ast_alert'       },
           'sensor_ctrl.ast_status'          : { signal: 'ast_pwst.io_pok' },
           'usbdev.usb_rx_d'                 : { signal: 'usb_rx_d'        },
@@ -1806,6 +1809,7 @@
           'flash_ctrl.flash_test_mode_a'    : { unused: true, tie_value: "" },
           'flash_ctrl.flash_test_voltage_h' : { unused: true, tie_value: "" },
           'otp_macro.ext_voltage_h'         : { unused: true, tie_value: "" },
+          'rram_macro.rram_test_analog'     : { unused: true, tie_value: "" },
           'sensor_ctrl.ast_alert'           : { signal: 'ast_alert'         },
           'sensor_ctrl.ast_status'          : { signal: 'ast_pwst.io_pok'   },
           'sensor_ctrl.manual_pad_attr'     : { unused: true                },
@@ -1875,6 +1879,7 @@
           'sensor_ctrl.ast_status'          : { signal: 'ast_pwst.io_pok' },
           'entropy_src.rng_fips'            : { unused: true },
           'otp_macro.ext_voltage_h'         : { unused: true },
+          'rram_macro.rram_test_analog'     : { unused: true },
           'flash_ctrl.flash_test_mode_a'    : { unused: true },
           'flash_ctrl.flash_test_voltage_h' : { unused: true },
           'flash_ctrl.flash_power_down_h'   : { unused: true },
@@ -1886,7 +1891,7 @@
         remove_ports: [],
         remove_pads: [
           'CC1', 'CC2',
-          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
+          'FLASH_TEST_VOLT', 'OTP_EXT_VOLT', 'RRAM_ANALOG',
           'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
           'USB_P', 'USB_N'
         ],

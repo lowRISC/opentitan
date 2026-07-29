@@ -327,7 +327,7 @@ module chip_earlgrey_cw340 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [69:0] unused_sig;
+  logic [70:0] unused_sig;
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -1233,6 +1233,7 @@ module chip_earlgrey_cw340 #(
     .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h      ),
     .otp_ext_voltage_h_io                  ('0                       ),
     .otp_obs_o                             (otp_obs                  ),
+    .rram_test_analog_io                   ('0                       ),
     .por_n_i                               (por_n                    ),
     .rstmgr_resets_o                       (rstmgr_resets            ),
     .rstmgr_rst_en_o                       (                         ),

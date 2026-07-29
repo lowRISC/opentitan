@@ -23,6 +23,7 @@ module chip_earlgrey_asic #(
   inout FLASH_TEST_MODE0, // Manual Pad
   inout FLASH_TEST_MODE1, // Manual Pad
   inout OTP_EXT_VOLT, // Manual Pad
+  inout RRAM_ANALOG, // Manual Pad
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
@@ -275,7 +276,7 @@ module chip_earlgrey_asic #(
 
   logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic                         [22:0] dio_in_raw;
+  logic                         [23:0] dio_in_raw;
 
   logic unused_mio_in_raw;
   logic unused_dio_in_raw;
@@ -292,6 +293,7 @@ module chip_earlgrey_asic #(
   logic manual_in_flash_test_mode0, manual_out_flash_test_mode0, manual_oe_flash_test_mode0;
   logic manual_in_flash_test_mode1, manual_out_flash_test_mode1, manual_oe_flash_test_mode1;
   logic manual_in_otp_ext_volt, manual_out_otp_ext_volt, manual_oe_otp_ext_volt;
+  logic manual_in_rram_analog, manual_out_rram_analog, manual_oe_rram_analog;
 
   pad_attr_t manual_attr_por_n;
   pad_attr_t manual_attr_usb_p;
@@ -302,6 +304,7 @@ module chip_earlgrey_asic #(
   pad_attr_t manual_attr_flash_test_mode0;
   pad_attr_t manual_attr_flash_test_mode1;
   pad_attr_t manual_attr_otp_ext_volt;
+  pad_attr_t manual_attr_rram_analog;
 
   //////////////////////
   // Padring Instance //
@@ -314,7 +317,7 @@ module chip_earlgrey_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(23),
+    .NDioPads(24),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
@@ -333,6 +336,7 @@ module chip_earlgrey_asic #(
       scan_role_pkg::DioPadSpiHostD2ScanRole,
       scan_role_pkg::DioPadSpiHostD1ScanRole,
       scan_role_pkg::DioPadSpiHostD0ScanRole,
+      scan_role_pkg::DioPadRramAnalogScanRole,
       scan_role_pkg::DioPadOtpExtVoltScanRole,
       scan_role_pkg::DioPadFlashTestMode1ScanRole,
       scan_role_pkg::DioPadFlashTestMode0ScanRole,
@@ -407,6 +411,7 @@ module chip_earlgrey_asic #(
       pad_orient_pkg::DioPadSpiHostD2PadOrient,
       pad_orient_pkg::DioPadSpiHostD1PadOrient,
       pad_orient_pkg::DioPadSpiHostD0PadOrient,
+      pad_orient_pkg::DioPadRramAnalogPadOrient,
       pad_orient_pkg::DioPadOtpExtVoltPadOrient,
       pad_orient_pkg::DioPadFlashTestMode1PadOrient,
       pad_orient_pkg::DioPadFlashTestMode0PadOrient,
@@ -481,6 +486,7 @@ module chip_earlgrey_asic #(
       IoBankVioa, // SPI_HOST_D2
       IoBankVioa, // SPI_HOST_D1
       IoBankVioa, // SPI_HOST_D0
+      IoBankVcc, // RRAM_ANALOG
       IoBankVcc, // OTP_EXT_VOLT
       IoBankVcc, // FLASH_TEST_MODE1
       IoBankVcc, // FLASH_TEST_MODE0
@@ -555,6 +561,7 @@ module chip_earlgrey_asic #(
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
+      AnalogIn0, // RRAM_ANALOG
       AnalogIn1, // OTP_EXT_VOLT
       InputStd, // FLASH_TEST_MODE1
       InputStd, // FLASH_TEST_MODE0
@@ -638,6 +645,7 @@ module chip_earlgrey_asic #(
       SPI_HOST_D2,
       SPI_HOST_D1,
       SPI_HOST_D0,
+      RRAM_ANALOG,
       OTP_EXT_VOLT,
       FLASH_TEST_MODE1,
       FLASH_TEST_MODE0,
@@ -731,6 +739,7 @@ module chip_earlgrey_asic #(
         dio_in[DioSpiHost0Sd2],
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
+        manual_in_rram_analog,
         manual_in_otp_ext_volt,
         manual_in_flash_test_mode1,
         manual_in_flash_test_mode0,
@@ -756,6 +765,7 @@ module chip_earlgrey_asic #(
         dio_out[DioSpiHost0Sd2],
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
+        manual_out_rram_analog,
         manual_out_otp_ext_volt,
         manual_out_flash_test_mode1,
         manual_out_flash_test_mode0,
@@ -781,6 +791,7 @@ module chip_earlgrey_asic #(
         dio_oe[DioSpiHost0Sd2],
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
+        manual_oe_rram_analog,
         manual_oe_otp_ext_volt,
         manual_oe_flash_test_mode1,
         manual_oe_flash_test_mode0,
@@ -806,6 +817,7 @@ module chip_earlgrey_asic #(
         dio_attr[DioSpiHost0Sd2],
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
+        manual_attr_rram_analog,
         manual_attr_otp_ext_volt,
         manual_attr_flash_test_mode1,
         manual_attr_flash_test_mode0,
@@ -1148,6 +1160,8 @@ module chip_earlgrey_asic #(
   assign manual_oe_flash_test_volt = 1'b0;
   assign manual_out_otp_ext_volt = 1'b0;
   assign manual_oe_otp_ext_volt = 1'b0;
+  assign manual_out_rram_analog = 1'b0;
+  assign manual_oe_rram_analog = 1'b0;
 
   // Enable schmitt trigger on POR for better signal integrity.
   assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
@@ -1163,6 +1177,7 @@ module chip_earlgrey_asic #(
   // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_flash_test_volt = '0;
   assign manual_attr_otp_ext_volt = '0;
+  assign manual_attr_rram_analog = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
@@ -1171,7 +1186,8 @@ module chip_earlgrey_asic #(
     manual_in_flash_test_volt,
     manual_in_flash_test_mode0,
     manual_in_flash_test_mode1,
-    manual_in_otp_ext_volt
+    manual_in_otp_ext_volt,
+    manual_in_rram_analog
   };
 
   ///////////////////////////////
@@ -1315,6 +1331,7 @@ module chip_earlgrey_asic #(
     .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h      ),
     .otp_ext_voltage_h_io                  (OTP_EXT_VOLT             ),
     .otp_obs_o                             (otp_obs                  ),
+    .rram_test_analog_io                   (RRAM_ANALOG              ),
     .por_n_i                               (por_n                    ),
     .rstmgr_resets_o                       (rstmgr_resets            ),
     .rstmgr_rst_en_o                       (                         ),

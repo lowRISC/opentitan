@@ -683,6 +683,7 @@ module chip_earlgrey_verilator (
     .otp_macro_pwr_seq_h_i                 (otp_macro_pwr_seq_h      ),
     .otp_ext_voltage_h_io                  (                         ),
     .otp_obs_o                             (otp_obs                  ),
+    .rram_test_analog_io                   (                         ),
     .por_n_i                               (por_n                    ),
     .rstmgr_resets_o                       (rstmgr_resets            ),
     .rstmgr_rst_en_o                       (                         ),

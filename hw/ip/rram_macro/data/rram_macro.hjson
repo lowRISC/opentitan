@@ -113,6 +113,14 @@
       package: ""
       desc:    "AST observability bus."
     }
+    // RRAM analog port - directly wired to top pad
+    { struct:  ""
+      type:    "io"
+      name:    "rram_test_analog"
+      act:     "none"
+      default: "'0"
+      package: "",
+    }
   ]
 
   regwidth: "32",

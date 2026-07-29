@@ -1027,6 +1027,8 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_oe_flash_test_volt = 1'b0;
   assign manual_out_otp_ext_volt = 1'b0;
   assign manual_oe_otp_ext_volt = 1'b0;
+  assign manual_out_rram_analog = 1'b0;
+  assign manual_oe_rram_analog = 1'b0;
 
   // Enable schmitt trigger on POR for better signal integrity.
   assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
@@ -1042,6 +1044,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // These pad attributes are currently tied off permanently (these are supply pads).
   assign manual_attr_flash_test_volt = '0;
   assign manual_attr_otp_ext_volt = '0;
+  assign manual_attr_rram_analog = '0;
 
   logic unused_manual_sigs;
   assign unused_manual_sigs = ^{
@@ -1050,7 +1053,8 @@ module chip_${top["name"]}_${target["name"]} #(
     manual_in_flash_test_volt,
     manual_in_flash_test_mode0,
     manual_in_flash_test_mode1,
-    manual_in_otp_ext_volt
+    manual_in_otp_ext_volt,
+    manual_in_rram_analog
   };
 
   ///////////////////////////////
