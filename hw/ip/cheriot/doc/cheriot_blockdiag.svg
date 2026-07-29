@@ -1,0 +1,2088 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   style="background: transparent; background-color: transparent; color-scheme: light dark;"
+   version="1.1"
+   width="492px"
+   height="604px"
+   viewBox="0 0 492 604"
+   id="svg624"
+   sodipodi:docname="cheriot_blockdiag.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <sodipodi:namedview
+     id="namedview626"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="1.2301325"
+     inkscape:cx="140.63526"
+     inkscape:cy="335.32974"
+     inkscape:window-width="1920"
+     inkscape:window-height="1008"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg624" />
+  <defs
+     id="defs2" />
+  <g
+     id="g622"
+     style="display:inline">
+    <rect
+       style="display:inline;fill:#ffffff;stroke-width:5.66899"
+       id="rect1317"
+       width="492"
+       height="604"
+       x="0"
+       y="0" />
+    <g
+       data-cell-id="0"
+       id="g620"
+       style="display:inline">
+      <g
+         data-cell-id="1"
+         id="g618">
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-47"
+           id="g8">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g6">
+            <rect
+               x="80"
+               y="280"
+               width="300"
+               height="160"
+               fill="#f6fff5"
+               stroke="#82b366"
+               pointer-events="all"
+               style="fill:#f6fff5;stroke:#82b366"
+               id="rect4" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-53"
+           id="g16">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g14">
+            <path
+               d="M 330,270 V 383.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path10" />
+            <path
+               d="m 330,388.88 -3.5,-7 3.5,1.75 3.5,-1.75 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path12" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-16"
+           id="g22">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g20">
+            <rect
+               x="10"
+               y="10"
+               width="330"
+               height="230"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect18" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-14"
+           id="g28">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g26">
+            <rect
+               x="20"
+               y="20"
+               width="310"
+               height="180"
+               fill="#f6fff5"
+               stroke="#82b366"
+               pointer-events="all"
+               style="fill:#f6fff5;stroke:#82b366"
+               id="rect24" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-2"
+           id="g42">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g32">
+            <rect
+               x="40"
+               y="30"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect30" />
+          </g>
+          <g
+             id="g40">
+            <g
+               id="g38">
+              <switch
+                 id="switch36">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 50px; margin-left: 41px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Ibex Core</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="80"
+                   y="54"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text34">Ibex Core</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-3"
+           id="g56">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g46">
+            <rect
+               x="160"
+               y="30"
+               width="120"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               stroke-dasharray="3, 3"
+               pointer-events="all"
+               id="rect44" />
+          </g>
+          <g
+             id="g54">
+            <g
+               id="g52">
+              <switch
+                 id="switch50">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 50px; margin-left: 161px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                        <xhtml:div>Revocation Engine</xhtml:div>
+                      </xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="220"
+                   y="54"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text48">Revocation Engine</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-4"
+           id="g64">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g62">
+            <path
+               d="m 60,70 0.64,382.95"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path58" />
+            <path
+               d="m 60.65,458.2 -3.51,-6.99 3.5,1.74 3.5,-1.75 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path60" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-5"
+           id="g78">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g68">
+            <rect
+               x="35"
+               y="460"
+               width="225"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect66" />
+          </g>
+          <g
+             id="g76">
+            <g
+               id="g74">
+              <switch
+                 id="switch72">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 223px; height: 1px; padding-top: 480px; margin-left: 36px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Main TLUL Crossbar</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="148"
+                   y="484"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text70">Main TLUL Crossbar</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-6"
+           id="g84">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g82">
+            <path
+               d="m 100,120 20,-20 h 40 l 20,20 z"
+               fill="#ffffff"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               stroke-dasharray="3, 3"
+               transform="rotate(180,140,110)"
+               pointer-events="all"
+               id="path80" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-8"
+           id="g92">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g90">
+            <path
+               d="m 100,70 v 10 h 20 v 13.63"
+               fill="none"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               style="stroke:#99004d"
+               id="path86" />
+            <path
+               d="m 120,98.88 -3.5,-7 3.5,1.75 3.5,-1.75 z"
+               fill="#99004d"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               style="fill:#99004d;stroke:#99004d"
+               id="path88" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-9"
+           id="g100">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g98">
+            <path
+               d="M 190,70 V 80 H 160 V 93.63"
+               fill="none"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               stroke-dasharray="3, 3"
+               pointer-events="stroke"
+               style="stroke:#99004d"
+               id="path94" />
+            <path
+               d="m 160,98.88 -3.5,-7 3.5,1.75 3.5,-1.75 z"
+               fill="#99004d"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               style="fill:#99004d;stroke:#99004d"
+               id="path96" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-10"
+           id="g108">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g106">
+            <path
+               d="M 249.88,460.12 250,76.37"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               stroke-dasharray="3, 3"
+               pointer-events="stroke"
+               id="path102" />
+            <path
+               d="m 250,71.12 3.5,7 -3.5,-1.75 -3.5,1.75 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path104" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-11"
+           id="g116">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g114">
+            <path
+               d="m 139.71,120 0.23,23.63"
+               fill="none"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               style="stroke:#99004d"
+               id="path110" />
+            <path
+               d="m 139.99,148.88 -3.57,-6.96 3.52,1.71 3.48,-1.78 z"
+               fill="#99004d"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               style="fill:#99004d;stroke:#99004d"
+               id="path112" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-12"
+           id="g130">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g120">
+            <rect
+               x="100"
+               y="150"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect118" />
+          </g>
+          <g
+             id="g128">
+            <g
+               id="g126">
+              <switch
+                 id="switch124">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 170px; margin-left: 101px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">TRVK Filter</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="140"
+                   y="174"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text122">TRVK Filter</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-13"
+           id="g138">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g136">
+            <path
+               d="m 139.71,190 0.28,143.63"
+               fill="none"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               style="stroke:#99004d"
+               id="path132" />
+            <path
+               d="m 140,338.88 -3.52,-6.99 3.51,1.74 3.49,-1.75 z"
+               fill="#99004d"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               style="fill:#99004d;stroke:#99004d"
+               id="path134" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-15"
+           id="g152">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g142">
+            <rect
+               x="270"
+               y="170"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect140" />
+          </g>
+          <g
+             id="g150">
+            <g
+               id="g148">
+              <switch
+                 id="switch146">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 185px; margin-left: 271px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                        <xhtml:font
+                           style="color: rgb(0, 102, 0);">Lockstep</xhtml:font>
+                      </xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="300"
+                   y="189"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text144">Lockstep</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-17"
+           id="g166">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g156">
+            <rect
+               x="20"
+               y="70"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect154" />
+          </g>
+          <g
+             id="g164">
+            <g
+               id="g162">
+              <switch
+                 id="switch160">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 85px; margin-left: 21px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">I</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="50"
+                   y="89"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text158">I</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-18"
+           id="g180">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g170">
+            <rect
+               x="80"
+               y="70"
+               width="20"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect168" />
+          </g>
+          <g
+             id="g178">
+            <g
+               id="g176">
+              <switch
+                 id="switch174">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 18px; height: 1px; padding-top: 85px; margin-left: 81px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">D</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="90"
+                   y="89"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text172">D</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-19"
+           id="g194">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g184">
+            <rect
+               x="265"
+               y="210"
+               width="70"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect182" />
+          </g>
+          <g
+             id="g192">
+            <g
+               id="g190">
+              <switch
+                 id="switch188">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 68px; height: 1px; padding-top: 225px; margin-left: 266px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">rv_core_ibex</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="300"
+                   y="229"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text186">rv_core_ibex</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-20"
+           id="g200">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g198">
+            <path
+               d="M 60,210 70,220 60,230 50,220 Z"
+               fill="#ffffff"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path196" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-22"
+           id="g206">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g204">
+            <path
+               d="m 140,210 10,10 -10,10 -10,-10 z"
+               fill="#ffffff"
+               stroke="#99004d"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               style="stroke:#99004d"
+               id="path202" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-24"
+           id="g212">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g210">
+            <path
+               d="m 250,210 10,10 -10,10 -10,-10 z"
+               fill="#ffffff"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               stroke-dasharray="3, 3"
+               pointer-events="all"
+               id="path208" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-25"
+           id="g226">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g216">
+            <rect
+               x="59"
+               y="217"
+               width="70"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect214" />
+          </g>
+          <g
+             id="g224">
+            <g
+               id="g222">
+              <switch
+                 id="switch220">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 68px; height: 1px; padding-top: 232px; margin-left: 60px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">OBI - <xhtml:span
+   style="background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));">TLUL</xhtml:span>
+</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="94"
+                   y="236"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text218">OBI - TLUL</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-27"
+           id="g240">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g230">
+            <rect
+               x="140"
+               y="120"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect228" />
+          </g>
+          <g
+             id="g238">
+            <g
+               id="g236">
+              <switch
+                 id="switch234">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 135px; margin-left: 141px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                        <xhtml:font
+                           style="color: rgb(153, 0, 77);">CHERIoT</xhtml:font>
+                      </xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="170"
+                   y="139"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text232">CHERIoT</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-28"
+           id="g248">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g246">
+            <path
+               d="m 180,170 h 30 v 140 h 73.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path242" />
+            <path
+               d="m 288.88,310 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path244" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-29"
+           id="g254">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g252">
+            <path
+               d="m 210,210 10,10 -10,10 -10,-10 z"
+               fill="#ffffff"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path250" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-31"
+           id="g268">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g258">
+            <rect
+               x="35"
+               y="235"
+               width="20"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect256" />
+          </g>
+          <g
+             id="g266">
+            <g
+               id="g264">
+              <switch
+                 id="switch262">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 18px; height: 1px; padding-top: 250px; margin-left: 36px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">I</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="45"
+                   y="254"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text260">I</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-32"
+           id="g282">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g272">
+            <rect
+               x="120"
+               y="235"
+               width="20"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect270" />
+          </g>
+          <g
+             id="g280">
+            <g
+               id="g278">
+              <switch
+                 id="switch276">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 18px; height: 1px; padding-top: 250px; margin-left: 121px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                        <xhtml:font
+                           style="color: rgb(153, 0, 77);">D</xhtml:font>
+                      </xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="130"
+                   y="254"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text274">D</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-33"
+           id="g296">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g286">
+            <rect
+               x="158"
+               y="236"
+               width="47"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect284" />
+          </g>
+          <g
+             id="g294">
+            <g
+               id="g292">
+              <switch
+                 id="switch290">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 45px; height: 1px; padding-top: 251px; margin-left: 159px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">RevBM</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="182"
+                   y="255"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text288">RevBM</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-34"
+           id="g310">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g300">
+            <rect
+               x="220"
+               y="232.5"
+               width="30"
+               height="35"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect298" />
+          </g>
+          <g
+             id="g308">
+            <g
+               id="g306">
+              <switch
+                 id="switch304">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 250px; margin-left: 221px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Cfg</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="235"
+                   y="254"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text302">Cfg</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-36"
+           id="g316">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g314">
+            <path
+               d="M 190,180 V 160"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path312" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-37"
+           id="g330">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g320">
+            <rect
+               x="100"
+               y="340"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect318" />
+          </g>
+          <g
+             id="g328">
+            <g
+               id="g326">
+              <switch
+                 id="switch324">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 360px; margin-left: 101px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Tag Filter</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="140"
+                   y="364"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text322">Tag Filter</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-39"
+           id="g344">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g334">
+            <rect
+               x="290"
+               y="290"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect332" />
+          </g>
+          <g
+             id="g342">
+            <g
+               id="g340">
+              <switch
+                 id="switch338">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 310px; margin-left: 291px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Access Chk</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="330"
+                   y="314"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text336">Access Chk</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-40"
+           id="g358">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g348">
+            <rect
+               x="290"
+               y="340"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect346" />
+          </g>
+          <g
+             id="g356">
+            <g
+               id="g354">
+              <switch
+                 id="switch352">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 360px; margin-left: 291px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Access Chk</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="330"
+                   y="364"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text350">Access Chk</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-41"
+           id="g372">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g362">
+            <rect
+               x="290"
+               y="390"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect360" />
+          </g>
+          <g
+             id="g370">
+            <g
+               id="g368">
+              <switch
+                 id="switch366">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 410px; margin-left: 291px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Access Chk</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="330"
+                   y="414"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text364">Access Chk</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-44"
+           id="g380">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g378">
+            <path
+               d="m 140,380 0.28,73.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path374" />
+            <path
+               d="m 140.3,458.88 -3.53,-6.98 3.51,1.73 3.49,-1.76 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path376" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-46"
+           id="g388">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g386">
+            <path
+               d="M 210.05,460.16 210,410 h 73.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path382" />
+            <path
+               d="m 288.88,410 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path384" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-48"
+           id="g402">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g392">
+            <rect
+               x="80"
+               y="410"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect390" />
+          </g>
+          <g
+             id="g400">
+            <g
+               id="g398">
+              <switch
+                 id="switch396">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 425px; margin-left: 81px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                        <xhtml:font
+                           style="color: rgb(0, 102, 0);">Lockstep</xhtml:font>
+                      </xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="110"
+                   y="429"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text394">Lockstep</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-49"
+           id="g416">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g406">
+            <rect
+               x="208"
+               y="430"
+               width="30"
+               height="35"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect404" />
+          </g>
+          <g
+             id="g414">
+            <g
+               id="g412">
+              <switch
+                 id="switch410">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 28px; height: 1px; padding-top: 448px; margin-left: 209px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Sys</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="223"
+                   y="451"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text408">Sys</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-54"
+           id="g430">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g420">
+            <rect
+               x="272.5"
+               y="245"
+               width="115"
+               height="35"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect418" />
+          </g>
+          <g
+             id="g428">
+            <g
+               id="g426">
+              <switch
+                 id="switch424">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 113px; height: 1px; padding-top: 263px; margin-left: 274px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">CHERIoT Enable</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="330"
+                   y="266"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text422">CHERIoT Enable</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-56"
+           id="g438">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g436">
+            <path
+               d="m 370,310 h 23.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path432" />
+            <path
+               d="m 398.88,310 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path434" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-57"
+           id="g446">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g444">
+            <path
+               d="m 370,359.86 h 23.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path440" />
+            <path
+               d="m 398.88,359.86 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path442" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-58"
+           id="g454">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g452">
+            <path
+               d="m 370,409.72 h 23.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path448" />
+            <path
+               d="m 398.88,409.72 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path450" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-59"
+           id="g460">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g458">
+            <path
+               d="m 350,370 20,-20 h 80 l 20,20 z"
+               fill="#ffffff"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               transform="rotate(90,410,360)"
+               pointer-events="all"
+               id="path456" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-60"
+           id="g474">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g464">
+            <rect
+               x="40"
+               y="530"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect462" />
+          </g>
+          <g
+             id="g472">
+            <g
+               id="g470">
+              <switch
+                 id="switch468">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 550px; margin-left: 41px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Main SRAM</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="80"
+                   y="554"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text466">Main SRAM</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-61"
+           id="g488">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g478">
+            <rect
+               x="170"
+               y="530"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect476" />
+          </g>
+          <g
+             id="g486">
+            <g
+               id="g484">
+              <switch
+                 id="switch482">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 550px; margin-left: 171px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">NVM</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="210"
+                   y="554"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text480">NVM</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-62"
+           id="g502">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g492">
+            <rect
+               x="400"
+               y="530"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect490" />
+          </g>
+          <g
+             id="g500">
+            <g
+               id="g498">
+              <switch
+                 id="switch496">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 550px; margin-left: 401px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Meta SRAM</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="440"
+                   y="554"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text494">Meta SRAM</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-63"
+           id="g516">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g506">
+            <rect
+               x="262"
+               y="360"
+               width="26"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect504" />
+          </g>
+          <g
+             id="g514">
+            <g
+               id="g512">
+              <switch
+                 id="switch510">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 24px; height: 1px; padding-top: 375px; margin-left: 263px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">Tags</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="275"
+                   y="379"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text508">Tags</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-65"
+           id="g530">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g520">
+            <rect
+               x="180"
+               y="340"
+               width="80"
+               height="40"
+               fill="#ffffff"
+               stroke="#000000"
+               pointer-events="all"
+               id="rect518" />
+          </g>
+          <g
+             id="g528">
+            <g
+               id="g526">
+              <switch
+                 id="switch524">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 360px; margin-left: 181px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">RMW Filter</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="220"
+                   y="364"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text522">RMW Filter</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-66"
+           id="g538">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g536">
+            <path
+               d="m 260,360 h 23.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path532" />
+            <path
+               d="m 288.88,360 -7,3.5 1.75,-3.5 -1.75,-3.5 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path534" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-68"
+           id="g546">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g544">
+            <path
+               d="m 79.78,500.16 0.17,23.47"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path540" />
+            <path
+               d="m 79.99,528.88 -3.55,-6.97 3.51,1.72 3.49,-1.77 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path542" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-69"
+           id="g554">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g552">
+            <path
+               d="m 209.8,500 v 23.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path548" />
+            <path
+               d="m 209.8,528.88 -3.5,-7 3.5,1.75 3.5,-1.75 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path550" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-70"
+           id="g562">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g560">
+            <path
+               d="m 420,360 h 20 l -0.19,163.63"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path556" />
+            <path
+               d="m 439.8,528.88 -3.49,-7 3.5,1.75 3.5,-1.74 z"
+               fill="#000000"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="all"
+               id="path558" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-71"
+           id="g568">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g566">
+            <path
+               d="M 273.83,370 V 350"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path564" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-72"
+           id="g574">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g572">
+            <path
+               d="M 272.5,420 V 400"
+               fill="none"
+               stroke="#000000"
+               stroke-miterlimit="10"
+               pointer-events="stroke"
+               id="path570" />
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-74"
+           id="g588">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g578">
+            <rect
+               x="50"
+               y="563"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect576" />
+          </g>
+          <g
+             id="g586">
+            <g
+               id="g584">
+              <switch
+                 id="switch582">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 578px; margin-left: 51px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">128 kiB</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="80"
+                   y="582"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text580">128 kiB</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-75"
+           id="g602">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g592">
+            <rect
+               x="178"
+               y="563"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect590" />
+          </g>
+          <g
+             id="g600">
+            <g
+               id="g598">
+              <switch
+                 id="switch596">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 578px; margin-left: 179px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">1024 kiB</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="208"
+                   y="582"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text594">1024 kiB</text>
+              </switch>
+            </g>
+          </g>
+        </g>
+        <g
+           data-cell-id="P0XwuShIr-ekQr74czGd-76"
+           id="g616">
+          <g
+             transform="translate(0.5,0.5)"
+             id="g606">
+            <rect
+               x="410"
+               y="563"
+               width="60"
+               height="30"
+               fill="none"
+               stroke="none"
+               pointer-events="all"
+               id="rect604" />
+          </g>
+          <g
+             id="g614">
+            <g
+               id="g612">
+              <switch
+                 id="switch610">
+                <foreignObject
+                   style="overflow: visible; text-align: left;"
+                   pointer-events="none"
+                   width="100%"
+                   height="100%"
+                   requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                  <xhtml:div
+                     style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 58px; height: 1px; padding-top: 578px; margin-left: 411px;">
+                    <xhtml:div
+                       style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
+                      <xhtml:div
+                         style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">64<xhtml:span
+   style="background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));"> kiB</xhtml:span>
+</xhtml:div>
+                    </xhtml:div>
+                  </xhtml:div>
+                </foreignObject>
+                <text
+                   x="440"
+                   y="582"
+                   fill="light-dark(#000000, #ffffff)"
+                   font-family="Helvetica"
+                   font-size="12px"
+                   text-anchor="middle"
+                   id="text608">36 kiB</text>
+                <rect
+                   style="fill:#bd52d5;stroke-width:1.33333"
+                   id="rect1148"
+                   width="279.06039"
+                   height="476.37463"
+                   x="-2.9912937"
+                   y="-3.6041596" />
+                <rect
+                   style="fill:#bd52d5;stroke-width:1.38591"
+                   id="rect1150"
+                   width="492"
+                   height="604"
+                   x="1.5293322e-14"
+                   y="-1.4210855e-14" />
+              </switch>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
