@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "cheriot"
+
+  // Mirrors the test lists imported by cheriot_sim_cfg.hjson. mem_testplan is not imported: the
+  // only memory window, `revbm`, has no registers, so reggen emits no RAL model and there is no RAL
+  // memory to walk.
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Bring the subsystem out of reset in ePMP mode and check that it stays quiescent: no
+            transaction is generated on either host port, `fatal_fault` stays low, and the CSR
+            interface responds to a register access.
+            '''
+      stage: V1
+      tests: ["cheriot_smoke"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: cheriot_feature_cg
+      desc: '''
+            Placeholder. No covergroup is implemented; SIM_COVERAGE_MODEL_ADDED is Not Started and
+            scoped for the V1-to-V2 work.
+            '''
+    }
+  ]
+}
