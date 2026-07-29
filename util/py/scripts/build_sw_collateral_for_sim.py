@@ -124,9 +124,9 @@ KNOWN_FLAGS = [
     "signed",
     # Also used to mark images that build binaries signed with fake keys, to
     # then also correctly locate the output binary by name.
-    "fake_ecdsa_dev_key_0",
-    "fake_ecdsa_prod_key_0",
-    "fake_ecdsa_test_key_0",
+    "dev_key_0",
+    "prod_key_0",
+    "test_key_0",
     "fake_rsa_dev_key_0",
     "fake_rsa_prod_key_0",
     "fake_rsa_test_key_0",
