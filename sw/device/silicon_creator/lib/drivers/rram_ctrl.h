@@ -50,6 +50,16 @@ typedef struct rram_ctrl_info_page {
    * a real RRAM info page.
    */
   bool emulated;
+  /**
+   * Number of contiguous physical pages backing this logical page.
+   *
+   * Real info pages are always 1 (there's no way to combine physical info
+   * pages). Emulated pages can span multiple contiguous data-partition pages
+   * to fit content larger than 512 bytes; callers reading/writing more than
+   * `num_pages * 512` bytes will silently spill into the next logical page's
+   * storage, since nothing enforces this bound at the read/write call site.
+   */
+  uint32_t num_pages;
 } rram_ctrl_info_page_t;
 
 /**
@@ -59,7 +69,7 @@ typedef struct rram_ctrl_info_page {
  */
 enum {
   kRramCtrlEmulPageBase = 4064,
-  kRramCtrlEmulPageCount = 14,
+  kRramCtrlEmulPageCount = 20,
   /**
    * Memory-protection region index (of `RRAM_CTRL_PARAM_NUM_REGIONS`) used
    * for the shared emulated-page region.
@@ -81,40 +91,53 @@ enum {
 /**
  * Table of RRAM information pages.
  *
- * Columns: Name, physical page index, whether emulated.
+ * Columns: Name, physical page index, whether emulated, number of contiguous
+ * physical pages backing it (see `rram_ctrl_info_page_t.num_pages`).
  * We use an X macro to facilitate writing enums, switch statements, and unit
  * tests using the constants here, mirroring `FLASH_CTRL_INFO_PAGES_DEFINE`.
+ *
+ * Emulated-page offsets below are manually cumulative (each is the previous
+ * entry's offset + its `num_pages`) since a page occupying more than one
+ * slot has no entries of its own for its 2nd-Nth pages.
  */
 // clang-format off
 #define RRAM_CTRL_INFO_PAGES_DEFINE(X) \
   /**
    * Real, individually-protected info pages.
    */ \
-  X(kRramCtrlInfoPageFactoryId,           0, false) \
-  X(kRramCtrlInfoPageAttestationKeySeeds, 1, false) \
-  X(kRramCtrlInfoPageFactoryCerts,        2, false) \
-  X(kRramCtrlInfoPageCreatorSecret,       5, false) \
-  X(kRramCtrlInfoPageOwnerSecret,         6, false) \
-  X(kRramCtrlInfoPageWaferAuthSecret,     7, false) \
+  X(kRramCtrlInfoPageFactoryId,           0, false, 1) \
+  X(kRramCtrlInfoPageAttestationKeySeeds, 1, false, 1) \
+  X(kRramCtrlInfoPageFactoryCerts,        2, false, 1) \
+  X(kRramCtrlInfoPageCreatorSecret,       5, false, 1) \
+  X(kRramCtrlInfoPageOwnerSecret,         6, false, 1) \
+  X(kRramCtrlInfoPageWaferAuthSecret,     7, false, 1) \
   /**
    * Emulated info pages, relocated onto the data partition. All share
    * `kRramCtrlEmulRegion`'s memory protection; see the TODO on
    * `rram_ctrl_info_page_t`.
+   *
+   * `owner_block_t` (backing OwnerSlot0/1) is 2048 bytes
+   * (`OT_ASSERT_SIZE(owner_block_t, 2048)`) -- 4 pages, not 1. Previously
+   * each only got 1 page, so every write silently overflowed into the next
+   * 3 logical pages' storage. OwnerSlot0/1 below now each reserve 4 pages
+   * (their 2nd-4th pages have no named entry of their own, matching how a
+   * single-page entry's extent is implied by its consumer's read/write size
+   * rather than a field in this table).
    */ \
-  X(kRramCtrlInfoPageOwnerReserved0,      kRramCtrlEmulPageBase + 0,  true) \
-  X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 1,  true) \
-  X(kRramCtrlInfoPageOwnerReserved2,      kRramCtrlEmulPageBase + 2,  true) \
-  X(kRramCtrlInfoPageOwnerReserved3,      kRramCtrlEmulPageBase + 3,  true) \
-  X(kRramCtrlInfoPageBootData0,           kRramCtrlEmulPageBase + 4,  true) \
-  X(kRramCtrlInfoPageBootData1,           kRramCtrlEmulPageBase + 5,  true) \
-  X(kRramCtrlInfoPageOwnerSlot0,          kRramCtrlEmulPageBase + 6,  true) \
-  X(kRramCtrlInfoPageOwnerSlot1,          kRramCtrlEmulPageBase + 7,  true) \
-  X(kRramCtrlInfoPageCreatorReserved0,    kRramCtrlEmulPageBase + 8,  true) \
-  X(kRramCtrlInfoPageOwnerReserved4,      kRramCtrlEmulPageBase + 9,  true) \
-  X(kRramCtrlInfoPageOwnerReserved5,      kRramCtrlEmulPageBase + 10, true) \
-  X(kRramCtrlInfoPageOwnerReserved6,      kRramCtrlEmulPageBase + 11, true) \
-  X(kRramCtrlInfoPageOwnerReserved7,      kRramCtrlEmulPageBase + 12, true) \
-  X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 13, true) \
+  X(kRramCtrlInfoPageOwnerReserved0,      kRramCtrlEmulPageBase + 0,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 1,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved2,      kRramCtrlEmulPageBase + 2,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved3,      kRramCtrlEmulPageBase + 3,  true, 1) \
+  X(kRramCtrlInfoPageBootData0,           kRramCtrlEmulPageBase + 4,  true, 1) \
+  X(kRramCtrlInfoPageBootData1,           kRramCtrlEmulPageBase + 5,  true, 1) \
+  X(kRramCtrlInfoPageOwnerSlot0,          kRramCtrlEmulPageBase + 6,  true, 4) \
+  X(kRramCtrlInfoPageOwnerSlot1,          kRramCtrlEmulPageBase + 10, true, 4) \
+  X(kRramCtrlInfoPageCreatorReserved0,    kRramCtrlEmulPageBase + 14, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved4,      kRramCtrlEmulPageBase + 15, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved5,      kRramCtrlEmulPageBase + 16, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved6,      kRramCtrlEmulPageBase + 17, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved7,      kRramCtrlEmulPageBase + 18, true, 1) \
+  X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 19, true, 1) \
 // clang-format on
 
 /**
@@ -122,8 +145,9 @@ enum {
  * @param name_ Name of the enumeration constant.
  * @param page_id_ Physical page index of the info page.
  * @param emulated_ Whether the page is emulated on the data partition.
+ * @param num_pages_ Number of contiguous physical pages backing this page.
  */
-#define INFO_PAGE_STRUCT_DECL_(name_, page_id_, emulated_) \
+#define INFO_PAGE_STRUCT_DECL_(name_, page_id_, emulated_, num_pages_) \
   extern const rram_ctrl_info_page_t name_;
 
 /**
