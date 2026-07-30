@@ -231,6 +231,23 @@ static status_t internal_p256_keygen_start(
  * @return OK if all security and parameter checks pass, or BAD_ARGS if
  *         inputs are invalid, mismatched, or if a fault is detected.
  */
+#ifdef FIPS_MODE
+OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_digest_check_fips(
+    const otcrypto_hash_digest_t message_digest) {
+  switch (launder32(message_digest.mode)) {
+    case kOtcryptoHashModeSha256:
+    case kOtcryptoHashModeSha384:
+    case kOtcryptoHashModeSha512:
+    case kOtcryptoHashModeSha3_256:
+    case kOtcryptoHashModeSha3_384:
+    case kOtcryptoHashModeSha3_512:
+      return OTCRYPTO_OK;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+#endif
+
 OT_NOINLINE
 OT_WARN_UNUSED_RESULT
 static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
@@ -259,6 +276,10 @@ static otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start_setup(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_digest.len, kP256ScalarWords);
+
+#ifdef FIPS_MODE
+  HARDENED_TRY(p256_digest_check_fips(message_digest));
+#endif
 
   HARDENED_TRY(p256_private_key_length_check(private_key));
 
@@ -592,6 +613,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
   }
   HARDENED_CHECK_EQ(message_digest.len, kP256ScalarWords);
 
+#ifdef FIPS_MODE
+  HARDENED_TRY(p256_digest_check_fips(message_digest));
+#endif
+
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
                                                              &diversification));
@@ -642,6 +667,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_digest.len, kP256ScalarWords);
+
+#ifdef FIPS_MODE
+  HARDENED_TRY(p256_digest_check_fips(message_digest));
+#endif
 
   // Check the signature lengths.
   HARDENED_TRY(p256_signature_length_check(signature->len));

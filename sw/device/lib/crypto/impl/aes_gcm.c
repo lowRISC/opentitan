@@ -201,6 +201,12 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
  */
 status_t aes_gcm_check_tag_length(size_t word_len,
                                   otcrypto_aes_gcm_tag_len_t tag_len) {
+#ifdef FIPS_MODE
+  if (launder32(tag_len) != kOtcryptoAesGcmTagLen128 &&
+      launder32(tag_len) != kOtcryptoAesGcmTagLen96) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   size_t bit_len = 0;
   otcrypto_aes_gcm_tag_len_t tag_len_set = launder32(0);
   switch (launder32(tag_len)) {

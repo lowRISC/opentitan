@@ -69,6 +69,51 @@ static status_t digest_check(const otcrypto_hash_digest_t digest) {
   return OTCRYPTO_OK;
 }
 
+#ifdef FIPS_MODE
+OT_WARN_UNUSED_RESULT
+static status_t rsa_digest_check_fips(
+    const otcrypto_hash_digest_t message_digest,
+    const rsa_signature_padding_t padding_mode, size_t encoded_message_len) {
+  // Per NIST SP 800-57 Part 1 Table 3, the security strength of a hash function
+  // for digital signatures (collision resistance) is half its output size (N/2
+  // bits):
+  //   - SHA3-224 (224-bit output)  -> 112-bit security strength
+  //   - SHA-256 / SHA3-256 / SHAKE128 -> 128-bit security strength
+  //   - SHA-384 / SHA3-384        -> 192-bit security strength (>= 150-bit)
+  //   - SHA-512 / SHA3-512 / SHAKE256 -> 256-bit security strength
+  //
+  // Minimum digest output size (min_bits = 2 * required_security_strength):
+  //   - RSA-2048 (112-bit strength) -> min_bits = 224
+  //   - RSA-3072 (128-bit strength) -> min_bits = 256
+  //   - RSA-4096 (150-bit strength) -> min_bits = 384
+  size_t min_bits = 224;
+  if (launder32(encoded_message_len) == kRsa3072NumWords) {
+    min_bits = 256;
+  } else if (launder32(encoded_message_len) == kRsa4096NumWords) {
+    min_bits = 384;
+  }
+
+  // Get digest output size and check for XOF modes (SHAKE only allowed for
+  // PSS).
+  size_t digest_bits = message_digest.len * 32;
+  if (launder32(message_digest.mode) == kOtcryptoHashXofModeShake128) {
+    digest_bits = 256;
+    if (padding_mode != kRsaSignaturePaddingPss)
+      return OTCRYPTO_BAD_ARGS;
+  } else if (launder32(message_digest.mode) == kOtcryptoHashXofModeShake256) {
+    digest_bits = 512;
+    if (padding_mode != kRsaSignaturePaddingPss)
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (digest_bits < min_bits) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+#endif
+
 /**
  * Encode the message with the provided padding mode and hash function.
  *
@@ -85,6 +130,10 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
                                uint32_t *encoded_message) {
   // Check that the digest length is OK.
   HARDENED_TRY(digest_check(message_digest));
+#ifdef FIPS_MODE
+  HARDENED_TRY(
+      rsa_digest_check_fips(message_digest, padding_mode, encoded_message_len));
+#endif
 
   switch (launder32(padding_mode)) {
     case kRsaSignaturePaddingPkcs1v15:
@@ -138,6 +187,10 @@ static status_t encoded_message_verify(
     const size_t encoded_message_len, hardened_bool_t *result) {
   // Check that the digest length is OK.
   HARDENED_TRY(digest_check(message_digest));
+#ifdef FIPS_MODE
+  HARDENED_TRY(
+      rsa_digest_check_fips(message_digest, padding_mode, encoded_message_len));
+#endif
 
   switch (launder32(padding_mode)) {
     case kRsaSignaturePaddingPkcs1v15:

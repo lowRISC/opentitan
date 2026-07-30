@@ -351,6 +351,21 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
 
+#ifdef FIPS_MODE
+OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_digest_check_fips(
+    const otcrypto_hash_digest_t message_digest) {
+  switch (launder32(message_digest.mode)) {
+    case kOtcryptoHashModeSha384:
+    case kOtcryptoHashModeSha512:
+    case kOtcryptoHashModeSha3_384:
+    case kOtcryptoHashModeSha3_512:
+      return OTCRYPTO_OK;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+#endif
+
 OT_NOINLINE static otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start_setup(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest) {
@@ -379,6 +394,10 @@ OT_NOINLINE static otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start_setup(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_digest.len, kP384ScalarWords);
+
+#ifdef FIPS_MODE
+  HARDENED_TRY(p384_digest_check_fips(message_digest));
+#endif
 
   // Check the key length.
   HARDENED_TRY(p384_private_key_length_check(private_key));
@@ -519,6 +538,10 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_digest.len, kP384ScalarWords);
+
+#ifdef FIPS_MODE
+  HARDENED_TRY(p384_digest_check_fips(message_digest));
+#endif
 
   // Check the signature lengths.
   HARDENED_TRY(p384_signature_length_check(signature->len));
