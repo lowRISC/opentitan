@@ -8434,7 +8434,17 @@
           package: rom_ctrl_pkg
           type: uni
           act: rcv
-          width: 2
+          width:
+          {
+            name: NumRomDigestInputs
+            desc: Number of digest inputs from ROM_CTRL
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: true
+            expose: true
+            name_top: KeymgrDpeNumRomDigestInputs
+          }
           default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
           inst_name: keymgr_dpe
           domain: Main
@@ -26486,7 +26496,17 @@
         package: rom_ctrl_pkg
         type: uni
         act: rcv
-        width: 2
+        width:
+        {
+          name: NumRomDigestInputs
+          desc: Number of digest inputs from ROM_CTRL
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: true
+          expose: true
+          name_top: KeymgrDpeNumRomDigestInputs
+        }
         default: rom_ctrl_pkg::KEYMGR_DATA_DEFAULT
         inst_name: keymgr_dpe
         domain: Main
