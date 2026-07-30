@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -38,7 +38,7 @@ static const size_t kCustomStringLen = 0;
 static const char kKmacMessage[] = "\x00\x01\x02\x03";
 static const size_t kKmacMessageLen = 4;
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_sram_ctrl_t ret_sram;
 static dif_rstmgr_t rstmgr;
@@ -50,7 +50,7 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
-  CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init_from_dt(kDtKeymgrDpe, &keymgr_dpe));
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgr, &rstmgr));
   CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRet, &ret_sram));
 }
@@ -72,35 +72,35 @@ static void init_peripheral_handles(void) {
  * kDifKmacModeKmacLen256 with a sideloaded key are computed. The outputs are
  * compared to the previous value stored in the retention SRAM.
  *
- * @param keymgr the key manager handle.
+ * @param keymgr_dpe the key manager dpe handle.
  * @param kmac the kmac handle.
  * @param test_phase the current test phase.
  */
-static void test_kmac_key_sideload(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
-                                   size_t test_phase) {
+static void test_kmac_key_sideload(dif_keymgr_dpe_t *keymgr_dpe,
+                                   dif_kmac_t *kmac, size_t test_phase) {
   // Configure KMAC to use the sideloaded key.
   CHECK_STATUS_OK(kmac_testutils_config(kmac, true));
 
   // Generate the sideloaded key.
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
-  sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyVersionedParams;
+  sideload_params.key_dest = kDifKeymgrDpeKeyDestKmac;
+  sideload_params.sideload_key = true;
+  // Ensure the slot matches with the CreatorRootKey
+  sideload_params.slot_src_sel = kCreatorRootKeyParams.slot_dst_sel;
 
-  // Get the maximum key version supported by the keymgr in its current state.
-  uint32_t max_key_version;
-  CHECK_STATUS_OK(
-      keymgr_testutils_max_key_version_get(keymgr, &max_key_version));
-
+  // Check the applied key version
+  uint32_t max_key_version = kCreatorRootKeyParams.max_key_version;
   if (sideload_params.version > max_key_version) {
-    LOG_INFO("Key version %d is greater than the maximum key version %d",
+    LOG_INFO("Key version %d is greater than the maximum key version %d!",
              sideload_params.version, max_key_version);
-    LOG_INFO("Setting key version to the maximum key version %d",
+    LOG_INFO("Setting key version to the maximum key version %d.",
              max_key_version);
     sideload_params.version = max_key_version;
   }
 
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Kmac");
+      keymgr_dpe_testutils_generate_key(keymgr_dpe, &sideload_params));
+  LOG_INFO("Keymgr dpe generated HW output for Kmac");
   uint32_t output_sideload[ARRAYSIZE(kKmacModes)][kKmacOutputLen];
 
   for (size_t it = 0; it < ARRAYSIZE(kKmacModes); it++) {
@@ -129,20 +129,20 @@ static void test_kmac_key_sideload(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
 
     // Enable "clear the key" toggle, so that previous sideload key port is
     // cleared.
-    CHECK_DIF_OK(
-        dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
+    CHECK_DIF_OK(dif_keymgr_dpe_clear_sideload_key(
+        keymgr_dpe, kDifKeymgrDpeSideLoadClearKmac));
 
     // Disable "clear the key" toggle, so that the sideload key port is stable.
     // Otherwise, the sideload port is continuously overwritten by fresh
     // randomness every clock cycle.
-    CHECK_DIF_OK(
-        dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleDisabled));
+    CHECK_DIF_OK(dif_keymgr_dpe_clear_sideload_key(
+        keymgr_dpe, kDifKeymgrDpeSideLoadClearNone));
 
     // Let the keymanager generate a new key with a different salt.
     sideload_params.salt[0] = ~sideload_params.salt[0];
     CHECK_STATUS_OK(
-        keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
-    LOG_INFO("Keymgr generated new HW output for Kmac.");
+        keymgr_dpe_testutils_generate_key(keymgr_dpe, &sideload_params));
+    LOG_INFO("Keymgr dpe generated new HW output for Kmac.");
 
     uint32_t output_sideload_after_clear[kKmacOutputLen];
     CHECK_STATUS_OK(
@@ -190,10 +190,10 @@ bool test_main(void) {
 
   // Initialize peripherals and the keymanager.
   init_peripheral_handles();
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe, &kmac));
 
   LOG_INFO("Starting test phase %d", test_phase_cnt);
-  test_kmac_key_sideload(&keymgr, &kmac, test_phase_cnt);
+  test_kmac_key_sideload(&keymgr_dpe, &kmac, test_phase_cnt);
   LOG_INFO("Finished test phase %x", test_phase_cnt);
 
   // After phase 0, trigger a software reset.
