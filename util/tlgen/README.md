@@ -118,6 +118,7 @@ reset | optional | string | main reset of the port
 pipeline | optional | python Bool | If true, pipeline is added in front of the port
 req_fifo_pass | optional | python Bool | If true, pipeline fifo has passthrough behavior on req
 rsp_fifo_pass | optional | python Bool | If true, pipeline fifo has passthrough behavior on rsp
+fifo_depth | optional | int | depth of req/rsp fifo if pipeline is true and fifo_pass is false
 inst_type | optional | string | Instance type
 xbar | optional | python Bool | If true, the node is connected to another Xbar
 addr_range | optional | list of group | List of addr_range group
