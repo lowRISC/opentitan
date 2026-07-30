@@ -6,6 +6,7 @@
 
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data_v0.h"
 
 rom_error_t perso_tlv_init_v1_blob(perso_blob_t *pb) {
   if (pb->next_free != 0) {
@@ -65,8 +66,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
     case kPersoBlobVersionV1: {
       perso_tlv_object_header_v1_t objh;
       memcpy(&objh, buf, sizeof(perso_tlv_object_header_v1_t));
-      PERSO_TLV_GET_FIELD_V1(ObjhV1, Size, objh, &obj_size);
-      PERSO_TLV_GET_FIELD_V1(ObjhV1, Type, objh, &obj_type);
+      PERSO_TLV_GET_FIELD_V1(Objh, Size, objh, &obj_size);
+      PERSO_TLV_GET_FIELD_V1(Objh, Type, objh, &obj_type);
       break;
     }
     default:
@@ -109,6 +110,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   if (ltv_buf_size < cert_header_size) {
     return kErrorPersoTlvInternal;
   }
+  size_t max_cert_name_len = 0;
   switch (blob_version) {
     case kPersoBlobVersionV0: {
       perso_tlv_cert_header_t crth;
@@ -119,13 +121,15 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
       PERSO_TLV_GET_FIELD(Crth, Size, crth, &wrapped_cert_size_v0);
       name_len = name_len_v0;
       wrapped_cert_size = wrapped_cert_size_v0;
+      max_cert_name_len = kCrthNameSizeFieldMaskV0;
       break;
     }
     case kPersoBlobVersionV1: {
       perso_tlv_cert_header_v1_t crth;
       memcpy(&crth, buf, sizeof(perso_tlv_cert_header_v1_t));
-      PERSO_TLV_GET_FIELD_V1(CrthV1, NameSize, crth, &name_len);
-      PERSO_TLV_GET_FIELD_V1(CrthV1, Size, crth, &wrapped_cert_size);
+      PERSO_TLV_GET_FIELD_V1(Crth, NameSize, crth, &name_len);
+      PERSO_TLV_GET_FIELD_V1(Crth, Size, crth, &wrapped_cert_size);
+      max_cert_name_len = kCrthNameSizeFieldMaskV1;
       break;
     }
     default:
@@ -143,8 +147,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   if (ltv_buf_size < name_len) {
     return kErrorPersoTlvInternal;
   }
-  if (name_len > kCrthNameSizeFieldMask) {
-    return kErrorPersoTlvInternal;
+  if (name_len > max_cert_name_len) {
+    return kErrorPersoTlvCertNameTooLong;
   }
   memcpy(obj->name, buf, name_len);
   obj->name[name_len] = '\0';
@@ -174,14 +178,17 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
                                      uint8_t *buf, size_t *buf_size) {
   size_t obj_header_size;
   size_t cert_header_size;
+  size_t max_cert_name_len;
   switch (blob_version) {
     case kPersoBlobVersionV0:
       obj_header_size = sizeof(perso_tlv_object_header_t);
       cert_header_size = sizeof(perso_tlv_cert_header_t);
+      max_cert_name_len = kCrthNameSizeFieldMaskV0;
       break;
     case kPersoBlobVersionV1:
       obj_header_size = sizeof(perso_tlv_object_header_v1_t);
       cert_header_size = sizeof(perso_tlv_cert_header_v1_t);
+      max_cert_name_len = kCrthNameSizeFieldMaskV1;
       break;
     default:
       return kErrorPersoTlvInternal;
@@ -191,10 +198,13 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
 
   // Compute the name length (strlen() is not available).
   size_t name_len = 0;
-  while (name[name_len])
+  while (name[name_len] != '\0' && (name_len <= max_cert_name_len)) {
     name_len++;
-  if (name_len > kCrthNameSizeFieldMask)
+  }
+
+  if (name_len > max_cert_name_len) {
     return kErrorPersoTlvCertNameTooLong;
+  }
 
   // Compute the wrapped certificate object (cert header + cert data) and perso
   // LTV object sizes.
@@ -225,10 +235,10 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
     case kPersoBlobVersionV1: {
       perso_tlv_object_header_v1_t obj_header = 0;
       perso_tlv_cert_header_v1_t cert_header = 0;
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Type, obj_header, obj_type);
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Size, obj_header, obj_size);
-      PERSO_TLV_SET_FIELD_V1(CrthV1, Size, cert_header, wrapped_cert_size);
-      PERSO_TLV_SET_FIELD_V1(CrthV1, NameSize, cert_header, name_len);
+      PERSO_TLV_SET_FIELD_V1(Objh, Type, obj_header, obj_type);
+      PERSO_TLV_SET_FIELD_V1(Objh, Size, obj_header, obj_size);
+      PERSO_TLV_SET_FIELD_V1(Crth, Size, cert_header, wrapped_cert_size);
+      PERSO_TLV_SET_FIELD_V1(Crth, NameSize, cert_header, name_len);
       memcpy(buf + *buf_size, &obj_header,
              sizeof(perso_tlv_object_header_v1_t));
       *buf_size += sizeof(perso_tlv_object_header_v1_t);
@@ -324,7 +334,7 @@ perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
   switch (version) {
     case kPersoBlobVersionV1: {
       perso_tlv_object_header_v1_t header = *(const uint32_t *)data;
-      PERSO_TLV_GET_FIELD_V1(ObjhV1, Type, header, &type);
+      PERSO_TLV_GET_FIELD_V1(Objh, Type, header, &type);
       break;
     }
     case kPersoBlobVersionV0:
@@ -343,7 +353,7 @@ uint32_t perso_tlv_object_size(const uint8_t *data,
   switch (version) {
     case kPersoBlobVersionV1: {
       perso_tlv_object_header_v1_t header = *(const uint32_t *)data;
-      PERSO_TLV_GET_FIELD_V1(ObjhV1, Size, header, &size);
+      PERSO_TLV_GET_FIELD_V1(Objh, Size, header, &size);
       break;
     }
     case kPersoBlobVersionV0:
@@ -377,8 +387,8 @@ rom_error_t perso_tlv_push_object_to_perso_blob(
   switch (version) {
     case kPersoBlobVersionV1: {
       perso_tlv_object_header_v1_t header = 0;
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Type, header, obj_type);
-      PERSO_TLV_SET_FIELD_V1(ObjhV1, Size, header, total_size);
+      PERSO_TLV_SET_FIELD_V1(Objh, Type, header, obj_type);
+      PERSO_TLV_SET_FIELD_V1(Objh, Size, header, total_size);
       memcpy(perso_blob->body + perso_blob->next_free, &header, header_size);
       break;
     }
