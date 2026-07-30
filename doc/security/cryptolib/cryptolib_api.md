@@ -44,6 +44,17 @@ Please note that this function only can be called from the machine (M) mode priv
 
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_init }}
 
+### Advanced Configuration and System Operations
+
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_security_config_check }}
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_set_security_config }}
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_disable_icache }}
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_restore_icache }}
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_clear_alerts }}
+{{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_init }}
+{{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_check }}
+{{#header-snippet sw/device/lib/crypto/include/self_integrity.h otcrypto_integrity_check }}
+
 ## Cryptolib Exit
 
 Before returning to the caller, the cryptolib invokes `otcrypto_eval_exit` with the status returned by the cryptolib operation.
@@ -61,6 +72,8 @@ You can activate these settings during the build process by passing `--define=<s
 
 Additionally, building with the Bazel `--stamp` option is required to include the actual Git commit hash in the build info.
 Building with `--stamp` also automatically marks the build as a release build (setting `released` to `true`).
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
 
 | Configuration Setting | Internal Define | Description |
 |---|---|---|
@@ -129,6 +142,23 @@ Word buffers can be safely interpreted as byte streams by the caller; the bytes 
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_word32_buf }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_const_word32_buf }}
+
+### Buffer and Key Integrity Helpers
+
+The cryptolib provides helper functions to create and verify integrity checksums on data buffers and key structures:
+
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_make_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_make_const_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_make_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_make_const_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_check_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_check_const_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_check_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_check_const_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_integrity_unblinded_checksum }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_integrity_blinded_checksum }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_integrity_unblinded_key_check }}
+{{#header-snippet sw/device/lib/crypto/include/integrity.h otcrypto_integrity_blinded_key_check }}
 
 ### Key data structures
 
@@ -663,6 +693,7 @@ To learn more about DRBG details such as entropy requirements, seed construction
 
 {{#header-snippet sw/device/lib/crypto/include/drbg.h otcrypto_drbg_manual_instantiate }}
 {{#header-snippet sw/device/lib/crypto/include/drbg.h otcrypto_drbg_manual_reseed }}
+{{#header-snippet sw/device/lib/crypto/include/drbg.h otcrypto_drbg_manual_generate }}
 
 ## Key derivation
 
