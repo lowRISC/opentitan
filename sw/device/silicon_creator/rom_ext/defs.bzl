@@ -19,12 +19,28 @@ ROM_EXT_VERSION = struct(
 )
 
 ROM_EXT_VARIATIONS = {
-    "dice_x509": [
-        "//sw/device/silicon_creator/lib/cert:dice",
-    ],
-    "dice_cwt": [
-        "//sw/device/silicon_creator/lib/cert:dice_cwt",
-    ],
+    "dice_x509": struct(
+        deps = [
+            "//sw/device/silicon_creator/lib/cert:dice",
+        ],
+        slot_spec = {},
+    ),
+    "dice_cwt": struct(
+        deps = [
+            "//sw/device/silicon_creator/lib/cert:dice_cwt",
+        ],
+        slot_spec = {},
+    ),
+    "dice_mldsa": struct(
+        deps = [
+            "//sw/device/silicon_creator/lib/cert:dice",
+        ],
+        slot_spec = {
+            "owner_slot_a": "0x20000",
+            "owner_slot_b": "0xa0000",
+            "rom_ext_size": "0x20000",
+        },
+    ),
 }
 
 SLOTS = [

@@ -302,6 +302,7 @@ def opentitan_test(
         verilator = _verilator_params(),
         qemu = _qemu_params(),
         data = [],
+        slot_spec = {},
         run_in_ci = None,
         **kwargs):
     """Instantiate a test per execution environment.
@@ -475,6 +476,7 @@ def opentitan_test(
             manifest = manifest,
             # Point to test suite created below.
             test_suite = str(Label(":{}".format(name))),
+            slot_spec = slot_spec,
             **test_kwargs
         )
 
