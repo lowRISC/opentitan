@@ -22,12 +22,19 @@ py_library(
 py_binary(
     name = "gen-flash-img",
     srcs = ["gen-flash-img.py"],
+    imports = [
+        # //util/design:
+        #   util.design.prince
+        #   util.design.secded_gen
+        ".",
+    ],
     deps = [
         ":prince",
         ":secded_gen",
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_map",
         "//util/design/lib:present",
+        requirement("hjson"),
         requirement("pyfinite"),
     ],
 )
@@ -60,7 +67,6 @@ py_binary(
 py_binary(
     name = "gen-otp-rot-auth-json",
     srcs = ["gen-otp-rot-auth-json.py"],
-    imports = ["."],
     deps = [
         requirement("hjson"),
         requirement("pycryptodome"),
@@ -87,7 +93,15 @@ py_binary(
 py_test(
     name = "sparse-fsm-encode-test",
     srcs = ["sparse-fsm-encode-test.py"],
-    deps = [":sparse-fsm-encode"],
+    imports = [
+        # //util/design:
+        #   util.design.lib
+        ".",
+    ],
+    deps = [
+        ":sparse-fsm-encode",
+        "//util/design/lib:common",
+    ],
 )
 
 py_binary(

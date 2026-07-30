@@ -19,6 +19,11 @@ package(default_visibility = ["//visibility:public"])
 py_test(
     name = "db_test",
     srcs = ["db_test.py"],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.db
+        "../src",
+    ],
     deps = [
         "//sw/host/provisioning/orchestrator/src:db",
     ],
@@ -34,11 +39,18 @@ py_test(
         "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
         "//sw/host/provisioning/orchestrator/configs/skus:emulation",
     ],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.device_id
+        #   sw.host.provisioning.orchestrator.src.sku_config
+        #   sw.host.provisioning.orchestrator.src.util
+        "../src",
+    ],
     deps = [
-        requirement("hjson"),
         "//sw/host/provisioning/orchestrator/src:device_id",
         "//sw/host/provisioning/orchestrator/src:sku_config",
         "//sw/host/provisioning/orchestrator/src:util",
+        requirement("hjson"),
     ],
 )
 
@@ -48,6 +60,11 @@ py_test(
     data = [
         "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+    ],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.util
+        "../src",
     ],
     deps = [
         "//sw/host/provisioning/orchestrator/src:util",

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:defs.bzl", "py_library")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -48,6 +49,11 @@ py_library(
 py_library(
     name = "decode",
     srcs = ["decode.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        "..",
+    ],
     deps = [
         ":elf",
         ":insn_yaml",
@@ -67,6 +73,7 @@ py_library(
     srcs = ["elf.py"],
     deps = [
         ":mem_layout",
+        requirement("pyelftools"),
     ],
 )
 
@@ -199,6 +206,11 @@ py_library(
 py_library(
     name = "section",
     srcs = ["section.py"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.shared
+        "..",
+    ],
     deps = [
         ":decode",
         ":insn_yaml",
@@ -221,6 +233,9 @@ py_library(
 py_library(
     name = "testcase",
     srcs = ["testcase.py"],
+    deps = [
+        requirement("hjson"),
+    ],
 )
 
 py_library(

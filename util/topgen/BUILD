@@ -14,6 +14,11 @@ py_library(
         "gen_top_docs.py",
         "validate.py",
     ],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":c",
         ":lib",
@@ -22,14 +27,19 @@ py_library(
         ":secure_prng",
         "//util/reggen:ip_block",
         "//util/reggen:validate",
-        requirement("tabulate"),
         requirement("pycryptodome"),
+        requirement("tabulate"),
     ],
 )
 
 py_library(
     name = "c_test",
     srcs = ["c_test.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":c",
         ":lib",
@@ -44,14 +54,19 @@ py_library(
         "gen_dv.py",
         "top.py",
     ],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         "//util/reggen:gen_dv",
         "//util/reggen:ip_block",
         "//util/reggen:params",
         "//util/reggen:reg_block",
         "//util/reggen:window",
-        requirement("mako"),
         requirement("importlib_resources"),
+        requirement("mako"),
     ],
 )
 
@@ -60,6 +75,12 @@ py_library(
     srcs = [
         "intermodule.py",
         "lib.py",
+    ],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.topgen
+        "..",
     ],
     deps = [
         "//util/reggen:inter_signal",
@@ -72,6 +93,11 @@ py_library(
 py_library(
     name = "c",
     srcs = ["c.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         ":lib",
         "//util/reggen:ip_block",
@@ -82,6 +108,12 @@ py_library(
 py_library(
     name = "rust",
     srcs = ["rust.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.version_file
+        "..",
+    ],
     deps = [
         ":lib",
         "//util:version_file",
@@ -117,6 +149,12 @@ py_library(
 py_library(
     name = "merge",
     srcs = ["merge.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.topgen
+        "..",
+    ],
     deps = [
         ":c",
         ":clocks",
