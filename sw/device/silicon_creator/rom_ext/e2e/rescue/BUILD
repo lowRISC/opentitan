@@ -33,7 +33,8 @@ _POSITIONS = {
     "slot_b": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "slot": "SlotB",
-        "rom_ext_offset": "0x80000",
+        # RRAM's NVM_BYTES_PER_SLOT is 0x100000 (1 MiB)
+        "rom_ext_offset": "0x100000",
     },
 }
 
