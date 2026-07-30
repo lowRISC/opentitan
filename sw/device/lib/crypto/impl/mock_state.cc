@@ -17,7 +17,10 @@ static crypto_state_t default_state = {
     .self_check_state = kHardenedBoolFalse,
     .locked_state = kHardenedBoolFalse,
     .csrng_instantiated = kHardenedBoolFalse,
-    .csrng_is_default = kHardenedBoolFalse,
+#ifdef FIPS_MODE
+    .cmvp_service_indicator = kOtcryptoCmvpNoService,
+    .cmvp_call_depth = 0,
+#endif
 };
 
 otcrypto_status_t init_state(otcrypto_state_t *state,
@@ -28,6 +31,10 @@ otcrypto_status_t init_state(otcrypto_state_t *state,
   internal_state->self_check_state = kHardenedBoolFalse;
   internal_state->csrng_instantiated = kHardenedBoolFalse;
   internal_state->csrng_is_default = kHardenedBoolFalse;
+#ifdef FIPS_MODE
+  internal_state->cmvp_service_indicator = kOtcryptoCmvpNoService;
+  internal_state->cmvp_call_depth = 0;
+#endif
   internal_state->security_level = security_level;
   return OTCRYPTO_OK;
 }

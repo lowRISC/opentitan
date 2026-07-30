@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_signature.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
@@ -99,6 +100,7 @@ static hardened_bool_t bignum_lt(const uint32_t *a, const uint32_t *b,
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_PUBLIC_KEY_CONSTRUCT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || public_key == NULL ||
       public_key->key == NULL) {
@@ -287,6 +289,10 @@ static status_t public_key_structural_check(
 }
 
 otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_ASYNC_START);
+  if (size == kOtcryptoRsaSize2048) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
   switch (launder32(size)) {
     case kOtcryptoRsaSize2048:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
@@ -334,6 +340,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     const otcrypto_const_word32_buf_t *d_share0,
     const otcrypto_const_word32_buf_t *d_share1,
     otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_PRIVATE_KEY_FROM_EXPONENTS);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || d_share0 == NULL ||
       d_share0->data == NULL || d_share1 == NULL || d_share1->data == NULL ||
@@ -538,6 +545,7 @@ static otcrypto_status_t rsa_pct_verify(
 
 otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
@@ -549,6 +557,9 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   // Infer the RSA size from the public key modulus.
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+  if (size == kOtcryptoRsaSize2048) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
 
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(public_key));
@@ -627,6 +638,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     const otcrypto_const_word32_buf_t *cofactor_share0,
     const otcrypto_const_word32_buf_t *cofactor_share1) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_RSA_KEYPAIR_FROM_COFACTOR_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || cofactor_share0 == NULL ||
       cofactor_share0->data == NULL || cofactor_share1 == NULL ||
@@ -634,6 +647,9 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  if (size == kOtcryptoRsaSize2048) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
 
   // Verify the input buffers
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(modulus));
@@ -695,6 +711,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
 
 otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_RSA_KEYPAIR_FROM_COFACTOR_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || private_key == NULL ||
@@ -706,6 +724,9 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
   // Infer the RSA size from the public key modulus.
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+  if (size == kOtcryptoRsaSize2048) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
 
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(public_key));
@@ -804,6 +825,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_SIGN_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (message_digest.data == NULL || private_key == NULL ||
@@ -872,6 +894,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_start(
 
 otcrypto_status_t otcrypto_rsa_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_SIGN_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (signature == NULL || signature->data == NULL) {
@@ -912,6 +935,7 @@ otcrypto_status_t otcrypto_rsa_sign_async_finalize(
 otcrypto_status_t otcrypto_rsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_const_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_VERIFY_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL || signature == NULL ||
@@ -997,6 +1021,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_VERIFY_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (message_digest.data == NULL || verification_result == NULL) {
@@ -1020,6 +1045,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *message,
     const otcrypto_const_byte_buf_t *label) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_ENCRYPT_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (public_key == NULL || public_key->key == NULL) {
@@ -1096,6 +1122,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
 
 otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
     otcrypto_word32_buf_t *ciphertext) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_ENCRYPT_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (ciphertext == NULL || ciphertext->data == NULL) {
@@ -1138,6 +1165,7 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
 otcrypto_status_t otcrypto_rsa_decrypt_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_word32_buf_t *ciphertext) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_DECRYPT_ASYNC_START);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (private_key == NULL || private_key->keyblob == NULL ||
@@ -1250,6 +1278,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_DECRYPT_ASYNC_FINALIZE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (plaintext == NULL || plaintext->data == NULL || label == NULL ||
       label->data == NULL || plaintext_bytelen == NULL) {

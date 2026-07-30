@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -23,6 +24,7 @@
 otcrypto_status_t otcrypto_symmetric_keygen(
     const otcrypto_const_byte_buf_t *perso_string,
     otcrypto_blinded_key_t *key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SYMMETRIC_KEYGEN);
   if (key == NULL || key->keyblob == NULL) {
     // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
@@ -118,6 +120,7 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
 
 otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
                                              otcrypto_blinded_key_t *key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN);
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -264,6 +267,7 @@ static void hw_wipe_guard(uint32_t *dummy) {
 otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                                     const otcrypto_blinded_key_t *key_kek,
                                     otcrypto_word32_buf_t *wrapped_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KEY_WRAP);
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || wrapped_key == NULL ||
       wrapped_key->data == NULL) {
@@ -327,6 +331,7 @@ otcrypto_status_t otcrypto_key_unwrap(
     const otcrypto_const_word32_buf_t *wrapped_key,
     const otcrypto_blinded_key_t *key_kek, hardened_bool_t *success,
     otcrypto_blinded_key_t *unwrapped_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KEY_UNWRAP);
   if (wrapped_key == NULL || wrapped_key->data == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || success == NULL || unwrapped_key == NULL ||
       unwrapped_key->keyblob == NULL) {

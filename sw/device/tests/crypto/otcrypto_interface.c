@@ -18,6 +18,9 @@ volatile otcrypto_interface_t otcrypto = {
     .lib_version = &otcrypto_lib_version,
     .version_decode = &otcrypto_version_decode,
 
+    // CMVP service indicator.
+    .cmvp_service_indicator = &otcrypto_cmvp_service_indicator,
+
     // Entropy.
     .entropy_init = &otcrypto_entropy_init,
     .entropy_check = &otcrypto_entropy_check,

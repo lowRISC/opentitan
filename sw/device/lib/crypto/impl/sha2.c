@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -23,6 +24,7 @@ static_assert(
 
 otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SHA2_256);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
@@ -44,6 +46,7 @@ otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
 
 otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SHA2_384);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
@@ -65,6 +68,7 @@ otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
 
 otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
                                     otcrypto_hash_digest_t *digest) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SHA2_512);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (message == NULL || (message->data == NULL && message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
@@ -86,6 +90,7 @@ otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
 
 otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
                                      otcrypto_sha2_context_t *ctx) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SHA2_INIT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -155,6 +160,7 @@ static status_t check_lengths(hmac_ctx_t *hmac_ctx) {
 
 otcrypto_status_t otcrypto_sha2_update(
     otcrypto_sha2_context_t *ctx, const otcrypto_const_byte_buf_t *message) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SHA2_UPDATE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || message == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -179,6 +185,7 @@ otcrypto_status_t otcrypto_sha2_update(
 
 otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
                                       otcrypto_hash_digest_t *digest) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SHA2_FINAL);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || digest == NULL || digest->data == NULL) {
     return OTCRYPTO_BAD_ARGS;

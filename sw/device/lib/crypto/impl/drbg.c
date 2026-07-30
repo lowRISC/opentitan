@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -113,6 +114,7 @@ static otcrypto_status_t seed_material_xor(
 
 otcrypto_status_t otcrypto_drbg_instantiate(
     const otcrypto_const_byte_buf_t *perso_string) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_INSTANTIATE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (perso_string != NULL && perso_string->len != 0 &&
@@ -133,6 +135,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 
 otcrypto_status_t otcrypto_drbg_reseed(
     const otcrypto_const_byte_buf_t *additional_input) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_RESEED);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (additional_input == NULL ||
@@ -153,6 +156,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
     const otcrypto_const_byte_buf_t *entropy,
     const otcrypto_const_byte_buf_t *perso_string) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_MANUAL_INSTANTIATE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (perso_string->len != 0 && perso_string->data == NULL) {
@@ -181,6 +185,7 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
 otcrypto_status_t otcrypto_drbg_manual_reseed(
     const otcrypto_const_byte_buf_t *entropy,
     const otcrypto_const_byte_buf_t *additional_input) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_MANUAL_RESEED);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
   if (additional_input == NULL ||
@@ -232,6 +237,7 @@ static otcrypto_status_t generate(
 otcrypto_status_t otcrypto_drbg_generate(
     const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_GENERATE);
   if (drbg_output->len == 0) {
     // Nothing to do.
     return OTCRYPTO_OK;
@@ -254,6 +260,7 @@ otcrypto_status_t otcrypto_drbg_generate(
 otcrypto_status_t otcrypto_drbg_manual_generate(
     const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_MANUAL_GENERATE);
   if (drbg_output->len == 0) {
     // Nothing to do.
     return OTCRYPTO_OK;
