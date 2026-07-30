@@ -30,7 +30,10 @@ extern "C" {
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of the ECDSA key generation.
+ * @return Result of the ECDSA key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_keygen(
@@ -89,7 +92,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
- * @return Result of the ECDSA signature generation.
+ * @return Result of the ECDSA signature generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_sign(
@@ -138,7 +144,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
  * @param[out] verification_result Whether the signature passed verification.
- * @return Result of the ECDSA verification operation.
+ * @return Result of the ECDSA verification operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or buffer lengths are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
@@ -159,7 +168,10 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
  *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
- * @return Result of the ECDH key generation.
+ * @return Result of the ECDH key generation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or keyblob
+ * length is invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * hardware or integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256_keygen(
@@ -171,7 +183,10 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen(
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
- * @return Result of ECDH shared secret generation.
+ * @return Result of ECDH shared secret generation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,

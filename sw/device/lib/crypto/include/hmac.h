@@ -63,7 +63,10 @@ typedef struct otcrypto_hmac_context {
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
  * @param[out] tag Output authentication tag.
- * @return The result of the HMAC operation.
+ * @return Result of the HMAC operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
@@ -80,7 +83,10 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
- * @return Result of the HMAC init operation.
+ * @return Result of the HMAC init operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or mode is
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
@@ -116,11 +122,14 @@ otcrypto_status_t otcrypto_hmac_update(
  * The caller should allocate space for the `tag` buffer, (the length should
  * match the hash function digest size), and set the length of expected output
  * in the `len` field of `tag`. If the user-set length and the output length
- * does not match, an error message will be returned.
+ * does not match, `kOtcryptoStatusValueBadArgs` will be returned.
  *
  * @param ctx Pointer to the generic HMAC context struct.
  * @param[out] tag Output authentication tag.
- * @return Result of the HMAC final operation.
+ * @return Result of the HMAC final operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,

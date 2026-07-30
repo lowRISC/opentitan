@@ -45,7 +45,10 @@ typedef struct otcrypto_sha2_context {
  *
  * @param message Input message to be hashed.
  * @param[out] digest Output digest after hashing the input message.
- * @return OK or error.
+ * @return Result of the SHA2-256 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
@@ -60,7 +63,10 @@ otcrypto_status_t otcrypto_sha2_256(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message to be hashed.
  * @param[out] digest Output digest after hashing the input message.
- * @return OK or error.
+ * @return Result of the SHA2-384 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
@@ -75,7 +81,10 @@ otcrypto_status_t otcrypto_sha2_384(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message to be hashed.
  * @param[out] digest Output digest after hashing the input message.
- * @return OK or error.
+ * @return Result of the SHA2-512 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
@@ -86,7 +95,9 @@ otcrypto_status_t otcrypto_sha2_512(const otcrypto_const_byte_buf_t *message,
  *
  * @param hash_mode Desired mode (must be a SHA-2 mode).
  * @param[out] ctx Initialized context object.
- * @return OK or error.
+ * @return Result of the SHA2 init operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if mode is invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
@@ -97,7 +108,9 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
  *
  * @param ctx Initialized context object (updated in place).
  * @param message Input message data.
- * @return OK or error.
+ * @return Result of the SHA2 update operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_update(
