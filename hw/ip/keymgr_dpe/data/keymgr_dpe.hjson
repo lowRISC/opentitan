@@ -119,7 +119,7 @@
       name:    "rom_digest"
       act:     "rcv"
       package: "rom_ctrl_pkg"
-      width:   "2"
+      width:   "NumRomDigestInputs"
       default: "rom_ctrl_pkg::KEYMGR_DATA_DEFAULT"
     },
     { struct:  "logic"
