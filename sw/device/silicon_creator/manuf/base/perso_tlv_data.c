@@ -333,13 +333,15 @@ perso_tlv_object_type_t perso_tlv_object_type(const uint8_t *data,
   perso_tlv_object_type_t type;
   switch (version) {
     case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t header = *(const uint32_t *)data;
+      perso_tlv_object_header_v1_t header;
+      memcpy(&header, data, sizeof(header));
       PERSO_TLV_GET_FIELD_V1(Objh, Type, header, &type);
       break;
     }
     case kPersoBlobVersionV0:
     default: {
-      perso_tlv_object_header_t header = *(const uint16_t *)data;
+      perso_tlv_object_header_t header;
+      memcpy(&header, data, sizeof(header));
       PERSO_TLV_GET_FIELD(Objh, Type, header, &type);
       break;
     }
@@ -352,13 +354,15 @@ uint32_t perso_tlv_object_size(const uint8_t *data,
   uint32_t size;
   switch (version) {
     case kPersoBlobVersionV1: {
-      perso_tlv_object_header_v1_t header = *(const uint32_t *)data;
+      perso_tlv_object_header_v1_t header;
+      memcpy(&header, data, sizeof(header));
       PERSO_TLV_GET_FIELD_V1(Objh, Size, header, &size);
       break;
     }
     case kPersoBlobVersionV0:
     default: {
-      perso_tlv_object_header_t header = *(const uint16_t *)data;
+      perso_tlv_object_header_t header;
+      memcpy(&header, data, sizeof(header));
       uint16_t size_v0;
       PERSO_TLV_GET_FIELD(Objh, Size, header, &size_v0);
       size = size_v0;

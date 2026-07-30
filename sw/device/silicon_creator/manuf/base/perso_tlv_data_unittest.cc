@@ -21,7 +21,7 @@ namespace {
 class PersoTlvDataTest : public testing::Test {
  public:
   // A small scratch buffer used for tests.
-  static constexpr size_t kScratchBufferSize = 256;
+  static constexpr size_t kScratchBufferSize = 512;
   std::array<uint8_t, kScratchBufferSize> scratch_buf_;
 
   void SetUp() override { scratch_buf_.fill(0); }
@@ -309,6 +309,53 @@ TEST_F(PersoTlvDataTest, PersoTlvPushObjectToPersoBlobV1) {
             (uint32_t)kPersoObjectTypeDeviceId);
   EXPECT_EQ(perso_tlv_object_size(pb.body + 4, kPersoBlobVersionV1),
             (uint32_t)(sizeof(perso_tlv_object_header_v1_t) + sizeof(data)));
+}
+
+TEST_F(PersoTlvDataTest, PersoTlvMultipleCertObjBuildX509CertV1) {
+  const char *name1 = "TSTCRT1";
+  const char *name2 = "TSTCRT2";
+  perso_tlv_object_type_t obj_type = kPersoObjectTypeX509Cert;
+  const uint8_t *cert = kX509CertTestdata;
+  size_t cert_size = kX509CertTestdataSize;
+  size_t buf_size = kScratchBufferSize;
+
+  EXPECT_EQ(perso_tlv_cert_obj_build(name1, obj_type, cert, cert_size,
+                                     kPersoBlobVersionV0, scratch_buf_.data(),
+                                     &buf_size),
+            kErrorOk);
+  size_t new_buf_size = kScratchBufferSize - buf_size;
+  EXPECT_EQ(perso_tlv_cert_obj_build(name2, obj_type, cert, cert_size,
+                                     kPersoBlobVersionV0, scratch_buf_.data() + buf_size,
+                                     &new_buf_size),
+            kErrorOk);
+
+  perso_tlv_cert_obj_t obj;
+  size_t tlv_buf_size = buf_size + new_buf_size;
+
+  EXPECT_EQ(perso_tlv_object_type(scratch_buf_.data(), kPersoBlobVersionV0),
+            obj_type);
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data(), tlv_buf_size,
+                                   kPersoBlobVersionV0, &obj),
+            kErrorOk);
+
+  EXPECT_EQ(obj.obj_type, (uint32_t)obj_type);
+  EXPECT_EQ(obj.obj_size, buf_size);
+  EXPECT_STREQ(obj.name, name1);
+  EXPECT_EQ(obj.cert_body_size, cert_size);
+  EXPECT_EQ(memcmp(obj.cert_body_p, cert, cert_size), 0);
+
+  EXPECT_EQ(perso_tlv_object_type(scratch_buf_.data() + buf_size, kPersoBlobVersionV0),
+            obj_type);
+
+  EXPECT_EQ(perso_tlv_get_cert_obj(scratch_buf_.data() + buf_size, tlv_buf_size - buf_size,
+                                   kPersoBlobVersionV0, &obj),
+            kErrorOk);
+
+  EXPECT_EQ(obj.obj_type, (uint32_t)obj_type);
+  EXPECT_EQ(obj.obj_size, new_buf_size);
+  EXPECT_STREQ(obj.name, name2);
+  EXPECT_EQ(obj.cert_body_size, cert_size);
+  EXPECT_EQ(memcmp(obj.cert_body_p, cert, cert_size), 0);
 }
 
 }  // namespace
