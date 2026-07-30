@@ -33,7 +33,7 @@ fn _load_private_key(path: &Path) -> Result<SigningKey> {
     }
 }
 
-/// Loads an RSA private key from a file.  The key may be in either PKCS#1 or
+/// Loads an ECDSA private key from a file.  The key may be in either PKCS#1 or
 /// PKCS#8 format encoded in either DER or PEM encodings.
 pub fn load_private_key<P: AsRef<Path>>(path: P) -> Result<SigningKey> {
     _load_private_key(path.as_ref())
@@ -113,7 +113,7 @@ fn _load_public_key(path: &Path) -> Result<VerifyingKey> {
     }
 }
 
-/// Loads an RSA public key from a file.  The key may be in either PKCS#1 or
+/// Loads an ECDSA public key from a file.  The key may be in either PKCS#1 or
 /// PKCS#8 format encoded in either DER or PEM encodings.
 pub fn load_public_key<P: AsRef<Path>>(path: P) -> Result<VerifyingKey> {
     _load_public_key(path.as_ref())
@@ -206,7 +206,7 @@ pub fn _save_private_key<P: AsRef<Path>>(
     }
 }
 
-/// Saves an RSA private `key` to a file in the requested encoding.
+/// Saves an ECDSA private `key` to a file in the requested encoding.
 pub fn save_private_key<P: AsRef<Path>>(path: P, key: &SigningKey, enc: KeyEncoding) -> Result<()> {
     _save_private_key(path, key, enc)
 }
@@ -229,7 +229,7 @@ pub fn _save_public_key<P: AsRef<Path>>(
     }
 }
 
-/// Saves an RSA public `key` to a file in the requested encoding.
+/// Saves an ECDSA public `key` to a file in the requested encoding.
 pub fn save_public_key<P: AsRef<Path>>(
     path: P,
     key: &VerifyingKey,

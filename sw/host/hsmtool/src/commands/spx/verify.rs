@@ -30,7 +30,7 @@ pub struct Verify {
     signature: PathBuf,
 }
 
-#[typetag::serde(name = "rsa-verify")]
+#[typetag::serde(name = "spx-verify")]
 impl Dispatch for Verify {
     fn run(
         &self,
