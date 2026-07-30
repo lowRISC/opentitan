@@ -26,6 +26,7 @@
 #include "sw/device/silicon_creator/lib/cert/seeds.h"
 #include "sw/device/silicon_creator/lib/cert/template.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/csrng.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
@@ -246,9 +247,9 @@ static rom_error_t dice_cdi_hybrid_cert_build(
   memset(&sig_params, 0, sizeof(sig_params));
   if (tbs_values->key_alg == kCdiHybridKeyAlgMldsa44) {
     uint32_t randomizer[MLDSA44_RANDOMIZER_BYTES / sizeof(uint32_t)];
-    HARDENED_CHECK_EQ(
-        hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
-        kHardenedBoolTrue);
+    HARDENED_RETURN_IF_ERROR(csrng_instantiate());
+    HARDENED_RETURN_IF_ERROR(
+        csrng_read_words(randomizer, ARRAYSIZE(randomizer)));
     mldsa44_tiny_sign_with_stack(curr_mldsa_sig, signer_mldsa_seed,
                                  (const uint8_t *)randomizer, tbs_buffer,
                                  tbs_size, stack_top);
