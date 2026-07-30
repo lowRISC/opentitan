@@ -111,8 +111,9 @@ otcrypto_status_t otcrypto_aes_padding_strip(
  *
  * The caller should allocate space for the `cipher_output` buffer, which is
  * given in bytes by `otcrypto_aes_padded_plaintext_length`, and set the number
- * of bytes allocated in the `len` field of the output.  If the user-set length
- * and the expected length do not match, an error message will be returned.
+ * of bytes allocated in the `len` field of the output. If the user-set length
+ * and the expected length do not match, `kOtcryptoStatusValueBadArgs` will be
+ * returned.
  *
  * Note that, during decryption, the padding mode is ignored. This function
  * will NOT check the padding or return an error if the padding is invalid,
@@ -126,7 +127,10 @@ otcrypto_status_t otcrypto_aes_padding_strip(
  * @param cipher_input Input data to be ciphered.
  * @param aes_padding Padding scheme to be used for the data.
  * @param[out] cipher_output Output data after cipher operation.
- * @return The result of the cipher operation.
+ * @return Result of the cipher operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware or integrity check fails.
  */
 otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_word32_buf_t *iv,
