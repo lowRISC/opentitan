@@ -168,3 +168,4 @@ otcrypto_cmac
 otcrypto_cmac_init
 otcrypto_cmac_update
 otcrypto_cmac_final
+otcrypto_cmvp_service_indicator

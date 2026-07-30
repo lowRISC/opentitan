@@ -23,6 +23,8 @@ typedef struct crypto_state {
   hardened_bool_t locked_state;
   hardened_bool_t csrng_instantiated;
   hardened_bool_t disable_trng_input;
+  otcrypto_cmvp_service_indicator_t cmvp_service_indicator;
+  uint32_t cmvp_call_depth;
 } crypto_state_t;
 
 /**
