@@ -763,6 +763,21 @@ class SignConverter {
 #endif
 
 /**
+ * A macro that returns maximum of two values. The behavior is similar
+ * to `MAX`. But this does not define intermediate temporary variables
+ * like `MAX`, so it is ONLY meant to be use in cases where adding a
+ * statement expression causes syntax errors (like when specifying size
+ * of an array in its declaration during compile time). For all other
+ * usual cases, prefer using `MAX` (particularly where evaluating `a`
+ * or `b` can have side effects)
+ *
+ * @param a First value.
+ * @param b Second value.
+ *
+ */
+#define MAX_NODEF(a, b) (((a) > (b)) ? (a) : (b))
+
+/**
  * Attribute on function declarations to disable coverage instrumentation.
  */
 #define OT_NO_COVERAGE __attribute__((no_profile_instrument_function))

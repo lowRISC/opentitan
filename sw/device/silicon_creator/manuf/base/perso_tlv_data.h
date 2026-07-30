@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -82,18 +83,6 @@ typedef uint16_t perso_tlv_dev_seed_header_t;
 typedef uint32_t perso_tlv_object_header_v1_t;
 typedef uint32_t perso_tlv_cert_header_v1_t;
 
-typedef enum perso_tlv_obj_header_fields {
-  // Object size, total size, this header included.
-  kObjhSizeFieldShift = kObjhSizeFieldShiftV0,
-  kObjhSizeFieldWidth = kObjhSizeFieldWidthV0,
-  kObjhSizeFieldMask = kObjhSizeFieldMaskV0,
-
-  // Object type, one of perso_tlv_object_type_t.
-  kObjhTypeFieldShift = kObjhTypeFieldShiftV0,
-  kObjhTypeFieldWidth = kObjhTypeFieldWidthV0,
-  kObjhTypeFieldMask = kObjhTypeFieldMaskV0,
-} perso_tlv_obj_header_fields_t;
-
 typedef struct perso_tlv_dev_seed_element {
   uint32_t el[8];
 } perso_tlv_dev_seed_element_t;
@@ -127,17 +116,6 @@ typedef struct perso_tlv_blob_version_payload {
  *  | 4 bit length|       12 bits total size       |
  *  +-------------+--------------------------------+
  */
-typedef enum perso_tlv_cert_header_fields {
-  // Certificate size, total size, this header and name length included.
-  kCrthSizeFieldShift = kCrthSizeFieldShiftV0,
-  kCrthSizeFieldWidth = kCrthSizeFieldWidthV0,
-  kCrthSizeFieldMask = kCrthSizeFieldMaskV0,
-
-  // Length of the certificate name immediately following the header.
-  kCrthNameSizeFieldShift = kCrthNameSizeFieldShiftV0,
-  kCrthNameSizeFieldWidth = kCrthNameSizeFieldWidthV0,
-  kCrthNameSizeFieldMask = kCrthNameSizeFieldMaskV0,
-} perso_tlv_cert_header_fields_t;
 
 // Helper macros for compile-time Big Endian conversion
 #define TLV_TO_BE16(val) __builtin_bswap16((uint16_t)(val))
@@ -179,7 +157,7 @@ typedef struct perso_tlv_cert_obj {
   /**
    * Certificate name string.
    */
-  char name[kCrthNameSizeFieldMask + 1];
+  char name[MAX_NODEF(kCrthNameSizeFieldMaskV0, kCrthNameSizeFieldMaskV1) + 1];
 } perso_tlv_cert_obj_t;
 
 /**
