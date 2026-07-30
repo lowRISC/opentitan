@@ -28,7 +28,10 @@ extern "C" {
  *
  * @param message Input message.
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the SHA3-224 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha3_224(const otcrypto_const_byte_buf_t *message,
@@ -44,7 +47,10 @@ otcrypto_status_t otcrypto_sha3_224(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message.
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the SHA3-256 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha3_256(const otcrypto_const_byte_buf_t *message,
@@ -60,7 +66,10 @@ otcrypto_status_t otcrypto_sha3_256(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message.
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the SHA3-384 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha3_384(const otcrypto_const_byte_buf_t *message,
@@ -76,7 +85,10 @@ otcrypto_status_t otcrypto_sha3_384(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message.
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the SHA3-512 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha3_512(const otcrypto_const_byte_buf_t *message,
@@ -91,7 +103,10 @@ otcrypto_status_t otcrypto_sha3_512(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message.
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the SHAKE128 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_shake128(const otcrypto_const_byte_buf_t *message,
@@ -106,7 +121,10 @@ otcrypto_status_t otcrypto_shake128(const otcrypto_const_byte_buf_t *message,
  *
  * @param message Input message.
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the SHAKE256 operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_shake256(const otcrypto_const_byte_buf_t *message,
@@ -126,7 +144,10 @@ otcrypto_status_t otcrypto_shake256(const otcrypto_const_byte_buf_t *message,
  * @param function_name_string Function name parameter (may be empty).
  * @param customization_string Customization parameter (may be empty).
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the cSHAKE128 operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cshake128(
@@ -149,7 +170,10 @@ otcrypto_status_t otcrypto_cshake128(
  * @param function_name_string Function name parameter (may be empty).
  * @param customization_string Customization parameter (may be empty).
  * @param[out] digest Computed digest.
- * @return OK or error.
+ * @return Result of the cSHAKE256 operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or digest length are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cshake256(
