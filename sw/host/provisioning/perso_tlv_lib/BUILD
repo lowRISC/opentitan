@@ -12,13 +12,14 @@ rust_bindgen_library(
     bindgen_flags = [
         "--allowlist-type=perso_tlv_object_type_t",
         "--allowlist-type=perso_tlv_object_header_t",
+        "--allowlist-type=perso_tlv_object_header_v1_t",
         "--allowlist-type=perso_tlv_cert_header_t",
+        "--allowlist-type=perso_tlv_cert_header_v1_t",
         "--allowlist-type=perso_tlv_dev_seed_header_t",
-        "--allowlist-type=perso_tlv_obj_header_fields_t",
-        "--allowlist-type=perso_tlv_cert_header_fields_t",
+        "--allowlist-type=perso_tlv_blob_version_payload_t",
         "--allowlist-type=perso_tlv_obj_header_fields_v0_t",
-        "--allowlist-type=perso_tlv_cert_header_fields_v0_t",
         "--allowlist-type=perso_tlv_obj_header_fields_v1_t",
+        "--allowlist-type=perso_tlv_cert_header_fields_v0_t",
         "--allowlist-type=perso_tlv_cert_header_fields_v1_t",
     ],
     cc_lib = "//sw/device/silicon_creator/manuf/base:perso_tlv_headers",
@@ -37,6 +38,10 @@ rust_library(
     edition = "2024",
     deps = [
         "//sw/host/provisioning/perso_tlv_lib:perso_tlv_objects",
+        "//sw/host/provisioning/ujson_lib",
         "@crate_index//:anyhow",
+        "@crate_index//:log",
+        "@crate_index//:arrayvec",
+
     ],
 )

@@ -762,6 +762,8 @@ class SignConverter {
   })
 #endif
 
+#define MAX_NODEF(a, b) (((a) > (b)) ? (a) : (b))
+
 /**
  * Attribute on function declarations to disable coverage instrumentation.
  */

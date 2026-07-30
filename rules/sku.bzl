@@ -86,6 +86,8 @@ def _sku_cfg_impl(ctx):
 
     if ctx.attr.dice_ca:
         config["dice_ca"] = process_ca(ctx.attr.dice_ca)
+    if ctx.attr.blob_version:
+        config["blob_version"] = ctx.attr.blob_version
     if ctx.attr.ext_ca:
         config["ext_ca"] = process_ca(ctx.attr.ext_ca)
 
@@ -133,6 +135,7 @@ sku_cfg = rule(
     implementation = _sku_cfg_impl,
     attrs = {
         "sku_name": attr.string(mandatory = True),
+        "blob_version": attr.int(mandatory = False),
         "product": attr.string(mandatory = True),
         "si_creator": attr.string(mandatory = True),
         "package": attr.string(mandatory = True),
