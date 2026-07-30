@@ -473,7 +473,11 @@ typedef uint32_t rram_ctrl_region_index_t;
  *
  * @param region The index of the region to protect.
  * @param page_offset The index of the first page in the region.
- * @param num_pages The number of pages in the region.
+ * @param num_pages The number of pages in the region, i.e. the region covers
+ *                  the exclusive range `[page_offset, page_offset +
+ *                  num_pages)`. Internally compensates for the hardware's
+ *                  match logic, which is inclusive of `page_offset +
+ *                  num_pages`.
  * @param perms The read/write permissions for this region.
  * @param cfg RRAM config values that are used to fill in some fields of the
  *            `MP_REGION_CFG_${region}` register.

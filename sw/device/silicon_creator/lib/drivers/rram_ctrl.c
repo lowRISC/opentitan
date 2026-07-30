@@ -532,11 +532,18 @@ void rram_ctrl_data_region_protect(rram_ctrl_region_index_t region,
                    RRAM_CTRL_MP_REGION_CFG_0_REG_RESVAL);
 
   // Set the region's bounds in the MP_REGION_${region} register.
+  //
+  // `rram_ctrl_mp_region_sel.sv` matches `addr <= base + size` (inclusive),
+  // one page past the exclusive `[page_offset, page_offset + num_pages)`
+  // range this function documents. Write `num_pages - 1` to compensate, so
+  // callers keep using the exclusive convention. `num_pages == 0` (a
+  // disabled/empty region) is left as 0 rather than underflowing.
   uint32_t mp_region = RRAM_CTRL_MP_REGION_0_REG_RESVAL;
   mp_region = bitfield_field32_write(
       mp_region, RRAM_CTRL_MP_REGION_0_BASE_0_FIELD, page_offset);
-  mp_region = bitfield_field32_write(
-      mp_region, RRAM_CTRL_MP_REGION_0_SIZE_0_FIELD, num_pages);
+  mp_region =
+      bitfield_field32_write(mp_region, RRAM_CTRL_MP_REGION_0_SIZE_0_FIELD,
+                             num_pages > 0 ? num_pages - 1 : 0);
   sec_mmio_write32(kBase + RRAM_CTRL_MP_REGION_0_REG_OFFSET + region,
                    mp_region);
 

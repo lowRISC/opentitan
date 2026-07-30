@@ -125,38 +125,6 @@ static nvm_page_cfg_t cfg_from_rram(rram_ctrl_cfg_t c) {
   };
 }
 
-/**
- * Overwrites an info page with the all-1s "erased" pattern.
- *
- * RRAM has no erase primitive; this approximates flash's per-page erase by
- * directly overwriting the page's contents, for both real and emulated pages
- * (emulated pages are addressed individually within the shared data-partition
- * region, so this only touches the target page's own bytes).
- */
-OT_WARN_UNUSED_RESULT
-static rom_error_t rram_info_page_erase(const rram_ctrl_info_page_t *p) {
-  enum { kChunkWords = 64 };
-  uint32_t chunk[kChunkWords];
-  memset(chunk, 0xff, sizeof(chunk));
-
-  uint32_t words_left = NVM_BYTES_PER_PAGE / sizeof(uint32_t);
-  uint32_t word_offset = 0;
-  while (words_left > 0) {
-    uint32_t n = words_left < kChunkWords ? words_left : kChunkWords;
-    rom_error_t err;
-    if (p->emulated) {
-      err = rram_ctrl_data_write(
-          p->page_id * NVM_BYTES_PER_PAGE + word_offset * sizeof(uint32_t), n,
-          chunk);
-    } else {
-      err = rram_ctrl_info_write(p, word_offset * sizeof(uint32_t), n, chunk);
-    }
-    HARDENED_RETURN_IF_ERROR(err);
-    word_offset += n;
-    words_left -= n;
-  }
-  return kErrorOk;
-}
 #else
 static const flash_ctrl_info_page_t *page_ptr(nvm_info_page_t page) {
   HARDENED_CHECK_LT((uint32_t)page, ARRAYSIZE(kPageTable));
@@ -304,10 +272,23 @@ rom_error_t nvm_ctrl_data_write(uint32_t addr, uint32_t word_count,
 }
 
 rom_error_t nvm_ctrl_data_erase(uint32_t addr) {
-  // RRAM supports direct overwrite; no erase step is required before a
-  // write.
-  (void)addr;
-  return kErrorOk;
+  // RRAM supports direct overwrite, so no separate hardware erase step is
+  // required before a write. Explicitly write the page to kNvmErasedWord
+  // (all-ones, matching flash's actual erased value) rather than leaving it
+  // untouched: callers rely on "erase resets a page to a known, blank
+  // state" (e.g. boot_data.c's erased-slot detection compares words against
+  // kNvmErasedWord), which a no-op can't provide, and old page contents
+  // would otherwise linger indefinitely after an explicit erase request.
+  // write_aligned() (called via rram_ctrl_data_write()) already chunks
+  // against the hardware's per-transaction word limit internally, so the
+  // whole page can be written in one call.
+  static_assert(kNvmErasedWord == UINT32_MAX,
+                "memset(..., 0xff, ...) below assumes an all-ones erased "
+                "value");
+  enum { kPageWords = NVM_BYTES_PER_PAGE / sizeof(uint32_t) };
+  uint32_t erased[kPageWords];
+  memset(erased, 0xff, sizeof(erased));
+  return rram_ctrl_data_write(addr, kPageWords, erased);
 }
 
 rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr) {
@@ -315,7 +296,30 @@ rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr) {
   return kErrorOk;
 }
 
-rom_error_t nvm_ctrl_chip_erase(void) { return kErrorOk; }
+rom_error_t nvm_ctrl_chip_erase(void) {
+  // Mirror flash's "erase both firmware banks" semantics: erase every page up
+  // to the emulated info-page region (`kRramCtrlEmulPageBase`). That region
+  // -- like flash's separate INFO partition -- must survive a chip erase
+  // since it backs OwnerSlot0/1, DiceCerts, BootData0/1, etc. Without this,
+  // bootstrap's initial CHIP_ERASE (which precedes every bootstrap session)
+  // was a no-op, leaving a previous image's data in any page the new image
+  // doesn't explicitly program.
+  rram_ctrl_data_default_perms_set((rram_ctrl_perms_t){
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+  });
+  rom_error_t err = kErrorOk;
+  uint32_t end_addr = kRramCtrlEmulPageBase * NVM_BYTES_PER_PAGE;
+  for (uint32_t addr = 0; err == kErrorOk && addr < end_addr;
+       addr += NVM_BYTES_PER_PAGE) {
+    err = nvm_ctrl_data_erase(addr);
+  }
+  rram_ctrl_data_default_perms_set((rram_ctrl_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+  });
+  return err;
+}
 
 rom_error_t nvm_ctrl_chip_erase_verify(void) { return kErrorOk; }
 
@@ -375,9 +379,26 @@ rom_error_t nvm_ctrl_page_program(uint32_t addr, size_t byte_count,
 }
 
 rom_error_t nvm_ctrl_sector_erase(uint32_t addr) {
-  // RRAM supports direct overwrite; no erase step is required.
-  (void)addr;
-  return kErrorOk;
+  // Bootstrap's SPI SECTOR_ERASE always covers a fixed 4 KiB region,
+  // independent of RRAM's own erase/write granularity (`NVM_BYTES_PER_PAGE`,
+  // 512 bytes); erase every page within that region so unwritten pages left
+  // over from a previous image don't linger (see `nvm_ctrl_data_erase()`).
+  enum { kSectorSizeBytes = 4096 };
+  addr &= ~(uint32_t)(kSectorSizeBytes - 1);
+  rram_ctrl_data_default_perms_set((rram_ctrl_perms_t){
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+  });
+  rom_error_t err = kErrorOk;
+  for (uint32_t offset = 0; err == kErrorOk && offset < kSectorSizeBytes;
+       offset += NVM_BYTES_PER_PAGE) {
+    err = nvm_ctrl_data_erase(addr + offset);
+  }
+  rram_ctrl_data_default_perms_set((rram_ctrl_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+  });
+  return err;
 }
 
 rom_error_t nvm_ctrl_info_read(nvm_info_page_t page, uint32_t offset,
@@ -415,7 +436,34 @@ rom_error_t nvm_ctrl_info_write(nvm_info_page_t page, uint32_t offset,
 }
 
 rom_error_t nvm_ctrl_info_erase(nvm_info_page_t page) {
-  return rram_info_page_erase(page_ptr(page));
+  // RRAM has no erase primitive; this approximates flash's per-page erase by
+  // directly overwriting each page's contents with kNvmErasedWord (all-ones).
+  // Loops over `p->num_pages` since some entries (OwnerSlot0/1, DiceCerts,
+  // FactoryCerts) span more than one physical page.
+  static_assert(kNvmErasedWord == UINT32_MAX,
+                "memset(..., 0xff, ...) below assumes an all-ones erased "
+                "value");
+  const rram_ctrl_info_page_t *p = page_ptr(page);
+  enum { kPageWords = NVM_BYTES_PER_PAGE / sizeof(uint32_t) };
+  uint32_t erased[kPageWords];
+  memset(erased, 0xff, sizeof(erased));
+  if (p->emulated) {
+    // Emulated pages are addressed individually within the shared
+    // data-partition region: each physical page this entry spans is just a
+    // data-partition page.
+    for (uint32_t i = 0; i < p->num_pages; ++i) {
+      HARDENED_RETURN_IF_ERROR(rram_ctrl_data_write(
+          (p->page_id + i) * NVM_BYTES_PER_PAGE, kPageWords, erased));
+    }
+    return kErrorOk;
+  }
+  // Real info pages have no data-partition address; overwrite directly via
+  // rram_ctrl_info_write().
+  for (uint32_t i = 0; i < p->num_pages; ++i) {
+    HARDENED_RETURN_IF_ERROR(
+        rram_ctrl_info_write(p, i * NVM_BYTES_PER_PAGE, kPageWords, erased));
+  }
+  return kErrorOk;
 }
 
 void nvm_ctrl_data_default_perms_set(nvm_page_perms_t perms) {
@@ -482,8 +530,7 @@ void nvm_ctrl_data_region_protect(uint32_t region, uint32_t page_offset,
 }
 
 void nvm_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
-  // RRAM has no bank-erase concept; nothing to permission-gate. The only
-  // caller, `nvm_ctrl_chip_erase`, is itself a no-op for RRAM.
+  // RRAM has no bank-erase concept; nothing to permission-gate.
   (void)enable;
 }
 
