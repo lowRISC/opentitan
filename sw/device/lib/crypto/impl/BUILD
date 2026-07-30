@@ -34,6 +34,7 @@ cc_library(
     srcs = ["aes.c"],
     hdrs = ["//sw/device/lib/crypto/include:aes.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":keyblob",
@@ -51,6 +52,7 @@ cc_library(
     srcs = ["aes_gcm.c"],
     hdrs = ["//sw/device/lib/crypto/include:aes_gcm.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":keyblob",
@@ -83,6 +85,7 @@ cc_library(
     srcs = ["drbg.c"],
     hdrs = ["//sw/device/lib/crypto/include:drbg.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":status",
@@ -99,6 +102,7 @@ cc_library(
     srcs = ["cmac.c"],
     hdrs = ["//sw/device/lib/crypto/include:cmac.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":keyblob",
@@ -122,6 +126,7 @@ cc_library(
     }),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":cmvp",
         ":config",
         ":hmac",
         ":integrity",
@@ -140,6 +145,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:ecc_p256.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":cmvp",
         ":config",
         ":hash",
         ":keyblob",
@@ -155,6 +161,7 @@ cc_library(
     hdrs = ["//sw/device/lib/crypto/include:ecc_p384.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":cmvp",
         ":config",
         ":hash",
         ":keyblob",
@@ -169,6 +176,7 @@ cc_library(
     srcs = ["hkdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":cryptolib_build_info",
         ":hmac",
@@ -203,6 +211,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
+        ":cmvp",
         ":state",
         ":status",
         "//sw/device/lib/base:hardened",
@@ -266,6 +275,7 @@ cc_library(
     srcs = ["kdf_ctr.c"],
     hdrs = ["//sw/device/lib/crypto/include:kdf_ctr.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":hmac",
         ":integrity",
@@ -308,6 +318,7 @@ cc_library(
     srcs = ["key_transport.c"],
     hdrs = ["//sw/device/lib/crypto/include:key_transport.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":status",
         "//sw/device/lib/crypto/drivers:aes",
@@ -339,6 +350,7 @@ cc_library(
     srcs = ["kmac_kdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:kmac_kdf.h"],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":keyblob",
@@ -363,6 +375,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
+        ":cmvp",
         ":config",
         ":hash",
         ":integrity",
@@ -386,6 +399,7 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
+        ":cmvp",
         ":cryptolib_build_info",
         ":entropy_src",
         ":integrity",
@@ -432,6 +446,49 @@ dual_cc_library(
     ),
 )
 
+dual_cc_library(
+    name = "cmvp",
+    srcs = dual_inputs(
+        device = ["cmvp.c"],
+        host = ["cmvp.c"],
+    ),
+    hdrs = [
+        "cmvp.h",
+        "//sw/device/lib/crypto/include:cmvp.h",
+    ],
+    defines = select({
+        "//sw/device/lib/crypto/configs:hashed": ["FIPS_MODE"],
+        "//conditions:default": [],
+    }),
+    deps = dual_inputs(
+        shared = [
+            ":state",
+            ":status",
+            "//sw/device/lib/crypto/include:datatypes",
+        ],
+    ),
+)
+
+dual_cc_library(
+    name = "cmvp_fips",
+    srcs = dual_inputs(
+        device = ["cmvp.c"],
+        host = ["cmvp.c"],
+    ),
+    hdrs = [
+        "cmvp.h",
+        "//sw/device/lib/crypto/include:cmvp.h",
+    ],
+    defines = ["FIPS_MODE"],
+    deps = dual_inputs(
+        shared = [
+            ":state",
+            ":status",
+            "//sw/device/lib/crypto/include:datatypes",
+        ],
+    ),
+)
+
 cc_library(
     name = "hash",
     srcs = ["hash.c"],
@@ -454,6 +511,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":status",
@@ -473,6 +531,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":cmvp",
         ":config",
         ":status",
         "//sw/device/lib/base:hardened",
@@ -533,6 +592,7 @@ cc_library(
         "//sw/device/lib/crypto/include:hmac.h",
     ],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":keyblob",
@@ -551,6 +611,7 @@ cc_library(
         "//sw/device/lib/crypto/include:kmac.h",
     ],
     deps = [
+        ":cmvp",
         ":config",
         ":integrity",
         ":keyblob",
@@ -573,9 +634,36 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "cmvp_unittest",
+    srcs = ["cmvp_unittest.cc"],
+    defines = ["FIPS_MODE"],
+    deps = [
+        ":cmvp_fips",
+        ":state",
+        ":status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "cmvp_nofips_unittest",
+    srcs = ["cmvp_unittest.cc"],
+    deps = [
+        ":cmvp",
+        ":state",
+        ":status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "@googletest//:gtest_main",
+    ],
+)
+
 test_suite(
     name = "impl_unittest_suite",
     tests = [
+        ":cmvp_nofips_unittest",
+        ":cmvp_unittest",
         ":integrity_unittest",
         ":key_transport_unittest",
         ":keyblob_unittest",

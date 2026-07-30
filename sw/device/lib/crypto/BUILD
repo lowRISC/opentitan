@@ -22,6 +22,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:aes_gcm",
         "//sw/device/lib/crypto/impl:cmac",
+        "//sw/device/lib/crypto/impl:cmvp",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:cryptolib_build_info",
         "//sw/device/lib/crypto/impl:drbg",

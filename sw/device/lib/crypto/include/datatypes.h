@@ -560,6 +560,20 @@ typedef struct otcrypto_state {
   uint32_t data[24];
 } otcrypto_state_t;
 
+/**
+ * CMVP service indicator states.
+ */
+typedef enum otcrypto_cmvp_service_indicator {
+  // No service called or indicator cleared.
+  kOtcryptoCmvpNoService = 0,
+  // Approved crypto service.
+  kOtcryptoCmvpApprovedService = 1,
+  // Non-approved crypto service.
+  kOtcryptoCmvpNotApprovedService = 2,
+} otcrypto_cmvp_service_indicator_t;
+
+typedef otcrypto_cmvp_service_indicator_t otcrypto_cmvp_indicator_t;
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
