@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -31,6 +32,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
     const otcrypto_const_byte_buf_t *label,
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KMAC_KDF);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (key_derivation_key == NULL || key_derivation_key->keyblob == NULL ||
@@ -44,6 +46,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  if (output_key_material->config.key_length < 14) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;

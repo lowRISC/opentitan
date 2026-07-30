@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -342,12 +343,19 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
                                 const otcrypto_const_byte_buf_t *input_message,
                                 otcrypto_word32_buf_t *tag) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  // Tag length must be between 2 and 4 words (64 to 128 bits) per SP 800-38B.
+  if (launder32(tag->len) < 2 || launder32(tag->len) > kAesBlockNumWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GE(tag->len, 2);
+  HARDENED_CHECK_LE(tag->len, kAesBlockNumWords);
 
   // Clear AES unconditionally, and clear sideload if requested.
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
@@ -435,6 +443,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
 
 otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_INIT);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -501,6 +510,7 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
 otcrypto_status_t otcrypto_cmac_update(
     otcrypto_cmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_UPDATE);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input_message == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -554,11 +564,18 @@ otcrypto_status_t otcrypto_cmac_update(
 
 otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
                                       otcrypto_word32_buf_t *tag) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_CMAC_FINAL);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  // Tag length must be between 2 and 4 words (64 to 128 bits) per SP 800-38B.
+  if (launder32(tag->len) < 2 || launder32(tag->len) > kAesBlockNumWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GE(tag->len, 2);
+  HARDENED_CHECK_LE(tag->len, kAesBlockNumWords);
 
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);

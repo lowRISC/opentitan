@@ -174,3 +174,4 @@ otcrypto_ecdsa_p384_hash_sign_verify
 otcrypto_ecdsa_p384_hash_verify
 otcrypto_rsa_hash_sign_verify
 otcrypto_rsa_hash_verify
+otcrypto_cmvp_service_indicator

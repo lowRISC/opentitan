@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -15,11 +16,13 @@ extern const uint8_t _libotcrypto_start_[];
 extern const uint8_t _libotcrypto_end_[];
 
 otcrypto_status_t otcrypto_integrity_check(void) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_INTEGRITY_CHECK);
   crypto_state_t *state = NULL;
 
   HARDENED_TRY(read_state_pointer(&state));
 
   if (state->locked_state == kHardenedBoolTrue) {
+    otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -67,16 +70,22 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   if (diff != 0) {
     // Lock the cryptolib if the self-integrity check failed
     state->locked_state = kHardenedBoolTrue;
+    otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 
   // Set the stateful word that the self-integrity check is done
   state->self_check_state = kHardenedBoolTrue;
+  otcrypto_cmvp_end_service();
   return OTCRYPTO_OK;
 }
 
 #else
 
-otcrypto_status_t otcrypto_integrity_check(void) { return OTCRYPTO_OK; }
+otcrypto_status_t otcrypto_integrity_check(void) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_INTEGRITY_CHECK);
+  otcrypto_cmvp_end_service();
+  return OTCRYPTO_OK;
+}
 
 #endif
