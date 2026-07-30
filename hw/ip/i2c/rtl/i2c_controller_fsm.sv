@@ -140,7 +140,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       // If we disable Host-Mode mid-txn, keep counting until the end of
       // byte, at which point we create a STOP condition then return to Idle.
       (!host_idle_o && !host_enable_i)) begin
-      tcount_d = tcount_q - 1'b1;
+      tcount_d = (tcount_q == 16'h0) ? 16'h0 :  tcount_q - 1'b1;
     end
   end
 
@@ -976,6 +976,9 @@ module i2c_controller_fsm import i2c_pkg::*;
 
   // Make sure we never attempt to send a single cycle glitch
   `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)
+
+  // Make sure we never underflow the internal timer
+  `ASSERT_NEVER(I2CTimerUnderflow_A, tcount_q == 16'h0000 && tcount_d == 16'hFFFF)
 
   // TODO: Handle the assertion below
 //  // I2C bus outputs
