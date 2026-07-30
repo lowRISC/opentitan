@@ -139,39 +139,44 @@ The Ibex documentation has more details on the current pipeline operation, inclu
 
 ### Memory
 
-The device contains three memory address spaces for instruction and data.
+The device contains four memory address spaces for instruction and data.
 
 Instruction ROM (32kB) is the target for the Ibex processor after release of external reset.
 The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
-The next stage - a boot loader stored in embedded flash memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
+The next stage - a boot loader stored in non-volatile memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
 The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
 The details of this check will come at a later date.
 For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
 This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
 
-Earl Grey contains 1024kB of embedded-flash (e-flash) memory for code storage.
-This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
+Earl Grey currently contains two non-volatile memory (NVM) technologies: 1024kB of embedded-flash (e-flash) and 2MiB of embedded RRAM (resistive RAM).
+Flash is the NVM technology in active use today, and is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
+RRAM is also present in the design, and is intended to replace flash as Earl Grey's NVM technology in the near future.
 At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
 
-Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
+Embedded-flash is the currently used technology for a silicon design implementing the full OpenTitan device.
 It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
-Earl Grey, as an FPGA proof of concept, will model these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
+Earl Grey, as an FPGA proof of concept, models these parameters in its emulation of the memory in order to prepare for the replacement with the silicon flash macros that will come.
 This includes the read-speeds, the page-sized erase and program interfaces, the two-bank update scheme, and the non-volatile nature of the memory.
 Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
 We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
 
-Details on how e-flash memory is used by software will be detailed in future Secure Boot Process and Software sections over time.
+RRAM is intended for code and data storage, and will eventually replace flash as the primary NVM technology.
+Like flash, RRAM is a non-volatile memory technology, so software must interact with the [RRAM controller](#rram-controller) to write to it rather than writing to the standard memory address space directly; unlike flash, RRAM only requires a read/write interface, with no separate erase step.
+The FPGA emulation of the memory approximates the read and write speeds and non-volatile nature that the RRAM macro exhibits in silicon.
 
-The intent is for the contents of the embedded flash code to survive FPGA reset as it would as a NVM in silicon.
+Details on how flash and RRAM are used by software will be detailed in future Secure Boot Process and Software sections over time.
+
+The intent is for the contents of the NVM code to survive FPGA reset as it would as a NVM in silicon.
 Loading of the FPGA with initial content, or updating with new content, is described in other software specifications.
-The SPI device peripheral is provided as a method to bulk-load e-flash memory.
+The SPI device peripheral is provided as a method to bulk-load either NVM.
 The processor debug port (via JTAG) is also available for code loading.
 See those specifications for more details.
 
 Also included is a 128kB of SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
 It is also available for code storage, though that is not its intended purpose.
 
-The base address of the ROM, Flash, and SRAM are given in the address map section later in this document.
+The base address of the ROM, Flash, RRAM, and SRAM are given in the address map section later in this document.
 
 ### Secure boot
 
@@ -332,10 +337,29 @@ The goal is for both of these to be satisfied with the same timer module.
 
 The specification for the timer can be found [here](../../../ip/rv_timer/README.md).
 
+##### RRAM Controller
+
+The RRAM controller manages an emulated RRAM (resistive RAM) macro, and is intended to replace the flash controller as Earl Grey's primary non-volatile storage peripheral for code and data.
+
+The primary read path for this data is in the standard memory address space.
+Writes on the other hand, need to be initiated by software  which must interact with the RRAM controller.
+
+Unlike flash, RRAM does not require a separate erase step before writing: the RRAM controller exposes only read and write commands, and software can write new data to a word directly without first erasing its page.
+Read, as mentioned above, is standard, and uses the chip memory address space.
+
+Writes are significantly slower than reads, and must be aligned to an RRAM word (128b) and sized as a multiple of it.
+The RRAM controller peripheral in this release approximates the expected timing of the silicon RRAM macro.
+
+Security is also a concern, since secret data can be stored in the RRAM.
+The RRAM controller provides per-page memory protection, on-the-fly XEX scrambling (using the PRINCE cipher) with a key sideloaded from OTP, end-to-end bus integrity, and per-word address infection to protect against a range of physical and software attacks.
+A secure wipe of the RRAM contents with random data is also performed on entry to the RMA lifecycle state.
+RRAM already has the ability to emulate OTP storage; it is planned to be connected to the OTP controller for this purpose in a future revision.
+For more details see the [RRAM controller module specification](../../../ip/rram_ctrl/README.md).
+
 ##### Flash Controller
 
 The final peripheral discussed in this release of the netlist is an emulated flash controller.
-As mentioned in the memory section, up to 1024kB of emulated embedded flash is available for code and data storage.
+As mentioned in the memory section, emulated embedded flash is available for code and data storage.
 The primary read path for this data is in the standard memory address space.
 Writes to that address space are ignored, however, since one can not write to flash in a standard way.
 Instead, to write to flash, software must interact with the flash controller.
