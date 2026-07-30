@@ -33,7 +33,10 @@ extern "C" {
  *
  * @param perso_string Pointer to personalization bitstring, or NULL for default
  * mode.
- * @return Result of the DRBG instantiate operation.
+ * @return Result of the DRBG instantiate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments are invalid, `kOtcryptoStatusValueInternalError` if entropy fetch
+ * times out, or `kOtcryptoStatusValueFatalError` if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_instantiate(
     const otcrypto_const_byte_buf_t *perso_string);
@@ -45,7 +48,10 @@ otcrypto_status_t otcrypto_drbg_instantiate(
  * entropy source and updates the working state parameters.
  *
  * @param additional_input Pointer to the additional input for DRBG.
- * @return Result of the DRBG reseed operation.
+ * @return Result of the DRBG reseed operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments are invalid,
+ * `kOtcryptoStatusValueInternalError` if entropy fetch times out, or
+ * `kOtcryptoStatusValueFatalError` if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_reseed(
     const otcrypto_const_byte_buf_t *additional_input);
@@ -102,7 +108,10 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
- * @return Result of the DRBG generate operation.
+ * @return Result of the DRBG generate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or output length are invalid, or `kOtcryptoStatusValueFatalError`
+ * if a hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_generate(
     const otcrypto_const_byte_buf_t *additional_input,
@@ -133,7 +142,9 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
 /**
  * Uninstantiates DRBG and clears the context.
  *
- * @return Result of the DRBG uninstantiate operation.
+ * @return Result of the DRBG uninstantiate operation. Returns
+ * `kOtcryptoStatusValueOk` on success, or `kOtcryptoStatusValueFatalError` if a
+ * hardware check fails.
  */
 otcrypto_status_t otcrypto_drbg_uninstantiate(void);
 

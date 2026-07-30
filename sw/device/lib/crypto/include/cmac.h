@@ -65,7 +65,10 @@ typedef struct otcrypto_cmac_context {
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be authenticated.
  * @param[out] tag Output authentication tag.
- * @return The result of the CMAC operation.
+ * @return Result of the CMAC operation. Returns `kOtcryptoStatusValueOk` on
+ * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
+ * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
+ * internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
@@ -80,7 +83,10 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
  *
  * @param[out] ctx Pointer to the generic CMAC context struct.
  * @param key Pointer to the blinded CMAC key struct.
- * @return Result of the CMAC init operation.
+ * @return Result of the CMAC init operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if key configuration or mode is
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
@@ -120,7 +126,10 @@ otcrypto_status_t otcrypto_cmac_update(
  *
  * @param ctx Pointer to the generic CMAC context struct.
  * @param[out] tag Output authentication tag.
- * @return Result of the CMAC final operation.
+ * @return Result of the CMAC final operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or buffer lengths are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,

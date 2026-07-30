@@ -40,7 +40,10 @@ extern "C" {
  * @param salt Salt value (optional, may be empty).
  * @param info Context-specific string (optional, may be empty).
  * @param[out] okm Blinded output keying material.
- * @return Result of the key derivation operation.
+ * @return Result of the key derivation operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
                                 const otcrypto_const_byte_buf_t *salt,
@@ -64,7 +67,10 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
  * @param ikm Blinded input key material.
  * @param salt Salt value (optional, may be empty).
  * @param[out] prk Extracted pseudo-random key.
- * @return Result of the key derivation operation.
+ * @return Result of the key derivation operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                                         const otcrypto_const_byte_buf_t *salt,
@@ -82,7 +88,10 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
  * @param prk Pseudo-random key from HKDF-extract.
  * @param info Context-specific string (optional).
  * @param[out] okm Blinded output key material.
- * @return Result of the key derivation operation.
+ * @return Result of the key derivation operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or buffer lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
                                        const otcrypto_const_byte_buf_t *info,

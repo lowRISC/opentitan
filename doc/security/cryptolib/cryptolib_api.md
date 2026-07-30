@@ -162,6 +162,21 @@ Callers who do not wish to use `status_t` infrastructure may compare to these va
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_status_value }}
 
+#### Error Handling and Applicability Across APIs
+
+Every API in the OpenTitan cryptography library returns an `otcrypto_status_t` code that evaluates to one of the standard `otcrypto_status_value_t` values.
+The table below specifies the meaning of each status code, the exact conditions under which it is returned, and which APIs it applies to:
+
+| Status Value | Meaning | Return Conditions | Applicability |
+|---|---|---|---|
+| `kOtcryptoStatusValueOk` | Success | The operation completed successfully without errors. | All Cryptolib APIs. |
+| `kOtcryptoStatusValueBadArgs` | Bad Arguments / Invalid Input | Returned when: <br>- A required input pointer is `NULL` (unless `OTCRYPTO_DISABLE_NULL_CHECKS` is configured).<br>- An input or output buffer length does not match expectations (e.g., in `otcrypto_aes`, `otcrypto_key_wrap`, `otcrypto_hmac`).<br>- An invalid key type, key mode, padding mode, or curve parameter is specified.<br>- Keyblob or share length does not match the key configuration (e.g., in `otcrypto_ecdsa_p256_keygen` or `otcrypto_symmetric_keygen`). | All APIs that accept arguments, buffers, or key configurations. |
+| `kOtcryptoStatusValueInternalError` | Recoverable / Transient Error | Returned when a transient, non-fatal hardware error or timeout occurs (e.g., timeout waiting for TRNG/entropy generation or OTBN completion). The caller may safely retry the operation. | APIs that interface with hardware accelerators or the entropy complex (`drbg`, `otbn`, `entropy_src`). |
+| `kOtcryptoStatusValueFatalError` | Fatal Error | Returned when: <br>- A security alert or hardware fault detector is triggered during execution.<br>- A buffer or key integrity checksum check fails (`otcrypto_integrity_*`).<br>- A Power-On Self-Test (POST) or Known Answer Test (KAT) fails. | All cryptographic operations and initialization routines. |
+| `kOtcryptoStatusValueAsyncIncomplete` | Asynchronous Operation In Progress | Returned when an asynchronous operation (e.g., `otcrypto_ecdsa_p256_sign_async_finalize` or `otcrypto_rsa_sign_async_finalize`) is polled or finalized before OTBN has finished processing. | Only asynchronous `*_async_finalize` APIs. |
+
+For specific API functions (e.g., `otcrypto_aes`, `otcrypto_ecdsa_p256_keygen`, `otcrypto_key_wrap`), any mismatch in input lengths, invalid key mode, or invalid buffer alignment will specifically return `kOtcryptoStatusValueBadArgs`, while hardware alerts or checksum corruptions will return `kOtcryptoStatusValueFatalError`.
+
 ### Data buffers
 
 The cryptolib uses byte buffers for data that may not be 32-bit aligned, such as message inputs to hash functions.
