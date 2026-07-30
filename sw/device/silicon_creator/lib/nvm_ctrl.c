@@ -297,20 +297,19 @@ rom_error_t nvm_ctrl_data_erase_verify(uint32_t addr) {
 }
 
 rom_error_t nvm_ctrl_chip_erase(void) {
-  // Mirror flash's "erase both firmware banks" semantics: erase every page up
-  // to the emulated info-page region (`kRramCtrlEmulPageBase`). That region
-  // -- like flash's separate INFO partition -- must survive a chip erase
-  // since it backs OwnerSlot0/1, DiceCerts, BootData0/1, etc. Without this,
-  // bootstrap's initial CHIP_ERASE (which precedes every bootstrap session)
-  // was a no-op, leaving a previous image's data in any page the new image
-  // doesn't explicitly program.
+  // Mirror flash's "erase both firmware banks" semantics: erase every usable
+  // page (see `NVM_USABLE_DATA_SIZE_BYTES`), stopping before the emulated
+  // info-page region. That region -- like flash's separate INFO partition --
+  // must survive a chip erase since it backs OwnerSlot0/1, DiceCerts,
+  // BootData0/1, etc. Without this, bootstrap's initial CHIP_ERASE (which
+  // precedes every bootstrap session) was a no-op, leaving a previous
+  // image's data in any page the new image doesn't explicitly program.
   rram_ctrl_data_default_perms_set((rram_ctrl_perms_t){
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4True,
   });
   rom_error_t err = kErrorOk;
-  uint32_t end_addr = kRramCtrlEmulPageBase * NVM_BYTES_PER_PAGE;
-  for (uint32_t addr = 0; err == kErrorOk && addr < end_addr;
+  for (uint32_t addr = 0; err == kErrorOk && addr < NVM_USABLE_DATA_SIZE_BYTES;
        addr += NVM_BYTES_PER_PAGE) {
     err = nvm_ctrl_data_erase(addr);
   }

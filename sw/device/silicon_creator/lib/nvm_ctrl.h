@@ -88,6 +88,26 @@ extern "C" {
 #endif  // HAS_RRAM_CTRL
 
 /**
+ * Exclusive upper bound, in bytes, of the NVM data partition actually usable
+ * for generic firmware reads/writes/erases (bootstrap PAGE_PROGRAM/erase,
+ * rescue firmware updates, ...).
+ *
+ * For RRAM, this stops before `kRramCtrlEmulPageBase`: everything from there
+ * onward is either the emulated info-page region (OwnerSlot0/1, DiceCerts,
+ * BootData0/1, ... -- only accessible through `nvm_ctrl_info_*()`, not plain
+ * data reads/writes) or, past `kRramCtrlEmulPageBase +
+ * kRramCtrlEmulPageCount`, a small tail reserved for OTP that's read/write
+ * protected in hardware and must never be touched by software at all. For
+ * flash, there is no such reserved tail, so this is just the full data
+ * partition size.
+ */
+#ifdef HAS_RRAM_CTRL
+#define NVM_USABLE_DATA_SIZE_BYTES (kRramCtrlEmulPageBase * NVM_BYTES_PER_PAGE)
+#else
+#define NVM_USABLE_DATA_SIZE_BYTES NVM_DATA_SIZE_BYTES
+#endif  // HAS_RRAM_CTRL
+
+/**
  * Page/byte count of one firmware slot (A or B).
  *
  * There are always exactly two slots, splitting the NVM data partition in

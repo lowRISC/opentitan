@@ -19,9 +19,10 @@
 
 enum {
   /*
-   * Maximum flash address, exclusive.
+   * Maximum flash address, exclusive. Bounded to the portion of NVM usable
+   * for generic firmware data; see `NVM_USABLE_DATA_SIZE_BYTES`.
    */
-  kMaxAddress = NVM_DATA_SIZE_BYTES,
+  kMaxAddress = NVM_USABLE_DATA_SIZE_BYTES,
 };
 
 /**
