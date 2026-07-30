@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/self_integrity.h"
@@ -103,6 +104,13 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
   crypto_state_t state;
   HARDENED_TRY(read_state(&state));
+
+#ifdef FIPS_MODE
+  if (state.cmvp_call_depth > 0) {
+    state.cmvp_call_depth--;
+    HARDENED_TRY(store_state(&state));
+  }
+#endif
 
   if (state.security_level != kOtcryptoKeySecurityLevelLow) {
     if (read_alert_registers()) {

@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
@@ -72,6 +73,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_const_byte_buf_t *label,
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KDF_CTR_HMAC);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
@@ -89,6 +91,11 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  if (key_derivation_key->config.key_length < 14 ||
+      output_key_material->config.key_length < 14) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
 
   // Check the private key checksum.
   if (otcrypto_integrity_blinded_key_check(key_derivation_key) !=
