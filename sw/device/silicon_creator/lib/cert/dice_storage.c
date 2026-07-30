@@ -100,7 +100,7 @@ rom_error_t dice_storage_write_cert_tlv_v1(const dice_storage_slot_v1_t *slot,
 
   dice_storage_header_v1_t hdr = slot->header;
   PERSO_TLV_SET_FIELD_V1(
-      CrthV1, Size, hdr.cert_header,
+      Crth, Size, hdr.cert_header,
       sizeof(dice_storage_header_v1_t) - sizeof(hdr.object_header) + cert_size);
 
   for (size_t i = 0; i < num_pages; ++i) {

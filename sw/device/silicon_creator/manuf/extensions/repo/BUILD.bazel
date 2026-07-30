@@ -28,6 +28,7 @@ rust_library(
     deps = [
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
+        "@lowrisc_opentitan//sw/host/provisioning/perso_tlv_lib",
         "@lowrisc_opentitan//sw/host/provisioning/util_lib",
     ],
 )
