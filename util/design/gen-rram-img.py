@@ -12,63 +12,38 @@ r"""Takes a compiled VMEM image and processes it for loading into the RRAM.
 import argparse
 import re
 import sys
-from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import List
 
 import hjson
 from pyfinite import ffield
-from lib.common import (check_int,
-                        inverse_permute_bits,
-                        validate_data_perm_option,
-                        vmem_permutation_string)
-from lib.Present import Present
+from lib.common import validate_data_perm_option, vmem_permutation_string
+from lib.otp_scrambling_keys import (OTP_WORD_SIZE_WECC, ScramblingConfigs,
+                                     compute_scrambling_keys,
+                                     get_otp_ctrl_netlist_consts,
+                                     get_scrambling_configs_from_otp)
 
 import prince
 
-MUBI4_TRUE = 0x6
-
-# Fixed OTP data / scrambling parameters.
-OTP_WORD_SIZE = 16  # bits
-OTP_WORD_SIZE_WECC = 24  # bits
 OTP_RRAM_DATA_DEFAULT_CFG_RE = re.compile(
     r"CREATOR_SW_CFG: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG")
-OTP_RRAM_DATA_DEFAULT_CFG_BLOCK_SIZE = 32  # bits
-OTP_SECRET1_RE = re.compile(r"SECRET1")
-OTP_SECRET1_BLOCK_SIZE = 64  # bits
-OTP_SECRET1_PRESENT_KEY_LENGTH = 128  # bits
-OTP_SECRET1_PRESENT_NUM_ROUNDS = 32
-OTP_RRAM_ADDR_KEY_SEED_SIZE = 256  # bits
-OTP_RRAM_DATA_KEY_SEED_SIZE = 256  # bits
-OTP_SECRET1_RRAM_ADDR_KEY_SEED_START = 0
 
 # RRAM data / scrambling parameters.
 RRAM_ADDR_KEY_SIZE = 128  # bits
 RRAM_DATA_KEY_SIZE = 128  # bits
 RRAM_WORD_SIZE = 128  # bits
+# rram_ctrl_pkg::AddrW = clog2(2MiB/(128/8))
 RRAM_ADDR_SIZE = 17  # bits
 RRAM_PRINCE_NUM_HALF_ROUNDS = 5
 
+# First RRAM word address in the OTP partition, i.e. the exclusive upper bound
+# of the data partition. rram_ctrl_pkg::OtpStartPage * WordsPerPage
+# = (TotalPages - OtpPages) * WordsPerPage = (4096 - 5) * 32.
+RRAM_OTP_START_WORD_ADDR = 4091 * 32
 
-class RramScramblingKeyType(Enum):
-    ADDRESS = 1
-    DATA = 2
-
-
-# RRAM scrambling key computation parameters.
 # ------------------------------------------------------------------------------
 # DO NOT EDIT: edit fixed parameters above instead.
 # ------------------------------------------------------------------------------
-# Computed OTP data / scrambling parameters.
-OTP_SECRET1_RRAM_ADDR_KEY_SEED_STOP = (OTP_RRAM_ADDR_KEY_SEED_SIZE // OTP_SECRET1_BLOCK_SIZE)
-OTP_SECRET1_RRAM_DATA_KEY_SEED_START = (OTP_RRAM_ADDR_KEY_SEED_SIZE // OTP_SECRET1_BLOCK_SIZE)
-OTP_SECRET1_RRAM_DATA_KEY_SEED_STOP = OTP_SECRET1_RRAM_DATA_KEY_SEED_START + (
-    OTP_RRAM_DATA_KEY_SEED_SIZE // OTP_SECRET1_BLOCK_SIZE)
-
-# Computed RRAM data / scrambling parameters.
-RRAM_KEY_COMPUTATION_KEY_SIZE = OTP_RRAM_ADDR_KEY_SEED_SIZE // 2
-RRAM_KEY_COMPUTATION_KEY_MASK = (2**RRAM_KEY_COMPUTATION_KEY_SIZE) - 1
 RRAM_GF_OPERAND_B_MASK = (2**RRAM_WORD_SIZE) - 1
 RRAM_GF_OPERAND_A_MASK = (2**RRAM_ADDR_SIZE) - 1
 # Create GF(2^128) with irreducible_polynomial = x^128 + x^7 + x^2 + x + 1
@@ -80,32 +55,6 @@ RRAM_GF_2_128 = ffield.FField(128,
 RRAM_VMEM_WORD_SIZE = (RRAM_WORD_SIZE)
 VMEM_FORMAT_STR = " {:0" + f"{RRAM_VMEM_WORD_SIZE // 4}" + "X}"
 # ------------------------------------------------------------------------------
-
-
-@dataclass
-class RramScramblingConfigs:
-    scrambling_enabled: bool = False
-    otp_secret1_key: int = None
-    addr_key_iv: int = None
-    data_key_iv: int = None
-    addr_key_final_const: int = None
-    data_key_final_const: int = None
-    addr_key_seed: int = None
-    data_key_seed: int = None
-    addr_key: int = None
-    data_key: int = None
-
-    def get_iv(self, key_type: RramScramblingKeyType):
-        if key_type == RramScramblingKeyType.ADDRESS:
-            return self.addr_key_iv
-        else:
-            return self.data_key_iv
-
-    def get_final_cnst(self, key_type: RramScramblingKeyType):
-        if key_type == RramScramblingKeyType.ADDRESS:
-            return self.addr_key_final_const
-        else:
-            return self.data_key_final_const
 
 
 def _interleave_split(data: int):
@@ -166,153 +115,9 @@ def _xex_scramble(data: int, word_addr: int, rram_addr_key: int,
     return _interleave_combine(data_0, data_1) ^ mask
 
 
-def _convert_array_2_int(data_array: List[int],
-                         data_size: int,
-                         little_endian=True) -> int:
-    """Converts array of data blocks to an int."""
-    reformatted_data = 0
-    if not little_endian:
-        data_array.reverse()
-    for i, data in enumerate(data_array):
-        reformatted_data |= (data << (i * data_size))
-    return reformatted_data
-
-
-def _get_otp_ctrl_netlist_consts(top_secret_cfg: dict, scrambling_configs: RramScramblingConfigs):
-
-    for module in top_secret_cfg["module"]:
-        if module.get("template_type") == "otp_ctrl":
-            otp_map = module["otp_mmap"]
-            break
-    else:
-        raise RuntimeError("OTP memory map configuration not found in top secret configuration")
-
-    # Extract OTP secret1 partition scrambling key.
-    for key in otp_map["scrambling"]["keys"]:
-        if key["name"] == "Secret1Key":
-            scrambling_configs.otp_secret1_key = check_int(key["value"])
-
-    # Extract OTP NVM scrambling key IVs.
-    for digest in otp_map["scrambling"]["digests"]:
-        if digest["name"] == "NvmAddrKey":
-            scrambling_configs.addr_key_iv = check_int(digest["iv_value"])
-            scrambling_configs.addr_key_final_const = check_int(digest["cnst_value"])
-        if digest["name"] == "NvmDataKey":
-            scrambling_configs.data_key_iv = check_int(digest["iv_value"])
-            scrambling_configs.data_key_final_const = check_int(digest["cnst_value"])
-
-
-def _get_rram_scrambling_configs(otp_vmem_file: str, otp_data_perm: list,
-                                 configs: RramScramblingConfigs) -> None:
-    # Open OTP VMEM file and read into memory, skipping comment lines.
-    try:
-        otp_vmem = Path(otp_vmem_file).read_text()
-    except IOError:
-        raise Exception(f"Unable to open {otp_vmem_file}")
-    otp_vmem_lines = re.findall(r"^@.*$", otp_vmem, flags=re.MULTILINE)
-
-    # Retrieve OTP data from the following partitions:
-    # - CREATOR_SW_CFG: which contains the RRAM scramble enablement flag, and
-    # - SECRET1: which contains the RRAM scrambling key seeds.
-    # Note, we strip ECC bits from each data word when processing.
-    rram_data_default_cfg = None
-    secret1_data_blocks = []
-    otp_data_block = 0
-    idx = 0
-    for line in otp_vmem_lines:
-        if (OTP_RRAM_DATA_DEFAULT_CFG_RE.search(line) or
-                OTP_SECRET1_RE.search(line)):
-            # Convert OTP VMEM word from string to int.
-            otp_data_word_w_ecc = int(line.split()[1], 16)
-            # Un-permute bits if necessary.
-            if otp_data_perm:
-                otp_data_word_as_str = format(
-                    otp_data_word_w_ecc, "0" + str(OTP_WORD_SIZE_WECC) + "b")
-                otp_data_word_w_ecc = int(
-                    inverse_permute_bits(otp_data_word_as_str, otp_data_perm),
-                    2)
-            # Drop ECC bits.
-            otp_data_word = otp_data_word_w_ecc & (2**OTP_WORD_SIZE - 1)
-            otp_data_block |= otp_data_word << (idx * OTP_WORD_SIZE)
-            idx += 1
-            if OTP_RRAM_DATA_DEFAULT_CFG_RE.search(line):
-                if idx == (OTP_RRAM_DATA_DEFAULT_CFG_BLOCK_SIZE //
-                           OTP_WORD_SIZE):
-                    rram_data_default_cfg = otp_data_block & 0xff
-                    # If RRAM data scrambling is disabled, then we can return
-                    # early to save execution time.
-                    if rram_data_default_cfg != MUBI4_TRUE:
-                        configs.scrambling_enabled = False
-                        return
-                    configs.scrambling_enabled = True
-                    otp_data_block = 0
-                    idx = 0
-            if OTP_SECRET1_RE.search(line):
-                if idx == (OTP_SECRET1_BLOCK_SIZE // OTP_WORD_SIZE):
-                    secret1_data_blocks.append(otp_data_block)
-                    otp_data_block = 0
-                    idx = 0
-
-    # Check we found the data we were looking for in the OTP image.
-    if rram_data_default_cfg is None:
-        raise RuntimeError(
-            "Cannot read RRAM scrambling enablement state from OTP.")
-    if not secret1_data_blocks:
-        raise RuntimeError("Cannot read RRAM scrambling key seeds from OTP.")
-
-    # Descramble SECRET1 partition data blocks and extract RRAM scrambling key
-    # seeds. The SECRET1 partition layout looks like:
-    # {RRAM_ADDR_KEY_SEED, RRAM_DATA_KEY_SEED, SRAM_DATA_KEY_SEED, DIGEST}
-    otp_secret1_present_cipher = Present(configs.otp_secret1_key,
-                                         rounds=OTP_SECRET1_PRESENT_NUM_ROUNDS,
-                                         keylen=OTP_SECRET1_PRESENT_KEY_LENGTH)
-    descrambled_secret1_blocks = list(
-        map(otp_secret1_present_cipher.decrypt, secret1_data_blocks))
-    configs.addr_key_seed = _convert_array_2_int(
-        descrambled_secret1_blocks[OTP_SECRET1_RRAM_ADDR_KEY_SEED_START:
-                                   OTP_SECRET1_RRAM_ADDR_KEY_SEED_STOP],
-        OTP_SECRET1_BLOCK_SIZE)
-    configs.data_key_seed = _convert_array_2_int(
-        descrambled_secret1_blocks[OTP_SECRET1_RRAM_DATA_KEY_SEED_START:
-                                   OTP_SECRET1_RRAM_DATA_KEY_SEED_STOP],
-        OTP_SECRET1_BLOCK_SIZE)
-
-
-def _compute_rram_scrambling_key(scrambling_configs: RramScramblingConfigs,
-                                 key_type: RramScramblingKeyType) -> int:
-    if key_type == RramScramblingKeyType.ADDRESS:
-        key_seed = scrambling_configs.addr_key_seed
-    else:
-        key_seed = scrambling_configs.data_key_seed
-    full_key = 0
-    for i in range(2):
-        round_1_present_key = (key_seed >>
-                               (RRAM_KEY_COMPUTATION_KEY_SIZE *
-                                i)) & RRAM_KEY_COMPUTATION_KEY_MASK
-        key_half = 0
-        for j in range(2):
-            if j == 0:
-                cipher = Present(round_1_present_key)
-                key_half = cipher.encrypt(scrambling_configs.get_iv(
-                    key_type)) ^ scrambling_configs.get_iv(key_type)
-            else:
-                cipher = Present(scrambling_configs.get_final_cnst(key_type))
-                key_half = cipher.encrypt(key_half) ^ key_half
-        full_key |= key_half << (64 * i)
-    return full_key
-
-
-def _compute_rram_scrambling_keys(
-        scrambling_configs: RramScramblingConfigs) -> None:
-    scrambling_configs.addr_key = _compute_rram_scrambling_key(
-        scrambling_configs, RramScramblingKeyType.ADDRESS)
-    scrambling_configs.data_key = _compute_rram_scrambling_key(
-        scrambling_configs, RramScramblingKeyType.DATA)
-
-
 def _reformat_rram_vmem(
         rram_vmem_file: str,
-        scrambling_configs: RramScramblingConfigs) -> List[str]:
+        scrambling_configs: ScramblingConfigs) -> List[str]:
     # Open (raw) RRAM VMEM file and read into memory, skipping comment lines.
     try:
         rram_vmem = Path(rram_vmem_file).read_text()
@@ -336,6 +141,14 @@ def _reformat_rram_vmem(
                 address_offset = 0
             # Process the data words.
             else:
+                rram_word_addr = address + address_offset
+                if rram_word_addr >= RRAM_OTP_START_WORD_ADDR:
+                    raise ValueError(
+                        f"RRAM word address 0x{rram_word_addr:x} falls in the "
+                        "OTP partition (starting at word address "
+                        f"0x{RRAM_OTP_START_WORD_ADDR:x}), which this script "
+                        "does not address-infect or scramble. Check "
+                        "--in-rram-vmem's word size and offsets.")
                 data = int(item, 16)
                 # addr infection with word address
                 new_data = 0
@@ -363,6 +176,7 @@ def main(argv: List[str]):
     parser = argparse.ArgumentParser()
     parser.add_argument("--in-rram-vmem",
                         type=str,
+                        required=True,
                         help="Input VMEM file to reformat.")
 
     parser.add_argument("--in-otp-vmem",
@@ -375,7 +189,10 @@ def main(argv: List[str]):
                         help='''
                         Path to the top secret configuration in Hjson format.
                         ''')
-    parser.add_argument("--out-rram-vmem", type=str, help="Output VMEM file.")
+    parser.add_argument("--out-rram-vmem",
+                        type=str,
+                        required=True,
+                        help="Output VMEM file.")
     parser.add_argument("--otp-data-perm",
                         type=vmem_permutation_string,
                         metavar="<map>",
@@ -394,7 +211,7 @@ def main(argv: List[str]):
                         generate an error.
                         """)
     args = parser.parse_args(argv)
-    scrambling_configs = RramScramblingConfigs()
+    scrambling_configs = ScramblingConfigs()
 
     # Validate OTP bit permutation configuration.
     if args.otp_data_perm:
@@ -406,15 +223,16 @@ def main(argv: List[str]):
         with open(args.top_secret_cfg, 'r') as infile:
             top_secret_cfg = hjson.load(infile)
 
-        _get_otp_ctrl_netlist_consts(top_secret_cfg, scrambling_configs)
-        _get_rram_scrambling_configs(args.in_otp_vmem, args.otp_data_perm,
-                                     scrambling_configs)
+        get_otp_ctrl_netlist_consts(top_secret_cfg, scrambling_configs)
+        get_scrambling_configs_from_otp(args.in_otp_vmem, args.otp_data_perm,
+                                        OTP_RRAM_DATA_DEFAULT_CFG_RE,
+                                        scrambling_configs)
 
     # Compute RRAM scrambling keys from seeds.
     if scrambling_configs.scrambling_enabled:
-        _compute_rram_scrambling_keys(scrambling_configs)
+        compute_scrambling_keys(scrambling_configs)
 
-    # Reformat RRAM VMEM file to add integrity/reliability ECC and scrambling.
+    # Reformat RRAM VMEM file to add address infection and scrambling.
     reformatted_vmem_lines = _reformat_rram_vmem(args.in_rram_vmem,
                                                  scrambling_configs)
 
