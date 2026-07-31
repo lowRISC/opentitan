@@ -78,8 +78,13 @@ typedef struct rram_ctrl_info_page {
  * memory-protection region covering this range.
  */
 enum {
-  kRramCtrlEmulPageBase = 4064,
-  kRramCtrlEmulPageCount = 27,
+  // 3 lower than the OwnerReserved0-growth-driven page count below would
+  // otherwise need, since growing this *upward* would collide with the
+  // read/write-protected OTP tail immediately following this region -- grow
+  // by moving the base down into what would otherwise be usable slot data
+  // instead (see `NVM_USABLE_DATA_SIZE_BYTES`).
+  kRramCtrlEmulPageBase = 4061,
+  kRramCtrlEmulPageCount = 30,
   /**
    * Memory-protection region index (of `RRAM_CTRL_PARAM_NUM_REGIONS`) used
    * for the shared emulated-page region.
@@ -138,11 +143,16 @@ enum {
    * didn't need to span pages at all as a real page; all three previously
    * got only 1 page, so writes silently overflowed into the next logical
    * page(s)' storage.
+   *
+   * `OwnerReserved0` is 4 pages, not 1: it's the page ISFB owner configs
+   * point at (`isfb->bank=0,page=5`; see `nvm_ctrl_info_page_lookup`), and
+   * `isfb.c` needs 512 bytes for its strike region plus up to 1024 bytes for
+   * product expressions -- 2048 bytes total, matching flash's original info
+   * page size for this same content. Growing it in place absorbs what were
+   * `OwnerReserved1-3`'s pages, so those three move to the newly-appended
+   * pages at the end of this region instead.
    */ \
-  X(kRramCtrlInfoPageOwnerReserved0,      kRramCtrlEmulPageBase + 0,  true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 1,  true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved2,      kRramCtrlEmulPageBase + 2,  true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved3,      kRramCtrlEmulPageBase + 3,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved0,      kRramCtrlEmulPageBase + 0,  true, 4) \
   X(kRramCtrlInfoPageBootData0,           kRramCtrlEmulPageBase + 4,  true, 1) \
   X(kRramCtrlInfoPageBootData1,           kRramCtrlEmulPageBase + 5,  true, 1) \
   X(kRramCtrlInfoPageOwnerSlot0,          kRramCtrlEmulPageBase + 6,  true, 4) \
@@ -154,6 +164,9 @@ enum {
   X(kRramCtrlInfoPageOwnerReserved7,      kRramCtrlEmulPageBase + 18, true, 1) \
   X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 19, true, 4) \
   X(kRramCtrlInfoPageFactoryCerts,        kRramCtrlEmulPageBase + 23, true, 4) \
+  X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 27, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved2,      kRramCtrlEmulPageBase + 28, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved3,      kRramCtrlEmulPageBase + 29, true, 1) \
 // clang-format on
 
 /**

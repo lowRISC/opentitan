@@ -206,8 +206,13 @@ status_t nvm_testutils_write_info_page(nvm_info_page_t page,
                                        const uint32_t *data, size_t word_count,
                                        bool erase_before_write, bool readback) {
   const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
-  // RRAM has no erase step; writes overwrite in place.
-  (void)erase_before_write;
+  // RRAM has no hardware erase step, but callers requesting
+  // `erase_before_write` still expect the rest of the page to come back to a
+  // known blank (all-ones) state first, not just have this write's bytes
+  // land on top of whatever was there before.
+  if (erase_before_write) {
+    TRY(nvm_ctrl_info_erase(page));
+  }
 
   dif_rram_ctrl_state_t rram;
   TRY(dif_rram_state_init(&rram));
@@ -296,6 +301,31 @@ status_t nvm_testutils_info_page_lock(nvm_info_page_t page, bool lock) {
   TRY(dif_rram_state_init(&rram));
   dif_rram_ctrl_info_region_t region = {.page = p->page_id};
   TRY(dif_rram_ctrl_lock_info_region_properties(&rram, region));
+  return OK_STATUS();
+}
+
+status_t nvm_testutils_info_page_print(nvm_info_page_t page) {
+  const rram_ctrl_info_page_t *p = nvm_ctrl_rram_page_info(page);
+  dif_rram_ctrl_state_t rram;
+  TRY(dif_rram_state_init(&rram));
+  dif_rram_ctrl_info_region_t region = {.page = p->page_id};
+  dif_rram_ctrl_region_properties_t props;
+  bool locked;
+  if (p->emulated) {
+    // Emulated pages aren't real info regions at the DIF level: they're
+    // backed by the shared data-partition MP region (`kRramCtrlEmulRegion`).
+    // Query that instead, but keep printing under the page's own label.
+    dif_rram_ctrl_data_region_properties_t data_props;
+    TRY(dif_rram_ctrl_get_data_region_properties(&rram, kRramCtrlEmulRegion,
+                                                 &data_props));
+    TRY(dif_rram_ctrl_data_region_is_locked(&rram, kRramCtrlEmulRegion,
+                                            &locked));
+    props = data_props.properties;
+  } else {
+    TRY(dif_rram_ctrl_get_info_region_properties(&rram, region, &props));
+    TRY(dif_rram_ctrl_info_region_is_locked(&rram, region, &locked));
+  }
+  rram_ctrl_testutils_info_region_print(region, &props, locked);
   return OK_STATUS();
 }
 
@@ -706,6 +736,20 @@ status_t nvm_testutils_info_page_lock(nvm_info_page_t page, bool lock) {
   dif_flash_ctrl_state_t flash;
   TRY(dif_flash_state_init(&flash));
   TRY(dif_flash_ctrl_lock_info_region_properties(&flash, phys_to_region(&p)));
+  return OK_STATUS();
+}
+
+status_t nvm_testutils_info_page_print(nvm_info_page_t page) {
+  TRY_CHECK(page < ARRAYSIZE(kPageMap), "invalid page %d", page);
+  const nvm_page_phys_t p = kPageMap[page];
+  dif_flash_ctrl_state_t flash;
+  TRY(dif_flash_state_init(&flash));
+  dif_flash_ctrl_info_region_t region = phys_to_region(&p);
+  dif_flash_ctrl_region_properties_t props;
+  bool locked;
+  TRY(dif_flash_ctrl_get_info_region_properties(&flash, region, &props));
+  TRY(dif_flash_ctrl_info_region_is_locked(&flash, region, &locked));
+  flash_ctrl_testutils_info_region_print(region, &props, locked);
   return OK_STATUS();
 }
 

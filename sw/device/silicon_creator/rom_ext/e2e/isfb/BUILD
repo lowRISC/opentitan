@@ -59,9 +59,8 @@ opentitan_binary(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
     ],
@@ -74,17 +73,18 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
-        # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
-        exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
+        # Check that the ISFB info page is configured for RD/WR, but not
+        # locked (RRAM's emulated pages are never locked; see
+        # nvm_testutils_info_page_lock()).
+        exit_success = "info region page=4055 RD-WR-uu-uu UN",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
     ],
@@ -98,10 +98,15 @@ opentitan_test(
     },
     fpga = fpga_params(
         # Even though the isfb_erase extension is present and set to true,
-        # the manifest doesn't node lock this image.  The erase condition
-        # is not met and the ISFB page should not allow erase.
-        # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
-        exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
+        # the manifest doesn't node lock this image, so the erase condition
+        # in isfb_info_flash_erase_policy_get() is not met.
+        #
+        # TODO(#30890): on RRAM there is no separate erase_en, so this test
+        # can no longer observe a difference between "erase denied" and
+        # "erase allowed" (see isfb_page_test) -- both produce the same page
+        # properties. This exit_success only confirms the page is RD/WR and
+        # unlocked, not that erase was actually withheld.
+        exit_success = "info region page=4055 RD-WR-uu-uu UN",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
@@ -109,9 +114,8 @@ opentitan_test(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:nvm_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:nvm_ctrl",
     ],

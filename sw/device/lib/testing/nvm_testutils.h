@@ -170,6 +170,22 @@ OT_WARN_UNUSED_RESULT
 status_t nvm_testutils_info_page_lock(nvm_info_page_t page, bool lock);
 
 /**
+ * Log the current access permissions, configuration, and lock state of an
+ * NVM info page.
+ *
+ * Unlike the other nvm_testutils_info_page_* functions, this reads back
+ * whatever the page's properties currently are, rather than setting them.
+ * On flash the printed line has six enable fields (RD-WR-ER-SC-EC-HE); RRAM
+ * has no separate erase or high-endurance concept, so its line only has four
+ * (RD-WR-SC-EC).
+ *
+ * @param page Logical info page identifier.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t nvm_testutils_info_page_print(nvm_info_page_t page);
+
+/**
  * Set properties for an NVM data region and enable it.
  *
  * Configures the base page, size, access permissions, and memory properties
