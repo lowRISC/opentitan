@@ -67,7 +67,7 @@ void boot_measurements_test(void) {
 void sec_mmio_pos_test(void) {
   enum {
     kRndOffset = 13,
-    kRomCheckValue = 6,
+    kRomCheckValue = 9,
   };
 
   sec_mmio_check_values(kRndOffset);
