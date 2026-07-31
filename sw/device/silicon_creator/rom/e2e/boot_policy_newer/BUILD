@@ -83,22 +83,22 @@ BOOT_POLICY_NEWER_CASES = [
     {
         "a": 0,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=0, lc_state=0x{}",
+        "exit_success": "slot=0x30000000, security_version=0, lc_state=0x{}",
     },
     {
         "a": 0,
         "b": 1,
-        "exit_success": "slot=0x20080000, security_version=1, lc_state=0x{}",
+        "exit_success": "slot=0x30100000, security_version=1, lc_state=0x{}",
     },
     {
         "a": 1,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=1, lc_state=0x{}",
+        "exit_success": "slot=0x30000000, security_version=1, lc_state=0x{}",
     },
     {
         "a": 1,
         "b": 1,
-        "exit_success": "slot=0x20000000, security_version=1, lc_state=0x{}",
+        "exit_success": "slot=0x30000000, security_version=1, lc_state=0x{}",
     },
 ]
 
