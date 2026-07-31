@@ -129,8 +129,12 @@
             <div class="page">
                 {{> header}}
                 <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
-                    <div class="left-buttons">
+                <div id="menu-bar" class="menu-bar sticky bordered branch">
+						<!-- Amber Announcement Banner -->
+						<div class="site-banner">
+							Refer to <a href="/book">master</a> for latest OpenTitan data
+						</div>
+						<div class="left-buttons">
                         <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
                         </button>
@@ -146,6 +150,16 @@
                         </button>
                         {{/if}}
                     </div>
+
+					<div class="releases-dropdown">
+						<input type="checkbox" id="release-menu-toggle" style="display:none;">
+						<label for="release-menu-toggle" class="dropbtn">
+							earlgrey_1.0.0 <i class="fa fa-angle-down"></i>
+						</label>
+						<div class="dropdown-content">
+							<a href="/book/">master</a>
+						</div>
+					</div>
 
                     <div class="menu-title">
                         <a class="logo" href="/">
