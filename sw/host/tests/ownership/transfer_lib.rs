@@ -15,6 +15,7 @@ use opentitanlib::chip::boot_svc::{Message, UnlockMode};
 use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey};
+use opentitanlib::image::manifest::CHIP_ROM_EXT_SIZE_MAX;
 use opentitanlib::ownership::{
     ApplicationKeyDomain, CommandTag, FlashFlags, HybridRawPublicKey, KeyMaterial,
     OwnerApplicationKey, OwnerBlock, OwnerConfigItem, OwnerFlashConfig, OwnerFlashInfoConfig,
@@ -167,6 +168,17 @@ const CFG_APP_CONSTRAINT: u32 = 0x0000_0020;
 const CFG_FLASH_ERROR: u32 = 0x0000_0040;
 // Request an invalid owner config with a correct signature.
 const CFG_INVALID: u32 = 0x000_0080;
+
+// NVM page geometry for the RRAM-based `fpga_cw340_rom_ext` target this test
+// suite runs against; matches `NVM_BYTES_PER_PAGE`/`NVM_PAGES_PER_SLOT` for
+// `HAS_RRAM_CTRL` builds in sw/device/silicon_creator/lib/nvm_ctrl.h.
+const NVM_BYTES_PER_PAGE: u32 = 512;
+const NVM_PAGES_PER_SLOT: u16 = 2048;
+const ROM_EXT_PAGES: u16 = (CHIP_ROM_EXT_SIZE_MAX / NVM_BYTES_PER_PAGE) as u16;
+// Arbitrary reservation the same size as the ROM_EXT, just to exercise a
+// third region flavor in the flash config.
+const FILESYSTEM_PAGES: u16 = ROM_EXT_PAGES;
+const FIRMWARE_PAGES: u16 = NVM_PAGES_PER_SLOT - ROM_EXT_PAGES - FILESYSTEM_PAGES;
 
 #[repr(u32)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -322,24 +334,48 @@ where
             // It is an error set have a flash config that overlaps the ROM_EXT
             // region.
 
-            // Side A: 0-64K romext, 64-448K firmware, 448-512K filesystem.
+            // Side A: romext, then firmware, then filesystem.
             vec![
-                OwnerFlashRegion::new(0, 32, config.rom_ext()),
-                OwnerFlashRegion::new(32, 192, config.firmware()),
-                OwnerFlashRegion::new(224, 32, config.filesystem()),
-                // Side B: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                OwnerFlashRegion::new(256, 32, config.rom_ext()),
-                OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
-                OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
+                OwnerFlashRegion::new(0, ROM_EXT_PAGES, config.rom_ext()),
+                OwnerFlashRegion::new(ROM_EXT_PAGES, FIRMWARE_PAGES, config.firmware()),
+                OwnerFlashRegion::new(
+                    ROM_EXT_PAGES + FIRMWARE_PAGES,
+                    FILESYSTEM_PAGES,
+                    config.filesystem(),
+                ),
+                // Side B: romext, then firmware, then filesystem.
+                OwnerFlashRegion::new(NVM_PAGES_PER_SLOT, ROM_EXT_PAGES, config.rom_ext()),
+                OwnerFlashRegion::new(
+                    NVM_PAGES_PER_SLOT + ROM_EXT_PAGES,
+                    FIRMWARE_PAGES,
+                    config.firmware(),
+                ),
+                OwnerFlashRegion::new(
+                    NVM_PAGES_PER_SLOT + ROM_EXT_PAGES + FIRMWARE_PAGES,
+                    FILESYSTEM_PAGES,
+                    config.filesystem(),
+                ),
             ]
         } else {
             vec![
-                // Side A: 64-448K firmware, 448-512K filesystem.
-                OwnerFlashRegion::new(32, 192, config.firmware()),
-                OwnerFlashRegion::new(224, 32, config.filesystem()),
-                // Side B: 64-448K firmware, 448-512K filesystem.
-                OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
-                OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
+                // Side A: firmware, then filesystem.
+                OwnerFlashRegion::new(ROM_EXT_PAGES, FIRMWARE_PAGES, config.firmware()),
+                OwnerFlashRegion::new(
+                    ROM_EXT_PAGES + FIRMWARE_PAGES,
+                    FILESYSTEM_PAGES,
+                    config.filesystem(),
+                ),
+                // Side B: firmware, then filesystem.
+                OwnerFlashRegion::new(
+                    NVM_PAGES_PER_SLOT + ROM_EXT_PAGES,
+                    FIRMWARE_PAGES,
+                    config.firmware(),
+                ),
+                OwnerFlashRegion::new(
+                    NVM_PAGES_PER_SLOT + ROM_EXT_PAGES + FIRMWARE_PAGES,
+                    FILESYSTEM_PAGES,
+                    config.filesystem(),
+                ),
             ]
         };
         owner
@@ -360,8 +396,10 @@ where
     }
     if cfg & CFG_RESCUE1 != 0 {
         let mut rescue = OwnerRescueConfig::all();
-        rescue.start = 32;
-        rescue.size = 192;
+        // Rescue may only write the firmware region (matching the flash
+        // config above), not the ROM_EXT reservation.
+        rescue.start = ROM_EXT_PAGES;
+        rescue.size = FIRMWARE_PAGES;
         if cfg & CFG_RESCUE_RESTRICT != 0 {
             // Restrict one of the boot_svc commands in "restrict" mode.
             rescue
