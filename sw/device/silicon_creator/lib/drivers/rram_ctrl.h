@@ -78,13 +78,10 @@ typedef struct rram_ctrl_info_page {
  * memory-protection region covering this range.
  */
 enum {
-  // 3 lower than the OwnerReserved0-growth-driven page count below would
-  // otherwise need, since growing this *upward* would collide with the
-  // read/write-protected OTP tail immediately following this region -- grow
-  // by moving the base down into what would otherwise be usable slot data
-  // instead (see `NVM_USABLE_DATA_SIZE_BYTES`).
-  kRramCtrlEmulPageBase = 4061,
-  kRramCtrlEmulPageCount = 30,
+  // EmulPageBase = TotalPageCount (4096) - OtpPageCount (5) - EmulPageCount
+  // (36)
+  kRramCtrlEmulPageBase = 4055,
+  kRramCtrlEmulPageCount = 36,
   /**
    * Memory-protection region index (of `RRAM_CTRL_PARAM_NUM_REGIONS`) used
    * for the shared emulated-page region.
@@ -144,29 +141,30 @@ enum {
    * got only 1 page, so writes silently overflowed into the next logical
    * page(s)' storage.
    *
-   * `OwnerReserved0` is 4 pages, not 1: it's the page ISFB owner configs
-   * point at (`isfb->bank=0,page=5`; see `nvm_ctrl_info_page_lookup`), and
-   * `isfb.c` needs 512 bytes for its strike region plus up to 1024 bytes for
-   * product expressions -- 2048 bytes total, matching flash's original info
-   * page size for this same content. Growing it in place absorbs what were
-   * `OwnerReserved1-3`'s pages, so those three move to the newly-appended
-   * pages at the end of this region instead.
+   * All `OwnerReservedN` pages are kept contiguous here for readability.
+   * `OwnerReserved0`, `OwnerReserved6`, and `OwnerReserved7` are 4 pages
+   * (2048 bytes). `OwnerReserved0` is what ISFB owner configs point
+   * at (`isfb->bank=0,page=5`); it needs the space for its strike region
+   * plus product expressions. `OwnerReserved6`/`7` need it because SKU
+   * extensions (e.g. `tpm_personalize_ext.c`'s TPM EK cert) write to them
+   * via the same `dice_page_t` buffer as `DiceCerts`/`FactoryCerts`, which
+   * is always a full `kDicePageDataSize`.
    */ \
   X(kRramCtrlInfoPageOwnerReserved0,      kRramCtrlEmulPageBase + 0,  true, 4) \
-  X(kRramCtrlInfoPageBootData0,           kRramCtrlEmulPageBase + 4,  true, 1) \
-  X(kRramCtrlInfoPageBootData1,           kRramCtrlEmulPageBase + 5,  true, 1) \
-  X(kRramCtrlInfoPageOwnerSlot0,          kRramCtrlEmulPageBase + 6,  true, 4) \
-  X(kRramCtrlInfoPageOwnerSlot1,          kRramCtrlEmulPageBase + 10, true, 4) \
-  X(kRramCtrlInfoPageCreatorReserved0,    kRramCtrlEmulPageBase + 14, true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved4,      kRramCtrlEmulPageBase + 15, true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved5,      kRramCtrlEmulPageBase + 16, true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved6,      kRramCtrlEmulPageBase + 17, true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved7,      kRramCtrlEmulPageBase + 18, true, 1) \
-  X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 19, true, 4) \
-  X(kRramCtrlInfoPageFactoryCerts,        kRramCtrlEmulPageBase + 23, true, 4) \
-  X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 27, true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved2,      kRramCtrlEmulPageBase + 28, true, 1) \
-  X(kRramCtrlInfoPageOwnerReserved3,      kRramCtrlEmulPageBase + 29, true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved1,      kRramCtrlEmulPageBase + 4,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved2,      kRramCtrlEmulPageBase + 5,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved3,      kRramCtrlEmulPageBase + 6,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved4,      kRramCtrlEmulPageBase + 7,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved5,      kRramCtrlEmulPageBase + 8,  true, 1) \
+  X(kRramCtrlInfoPageOwnerReserved6,      kRramCtrlEmulPageBase + 9,  true, 4) \
+  X(kRramCtrlInfoPageOwnerReserved7,      kRramCtrlEmulPageBase + 13, true, 4) \
+  X(kRramCtrlInfoPageBootData0,           kRramCtrlEmulPageBase + 17, true, 1) \
+  X(kRramCtrlInfoPageBootData1,           kRramCtrlEmulPageBase + 18, true, 1) \
+  X(kRramCtrlInfoPageOwnerSlot0,          kRramCtrlEmulPageBase + 19, true, 4) \
+  X(kRramCtrlInfoPageOwnerSlot1,          kRramCtrlEmulPageBase + 23, true, 4) \
+  X(kRramCtrlInfoPageCreatorReserved0,    kRramCtrlEmulPageBase + 27, true, 1) \
+  X(kRramCtrlInfoPageDiceCerts,           kRramCtrlEmulPageBase + 28, true, 4) \
+  X(kRramCtrlInfoPageFactoryCerts,        kRramCtrlEmulPageBase + 32, true, 4) \
 // clang-format on
 
 /**

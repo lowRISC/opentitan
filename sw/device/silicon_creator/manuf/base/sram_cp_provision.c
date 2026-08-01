@@ -3,9 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdint.h>
+#include <string.h>
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -136,6 +138,24 @@ static status_t flash_info_page_0_read_and_validate(
   // Read AST calibration values into RAM.
   TRY(manuf_nvm_info_field_read(kNvmInfoFieldAstCalibrationData, ast_cfg_data,
                                 kNvmInfoAstCalibrationDataSizeIn32BitWords));
+
+  // Read the CRC32 that wafer-test equipment should have written alongside
+  // the wafer info fields above. If it doesn't match, those fields (and the
+  // AST calibration data) are unprovisioned and set to 0.
+  uint32_t wafer_info_crc = 0;
+  static_assert(kNvmInfoFieldWaferInfoCrcSizeIn32BitWords == 1,
+                "Wafer info CRC should fit in <32bits.");
+  TRY(manuf_nvm_info_field_read(kNvmInfoFieldWaferInfoCrc, &wafer_info_crc,
+                                kNvmInfoFieldWaferInfoCrcSizeIn32BitWords));
+  const uint32_t wafer_info_words[] = {lot_name, wafer_number, wafer_x_coord,
+                                       wafer_y_coord};
+  if (crc32(wafer_info_words, sizeof(wafer_info_words)) != wafer_info_crc) {
+    lot_name = 0;
+    wafer_number = 0;
+    wafer_x_coord = 0;
+    wafer_y_coord = 0;
+    memset(ast_cfg_data, 0, sizeof(ast_cfg_data));
+  }
 
   // Encode CP device ID.
   // HW origin portion of CP device.
