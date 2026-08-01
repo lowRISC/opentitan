@@ -185,8 +185,8 @@ rom_error_t dice_chain_attestation_owner(
       dice_storage_slot_init(&kDiceStorageCdi0Ecdsa, &dice_page);
       memcpy(dice_storage_slot_data(&kDiceStorageCdi0Ecdsa, &dice_page),
              static_dice_cdi_0.cert_data, static_dice_cdi_0.cert_size);
-      dice_storage_set_cert_size(&kDiceStorageCdi0Ecdsa,
-                                 static_dice_cdi_0.cert_size, &dice_page);
+      dice_storage_set_v0_cert_size(&kDiceStorageCdi0Ecdsa,
+                                    static_dice_cdi_0.cert_size, &dice_page);
       dice_page.cdi_key_ids[kDicePageKeyIdxCdi0] =
           read_64(static_dice_cdi_0.cdi_0_pubkey_id.digest);
     }
@@ -201,8 +201,8 @@ rom_error_t dice_chain_attestation_owner(
         owner_manifest->security_version, key_domain, &key_ids,
         &static_dice_cdi_0.cdi_0_pubkey, &subject_pubkey, cdi1_cert_data_ptr,
         &generated_cdi1_size));
-    dice_storage_set_cert_size(&kDiceStorageCdi1Ecdsa, generated_cdi1_size,
-                               &dice_page);
+    dice_storage_set_v0_cert_size(&kDiceStorageCdi1Ecdsa, generated_cdi1_size,
+                                  &dice_page);
     dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] = expected_cdi1_id;
 
     // Calculate and update digest.
