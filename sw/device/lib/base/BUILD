@@ -341,7 +341,18 @@ cc_test(
 opentitan_test(
     name = "hardened_memory_functest",
     srcs = ["hardened_memory_functest.c"],
-    exec_env = BASE_EXEC_ENVS,
+    exec_env = dicts.add(
+        BASE_EXEC_ENVS,
+        {
+            # This test expects constant cycle count which cannot be guaranteed on the RRAM.
+            # see https://github.com/lowRISC/opentitan/issues/30895
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_sival_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_sival_skip_ci",
+        },
+    ),
+    fpga_sival_skip_ci = fpga_params(
+        tags = ["skip_in_ci"],
+    ),
     deps = [
         "//hw/top:rv_core_ibex_c_regs",
         "//hw/top/dt:rv_core_ibex",
