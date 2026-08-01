@@ -34,7 +34,10 @@ def bcd_decode(x: int) -> int:
     For example, `0x46` hex represents `46` decimal.
     This encoding is a manufacturing equipment constraint.
     """
-    return int(hex(x)[2:])
+    try:
+        return int(hex(x)[2:])
+    except ValueError:
+        raise ValueError(f"{format_hex(x)} is not a legal BCD-encoded value")
 
 
 def bcd_encode(x: int) -> int:
