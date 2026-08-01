@@ -142,11 +142,17 @@ _CONFIGS = {
 # is all zeros.  The identifier word allows rescue to identify the first block
 # of the rescue payload as a potential ROM_EXT and possibly store it in
 # flash of the inactive partition.
+py_binary(
+    name = "bad_rom_ext_gen",
+    srcs = ["bad_rom_ext_gen.py"],
+)
+
 genrule(
     name = "bad_rom_ext",
     srcs = ["bad_rom_ext.txt"],
     outs = ["bad_rom_ext.bin"],
-    cmd = "xxd -r $< > $@",
+    cmd = "$(location :bad_rom_ext_gen) $< $@",
+    tools = [":bad_rom_ext_gen"],
 )
 
 # Test rescue driven ROM_EXT updates:
