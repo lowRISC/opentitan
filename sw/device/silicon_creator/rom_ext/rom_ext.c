@@ -594,7 +594,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // meaningful action we could take in the event of an error.  If there
   // was an error, ownership_history_get will default history hash result to
   // all ones.
-  OT_DISCARD(ownership_history_get(&owner_history_hash));
+  OT_DISCARD(ownership_history_get(boot_data->ownership_transfers,
+                                   &owner_history_hash));
 
   // Handle any pending boot_svc commands.
   uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;
