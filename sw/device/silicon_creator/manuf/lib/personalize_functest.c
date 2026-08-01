@@ -86,17 +86,8 @@ bool test_main(void) {
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
-    // Provision the OTP SECRET1 partition.
-    if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
-      LOG_INFO("Provisioning OTP SECRET1 ...");
-      CHECK_STATUS_OK(manuf_personalize_device_secret1(&lc_ctrl, &otp_ctrl));
-      // Wait in a loop so that the test harness can trigger a second bootstrap
-      // operation. This is required because the flash scrambling setting may
-      // have changed in OTP.
-      // The following log message is polled in the host side of this test.
-      LOG_INFO("Provisioning OTP SECRET1 Done ...");
-      abort();
-    }
+    // Secure-by-Default: SECRET1 must be pre-programmed in OTP.
+    CHECK_STATUS_OK(manuf_personalize_device_secret1_check(&otp_ctrl));
 
     // Provision the OTP SECRET2 partition and flash info pages.
     if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
