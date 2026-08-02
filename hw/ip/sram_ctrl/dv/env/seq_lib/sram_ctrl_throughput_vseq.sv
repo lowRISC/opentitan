@@ -6,7 +6,9 @@
 //
 // The minimum possible time for an SRAM operation is two cycles (one for the A channel request,
 // then one for the D channel response). Since these operations can run back-to-back with the A and
-// D channels both busy, the highest possible throughput is that N operations take N+1 cycles.
+// D channels both busy, the highest possible throughput is that N operations take N+1 cycles. (Note
+// that the timing in the TL agent means this will be counted as N+2, which is explained in detail
+// in a comment in the body task).
 //
 // If readback is not enabled and the operation is a read or complete write, the timing should be as
 // described above. If the operation is a partial write, it actually expands into a
@@ -59,6 +61,14 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
       `uvm_info(`gfn, $sformatf("iteration: %0d, issuing %0d ops", i, num_ops), UVM_LOW)
 
+      // Since we expect this vseq to be the only thing sending operations to SRAM, we can be sure
+      // that tl_host_driver is currently waiting in seq_item_port.get_next_item(): any previous
+      // iteration needed to wait for the D channel response to come back before it finished,
+      // leaving a gap with no A channel transaction.
+      //
+      // As such, we expect an extra cycle for the first operation in the do_rand_ops() call. This
+      // will be reflected in a "1 + " added to each expected time.
+
       `DV_SPINWAIT_EXIT(
           // thread 1 to count cycles
           forever begin
@@ -81,7 +91,7 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
         // runs with partial_access_pct=0 in this situation).
         int unsigned exp_w_time    = 3 * num_writes;
         int unsigned exp_r_time    = 2 * num_reads;
-        int unsigned exp_full_time = exp_r_time + exp_w_time - last_was_write;
+        int unsigned exp_full_time = 1 + exp_r_time + exp_w_time - last_was_write;
 
         if (num_cycles != exp_full_time) begin
           string sub_msg = "";
@@ -90,9 +100,9 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
           end
           `uvm_error(get_full_name(),
                      $sformatf({"Mismatch in time taken for %0d operations with readback. ",
-                                "There were %0d writes (allowed 3 cycles each) and ",
-                                "%0d reads (allowed two cycles each). %0s",
-                                "This gives a total expected time of %0d cycles but we ",
+                                "After aligning with the clock, there were %0d writes ",
+                                "(allowed 3 cycles each) and %0d reads (allowed two cycles each). ",
+                                "%0sThis gives a total expected time of %0d cycles but we ",
                                 "actually took %0d cycles."},
                                num_ops,
                                num_writes,
@@ -105,15 +115,16 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
         int unsigned num_full_ops  = num_ops - num_partial_write;
         int unsigned full_op_time  = 1 * num_full_ops;
         int unsigned rmw_time      = 3 * num_partial_write;
-        int unsigned expected_time = full_op_time + rmw_time + 1;
+        int unsigned expected_time = 1 + full_op_time + rmw_time + 1;
 
         if (num_cycles != expected_time) begin
           `uvm_error(get_full_name(),
                      $sformatf({"Mismatch in time taken for %0d operations without readback. ",
                                 "There were %0d full operations (allowed 1 cycle each) ",
                                 "and %0d partial ones (allowed 3 cycles each). After adding one ",
-                                "cycle for the tail response, the expected ",
-                                "time was %0d cycles. We actually took %0d cycles."},
+                                "cycle at the start to align with the clock and another for the ",
+                                "tail response, the expected time was %0d cycles. ",
+                                "We actually took %0d cycles."},
                                num_ops,
                                num_full_ops,
                                num_partial_write,
