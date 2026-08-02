@@ -75,9 +75,51 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
         // In throughput_w_readback test, if the last operation was a write, subtract
         // one as the write already gets acknowledged over TLUL while the readback error
         // is still doing the readback of the written value.
-        `DV_CHECK_EQ(num_cycles, num_writes * 3 + num_reads * 2 - last_was_write);
+        //
+        // Note that this sequence does not currently send partial writes when readback is enabled.
+        // The hardware supports the combination, but it is not yet tested by this sequence (which
+        // runs with partial_access_pct=0 in this situation).
+        int unsigned exp_w_time    = 3 * num_writes;
+        int unsigned exp_r_time    = 2 * num_reads;
+        int unsigned exp_full_time = exp_r_time + exp_w_time - last_was_write;
+
+        if (num_cycles != exp_full_time) begin
+          string sub_msg = "";
+          if (last_was_write) begin
+            sub_msg = "The last operation was a write, so subtract one from the expected length. ";
+          end
+          `uvm_error(get_full_name(),
+                     $sformatf({"Mismatch in time taken for %0d operations with readback. ",
+                                "There were %0d writes (allowed 3 cycles each) and ",
+                                "%0d reads (allowed two cycles each). %0s",
+                                "This gives a total expected time of %0d cycles but we ",
+                                "actually took %0d cycles."},
+                               num_ops,
+                               num_writes,
+                               num_reads,
+                               sub_msg,
+                               exp_full_time,
+                               num_cycles))
+        end
       end else begin
-        `DV_CHECK_EQ(num_cycles, num_ops + 1 + num_partial_write * 2);
+        int unsigned num_full_ops  = num_ops - num_partial_write;
+        int unsigned full_op_time  = 1 * num_full_ops;
+        int unsigned rmw_time      = 3 * num_partial_write;
+        int unsigned expected_time = full_op_time + rmw_time + 1;
+
+        if (num_cycles != expected_time) begin
+          `uvm_error(get_full_name(),
+                     $sformatf({"Mismatch in time taken for %0d operations without readback. ",
+                                "There were %0d full operations (allowed 1 cycle each) ",
+                                "and %0d partial ones (allowed 3 cycles each). After adding one ",
+                                "cycle for the tail response, the expected ",
+                                "time was %0d cycles. We actually took %0d cycles."},
+                               num_ops,
+                               num_full_ops,
+                               num_partial_write,
+                               expected_time,
+                               num_cycles))
+        end
       end
     end
   endtask : body
