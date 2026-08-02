@@ -3,8 +3,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Test maximum sram throughput with zero_delays=1
-// If no partial write is enabled, it takes N+1 cycles to finish N read/write accesses
-// If there are M partial writes, it takes extra M*2 cycles
+//
+// The minimum possible time for an SRAM operation is two cycles (one for the A channel request,
+// then one for the D channel response). Since these operations can run back-to-back with the A and
+// D channels both busy, the highest possible throughput is that N operations take N+1 cycles.
+//
+// If readback is not enabled and the operation is a read or complete write, the timing should be as
+// described above. If the operation is a partial write, it actually expands into a
+// read-modify-write. This takes 4 cycles instead of the 2 for a read or complete write, so the
+// expected time will be 2 cycles more.
+//
+// If readback is enabled, operations don't overlap in the same way. Read operations take 2 cycles.
+// Write operations take three cycles (SRAM write request; SRAM write response / SRAM read request;
+// SRAM read response). The TL response to the write operation comes after the SRAM response, so the
+// latency is still 2 cycles. As the operations don't overlap, a write operation adds 3 cycles to
+// the total time unless it is the last operation, in which case it will only add 2.
+
 class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
   `uvm_object_utils(sram_ctrl_throughput_vseq)
 
