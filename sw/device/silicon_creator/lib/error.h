@@ -60,6 +60,7 @@ enum module_ {
   kModuleGpio =            MODULE_CODE('G', 'I'),
   kModuleUsb =             MODULE_CODE('U', 'S'),
   kModuleNvmCtrl =         MODULE_CODE('N', 'V'),
+  kModuleRramCtrl =        MODULE_CODE('R', 'M'),
   // clang-format on
 };
 
@@ -146,6 +147,11 @@ enum module_ {
   X(kErrorFlashCtrlDataErase,         ERROR_(5, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoErase,         ERROR_(6, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataEraseVerify,   ERROR_(7, kModuleFlashCtrl, kInternal)), \
+  \
+  X(kErrorRramCtrlDataRead,           ERROR_(1, kModuleRramCtrl, kInternal)), \
+  X(kErrorRramCtrlInfoRead,           ERROR_(2, kModuleRramCtrl, kInternal)), \
+  X(kErrorRramCtrlDataWrite,          ERROR_(3, kModuleRramCtrl, kInternal)), \
+  X(kErrorRramCtrlInfoWrite,          ERROR_(4, kModuleRramCtrl, kInternal)), \
   \
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
