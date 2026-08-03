@@ -16,6 +16,9 @@ class rom_ctrl_skip_middle_seq extends uvm_sequence #(rom_ctrl_addr_force_item);
   extern function void do_print(uvm_printer printer);
 
   extern task body();
+
+  // Set a flag in m_item so that any driver that is driving that item will abort it immediately.
+  extern function void abort();
 endclass
 
 function rom_ctrl_skip_middle_seq::new(string name="");
@@ -31,8 +34,17 @@ endfunction
 task rom_ctrl_skip_middle_seq::body();
   start_item(m_item);
   finish_item(m_item);
-  `uvm_info(get_full_name(),
-            $sformatf("Skipped middle of rom_ctrl count (0x%0h -> 0x%0h)",
-                      m_item.m_start_addr, m_item.m_desired_addr),
-            UVM_HIGH)
+
+  if (m_item.get_aborted()) begin
+    `uvm_info(get_full_name(), "Aborted skipping the middle of rom_ctrl count", UVM_HIGH)
+  end else begin
+    `uvm_info(get_full_name(),
+              $sformatf("Skipped middle of rom_ctrl count (0x%0h -> 0x%0h)",
+                        m_item.m_start_addr, m_item.m_desired_addr),
+              UVM_HIGH)
+  end
 endtask
+
+function void rom_ctrl_skip_middle_seq::abort();
+  m_item.abort();
+endfunction
