@@ -140,3 +140,23 @@
     This WSR transfers share 1 of the second input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
     Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+
+- name: urnd_state
+  address: 16
+  doc: |
+    If the `urnd_ctrl_enabled` bit is not set, any read returns zero and any write to this WSR is ignored.
+
+    If the `urnd_ctrl_enabled` bit in the CTRL register is set, this WSR exposes the current state of the Bivium PRNG and provides a way to restore the PRNG.
+
+    Reading this WSR will copy the current state of the PRNG into the destination WDR.
+    The state is 177 bit wide, LSB aligned, and zero padded to 256 bits.
+
+    The URND PRNG state can be restored in steps.
+    Once the RESTORE command in URND_CTRL is issued, a write to this WSR will perform a partial restore of the URND PRNG with the provided value.
+    When restoring, only the lowest 32 bits (or fewer for the last restore word) are used for the restore step, the upper bits are ignored.
+    The restore starts with the least significant word of the state.
+    The restore process is complete once the last restore word is written to the WSR.
+    Any write to this WSR while the URND PRNG is not in the RESTORING state is ignored.
+
+    There is no immediate state validation when restoring a state.
+    If an invalid state (e.g., all-zero) is provided the URND PRNG will raise a fatal error on the next state update.

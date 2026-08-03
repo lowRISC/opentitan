@@ -58,6 +58,10 @@ package otbn_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } urnd_ctrl_enabled;
+    struct packed {
+      logic        q;
+      logic        qe;
     } wfi_enabled;
     struct packed {
       logic        q;
@@ -152,6 +156,9 @@ package otbn_reg_pkg;
   } otbn_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        d;
+    } urnd_ctrl_enabled;
     struct packed {
       logic        d;
     } wfi_enabled;
@@ -264,12 +271,12 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [120:120]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [119:119]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [118:117]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [116:113]
-    otbn_reg2hw_cmd_reg_t cmd; // [112:104]
-    otbn_reg2hw_ctrl_reg_t ctrl; // [103:100]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [122:122]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [121:121]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [120:119]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [118:115]
+    otbn_reg2hw_cmd_reg_t cmd; // [114:106]
+    otbn_reg2hw_ctrl_reg_t ctrl; // [105:100]
     otbn_reg2hw_err_bits_reg_t err_bits; // [99:66]
     otbn_reg2hw_insn_cnt_reg_t insn_cnt; // [65:33]
     otbn_reg2hw_load_checksum_reg_t load_checksum; // [32:0]
@@ -277,8 +284,8 @@ package otbn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    otbn_hw2reg_intr_state_reg_t intr_state; // [109:108]
-    otbn_hw2reg_ctrl_reg_t ctrl; // [107:106]
+    otbn_hw2reg_intr_state_reg_t intr_state; // [110:109]
+    otbn_hw2reg_ctrl_reg_t ctrl; // [108:106]
     otbn_hw2reg_status_reg_t status; // [105:97]
     otbn_hw2reg_err_bits_reg_t err_bits; // [96:80]
     otbn_hw2reg_fatal_alert_cause_reg_t fatal_alert_cause; // [79:64]
@@ -307,9 +314,10 @@ package otbn_reg_pkg;
   parameter logic [0:0] OTBN_ALERT_TEST_RECOV_RESVAL = 1'h 0;
   parameter logic [7:0] OTBN_CMD_RESVAL = 8'h 0;
   parameter logic [7:0] OTBN_CMD_CMD_RESVAL = 8'h 0;
-  parameter logic [1:0] OTBN_CTRL_RESVAL = 2'h 0;
+  parameter logic [2:0] OTBN_CTRL_RESVAL = 3'h 0;
   parameter logic [0:0] OTBN_CTRL_SOFTWARE_ERRS_FATAL_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_CTRL_WFI_ENABLED_RESVAL = 1'h 0;
+  parameter logic [0:0] OTBN_CTRL_URND_CTRL_ENABLED_RESVAL = 1'h 0;
   parameter logic [23:0] OTBN_ERR_BITS_RESVAL = 24'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_BAD_DATA_ADDR_RESVAL = 1'h 0;
   parameter logic [0:0] OTBN_ERR_BITS_BAD_INSN_ADDR_RESVAL = 1'h 0;
