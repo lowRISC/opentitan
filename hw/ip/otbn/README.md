@@ -34,6 +34,7 @@ See that document for integration overview within the broader top level system.
 * A CSR / WSR based Masking Accelerator Interface (MAI) for efficient and first-order SCA hardened masking operations.
 * A WFI instruction which pauses an OTBN application and then allows a host to read/write the DMEM whilst paused.
   The host must command to resume the execution.
+* A URND control interface to save and restore the underlying PRNG state for deterministic URND values.
 
 ## Description
 
@@ -384,6 +385,47 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
       </td>
     </tr>
     <tr>
+      <td>0x7D9</td>
+      <td>RW</td>
+      <td>URND_CTRL</td>
+      <td>
+        This CSR is used to control the URND PRNG.
+        Any write is ignored if the `urnd_ctrl_enabled` bit in the CTRL register is not set.
+        Always reads as 0.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                STOP: Writing 1 to this bit stops the URND PRNG. Once stopped, the URND PRNG does not update its state except URND is read by an instruction or any accelerator like the MAI uses bits for its masking. Has no effect if the URND PRNG is already stopped.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                START: Writing 1 to this bit resumes the URND PRNG. Takes priority over a STOP command (if both are issued at the same time). Has no effect if the URND PRNG is already running.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                RESTORE: Writing 1 to this bit starts the restore process. The restore can be performed while the URND PRNG is running or stopped. See URND_STATE on how to provide the restore words. Has no effect if a restore has already been started.
+              </td>
+            </tr>
+            <tr>
+              <td>31:3</td>
+              <td>
+                Reserved. Any write is ignored. Always reads as 0.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
       <td>0x7DB</td>
       <td>RW</td>
       <td>KMAC_STATUS</td>
@@ -630,8 +672,65 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
         Intended for use in masking and blinding schemes.
         Use RND for high-quality randomness.
         <br>
-        The number is sourced from an local PRNG.
+        The number is sourced from a local PRNG.
         Reads never stall.
+      </td>
+    </tr>
+    <tr>
+      <td>0xFC2</td>
+      <td>RO</td>
+      <td>URND_STATUS</td>
+      <td>
+        The URND status register.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                URND_CTRL_ENABLED: This bit exposes the `urnd_ctrl_enabled` bit in the CTRL register to OTBN SW. Writes to URND_CTRL are ignored if this bit is not set.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                STOPPED: This bit is set to 1 when the URND PRNG is stopped.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                RESTORING: This bit is set to 1 after a RESTORE command once the URND PRNG is ready to accept restore words via URND_STATE. This bit is cleared once the restore process has completed.
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                USED_WHILE_STOPPED: This bit is set and kept to 1 if the URND PRNG state was forced to update while it was stopped. It is cleared when a STOP command is issued.
+              </td>
+            </tr>
+            <tr>
+              <td>4:15</td>
+              <td>
+                Reserved. Always reads as 0.
+              </td>
+            </tr>
+            <tr>
+              <td>16:25</td>
+              <td>
+                URND_STATE_WIDTH: Exposes the URND PRNG state width. This is fixed to 177 bits for Bivium. Can be used together with the URND restore word width to determine how many URND_STATE writes are required to fully restore the URND PRNG.
+              </td>
+            </tr>
+            <tr>
+              <td>26:31</td>
+              <td>
+                URND_RESTORE_WIDTH: Exposes the URND PRNG restore word width. This is fixed to 32 for Bivium. Can be used together with the URND PRNG state width to determine how many URND_STATE writes are required to fully restore the URND PRNG.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </td>
     </tr>
     <tr>
@@ -912,6 +1011,29 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
         This WSR transfers share 1 of the second input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
         Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+      </td>
+    </tr>
+    <tr>
+      <td>0x10</td>
+      <td>RW</td>
+      <td><a name="urnd-state">URND_STATE</a></td>
+      <td>
+        If the `urnd_ctrl_enabled` bit is not set, any read returns zero and any write to this WSR is ignored.
+        <br>
+        If the `urnd_ctrl_enabled` bit in the CTRL register is set, this WSR exposes the current state of the Bivium PRNG and provides a way to restore the PRNG.
+        <br>
+        Reading this WSR will copy the current state of the PRNG into the destination WDR.
+        The state is 177 bit wide, LSB aligned, and zero padded to 256 bits.
+        <br>
+        The URND PRNG state can be restored in steps.
+        Once the RESTORE command in URND_CTRL is issued, a write to this WSR will perform a partial restore of the URND PRNG with the provided value.
+        When restoring, only the lowest 32 bits (or fewer for the last restore word) are used for the restore step, the upper bits are ignored.
+        The restore starts with the least significant word of the state.
+        The restore process is complete once the last restore word is written to the WSR.
+        Any write to this WSR while the URND PRNG is not in the RESTORING state is ignored.
+        <br>
+        There is no immediate state validation when restoring a state.
+        If an invalid state (e.g., all-zero) is provided the URND PRNG will raise a fatal error on the next state update.
       </td>
     </tr>
   </tbody>

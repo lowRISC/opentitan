@@ -129,17 +129,18 @@ The operation to perform.
 Control Register
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "software_errs_fatal", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wfi_enabled", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "software_errs_fatal", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wfi_enabled", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "urnd_ctrl_enabled", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                                                                                    |
 |:------:|:------:|:-------:|:--------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |                     | Reserved                                                                                                                                                                                                                       |
+|  31:3  |        |         |                     | Reserved                                                                                                                                                                                                                       |
+|   2    |   rw   |   0x0   | urnd_ctrl_enabled   | Controls whether the URND_CTRL CSR is enabled. When set, OTBN SW can use the functionality provided by the URND_CTRL CSR. When cleared, writes to URND_CTRL have no effect. Writes are ignored if OTBN is not idle.            |
 |   1    |   rw   |   0x0   | wfi_enabled         | Controls whether the WFI instruction is enabled. When set, the WFI instruction can be used to pause execution. When cleared, the WFI instruction is treated as an invalid instruction. Writes are ignored if OTBN is not idle. |
 |   0    |   rw   |   0x0   | software_errs_fatal | Controls the reaction to software errors. When set software errors produce fatal errors, rather than recoverable errors. Writes are ignored if OTBN is not idle.                                                               |
 
