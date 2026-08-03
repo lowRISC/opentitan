@@ -391,7 +391,7 @@ TEST_F(ControlSoftwareErrorsFatalTest, Failure) {
                  {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, false}});
   // Emulate OTBN not being idle by mocking a wrong readback value.
   EXPECT_READ32(OTBN_CTRL_REG_OFFSET,
-                 {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, true}});
+                {{OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, true}});
 
   EXPECT_EQ(dif_otbn_set_ctrl_software_errs_fatal(&dif_otbn_, false),
             kDifUnavailable);
