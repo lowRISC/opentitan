@@ -228,6 +228,16 @@ int OtbnModel::take_loop_warps(const OtbnMemUtil &memutil) {
   return 0;
 }
 
+void OtbnModel::send_mem_to_iss(ISSWrapper *iss, bool is_imem) {
+  std::string dfname(iss->make_tmp_path(is_imem ? "imem" : "dmem"));
+  write_words_to_file(dfname, get_sim_memory(is_imem));
+  if (is_imem) {
+    iss->load_i(dfname);
+  } else {
+    iss->load_d(dfname);
+  }
+}
+
 int OtbnModel::start_operation(command_t command) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
@@ -241,14 +251,8 @@ int OtbnModel::start_operation(command_t command) {
         cmd_desc = "execute";
         iss_command = ISSWrapper::Execute;
 
-        std::string dfname(iss->make_tmp_path("dmem"));
-        std::string ifname(iss->make_tmp_path("imem"));
-
-        write_words_to_file(dfname, get_sim_memory(false));
-        write_words_to_file(ifname, get_sim_memory(true));
-
-        iss->load_d(dfname);
-        iss->load_i(ifname);
+        send_mem_to_iss(iss, true);
+        send_mem_to_iss(iss, false);
       } break;
 
       case DmemWipe:
@@ -585,6 +589,9 @@ int OtbnModel::wfi_resume() {
     return -1;
 
   try {
+    // The host may have written DMEM while OTBN was paused, so re-load the
+    // DMEM into the ISS before resuming.
+    send_mem_to_iss(iss, false);
     iss->wfi_resume();
   } catch (const std::exception &err) {
     std::cerr << "Error when resuming ISS: " << err.what() << "\n";
