@@ -23,18 +23,22 @@ use zerocopy::{Immutable, IntoBytes};
 /// Size of SHA-1 build id.
 pub const BUILD_ID_SIZE: usize = 20;
 /// LLVM's INSTR_PROF_RAW_MAGIC_32.
-/// https://github.com/llvm/llvm-project/blob/llvmorg-16.0.2/compiler-rt/include/profile/InstrProfData.inc#L635-L647
+/// https://github.com/llvm/llvm-project/blob/llvmorg-21.1.0/compiler-rt/include/profile/InstrProfData.inc#L718-L720
 pub const PRF_MAGIC: u64 = 0xff6c70726f665281; // File magic: \x81Rforpl\xff
 /// OpenTitan specific compressed counter format.
 pub const OTC_MAGIC: u64 = 0xff65766f43544f81; // File magic: \x81OTCove\xff
 /// LLVM's INSTR_PROF_RAW_VERSION.
-/// https://github.com/llvm/llvm-project/blob/llvmorg-16.0.2/compiler-rt/include/profile/InstrProfData.inc#L649-L651
-pub const PRF_VERSION: u64 = 8;
+/// https://github.com/llvm/llvm-project/blob/llvmorg-21.1.0/compiler-rt/include/profile/InstrProfData.inc#L723
+pub const PRF_VERSION: u64 = 10;
 /// LLVM's VARIANT_MASK_BYTE_COVERAGE.
-/// https://github.com/llvm/llvm-project/blob/llvmorg-16.0.2/compiler-rt/include/profile/InstrProfData.inc#L673
+/// https://github.com/llvm/llvm-project/blob/llvmorg-21.1.0/compiler-rt/include/profile/InstrProfData.inc#L749
 pub const VARIANT_MASK_BYTE_COVERAGE: u64 = 0x1 << 60;
 /// Size of each entry in __llvm_prf_data section.
-pub const PRF_DATA_ENTRY_SIZE: u64 = 40;
+/// The size can be found with the following command:
+/// $ /path/to/lowrisc/toolchain/clang -S test.c \
+///     -fprofile-instr-generate -fcoverage-mapping \
+///     -mllvm --enable-single-byte-coverage
+pub const PRF_DATA_ENTRY_SIZE: u64 = 48;
 
 #[macro_export]
 macro_rules! debug_log {
@@ -90,7 +94,7 @@ pub fn search_by_extension(dir: &PathBuf, extension: &str) -> Vec<PathBuf> {
 /// LLVM profraw file header.
 ///
 /// This represents the INSTR_PROF_RAW_HEADER structure defined in:
-/// http://github.com/llvm/llvm-project/blob/llvmorg-16.0.2/compiler-rt/include/profile/InstrProfData.inc#L128-L141
+/// https://github.com/llvm/llvm-project/blob/llvmorg-21.1.0/compiler-rt/include/profile/InstrProfData.inc#L154-L171
 #[derive(Debug, Default, Immutable, IntoBytes)]
 #[repr(C)]
 pub struct ProfileHeader {
@@ -101,9 +105,14 @@ pub struct ProfileHeader {
     pub padding_bytes_before_counters: u64,
     pub num_counters: u64,
     pub padding_bytes_after_counters: u64,
+    pub num_bitmap_bytes: u64,
+    pub padding_bytes_after_bitmap_bytes: u64,
     pub names_size: u64,
     pub counters_delta: u64,
+    pub bitmap_delta: u64,
     pub names_delta: u64,
+    pub num_vtables: u64,
+    pub vnames_size: u64,
     pub value_kind_last: u64,
 }
 
@@ -242,9 +251,14 @@ impl ProfileData {
                 padding_bytes_before_counters: 0,
                 num_counters: 0, // The field will be set later.
                 padding_bytes_after_counters: 0,
+                num_bitmap_bytes: 0,
+                padding_bytes_after_bitmap_bytes: 0,
                 names_size: prf_names.size(),
                 counters_delta: prf_cnts.address().wrapping_sub(prf_data.address()) as u32 as u64,
+                bitmap_delta: 0,
                 names_delta: prf_names.address() as u32 as u64,
+                num_vtables: 0,
+                vnames_size: 0,
                 value_kind_last: 1,
             },
             cnts_size: prf_cnts.size(),

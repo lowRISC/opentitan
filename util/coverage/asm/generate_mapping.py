@@ -203,10 +203,12 @@ def main(args: argparse.Namespace) -> None:
                 .word    .L__asm_profc - .L__asm_profd_{name}
                 .word    0
                 .word    0
+                .word    0
                 .word    {counter_size}
-                .zero    4
-                .zero    4
-                .size    .L__asm_profd_{name}, 40
+                .zero    6
+                .zero    2
+                .word    0
+                .size    .L__asm_profd_{name}, 48
             """))
 
             # https://llvm.org/docs/CoverageMappingFormat.html#function-record
