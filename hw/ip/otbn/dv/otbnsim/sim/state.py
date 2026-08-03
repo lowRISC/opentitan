@@ -204,6 +204,18 @@ class OTBNState:
         # The masking accelerator interface (MAI) handles the accelerators
         self.mai = MaskingAcceleratorInterface(self.csrs, self.wsrs)
 
+        # Wait For Interrupt:
+        # - wfi_enabled is the CTRL bit.
+        # - if wfi_auto_resume is set, the wfi insn resumes after 1 cycle. Useful to set in
+        #   standalone mode
+        # - The resume command has one cycle delay in RTL. The simulation however requests the
+        #   resume when the command is issued. Thus _wfi_resume_pending models this delay.
+        # - _wfi_resume is the actual flag which gets set to advance.
+        self.wfi_enabled = False
+        self.wfi_auto_resume = False
+        self._wfi_resume_pending = False
+        self._wfi_resume = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -474,6 +486,35 @@ class OTBNState:
 
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
+
+    def enter_wfi_pause(self) -> None:
+        '''Pause execution on a wfi instruction.
+
+        Raise the done interrupt and reflect PAUSED in STATUS.
+        '''
+        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        self.ext_regs.write('STATUS', Status.PAUSED, True)
+
+    def wfi_should_resume(self) -> bool:
+        '''Return whether a wfi instruction should resume this cycle.'''
+        # There is one cycle delay in the RTL. The simulation sets the pending flag which then
+        # updates the actual flag. The actual flag is then checked one cycle later. Immediately
+        # resume if wfi_auto_resume is set.
+        do_resume = self._wfi_resume or self.wfi_auto_resume
+        if not do_resume:
+            self._wfi_resume = self._wfi_resume_pending
+            self._wfi_resume_pending = False
+
+        return do_resume
+
+    def exit_wfi_pause(self) -> None:
+        '''Resume execution after a wfi pause.'''
+        self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
+        self._wfi_resume = False
+
+    def request_wfi_resume(self) -> None:
+        '''Request that a paused wfi instruction resumes.'''
+        self._wfi_resume_pending = True
 
     def get_fsm_state(self) -> FsmState:
         return self._fsm_state

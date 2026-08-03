@@ -216,6 +216,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
           // as well.
           if (item.is_write) begin
             cfg.model_agent_cfg.vif.set_software_errs_fatal(item.a_data[0]);
+            cfg.model_agent_cfg.vif.set_wfi_enabled(item.a_data[1]);
           end
         end
         default: begin
