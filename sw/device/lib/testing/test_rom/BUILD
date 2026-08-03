@@ -188,6 +188,10 @@ cc_library(
         ["HAS_FLASH_CTRL"],
         [],
     ) + opentitan_if_ip(
+        "rram_ctrl",
+        ["HAS_RRAM_CTRL"],
+        [],
+    ) + opentitan_if_ip(
         "otp_ctrl",
         ["HAS_OTP_CTRL"],
         [],
@@ -243,6 +247,14 @@ cc_library(
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:nvm_testutils",
+        ],
+        [],
+    ) + opentitan_if_ip(
+        "rram_ctrl",
+        [
+            "//hw/top:rram_ctrl_c_regs",
+            "//hw/top/dt:rram_ctrl",
+            "//sw/device/lib/dif:rram_ctrl",
         ],
         [],
     ) + opentitan_if_ip(
