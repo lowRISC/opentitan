@@ -266,22 +266,26 @@ status_t otbn_dmem_sec_wipe(void) {
   return OTCRYPTO_OK;
 }
 
-status_t otbn_set_ctrl_software_errs_fatal(bool enable) {
+static status_t otbn_set_bit_in_ctrl_reg(bitfield_bit32_index_t bit,
+                                         bool enable) {
   // Ensure OTBN is idle (otherwise CTRL writes will be ignored).
   HARDENED_TRY(otbn_assert_idle());
 
-  // Only one bit in the CTRL register so no need to read current value.
-  uint32_t new_ctrl;
+  // Preserve the other CTRL fields via a read-modify-write.
+  uint32_t ctrl_reg = abs_mmio_read32(otbn_base() + OTBN_CTRL_REG_OFFSET);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, bit, enable);
 
-  if (enable) {
-    new_ctrl = 1;
-  } else {
-    new_ctrl = 0;
-  }
-
-  abs_mmio_write32(otbn_base() + OTBN_CTRL_REG_OFFSET, new_ctrl);
+  abs_mmio_write32(otbn_base() + OTBN_CTRL_REG_OFFSET, ctrl_reg);
 
   return OTCRYPTO_OK;
+}
+
+status_t otbn_set_ctrl_software_errs_fatal(bool enable) {
+  return otbn_set_bit_in_ctrl_reg(OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT, enable);
+}
+
+status_t otbn_set_ctrl_wfi_enable(bool enable) {
+  return otbn_set_bit_in_ctrl_reg(OTBN_CTRL_WFI_ENABLED_BIT, enable);
 }
 
 /**
