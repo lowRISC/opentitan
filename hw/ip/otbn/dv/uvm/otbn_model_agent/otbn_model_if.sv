@@ -137,6 +137,12 @@ interface otbn_model_if
                     "Failed to set software_errs_fatal", "otbn_model_if")
   endfunction
 
+  function automatic void set_wfi_enabled(bit new_val);
+    `uvm_info("otbn_model_if", "writing to wfi_enabled", UVM_HIGH);
+    `DV_CHECK_FATAL(u_model.otbn_model_set_wfi_enabled(handle, new_val) == 0,
+                    "Failed to set wfi_enabled", "otbn_model_if")
+  endfunction
+
   function automatic void otbn_set_no_sec_wipe_chk();
     `uvm_info("otbn_model_if", "writing to no_sec_wipe_data_chk", UVM_HIGH);
     u_model.otbn_set_no_sec_wipe_chk(handle);

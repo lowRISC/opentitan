@@ -10,6 +10,7 @@ class Cmd(IntEnum):
     EXECUTE = 0xd8
     SEC_WIPE_DMEM = 0xc3
     SEC_WIPE_IMEM = 0x1e
+    RESUME = 0xa6
 
 
 class Status(IntEnum):
@@ -19,6 +20,7 @@ class Status(IntEnum):
     BUSY_SEC_WIPE_DMEM = 0x02
     BUSY_SEC_WIPE_IMEM = 0x03
     BUSY_SEC_WIPE_INT = 0x04
+    PAUSED = 0x05
     LOCKED = 0xFF
 
 
