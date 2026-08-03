@@ -100,6 +100,13 @@ enum {
   kRramCtrlEmulRegion = 8,
 };
 
+// 32Kb per slot are reserved for OTP and emulated info pages.
+static_assert((RRAM_CTRL_PARAM_NUM_DATA_PAGES - kRramCtrlEmulPageBase) *
+                      RRAM_CTRL_PARAM_BYTES_PER_PAGE <=
+                  0x8000,
+              "_nvm_slot_reserved_bytes in top_earlgrey_memory.ld is no "
+              "longer big enough to cover the emulated info-page/OTP tail");
+
 /**
  * Table of RRAM information pages.
  *

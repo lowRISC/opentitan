@@ -18,6 +18,10 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _rom_ext_size = LENGTH(nvm) / 2;
 _rom_ext_start_address = ORIGIN(nvm) + _rom_ext_size;
 
-REGION_ALIAS("rom_ext_nvm", nvm);
+/* Bounded to leave `_nvm_slot_reserved_bytes` empty at the end of Slot B. */
+MEMORY {
+  rom_ext_slot_b(rx) : ORIGIN = _rom_ext_start_address, LENGTH = LENGTH(nvm) / 2 - _nvm_slot_reserved_bytes
+}
+REGION_ALIAS("rom_ext_nvm", rom_ext_slot_b);
 
 INCLUDE sw/device/silicon_creator/rom_ext/rom_ext_common.ld

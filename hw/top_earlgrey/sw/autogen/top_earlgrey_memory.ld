@@ -30,6 +30,7 @@ MEMORY {
  * technology.
  */
 REGION_ALIAS("nvm", rram);
+_nvm_slot_reserved_bytes = 32768;
 
 /**
  * Exception frame at the top of main SRAM

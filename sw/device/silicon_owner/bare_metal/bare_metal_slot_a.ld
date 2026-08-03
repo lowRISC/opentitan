@@ -18,6 +18,10 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  * Silicon Owner stage */
 _slot_start_address = ORIGIN(nvm) + _rom_ext_size;
 
-REGION_ALIAS("owner_nvm", nvm);
+/* Bounded to leave `_nvm_slot_reserved_bytes` empty at the end of Slot A. */
+MEMORY {
+  bare_metal_slot_a(rx) : ORIGIN = _slot_start_address, LENGTH = LENGTH(nvm) / 2 - _rom_ext_size - _nvm_slot_reserved_bytes
+}
+REGION_ALIAS("owner_nvm", bare_metal_slot_a);
 
 INCLUDE sw/device/silicon_owner/bare_metal/bare_metal_common.ld
