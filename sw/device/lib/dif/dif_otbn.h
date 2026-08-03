@@ -29,6 +29,7 @@ typedef enum dif_otbn_cmd {
   kDifOtbnCmdExecute = 0xd8,
   kDifOtbnCmdSecWipeDmem = 0xc3,
   kDifOtbnCmdSecWipeImem = 0x1e,
+  kDifOtbnCmdResume = 0xa6,
 } dif_otbn_cmd_t;
 
 /**
@@ -40,6 +41,7 @@ typedef enum dif_otbn_status {
   kDifOtbnStatusBusySecWipeDmem = 0x02,
   kDifOtbnStatusBusySecWipeImem = 0x03,
   kDifOtbnStatusBusySecWipeInt = 0x04,
+  kDifOtbnStatusPaused = 0x05,
   kDifOtbnStatusLocked = 0xFF,
 } dif_otbn_status_t;
 
@@ -238,6 +240,22 @@ dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
                                                    bool enable);
+
+/**
+ * Sets the WFI enabled bit in the control register.
+ *
+ * When set, OTBN software may use the WFI instruction to pause execution and
+ * hand control back to the host until it issues a RESUME command.
+ * When cleared, the WFI instruction raises an `ILLEGAL_INSN` error. The bit can
+ * only be changed when the OTBN status is IDLE.
+ *
+ * @param otbn OTBN instance.
+ * @param enable Enable or disable the WFI instruction.
+ * @return The result of the operation, `kDifUnavailable` is returned when the
+ * requested change cannot be made.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_set_ctrl_wfi_enable(const dif_otbn_t *otbn, bool enable);
 
 /**
  * Get the size of OTBN's data memory in bytes.
