@@ -6,7 +6,7 @@ from typing import List, Optional
 from .ispr import ISPR, DumbISPR, ISPRChange
 
 
-class KmacStatusCSR(ISPR):
+class KmacStatusCSR(DumbISPR):
     '''Models the KMAC_STATUS CSR.
 
     Bit layout:
@@ -40,14 +40,14 @@ class KmacStatusCSR(ISPR):
         self.on_start()
 
     def on_start(self) -> None:
+        super().on_start()
         self._value = 0
         self._set_mask = 0
         self._clr_mask = 0
 
-    def read_unsigned(self) -> int:
-        return self._value
-
     def write_unsigned(self, value: int) -> None:
+        # Store written value for tracing.
+        super().write_unsigned(value)
         # SW writes are W1C.
         self._clr_mask |= value & self.W1C_MASK
 
@@ -84,23 +84,26 @@ class KmacStatusCSR(ISPR):
                       (1 << self.MSG_WRITE_ERROR_POS))
         self._value &= ~error_mask
 
-    def commit(self) -> None:
-        # Apply the staged SW W1C clear and the staged HW set. Setting a bit has priority over
-        # clearing it.
+    def _end(self, commit: bool) -> None:
+        # Shared code of commit and abort.
+        # When committing, apply the staged SW W1C clear and the staged HW set. Setting a bit has
+        # priority over clearing it. If we abort, we discard any W1C but hardware updates (set)
+        # always commit.
+        if not commit:
+            self._clr_mask = 0
+
         self._value = ((self._value & ~self._clr_mask) | self._set_mask) & self.VALUE_MASK
         self._set_mask = 0
         self._clr_mask = 0
+        # Reset tracing
+        self._next_value = None
+        self._pending_write = False
+
+    def commit(self) -> None:
+        self._end(commit=True)
 
     def abort(self) -> None:
-        # Abort the insn execution which means discarding any W1C. Hardware updates always commit.
-        self._value = (self._value | self._set_mask) & self.VALUE_MASK
-        self._set_mask = 0
-        self._clr_mask = 0
-
-    def changes(self) -> List[ISPRChange]:
-        # Do not emit a trace because reads are not traced, only SW writes are. But this is read
-        # only.
-        return []
+        self._end(commit=False)
 
 
 class KmacCtrlCSR(ISPR):
