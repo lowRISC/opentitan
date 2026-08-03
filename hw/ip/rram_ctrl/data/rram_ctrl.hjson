@@ -501,6 +501,7 @@
                   Disables RRAM functionality completely.
                   This is a shortcut mechanism used by the software to completely kill RRAM in case of emergency.
                   Since this register is rw1s instead of rw, to disable, write the value MuBi4True to the register to disable the RRAM.
+                  Once disabled, RRAM functionality cannot be re-enabled until the next reset.
                   '''
             resval: false,
           },
