@@ -78,6 +78,7 @@ DIFS = {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
     },
     "rom_ctrl": {},
+    "rram_ctrl": {},
     "rstmgr": {},
     "rv_core_ibex": {},
     "rv_dm": {},
