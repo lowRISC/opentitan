@@ -42,7 +42,7 @@ class MockShutdownImpl : public ::global_mock::GlobalMock<MockShutdownImpl> {
  public:
   MOCK_METHOD(void, shutdown_report_error, (rom_error_t));
   MOCK_METHOD(void, shutdown_software_escalate, ());
-  MOCK_METHOD(void, shutdown_keymgr_kill, ());
+  MOCK_METHOD(void, shutdown_keymgr_dpe_kill, ());
   MOCK_METHOD(void, shutdown_reset, ());
   MOCK_METHOD(void, shutdown_nvm_kill, ());
   MOCK_METHOD(void, shutdown_hang, ());
@@ -57,8 +57,8 @@ void shutdown_report_error(rom_error_t error) {
 void shutdown_software_escalate(void) {
   return MockShutdownImpl::Instance().shutdown_software_escalate();
 }
-void shutdown_keymgr_kill(void) {
-  return MockShutdownImpl::Instance().shutdown_keymgr_kill();
+void shutdown_keymgr_dpe_kill(void) {
+  return MockShutdownImpl::Instance().shutdown_keymgr_dpe_kill();
 }
 void shutdown_reset(void) {
   return MockShutdownImpl::Instance().shutdown_reset();
@@ -355,7 +355,7 @@ class ShutdownTest : public rom_test::RomTest {
     // kill functions were called.
     EXPECT_CALL(shutdown_, shutdown_report_error(error));
     EXPECT_CALL(shutdown_, shutdown_software_escalate());
-    EXPECT_CALL(shutdown_, shutdown_keymgr_kill());
+    EXPECT_CALL(shutdown_, shutdown_keymgr_dpe_kill());
     EXPECT_CALL(shutdown_, shutdown_reset());
     EXPECT_CALL(shutdown_, shutdown_nvm_kill());
     EXPECT_CALL(shutdown_, shutdown_hang());
