@@ -10,11 +10,28 @@
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/template.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/manuf/lib/nvm_info_field.h"
 
-const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
+/**
+ * Keymgr dpe constant
+ */
+// TODO(#30777): Replace the hard-coded slot number
+// Slot Number must match with the ones defined in dice_chain.c!
+// Pre-defined slot id for the attestation / sealing key chain
+enum {
+  /**
+   * Keymgr DPE default slot for sealing context
+   */
+  kKeymgrDPESealSlot = 0,
+  /**
+   * Keymgr DPE default slot for attestation context
+   */
+  kKeymgrDPEAttestSlot = 1,
+};
+
+const sc_keymgr_dpe_diversification_t kTpmEkKeymgrDpeDiversifier = {
     .salt =
         {
             0x3fd3bc42,
@@ -27,12 +44,13 @@ const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
             0x351c28f1,
         },
     .version = 0,
+    // Pre-defined slot id for the sealing key chain
+    .sel_src_slot = kKeymgrDPESealSlot,
 };
-const sc_keymgr_ecc_key_t kTpmKeyEk = {
-    .type = kScKeymgrKeyTypeSealing,
+const sc_keymgr_dpe_ecc_key_t kTpmKeyEk = {
     .keygen_seed_idx = kNvmInfoFieldTpmEkKeySeedIdx,
-    .keymgr_diversifier = &kTpmEkKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
+    .keymgr_dpe_diversifier = &kTpmEkKeymgrDpeDiversifier,
+    .required_keymgr_dpe_state = kScKeymgrDPEStateAvailable,
 };
 
 rom_error_t tpm_ek_tbs_cert_build(cert_key_id_pair_t *key_ids,
