@@ -56,6 +56,9 @@ module otbn_mai
   // Connection to MOD register with integrity data
   input  logic [ExtWLEN-1:0] ispr_mod_intg_i,
 
+  // State for URND control
+  output logic mai_is_or_will_use_urnd_o,
+
   // Error
   output logic mai_software_error_o,
   output logic mai_reg_intg_violation_err_o,
@@ -135,7 +138,7 @@ module otbn_mai
   logic                 ma_in_ready;
   logic                 ma_in_consume;
   logic                 ma_out_ready;
-  logic                 ma_busy_q;
+  logic                 ma_busy_q, ma_busy_d;
   ma_sharing_t          ma_in0;
   ma_sharing_t          ma_in1;
   ma_sharing_t          ma_remask_rand;
@@ -422,6 +425,10 @@ module otbn_mai
   assign ispr_mai_status.busy        = ma_busy_q;
   assign ispr_mai_status_rdata_o     = ispr_mai_status;
 
+  // Tell the URND advance control that the MAI is or will be using URND. This then ensures that
+  // the PRNG is advanced and provides fresh randomness in each cycle.
+  assign mai_is_or_will_use_urnd_o = ispr_mai_status.busy || ma_busy_d;
+
   // Control read
   assign ispr_mai_ctrl_r.rsvd  = '0;
   assign ispr_mai_ctrl_r.start = 1'b0;
@@ -455,15 +462,14 @@ module otbn_mai
   end
 
   // Busy control
+  assign ma_busy_d = out_cnt_set ? 1'b0 :
+                     ma_start    ? 1'b1 : ma_busy_q;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_busy_control_state
     if (!rst_ni) begin
       ma_busy_q <= 1'b0;
     end else begin
-      if (out_cnt_set) begin
-        ma_busy_q <= 1'b0;
-      end else if (ma_start) begin
-        ma_busy_q <= 1'b1;
-      end
+      ma_busy_q <= ma_busy_d;
     end
   end
 

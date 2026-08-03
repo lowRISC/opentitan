@@ -1175,6 +1175,7 @@ module otbn_core
       .ispr_mai_res_s0_rdata_o     (ispr_mai_res_s0_rdata),
       .ispr_mai_res_s1_rdata_o     (ispr_mai_res_s1_rdata),
       .ispr_mod_intg_i             (ispr_mod_intg),
+      .mai_is_or_will_use_urnd_o   (), // Not connected
       .mai_software_error_o        (mai_software_error),
       .mai_reg_intg_violation_err_o(mai_reg_intg_violation_err),
       .mai_state_err_o             (mai_state_err),
