@@ -32,33 +32,54 @@ task rom_ctrl_addr_force_driver::run_phase(uvm_phase phase);
     seq_item_port.get_next_item(req);
 
     // Wait for either the counter's addr_q signal to match req.m_start_addr (lining the timing up
-    // with the negedge of the clock to make things more obvious in the waves) or for a reset to be
-    // asserted.
-    fork : isolation_fork begin
+    // with the negedge of the clock to make things more obvious in the waves), for the item to be
+    // aborted or for a reset to be asserted.
+    fork : isolation_fork0 begin
       fork
         begin
           m_vif.wait_for_addr(req.m_start_addr);
           @(negedge m_vif.clk_i);
         end
+        req.wait_until_aborted();
         wait (!m_vif.rst_ni);
       join_any
       disable fork;
     end join
 
-    // If reset has not been asserted, try to drive the item by calling force_addr. This works by
-    // applying a force to override the addr_q value for a cycle but returns early if reset is
-    // asserted (releasing the force either way)
-    if (m_vif.rst_ni) begin
-      `uvm_info("force_addr",
-                $sformatf("Forcing word address in rom_ctrl counter from 0x%0h to 0x%0h.",
-                          req.m_start_addr, req.m_desired_addr),
-                UVM_HIGH)
+    fork : isolation_fork1 begin
+      // A force needs doing if we are not in reset and the item hasn't been aborted.
+      bit force_pending = m_vif.rst_ni && !req.get_aborted();
 
-      m_vif.force_addr(req.m_desired_addr);
-    end
+      if (force_pending) begin
+        `uvm_info("force_addr",
+                  $sformatf("Forcing word address in rom_ctrl counter from 0x%0h to 0x%0h.",
+                            req.m_start_addr, req.m_desired_addr),
+                  UVM_HIGH)
 
-    // Either the address has been forced or there has been a reset. Mark the item done either way.
-    seq_item_port.item_done();
+        // Tell the force_addr task to start forcing the address. This sits inside a fork/join_any
+        // so that calling req.abort() will cause the driver to respond immediately.
+        fork
+          begin
+            m_vif.force_addr(req.m_desired_addr);
+            force_pending = 0;
+          end
+          req.wait_until_aborted();
+        join_any
+      end
+
+      // Either the address has been forced, the item was aborted or there has been a reset. Mark
+      // the item done either way.
+      seq_item_port.item_done();
+
+      // If force_pending is still true, req.abort() was called when we were in the middle of
+      // m_vif.force_addr. That's fine: wait until that task runs to completion (removing the force)
+      // and clearing force_pending. This will only take one cycle.
+      wait(!force_pending);
+
+      // At this point, there will usually still be a process running req.wait_until_aborted(). But
+      // we know that there is no longer a process running m_vif.force_addr().
+      disable fork;
+    end join
   end
 endtask
 
