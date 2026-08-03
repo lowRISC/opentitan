@@ -8,16 +8,16 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/cert/cert.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 /**
  * TPM ECC key descriptors.
  */
-extern const sc_keymgr_ecc_key_t kTpmKeyEk;
-extern const sc_keymgr_ecc_key_t kTpmKeyCek;
-extern const sc_keymgr_ecc_key_t kTpmKeyCik;
+extern const sc_keymgr_dpe_ecc_key_t kTpmKeyEk;
+extern const sc_keymgr_dpe_ecc_key_t kTpmKeyCek;
+extern const sc_keymgr_dpe_ecc_key_t kTpmKeyCik;
 
 /**
  * Generates an X.509 TBS section of a TPM EK certificate.
