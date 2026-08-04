@@ -1598,7 +1598,9 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
-        DARJEELING_TEST_ENVS,
+        # TODO(#30919): Disable tests on darjeeling due to missing keymgr_dpe
+        # testutils functions.
+        #DARJEELING_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -2754,7 +2756,9 @@ opentitan_test(
     srcs = ["kmac_error_conditions_test.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        # TODO(#30919): Disable tests on darjeeling due to missing keymgr_dpe
+        # testutils functions.
+        #DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
@@ -2825,7 +2829,9 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
+        # TODO(#30919): Disable tests on darjeeling due to missing keymgr_dpe
+        # testutils functions.
+        #DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
