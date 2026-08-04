@@ -19,7 +19,7 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otbn.h"
@@ -65,7 +65,7 @@ static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otbn_t otbn;
@@ -139,8 +139,8 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   TRY(dif_i2c_init(base_addr, &i2c2));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  TRY(dif_keymgr_init(base_addr, &keymgr));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR);
+  TRY(dif_keymgr_dpe_init(base_addr, &keymgr_dpe));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
   TRY(dif_kmac_init(base_addr, &kmac));
@@ -311,10 +311,12 @@ status_t handle_alert_fi_trigger(ujson_t *uj) {
       TRY(dif_i2c_alert_force(&i2c2, kDifI2cAlertFatalFault));
       break;
     case 23:
-      TRY(dif_keymgr_alert_force(&keymgr, kDifKeymgrAlertRecovOperationErr));
+      TRY(dif_keymgr_dpe_alert_force(&keymgr_dpe,
+                                     kDifKeymgrDpeAlertRecovOperationErr));
       break;
     case 24:
-      TRY(dif_keymgr_alert_force(&keymgr, kDifKeymgrAlertFatalFaultErr));
+      TRY(dif_keymgr_dpe_alert_force(&keymgr_dpe,
+                                     kDifKeymgrDpeAlertFatalFaultErr));
       break;
     case 25:
       TRY(dif_kmac_alert_force(&kmac, kDifKmacAlertRecovOperationErr));
