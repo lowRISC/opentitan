@@ -177,6 +177,12 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  // Return true if the top-level lc_hw_debug_en_i signal (monitored through
+  // cfg.m_mode_agent_cfg.vif) is On
+  local function bit is_lc_hw_debug_en();
+    return cfg.m_mode_agent_cfg.vif.mon_cb.lc_hw_debug_en === lc_ctrl_pkg::On;
+  endfunction
+
   // Receive and process incoming predicted complete SBA accesses.
   virtual task process_sba_access_fifo();
     sba_access_item item;
@@ -195,7 +201,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
       // If the debugger is not enabled and cfg.sba_tl_tx_requires_debug=1 then we should not have
       // seen the SBA item translate into a TL access.
-      if (cfg.sba_tl_tx_requires_debug && cfg.rv_dm_vif.lc_hw_debug_en != lc_ctrl_pkg::On) begin
+      if (cfg.sba_tl_tx_requires_debug && !is_lc_hw_debug_en()) begin
         `DV_CHECK(sba_tl_access_q.size() == 0)
       end
 
@@ -213,7 +219,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("Received SBA TL a_chan item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
       if (cfg.sba_tl_tx_requires_debug) begin
-        `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
+        `DV_CHECK(is_lc_hw_debug_en(),
                   "Received an SBA TL item when SBA should have been disabled.")
       end
 
@@ -228,7 +234,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       `uvm_info(`gfn, $sformatf("Received SBA TL d_chan item:\n%0s",
                                 item.sprint(uvm_default_line_printer)), UVM_HIGH)
       if (cfg.sba_tl_tx_requires_debug) begin
-        `DV_CHECK(cfg.rv_dm_vif.lc_hw_debug_en == lc_ctrl_pkg::On,
+        `DV_CHECK(is_lc_hw_debug_en(),
                   "Received an SBA TL item when SBA should have been disabled.")
       end
       sba_tl_access_q.push_back(item);
@@ -416,7 +422,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
   // Return true if we're using late debug enable, based on top-level inputs and register state.
   function logic using_late_debug_enable();
-    prim_mubi_pkg::mubi8_t  pin_val = cfg.rv_dm_vif.otp_dis_rv_dm_late_debug;
+    prim_mubi_pkg::mubi8_t  pin_val = cfg.m_mode_agent_cfg.vif.otp_dis_rv_dm_late_debug;
     prim_mubi_pkg::mubi32_t reg_val = prim_mubi_pkg::mubi32_t'(`gmv(ral.late_debug_enable));
     return (prim_mubi_pkg::mubi8_test_true_strict(pin_val) ||
             prim_mubi_pkg::mubi32_test_true_strict(reg_val));
@@ -425,9 +431,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
   // Return whether debug is supposed to be enabled, based on whether we're using late debug enable
   // and on top-level inputs.
   function logic is_debug_enabled();
-    return lc_ctrl_pkg::lc_tx_test_true_strict(using_late_debug_enable ?
-                                               cfg.rv_dm_vif.lc_hw_debug_en :
-                                               cfg.rv_dm_vif.lc_dft_en);
+    return lc_ctrl_pkg::lc_tx_test_true_strict(using_late_debug_enable() ?
+                                               cfg.m_mode_agent_cfg.vif.mon_cb.lc_hw_debug_en :
+                                               cfg.m_mode_agent_cfg.vif.mon_cb.lc_dft_en);
   endfunction
 
   // This overrides a function in cip_base_scoreboard. The problem is that when debug is not

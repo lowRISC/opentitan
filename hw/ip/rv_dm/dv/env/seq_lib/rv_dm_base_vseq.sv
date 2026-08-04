@@ -11,6 +11,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(rv_dm_base_vseq)
   `uvm_object_new
 
+  // Configuration for running sequences
+  rv_dm_mode_sequencer m_mode_sequencer;
+
   // These flags control "late debug enable". The mode (late_debug_enable) gets randomized in
   // pre_start and it takes effect either through a top-level pin (pin_late_debug_enable) or a
   // register (reg_late_debug_enable).
@@ -18,7 +21,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // When one of this inputs is mubi true, the "debug enable" check is made on lc_hw_debug_en_i
   // instead of lc_dft_en_i.
   rand bit late_debug_enable;
-  rand bit pin_late_debug_enable;
+  rand bit pin_disable_late_debug;
   rand bit reg_late_debug_enable;
 
   // This flag controls whether the pinmux_hw_debug_en_i signal is set to On. This determines
@@ -101,10 +104,10 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.en_scb == 1'b0 -> reg_late_debug_enable == 1'b0;
   }
 
-  // A constraint to make sure that pin_late_debug_enable and reg_late_debug_enable correctly
+  // A constraint to make sure that pin_disable_late_debug and reg_late_debug_enable correctly
   // implement the intent in the late_debug_enable bit.
   constraint late_debug_enable_split_c {
-    late_debug_enable == pin_late_debug_enable || reg_late_debug_enable;
+    late_debug_enable == (!pin_disable_late_debug) || reg_late_debug_enable;
   }
 
   // SBA TL device sequence. Class member for more controllability.
@@ -125,37 +128,73 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
-    cfg.rv_dm_vif.scanmode <= bool_to_mubi4_t(scanmode);
+    rv_dm_mode_seq mode_seq;
+    bit strap_en = 1'b0;
 
-    cfg.rv_dm_vif.unavailable <= unavailable;
+    // Before starting, check that the virtual sequence has been configured
+    if (m_mode_sequencer == null) `uvm_fatal(get_name(), "m_mode_sequencer not configured.")
 
-    cfg.rv_dm_vif.lc_dft_en <= bool_to_lc_tx_t(lc_dft_en);
-
-    cfg.rv_dm_vif.lc_check_byp_en <= lc_ctrl_pkg::Off;
-    cfg.rv_dm_vif.lc_escalate_en <= lc_ctrl_pkg::Off;
-    cfg.rv_dm_vif.strap_en_override <= 1'b0;
 `ifdef USE_DMI_INTERFACE
     // TODO: revisit this. In order to operate in DMI mode we need to assert `strap_en`.
-    cfg.rv_dm_vif.strap_en <= 1'b1;
-`else
-    cfg.rv_dm_vif.strap_en <= 1'b0;
+    strap_en = 1'b1;
 `endif
 
-    // Drive the otp_dis_rv_dm_late_debug_i pin to match pin_late_debug_enable (to avoid assertions
-    // that get triggered in prim_lc_sync/prim_mubi8_sync if the input is 'x). We will configure the
-    // register a little later, in dut_init.
-    set_late_debug_enable_with_pin(pin_late_debug_enable);
+    mode_seq = rv_dm_mode_seq::type_id::create("mode_seq");
+    mode_seq.m_has_lc_ctrl_signals = 1'b1;
+    mode_seq.m_has_pinmux_signals = 1'b1;
+    mode_seq.m_has_pwrmgr_signals = 1'b1;
+    mode_seq.m_has_otp_ctrl_signals = 1'b1;
+    mode_seq.m_has_scanmode = 1'b1;
 
-    // Drive the pinmux_hw_debug_en_i pin to match the pinmux_hw_debug_en bit, avoiding assertions
-    // that get triggered in prim_lc_sync if the input is 'x.
-    upd_pinmux_hw_debug_en();
+    if (!mode_seq.randomize() with {
+          // Signals from lc_ctrl //////////////////////////////////////////////////////////////////
+          //
+          // The lc_hw_debug_clr signal in the item is always given a valid lc_tx_t encoding that
+          // match the bit value in the vseq.
+          m_lc_hw_debug_clr == local::lc_hw_debug_clr;
+          m_lc_hw_debug_clr_valid == 1;
 
-    // Drive the lc_hw_debug_en_i pin to match the lc_hw_debug_en bit, avoiding assertions that get
-    // triggered in prim_lc_sync if the input is 'x.
-    upd_lc_hw_debug_en();
+          // We don't need to specify validity of the encoding for lc_hw_debug_en, lc_dft_en or
+          // lc_init_done. The sequence will choose On if the signal is true and an arbitrary value
+          // other than On otherwise.
+           m_lc_hw_debug_en == local::lc_hw_debug_en;
+           m_lc_dft_en      == local::lc_dft_en;
+           m_lc_init_done   == local::lc_init_done;
 
-    // Drive the lc_init_done_i pin to match the lc_init_done bit
-    upd_lc_init_done();
+           // Set lc_escalate_en and lc_check_byp_en to Off. (Don't escalate; Don't claim a
+           // life-cycle transition in rv_dm_dmi_gate)
+           m_lc_escalate_en  == 1'b0;
+           m_lc_check_byp_en == 1'b0;
+
+           m_strap_en_override == 1'b0;
+
+          // Signals from pinmux ///////////////////////////////////////////////////////////////////
+          //
+          // The sequence will choose On for pinmux_hw_debug_en if the signal is true and an
+          // arbitrary value other than On otherwise.
+           m_pinmux_hw_debug_en == local::pinmux_hw_debug_en;
+
+          // Signals from pwrmgr ///////////////////////////////////////////////////////////////////
+           m_strap_en == local::strap_en;
+
+          // Signals from otp_ctrl /////////////////////////////////////////////////////////////////
+          //
+          // The sequence will choose MuBi8False for m_otp_dis_rv_dm_late_debug if the signal is
+          // false and an arbitrary value other than MuBi8False otherwise.
+           m_otp_dis_rv_dm_late_debug == local::pin_disable_late_debug;
+
+           // Scanmode signal
+           //
+           // The sequence will choose MuBi4True for m_scanmode if the signal is true and an
+           // arbitrary value other than MuBi4True otherwise.
+           m_scanmode == local::scanmode;
+         }) begin
+      `uvm_fatal(get_name(), "Failed to randomize mode sequence.")
+    end
+
+    mode_seq.start(m_mode_sequencer);
+
+    cfg.rv_dm_vif.cb.unavailable <= unavailable;
 
     super.pre_start();
   endtask
@@ -369,52 +408,14 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     return val;
   endfunction
 
-  function lc_ctrl_pkg::lc_tx_t bool_to_lc_tx_t(bit bool_val);
-    return lc_ctrl_pkg::lc_tx_t'(bool_to_something(bool_val, 4, lc_ctrl_pkg::On));
-  endfunction
-
-  function prim_mubi_pkg::mubi4_t bool_to_mubi4_t(bit bool_val);
-    return prim_mubi_pkg::mubi4_t'(bool_to_something(bool_val, 4, prim_mubi_pkg::MuBi4True));
-  endfunction
-
-  function prim_mubi_pkg::mubi8_t bool_to_mubi8_t(bit bool_val);
-    return prim_mubi_pkg::mubi8_t'(bool_to_something(bool_val, 8, prim_mubi_pkg::MuBi8True));
-  endfunction
-
   function prim_mubi_pkg::mubi32_t bool_to_mubi32_t(bit bool_val);
     return prim_mubi_pkg::mubi32_t'(bool_to_something(bool_val, 32, prim_mubi_pkg::MuBi32True));
-  endfunction
-
-  // Set the otp_dis_rv_dm_late_debug_i pin to a t/f value matching bool_val.
-  function void set_late_debug_enable_with_pin(bit bool_val);
-    cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= bool_to_mubi8_t(bool_val);
   endfunction
 
   // Write to the late_debug_enable register with a t/f value matching bool_val.
   virtual task set_late_debug_enable_with_reg(bit bool_val);
     csr_wr(.ptr(ral.late_debug_enable), .value(bool_to_mubi32_t(bool_val)));
   endtask
-
-  // Update the pinmux_hw_debug_en_i pin to match the bit in pinmux_hw_debug_en
-  function void upd_pinmux_hw_debug_en();
-    cfg.rv_dm_vif.pinmux_hw_debug_en <= bool_to_lc_tx_t(pinmux_hw_debug_en);
-  endfunction
-
-  // Update the lc_init_done_i pin to match the bit in lc_init_done
-  function void upd_lc_init_done();
-    cfg.rv_dm_vif.lc_init_done <= bool_to_lc_tx_t(lc_init_done);
-  endfunction
-
-  // Update the lc_hw_debug_clr_i and lc_hw_debug_en_i pins to match the bit in lc_hw_debug_clr and
-  // lc_hw_debug_en, respectively.
-  function void upd_lc_hw_debug_en();
-    // The `bool_to_lc_tx_t` function converts a bit type to a lc_tx_t type by mapping `1` to `On`
-    // and `0` to a random non-`On` value. For `lc_hw_debug_clr`, this is not what we want, though,
-    // because the DUT will interpret a non-`Off` value as `On`. Hence the ternary statement below
-    // instead maps `0` to `Off`.
-    cfg.rv_dm_vif.lc_hw_debug_clr <= lc_hw_debug_clr ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
-    cfg.rv_dm_vif.lc_hw_debug_en <= bool_to_lc_tx_t(lc_hw_debug_en);
-  endfunction
 
   // Read the dtmcs register and check the dmistat field has the expected value, skipping the check
   // if the system is in reset.
@@ -517,4 +518,38 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     // This should now have cleared the pending reset flag. Make sure it is clear.
     check_ndmreset_pending(1'b0);
   endtask
+
+  protected task upd_lc_hw_debug_en();
+    rv_dm_mode_seq mode_seq = rv_dm_mode_seq::type_id::create("mode_seq");
+    mode_seq.m_has_lc_ctrl_signals = 1'b1;
+
+    if (!mode_seq.randomize() with {
+          m_lc_hw_debug_clr == local::lc_hw_debug_clr;
+          m_lc_hw_debug_clr_valid == 1;
+          m_lc_hw_debug_en == local::lc_hw_debug_en;
+          m_lc_dft_en == local::lc_dft_en;
+          m_lc_init_done == local::lc_init_done;
+          m_lc_check_byp_en == 1'b0;
+          m_lc_escalate_en == 1'b0;
+          m_strap_en_override == 1'b0;
+        }) begin
+      `uvm_fatal(get_name(), "Failed to randomize mode sequence.")
+    end
+
+    mode_seq.start(m_mode_sequencer);
+  endtask
+
+  protected task upd_pinmux_hw_debug_en();
+    rv_dm_mode_seq mode_seq = rv_dm_mode_seq::type_id::create("mode_seq");
+    mode_seq.m_has_pinmux_signals = 1'b1;
+
+    if (!mode_seq.randomize() with {
+           m_pinmux_hw_debug_en == local::pinmux_hw_debug_en;
+         }) begin
+      `uvm_fatal(get_name(), "Failed to randomize mode sequence.")
+    end
+
+    mode_seq.start(m_mode_sequencer);
+  endtask
+
 endclass : rv_dm_base_vseq
