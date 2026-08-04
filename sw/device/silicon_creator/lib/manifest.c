@@ -6,15 +6,12 @@
 
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
-#define EFLASH_SIZE_BYES TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES
-#elif defined(OPENTITAN_IS_EARLGREY)
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 #include "sw/device/silicon_creator/lib/nvm_ctrl.h"
-#define EFLASH_SIZE_BYES NVM_DATA_SIZE_BYTES
+#define NVM_SIZE_BYTES NVM_DATA_SIZE_BYTES
 #elif defined(OPENTITAN_IS_DARJEELING)
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#define EFLASH_SIZE_BYES TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES
+#define NVM_SIZE_BYTES TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES
 #else
 #error unsupported top
 #endif
@@ -30,7 +27,7 @@ static_assert(CHIP_BL0_SIZE_MIN >= CHIP_MANIFEST_SIZE,
 static_assert(CHIP_BL0_SIZE_MAX >= CHIP_BL0_SIZE_MIN,
               "`CHIP_BL0_SIZE_MAX` is too small");
 static_assert(CHIP_BL0_SIZE_MAX <=
-                  ((EFLASH_SIZE_BYES / 2) - CHIP_ROM_EXT_SIZE_MAX),
+                  ((NVM_SIZE_BYTES / 2) - CHIP_ROM_EXT_SIZE_MAX),
               "`CHIP_BL0_SIZE_MAX` is too large");
 
 // Extern declarations for the inline functions in the manifest header.
