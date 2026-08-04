@@ -5,6 +5,7 @@
 // This #if define ... ensures backwards compatibility with darjeeling. Either
 // both tops will get their own testutils or this define guard can be
 // implemented at a more granular level (i.e. at function level).
+// TODO(#30919): Split the keymgr_dpe_testutil on a finer level.
 #if defined(OPENTITAN_IS_DARJEELING)
 
 #include "sw/device/lib/testing/keymgr_dpe_testutils.h"
