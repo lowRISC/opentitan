@@ -15,6 +15,13 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+enum {
+  // See the identically-named, identically-defined enum in boot_data.c: not
+  // part of `boot_data.h` since that header must stay buildable without
+  // `nvm_ctrl.h` (see the comment there for why).
+  kBootDataEntriesPerPage = NVM_BYTES_PER_PAGE / sizeof(boot_data_t),
+};
+
 /**
  * Boot data NVM info pages.
  */

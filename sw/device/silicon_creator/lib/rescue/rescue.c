@@ -45,7 +45,8 @@ typedef enum rescue_request {
 static rescue_request_t rescue_requested;
 
 const uint32_t kNvmPageSize = NVM_BYTES_PER_PAGE;
-const uint32_t kNvmBankSize = NVM_PAGES_PER_BANK * NVM_BYTES_PER_PAGE;
+// Byte size of one firmware slot (A or B); see `NVM_BYTES_PER_SLOT`.
+const uint32_t kNvmSlotSize = NVM_BYTES_PER_SLOT;
 
 static inline bool is_rom_ext(const void *data) {
   const manifest_t *manifest = (const manifest_t *)data;
@@ -63,7 +64,26 @@ static inline bool is_rom_ext_update_allowed(rescue_state_t *state) {
 
 rom_error_t nvm_firmware_block(rescue_state_t *state) {
   uint32_t bank_offset =
-      state->mode == kRescueModeFirmwareSlotB ? kNvmBankSize : 0;
+      state->mode == kRescueModeFirmwareSlotB ? kNvmSlotSize : 0;
+  // `state->nvm_limit` is slot-agnostic (relative to `bank_offset`), but the
+  // portion of NVM usable for generic firmware data is not necessarily a
+  // whole slot away from `bank_offset` -- e.g. on RRAM, Slot B's tail
+  // overlaps the emulated info-page region and, past that, a small range
+  // reserved for OTP that's read/write protected in hardware. Clamp so this
+  // never erases/writes past `NVM_USABLE_DATA_SIZE_BYTES` regardless of
+  // which slot `bank_offset` selects.
+  uint32_t nvm_limit = state->nvm_limit;
+  if (bank_offset + nvm_limit > NVM_USABLE_DATA_SIZE_BYTES) {
+    nvm_limit = NVM_USABLE_DATA_SIZE_BYTES - bank_offset;
+  }
+  // Slot A has its own separate reserved tail (see
+  // `NVM_SLOT_A_USABLE_SIZE_BYTES`), used on RRAM for `CreatorReserved0`'s
+  // dedicated region. The clamp above doesn't cover it, since it's entirely
+  // below `NVM_USABLE_DATA_SIZE_BYTES` and only applies when `bank_offset`
+  // selects Slot A.
+  if (bank_offset == 0 && nvm_limit > NVM_SLOT_A_USABLE_SIZE_BYTES) {
+    nvm_limit = NVM_SLOT_A_USABLE_SIZE_BYTES;
+  }
   if (state->nvm_offset == 0) {
     // TODO(#24428): Make sure we interact correctly with owner flash region
     // configuration.
@@ -81,7 +101,7 @@ rom_error_t nvm_firmware_block(rescue_state_t *state) {
             : state->nvm_start;
 
     // Erase the allowed range in the requested partition.
-    for (uint32_t addr = state->nvm_begin; addr < state->nvm_limit;
+    for (uint32_t addr = state->nvm_begin; addr < nvm_limit;
          addr += kNvmPageSize) {
       HARDENED_RETURN_IF_ERROR(nvm_ctrl_data_erase(bank_offset + addr));
     }
@@ -95,7 +115,7 @@ rom_error_t nvm_firmware_block(rescue_state_t *state) {
   if (state->nvm_offset < state->nvm_begin) {
     // Before allowed beginning; silently consume the data without flashing.
     state->nvm_offset += sizeof(state->data);
-  } else if (state->nvm_offset >= state->nvm_limit) {
+  } else if (state->nvm_offset >= nvm_limit) {
     // Beyond the allowed limit; return an error.
     return kErrorRescueImageTooBig;
   } else {
@@ -346,7 +366,7 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
     // If there is no rescue config, then the rescue region starts immediately
     // after the ROM_EXT and ends at the end of the flash bank.
     state->nvm_start = CHIP_ROM_EXT_SIZE_MAX;
-    state->nvm_limit = kNvmBankSize;
+    state->nvm_limit = kNvmSlotSize;
     state->inactivity_deadline = 0;
   } else {
     state->nvm_start = (uint32_t)config->start * kNvmPageSize;

@@ -171,6 +171,11 @@ rom_error_t isfb_info_flash_erase_policy_get(
 
   // B3: `manifest_ext_isfb_erase_t` must be present and set to harden true in
   // the firmware manifest.
+  // TODO(#30890): on RRAM, there is no hardware-enforced distinction between
+  // "can write" and "can erase" (no `erase_en`), so any image with plain
+  // write access to the ISFB page can flip a struck bit back to `1` without
+  // needing this policy to hold. The one-way strike/un-strike ratchet this
+  // check is meant to enforce is not currently guaranteed on RRAM.
   if (policies[2] != kHardenedBoolTrue && ext_isfb_erase != NULL) {
     policies[2] = (hardened_bool_t)ext_isfb_erase->erase_allowed;
     check_cnt_got = launder32(check_cnt_got) + 1;

@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -135,11 +136,15 @@
       kBootSvcMinBl0SecVerReqType, kBootSvcOwnershipActivateReqType,         \
       kBootSvcOwnershipUnlockReqType,
 #endif
+// Rescue's default bounds span from the end of the ROM_EXT to the end of the
+// slot; computed in NVM_BYTES_PER_PAGE units (RRAM's page size differs from
+// flash's, so these must not be hardcoded flash-page counts).
 #ifndef WITH_RESCUE_START
-#define WITH_RESCUE_START (32)
+#define WITH_RESCUE_START (CHIP_ROM_EXT_SIZE_MAX / NVM_BYTES_PER_PAGE)
 #endif
 #ifndef WITH_RESCUE_SIZE
-#define WITH_RESCUE_SIZE (224)
+#define WITH_RESCUE_SIZE \
+  (NVM_PAGES_PER_SLOT - CHIP_ROM_EXT_SIZE_MAX / NVM_BYTES_PER_PAGE)
 #endif
 
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {

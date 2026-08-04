@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -18,9 +19,18 @@
 
 enum {
   /*
-   * Maximum flash address, exclusive.
+   * Maximum flash address, exclusive. Bounded to the portion of NVM usable
+   * for generic firmware data; see `NVM_USABLE_DATA_SIZE_BYTES`.
    */
-  kMaxAddress = NVM_DATA_SIZE_BYTES,
+  kMaxAddress = NVM_USABLE_DATA_SIZE_BYTES,
+  /*
+   * Slot A's own reserved tail, excluded separately from `kMaxAddress`
+   * above since it falls strictly below it (Slot A comes first in the
+   * address space); see `NVM_SLOT_A_USABLE_SIZE_BYTES`. Empty range
+   * (`kSlotAReservedStart == kSlotAReservedEnd`) on flash.
+   */
+  kSlotAReservedStart = NVM_SLOT_A_USABLE_SIZE_BYTES,
+  kSlotAReservedEnd = NVM_BYTES_PER_SLOT,
 };
 
 /**
@@ -68,15 +78,15 @@ typedef enum bootstrap_state {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_sector_erase(uint32_t addr) {
-  if (addr >= kMaxAddress) {
+  if (addr >= kMaxAddress ||
+      (addr >= kSlotAReservedStart && addr < kSlotAReservedEnd)) {
     return kErrorBootstrapEraseAddress;
   }
   return nvm_ctrl_sector_erase(addr);
 }
 
 /**
- * Handles access permissions and programs up to 256 bytes of flash memory
- * starting at `addr`.
+ * Handles access permissions and programs flash memory starting at `addr`.
  *
  * If `byte_count` is not a multiple of flash word size, it's rounded up to next
  * flash word and missing bytes in `data` are set to `0xff`.
@@ -92,7 +102,8 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
-  if (addr & (NVM_BYTES_PER_WORD - 1) || addr >= kMaxAddress) {
+  if (addr & (NVM_BYTES_PER_WORD - 1) || addr >= kMaxAddress ||
+      (addr >= kSlotAReservedStart && addr < kSlotAReservedEnd)) {
     return kErrorBootstrapProgramAddress;
   }
   return nvm_ctrl_page_program(addr, byte_count, data);
