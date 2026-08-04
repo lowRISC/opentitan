@@ -243,7 +243,7 @@ TEST_F(OwnerBlockTest, FlashConfigTooManyEntries) {
   rom_error_t error =
       owner_block_nvm_apply(&flash_config_too_many_entries, kBootSlotA,
                             /*owner_lockdown=*/0, &mp_index);
-  EXPECT_EQ(error, kErrorOwnershipFlashConfigLength);
+  EXPECT_EQ(error, kErrorOwnershipNvmConfigLength);
 }
 
 // Tests that the flash parameters get applied for side A.
@@ -1034,14 +1034,14 @@ TEST_P(RomExtFlashConfigTest, BadFlashConfig) {
 INSTANTIATE_TEST_SUITE_P(
     AllCases, RomExtFlashConfigTest,
     testing::Values(
-        std::make_tuple(&invalid_flash_0, kErrorOwnershipFlashConfigRomExt),
-        std::make_tuple(&invalid_flash_1, kErrorOwnershipFlashConfigRomExt),
-        std::make_tuple(&invalid_flash_2, kErrorOwnershipFlashConfigRomExt),
-        std::make_tuple(&invalid_flash_3, kErrorOwnershipFlashConfigRomExt),
-        std::make_tuple(&invalid_flash_4, kErrorOwnershipFlashConfigLength),
-        std::make_tuple(&invalid_flash_5, kErrorOwnershipFlashConfigBounds),
-        std::make_tuple(&invalid_flash_6, kErrorOwnershipFlashConfigSlots),
-        std::make_tuple(&invalid_flash_7, kErrorOwnershipFlashConfigSlots),
+        std::make_tuple(&invalid_flash_0, kErrorOwnershipNvmConfigRomExt),
+        std::make_tuple(&invalid_flash_1, kErrorOwnershipNvmConfigRomExt),
+        std::make_tuple(&invalid_flash_2, kErrorOwnershipNvmConfigRomExt),
+        std::make_tuple(&invalid_flash_3, kErrorOwnershipNvmConfigRomExt),
+        std::make_tuple(&invalid_flash_4, kErrorOwnershipNvmConfigLength),
+        std::make_tuple(&invalid_flash_5, kErrorOwnershipNvmConfigBounds),
+        std::make_tuple(&invalid_flash_6, kErrorOwnershipNvmConfigSlots),
+        std::make_tuple(&invalid_flash_7, kErrorOwnershipNvmConfigSlots),
         std::make_tuple(&invalid_flash_8, kErrorOwnershipInvalidTagLength),
         std::make_tuple(&invalid_flash_9, kErrorOwnershipInvalidTagLength)));
 

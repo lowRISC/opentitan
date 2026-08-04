@@ -637,7 +637,7 @@ ownership_transfer_test(
             --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
             --config-kind=with-flash-error
             --dual-owner-boot-check=false
-            --expected-error=OwnershipFlashConfigRomExt
+            --expected-error=OwnershipNvmConfigRomExt
         """,
         "test_harness": "//sw/host/tests/ownership:transfer_test",
     },

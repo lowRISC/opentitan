@@ -229,17 +229,17 @@ enum module_ {
   X(kErrorOwnershipInvalidTag,        ERROR_(5, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidTagLength,  ERROR_(6, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipDuplicateItem,     ERROR_(7, kModuleOwnership, kAlreadyExists)), \
-  X(kErrorOwnershipFlashConfigLength, ERROR_(8, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipNvmConfigLength, ERROR_(8, kModuleOwnership, kOutOfRange)), \
   X(kErrorOwnershipInvalidInfoPage,   ERROR_(9, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipBadInfoPage,       ERROR_(10, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipNoOwner,           ERROR_(11, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipKeyNotFound,       ERROR_(12, kModuleOwnership, kNotFound)), \
   X(kErrorOwnershipInvalidDin,        ERROR_(13, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipUnlockDenied,      ERROR_(14, kModuleOwnership, kPermissionDenied)), \
-  X(kErrorOwnershipFlashConfigRomExt, ERROR_(15, kModuleOwnership, kInvalidArgument)), \
-  X(kErrorOwnershipFlashConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipNvmConfigRomExt, ERROR_(15, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipNvmConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidAlgorithm,  ERROR_(17, kModuleOwnership, kInvalidArgument)), \
-  X(kErrorOwnershipFlashConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipNvmConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidRescueBounds, ERROR_(19, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipSignatureNotFound, ERROR_(20, kModuleOwnership, kNotFound)), \
   /* Group all of the ISFB error codes together */ \

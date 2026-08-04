@@ -30,8 +30,10 @@
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 #include "sw/device/silicon_creator/lib/stack_utilization.h"
 
-#ifdef HAS_FLASH_CTRL
+#if defined(USE_FLASH)
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#elif defined(USE_RRAM)
+#include "sw/device/silicon_creator/lib/drivers/rram_ctrl.h"
 #endif
 
 #ifdef HAS_KEYMGR
@@ -450,9 +452,11 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_reset(void)) {
                    kMultiBitBool4True);
 }
 
-SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
-#ifdef HAS_FLASH_CTRL
+SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_nvm_kill(void)) {
+#if defined(USE_FLASH)
   flash_ctrl_disable();
+#elif defined(USE_RRAM)
+  rram_ctrl_disable();
 #endif
 }
 
@@ -539,9 +543,9 @@ void shutdown_finalize(rom_error_t reason) {
   shutdown_keymgr_kill();
   // Report coverage again to ensure the calls above are reported.
   coverage_report();
-  // Reset before killing the flash to be able to use this also in flash.
+  // Reset before killing NVM to be able to use this also in NVM.
   shutdown_reset();
-  shutdown_flash_kill();
+  shutdown_nvm_kill();
   // If we get here, we'll wait for the watchdog to reset the chip.
   shutdown_hang();
 }

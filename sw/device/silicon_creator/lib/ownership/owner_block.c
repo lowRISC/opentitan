@@ -22,19 +22,22 @@ owner_block_t owner_page[2];
 owner_page_status_t owner_page_valid[2];
 
 enum {
-  kNvmBankSize = NVM_PAGES_PER_BANK,
+  // Page count of one firmware slot (A or B). Each NVM bank holds
+  // `NVM_NUM_BANKS == 1 ? 2 : 1` slot(s); see `NVM_PAGES_PER_SLOT`.
+  kNvmSlotSize = NVM_PAGES_PER_SLOT,
   kNvmPageSize = NVM_BYTES_PER_PAGE,
-  kNvmTotalSize = NVM_NUM_BANKS * kNvmBankSize,
+  kNvmTotalSize = 2 * kNvmSlotSize,
 
+  // SlotA/B start/end (excluding the reserved region)
   kNvmSlotAStart = 0,
-  kNvmSlotAEnd = kNvmSlotAStart + kNvmBankSize,
-  kNvmSlotBStart = kNvmBankSize,
-  kNvmSlotBEnd = kNvmSlotBStart + kNvmBankSize,
+  kNvmSlotAEnd = NVM_SLOT_A_END_BYTES / kNvmPageSize,
+  kNvmSlotBStart = kNvmSlotSize,
+  kNvmSlotBEnd = NVM_SLOT_B_END_BYTES / kNvmPageSize,
 
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kNvmPageSize,
   kRomExtAStart = 0 / kNvmPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
-  kRomExtBStart = kNvmBankSize + kRomExtAStart,
+  kRomExtBStart = kNvmSlotSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 
   kRomExtRegions = 2,
@@ -179,7 +182,7 @@ rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
     return kErrorOwnershipInvalidTagLength;
   }
   uint32_t end = rescue->start + rescue->size;
-  if (rescue->start < kRomExtSizeInPages || end > kNvmBankSize) {
+  if (rescue->start < kRomExtSizeInPages || end > kNvmSlotSize) {
     return kErrorOwnershipInvalidRescueBounds;
   }
   return kErrorOk;
@@ -304,11 +307,12 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   return kErrorOk;
 }
 
-static hardened_bool_t in_nvm_slot(uint32_t bank_start, uint32_t start,
-                                   uint32_t end) {
-  uint32_t bank_end = bank_start + kNvmBankSize;
-  return (bank_start <= start && start < bank_end && bank_start < end &&
-          end <= bank_end)
+// `slot_end` is the exclusive upper bound a region is allowed to reach within
+// the slot.
+static hardened_bool_t in_nvm_slot(uint32_t slot_start, uint32_t slot_end,
+                                   uint32_t start, uint32_t end) {
+  return (slot_start <= start && start < slot_end && slot_start < end &&
+          end <= slot_end)
              ? kHardenedBoolTrue
              : kHardenedBoolFalse;
 }
@@ -325,7 +329,7 @@ rom_error_t owner_block_nvm_check(const owner_nvm_config_t *nvm) {
   }
   len /= sizeof(owner_nvm_region_t);
   if (len > kProtectSlots - kRomExtRegions) {
-    return kErrorOwnershipFlashConfigLength;
+    return kErrorOwnershipNvmConfigLength;
   }
 
   uint32_t num_slot_a = 0;
@@ -333,27 +337,33 @@ rom_error_t owner_block_nvm_check(const owner_nvm_config_t *nvm) {
   const owner_nvm_region_t *config = nvm->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
+    // A region must contain at least one page.
+    if (config->size == 0) {
+      return kErrorOwnershipNvmConfigBounds;
+    }
     uint32_t start = config->start;
     uint32_t end = start + config->size;
     // When checking the NVM configuration, a region is a ROM_EXT region if
     // it overlaps the ROM_EXT bounds.  It is an error to accept a new config
     // with a NVM region that overlaps the ROM_EXT.
     if (rom_ext_nvm_overlap(start, end) == kHardenedBoolTrue) {
-      return kErrorOwnershipFlashConfigRomExt;
-    } else if (in_nvm_slot(kNvmSlotAStart, start, end) == kHardenedBoolTrue) {
+      return kErrorOwnershipNvmConfigRomExt;
+    } else if (in_nvm_slot(kNvmSlotAStart, kNvmSlotAEnd, start, end) ==
+               kHardenedBoolTrue) {
       num_slot_a += 1;
       if (num_slot_a > NVM_CONFIG_REGIONS_PER_SLOT) {
-        return kErrorOwnershipFlashConfigSlots;
+        return kErrorOwnershipNvmConfigSlots;
       }
-    } else if (in_nvm_slot(kNvmSlotBStart, start, end) == kHardenedBoolTrue) {
+    } else if (in_nvm_slot(kNvmSlotBStart, kNvmSlotBEnd, start, end) ==
+               kHardenedBoolTrue) {
       num_slot_b += 1;
       if (num_slot_b > NVM_CONFIG_REGIONS_PER_SLOT) {
-        return kErrorOwnershipFlashConfigSlots;
+        return kErrorOwnershipNvmConfigSlots;
       }
     } else {
       // NVM regions are not allowed to span between slots or extend beyond
       // the end of NVM.
-      return kErrorOwnershipFlashConfigBounds;
+      return kErrorOwnershipNvmConfigBounds;
     }
   }
   return kErrorOk;
@@ -390,16 +400,16 @@ rom_error_t owner_block_nvm_apply(const owner_nvm_config_t *nvm,
 
   // TODO: Hardening: lockdown should be one of kBootSlotA, kBootSlotB or
   // kHardenedBoolFalse.
-  uint32_t start = config_side == kBootSlotA   ? 0
-                   : config_side == kBootSlotB ? kNvmBankSize
+  uint32_t start = config_side == kBootSlotA   ? kNvmSlotAStart
+                   : config_side == kBootSlotB ? kNvmSlotBStart
                                                : 0xFFFFFFFF;
-  uint32_t end = config_side == kBootSlotA   ? kNvmBankSize
-                 : config_side == kBootSlotB ? 2 * kNvmBankSize
+  uint32_t end = config_side == kBootSlotA   ? kNvmSlotAEnd
+                 : config_side == kBootSlotB ? kNvmSlotBEnd
                                              : 0;
   size_t len = (nvm->header.length - sizeof(owner_nvm_config_t)) /
                sizeof(owner_nvm_region_t);
   if (len > kProtectSlots - kRomExtRegions) {
-    return kErrorOwnershipFlashConfigLength;
+    return kErrorOwnershipNvmConfigLength;
   }
 
   const owner_nvm_region_t *config = nvm->config;
