@@ -81,10 +81,9 @@ dual_cc_library(
         shared = ["rom_ext_boot_policy_ptrs.h"],
     ),
     deps = dual_inputs(
-        device = opentitan_select_top(
-            {"earlgrey": ["//sw/device/silicon_creator/lib:nvm_ctrl"]},
-            [],
-        ),
+        device = [
+            "//sw/device/silicon_creator/lib:nvm_ctrl",
+        ],
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",

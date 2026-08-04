@@ -308,7 +308,10 @@ dual_cc_library(
         device = [
             "//hw/top:top_lib",
         ] + opentitan_select_top(
-            {"earlgrey": [":nvm_ctrl"]},
+            {
+                "earlgrey": [":nvm_ctrl"],
+                "englishbreakfast": [":nvm_ctrl"],
+            },
             [],
         ),
         host = [
@@ -527,6 +530,17 @@ dual_cc_library(
     name = "nvm_ctrl",
     srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
     hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
+    # Selects which NVM backend nvm_ctrl.h/.c compile against. Only a
+    # flash_ctrl-backed implementation exists today (earlgrey,
+    # englishbreakfast); a future RRAM-backed top would add its own branch
+    # here alongside a USE_RRAM implementation (see nvm_ctrl.h).
+    defines = opentitan_select_top(
+        {
+            "earlgrey": ["USE_FLASH"],
+            "englishbreakfast": ["USE_FLASH"],
+        },
+        [],
+    ),
     deps = dual_inputs(
         # The device variant always links the real flash_ctrl driver, even
         # when force-included in a host build (e.g. a future shutdown_unittest
@@ -542,7 +556,7 @@ dual_cc_library(
         shared = [
             ":error",
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",

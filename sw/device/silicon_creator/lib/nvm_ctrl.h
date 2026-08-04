@@ -14,8 +14,24 @@
 
 // Hardware parameter and address constants.  Only nvm_ctrl.{h,c} may include
 // these headers directly; all other callers use the NVM_* aliases below.
+//
+// USE_FLASH/USE_RRAM select which backend's constants populate the NVM_*
+// aliases below; set per top by the `nvm_ctrl` build rule. Only the
+// flash_ctrl-backed implementation exists today (earlgrey,
+// englishbreakfast); a future RRAM-backed top would add a USE_RRAM branch
+// here with its own includes.
+#if defined(USE_FLASH)
 #include "hw/top/flash_ctrl_regs.h"
+#if defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
+#else
+#error "USE_FLASH set for an unsupported top"
+#endif
+#elif !defined(USE_RRAM)
+#error "nvm_ctrl.h requires USE_FLASH or USE_RRAM to be defined"
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +41,7 @@ extern "C" {
 // NVM layout constants
 // ---------------------------------------------------------------------------
 
+#if defined(USE_FLASH)
 /** Byte size of one NVM page. */
 #define NVM_BYTES_PER_PAGE FLASH_CTRL_PARAM_BYTES_PER_PAGE
 /** Byte size of one NVM program/read word. */
@@ -35,10 +52,18 @@ extern "C" {
 #define NVM_NUM_BANKS FLASH_CTRL_PARAM_REG_NUM_BANKS
 /** Number of data pages per NVM bank. */
 #define NVM_PAGES_PER_BANK FLASH_CTRL_PARAM_REG_PAGES_PER_BANK
+#if defined(OPENTITAN_IS_EARLGREY)
 /** Base address of the NVM data partition in the system memory map. */
 #define NVM_DATA_BASE_ADDR TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR
 /** Total byte size of the NVM data partition. */
 #define NVM_DATA_SIZE_BYTES TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+/** Base address of the NVM data partition in the system memory map. */
+#define NVM_DATA_BASE_ADDR TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR
+/** Total byte size of the NVM data partition. */
+#define NVM_DATA_SIZE_BYTES TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES
+#endif
+#endif  // USE_FLASH
 /** Byte size of one firmware slot (A or B); half of the data partition. */
 #define NVM_BYTES_PER_SLOT (NVM_DATA_SIZE_BYTES / 2)
 
