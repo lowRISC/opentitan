@@ -658,6 +658,8 @@ interface chip_if;
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 `endif
   wire adc_data_valid = `AST_HIER.u_ast_aon.u_adc.adc_d_val_o;
+  wire rram_rd_buf_rdy = ~((|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_valid) ||
+                           (|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_wip));
 
   task static force_adc_d_o(input bit [9:0] channel_val);
     force `AST_HIER.u_ast_aon.adc_d_o = channel_val;

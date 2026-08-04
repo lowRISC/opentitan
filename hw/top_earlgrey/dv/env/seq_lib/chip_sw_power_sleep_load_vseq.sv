@@ -62,6 +62,7 @@ class chip_sw_power_sleep_load_vseq extends chip_sw_base_vseq;
 
   virtual task sw_symbol_bkdr_overwr_scalar(string str, bit [7:0] data);
     bit [7:0] array_data[1] = {data};
+    wait_rram_rd_buf_rdy();
     sw_symbol_backdoor_overwrite(str, array_data);
   endtask
 
