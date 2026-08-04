@@ -96,6 +96,7 @@ name:
 
   smoke_dir: "{otbn_dir}/dv/smoke"
   multi_err_dir: "{otbn_dir}/dv/otbnsim/test/simple/multi"
+  wfi_dir: "{proj_root}/sw/otbn/wfi"
 
   run_modes: [
     // Run the random instruction generator and build the one resulting binary
@@ -141,6 +142,14 @@ name:
       name: build_otbn_multi_err_binaries_mode
       pre_run_cmds: [
         "{gen_fixed} --src-dir {multi_err_dir} {otbn_elf_dir}"
+      ]
+    }
+
+    // Build the WFI top level test in {otbn_elf_dir}.
+    {
+      name: build_otbn_wfi_binary_mode
+      pre_run_cmds: [
+        "{gen_fixed} --src-dir {wfi_dir} {otbn_elf_dir}"
       ]
     }
   ]
@@ -367,6 +376,13 @@ name:
       uvm_test_seq: "otbn_partial_wipe_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 10
+    }
+
+    {
+      name: "otbn_wfi_smoke"
+      uvm_test_seq: "otbn_wfi_smoke_vseq"
+      en_run_modes: ["build_otbn_wfi_binary_mode"]
+      reseed: 1 // directed test
     }
   ]
 
