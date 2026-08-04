@@ -27,6 +27,7 @@ MEMORY {
  * technology.
  */
 REGION_ALIAS("nvm", eflash);
+_nvm_slot_reserved_bytes = 0;
 
 /**
  * Exception frame at the top of main SRAM
