@@ -7,6 +7,13 @@ load("//rules:otbn.bzl", "otbn_binary")
 package(default_visibility = ["//visibility:public"])
 
 otbn_binary(
+    name = "wfi_back_to_back",
+    srcs = [
+        "wfi_back_to_back.s",
+    ],
+)
+
+otbn_binary(
     name = "wfi_sec_wipe",
     srcs = [
         "wfi_sec_wipe.s",
