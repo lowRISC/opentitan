@@ -73,7 +73,6 @@ cc_library(
     hdrs = ["nvm_info_field.h"],
     deps = [
         "//hw/top:ast_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing:nvm_testutils",

@@ -31,7 +31,7 @@ static status_t peripheral_handles_init(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
-  LOG_INFO("Executing from flash.");
+  LOG_INFO("Executing from NVM.");
 
   // Read LC state.
   dif_lc_ctrl_state_t lc_state = kDifLcCtrlStateInvalid;
@@ -40,7 +40,7 @@ bool test_main(void) {
   switch (lc_state) {
     case kDifLcCtrlStateProd:
     case kDifLcCtrlStateProdEnd:
-      LOG_INFO("Reading the isolated flash partition.");
+      LOG_INFO("Reading the isolated NVM info page.");
       uint32_t actual_wafer_auth_secret
           [kNvmInfoFieldWaferAuthSecretSizeIn32BitWords] = {0};
       CHECK_STATUS_OK(nvm_testutils_info_page_setup(

@@ -16,7 +16,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print_uart.h"
-#ifdef OPENTITAN_IS_EARLGREY
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 #include "sw/device/lib/testing/nvm_testutils.h"
 #endif
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -130,7 +130,7 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Initialize the NVM.
-#ifdef OPENTITAN_IS_EARLGREY
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
   {
     uint32_t otp_nvm_default_cfg = 0;
 #ifdef HAS_OTP_CTRL
@@ -140,7 +140,7 @@ bool rom_test_main(void) {
 #endif
     CHECK_STATUS_OK(nvm_testutils_rom_init(otp_nvm_default_cfg));
   }
-#endif /* OPENTITAN_IS_EARLGREY */
+#endif /* OPENTITAN_IS_EARLGREY || OPENTITAN_IS_ENGLISHBREAKFAST */
 
   // Setup the UART for printing messages to the console.
   if (kDeviceType != kDeviceSimDV) {
