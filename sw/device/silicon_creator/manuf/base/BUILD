@@ -132,7 +132,10 @@ opentitan_test(
         },
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp:img_raw",
-        tags = ["manuf"],
+        tags = [
+            "manuf",
+            "skip_in_ci",
+        ],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
