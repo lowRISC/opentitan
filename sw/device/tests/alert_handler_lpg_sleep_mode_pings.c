@@ -17,7 +17,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
@@ -500,7 +500,7 @@ bool test_main(void) {
     // state.
     if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
       CHECK_STATUS_OK(
-          keymgr_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
+          keymgr_dpe_testutils_nvm_init(&kCreatorSecret, &kOwnerSecret));
       chip_sw_reset();
     }
   }
