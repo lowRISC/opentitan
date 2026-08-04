@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/cmac.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -98,7 +99,7 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
@@ -232,7 +233,7 @@ status_t cryptolib_sca_gcm_impl(
     size_t *cfg_out, size_t trigger) {
   // Construct the blinded key configuration.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
@@ -360,7 +361,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
 
   // Build the key configuration.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
@@ -432,7 +433,7 @@ status_t cryptolib_sca_cmac_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
                                  size_t *cfg_out, size_t trigger) {
   // Build the key configuration.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCmac,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,

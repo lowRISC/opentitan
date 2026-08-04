@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
@@ -329,7 +330,7 @@ status_t handle_rsa_decrypt(ujson_t *uj) {
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -439,7 +440,7 @@ status_t handle_rsa_sign(ujson_t *uj) {
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -611,7 +612,7 @@ status_t handle_rsa_keygen_check(ujson_t *uj) {
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = key_mode,
               .key_length = private_key_bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -726,7 +727,7 @@ status_t handle_rsa_keygen(ujson_t *uj) {
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = key_mode,
               .key_length = private_key_bytes,
               .hw_backed = kHardenedBoolFalse,

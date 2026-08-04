@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -61,7 +62,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
                          const uint32_t *exp_tag) {
   // Construct blinded key.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
@@ -158,7 +159,7 @@ static status_t streaming_test(void) {
 
   // Construct blinded key.
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = sizeof(kBasicTestKey),
       .hw_backed = kHardenedBoolFalse,

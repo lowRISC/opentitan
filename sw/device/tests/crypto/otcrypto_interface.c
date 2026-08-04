@@ -15,6 +15,7 @@ volatile otcrypto_interface_t otcrypto = {
 
     // Build info.
     .build_info = &otcrypto_build_info,
+    .lib_version = &otcrypto_lib_version,
 
     // Entropy.
     .entropy_init = &otcrypto_entropy_init,

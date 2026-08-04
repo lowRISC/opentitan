@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/aes.h"
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
@@ -110,7 +111,7 @@ status_t handle_aes_block(ujson_t *uj) {
 
   // Build the key configuration
   otcrypto_key_config_t config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = uj_data.key_length,
       .hw_backed = kHardenedBoolFalse,

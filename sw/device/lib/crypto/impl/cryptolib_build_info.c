@@ -21,3 +21,7 @@ otcrypto_status_t otcrypto_build_info(uint32_t *version, bool *released,
 
   return LAUNDERED_OTCRYPTO_OK;
 }
+
+otcrypto_lib_version_t otcrypto_lib_version(void) {
+  return (otcrypto_lib_version_t)kCryptoLibVersion;
+}

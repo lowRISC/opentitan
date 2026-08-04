@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
@@ -48,15 +49,6 @@ static const uint8_t sha256_ans[32] = {
     0x96, 0x0b, 0x0b, 0x00, 0x0a, 0xca, 0x2a, 0xc3, 0x29, 0xde, 0xea,
     0x5c, 0x23, 0x28, 0xeb, 0xc6, 0xf2, 0xba, 0x98, 0x02, 0xc1};
 
-static const otcrypto_key_config_t kSha256Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeHmacSha256,
-    .key_length = 20,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
 // RFC 4231 Test case 3
 // https://datatracker.ietf.org/doc/html/rfc4231#section-4.4
 //    Key            aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
@@ -81,15 +73,6 @@ static const uint8_t hmac_sha256_ans[32] = {
     0x77, 0x3e, 0xa9, 0x1e, 0x36, 0x80, 0x0e, 0x46, 0x85, 0x4d, 0xb8,
     0xeb, 0xd0, 0x91, 0x81, 0xa7, 0x29, 0x59, 0x09, 0x8b, 0x3e, 0xf8,
     0xc1, 0x22, 0xd9, 0x63, 0x55, 0x14, 0xce, 0xd5, 0x65, 0xfe};
-
-static const otcrypto_key_config_t kSha512Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeHmacSha512,
-    .key_length = 20,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
 
 static const uint8_t hmac_sha512_ans[64] = {
     0xfa, 0x73, 0xb0, 0x08, 0x9d, 0x56, 0xa2, 0x84, 0xef, 0xb0, 0xf0,
@@ -120,14 +103,6 @@ static const uint8_t sha512_ans[64] = {
 // k = 94a1bbb14b906a61a280f245f9e93c7f3b4a6247824f5d33b9670787642a68de
 // R = f3ac8061b514795b8843e3d6629527ed2afd6b1f6a555a7acabb5e6f79c8c2ac
 // S = 8bf77819ca05a6b2786c76262bf7371cef97b218e96f175a3ccdda2acc058903
-
-static const otcrypto_key_config_t kP256Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP256,
-    .key_length = 32,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
 
 static const uint8_t p256_d[32] = {
     0x64, 0xb4, 0x72, 0xda, 0x6d, 0xa5, 0x54, 0xca, 0xac, 0x3e, 0x4e,
@@ -178,14 +153,6 @@ static const uint8_t p256_sig[64] = {
 // b11db00cdaf53286d4483f38cd02785948477ed7ebc2ad609054551da0ab0359978c61851788aa2ec3267946d440e878
 // S =
 // 16007873c5b0604ce68112a8fee973e8e2b6e3319c683a762ff5065a076512d7c98b27e74b7887671048ac027df8cbf2
-
-static const otcrypto_key_config_t kP384Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP384,
-    .key_length = 48,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
 
 static const uint8_t p384_d[48] = {
     0x6b, 0x9e, 0x7f, 0x6d, 0x47, 0x87, 0xc9, 0x83, 0x77, 0x5a, 0x85, 0x9b,
@@ -385,14 +352,6 @@ static const uint8_t aes_gcm_256_tag[] = {0xab, 0xd3, 0xd2, 0x6d, 0x65, 0xa6,
                                           0x27, 0x5f, 0x7a, 0x4f, 0x56, 0xb4,
                                           0x22, 0xac, 0xab, 0x49};
 
-static const otcrypto_key_config_t kAesGcm256Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesGcm,
-    .key_length = 32,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
 // ACVP vector /acvp/v1/testSessions/665366/vectorSets/3483386 tcId = 21
 static const uint8_t aes_256_key[32] = {0};
 
@@ -403,14 +362,6 @@ static const uint8_t aes_256_pt[] = {0x91, 0xfb, 0xef, 0x2d, 0x15, 0xa9,
 static const uint8_t aes_256_ct[] = {0x1b, 0xc7, 0x04, 0xf1, 0xbc, 0xe1,
                                      0x35, 0xce, 0xb8, 0x10, 0x34, 0x1b,
                                      0x21, 0x6d, 0x7a, 0xbe};
-
-static const otcrypto_key_config_t kAes256Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesEcb,
-    .key_length = 32,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
 
 // SHAKE256 CAVP vector
 // Len = 8
@@ -438,15 +389,6 @@ static const uint8_t shake256_ans[] = {
 // Requested output length is 512-bits
 // S (as a character string) is
 // "My Tagged Application"
-
-static const otcrypto_key_config_t kKmac256Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeKmac256,
-    .key_length = 32,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
 
 static const uint8_t kmac_256_in[] = {0x00, 0x01, 0x02, 0x03};
 
@@ -527,6 +469,15 @@ static status_t kat_sha512_hash(void) {
 }
 
 static status_t kat_sha256_hmac(void) {
+  const otcrypto_key_config_t kSha256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = 20,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   // Generate the 50-byte 0xDD message dynamically
   uint8_t hmac_sha256_in[50];
   memset(hmac_sha256_in, 0xDD, sizeof(hmac_sha256_in));
@@ -566,6 +517,15 @@ static status_t kat_sha256_hmac(void) {
 }
 
 static status_t kat_sha512_hmac(void) {
+  const otcrypto_key_config_t kSha512Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha512,
+      .key_length = 20,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   // Generate the 50-byte 0xDD message dynamically
   uint8_t hmac_sha512_in[50];
   memset(hmac_sha512_in, 0xDD, sizeof(hmac_sha512_in));
@@ -610,6 +570,14 @@ static status_t kat_drbg(void) {
 }
 
 static status_t kat_p256_sign(void) {
+  const otcrypto_key_config_t kP256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob_sk[20] = {0};
   otcrypto_blinded_key_t private_key = {
       .config = kP256Config,
@@ -646,6 +614,14 @@ static status_t kat_p256_sign(void) {
 }
 
 static status_t kat_p256_base_point_mul(void) {
+  const otcrypto_key_config_t kP256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob_sk[20] = {0};
   otcrypto_blinded_key_t private_key = {
       .config = kP256Config,
@@ -722,6 +698,14 @@ static status_t kat_p256_point_on_curve(void) {
 }
 
 static status_t kat_p384_sign(void) {
+  const otcrypto_key_config_t kP384Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = 48,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob_sk[28] = {0};
   otcrypto_blinded_key_t private_key = {
       .config = kP384Config,
@@ -759,6 +743,14 @@ static status_t kat_p384_sign(void) {
 }
 
 static status_t kat_p384_base_point_mul(void) {
+  const otcrypto_key_config_t kP384Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = 48,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob_sk[28] = {0};
   otcrypto_blinded_key_t private_key = {
       .config = kP384Config,
@@ -877,7 +869,7 @@ static status_t kat_rsa4096_sign(void) {
   uint32_t keyblob[kOtcryptoRsa4096PrivateKeyblobBytes / 4];
 
   const otcrypto_key_config_t kRsa4096Config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaSignPkcs,
       .key_length = kOtcryptoRsa4096PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -934,6 +926,14 @@ static status_t kat_rsa4096_verify(void) {
 }
 
 static status_t kat_aes_gcm_256_encrypt(void) {
+  const otcrypto_key_config_t kAesGcm256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob[keyblob_num_words(kAesGcm256Config)];
   HARDENED_TRY(keyblob_from_key_and_mask((uint32_t *)aes_gcm_256_key, kTestMask,
                                          kAesGcm256Config, keyblob));
@@ -973,6 +973,14 @@ static status_t kat_aes_gcm_256_encrypt(void) {
 }
 
 static status_t kat_aes_ecb_256_decrypt(void) {
+  const otcrypto_key_config_t kAes256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesEcb,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob[keyblob_num_words(kAes256Config)];
   HARDENED_TRY(keyblob_from_key_and_mask((uint32_t *)aes_256_key, kTestMask,
                                          kAes256Config, keyblob));
@@ -1023,6 +1031,15 @@ static status_t kat_shake_256(void) {
 }
 
 static status_t kat_kmac_256(void) {
+  const otcrypto_key_config_t kKmac256Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeKmac256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob[keyblob_num_words(kKmac256Config)];
   // {0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b,
   // 0x4c, 0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
@@ -1095,15 +1112,15 @@ static const uint32_t ed25519_sig[] = {
 
 static const uint8_t ed25519_msg[] = {0x72};
 
-static const otcrypto_key_config_t kEd25519Config = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEd25519,
-    .key_length = sizeof(ed25519_sk),
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
-
 static status_t kat_ed25519_sign(void) {
+  const otcrypto_key_config_t kEd25519Config = {
+
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = sizeof(ed25519_sk),
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
   uint32_t keyblob[keyblob_num_words(kEd25519Config)];
 
   memset(keyblob, 0, sizeof(keyblob));

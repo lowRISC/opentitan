@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -70,7 +71,6 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
@@ -129,7 +129,6 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
@@ -212,7 +211,6 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 .config =
                     {
-                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKdfKmac256,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
@@ -319,14 +317,16 @@ static status_t run_test_vector(void) {
   uint32_t km_buffer1[km_keyblob_len];
   uint32_t km_buffer2[km_keyblob_len];
 
+  *(otcrypto_lib_version_t *)&current_test_vector->key_derivation_key.config
+       .version = otcrypto_lib_version();
   current_test_vector->key_derivation_key.checksum =
       otcrypto_integrity_blinded_checksum(
           &current_test_vector->key_derivation_key);
 
   otcrypto_key_config_t km_config = {
+      .version = otcrypto_lib_version(),
       // The following key_mode is a dummy placeholder. It does not
       // necessarily match the `key_length`.
-      .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeKdfKmac128,
       .key_length = km_key_len,
       .hw_backed = kHardenedBoolFalse,

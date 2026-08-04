@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
@@ -25,13 +26,14 @@ enum {
   kP384SignatureWords = 768 / 32,
 };
 
-static const otcrypto_key_config_t kPrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsaP384,
-    .key_length = kP384PrivateKeyBytes,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kPrivateKeyConfig                             \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdsaP384,          \
+      .key_length = kP384PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 static const char kMessage[] = "test message for public key import";
 
@@ -67,16 +69,17 @@ static status_t import_then_verify_test(void) {
   LOG_INFO("Generating keypair...");
   TRY(otcrypto_ecdsa_p384_keygen(&private_key, &generated_public_key));
 
-  // Import the private key shares into a fresh blinded key struct.
-  // Use an exportable config so we can round-trip via export below.
-  static const otcrypto_key_config_t kExportableKeyConfig = {
-      .version = kOtcryptoLibVersion1,
-      .key_mode = kOtcryptoKeyModeEcdsaP384,
-      .key_length = kP384PrivateKeyBytes,
-      .hw_backed = kHardenedBoolFalse,
-      .exportable = kHardenedBoolTrue,
-      .security_level = kOtcryptoKeySecurityLevelLow,
-  };
+// Import the private key shares into a fresh blinded key struct.
+// Use an exportable config so we can round-trip via export below.
+#define kExportableKeyConfig                          \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeEcdsaP384,          \
+      .key_length = kP384PrivateKeyBytes,             \
+      .hw_backed = kHardenedBoolFalse,                \
+      .exportable = kHardenedBoolTrue,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
   otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, keyblob, kP384MaskedScalarShareWords);
   otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
@@ -250,7 +253,7 @@ static status_t run_import_export_negative_tests(void) {
 
   uint32_t keyblob[28] = {0};
   otcrypto_key_config_t priv_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeEcdsaP384,
       .key_length = 48,
       .hw_backed = kHardenedBoolFalse,

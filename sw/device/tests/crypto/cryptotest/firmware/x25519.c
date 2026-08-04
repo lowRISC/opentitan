@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -29,14 +30,15 @@ enum {
   kX25519SharedSecretWords = X25519_CMD_SHARED_SECRET_BYTES / sizeof(uint32_t),
 };
 
-static const otcrypto_key_config_t kX25519PrivateKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeX25519,
-    .key_length = X25519_CMD_PRIVATE_KEY_BYTES,
-    .hw_backed = kHardenedBoolFalse,
-    .exportable = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kX25519PrivateKeyConfig                       \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeX25519,             \
+      .key_length = X25519_CMD_PRIVATE_KEY_BYTES,     \
+      .hw_backed = kHardenedBoolFalse,                \
+      .exportable = kHardenedBoolFalse,               \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 status_t handle_x25519_key_exchange(ujson_t *uj) {
   // Receive the server's public key from the host.
@@ -95,7 +97,7 @@ status_t handle_x25519_key_exchange(ujson_t *uj) {
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = X25519_CMD_SHARED_SECRET_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -189,7 +191,7 @@ status_t handle_x25519_shared_secret_generation(ujson_t *uj) {
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = X25519_CMD_SHARED_SECRET_BYTES,
               .hw_backed = kHardenedBoolFalse,

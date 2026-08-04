@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -44,7 +45,7 @@ status_t keygen_then_sign_test(void) {
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kTestKeyMode,
               .key_length = kOtcryptoRsa2048PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
@@ -130,7 +131,7 @@ static status_t run_keygen_negative_tests(void) {
   };
 
   otcrypto_key_config_t valid_priv_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaSignPkcs,
       .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
@@ -214,7 +215,7 @@ static status_t run_async_wrong_finalize_tests(void) {
   otcrypto_blinded_key_t valid_priv_2048 = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeRsaSignPkcs,
               .key_length = kOtcryptoRsa2048PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
@@ -235,7 +236,7 @@ static status_t run_async_wrong_finalize_tests(void) {
   otcrypto_blinded_key_t valid_priv_3072 = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeRsaSignPkcs,
               .key_length = kOtcryptoRsa3072PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,

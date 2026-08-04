@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
@@ -113,7 +114,7 @@ status_t cryptolib_sca_rsa_dec_impl(
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -192,7 +193,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEcdhP256,
               .key_length = kPentestP256Bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -259,7 +260,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = kPentestP256Bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -381,7 +382,7 @@ status_t cryptolib_sca_rsa_sign_impl(
 
   // Construct the private key.
   otcrypto_key_config_t private_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = key_mode,
       .key_length = private_key_bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -471,8 +472,8 @@ status_t cryptolib_sca_rsa_sign_impl(
 status_t cryptolib_sca_p256_sign_impl(
     cryptolib_sca_asym_p256_sign_in_t uj_input,
     cryptolib_sca_asym_p256_sign_out_t *uj_output) {
-  static const otcrypto_key_config_t kP256PrivateKeyConfig = {
-      .version = kOtcryptoLibVersion1,
+  const otcrypto_key_config_t kP256PrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeEcdsaP256,
       .key_length = kPentestP256Bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -613,7 +614,7 @@ status_t cryptolib_sca_p384_ecdh_impl(
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEcdhP384,
               .key_length = kPentestP384Bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -681,7 +682,7 @@ status_t cryptolib_sca_p384_ecdh_impl(
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = kPentestP384Bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -722,8 +723,8 @@ status_t cryptolib_sca_p384_ecdh_impl(
 status_t cryptolib_sca_p384_sign_impl(
     cryptolib_sca_asym_p384_sign_in_t uj_input,
     cryptolib_sca_asym_p384_sign_out_t *uj_output) {
-  static const otcrypto_key_config_t kP384PrivateKeyConfig = {
-      .version = kOtcryptoLibVersion1,
+  const otcrypto_key_config_t kP384PrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeEcdsaP384,
       .key_length = kPentestP384Bytes,
       .hw_backed = kHardenedBoolFalse,
@@ -875,7 +876,7 @@ status_t cryptolib_sca_ed25519_sign_impl(
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEd25519,
               .key_length = ED25519_CMD_SCALAR_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -962,7 +963,7 @@ status_t cryptolib_sca_x25519_base_mul_impl(uint8_t scalar[X25519_CMD_BYTES],
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeX25519,
               .key_length = X25519_CMD_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -1011,7 +1012,7 @@ status_t cryptolib_sca_x25519_ecdh_impl(
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeX25519,
               .key_length = X25519_CMD_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -1037,7 +1038,7 @@ status_t cryptolib_sca_x25519_ecdh_impl(
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = X25519_CMD_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -1088,7 +1089,7 @@ status_t cryptolib_sca_x25519_point_mul_impl(
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeX25519,
               .key_length = X25519_CMD_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -1116,7 +1117,7 @@ status_t cryptolib_sca_x25519_point_mul_impl(
   otcrypto_blinded_key_t shared_secret = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeAesCtr,
               .key_length = X25519_CMD_BYTES,
               .hw_backed = kHardenedBoolFalse,
@@ -1160,7 +1161,7 @@ status_t cryptolib_sca_p256_base_mul_impl(uint8_t scalar[P256_CMD_BYTES],
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEcdsaP256,
               .key_length = kPentestP256Bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -1244,7 +1245,7 @@ status_t cryptolib_sca_p384_base_mul_impl(uint8_t scalar[P384_CMD_BYTES],
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEcdsaP384,
               .key_length = kPentestP384Bytes,
               .hw_backed = kHardenedBoolFalse,
@@ -1337,7 +1338,7 @@ status_t cryptolib_sca_ed25519_base_mul_impl(
   otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kOtcryptoLibVersion1,
+              .version = otcrypto_lib_version(),
               .key_mode = kOtcryptoKeyModeEd25519,
               .key_length = ED25519_CMD_SCALAR_BYTES,
               .hw_backed = kHardenedBoolFalse,

@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hkdf.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -75,7 +76,7 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
 
   // Construct a blinded key struct for the intermediate key.
   otcrypto_key_config_t prk_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = ikm->config.key_mode,
       .key_length = digest_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -204,7 +205,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   uint32_t salt_mask[kHkdfMaxSaltWords];
   memset(salt_mask, 0, salt_wordlen * sizeof(uint32_t));
   otcrypto_key_config_t salt_key_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = ikm->config.key_mode,
       .key_length = salt_bytelen,
       .hw_backed = kHardenedBoolFalse,

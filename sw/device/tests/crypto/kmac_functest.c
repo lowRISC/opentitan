@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -189,6 +190,8 @@ static status_t run_cshake(otcrypto_hash_digest_t *digest) {
  * @return OK or error.
  */
 static status_t run_kmac(otcrypto_word32_buf_t tag) {
+  *(otcrypto_lib_version_t *)&current_test_vector->key.config.version =
+      otcrypto_lib_version();
   current_test_vector->key.checksum =
       otcrypto_integrity_blinded_checksum(&current_test_vector->key);
   otcrypto_const_byte_buf_t input_msg = OTCRYPTO_MAKE_BUF(
@@ -255,7 +258,7 @@ static status_t run_negative_tests(void) {
 
   // Base valid config
   otcrypto_key_config_t valid_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeKmac128,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,

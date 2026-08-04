@@ -9,6 +9,7 @@
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_KMAC_TESTVECTORS_H_
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/kmac.h"
 
 #ifdef __cplusplus
@@ -47,7 +48,6 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
   % if "key" in t:
         .key = {
             .config = {
-                .version = kOtcryptoLibVersion1,
                 .key_mode = ${"kOtcryptoKeyModeKmac" + str(t["security_str"])},
                 .key_length = ${t["key_len"]},
                 .hw_backed = kHardenedBoolFalse,

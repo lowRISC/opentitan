@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -83,7 +84,7 @@ static status_t run_test(kdf_test_vector_t *test) {
 
   // Construct the input key derivation key.
   otcrypto_key_config_t kdk_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = test->key_mode,
       .key_length = test->kdk_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -103,7 +104,7 @@ static status_t run_test(kdf_test_vector_t *test) {
   // Construct a blinded key struct for the output keying material. The key mode
   // here doesn't really matter, it just needs to be some symmetric key.
   otcrypto_key_config_t km_config = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = test->km_mode,
       .key_length = test->km_bytelen,
       .hw_backed = kHardenedBoolFalse,
@@ -1086,7 +1087,7 @@ static status_t run_hmac_kdf_negative_tests(void) {
 
   // Base valid configs
   otcrypto_key_config_t kdk_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,
@@ -1094,7 +1095,7 @@ static status_t run_hmac_kdf_negative_tests(void) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   otcrypto_key_config_t km_cfg = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeAesCtr,
       .key_length = 32,
       .hw_backed = kHardenedBoolFalse,

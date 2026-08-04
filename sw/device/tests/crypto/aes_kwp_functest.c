@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
@@ -15,13 +16,14 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 // Key configuration for wrapping key (AES-256).
-static const otcrypto_key_config_t kWrappingKeyConfig = {
-    .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeAesKwp,
-    .key_length = 256 / 8,
-    .hw_backed = kHardenedBoolFalse,
-    .security_level = kOtcryptoKeySecurityLevelLow,
-};
+#define kWrappingKeyConfig                            \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeAesKwp,             \
+      .key_length = 256 / 8,                          \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
 
 /**
  * Check that wrapping and unwrapping returns the original key.
@@ -72,7 +74,7 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
  */
 static status_t wrap_unwrap_random_test(void) {
   const otcrypto_key_config_t kKmacKeyConfig = {
-      .version = kOtcryptoLibVersion1,
+      .version = otcrypto_lib_version(),
       .key_mode = kOtcryptoKeyModeKmac128,
       .key_length = 128 / 8,
       .hw_backed = kHardenedBoolFalse,
