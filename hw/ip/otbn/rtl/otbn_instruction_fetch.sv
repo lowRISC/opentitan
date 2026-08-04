@@ -30,6 +30,9 @@ module otbn_instruction_fetch
   input logic                     insn_fetch_req_valid_raw_i,
   input logic [ImemAddrWidth-1:0] insn_fetch_req_addr_i,
 
+  // The enable for the URND PRNG control feature.
+  input logic                     urnd_ctrl_enabled_i,
+
   // Decoded instruction
   output logic                     insn_fetch_resp_valid_o,
   output logic [ImemAddrWidth-1:0] insn_fetch_resp_addr_o,
@@ -43,6 +46,9 @@ module otbn_instruction_fetch
   output ispr_bignum_predec_t      ispr_bignum_predec_o,
   output mac_bignum_predec_t       mac_bignum_predec_o,
   output logic                     lsu_addr_en_predec_o,
+
+  // A Signal indicating that URND will be used in the next cycle.
+  output logic urnd_will_be_consumed_o,
 
   input logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_i,
   input logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_i,
@@ -95,6 +101,7 @@ module otbn_instruction_fetch
   ispr_bignum_predec_t ispr_bignum_predec;
   mac_bignum_predec_t  mac_bignum_predec, mac_bignum_predec_raw, mac_bignum_predec_to_fsm;
   mac_bignum_predec_t  mac_bignum_predec_q, mac_bignum_predec_d;
+  mac_bignum_contrl_t  mac_bignum_contrl;
   logic                mac_bignum_is_busy;
   logic                lsu_addr_en_predec_q, lsu_addr_en_predec_d;
   logic                lsu_addr_en_predec_insn;
@@ -141,6 +148,8 @@ module otbn_instruction_fetch
     .imem_raddr_i (insn_prefetch_addr),
     .imem_rvalid_i(imem_rvalid_final),
 
+    .urnd_ctrl_enabled_i,
+
     .rf_bignum_predec_o       (rf_bignum_predec_insn),
     .alu_bignum_predec_o      (alu_bignum_predec_insn),
     .ctrl_flow_predec_o       (ctrl_flow_predec),
@@ -185,7 +194,7 @@ module otbn_instruction_fetch
     .op_b_elem0_sel_i (mac_bignum_predec_to_fsm.op_b_elem0_sel),
     .op_b_elem1_sel_i (mac_bignum_predec_to_fsm.op_b_elem1_sel),
 
-    .contrl_o (/* unused here */),
+    .contrl_o (mac_bignum_contrl),
     .predec_o (mac_bignum_predec),
     .is_busy_o(mac_bignum_is_busy),
 
@@ -209,6 +218,26 @@ module otbn_instruction_fetch
     mac_bignum_predec_to_fsm.add_res_en,
     mac_bignum_predec_to_fsm.operation_valid_raw
   };
+
+  // We must generate a URND used signal already here so that a stopped PRNG is advanced once URND
+  // is used and not with one cycle delay (URND is the flopped PRNG output).
+  // URND is used by an instruction when (there are other users):
+  // - The BN MAC clears its internal registers during a multiplication insn.
+  // - URND is read
+  logic mac_bignum_will_consume_urnd;
+  assign mac_bignum_will_consume_urnd = mac_bignum_contrl.acc_clear_en ||
+                                        mac_bignum_contrl.c_clear_en   ||
+                                        mac_bignum_contrl.tmp_clear_en;
+
+  logic unused_mac_bignum_contrl;
+  assign unused_mac_bignum_contrl = ^{
+    mac_bignum_contrl.acc_wr_en_raw,
+    mac_bignum_contrl.c_wr_en_raw,
+    mac_bignum_contrl.tmp_wr_en_raw
+  };
+
+  assign urnd_will_be_consumed_o = mac_bignum_will_consume_urnd ||
+                                   ispr_bignum_predec_d.ispr_rd_en[IsprUrnd];
 
   prim_onehot_enc #(
     .OneHotWidth(NWdr)

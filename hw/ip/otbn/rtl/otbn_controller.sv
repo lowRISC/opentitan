@@ -1336,6 +1336,14 @@ module otbn_controller
         ispr_addr_base      = IsprUrnd;
         ispr_word_addr_base = '0;
       end
+      CsrUrndCtrl: begin
+        ispr_addr_base      = IsprUrndCtrl;
+        ispr_word_addr_base = '0;
+      end
+      CsrUrndStatus: begin
+        ispr_addr_base      = IsprUrndStatus;
+        ispr_word_addr_base = '0;
+      end
       CsrKmacStatus: begin
         ispr_addr_base      = IsprKmacStatus;
         ispr_word_addr_base = '0;
@@ -1517,6 +1525,7 @@ module otbn_controller
       WsrMaiIn1S1:   ispr_addr_bignum = IsprMaiIn1S1;
       WsrKmacDataS0: ispr_addr_bignum = IsprKmacDataS0;
       WsrKmacDataS1: ispr_addr_bignum = IsprKmacDataS1;
+      WsrUrndState : ispr_addr_bignum = IsprUrndState;
       default: wsr_illegal_addr = 1'b1;
     endcase
   end
