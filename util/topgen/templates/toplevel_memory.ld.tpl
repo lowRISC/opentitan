@@ -45,9 +45,9 @@ def get_virtual_memory_size(top):
     for mod in top["module"]:
         if "memory" in mod:
             for _, mem in mod["memory"].items():
-                if mem["label"] == "eflash":
+                if mem["label"] == "eflash" or mem["label"] == "rram":
                     return hex(int(mem["size"], 0) // 2)
-    # if no flash_ctrl is present, but a ctn memory region is,
+    # if no flash_ctrl or rram_ctrl is present, but a ctn memory region is,
     # use that size instead
     for mod in top["module"]:
         if "memory" in mod:
@@ -83,10 +83,12 @@ MEMORY {
  * linker scripts can place sections with `> nvm` instead of hardcoding one
  * technology.
  */
-  % if lib.has_module_type(top, "flash_ctrl"):
-REGION_ALIAS("nvm", eflash);
-  % else:
+  % if lib.has_module_type(top, "rram_ctrl"):
 REGION_ALIAS("nvm", rram);
+_nvm_slot_reserved_bytes = 32768;
+  % else:
+REGION_ALIAS("nvm", eflash);
+_nvm_slot_reserved_bytes = 0;
   % endif
 
 % endif
