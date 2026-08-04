@@ -8,13 +8,13 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -30,7 +30,7 @@
 #define BYTES_IN_WDR 32
 
 static dif_otbn_t otbn;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 
 enum {
@@ -476,19 +476,8 @@ status_t handle_otbn_pentest_init(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_otbn_pentest_init_keymgr(ujson_t *uj) {
-  if (kBootStage != kBootStageOwner) {
-    TRY(keymgr_testutils_startup(&keymgr, &kmac));
-    // Advance to OwnerIntermediateKey state.
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_check_state(&keymgr,
-                                     kDifKeymgrStateOwnerIntermediateKey));
-    LOG_INFO("Keymgr entered OwnerIntKey State");
-  } else {
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
-                        &keymgr));
-    TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
-  }
+status_t handle_otbn_pentest_init_keymgr_dpe(ujson_t *uj) {
+  TRY(keymgr_dpe_testutils_initialize(&keymgr_dpe, &kmac));
 
   dif_otbn_t otbn;
   TRY(dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
@@ -657,13 +646,16 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   TRY(ujson_deserialize_penetrationtest_otbn_sca_fixed_seed_t(uj, &uj_data));
 
   // Key generation parameters.
-  dif_keymgr_versioned_key_params_t sideload_params[kKeySideloadNumIt];
+  dif_keymgr_dpe_generate_params_t sideload_params[kKeySideloadNumIt];
 
   // Generate FvsR values.
   bool sample_fixed = true;
   for (size_t it = 0; it < kKeySideloadNumIt; it++) {
     sideload_params[it].version = 0x0;
-    sideload_params[it].dest = kDifKeymgrVersionedKeyDestOtbn;
+    sideload_params[it].key_dest = kDifKeymgrDpeKeyDestOtbn;
+    sideload_params[it].sideload_key = true;
+    // TODO(#30777): Replace the hard-coded slot number
+    sideload_params[it].slot_src_sel = 0;
     memset(sideload_params[it].salt, 0, sizeof(sideload_params[it].salt));
     if (sample_fixed) {
       sideload_params[it].salt[0] = uj_data.fixed_seed;
@@ -683,7 +675,7 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
 
   // SCA code target.
   for (size_t it = 0; it < kKeySideloadNumIt; it++) {
-    TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params[it]));
+    TRY(keymgr_dpe_testutils_generate_key(&keymgr_dpe, &sideload_params[it]));
 
     TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
 
@@ -796,7 +788,7 @@ status_t handle_otbn_sca(ujson_t *uj) {
     case kOtbnScaSubcommandInit:
       return handle_otbn_pentest_init(uj);
     case kOtbnScaSubcommandInitKeyMgr:
-      return handle_otbn_pentest_init_keymgr(uj);
+      return handle_otbn_pentest_init_keymgr_dpe(uj);
     case kOtbnScaSubcommandInsnCarryFlag:
       return handle_otbn_sca_insn_carry_flag(uj);
     case kOtbnScaSubcommandCombiOps:
