@@ -171,6 +171,17 @@ def _parameter_name(env, pname):
             fail("Unable to identify parameter block name:", env)
     return pname
 
+def _qemu_kind_unsupported(env, kind):
+    """True if `env` is a QEMU exec_env and QEMU doesn't support `kind` yet.
+
+    QEMU only knows how to boot "rom", "ram", and "flash" kind binaries (see
+    qemu.bzl); rather than let bazel discover this the hard way at analysis
+    time when a broad build/test wildcard sweeps up the target, mark it
+    target_compatible_with incompatible so it's simply skipped.
+    """
+    (_, suffix) = env.split(":")
+    return suffix.startswith("sim_qemu") and kind == "rram"
+
 def _hacky_tags(env):
     (_, suffix) = env.split(":")
     tags = []
@@ -283,7 +294,7 @@ def opentitan_binary(name, exec_env, **kwargs):
 def opentitan_test(
         name,
         srcs = [],
-        kind = "flash",
+        kind = "rram",
         deps = [],
         copts = [],
         defines = [],
@@ -430,7 +441,9 @@ def opentitan_test(
         )
         test_kwargs["target_compatible_with"] = opentitan_select_top(
             {
-                ev_to_top_map[env]: []
+                ev_to_top_map[env]: (
+                    ["@platforms//:incompatible"] if _qemu_kind_unsupported(env, kind) else []
+                )
                 for env in env_list
             },
             ["@platforms//:incompatible"],
