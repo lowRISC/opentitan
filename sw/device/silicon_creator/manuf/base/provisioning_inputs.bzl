@@ -34,6 +34,7 @@ EARLGREY_SKUS = {
         "spx_key": {},
         "signature_prefix": None,
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "tags": ["skip_in_ci"],
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
@@ -49,6 +50,7 @@ EARLGREY_SKUS = {
         "spx_key": {},
         "signature_prefix": None,
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_cwt.hjson",
+        "tags": ["skip_in_ci"],
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
@@ -67,6 +69,7 @@ EARLGREY_SKUS = {
         "spx_key": {},
         "signature_prefix": None,
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:emulation_tpm.hjson",
+        "tags": ["skip_in_ci"],
     },
     # This configuration is not really usable in master but left here as an example until
     # a more appropriate solution is found.
